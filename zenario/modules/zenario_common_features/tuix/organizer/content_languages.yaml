@@ -6,8 +6,6 @@ zenario__content:
             key:
                 cType: ""
             title: Content items by language
-            view_mode: list
-            disable_grid_view: true
             allow_bypass: Yes
             db_items:
                 table: '[[DB_PREFIX]]languages AS l'

@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 //If a language has not yet been enabled, then we cannot do anything.
-if (!\ze::$defaultLang
+if (!ze::$defaultLang
  || !\ze\row::exists('languages', [])) {
 	return;
 }
@@ -64,7 +64,7 @@ if ($resultSp = \ze\sql::select($sql)) {
 		
 		if (!$sp['equiv_id']) {
 			//If the special page hasn't been created yet, make sure it is created.
-			$langsToCreate[\ze::$defaultLang] = true;
+			$langsToCreate[ze::$defaultLang] = true;
 		
 		} else {
 			$thisLang = \ze\content::langId($sp['equiv_id'], $sp['content_type']);
@@ -72,8 +72,8 @@ if ($resultSp = \ze\sql::select($sql)) {
 		}
 		
 		//To ensure that the special page exists for the default language we may need to create one
-		if ($thisLang && $thisLang != \ze::$defaultLang && !isset($equivs[\ze::$defaultLang])) {
-			$langsToCreate[\ze::$defaultLang] = true;
+		if ($thisLang && $thisLang != ze::$defaultLang && !isset($equivs[ze::$defaultLang])) {
+			$langsToCreate[ze::$defaultLang] = true;
 		}
 		
 		if (!empty($langsToCreate)) {

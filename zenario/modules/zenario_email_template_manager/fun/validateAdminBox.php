@@ -39,7 +39,7 @@ switch ($path) {
 			}
 			
 			if (ze\row::exists('email_templates', $key)) {
-				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('Please ensure the Name you give this Email Template is Unique.');
+				$box['tabs']['meta_data']['errors'][] = ze\admin::phrase('That name is in use. Please ensure you give a unique name to this email template.');
 			}
 			
 			$headersDays = $values['data_deletion/period_to_delete_log_headers'];

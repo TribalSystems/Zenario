@@ -40,6 +40,7 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		$selectedId = (int) $this->slideId;
 	}
 	
+	$organizerLink = 'organizer.php?fromCID='. ze::$cID. '&fromCType='. ze::$cType. '#';
 	$tagPath = 'zenario__modules/panels/nested_plugins';
 	
 	switch ($this->moduleClassName) {
@@ -60,10 +61,20 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	
 	$navPath = 'zenario__modules/panels/modules/item//'. (int) $this->moduleId. '//item_buttons/'. $buttonName. '//'. (int) $this->instanceId. '//'. $selectedId;
 	
+	
+	//For nests/slideshows, hide the default "settings" FAB.
+	//(If needed, it can still be reached from the Organizer view.)
+	$controls['actions']['settings']['hidden'] = true;
+	//if ($isSlideshow) {
+	//	$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow settings');
+	//} else {
+	//	$controls['actions']['settings']['ord'] = 63;
+	//	$controls['actions']['settings']['label'] = ze\admin::phrase('Nest settings');
+	//}
+	
+	
+	//Setup the button to open up the Organizer view for editing a nest/slideshow
 	if ($isSlideshow) {
-		
-		$controls['actions']['settings']['label'] = ze\admin::phrase('Slideshow settings');
-		
 		if ($this->moduleClassName == 'zenario_slideshow_simple') {
 			if ($existingPlugins) {
 				$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit images in slideshow');
@@ -79,9 +90,6 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		}
 	
 	} else {
-		$controls['actions']['settings']['ord'] = 63;
-		$controls['actions']['settings']['label'] = ze\admin::phrase('Nest settings');
-		
 		if ($existingPlugins) {
 			$controls['actions']['nested_plugins']['label'] = ze\admin::phrase('Add/edit plugins in nest');
 		} else {
@@ -100,29 +108,31 @@ if (isset($controls['actions']['settings']['onclick'])) {
 			". ze\ring::engToBoolean($this->isVersionControlled). ",
 			this);";
 	
+	$controls['actions']['nested_plugins']['link_to_new_tab'] = $organizerLink. $navPath;
 	
-	//For nests, add a button that edits the current slide
-	if (!$isSlideshow && $selectedId) {
-		
-		$controls['actions']['edit_slide'] = $controls['actions']['settings'];
-		
-		$controls['actions']['edit_slide']['ord'] = 62;
-
-		$staticMethodInfo = ze\row::get('nested_plugins', ['module_class_name', 'method_name'], ['instance_id' => $this->instanceId, 'is_slide' => 1, 'id' => (int) $this->slideId]);
-		if ($staticMethodInfo['module_class_name'] && $staticMethodInfo['method_name']) {
-			$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]]) [Static method used]', ['slideNum' => $this->slideNum]);
-		} else {
-			$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]])', ['slideNum' => $this->slideNum]);
-		}
-
-		$controls['actions']['edit_slide']['onclick'] = "
-			var isVersionControlled = ". ze\ring::engToBoolean($this->isVersionControlled). ";
-			if (!isVersionControlled || zenarioA.draft(this.id, true)) {
-				zenarioA.pluginSlotEditSettings(this, '". ze\escape::js($this->slotName). "', 'zenario_slide', {id: ". (int) $selectedId. "});
-			}
-			return false;
-		";
-	}
+	
+	////For nests, add a button that edits the current slide
+	//if (!$isSlideshow && $selectedId) {
+	//	
+	//	$controls['actions']['edit_slide'] = $controls['actions']['settings'];
+	//	
+	//	$controls['actions']['edit_slide']['ord'] = 62;
+	//
+	//	$staticMethodInfo = ze\row::get('nested_plugins', ['module_class_name', 'method_name'], ['instance_id' => $this->instanceId, 'is_slide' => 1, 'id' => (int) $this->slideId]);
+	//	if ($staticMethodInfo['module_class_name'] && $staticMethodInfo['method_name']) {
+	//		$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]]) [Static method used]', ['slideNum' => $this->slideNum]);
+	//	} else {
+	//		$controls['actions']['edit_slide']['label'] = ze\admin::phrase('Slide properties (slide [[slideNum]])', ['slideNum' => $this->slideNum]);
+	//	}
+	//
+	//	$controls['actions']['edit_slide']['onclick'] = "
+	//		var isVersionControlled = ". ze\ring::engToBoolean($this->isVersionControlled). ";
+	//		if (!isVersionControlled || zenarioA.draft(this.id, true)) {
+	//			zenarioA.pluginSlotEditSettings(this, '". ze\escape::js($this->slotName). "', 'zenario_slide', {id: ". (int) $selectedId. "});
+	//		}
+	//		return false;
+	//	";
+	//}
 	
 	
 	////For nests, add a button that opens the conductor

@@ -110,9 +110,9 @@ plugin_settings:
                 animation_library:
                     plugin_setting:
                         name: animation_library
-                    label:  'Animation library for slides:'
+                    label:  'Animation library for slide transitions:'
                     type: radios
-                    value: cycle
+                    value: cycle2
                     values:
                         0:
                             label: 'None (advanced)'
@@ -120,14 +120,10 @@ plugin_settings:
                                 If you check this option, no animation library will be included.
                                 However the HTML code of the slideshow will still be placed on the page,
                                 and you may use your own CSS or JavaScript code to do what you wish with it.
-                        cycle:
-                            label: 'Cycle (recommended)'
-                            side_note: |
-                                The jQuery Cycle library will be used to power the transitions.
                         cycle2:
-                            label: 'Cycle 2'
+                            label: 'jQuery Cycle (recommended)'
                             side_note: |
-                                The newer version of the jQuery Cycle library. Cannot be used on the same page as the old Cycle library.
+                                The jQuery Cycle library will be used for transitions. Unless the height of the slideshow is set in CSS, the height of the first image will be applied automatically to all.
                         roundabout:
                             label: 'Roundabout'
                             side_note: |
@@ -178,7 +174,7 @@ plugin_settings:
                 next_prev_buttons_loop:
                     plugin_setting:
                         name: next_prev_buttons_loop
-                    visible_if: zenarioAB.value('animation_library') == 'cycle' || zenarioAB.value('animation_library') == 'cycle2'
+                    visible_if: zenarioAB.value('animation_library') == 'cycle2'
                     indent: 1
                     label: 'Loop slides'
                     type: checkbox
@@ -207,99 +203,6 @@ plugin_settings:
                     side_note: |
                         Clicking on a tab changes to that tab's slide.
                         Only applies with Frameworks with Tabs.
-        cycle_effects:
-            label: Effects
-            fields:
-                fx:
-                    plugin_setting:
-                        name: fx
-                    label: 'Effect for Transitions:'
-                    type: select
-                    values:
-                        none:
-                            label: None
-                        blindX:
-                            label: Blind (Horizontal)
-                        blindY:
-                            label: Blind (Vertical)
-                        blindZ:
-                            label: Blind (Diagonal)
-                        cover:
-                            label: Cover
-                        curtainX:
-                            label: Curtain (Horizontal)
-                        curtainY:
-                            label: Curtain (Vertical)
-                        fade:
-                            label: Fade
-                        fadeout:
-                            label: Fadeout
-                        fadeZoom:
-                            label: Fade and Zoom
-                        growX:
-                            label: Grow (Horizontal)
-                        growY:
-                            label: Grow (Vertical)
-                        scrollUp:
-                            label: Scroll (Up)
-                        scrollDown:
-                            label: Scroll (Down)
-                        scrollLeft:
-                            label: Scroll (Left)
-                        scrollRight:
-                            label: Scroll (Right)
-                        scrollHorz:
-                            label: Scroll (Horizontal)
-                        scrollVert:
-                            label: Scroll (Vertical)
-                        shuffle:
-                            label: Shuffle
-                        slideX:
-                            label: Slide (Horizontal)
-                        slideY:
-                            label: Slide (Vertical)
-                        toss:
-                            label: Toss
-                        turnUp:
-                            label: Turn (Up)
-                        turnDown:
-                            label: Turn (Down)
-                        turnLeft:
-                            label: Turn (Left)
-                        turnRight:
-                            label: Turn (Right)
-                        uncover:
-                            label: Uncover
-                        wipe:
-                            label: Wipe
-                        zoom:
-                            label: Zoom
-                    value: fade
-                    side_note: 'See <a href="http://malsup.com/jquery/cycle/" target="_blank">http://malsup.com/jquery/cycle/</a> for more information.'
-                sync:
-                    plugin_setting:
-                        name: sync
-                    label: 'Hide/show effects happen simultaneously'
-                    type: checkbox
-                    value: 1
-                speed:
-                    plugin_setting:
-                        name: speed
-                    label: 'Animation duration:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter an animation duration.
-                        numeric: The animation duration must be a number.
-                    value: 1000
-                    slider:
-                        min: 0
-                        max: 5000
-                        step: 50
-                        range: min
-                        before_field: true
-                    style: |
-                        width: 4em;
-                    post_field_html: ms
         cycle2_effects:
             label: Effects
             fields:
@@ -411,31 +314,31 @@ plugin_settings:
 
         
         size:
-            label: Image size
+            label: Images
             fields:
                 desc:
                     full_width: true
                     snippet:
                         html: |
-                            The following settings let you set default values to apply to Banner Plugins that have an image.
+                            The following settings let you set default values to apply to Banner plugins that have an image.
                             The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
                 banner_canvas:
                     plugin_setting:
                         name: banner_canvas
                     label: 'Size constraint:'
                     type: select
-                    value: unlimited
+                    value: crop_and_zoom
                     values:
                         unlimited:
-                            label: Unlimited size
+                            label: Don't set
+                        crop_and_zoom:
+                            label: Crop and zoom
                         fixed_width:
                             label: Constrain by width
                         fixed_height:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
-                        crop_and_zoom:
-                            label: Crop and zoom
                     format_onchange: true
                 banner_width:
                     plugin_setting:
@@ -446,7 +349,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: ""
+                    value: 600
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
@@ -459,27 +362,108 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: ""
+                    value: 400
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                enlarge_image:
+                
+                advanced_behaviour:
                     plugin_setting:
-                        name: enlarge_image
-                    label: 'Enlarge images in a floating box'
-                    type: checkbox
+                        name: advanced_behaviour
+                    label: 'Additional behaviour:'
+                    type: select
+                    value: none
+                    values:
+                        none:
+                            label: Don't set
+                        background_image:
+                            label: 'Show as a background image'
+                        lazy_load:
+                            label: 'Lazy load image'
+
+                mobile_behaviour:
+                    plugin_setting:
+                        name: mobile_behaviour
+                    label: 'Image settings for mobile browsers:'
+                    type: select
+                    format_onchange: true
+                    values:
+                        mobile_same_image:
+                            label: Don't set
+                        mobile_same_image_different_size:
+                            label: 'Same image, different size'
+                        mobile_hide_image:
+                            label: 'Hide image on mobile browsers'
+                    value: mobile_same_image              
+                mobile_canvas:
+                    indent: 1
+                    plugin_setting:
+                        name: mobile_canvas
+                    label: 'Size constraint:'
+                    type: select
+                    format_onchange: true
+                    value: crop_and_zoom
+                    values:
+                        crop_and_zoom:
+                            label: Crop and zoom
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                mobile_width:
+                    plugin_setting:
+                        name: mobile_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: 360
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
+                mobile_height:
+                    plugin_setting:
+                        name: mobile_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: 240
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2  
+                
+                
+                
+                link_type:
+                    plugin_setting:
+                        name: link_type
+                    label: 'Link destination:'
+                    type: select
+                    value: _NO_LINK
+                    values:
+                        _NO_LINK:
+                            label: Don't set
+                        _ENLARGE_IMAGE:
+                            label: Enlarge image in floating box
                     format_onchange: true
                 enlarge_canvas:
                     plugin_setting:
                         name: enlarge_canvas
                     indent: 1
-                    label: 'Enlarged image canvas:'
+                    label: 'Enlarged image size constraint:'
                     type: select
                     value: unlimited
                     values:
                         unlimited:
                             ord: 1
-                            label: Unlimited size
+                            label: Don't set
                         fixed_width:
                             ord: 2
                             label: Constrain by width
@@ -516,4 +500,3 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-

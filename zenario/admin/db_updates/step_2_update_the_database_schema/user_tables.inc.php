@@ -159,16 +159,6 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]user_country_link`
 	MODIFY COLUMN `country_id` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
 _sql
-
-//Starting with 9.3, smart groups may now check whether a user has any or a specific active timer,
-//or check if the user has no active timer.
-); ze\dbAdm::revision(56352
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]smart_group_rules`
-	MODIFY COLUMN `type_of_check`
-		enum('user_field', 'role', 'activity_band', 'in_a_group', 'not_in_a_group', 'has_a_current_timer', 'has_no_current_timer') NOT NULL default 'user_field',
-	ADD COLUMN `timer_template_id` int unsigned NOT NULL DEFAULT '0' AFTER `role_id`
-_sql
-
-
 );
+
+

@@ -33,7 +33,7 @@ keywords: menu, navigation, mobile
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
-css_class_name: zenario_menu_reponsive_multilevel_2
+css_class_name: zenario_menu_responsive_multilevel_2
 is_pluggable: true
 nestable: true
 default_framework: standard

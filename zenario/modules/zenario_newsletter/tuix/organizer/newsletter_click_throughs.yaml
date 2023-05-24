@@ -4,7 +4,6 @@ zenario__email_template_manager:
     panels:
         newsletter_click_throughs:
             title: "Click throughs for Newsletter:"
-            view_mode: list
             default_sort_column: link_ordinal
             db_items:
                 table: |

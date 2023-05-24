@@ -1,0 +1,16 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+    panels:
+        users:
+            item_buttons:
+                view_user_form_responses:
+                    ord: 0.3
+                    parent: view_dropdown
+                    hide_in_select_mode: Yes
+                    label: This user's form responses
+                    link:
+                        priv: _PRIV_VIEW_FORM_RESPONSES
+                        path: zenario__user_forms/panels/user_form_responses
+                        refiner: user_id
+                        branch: Yes

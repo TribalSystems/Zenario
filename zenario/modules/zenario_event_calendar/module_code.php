@@ -65,13 +65,13 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	}
 
 	function showMonthView() {
-		if ($_GET['month'] ?? false){
-			$month=(int)($_GET['month'] ?? false);
+		if (ze::get('month')){
+			$month=(int)ze::get('month');
 		} else {
 			$month=date('n',time());
 		}
-		if (($_GET['year'] ?? false) && (($_GET['year'] ?? false)>1969) && (($_GET['year'] ?? false)<2038)){
-			$year=(int)($_GET['year'] ?? false);
+		if (ze::get('year') && (ze::get('year')>1969) && (ze::get('year')<2038)){
+			$year=(int)ze::get('year');
 		} else {
 			$year=date('Y',time());
 		}
@@ -205,8 +205,9 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 						}
 					}
 					
+					$href = $this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0);
 					$dayMergeFields = [
-						'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
+						'Anchor' => ' onclick="$.colorbox({href: \'' . ze\escape::jsOnClick($href) . '\', open: true});"',
 						'Day_class_name' => $day_class_name_var,
 						'Td_day_class_name' => 'event',
 						'Day_label' => (string)(int)($j++),
@@ -221,8 +222,9 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 
 					$mergeFields[] = $dayMergeFields;
 				} elseif ($this->setting('show_event_titles') == "nothing" || !$this->setting('event_count')) {
+					$href = $this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0);
 					$mergeFields[] = [
-						'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=month_view&day=" . (string)(int)$j . "&month=" . (string)(int)$month . "&year=" . (string)(int)$year,1,true,300,-150,17,false,0)). '"',
+						'Anchor' => ' onclick="$.colorbox({href: \'' . ze\escape::jsOnClick($href) . '\', open: true});"',
 						'Day_class_name' => $day_class_name_var,
 						'Td_day_class_name' => 'event',
 						'Day_label' => (string)(int)($j++),
@@ -261,8 +263,8 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$startMonth = date("n", strtotime($startMonth));
 	
 		$langIDs = [];
-		if (($_GET['year'] ?? false) && (($_GET['year'] ?? false)>1969) && (($_GET['year'] ?? false)<2038)){
-			$year=(int)($_GET['year'] ?? false);
+		if (ze::get('year') && (ze::get('year')>1969) && (ze::get('year')<2038)){
+			$year = (int) ze::get('year');
 		} else {
 			$year = date('Y', time());
 			$currentMonth = date('m', time());
@@ -378,8 +380,9 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 							}
 						}
 					
+						$href = $this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$yearForSql,1,true,300,-150,17,false,0);
 						$monthMergeFields = [
-							'Anchor' =>' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$yearForSql,1,true,300,-150,17,false,0)). '"',
+							'Anchor' =>' onclick="$.colorbox({href: \'' . ze\escape::jsOnClick($href) . '\', open: true});"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
@@ -400,8 +403,9 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 
 						$mergeFields[] = $monthMergeFields;
 					} elseif ($this->setting('show_event_titles') == "nothing" || !$this->setting('event_count')) {
+						$href = $this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$yearForSql,1,true,300,-150,17,false,0);
 						$monthMergeFields = [
-							'Anchor' => ' rel="colorbox" href="'. htmlspecialchars($this->showFloatingBoxLink("&mode=year_view&month=" . (string)(int)$month . "&year=" . (string)(int)$yearForSql,1,true,300,-150,17,false,0)). '"',
+							'Anchor' => ' onclick="$.colorbox({href: \'' . ze\escape::jsOnClick($href) . '\', open: true});"',
 							'Current_month'=>$currentMonthClass,
 							'Month_with_events'=>'month_with_events',
 							'Month_label'=> $monthLabel,
@@ -948,7 +952,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 
 	function showFloatingBox() {
 		$langIDs = $this->getAllowedLanguages();
-		$events = $this->getEventsDesc($_GET['year'] ?? false, ($_GET['month'] ?? false), ($_GET['day'] ?? false), $langIDs);
+		$events = $this->getEventsDesc($_GET['year'] ?? false, ze::get('month'), ze::get('day'), $langIDs);
 		
 		$this->data['EFrame'] = true;
 		$this->data['Single_event'] = [];
@@ -990,11 +994,11 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 				$this->data['Single_event'][] = $arr;
 			}
 		} else {
-			$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('No events on [[date]]', ['date' => ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false)  ,  $this->setting('date_format'),false,false)]))];
+			$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('No events on [[date]]', ['date' => ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day')  ,  $this->setting('date_format'),false,false)]))];
 		}
 		
-		if ($_GET['day'] ?? false) {
-			$numerOfEvents = $this->getEventDay($_GET['year'] ?? false, ($_GET['month'] ?? false), ($_GET['day'] ?? false), $langIDs);
+		if (ze::get('day')) {
+			$numerOfEvents = $this->getEventDay($_GET['year'] ?? false, ze::get('month'), ze::get('day'), $langIDs);
 			if ($numerOfEvents > 1) {
 				$counter = $numerOfEvents." ".$this->phrase('events');
 			} else {
@@ -1004,15 +1008,15 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			
 			if ($this->setting('event_count')) {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false),  $this->setting('date_format'), false, false);
+				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'),  $this->setting('date_format'), false, false);
 				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>".$counter."</p>";
 			} else {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-' . ($_GET['day'] ?? false), $this->setting('date_format'), false, false);
+				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'), $this->setting('date_format'), false, false);
 				$this->data['Event_counter_class_in_window'] = "";
 			}
 		} else {
-			$numerOfEvents = $this->getMonthEvent($_GET['year'] ?? false, ($_GET['month'] ?? false), $langIDs);
+			$numerOfEvents = $this->getMonthEvent($_GET['year'] ?? false, ze::get('month'), $langIDs);
 			if ($numerOfEvents > 1) {
 				$counter = $numerOfEvents . " " . $this->phrase('events');
 			} else {
@@ -1021,11 +1025,11 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 			
 			if ($this->setting('event_count')) {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
+				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
 				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>".$counter."</p>";
 			} else {
 				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(($_GET['year'] ?? false) . '-' . ($_GET['month'] ?? false) . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
+				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
 				$this->data['Event_counter_class_in_window'] = "";
 			}
 		}

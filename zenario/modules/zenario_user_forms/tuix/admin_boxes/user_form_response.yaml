@@ -5,7 +5,6 @@ zenario_user_form_response:
     save_button_message: false
     key:
         id: ''
-        form_id: ''
     tabs:
         form_fields:
             label: Fields

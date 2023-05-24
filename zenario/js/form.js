@@ -60,6 +60,11 @@ zenario.lib(function(
 
 
 
+
+var NOTICE_TYPES = {error: 1, warning: 1, question: 1, information: 1, success: 1};
+
+
+
 methods.init = function(globalName, microtemplatePrefix, containerId) {
 	
 	thus.globalName = globalName;
@@ -68,7 +73,7 @@ methods.init = function(globalName, microtemplatePrefix, containerId) {
 	
 	thus.baseCSSClass = '';
 	thus.onKeyUpNum = 0;
-	zenarioAB.sizing = false;
+	thus.sizing = false;
 	thus.cachedAJAXSnippets = {};
 	thus.changed = {};
 	thus.toggleLevelsPressed = {};
@@ -183,7 +188,7 @@ methods.getTitle = function() {
 	if (thus.tuix.key
 	 && thus.tuix.key.id
 	 && (title = thus.tuix.title_for_existing_records)) {
-		values = _.extend(thus.getValues1D(false, undefined, true), thus.tuix.key);
+		values = _.extend(thus.getInitialValues(true), thus.tuix.key);
 		
 		return zenario.applyMergeFields(title, values);
 		
@@ -231,15 +236,6 @@ methods.initFields = function() {
 				
 				foreach (fields as id => field) {
 					if (field) {
-						
-						//Ensure this the display values for <use_value_for_plugin_name> fields are always looked up,
-						//even if this field is never actually shown
-						if (field.pick_items
-						 && field.plugin_setting
-						 && field.plugin_setting.use_value_for_plugin_name) {
-							thus.pickedItemsArray(field, thus.value(id, tab, false));
-						
-						} else
 						if (field.values
 						 && _.isString(field.values)
 						 && lovs[field.values]) {
@@ -548,7 +544,7 @@ methods.draw = function() {
 
 methods.draw2 = function() {
 	//var cb = new zenario.callback,
-	//	html = zenarioAB.drawFields(cb);
+	//	html = thus.drawFields(cb);
 	//...
 };
 methods.size = function() {
@@ -579,7 +575,7 @@ methods.getPrevTab = function() {
 methods.goToNextTab = function() {
 	var nextTab = thus.getNextTab();
 	if (defined(nextTab)) {
-		zenarioAB.clickTab(nextTab);
+		thus.clickTab(nextTab);
 		return true;
 	}
 };
@@ -587,7 +583,7 @@ methods.goToNextTab = function() {
 methods.goToPrevTab = function() {
 	var prevTab = thus.getPrevTab();
 	if (defined(prevTab)) {
-		zenarioAB.clickTab(prevTab);
+		thus.clickTab(prevTab);
 		return true;
 	}
 };
@@ -687,7 +683,8 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		fieldValuesByIndent = {},
 		errorsDrawn = false,
 		i, error, field, notice,
-		groupingName, lastGrouping, lastVisibleGrouping, groupingField = false, groupingsDrawn = {},
+		groupingName, groupingField = false, groupingsDrawn = {},
+		lastGrouping, lastVisibleGrouping, lastVisibleGroupingField,
 		data = {
 			fields: {},
 			rows: [],
@@ -700,6 +697,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		};
 	
 	thus.drawingFields = true;
+	thus.drawnSortedFields = [];
 	
 	if (!scanForHiddenFieldsWithoutDrawingThem) {
 		thus.ffoving = 0;
@@ -752,7 +750,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			foreach (tabs.notices as i => notice) {
 				if (engToBoolean(notice.show)
 				 && !zenarioT.hidden(notice, thus, undefined, i)
-				 && {error: 1, warning: 1, question: 1, information: 1, success: 1}[notice.type]) {
+				 && NOTICE_TYPES[notice.type]) {
 					data.notices[i] = notice;
 				}
 			}
@@ -793,6 +791,8 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			continue;
 		}
 		
+		thus.drawnSortedFields.push(fieldId);
+		
 		if (forceNewRowForNewGrouping
 		 || field._startNewRow
 		 || !data.rows.length) {
@@ -810,7 +810,9 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			groupingField._showOnOpen = true;
 			
 			groupingField._lastVisibleGrouping = lastVisibleGrouping;
+			groupingField._lastVisibleGroupingField = lastVisibleGroupingField;
 			lastVisibleGrouping = groupingName;
+			lastVisibleGroupingField = groupingField;
 			
 			data.rows[data.rows.length-1].fields.push(groupingField);
 			data.fields[groupingName] = groupingField;
@@ -826,7 +828,9 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 		}
 		
 		field._lastVisibleGrouping = lastVisibleGrouping;
+		field._lastVisibleGroupingField = lastVisibleGroupingField;
 		lastVisibleGrouping = groupingName;
+		lastVisibleGroupingField = groupingField;
 		
 		data.rows[data.rows.length-1].fields.push(field);
 		data.fields[fieldId] = field;
@@ -858,7 +862,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			//show the errors at the very start by inserting a dummy field at the beginning
 			data.rows.splice(0, 0, {errors: data.errors, notices: data.notices});
 		}
-	
+		
 		microTemplate = microTemplate || tabs.template || thus.mtPrefix + '_current_tab';
 		html += thus.microTemplate(microTemplate, data);
 	}
@@ -868,6 +872,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	
 	foreach (sortedFields as f => fieldId) {
 		
+		delete fields[fieldId]._lastVisibleGroupingField;
 		delete fields[fieldId]._lastVisibleGrouping;
 		delete fields[fieldId]._startNewRow;
 		delete fields[fieldId]._hideOnOpen;
@@ -1710,6 +1715,15 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 	}
 	
+	//Experimental option here
+	//Have an option to display select lists with only two values as a toggle.
+	displaySelectsAsToggles = fieldType == 'select' && field.onoff && sortOrder.length == 2;
+	
+	if (displaySelectsAsToggles) {
+		extraAtt.style = 'display: none;';
+	}
+	
+	
 	
 	//Set the "readonly" flag for fields this are read-only
 	if (readOnly) {
@@ -1881,7 +1895,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 		//If there are selected values, draw them in so this the tokenize library initialises correctly
 		if (field.values && (!_.isEmpty(picked_items) || isMultiSelectList)) {
-			mergeFields.pickerHTML += thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
+			mergeFields.pickerHTML += thus.hierarchicalSelect(picked_items, id, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
 		}
 		
 		mergeFields.pickerHTML += '</select>';
@@ -2180,7 +2194,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			case 'editor':
 				html += '<textarea';
 				
-				var dummyTextArea = '<textarea ' + thus.outputAtts(field) + '></textarea>',
+				var dummyTextArea = '<textarea ' + thus.outputAtts(id, field) + '></textarea>',
 					minHeight = $(dummyTextArea).height(),
 					maxHeight = Math.max(Math.floor(($(window).height()) * 0.5), 300),
 					content_css = undefined,
@@ -2191,7 +2205,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				
 				if (thus.useSimpleEditor()) {
 					options = {
-						script_url: URLBasePath + zenario.tinyMCEPath,
+						script_url: zenario.addBasePath(zenario.tinyMCEPath),
 						plugins: [
 							"advlist autolink lists link image charmap hr anchor",
 							"searchreplace code fullscreen",
@@ -2208,7 +2222,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					zenarioA.getSkinDesc();
 			
 					var readonlyOptions = {
-							script_url: URLBasePath + zenario.tinyMCEPath,
+							script_url: zenario.addBasePath(zenario.tinyMCEPath),
 		
 							inline: false,
 							menubar: false,
@@ -2434,7 +2448,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							disabled: (readOnly && !allowTypingInDateField),
 							onSelect: function(dateText, inst) {
 								$field.change();
-								//zenarioAB.fieldChange(this.name);
+								//thus.fieldChange(this.name);
 							},
 							beforeShow: function(el, inst) {
 								//Note down what value the field was set to before it's opened
@@ -2462,8 +2476,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 									//Fallback code: valid date in valid format, but the month capitalisation is wrong.
 									//Format the value to fix capitalisation.
 									if (formattedVal !== enteredVal) {
-										zenarioAB.setFieldValue(id, formattedVal, mySqlVal);
-										$(zenarioAB.get(id)).change();
+										thus.setFieldValue(id, formattedVal, mySqlVal);
+										$(thus.get(id)).change();
 									}
 								} catch (e) {
 									//Invalid date: attempt to set the last known valid value.
@@ -2473,12 +2487,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 											formattedVal = $.datepicker.formatDate(inst.settings.dateFormat, dateObj, inst.settings),
 											mySqlVal = $.datepicker.formatDate("yy-mm-dd", dateObj, inst.settings);
 										
-										zenarioAB.setFieldValue(id, formattedVal, mySqlVal);
-										$(zenarioAB.get(id)).change();
+										thus.setFieldValue(id, formattedVal, mySqlVal);
+										$(thus.get(id)).change();
 									} catch (e) {
 										//Fallback code: there is no last safe value. Set the value to a blank string ('').
-										zenarioAB.setFieldValue(id, '');
-										$(zenarioAB.get(id)).change();
+										thus.setFieldValue(id, '');
+										$(thus.get(id)).change();
 									}
 								}
 							}
@@ -2504,6 +2518,30 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						(extraAtt.onblur || '');
 		
 				} else {
+					if (fieldType == 'text' && field.spinner) {
+						cb.after(function() {
+							var $field = $(thus.get(id)),
+								options = _.clone(field.spinner);
+							
+							options.disabled = readOnly;
+							
+							//This was causing the change event to trigger while typing,
+							//which isn't good, so I've commented it out.
+							//$options.stop = function() {
+							//	$field.change();
+							//$};
+							options.change = function() {
+								$field.change();
+							};
+							
+							$field.spinner(options);
+							
+							if (options.units) {
+								$field.after(_$span('class', 'zenario_spinner_unit', htmlspecialchars(options.units)));
+							}
+						});
+					}
+					
 					if (field.slider) {
 						hasSlider = true;
 						html += thus.drawSlider(cb, id, field, readOnly, true);
@@ -2585,7 +2623,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		
-		html += thus.outputAtts(atts, extraAtt, extraAttAfter, overrides);
+		html += thus.outputAtts(id, atts, extraAtt, extraAttAfter, overrides);
 		
 		var valAttribute = htmlspecialchars(isButton? field.value : value, false, 'asis'),
 			emptyValue = '';
@@ -2655,11 +2693,42 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			if (field.values) {
 				picked_items = {};
 				picked_items[value] = true;
-				html += thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
+				html += thus.hierarchicalSelect(picked_items, id, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
 			}
 			html += emptyValue + '</select>';
 			
 			html += thus.displayMissingItems(field);
+			
+			
+			//Experimental option here
+			//Have an option to display select lists with only two values as a toggle.
+			if (displaySelectsAsToggles) {
+				html += _$div(
+					'class', 'onoffswitch',
+					
+					_$input(
+						'type', 'checkbox',
+						'id', 'zfab_onofff__' + id,
+						'class', 'onoffswitch-checkbox',
+						'checked', value != sortOrder[1]
+					) +
+				
+					_$label('class', 'onoffswitch-label', 'for', 'zfab_onofff__' + id,
+						_$span('class', 'onoffswitch-inner') +
+						_$span('class', 'onoffswitch-switch')
+					)
+				);
+				
+				(function (id, offVal, onVal) {
+					cb.after(function() {
+						$(thus.get('zfab_onofff__' + id)).change(function(e) {
+							$selectList = $(thus.get(id));
+							$selectList.val(this.checked? onVal : offVal);
+							$selectList.change();
+						});
+					});
+				})(id, sortOrder[1], sortOrder[0]);
+			}
 		
 		}
 		if (isTextFieldWithAutocomplete) {
@@ -2741,26 +2810,24 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		//Other fields only have this if they specifically use the post_field_label property
 		if (defined(field.post_field_label)) {
-			html += ' ' + _$label('for', id, 'id', 'label_for__' + id, htmlspecialchars(field.post_field_label));
+			html += ' ' + _$label('class', field.label_class, 'for', id, 'id', 'label_for__' + id, htmlspecialchars(field.post_field_label));
 			addWidgetWrap = true;
 		}
 		
-		
-		if (hasPreFieldTags) {
-			html = preFieldTags.join('') + html;
-		}
-		if (defined(field.pre_field_html)) {
-			html = zenario.unfun(field.pre_field_html) + html;
-		}
 		
 		if (field.show_copy_text_button && zenario.canCopy()) {
 			
 			var copyButtonOnclick = thus.defineLibVarBeforeCode() + "lib.copyField(this, '" + zenario.jsEscape(id) + "');",
 				tooltip = thus.vaPhrase('copy');
 			
-			html += _$span("id", "test", "class", "zenario_copy", "onclick", copyButtonOnclick, "title", tooltip, '📋');
+			html += _$span("class", "zenario_copy", "onclick", copyButtonOnclick, "title", tooltip, '📋');
 			//N.b. '⎘' might also be a good copy paste symbol...
 			
+			addWidgetWrap = true;
+		}
+		
+		if (field.tooltip) {
+			html += thus.postFieldTooltip(field);
 			addWidgetWrap = true;
 		}
 		
@@ -2780,24 +2847,32 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			});
 		}
 		
+		if (defined(field.pre_field_text)) {
+			html = htmlspecialchars(zenario.unfun(field.pre_field_text)) + html;
+		}
+		
+		if (defined(field.post_field_text)) {
+			html += htmlspecialchars(zenario.unfun(field.post_field_text));
+		}
+		
+		if (defined(field.pre_field_html)) {
+			html = zenario.unfun(field.pre_field_html) + html;
+		}
+		
 		if (defined(field.post_field_html)) {
 			html += zenario.unfun(field.post_field_html);
 		}
 		
-		if (field.tooltip) {
-			if (field.tooltip_link) {
-				displayItem = '<a href="' + field.tooltip_link + '"';
-				
-				if (field.tooltip_link_open_in_new_window) {
-					displayItem += ' target="blank"';
-				}
-				
-				displayItem += '>?</a>';
-			} else {
-				displayItem = '?';
-			}
-
-			html += _$div("class", "zenario_field_tooltip", "title", field.tooltip, displayItem);
+		if (field.notices_above) {
+			html = thus.drawNotices(field.notices_above) + html;
+		}
+		
+		if (field.notices_below) {
+			html += thus.drawNotices(field.notices_below);
+		}
+		
+		if (hasPreFieldTags) {
+			html = preFieldTags.join('') + html;
 		}
 		
 		if (hasPostFieldTags) {
@@ -2810,6 +2885,55 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	}
 	
 	return html;
+};
+
+methods.drawNotices = function(notices) {
+	
+	var ni, notice,
+		html = '';
+	
+	if (!_.isEmpty(notices)) {
+		foreach (notices as ni => notice) {
+			if (NOTICE_TYPES[notice.type] && !zenarioT.hidden(notice, thus, undefined, ni)) {
+				html += _$div(
+					'class', 'zenario_notice zenario_notice_' + notice.type + (notice.size == 'large'? ' large' : ' small'),
+					notice.html? notice.message : zenario.htmlspecialchars(notice.message, true)
+				);
+			}
+		}
+	}
+	
+	return html;
+};
+
+methods.postFieldTooltip = function(field) {
+	var displayItem,
+		tooltip = field.tooltip;
+	
+	//Catch the case where we've been using the enable_microtemplates_in_properties
+	//option, and the tooltip is actually a function that returns the tooltip as an output.
+	if (_.isFunction(tooltip)) {
+		tooltip = tooltip();
+	}
+	
+	//If the tooltip turned out to be an empty string, don't output anything.
+	if ($.trim(tooltip) === '') {
+		return '';
+	}
+	
+	if (field.tooltip_link) {
+		displayItem = '<a href="' + field.tooltip_link + '"';
+		
+		if (field.tooltip_link_open_in_new_window) {
+			displayItem += ' target="blank"';
+		}
+		
+		displayItem += '>?</a>';
+	} else {
+		displayItem = '?';
+	}
+
+	return _$span("class", "zenario_field_tooltip", "title", field.tooltip, displayItem);
 };
 
 methods.addExtraAttsForTextFields = function(field, extraAtt) {
@@ -2837,50 +2961,112 @@ methods.updateProgressBar = function(fieldId) {
 	var progressBarClass;
 	var progressBar = $('#progressbar__' + fieldId);
 	
-	if (cnt < 1) {
-		progressBarClass = 'poor';
-		progressBarValue = 0;
+	switch (fieldId) {
+		case 'title':
+			if (cnt < 1) {
+				progressBarClass = 'poor';
+				progressBarValue = 0;
 
-	} else if (cnt < 12) {
-		progressBarClass = 'poor';
-		if (cnt < 8) {
-			progressBarValue = 10;
-		} else {
-			progressBarValue = 20;
-		}
+			} else if (cnt < 12) {
+				progressBarClass = 'poor';
+				if (cnt < 8) {
+					progressBarValue = 10;
+				} else {
+					progressBarValue = 20;
+				}
 
-	} else if (cnt < 26) {
-		progressBarClass = 'medium';
-		if (cnt < 20) {
-			progressBarValue = 30;
-		} else if (cnt < 23) {
-			progressBarValue = 40;
-		} else {
-			progressBarValue = 50;
-		}
+			} else if (cnt < 26) {
+				progressBarClass = 'medium';
+				if (cnt < 20) {
+					progressBarValue = 30;
+				} else if (cnt < 23) {
+					progressBarValue = 40;
+				} else {
+					progressBarValue = 50;
+				}
 
-	} else if (cnt < 70) {
-		progressBarClass = 'good';
-		if (cnt < 45) {
-			progressBarValue = 60;
-		} else if (cnt < 50) {
-			progressBarValue = 70;
-		} else if (cnt < 55) {
-			progressBarValue = 80;
-		} else if (cnt < 60) {
-			progressBarValue = 90;
-		} else {
-			progressBarValue = 100;
-		}
+			} else if (cnt < 70) {
+				progressBarClass = 'good';
+				if (cnt < 45) {
+					progressBarValue = 60;
+				} else if (cnt < 50) {
+					progressBarValue = 70;
+				} else if (cnt < 55) {
+					progressBarValue = 80;
+				} else if (cnt < 60) {
+					progressBarValue = 90;
+				} else {
+					progressBarValue = 100;
+				}
 
-	} else {
-		if (cnt < 120) {
-			progressBarClass = 'medium';
-		} else {
-			progressBarClass = 'poor';
-		}
-		progressBarValue = 100;
+			} else {
+				if (cnt < 120) {
+					progressBarClass = 'medium';
+				} else {
+					progressBarClass = 'poor';
+				}
+				progressBarValue = 100;
 
+			}
+			break;
+		
+		case 'description':
+			if (cnt < 1) {
+				progressBarClass = 'poor';
+				progressBarValue = 0;
+			
+			} else if (cnt < 50) {
+				progressBarClass = 'poor';
+				if (cnt < 8) {
+					progressBarValue = 10;
+				} else {
+					progressBarValue = 20;
+				}
+			
+			} else if (cnt < 100) {
+				progressBarClass = 'medium';
+				if (cnt < 60) {
+					progressBarValue = 30;
+				} else if (cnt < 80) {
+					progressBarValue = 40;
+				} else {
+					progressBarValue = 50;
+				}
+			
+			} else if (cnt < 156) {
+				progressBarClass = 'good';
+				if (cnt < 110) {
+					progressBarValue = 60;
+				} else if (cnt < 120) {
+					progressBarValue = 70;
+				} else if (cnt < 130) {
+					progressBarValue = 80;
+				} else if (cnt < 140) {
+					progressBarValue = 90;
+				} else {
+					progressBarValue = 100;
+				}
+			
+			} else {
+				if (cnt < 175) {
+					progressBarClass = 'medium';
+				} else {
+					progressBarClass = 'poor';
+				}
+				progressBarValue = 100;
+			
+			}
+			break;
+		
+		case 'alias':
+			if (cnt < 1) {
+				progressBarClass = 'poor';
+				progressBarValue = 10;
+			} else {
+				progressBarClass = 'good';
+				progressBarValue = 100;
+			}
+			break;
 	}
 
 	progressBar.progressbar({
@@ -2947,9 +3133,10 @@ var allowedAtt = {
 		'span'
 	];
 
-methods.outputAtts = function(atts, extraAtt, extraAttAfter, overrides, allowEverything) {
+methods.outputAtts = function(fieldCodeName, atts, extraAtt, extraAttAfter, overrides, allowEverything) {
 	
 	var att,
+		definitions,
 		html = '';
 	
 	foreach (atts as att) {
@@ -2962,7 +3149,13 @@ methods.outputAtts = function(atts, extraAtt, extraAttAfter, overrides, allowEve
 				}
 			
 			} else {
-				html += ' ' + att + '="' + thus.defineLibVarBeforeCode(att);
+				definitions = thus.defineLibVarBeforeCode(att);
+				
+				if (definitions !== '') {
+					definitions += "var fieldCodeName = '" + htmlspecialchars(fieldCodeName) + "', field = lib.field(fieldCodeName); ";
+				}
+				
+				html += ' ' + att + '="' + definitions;
 				
 				if (extraAtt && extraAtt[att]) {
 					html += extraAtt[att] + ' ';
@@ -2982,13 +3175,13 @@ methods.outputAtts = function(atts, extraAtt, extraAttAfter, overrides, allowEve
 	}
 	
 	if (overrides) {
-		html += thus.outputAtts(overrides, false, false, false, true);
+		html += thus.outputAtts(fieldCodeName, overrides, false, false, false, true);
 	}
 	if (extraAtt) {
-		html += thus.outputAtts(extraAtt, false, false, false, true);
+		html += thus.outputAtts(fieldCodeName, extraAtt, false, false, false, true);
 	}
 	if (extraAttAfter) {
-		html += thus.outputAtts(extraAttAfter, false, false, false, true);
+		html += thus.outputAtts(fieldCodeName, extraAttAfter, false, false, false, true);
 	}
 	
 	return html;
@@ -3084,7 +3277,7 @@ methods.keepNumeric = function(el, allowMinus, limitDPs) {
 
 
 
-methods.hierarchicalSelect = function(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents, parent) {
+methods.hierarchicalSelect = function(picked_items, fieldCodeName, field, tabTUIX, sortOrder, parentsValuesExist, existingParents, parent) {
 	
 	var html = '',
 		disabled,
@@ -3125,7 +3318,7 @@ methods.hierarchicalSelect = function(picked_items, field, tabTUIX, sortOrder, p
 		 && parentsValuesExist
 		 && existingParents[v]) {
 			
-			childrenHTML = thus.hierarchicalSelect(picked_items, field, tabTUIX, sortOrder, parentsValuesExist, existingParents, v);
+			childrenHTML = thus.hierarchicalSelect(picked_items, fieldCodeName, field, tabTUIX, sortOrder, parentsValuesExist, existingParents, v);
 			
 			if (childrenHTML || showWithoutChildren) {
 				html += _$html('optgroup', 'label', val, 'disabled', !childrenHTML, childrenHTML);
@@ -3137,7 +3330,7 @@ methods.hierarchicalSelect = function(picked_items, field, tabTUIX, sortOrder, p
 			
 			//html += _$option('value', v, 'selected', selected, 'disabled', disabled, htmlspecialchars(val, false, true));
 			
-			html += '<option ' + thus.outputAtts(val, false, false, {disabled: disabled, selected: selected, value: v}) + '>' +
+			html += '<option ' + thus.outputAtts(fieldCodeName, val, false, false, {disabled: disabled, selected: selected, value: v}) + '>' +
 						htmlspecialchars(val, false, true) +
 					'</option>';
 		}
@@ -3819,7 +4012,8 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 		v = sortOrder[i];
 		
 		//Make sure the number is numeric if it looks numeric
-		if (v == 1*v) {
+		if (v !== ''
+		 && v == 1*v) {
 			v = 1*v;
 		}
 		
@@ -3959,7 +4153,7 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, readO
 					thus.splitValues[id] += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);
 			
 				} else {
-					html += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);; 
+					html += thus.microTemplate(thus.mtPrefix + '_radio_or_checkbox', m);
 				}
 			}
 			
@@ -4802,22 +4996,26 @@ methods.readField = function(f) {
 			}
 		
 		} else if (fieldType == 'code_editor') {
-			if (codeEditor = ace.edit(f)) {
-				content = codeEditor.getValue();
+			
+			try {
+				if (codeEditor = ace.edit(f)) {
+					content = codeEditor.getValue();
 				
-				thus.editingPositions[tab + '/' + f] = thus.getCodeEditorPosition(codeEditor);
+					thus.editingPositions[tab + '/' + f] = thus.getCodeEditorPosition(codeEditor);
 				
-				//I've been experiementing with trying to save the undo history, but can't get it working :(
-				//var undoManager;
-				//if (undoManager = codeEditor.session.getUndoManager()) {
-				//	this.editingHistory[tab + '/' + f] = undoManager;
-				//	//this.editingHistory[tab + '/' + f] = {
-				//	//	$doc: undoManager.$doc,
-				//	//	$redoStack: undoManager.$redoStack,
-				//	//	$undoStack: undoManager.$undoStack,
-				//	//	dirtyCounter: undoManager.dirtyCounter
-				//	//};
-				//}
+					//I've been experiementing with trying to save the undo history, but can't get it working :(
+					//var undoManager;
+					//if (undoManager = codeEditor.session.getUndoManager()) {
+					//	this.editingHistory[tab + '/' + f] = undoManager;
+					//	//this.editingHistory[tab + '/' + f] = {
+					//	//	$doc: undoManager.$doc,
+					//	//	$redoStack: undoManager.$redoStack,
+					//	//	$undoStack: undoManager.$undoStack,
+					//	//	dirtyCounter: undoManager.dirtyCounter
+					//	//};
+					//}
+				}
+			} catch (e) {
 			}
 		}
 		
@@ -5073,8 +5271,8 @@ methods.sortFields = function(tab) {
 		foreach (fields as i => field) {
 			if (field.type
 			 && field.type == 'grouping') {
-				groupingOrds[field.name || i] = 1*field.ord;
-				thus.groupings[tab][field.name || i] = i;
+				groupingOrds[i] = 1*field.ord;
+				thus.groupings[tab][i] = i;
 			}
 		}
 		
@@ -5119,6 +5317,11 @@ methods.setData = function(data) {
  
 
 methods.setDataDiff = function(data) {
+	
+	if (thus.tuix.never_sync_this_data_between_client_and_server) {
+		delete thus.tuix.never_sync_this_data_between_client_and_server;
+	}
+	
 	thus.syncAdminBoxFromServerToClient(data, thus.tuix);
 };
 
@@ -5157,6 +5360,15 @@ methods.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
 
 
 methods.sendStateToServer = function() {
+	var tuix = thus.tuix;
+	
+	//Never send the never_sync_this_data_between_client_and_server object,
+	//remove it before stringifying the data if it is there.
+	if (defined(tuix.never_sync_this_data_between_client_and_server)) {
+		tuix = _.clone(tuix);
+		delete tuix.never_sync_this_data_between_client_and_server;
+	}
+	
 	return JSON.stringify(thus.tuix);
 };
 
@@ -5164,10 +5376,10 @@ methods.sendStateToServerDiff = function() {
 	var $serverTags = {};
 	thus.syncAdminBoxFromClientToServerR($serverTags, thus.tuix);
 	
-	if (defined(thus.tuix.from_client)
-	 && _.isObject(thus.tuix.from_client)) {
-		$serverTags.from_client = {};
-		thus.syncAllTagsToServerR($serverTags.from_client, thus.tuix.from_client);
+	if (defined(thus.tuix.always_sync_this_data_between_client_and_server)
+	 && _.isObject(thus.tuix.always_sync_this_data_between_client_and_server)) {
+		$serverTags.always_sync_this_data_between_client_and_server = {};
+		thus.syncAllTagsToServerR($serverTags.always_sync_this_data_between_client_and_server, thus.tuix.always_sync_this_data_between_client_and_server);
 	}
 	
 	return JSON.stringify($serverTags);
@@ -5225,7 +5437,7 @@ methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $ke
 	}
 };
 
-//This function is similar to the above, except it is specifically coded to handle the "from_client" object,
+//This function is similar to the above, except it is specifically coded to handle the "always_sync_this_data_between_client_and_server" object,
 //where everything is allowed through
 methods.syncAllTagsToServerR = function($serverTags, $clientTags) {
 	
@@ -5264,33 +5476,58 @@ methods.getValueArrayofArrays = function(leaveAsJSONString) {
 	return zenario.nonAsyncAJAX(thus.getURL(), zenario.urlRequest({_read_values: true, _box: thus.sendStateToServer()}), !leaveAsJSONString);
 };
 
-methods.getValues1D = function(pluginSettingsOnly, useTabNames, getInitialValues, ignoreReadonlyFields, ignoreHiddenFields, specificTabs) {
+methods.getVisibleValues = function(useTabNames, specificTabs) {
+	return thus.getFieldValues(false, false, false, true, true, useTabNames, specificTabs);
+};
+
+methods.getPluginSettingValues = function() {
+	return thus.getFieldValues(false, false, true);
+};
+
+methods.getInitialValues = function(useTabNames) {
+	return thus.getFieldValues(false, true, false, false, false, useTabNames);
+};
+
+methods.getFieldValues = function(includeTogglesIfOn, getInitialValues, pluginSettingsOnly, ignoreReadonlyFields, ignoreHiddenFields, useTabNames, specificTabs) {
 	
 	var t, tab, f, field, name, value, values = {};
 	
 	if (thus.tuix
 	 && thus.tuix.tabs) {
+	 	
 		foreach (thus.tuix.tabs as t => tab) {
-			if (tab.fields && (!defined(specificTabs) || zenarioT.tuixToArray(specificTabs).indexOf(t) != -1)) {
+			
+			if (tab.fields && (!specificTabs || zenarioT.tuixToArray(specificTabs).indexOf(t) != -1)) {
+				
 				foreach (tab.fields as f => field) {
 					
 					name = f;
 					
-					if (!thus.isFormField(field)
-					 || (ignoreReadonlyFields && thus.fieldIsReadonly(f, field, t))
+					if ((ignoreReadonlyFields && thus.fieldIsReadonly(f, field, t))
 					 || (ignoreHiddenFields && (tab._was_hidden_before || field._was_hidden_before))
 					 || (pluginSettingsOnly && !(name = field.plugin_setting && field.plugin_setting.name))) {
 						continue;
 					}
 					
-					value = thus.currentValue(f, t, getInitialValues);
+					if (includeTogglesIfOn && field.type == 'toggle') {
+						if (field.pressed) {
+							value = 1;
+						} else {
+							continue;
+						}
 					
-					if (!useTabNames) {
-						values[name] = value;
+					} else if (!thus.isFormField(field)) {
+						continue;
+					
+					} else {
+						value = thus.currentValue(f, t, getInitialValues);
 					}
-					if (useTabNames || !defined(useTabNames)) {
+					
+					if (useTabNames) {
 						values[t + '/' + f] = value;
 					}
+					
+					values[name] = value;
 				}
 			}
 		}

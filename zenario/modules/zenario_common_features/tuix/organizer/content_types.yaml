@@ -3,9 +3,8 @@
 zenario__content:
     panels:
         content_types:
+            priv: _PRIV_VIEW_SITE_SETTING
             title: Settings for content types
-            view_mode: list
-            disable_grid_view: true
             use_tall_rows: true;
             db_items:
                 table: |
@@ -89,6 +88,7 @@ zenario__content:
                     hide_when_children_are_not_visible: true
                     label: ⚙
                 settings_ctype_list:
+                    priv: _PRIV_RUN_MODULE
                     parent: settings_dropdown
                     hide_in_select_mode: true
                     label: Enable more content types

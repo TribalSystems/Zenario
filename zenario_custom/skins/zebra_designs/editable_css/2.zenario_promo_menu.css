@@ -23,7 +23,6 @@
 
 .zenario_promo_menu__default_style {
 	position:relative;
-	text-align:right;
 }
 
 .zenario_promo_menu__default_style ul {
@@ -138,6 +137,15 @@ body.ie .zenario_promo_menu__default_style ul li:hover .columns_wrap {
 .zenario_promo_menu__default_style .columns_wrap .level2 > a:before,
 .zenario_promo_menu__default_style .columns_wrap .level3 > a:before {
 	font-family: 'FontAwesome';
+}
+
+.zenario_promo_menu__default_style ul > li.has_child > a:after {
+	padding-left:5px;
+}
+
+.zenario_promo_menu__default_style .columns_wrap .level2 > a:before,
+.zenario_promo_menu__default_style .columns_wrap .level3 > a:before {
+	padding-right:5px;
 }
 
 .zenario_promo_menu__default_style ul > li.has_child > a:after {

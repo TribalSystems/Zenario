@@ -32,7 +32,7 @@ $mergeFields = [];
 //Add the login link for admins if this looks like a logged out admin
 if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link::adminDomainIsPrivate()) {
 	$url =
-		(\ze::setting('admin_use_ssl')? 'https://' : \ze\link::protocol()).
+		(ze::setting('admin_use_ssl')? 'https://' : \ze\link::protocol()).
 		\ze\link::adminDomain(). SUBDIRECTORY.
 		'admin.php?';
 	$importantGetRequests = \ze\link::importantGetRequests(true);
@@ -51,8 +51,8 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link
 
 	//Add the logo
 	$logoURL = $logoWidth = $logoHeight = false;
-	if (\ze::setting('admin_link_logo') == 'custom'
-	 && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, \ze::setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
+	if (ze::setting('admin_link_logo') == 'custom'
+	 && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
 
 		if (strpos($logoURL, '://') === false) {
 			$logoURL = \ze\link::absolute(). $logoURL;
@@ -63,8 +63,8 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link
 		$logoHeight = 19;
 	}
 	
-	$offset = (int) \ze::setting('admin_link_logo_offset', $useCache = true, $default = 30);
-	$pos = \ze::setting('admin_link_logo_pos', $useCache = true, $default = 'allt allr');
+	$offset = (int) ze::setting('admin_link_logo_offset', $useCache = true, $default = 30);
+	$pos = ze::setting('admin_link_logo_pos', $useCache = true, $default = 'allt allr');
 	
 	if (substr($pos, 0, 4) == 'allb') {
 		$style = 'bottom:'. $offset. 'px';
@@ -94,7 +94,7 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link
 	return;
 }
 
-switch (\ze::setting('cookie_require_consent')) {
+switch (ze::setting('cookie_require_consent')) {
 	case 'implied':
 		//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
 		if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {

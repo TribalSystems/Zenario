@@ -102,7 +102,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 
 		switch ($refinerName) {
 			case 'nestable_only':
-				$panel['title'] = ze\admin::phrase('Modules that can be nested');
+				$panel['title'] = ze\admin::phrase('Modules which make plugins that can be nested');
 				break;
 			case 'nestable_wireframes_only':
 				$panel['title'] = ze\admin::phrase('Plugins that can be nested');
@@ -111,7 +111,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 				$panel['title'] = ze\admin::phrase('Modules with phrases');
 				break;
 			case 'slotable_only':
-				$panel['title'] = ze\admin::phrase('Running modules with library plugins');
+				$panel['title'] = ze\admin::phrase('Modules which make plugins (choose a module and then a plugin to insert into a slot)');
 				break;
 		}
 
@@ -296,6 +296,21 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 						//$module['frontend_link'] = $desc['webpage'];
 						//$module['has_webpage'] = true;
 					//}
+					
+					if ($module['nestable'] == 2) {
+						if ($mode == 'full') {
+							$module['link'] = [
+								//'path' => 'zenario__modules/panels/modules/item//'. $id. '//collection_buttons/view_nests_containing////'
+								'path' => 'zenario__modules/panels/plugins',
+								'refiner' => 'view_nests_containing'
+							];
+							$module['tooltip'] = ze\admin::phrase('View nests or slideshows which use this module.');
+						} else {
+							$module['link'] = false;
+							$module['disabled'] = true;
+							$module['tooltip'] = ze\admin::phrase('This module can only make plugins directly in a nest or slideshow.');
+						}
+					}
 			
 					if ($mode != 'select') {
 						//Read the dependancies of a Module from an XML description
@@ -391,15 +406,15 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 		$reloadIfNeeded = false;
 		$return = null;
 		
-		if (($_POST['suspend'] ?? false) && ze\priv::check('_PRIV_RUN_MODULE') && $module['status'] == 'module_running') {
+		if (ze::post('suspend') && ze\priv::check('_PRIV_RUN_MODULE') && $module['status'] == 'module_running') {
 			ze\moduleAdm::suspend($ids);
 			ze\skinAdm::clearCache();
 			$reloadIfNeeded = true;
 
-		} elseif (($_GET['remove'] ?? false) || ($_GET['uninstall'] ?? false)) {
+		} elseif (ze::get('remove') || ze::get('uninstall')) {
 			$module = ze\module::details($ids);
 	
-			if ($_GET['remove'] ?? false) {
+			if (ze::get('remove')) {
 				echo ze\admin::phrase('Are you sure that you wish to remove the module "[[class_name]]" ([[display_name]])?', $module);
 			} else {
 				echo ze\admin::phrase('Are you sure that you wish to uninitialise the module "[[class_name]]" ([[display_name]])?', $module);
@@ -437,11 +452,11 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 			echo ze\admin::phrase('This cannot be undone.');
 	
 
-		} elseif (($_POST['remove'] ?? false) && ze\priv::check("_PRIV_RESET_MODULE") && (!file_exists(CMS_ROOT . 'modules/'. $module['class_name']. '/module_code.php'))) {
+		} elseif (ze::post('remove') && ze\priv::check("_PRIV_RESET_MODULE") && (!file_exists(CMS_ROOT . 'modules/'. $module['class_name']. '/module_code.php'))) {
 			ze\moduleAdm::uninstall($ids, true);
 			ze\skinAdm::clearCache();
 
-		} elseif (($_POST['uninstall'] ?? false) && ze\priv::check("_PRIV_RESET_MODULE") && $module['status'] == 'module_suspended') {
+		} elseif (ze::post('uninstall') && ze\priv::check("_PRIV_RESET_MODULE") && $module['status'] == 'module_suspended') {
 			
 			//Remember the module's class name
 			$moduleClassName = ze\module::className($ids);

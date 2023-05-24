@@ -382,6 +382,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 								'<div class="zfab_plugin_rename_warning warning_icon">'.
 									ze\admin::phrase("You've changed this plugin's name; please select whether you want to:").
 								'</div>';
+							
+							//The above could be rewritten using TUIX properties if desired
+							#$fields['first_tab/duplicate_or_rename']['notices_above']['rename_warning'] = [
+							#	'type' => 'warning',
+							#	'message' => ze\admin::phrase("You've changed this plugin's name; please select whether you want to:")
+							#];
 						}
 					}
 				}
@@ -478,7 +484,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				//Load the values from the database
 				if ($box['key']['eggId']) {
 					$sql = "
-						SELECT name_or_slide_label, framework, css_class
+						SELECT framework, css_class
 						FROM ". DB_PREFIX. "nested_plugins
 						WHERE id = ". (int) $box['key']['eggId'];
 	
@@ -1059,20 +1065,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 											}
 											
 											//Don't save a value for a field if it was hidden...
-											if (empty($ps['save_value_when_hidden'])
-											 && (ze\ring::engToBoolean($tab['hidden'] ?? false)
-											  || ze\ring::engToBoolean($tab['_was_hidden_before'] ?? false)
-											  || ze\ring::engToBoolean($field['hidden'] ?? false)
-											  || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false))) {
-												
-												if ($ps['save_empty_value_when_hidden'] ?? $defaultValue) {
-													//If a setting has a default value, we'll need to store a blank in the database
-													//to make it clear that the field was hidden and not set
-													ze\row::set('plugin_settings', ['value' => ''], $pk);
-												} else {
-													//Otherwise we can just delete the row
-													ze\row::delete('plugin_settings', $pk);
-												}
+											if (!empty($tab['hidden'])
+											 || !empty($tab['_was_hidden_before'])
+											 || !empty($field['hidden'])
+											 || !empty($field['_was_hidden_before'])) {
+												ze\row::delete('plugin_settings', $pk);
 					
 											//...or a multiple edit field that is not marked as changed
 											} else
@@ -1222,77 +1219,6 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						}
 					}
 				}
-				
-				//Set the Nested Plugin's name
-				if ($box['key']['instanceId']){
-					//For Nested Plugins, check to see if there is a Plugin Setting with the <use_value_for_plugin_name> tag set,
-					//which should be the name of the Nested Plugin
-					//Empty or Hidden fields don't count; otherwise the value of <use_value_for_plugin_name> indicates which field has priority.
-					$eggName = false;
-					$eggNameCurrentPriority = false;
-					foreach ($box['tabs'] as $tabName => &$tab) {
-						if (is_array($tab)
-						 && !ze\ring::engToBoolean($tab['hidden'] ?? false)
-						 && !ze\ring::engToBoolean($tab['_was_hidden_before'] ?? false)
-						 && !empty($tab['fields']) && is_array($tab['fields'])) {
-			
-							foreach ($tab['fields'] as $fieldName => &$field) {
-								if (is_array($field)
-								 && !empty($values[$tabName. '/'. $fieldName])
-								 && !empty($field['plugin_setting']['use_value_for_plugin_name'])
-								 && !ze\ring::engToBoolean($field['hidden'] ?? false)
-								 && !ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)
-								 && ($eggNameCurrentPriority === false || $eggNameCurrentPriority > (int) $field['plugin_setting']['use_value_for_plugin_name'])) {
-					
-									$eggName = $values[$tabName. '/'. $fieldName];
-									$editMode = ze\ring::engToBoolean($tab['edit_mode']['on'] ?? false)? '_' : '';
-									$eggNameCurrentPriority = (int) $field['plugin_setting']['use_value_for_plugin_name'];
-									
-									//T10290 - for an internal link, only record the tag id and not the alias and publishing status
-									// (which will get out of date!)
-									if (empty($field['pick_items']['target_path'])
-									 || $field['pick_items']['target_path'] != 'zenario__content/panels/content') {
-										
-										//Attempt to get a display value, rather than the actual value
-										$items = explode(',', $eggName);
-										if (!empty($field['values'][$items[0]])) {
-										    $eggName = !is_array($field['values'][$items[0]]) ? $field['values'][$items[0]] : $field['values'][$items[0]]['label'];
-					
-										} elseif (!empty($field['values'][$eggName])) {
-											$eggName = $field['values'][$eggName];
-					
-										} elseif (!empty($field['_display_value'])) {
-											$eggName = $field['_display_value'];
-										}
-									}
-								}
-							}
-						}
-					}
-					
-					if (is_array($eggName)) {
-						$eggName = $eggName['label'] ?? false;
-					}
-	
-					if ($eggName) {
-						$eggName = ze\module::displayName($box['key']['moduleId']). ': '. $eggName;
-					} else {
-						$eggName = ze\module::displayName($box['key']['moduleId']);
-					}
-					$nestedpk = [
-						'instance_id' => $box['key']['instanceId'],
-						'egg_id' => $box['key']['eggId'],
-						'name' => 'nested_title'
-						];
-					$nestedvalue['instance_id'] = $box['key']['instanceId'];
-					$nestedvalue['name'] = 'nested_title';
-					$nestedvalue['egg_id'] = $box['key']['eggId'];
-					$nestedvalue['value'] = $eggName;
-					ze\row::set('plugin_settings', $nestedvalue, $nestedpk);
-				}
-				if($box['key']['eggId']) {	
-					ze\row::update('nested_plugins', ['name_or_slide_label' => mb_substr($eggName, 0, 250, 'UTF-8')], $box['key']['eggId']);
-				}
 
 				if ($instance['content_id']) {
 					if ($syncContent) {
@@ -1371,7 +1297,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						}
 					}
 					
-					if (!($_REQUEST['_save_and_continue'] ?? false)) {
+					if (!ze::request('_save_and_continue')) {
 						//If the CSS files have changed, and we opened up from the front-end,
 						//unset the slotName from the key to force the toolkit to reload the whole page.
 						if ((isset($fields['this_css_tab/use_css_file']['current_value']) && $fields['this_css_tab/use_css_file']['current_value'] != $fields['this_css_tab/use_css_file']['value'])
@@ -1620,8 +1546,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			$fields[$ppath]['plugin_setting'] = [
 				'name' => $ppath,
 				'value' => $defaultText,
-				'dont_save_default_value' => true,
-				'save_empty_value_when_hidden' => false
+				'dont_save_default_value' => true
 			];
 		}
 	
@@ -1636,7 +1561,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 	
 		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
 			$mrg = [
-				'def_lang_name' => htmlspecialchars(\ze\lang::name(\ze::$defaultLang)),
+				'def_lang_name' => htmlspecialchars(\ze\lang::name(ze::$defaultLang)),
 				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 		

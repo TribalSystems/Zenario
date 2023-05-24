@@ -37,14 +37,14 @@ class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__menu/panels/sections') return;
 		
-		if ($_GET['refiner__language'] ?? false) {
-			$panel['title'] = ze\admin::phrase('Menu sections (language [[lang]])', ['lang' => ze\lang::name($_GET['refiner__language'] ?? false)]);
+		if (ze::get('refiner__language')) {
+			$panel['title'] = ze\admin::phrase('Menu sections (language [[lang]])', ['lang' => ze\lang::name(ze::get('refiner__language'))]);
 			if ($_GET['refiner__language'] != ze::$defaultLang) {
 
 				$panel['notice']['show'] = false;
 				
 			}
-			$panel['message'] = ze\admin::phrase('Advanced', ['lang' => ze\lang::name($_GET['refiner__language'] ?? false)]);
+			$panel['message'] = ze\admin::phrase('Advanced', ['lang' => ze\lang::name(ze::get('refiner__language'))]);
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {

@@ -18,7 +18,7 @@ zenario_alias:
                 alias:
                     redraw_immediately_onchange: true
                 create_spare_alias:
-                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     ord: alias.01
                     same_row: true
                     visible_if: |

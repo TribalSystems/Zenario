@@ -65,9 +65,34 @@ class zenario_banner extends ze\moduleBaseClass {
 		$linkExists = false;
 		$linkTo = $this->setting($link_type);
 		
+		//Special logic for Storefront Banner: attempt to load the product information.
+		//This will be used later.
+		if ($linkTo == '_PRODUCT_DESCRIPTION_PAGE') {
+			if ($this->setting("product_source") == 'auto') {
+				$product = zenario_ecommerce_manager::getProductFromDescriptiveContentItem($this->cID, $this->cType);
+			} elseif ($this->setting("product_source") == 'select_product' && $this->setting("product_for_sale")) {
+				$product = zenario_ecommerce_manager::getProduct($this->setting("product_for_sale"));
+			} else {
+				$product = false;
+			}
+		}
+		
 		//Check to see if an item is set in the hyperlink_target setting 
-		if ($linkTo == '_CONTENT_ITEM'
-		 && ($linkExists = $this->getCIDAndCTypeFromSetting($cID, $cType, $hyperlink_target, $useTranslation))) {
+		if (
+			($linkTo == '_CONTENT_ITEM'
+		 		&& ($linkExists = $this->getCIDAndCTypeFromSetting($cID, $cType, $hyperlink_target, $useTranslation)))
+		 	||
+		 		//Special logic for Storefront Banner: link to a product's descriptive page
+		 		(
+					$linkTo == '_PRODUCT_DESCRIPTION_PAGE'
+					&& $product
+					&& is_array($product)
+					&& isset($product['content_item_id'])
+					&& ($cID = $product['content_item_id'])
+					&& isset($product['content_item_type'])
+					&& ($cType = $product['content_item_type'])
+		 		)
+		) {
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
@@ -214,7 +239,7 @@ class zenario_banner extends ze\moduleBaseClass {
 						'href="'. htmlspecialchars($link). '"';
 				}
 			
-			}  elseif ($linkTo == '_EMAIL') {
+			} elseif ($linkTo == '_EMAIL') {
 				$url = 'email_address';
 				if ($link = $this->setting($url)) {
 					$mergeFields['Image_Link_Href'] =
@@ -254,7 +279,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 			
 				//Open the editor immediately if it is in the URL
-				if (($_REQUEST['content__edit_container'] ?? false) == $this->containerId) {
+				if (ze::request('content__edit_container') == $this->containerId) {
 					$this->editing = true;
 					$this->markSlotAsBeingEdited();
 					$this->openEditor();
@@ -273,6 +298,16 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 		$pictureCID = $pictureCType = false;
 		
+		//Special logic for Storefront Banner: attempt to load the product information.
+		//This will be used later.
+		if ($this->setting("product_source") == 'auto') {
+			$product = zenario_ecommerce_manager::getProductFromDescriptiveContentItem($this->cID, $this->cType);
+		} elseif ($this->setting("product_source") == 'select_product' && $this->setting("product_for_sale")) {
+			$product = zenario_ecommerce_manager::getProduct($this->setting("product_for_sale"));
+		} else {
+			$product = false;
+		}
+		
 		//Attempt to find a masthead image to display
 		//Check to see if an overwrite has been set, and use it if so
 		if (($this->setting('image_source') == '_CUSTOM_IMAGE'
@@ -284,115 +319,105 @@ class zenario_banner extends ze\moduleBaseClass {
 		 
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID
-		  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))) {
+		  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))
+		 
+		 //Special logic for Storefront Banner if set to display the product image
+		 || ($this->setting('image_source') == '_PRODUCT_IMAGE' && !empty($product) && is_array($product) && !empty($product['image_id']) && ($imageId = $product['image_id']))
+		) {
 			
 			//Get the resize options for the image from the plugin settings
-			$bannerMaxWidth = $this->setting('width');
-			$bannerMaxHeight = $this->setting('height');
-			$bannerCanvas = $this->setting('canvas');
-			$bannerRetina = $this->setting('retina');
+			$setCanvas = $this->setting('canvas');
+			$setWidth = $this->setting('width');
+			$setHeight = $this->setting('height');
+			$setRetina = $this->setting('retina');
 			
 			//If this banner is in a nest, check if there are default settings set by the nest
-			if (isset($this->parentNest)
-			 && $this->parentNest->banner_canvas) {
-				
-				$inheritDimensions = true;
-				
-				//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
-				if ($bannerCanvas == 'fixed_width_and_height'
-				 || $this->parentNest->banner_canvas == 'fixed_width_and_height'
-				 || ($this->parentNest->banner_canvas == 'fixed_width' && $bannerCanvas == 'fixed_height')
-				 || ($this->parentNest->banner_canvas == 'fixed_height' && $bannerCanvas == 'fixed_width')) {
-					$bannerCanvas = 'fixed_width_and_height';
-				
-				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
-				//crop_and_zoom settings on the banner, and vice versa. So do an XOR and only update the settings if
-				//they're not both different
-				} else
-				if (!$bannerCanvas
-				 || $bannerCanvas == 'unlimited'
-				 || !(($this->parentNest->banner_canvas == 'crop_and_zoom') XOR ($bannerCanvas == 'crop_and_zoom'))) {
-					$bannerCanvas = $this->parentNest->banner_canvas;
-				
-				} else {
-					$inheritDimensions = false;
+			$inNest = isset($this->parentNest);
+			
+			
+			if ($inNest) {
+				//The banner plugin has some fiddly logic for the default value of the canvas.
+				//In a nest, the default value should be "Unlimited/Inherit"
+				if ($setCanvas == 'DEFAULT') {
+					$setCanvas = 'unlimited';
 				}
 				
-				if ($inheritDimensions && $this->parentNest->banner_width) {
-					if (!$bannerMaxWidth
-					 || !ze::in($bannerCanvas, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom')) {
-						$bannerMaxWidth = $this->parentNest->banner_width;
-					}
+				if ($setCanvas == 'unlimited'
+				 && $this->parentNest->setting('banner_canvas')) {
+					$setCanvas = $this->parentNest->setting('banner_canvas');
+					$setWidth = $this->parentNest->setting('banner_width');
+					$setHeight = $this->parentNest->setting('banner_height');
+					$setRetina = $this->parentNest->setting('banner_retina');
 				}
-				
-				if ($inheritDimensions && $this->parentNest->banner_height) {
-					if (!$bannerMaxHeight
-					 || !ze::in($bannerCanvas, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
-						$bannerMaxHeight = $this->parentNest->banner_height;
-					}
+			
+			} else {
+				//The banner plugin has some fiddly logic for the default value of the canvas.
+				//Outside of a nest, the default value should be "Crop and Zoom"
+				if ($setCanvas == 'DEFAULT') {
+					$setCanvas = 'crop_and_zoom';
 				}
 			}
 			
-			$banner__enlarge_image = true;
-			$banner__enlarge_floating_box_title_mode = $this->setting('floating_box_title_mode');
-			$banner__enlarge_canvas = $this->setting('enlarge_canvas');
-			$banner__enlarge_width = (int) $this->setting('enlarge_width');
-			$banner__enlarge_height = (int) $this->setting('enlarge_height');
 			
-			//Also have some nest-wide options to enable colorbox popups, and to set restrictions there too
-			if (isset($this->parentNest)
-			 && $this->parentNest->banner__enlarge_image
-			 && !ze::in($this->setting('link_type'), '_CONTENT_ITEM', '_EXTERNAL_URL', '_EMAIL')) {
+			$setBehaviour = $this->setting('advanced_behaviour');
+			
+			if ($inNest
+			 && $setBehaviour == 'none'
+			 && $this->parentNest->setting('advanced_behaviour')) {
+				$setBehaviour = $this->parentNest->setting('advanced_behaviour');
+			}
+			
+			
+			
+			$setMobBehaviour = $this->setting('mobile_behaviour');
+			$setMobWidth = $this->setting('mobile_width');
+			$setMobHeight = $this->setting('mobile_height');
+			$setMobCanvas = $this->setting('mobile_canvas');
+			$setMobRetina = $this->setting('mobile_retina');
+			
+			if ($inNest
+			 && $setMobBehaviour == 'mobile_same_image'
+			 && $this->parentNest->setting('mobile_behaviour')) {
+				$setMobBehaviour = $this->parentNest->setting('mobile_behaviour');
 				
-				//Set the link type to "_ENLARGE_IMAGE" if it's not already.
-				$this->setSetting('link_type', '_ENLARGE_IMAGE', false);
-				if(!$banner__enlarge_floating_box_title_mode) {
-					$this->setSetting('floating_box_title_mode', 'use_default', false);
-				}
-				
-				$inheritDimensions = true;
-				
-				//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
-				if ($banner__enlarge_canvas == 'fixed_width_and_height'
-				 || $this->parentNest->banner__enlarge_canvas == 'fixed_width_and_height'
-				 || ($this->parentNest->banner__enlarge_canvas == 'fixed_width' && $banner__enlarge_canvas == 'fixed_height')
-				 || ($this->parentNest->banner__enlarge_canvas == 'fixed_height' && $banner__enlarge_canvas == 'fixed_width')) {
-					$banner__enlarge_canvas = 'fixed_width_and_height';
-				
-				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
-				//crop_and_zoom settings on the banner, and vice versa. So do an XOR and only update the settings if
-				//they're not both different
-				} else
-				if (!$banner__enlarge_canvas
-				 || $banner__enlarge_canvas == 'unlimited'
-				 || !(($this->parentNest->banner__enlarge_canvas == 'crop_and_zoom') XOR ($banner__enlarge_canvas == 'crop_and_zoom'))) {
-					$banner__enlarge_canvas = $this->parentNest->banner__enlarge_canvas;
-				
-				} else {
-					$inheritDimensions = false;
-				}
-				
-				if ($inheritDimensions && $this->parentNest->banner__enlarge_width) {
-					if (!$banner__enlarge_width
-					 || !ze::in($banner__enlarge_canvas, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom')) {
-						$banner__enlarge_width = $this->parentNest->banner__enlarge_width;
-					}
-				}
-				
-				if ($inheritDimensions && $this->parentNest->banner__enlarge_height) {
-					if (!$banner__enlarge_height
-					 || !ze::in($banner__enlarge_canvas, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
-						$banner__enlarge_height = $this->parentNest->banner__enlarge_height;
-					}
+				if ($setMobBehaviour == 'mobile_same_image_different_size'
+				 && $this->parentNest->setting('mobile_canvas')) {
+					$setMobCanvas = $this->parentNest->setting('mobile_canvas');
+					$setMobWidth = $this->parentNest->setting('mobile_width');
+					$setMobHeight = $this->parentNest->setting('mobile_height');
+					$setMobRetina = $this->parentNest->setting('mobile_retina');
 				}
 			}
+			
+			
+			
+			$setLargeTitle = $this->setting('floating_box_title_mode');
+			$setLargeCanvas = $this->setting('enlarge_canvas');
+			$setLargeWidth = (int) $this->setting('enlarge_width');
+			$setLargeHeight = (int) $this->setting('enlarge_height');
+			$setLinkType = $this->setting('link_type');
+			
+			if ($inNest
+			 && $this->parentNest->setting('link_type')
+			 && $setLinkType == '_NO_LINK') {
+				$setLinkType = $this->parentNest->setting('link_type');
+				
+				if ($this->parentNest->setting('enlarge_canvas')
+				 && $this->parentNest->setting('enlarge_canvas') != 'unlimited'
+				 && $setLinkType == '_ENLARGE_IMAGE') {
+					$setLargeWidth = $this->parentNest->setting('enlarge_width');
+					$setLargeHeight = $this->parentNest->setting('enlarge_height');
+					$setLargeCanvas = $this->parentNest->setting('enlarge_canvas');
+				}
+			}
+			
 			
 			$cols = [];
 			if (!$this->setting('alt_tag')) {
 				$cols[] = 'alt_tag';
 			}
 			
-			if ($this->setting('link_type')=='_ENLARGE_IMAGE' && $this->setting('floating_box_title_mode') != 'overwrite') {
+			if ($setLinkType=='_ENLARGE_IMAGE' && $setLargeTitle != 'overwrite') {
 				$cols[] = 'floating_box_title';
 			}
 			
@@ -428,7 +453,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			//Change some parameters based on the option chosen for  the "Additional behaviour"
 			//(né "Advanced behaviour") plugin setting.
-			switch ($this->setting('advanced_behaviour')) {
+			switch ($setBehaviour) {
 				case 'background_image':
 					$showAsBackgroundImage = true;
 					$preferInlineStypes = false;
@@ -452,17 +477,17 @@ class zenario_banner extends ze\moduleBaseClass {
 			//But note this needs a responsive layout with a minimum width set to work.
 			//It's also not currently compatible with the "Lazy load" option.
 			if (!$lazyLoad && ze::$minWidth) {
-				switch ($this->setting('mobile_behaviour')) {
+				switch ($setMobBehaviour) {
 					
 					//Same image as for desktop, but use a different size
 					case 'mobile_same_image_different_size':
 						$changeOnMob = true;
 						$preferInlineStypes = false;
 						$mobImageId = $imageId;
-						$mobMaxWidth = $this->setting('mobile_width');
-						$mobMaxHeight = $this->setting('mobile_height');
-						$mobCanvas = $this->setting('mobile_canvas');
-						$mobRetina = $this->setting('mobile_retina');
+						$mobMaxWidth = $setMobWidth;
+						$mobMaxHeight = $setMobHeight;
+						$mobCanvas = $setMobCanvas;
+						$mobRetina = $setMobRetina;
 						break;
 					
 					//Different image
@@ -470,10 +495,10 @@ class zenario_banner extends ze\moduleBaseClass {
 						if ($mobImageId = $this->setting('mobile_image')) {
 							$changeOnMob = true;
 							$preferInlineStypes = false;
-							$mobMaxWidth = $this->setting('mobile_width');
-							$mobMaxHeight = $this->setting('mobile_height');
-							$mobCanvas = $this->setting('mobile_canvas');
-							$mobRetina = $this->setting('mobile_retina');
+							$mobMaxWidth = $setMobWidth;
+							$mobMaxHeight = $setMobHeight;
+							$mobCanvas = $setMobCanvas;
+							$mobRetina = $setMobRetina;
 						}
 						break;
 					
@@ -486,7 +511,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			$html = ze\file::imageHTML(
 				$this->styles, $preferInlineStypes,
-				$this->noteImage($imageId), $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+				$this->noteImage($imageId), $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
 				$altTag, $htmlID, $cssClass, $styles, $attributes,
 				$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
 				$this->noteImage($mobImageId), $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
@@ -548,7 +573,7 @@ class zenario_banner extends ze\moduleBaseClass {
 					
 					$html .= ze\file::imageHTML(
 						$ignoreStyles, $preferInlineStypes,
-						$this->noteImage($rolloImageId), $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+						$this->noteImage($rolloImageId), $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
 						$altTag, $htmlID, $cssClass, $styles, $attributes,
 						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
 						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
@@ -562,7 +587,7 @@ class zenario_banner extends ze\moduleBaseClass {
 					
 					$html .= ze\file::imageHTML(
 						$ignoreStyles, $preferInlineStypes,
-						$imageId, $bannerMaxWidth, $bannerMaxHeight, $bannerCanvas, $bannerRetina, $makeWebP,
+						$imageId, $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
 						$altTag, $htmlID, $cssClass, $styles, $attributes,
 						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
 						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
@@ -588,10 +613,10 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			$this->subSections['Image'] = true;
 			
-			if ($this->setting('link_type') == '_ENLARGE_IMAGE') {
+			if ($setLinkType == '_ENLARGE_IMAGE') {
 				
 				$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
-				if (ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, false, $isRetina, $mimeType, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
+				if (ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, false, $isRetina, $mimeType, $imageId, $setLargeWidth, $setLargeHeight, $setLargeCanvas)) {
 					
 					ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 					
@@ -605,7 +630,7 @@ class zenario_banner extends ze\moduleBaseClass {
 						//Would need support from colorbox, and ", a[data-colorbox-group]" added to the jQuery pattern that sets colorboxes up
 					//$this->mergeFields['Image_Link_Href'] = 'data-colorbox-group="group2" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box"';
 					
-					if ($this->setting('floating_box_title_mode') == 'overwrite') {
+					if ($setLargeTitle == 'overwrite') {
 						$caption = $this->setting('floating_box_title');
 					} else {
 						$caption = $image['floating_box_title'];
@@ -630,8 +655,8 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 		}
 		
-		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing;
-		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
+		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing || $this->setting("use_product_display_name");
+		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing || $this->setting("use_product_display_name");
 		$this->subSections['Title_Anchor_Enabled'] = (bool) $this->setting('set_an_anchor');
 		$this->subSections['Title_Anchor'] = $this->setting('anchor_name');
 		$this->subSections['More_Link_Text'] = (bool) $this->setting('more_link_text');
@@ -656,7 +681,11 @@ class zenario_banner extends ze\moduleBaseClass {
 			//Title and the more link text will need to be html escaped, and may need translating if this is a library plugin.
 			//The text is html but may need parsing for merge fields.
 			if ($this->subSections['Title']) {
-				$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
+				if ($this->setting("use_product_display_name") && !empty($product) && is_array($product) && !empty($product['product_display_name'])) {
+					$this->mergeFields['Title'] = htmlspecialchars($product['product_display_name']);
+				} else {
+					$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
+				}
 				
 				if (!$this->isVersionControlled) {
 					if ($this->setting('translate_text')) {
@@ -673,7 +702,11 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			if ($this->subSections['Text']) {
-				$this->mergeFields['Text'] = $this->setting('text');
+				if ($this->setting("use_product_display_name") && !empty($product) && is_array($product) && !empty($product['description'])) {
+					$this->mergeFields['Text'] = $product['description'];
+				} else {
+					$this->mergeFields['Text'] = $this->setting('text');
+				}
 				
 				if (!$this->isVersionControlled) {
 					if ($this->setting('translate_text')) {
@@ -753,6 +786,28 @@ class zenario_banner extends ze\moduleBaseClass {
 		}
 	}
 	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		$desc = [];
+		$desc[] = ze\admin::phrase('Banner');
+		
+		if ($imageId = ze\plugin::setting('image', $instanceId, $eggId)) {
+			if ($filename = ze\row::get('files', 'filename', $imageId)) {
+				$desc[] = $filename;
+			}
+		}
+		
+		if ($title = ze\plugin::setting('title', $instanceId, $eggId)) {
+			$desc[] = $title;
+		}
+		
+		if ($cIDAndType = ze\plugin::setting('hyperlink_target', $instanceId, $eggId)) {
+			$desc[] = ze\content::formatTagFromTagId($cIDAndType, true);
+		}
+		
+		return implode('; ', $desc);
+	}
+	
 	
 	protected $imgsUsed = [];
 	public function noteImage($imageId) {
@@ -766,52 +821,18 @@ class zenario_banner extends ze\moduleBaseClass {
 	
 	public function fillAdminSlotControls(&$controls) {
 		
-		//If this is a version controlled plugin and the current administrator is an author,
-		//show the cut/copy/patse options
+		//If this is a version controlled plugin and the current administrator is an author
 		if ($this->isVersionControlled && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 			
-			//Check whether something compatible was previously copied
-			$copied =
-				!empty($_SESSION['admin_copied_contents']['class_name'])
-			 && $_SESSION['admin_copied_contents']['class_name'] == 'zenario_banner';
-			
-			//If something has been entered, show the copy button
-			if (!$this->empty) {
-				$controls['actions']['copy_contents']['hidden'] = false;
-				$controls['actions']['copy_contents']['onclick'] =
-					str_replace('list,of,allowed,modules', 'zenario_banner',
-						$controls['actions']['copy_contents']['onclick']);
-			}
-			
-			//Check to see if this is the most recent version and the current administrator can make changes
-			if (ze::$cVersion == ze::$adminVersion
-			 && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
-				
-				if (!$this->empty) {
-					$controls['actions']['cut_contents']['hidden'] = false;
-					$controls['actions']['cut_contents']['onclick'] =
-						str_replace('list,of,allowed,modules', 'zenario_banner',
-							$controls['actions']['cut_contents']['onclick']);
-				}
-			
-				//If there is no contents here and something was copied, show the paste option
-				if ($this->empty && $copied) {
-					$controls['actions']['paste_contents']['hidden'] = false;
-				}
-			
-				//If there is contents here and something was copied, show the swap and overwrite options
-				if (!$this->empty && $copied) {
-					$controls['actions']['overwrite_contents']['hidden'] = false;
-					$controls['actions']['swap_contents']['hidden'] = false;
-				}
-			}
-			
 			if (isset($controls['actions']['settings'])) {
+				//Show an edit inline button
 				$controls['actions']['banner_edit_title'] = [
 					'ord' => 1.1,
 					'label' => ze\admin::phrase('Edit title & HTML (inline)'),
 					'page_modes' => $controls['actions']['settings']['page_modes'],
 					'onclick' => htmlspecialchars_decode($this->editTitleInlineOnClick())];
+				
+				//Give the edit in FAB button a more specific name to make it clear it's not the edit inline button
 				$controls['actions']['settings']['label'] = ze\admin::phrase('Edit contents (admin box)');
 			}
 			

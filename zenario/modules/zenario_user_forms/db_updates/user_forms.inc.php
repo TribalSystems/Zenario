@@ -191,8 +191,7 @@ if (ze\dbAdm::needRevision(19)) {
 <p>Thank you for your message! We will get back to you shortly.</p>',
 			'user_duplicate_email_action' => 'merge',
 			'submit_button_text' => 'Send',
-			'admin_email_use_template' => 1,
-			'admin_email_template' => 'zenario_common_features__to_admin_contact_form_submission'
+			'admin_email_use_template' => 0
 		]);
 		
 		// Create form fields
@@ -1655,6 +1654,20 @@ ze\dbAdm::revision(276
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
 	DROP COLUMN `show_selected_order`
+_sql
+
+//In 9.4, we dropped support for converting multiple images to PDF
+//as it was no longer working in PHP 8, and was hardly used (if at all).
+); ze\dbAdm::revision(279
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	DROP COLUMN `allow_converting_multiple_images_to_pdf`
+_sql
+
+); ze\dbAdm::revision(280
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	CHANGE `validation` `validation` enum('email', 'URL', 'integer', 'number', 'phone_number', 'floating_point') DEFAULT NULL
 _sql
 
 );

@@ -107,7 +107,16 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 			exit;
 		}
 		
+		
 		$box['title'] = ze\admin::phrase('Editing the skin "[[display_name]]"', $skin['display_name']);
+		
+		$content = ze\row::get('content_items', true, ['id' => $box['key']['cID'], 'type' => $box['key']['cType']]);
+		$mrg = [
+			'version' => $box['key']['cVersion'],
+			'versionStatus' => ze\contentAdm::versionStatus($box['key']['cVersion'], $content['visitor_version'], $content['admin_version'], $content['status'])
+		];
+		$box['custom__update_preview_message'] = ze\admin::phrase('Update preview (v[[version]] [[versionStatus]])', $mrg);
+		
 		
 		$files = self::getFilesArray($skin);
 		//Add a tab for each editable file.

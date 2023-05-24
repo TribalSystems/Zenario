@@ -3,16 +3,6 @@
 sections:
     slot_wand:
         buttons:
-            show_grid_off:
-                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
-                tooltip: Show gridlines
-                visible_if: '!zenarioA.showGridOn'
-                onclick: zenarioA.toggleShowGrid();
-            show_grid_on:
-                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
-                tooltip: Hide gridlines
-                visible_if: zenarioA.showGridOn
-                onclick:  zenarioA.toggleShowGrid();
             show_empty_slots_off:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
                 tooltip: Show mobile & empty slots
@@ -23,3 +13,13 @@ sections:
                 tooltip: Hide mobile & empty slots
                 visible_if: zenarioA.showEmptySlotsOn
                 onclick: zenarioA.toggleShowEmptySlots();
+            show_grid_off:
+                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
+                tooltip: Show gridlines
+                visible_if: '!zenarioA.showGridOn'
+                onclick: zenarioA.toggleShowGrid();
+            show_grid_on:
+                css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
+                tooltip: Hide gridlines
+                visible_if: zenarioA.showGridOn
+                onclick:  zenarioA.toggleShowGrid();

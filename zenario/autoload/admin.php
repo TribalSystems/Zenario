@@ -207,7 +207,6 @@ class admin {
 
 
 
-
 	//Formerly "timeDiff()"
 	public static function timeDiff($a, $b, $lowerLimit = false) {
 		$sql = "
@@ -309,8 +308,12 @@ class admin {
 		return \ze\date::formatDateTime($date, $format_type, $languageId, $rss, $cli, $admin = true);
 	}
 	
-	public static function relativeDate($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false, $showDateTime = false) {
-		return \ze\date::relative($timestamp, $maxPeriod, $addFullTime, $format_type, $languageId, $time_format, $cli, $showDateTime, $admin = true);
+	public static function formatRelativeDate($date) {
+		return \ze\date::formatRelativeDate($date, false, true);
+	}
+	
+	public static function formatRelativeDateTime($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $time_format = true, $showDateTime = false) {
+		return \ze\date::formatRelativeDateTime($timestamp, $maxPeriod, $addFullTime, $format_type, false, $time_format, false, $showDateTime, true);
 	}
 
 
@@ -336,25 +339,6 @@ class admin {
 		$html = '<p>' . \ze\admin::phrase('Minimum requirements:') . '</p><ul>';
 		$class = $passwordValidation['min_length'] ? 'pass' : 'fail';
 		$html .= '<li class="' . $class . '" id="min_length">' . \ze\admin::phrase('[[n]] characters long', ['n' => $passwordRequirements['min_length']]) . '</li>';
-		if ($passwordRequirements['require_lowercase_chars']) {
-			$class = $passwordValidation['lowercase'] ? 'pass' : 'fail';
-			$html .= '<li class="' . $class . '" id="lowercase">' . \ze\admin::phrase('1 lowercase character') . '</li>';
-		}
-
-		if ($passwordRequirements['require_uppercase_chars']) {
-			$class = $passwordValidation['uppercase'] ? 'pass' : 'fail';
-			$html .= '<li class="' . $class . '" id="uppercase">' . \ze\admin::phrase('1 uppercase character') . '</li>';
-		}
-
-		if ($passwordRequirements['require_numbers']) {
-			$class = $passwordValidation['numbers'] ? 'pass' : 'fail';
-			$html .= '<li class="' . $class . '" id="numbers">' . \ze\admin::phrase('1 number') . '</li>';
-		}
-
-		if ($passwordRequirements['require_symbols']) {
-			$class = $passwordValidation['symbols'] ? 'pass' : 'fail';
-			$html .= '<li class="' . $class . '" id="symbols">' . \ze\admin::phrase('1 symbol') . '</li>';
-		}
 
 		$html .= '</ul>';
 		
@@ -484,7 +468,6 @@ class admin {
 			'_PRIV_VIEW_MENU_ITEM' => true,
 			'_PRIV_EDIT_MENU_TEXT' => true,
 			'_PRIV_EDIT_DRAFT' => true,
-			'_PRIV_HIDE_CONTENT_ITEM' => true,
 			'_PRIV_PUBLISH_CONTENT_ITEM' => true,
 			'_PRIV_VIEW_LANGUAGE' => true,
 			'_PRIV_MANAGE_LANGUAGE_PHRASE' => true];
@@ -532,6 +515,15 @@ class admin {
 				session_id = '" . \ze\escape::sql(session_id()) . "'";
 		}
 		
+		if (\ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'failed_login_count_since_last_successful_login')) {
+			if (!isset($_SESSION['failed_login_count_since_last_successful_login'])) {
+				$_SESSION['failed_login_count_since_last_successful_login'] = 0;
+			}
+			
+			$sql .= ",
+				failed_login_count_since_last_successful_login = " . (int) $_SESSION['failed_login_count_since_last_successful_login'];
+		}
+		
 		$sql .= "
 			WHERE id = ". (int) $adminId;
 		\ze\sql::cacheFriendlyUpdate($sql);
@@ -545,8 +537,8 @@ class admin {
 		//checks in the admin login screen
 		$_SESSION['admin_logged_in'] = false;
 
-		if (isset($_SESSION['admin_failed_logins_count'])) {
-			unset($_SESSION['admin_failed_logins_count']);
+		if (isset($_SESSION['failed_login_count_since_last_successful_login'])) {
+			unset($_SESSION['failed_login_count_since_last_successful_login']);
 		}
 	}
 	

@@ -1,12 +1,12 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__content:
+zenario__library:
 	nav:
 		mic_image_library:
-			ord: 27
+			ord: 2
 			css_class: media_image
 			label: MIC images
 			tooltip: |
-				View and manage images used by Multiple Image Container plugins.
+				Edit images used galleries by Multiple Image Container (MIC) plugins.
 			link:
-				path: zenario__content/panels/mic_image_library
+				path: zenario__library/panels/mic_image_library

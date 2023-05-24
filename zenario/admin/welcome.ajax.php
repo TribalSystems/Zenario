@@ -61,7 +61,7 @@ if (!$installed) {
 
 
 //Handle the image upload in the installer
-if (($_REQUEST['method_call'] ?? false) == 'handleWelcomeAJAX') {
+if (ze::request('method_call') == 'handleWelcomeAJAX') {
 	
 	if (!$installed) {
 		ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata', null, $doVirusScan = false);
@@ -94,7 +94,7 @@ if (!$installed && !empty($_GET['getUploadedFileInCacheDir'])) {
 	exit;
 }
 
-if ($_REQUEST['quickValidate'] ?? false) {
+if (ze::request('quickValidate')) {
 	
 	$tab = $_POST['tab'] ?? false;
 	
@@ -135,14 +135,16 @@ $removedColumns = [];
 ze\tuix::parse2($source, $removedColumns, 'welcome');
 
 
-if (($_POST['_format'] ?? false) || ($_POST['_validate'] ?? false)) {
+if (ze::post('_format') || ze::post('_validate')) {
 	$clientTags = $tags = json_decode($_POST['_box'], true);
 }
 
+$getRequest = null;
 if (isset($_GET['get'])) {
 	$getRequest = json_decode($_GET['get'], true);
-} else {
-	$getRequest = null;
+}
+if (empty($getRequest) || !is_array($getRequest)) {
+	$getRequest = [];
 }
 
 $task = $_GET['task'] ?? false;
@@ -246,6 +248,7 @@ if ($systemRequirementsMet && $installed) {
 		
 			if (!$admin) {
 				$tags['tabs']['new_admin']['errors'][] = ze\admin::phrase('This link is invalid or has expired. Please contact an administrator.');
+				$fields['new_admin/username']['hidden'] =
 				$fields['new_admin/description']['hidden'] =
 				$fields['new_admin/password']['hidden'] =
 				$fields['new_admin/re_password']['hidden'] =

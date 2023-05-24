@@ -5,7 +5,7 @@ if (!ze\admin::setting('show_dev_tools')) {
 	exit;
 }
 
-switch ($_GET['mode'] ?? false) {
+switch (ze::get('mode')) {
 	case 'zenarioAB';
 		$type = 'admin_boxes';
 		break;

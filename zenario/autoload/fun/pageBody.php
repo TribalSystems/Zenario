@@ -37,7 +37,7 @@ $bodyTag = '<body class="desktop no_js '. \ze\cache::browserBodyClass();
 
 //Add the Admin Toolbar in Admin Mode
 if (\ze\priv::check()) {
-	if ($includeAdminToolbar && \ze::$cID) {
+	if ($includeAdminToolbar && ze::$cID) {
 		//Set the current Admin Toolbar tab in Admin Mode
 		$toolbars = [];
 		\ze\admin::pageBodyAdminClass($bodyTag, $toolbars);
@@ -50,11 +50,18 @@ if (\ze\priv::check()) {
 		
 		$bodyTag .= ' zenario_pageMode_preview zenario_pageModeIsnt_edit zenario_pageModeIsnt_edit_disabled zenario_pageModeIsnt_menu zenario_pageModeIsnt_layout';
 	}
+	
+	//Add a class when Google Maps API key is available
+	if (ze::setting('google_maps_api_key')) {
+		$bodyTag .= ' zenario_adminGoogleMapsAvailable';
+	} else {
+		$bodyTag .= ' zenario_adminGoogleMapsNotAvailable';
+	}
 } else {
 	$includeAdminToolbar = false;
 }
 
-if (\ze::$userId) {
+if (ze::$userId) {
 	$bodyTag .= ' zenario_userLoggedIn';
 }
 
@@ -77,31 +84,17 @@ $showingPreview =
 	$extraClassNames == 'zenario_showing_preview'
  || $extraClassNames == 'zenario_showing_plugin_preview';
 
-if (!$showingPreview) {
-	//If this page is a normal webpage being displayed by index.php, output the "Start of body" slot
-	if (\ze::$cID) {
-		echo "\n", \ze::setting('sitewide_body');
-		if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'body') {
-			echo "\n", ze::setting('sitewide_analytics_html');
-		}
-		if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'body') {
-			echo "\n", ze::setting('sitewide_social_media_html');
-		}
-	}
-}
-
 //Add more classes to the browser body class using a short JavaScript function.
 echo '
 <script type="text/javascript">
-var URLBasePath = "', \ze\escape::js(\ze\link::protocol(). ($_SERVER["HTTP_HOST"] ?? false) . SUBDIRECTORY), '";
 ', file_get_contents(CMS_ROOT. 'zenario/js/body.min.js');
 
-if (\ze::setting('mod_rewrite_slashes')) {
+if (ze::setting('mod_rewrite_slashes')) {
 	echo file_get_contents(CMS_ROOT. 'zenario/js/body.anchor-fix.min.js');
 }
 
 echo
-'})(document,window);';
+'})(document,window,"', \ze\escape::js(ze::$cType), '",', (int) ze::$layoutId, ',', (int) ze::$skinId, ',"', \ze\escape::js(\ze\link::protocol(). ($_SERVER["HTTP_HOST"] ?? false) . SUBDIRECTORY), '");';
 
 	//Use the "no_js" class if we're showing a preview
 	if ($showingPreview) {
@@ -109,7 +102,21 @@ echo
 			zenarioL.set(1, "js", "no_js");';
 	}
 	
-echo '</script>';
+echo '
+</script>';
+
+if (!$showingPreview) {
+	//If this page is a normal webpage being displayed by index.php, output the "Start of body" slot
+	if (ze::$cID) {
+		ze\content::sitewideHTML('sitewide_body');
+		if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'body') {
+			ze\content::sitewideHTML('sitewide_analytics_html');
+		}
+		if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'body') {
+			ze\content::sitewideHTML('sitewide_social_media_html');
+		}
+	}
+}
 
 if ($includeAdminToolbar) {
 	\ze\admin::pageBodyAdminToolbar($toolbars, $toolbarAttr);

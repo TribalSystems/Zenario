@@ -32,10 +32,14 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
+		if ($box['key']['openedFromCollectionButton']) {
+			$box['key']['idFromOrganizer'] = '';
+		} else {
+			$box['key']['idFromOrganizer'] = $box['key']['id'];
+		}
+		
 		//Allow this FAB to be opened from the modules panel, by module id
 		if (is_numeric($box['key']['id'])) {
-			$box['key']['idFromOrganizer'] = $box['key']['id'];
-			
 			if (!$box['key']['id'] = ze\row::get('content_types', 'content_type_id', ['module_id' => $box['key']['id']])) {
 				echo ze\admin::phrase('This module does not seem to have a content type associated with it');
 				exit;
@@ -214,15 +218,10 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			
 			ze\row::update('content_types', $vals, $box['key']['id']);
 		}
-		if ($box['key']['idFromOrganizer']) {
-			$box['key']['id'] = $box['key']['idFromOrganizer'];
-		}
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Put the key back to what it originally was, to prevent highlighting bugs in Organizer
-		if ($box['key']['idFromOrganizer']) {
-			$box['key']['id'] = $box['key']['idFromOrganizer'];
-		}
+		$box['key']['id'] = $box['key']['idFromOrganizer'];
 	}
 }

@@ -13,11 +13,15 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]categories`;
 CREATE TABLE `[[DB_PREFIX]]categories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `name` varchar(50) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `name` varchar(50) NOT NULL,
   `code_name` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
   `public` tinyint(1) NOT NULL DEFAULT '0',
   `landing_page_equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `landing_page_content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `created` datetime DEFAULT NULL,
+  `created_admin_id` int(10) unsigned DEFAULT NULL,
+  `last_edited` datetime DEFAULT NULL,
+  `last_edited_admin_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code_name` (`code_name`),
   KEY `name` (`name`,`parent_id`),
@@ -38,9 +42,9 @@ CREATE TABLE `[[DB_PREFIX]]category_item_link` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]centralised_lists`;
 CREATE TABLE `[[DB_PREFIX]]centralised_lists` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `module_class_name` varchar(255) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `method_name` varchar(255) NOT NULL,
-  `label` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `label` varchar(250) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
@@ -66,10 +70,10 @@ CREATE TABLE `[[DB_PREFIX]]consents` (
   `datetime` datetime DEFAULT NULL,
   `user_id` int(10) unsigned NOT NULL DEFAULT '0',
   `ip_address` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
-  `email` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `first_name` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `last_name` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `label` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT '',
+  `email` varchar(255) NOT NULL DEFAULT '',
+  `first_name` varchar(255) NOT NULL DEFAULT '',
+  `last_name` varchar(255) NOT NULL DEFAULT '',
+  `label` varchar(250) DEFAULT '',
   PRIMARY KEY (`id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
@@ -79,9 +83,9 @@ CREATE TABLE `[[DB_PREFIX]]content_cache` (
   `content_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `content_version` int(10) unsigned NOT NULL DEFAULT '0',
-  `text` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `text` mediumtext,
   `text_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
-  `extract` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `extract` mediumtext,
   `extract_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`content_id`,`content_type`,`content_version`),
   KEY `extract_wordcount` (`extract_wordcount`),
@@ -94,17 +98,17 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]content_item_versions`;
 CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   `id` int(10) unsigned NOT NULL,
   `type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  `tag_id` varchar(32) NOT NULL,
+  `tag_id` varchar(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `version` int(10) unsigned NOT NULL,
-  `title` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `description` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `keywords` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `content_summary` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `title` varchar(250) NOT NULL DEFAULT '',
+  `description` mediumtext,
+  `keywords` text,
+  `content_summary` mediumtext,
   `lock_summary` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `file_id` int(10) unsigned NOT NULL DEFAULT '0',
   `s3_file_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `s3_filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `filename` varchar(250) NOT NULL DEFAULT '',
+  `s3_filename` varchar(250) NOT NULL DEFAULT '',
   `feature_image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `layout_id` int(10) unsigned NOT NULL DEFAULT '0',
   `skin_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -113,18 +117,21 @@ CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   `bg_color` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `bg_position` enum('left top','center top','right top','left center','center center','right center','left bottom','center bottom','right bottom') DEFAULT NULL,
   `bg_repeat` enum('repeat','repeat-x','repeat-y','no-repeat') DEFAULT NULL,
-  `head_html` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `head_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
+  `head_html` mediumtext,
+  `head_cc` enum('not_needed','needed','specific_types') NOT NULL DEFAULT 'not_needed',
+  `head_cc_specific_cookie_types` enum('functionality','analytics','social_media') DEFAULT NULL,
   `head_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `head_overwrite` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `foot_html` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `foot_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
+  `foot_html` mediumtext,
+  `foot_cc` enum('not_needed','needed','specific_types') NOT NULL DEFAULT 'not_needed',
+  `foot_cc_specific_cookie_types` enum('functionality','analytics','social_media') DEFAULT NULL,
   `foot_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `foot_overwrite` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `created_datetime` datetime DEFAULT NULL,
   `creating_author_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_author_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_modified_datetime` datetime DEFAULT NULL,
+  `version_changed` enum('not_checked','no_changes_made','changes_made') DEFAULT 'not_checked',
   `publisher_id` int(10) unsigned NOT NULL DEFAULT '0',
   `published_datetime` datetime DEFAULT NULL,
   `concealer_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -133,10 +140,16 @@ CREATE TABLE `[[DB_PREFIX]]content_item_versions` (
   `rss_slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `rss_nest` int(10) unsigned NOT NULL DEFAULT '0',
   `writer_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `writer_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `writer_name` varchar(250) NOT NULL DEFAULT '',
   `scheduled_publish_datetime` datetime DEFAULT NULL,
   `in_sitemap` tinyint(1) NOT NULL DEFAULT '1',
+  `apply_noindex_meta_tag` tinyint(1) NOT NULL DEFAULT '0',
   `sensitive_content_message` tinyint(1) NOT NULL DEFAULT '0',
+  `pinned` tinyint(1) NOT NULL DEFAULT '0',
+  `pinned_duration` enum('fixed_date','fixed_duration','until_unpinned') DEFAULT NULL,
+  `pinned_fixed_duration_value` tinyint(2) NOT NULL DEFAULT '0',
+  `pinned_fixed_duration_unit` enum('days','weeks') DEFAULT NULL,
+  `unpin_date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`,`type`,`version`),
   UNIQUE KEY `tag_id` (`tag_id`,`version`),
   KEY `type` (`type`),
@@ -164,8 +177,8 @@ CREATE TABLE `[[DB_PREFIX]]content_items` (
   `type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `tag_id` varchar(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `equiv_id` int(10) unsigned NOT NULL,
-  `language_id` varchar(15) NOT NULL,
-  `alias` varchar(75) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `language_id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `alias` varchar(75) NOT NULL DEFAULT '',
   `lang_code_in_url` enum('show','hide','default') NOT NULL DEFAULT 'default',
   `first_created_datetime` datetime DEFAULT NULL,
   `visitor_version` int(10) unsigned NOT NULL DEFAULT '0',
@@ -209,10 +222,35 @@ CREATE TABLE `[[DB_PREFIX]]content_types` (
   `hide_menu_node` tinyint(1) NOT NULL DEFAULT '0',
   `default_permissions` enum('public','logged_in') NOT NULL DEFAULT 'public',
   `hide_private_item` tinyint(1) NOT NULL DEFAULT '0',
+  `allow_pinned_content` tinyint(1) NOT NULL DEFAULT '0',
+  `when_creating_put_title_in_body` tinyint(1) NOT NULL DEFAULT '0',
+  `auto_set_release_date` tinyint(1) NOT NULL DEFAULT '0',
+  `enable_css_tab` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`content_type_id`),
   KEY `content_type_id` (`content_type_id`),
   KEY `plugin_id` (`module_id`),
   KEY `default_layout_id` (`default_layout_id`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]cropped_images`;
+CREATE TABLE `[[DB_PREFIX]]cropped_images` (
+  `image_id` int(10) unsigned NOT NULL,
+  `aspect_ratio_width` mediumint(6) NOT NULL,
+  `aspect_ratio_height` mediumint(6) NOT NULL,
+  `aspect_ratio_angle` float NOT NULL,
+  `ui_crop_x` mediumint(6) NOT NULL,
+  `ui_crop_y` mediumint(6) NOT NULL,
+  `ui_crop_width` mediumint(6) NOT NULL,
+  `ui_crop_height` mediumint(6) NOT NULL,
+  `ui_image_width` mediumint(6) NOT NULL,
+  `ui_image_height` mediumint(6) NOT NULL,
+  `crop_x` mediumint(6) NOT NULL,
+  `crop_y` mediumint(6) NOT NULL,
+  `crop_width` mediumint(6) NOT NULL,
+  `crop_height` mediumint(6) NOT NULL,
+  PRIMARY KEY (`image_id`,`aspect_ratio_width`,`aspect_ratio_height`),
+  KEY `image_id` (`image_id`,`aspect_ratio_angle`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
@@ -221,8 +259,8 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_field_values` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `field_id` int(10) NOT NULL,
   `ord` int(10) NOT NULL DEFAULT '0',
-  `label` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-  `note_below` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `label` varchar(250) NOT NULL,
+  `note_below` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `field_id` (`field_id`,`id`),
   KEY `field_id_2` (`field_id`,`ord`)
@@ -240,25 +278,24 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_fields` (
   `fundamental` tinyint(1) NOT NULL DEFAULT '0',
   `field_name` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `ord` int(10) unsigned NOT NULL DEFAULT '0',
-  `label` varchar(64) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `default_label` varchar(64) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `label` varchar(64) NOT NULL DEFAULT '',
+  `default_label` varchar(64) NOT NULL DEFAULT '',
   `type` enum('group','checkbox','consent','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker','repeat_start','repeat_end') NOT NULL DEFAULT 'other_system_field',
   `width` smallint(5) unsigned NOT NULL DEFAULT '0',
   `height` smallint(5) unsigned NOT NULL DEFAULT '0',
   `values_source` varchar(255) NOT NULL DEFAULT '',
-  `values_source_filter` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `values_source_filter` varchar(250) NOT NULL DEFAULT '',
   `dataset_foreign_key_id` int(10) unsigned NOT NULL DEFAULT '0',
   `multiple_select` tinyint(1) NOT NULL DEFAULT '0',
   `store_file` enum('in_docstore','in_database') DEFAULT NULL,
   `extensions` varchar(255) NOT NULL DEFAULT '',
   `required` tinyint(1) NOT NULL DEFAULT '0',
-  `required_message` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `required_message` text,
   `validation` enum('none','email','emails','no_spaces','numeric','screen_name') NOT NULL DEFAULT 'none',
-  `validation_message` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `note_below` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `side_note` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `validation_message` text,
+  `note_below` text,
+  `side_note` text,
   `db_column` varchar(255) NOT NULL DEFAULT '',
-  `db_update_running` tinyint(1) NOT NULL DEFAULT '0',
   `admin_box_visibility` enum('show','show_on_condition','hide') NOT NULL DEFAULT 'show',
   `organizer_visibility` enum('none','hide','show_by_default','always_show') NOT NULL DEFAULT 'none',
   `create_index` tinyint(1) NOT NULL DEFAULT '0',
@@ -303,7 +340,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_tabs` (
   `dataset_id` int(10) unsigned NOT NULL,
   `name` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `ord` int(10) unsigned NOT NULL DEFAULT '0',
-  `label` varchar(32) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `label` varchar(32) NOT NULL DEFAULT '',
   `default_label` varchar(255) NOT NULL DEFAULT '',
   `parent_field_id` int(10) NOT NULL DEFAULT '0',
   `is_system_field` tinyint(1) NOT NULL DEFAULT '0',
@@ -326,7 +363,7 @@ CREATE TABLE `[[DB_PREFIX]]custom_dataset_values_link` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]custom_datasets`;
 CREATE TABLE `[[DB_PREFIX]]custom_datasets` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `label` varchar(64) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `label` varchar(64) NOT NULL,
   `system_table` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `table` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `extends_admin_box` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
@@ -354,15 +391,15 @@ CREATE TABLE `[[DB_PREFIX]]document_rules` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
   `use` enum('filename_without_extension','filename_and_extension','extension') NOT NULL DEFAULT 'filename_without_extension',
-  `pattern` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `pattern` mediumtext,
   `action` enum('move_to_folder','set_field') NOT NULL,
   `folder_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `replacement` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `replacement` mediumtext,
   `replacement_is_regexp` tinyint(1) unsigned NOT NULL,
   `apply_second_pass` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `second_pattern` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `second_replacement` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `second_pattern` mediumtext,
+  `second_replacement` mediumtext,
   `stop_processing_rules` tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `ordinal` (`ordinal`)
@@ -384,7 +421,7 @@ CREATE TABLE `[[DB_PREFIX]]document_tag_link` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_tags`;
 CREATE TABLE `[[DB_PREFIX]]document_tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `tag_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `tag_name` varchar(250) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_name` (`tag_name`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
@@ -392,8 +429,8 @@ CREATE TABLE `[[DB_PREFIX]]document_tags` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]document_types`;
 CREATE TABLE `[[DB_PREFIX]]document_types` (
-  `type` varchar(10) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `mime_type` varchar(128) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `type` varchar(10) NOT NULL DEFAULT '',
+  `mime_type` varchar(128) NOT NULL DEFAULT '',
   `custom` tinyint(1) NOT NULL DEFAULT '1',
   `is_allowed` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`type`),
@@ -408,16 +445,16 @@ CREATE TABLE `[[DB_PREFIX]]documents` (
   `type` enum('file','folder') NOT NULL DEFAULT 'file',
   `file_id` int(10) unsigned DEFAULT NULL,
   `folder_id` int(10) NOT NULL DEFAULT '0',
-  `folder_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
+  `folder_name` varchar(250) DEFAULT NULL,
   `privacy` enum('public','private','offline') NOT NULL DEFAULT 'offline',
   `document_datetime` datetime DEFAULT NULL,
   `thumbnail_id` int(10) DEFAULT NULL,
-  `extract` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `extract` mediumtext,
   `extract_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
   `dont_autoset_metadata` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
+  `filename` varchar(250) DEFAULT NULL,
   `file_datetime` datetime DEFAULT NULL,
-  `title` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
+  `title` varchar(250) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ordinal` (`ordinal`),
   KEY `type` (`type`),
@@ -435,21 +472,21 @@ CREATE TABLE `[[DB_PREFIX]]documents_custom_data` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]email_templates`;
 CREATE TABLE `[[DB_PREFIX]]email_templates` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `module_class_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
-  `code` varchar(255) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+  `code` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `template_name` varchar(255) NOT NULL DEFAULT '',
-  `subject` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `subject` varchar(250) NOT NULL,
   `from_details` enum('site_settings','custom_details') NOT NULL DEFAULT 'site_settings',
-  `email_address_from` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `email_name_from` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `head` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `body` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `email_address_from` varchar(100) NOT NULL DEFAULT '',
+  `email_name_from` varchar(250) NOT NULL DEFAULT '',
+  `head` mediumtext,
+  `body` text,
   `send_cc` tinyint(1) NOT NULL DEFAULT '0',
-  `cc_email_address` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `cc_email_address` text,
   `send_bcc` tinyint(1) NOT NULL DEFAULT '0',
-  `bcc_email_address` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `bcc_email_address` text,
   `debug_override` tinyint(1) NOT NULL DEFAULT '0',
-  `debug_email_address` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `debug_email_address` text,
   `date_created` datetime NOT NULL,
   `created_by_id` int(10) unsigned NOT NULL DEFAULT '0',
   `date_modified` datetime DEFAULT NULL,
@@ -479,17 +516,17 @@ CREATE TABLE `[[DB_PREFIX]]files` (
   `privacy` enum('auto','public','private') NOT NULL DEFAULT 'auto',
   `archived` tinyint(1) NOT NULL DEFAULT '0',
   `created_datetime` datetime DEFAULT NULL,
-  `filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-  `mime_type` varchar(128) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-  `width` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `height` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `alt_tag` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `title` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `floating_box_title` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `filename` varchar(250) NOT NULL,
+  `mime_type` varchar(128) NOT NULL,
+  `width` smallint(5) unsigned DEFAULT NULL,
+  `height` smallint(5) unsigned DEFAULT NULL,
+  `alt_tag` text,
+  `title` text,
+  `floating_box_title` text,
   `size` int(10) unsigned NOT NULL,
   `location` enum('db','docstore','s3') NOT NULL,
   `data` longblob,
-  `path` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `path` varchar(250) NOT NULL DEFAULT '',
   `thumbnail_180x130_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `thumbnail_180x130_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `thumbnail_180x130_data` mediumblob,
@@ -499,6 +536,7 @@ CREATE TABLE `[[DB_PREFIX]]files` (
   `custom_thumbnail_2_width` smallint(5) unsigned DEFAULT NULL,
   `custom_thumbnail_2_height` smallint(5) unsigned DEFAULT NULL,
   `custom_thumbnail_2_data` mediumblob,
+  `image_credit` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `checksum` (`checksum`,`usage`),
   UNIQUE KEY `short_checksum` (`short_checksum`,`usage`),
@@ -521,7 +559,7 @@ CREATE TABLE `[[DB_PREFIX]]files` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_link`;
 CREATE TABLE `[[DB_PREFIX]]group_link` (
-  `link_from` enum('chain','slide','slide_layout') NOT NULL,
+  `link_from` enum('chain','slide') NOT NULL,
   `link_from_id` int(10) unsigned NOT NULL,
   `link_from_char` char(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `link_to` enum('group','role') NOT NULL,
@@ -543,7 +581,7 @@ CREATE TABLE `[[DB_PREFIX]]image_tag_link` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]image_tags`;
 CREATE TABLE `[[DB_PREFIX]]image_tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `name` varchar(250) NOT NULL,
   `color` enum('blue','red','green','orange','yellow','violet','grey') NOT NULL DEFAULT 'blue',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
@@ -578,7 +616,7 @@ CREATE TABLE `[[DB_PREFIX]]job_logs` (
   `status` enum('action_taken','no_action_taken','error') NOT NULL,
   `started` datetime DEFAULT NULL,
   `finished` datetime DEFAULT NULL,
-  `note` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `note` mediumtext,
   PRIMARY KEY (`id`),
   KEY `job_id` (`job_id`),
   KEY `status` (`status`),
@@ -591,10 +629,10 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]jobs`;
 CREATE TABLE `[[DB_PREFIX]]jobs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `job_type` enum('scheduled','background') NOT NULL DEFAULT 'scheduled',
-  `manager_class_name` varchar(200) NOT NULL,
+  `manager_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `job_name` varchar(127) NOT NULL,
   `module_id` int(10) unsigned NOT NULL,
-  `module_class_name` varchar(200) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `static_method` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `script_path` varchar(255) NOT NULL DEFAULT '',
   `script_restart_time` bigint(14) unsigned NOT NULL DEFAULT '0',
@@ -610,9 +648,9 @@ CREATE TABLE `[[DB_PREFIX]]jobs` (
   `log_on_no_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `email_on_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `email_on_no_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `email_address_on_action` varchar(200) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `email_address_on_no_action` varchar(200) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `email_address_on_error` varchar(200) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `email_address_on_action` varchar(200) NOT NULL DEFAULT '',
+  `email_address_on_no_action` varchar(200) NOT NULL DEFAULT '',
+  `email_address_on_error` varchar(200) NOT NULL DEFAULT '',
   `last_run_started` datetime DEFAULT NULL,
   `last_run_finished` datetime DEFAULT NULL,
   `status` enum('never_run','rerun_scheduled','in_progress','action_taken','no_action_taken','error') NOT NULL DEFAULT 'never_run',
@@ -629,17 +667,17 @@ CREATE TABLE `[[DB_PREFIX]]jobs` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]languages`;
 CREATE TABLE `[[DB_PREFIX]]languages` (
-  `id` varchar(15) NOT NULL DEFAULT '',
+  `id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `detect` tinyint(1) NOT NULL DEFAULT '0',
-  `detect_lang_codes` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `detect_lang_codes` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `translate_phrases` tinyint(1) NOT NULL DEFAULT '1',
   `show_untranslated_content_items` tinyint(1) NOT NULL DEFAULT '0',
   `sync_assist` tinyint(1) NOT NULL DEFAULT '0',
   `search_type` enum('full_text','simple') NOT NULL DEFAULT 'full_text',
   `language_picker_logic` enum('visible_or_disabled','visible_or_hidden','always_hidden') NOT NULL DEFAULT 'visible_or_disabled',
-  `thousands_sep` varchar(1) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT ',',
-  `dec_point` varchar(1) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '.',
-  `domain` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `thousands_sep` varchar(1) NOT NULL DEFAULT ',',
+  `dec_point` varchar(1) NOT NULL DEFAULT '.',
+  `domain` varchar(250) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `detect` (`detect`),
   KEY `sync_assist` (`sync_assist`),
@@ -657,13 +695,29 @@ CREATE TABLE `[[DB_PREFIX]]last_sent_warning_emails` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
+DROP TABLE IF EXISTS `[[DB_PREFIX]]layout_head_and_foot`;
+CREATE TABLE `[[DB_PREFIX]]layout_head_and_foot` (
+  `for` enum('sitewide') NOT NULL,
+  `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `min_width` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `max_width` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `fluid` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `responsive` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `head_json_data` json DEFAULT NULL,
+  `foot_json_data` json DEFAULT NULL,
+  PRIMARY KEY (`for`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
+
+
 DROP TABLE IF EXISTS `[[DB_PREFIX]]layout_slot_link`;
 CREATE TABLE `[[DB_PREFIX]]layout_slot_link` (
   `layout_id` int(10) unsigned NOT NULL,
-  `slot_name` varchar(100) NOT NULL,
+  `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `ord` smallint(4) unsigned NOT NULL DEFAULT '0',
   `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `small_screens` enum('show','hide','only','first') DEFAULT 'show',
+  `is_header` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `is_footer` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`layout_id`,`slot_name`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
@@ -671,7 +725,7 @@ CREATE TABLE `[[DB_PREFIX]]layout_slot_link` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]layouts`;
 CREATE TABLE `[[DB_PREFIX]]layouts` (
   `layout_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `name` varchar(250) NOT NULL DEFAULT '',
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `status` enum('active','suspended') NOT NULL DEFAULT 'active',
   `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
@@ -679,6 +733,7 @@ CREATE TABLE `[[DB_PREFIX]]layouts` (
   `max_width` smallint(4) unsigned NOT NULL DEFAULT '0',
   `fluid` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `responsive` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `header_and_footer` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `skin_id` int(10) unsigned DEFAULT NULL,
   `css_class` varchar(100) NOT NULL DEFAULT '',
   `bg_image_id` int(10) unsigned NOT NULL DEFAULT '0',
@@ -687,11 +742,13 @@ CREATE TABLE `[[DB_PREFIX]]layouts` (
   `bg_repeat` enum('repeat','repeat-x','repeat-y','no-repeat') DEFAULT NULL,
   `json_data` json DEFAULT NULL,
   `json_data_hash` varchar(8) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'xxxxxxxx',
-  `head_html` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `head_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
+  `head_html` mediumtext,
+  `head_cc` enum('not_needed','needed','specific_types') NOT NULL DEFAULT 'not_needed',
+  `head_cc_specific_cookie_types` enum('functionality','analytics','social_media') DEFAULT NULL,
   `head_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `foot_html` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `foot_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
+  `foot_html` mediumtext,
+  `foot_cc` enum('not_needed','needed','specific_types') NOT NULL DEFAULT 'not_needed',
+  `foot_cc_specific_cookie_types` enum('functionality','analytics','social_media') DEFAULT NULL,
   `foot_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `sensitive_content_message` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`layout_id`),
@@ -746,23 +803,24 @@ CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   `section_id` smallint(10) unsigned NOT NULL,
   `redundancy` enum('primary','secondary') NOT NULL DEFAULT 'primary',
   `accesskey` char(1) NOT NULL DEFAULT '',
-  `target_loc` enum('int','ext','none') NOT NULL DEFAULT 'none',
+  `target_loc` enum('int','doc','ext','none') NOT NULL DEFAULT 'none',
   `open_in_new_window` tinyint(1) NOT NULL DEFAULT '0',
   `equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `use_download_page` tinyint(1) NOT NULL DEFAULT '0',
+  `document_id` int(10) unsigned NOT NULL DEFAULT '0',
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
   `invisible` tinyint(1) NOT NULL DEFAULT '0',
   `hide_private_item` tinyint(1) NOT NULL DEFAULT '0',
   `restrict_child_content_types` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
   `add_registered_get_requests` tinyint(1) unsigned NOT NULL DEFAULT '1',
-  `rel_tag` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
+  `rel_tag` varchar(100) DEFAULT NULL,
   `css_class` varchar(100) NOT NULL DEFAULT '',
   `image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `rollover_image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `anchor` varchar(255) DEFAULT NULL,
-  `module_class_name` varchar(255) DEFAULT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
   `method_name` varchar(255) DEFAULT NULL,
   `param_1` varchar(255) DEFAULT NULL,
   `param_2` varchar(255) DEFAULT NULL,
@@ -775,7 +833,8 @@ CREATE TABLE `[[DB_PREFIX]]menu_nodes` (
   KEY `target_loc` (`target_loc`),
   KEY `invisible` (`invisible`),
   KEY `section_id` (`section_id`),
-  KEY `restrict_child_content_types` (`restrict_child_content_types`)
+  KEY `restrict_child_content_types` (`restrict_child_content_types`),
+  KEY `document_id` (`document_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
@@ -795,7 +854,7 @@ CREATE TABLE `[[DB_PREFIX]]menu_positions` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_sections`;
 CREATE TABLE `[[DB_PREFIX]]menu_sections` (
   `id` smallint(10) unsigned NOT NULL AUTO_INCREMENT,
-  `section_name` varchar(20) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `section_name` varchar(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `section_name` (`section_name`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
@@ -804,10 +863,10 @@ CREATE TABLE `[[DB_PREFIX]]menu_sections` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_text`;
 CREATE TABLE `[[DB_PREFIX]]menu_text` (
   `menu_id` int(10) unsigned NOT NULL,
-  `language_id` varchar(10) NOT NULL DEFAULT 'en',
-  `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `language_id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'en',
+  `name` varchar(250) NOT NULL DEFAULT '',
   `ext_url` varchar(255) NOT NULL DEFAULT '',
-  `descriptive_text` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `descriptive_text` mediumtext,
   PRIMARY KEY (`menu_id`,`language_id`),
   KEY `language_id` (`language_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
@@ -816,8 +875,8 @@ CREATE TABLE `[[DB_PREFIX]]menu_text` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]module_dependencies`;
 CREATE TABLE `[[DB_PREFIX]]module_dependencies` (
   `module_id` int(10) unsigned NOT NULL,
-  `module_class_name` varchar(200) NOT NULL,
-  `dependency_class_name` varchar(200) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `dependency_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `type` enum('dependency','inherit_frameworks','include_javascript','inherit_settings') NOT NULL,
   UNIQUE KEY `module_id` (`module_id`,`type`,`dependency_class_name`),
   KEY `type` (`type`),
@@ -829,9 +888,9 @@ CREATE TABLE `[[DB_PREFIX]]module_dependencies` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]modules`;
 CREATE TABLE `[[DB_PREFIX]]modules` (
   `id` int(20) unsigned NOT NULL AUTO_INCREMENT,
-  `class_name` varchar(200) NOT NULL,
-  `vlp_class` varchar(200) NOT NULL DEFAULT '',
-  `display_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `vlp_class` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
+  `display_name` varchar(250) NOT NULL,
   `edition` enum('Other','Community','Pro','ProBusiness','Enterprise') DEFAULT 'Other',
   `category` enum('custom','core','content_type','management','pluggable') DEFAULT NULL,
   `default_framework` varchar(50) NOT NULL DEFAULT '',
@@ -878,13 +937,12 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `slide_num` smallint(4) unsigned NOT NULL DEFAULT '1',
   `ord` smallint(4) unsigned NOT NULL DEFAULT '1',
   `cols` tinyint(2) NOT NULL DEFAULT '0' COMMENT '0 means full-width, -1 means grouped with the previous plugin',
-  `small_screens` enum('show','hide','only') COLLATE utf8mb4_unicode_ci DEFAULT 'show',
+  `small_screens` enum('show','hide','only') DEFAULT 'show',
   `module_id` int(10) unsigned NOT NULL,
-  `framework` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `css_class` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `framework` varchar(50) NOT NULL DEFAULT '',
+  `css_class` varchar(100) NOT NULL DEFAULT '',
   `makes_breadcrumbs` tinyint(1) NOT NULL DEFAULT '0',
   `is_slide` tinyint(1) NOT NULL DEFAULT '0',
-  `use_slide_layout` enum('','asset_schema','datapool_schema') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `invisible_in_nav` tinyint(1) NOT NULL DEFAULT '0',
   `show_back` tinyint(1) NOT NULL DEFAULT '0',
   `no_choice_no_going_back` tinyint(1) NOT NULL DEFAULT '0',
@@ -894,35 +952,23 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `auto_refresh_interval` int(10) unsigned NOT NULL DEFAULT '60',
   `request_vars` varchar(250) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `hierarchical_var` varchar(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
-  `global_command` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `states` set('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','aa','ab','ac','ad','ae','af','ag','ah','ai','aj','ak','al','am','an','ao','ap','aq','ar','as','at','au','av','aw','ax','ay','az','ba','bb','bc','bd','be','bf','bg','bh','bi','bj','bk','bl') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `name_or_title` varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','with_role','hidden') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'public',
-  `at_location` enum('any','in_url','detect') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'any',
+  `global_command` varchar(100) NOT NULL DEFAULT '',
+  `states` set('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','aa','ab','ac','ad','ae','af','ag','ah','ai','aj','ak','al','am','an','ao','ap','aq','ar','as','at','au','av','aw','ax','ay','az','ba','bb','bc','bd','be','bf','bg','bh','bi','bj','bk','bl') NOT NULL DEFAULT '',
+  `slide_label` varchar(250) NOT NULL DEFAULT '',
+  `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','with_role','hidden') NOT NULL DEFAULT 'public',
+  `at_location` enum('any','in_url','detect') NOT NULL DEFAULT 'any',
   `smart_group_id` int(10) unsigned NOT NULL DEFAULT '0',
   `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
-  `method_name` varchar(127) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `param_1` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `param_2` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `method_name` varchar(127) NOT NULL DEFAULT '',
+  `param_1` varchar(200) NOT NULL DEFAULT '',
+  `param_2` varchar(200) NOT NULL DEFAULT '',
   `always_visible_to_admins` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `instance_id` (`instance_id`,`is_slide`,`slide_num`,`ord`),
   KEY `slide_num` (`instance_id`,`slide_num`,`ord`),
-  KEY `makes_breadcrumbs` (`instance_id`,`makes_breadcrumbs`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]page_preview_sizes`;
-CREATE TABLE `[[DB_PREFIX]]page_preview_sizes` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `width` int(10) unsigned NOT NULL,
-  `height` int(10) unsigned NOT NULL,
-  `description` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `is_default` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `ordinal` int(10) unsigned NOT NULL,
-  `type` enum('desktop','laptop','tablet','tablet_landscape','smartphone') NOT NULL DEFAULT 'desktop',
-  PRIMARY KEY (`id`),
-  KEY `ordinal` (`ordinal`)
+  KEY `makes_breadcrumbs` (`instance_id`,`makes_breadcrumbs`),
+  KEY `module_id` (`module_id`),
+  KEY `module_id_2` (`module_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
@@ -932,7 +978,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_instance_store` (
   `method_name` varchar(64) NOT NULL,
   `request` varchar(255) NOT NULL DEFAULT '',
   `last_updated` datetime NOT NULL,
-  `store` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `store` mediumtext NOT NULL,
   `is_cache` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`instance_id`,`method_name`,`request`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
@@ -941,7 +987,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_instance_store` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_instances`;
 CREATE TABLE `[[DB_PREFIX]]plugin_instances` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `name` varchar(250) NOT NULL DEFAULT '',
   `module_id` int(10) unsigned NOT NULL,
   `content_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
@@ -968,7 +1014,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_item_link` (
   `content_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `content_version` int(10) unsigned NOT NULL,
-  `slot_name` varchar(100) NOT NULL,
+  `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `content_id` (`content_id`,`content_type`,`content_version`,`slot_name`),
   KEY `instance_id` (`instance_id`,`content_type`),
@@ -983,7 +1029,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_layout_link` (
   `module_id` int(10) unsigned NOT NULL,
   `instance_id` int(10) unsigned NOT NULL DEFAULT '0',
   `layout_id` int(10) unsigned NOT NULL,
-  `slot_name` varchar(100) NOT NULL,
+  `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `family_name` (`layout_id`,`slot_name`),
   KEY `slot_name` (`instance_id`,`slot_name`),
@@ -995,7 +1041,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_pages_by_mode`;
 CREATE TABLE `[[DB_PREFIX]]plugin_pages_by_mode` (
   `equiv_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  `module_class_name` varchar(200) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `mode` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `state` char(2) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`module_class_name`,`mode`),
@@ -1006,7 +1052,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_pages_by_mode` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_setting_defs`;
 CREATE TABLE `[[DB_PREFIX]]plugin_setting_defs` (
   `module_id` int(10) unsigned NOT NULL,
-  `module_class_name` varchar(200) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `name` varchar(255) NOT NULL,
   `default_value` mediumtext,
   PRIMARY KEY (`module_id`,`name`),
@@ -1019,7 +1065,7 @@ CREATE TABLE `[[DB_PREFIX]]plugin_settings` (
   `instance_id` int(10) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
   `egg_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `value` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `value` mediumtext,
   `is_content` enum('synchronized_setting','version_controlled_setting','version_controlled_content') NOT NULL DEFAULT 'synchronized_setting',
   `format` enum('empty','text','html','translatable_text','translatable_html') NOT NULL DEFAULT 'text',
   `foreign_key_to` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
@@ -1038,13 +1084,22 @@ CREATE TABLE `[[DB_PREFIX]]plugin_settings` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
+DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_sitewide_link`;
+CREATE TABLE `[[DB_PREFIX]]plugin_sitewide_link` (
+  `module_id` int(10) unsigned NOT NULL,
+  `instance_id` int(10) unsigned NOT NULL,
+  `slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  PRIMARY KEY (`slot_name`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
+
+
 DROP TABLE IF EXISTS `[[DB_PREFIX]]signals`;
 CREATE TABLE `[[DB_PREFIX]]signals` (
   `signal_name` varchar(127) NOT NULL,
   `module_id` int(10) unsigned NOT NULL,
-  `module_class_name` varchar(200) NOT NULL,
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   `static_method` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `suppresses_module_class_name` varchar(200) NOT NULL DEFAULT '',
+  `suppresses_module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   UNIQUE KEY `event_name` (`signal_name`,`module_class_name`),
   KEY `suppresses_plugin_class` (`suppresses_module_class_name`),
   KEY `plugin_id` (`module_id`)
@@ -1054,7 +1109,7 @@ CREATE TABLE `[[DB_PREFIX]]signals` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]site_settings`;
 CREATE TABLE `[[DB_PREFIX]]site_settings` (
   `name` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  `value` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `value` mediumtext,
   `default_value` mediumtext,
   `encrypted` tinyint(1) NOT NULL DEFAULT '0',
   `secret` tinyint(1) NOT NULL DEFAULT '0',
@@ -1068,7 +1123,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]skins`;
 CREATE TABLE `[[DB_PREFIX]]skins` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `display_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `display_name` varchar(250) NOT NULL DEFAULT '',
   `extension_of_skin` varchar(255) NOT NULL DEFAULT '',
   `import` text,
   `css_class` varchar(100) NOT NULL DEFAULT '',
@@ -1080,25 +1135,6 @@ CREATE TABLE `[[DB_PREFIX]]skins` (
   KEY `name` (`name`),
   KEY `display_name` (`display_name`),
   KEY `extension_of_skin` (`extension_of_skin`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]slide_layouts`;
-CREATE TABLE `[[DB_PREFIX]]slide_layouts` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `layout_for` enum('schema') NOT NULL,
-  `layout_for_id` int(10) unsigned NOT NULL,
-  `ord` smallint(4) unsigned NOT NULL DEFAULT '1',
-  `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-  `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','with_role') NOT NULL DEFAULT 'public',
-  `at_location` enum('any','in_url','detect') NOT NULL DEFAULT 'in_url',
-  `data` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `created` datetime NOT NULL,
-  `last_edited` datetime DEFAULT NULL,
-  `last_edited_admin_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `last_edited_user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `layout_for` (`layout_for`,`layout_for_id`,`ord`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
@@ -1118,13 +1154,14 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_group_rules`;
 CREATE TABLE `[[DB_PREFIX]]smart_group_rules` (
   `smart_group_id` int(10) unsigned NOT NULL,
   `ord` int(10) unsigned NOT NULL,
-  `type_of_check` enum('user_field','role','activity_band','in_a_group','not_in_a_group') NOT NULL DEFAULT 'user_field',
+  `type_of_check` enum('user_field','role','activity_band','in_a_group','not_in_a_group','has_a_current_timer','has_no_current_timer') NOT NULL DEFAULT 'user_field',
   `field_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field2_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field3_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field4_id` int(10) unsigned NOT NULL DEFAULT '0',
   `field5_id` int(10) unsigned NOT NULL DEFAULT '0',
   `role_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `timer_template_id` int(10) unsigned NOT NULL DEFAULT '0',
   `activity_band_id` int(10) unsigned NOT NULL DEFAULT '0',
   `not` tinyint(1) NOT NULL DEFAULT '0',
   `value` text,
@@ -1135,7 +1172,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_group_rules` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]smart_groups`;
 CREATE TABLE `[[DB_PREFIX]]smart_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `name` varchar(50) NOT NULL,
   `intended_usage` enum('smart_newsletter_group','smart_permissions_group') NOT NULL DEFAULT 'smart_newsletter_group',
   `must_match` enum('all','any') NOT NULL DEFAULT 'all',
   `created_on` datetime DEFAULT NULL,
@@ -1150,7 +1187,7 @@ CREATE TABLE `[[DB_PREFIX]]smart_groups` (
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_aliases`;
 CREATE TABLE `[[DB_PREFIX]]spare_aliases` (
-  `alias` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+  `alias` varchar(255) NOT NULL,
   `target_loc` enum('int','ext') NOT NULL DEFAULT 'int',
   `content_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
@@ -1182,7 +1219,8 @@ CREATE TABLE `[[DB_PREFIX]]special_pages` (
   `logic` enum('create_and_maintain_in_default_language','create_in_default_language_on_install') NOT NULL DEFAULT 'create_and_maintain_in_default_language',
   `allow_hide` tinyint(1) NOT NULL DEFAULT '0',
   `publish` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `module_class_name` varchar(200) NOT NULL DEFAULT '',
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
+  `allow_search` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`page_type`),
   UNIQUE KEY `content_type` (`content_type`,`equiv_id`),
   KEY `module_class_name` (`module_class_name`)
@@ -1193,7 +1231,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]translation_chain_privacy`;
 CREATE TABLE `[[DB_PREFIX]]translation_chain_privacy` (
   `equiv_id` int(10) unsigned NOT NULL,
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  `module_class_name` varchar(200) NOT NULL DEFAULT '',
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `method_name` varchar(127) NOT NULL DEFAULT '',
   `param_1` varchar(200) NOT NULL DEFAULT '',
   `param_2` varchar(200) NOT NULL DEFAULT '',
@@ -1231,9 +1269,9 @@ CREATE TABLE `[[DB_PREFIX]]tuix_file_contents` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_snippets`;
 CREATE TABLE `[[DB_PREFIX]]tuix_snippets` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-  `custom_yaml` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-  `custom_json` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `name` varchar(250) NOT NULL,
+  `custom_yaml` mediumtext,
+  `custom_json` mediumtext,
   `created` datetime DEFAULT NULL,
   `created_admin_id` int(10) unsigned DEFAULT NULL,
   `created_user_id` int(10) unsigned DEFAULT NULL,
@@ -1290,7 +1328,7 @@ CREATE TABLE `[[DB_PREFIX]]user_content_accesslog` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_country_link`;
 CREATE TABLE `[[DB_PREFIX]]user_country_link` (
   `user_id` int(10) unsigned NOT NULL,
-  `country_id` varchar(5) NOT NULL,
+  `country_id` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
   PRIMARY KEY (`user_id`,`country_id`),
   UNIQUE KEY `country_id` (`country_id`,`user_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
@@ -1333,8 +1371,8 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_login` datetime DEFAULT NULL,
-  `identifier` varchar(50) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
-  `screen_name` varchar(50) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT '',
+  `identifier` varchar(50) DEFAULT NULL,
+  `screen_name` varchar(50) DEFAULT '',
   `screen_name_confirmed` tinyint(1) NOT NULL DEFAULT '0',
   `password` varchar(50) NOT NULL DEFAULT '',
   `password_salt` varchar(8) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
@@ -1343,10 +1381,10 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   `status` enum('pending','active','suspended','contact') NOT NULL DEFAULT 'pending',
   `image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_profile_update_in_frontend` datetime DEFAULT NULL,
-  `salutation` varchar(25) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
-  `first_name` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `last_name` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `email` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `salutation` varchar(25) DEFAULT NULL,
+  `first_name` varchar(100) NOT NULL DEFAULT '',
+  `last_name` varchar(100) NOT NULL DEFAULT '',
+  `email` varchar(100) NOT NULL DEFAULT '',
   `email_verified` tinyint(1) NOT NULL DEFAULT '0',
   `created_date` datetime DEFAULT NULL,
   `created_admin_id` int(10) unsigned DEFAULT NULL,
@@ -1364,7 +1402,7 @@ CREATE TABLE `[[DB_PREFIX]]users` (
   `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `hash` varchar(28) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
   `creation_method` enum('visitor','admin') NOT NULL DEFAULT 'visitor',
-  `creation_method_note` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+  `creation_method_note` varchar(255) NOT NULL DEFAULT '',
   `ordinal` int(10) NOT NULL DEFAULT '0',
   `consent_hash` varchar(28) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1391,14 +1429,14 @@ CREATE TABLE `[[DB_PREFIX]]users_custom_data` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]visitor_phrases`;
 CREATE TABLE `[[DB_PREFIX]]visitor_phrases` (
   `id` int(1) NOT NULL AUTO_INCREMENT,
-  `code` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-  `language_id` varchar(15) NOT NULL DEFAULT '',
-  `module_class_name` varchar(200) NOT NULL,
-  `local_text` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `code` text NOT NULL,
+  `language_id` varchar(15) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
+  `module_class_name` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `local_text` text,
   `protect_flag` tinyint(1) NOT NULL DEFAULT '0',
   `seen_in_visitor_mode` tinyint(1) NOT NULL DEFAULT '0',
-  `seen_in_file` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
-  `seen_at_url` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+  `seen_in_file` varchar(250) NOT NULL DEFAULT '',
+  `seen_at_url` text,
   PRIMARY KEY (`id`),
   KEY `code` (`code`(250)),
   KEY `language_id` (`language_id`),
@@ -1406,6 +1444,26 @@ CREATE TABLE `[[DB_PREFIX]]visitor_phrases` (
   KEY `seen_in_file` (`seen_in_file`),
   KEY `module_class_name` (`module_class_name`(100),`language_id`,`code`(150))
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
+
+
+DROP TABLE IF EXISTS `[[DB_PREFIX]]writer_profiles`;
+CREATE TABLE `[[DB_PREFIX]]writer_profiles` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `admin_id` int(10) unsigned DEFAULT NULL,
+  `first_name` varchar(250) NOT NULL,
+  `last_name` varchar(250) NOT NULL,
+  `type` enum('administrator','external_writer') DEFAULT NULL,
+  `email` varchar(250) NOT NULL,
+  `photo` int(10) unsigned DEFAULT NULL,
+  `profile` blob,
+  `created` datetime DEFAULT NULL,
+  `created_admin_id` int(10) unsigned DEFAULT NULL,
+  `last_edited` datetime DEFAULT NULL,
+  `last_edited_admin_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `admin_id` (`admin_id`)
+) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
+
 
 REPLACE INTO `[[DB_PREFIX]]local_revision_numbers` VALUES
  ('admin/db_updates/step_2_update_the_database_schema','content_tables.inc.php',[[INSTALLER_REVISION_NO]]),

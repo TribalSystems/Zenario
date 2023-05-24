@@ -74,6 +74,15 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			if ($field['mandatory_if_visible']) {
 				$field['readonly_or_mandatory'] = 'mandatory_if_visible';
 			} elseif ($field['is_required']) {
+				//The logic below is commented out, and might be finished in the future.
+				//Currently there is only "Mandatory" logic rather than the split between "Mandatory at least 1" and "Mandatory all".
+				
+				// if ($field['all_values_are_required']) {
+// 					$field['readonly_or_mandatory'] = 'mandatory_all_values_required';
+// 				} else {
+// 					$field['readonly_or_mandatory'] = 'mandatory';
+// 				}
+				
 				$field['readonly_or_mandatory'] = 'mandatory';
 			} elseif ($field['is_readonly']) {
 				$field['readonly_or_mandatory'] = 'readonly';
@@ -406,7 +415,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		$formId = $refinerId;
 		
-		switch ($_POST['mode'] ?? false) {
+		switch (ze::post('mode')) {
 			//Note, the only validation done on this data is client-side. It was moved there in order to speed up editing so you don't 
 			//have an ajax request every time it needed to run. In the future it may be nessesary to have server-side validation as well.
 			case 'save':
@@ -1125,7 +1134,6 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		$values['custom_code_name'] = !empty($field['custom_code_name']) ? $this->sanitizeTextForSQL($field['custom_code_name']) : null;
 		$values['preload_dataset_field_user_data'] = !empty($field['preload_dataset_field_user_data']);
 		$values['split_first_name_last_name'] = !empty($field['split_first_name_last_name']);
-		$values['allow_converting_multiple_images_to_pdf'] = !empty($field['allow_converting_multiple_images_to_pdf']);
 		
 		$defaultValueMode = !empty($field['default_value_options']) ? $field['default_value_options'] : false;
 		$values['default_value'] = null;

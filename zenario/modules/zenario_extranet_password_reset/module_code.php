@@ -32,6 +32,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	
 	public function init() {
 		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		ze::requireJsLib('zenario/js/password_functions.min.js');
 
 		$this->registerPluginPage();
 		
@@ -42,7 +43,9 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		
 		$this->mode = 'modeResetPasswordStage1';
 		
-		if ($_POST['extranet_send_reset_email'] ?? false) {
+		ze::requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		
+		if (ze::post('extranet_send_reset_email')) {
 			
 			//Add a short delay to make it a tiny bit harder to repeatedly spam this plugin
 			usleep(500000);
@@ -60,14 +63,14 @@ class zenario_extranet_password_reset extends zenario_extranet {
 				}
 				$this->mode = 'modeLogin';
 			}
-		} elseif (($_REQUEST['extranet_reset_password'] ?? false) && ($userId = $this->getUserIdFromHashCode($_REQUEST['hash'] ?? false))) {
+		} elseif (ze::request('extranet_reset_password') && ($userId = $this->getUserIdFromHashCode(ze::request('hash')))) {
 			if (!$this->checkResetPasswordTime($userId)) {
 				ze\row::update('users', ['reset_password_time' => null], ['id' => $userId]);
 				$this->message = $this->phrase('This link has expired. To reset your password make a new request.');
 				$this->mode = 'modeLogin';
 			} else {
 				$this->mode = 'modeResetPasswordStage2';
-				if ($_POST['extranet_change_password'] ?? false) {
+				if (ze::post('extranet_change_password')) {
 					if ($this->changePassword($userId)) {
 						$this->message = $this->phrase('Your password has been changed.');
 						$this->mode = 'modeLogin';
@@ -103,21 +106,23 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->objects['hash'] = $_REQUEST['hash'] ?? false;
 		$this->objects['extranet_reset_password'] = $_REQUEST['extranet_reset_password'] ?? false;
 		
-		$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
-		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Main_Title'] = true;
 			$this->subSections['Reset_Password_Form_Passwords'] = true;
+			$this->objects['Password_Requirements_Settings'] = [
+				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
+				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
+			];
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		
-		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
+		$this->callScript('zenarioP', 'updatePasswordNotifier', '#extranet_new_password', $this->objects['Password_Requirements_Settings'], '#password_message', $adminFacing = false, $isInstaller = false);
 	}
 	
 	private function sendResetEmail(&$userIsContactOrSuspended) {
 		if (!$this->validateFormFields('Reset_Password_Form')) {
 			// Function displays error message so no action here
-		} elseif (!$userDetails = $this->getDetailsFromEmail($_POST['extranet_email'] ?? false)) {
+		} elseif (!$userDetails = $this->getDetailsFromEmail(ze::post('extranet_email'))) {
 			if ($this->setting('block_email_enumeration')) {
 				//If the block_email_enumeration option is enabled, don't tell the user that the email address doesn't exist!
 				return true;
@@ -125,7 +130,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 				$this->errors[] = ['Error' => $this->phrase("Sorry, we couldn't find an account associated with that email address.")];
 			}
 		} else {
-			if (ze\row::exists('users', ['email' => ($_POST['extranet_email'] ?? false), 'status' => 'pending', 'email_verified' => false  ])) {
+			if (ze\row::exists('users', ['email' => ze::post('extranet_email'), 'status' => 'pending', 'email_verified' => false  ])) {
 				$this->errors[] = ['Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.')];
 			} else {
 				if ($userDetails['status'] == 'active') {
@@ -175,13 +180,13 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	
 	// Attempt to change a user's password
 	private function changePassword($userId) {
-		$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),($_POST['extranet_password'] ?? false),$this->moduleClassNameForPhrases,$userId);
+		$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ze::post('extranet_new_password_confirm'), ze::post('extranet_password'), $this->moduleClassNameForPhrases, $userId);
 		
 		if (count($errors)) {
-			$this->errors = array_merge ($this->errors, $errors);
+			$this->errors = array_merge($this->errors, $errors);
 			return false;
 		} else {
-			ze\userAdm::setPassword($userId, ($_POST['extranet_new_password'] ?? false), false);
+			ze\userAdm::setPassword($userId, ze::post('extranet_new_password'), false);
 			//Set email verified flag
 			ze\row::update('users', ['email_verified' => 1], ['id' => $userId]);
 			return true;

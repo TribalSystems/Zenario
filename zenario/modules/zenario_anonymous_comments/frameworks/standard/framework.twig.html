@@ -20,6 +20,9 @@
 				<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
 			</tr><tr class="{{this.oddOrEven()}}">
 				<td class="ml"></td><td class="mc thread_title first_column">
+					{% if item.Pinned or item.Pinned_Text %}
+						<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
+					{% endif %}
 					{% if Show_Featured_Image %}
 						<div class="sticky_image">
 							<a {{item.Link}} class="{{item.Status_Class}}">
@@ -291,11 +294,11 @@
 				<div class="comments_label">{{Post_Message.Title_Text}}</div>
 				<div class="comments_field comments_post_title">{{Post_Message.Post_Title}}</div>
 			{% endif %}
-			{% if Show_Post_Name %}
+			{% if Show_Post_Name and not Edit_mode %}
 				<div class="comments_label">{{"Your name:"|trans}}</div>
 				<div class="comments_field comments_post_name">{{Post_Message.Post_Name}}</div>
 			{% endif %}
-			{% if Show_Post_Email %}
+			{% if Show_Post_Email and not Edit_mode %}
 				<div class="comments_label">{{"Your email:"|trans}}</div>
 				<div class="comments_field comments_post_email">{{Post_Message.Post_Email}}</div>
 			{% endif %}

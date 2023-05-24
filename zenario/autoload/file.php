@@ -606,38 +606,6 @@ class file {
 		return \ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, $retina, $isRetina, $mimeType, $imageId);
 	}
 
-	//Look through all images in the database that are flagged as public, check if they're all there, and add them if not
-	public static function checkAllImagePublicLinks($check) {
-		
-		if ($check) {
-			$report = ['numMissing' => 0];
-		}
-		
-		$sql = "
-			SELECT id, short_checksum, filename
-			FROM ". DB_PREFIX. "files
-			WHERE `usage` = 'image'
-			  AND mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
-			  AND `privacy` = 'public'";
-		
-		foreach (\ze\sql::select($sql) as $image) {
-			$filepath = CMS_ROOT. 'public/images/'. $image['short_checksum']. '/'. \ze\file::safeName($image['filename']);
-			
-			if (!is_file($filepath)) {
-				if ($check) {
-					++$report['numMissing'];
-					$report['exampleFile'] = $image['filename'];
-				} else {
-					\ze\file::addPublicImage($image['id']);
-				}
-			}
-		}
-		
-		if ($check) {
-			return $report;
-		}
-	}
-
 	//Formerly "addImageDataURIsToDatabase()"
 	public static function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'image') {
 	
@@ -2150,7 +2118,7 @@ class file {
 						$extract, $return_var);
 					
 						if ($return_var == 0) {
-							$extract = utf8_encode(implode("\n", $extract));
+							$extract = \ze\ring::encodeToUtf8(implode("\n", $extract));
 							$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
 							return true;
 						}
@@ -2219,7 +2187,7 @@ class file {
 								// Get rid of other characters which may show as Â or â
 								$extract = preg_replace ('/[\xC2\xE2]/', '', $extract);
 							
-								$extract = trim(utf8_encode($extract));
+								$extract = trim(\ze\ring::encodeToUtf8($extract));
 
 								return true;
 							}

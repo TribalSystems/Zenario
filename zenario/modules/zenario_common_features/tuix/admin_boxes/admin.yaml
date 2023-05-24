@@ -18,7 +18,7 @@ zenario_admin: &admin
                 is_trashed:
                     show: false
                     type: warning
-                    message: This administrator is trashed and cannot log in.
+                    message: This administrator account is trashed and they cannot log in.
                 is_inactive:
                     show: false
                     type: warning
@@ -121,7 +121,7 @@ zenario_admin: &admin
                     style: 'width: 20em;'
                     visible_if: zenarioAB.tuix.key.id
                 password_confirm:
-                    label: 'Re-confirm Password:'
+                    label: 'Re-confirm password:'
                     type: password
                     style: 'width: 20em;'
                     visible_if: zenarioAB.tuix.key.id

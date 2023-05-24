@@ -642,7 +642,7 @@ html.zenario_push_pull-wrapper_blocking .fixed:after {
 	visibility:visible;
 }
 
-html.zenario_push_pull-wrapper_blocking .zenario_push_pull-page .Slot_Top {
+html.zenario_push_pull-wrapper_blocking .zenario_push_pull-page .Slot_Header_Top {
 	z-index:0;
 }
 

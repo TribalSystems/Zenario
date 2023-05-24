@@ -2,6 +2,7 @@
 ---
 zenario__email_template_manager:
     ord: -690
+    priv: _PRIV_MANAGE_EMAIL_TEMPLATE
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_email_template_top_level
@@ -11,7 +12,7 @@ zenario__email_template_manager:
     nav:
         email_templates: 
             ord: 1
-            label: Templates
+            label: Email templates
             tooltip: "Email templates that your site can send"
             link:
                 path: zenario__email_template_manager/panels/email_templates
@@ -34,7 +35,7 @@ zenario__email_template_manager:
         other_email_addresses:
             ord: 6
             priv: _PRIV_VIEW_USER
-            label: Timer plans
+            label: Other emails
             tooltip: "View other modules that have an email address"
             link:
                 path: zenario__email_template_manager/panels/other_email_addresses

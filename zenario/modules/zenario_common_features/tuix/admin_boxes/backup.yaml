@@ -18,7 +18,13 @@ zenario_backup:
                     message: Zenario cannot call mysqldump directly.
                 assetwolf_threads:
                     type: warning
-                    message: The MQTT listener, Data processor, Metrics calculator, Data Push and Data repeater will all be paused whilst the backup is being generated.
+                    message: >
+                        If the background tasks for the MQTT listener, Data processor, Metrics calculator,
+                        Data Push and/or Data repeater are running, they will be temporarily paused whilst the backup
+                        is being generated.
+                        (If you are current running any of these in test/debug mode, your test scripts will stop
+                        and won't automatically resume afterwards.)
+
             fields:
                 desc1a:
                     visible_if: |

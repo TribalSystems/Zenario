@@ -69,7 +69,6 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				ze\priv::exitIfNot('_PRIV_VIEW_REUSABLE_PLUGIN');
 			}
 			
-			$values['details/invisible_in_nav'] = $details['invisible_in_nav'];
 			$values['details/show_back'] = $details['show_back'];
 			$values['details/no_choice_no_going_back'] = $details['no_choice_no_going_back'];
 			$values['details/show_embed'] = $details['show_embed'];
@@ -117,8 +116,8 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			$box['identifier']['value'] = $details['slide_num'];
 		
 		} else {
-			if (!($box['key']['instanceId'] = ($_GET['instanceId'] ?? false))
-			 && !($box['key']['instanceId'] = ($_GET['refiner__nest'] ?? false))) {
+			if (!($box['key']['instanceId'] = ze::get('instanceId'))
+			 && !($box['key']['instanceId'] = ze::get('refiner__nest'))) {
 				exit;
 			}
 			$instance = ze\plugin::details($box['key']['instanceId']);
@@ -130,7 +129,7 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 			}
 			
 			$details['slide_num'] = 1 + (int) self::maxTab($box['key']['instanceId']);
-			$details['name_or_slide_label'] = ze\admin::phrase('Slide [[num]]', ['num' => $details['slide_num']]);
+			$details['slide_label'] = ze\admin::phrase('Slide [[num]]', ['num' => $details['slide_num']]);
 			
 			$instance['slideNum'] = $details['slide_num'];
 			if (false !== strpos($instance['class_name'], 'slide')) {
@@ -179,7 +178,8 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		
 		$values['details/css_class'] = $details['css_class'] ?? '';
-		$values['details/name_or_slide_label'] = $details['name_or_slide_label'];
+		$values['details/slide_label'] = $details['slide_label'];
+		$values['details/set_page_title_with_conductor'] = $details['set_page_title_with_conductor'] ?? 'append';
 		
 		
 		$fields['details/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
@@ -195,28 +195,43 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		if ($box['key']['usesConductor']) {
 			if ($box['key']['breadcrumbsOverridden']) {
-				$fields['details/name_or_slide_label']['note_below'] =
-					ze\admin::phrase('This label will not appear on breadcrumb-links, as it is overridden by a plugin generating smart breadcrumbs on the slide above this one in the navigation.');
+				$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label (for internal use only):');
+				$fields['details/slide_label_notices']['notices_below']['appearance'] = [
+					'type' => 'warning',
+					'message' => ze\admin::phrase('This label will not appear on breadcrumb-links, as it is overridden by a plugin generating smart breadcrumbs on the slide above this one in the navigation.')
+				];
 			} else {
-				$fields['details/name_or_slide_label']['note_below'] =
-					ze\admin::phrase('This label will appear on links (e.g. breadcrumb-links) to this slide.');
+				$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label:');
+				$fields['details/slide_label_notices']['notices_below']['appearance'] = [
+					'type' => 'information',
+					'message' => ze\admin::phrase('This label will appear on links (e.g. breadcrumb-links) to this slide.')
+				];
 			}
 		
 		} else {
 			switch ($nestType) {
 				case 'tabs':
 				case 'tabs_and_buttons':
-					$fields['details/name_or_slide_label']['note_below'] =
-						ze\admin::phrase('This label will appear on links (e.g. tab-links) to this slide.');
+					$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label:');
+					$fields['details/slide_label_notices']['notices_below']['appearance'] = [
+						'type' => 'information',
+						'message' => ze\admin::phrase('This label will appear on links (e.g. tab-links) to this slide.')
+					];
 					break;
 				
 				default:
 					if (false !== strpos($instance['class_name'], 'slide')) {
-						$fields['details/name_or_slide_label']['note_below'] =
-							ze\admin::phrase('This label will not appear for this type of slideshow. (The type of slideshow can be changed in the slideshow settings.)');
+						$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label (for internal use only):');
+						$fields['details/slide_label_notices']['notices_below']['appearance'] = [
+							'type' => 'warning',
+							'message' => ze\admin::phrase('Label text will not be viewable by visitors for this type of slideshow. (The type of slideshow can be changed in the slideshow settings.)')
+						];
 					} else {
-						$fields['details/name_or_slide_label']['note_below'] =
-							ze\admin::phrase('This label will not appear for this type of nest. (The type of nest can be changed in the nest settings.)');
+						$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label (for internal use only):');
+						$fields['details/slide_label_notices']['notices_below']['appearance'] = [
+							'type' => 'warning',
+							'message' => ze\admin::phrase('Label text will not be viewable by visitors for this type of nest. (The type of nest can be changed in the nest settings.)')
+						];
 					}
 			}
 		}
@@ -228,14 +243,14 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 			
-			$fields['details/name_or_slide_label']['show_phrase_icon'] = true;
-			$fields['details/name_or_slide_label']['note_below'] .=
+			$fields['details/slide_label']['show_phrase_icon'] = true;
+			$fields['details/slide_label']['note_below'] =
 				"\n".
 				ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		
 		if ($box['key']['usesConductor'] && !$box['key']['breadcrumbsOverridden']) {
-			$fields['details/name_or_slide_label']['onchange'] = "
+			$fields['details/slide_label']['onchange'] = "
 				zenario.ajax(zenario_plugin_nest.AJAXLink({formatTitleTextAdmin: this.value, htmlescape: true})).after(function(html) {
 					$('#zenario__title_merge_fields__note').html(html);
 				});
@@ -253,11 +268,10 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($box['key']['usesConductor'] && !$box['key']['breadcrumbsOverridden']) {
-			$fields['details/title_merge_fields']['post_field_html'] =
-				'<br/>
-				<span id="zenario__title_merge_fields__note">'.
-					zenario_plugin_nest::formatTitleTextAdmin($values['details/name_or_slide_label'], true).
-				'</span>';
+			$fields['details/slide_label_notices']['pre_field_html'] =
+				'<span id="zenario__title_merge_fields__note">'.
+					zenario_plugin_nest::formatTitleTextAdmin($values['details/slide_label'], true).
+				'</span><br/>';
 		}
 	}
 	
@@ -298,13 +312,13 @@ class zenario_plugin_nest__admin_boxes__slide extends zenario_plugin_nest {
 		
 		
 		if (!$box['key']['id']) {
-			$box['key']['id'] = self::addSlide($box['key']['instanceId'], $values['details/name_or_slide_label']);
+			$box['key']['id'] = self::addSlide($box['key']['instanceId'], $values['details/slide_label']);
 		}
 		
 		$details = [
 			'css_class' => $values['details/css_class'],
-			'name_or_slide_label' => $values['details/name_or_slide_label'],
-			'invisible_in_nav' => $values['details/invisible_in_nav'],
+			'slide_label' => $values['details/slide_label'],
+			'set_page_title_with_conductor' => $values['details/set_page_title_with_conductor'],
 			'privacy' => 'public',
 			'at_location' => 'any',
 			'smart_group_id' => 0,

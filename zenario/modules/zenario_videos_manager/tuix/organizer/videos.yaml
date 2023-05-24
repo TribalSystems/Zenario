@@ -6,11 +6,20 @@ zenario_videos_manager:
             title: Video library
             no_items_message: No videos found
             panel_type: multi_line_list_or_grid
+            use_tall_rows: true
             item: 
                 css_class: zenario_videos_manager_item
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos AS v'
                 id_column: v.id
+            
+            refiners:
+                category:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]category_video_link AS cvl2
+                           ON cvl2.category_id = [[REFINER__CATEGORY]]
+                           AND cvl2.video_id = v.id
+            
             columns:
                 thumbnail_id:
                     type: hidden
@@ -31,15 +40,38 @@ zenario_videos_manager:
                     always_show: true
                     align_right: true
                     width: xxsmall
-                url:
-                    hidden: true
-                    db_column: v.url
                 title:
                     title: Title
                     db_column: v.title
                     width: xlarge
                     always_show: true
                     searchable: true
+                duplicate_url:
+                    title: URL not unique 
+                    always_show: true
+                    parent: url
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos AS url_duplicates
+                            WHERE url_duplicates.url = v.url
+                              AND url_duplicates.id <> v.id
+                            LIMIT 1
+                        )
+                    filter_format: yes_or_no
+                    microtemplate: |
+                        <% if (m.item.duplicate_url) { %>
+                            <span class="zenario_inline_warning">
+                                URL not unique
+                            </span>
+                        <% } %>
+                url:
+                    title: Remote URL
+                    show_by_default: true
+                    db_column: v.url
+                    searchable: true
+                    sortable: true
+                    width: xlarge
                 date:
                     title: Date
                     db_column: v.date

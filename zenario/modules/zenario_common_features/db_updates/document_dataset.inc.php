@@ -38,7 +38,7 @@ if (ze\dbAdm::needRevision(159)) {
 		'documents_custom_data',
 		'documents',
 		'zenario_document_properties',
-		'zenario__content/panels/documents',
+		'zenario__library/panels/documents',
 		'',
 		'');
 	//ze\datasetAdm::register($label, $table, $system_table = '', $extends_admin_box = '', $extends_organizer_panel = '', $view_priv = '', $edit_priv = '')
@@ -69,4 +69,18 @@ if (ze\dbAdm::needRevision(225)) {
 	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'extract', 'extract_wordcount', '');
 	
 	ze\dbAdm::revision(225);
+}
+
+if (ze\dbAdm::needRevision(264)) {
+	//In 9.4, a "Library" section was added, and the hierarchal documents were moved there. Update the dataset to use the new path to the documents panel.
+	$datasetId = ze\datasetAdm::register(
+		'Documents',
+		'documents_custom_data',
+		'documents',
+		'zenario_document_properties',
+		'zenario__library/panels/documents',
+		'',
+		'');
+	
+	ze\dbAdm::revision(264);
 }

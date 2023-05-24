@@ -2,7 +2,6 @@ zenario__email_template_manager:
     panels:
         newsletter_templates:
             title: Newsletter templates
-            view_mode: list
             no_items_message: No newsletter templates have been created.
             db_items:
                 table: |
@@ -23,7 +22,7 @@ zenario__email_template_manager:
                     searchable: Yes
                     show_by_default: No
                     width: xxsmall
-                    right_align: true
+                    align_right: true
                 name:
                     title: Name
                     db_column: nt.name

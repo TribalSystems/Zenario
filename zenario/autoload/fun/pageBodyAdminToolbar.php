@@ -35,12 +35,6 @@ $zenarioATLinks = [
 	'diagnostics' => 'admin.php?task=diagnostics&'. http_build_query(\ze\link::importantGetRequests(true))
 ];
 
-if ($_REQUEST['zenario_sk_return'] ?? false) {
-	$zenarioATLinks['organizer_hash'] = $_REQUEST['zenario_sk_return'] ?? false;
-} else {
-	$zenarioATLinks['organizer_hash'] = 'zenario__content/panels/content/refiners/content_type//'. \ze::$cType. '//'. \ze::$cType. '_'. \ze::$cID;
-}
-
 
 //Get the HTML code from the microtemplates to get the basic HTML structure of the Admin Toolbar roughly right.
 $toolbarTempHTML = file_get_contents(\ze::moduleDir('zenario_common_features', 'admin_microtemplates/zenario_toolbar.html'));

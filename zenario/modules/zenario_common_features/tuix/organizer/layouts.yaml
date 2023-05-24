@@ -3,8 +3,8 @@
 zenario__layouts:
     panels:
         layouts: &panel
+            priv: _PRIV_VIEW_TEMPLATE
             title: Available layouts
-            view_mode: list
             panel_type: multi_line_list
             css_class: two_line_list_panel
             use_tall_rows: true
@@ -19,11 +19,9 @@ zenario__layouts:
                     LEFT JOIN [[DB_PREFIX]]skins AS s
                     ON s.id = l.skin_id
                 id_column: l.layout_id
-                encode_id_column: true
                 where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
                 custom_where_statement__archived: "WHERE l.status = 'suspended'"
                 custom_where_statement__typeahead_search: "WHERE l.status = 'active'"
-            disable_summary_view: true
             columns:
                 code:
                     title: ID
@@ -39,7 +37,7 @@ zenario__layouts:
                     show_by_default: true
                     db_column: l.name
                     searchable: true
-                    width: xlarge
+                    width: xxlarge
                     html: true
                     css_class: label_column
                 summary:
@@ -85,6 +83,8 @@ zenario__layouts:
                     db_column: l.fluid
                 responsive:
                     db_column: l.responsive
+                header_and_footer:
+                    db_column: l.header_and_footer
                 content_type:
                     title: Content Type
                     db_column: l.content_type
@@ -156,6 +156,44 @@ zenario__layouts:
                         plugin_instance_usage: true
                     popout:
                         href: zenario/admin/grid_maker/grid_maker.php
+                        width: 100%
+                        height: 100%
+                        maxWidth: 100%
+                        maxHeight: 100%
+                        initialWidth: 100%
+                        initialHeight: 100%
+                        iframe: true
+                        escKey: false
+                        transition: none
+                        css_class: zenario_grid_maker
+                edit_head_slots:
+                    priv: _PRIV_EDIT_SITEWIDE
+                    hide_in_select_mode: true
+                    label: Edit site-wide header
+                    hide_on_refiner:
+                        module_usage: true
+                        plugin_instance_usage: true
+                    popout:
+                        href: zenario/admin/grid_maker/grid_maker.php?edit_head_slots=1
+                        width: 100%
+                        height: 100%
+                        maxWidth: 100%
+                        maxHeight: 100%
+                        initialWidth: 100%
+                        initialHeight: 100%
+                        iframe: true
+                        escKey: false
+                        transition: none
+                        css_class: zenario_grid_maker
+                edit_foot_slots:
+                    priv: _PRIV_EDIT_SITEWIDE
+                    hide_in_select_mode: true
+                    label: Edit site-wide footer
+                    hide_on_refiner:
+                        module_usage: true
+                        plugin_instance_usage: true
+                    popout:
+                        href: zenario/admin/grid_maker/grid_maker.php?edit_foot_slots=1
                         width: 100%
                         height: 100%
                         maxWidth: 100%
@@ -240,6 +278,7 @@ zenario__layouts:
                         #open: true
                         
                 code:
+                    priv: _PRIV_VIEW_TEMPLATE
                     parent: view_dropdown
                     hide_in_select_mode: true
                     label: HTML source
@@ -258,6 +297,7 @@ zenario__layouts:
                         branch: true
                         refiner: template
                 view_slots:
+                    priv: _PRIV_VIEW_SLOT
                     parent: view_dropdown
                     hide_in_select_mode: true
                     label: Slots and plugins on this layout

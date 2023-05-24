@@ -144,21 +144,21 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'zenario__content/panels/content':
 				//Handle creating multiple Audios at once in Storekeeper
-				if (($_POST['create_multiple'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', false, 'audio')) {
+				if (ze::post('create_multiple') && ze\priv::check('_PRIV_EDIT_DRAFT', false, 'audio')) {
 					$newIds = [];
 					
 					//This sholud only be allowed if we know what the language will be
-					if (($languageId = (($_POST['language'] ?? false) ?: ze::$defaultLang))) {
+					if (($languageId = (ze::post('language') ?: ze::$defaultLang))) {
 						
-						if ($_REQUEST['refiner__template'] ?? false) {
-							$cType = ze\row::get('layouts', 'content_type', ($_REQUEST['refiner__template'] ?? false));
+						if (ze::request('refiner__template')) {
+							$cType = ze\row::get('layouts', 'content_type', ze::request('refiner__template'));
 						} else {
 							$cType = $_POST['cType'] ?? false;
 						}
 						
 						if ($cType == 'audio') {
 							
-							if ($_REQUEST['refiner__template'] ?? false) {
+							if (ze::request('refiner__template')) {
 								$layoutId = $_REQUEST['refiner__template'] ?? false;
 							} else {
 								$layoutId = ze\row::get('content_types', 'default_layout_id', ['content_type_id' => $cType]);

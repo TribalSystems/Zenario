@@ -54,26 +54,26 @@ class zenario_extranet extends ze\moduleBaseClass {
 		}
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = !$this->hasLoginForm, $ifSessionSet = true, $ifCookieSet = false);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = !$this->hasLoginForm, $ifSessionSet = true, $ifCookieSet = false);
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$passwordNeedsChanging = ze\row::get('users', 'password_needs_changing', ($_POST['user_id'] ?? false));
-		if (($_POST['extranet_change_password'] ?? false) && $passwordNeedsChanging){
+		$passwordNeedsChanging = ze\row::get('users', 'password_needs_changing', ze::post('user_id'));
+		if (ze::post('extranet_change_password') && $passwordNeedsChanging) {
 			
-			$this->errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ($_POST['extranet_new_password_confirm'] ?? false), ($_POST['old_password'] ?? false), get_class($this), ($_POST['user_id'] ?? false));
+			$this->errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ze::post('extranet_new_password_confirm'), ze::post('old_password'), get_class($this), ze::post('user_id'));
 			
 			if (!empty($this->errors)) {
 				$this->mode = 'modeChangePassword';
 			} else {
-				ze\userAdm::setPassword($_POST['user_id'] ?? false, ($_POST['extranet_new_password'] ?? false), false);
-				$this->logUserIn($_POST['user_id'] ?? false);
+				ze\userAdm::setPassword($_POST['user_id'] ?? false, ze::post('extranet_new_password'), false);
+				$this->logUserIn(ze::post('user_id'));
 				$this->redirectToPage();
 			}
 		
 		} elseif (isset($_POST['accept_terms_and_conditions'])
 			&& ($userId = $_POST['user_id'] ?? false)
-			&& ze\user::checkPassword($userId, ($_POST['user_password'] ?? false))
+			&& ze\user::checkPassword($userId, ze::post('user_password'))
 		) {
 			$this->errors = [];
 			if (empty($_POST['extranet_terms_and_conditions'])) {
@@ -137,6 +137,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 				if (http_response_code() == 401) {
 					$this->objects['Redirect_Message'] = $this->phrase("You've requested a page for which access requires an account on this site. If you have an account, please log in using the form below.");
 				}
+
 				if ($this->hasLoginForm) {
 					if (ze::setting('cookie_require_consent') == 'explicit' && !ze\cookie::canSet('functionality')) {
 						$this->message = $this->phrase(
@@ -190,7 +191,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 					}
 				}
 				
-				if ($_POST['extranet_login'] ?? false) {
+				if (ze::post('extranet_login')) {
 					//Check if the login was successful and redirect the user if so, or move the user to a change password page
 					if ($this->checkLogin()) {
 						unset($_SESSION['extranet_user_failed_logins_count']);
@@ -256,8 +257,12 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if (!empty($mode) && is_string($mode)) {
 			if ($mode == 'modeLogin') {
 				if ($this->enableCaptcha(true)) {
-				    $this->subSections['Captcha'] = true;
-					$this->objects['Captcha'] = $this->captcha2();
+					$captchaSetting = ze::setting('captcha_status_and_version');
+
+					if ($captchaSetting == 'enabled_v2') {
+						$this->subSections['Captcha'] = true;
+						$this->objects['Captcha'] = $this->captcha2();
+					}
 				}
 			}
 
@@ -271,7 +276,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		$subSections = [];
 		$subSections['Password_Error_Display'] = $this->errors;
-		$old_password = !empty($this->old_password) ? $this->old_password : ($_POST['old_password'] ?? false);
+		$old_password = !empty($this->old_password) ? $this->old_password : ze::post('old_password');
 		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			echo $this->remember('user_id', $this->user_id);
@@ -515,7 +520,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$user = ze\user::logIn($userId);
 		
 		if ($this->setting('enable_remember_me')) {
-			if ($_POST['extranet_remember_me'] ?? false) {
+			if (ze::post('extranet_remember_me')) {
 				if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 					$_SESSION['SET_EXTRANET_LOGIN_COOKIE'] = $user['email'];
 				} else {
@@ -527,7 +532,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		}
 			
 		if ($this->setting('enable_log_me_in')) {
-			if ($_POST['extranet_log_me_in'] ?? false) {
+			if (ze::post('extranet_log_me_in')) {
 				$_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'] = $user['login_hash'];
 			}
 		}
@@ -560,9 +565,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 						$_SESSION['extranet_user_failed_logins_count']++;
 						$this->unsetCaptchaPassedVariableIfNeeded();
 					
-					} elseif (ze\user::checkPassword($user['id'], ($_POST['extranet_password'] ?? false))) {
+					} elseif (ze\user::checkPassword($user['id'], ze::post('extranet_password'))) {
 						//password correct
-						if($_REQUEST['extranet_terms_and_conditions'] ?? false){
+						if (ze::request('extranet_terms_and_conditions')){
 							ze\row::set('users', ['terms_and_conditions_accepted' => 1],  $user['id']);
 							$user['terms_and_conditions_accepted'] = true;
 							
@@ -620,7 +625,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 								$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 							} elseif ($user['status'] == 'pending') {
 								//user is pending, show error
-								if(ze\row::get('users', 'email_verified', ['email' => ($_POST['extranet_email'] ?? false)])) {
+								if(ze\row::get('users', 'email_verified', ['email' => ze::post('extranet_email')])) {
 									//user has verified email, wanting on admin to activate there account.
 									$errorMessage = $this->setting('account_pending_message');
 									$this->errors[] = ['Error' => $this->phrase($errorMessage)];
@@ -717,7 +722,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		return ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash', 'status'], ['email' => $email]);
 	}
 	
-	function validatePassword($newPassword,$confirmation,$oldPassword=false,$vlpClass=false,$userId = false) {
+	function validatePassword($newPassword, $confirmation, $oldPassword = false, $vlpClass = false, $userId = false) {
 		$errors = [];
 	
 		//Look up what their current password is
@@ -750,11 +755,19 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$errors[] = ['Error' => $this->phrase($errorMessage)];
 	
 		//checkPasswordStrength now returns an array instead of just a boolean.
-		} elseif (!ze\user::checkPasswordStrength($newPassword)['password_matches_requirements']) {
-			//password not strong enough
-			$errorMessage = ze\lang::phrase('Password does not match the requirements.');
-			$errors[] = ['Error' => $errorMessage];
-		
+		} else {
+			$passwordValidation = ze\user::checkPasswordStrength($newPassword, $checkIfEasilyGuessable = true);
+			if (!$passwordValidation['password_matches_requirements']) {
+				if ($passwordValidation['password_is_too_easy_to_guess']) {
+					//password too easy to guess
+					$errorMessage = ze\lang::phrase('Password is too easy to guess.');
+					$errors[] = ['Error' => $errorMessage];
+				} else {
+					//password not strong enough: not enough characters
+					$errorMessage = ze\lang::phrase('Password does not match the requirements.');
+					$errors[] = ['Error' => $errorMessage];
+				}
+			}
 		}
 	
 		return $errors;
@@ -811,9 +824,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 				$_SESSION['extranet_user_failed_logins_count'] = 0;
 			}
 
-			return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key') && $_SESSION['extranet_user_failed_logins_count'] >= $failedLoginsRequired;
+			return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('captcha_status_and_version') == 'enabled_v2' && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key') && $_SESSION['extranet_user_failed_logins_count'] >= $failedLoginsRequired;
 		} else {
-			return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
+			return $this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId]) && ze::setting('captcha_status_and_version') == 'enabled_v2' && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key');
 		}
 	}
 
@@ -916,7 +929,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 				$fields['first_tab/password_reset_page']['value'] = ze::$specialPages['zenario_password_reset'] ?? '';
 
 				//Disable Captcha feature if not set up in the API keys
-				if (!ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
+				if (ze::setting('captcha_status_and_version') != 'enabled_v2' || !ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {
 				    //Show warning
 					$recaptchaLink = "<a href='organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tcaptcha_picture~k{\"id\"%3A\"api_keys\"}' target='_blank'>site settings</a>";
 					$fields['use_captcha']['side_note'] = $this->phrase(
@@ -976,7 +989,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-        
 		//Information to view Data Protection settings
 		if ($path == 'zenario__users/nav/sign_in_log/panel') {
 			$accessLogDuration = '';
@@ -1013,12 +1025,49 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$panel['notice']['message'] = $accessLogDuration.".";
 			$panel['notice']['html'] = true;
 
-		}
-			switch ($path) {
-				case 'zenario__users/nav/sign_in_log/panel':
-					ze\tuix::flagEncryptedColumns($panel, 'u', 'users');
-					ze\tuix::flagEncryptedColumns($panel, 'usl', 'user_signin_log');
+			ze\tuix::flagEncryptedColumns($panel, 'u', 'users');
+			ze\tuix::flagEncryptedColumns($panel, 'usl', 'user_signin_log');
+
+			if ($refinerName == 'user' && $refinerId) {
+				$identifier = ze\row::get('users', 'identifier', $refinerId);
+				if (!$identifier) {
+					$identifier = ze\admin::phrase('(user deleted)');
+				}
+				
+				$panel['title'] = ze\admin::phrase('User sign-in log for user [[identifier]]', ['identifier' => $identifier]);
 			}
-		
+		}
+	}
+	
+	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		switch ($path) {
+			case 'zenario__users/nav/sign_in_log/panel':
+				if (ze::$dbL->columnIsEncrypted('users', 'first_name') || ze::$dbL->columnIsEncrypted('users', 'last_name')) {
+					$panel['columns']['User_Name']['encrypted'] = [];
+					
+					if (ze::$dbL->columnIsHashed('users', 'first_name') || ze::$dbL->columnIsHashed('users', 'last_name')) {
+						$panel['columns']['User_Name']['encrypted']['hashed'] = true;
+					}
+				}
+				
+				foreach ($panel['items'] as $id => &$item) {
+					$fullName = '';
+					
+					if ($item['First_Name']) {
+						$fullName .= $item['First_Name'];
+					}
+					
+					if ($item['Last_Name']) {
+						if ($item['First_Name']) {
+							$fullName .= ' ';
+						}
+						
+						$fullName .= $item['Last_Name'];
+					}
+					
+					$item['User_Name'] = $fullName;
+				}
+			break;
+		}
 	}
 }

@@ -58,7 +58,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 				$values['details/tags'] = $documentTagsString;
 				$fields['details/link_to_add_tags']['snippet']['html'] = 
 						ze\admin::phrase('To add or edit document tags click <a[[link]]>this link</a>.',
-							['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/document_tags'). '" target="_blank"']);
+							['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/document_tags'). '" target="_blank"']);
 			} else {
 				$fields['details/tags']['hidden'] = true;
 			}

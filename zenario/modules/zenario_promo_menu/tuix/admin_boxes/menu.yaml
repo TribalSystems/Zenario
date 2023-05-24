@@ -30,10 +30,10 @@ zenario_menu:
                         drag_and_drop: false
                         reorder_items: false
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     validation:
                         required_if_not_hidden: Please select an image.
@@ -60,10 +60,10 @@ zenario_menu:
                         drag_and_drop: false
                         reorder_items: false
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                 zenario_promo_menu__feature_image_checkbox:
                     label: 'Show promotional image'
@@ -77,10 +77,10 @@ zenario_menu:
                     foreign_key_to: file
                     label: 'Image:'
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     upload:
                         multi: false
@@ -184,10 +184,10 @@ zenario_menu:
                     foreign_key_to: file
                     label: 'Change image on rollover:'
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     upload:
                         multi: false

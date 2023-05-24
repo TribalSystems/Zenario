@@ -1,7 +1,7 @@
-/* Layout min-width: 1366px
+/* Layout min-width: 1280px
 --------------------------------------------------------------------------------------------------*/
 
-@media all and (max-width: 1367px) {
+@media all and (max-width: 1281px) {
 
 	.nest_portfolio .zenario_banner,
 	.nest_portfolio .zenario_banner .banner_wrap,
@@ -327,7 +327,7 @@
 		padding-top:10px;
 	}
 	
-	body.mobile .Gridbreak_Footer .Slot_Address,
+	body.mobile .Gridbreak_Footer .Slot_Footer_Address,
 	body.mobile .Gridbreak_Footer .Grouping_Footer {
 		text-align:center;
 	}
@@ -343,7 +343,7 @@
 		line-height:22px;
 	}
 	
-	body.mobile .Gridbreak_Footer .Slot_Address,
+	body.mobile .Gridbreak_Footer .Slot_Footer_Address,
 	body.mobile .Grouping_Footer .zenario_slot,
 	body.mobile .nest_portfolio .span4 .zenario_banner .banner_content .banner_text,
 	body.mobile .nest_portfolio .span4 .zenario_banner .banner_content .banner_more {

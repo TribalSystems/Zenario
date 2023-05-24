@@ -44,6 +44,11 @@ site_settings:
                     snippet:
                         label: OG (Open Graph) settings
                         label_class: subheading
+                gallery_options:
+                    type: grouping
+                    snippet:
+                        label: Gallery options
+                        label_class: subheading
                 description:
                     grouping: image_privacy
                     full_width: true
@@ -95,6 +100,14 @@ site_settings:
                     value: 630
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;px'
+                show_default_floating_box_caption:
+                    grouping: gallery_options
+                    site_setting:
+                        name: show_default_floating_box_caption
+                    label: "When editing an image, allow admin to add a gallery caption"
+                    note_below: |
+                            Some plugins such as a Multiple Image Container can display images in a colorbox (a modal window, like a pop-up). They can have a caption. If this option is enabled, the administrator will be able to enter an optional caption for each image. 
+                    type: checkbox
         image_sizes:
             label: Thumbnails
             edit_mode:
@@ -309,14 +322,15 @@ site_settings:
                         name: content_max_filesize
                     label: 'Zenario maximum file size:'
                     type: text
-                    value: 20
+                    value: 8
                     note_below: >
-                        Zenario's limit for the maximum uploadable file size
-                        for Documents, Pictures, Audio and other content types.
+                        Zenario's limit for the maximum uploadable file size. This should not be more than the server's maximum file size.
                     validation:
-                        required: Please enter a maximum content file size.
+                        required: Please enter a maximum uploadable file size.
                         numeric: Must be numeric.
                     decimal_places: ""
+                    maxlength: 10
+                    style: "width: 7em;"
                 content_max_filesize_unit:
                     site_setting:
                         name: content_max_filesize_unit
@@ -333,21 +347,18 @@ site_settings:
                     value: MB
                     redraw_onchange: true
                 apache_max_filesize:
-                    label: 'Server-wide maximum uploadable file size:'
+                    label: 'Server maximum uploadable file size:'
                     type: text
                     show_as_a_span: true
                     note_below: |
-                        The size of the largest file that can be uploaded to your server. Your server administrator can change this by changing the server's Apache Config (it is the lesser of upload_max_filesize and post_max_size as set in the php.ini file, which is usually in /etc/php/[version]/apache/php.ini).
+                        The size of the largest file allowed by your web server's configuration. Your server administrator may be able to change this by changing the server configuration (e.g. in Apache web server, it is the lesser of upload_max_filesize and post_max_size as set in the php.ini file, which is usually in /etc/php/[version]/apache/php.ini).
                 max_allowed_packet:
                     label: 'MySQL max_packet_size:'
                     type: text
                     show_as_a_span: true
                     note_below: |
-                        This is the size of the largest possible SQL query Zenario can send to your database.
-                                                        Images, along with their thumbnails and their working copies, will be added to the database using one command,
-                                                        so this puts a limit on the size of image that you can add to Zenario.
-                                                        Your server administrator can change this by changing the <code>max_allowed_packet</code> setting
-                                                        in the server's MySQL configuration.
+                        This is the size of the largest possible file, image or query that can be sent to your MySQL database.
+                        Your server administrator may change this by changing the <code>max_allowed_packet</code> setting in the server's MySQL configuration.
         file_downloads:
             label: File downloads
             edit_mode:

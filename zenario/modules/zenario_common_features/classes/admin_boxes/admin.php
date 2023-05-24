@@ -35,6 +35,27 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		if ($box['key']['view_profile']) {
 			$box['key']['id'] = ze\admin::id();
 		}
+		
+		
+		//Show the code names of permissions to developers
+		if (ze\admin::setting('show_dev_tools')) {
+			foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
+				if (is_array($field)
+				 && !empty($field['type'])
+				 && !empty($field['is_admin_permission'])
+				 && ze\ring::engToBoolean($field['is_admin_permission'])) {
+					
+					if ($field['type'] == 'checkboxes' && !empty($field['values'])) {
+						foreach ($field['values'] as $valueName => &$value) {
+							$value['post_field_html'] = ' (<code>'. htmlspecialchars($valueName). '</code>)';
+						}
+						unset($value);
+					}
+				}
+			}
+			unset($field);
+		}
+		
 
 		if ($box['key']['id']) {
 			if (!$details = ze\row::get('admins', true, $box['key']['id'])) {
@@ -123,14 +144,8 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 							if (!empty($perms[$valueName])) {
 								$items[] = $valueName;
 							}
-							
-							//Show the code names of permissions to developers
-							if (ze\admin::setting('show_dev_tools')) {
-								//$value['side_note'] = $valueName;
-								//$value['label'] = ($value['label'] ?? '') . ' ('. $valueName. ')';
-								$value['post_field_html'] = ' (<code>'. htmlspecialchars($valueName). '</code>)';
-							}
 						}
+						unset($value);
 						
 						if ($allPerms) {
 							$field['value'] = ze\escape::in(array_keys($field['values']), false);
@@ -145,6 +160,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 					}
 				}
 			}
+			unset($field);
 			
 			//Admins shouldn't be able to change themselves into a limited admin
 			if ($isCurrentAdmin) {
@@ -313,6 +329,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 							foreach ($field['values'] as $valueName => &$value) {
 								++$n;
 							}
+							unset($value);
 
 							//Count how many children have been checked
 							if (empty($values['permissions'. '/'. $fieldName])) {
@@ -611,6 +628,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 								$perms[$valueName] = in_array($valueName, ze\ray::explodeAndTrim($values['permissions'. '/'. $fieldName]));
 							}
 						}
+						unset($value);
 					}
 				}
 			}

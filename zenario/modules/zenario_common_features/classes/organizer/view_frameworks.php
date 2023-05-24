@@ -40,7 +40,7 @@ class zenario_common_features__organizer__view_frameworks extends ze\moduleBaseC
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		if ($refinerName == 'module' && ($module = ze\module::details($_GET['refiner__module'] ?? false))) {
+		if ($refinerName == 'module' && ($module = ze\module::details(ze::get('refiner__module')))) {
 			$panel['title'] =
 				ze\admin::phrase('Frameworks for the Module "[[name]]"', ['name' => $module['display_name']]);
 			

@@ -226,7 +226,6 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 	}
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$fields['first_tab/reverse_order']['hidden'] = true;
 		$fields['first_tab/menu_show_all_branches']['hidden'] = true;
 
 		$fields['first_tab/menu_number_of_levels']['values'] = [

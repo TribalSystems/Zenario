@@ -129,23 +129,23 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
+                    side_note: 'If a location has multiple images, the first one will be displayed.'
                 canvas:
                     plugin_setting:
                         name: canvas
-                        save_value_when_hidden: true
                     label: 'Image canvas:'
                     type: select
                     values:
-                        unlimited:
-                            label: Unlimited size
+                        crop_and_zoom:
+                            label: Crop and zoom
                         fixed_width:
                             label: Constrain by width
                         fixed_height:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
-                        crop_and_zoom:
-                            label: Crop and zoom
+                        unlimited:
+                            label: Unlimited size
                     value: crop_and_zoom
                     format_onchange: true
                     indent: 1
@@ -161,28 +161,26 @@ plugin_settings:
                 width:
                     plugin_setting:
                         name: width
-                        save_value_when_hidden: true
                     label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
                     value: 240
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
                 height:
                     plugin_setting:
                         name: height
-                        save_value_when_hidden: true
                     type: text
                     label: 'Height:'
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
                     value: 160
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
@@ -191,9 +189,8 @@ plugin_settings:
                     hide_with_previous_outdented_field: true
                     plugin_setting:
                         name: webp
-                        save_value_when_hidden: true
                     type: checkbox
-                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    label: 'Show WebP-format image, where browser supports it; recommended for smaller file size'
                     value: 1
                 pagination:
                     plugin_setting:
@@ -204,34 +201,34 @@ plugin_settings:
                 page_size:
                     plugin_setting:
                         name: page_size
-                    label: 'Number of Locations on one page:'
+                    label: 'Number of locations per page:'
                     type: select
                     values:
-                        1: "1"
-                        2: "2"
-                        3: "3"
-                        4: "4"
-                        5: "5"
-                        6: "6"
-                        7: "7"
-                        8: "8"
-                        9: "9"
-                        10: "10"
-                        12: "12"
-                        15: "15"
-                        20: "20"
-                        50: "50"
+                        1: 1
+                        2: 2
+                        3: 3
+                        4: 4
+                        5: 5
+                        6: 6
+                        7: 7
+                        8: 8
+                        9: 9
+                        10: 10
+                        12: 12
+                        15: 15
+                        20: 20
+                        50: 50
                         999999: All possible
-                    value: "10"
+                    value: 10
                 excerpt_length:
                     plugin_setting:
                         name: excerpt_length
                     label: 'Number of characters to show from Location Summary:'
                     type: select
                     values:
-                        50: "50"
-                        100: "100"
-                        200: "200"
-                        500: "500"
-                    value: "200"
+                        50: 50
+                        100: 100
+                        200: 200
+                        500: 500
+                    value: 200
     module_class_name: zenario_location_listing

@@ -1,256 +1,37 @@
-{# Required to use Twig functions #}
-{% import _self as self %}
+{% set advancedSearchCoreFrameworksPath = ze('', 'moduleDir', 'zenario_advanced_search', 'frameworks/') %}
 
-{% macro populateResults(Type, Show_scores) %}
-	{% for item in Type %}
-	<a href="{{item.url}}">
-		<div class="search_result {% if item.privacy != 'public' %} private {% endif %}">
-			{% if item.Feature_image_HTML_tag %}
-				<div class="search_result_image {{item.Icon_Class}}">{{item.Feature_image_HTML_tag}}</div>
-			{% endif %}
-			<div class="search_result_content">
-				<div class="search_result_title">
-					<span class="title">
-						{{item.Result_No}}. {{item.title}}
-						{{item.language_name}}
-					</span>
-					{% if Show_scores %}
-						{{item.score}}
-					{% endif %}
-				</div>
-				
-				{% if item.Breadcrumb %}
-					<div class="breadcrumb">{{item.Breadcrumb}}</div>
-				{% endif %}
-
-				<div class="search_result_summary">{{item.content_bodymain}}</div>
-			</div>
-		</div>
-	</a>
-	{% endfor %}
-{% endmacro %}
-
-{% if Mode == 'search_entry_box' %}
-	<div id="{{Container_Id}}_search_button_panel" class="search_button_panel">
-		<div
-			id="{{Container_Id}}_search_button"
-			class="search_button"
-			onclick="zenario_advanced_search.searchButtonOnClick('{{Container_Id}}');"
-			style="display: block;"
-		>
-			{{"Open search"|trans}}
-		</div>
-	</div>
-	<div id="{{Container_Id}}_search_entry_box_panel" class="search_entry_box_panel" style="display: none;">
-{% endif %}
+{% include advancedSearchCoreFrameworksPath ~ 'includes/open_form_search.twig.html' %}
 
 <div class="search_area">
 	<div class="zenario_advanced_search_criteria">
-	{% if Search_Box %}
-
-		{{Open_Form}}
-			<div>
-				{# The search label is only available in "Search entry box" mode. #}
-				{% if Search_Label %}
-					<label>{{"Search"|trans}}</label>
-				{% endif %}
-
-				{% if HasCategory00 %}
-					<div class="search_area_category search_area_extra_settings">
-					<label>{{"Category"|trans}}</label>
-					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category00_id", 'source_method': "getCategory00Options", 'onchange': "if (this.form.category01_id) { this.form.category01_id.value=0; } this.form.doSearch.click()"})}}
-					</div>
-				{% endif %}
-
-				{% if HasCategory01 %}
-					<div class="search_area_subcategory_1 search_area_extra_settings">
-					<label>{{"Subcategory"|trans}}</label>
-					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category01_id", 'source_method': "getCategory01Options", 'onchange': "if (this.form.category02_id) { this.form.category02_id.value=0; } this.form.doSearch.click()"})}}
-					</div>
-				{% endif %}
-
-				{% if HasCategory02 %}
-					<div class="search_area_subcategory_2 search_area_extra_settings">
-					<label>{{"Subcategory"|trans}}</label>
-					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category02_id", 'source_method': "getCategory02Options", 'onchange': "this.form.doSearch.click()"})}}
-					</div>
-				{% endif %}
-
-				{% if HasLanguageSelection %}
-					<div class="search_area_language search_area_extra_settings">
-					<label>{{"Language"|trans}}</label>
-					{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "language_id", 'source_method': "getLanguagesOptions", 'onchange': "this.form.doSearch.click()"})}}
-					</div>
-				{% endif %}
-
-                <input
-					id="{{Container_Id}}_search_input_box"
-					type="text"
-					class="search_input_box"
-					name="searchString"
-
-					{% if Placeholder %}
-						placeholder="{{Placeholder_Phrase|trans}}"
-					{% endif %}
-
-                	value="{{Search_String}}" 
-					onkeyup="zenario_advanced_search.onKeyUp(this, {{Delay}});"
-					autocomplete="off"
-				/>
-				<input
-					type="submit"
-					class="search_entry_button"
-					name="doSearch"
-					value="{{'Search'|trans}}"
-				/>
-
-				{% if Mode == 'search_entry_box' %}
-					<span
-						id = "{{Container_Id}}_close_button"
-						class="close_button"
-						onclick="zenario_advanced_search.closeButtonOnClick('{{Container_Id}}');"
-					>
-						X
-					</span>
-				{% endif %}
-
-				{% if Further_Search_Link and Further_Search_Phrase %}
-					<a class="further_search" href="{{Further_Search_Link|e}}">{{Further_Search_Phrase|e}}</a>
-				{% endif %}
-				
-				{% if Show_Clear_Search_Button %}
-					<input type="submit" class="search_entry_button" name="clearSearch" value="{{'Clear search'|trans}}" />
-				{% endif %}
-			</div>
-		{{Close_Form}}
-	{% endif %}
+		{% include advancedSearchCoreFrameworksPath ~ 'includes/search_form.twig.html' %}
 	</div>
 
 	<div id="{{Container_Id}}_results" class="zenario_advanced_search_results">
 		{# The search results heading is only available in "Search page" mode. #}
-		{% if Search_Result_Heading %}
-			<div class="search_heading">
-				{{Search_Results_For}}
-			</div>
-		{% endif %}
+		{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_heading.twig.html' %}
 		
 		{% if Search_Results %}
-			{% if Search_Result_Tabs %}
-				<div id="search_results_tabs">
-					{% for item in Search_Result_Tab %}
-						<div class="search_results_tab{{item.Tab_On}}">
-							<a {{item.Tab_Onclick}}>
-								{{item.Type}} ({{item.Record_Count}})
-							</a>
-						</div>
-					{% endfor %}
-				</div>
-			{% endif %}
+			{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_tabs.twig.html' %}
 		
 			{% set Column = 0 %}
 			{% if Search_Result_Rows %}
 				<div id="{{Container_Id}}_search_results" class="search_results {% if Mode == 'search_entry_box' %} column_count_{{Column_Count}} {% endif %}">
-					{% if Mode == 'search_entry_box' and (Html_Page_Search_Results or Html_Page_Search_No_Results) %}
-						{% set Column = Column + 1 %}
-						<div id="{{Container_Id}}_html_results" class="column_{{Column}} column column_html">
-					{% endif %}
+					{% for searchResultType in Search_Result_Types_Order %}
+						{% if searchResultType == 'html' %}
+							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_html_pages.twig.html' %}
+						{% elseif searchResultType == 'document' %}
+							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_documents.twig.html' %}
+						{% elseif searchResultType == 'news' %}
+							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_news.twig.html' %}
+						{% elseif searchResultType == 'blog' %}
+							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_blog.twig.html' %}
+						{% elseif searchResultType == 'other_modules' %}
+							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_other_module.twig.html' %}
+						{% endif %}
+					{% endfor %}
 
-					{% if Mode == 'search_entry_box' and Html_Page_Column_Heading_Text and not Html_Page_Search_No_Results %}
-						<span class="column_title">{{Html_Page_Column_Heading_Text|e}}</span>
-					{% endif %}
-
-					{% if Html_Page_Search_Results %}
-						{{self.populateResults(Html_Page_Search_Results, Show_scores)}}
-					{% endif %}
-
-					{% if Html_Page_Search_No_Results %}
-						<div class="search_no_results">
-							<p>{{Html_No_Results_Text|e}}</p>
-						</div>
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and (Html_Page_Search_Results or Html_Page_Search_No_Results) %}
-						</div>
-					{% endif %}
-
-
-
-					{% if Mode == 'search_entry_box' and (Document_Search_Results or Document_Search_No_Results) %}
-						{% set Column = Column + 1 %}
-						<div id="{{Container_Id}}_document_results" class="column_{{Column}} column column_docs">
-					{% endif %}
-					
-					{% if Mode == 'search_entry_box' and Document_Column_Heading_Text and not Document_Search_No_Results %}
-						<span class="column_title">{{Document_Column_Heading_Text|e}}</span>
-					{% endif %}
-					
-					{% if Document_Search_Results %}
-						{{self.populateResults(Document_Search_Results, Show_scores)}}
-					{% endif %}
-
-					{% if Document_Search_No_Results %}
-						<div class="search_no_results">
-							<p>{{Document_No_Results_Text|e}}</p>
-						</div>
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and (Document_Search_Results or Document_Search_No_Results) %}
-						</div>
-					{% endif %}
-
-
-
-					{% if Mode == 'search_entry_box' and (News_Search_Results or News_Search_No_Results) %}
-						{% set Column = Column + 1 %}
-						<div id="{{Container_Id}}_news_results" class="column_{{Column}} column  column_news">
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and News_Column_Heading_Text and not News_Search_No_Results %}
-						<span class="column_title">{{News_Column_Heading_Text|e}}</span>
-					{% endif %}
-
-					{% if News_Search_Results %}
-						{{self.populateResults(News_Search_Results, Show_scores)}}
-					{% endif %}
-
-					{% if News_Search_No_Results %}
-						<div class="search_no_results">
-							<p>{{News_No_Results_Text|e}}</p>
-						</div>
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and (News_Search_Results or News_Search_No_Results) %}
-						</div>
-					{% endif %}
-
-
-
-					{% if Mode == 'search_entry_box' and (Blog_Search_Results or Blog_Search_No_Results) %}
-						{% set Column = Column + 1 %}
-						<div id="{{Container_Id}}_blog_results" class="column_{{Column}} column  column_blog">
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and Blog_Column_Heading_Text and not Blog_Search_No_Results %}
-						<span class="column_title">{{Blog_Column_Heading_Text|e}}</span>
-					{% endif %}
-
-					{% if Blog_Search_Results %}
-						{{self.populateResults(Blog_Search_Results, Show_scores)}}
-					{% endif %}
-
-					{% if Blog_Search_No_Results %}
-						<div class="search_no_results">
-							<p>{{Blog_No_Results_Text|e}}</p>
-						</div>
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and (Blog_Search_Results or Blog_Search_No_Results) %}
-						</div>
-					{% endif %}
-
-					{% if Mode == 'search_entry_box' and All_results_without_limit > this.setting('maximum_results_number') %}
-						<p class="search_column_more">{{Press_enter_to_see_all_results_phrase|e}}</p>
-					{% endif %}
+					{% include advancedSearchCoreFrameworksPath ~ 'includes/press_enter_to_see_all_results.twig.html' %}
 				</div>
 			{% endif %}
 			
@@ -260,6 +41,4 @@
 	</div>
 </div>
 
-{% if Mode == 'search_entry_box' %}
-	</div>
-{% endif %}
+{% include advancedSearchCoreFrameworksPath ~ 'includes/close_form_search.twig.html' %}

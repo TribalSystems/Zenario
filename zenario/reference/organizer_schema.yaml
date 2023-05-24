@@ -380,6 +380,39 @@ additionalProperties:
                         description: >
                             This is used in list view. If set, taller rows will be used.
                     
+                    links:
+                        type: array
+                        description: >
+                            Use this property to display links on the start page.
+                            For example, display a link to content items in draft form on the start page.
+                        additionalProperties:
+                            properties:
+                                id:
+                                    type: string
+                                    description: >
+                                        The HTML id of the target element.
+                                css_class:
+                                    type: string
+                                    description: >
+                                        The CSS class of the target element.
+                                href:
+                                    type: string
+                                    description: >
+                                        The URL on the target element.
+                                title:
+                                    type: string
+                                    description: >
+                                        The title of the button (displayed in bold).
+                                text:
+                                    type: string
+                                    description: >
+                                        Short description of the button.
+                                record_count:
+                                    record_count:
+                                    type: *variable
+                                    description: >
+                                        A record count on the button. For example, the number of content items in draft form.
+                    
                     db_items:
                         type: object
                         required:
@@ -422,7 +455,8 @@ additionalProperties:
                                 preFillOrganizerPanel: true
                                 description: >
                                     Automatically call the encodeItemIdForOrganizer() function on the id column.
-                                    You should do this if the id is not numeric.
+                                    You should do this if the id is not numeric and might contain special characters
+                                    and/or commas.
                                     
                                     Note: while the *encoding* will be automatic, the *decoding* is not, and
                                     you'll still need to call decodeItemIdForOrganizer() manually in the

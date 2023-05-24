@@ -4,7 +4,6 @@ zenario__email_template_manager:
     panels:
         email_templates: 
             title: Email Templates 
-            view_mode: list
             notice:
                 show: false
                 type: warning

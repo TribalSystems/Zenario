@@ -99,32 +99,6 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				}
 		
 				break;
-			
-			
-			case 'images_for_newsletter':
-				$details = [];
-				if (ze\module::inc('zenario_newsletter')) {
-					$details = zenario_newsletter::details($refinerId);
-				}
-				
-				$panel['title'] = ze\admin::phrase('Images in the Newsletter "[[newsletter_name]]"', $details);
-				$panel['no_items_message'] = ze\admin::phrase('There are no images in this Newsletter.');
-		
-				if ($details['status'] != '_DRAFT') {
-					unset($panel['collection_buttons']['add']);
-					unset($panel['collection_buttons']['upload']);
-					unset($panel['collection_buttons']['delete_inline_file']);
-				}
-				
-				unset(
-					$panel['columns']['is_featured_image'],
-					$panel['item_buttons']['flag_as_feature'],
-					$panel['item_buttons']['unflag_as_feature']
-				);
-				
-				unset($panel['item_buttons']['send_to_documents']);
-				
-				break;
 
 	
 			case 'tag':
@@ -253,15 +227,15 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 	
 	protected function imageUsageLinks($id) {
 		return [
-			'plugins' => 'zenario__content/panels/image_library/hidden_nav/plugins_using_image//'. (int) $id. '//',
-			'nests' => 'zenario__content/panels/image_library/hidden_nav/nests_using_image//'. (int) $id. '//',
-			'slideshows' => 'zenario__content/panels/image_library/hidden_nav/slideshows_using_image//'. (int) $id. '//',
-			'content_items' => 'zenario__content/panels/image_library/hidden_nav/content_items_using_image//'. (int) $id. '//',
+			'plugins' => 'zenario__library/panels/image_library/hidden_nav/plugins_using_image//'. (int) $id. '//',
+			'nests' => 'zenario__library/panels/image_library/hidden_nav/nests_using_image//'. (int) $id. '//',
+			'slideshows' => 'zenario__library/panels/image_library/hidden_nav/slideshows_using_image//'. (int) $id. '//',
+			'content_items' => 'zenario__library/panels/image_library/hidden_nav/content_items_using_image//'. (int) $id. '//',
 
-			'menu_nodes' => 'zenario__content/panels/image_library/hidden_nav/menu_nodes_using_image//'. (int) $id. '//',
-			'email_templates' => 'zenario__content/panels/image_library/hidden_nav/email_templates_using_image//'. (int) $id. '//',
-			'newsletters' => 'zenario__content/panels/image_library/hidden_nav/newsletters_using_image//'. (int) $id. '//',
-			'newsletter_templates' => 'zenario__content/panels/image_library/hidden_nav/newsletter_templates_using_image//'. (int) $id. '//'
+			'menu_nodes' => 'zenario__library/panels/image_library/hidden_nav/menu_nodes_using_image//'. (int) $id. '//',
+			'email_templates' => 'zenario__library/panels/image_library/hidden_nav/email_templates_using_image//'. (int) $id. '//',
+			'newsletters' => 'zenario__library/panels/image_library/hidden_nav/newsletters_using_image//'. (int) $id. '//',
+			'newsletter_templates' => 'zenario__library/panels/image_library/hidden_nav/newsletter_templates_using_image//'. (int) $id. '//'
 		];
 	}
 	
@@ -366,11 +340,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				if (!$content = ze\row::get('content_items', ['id', 'type', 'admin_version'], ['tag_id' => $refinerId])) {
 					exit;
 
-				} elseif (($_POST['flag_as_feature'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
+				} elseif (ze::post('flag_as_feature') && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					self::setFeatureImage($content, $ids);
 					return;
 
-				} elseif (($_POST['unflag_as_feature'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
+				} elseif (ze::post('unflag_as_feature') && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					self::setFeatureImage($content, 0);
 					return;
 
@@ -384,16 +358,6 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				}
 				
 				break;
-				
-			
-			case 'images_for_newsletter':
-				$key = [
-					'foreign_key_to' => 'newsletter',
-					'foreign_key_id' => $refinerId];
-				$privCheck = ze\priv::check('_PRIV_EDIT_NEWSLETTER');
-				
-				break;
-			
 			
 			case 'tag':
 			default:
@@ -404,7 +368,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		}
 		
 		//Upload a new file
-		if (($_POST['upload'] ?? false) && $privCheck) {
+		if (ze::post('upload') && $privCheck) {
 			
 			ze\fileAdm::exitIfUploadError(false, false, true, 'Filedata');
 			
@@ -454,7 +418,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			}
 
 		//Add an image from the library
-		} elseif (($_POST['add'] ?? false) && $key && $privCheck) {
+		} elseif (ze::post('add') && $key && $privCheck) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $i => $id) {
 				$key['image_id'] = $id;
 				ze\row::set('inline_images', [], $key);
@@ -468,30 +432,21 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			return $ids;
 
 		//Mark images as public
-		} elseif (($_POST['mark_as_public'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::post('mark_as_public') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\row::update('files', ['privacy' => 'public'], $id);
 				ze\file::addPublicImage($id);
 			}
 
 		//Mark images as private
-		} elseif (($_POST['mark_as_private'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::post('mark_as_private') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\row::update('files', ['privacy' => 'private'], $id);
 				ze\file::deletePublicImage($id);
 			}
-		
-		//Try to fix any broken links in the images directory
-		} elseif ($_POST['regenerate_public_links'] ?? false) {
-			//ze\priv::exitIfNot('_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS');
-			ze\priv::exitIfNot('_PRIV_MANAGE_MEDIA');
-			
-			set_time_limit(60 * 10);
-			ze\file::checkAllImagePublicLinks($check = false);
-			\ze\skinAdm::emptyPageCache();
 
 		//Delete an unused image
-		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\contentAdm::deleteUnusedImage($id);
 			}
@@ -545,14 +500,14 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			}
 
 		//Detach an image from a content item or newsletter
-		} elseif (($_POST['remove'] ?? false) && $key && $privCheck) {
+		} elseif (ze::post('remove') && $key && $privCheck) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				$key['image_id'] = $id;
 				$key['in_use'] = 0;
 				ze\row::delete('inline_images', $key);
 			}
 		
-		} elseif ($_POST['view_public_link'] ?? false) {
+		} elseif (ze::post('view_public_link')) {
 
 			$rememberWhatThisWas = ze::$mustUseFullPath;
 			ze::$mustUseFullPath = false;
@@ -585,7 +540,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		
 		
 		//Send an image to Documents
-		} elseif ($_POST['send_to_documents'] ?? false) {
+		} elseif (ze::post('send_to_documents')) {
 			if ($file = \ze\row::get('files', ['filename', 'location', 'data', 'privacy'], $ids)) {
 			
 				if ($file['location'] == 'db') {
@@ -605,7 +560,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				}
 			}
 			
-		} elseif ($_POST['copy_to_mic_images'] ?? false) {
+		} elseif (ze::post('copy_to_mic_images')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = \ze\row::get('files', ['filename', 'location', 'data', 'privacy'], $id)) {
 					\ze\file::copyInDatabase('mic', $id, false, false, $addToDocstoreDirIfPossible = true);

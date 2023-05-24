@@ -68,7 +68,7 @@ class zenario_common_features__organizer__tuix_snippets extends ze\moduleBaseCla
 
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 			$sql = '
 				DELETE FROM '. DB_PREFIX. 'tuix_snippets
 				WHERE id IN ('. ze\escape::in($ids, 'numeric'). ')';

@@ -53,6 +53,8 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	
 	var $editorId = false;
 	
+	protected $pageSize;
+	
 	public function getEditorId() {
 		if ($this->editorId === false) {
 			$this->editorId = 'editor__'. preg_replace('@\D@', '', microtime() ?: time());
@@ -129,7 +131,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$this->page = (int) ($_REQUEST['comm_page'] ?? 1) ?: 1;
 
 		//Require the phrases
-		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. \ze::$visLang);
+		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
 		
 		$this->runCheckPrivs();
 		
@@ -286,14 +288,32 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		}
 
 		if ($this->canEditFirstPost($post)) {
-			$controls = true;
-			$sections['Edit_Post'] = true;
-			$mergeFields['Edit_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=edit_first_post&comm_enter_text=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
+			$dateTime = new DateTime($post['date_posted']);
+			$dateTime->modify('+1 hour');
+			$timestampPostedPlus1Hr = $dateTime->getTimestamp();
+			unset($dateTime);
+			
+			$timestampNow = strtotime(ze\date::now());
+			
+			if (ze\admin::id() || ($timestampPostedPlus1Hr >= $timestampNow)) {
+				$controls = true;
+				$sections['Edit_Post'] = true;
+				$mergeFields['Edit_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=edit_first_post&comm_enter_text=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
+			}
 		
 		} elseif ($this->canEditPost($post)) {
-			$controls = true;
-			$sections['Edit_Post'] = true;
-			$mergeFields['Edit_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=edit_post&comm_enter_text=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
+			$dateTime = new DateTime($post['date_posted']);
+			$dateTime->modify('+1 hour');
+			$timestampPostedPlus1Hr = $dateTime->getTimestamp();
+			unset($dateTime);
+			
+			$timestampNow = strtotime(ze\date::now());
+			
+			if (ze\admin::id() || ($timestampPostedPlus1Hr >= $timestampNow)) {
+				$controls = true;
+				$sections['Edit_Post'] = true;
+				$mergeFields['Edit_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=edit_post&comm_enter_text=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
+			}
 		}
 
 		if ($this->canDeletePost($post)) {
@@ -500,19 +520,19 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			$this->pageSize = (int) $this->setting('page_size_posts') ?: 12;
 			
 			//Don't show pagination if a specific post id is beind displayed
-			if ($_REQUEST['comm_post'] ?? false) {
+			if (ze::request('comm_post')) {
 				return;
 			}
 			
 			$pageCount = (int) ceil($this->thread['post_count'] / $this->pageSize);
 			
 			//Show the last page in the thread when adding a new reply
-			if (($_REQUEST['comm_enter_text'] ?? false) || $this->page == -1) {
+			if (ze::request('comm_enter_text') || $this->page == -1) {
 				$this->page = $pageCount;
 			}
 			
 			//Don't show pagination when the enter-reply box is displayed
-			if ($_REQUEST['comm_enter_text'] ?? false) {
+			if (ze::request('comm_enter_text')) {
 				return;
 			}
 			
@@ -539,12 +559,12 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		for ($i=1; $i <= $pageCount; ++$i) {
 			$pages[$i] = '&comm_page='. $i;
 			
-			if ($this->mode == 'showPosts' && ($_REQUEST['forum_thread'] ?? false)) {
-				$pages[$i] .= '&forum_thread='. (int) ($_REQUEST['forum_thread'] ?? false);
+			if ($this->mode == 'showPosts' && ze::request('forum_thread')) {
+				$pages[$i] .= '&forum_thread='. (int) ze::request('forum_thread');
 			}
 			
 			if ($this->mode == 'showSearch') {
-				$pages[$i] .= '&searchString='. rawurlencode($_REQUEST['searchString'] ?? false);
+				$pages[$i] .= '&searchString='. rawurlencode(ze::request('searchString'));
 			}
 		}
 		
@@ -577,37 +597,45 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		if ($this->setting('comments_require_approval') && !$this->modPrivs) {
 			$sql .= "
 				AND (
-						status='published'
-					OR	(
-							status='pending'";
+						status='published'";
 			
-			if (ze\user::id()) {
+			//As of 16 Nov 2022, for point 8 of the task T12234, Improve Comments (extranet user),
+			//if a visitor is NOT logged in and NOT and admin, they will NOT see pending comments.
+			$adminId = ze\admin::id();
+			$userId = ze\user::id();
+			
+			if ($adminId || $userId) {
 				$sql .= "
-						AND poster_id = ". (int) ze\user::id();
-			} else {
+						OR	(
+								status='pending'";
+			
+				if ($userId) {
+					$sql .= "
+							AND poster_id = ". (int) $userId;
+				}
+				
 				$sql .= "
-						AND poster_session_id = '". ze\escape::sql(ze\user::hashPassword(ze\link::primaryDomain(), session_id())). "'";
+					)";
 			}
 			
 			$sql .= "
-					)
 				)";
 		}
 		
 		//Have the option to just display a specific post
-		if ($_REQUEST['comm_post'] ?? false) {
+		if (ze::request('comm_post')) {
 			$sql .= "
-			  AND id = ". (int) ($_REQUEST['comm_post'] ?? false);
+			  AND id = ". (int) ze::request('comm_post');
 		} else {
 			$sql .= "
 			ORDER BY id";
 			
 			//Normally, display posts in order, unless the MOST_RECENT_FIRST option is checked and we're not making a reply.
-			if ($this->setting('order') == 'MOST_RECENT_FIRST' && !($_REQUEST['comm_enter_text'] ?? false)) {
+			if ($this->setting('order') == 'MOST_RECENT_FIRST' && !ze::request('comm_enter_text')) {
 				$sql .= " DESC";
 			}
 			
-			if ($this->setting('order') == 'MOST_RECENT_FIRST' && ($_REQUEST['comm_enter_text'] ?? false)) {
+			if ($this->setting('order') == 'MOST_RECENT_FIRST' && ze::request('comm_enter_text')) {
 				$sql .= "
 				LIMIT ". max(0, ($this->thread['post_count'] - $this->pageSize)). ", ". (int) $this->pageSize;
 			} else {
@@ -617,7 +645,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		$result = ze\sql::select($sql);
 
-		if ($_REQUEST['comm_post'] ?? false) {
+		if (ze::request('comm_post')) {
 			//Attempt to get information on a specific post. If it doesn't exist, clear the request and reload the page
 			if (!$this->posts[] = $this->post = ze\sql::fetchAssoc($result)) {
 				$this->clearRequest('comm_post');
@@ -682,7 +710,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$this->sections['Confirmation_Box']['Confirmation_Message'] = $message;
 		$this->sections['Confirmation_Box']['Cancel_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&forum_thread='. ze\ray::value($this->thread, 'id'), false);
 		
-		$this->sections['Confirmation_Box']['Open_Form'] = $this->openForm('', 'class="'. htmlspecialchars($_REQUEST['comm_request'] ?? false). '"'). 
+		$this->sections['Confirmation_Box']['Open_Form'] = $this->openForm('', 'class="'. htmlspecialchars(ze::request('comm_request')). '"'). 
 			$this->remember('comm_request').
 			$this->remember('comm_page').
 			$this->remember('comm_confirm').
@@ -720,9 +748,9 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				
 				$this->showUserInfo($mergeFields, $mergeFields, $post['poster_id'], $post);
 				
-				$this->getExtraPostInfo($post, $mergeFields, $mergeFields /*, ($_REQUEST['comm_request'] ?? false) == 'edit_post'*/);
+				$this->getExtraPostInfo($post, $mergeFields, $mergeFields /*, ze::request('comm_request') == 'edit_post'*/);
 				
-				if (($_REQUEST['comm_confirm'] ?? false) || ($_REQUEST['comm_enter_text'] ?? false) || !($this->checkPostActions($post, $mergeFields, $mergeFields))) {
+				if (ze::request('comm_confirm') || ze::request('comm_enter_text') || !($this->checkPostActions($post, $mergeFields, $mergeFields))) {
 				} else {
 					$mergeFields['Post_Controls'] = true;
 				}
@@ -769,6 +797,11 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				 && ($row = ze\sql::fetchRow($result))) {
 					$this->sections['Post_Message']['Post_Name'] =  htmlspecialchars($row[0]);
 				}
+			}
+			
+			if (!$this->sections['Post_Message']['Post_Name'] && ($adminId = ze\admin::id())) {
+				$adminDetails = ze\admin::details($adminId);
+				$this->sections['Post_Message']['Post_Name'] = $adminDetails['first_name'] . ' ' . $adminDetails['last_name'];
 			}
 			
 			$this->sections['Post_Message']['Post_Name'] = '<input type="text" id="comm_name" name="comm_name" maxlength="50" value="'. $this->sections['Post_Message']['Post_Name']. '"/>';
@@ -878,7 +911,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	
 	//Handle any requests the users ask for
 	function threadActionHandler() {
-		if ($_POST['comm_request'] ?? false) {
+		if (ze::post('comm_request')) {
 			require ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
@@ -886,44 +919,44 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 	
 	function threadSelectMode() {
 		
-		if ($_REQUEST['comm_confirm'] ?? false) {
-			if (($_REQUEST['comm_request'] ?? false) == 'delete_post' && $this->canDeletePost($this->post)) {
+		if (ze::request('comm_confirm')) {
+			if (ze::request('comm_request') == 'delete_post' && $this->canDeletePost($this->post)) {
 				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this comment?'), $this->phrase('Delete comment'));
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'approve_post' && $this->canApprovePost()) {
-				if (($_REQUEST['checksum'] ?? false) == md5($this->post['message_text'] ?? $this->thread['title'])) {
+			} elseif (ze::request('comm_request') == 'approve_post' && $this->canApprovePost()) {
+				if (ze::request('checksum') == md5($this->post['message_text'] ?? $this->thread['title'])) {
 					$this->showConfirmBox($this->phrase('Are you sure that you wish to approve this comment?'), $this->phrase('Approve comment'));
 				} else {
 					$this->showConfirmBox($this->phrase('The comment has just been edited. Please review it again.'), $this->phrase('Approve modified comment'));
 				}
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'delete_thread' && $this->canDeleteThread()) {
+			} elseif (ze::request('comm_request') == 'delete_thread' && $this->canDeleteThread()) {
 				$this->showConfirmBox($this->phrase('Are you sure that you wish to delete this thread?'), $this->phrase('Delete thread'));
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'lock_thread' && $this->canLockThread()) {
+			} elseif (ze::request('comm_request') == 'lock_thread' && $this->canLockThread()) {
 				$this->showConfirmBox($this->phrase('Are you sure that you wish to disallow further comments?'), $this->phrase('Disallow further comments'));
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'unlock_thread' && $this->canUnlockThread()) {
+			} elseif (ze::request('comm_request') == 'unlock_thread' && $this->canUnlockThread()) {
 				$this->showConfirmBox($this->phrase('Are you sure that you wish to allow further comments?'), $this->phrase('Allow further comments'));
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'subs_thread' && $this->canSubsThread()) {
+			} elseif (ze::request('comm_request') == 'subs_thread' && $this->canSubsThread()) {
 				$this->showConfirmBox($this->phrase('Are you sure you wish to subscribe? A notification email will be sent to &quot;[[email]]&quot; when a new comment is made on this page.', ['email' => htmlspecialchars(ze\user::email())]), $this->phrase('Subscribe'));
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_thread' && $this->canSubsThread()) {
+			} elseif (ze::request('comm_request') == 'unsubs_thread' && $this->canSubsThread()) {
 				$this->showConfirmBox($this->phrase('Are you sure you wish to unsubscribe, and no longer be notified of new comments on this page?'), $this->phrase('Unsubscribe'));
 			}
 			
-		} elseif ($_REQUEST['comm_enter_text'] ?? false) {
-			if (($_REQUEST['comm_request'] ?? false) == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
+		} elseif (ze::request('comm_enter_text')) {
+			if (ze::request('comm_request') == 'edit_first_post' && $this->canEditFirstPost($this->post)) {
 				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save comment'), 'edit', $this->phrase('Edit title:'));
 			
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'edit_post' && $this->canEditPost($this->post)) {
+			} elseif (ze::request('comm_request') == 'edit_post' && $this->canEditPost($this->post)) {
 				$this->showPostScreen($this->phrase('Edit comment:'), $this->phrase('Save comment'), 'edit');
 			
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'post_reply' && $this->canMakePost()) {
+			} elseif (ze::request('comm_request') == 'post_reply' && $this->canMakePost()) {
 				$this->showPostScreen($this->phrase('Enter a comment:'), $this->phrase('Add comment'), 'quote');
 			
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'report_post' && $this->canReportPost()) {
+			} elseif (ze::request('comm_request') == 'report_post' && $this->canReportPost()) {
 				$this->showPostScreen($this->phrase('Report the comment above as offensive:'), $this->phrase('Report this comment'), 'none');
 			}
 			

@@ -110,6 +110,12 @@ methods.modifyPostOnLoad = function() {
 	return false;
 };
 
+methods.sendsSignalOnEvent = function(eventName) {
+	return thus.tuix
+		&& thus.tuix.send_signals_on_events
+		&& thus.tuix.send_signals_on_events[eventName];
+};
+
 
 methods.ffov = function(action) {
 	
@@ -188,6 +194,19 @@ methods.ffov = function(action) {
 				thus.drawForm();
 				cb.done();
 				
+				var signalName;
+				
+				//Send signals if the flags to do so are enabled in the TUIX properties
+				if (action == 'format' && (signalName = thus.sendsSignalOnEvent('formFormat'))) {
+					zenario.sendSignal(signalName, thus.getFieldValues(true));
+				}
+				if (action == 'validate' && (signalName = thus.sendsSignalOnEvent('formValidate'))) {
+					zenario.sendSignal(signalName, thus.getFieldValues(true));
+				}
+				if (action == 'save' && (signalName = thus.sendsSignalOnEvent('formSave'))) {
+					zenario.sendSignal(signalName, thus.getFieldValues(true));
+				}
+			
 				//Scroll to the top of the slot on a "format" or "validate" event
 				if ((action == 'format' || action == 'validate') && thus.tuix.scroll_to_top_of_slot_on_format_or_validate) {
 					zenario.scrollToSlotTop(thus.containerId, true);
@@ -228,10 +247,21 @@ methods.draw = function() {
 		);
 	}
 };
+
 methods.redrawTab = function() {
 	thus.draw2();
 	thus.hideLoader(true);
+	
+	var signalName;
+	
+	//Check the TUIX properties to see if we need to send the formRedraw signal,
+	//and send it if so.
+	if (signalName = thus.sendsSignalOnEvent('formRedraw')) {
+		zenario.sendSignal(signalName, thus.getFieldValues(true));
+	}
 };
+
+
 methods.draw2 = function() {
 	thus.sortTabs();
 	
@@ -515,6 +545,14 @@ methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
 			thus.doAjaxLoadThenShowForm(callWhenLoaded);
 			break;
 		
+		case 'dash':
+			thus.doAjaxLoadThenShowDash(callWhenLoaded);
+			break;
+		
+		case 'graph':
+			thus.doAjaxLoadThenShowGraph(callWhenLoaded);
+			break;
+		
 		//Assume just a normal plugin if nothing matches
 		default:
 			zenario.refreshPluginSlot(thus.containerId, 'lookup', request);
@@ -537,16 +575,22 @@ methods.loadingDoneInAdvanceSoDrawPlugin = function() {
 			thus.drawForm();
 			break;
 		
+		case 'dash':
+			thus.setURLForSyncedRequests('fill');
+			thus.drawDash();
+			break;
+		
+		case 'graph':
+			thus.setURLForSyncedRequests('fill');
+			thus.drawGraph();
+			break;
+		
 		default:
 			console.error('"' + typeOfLogic + '" is not a valid value for the fea_type property. (If this value is out of date, you may need to clear the site cache.');
 	}
 };
 
 
-methods.doAjaxLoadThenShowForm = function(callWhenLoaded) {
-	thus.changed = {};
-	thus.fill().after(callWhenLoaded);
-};
 
 
 methods.doAjaxLoadThenShowList = function(callWhenLoaded) {
@@ -566,6 +610,89 @@ methods.doAjaxLoadThenShowList = function(callWhenLoaded) {
 		
 	});
 };
+
+methods.doAjaxLoadThenShowForm = function(callWhenLoaded) {
+	thus.changed = {};
+	thus.fill().after(callWhenLoaded);
+};
+
+methods.doAjaxLoadThenShowDash = function(callWhenLoaded) {
+	thus.fillDash().after(callWhenLoaded);
+};
+
+methods.doAjaxLoadThenShowGraph = function(callWhenLoaded) {
+	thus.fillGraph().after(callWhenLoaded);
+};
+
+methods.fillDash = function() {
+	return thus.feaAJAX('fill', 'dash');
+};
+
+methods.fillGraph = function() {
+	return thus.feaAJAX('fill', 'graph');
+};
+
+methods.formatDash = function() {
+	return thus.feaAJAX('format', 'dash');
+};
+
+methods.formatGraph = function() {
+	return thus.feaAJAX('format', 'graph');
+};
+
+methods.dashAJAX = function(action) {
+	return thus.feaAJAX(action, 'dash');
+};
+
+methods.graphAJAX = function(action) {
+	return thus.feaAJAX(action, 'graph');
+};
+
+methods.feaAJAX = function(action, typeOfLogic) {
+	
+	var cb = new zenario.callback,
+		url = thus.setURLForSyncedRequests(action),
+		post,
+		goneToURL = false;
+	
+	if (action == 'fill') {
+		post = thus.modifyPostOnLoad();
+	} else {
+		thus.prevPath = thus.path;
+		thus.checkValues();
+		post = {_format: true, _tuix: thus.sendStateToServer()};
+	}
+	
+	if (!thus.loading) {
+		thus.showLoader();
+		
+		var after = function(tuix) {
+			thus.hideLoader();
+			
+			if (action == 'fill') {
+				thus.tuix = tuix;
+			} else {
+				thus.setData(tuix);
+			}
+			
+			switch (typeOfLogic) {
+				case 'dash':
+					thus.drawDash();
+					break;
+		
+				case 'graph':
+					thus.drawGraph();
+					break;
+			}
+			cb.done();
+		};
+		
+		thus.ajax(url, post, true).after(after);
+	}
+	
+	return cb;
+};
+
 
 
 
@@ -645,6 +772,227 @@ methods.drawList = function() {
 
 	thus.hideLoader();
 };
+
+
+
+methods.drawDash = function() {
+	
+	thus.dashCustomSetup();
+	
+	thus.sortOutTUIX();
+	thus.drawDashHTML();
+	
+	thus.registerSignalHandlers();
+};
+
+methods.drawDashHTML = function() {
+	thus.cb = new zenario.callback;
+	thus.putHTMLOnPage(thus.microTemplate(thus.tuix.microtemplate, {}));
+};
+
+methods.dashCustomSetup = function() {
+	//...
+};
+
+methods.drawGraph = function() {
+	
+	thus.graphCustomSetup();
+	
+	thus.sortOutTUIX();
+	thus.cb = new zenario.callback;
+	
+	if (!thus._storedGraphSeriesData) {
+		thus._storedGraphSeriesData = {};
+	}
+	
+	var seriesData = thus._storedGraphSeriesData,
+		sync = thus.tuix.always_sync_this_data_between_client_and_server,
+		noSync = thus.tuix.never_sync_this_data_between_client_and_server,
+		incomingSeriesData = noSync && noSync.seriesData || {},
+		incomingGraph = sync.graph,
+		existingGraph = thus._graph,
+		thingsToCheck = ['yAxis', 'series'], ti, thing, i, ob, id, data;
+	
+	//Update the series data we have with anything new sent from the server
+	foreach (incomingSeriesData as id => data) {
+		seriesData[id] = data;
+	}
+	
+	//Create a shallow-copied clone so I can change some properties without
+	//messing with the sync tech, or with what you see in the dev tools
+	incomingGraph = _.clone(incomingGraph);
+	
+	//Add a custom formatting function for legend items.
+	//If the field names are in the format "Asset: Field name",
+	//then I only want to show the "Asset:" bit on the first field.
+	if (incomingGraph.legend && incomingGraph.legend.zenario_format_asset_names_and_fields) {
+		incomingGraph.legend = _.clone(incomingGraph.legend);
+		
+		var lastAssetName;
+		
+		incomingGraph.legend.labelFormatter = function () {
+			var splitter = ': ',
+				split = (this.name + '').split(splitter),
+				thisAssetName = split.shift(),
+				thisFieldName = split.join(splitter);
+			
+			if (lastAssetName !== thisAssetName) {
+				lastAssetName = thisAssetName;
+				
+				thisFieldName = thisAssetName + splitter + thisFieldName;
+			}
+            
+            return thisFieldName;
+        }
+	}
+	
+	//Add the series data from the "noSync" section
+	if (!_.isEmpty(incomingGraph.series)) {
+		incomingGraph.series = _.clone(incomingGraph.series);
+		
+		foreach (incomingGraph.series as id) {
+			if (seriesData[id]) {
+				incomingGraph.series[id] = _.clone(incomingGraph.series[id]);
+				incomingGraph.series[id].data = seriesData[id];
+				
+				//N.b. this might be needed if the line above doesn't work!
+				//incomingGraph.series[id].data = _.toArray(seriesData[id]);
+			}
+		}
+	}
+	
+	//Catch some cases where the sync function has been known to turned an array into
+	//an object, and try to restore a proper array
+	foreach (thingsToCheck as ti => thing) {
+		if (thing) {
+			if ((typeof incomingGraph[thing] === 'object') && !_.isArray(incomingGraph[thing])) {
+				incomingGraph[thing] = _.toArray(incomingGraph[thing]);
+			}
+		}
+	}
+	
+	
+	//This code would hide the graph until there was least one y-axis, and at least one series.
+	//I wrote it to try and reduce bugs, but right now things do seem to be working fine
+	//if I show an empty graph.
+	//if (_.isEmpty(incomingGraph.yAxis)
+	// || _.isEmpty(incomingGraph.series)) {
+	//	
+	//	if (existingGraph) {
+	//		existingGraph.destroy()
+	//	}
+	//	delete thus._graph;
+	//	
+	//	return;
+	//}
+	
+	
+	//Draw the HTML using the microtemplate.
+	//(Needs to be done before we try and initialise the graph as the <idv> for the graph will need to exist in the DOM first.)
+	thus.putHTMLOnPage(thus.microTemplate(thus.tuix.microtemplate, {}));
+	
+	
+	//If the graph didn't previously exist on the page, initialise it
+	if (!existingGraph) {
+		thus._graph = Highcharts.chart(incomingGraph);
+
+	} else {
+		//Otherwise, update the existing graph dynamically
+		foreach (thingsToCheck as ti => thing) {
+			var incoming = {}, existing = {};
+		
+			foreach (existingGraph[thing] as i => ob) {
+				id = ob.options.id;
+				existing[id] = true;
+			}
+	
+			foreach (incomingGraph[thing] as i => ob) {
+				id = ob.id;
+				incoming[id] = ob;
+			}
+		
+			foreach (existing as id) {
+				if (!incoming[id]) {
+					existingGraph.get(id).remove();
+				}
+			}
+	
+			foreach (incomingGraph[thing] as i => ob) {
+				id = ob.id;
+				if (!existing[id]) {
+				
+					switch (thing) {
+						case 'series':
+							//https://api.highcharts.com/class-reference/Highcharts.Chart#addSeries
+							//addSeries(options [, redraw] [, animation])
+							//console.log('addSeries', ob, false);
+							existingGraph.addSeries(ob, false);
+							break;
+					
+						case 'yAxis':
+							//https://api.highcharts.com/class-reference/Highcharts.Chart#addAxis
+							//addAxis(options [, isX] [, redraw] [, animation])
+							//console.log('addAxis', ob, false, false);
+							existingGraph.addAxis(ob, false, false);
+							break;
+					}
+				}
+			}
+		}
+	
+		//https://api.highcharts.com/class-reference/Highcharts.Chart#update
+		//update(options [, redraw])
+		//console.log('update', incomingGraph);
+		existingGraph.update(incomingGraph);
+	}
+	
+	thus.registerSignalHandlers();
+};
+
+methods.graphCustomSetup = function() {
+	//...
+};
+
+
+//Check the handle_signals property name, and see if any signal handlers need to be registered.
+methods.registerSignalHandlers = function() {
+	
+	//Only run this once per instance.
+	if (!thus._addedEvents) {
+		thus._addedEvents = true;
+		
+		//Don't be too picky with the format of the handle_signals property.
+		var si, signal, signals = zenarioT.tuixToArray(thus.tuix.handle_signals),
+			signalOnRegister;
+		
+		//Loop through each signal.
+		if (signals !== []) {
+			foreach (signals as si => signal) {	
+				
+				//Have the option to call a method when the signal is registered.
+				signalOnRegister = signal + 'OnRegister';
+				if (_.isFunction(thus[signalOnRegister])) {
+					thus[signalOnRegister]();
+				}
+				
+				if (_.isFunction(thus[signal])) {
+					//This function call here is to create a local copy of the signal variable
+					//that won't be updated by the next step of the for loop.
+					(function(signal) {
+						//And *this* function call here is to keep the this/thus variable still
+						//pointing to the instance.
+						thus.on(signal, function(data) {
+							thus[signal](data);
+						});
+					})(signal);
+				}
+			}
+		}
+	}
+};
+
+
+
 
 
 
@@ -2275,9 +2623,14 @@ zenario_abstract_fea.setupAndInit = function(moduleClassName, library, container
 
 	var globalName = moduleClassName + '_' + containerId.replace(/\-/g, '__');
 	
-	if (!window[globalName]) {
-		window[globalName] = new library();
-	}
+	
+	//Note: In older versions of Zenario, we didn't re-initialise the nested plugin instance in JavaScript if someone navigated away
+	//and then back again in Conductor.
+	//However this caused several bugs with events not firing properly, so we've removed this logic for now.
+	//if (!window[globalName]) {
+	//	window[globalName] = new library();
+	//}
+	window[globalName] = new library();
 	
 	window[globalName].showCloseButtonAtTopRight = showCloseButtonAtTopRight;
 	

@@ -310,6 +310,12 @@ class moduleAdm {
 						}
 					}
 				}
+				
+				if (!empty($desc['nestable_only'])) {
+					$nestable = 2;
+				} else {
+					$nestable = \ze\ring::engToBoolean($desc['nestable']);
+				}
 			
 				$foundModules[$moduleName] = true;
 				$sql = "
@@ -319,7 +325,7 @@ class moduleAdm {
 						display_name = '". \ze\escape::sql($desc['display_name']). "',
 						default_framework = '". \ze\escape::sql($desc['default_framework']). "',
 						css_class_name = '". \ze\escape::sql($desc['css_class_name']). "',
-						nestable = ". \ze\ring::engToBoolean($desc['nestable']);
+						nestable = ". (int) $nestable;
 					
 				if (!$dbUpdateSafeMode && \ze\ring::engToBoolean($desc['is_abstract'] ?? false)) {
 					$sql .= ",
@@ -638,6 +644,12 @@ class moduleAdm {
 				}
 			}
 		}
+		
+		if (!empty($desc['nestable_only'])) {
+			$nestable = 2;
+		} else {
+			$nestable = \ze\ring::engToBoolean($desc['nestable']);
+		}
 
 		$sql = "
 			UPDATE ". DB_PREFIX. "modules SET
@@ -650,7 +662,7 @@ class moduleAdm {
 				fill_organizer_nav = ". \ze\ring::engToBoolean($desc['fill_organizer_nav']). ",
 				can_be_version_controlled = ". \ze\ring::engToBoolean(\ze\ring::engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 				for_use_in_twig = ". \ze\ring::engToBoolean($desc['for_use_in_twig']). ",
-				nestable = ". \ze\ring::engToBoolean($desc['nestable']). ",
+				nestable = ". (int) $nestable. ",
 				category = '". \ze\escape::sql($category). "'
 			WHERE id = '". (int) $moduleId. "'";
 		\ze\sql::update($sql);
@@ -1097,62 +1109,69 @@ class moduleAdm {
 			
 					//Make sure a template exists for this Content Type, creating it if it doesn't
 					if (!$layoutId = \ze\row::get('layouts', 'layout_id', ['content_type' => $type['content_type_id']])) {
-						//Find an HTML Layout to copy; try to pick the most popular one, otherwise just pick the first one
-						$sql = "
-							SELECT t.*
-							FROM ". DB_PREFIX. "content_items AS c
-							INNER JOIN ". DB_PREFIX. "content_item_versions AS v
-							   ON v.id = c.id
-							  AND v.type = c.type
-							  AND v.version = c.admin_version
-							INNER JOIN ". DB_PREFIX. "layouts AS t
-							   ON t.layout_id = v.layout_id
-							  AND t.content_type = v.type
-							WHERE c.status NOT IN ('hidden','trashed','deleted')
-							  AND c.type = 'html'
-							GROUP BY t.layout_id
-							ORDER BY COUNT(c.tag_id) DESC, t.layout_id
-							LIMIT 1";
-				
-						if (!($result = \ze\sql::select($sql)) || !($layout = \ze\sql::fetchAssoc($result))) {
-							$layout = \ze\row::get('layouts', true, ['content_type' => 'html']);
+						
+						//Create a new blank layout, trying to set some sensible defaults.
+						$layoutDetails = [];
+						$layoutDetails['content_type'] = (string) $type['content_type_id'];
+						$layoutDetails['skin_id'] = \ze\layoutAdm::mostCommonSkinId();
+						
+						if (!empty($type['default_template_name'])) {
+							$layoutDetails['name'] = (string) $type['default_template_name'];
+						} else {
+							$layoutDetails['name'] = (string) $type['content_type_name_en'];
 						}
+						
+						//var_dump('layoutAdm::save', $layoutDetails, $layoutId);
+						\ze\layoutAdm::save($layoutDetails, $layoutId);
+						
+						
+						//Come up with a grid layout for this new layout
+						$data = \ze\gridAdm::sensibleDefault();
+						
+						//Use the standard header and footer
+						$data['headerAndFooter'] = true;
+						
+						//Get the width of the standard header and footer
+						$cols = \ze\row::get('layout_head_and_foot', 'cols', ['for' => 'sitewide']);
+						if (!$cols) {
+							$cols = 12;
+						}
+						
+						//Add a grid-break called "Gridbreak_Body", then a slot called "Slot_Main", to the layout
+						$data['cells'] = [
+							['width' => $cols, 'grid_break' => true, 'grid_css_class' => 'Gridbreak_Body'],
+							['width' => $cols, 'slot' => true, 'name' => $slotName = 'Slot_Main']
+						];
+						
+						//Save the grid layout
+						//var_dump('gridAdm::updateHeadAndFootAndSaveLayoutData', $layoutId, $data);
+						\ze\gridAdm::updateHeadAndFootAndSaveLayoutData($layoutId, $data);
+					
 				
-						if ($layout) {
-							//Work out a slot to put this Plugin into, favouring empty "Main" slots.
-							$slotName = \ze\layoutAdm::mainSlotByName($layout['layout_id']);
+						//Put an instance of this Plugin on that template, if this module uses instances
+						//Otherwise put an instance of the WYSIWYG Plugin on that template, if it's running
+						$addingEditor = false;
+						if ((\ze\ring::engToBoolean($desc['is_pluggable']) && ($addmoduleId = $moduleId))
+						 || (($addmoduleId = (\ze\module::id('zenario_wysiwyg_editor'))) && ($addingEditor = true))) {
 					
-							//Make a copy of that Layout for the new Content Type
-							$layout['content_type'] = (string) $type['content_type_id'];
-							$layout['name'] = \ze::ifNull((string) ($type['default_template_name'] ?? false), (string) $type['content_type_name_en']);
-							
-							\ze\layoutAdm::save($layout, $layoutId, $layout['layout_id']);
+							//Insert this Plugin onto the page
+							if ($addingEditor || \ze\ring::engToBoolean($desc['can_be_version_controlled'])) {
+								//Prefer a Wireframe Plugin if the Plugin allows it
+								\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, $addmoduleId);
 					
-							//Put an instance of this Plugin on that template, if this module uses instances
-							//Otherwise put an instance of the WYSIWYG Plugin on that template, if it's running
-							$addingEditor = false;
-							if ((\ze\ring::engToBoolean($desc['is_pluggable']) && ($addmoduleId = $moduleId))
-							 || (($addmoduleId = (\ze\module::id('zenario_wysiwyg_editor'))) && ($addingEditor = true))) {
-						
-								//Insert this Plugin onto the page
-								if ($addingEditor || \ze\ring::engToBoolean($desc['can_be_version_controlled'])) {
-									//Prefer a Wireframe Plugin if the Plugin allows it
-									\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, $addmoduleId);
-						
-								} else {
-									//Otherwise set a Reusable Instance there
-									if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $addmoduleId, 'content_id' => 0])) {
-										//Create a new reusable instance if one does not already exist
-										$errors = [];
-										\ze\pluginAdm::create(
-											$addmoduleId,
-											$desc['default_instance_name'],
-											$instanceId,
-											$errors, $onlyValidate = false, $forceName = true);
-									}
-							
-									\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $addmoduleId);
+							} else {
+								//Otherwise set a Reusable Instance there
+								if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $addmoduleId, 'content_id' => 0])) {
+									//Create a new reusable instance if one does not already exist
+									$errors = [];
+									\ze\pluginAdm::create(
+										$addmoduleId,
+										$desc['default_instance_name'],
+										$instanceId,
+										$errors, $onlyValidate = false, $forceName = true);
 								}
+						
+								\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $addmoduleId);
 							}
 						}
 					}

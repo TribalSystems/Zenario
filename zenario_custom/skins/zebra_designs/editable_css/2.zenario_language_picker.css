@@ -5,7 +5,6 @@
 .zenario_language_picker .lang_pick_box .lang_choose_text,
 .zenario_language_picker .lang_pick_box .lang_choices {
 	display:inline-block;
-	float:left;
 }
 
 .zenario_language_picker .lang_pick_box .lang_choices {

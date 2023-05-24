@@ -30,6 +30,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!$box['key']['form_id']) {
+			exit;
+		}
 		//Fill date ranges with recent dates
 		$values['details/date_from'] =  date('Y-m-01');
 		$values['details/date_to'] = date('Y-m-d');
@@ -64,6 +67,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_VIEW_FORM_RESPONSES');
 		$formId = $box['key']['form_id'];
+		$userId = $box['key']['user_id'];
 		//Export responses
 		
 		//Create PHPExcel object

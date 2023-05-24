@@ -26,10 +26,10 @@ plugin_settings:
                     label: 'Select document or folder:'
                     side_note: 'Select either a specific document, or a folder containing one or more documents.'
                     pick_items:
-                        path: zenario__content/panels/documents
-                        min_path: zenario__content/panels/documents
-                        max_path: zenario__content/panels/documents
-                        target_path: zenario__content/panels/documents
+                        path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
                         select_phrase: Select...
                     format_onchange: true
                     indent: 1
@@ -432,4 +432,4 @@ plugin_settings:
                         name: document_tags
                     label: 'Only show documents with one of the tags:'
                     type: checkboxes
-                    load_values_from_organizer_path: zenario__content/panels/document_tags
+                    load_values_from_organizer_path: zenario__library/panels/document_tags

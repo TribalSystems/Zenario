@@ -169,11 +169,11 @@ ze\content::pageFoot($prefix, 'organizer', true, false);
 echo '
 	<script type="text/javascript">';
 
-if (($_GET['openingInstance'] ?? false) && ($_GET['openingPath'] ?? false)) {
+if (ze::get('openingInstance') && ze::get('openingPath')) {
 	echo '
 		window.zenarioOQuickMode = true;
-		window.zenarioOOpeningInstance = ', (int) ($_GET['openingInstance'] ?? false), ';
-		window.zenarioOOpeningPath = "', preg_replace('@[^\w-/]@', '', ($_GET['openingPath'] ?? false)), '";';
+		window.zenarioOOpeningInstance = ', (int) ze::get('openingInstance'), ';
+		window.zenarioOOpeningPath = "', preg_replace('@[^\w-/]@', '', ze::get('openingPath')), '";';
 }
 
 $adminAuthType = ze\row::get('admins', 'authtype', ze\admin::id());
@@ -190,7 +190,7 @@ if ($fromCID) {
 }
 
 echo '
-		zenarioA.openedInIframe = ', ($_GET['openedInIframe'] ?? false)? 'true' : 'false', ';
+		zenarioA.openedInIframe = ', ze::get('openedInIframe')? 'true' : 'false', ';
 		zenarioA.homeLink = "', ze\escape::js($homeLink), '";
 		zenarioA.backLink = "', ze\escape::js($backLink), '";
 		

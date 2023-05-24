@@ -224,7 +224,9 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 		
 		zenarioO.refreshToShowItem(id,
 			createAnother && phrase.createdAnother,
-			!saveAndContinue && phrase.savedButNotShown);
+			!saveAndContinue && phrase.savedButNotShown,
+			thus.path
+		);
 	
 	//Check if thus FAB was opened from a specific slot (e.g. this was a plugin settings FAB)
 	} else if (zenario.cID && (slotName = thus.tuix.key.slotName)) {
@@ -432,7 +434,6 @@ methods.draw2 = function() {
 		};
 	
 	thus.setTitle(isReadOnly);
-	thus.showCloseButton();
 	
 	thus.get('zenario_fbButtons').innerHTML = thus.microTemplate(thus.mtPrefix + '_buttons', m);
 	zenario.addJQueryElements('#zenario_fbButtons ', true);
@@ -542,14 +543,6 @@ methods.sortTabs = function() {
 
 methods.setTitle = function(isReadOnly) {
 	//Do nothing..?
-};
-
-methods.showCloseButton = function() {
-	if (thus.tuix.cancel_button_message) {
-		$('#zenario_fbAdminFloatingBox .zenario_fabClose').css('display', 'none');
-	} else {
-		$('#zenario_fbAdminFloatingBox .zenario_fabClose').css('display', 'block');
-	}
 };
 
 
@@ -812,7 +805,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 			
 			if (loadValues) {
 				details.checksum = crc32(
-					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getValues1D(false, true, false, true, true)))
+					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getVisibleValues(true)))
 				);
 			}
 			break;
@@ -820,9 +813,9 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 		case 'plugin_settings':
 			if (loadValues) {
 				details.checksum = crc32(
-					(details.post.overrideSettings = JSON.stringify(thus.getValues1D(true, false)))
+					(details.post.overrideSettings = JSON.stringify(thus.getPluginSettingValues()))
 					+
-					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getValues1D(false, true, false, true, true, ['this_css_tab', 'all_css_tab', 'framework_tab'])))
+					(details.post.overrideFrameworkAndCSS = JSON.stringify(thus.getVisibleValues(true, ['this_css_tab', 'all_css_tab', 'framework_tab'])))
 				);
 			}
 			break;

@@ -572,9 +572,6 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		case 'zenarioAT':
 			ajaxMethodCall = 'handleAdminToolbarAJAX';
 			break;
-		case 'zenarioW':
-			ajaxMethodCall = 'handleWizardAJAX';
-			break;
 		case 'zenarioAB':
 		case 'zenarioSE':
 			ajaxMethodCall = 'handleAdminBoxAJAX';
@@ -772,10 +769,6 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		//and then open it in the same window if we successfully inserted it
 		if (zenarioCallingLibrary.globalName == 'zenarioO') {
 			frontend_link = zenarioO.parseReturnLink(frontend_link);
-			
-			if (frontend_link.indexOf('&zenario_sk_return=') != -1) {
-				sameWindow = true;
-			}
 		}
 		
 		if (sameWindow || frontend_link.substr(0, 25) == 'admin.php') {
@@ -856,7 +849,9 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			popout.href = item.href;
 		
 		} else if (item && item.frontend_link && !defined(popout.href)) {
-			popout.href = zenarioO.parseReturnLink(item.frontend_link, '_show_page_preview=1');
+			popout.href = zenarioO.parseReturnLink(item.frontend_link);
+			popout.href += popout.href.indexOf('?') === -1? '?' : '&';
+			popout.href += '_show_page_preview=1';
 		
 		} else if (item && popout.href) {
 			popout.href += popout.href.indexOf('?') === -1? '?' : '&';
@@ -1457,6 +1452,10 @@ zenarioT.csvToObject = function(aString, splitter) {
 //or an array (that might have been converted to an object),
 //and convert it to a normal array.
 zenarioT.tuixToArray = function(tuix) {
+	
+	if (!defined(tuix)) {
+		return [];
+	}
 	
 	if (_.isArray(tuix)) {
 		return tuix;

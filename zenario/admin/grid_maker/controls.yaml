@@ -1,0 +1,342 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+controlFields:
+    title_area:
+        #pre_grouping_html: |
+        #    <div class="zenario_grid_options">
+        start_new_grouping_wrapper: true
+        grouping_wrapper_css_class: zenario_grid_options
+        type: grouping
+        name: title_area
+        grouping_css_class: zenario_gmControls zenario_gmControls_title zenario_gmControls_newLine
+    title:
+        grouping: title_area
+        visible_if:
+            zenarioGM.modeIs: body
+        enable_microtemplates_in_properties: true
+        snippet:
+            span: |
+                {{zenario.applyMergeFields(zenarioA.phrase.gridTitle, zenarioGM)|escape}}
+    title_head:
+        grouping: title_area
+        visible_if:
+            zenarioGM.modeIs: head
+        snippet:
+            span: Editing site-wide header with Gridmaker
+    title_foot:
+        grouping: title_area
+        visible_if:
+            zenarioGM.modeIs: foot
+        snippet:
+            span: Editing site-wide footer with Gridmaker
+    hf_area:
+        type: grouping
+        name: hf_area
+        grouping_css_class: zenario_gmControls
+        visible_if:
+            zenarioGM.modeIs: body
+    headerAndFooter:
+        grouping: hf_area
+        type: checkbox
+        label: Use site-wide header and footer
+        custom_message:
+            switching_on_header: >
+                This layout will now use the site-wide header and footer.
+                <br/>
+                <br/>
+                It will use the widths, number of columns and behaviour, plus the slots, of the site-wide header and footer.
+                <br/>
+                <br/>
+                Click Undo if you didn't mean to do this.
+            switching_off_header: >
+                This layout will now be standalone, and no longer user site site-wide header and footer.
+                <br/>
+                <br/>
+                The widths, number of columns and behaviour can now be set independently on this layout.
+                <br/>
+                <br/>
+                Click Undo if you didn't mean to do this.
+        onchange: |
+            zenarioGM.updateAndChange();
+            
+            if (zenarioGM.data.headerAndFooter) {
+                toastr.info(field.custom_message.switching_on_header, undefined, {timeOut: 30000});
+            } else {
+                toastr.info(field.custom_message.switching_off_header, undefined, {timeOut: 30000});
+            }
+            
+    type_area:
+        type: grouping
+        name: type_area
+        grouping_css_class: zenario_gmControls
+    type:
+        grouping: type_area
+        type: radios
+        cols: 2
+        values:
+            fixed:
+                label: Fixed width
+                tooltip: |
+                    Fixed|
+                    In a fixed grid, all of the widths are specified in &quot;px&quot;.
+                    On a normal computer screen, one &quot;px&quot; will be one pixel tall and one pixel wide.
+                    On a retina screen, one &quot;px&quot; may be two pixels tall and two pixels wide, or sometimes higher.
+            fluid:
+                label: Fluid
+                tooltip: |
+                    Fluid|
+                    In a fluid grid, all of the widths are specified in percentages,
+                    and the size of your columns and gutters will vary depending on the screen size.
+                    Fluid grids can be prone to pixel rounding errors, especially in Internet Explorer 6 and 7.
+        onchange: zenarioGM.updateAndChange();
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    resp_area:
+        type: grouping
+        name: resp_area
+        grouping_css_class: zenario_gmControls zenario_gmControls_sepBlock
+    responsive:
+        grouping: resp_area
+        type: checkbox
+        label: Responsive
+        tooltip: |
+            Responsive|
+            Your grid has a minimum size. If your grid is not responsive, visitors with smaller screens
+            than the minimum size will see scrollbars on your site. If your grid is responsive,
+            it will turn itself off below the minimum size, and visitors with smaller screens than the
+            minimum size will see your slots one after the other taking up all of the available space.
+            (This effect is not displayed when managing slots in the editor.)
+        onchange: zenarioGM.updateAndChange();
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    mirror:
+        grouping: resp_area
+        type: checkbox
+        label: Right-to-left
+        tooltip: |
+            Display right-to-left|
+            Check this option to display slots from the right to the left,
+            e.g. for creating an Arabic, Hebrew or Urdu language version of an English language site.
+            <br/><br/>
+            The slots will appear right-to-left rather than left-to-right, and the
+            <code>direction: rtl;</code> rule will be added.
+            (This effect is not displayed when managing slots in &quot;Slots&quot;.)
+        onchange: zenarioGM.updateAndChange();
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    save_area:
+        type: grouping
+        name: save_area
+        grouping_css_class: zenario_gmControls zenario_gmControls_right
+        #post_grouping_html: |
+        #    </div>
+    grid_save:
+        grouping: save_area
+        visible_if: |
+            zenarioGM.modeIs('body')? zenarioA.hasPriv('_PRIV_EDIT_TEMPLATE') : zenarioA.hasPriv('_PRIV_EDIT_SITEWIDE')
+        type: button
+        css_class: submit_selected
+        value: Save
+        onclick: zenarioGM.save();
+    save_disabled:
+        grouping: save_area
+        visible_if: |
+            zenarioGM.modeIs('body')? zenarioA.hasNoPriv('_PRIV_EDIT_TEMPLATE') : zenarioA.hasNoPriv('_PRIV_EDIT_SITEWIDE')
+        type: button
+        disabled: true
+        css_class: submit_disabled
+        value: Save
+    save_as:
+        grouping: save_area
+        visible_if:
+            zenarioA.hasPriv: _PRIV_EDIT_TEMPLATE
+            zenarioGM.modeIs: body
+            zenarioGM.isExistingLayout: ''
+        type: button
+        css_class: submit_selected
+        value: Save a copy
+        onclick: zenarioGM.save(true);
+    save_as_disabled:
+        grouping: save_area
+        visible_if:
+            zenarioA.hasNoPriv: _PRIV_EDIT_TEMPLATE
+            zenarioGM.modeIs: body
+            zenarioGM.isExistingLayout: ''
+        type: button
+        disabled: true
+        css_class: submit_disabled
+        value: Save a copy
+    spinner_area:
+        #pre_grouping_html: |
+        #    <div class="zenario_grid_options">
+        start_new_grouping_wrapper: true
+        grouping_wrapper_css_class: zenario_grid_options
+        type: grouping
+        name: spinner_area
+        grouping_css_class: zenario_gmControls zenario_gmControls_newLine
+    minWidth:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fluid
+        label: 'Min-w:'
+        type: text
+        size: 4
+        spinner:
+            min: 100
+            step: 10
+            units: px
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    maxWidth:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fluid
+        label: 'Max-w:'
+        type: text
+        size: 4
+        spinner:
+            min: 320
+            step: 10
+            units: px
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    fullWidth:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fixed
+        label: 'Full w:'
+        type: text
+        size: 4
+        spinner:
+            min: 320
+            step: 10
+            units: px
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    cols:
+        grouping: spinner_area
+        label: 'Cols:'
+        type: text
+        size: 4
+        spinner:
+            min: 1
+            step: 1
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    gutterLeftEdgeFlu:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fluid
+        label: 'LM:'
+        type: text
+        size: 4
+        spinner:
+            min: 0
+            step: 0.1
+            units: %
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    gutterRightEdgeFlu:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fluid
+        label: 'RM:'
+        type: text
+        size: 4
+        spinner:
+            min: 0
+            step: 0.1
+            units: %
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    gutterFlu:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fluid
+        label: 'G:'
+        type: text
+        size: 4
+        spinner:
+            min: 0
+            step: 0.1
+            units: %
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    gutterLeftEdge:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fixed
+        label: 'LM:'
+        type: text
+        size: 4
+        spinner:
+            min: 0
+            step: 1
+            units: px
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    gutterRightEdge:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fixed
+        label: 'RM:'
+        type: text
+        size: 4
+        spinner:
+            min: 0
+            step: 1
+            units: px
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    colAndGutter:
+        grouping: spinner_area
+        visible_if:
+            lib.valueIs: type, fixed
+        label: 'Col / g:'
+        type: select
+        onchange: 'return zenarioGM.recalcOnChange(this, event, fieldCodeName);'
+        disabled_if:
+            zenarioGM.disableChangingSettings: ''
+    undo_redo_area:
+        type: grouping
+        name: undo_redo_area
+        grouping_css_class: zenario_gmControls zenario_gmControls_undoRedo
+        #post_grouping_html: |
+        #    </div>
+    undo:
+        grouping: undo_redo_area
+        visible_if: zenarioGM.canUndo()
+        type: button
+        css_class: unredo undo enabled
+        title: Undo
+        onclick: zenarioGM.undo();
+    undo_disabled:
+        grouping: undo_redo_area
+        hide_if_previous_field_is_not_hidden: true
+        type: button
+        disabled: true
+        css_class: unredo undo disabled
+        title: Undo
+    redo:
+        grouping: undo_redo_area
+        visible_if: zenarioGM.canRedo()
+        type: button
+        css_class: unredo redo enabled
+        title: Redo
+        onclick: zenarioGM.redo();
+    redo_disabled:
+        grouping: undo_redo_area
+        hide_if_previous_field_is_not_hidden: true
+        type: button
+        disabled: true
+        css_class: unredo redo disabled
+        title: Redo

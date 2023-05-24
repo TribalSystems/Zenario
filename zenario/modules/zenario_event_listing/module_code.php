@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_event_listing extends ze\moduleBaseClass {
 
     protected $data = [];
+    protected $page;
     
 	public function init() {
 		$this->allowCaching(
@@ -37,7 +38,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
-		$this->page = is_numeric($_GET['page'] ?? false)? (int) ($_GET['page'] ?? false) : 1;
+		$this->page = is_numeric(ze::get('page'))? (int) ze::get('page') : 1;
 		
 		switch ($this->setting('period_mode')){
 			case 'date_range':

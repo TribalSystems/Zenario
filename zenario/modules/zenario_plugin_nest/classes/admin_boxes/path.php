@@ -15,7 +15,7 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (!($_GET['refiner__nest'] ?? false)) {
+		if (!ze::get('refiner__nest')) {
 			exit;
 		}
 		
@@ -45,8 +45,6 @@ class zenario_plugin_nest__admin_boxes__path extends zenario_plugin_nest {
 			if (!empty($ids[4])) {
 				$box['key']['content_type'] = $ids[4];
 			}
-			
-			$box['max_height'] += 200;
 		}
 		
 		//Get the details of this slide

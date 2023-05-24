@@ -8,7 +8,6 @@ zenario__modules:
                 css_class: tuix_snippets
             title: TUIX snippets
             no_items_message: No TUIX snippets have been created on this site
-            #view_mode: list
             db_items:
                 table: '[[DB_PREFIX]]tuix_snippets AS ts'
                 id_column: ts.id

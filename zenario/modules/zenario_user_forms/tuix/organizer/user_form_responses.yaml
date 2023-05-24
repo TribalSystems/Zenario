@@ -16,13 +16,17 @@ zenario__user_forms:
             db_items:
                 table: |
                     [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
-                    LEFT JOIN [[DB_PREFIX]]users u
+                    INNER JOIN [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS uf
+                        ON uf.id = ur.form_id
+                    LEFT JOIN [[DB_PREFIX]]users AS u
                         ON ur.user_id = u.id
                 id_column: ur.id
                 max_limit: 99999999
             refiners:
                 form_id:
                     sql: 'ur.form_id = [[REFINER_ID]]'
+                user_id:
+                    sql: 'ur.user_id = [[REFINER_ID]]'
             columns:
                 id:
                     title: ID
@@ -40,12 +44,32 @@ zenario__user_forms:
                     format: datetime
                     searchable: true
                     always_show: true
+                user_id:
+                    db_column: ur.user_id
+                    hidden: true
                 user:
                     title: Identifier if User/Contact
                     db_column: u.identifier
                     disallow_sorting: true
+                    searchable: true
+                    #If displaying responses for a specific form, this column will always be shown.
+                    #If displaying all form responses for a specific user, it will be hidden in the PHP class.
                     always_show: true
                     width: xlarge
+                    html: true
+                form_id:
+                    db_column: ur.form_id
+                    hidden: true
+                form:
+                    title: Form
+                    db_column: uf.name
+                    disallow_sorting: true
+                    searchable: true
+                    #If displaying responses for a specific form, this column will be hidden in the PHP class.
+                    #If displaying all form responses for a specific user, it will always be shown.
+                    always_show: true
+                    width: xlarge
+                    html: true
                 blocked_by_profanity_filter:
                     title: Blocked by profanity filter
                     format: text
@@ -85,8 +109,6 @@ zenario__user_forms:
                     label: 'View response'
                     admin_box:
                         path: zenario_user_form_response
-                        key:
-                            form_id: ''
                 delete:
                     priv: _PRIV_VIEW_FORM_RESPONSES
                     label: 'Delete'
@@ -106,12 +128,14 @@ zenario__user_forms:
                         path: zenario_export_user_responses
                         key:
                             form_id: ''
+                            user_id: ''
                 delete_form_responses:
                     priv: _PRIV_MANAGE_FORMS
                     label: 'Delete all responses'
                     ajax:
                         confirm:
-                            message: Are you sure you wish to delete every response for this form? 
+                            #The message is set in the PHP class
+                            #(two cases: delete all responses to a specific form, or delete all responses from a specific user)
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

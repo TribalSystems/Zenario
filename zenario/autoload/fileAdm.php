@@ -36,12 +36,12 @@ class fileAdm {
 	//Formerly "handleAdminBoxAJAX()"
 	public static function handleAdminBoxAJAX() {
 	
-		if ($_REQUEST['fileUpload'] ?? false) {
+		if (\ze::request('fileUpload')) {
 		
 			\ze\fileAdm::exitIfUploadError(true, true, true, 'Filedata');
-			\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], ($_REQUEST['_html5_backwards_compatibility_hack'] ?? false));
+			\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], \ze::request('_html5_backwards_compatibility_hack'));
 	
-		} else if ($_REQUEST['fetchFromDropbox'] ?? false) {
+		} else if (\ze::request('fetchFromDropbox')) {
 			\ze\fileAdm::putDropboxFileIntoCacheDir($_POST['name'] ?? false, $_POST['link'] ?? false);
 	
 		} else {
@@ -259,11 +259,30 @@ To correct this, please ask your system administrator to perform a
 		} else {
 			$moduleClass = 'zenario_common_features';
 		}
+
 		
 		switch ($_FILES[$fileVar]['error'] ?? false) {
 			case UPLOAD_ERR_INI_SIZE:
 			case UPLOAD_ERR_FORM_SIZE:
-				echo \ze\lang::phrase('Your file was too large to be uploaded.', false, $moduleClass);
+				$apacheMaxFilesizeInBytes = \ze\dbAdm::apacheMaxFilesize();
+				$apacheMaxFilesizeFormatted = \ze\file::fileSizeConvert($apacheMaxFilesizeInBytes);
+
+				$zenarioMaxFilesizeValue = \ze::setting('content_max_filesize');
+				$zenarioMaxFilesizeUnit = \ze::setting('content_max_filesize_unit');
+				$zenarioMaxFilesizeInBytes = \ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+				$zenarioMaxFilesizeFormatted = $zenarioMaxFilesizeValue . ' ' .  $zenarioMaxFilesizeUnit;
+
+				if ($apacheMaxFilesizeInBytes < $zenarioMaxFilesizeInBytes) {
+					$maxUploadableSizeFormatted = $apacheMaxFilesizeFormatted;
+				} else {
+					$maxUploadableSizeFormatted = $zenarioMaxFilesizeFormatted;
+				}
+
+				echo \ze\lang::phrase(
+					'Your file was too large to be uploaded. The maximum uploadable size is [[max_uploadable_file_size]].',
+					['max_uploadable_file_size' => $maxUploadableSizeFormatted],
+					$moduleClass
+				);
 				exit;
 			case UPLOAD_ERR_PARTIAL:
 			case UPLOAD_ERR_NO_FILE:
@@ -317,7 +336,7 @@ To correct this, please ask your system administrator to perform a
 		//Any SVGs that are uploaded should be sanitsed as a precaution against XSS attacks.
 		if (\ze\file::mimeType($name) == 'image/svg+xml') {
 			if (is_writable($path)) {
-				require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/SVG-Sanitizer/SvgSanitizer.php';
+				require_once CMS_ROOT. 'zenario/libs/yarn/SVG-Sanitizer/SvgSanitizer.php';
 				$SvgSanitizer = new \SvgSanitizer();
 				$SvgSanitizer->load($path);
 				$SvgSanitizer->sanitize();
@@ -545,6 +564,70 @@ To correct this, please ask your system administrator to perform a
 		
 		} else {
 			return is_uploaded_file($path);
+		}
+	}
+
+	//Look through all images in the database that are flagged as public, check if they're all there, and add them if not
+	public static function checkAllImagePublicLinks($check) {
+		
+		if ($check) {
+			$report = ['numMissing' => 0];
+		}
+		
+		$sql = "
+			SELECT id, short_checksum, filename
+			FROM ". DB_PREFIX. "files
+			WHERE `usage` = 'image'
+			  AND mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+			  AND `privacy` = 'public'";
+		
+		foreach (\ze\sql::select($sql) as $image) {
+			$filepath = CMS_ROOT. 'public/images/'. $image['short_checksum']. '/'. \ze\file::safeName($image['filename']);
+			
+			if (!is_file($filepath)) {
+				//In "check" mode, we're just quickly checking if all of the directories look like they are there,
+				//and reporting which ones are missing.
+				if ($check) {
+					++$report['numMissing'];
+					$report['exampleFile'] = $image['filename'];
+				
+				//In "fix" mode, add any missing directories.
+				} else {
+					\ze\file::addPublicImage($image['id']);
+				}
+			}
+		}
+		
+		if ($check) {
+			return $report;
+		
+		//Also in "fix" mode, look for links to resized copies of public images in WYSIWYG Editors.
+		} else {
+			$publishingAPublicPage = false;
+			$fixWhereLinksGo = false;
+			$fixPublicDir = true;
+
+			//Get every content area on a WYSIWYG Editor that's on the current version
+			//or a draft version of a content item.
+			$sql = "
+				SELECT ps.value
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
+				   ON pi.content_id = c.id
+				  AND pi.content_type = c.type
+				  AND pi.content_version IN(c.visitor_version, c.admin_version)
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+				   ON ps.instance_id = pi.id
+				  AND ps.is_content = 'version_controlled_content'
+				WHERE c.status NOT IN ('trashed','deleted')";
+			$result = \ze\sql::select($sql);
+
+			while ($row = \ze\sql::fetchAssoc($result)) {
+				//Scan the HTML for images, with the "$fixPublicDir" option set.
+				$files = [];
+				$htmlChanged = false;
+				\ze\contentAdm::syncInlineFileLinks($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage, $fixWhereLinksGo, $fixPublicDir);
+			}
 		}
 	}
 	

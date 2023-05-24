@@ -183,7 +183,7 @@ class zenario_breadcrumbs extends zenario_menu {
 				if ($nextName !== null) {
 					$name = $nextName;
 				} else {
-					$name = $this->parentNest->formatTitleText($back['slide']['name_or_slide_label']);
+					$name = $this->parentNest->formatTitleText($back['slide']['slide_label']);
 				}
 				
 				//Check if any smart breadcrumbs have been defined
@@ -258,5 +258,16 @@ class zenario_breadcrumbs extends zenario_menu {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		// Overwrite zenario_menu fillAdminBox to do nothing
+	}
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		if ($sectionId = ze\plugin::setting('menu_section', $instanceId, $eggId)) {
+			if ($sectionName = ze\menu::sectionName($sectionId)) {
+				return ze\admin::phrase('Menu Breadcrumb Trail'). ' ('. $sectionName. ')';
+			}
+		}
+			
+		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
 	}
 }

@@ -19,8 +19,6 @@
 }
 
 .zenario_html_snippet img {
-	max-width:100% !important;
-	height:auto !important;
 	padding:20px;
 }
 
@@ -167,7 +165,7 @@
     font-size: 30px;
     position: absolute;
     left: 15px;
-    top: 15px;
+    top: 0;
 }
 
 /* Main site

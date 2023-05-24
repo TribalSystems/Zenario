@@ -114,7 +114,7 @@ class layoutAdm {
 			$sourceDetails = \ze\row::get('layouts', [
 				'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_position', 'bg_repeat',
 				'json_data', 'json_data_hash',
-				'cols', 'min_width', 'max_width', 'fluid', 'responsive',
+				'cols', 'min_width', 'max_width', 'fluid', 'responsive', 'header_and_footer',
 				'head_html', 'head_cc', 'head_cc_specific_cookie_types', 'head_visitor_only',
 				'foot_html', 'foot_cc', 'foot_cc_specific_cookie_types', 'foot_visitor_only'
 			], $sourceLayoutId);
@@ -128,7 +128,7 @@ class layoutAdm {
 		
 		foreach ([
 			'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_repeat', 'bg_position',
-			'name', 'cols', 'min_width', 'max_width', 'fluid', 'responsive'
+			'name', 'cols', 'min_width', 'max_width', 'fluid', 'responsive', 'header_and_footer'
 		] as $var) {
 			if (isset($submission[$var])) {
 				$values[$var] = $submission[$var];
@@ -139,6 +139,9 @@ class layoutAdm {
 		}
 		if (isset($submission['maxWidth'])) {
 			$values['max_width'] = $submission['maxWidth'];
+		}
+		if (isset($submission['headerAndFooter'])) {
+			$values['header_and_footer'] = $submission['headerAndFooter'];
 		}
 	
 		if (isset($submission['content_type'])) {
@@ -406,10 +409,9 @@ class layoutAdm {
 
 	
 
-	//Check how many items use a Layout or a Template Family
+	//Check how many items use a Layout or a site-wite header
 	//Formerly "checkTemplateUsage()"
-	public static function usage($layoutId, $publishedOnly = false, $countItems = true, $checkWhereItemLayerIsUsed = false, $slotName = false) {
-		
+	public static function usage($layoutId = false, $publishedOnly = false, $countItems = true, $checkWhereItemLayerIsUsed = false, $slotName = false) {
 		if ($countItems) {
 			$sql = "
 				SELECT COUNT(DISTINCT c.tag_id)";
@@ -454,10 +456,54 @@ class layoutAdm {
 			$sql .= "
 			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published')";
 		}
+		
+		
+		//Either check for a layout, or for a site-wide header
+		if ($layoutId) {
+			$sql .= "
+			AND v.layout_id = ". (int) $layoutId;
+		} else {
+			$sql .= "
+			AND t.header_and_footer = 1";
+		}
 	
 		
+	
+		if ($countItems) {
+			return \ze\sql::fetchValue($sql);
+		} else {
+			return \ze\sql::fetchValues($sql);
+		}
+	}
+	
+	public static function usageByTrashedContentItems($layoutId = false, $countItems = true) {
+		if ($countItems) {
+			$sql = "
+				SELECT COUNT(DISTINCT c.tag_id)";
+		} else {
+			$sql = "
+				SELECT DISTINCT c.tag_id";
+		}
+		
 		$sql .= "
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions as v
+			   ON c.id = v.id
+			  AND c.type = v.type
+			  AND v.version IN (c.admin_version, c.visitor_version)
+			INNER JOIN ". DB_PREFIX. "layouts AS t
+			   ON t.layout_id = v.layout_id
+			WHERE c.status IN ('trashed')";
+		
+		
+		//Either check for a layout, or for a site-wide header
+		if ($layoutId) {
+			$sql .= "
 			AND v.layout_id = ". (int) $layoutId;
+		} else {
+			$sql .= "
+			AND t.header_and_footer = 1";
+		}
 	
 		if ($countItems) {
 			return \ze\sql::fetchValue($sql);
@@ -467,9 +513,9 @@ class layoutAdm {
 	}
 
 
-	//Work out a slot to put this Plugin into, favouring empty "Main" slots. Default to Main_3.
+	//Work out a slot to put a new Plugin into, favouring "Main" slots.
 	//Formerly "getTemplateMainSlot()"
-	public static function mainSlotByName($layoutId, $guess1 = 'Main_3', $guess2 = 'Main') {
+	public static function mainSlotByName($layoutId) {
 		$sql = "
 			SELECT lsl.slot_name
 			FROM ". DB_PREFIX. "layout_slot_link AS lsl
@@ -482,8 +528,11 @@ class layoutAdm {
 			GROUP BY lsl.slot_name
 			ORDER BY
 				pitl.slot_name IS NULL DESC,
-				lsl.slot_name LIKE '". \ze\escape::like(\ze\escape::ascii($guess1)). "%' DESC,
-				lsl.slot_name LIKE '". \ze\escape::like(\ze\escape::ascii($guess2)). "%' DESC,
+				lsl.is_header ASC,
+				lsl.is_footer ASC,
+				lsl.slot_name LIKE 'Slot_Main%' DESC,
+				lsl.slot_name LIKE 'Main%' DESC,
+				lsl.ord,
 				lsl.slot_name
 			LIMIT 1";
 	
@@ -542,6 +591,32 @@ class layoutAdm {
 			return false;
 		} else {
 			return $slots;
+		}
+	}
+	
+	public static function mostCommonSkinId() {
+		//Get the most commonly used skin
+		$skin = \ze\sql::fetchAssoc("
+			SELECT
+				COUNT(DISTINCT c.tag_id) AS citems, 
+				s.id AS skinId
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version = c.admin_version
+			INNER JOIN ". DB_PREFIX. "layouts AS l
+			   ON l.layout_id = v.layout_id
+			INNER JOIN ". DB_PREFIX. "skins AS s
+			   ON s.id = l.skin_id
+			GROUP BY s.id
+			ORDER BY 1 DESC
+			LIMIT 1");
+		
+		if ($skin) {
+			return $skin['skinId'];
+		} else {
+			return 1;
 		}
 	}
 

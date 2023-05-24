@@ -75,15 +75,10 @@
 	margin:0;
 }
 
-.zenario_event_calendar .calendar_content .calendar_month_content table tr,
-.zenario_event_calendar .calendar_content .calendar_month_content table td {
-	
-}
-
 .zenario_event_calendar .calendar_content .calendar_month_content table td {
 	vertical-align:top;
 	border:1px solid #efefef;
-	background:#f9fbfc;
+	background:#f4f8fb;
 }
 
 .zenario_event_calendar .calendar_content .calendar_month_content table tr.day_header td {
@@ -172,6 +167,10 @@ body.webkit .zenario_event_calendar .calendar_content .calendar_month_content ta
 	color: #fff;
 	-webkit-border-radius:50%;
 	border-radius:50%;
+}
+
+.zenario_event_calendar .calendar_content .calendar_month_content table td.next_year {
+	background:#fdfaf3;
 }
 
 .zenario_event_calendar .calendar_content .calendar_month_content table td.current_month,

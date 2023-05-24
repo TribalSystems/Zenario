@@ -29,3 +29,27 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //This file should contain php scripts code for converting administrator data after some database structure changes
 
+
+//
+//	Zenario 9.4
+//
+
+
+//In 9.4 we're adding a new higher-level permission for managing site-wide things on a layout.
+//Initially, give this new permission to anyone who already had permissions to use Gridmaker.
+
+ze\dbAdm::revision(56880
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]action_admin_link`
+	SELECT '_PRIV_EDIT_SITEWIDE', admin_id
+	FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name = '_PRIV_EDIT_TEMPLATE'
+_sql
+);
+
+ze\dbAdm::revision(57141
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN ('_PRIV_HIDE_CONTENT_ITEM', '_PRIV_MANAGE_SPARE_ALIAS')
+_sql
+);

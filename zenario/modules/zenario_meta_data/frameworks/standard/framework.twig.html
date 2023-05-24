@@ -15,7 +15,7 @@
 		<div class="{{meta_data.class}}">
 			{% if show_labels %}
 				<{{meta_data.html_tag}}>
-				<span>{{meta_data.label}}:</span>
+				<span>{{meta_data.label}}</span>
 				</{{meta_data.html_tag}}>
 			{% endif %}
 			<img alt="{{meta_data.Writer_Alt}}" src="{{meta_data.Writer_Src}}"/>
@@ -25,18 +25,21 @@
 		<div class="{{meta_data.class}}">
 			{% if show_labels %}
 				<{{meta_data.html_tag}}>
-				<span>{{meta_data.label}}:</span>
+				<span>{{meta_data.label}}</span>
 				</{{meta_data.html_tag}}>
 			{% endif %}
 			
 			{{meta_data.Featured_Image_HTML}}
+			{% if meta_data.Image_credit %}
+				<span class="image_credit ">{{meta_data.Image_credit}}</span>
+			{% endif %}
 		</div>
 	
 	{% elseif key == "show_categories" %}
 		<div class="{{meta_data.class}}">
 			<{{meta_data.html_tag}}>
 			{% if show_labels %}
-				<span>{{meta_data.label}}:</span>
+				<span>{{meta_data.label}}</span>
 			{% endif %}
 				{% for item in categories %}
 					<a {% if item.Category_landing_page %} href="{{item.Category_landing_page|e}}" target="_blank" {% endif %}>
@@ -50,7 +53,7 @@
 		<div class="{{meta_data.class}}">
 			{% if show_labels %}
 				<{{meta_data.html_tag}}>
-				<span>{{meta_data.label}}:</span>
+				<span>{{meta_data.label}}</span>
 				</{{meta_data.html_tag}}>
 			{% endif %}
 			<span>{{meta_data.value}}</span>
@@ -60,7 +63,7 @@
 		<div class="{{meta_data.class}}">
 			<{{meta_data.html_tag}} {% if meta_data.class == 'page_title' and show_pinned_icon %} class="pinned_icon" {% endif %}>
 			{% if show_labels and meta_data.label %}
-				<span>{{meta_data.label}}:</span>
+				<span>{{meta_data.label}}</span>
 			{% endif %}
 			{{meta_data.value}}
 			</{{meta_data.html_tag}}>

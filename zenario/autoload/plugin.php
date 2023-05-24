@@ -126,9 +126,11 @@ class plugin {
 				pi.instance_id,
 				vcpi.id AS vcpi_id,
 				tsl.slot_name IS NOT NULL as `exists`,
+				tsl.is_header,
+				tsl.is_footer,
 				pi.level
 			FROM (
-				SELECT slot_name, module_id, instance_id, id, 'template' AS type, 2 AS level
+				SELECT slot_name, module_id, instance_id, 2 AS level
 				FROM ". DB_PREFIX. "plugin_layout_link
 				WHERE layout_id = ". (int) $layoutId.
 				  $whereSlotName;
@@ -136,7 +138,7 @@ class plugin {
 		if ($cID) {
 			$sql .= "
 			  UNION
-				SELECT slot_name, module_id, instance_id, id, 'item' AS type, 1 AS level
+				SELECT slot_name, module_id, instance_id, 1 AS level
 				FROM ". DB_PREFIX. "plugin_item_link
 				WHERE content_id = ". (int) $cID. "
 				  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
@@ -144,11 +146,21 @@ class plugin {
 				  $whereSlotName;
 		}
 	
+		if (\ze\row::get('layouts', 'header_and_footer', $layoutId)) {
+			$sql .= "
+			  UNION
+				SELECT slot_name, module_id, instance_id, 3 AS level
+				FROM ". DB_PREFIX. "plugin_sitewide_link
+				WHERE TRUE".
+				  $whereSlotName;
+		}
+	
 		$sql .= "
 			) AS pi";
 	
 		//Only show missing slots for Admins with the correct permissions
-		if (\ze::isAdmin() && (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT'))) {
+		$isAdmin = \ze::isAdmin();
+		if ($isAdmin && (\ze\priv::check('_PRIV_MANAGE_ITEM_SLOT') || \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT'))) {
 			$sql .= "
 			LEFT JOIN ". DB_PREFIX. "layout_slot_link AS tsl";
 		} else {
@@ -193,7 +205,13 @@ class plugin {
 				tsl.slot_name IS NOT NULL DESC,
 				tsl.ord,";
 		
-		if ($specificInstanceId || $specificSlotName) {
+		//In admin mode, if we're loading all slots, or loading the contents of a specific slot,
+		//we'll need to display anything that was in a slot but overriden on the item layer.
+		//We can't set a limit in this case.
+		//If we're looking up a specific plugin, or in visitor mode if we're looking up a specific
+		//slot and don't need to display diagnostic information on overriden contents,
+		//we can set a limit of 1 row. Do this to slightly increase the efficiency of the query.
+		if ($specificInstanceId || ($specificSlotName && !$isAdmin)) {
 			$sql .= "
 				pi.level ASC,
 				pi.slot_name
@@ -212,82 +230,110 @@ class plugin {
 	
 		$result = \ze\sql::select($sql);
 		while($row = \ze\sql::fetchAssoc($result)) {
+			$slotName = $row['slot_name'];
+			$moduleId = $row['module_id'];
+			$instanceId = $row['instance_id'];
 		
 			//Don't allow Opaque missing slots to count as missing slots
-			if (empty($row['module_id']) && !$row['exists']) {
+			if (empty($moduleId) && !$row['exists']) {
 				continue;
 			}
 		
 			//Check if this is a version-controlled Plugin instance
 			$isVersionControlled = false;
-			if ($row['module_id'] != 0 && $row['instance_id'] == 0) {
+			if ($moduleId != 0 && $instanceId == 0) {
 				$isVersionControlled = true;
 			
 				//Check if an instance has been inserted for this Content Item
 				if ($row['vcpi_id']) {
-					$row['instance_id'] = $row['vcpi_id'];
+					$instanceId = $row['vcpi_id'];
 			
 				//Otherwise, create and insert a new version controlled instance
 				} elseif ($runPlugins) {
-					$row['instance_id'] =
-						\ze\plugin::vcId($cID, $cType, $cVersion, $row['slot_name'], $row['module_id']);
+					$instanceId =
+						\ze\plugin::vcId($cID, $cType, $cVersion, $slotName, $moduleId);
 				}
+			}
+			
+			//In admin mode, watch out for placements on the layout and site-wide layers that have
+			//been overridden by something on the content-item layer
+			$overridden = null;
+			if ($isAdmin && isset($slotContents[$slotName])) {
+				$overridden = $slotContents[$slotName];
 			}
 		
 			//The "Opaque" option is a special case; let it through without an "is running" check
-			if ($row['module_id'] == 0) {
+			if ($moduleId == 0) {
 				//The "Opaque" option is used to hide plugins on the layout layer on specific pages.
 				//It's not valid if it's not actually covering anything up!
-				if ($checkOpaqueRulesAreValid && empty($slotContents[$row['slot_name']])) {
+				if ($checkOpaqueRulesAreValid && empty($slotContents[$slotName])) {
 					continue;
 				}
 			
-				$slotContents[$row['slot_name']] = ['instance_id' => 0, 'module_id' => 0];
-				$slotContents[$row['slot_name']]['error'] = \ze\admin::phrase('[Slot set to show nothing on this content item]');
-				$slotContents[$row['slot_name']]['level'] = $row['level'];
-				$slots[$row['slot_name']] = true;
+				$slotContents[$slotName] = ['instance_id' => 0, 'module_id' => 0];
+				$slotContents[$slotName]['error'] = \ze\admin::phrase('[Slot set to show nothing on this content item]');
+				$slotContents[$slotName]['level'] = $row['level'];
+				$slotContents[$slotName]['is_header'] = $row['is_header'];
+				$slotContents[$slotName]['is_footer'] = $row['is_footer'];
+				$slots[$slotName] = true;
+				
+				if ($isAdmin && $overridden !== null) {
+					$slotContents[$slotName]['overridden'] = $overridden;
+				}
 		
 			//Otherwise, if the instance is running, allow it to be added to the page
-			} elseif (!empty($modules[$row['module_id']])) {
-				$slotContents[$row['slot_name']] = $modules[$row['module_id']];
-				$slotContents[$row['slot_name']]['level'] = $row['level'];
-				$slotContents[$row['slot_name']]['module_id'] = $row['module_id'];
-				$slotContents[$row['slot_name']]['instance_id'] = $row['instance_id'];
-				$slotContents[$row['slot_name']]['css_class'] = $modules[$row['module_id']]['css_class_name'];
+			} elseif (!empty($modules[$moduleId])) {
+				$slotContents[$slotName] = $modules[$moduleId];
+				$slotContents[$slotName]['level'] = $row['level'];
+				$slotContents[$slotName]['is_header'] = $row['is_header'];
+				$slotContents[$slotName]['is_footer'] = $row['is_footer'];
+				$slotContents[$slotName]['module_id'] = $moduleId;
+				$slotContents[$slotName]['instance_id'] = $instanceId;
+				$slotContents[$slotName]['css_class'] = $modules[$moduleId]['css_class_name'];
 			
 				if ($isVersionControlled) {
-					$slotContents[$row['slot_name']]['content_id'] = $cID;
-					$slotContents[$row['slot_name']]['content_type'] = $cType;
-					$slotContents[$row['slot_name']]['content_version'] = $cVersion;
-					$slotContents[$row['slot_name']]['slot_name'] = $row['slot_name'];
+					$slotContents[$slotName]['content_id'] = $cID;
+					$slotContents[$slotName]['content_type'] = $cType;
+					$slotContents[$slotName]['content_version'] = $cVersion;
+					$slotContents[$slotName]['slot_name'] = $slotName;
 				}
 			
-				$slotContents[$row['slot_name']]['cache_if'] = [];
-				$slotContents[$row['slot_name']]['clear_cache_by'] = [];
+				$slotContents[$slotName]['cache_if'] = [];
+				$slotContents[$slotName]['clear_cache_by'] = [];
 			
-				$slots[$row['slot_name']] = true;
+				$slots[$slotName] = true;
+				
+				if ($isAdmin && $overridden !== null) {
+					$slotContents[$slotName]['overridden'] = $overridden;
+				}
 		
 			//Suspended modules in admin mode
-			} elseif (!empty($suspendedModules[$row['module_id']])) {
-				$slotContents[$row['slot_name']] = $suspendedModules[$row['module_id']];
-				$slotContents[$row['slot_name']]['level'] = $row['level'];
-				$slotContents[$row['slot_name']]['module_id'] = $row['module_id'];
-				$slotContents[$row['slot_name']]['instance_id'] = $row['instance_id'];
-				$slotContents[$row['slot_name']]['css_class'] = $suspendedModules[$row['module_id']]['css_class_name'];
+			} elseif (!empty($suspendedModules[$moduleId])) {
+				$slotContents[$slotName] = $suspendedModules[$moduleId];
+				$slotContents[$slotName]['level'] = $row['level'];
+				$slotContents[$slotName]['is_header'] = $row['is_header'];
+				$slotContents[$slotName]['is_footer'] = $row['is_footer'];
+				$slotContents[$slotName]['module_id'] = $moduleId;
+				$slotContents[$slotName]['instance_id'] = $instanceId;
+				$slotContents[$slotName]['css_class'] = $suspendedModules[$moduleId]['css_class_name'];
 			
 				if ($isVersionControlled) {
-					$slotContents[$row['slot_name']]['content_id'] = $cID;
-					$slotContents[$row['slot_name']]['content_type'] = $cType;
-					$slotContents[$row['slot_name']]['content_version'] = $cVersion;
-					$slotContents[$row['slot_name']]['slot_name'] = $row['slot_name'];
+					$slotContents[$slotName]['content_id'] = $cID;
+					$slotContents[$slotName]['content_type'] = $cType;
+					$slotContents[$slotName]['content_version'] = $cVersion;
+					$slotContents[$slotName]['slot_name'] = $slotName;
 				}
 			
-				$slotContents[$row['slot_name']]['cache_if'] = [];
-				$slotContents[$row['slot_name']]['clear_cache_by'] = [];
+				$slotContents[$slotName]['cache_if'] = [];
+				$slotContents[$slotName]['clear_cache_by'] = [];
 				
-				$slotContents[$row['slot_name']]['isSuspended'] = true;
+				$slotContents[$slotName]['isSuspended'] = true;
 			
-				$slots[$row['slot_name']] = true;
+				$slots[$slotName] = true;
+				
+				if ($isAdmin && $overridden !== null) {
+					$slotContents[$slotName]['overridden'] = $overridden;
+				}
 			}
 		}
 	
@@ -407,7 +453,7 @@ class plugin {
 			$runPlugins, $overrideSettings = false, $overrideFrameworkAndCSS = false
 	) {
 	
-		if (!($_REQUEST['method_call'] ?? false)
+		if (!\ze::request('method_call')
 		&& isset(\ze::$cacheEnv) && isset(\ze::$allReq) && isset(\ze::$knownReq)
 		&& \ze::setting('caching_enabled') && \ze::setting('cache_web_pages')) {
 	
@@ -498,8 +544,8 @@ class plugin {
 														$slotContents[$slotNameNestId]['class']->pageFoot = file_get_contents($chPath. 'foot.html');
 													}
 													if (isset($vars['l'])) {
-														foreach ($vars['l'] as $lib => $dummy) {
-															\ze::requireJsLib($lib);
+														foreach ($vars['l'] as $lib => $stylesheet) {
+															\ze::requireJsLib($lib, $stylesheet);
 														}
 														unset($vars['l']);
 													}
@@ -703,7 +749,7 @@ class plugin {
 	
 	public static function preSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 		if (\ze::$canCache
-		&& !($_REQUEST['method_call'] ?? false)
+		&& !\ze::request('method_call')
 		&& isset(\ze::$cacheEnv) && isset(\ze::$allReq) && isset(\ze::$knownReq)
 		&& \ze::setting('caching_enabled') && \ze::setting('cache_web_pages')
 		&& empty(\ze::$slotContents[$slotName]['served_from_cache'])) {
@@ -780,7 +826,7 @@ class plugin {
 	
 	public static function postSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 		if (\ze::$canCache
-		&& !($_REQUEST['method_call'] ?? false)
+		&& !\ze::request('method_call')
 		&& isset(\ze::$cacheEnv) && isset(\ze::$allReq) && isset(\ze::$knownReq)
 		&& \ze::setting('caching_enabled') && \ze::setting('cache_web_pages')
 		&& empty(\ze::$slotContents[$slotName]['served_from_cache'])) {
@@ -1073,11 +1119,22 @@ class plugin {
 		if (!isset(\ze::$slotContents[$slotName])) {
 			\ze::$slotContents[$slotName] = [];
 		}
+		
+		$slot = &\ze::$slotContents[$slotName];
 	
-		if (!isset(\ze::$slotContents[$slotName]['class']) || empty(\ze::$slotContents[$slotName]['class'])) {
-			\ze::$slotContents[$slotName]['class'] = new \ze\moduleBaseClass;
-			\ze::$slotContents[$slotName]['class']->setInstance(
+		if (!isset($slot['class']) || empty($slot['class'])) {
+			$slot['class'] = new \ze\moduleBaseClass;
+			$slot['class']->setInstance(
 				[\ze::$cID, \ze::$cType, \ze::$cVersion, $slotName, false, false, false, false, false, false, false, false, false]);
+		}
+		
+		//Add flags to say whether this slot is in the header, and in the footer.
+		//(The slotContents() function only adds these flags for full slots, not empty ones, so we might need to set them here.)
+		if (!isset($slot['is_header'])) {
+			if ($slotInfo = \ze\row::get('layout_slot_link', ['is_header', 'is_footer'], ['layout_id' => \ze::$layoutId, 'slot_name' => $slotName])) {
+				$slot['is_header'] = $slotInfo['is_header'];
+				$slot['is_footer'] = $slotInfo['is_footer'];
+			}
 		}
 	}
 

@@ -227,3 +227,16 @@ body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-content.zenario_cache_i
 	left:0;
 	top:3px;
 }
+
+
+
+/*
+	Some tweaks for icons for nested plugins
+*/
+
+.zenario_slot .zenario_slot x-zenario-cache-info.zenario_cache_info x-zenario-cache-info {
+	right: 45px;
+	width: 17px;
+	height: 17px;
+	background-size: 17px 17px;
+}

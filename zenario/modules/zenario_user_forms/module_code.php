@@ -44,8 +44,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $userId = false;
 	
 	public function init() {
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.sortable.min.js');
+		ze::requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
+		ze::requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable.min.js');
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
@@ -57,7 +57,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//This plugin must have a form selected
 		if (!$formId) {
 			if (ze\admin::id()) {
-				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must select a form for this plugin.')) . '</p>';
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("No form has been selected, please edit plugin settings to select a form.")) . '</p>';
 			}
 			return true;
 		}
@@ -66,7 +66,45 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		$this->dataset = ze\dataset::details('users');
 		$this->form = static::getForm($formId);
+		
+		if (!$this->form) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("The selected form could not be found, please edit plugin settings to select a different form.")) . '</p>';
+			}
+			return true;
+		}
+		
 		$t = $this->form['translate_text'];
+
+		$recaptchaFormPolicy = ze::setting('recaptcha_form_policy');
+		if ($this->enableCaptcha() && $this->form['captcha_type'] == 'pictures') {
+			if (!$recaptchaFormPolicy || $recaptchaFormPolicy == 'require_visitor_accepts_analytics_and_functional_cookies') {
+				if (!ze\cookie::canSet('functionality') || !ze\cookie::canSet('analytics')) {
+					$this->displayMode = $this->setting('display_mode');
+
+					$formTitle = $this->getFormTitle(false, 'Cannot load form');
+					
+					$html = '
+						<div id="' . htmlspecialchars($this->containerId) . '_form_wrapper" class="form_wrapper">' . 
+							$formTitle . '
+							<div id="' . $this->slotName . '" class="user_form">
+								<p class="error">
+									<span class="zenario_cc_manage">
+										' . $this->phrase(
+											'Sorry, this form requires you to accept Analytics and Functional cookies before it can load. Click [[link_start]]here[[link_end]] to allow these types of cookie.',
+											['link_start' => '<a onclick="zenario.manageCookies();">', 'link_end' => '</a>']
+										) . $this->getCloseButtonHTML() . '
+									</span>
+								</p>
+							</div>
+						</div>';
+					
+
+					$this->data['form_HTML'] = $html;
+					return true;
+				}
+			}
+		}
 		
 		//Email verification for registration forms
 		if ($this->form['type'] == 'registration') {
@@ -167,9 +205,44 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				return true;
 			}
+			
+			if (!ze\module::inc('zenario_extranet')) {
+				if (ze\admin::id()) {
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Extranet Base Module must be running if the "Save and complete later" feature is enabled.')) . '</p>';
+				}
+				return true;
+			}
+			
 			if (!$this->userId) {
 				if (ze\admin::id()) {
 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must be logged in as an extranet user to see this plugin.')) . '</p>';
+				}
+				return true;
+			}
+			
+			$scheduledTaskManagerProblemMessage = '';
+			if (ze\module::inc('zenario_scheduled_task_manager')) {
+				if (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
+					if (ze\admin::id()) {
+						$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Scheduled Task Manager master switch is not on. The form will not be displayed to visitors.')) . '</p>';
+					}
+					return true;
+				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
+					if (ze\admin::id()) {
+						$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Scheduled Task Manager is running, but the crontab is not invoking it. The form will not be displayed to visitors.')) . '</p>';
+					}
+					return true;
+				} else {
+					if (!ze\row::get('jobs', 'status', ['job_name' => 'jobDataProtectionCleanup', 'enabled' => true])) {
+						if (ze\admin::id()) {
+							$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The scheduled task jobDataProtectionCleanup is not running. Without this the form will not be displayed. You must enable this scheduled task for data protection around saved responses.')) . '</p>';
+						}
+						return true;
+					}
+				}
+			} else {
+				if (ze\admin::id()) {
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Scheduled Task Manager is not running. The form will not be displayed to visitors.')) . '</p>';
 				}
 				return true;
 			}
@@ -179,7 +252,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return true;
 		}
 		
-		$this->reloaded = ($_POST['reloaded'] ?? false) && ($this->instanceId == ($_POST['instanceId'] ?? false));
+		$this->reloaded = ze::post('reloaded') && ($this->instanceId == ze::post('instanceId'));
 		$reloadedWithAjax = $this->reloaded && $this->methodCallIs('refreshPlugin');
 		
 		//Decide whether to display plugin contents in a modal window
@@ -187,7 +260,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$loadContentInColorbox = false;
 		$this->displayMode = $this->setting('display_mode');
 		if ($this->displayMode == 'in_modal_window') {
-			if ($reloadedWithAjax || ($_GET['showInFloatingBox'] ?? false)) {
+			if ($reloadedWithAjax || ze::get('showInFloatingBox')) {
 				$showInFloatingBox = true;
 				$floatingBoxParams = [
 					'escKey' => false, 
@@ -223,8 +296,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		if (!empty($_GET['formPageHash']) && empty($_POST) && empty($_FILES) && !empty($_SERVER['CONTENT_LENGTH'])) {
-			$max = $this->getMaxPostSize();
-			$this->errors['global_top'] = static::fPhrase('Exceeded form size limit of [[max]].', ['max' => $max], $t);
+			$max = $this->getMaxPostOrUploadSize();
+			$this->errors['global_top'] = static::fPhrase('Exceeded form size limit of [[max]].', ['max' => ze\file::fileSizeConvert($max)], $t);
 			$this->formPageHash = $_GET['formPageHash'];
 			
 		} elseif (!$this->reloaded) {
@@ -239,9 +312,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				$partialSaveFound = ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['user_id' => $this->userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
 				if ($partialSaveFound) {
-					if (!$this->form['allow_clear_partial_data'] || ($_POST['resume'] ?? false)) {
+					if (!$this->form['allow_clear_partial_data'] || ze::post('resume')) {
 						$this->loadPartialSaveData($this->userId, $formId, $getRequestValue);
-					} elseif ($this->form['allow_clear_partial_data'] && ($_POST['clear'] ?? false)) {
+					} elseif ($this->form['allow_clear_partial_data'] && ze::post('clear')) {
 						static::deleteOldPartialResponse($formId, $this->userId, $getRequestValue);
 					} else {
 						$html = $this->getPartialSaveResumeFormHTML();
@@ -291,10 +364,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			];
 			
 		}
-		if (!$this->pages) {
-			return false;
-		}
-		$pageId = reset($this->pages)['id'];
+		
+		$pageId = (!empty($this->pages) ? reset($this->pages)['id'] : 0);
 		$currentPageId = $_POST['current_page'] ?? $pageId;
 		
 		//Get fields per page
@@ -448,7 +519,24 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			'set_predefined_text_warning' => static::fPhrase('This will override the existing content, are you sure?', [], $t)
 		];
 		
-		$this->callScript('zenario_user_forms', 'initForm', $this->containerId, $this->slotName, $this->pluginAJAXLink(), $colorboxFormHTML, $formFinalSubmitSuccessfull, $this->inFullScreen, $allowProgressBarNavigation, $pageId, $maxPageReached, $showLeavingPageMessage = true, $isErrors, json_encode($extraPhrases));
+		$this->callScript(
+			'zenario_user_forms',
+			'initForm',
+			$this->containerId,
+			$this->slotName,
+			$this->pluginAJAXLink(),
+			$colorboxFormHTML,
+			$formFinalSubmitSuccessfull,
+			$this->inFullScreen,
+			$allowProgressBarNavigation,
+			$pageId,
+			$maxPageReached,
+			$showLeavingPageMessage = true,
+			$isErrors,
+			json_encode($extraPhrases),
+			$maxUploadSize = $this->getMaxPostOrUploadSize(),
+			$maxUploadSizeFormatted = ze\file::fileSizeConvert($maxUploadSize)
+		);
 		return true;
 	}
 	
@@ -518,7 +606,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								$cacheFile = ['name' => urldecode($file['name'][$j]), 'path' => $newName];
 								
 								//If requested, make thumbnails
-								if ($_GET['thumbnail'] ?? false) {
+								if (ze::get('thumbnail')) {
 									$imageString = file_get_contents($newName);
 									$imageMimeType = ze\file::mimeType($newName);
 									$imageSize = getimagesize($newName);
@@ -587,7 +675,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				
 				//Step 2: combine all pdfs into a single file
-				$rawUserFullPDFFileName = (($_POST['name'] ?? false) ? ($_POST['name'] ?? false) : 'my-combined-file');
+				$rawUserFullPDFFileName = (ze::post('name') ? ze::post('name') : 'my-combined-file');
 				$fullPDFName = preg_replace('/[^\w\-\.]/', '_', $rawUserFullPDFFileName);
 				
 				if (substr($fullPDFName, -4) != '.pdf') {
@@ -766,8 +854,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id'], $keys);
 			while ($response = ze\sql::fetchAssoc($result)) {
-				ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id' => $response['id']]);
-				ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $response['id']]);
+				static::deleteFormPartialResponse($response['id']);
 			}
 		} else {
 			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', []);
@@ -904,7 +991,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $html;
 	}
 	
-	public static function deleteFormResponse($responseId) {
+	public static function deleteFormResponse($responseId, $onlyDeleteFiles = false) {
 		ze\module::sendSignal('eventFormResponseDeleted', [$responseId]);
 
 		$thisResponseFileIdsArray = $otherFullResponsesAndPartialResponsesFileIdsArray = [];
@@ -979,8 +1066,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 
-		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId]);
-		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
+		if (!$onlyDeleteFiles) {
+			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId]);
+			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
+		}
 	}
 
 	public static function deleteFormPartialResponse($partialResponseId) {
@@ -1339,7 +1428,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$fieldId = static::getRepeatFieldId($row['form_field_id'], $row['field_row']);
 				if (isset($fields[$fieldId])) {
-					$fields[$fieldId]['value'] = static::getFieldValueFromStored($fields[$fieldId], $row['value']);
+					if (!empty($fields[$fieldId]['type']) && $fields[$fieldId]['type'] == 'sortable_selection') {
+						$fields[$fieldId]['value'] = $row['value'];
+					} else {
+						$fields[$fieldId]['value'] = static::getFieldValueFromStored($fields[$fieldId], $row['value']);
+					}
 				}
 			}
 		}
@@ -1426,7 +1519,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.filter_on_field,
 				uff.repeat_start_id,
 				uff.invert_dataset_result,
-				uff.allow_converting_multiple_images_to_pdf,
 				cdf.id AS dataset_field_id, 
 				cdf.type, 
 				cdf.db_column, 
@@ -1586,7 +1678,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$printButtonPages = $this->setting('print_page_button_pages');
 				if ($printButtonPages) {
 					$printButtonPages = explode(',', $printButtonPages);
-					if (in_array($this->pages[$pageId]['ord'], $printButtonPages)) {
+					if (!empty($pageId) && in_array($this->pages[$pageId]['ord'], $printButtonPages)) {
 						$topButtonsHTML .= '<div id="' . htmlspecialchars($this->containerId) . '_print_page" class="print_page">' . htmlspecialchars(static::fPhrase('Print', [], $t)) . '</div>';
 						
 					}
@@ -1612,7 +1704,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$switcherHTML = '';
 			$hasPageVisibleOnSwitcher = false;
 			$switcherHTML .= '<div class="page_switcher"><ul class="progress_bar">';
-			$page = $this->pages[$pageId];
+			$page = ((!empty($this->pages) && $pageId) ? $this->pages[$pageId] : 0);
 			
 			$maxPageReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] ?? $pageId;
 			
@@ -1723,7 +1815,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html .= '</div>';
 		
 		//Only show extranet links on the first page of a form
-		if ($this->pages[$pageId]['ord'] == 1 && !$this->setting('hide_extranet_links')) {
+		if (!empty($this->pages) && $pageId && $this->pages[$pageId]['ord'] == 1 && !$this->setting('hide_extranet_links')) {
 			$html .= $this->getExtranetLinksHTML(['resend' => true, 'login' => true]);
 		}
 		return $html;
@@ -1733,11 +1825,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html = '';
 		$t = $this->form['translate_text'];
 		$isMultiPageForm = count($this->pages) > 1;
-		if ($isMultiPageForm) {
+		if ($pageId && $isMultiPageForm) {
 			$html .= '<fieldset id="' . htmlspecialchars($this->containerId) . '_page_' . htmlspecialchars($pageId) . '" class="page_' . (int)$this->pages[$pageId]['ord'] . '">';
 		}
 		
-		$onLastPage = ($pageId == end($this->pages)['id']);
+		$onLastPage = (!empty($this->pages) && $pageId == end($this->pages)['id']);
 		$button = $this->getCustomButtons($pageId, $onLastPage, 'top');
 		if ($button) {
 			$html .= $button;
@@ -1777,74 +1869,76 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 		} else {
-			foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
-				$field = $this->fields[$fieldId];
-				if ($field['type'] == 'repeat_start') {
-					$html .= $this->getWrapperDivHTML($field, $wrapDivOpen, $currentDivWrapClass);
-					//Repeat start div
-					$html .= '<div id="' . htmlspecialchars($this->containerId) . '_repeat_block_' . (int)$fieldId . '" data-id="' . (int)$fieldId . '" class="repeat_block repeat_block_' . (int)$fieldId;
-					if ($field['css_classes']) {
-						$html .= ' ' . htmlspecialchars($field['css_classes']);
-					}
-					if ($field['visibility'] == 'visible_on_condition') {
-						$html .= ' visible_on_condition';
-					}
-					$html .= '"';
-					if ($this->isFieldHidden($field)) {
-						$html .= ' style="display:none;"';
-					}
-					if ($field['visibility'] == 'visible_on_condition') {
-						$html .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
-					}
-					$html .= '>';
-					$html .= '<input type="hidden" name="' . htmlspecialchars(static::getFieldName($fieldId, $field['custom_code_name'])) . '" value="' . htmlspecialchars(implode(',', $field['rows'])) . '">';
+			if (!empty($this->pages) && $pageId && isset($this->pages[$pageId])) {
+				foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
+					$field = $this->fields[$fieldId];
+					if ($field['type'] == 'repeat_start') {
+						$html .= $this->getWrapperDivHTML($field, $wrapDivOpen, $currentDivWrapClass);
+						//Repeat start div
+						$html .= '<div id="' . htmlspecialchars($this->containerId) . '_repeat_block_' . (int)$fieldId . '" data-id="' . (int)$fieldId . '" class="repeat_block repeat_block_' . (int)$fieldId;
+						if ($field['css_classes']) {
+							$html .= ' ' . htmlspecialchars($field['css_classes']);
+						}
+						if ($field['visibility'] == 'visible_on_condition') {
+							$html .= ' visible_on_condition';
+						}
+						$html .= '"';
+						if ($this->isFieldHidden($field)) {
+							$html .= ' style="display:none;"';
+						}
+						if ($field['visibility'] == 'visible_on_condition') {
+							$html .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
+						}
+						$html .= '>';
+						$html .= '<input type="hidden" name="' . htmlspecialchars(static::getFieldName($fieldId, $field['custom_code_name'])) . '" value="' . htmlspecialchars(implode(',', $field['rows'])) . '">';
 				
-					//Repeat start title
-					if ($field['label']) {
-						$html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</div>';
-					}
+						//Repeat start title
+						if ($field['label']) {
+							$html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</div>';
+						}
 				
-					$html .= '<div class="repeat_rows">';
+						$html .= '<div class="repeat_rows">';
 				
-				} elseif ($field['type'] == 'repeat_end') {
-					$repeatStartField = $this->fields[$field['repeat_start_id']];
-					if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) < $repeatStartField['max_rows']) {
-						$addRowLabel = $repeatStartField['add_row_label'] ? $repeatStartField['add_row_label'] : 'Add +';
-						$html .= '<div class="repeat_block_buttons"><div class="add">' . htmlspecialchars(static::fPhrase($addRowLabel, [], $t)) . '</div></div>';
-					}
+					} elseif ($field['type'] == 'repeat_end') {
+						$repeatStartField = $this->fields[$field['repeat_start_id']];
+						if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) < $repeatStartField['max_rows']) {
+							$addRowLabel = $repeatStartField['add_row_label'] ? $repeatStartField['add_row_label'] : 'Add +';
+							$html .= '<div class="repeat_block_buttons"><div class="add">' . htmlspecialchars(static::fPhrase($addRowLabel, [], $t)) . '</div></div>';
+						}
 
-					if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) == $repeatStartField['max_rows']) {
-						$html .= '<div class="max_rows_note">' . ze\lang::phrase("Maximum number of [[max_rows]] reached, you can't add more", ['max_rows' => $repeatStartField['max_rows']]) . '</div>';
-					}
-					//End start and repeat_rows divs
-					$html .= '</div></div>';
-				} else {
-					if (!empty($field['firstRepeatBlockField'])) {
-						$html .= '<div class="repeat_row row_' . (int)$field['row'] . '"><div class="repeat_fields">';
-					}
-				
-					//Seperate div wraps for fields in a repeat block
-					if (!empty($field['repeat_start_id'])) {
-						$fieldWrapDivOpen = &$repeatFieldWrapDivOpen;
-						$fieldCurrentDivWrapClass = &$repeatFieldCurrentDivWrapClass;
+						if (is_array($repeatStartField['rows']) && count($repeatStartField['rows']) == $repeatStartField['max_rows']) {
+							$html .= '<div class="max_rows_note">' . ze\lang::phrase("Maximum number of [[max_rows]] reached, you can't add more", ['max_rows' => $repeatStartField['max_rows']]) . '</div>';
+						}
+						//End start and repeat_rows divs
+						$html .= '</div></div>';
 					} else {
-						$fieldWrapDivOpen = &$wrapDivOpen;
-						$fieldCurrentDivWrapClass = &$currentDivWrapClass;
-					}
-				
-					$html .= $this->getWrapperDivHTML($field, $fieldWrapDivOpen, $fieldCurrentDivWrapClass);
-					$html .= $this->getFieldHTML($fieldId, $pageId, $readonly);
-				
-				
-					if (!empty($field['lastRepeatBlockField'])) {
-						if ($fieldWrapDivOpen) {
-							$html .= $this->getWrapperDivHTML($field, $fieldWrapDivOpen, $fieldCurrentDivWrapClass, true);
+						if (!empty($field['firstRepeatBlockField'])) {
+							$html .= '<div class="repeat_row row_' . (int)$field['row'] . '"><div class="repeat_fields">';
 						}
-						$html .= '</div>';
-						if (!empty($field['repeatBlockDeleteButton'])) {
-							$html .= '<div class="delete" data-row="' . (int)$field['row'] . '">' . static::fPhrase('Delete', [], $t) . '</div>';
+				
+						//Seperate div wraps for fields in a repeat block
+						if (!empty($field['repeat_start_id'])) {
+							$fieldWrapDivOpen = &$repeatFieldWrapDivOpen;
+							$fieldCurrentDivWrapClass = &$repeatFieldCurrentDivWrapClass;
+						} else {
+							$fieldWrapDivOpen = &$wrapDivOpen;
+							$fieldCurrentDivWrapClass = &$currentDivWrapClass;
 						}
-						$html .= '</div>';
+				
+						$html .= $this->getWrapperDivHTML($field, $fieldWrapDivOpen, $fieldCurrentDivWrapClass);
+						$html .= $this->getFieldHTML($fieldId, $pageId, $readonly);
+				
+				
+						if (!empty($field['lastRepeatBlockField'])) {
+							if ($fieldWrapDivOpen) {
+								$html .= $this->getWrapperDivHTML($field, $fieldWrapDivOpen, $fieldCurrentDivWrapClass, true);
+							}
+							$html .= '</div>';
+							if (!empty($field['repeatBlockDeleteButton'])) {
+								$html .= '<div class="delete" data-row="' . (int)$field['row'] . '">' . static::fPhrase('Delete', [], $t) . '</div>';
+							}
+							$html .= '</div>';
+						}
 					}
 				}
 			}
@@ -1893,9 +1987,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($isMultiPageForm && !$onLastPage) {
 			$html .= '<input type="button" value="' . htmlspecialchars(static::fPhrase($this->pages[$pageId]['next_button_text'], [], $t)) . '" class="next"/>';
 		}
-		//Final submit button
-		if ($this->showSubmitButton() && $onLastPage) {
-			$html .= '<input type="button" class="next submit" value="' . htmlspecialchars(static::fPhrase($this->form['submit_button_text'], [], $t)) . '"/>';
+		
+		//Final submit button: display on the last page, or if there are no form fields.
+		if (empty($this->pages) || ($this->showSubmitButton() && $onLastPage)) {
+			$html .= '<input type="button" class="next submit" value="' . htmlspecialchars(static::fPhrase($this->form['submit_button_text'], [], $t)) . '" ' . (empty($this->pages) ? 'disabled="true"' : '') . ' />';
 		}
 		
 		$button = $this->getCustomButtons($pageId, $onLastPage, 'last');
@@ -1947,7 +2042,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	public function addToPageHead() {
 		if ($this->enableCaptcha() && $this->form['captcha_type'] == 'pictures') {
-			$this->loadCaptcha2Lib();
+			$recaptchaFormPolicy = ze::setting('recaptcha_form_policy');
+			if ($recaptchaFormPolicy != 'show_form_without_recaptcha') {
+				$this->loadCaptcha2Lib();
+			}
 		}
 	}
 	
@@ -2555,13 +2653,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 										<input class="upload_complete_files" type="file" name="file_upload[]" multiple>
 									</div>
 								</div>';
-				if ($field['allow_converting_multiple_images_to_pdf']) {
-					$html .= '
-								<div class="section_wrap">
-									<label>' . htmlspecialchars(static::fPhrase('Upload multiple images as a single PDF', [], $t)) . '</label>
-									<input type="button" class="open_popup_2" value="' . htmlspecialchars(static::fPhrase('Start...', [], $t)) . '">
-								</div>';
-				}
 				
 				$html .= '
 								<div class="section_wrap save">
@@ -3131,19 +3222,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								}
 								
 								//Check $_FILES[$name]['error'] value.
-								switch ($_FILES[$name]['error']) {
-									case UPLOAD_ERR_OK:
-										break;
-									case UPLOAD_ERR_NO_FILE:
-										//Handled by validateFormField
-										//throw new RuntimeException(static::fPhrase('No file sent.', [], $t));
-										break;
-									case UPLOAD_ERR_INI_SIZE:
-									case UPLOAD_ERR_FORM_SIZE:
-										$max = $this->getMaxUploadSize();
-										throw new RuntimeException(static::fPhrase('Exceeded filesize limit of [[max]].', ['max' => $max], $t));
-									default:
-										throw new RuntimeException(static::fPhrase('Unknown errors.', [], $t));
+								$max = $this->getMaxPostOrUploadSize();
+								if (ze::in($_FILES[$name]['error'], UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE) || $_FILES[$name]['size'] > $max) {
+									throw new RuntimeException(static::fPhrase('Exceeded filesize limit of [[max]].', ['max' => ze\file::fileSizeConvert($max)], $t));
+								} else {
+									switch ($_FILES[$name]['error']) {
+										case UPLOAD_ERR_OK:
+											break;
+										case UPLOAD_ERR_NO_FILE:
+											//Handled by validateFormField
+											//throw new RuntimeException(static::fPhrase('No file sent.', [], $t));
+											break;
+										default:
+											throw new RuntimeException(static::fPhrase('Unknown errors.', [], $t));
+									}
 								}
 								
 								//File is valid, add to cache and remember the location
@@ -3168,7 +3260,28 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						break;
 					case 'file_picker':
 					case 'document_upload':
+						$max = $this->getMaxPostOrUploadSize();
 						$files = json_decode($post[$name], true);
+						
+						try {
+							if (!empty($files)) {
+								$totalSizeForMultiFileUploader = 0;
+							
+								foreach ($files as $file) {
+									if (!empty($file['path']) && file_exists($file['path'])) {
+										$fileSize = filesize($file['path']);
+										$totalSizeForMultiFileUploader += $fileSize;
+									
+										if ($totalSizeForMultiFileUploader > $max) {
+											throw new RuntimeException(static::fPhrase('Exceeded filesize limit of [[max]].', ['max' => ze\file::fileSizeConvert($max)], $t));
+											break;
+										}
+									}
+								}
+							}
+						} catch (RuntimeException $e) {
+							$this->errors[$fieldId] = $e->getMessage();
+						}
 						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $files ? $files : [];
 						break;
 				}
@@ -3198,14 +3311,24 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	private function getMaxUploadSize() {
-		$bytes = $this->convertPHPSizeToBytes(ini_get('upload_max_filesize'));
-		return ze\file::fileSizeConvert($bytes);
-	}
+	private function getMaxPostOrUploadSize() {
+		$sizesToCheck = [];
+		$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+		$sizesToCheck[] = $apacheMaxFilesize;
+		
+		$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+		$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+		$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+		$sizesToCheck[] = $zenarioMaxFilesize;
 	
-	private function getMaxPostSize() {
-		$bytes = $this->convertPHPSizeToBytes(ini_get('post_max_size'));
-		return ze\file::fileSizeConvert($bytes);
+		if (ze::setting('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size') {
+			$userFormsMaxFilesizeValue = ze::setting('zenario_user_forms_content_max_filesize');
+			$userFormsMaxFilesizeUnit = ze::setting('zenario_user_forms_content_max_filesize_unit');
+			$userFormsMaxFilesize = ze\file::fileSizeBasedOnUnit($userFormsMaxFilesizeValue, $userFormsMaxFilesizeUnit);
+			$sizesToCheck[] = $userFormsMaxFilesize;
+		}
+		
+		return min($sizesToCheck);
 	}
 	
 	private function convertPHPSizeToBytes($size) {
@@ -3272,7 +3395,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$fields = static::getFormFieldsStatic($partialSave['form_id'], [], false, $loadFromPartialResponseId = $partialSave['id']);
 		foreach ($fields as $fieldId => $field) {
 			if (isset($field['value'])) {
-				$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $field['value'];
+				if ($field['type'] == 'sortable_selection') {
+					//For sortable selection field, the selected values and their order
+					//for both the left and right-hand side column are stored in the following format:
+					//comma-separated list for left-hand side column, colon, then comma-separated list for right-hand side column.
+					$sortableSelectionFieldLeftAndRightHandSideValues = explode(';', $field['value']);
+					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values'] = $sortableSelectionFieldLeftAndRightHandSideValues[0];
+					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values'] = $sortableSelectionFieldLeftAndRightHandSideValues[1];
+				} else {
+					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $field['value'];
+				}
 			}
 		}
 	}
@@ -3427,7 +3559,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							$fieldLov = $this->getFieldCurrentLOV($fieldId);
 							$fieldLovCount = count($fieldLov);
 						
-// 							var_dump(count($value)); var_dump($fieldLovCount);
 							if ($fieldLovCount > 0 && count($value) != $fieldLovCount) {
 								return static::fPhrase($field['required_error_message'], [], $t);
 							}
@@ -3488,6 +3619,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					break;
 				case 'number':
 					if (!static::validateNumericInput($value)) {
+						return static::fPhrase($field['field_validation_error_message'], [], $t);
+					}
+					break;
+				case 'phone_number':
+					if (!static::validatePhoneNumberInput($value)) {
 						return static::fPhrase($field['field_validation_error_message'], [], $t);
 					}
 					break;
@@ -3991,11 +4127,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($this->parentNest) {
 				$backs = $this->parentNest->getBackLinks();
 				foreach ($backs as $state => $back) {
-					$menuNodes[] = $this->parentNest->formatTitleText(ze\lang::phrase($back['slide']['name_or_slide_label'], [], 'zenario_breadcrumbs'));
+					$menuNodes[] = $this->parentNest->formatTitleText(ze\lang::phrase($back['slide']['slide_label'], [], 'zenario_breadcrumbs'));
 				}
 			}
 		}
+		
+		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
+		if (!$url) {
+			$url = ze\link::absolute();
+		}
+		
 		$mergeFields['breadcrumbs'] = implode(' » ', $menuNodes);
+		
+		$mergeFields['breadcrumbs'] .= ' (' . htmlspecialchars($url) . ')';
 		
 		return $mergeFields;
 	}
@@ -4494,7 +4638,29 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$rows = $this->fields[$field['repeat_start_id']]['rows'];
 				$row = array_search($field['row'], $rows) + 1;
 			}
-			$value = static::getFieldStorableValue($field, $field['value']);
+			
+			if ($field['type'] == 'sortable_selection') {
+				//For sortable selection field, save the selected values and their order
+				//for both the left and right-hand side column. Use the format:
+				//comma-separated list for left-hand side column, colon, then comma-separated list for right-hand side column.
+				//Please note: this code will also work with the step switcher.
+				$leftHandSideValues = $rightHandSideValues = '';
+				if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
+					$leftHandSideValues = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values'];
+					$rightHandSideValues = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values'];
+				} else {
+					if (isset($_POST['field_' . $fieldId . '_left_values'])) {
+						$leftHandSideValues = $_POST['field_' . $fieldId . '_left_values'];
+					}
+					
+					if (isset($_POST['field_' . $fieldId . '_right_values'])) {
+						$rightHandSideValues = $_POST['field_' . $fieldId . '_right_values'];
+					}
+				}
+				$value = $leftHandSideValues . ';' . $rightHandSideValues;
+			} else {
+				$value = static::getFieldStorableValue($field, $field['value']);
+			}
 			
 			ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
 		}
@@ -4557,7 +4723,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	private function getCaptchaError() {
-		if ($this->enableCaptcha() && ($_POST['submitForm'] ?? false) && $this->instanceId == ($_POST['instanceId'] ?? false)) {
+		$recaptchaFormPolicy = ze::setting('recaptcha_form_policy');
+		if ($this->enableCaptcha() && $recaptchaFormPolicy != 'show_form_without_recaptcha' && ze::post('submitForm') && $this->instanceId == ze::post('instanceId')) {
 			$error = false;
 			$t = $this->form['translate_text'];
 			if ($this->form['captcha_type'] == 'math') {
@@ -4590,7 +4757,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->form['captcha_type'] == 'math') {
 			$html .= $this->mathCaptcha();
 		} elseif ($this->form['captcha_type'] == 'pictures') {
-			$html .= $this->captcha2();
+			$recaptchaFormPolicy = ze::setting('recaptcha_form_policy');
+			if ($recaptchaFormPolicy != 'show_form_without_recaptcha' || (ze\cookie::canSet('functionality') && ze\cookie::canSet('analytics'))) {
+				$html .= $this->captcha2();
+			} else {
+				return '';
+			}
 		}
 
 		if (isset($this->errors['captcha']) && $this->form['show_errors_below_fields']) {
@@ -4643,7 +4815,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		$html  = '<div class="resume_box">';
 		$html .= $this->openForm('if (this.submited && !confirm("' . htmlspecialchars($this->phrase("Are you sure you want to clear all your data?")) . '")) { return false; }');
-		$html .= '<p>' . static::fPhrase($this->form['clear_partial_data_message'], [], $t) . '</p>';
+		$html .= '<p>' . static::fPhrase(($this->form['clear_partial_data_message'] ?: ''), [], $t) . '</p>';
 		$html .= '<input type="submit" onclick="this.form.submited = false" name="resume" value="' . htmlspecialchars(static::fPhrase('Resume', [], $t)) . '">';
 		$html .= '<input type="submit" onclick="this.form.submited = true" name="clear" value="' . htmlspecialchars(static::fPhrase('Clear', [], $t)) . '">';
 		$html .= $this->closeForm();
@@ -4702,17 +4874,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	//An overwritable method to set the form title
-	protected function getFormTitle($overwrite = false) {
+	protected function getFormTitle($overwrite = false, $fallback = '') {
 		$t = $this->form['translate_text'];
-		$title = $overwrite ? $overwrite : $this->form['title'];
-		if ($title && !empty($this->form['title_tag'])) {
-			$html = '<' . htmlspecialchars($this->form['title_tag']);
+		$title = ($overwrite ? $overwrite : $this->form['title']) ?: $fallback;
+		$titleTag = $this->form['title_tag'] ?: 'h2';
+		if ($title && !empty($titleTag)) {
+			$html = '<' . htmlspecialchars($titleTag );
 			if ($this->displayMode == 'inline_popup') {
 				$html .= ' onclick="zenario_user_forms.toggleForm(\'' . htmlspecialchars($this->containerId) . '\')"';
 			}
 			$html .= '>';
 			$html .= static::fPhrase($title, [], $t);
-			$html .= '</' . htmlspecialchars($this->form['title_tag']) . '>';
+			$html .= '</' . htmlspecialchars($titleTag ) . '>';
 			return $html;
 		}
 		return '';
@@ -4770,6 +4943,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return false;
 		}
 		return true;
+	}
+	
+	public static function validatePhoneNumberInput($input) {
+		//Allowed characters: numbers 0-9, +-() and spaces.
+		//Allowed length from 1 to 20 (including spaces).
+		$pattern = '/^[0-9\+\-\(\)\s]{1,20}$/';
+		
+		return preg_match($pattern, $input);
 	}
 	
 	public static function fPhrase($text, $replace, $translate) {
@@ -5573,6 +5754,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	public static function eventUserDeleted($userId, $deleteAllData) {
 		//When deleting all data about a user, delete the content of their form respones but keep the header
 		if ($deleteAllData) {
+			//Get the user's form responses...
+			$sql = '
+				SELECT id
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+				WHERE user_id = ' . (int)$userId;
+			$result = ze\sql::select($sql);
+			
+			//...and clear out any uploads from the files table.
+			//Keep the actual response entry.
+			while ($responseId = ze\sql::fetchValue($result)) {
+				self::deleteFormResponse($responseId, $onlyDeleteFiles = true);
+			}
+			
 			$sql = '
 				DELETE urd.*
 				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
@@ -5586,7 +5780,51 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				SET user_id = 0, user_deleted = 1, data_deleted = 1
 				WHERE user_id = ' . (int)$userId;
 			ze\sql::update($sql);
+			
+			//Delete all partial responses for this user.
+			$sql = '
+				SELECT id
+				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_partial_response
+				WHERE user_id = ' . (int)$userId;
+			$result = ze\sql::select($sql);
+			
+			while ($partialResponseId = ze\sql::fetchValue($result)) {
+				self::deleteFormPartialResponse($partialResponseId);
+			}
 		}
+	}
+	
+	public static function deleteUserDataGetInfo($userIds) {
+		$sql = '
+			SELECT COUNT(id)
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+			WHERE user_id IN (' . ze\escape::in($userIds) . ')';
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$formResponses = ze\admin::phrase('Form responses ([[count]] found)', ['count' => $count]);
+		
+		$sql = '
+			SELECT COUNT(id)
+			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_partial_response
+			WHERE user_id IN (' . ze\escape::in($userIds) . ')';
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$formPartialResponses = ze\admin::phrase('Saved but unsubmitted form responses ([[count]] found)', ['count' => $count]);
+		
+		return implode('<br />', [$formResponses, $formPartialResponses]);
+	}
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		if ($formId = ze\plugin::setting('user_form', $instanceId, $eggId)) {
+			if ($name = zenario_user_forms::getFormName($formId)) {
+				return ze\admin::phrase('Form:'). ' '. $name;
+			}
+		}
+			
+		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
 	}
 	
 }

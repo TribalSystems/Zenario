@@ -59,6 +59,20 @@ diagnostics:
                     snippet:
                         html: Apache http server version 2.4.7 or later
                     visible_if: zenarioAW.togglePressed(field)
+                directory_indexing_warning:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            In your Apache config you have directory indexing enabled.
+                            
+                            This can be a serious secuirity vulnerability as it allows
+                            visitors to browse and view private images and downloads.
+                            
+                            Please add <code>Options -Indexes</code> to either your
+                            Apache config or your .htaccess file to disable this.
+                    visible_if: zenarioAW.togglePressed(field)
                 php:
                     grouping: sub_table
                     full_width: true
@@ -101,7 +115,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: MySQLi extension enabled in PHP
+                        html: Checking for MySQLi extension enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 mysql_2:
                     grouping: sub_table
@@ -123,14 +137,14 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: ctype extension enabled in PHP
+                        html: Checking for ctype extension enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 mb_2:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: mbstring extension enabled in PHP
+                        html: Checking for mbstring extension enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 
                 gd:
@@ -146,28 +160,28 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: GD Library enabled in PHP
+                        html: Checking for GD Library enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 gd_2:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: GIF Read Support enabled in PHP
+                        html: Checking for GIF Read Support enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 gd_3:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: JPG Support enabled in PHP
+                        html: Checking for JPG Support enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 gd_4:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: PNG Support enabled in PHP
+                        html: Checking for PNG Support enabled in PHP... [[ok_or_failed]]
                     visible_if: zenarioAW.togglePressed(field)
                 
                 optional:
@@ -211,8 +225,8 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: |
-                            curl extension enabled in PHP
-                            <br/><small>Needed for translating pages using Google Translate and GeoIP services.</small>
+                            Checking for curl extension enabled in PHP... [[ok_or_failed]]
+                            <br/><small>Needed for some security checks, for GeoIP services, and potentially other custom uses.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 optional_zip:
                     grouping: sub_table
@@ -220,16 +234,16 @@ diagnostics:
                     row_class: sub_field
                     snippet:
                         html: |
-                            zip extension enabled in PHP
+                            Checking for zip extension enabled in PHP... [[ok_or_failed]]
                             <br/><small>Needed for creating document extracts</small>
                     visible_if: zenarioAW.togglePressed(field)
-                optional_utf8_encode:
+                optional_xml:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: |
-                            xml extension enabled in PHP
+                            Checking for xml extension enabled in PHP... [[ok_or_failed]]
                             <br/><small>Needed for uploading PDF documents</small>
                     visible_if: zenarioAW.togglePressed(field)
                 
@@ -318,6 +332,16 @@ diagnostics:
                         html: |
                             Antivirus
                             <br/><small>ClamAV is correctly set up.</small>
+                    visible_if: zenarioAW.togglePressed(field)
+                
+                mysql_timezone_set:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            MySQL timezone handling
+                            <br/><small>MySQL timezone handling is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
 
                 
@@ -558,8 +582,25 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                
+                admin_timeout_not_set_up_correctly:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: ''
+                    visible_if: zenarioAW.togglePressed(field)
                 public_documents: *blank_child
                 public_images: *blank_child
+                repair_public_images:
+                    grouping: sub_table
+                    full_width: true
+                    type: submit
+                    value: Repair public images
+                    style: |
+                        margin: auto;
+                        display: inherit;
+                    hide_on_install: true
+                    
                 site_automated_backups: *blank_child
                 restore_policy_not_set: *blank_child
                 scheduled_task_manager: *blank_child
@@ -596,7 +637,7 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site is in development mode.<br/>
+                            Your site is in developer mode.<br/>
                             The PHP error reporting level specified in <code>zenario_siteconfig.php</code> currently tells Zenario to suppress PHP issues which developers should see. To change this, edit the file and ensure it has the following line:<br/>
                             <code>define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE | E_STRICT));</code><br/>
                     hide_on_install: true
@@ -635,7 +676,7 @@ diagnostics:
                 #    row_class: sub_level
                 #    snippet:
                 #        html: |
-                #            Your site is in development mode
+                #            Your site is in developer mode
                 #            but you do not have &ldquo;Email debug mode&rdquo; enabled under
                 #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
                 #    hide_on_install: true
@@ -660,10 +701,8 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            This site contains user-related data,
-                            but you are not protecting your admin-login with two-factor authentication.
-                            Please edit the <code>zenario_custom/site_description.yaml</code> file
-                            to enable two-factor authentication.
+                            This site is not protecting administrator logins with two-factor authentication (2FA).
+                            Please edit the <code>zenario_custom/site_description.yaml</code> file to enable 2FA.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 unencrypted_data:
@@ -725,6 +764,12 @@ diagnostics:
                     row_class: sub_level
                     visible_if: zenarioAW.togglePressed(field)
                 css_file_wrappers_not_on_for_visitors:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    visible_if: zenarioAW.togglePressed(field)
+                
+                zenario_max_upload_size_exceeds_site_wide_size:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
@@ -793,11 +838,18 @@ diagnostics:
                     snippet:
                         html: No administrator has been inactive for over 90 days.
                 administrator_inactive_1: *blank_child
-                administrator_inactive_2: *blank_child 
-                administrator_inactive_3: *blank_child 
-                administrator_inactive_4: *blank_child 
-                administrator_inactive_5: *blank_child 
-                administrator_more_inactive: *blank_child 
+                administrator_inactive_2: *blank_child
+                administrator_inactive_3: *blank_child
+                administrator_inactive_4: *blank_child
+                administrator_inactive_5: *blank_child
+                administrator_more_inactive: *blank_child
+                
+                administrator_with_3_or_more_failed_logins_1: *blank_child
+                administrator_with_3_or_more_failed_logins_2: *blank_child
+                administrator_with_3_or_more_failed_logins_3: *blank_child
+                administrator_with_3_or_more_failed_logins_4: *blank_child
+                administrator_with_3_or_more_failed_logins_5: *blank_child
+                administrator_with_3_or_more_failed_logins_more: *blank_child
                 
                 continue:
                     value: Continue

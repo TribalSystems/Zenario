@@ -5,15 +5,15 @@ copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: true
 license_info: 'Modified BSD License'
-display_name: Slideshow (simple)
+display_name: Slideshow (simple/image-only)
 description: |
     <p>
-        This module allows you to create a simple animated slideshow of images.
-    </p><p>
-        Each image can have extra HTML added and a few other options such as a hyperlink and privacy controls.
+        This module allows you to create a slideshow of images with animated transitions.
     </p><p>
         You can create dynamic effects for your visitors, controlling all aspects of display and slide transitions.
-        The slides can auto-advance after a set delay, or slides can be set to only advance when a visitor clicks Next or Prev.
+        Slides can auto-advance after a set delay, or they can be set to only advance when a visitor clicks Next or Previous.
+    </p><p>
+        Each image can have a hyperlink and text/HTML, plus personalisation controls.
     </p>
 category: pluggable
 keywords: >

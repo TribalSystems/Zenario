@@ -30,28 +30,116 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 	
+	public static function getInheritInfo($canvas, $width = 0, $height = 0, $isSVG = false) {
+		
+		$mrg = ['width' => $width, 'height' => $height];
+	
+		switch ($canvas) {
+			case 'background_image':
+				return ze\admin::phrase('Inherit (show as a background image)');
+			case 'lazy_load':
+				return ze\admin::phrase('Inherit (lazy load image)');
+			
+			case 'fixed_width':
+				if ($isSVG) {
+					return ze\admin::phrase('Inherit (set width to [[width]])', $mrg);
+				} else {
+					return ze\admin::phrase('Inherit (constrain width by [[width]])', $mrg);
+				}
+			case 'fixed_height':
+				if ($isSVG) {
+					return ze\admin::phrase('Inherit (set height to [[height]])', $mrg);
+				} else {
+					return ze\admin::phrase('Inherit (constrain height by [[height]])', $mrg);
+				}
+			case 'crop_and_zoom':
+				if (!$isSVG) {
+					return ze\admin::phrase('Inherit (crop and zoom to [[width]]w × [[height]]h)', $mrg);
+				}
+			case 'fixed_width_and_height':
+				return ze\admin::phrase('Inherit (constrain width and height by [[width]]w × [[height]]h)', $mrg);
+			
+			case 'mobile_same_image_different_size':
+			case 'mobile_same_image_different_size.':
+				return ze\admin::phrase('Inherit (same image, different size)');
+			case 'mobile_same_image_different_size.fixed_width':
+				if ($isSVG) {
+					return ze\admin::phrase('Inherit (same image, set width to [[width]])', $mrg);
+				} else {
+					return ze\admin::phrase('Inherit (same image, constrain width by [[width]])', $mrg);
+				}
+			case 'mobile_same_image_different_size.fixed_height':
+				if ($isSVG) {
+					return ze\admin::phrase('Inherit (same image, set height to [[height]])', $mrg);
+				} else {
+					return ze\admin::phrase('Inherit (same image, constrain height by [[height]])', $mrg);
+				}
+			case 'mobile_same_image_different_size.crop_and_zoom':
+				if (!$isSVG) {
+					return ze\admin::phrase('Inherit (same image, crop and zoom to [[width]]w × [[height]]h)', $mrg);
+				}
+			case 'mobile_same_image_different_size.fixed_width_and_height':
+				return ze\admin::phrase('Inherit (same image, constrain width and height by [[width]]w × [[height]]h)', $mrg);
+			
+			case 'mobile_hide_image':
+			case 'mobile_hide_image.':
+			case 'mobile_hide_image.crop_and_zoom':
+			case 'mobile_hide_image.fixed_width':
+			case 'mobile_hide_image.fixed_height':
+			case 'mobile_hide_image.fixed_width_and_height':
+				return ze\admin::phrase('Inherit (hide image on mobile browsers)');
+			
+			case '_ENLARGE_IMAGE':
+			case '_ENLARGE_IMAGE.':
+			case '_ENLARGE_IMAGE.unlimited':
+				return ze\admin::phrase('Inherit (enlarge image in floating box)');
+			case '_ENLARGE_IMAGE.fixed_width':
+				return ze\admin::phrase('Inherit (enlarge image in floating box, constrain width by [[width]])', $mrg);
+			case '_ENLARGE_IMAGE.fixed_height':
+				return ze\admin::phrase('Inherit (enlarge image in floating box, constrain height by [[height]])', $mrg);
+			case '_ENLARGE_IMAGE.crop_and_zoom':
+				return ze\admin::phrase('Inherit (enlarge image in floating box, crop and zoom to [[width]]w × [[height]]h)', $mrg);
+			case '_ENLARGE_IMAGE.fixed_width_and_height':
+				return ze\admin::phrase('Inherit (enlarge image in floating box, constrain width and height by [[width]]w × [[height]]h)', $mrg);
+		}
+		
+		return ze\admin::phrase('Inherit');
+	}
 	
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$fields['image_and_link/image']['side_note'] =
-		$fields['image_and_link/mobile_image']['side_note'] =
-		$fields['image_and_link/rollover_image']['side_note'] = 
+		
+		//The banner plugin has some fiddly logic for the default value of the canvas.
+		//Outside of a nest, the default value should be "Crop and Zoom"
+		if ($values['first_tab/canvas'] == 'DEFAULT') {
+			if (empty($box['key']['eggId'])) {
+				//Outside of a nest, the default value should be "Crop and Zoom"
+				$values['first_tab/canvas'] = 'crop_and_zoom';
+			} else {
+				//In a nest, the default value should be "Unlimited/Inherit"
+				$values['first_tab/canvas'] = 'unlimited';
+			}
+		}
+		
+		$fields['first_tab/image']['side_note'] =
+		$fields['first_tab/mobile_image']['side_note'] =
+		$fields['first_tab/rollover_image']['side_note'] = 
 			ze\admin::phrase('If a JPG or PNG image is selected, Zenario will create and display a WebP version of the image. Fallback logic will be used for browsers which do not support WebP.');
 		
 		//For Wireframe Plugins, pick images from this item's images, rather than 
 		if ($box['key']['isVersionControlled']/*
 		 && ze\content::isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])*/) {
-			$box['tabs']['image_and_link']['fields']['image']['pick_items']['path'] =
-			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['path'] =
+			$box['tabs']['first_tab']['fields']['image']['pick_items']['path'] =
+			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['path'] =
 				'zenario__content/panels/content/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
 			
-			$box['tabs']['image_and_link']['fields']['image']['pick_items']['min_path'] =
-			$box['tabs']['image_and_link']['fields']['image']['pick_items']['max_path'] =
-			$box['tabs']['image_and_link']['fields']['image']['pick_items']['target_path'] =
-			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['min_path'] =
-			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['max_path'] =
-			$box['tabs']['image_and_link']['fields']['rollover_image']['pick_items']['target_path'] =
-				'zenario__content/panels/image_library';
+			$box['tabs']['first_tab']['fields']['image']['pick_items']['min_path'] =
+			$box['tabs']['first_tab']['fields']['image']['pick_items']['max_path'] =
+			$box['tabs']['first_tab']['fields']['image']['pick_items']['target_path'] =
+			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['min_path'] =
+			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['max_path'] =
+			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['target_path'] =
+				'zenario__library/panels/image_library';
 		}
 		
 		$box['first_display'] = true;
@@ -62,41 +150,46 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		if ((!empty($box['key']['eggId']))
 		 && ($nestedPlugin = ze\pluginAdm::getNestDetails($box['key']['eggId']))
 		 && (ze\module::className($nestedPlugin['module_id']) == 'zenario_banner')) {
+			
 			//If this banner is in a nest, check if the nest has a banner image size constraint set.
-			$nestCanvasSetting = ze\plugin::setting('banner_canvas', $nestedPlugin['instance_id']);
-			if (ze::in($nestCanvasSetting, 'fixed_width', 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom')) {
-				$fields['image_and_link/canvas']['values']['unlimited']['label'] = ze\admin::phrase('Inherit from nest');
-
-				$nestWidth = ze\plugin::setting('banner_width', $nestedPlugin['instance_id']);
-				$nestHeight = ze\plugin::setting('banner_height', $nestedPlugin['instance_id']);
-
-				switch ($nestCanvasSetting) {
-					case 'fixed_width':
-						$nestSetting = 'constrain by width';
-						$nestDimensions = $nestWidth . 'w';
-						break;
-					case 'fixed_height':
-						$nestSetting = 'constrain by height';
-						$nestDimensions = $nestHeight . 'h';
-						break;
-					case 'fixed_width_and_height':
-						$nestSetting = 'constrain by width and height';
-						$nestDimensions = $nestWidth . 'w x ' . $nestHeight . 'h';
-						break;
-					case 'crop_and_zoom':
-						$nestSetting = 'crop and zoom';
-						$nestDimensions = $nestWidth . 'w x ' . $nestHeight . 'h';
-						break;
-				}
-
-				$nestSettingString = ze\admin::phrase('Nest setting: [[nest_banner_canvas]] [[dimensions]]', ['nest_banner_canvas' => $nestSetting, 'dimensions' => $nestDimensions]);
-
-				ze\lang::applyMergeFields($fields['image_and_link/nest_canvas_setting']['snippet']['html'], ['nest_canvas_setting' => $nestSettingString]);
-			} else {
-				unset($box['tabs']['image_and_link']['fields']['nest_canvas_setting']);
+			$setCanvas = ze\plugin::setting('banner_canvas', $nestedPlugin['instance_id']);
+			$setWidth = ze\plugin::setting('banner_width', $nestedPlugin['instance_id']);
+			$setHeight = ze\plugin::setting('banner_height', $nestedPlugin['instance_id']);
+			$setBehaviour = ze\plugin::setting('advanced_behaviour', $nestedPlugin['instance_id']);
+			$setMobBehaviour = ze\plugin::setting('mobile_behaviour', $nestedPlugin['instance_id']);
+			$setMobCanvas = ze\plugin::setting('mobile_canvas', $nestedPlugin['instance_id']);
+			$setMobWidth = ze\plugin::setting('mobile_width', $nestedPlugin['instance_id']);
+			$setMobHeight = ze\plugin::setting('mobile_height', $nestedPlugin['instance_id']);
+			$setLinkType = ze\plugin::setting('link_type', $nestedPlugin['instance_id']);
+			$setLargeCanvas = ze\plugin::setting('enlarge_canvas', $nestedPlugin['instance_id']);
+			$setLargeWidth = ze\plugin::setting('enlarge_width', $nestedPlugin['instance_id']);
+			$setLargeHeight = ze\plugin::setting('enlarge_height', $nestedPlugin['instance_id']);
+			
+			if ($setCanvas && $setCanvas != 'unlimited') {
+				$fields['first_tab/canvas']['values']['unlimited']['ord'] = -1;
+				$fields['first_tab/canvas']['values']['unlimited']['custom__is_inherit'] = true;
+				$fields['first_tab/canvas']['values']['unlimited']['custom__label_raster'] = self::getInheritInfo($setCanvas, $setWidth, $setHeight);
+				$fields['first_tab/canvas']['values']['unlimited']['custom__label_svg'] = self::getInheritInfo($setCanvas, $setWidth, $setHeight, true);
+				
+				//The "is retina" checkbox shouldn't appear if the "unlimited" option has been renamed to "inherit".
+				//However there's a function call later that will overwrite whatever we set here.
+				$fields['first_tab/retina']['hidden'] = true;
+				//Slightly hacky work-around: use the visible_if property to hide the field instead!
+				$fields['first_tab/retina']['visible_if'] = 'false';
 			}
-		} else {
-			unset($box['tabs']['image_and_link']['fields']['nest_canvas_setting']);
+			
+			if ($setBehaviour && $setBehaviour != 'none') {
+				$fields['first_tab/advanced_behaviour']['values']['none']['label'] = self::getInheritInfo($setBehaviour);
+			}
+			
+			if ($setMobBehaviour && $setMobBehaviour != 'mobile_same_image') {
+				$fields['first_tab/mobile_behaviour']['values']['mobile_same_image']['custom__label_raster'] = self::getInheritInfo($setMobBehaviour. '.'. $setMobCanvas, $setMobWidth, $setMobHeight);
+				$fields['first_tab/mobile_behaviour']['values']['mobile_same_image']['custom__label_svg'] = self::getInheritInfo($setMobBehaviour. '.'. $setMobCanvas, $setMobWidth, $setMobHeight, true);
+			}
+			
+			if ($setLinkType && $setLinkType != '_NO_LINK') {
+				$fields['first_tab/link_type']['values']['_NO_LINK']['label'] = self::getInheritInfo($setLinkType. '.'. $setLargeCanvas, $setLargeWidth, $setLargeHeight);
+			}
 		}
 
 		$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_special_characters'] =
@@ -119,8 +212,113 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		
+		//If an SVG image is selected, tweak the canvas options slightly.
+		//Give some slightly different labels to reflect the fact that the options for SVGs work slightly differently,
+		//and hide the "crop and zoom" option.
+		if (isset($fields['first_tab/canvas']['values']['fixed_width']['custom__label_raster'])) {
+			$canvasLOV = &$fields['first_tab/canvas']['values'];
+			
+			$svgSelected = false;
+			if ($values['first_tab/image_source'] == '_CUSTOM_IMAGE') {
+				if ($image = $values['first_tab/image']) {
+					if (is_numeric($image)) {
+						$svgSelected = ze\row::get('files', 'mime_type', $image) == 'image/svg+xml';
+					} else {
+						if ($tmpFilePath = ze\file::getPathOfUploadInCacheDir($image)) {
+							$svgSelected = ze\file::mimeType($tmpFilePath) == 'image/svg+xml';
+						}
+					}
+				}
+			}
+			
+			if ($svgSelected) {
+				//Don't allow SVGs to select the "Crop and zoom" option
+				if ($values['first_tab/canvas'] == 'crop_and_zoom') {
+					$values['first_tab/canvas'] = 'fixed_width_and_height';
+				}
+				
+				$canvasLOV['crop_and_zoom']['hidden'] = true;
+				$canvasLOV['fixed_width']['label'] = $canvasLOV['fixed_width']['custom__label_svg'];
+				$canvasLOV['fixed_height']['label'] = $canvasLOV['fixed_height']['custom__label_svg'];
+				$canvasLOV['unlimited']['label'] = $canvasLOV['unlimited']['custom__label_svg'];
+			} else {
+				$canvasLOV['crop_and_zoom']['hidden'] = false;
+				$canvasLOV['fixed_width']['label'] = $canvasLOV['fixed_width']['custom__label_raster'];
+				$canvasLOV['fixed_height']['label'] = $canvasLOV['fixed_height']['custom__label_raster'];
+				$canvasLOV['unlimited']['label'] = $canvasLOV['unlimited']['custom__label_raster'];
+			}
+			
+			//The "unlimited" option should be shown first if it has been renamed (e.g. to "Inherit" or "Use base width and height").
+			if ($svgSelected || !empty($canvasLOV['unlimited']['custom__is_inherit'])) {
+				$canvasLOV['unlimited']['ord'] = -1;
+			} else {
+				$canvasLOV['unlimited']['ord'] = 99;
+			}
+			unset($canvasLOV);
+			
+			
+			if (isset($fields['first_tab/mobile_behaviour']['values']['mobile_same_image']['custom__label_raster'])) {
+				$canvasLOV = &$fields['first_tab/mobile_behaviour']['values'];
+			
+				if ($svgSelected) {
+					$canvasLOV['mobile_same_image']['label'] = $canvasLOV['mobile_same_image']['custom__label_svg'];
+				} else {
+					$canvasLOV['mobile_same_image']['label'] = $canvasLOV['mobile_same_image']['custom__label_raster'];
+				}
+				unset($canvasLOV);
+			}
+			
+			
+			if (isset($fields['first_tab/mobile_canvas']['values']['fixed_width']['custom__label_raster'])) {
+				$canvasLOV = &$fields['first_tab/mobile_canvas']['values'];
+				
+				if ($values['first_tab/mobile_behaviour'] == 'mobile_change_image') {
+					if ($image = $values['first_tab/mobile_image']) {
+						if (is_numeric($image)) {
+							$svgSelected = ze\row::get('files', 'mime_type', $image) == 'image/svg+xml';
+						} else {
+							if ($tmpFilePath = ze\file::getPathOfUploadInCacheDir($image)) {
+								$svgSelected = ze\file::mimeType($tmpFilePath) == 'image/svg+xml';
+							}
+						}
+					}
+				}
+			
+				if ($svgSelected) {
+					//Don't allow SVGs to select the "Crop and zoom" option
+					if ($values['first_tab/mobile_canvas'] == 'crop_and_zoom') {
+						$values['first_tab/mobile_canvas'] = 'fixed_width_and_height';
+					}
+				
+					$canvasLOV['crop_and_zoom']['hidden'] = true;
+					$canvasLOV['fixed_width']['label'] = $canvasLOV['fixed_width']['custom__label_svg'];
+					$canvasLOV['fixed_height']['label'] = $canvasLOV['fixed_height']['custom__label_svg'];
+					$canvasLOV['unlimited']['label'] = $canvasLOV['unlimited']['custom__label_svg'];
+				} else {
+					$canvasLOV['crop_and_zoom']['hidden'] = false;
+					$canvasLOV['fixed_width']['label'] = $canvasLOV['fixed_width']['custom__label_raster'];
+					$canvasLOV['fixed_height']['label'] = $canvasLOV['fixed_height']['custom__label_raster'];
+					$canvasLOV['unlimited']['label'] = $canvasLOV['unlimited']['custom__label_raster'];
+				}
+				
+				//The "unlimited" option should be shown first if it has been renamed (e.g. to "Inherit" or "Use base width and height").
+				if ($svgSelected) {
+					$canvasLOV['unlimited']['ord'] = -1;
+				} else {
+					$canvasLOV['unlimited']['ord'] = 99;
+				}
+				unset($canvasLOV);
+			}
+		}
+		
+		
+		
+		
+		
 		if (!ze\module::inc('zenario_ctype_picture')) {
-			unset($fields['image_and_link/image_source']['values']['_PICTURE']);
+			unset($fields['first_tab/image_source']['values']['_PICTURE']);
 		}
 		
 		$retinaSideNote = "If the source image is large enough,
@@ -131,20 +329,21 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
                             If the source image is not large enough this will have no effect.";
 	
 		
-		$fields['image_and_link/use_rollover']['hidden'] = 
-		$fields['image_and_link/image']['hidden'] = 
-			$values['image_and_link/image_source'] != '_CUSTOM_IMAGE';
+		$fields['first_tab/image']['hidden'] = 
+			$values['first_tab/image_source'] != '_CUSTOM_IMAGE';
 		
-		$fields['image_and_link/rollover_image']['hidden'] = 
-			$values['image_and_link/advanced_behaviour'] != 'use_rollover'
-			|| !($values['image_and_link/image_source'] == '_CUSTOM_IMAGE');
+		$fields['first_tab/use_rollover']['hidden'] = ($values['first_tab/image_source'] != '_CUSTOM_IMAGE' || $values['first_tab/image_source'] != '_PRODUCT_IMAGE');
+		
+		$fields['first_tab/rollover_image']['hidden'] = 
+			$values['first_tab/advanced_behaviour'] != 'use_rollover'
+			|| !($values['first_tab/image_source'] == '_CUSTOM_IMAGE' || $values['first_tab/image_source'] == '_PRODUCT_IMAGE');
 			
 		//TODO disable using rollover images when the source isn't "Show an image"
-		$fields['image_and_link/advanced_behaviour']['values']['use_rollover']['disabled'] =
-			!($values['image_and_link/image_source'] == '_CUSTOM_IMAGE');
+		$fields['first_tab/advanced_behaviour']['values']['use_rollover']['disabled'] =
+			!($values['first_tab/image_source'] == '_CUSTOM_IMAGE' || $values['first_tab/image_source'] == '_PRODUCT_IMAGE');
 		
-		$fields['image_and_link/picture']['hidden'] =
-			$values['image_and_link/image_source'] != '_PICTURE';
+		$fields['first_tab/picture']['hidden'] =
+			$values['first_tab/image_source'] != '_PICTURE';
 		
 		//Check whether an image is picked
 		$cID = $cType = $pictureCID = $pictureCType = $imageId = $imagePicked = false;
@@ -152,23 +351,23 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		//A little hack to make extending this module easier
 		//If the extending module doesn't use the "image_source" field, just check whether
 		//the image field is empty or not
-		if (empty($fields['image_and_link/image_source'])
-		 || !empty($fields['image_and_link/image_source']['hidden'])) {
-			$imagePicked = !empty($values['image_and_link/image']);
+		if (empty($fields['first_tab/image_source'])
+		 || !empty($fields['first_tab/image_source']['hidden'])) {
+			$imagePicked = !empty($values['first_tab/image']);
 		
 		//Otherwise run through the full logic for different types of images
 		} else {
 			$cID = $cType = $pictureCID = $pictureCType = $imageId = false;
 			
-			(($values['image_and_link/image_source'] == '_CUSTOM_IMAGE'
-			  && ($imageId = $values['image_and_link/image']))
+			(($values['first_tab/image_source'] == '_CUSTOM_IMAGE'
+			  && ($imageId = $values['first_tab/image']))
 		
-			 || ($values['image_and_link/image_source'] == '_PICTURE'
-			  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['image_and_link/picture']))
+			 || ($values['first_tab/image_source'] == '_PICTURE'
+			  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
 			  && ($imageId = ze\row::get("versions", "file_id", ["id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)])))
 		 
-			 || ($values['image_and_link/image_source'] == '_STICKY_IMAGE'
-			  && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['image_and_link/hyperlink_target']))
+			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
+			  && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
 			  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))
 			  
 			  || (isset($fields['first_tab/product_source'])
@@ -176,138 +375,154 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			  		($values['first_tab/product_source'] == 'auto' && $product = zenario_ecommerce_manager::getProductFromDescriptiveContentItem($this->cID, $this->cType))
 			  		|| ($values['first_tab/product_source'] == 'select_product' && $values['first_tab/product_for_sale'] && ($product = zenario_ecommerce_manager::getProduct($values['first_tab/product_for_sale'])) && $product)
 			  	)
-			  	&& (($values['image_and_link/image_source'] == '_PRODUCT_IMAGE' && ($imageId = $product['image_id'])) || ($values['image_and_link/image_source'] == '_CUSTOM_IMAGE' && ($imageId = $values['first_tab/image'])))
+			  	&& (($values['first_tab/image_source'] == '_PRODUCT_IMAGE' && ($imageId = $product['image_id'])) || ($values['first_tab/image_source'] == '_CUSTOM_IMAGE' && ($imageId = $values['first_tab/image'])))
 			  ));
 			
 			$imagePicked = (bool) $imageId;
 		}
 		
 		
-		if (!empty($fields['image_and_link/link_type']['values'])) {
+		if (!empty($fields['first_tab/link_type']['values'])) {
 			
 			$onlyShowLinkToContent = false;
-			if ($values['image_and_link/image_source'] == '_STICKY_IMAGE') {
-				$values['image_and_link/link_type'] = '_CONTENT_ITEM';
+			if ($values['first_tab/image_source'] == '_STICKY_IMAGE') {
+				$values['first_tab/link_type'] = '_CONTENT_ITEM';
 				$onlyShowLinkToContent = true;
 			}
 			
-			$fields['image_and_link/link_type']['values']['_NO_LINK']['disabled'] =
-			$fields['image_and_link/link_type']['values']['_EXTERNAL_URL']['disabled'] =
-			$fields['image_and_link/link_type']['values']['_EMAIL']['disabled'] = $onlyShowLinkToContent;
+			$fields['first_tab/link_type']['values']['_NO_LINK']['disabled'] =
+			$fields['first_tab/link_type']['values']['_EXTERNAL_URL']['disabled'] =
+			$fields['first_tab/link_type']['values']['_EMAIL']['disabled'] = $onlyShowLinkToContent;
 			
 		}
 		
-		$fields['image_and_link/alt_tag']['hidden'] = 
-		$fields['image_and_link/retina']['hidden'] = 
+		$fields['first_tab/alt_tag']['hidden'] = 
+		$fields['first_tab/retina']['hidden'] = 
 		$hidden = 
 			!$imagePicked;
 		
-		$this->showHideImageOptions($fields, $values, 'image_and_link', $hidden);
-		if ($values['image_and_link/canvas'] != "unlimited") {
-			$fields['image_and_link/canvas']['side_note'] = $retinaSideNote;
+		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
+		if ($values['first_tab/canvas'] != "unlimited") {
+			$fields['first_tab/canvas']['side_note'] = $retinaSideNote;
 		} else {
-			$fields['image_and_link/canvas']['side_note'] = "";
+			$fields['first_tab/canvas']['side_note'] = "";
 		}
 		
-		$fields['image_and_link/floating_box_title']['hidden'] = 
+		$fields['first_tab/floating_box_title']['hidden'] = 
 			!$imagePicked
-		 || $values['image_and_link/image_source'] == '_STICKY_IMAGE'
-		 || $values['image_and_link/link_type'] != '_ENLARGE_IMAGE';
+		 || $values['first_tab/image_source'] == '_STICKY_IMAGE'
+		 || $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
 		
-		$fields['image_and_link/stretched_image_warning']['hidden'] = true;
+		$fields['first_tab/stretched_image_warning']['hidden'] = true;
 
 		if ($imagePicked
 		 && $imageId
 		 && ($image = ze\row::get('files', ['width', 'height', 'alt_tag', 'title', 'floating_box_title', 'mime_type'], $imageId))) {
-			$editModeOn = ze\ring::engToBoolean($box['tabs']['image_and_link']['edit_mode']['on'] ?? false);
+			$editModeOn = ze\ring::engToBoolean($box['tabs']['first_tab']['edit_mode']['on'] ?? false);
 			
-			if ($box['first_display'] && !$values['image_and_link/alt_tag']) {
-				$fields['image_and_link/alt_tag']['value'] = $image['alt_tag'];
-			}
-			if ($editModeOn && !$values['image_and_link/alt_tag']) {
-				$fields['image_and_link/alt_tag']['current_value'] = $image['alt_tag'];
-			}
+			$fields['first_tab/alt_tag']['placeholder'] = $image['alt_tag'];
 			
 			if ($image['floating_box_title']) {
 				$merge = '"' . $image['floating_box_title'] . '"';
 			} else {
 				$merge = 'No caption set';
 			}
-			$fields['image_and_link/floating_box_title_mode']['values']['use_default']['label'] = 'Use the image\'s default floating box caption (' . htmlspecialchars($merge) .')';
+			$fields['first_tab/floating_box_title_mode']['values']['use_default']['label'] = 'Use the image\'s default floating box caption (' . htmlspecialchars($merge) .')';
 				
 			if ($box['first_display']) {
-				if (!$values['image_and_link/floating_box_title']) {
-					$fields['image_and_link/floating_box_title']['value'] = $image['floating_box_title'];
+				if (!$values['first_tab/floating_box_title']) {
+					$fields['first_tab/floating_box_title']['value'] = $image['floating_box_title'];
 				}
 			}
 			
-			if ($values['image_and_link/canvas'] == "resize_and_crop") {
+			if ($values['first_tab/canvas'] == "resize_and_crop") {
 				$mimeType = $image['mime_type'];
 				if ($mimeType != 'image/svg+xml'
-					&& ($values['image_and_link/width'] > $image['width'] || $values['image_and_link/height'] > $image['height']
+					&& ($values['first_tab/width'] > $image['width'] || $values['first_tab/height'] > $image['height']
 					)
 				) {
-					$fields['image_and_link/stretched_image_warning']['hidden'] = false;
+					$fields['first_tab/stretched_image_warning']['hidden'] = false;
 				}
 			}
+		}
+		
+		$fields['first_tab/mobile_behaviour']['hidden'] = !ze::in($values['first_tab/image_source'], '_CUSTOM_IMAGE', '_STICKY_IMAGE', '_PICTURE', '_PRODUCT_IMAGE');
+		
+		$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = true;
+		$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = '';
+		$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = '';
+		
+		if ($values['first_tab/image_source'] == '_STICKY_IMAGE') {
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] =
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] = true;
 			
-			$fields['image_and_link/mobile_behaviour']['hidden'] = false;
+			if ($imagePicked && ($filename = ze\row::get('files', 'filename', $imageId))) {
+				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = false;
+				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = 'information';
+				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = ze\admin::phrase('Featured image filename: [[filename]]', ['filename' => $filename]);
+			} else {
+				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = false;
+				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = 'warning';
+				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = ze\admin::phrase('Warning: the selected content item has no featured image.');
+			}
 		} else {
-			$fields['image_and_link/mobile_behaviour']['hidden'] = true;
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] =
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] = false;
 		}
 		
 		$box['first_display'] = false;
 		
-		$fields['image_and_link/hyperlink_target']['hidden'] = 
-		$fields['image_and_link/hide_private_item']['hidden'] = 
-		$fields['image_and_link/use_download_page']['hidden'] = 
-			$values['image_and_link/link_type'] != '_CONTENT_ITEM';
+		$fields['first_tab/hyperlink_target']['hidden'] = 
+		$fields['first_tab/hide_private_item']['hidden'] = 
+		$fields['first_tab/use_download_page']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM';
 
-		$fields['image_and_link/get_translation']['hidden'] = 
-			$values['image_and_link/link_type'] != '_CONTENT_ITEM'
+		$fields['first_tab/get_translation']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled']
 		 || ze\lang::count() < 2;
 
 		$fields['first_tab/more_link_text']['hidden'] = 
-		$fields['image_and_link/target_blank']['hidden'] = 
-			$values['image_and_link/link_type'] != '_CONTENT_ITEM'
-		 && $values['image_and_link/link_type'] != '_DOCUMENT'
-		 && $values['image_and_link/link_type'] != '_EXTERNAL_URL'
-		 && $values['image_and_link/link_type'] != '_EMAIL';
+		$fields['first_tab/target_blank']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
+		 && $values['first_tab/link_type'] != '_DOCUMENT'
+		 && $values['first_tab/link_type'] != '_EXTERNAL_URL'
+		 && $values['first_tab/link_type'] != '_EMAIL'
+		 && $values['first_tab/link_type'] != '_PRODUCT_DESCRIPTION_PAGE'; //This value is for Storefront Banner
 
-		$fields['image_and_link/use_translation']['hidden'] = 
-			$values['image_and_link/link_type'] != '_CONTENT_ITEM'
+		$fields['first_tab/use_translation']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled']
 		 || ze\lang::count() < 2;
 
-		$fields['image_and_link/url']['hidden'] = 
-			$values['image_and_link/link_type'] != '_EXTERNAL_URL';
+		$fields['first_tab/url']['hidden'] = 
+			$values['first_tab/link_type'] != '_EXTERNAL_URL';
 		
-		if ($values['image_and_link/link_type'] == '_EMAIL') {
-			$fields['image_and_link/email_address']['hidden'] = false;
-			if (!empty($values['image_and_link/email_address']) && !strstr($values['image_and_link/email_address'], 'mailto:')) {
-				$values['image_and_link/email_address'] = 'mailto:' . $values['image_and_link/email_address'];
+		if ($values['first_tab/link_type'] == '_EMAIL') {
+			$fields['first_tab/email_address']['hidden'] = false;
+			if (!empty($values['first_tab/email_address']) && !strstr($values['first_tab/email_address'], 'mailto:')) {
+				$values['first_tab/email_address'] = 'mailto:' . $values['first_tab/email_address'];
 			}
 		} else {
-			$fields['image_and_link/email_address']['hidden'] = true;
+			$fields['first_tab/email_address']['hidden'] = true;
 		}
 		
-		$hidden = $values['image_and_link/link_type'] != '_ENLARGE_IMAGE';
-		$this->showHideImageOptions($fields, $values, 'image_and_link', $hidden, 'enlarge_');
-		if ($values['image_and_link/enlarge_canvas'] != "unlimited") {
-			$fields['image_and_link/enlarge_canvas']['side_note'] = $retinaSideNote;
+		$hidden = $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
+		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'enlarge_');
+		if ($values['first_tab/enlarge_canvas'] != "unlimited") {
+			$fields['first_tab/enlarge_canvas']['side_note'] = $retinaSideNote;
 		} else {
-			$fields['image_and_link/enlarge_canvas']['side_note'] = "";
+			$fields['first_tab/enlarge_canvas']['side_note'] = "";
 		}
 		
 		$cID = $cType = false;
-		if ($values['image_and_link/link_type'] == '_CONTENT_ITEM'
-		 && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['image_and_link/hyperlink_target']))
+		if ($values['first_tab/link_type'] == '_CONTENT_ITEM'
+		 && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
 		 && ($cType == 'document')) {
-			$fields['image_and_link/use_download_page']['hidden'] = false;
+			$fields['first_tab/use_download_page']['hidden'] = false;
 		} else {
-			$fields['image_and_link/use_download_page']['current_value'] = false;
-			$fields['image_and_link/use_download_page']['hidden'] = true;
+			$fields['first_tab/use_download_page']['current_value'] = false;
+			$fields['first_tab/use_download_page']['hidden'] = true;
 		}
 		
 		//Don't show the translations checkbox if this can never be translated
@@ -317,12 +532,12 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		
 		//Don't show notes about translations if this won't be translated
 		if ($fields['first_tab/translate_text']['hidden'] || !$values['first_tab/translate_text']) {
-			$fields['first_tab/text']['show_phrase_icon'] =
-			$fields['first_tab/title']['show_phrase_icon'] =
+			$fields['title_and_description/text']['show_phrase_icon'] =
+			$fields['title_and_description/title']['show_phrase_icon'] =
 			$fields['first_tab/more_link_text']['show_phrase_icon'] = false;
 			
-			$fields['first_tab/text']['note_below'] =
-			$fields['first_tab/title']['note_below'] =
+			$fields['title_and_description/text']['note_below'] =
+			$fields['title_and_description/title']['note_below'] =
 			$fields['first_tab/more_link_text']['note_below'] = '';
 		
 		} else {
@@ -332,11 +547,11 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 				'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
 			];
 			
-			$fields['first_tab/text']['show_phrase_icon'] =
-			$fields['first_tab/title']['show_phrase_icon'] =
+			$fields['title_and_description/text']['show_phrase_icon'] =
+			$fields['title_and_description/title']['show_phrase_icon'] =
 			$fields['first_tab/more_link_text']['show_phrase_icon'] = true;
 			
-			$fields['first_tab/title']['side_note'] = 
+			$fields['title_and_description/title']['side_note'] = 
 			$fields['first_tab/more_link_text']['side_note'] = 
                                 ze\admin::phrase('
                                         To make a phrase that gets managed by the translation system, check the checkbox to make this plugin multilingual, and enter text in [[def_lang_name]] between double square brackets, [[Like this]], wherever you see the speech bubbles icon.<br />
@@ -347,46 +562,46 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		
 
 		//Only show the mobile image picker if an image is picked and "Mobile behaviour" is set to "Different image".
-		$fields['image_and_link/mobile_image']['hidden'] = $fields['image_and_link/mobile_behaviour']['hidden'] || $values['image_and_link/mobile_behaviour'] != 'mobile_change_image';
+		$fields['first_tab/mobile_image']['hidden'] = $fields['first_tab/mobile_behaviour']['hidden'] || $values['first_tab/mobile_behaviour'] != 'mobile_change_image';
 		
 		//Only show mobile options if "Mobile behaviour" is set to either "Different image", or "Same image, different size".
 		$hideMobileOptions = (
 			(
-				($values['image_and_link/mobile_behaviour'] != 'mobile_change_image')
-				&& ($values['image_and_link/mobile_behaviour'] != 'mobile_same_image_different_size')
+				($values['first_tab/mobile_behaviour'] != 'mobile_change_image')
+				&& ($values['first_tab/mobile_behaviour'] != 'mobile_same_image_different_size')
 			)
-			|| $fields['image_and_link/mobile_behaviour']['hidden']
-			);
+			|| $fields['first_tab/mobile_behaviour']['hidden']
+		);
 			
-		$this->showHideImageOptions($fields, $values, 'image_and_link', $hideMobileOptions, 'mobile_');
-		if ($values['image_and_link/mobile_canvas'] != "unlimited") {
-			$fields['image_and_link/mobile_canvas']['side_note'] = $retinaSideNote;
+		$this->showHideImageOptions($fields, $values, 'first_tab', $hideMobileOptions, 'mobile_');
+		if ($values['first_tab/mobile_canvas'] != "unlimited") {
+			$fields['first_tab/mobile_canvas']['side_note'] = $retinaSideNote;
 		} else {
-			$fields['image_and_link/mobile_canvas']['side_note'] = "";
+			$fields['first_tab/mobile_canvas']['side_note'] = "";
 		}
 		
 		//Lazy load - only works if Mobile Behaviour is set to "Same image".
-		if ($values['image_and_link/mobile_behaviour'] != 'mobile_same_image') {
-			$fields['image_and_link/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
-			$fields['image_and_link/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image".');
+		if ($values['first_tab/mobile_behaviour'] != 'mobile_same_image') {
+			$fields['first_tab/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
+			$fields['first_tab/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image".');
 		} else {
-			$fields['image_and_link/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
-			unset($fields['image_and_link/advanced_behaviour']['side_note']);
+			$fields['first_tab/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
+			unset($fields['first_tab/advanced_behaviour']['side_note']);
 		}
 		
-		if ($values['image_and_link/advanced_behaviour'] == 'lazy_load') {
-			$fields['image_and_link/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
-			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
-			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
-			$fields['image_and_link/mobile_behaviour']['note_below'] = ze\admin::phrase('If lazy load is enabled, only "Same image" setting may be used.');
+		if ($values['first_tab/advanced_behaviour'] == 'lazy_load') {
+			$fields['first_tab/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
+			$fields['first_tab/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
+			$fields['first_tab/mobile_behaviour']['note_below'] = ze\admin::phrase('If lazy load is enabled, only "Same image" setting may be used.');
 		} else {
-			$fields['image_and_link/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
-			$fields['image_and_link/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
-			$fields['image_and_link/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
-			unset($fields['image_and_link/mobile_behaviour']['note_below']);
+			$fields['first_tab/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
+			$fields['first_tab/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
+			unset($fields['first_tab/mobile_behaviour']['note_below']);
 		}
 		
-		if ($values['first_tab/set_an_anchor']) {
+		if ($values['title_and_description/set_an_anchor']) {
 			$anchorName = $values['first_tab/anchor_name'] ?: '[anchorname]';
 			$box['tabs']['first_tab']['fields']['anchor_name']['side_note'] =
 				ze\admin::phrase(
@@ -402,8 +617,8 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		//1) Link to a document:
 		
 		//Get selected document...
-		if (isset($values['image_and_link/document_id'])) {
-			$documentId = $values['image_and_link/document_id'];
+		if (isset($values['first_tab/document_id'])) {
+			$documentId = $values['first_tab/document_id'];
 		}
 
 		//...get privacy settings of the document and content item...
@@ -413,62 +628,61 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		//...and display or hide a privacy warning note if necessary.
 		
 		if ($document && $document['privacy'] == 'private' && ($contentItemPrivacy == 'public' || $contentItemPrivacy == 'logged_out')) {
-			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: this content item is public, the selected document is private, so it will not appear to visitors.</p>';
+			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '<p>Warning: this content item is public, the selected document is private, so it will not appear to visitors.</p>';
 		} elseif ($document && $document['privacy'] == 'offline') {
-			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '<p>Warning: the selected document is offline, so it will not appear to visitors. Change the privacy of the document to make it available.</p>';
+			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '<p>Warning: the selected document is offline, so it will not appear to visitors. Change the privacy of the document to make it available.</p>';
 		} else {
-			$box['tabs']['image_and_link']['fields']['privacy_warning']['note_below'] = '';
+			$box['tabs']['first_tab']['fields']['privacy_warning']['note_below'] = '';
 		}
 		
 		//2) Link to a content item:
 		
 		//Get the privacy of the target content item...
-		if ($values['image_and_link/link_type'] == '_CONTENT_ITEM') {
-			if (!empty($values['image_and_link/hyperlink_target'])) {
-				$targetContentItem = $values['image_and_link/hyperlink_target'];
-				$cID = $cType = false;
-				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $targetContentItem);
+		if ($values['first_tab/link_type'] == '_CONTENT_ITEM') {
+			$cID = $cType = false;
+			if (!empty($values['first_tab/hyperlink_target'])
+			 && ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target'])) {
 			
 				$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $cID, 'type' => $cType]);
 				
 				//...and display it to the admin...
-				$fields['image_and_link/hide_private_item']['note_below'] = '<p>Selected content item privacy setting is:</p><p>"' . ze\contentAdm::privacyDesc($contentItemPrivacy) . '"</p>';
-				$fields['image_and_link/hide_private_item']['indent'] = 2;
-				$fields['image_and_link/target_blank']['indent'] = 2;
+				$fields['first_tab/hide_private_item']['note_below'] = '<p>Selected content item privacy setting is:</p><p>"' . ze\contentAdm::privacyDesc($contentItemPrivacy) . '"</p>';
+				$fields['first_tab/hide_private_item']['indent'] = 2;
+				$fields['first_tab/target_blank']['indent'] = 2;
 			} else {
 				//...or don't show the note at all if no content item is selected.
-				$fields['image_and_link/hide_private_item']['indent'] = 1;
-				$fields['image_and_link/target_blank']['indent'] = 1;
-				unset($fields['image_and_link/hide_private_item']['note_below']);
+				$fields['first_tab/hide_private_item']['indent'] = 1;
+				$fields['first_tab/target_blank']['indent'] = 1;
+				unset($fields['first_tab/hide_private_item']['note_below']);
 			}
 		}
 	}
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if (!empty($fields['image_and_link/alt_tag'])
-		 && empty($fields['image_and_link/alt_tag']['hidden'])
-		 && $changes['image_and_link/alt_tag']
-		 && !$values['image_and_link/alt_tag']) {
-			$box['tabs']['image_and_link']['errors'][] = ze\admin::phrase('Please enter an alt-tag.');
+		if (!empty($fields['first_tab/alt_tag'])
+		 && empty($fields['first_tab/alt_tag']['hidden'])
+		 && $changes['first_tab/alt_tag']
+		 && !$values['first_tab/alt_tag']) {
+			$box['tabs']['first_tab']['errors'][] = ze\admin::phrase('Please enter an alt-tag.');
 		}
 		
-		if (!empty($fields['image_and_link/floating_box_title'])
-		 && empty($fields['image_and_link/floating_box_title']['hidden'])
-		 && $changes['image_and_link/floating_box_title']
-		 && !$values['image_and_link/floating_box_title']) {
-			$box['tabs']['image_and_link']['errors'][] = ze\admin::phrase('Please enter a floating box title attribute.');
+		if (!empty($fields['first_tab/floating_box_title'])
+		 && empty($fields['first_tab/floating_box_title']['hidden'])
+		 && $changes['first_tab/floating_box_title']
+		 && !$values['first_tab/floating_box_title']) {
+			$box['tabs']['first_tab']['errors'][] = ze\admin::phrase('Please enter a floating box title attribute.');
 		}
 		
 		//Convert all absolute URLs in the HTML Text to relative URLs when saving
 		foreach (['value', 'current_value'] as $value) {
-			if (isset($box['tabs']['first_tab']['fields']['text'][$value])) {
+			if (isset($box['tabs']['title_and_description']['fields']['text'][$value])) {
 				foreach (['"', "'"] as $quote) {
-					$box['tabs']['first_tab']['fields']['text'][$value] = 
+					$box['tabs']['title_and_description']['fields']['text'][$value] = 
 						str_replace(
 							$quote. htmlspecialchars(ze\link::absolute()),
 							$quote,
-							$box['tabs']['first_tab']['fields']['text'][$value]);
+							$box['tabs']['title_and_description']['fields']['text'][$value]);
 				}
 			}
 		}

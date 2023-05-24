@@ -3,9 +3,9 @@
 zenario__modules:
     panels:
         modules:
+            priv: _PRIV_VIEW_SLOT
             title: Modules
             disable_periodic_refresh: true
-            view_mode: list
             enable_close_up_view: true
             slidedown_view_microtemplate: zenario_slidedown_view_module
             
@@ -42,7 +42,7 @@ zenario__modules:
             refiners:
                 nestable_only:
                     sql: |
-                        m.status = 'module_running' AND m.is_pluggable = 1 AND m.nestable = 1
+                        m.status = 'module_running' AND m.is_pluggable = 1 AND m.nestable IN (1, 2)
                 phrases_only:
                     sql: |
                         m.is_pluggable = 1 AND m.vlp_class IS NOT NULL AND m.vlp_class = m.class_name
@@ -172,9 +172,6 @@ zenario__modules:
                         refiners:
                             module:
                                 exists: true
-                        view_mode: list
-                        disable_grid_view: true
-                        disable_summary_view: true
                         item:
                             name: Framework
                             names: Frameworks
@@ -215,7 +212,9 @@ zenario__modules:
                     label: "Module's plugins"
                     parent: view_dropdown
                     visible_if: |
-                        item.is_pluggable && item.status == 'module_running'
+                        item.is_pluggable &&
+                        item.nestable !== 2 &&
+                        item.status == 'module_running'
                     link:
                         path: zenario__modules/panels/plugins
                         refiner: plugin
@@ -223,7 +222,9 @@ zenario__modules:
                     parent: view_dropdown
                     label: "Layouts with module's plugins"
                     visible_if: |
-                        item.is_pluggable && item.status == 'module_running'
+                        item.is_pluggable &&
+                        item.nestable !== 2 &&
+                        item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
@@ -232,7 +233,9 @@ zenario__modules:
                     parent: view_dropdown
                     label: "Content items using this module's plugins"
                     visible_if: |
-                        item.is_pluggable && item.status == 'module_running'
+                        item.is_pluggable &&
+                        item.nestable !== 2 &&
+                        item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
@@ -260,7 +263,9 @@ zenario__modules:
                     parent: view_dropdown
                     label: "Effective usage"
                     visible_if: |
-                        item.is_pluggable && item.status == 'module_running'
+                        item.is_pluggable &&
+                        item.nestable !== 2 &&
+                        item.status == 'module_running'
                     hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content

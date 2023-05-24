@@ -37,7 +37,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 			return ze\priv::check();
 		}
 		
-		if ($_POST['extranet_add_image'] ?? false) {
+		if (ze::post('extranet_add_image')) {
 			
 		  
 		  if (empty($_FILES['extranet_upload_image']['name'])) {
@@ -51,9 +51,31 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		  } else {
 			ze\fileAdm::exitIfUploadError(false, false, true, $fileVar = 'extranet_upload_image');
 			
-			if (ze\file::fileSizeBasedOnUnit(ze::setting('max_content_image_filesize'),ze::setting('max_content_image_filesize_unit')) < $_FILES['extranet_upload_image']['size']) {
+			//Work out the max size of the image upload.
+			//Check the Apache max upload value, the Zenario one, and the Maximum user image file size.
+			//Pick the smallest limit of the 3 to validate against.
+			
+			$sizesToCheck = [];
+			$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+			$sizesToCheck[] = $apacheMaxFilesize;
+
+			$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+			$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+			$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			$sizesToCheck[] = $zenarioMaxFilesize;
+
+			if (ze::setting('max_user_image_filesize_override') == 'limit_max_attachment_file_size') {
+				$usersMaxFilesizeValue = ze::setting('max_user_image_filesize');
+				$usersMaxFilesizeUnit = ze::setting('max_user_image_filesize_unit');
+				$usersMaxFilesize = ze\file::fileSizeBasedOnUnit($usersMaxFilesizeValue, $usersMaxFilesizeUnit);
+				$sizesToCheck[] = $usersMaxFilesize;
+			}
+
+			$maxSize = min($sizesToCheck);
+			
+			if ($maxSize < $_FILES['extranet_upload_image']['size']) {
 				$this->sections['Errors'] = true;
-				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[filesize]] [[unit]]', ['filesize'=>setting('max_content_image_filesize'), 'unit'=>setting('max_content_image_filesize_unit')])];
+				$this->sections['Error'] = ['Error' => $this->phrase('Your image must be smaller than [[max_file_size]]', ['max_file_size' => ze\file::fileSizeConvert($maxSize)])];
 			} elseif (empty($_FILES['extranet_upload_image']) || empty($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = ['Error' => $this->phrase('Please pick an image.')];
@@ -86,7 +108,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 			}
 		  }
 		
-		} elseif (($_POST['extranet_remove_image_confirm'] ?? false) && $this->setting('allow_remove')) {
+		} elseif (ze::post('extranet_remove_image_confirm') && $this->setting('allow_remove')) {
 			$this->removeUserImage();
 		}
 		
@@ -111,8 +133,8 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 			
 		}
 		
-		$this->sections['Remove_Image'] = (bool) ($this->setting('allow_remove') && (!($_POST['extranet_remove_image'] ?? false)));
-		$this->sections['Remove_Image_Confirm'] = (bool) ($this->setting('allow_remove') && ($_POST['extranet_remove_image'] ?? false));
+		$this->sections['Remove_Image'] = (bool) ($this->setting('allow_remove') && (!ze::post('extranet_remove_image')));
+		$this->sections['Remove_Image_Confirm'] = (bool) ($this->setting('allow_remove') && ze::post('extranet_remove_image'));
 		$this->sections['New_Image'] = true;
 		
 		return true;

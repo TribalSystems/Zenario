@@ -8,9 +8,10 @@ zenario__users:
     css_class: zenario_cms_core_users
     label: Users & contacts
     tooltip: |
-        Manage contacts and extranet users
+        Create accounts for extranet users and other known contacts
     nav:
         users:
+            ord: 1
             priv: _PRIV_VIEW_USER
             label: 'Users & contacts'
             tooltip: >
@@ -18,6 +19,7 @@ zenario__users:
             link:
                 path: zenario__users/panels/users
         suspended_users:
+            ord: 2
             priv: _PRIV_VIEW_USER
             css_class: zenario_suspended_users
             label: Suspended users
@@ -27,6 +29,7 @@ zenario__users:
                 refiner: suspended_users
             visible_if: zenarioA.module.zenario_extranet && zenarioA.module.zenario_extranet.running
         groups:
+            ord: 3
             priv: _PRIV_VIEW_USER
             label: Groups
             tooltip: >
@@ -34,6 +37,7 @@ zenario__users:
             link:
                 path: zenario__users/panels/groups
         smart_groups:
+            ord: 4
             priv: _PRIV_VIEW_USER
             label: Smart groups
             tooltip: >
@@ -42,13 +46,17 @@ zenario__users:
             link:
                 path: zenario__users/panels/smart_groups
         consents:
+            ord: 5
             priv: _PRIV_VIEW_USER
             label: Consent log
             tooltip: >
                 When completing a form, a consent to store data may be required. View the log of consents.
+            css_class: "zenario_consent zenario_separator_before_this"
             link:
                 path: zenario__users/panels/consents
         access_log:
+            #If Extranet Base module is running, element 6 will be the User sign-in log.
+            ord: 7
             priv: _PRIV_VIEW_USER
             label: User access log
             tooltip: Log of extranet users and the private content items they have accessed

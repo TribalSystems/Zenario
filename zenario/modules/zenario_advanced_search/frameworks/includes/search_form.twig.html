@@ -1,0 +1,81 @@
+{% if Search_Box %}
+    {{Open_Form}}
+        <div>
+            {# The search label is only available in "Search entry box" mode. #}
+            {% if Search_Label %}
+                <label>{{"Search"|trans}}</label>
+            {% endif %}
+
+            {% if HasCategory00 %}
+                <div class="search_area_category search_area_extra_settings">
+                <label>{{"Category"|trans}}</label>
+                {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category00_id", 'source_method': "getCategory00Options", 'onchange': "if (this.form.category01_id) { this.form.category01_id.value=0; } this.form.doSearch.click()"})}}
+                </div>
+            {% endif %}
+
+            {% if HasCategory01 %}
+                <div class="search_area_subcategory_1 search_area_extra_settings">
+                <label>{{"Subcategory"|trans}}</label>
+                {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category01_id", 'source_method': "getCategory01Options", 'onchange': "if (this.form.category02_id) { this.form.category02_id.value=0; } this.form.doSearch.click()"})}}
+                </div>
+            {% endif %}
+
+            {% if HasCategory02 %}
+                <div class="search_area_subcategory_2 search_area_extra_settings">
+                <label>{{"Subcategory"|trans}}</label>
+                {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "category02_id", 'source_method': "getCategory02Options", 'onchange': "this.form.doSearch.click()"})}}
+                </div>
+            {% endif %}
+
+            {% if HasLanguageSelection %}
+                <div class="search_area_language search_area_extra_settings">
+                <label>{{"Language"|trans}}</label>
+                {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "language_id", 'source_method': "getLanguagesOptions", 'onchange': "this.form.doSearch.click()"})}}
+                </div>
+            {% endif %}
+
+            <input
+                id="{{Container_Id}}_search_input_box"
+                type="text"
+                class="search_input_box"
+                name="searchString"
+
+                {% if Placeholder %}
+                    placeholder="{{Placeholder_Phrase|trans}}"
+                {% endif %}
+
+                value="{{Search_String}}" 
+                onkeyup="zenario_advanced_search.onKeyUp('{{Container_Id}}', this, '{{Default_Tab}}', '{{Mode}}', {{Delay}});"
+                autocomplete="off"
+            />
+
+			<input
+				type="submit"
+				class="search_entry_button"
+				name="doSearch"
+				value="{{'Search'|trans}}"
+				{% if not Use_specific_search_results_page %}
+					style="display: none;"
+				{% endif %}
+			/>
+
+            {% if Mode == 'search_entry_box' %}
+                <span
+                    id = "{{Container_Id}}_close_button"
+                    class="close_button"
+                    onclick="zenario_advanced_search.closeButtonOnClick('{{Container_Id}}');"
+                >
+                    X
+                </span>
+            {% endif %}
+
+            {% if Further_Search_Link and Further_Search_Phrase %}
+                <a class="further_search" href="{{Further_Search_Link|e}}">{{Further_Search_Phrase|e}}</a>
+            {% endif %}
+            
+            {% if Show_Clear_Search_Button %}
+                <input type="submit" class="search_entry_button" name="clearSearch" value="{{'Clear search'|trans}}" />
+            {% endif %}
+        </div>
+    {{Close_Form}}
+{% endif %}

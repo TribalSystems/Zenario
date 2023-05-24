@@ -190,7 +190,7 @@ if ($installed) {
 		  AND revision_no > ". (int) LATEST_REVISION_NO. "
 		LIMIT 1";
 
-	if ($dbRev = ze\sql::fetchRow(ze\sql::select($sql))) {
+	if (false && $dbRev = ze\sql::fetchRow(ze\sql::select($sql))) {
 		
 		
 		$sql = "

@@ -64,67 +64,78 @@ methods.returnPanelTitle = function() {
 };
 
 methods.showPanel = function($header, $panel, $footer) {
-	$header.html(thus.microTemplate('zenario_organizer_panel_header', {})).show();
-	var html = thus.microTemplate('zenario_organizer_google_map', {});
-	$panel.html(html).show();
+	if (zenarioA.siteSettings.google_maps_api_key !== undefined) {
+		$header.html(thus.microTemplate('zenario_organizer_panel_header', {})).show();
+		var html = thus.microTemplate('zenario_organizer_google_map', {});
+		$panel.html(html).show();
 	
-	var 
-		map,
-		mapOptions = {
-			center: {
-				lat: 0, 
-				lng: 0
+		var 
+			map,
+			mapOptions = {
+				center: {
+					lat: 0, 
+					lng: 0
+				},
+				zoom: 2
 			},
-			zoom: 2
-		},
-		bounds = new google.maps.LatLngBounds(),
-		marker,
-		position,
-		lat = thus.tuix.lat_column,
-		lng = thus.tuix.lng_column,
-		dblClickItemButton = thus.tuix.double_click_item_button,
-		items = thus.tuix.items,
-		itemsCount = 0,
-		itemsWithLatLng = 0;
+			bounds = new google.maps.LatLngBounds(),
+			marker,
+			position,
+			lat = thus.tuix.lat_column,
+			lng = thus.tuix.lng_column,
+			dblClickItemButton = thus.tuix.double_click_item_button,
+			items = thus.tuix.items,
+			itemsCount = 0,
+			itemsWithLatLng = 0;
 	
-	// Create google map
-	map = new google.maps.Map(document.getElementById('organizer_google_map'), mapOptions);
+		// Create google map
+		map = new google.maps.Map(document.getElementById('organizer_google_map'), mapOptions);
 	
-	// Add locations to google map
-	foreach (items as var key => var item) {
-		itemsCount++;
-		if (item[lat] && item[lng]) {
-			itemsWithLatLng++;
-			position = new google.maps.LatLng(item[lat], item[lng]);
-			marker = new google.maps.Marker({
-				position: position,
-				map: map,
-				icon: thus.offIconURL
-			});
+		// Add locations to google map
+		foreach (items as var key => var item) {
+			itemsCount++;
+			if (item[lat] && item[lng]) {
+				itemsWithLatLng++;
+				position = new google.maps.LatLng(item[lat], item[lng]);
+				marker = new google.maps.Marker({
+					position: position,
+					map: map,
+					icon: thus.offIconURL
+				});
 			
-			if (thus.selectedItems[key]) {
-				marker.icon = thus.onIconURL;
+				if (thus.selectedItems[key]) {
+					marker.icon = thus.onIconURL;
+				}
+			
+				bounds.extend(position);
+			
+				// Select a location on single click
+				google.maps.event.addListener(marker, 'click', thus.makeSelectItemCallback(item, marker));
+			
+				// Open properties admin box on double click
+				google.maps.event.addListener(marker, 'dblclick', thus.makeOpenAdminBoxCallback(item, marker, dblClickItemButton));
 			}
-			
-			bounds.extend(position);
-			
-			// Select a location on single click
-			google.maps.event.addListener(marker, 'click', thus.makeSelectItemCallback(item, marker));
-			
-			// Open properties admin box on double click
-			google.maps.event.addListener(marker, 'dblclick', thus.makeOpenAdminBoxCallback(item, marker, dblClickItemButton));
 		}
+		if (itemsWithLatLng) {
+			map.fitBounds(bounds);
+		}
+		google.maps.event.addDomListener(window, "resize", function() {
+			var center = map.getCenter();
+			google.maps.event.trigger(map, "resize");
+			map.setCenter(center); 
+		});
+		html = thus.microTemplate('zenario_organizer_google_map_footer', {items: itemsWithLatLng, total: itemsCount});
+		$footer.html(html).show();
+	} else {
+		$header.html(thus.microTemplate('zenario_organizer_panel_header', {})).show();
+		
+		var apiKeysPanelUrl = 'organizer.php#zenario__administration/panels/site_settings//api_keys~.site_settings~tgoogle_maps~k{"id"%3A"api_keys"}'
+		var googleMapsApiKeyUnavailablePhrase = "No Google Maps API key has been set, go to <a target='_blank' href='" + apiKeysPanelUrl + "'>API Keys</a> to set one.";
+		$panel.html(thus.microTemplate('zenario_organizer_google_map_key_unavailable', {})).show();
+		
+		
+		$footer.html('').show();
 	}
-	if (itemsWithLatLng) {
-		map.fitBounds(bounds);
-	}
-	google.maps.event.addDomListener(window, "resize", function() {
-		var center = map.getCenter();
-		google.maps.event.trigger(map, "resize");
-		map.setCenter(center); 
-	});
-	html = thus.microTemplate('zenario_organizer_google_map_footer', {items: itemsWithLatLng, total: itemsCount});
-	$footer.html(html).show();
 };
 
 methods.showButtons = function($buttons) {

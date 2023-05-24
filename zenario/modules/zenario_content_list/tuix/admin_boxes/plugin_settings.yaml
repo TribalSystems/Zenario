@@ -58,11 +58,17 @@ plugin_settings:
                     value: visitor
                     values:
                         visitor:
-                            label: "Show content items in visitor's language"
+                            label: "Show content items in visitor's language only"
+                            ord: 1
+                        visitor_with_site_default_lang_fallback:
+                            label: "Show content items in visitor's language, with fall-back to site default language ([[site_default_lang]])"
+                            ord: 2
                         all:
-                            label: Show content items in all languages enabled
+                            label: "Show content items in all languages"
+                            ord: 3
                         specific_languages:
-                            label: Show content items in specific languages...
+                            label: "Show content items in specific languages..."
+                            ord: 4
                     format_onchange: true
                 specific_languages:
                     grouping: content_item_filters
@@ -102,7 +108,7 @@ plugin_settings:
                     grouping: date_based_filters
                     label: "Date range start:"
                     type: date
-                    change_month_and_year: "1"
+                    change_month_and_year: 1
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 end_date:
@@ -111,7 +117,7 @@ plugin_settings:
                     grouping: date_based_filters
                     label: "Date range end:"
                     type: date
-                    change_month_and_year: "1"
+                    change_month_and_year: 1
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 relative_operator:
@@ -137,7 +143,7 @@ plugin_settings:
                     style: width:50px;
                     pre_field_html: '&nbsp;'
                     post_field_html: '&nbsp;'
-                    value: "1"
+                    value: 1
                     validation:
                         required_if_not_hidden: Please specify a relative date range.
                 relative_units:
@@ -150,7 +156,7 @@ plugin_settings:
                         months: month(s)
                         years: year(s)
                     same_row: true
-                    value: "1"
+                    value: 1
                     validation:
                         required_if_not_hidden: Please specify a relative date range.
                 prior_to_date:
@@ -159,7 +165,7 @@ plugin_settings:
                     grouping: date_based_filters
                     label: "Prior to the date:"
                     type: date
-                    change_month_and_year: "1"
+                    change_month_and_year: 1
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 on_date:
@@ -168,7 +174,7 @@ plugin_settings:
                     grouping: date_based_filters
                     label: "On the date:"
                     type: date
-                    change_month_and_year: "1"
+                    change_month_and_year: 1
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 after_date:
@@ -177,7 +183,7 @@ plugin_settings:
                     grouping: date_based_filters
                     label: "After the date:"
                     type: date
-                    change_month_and_year: "1"
+                    change_month_and_year: 1
                     side_note: "Content items must have been published and they must have the release date defined."
                     indent: 1
                 only_show_child_items:
@@ -196,7 +202,7 @@ plugin_settings:
                     grouping: content_item_filters
                     label: 'Menu levels:'
                     type: select
-                    value: "1"
+                    value: 1
                     values:
                         1:
                             label: Descend one level in the menu
@@ -218,7 +224,7 @@ plugin_settings:
                     grouping: content_item_filters
                     label: 'Menu node type:'
                     type: select
-                    value: "1"
+                    value: 1
                     values:
                         - 
                             label: Ignore secondary menu nodes
@@ -256,10 +262,10 @@ plugin_settings:
                     label: 'Filter by category:'
                     indent: 1
                     pick_items:
-                        path: zenario__content/panels/categories
-                        min_path: zenario__content/panels/categories
-                        max_path: zenario__content/panels/categories
-                        target_path: zenario__content/panels/categories
+                        path: zenario__library/panels/categories
+                        min_path: zenario__library/panels/categories
+                        max_path: zenario__library/panels/categories
+                        target_path: zenario__library/panels/categories
                         select_phrase: Select categories...
                         multiple_select: true
                     value: ""
@@ -313,10 +319,10 @@ plugin_settings:
                     plugin_setting:
                         name: omit_category
                     pick_items:
-                        path: zenario__content/panels/categories
-                        min_path: zenario__content/panels/categories
-                        max_path: zenario__content/panels/categories
-                        target_path: zenario__content/panels/categories
+                        path: zenario__library/panels/categories
+                        min_path: zenario__library/panels/categories
+                        max_path: zenario__library/panels/categories
+                        target_path: zenario__library/panels/categories
                         select_phrase: Select categories...
                         multiple_select: true
                     value: ""
@@ -500,7 +506,7 @@ plugin_settings:
                     label: |
                         For overall list, show a link to a "more info" content item
                     type: checkbox
-                    value: "0"
+                    value: 0
                     side_note: >
                         Use this if you wish to show a short list here, and a link
                         to a further page with a longer list.
@@ -514,8 +520,8 @@ plugin_settings:
                     label: |
                         "More info" link text:
                     type: text
-                    width: "150"
-                    maxlength: "255"
+                    width: 150
+                    maxlength: 255
                     value: "More..."
                     indent: 1
                 more_hyperlink_target:
@@ -568,7 +574,7 @@ plugin_settings:
                         name: enable_rss
                     label: 'Generate RSS feed'
                     type: checkbox
-                    value: "0"
+                    value: 0
                     format_onchange: true
                 rss_include_channel_title:
                     grouping: rss
@@ -686,7 +692,7 @@ plugin_settings:
                     label: |
                         Show meta data title of each content item listed
                     type: checkbox
-                    value: "1"
+                    value: 1
                     redraw_onchange: true
                 titles_tags:
                     plugin_setting:
@@ -699,6 +705,20 @@ plugin_settings:
                     side_note: |
                         Choose the HTML tag style to use for each title
                     visible_if: zenarioAB.value('show_titles')
+                title_source:
+                    indent: 1
+                    plugin_setting:
+                        name: title_source
+                    type: radios
+                    values:
+                        content_item_title:
+                            ord: 1
+                            label: 'Use meta data title of content item'
+                        content_item_menu_node:
+                            ord: 2
+                            label: 'Use menu node text (fall back to meta data title if item not in menu)'
+                    value: content_item_title
+                    visible_if: lib.value('show_titles')
                 show_language:
                     plugin_setting:
                         name: show_language
@@ -744,20 +764,19 @@ plugin_settings:
                 canvas:
                     plugin_setting:
                         name: canvas
-                        save_value_when_hidden: true
                     label: 'Image canvas:'
                     type: select
                     values:
-                        unlimited:
-                            label: Unlimited size
+                        crop_and_zoom:
+                            label: Crop and zoom
                         fixed_width:
                             label: Constrain by width
                         fixed_height:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
-                        crop_and_zoom:
-                            label: Crop and zoom
+                        unlimited:
+                            label: Unlimited size
                     value: crop_and_zoom
                     format_onchange: true
                     indent: 1
@@ -773,28 +792,26 @@ plugin_settings:
                 width:
                     plugin_setting:
                         name: width
-                        save_value_when_hidden: true
                     label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
                     value: 240
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
                 height:
                     plugin_setting:
                         name: height
-                        save_value_when_hidden: true
                     type: text
                     label: 'Height:'
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
                     value: 160
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
@@ -803,9 +820,8 @@ plugin_settings:
                     hide_with_previous_outdented_field: true
                     plugin_setting:
                         name: webp
-                        save_value_when_hidden: true
                     type: checkbox
-                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
                     value: 1
                 fall_back_to_default_image:
                     plugin_setting:
@@ -832,10 +848,10 @@ plugin_settings:
                         drag_and_drop: true
                         reorder_items: false
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     indent: 2
                     validation:
@@ -876,7 +892,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_permalink
                     type: checkbox
-                    value: "0"
+                    value: 0
                     
                 show_dates:
                     plugin_setting:
@@ -884,7 +900,7 @@ plugin_settings:
                     label: |
                         Show each content item's release date
                     type: checkbox
-                    value: "0"
+                    value: 0
                     format_onchange: true
                 date_format:
                     plugin_setting:
@@ -917,7 +933,7 @@ plugin_settings:
                     label: |
                         Show each content item's writer's name
                     type: checkbox
-                    value: "0"
+                    value: 0
                     side_note: |
                         Will display the writer name. Usually only for Blog or News content items, but depends on settings for each content type.
                 
@@ -927,7 +943,7 @@ plugin_settings:
                     label: 'Links to private items:'
                     type: select
                     format_onchange: true
-                    value: "1"
+                    value: 1
                     empty_value: |
                         Show to everyone
                     values:
@@ -1028,7 +1044,7 @@ plugin_settings:
                         name: show_pagination
                     label: 'Paginate'
                     type: checkbox
-                    value: "1"
+                    value: 1
                     format_onchange: true
                 pagination_style:
                     plugin_setting:
@@ -1043,12 +1059,12 @@ plugin_settings:
                     label: 'Maximum number of pages:'
                     type: select
                     values:
-                        3: "3"
-                        5: "5"
-                        9: "9"
-                        20: "20"
-                        99: "99"
-                    value: "9"
+                        3: 3
+                        5: 5
+                        9: 9
+                        20: 20
+                        99: 99
+                    value: 9
                     indent: 1
                 offset:
                     plugin_setting:
@@ -1104,7 +1120,7 @@ plugin_settings:
                         50:
                             ord: 50
                             label: Skip 50 results
-                    value: "0"
+                    value: 0
                     side_note: >
                         Use this feature if you have more than one CSL plugin on a page, for example where one CSL shows more details of top results and this one shows less details of lower results. This could be set up in a nest or slideshow with several tabs, or in different slots.
                 page_size:

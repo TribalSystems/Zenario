@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $foundChecksums = [];
 $foundChecksumsWithTheWrongUsage = [];
+$checksumCol = 'short_checksum';
 
 
 
@@ -190,9 +191,17 @@ if ($usage == 'image'
 			}
 			
 			
+			//Have an option to fix missing image links in the public dir.
+			//In this mode, always try to create the image on the disk if it's not there.
+			if ($fixPublicDir) {
+				$needsChanging = true;
+			}
+			
+			
 			//If we see a private image (or an "auto" image that's not
 			//on a public page) then attempt to switch back to using zenario/file.php URL
-			if ($file
+			if ($fixWhereLinksGo
+			 && $file
 			 && ($file['privacy'] == 'private'
 			  || ($file['privacy'] == 'auto' && !$publishingAPublicPage))) {
 				
@@ -206,8 +215,8 @@ if ($usage == 'image'
 			
 			//Otherwise attempt to regenerate the public link if needed
 			} elseif ($needsChanging) {
-				$rememberWhatThisWas = \ze::$mustUseFullPath;
-				\ze::$mustUseFullPath = false;
+				$rememberWhatThisWas = ze::$mustUseFullPath;
+				ze::$mustUseFullPath = false;
 				
 				$url = '';
 				$dummyWidth = $dummyHeight = 0;
@@ -224,7 +233,7 @@ if ($usage == 'image'
 					}
 				}
 				
-				\ze::$mustUseFullPath = $rememberWhatThisWas;
+				ze::$mustUseFullPath = $rememberWhatThisWas;
 			}
 		
 		
@@ -298,12 +307,12 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		//If we can get the checksum from the url, look up this file and process it
 		$needsChanging = false;
 		$changed = false;
-		if ($checksum = \ze::ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
+		if ($checksum = ze::ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
 		
 			//Catch old checksums in base 16. Convert these to base 64 so the links will be shorter.
 			if (strlen($checksum) == 32
 			 && preg_match('/[^ABCDEFabcdef0-9]/', $checksum) === 0) {
-				$checksum = \ze::base16To64($checksum);
+				$checksum = ze::base16To64($checksum);
 				$needsChanging = true;
 			}
 			
@@ -319,7 +328,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 
 		
 			//Get the preferred filename from the URL string, if it is set
-			$filename = \ze::ifNull(trim(rawurldecode($params['filename'] ?? false)), null, null);
+			$filename = ze::ifNull(trim(rawurldecode($params['filename'] ?? false)), null, null);
 		
 		
 			//Check to see if this is the checksum of an image, with the correct usage set
@@ -332,7 +341,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			$file = $foundChecksums[$checksum];
 			
 			//If it is, we've found it and we can continue without any changes
-			if ($file && \ze::ifNull(trim(rawurldecode($params['usage'] ?? false)), 'image') == $usage) {
+			if ($file && ze::ifNull(trim(rawurldecode($params['usage'] ?? false)), 'image') == $usage) {
 		
 			//If not, check to see if it is the checksum of an image that exists somewhere on the filesystem,
 			//and try to copy it over.
@@ -431,9 +440,10 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		
 			//Add a simple checksum to make it harder for visitors to randomly change the widths and heights as they wish just by changing the URL
 			$key = false;
-			if (($widthForRetina && (!$knownDimensions || $widthForRetina != $file['width']))
+			if ($file
+			 && ($widthForRetina && (!$knownDimensions || $widthForRetina != $file['width']))
 			 && ($heightForRetina && (!$knownDimensions || $heightForRetina != $file['height']))) {
-				$key = \ze::hash64($file['id']. '_'. $widthForRetina. '_'. $heightForRetina. '_'. $checksum, 10);
+				$key = ze::hash64($file['id']. '_'. $widthForRetina. '_'. $heightForRetina. '_'. $checksum, 10);
 			}
 			
 			if (($params['k'] ?? false) != $key) {
@@ -444,7 +454,8 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			//For public images (or images that are set to "auto" and about to be made public because
 			//we're publishing a public page that they are on), try to switch to the image's URL
 			//in the public directory.
-			if ($file
+			if ($fixWhereLinksGo
+			 && $file
 			 && $usage == 'image'
 			 && ($file['privacy'] == 'public'
 			  || ($file['privacy'] == 'auto' && $publishingAPublicPage))) {
@@ -452,8 +463,8 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				$dummyWidth = $dummyHeight = 0;
 				$url = '';
 				
-				$rememberWhatThisWas = \ze::$mustUseFullPath;
-				\ze::$mustUseFullPath = false;
+				$rememberWhatThisWas = ze::$mustUseFullPath;
+				ze::$mustUseFullPath = false;
 				if (ze\file::imageLink(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
 					$mode = 'adjust', $offset = 0, $retina = true,
@@ -465,7 +476,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 						$changed = true;
 					}
 				}
-				\ze::$mustUseFullPath = $rememberWhatThisWas;
+				ze::$mustUseFullPath = $rememberWhatThisWas;
 			}
 			
 			

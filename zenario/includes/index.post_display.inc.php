@@ -126,7 +126,9 @@ if (ze::$canCache
 			"></x-zenario-cache-info></x-zenario-cache-info>
 			<script type="text/javascript">
 				window.zenarioCD = {load:', json_encode(ze::$cacheEnv), ', slots: ', json_encode($chSlots), '};
-				zenario.tooltips(\'#zenario_cache_info *\');
+				zOnLoad(function() {
+					zenario.tooltips(\'#zenario_cache_info *\');
+				});
 			</script>';
 	}
 	

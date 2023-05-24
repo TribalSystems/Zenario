@@ -40,3 +40,4 @@ zenario_skin_editor:
                     same_row: true
                     type: hidden
     save_and_continue_button_message: Save and continue
+    custom__update_preview_message: ''

@@ -42,11 +42,11 @@ body .zenario_skin {
 	border-bottom:1px solid #f0f0f0;
 }
 
-.Slot_Top .zenario_slot {
+.Slot_Header_Top .zenario_slot {
 	padding-top:10px;
 }
 
-.Slot_Top .zenario_plugin_nest .zenario_slot {
+.Slot_Header_Top .zenario_plugin_nest .zenario_slot {
 	padding-top:inherit;
 }
 

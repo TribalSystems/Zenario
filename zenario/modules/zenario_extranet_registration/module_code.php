@@ -34,6 +34,7 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 	public function init() {
 		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		ze::requireJsLib('zenario/js/password_functions.min.js');
 		
 		$this->registerPluginPage();
 		
@@ -44,6 +45,9 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		
 		$this->mode = 'modeRegistration';
+		
+		ze::requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		
 		$this->registerGetRequest('extranet_resend');
 		
 		// Set the title
@@ -155,26 +159,26 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 			
 			if (!empty($_SESSION['extranetUserID'])) {
-				if (($_GET['confirm_email'] ?? false) && $this->isEmailAddressVerified($_SESSION['extranetUserID'])) {
+				if (ze::get('confirm_email') && $this->isEmailAddressVerified($_SESSION['extranetUserID'])) {
 					$this->mode = 'modeVerificationAlreadyDone';
 				} else {
 					$this->mode = 'modeLoggedIn';
 				}
-			} elseif (($_POST['extranet_resend'] ?? false) && ($this->setting('initial_email_address_status')=='not_verified')) {
+			} elseif (ze::post('extranet_resend') && ($this->setting('initial_email_address_status')=='not_verified')) {
 				$this->validateFormFields('Resend_Form');
-				$user = $this->getDetailsFromEmail($_POST['email'] ?? false);
+				$user = $this->getDetailsFromEmail(ze::post('email'));
 				if ((!$this->errors) && (!empty($user['id'])) ) {
 					$this->sendVerificationEmail($user['id'] ?? false);
 					$this->mode = 'modeResent';
 				} else {
 					$this->mode = 'modeResend';
 				}
-			} elseif (($_GET['extranet_resend'] ?? false) && ($this->setting('initial_email_address_status')=='not_verified')) {
+			} elseif (ze::get('extranet_resend') && ($this->setting('initial_email_address_status')=='not_verified')) {
 				$this->mode = 'modeResend';
-			} elseif ($_POST['extranet_register'] ?? false){
+			} elseif (ze::post('extranet_register')){
 				$this->scrollToTopOfSlot();
 				
-				if ($_POST['screen_name'] ?? false) {
+				if (ze::post('screen_name')) {
 					$_POST['screen_name'] = trim($_POST['screen_name']);
 				}
 				
@@ -184,8 +188,8 @@ class zenario_extranet_registration extends zenario_extranet {
 					$this->mode = 'modeRegistration';
 				}
 				
-			} elseif (($_GET['confirm_email'] ?? false) && ($this->setting('initial_email_address_status')=='not_verified')) { 
-				if ($userId = $this->getUserIdFromHashCode($_GET['hash'] ?? false)){
+			} elseif (ze::get('confirm_email') && ($this->setting('initial_email_address_status')=='not_verified')) { 
+				if ($userId = $this->getUserIdFromHashCode(ze::get('hash'))){
 					if (!$this->isEmailAddressVerified($userId)){
 						$this->setEmailVerified($userId);
 						$this->applyAccountActivationPolicy($userId);
@@ -408,7 +412,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 
 			if ($this->setting('user_password') == 'user_to_choose_password') {
-				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ($_POST['extranet_new_password_confirm'] ?? false), false, get_class($this));
+				$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ze::post('extranet_new_password_confirm'), false, get_class($this));
 				if (count($errors)) {
 					$this->errors = array_merge($this->errors, $errors);
 					unset($_SESSION['captcha_passed__'. $this->instanceId]);
@@ -449,9 +453,9 @@ class zenario_extranet_registration extends zenario_extranet {
 		$fields = $this->validateFormFields('Registration_Form', $contactsCountAsUnregistered);
 		
 		if ($this->setting('user_email_verification')) {
-			if (!($_POST['email_confirm'] ?? false)) {
+			if (!ze::post('email_confirm')) {
 				$this->errors[] = ['Error' => $this->phrase('Please re-enter your email address.')];
-			} elseif (($_POST['email'] ?? false) != $_POST['email_confirm'] ?? false) {
+			} elseif (ze::post('email') != $_POST['email_confirm'] ?? false) {
 				$this->errors[] = ['Error' => $this->phrase('The email addresses you entered do not match.')];
 			}
 		}
@@ -465,7 +469,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		
 		if ($this->useScreenName) {
-			if ($_POST['screen_name'] ?? false){
+			if (ze::post('screen_name')){
 				$fields['screen_name'] = $_POST['screen_name'] ?? false;
 				$fields['screen_name_confirmed'] = 1;
 			} else {
@@ -501,7 +505,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$fields['password'] = ze\userAdm::createPassword();
 		}
 		
-		if (($_REQUEST['extranet_terms_and_conditions'] ?? false) && $this->setting('requires_terms_and_conditions') && ($this->setting('terms_and_conditions_page')) || $this->setting('url')) {
+		if (ze::request('extranet_terms_and_conditions') && $this->setting('requires_terms_and_conditions') && ($this->setting('terms_and_conditions_page')) || $this->setting('url')) {
 			$fields['terms_and_conditions_accepted'] = 1;
 		}
 		
@@ -526,7 +530,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		
 		//Allow contacts to register, turning their contact account into a user account
-		$userId = ze\row::get('users', 'id', ['email' => ($_POST['email'] ?? false), 'status' => 'contact']);
+		$userId = ze\row::get('users', 'id', ['email' => ze::post('email'), 'status' => 'contact']);
 		
 		$userId = ze\userAdm::save($fields2, $userId);
 		
@@ -644,7 +648,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			
 			if (ze\module::inc('zenario_users')) {
 				foreach (ze\user::details($userId) as $cn => $cv){
-					$emailMergeFields[$cn] = htmlspecialchars($cv);
+					$emailMergeFields[$cn] = htmlspecialchars($cv ?: '');
 				}
 			}
 			
@@ -883,16 +887,19 @@ class zenario_extranet_registration extends zenario_extranet {
 		$userToChoosePassword = ($this->setting('user_password') == 'user_to_choose_password');
 		if ($userToChoosePassword) {
 			$this->subSections['User_passwords'] = true;
-			$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
 		}
 		
 		echo $this->openForm('',' class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Registration_Form'] = true;
+			$this->objects['Password_Requirements_Settings'] = [
+				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
+				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
+			];
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		
 		if ($userToChoosePassword) {
-			$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
+			$this->callScript('zenarioP', 'updatePasswordNotifier', '#extranet_new_password', $this->objects['Password_Requirements_Settings'], '#password_message', $adminFacing = false, $isInstaller = false);
 		}
 	}
 
@@ -942,14 +949,14 @@ class zenario_extranet_registration extends zenario_extranet {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case "zenario__users/panels/zenario_extranet_registration__code_groups":
-				if (($_POST['action'] ?? false) == 'add_group_to_code') {
+				if (ze::post('action') == 'add_group_to_code') {
 					ze\row::set(
 						ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'code_groups',
 						[],
-						['code_id' => $refinerId, 'group_id' => ($_POST['group_id'] ?? false)]);
+						['code_id' => $refinerId, 'group_id' => ze::post('group_id')]);
 				}
 	
-				if (($_POST['action'] ?? false) == 'remove_group_from_code') {
+				if (ze::post('action') == 'remove_group_from_code') {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::delete(
 							ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'code_groups',
@@ -958,7 +965,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 				break;
 			case "zenario__users/panels/zenario_extranet_registration__codes":
-				if (($_POST['action'] ?? false) == 'delete_code') {
+				if (ze::post('action') == 'delete_code') {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::delete(
 							ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'codes',

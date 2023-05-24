@@ -570,6 +570,9 @@ class moduleAPI {
 		return \ze::setting($settingName);
 	}
 	
+	
+	
+	
 	  ////////////////////////////////
 	 //  Initialization Functions  //
 	////////////////////////////////
@@ -757,16 +760,7 @@ class moduleAPI {
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call='. $methodCall.
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
-		  (\ze::isAdmin()?
-			'&cVersion='. $this->cVersion
-		   : '').
-			'&instanceId='. $this->instanceId.
-			'&slotName='. $this->slotName.
-			'&eggId='. $this->eggId.
-  		  //Plugins from the Slide Designer will have a dummy eggId, so we'll need to specify the id of the slide they're on to find them
-		  ($this->eggId && $this->eggId < 0?
-			'&slideId='. $this->slideId
-		   : '').
+			$this->pluginRequestVars().
 			\ze\ring::urlRequest($requests);
 	}
 	
@@ -809,25 +803,15 @@ class moduleAPI {
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showFloatingBox'.
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
-		  (\ze::isAdmin()?
-			'&cVersion='. $this->cVersion
-		   : '').
-			'&instanceId='. $this->instanceId.
-			'&slotName='. $this->slotName.
-			'&eggId='. $this->eggId.
+			$this->pluginRequestVars().
 			\ze\ring::urlRequest($requests);
 	}
 	
 	public final function showSingleSlotLink($requests = '', $hideLayout = true) {
 		return
 			$this->linkToItem($this->cID, $this->cType, false, 
-			  (\ze::isAdmin()?
-				'&cVersion='. $this->cVersion
-			   : '').
 				'&method_call=showSingleSlot'.
-				'&instanceId='. $this->instanceId.
-				'&slotName='. $this->slotName.
-				'&eggId='. $this->eggId.
+				$this->pluginRequestVars().
 				($hideLayout? '&hideLayout=1' : '').
 				\ze\ring::urlRequest($requests),
 			\ze::$alias);
@@ -851,16 +835,7 @@ class moduleAPI {
 			$this->visitorTUIXLink($callbackFromScriptTags, $path, $requests, $mode).
 			'&cID='. $this->cID.
 			'&cType='. $this->cType.
-		  (\ze::isAdmin()?
-			'&cVersion='. $this->cVersion
-		   : '').
-			'&instanceId='. $this->instanceId.
-			'&slotName='. $this->slotName.
-			'&eggId='. $this->eggId.
-		  //Plugins from the Slide Designer will have a dummy eggId, so we'll need to specify the id of the slide they're on to find them
-		  ($this->eggId && $this->eggId < 0?
-			'&slideId='. $this->slideId
-		   : '');
+			$this->pluginRequestVars();
 	}
 	
 	
@@ -897,14 +872,7 @@ class moduleAPI {
 			\ze::$rss = $rss;
 		
 		} else {
-			$request .=
-				'&instanceId='. $this->instanceId.
-				'&slotName='. $this->slotName;
-			
-			if ($this->eggId) {
-				$request .=
-					'&eggId='. $this->eggId;
-			}
+			$request .= $this->pluginRequestVars();
 		}
 		
 		//Only allow the first Plugin to call this function to set the RSS link
@@ -1068,11 +1036,24 @@ class moduleAPI {
 	}
 	
 	public final function wrapperClass() {
-		if (isset($this->zAPISettings['mode'])) {
-			return $this->cssClass. ' '. $this->moduleClassName. '__in_mode__'. $this->zAPISettings['mode'];
+		
+		$cssClass = $this->cssClass;
+		
+		if (!empty(\ze::$slotContents[$this->slotName]['is_header'])) {
+			$cssClass .= ' zenario_slot_in_header';
+		
+		} elseif (!empty(\ze::$slotContents[$this->slotName]['is_footer'])) {
+			$cssClass .= ' zenario_slot_in_footer';
+		
 		} else {
-			return $this->cssClass;
+			$cssClass .= ' zenario_slot_in_body';
 		}
+		
+		if (isset($this->zAPISettings['mode'])) {
+			$cssClass .= ' '. $this->moduleClassName. '__in_mode__'. $this->zAPISettings['mode'];
+		}
+		
+		return $cssClass;
 	}
 	
 	public final function zAPISetCachableVars(&$a) {
@@ -1251,12 +1232,12 @@ class moduleAPI {
 		//I'd also need to catch the case where a plugin got overridden, and show the layout preview from the module that was overridden..?
 		if ($checkPriv
 		 && !$isLayoutPreview
-		 && $this->slotLevel == 2
+		 && $this->slotLevel > 1
 		 && \ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			if ((bool)\ze\admin::id()) {
-				echo '<div id="'. $this->containerId. '-layout_preview" onclick="return zenarioA.adminSlotWrapperClick(\'', htmlspecialchars($this->slotName), '\', event, ', $this->eggId? 1 : 0, ');" class="zenario_slot_layout_preview zenario_slot ', $this->cssClass. '"';
+				echo '<div id="'. $this->containerId. '-layout_preview" onclick="return zenarioA.adminSlotWrapperClick(\'', htmlspecialchars($this->slotName), '\', event, ', $this->eggId? 1 : 0, ');" class="zenario_slot_layout_preview zenario_slot ', $this->wrapperClass(). '"';
 			}	else {
-				echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->cssClass. '"';
+				echo '<div id="'. $this->containerId. '-layout_preview" class="zenario_slot_layout_preview zenario_slot '. $this->wrapperClass(). '"';
 			}		
 			
 			if ($this->shouldShowLayoutPreview()
@@ -1319,7 +1300,14 @@ class moduleAPI {
 		} elseif (empty($slot['init'])) {
 			if (empty($slot['error'])) {
 				if (empty($slot['module_id'])) {
-					return \ze\admin::phrase('This is an empty slot');
+					if (!empty($slot['is_header'])) {
+						return \ze\admin::phrase('This is an empty slot on the site-wide header');
+	
+					} elseif (!empty($slot['is_footer'])) {
+						return \ze\admin::phrase('This is an empty slot on the site-wide footer');
+					} else {
+						return \ze\admin::phrase('This is an empty slot');
+					}
 				} else {
 					return \ze\admin::phrase('This is a plugin (its current settings result in no output)');
 				}
@@ -1331,7 +1319,15 @@ class moduleAPI {
 			return $this->parentNest->returnWhatThisEggIs();
 			
 		} elseif ($this->isVersionControlled) {
-			return \ze\admin::phrase('This is a version-controlled editable area on the content item');
+			return \ze\admin::phrase('This is a version-controlled editable area on the content item, double-click to edit');
+		
+		} elseif ($this->slotLevel == 3) {
+			if (!empty($slot['is_header'])) {
+				return \ze\admin::phrase('This is a plugin on the site-wide header');
+		
+			} else {
+				return \ze\admin::phrase('This is a plugin on the site-wide footer');
+			}
 		
 		} elseif ($this->slotLevel == 2) {
 			return \ze\admin::phrase('This is a plugin on the layout');
@@ -1698,6 +1694,26 @@ class moduleAPI {
 			return $this->getModeFromPath($_REQUEST['path']);
 		}
 	}
+	
+	protected function pluginRequestVars() {
+		$vars = 
+			'&instanceId='. $this->instanceId.
+			'&slotName='. $this->slotName;
+		
+		if (\ze::isAdmin()) {
+			$vars .= '&cVersion='. $this->cVersion;
+		}
+		
+		if ($this->eggId) {
+			$vars .= '&eggId='. $this->eggId;
+		}
+		
+		if ($this->slideId) {
+			$vars .= '&slideId='. $this->slideId;
+		}
+		
+		return $vars;
+	}
 }
 
 
@@ -1751,7 +1767,7 @@ class moduleBaseClass extends moduleAPI {
 	}
 	
 	public function shouldShowLayoutPreview() {
-		return $this->isVersionControlled && $this->slotLevel == 2;
+		return $this->isVersionControlled && $this->slotLevel > 1;
 	}
 	
 	public function showLayoutPreview() {
@@ -1826,24 +1842,6 @@ class moduleBaseClass extends moduleAPI {
 	}
 	
 	public function handleAdminToolbarAJAX($cID, $cType, $cVersion, $ids) {
-		
-		//...your PHP code...//
-	}
-	
-	
-	
-	
-	  /////////////////////////////////
-	 //  Methods called by Wizards  //
-	/////////////////////////////////
-	
-	
-	public function fillWizard($path, &$box, &$fields, &$values) {
-		
-		//...your PHP code...//
-	}
-	
-	public function formatWizard($path, &$box, &$fields, &$values, $changes) {
 		
 		//...your PHP code...//
 	}
@@ -2004,6 +2002,10 @@ class moduleBaseClass extends moduleAPI {
 	 //  Other Methods called in Admin Mode  //
 	//////////////////////////////////////////
 	
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		return \ze\module::getModuleDisplayNameByClassName($moduleClassName);
+	}
 	
 	public function fillAdminSlotControls(&$controls) {
 		//...your PHP code...//

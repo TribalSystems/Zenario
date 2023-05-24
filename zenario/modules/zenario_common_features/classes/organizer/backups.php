@@ -99,10 +99,10 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 			$filename = ze::setting('backup_dir') . '/'. ze\file::safeName(ze\ring::decodeIdForOrganizer($ids));
 		}
 		
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_RESTORE_SITE')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_RESTORE_SITE')) {
 			unlink($filename);
 		
-		} elseif (($_POST['upload'] ?? false) && ze\priv::check('_PRIV_BACKUP_SITE')) {
+		} elseif (ze::post('upload') && ze\priv::check('_PRIV_BACKUP_SITE')) {
 			
 			ze\fileAdm::exitIfUploadError(true, false, false, 'Filedata');
 			
@@ -119,7 +119,7 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 				echo '<!--Message_Type:Error-->Unable to upload the database backup';
 			}
 		
-		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_RESTORE_SITE')) {
+		} elseif (ze::post('restore') && ze\priv::check('_PRIV_RESTORE_SITE')) {
 			//Restore a database backup from the file system
 			$failures = [];
 			if (ze\dbAdm::restoreFromBackup($filename, $failures, true)) {

@@ -105,13 +105,17 @@ class sql {
 
 	//Fetch multiple values from a SQL query (one column, multiple rows)
 	//Formerly "sqlFetchValues()"
-	public static function fetchValues($result) {
+	public static function fetchValues($result, $indexBySecondColumn = false) {
 		if (is_string($result)) {
 			$result = static::select($result);
 		}
 		$out = [];
 		while ($row = static::fetchRow($result)) {
-			$out[] = $row[0];
+			if ($indexBySecondColumn) {
+				$out[$row[1]] = $row[0];
+			} else {
+				$out[] = $row[0];
+			}
 		}
 		return $out;
 	}

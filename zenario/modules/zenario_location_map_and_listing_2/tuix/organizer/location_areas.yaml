@@ -4,7 +4,6 @@ zenario__locations:
             name: Areas
             panel:
                 title: Areas
-                view_mode: list
                 db_items:
                     table: "[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]areas AS a"
                     id_column: a.id

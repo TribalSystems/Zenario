@@ -300,7 +300,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 			$this->data['Pagination']='';
 			$this->pagination('pagination', $this->page, $pages, $this->data['Pagination']);
 		} else {
-			$this->data['Msg_Empty_List']=	$this->phrase('There are no locations to show.');
+			$this->data['Msg_Empty_List']=	$this->phrase('There are no locations to show');
 		}
 		$this->twigFramework($this->data);
 		
@@ -412,9 +412,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 					
 					initMap(
 						\'map\',
-						'. (float) ($_GET['map_center_lat'] ?? false). ',
-						'. (float) ($_GET['map_center_lng'] ?? false). ',
-						'. (float) ($_GET['map_zoom'] ?? false). '
+						'. (float) ze::get('map_center_lat'). ',
+						'. (float) ze::get('map_center_lng'). ',
+						'. (float) ze::get('map_zoom'). '
 					);
 				">
 					<div id="map" style="width: 475px; height: 325px;"></div>

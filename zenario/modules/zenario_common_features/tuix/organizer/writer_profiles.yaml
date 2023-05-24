@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__content:
+zenario__library:
 	panels:
 		writer_profiles:
 			title: Writer profiles

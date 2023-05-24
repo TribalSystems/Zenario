@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch($path) {
 	case 'zenario_country_manager__country':
-		if ($_GET['refinerId'] ?? false){
+		if (ze::get('refinerId')){
 			$box['key']['id'] = $_GET['refinerId'] ?? false;
 		}
 		if ($box['key']['id'] ?? false) {
@@ -45,10 +45,10 @@ switch($path) {
 		if (!ze::setting('zenario_country_manager__region_type_management')) {
 			$box['tabs']['details']['fields']['region_type']['hidden'] = true;
 		}
-		if ($_GET['id'] ?? false){
+		if (ze::get('id')){
 			$box['key']['id'] = $_GET['id'] ?? false;
 		}
-		if (($_GET['refinerName'] ?? false)=='parent_id') {
+		if (ze::get('refinerName') =='parent_id') {
 			$box['key']['parent_id'] = $_GET['refinerId'] ?? false;
 			if ($box['key']['id'] ?? false) {
 				$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name','region_type'], ['id' => ($box['key']['id'] ?? false)]);
@@ -64,7 +64,7 @@ switch($path) {
 												['parent_region_name' => $parentRegion['name']]);
 				$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
 			}
-		} elseif ($_GET['refiner__country_code_filter'] ?? false) {
+		} elseif (ze::get('refiner__country_code_filter')) {
 			$box['key']['country_id'] = $_GET['refiner__country_code_filter'] ?? false;
 			$countryName = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => ($box['key']['country_id'] ?? false)]);
 			if ($box['key']['id'] ?? false) {

@@ -198,16 +198,35 @@ class document {
 			
 			$fileDetails = \ze\row::get('files', ['path', 'filename', 'location'], $details['file_id']);
 			$document = \ze\row::get('documents', ['file_id', 'filename'], ['id'=>$documentId]);
-			$fileIdsInDocument = \ze\row::getAssocs('documents', ['file_id', 'filename'], ['file_id'=>$document['file_id']]);
-			$numberFileIds =count($fileIdsInDocument);
+			$fileIdsInDocument = \ze\row::getAssocs('documents', ['file_id', 'filename'], ['file_id' => $document['file_id']]);
+			$numberFileIds = count($fileIdsInDocument);
 			
-			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime'], $document['file_id']);
+			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'checksum'], $document['file_id']);
 
 			\ze\document::deletePubliclink($documentId, true);
 			
 			if($file['filename']) {
-				//check to see if file used by another document before deleting or used in ctype documents
-				if (($numberFileIds == 1) && !\ze\row::exists('content_item_versions', ['file_id' => $details['file_id']])) {
+				//Check to see if the file is used by another document, or a document content item,  before deleting.
+				//Please note: it is possible that the same file is in the files table more than once
+				//with different 'usage' column values. Check these too!
+				$fileInUseByOtherDocuments = false;
+				if (\ze\row::exists('content_item_versions', ['file_id' => $details['file_id']])) {
+					$fileInUseByOtherDocuments = true;
+				}
+				
+				if (!$fileInUseByOtherDocuments) {
+					$otherInstancesOfIdenticalFile = \ze\row::getAssocs('files', ['id', 'filename', 'path', 'created_datetime'], ['checksum' => $file['checksum'], 'id' => ['!' => $file['id']]]);
+					if (!empty($otherInstancesOfIdenticalFile)) {
+						foreach ($otherInstancesOfIdenticalFile as $otherInstance) {
+							if (\ze\row::exists('content_item_versions', ['file_id' => $otherInstance['id']])) {
+								$fileInUseByOtherDocuments = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				if (($numberFileIds == 1) && !$fileInUseByOtherDocuments) {
 					\ze\row::delete('files', ['id' => $details['file_id']]);
 					if ($details['thumbnail_id']) {
 						\ze\row::delete('files', ['id' => $details['thumbnail_id']]);

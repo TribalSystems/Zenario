@@ -295,7 +295,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$this->exitIfCannotEditDataset($datasetId);
 		$dataset = ze\dataset::details($datasetId);
 		
-		switch ($_POST['mode'] ?? false) {
+		switch (ze::post('mode')) {
 			case 'save':
 				$errors = [];
 				

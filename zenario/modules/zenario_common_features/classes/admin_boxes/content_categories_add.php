@@ -39,11 +39,11 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 		$tagIds = [];
 		$equivId = $cType = false;
 		
-		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
+		if (ze::request('equivId') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('equivId');
 		
-		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
+		} elseif (ze::request('cID') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('cID');
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
@@ -77,7 +77,7 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 			
 			$box['tabs']['categories_add']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/categories'). '" target="_blank"']);
 			
 			
 			$inCats = [];

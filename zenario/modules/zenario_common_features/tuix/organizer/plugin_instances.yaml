@@ -9,7 +9,6 @@ zenario__modules:
                 moduleIds: ''
             title: Plugin library
             select_mode_title: Select a plugin
-            view_mode: list
             
             notice:
                 #This notice will be shown if there are any instances of that module

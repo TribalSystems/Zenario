@@ -60,7 +60,7 @@ class zenario_common_features__organizer__spare_domains extends ze\moduleBaseCla
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_SPARE_DOMAIN_NAME')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_SPARE_DOMAIN_NAME')) {
 			$sql = "
 				DELETE FROM ". DB_PREFIX . "spare_domain_names
 				WHERE requested_url = '". ze\escape::sql(ze\ring::decodeIdForOrganizer($ids)). "'";

@@ -1,0 +1,26 @@
+{% for item in Type %}
+	<a href="{{item.url}}" {% if Open_links_to_results_in_a_new_window %} target="_blank" {% endif %}>
+		<div class="search_result {% if item.privacy != 'public' %} private {% endif %} {% if item.pinned %} pinned {% endif %}">
+			{% if item.Feature_image_HTML_tag %}
+				<div class="search_result_image {{item.Icon_Class}}">{{item.Feature_image_HTML_tag}}</div>
+			{% endif %}
+			<div class="search_result_content">
+				<div class="search_result_title">
+					<span class="title">
+						{{item.Result_No}}. {{item.title}}
+						{{item.language_name}}
+					</span>
+					{% if Show_scores %}
+						{{item.score}}
+					{% endif %}
+				</div>
+				
+				{% if item.Breadcrumb %}
+					<div class="breadcrumb">{{item.Breadcrumb}}</div>
+				{% endif %}
+
+				<div class="search_result_summary">{{item.content_bodymain}}</div>
+			</div>
+		</div>
+	</a>
+{% endfor %}

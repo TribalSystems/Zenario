@@ -152,7 +152,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		ze\priv::exitIfNot('_PRIV_MANAGE_SPARE_ALIAS');
+		ze\priv::exitIfNot('_PRIV_PUBLISH_CONTENT_ITEM');
 		
 		$alias = ($box['key']['id'] ?: $values['spare_alias/alias']);
 		

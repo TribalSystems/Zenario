@@ -9,7 +9,6 @@
     font-size:11px;
 }
 
-.title_red,
 .description_red,
 .keywords_red
 {
@@ -17,9 +16,11 @@
     padding: 2px 5px !important;
     text-align: center;
 	background: none repeat scroll 0 0 #FCA4A3;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
 }
 
-.title_orange,
 .description_orange,
 .keywords_orange
 {
@@ -27,9 +28,11 @@
     padding: 2px 5px !important;
     text-align: center;
 	background: none repeat scroll 0 0 #FF9900;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
 }
 
-.title_yellow,
 .description_yellow,
 .keywords_yellow
  {
@@ -37,9 +40,11 @@
     padding: 2px 5px !important;
     text-align: center;
 	background: none repeat scroll 0 0 #FFCC33;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
 }
 
-.title_green,
 .description_green,
 .keywords_green
  {
@@ -47,6 +52,39 @@
     padding: 2px 5px !important;
     text-align: center;
 	background: none repeat scroll 0 0 #53F27C;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
+}
+
+.title_red,
+.title_orange,
+.title_yellow,
+.title_green {
+    display:inline;
+    padding: 2px 5px !important;
+    text-align: center;
+    font-family:Verdana,Arial,sans-serif;
+    font-size:13px;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
+}
+
+.title_red {
+	color:#ff3939;
+}
+
+.title_orange {
+	color:#FF9900;
+}
+
+.title_yellow {
+	color:#e6af0b;
+}
+
+.title_green {
+	color:#24ae2d;
 }
 
 #zenario_fbAdminInner .zfab_search_engine_preview {
@@ -197,6 +235,58 @@ input.zenario_datepicker {
 
 #zenario_abtab .thickbox .ui-slider-horizontal .ui-slider-handle {
 	top: -0.19em;
+}
+
+
+/*  Some styles for jQueryUI Spinners in Admin Mode  */
+
+.ui-spinner-disabled {
+	opacity: 0.7;
+}
+
+.ui-spinner-disabled a {
+	display: none;
+}
+
+.ui-spinner span.zenario_spinner_unit {
+	position: relative;
+	right: 25px;
+	top: 2px
+}
+
+.ui-spinner .ui-spinner-input {
+	margin-right:28px;
+	padding:4px 0;
+	text-align:right;
+}
+
+.ui-spinner .zenario_grid_setting_cols {
+	width:30px;
+}
+
+.ui-spinner-button {
+	width:21px;
+}
+
+.ui-spinner-button .ui-icon {
+	width:21px;
+	height:15px;
+}
+
+.ui-state-default.ui-spinner-up .ui-icon {
+	background:url('../admin/images/grid_maker/nudge-btn-off-state-up.gif') no-repeat bottom;
+}
+
+.ui-state-default.ui-spinner-up .ui-icon:hover {
+	background:url('../admin/images/grid_maker/nudge-btn-over-state-up.gif') no-repeat bottom;
+}
+
+.ui-state-default.ui-spinner-down .ui-icon {
+	background:url('../admin/images/grid_maker/nudge-btn-off-state-down.gif') no-repeat bottom;
+}
+
+.ui-state-default.ui-spinner-down .ui-icon:hover {
+	background:url('../admin/images/grid_maker/nudge-btn-over-state-down.gif') no-repeat bottom;
 }
 
 
@@ -433,7 +523,8 @@ body .zenario_admin_tooltip_over_tinymce {
 .zenario_admin_tooltip.tooltip_middle_left .tooltip_arrow {
 	display: block;
 	left: -6px;
-	background: left transparent no-repeat url('../admin/images/tooltip_left_black.png');
+	background: left transparent no-repeat url('../admin/images/tooltip_left_black.svg');
+	background-size: 6px 9px;
 }
 
 .zenario_admin_tooltip.tooltip_middle_right {
@@ -442,7 +533,8 @@ body .zenario_admin_tooltip_over_tinymce {
 .zenario_admin_tooltip.tooltip_middle_right .tooltip_arrow {
 	display: block;
 	right: -6px;
-	background: right transparent no-repeat url('../admin/images/tooltip_right_black.png');
+	background: right transparent no-repeat url('../admin/images/tooltip_right_black.svg');
+	background-size: 6px 9px;
 }
 
 .zenario_admin_tooltip.tooltip_top_center {
@@ -451,7 +543,8 @@ body .zenario_admin_tooltip_over_tinymce {
 .zenario_admin_tooltip.tooltip_top_center .tooltip_arrow {
 	display: block;
 	top: -6px;
-	background: top transparent no-repeat url('../admin/images/tooltip_up_black.png');
+	background: top transparent no-repeat url('../admin/images/tooltip_up_black.svg');
+	background-size: 9px 6px;
 }
 
 .zenario_admin_tooltip.tooltip_bottom_center .tooltip_arrow {
@@ -459,7 +552,8 @@ body .zenario_admin_tooltip_over_tinymce {
 	position: relative;
 	top: 13px;
 	height: 5px;
-	background: bottom transparent no-repeat url('../admin/images/tooltip_down_black.png');
+	background: bottom transparent no-repeat url('../admin/images/tooltip_down_black.svg');
+	background-size: 9px 6px;
 }
 
 .zenario_admin_tooltip.tooltip_bottom_left .tooltip_arrow {
@@ -476,21 +570,16 @@ span.zenario_conditionally_hidden {
 .zenario_inactive a {
 	font-style: italic;
 }
-
-/* inputs consistency between browsers */
-/* Removed as it was causing checkboxes to be hidden! */
-/*
-input, textarea, button {
-    -webkit-appearance: none; / *Safari/Chrome* /
-    -moz-appearance: none; / *Firefox* /
-    -ms-appearance: none; / *IE* /
-    -o-appearance: none; / *Opera* /
-    appearance: none;
-    -webkit-border-radius: 0; 
-}
-*/
+/**/
 
 /*  Layout icon backgrounds  */
+
+#organizer_rightColumn div.organizer_row.layout_status_active div.organizer_cell div.zenario_layout_inline_button a,
+#organizer_rightColumn div.organizer_row.layout_status_active_default div.organizer_cell div.zenario_layout_inline_button a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_active a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_icon_layout.layout_status_active_default a {
+	background:#D7ABEA;
+}
 
 #organizer_rightColumn div.organizer_row.layout_status_active div.organizer_cell div.zenario_layout_inline_button a,
 #organizer_rightColumn div.organizer_row.layout_status_active_default div.organizer_cell div.zenario_layout_inline_button a,
@@ -877,44 +966,41 @@ del.zenario_link_status > del {
 	width: 16px;
 	height: 16px;
 	border: 0;
-	opacity: 0.5;
+	opacity: 0.7;
 }
 
 del.zenario_link_status__content_not_found > del {
-	background:url('../admin/images/link_status/doesnt-exist-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/doesnt-exist-v3.svg') no-repeat center / 16px 16px;
 }
 
 del.zenario_link_status__hidden > del {
-	background:url('../admin/images/link_status/draft-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/draft-v3.svg') no-repeat center / 16px 16px;
 }
 
 del.zenario_link_status__published_with_draft > del {
-	background:url('../admin/images/link_status/published-with-draft-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/published-with-draft-v3.svg') no-repeat center / 16px 16px;
 }
 
 del.zenario_link_status__published_with_draft_401 > del {
-	background:url('../admin/images/link_status/published-with-draft-protected-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/published-with-draft-protected-v3.svg') no-repeat center;
 }
 
 del.zenario_link_status__published_with_draft_403 > del {
-	background:url('../admin/images/link_status/published-with-draft-403-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/published-with-draft-403-v3.svg') no-repeat center;
 }
 
 del.zenario_link_status__published_401 > del {
-	background:url('../admin/images/link_status/published-protected-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/published-protected-v3.svg') no-repeat center / 16px 16px;
 }
 
 del.zenario_link_status__published_403 > del {
-	background:url('../admin/images/link_status/published-403-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/published-403-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__spare_domain > del {
-	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
-}
-
+del.zenario_link_status__spare_domain > del,
 del.zenario_link_status__spare_alias > del,
 del.zenario_link_status__published_301 > del {
-	background:url('../admin/images/link_status/spare-domain-v2.png') no-repeat center;
+	background:url('../admin/images/link_status/spare-domain-v3.svg') no-repeat center / 16px 16px;
 }
 
 del.zenario_link_status__menu_warning > del {

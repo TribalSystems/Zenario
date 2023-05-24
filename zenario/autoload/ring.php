@@ -80,6 +80,13 @@ class ring {
 			return $data[1];
 		}
 	}
+	
+	public static function encodeToUtf8($text) {
+		//This function was taken from one of the comments in the PHP documentation:
+		//https://www.php.net/manual/en/function.mb-convert-encoding.php
+		//This is in the public domain.
+		return mb_convert_encoding($text, "UTF-8", mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true));
+	}
 
 	//Formerly "chopPrefixOffString()", "chopPrefixOffOfString()"
 	public static function chopPrefix($prefix, $string, $returnStringOnFailure = false, $caseInsensitive = false) {

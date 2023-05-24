@@ -369,6 +369,6 @@ class cache {
 				}
 			}
 		}
-		echo "\nzenario._uAM(", $targetVar, ',', json_encode($output), ');';
+		echo "\nzenario._mkd(", $targetVar, ',', json_encode($output), ');';
 	}
 }

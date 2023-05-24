@@ -29,19 +29,64 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 class zenario_common_features__admin_boxes__download_sample_file extends ze\moduleBaseClass {
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		$dataset = ze\dataset::details($box['key']['dataset']);
+		
+		$fieldExists = false;
+		$datasetFieldNames = '<ul>';
+		
+		if ($dataset['system_table'] == 'users') {
+			$datasetFieldNames .= '<li>' . ze\admin::phrase('User ID (user_id)') . '</li>';
+		}
+		
+		$sql = '
+			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.label, f.default_label, f.field_name
+			FROM '.DB_PREFIX.'custom_dataset_fields f
+			INNER JOIN '.DB_PREFIX.'custom_dataset_tabs t
+				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
+			WHERE f.dataset_id = '.(int)$dataset['id']. '
+			AND f.include_in_export = 1
+			AND f.type != "textarea"
+			AND f.type != "editor"
+			ORDER BY t.ord, f.ord';
+		$result = ze\sql::select($sql);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$fieldExists = true;
+			$datasetColumns[$row['id']] = $row['db_column'];
+			$datasetFieldNames .= '<li>' . str_replace(":", "", ($row['label'] ?: $row['default_label'])) . ' (' . $row['db_column'] . ')';
+			
+			$datasetFieldNames .= '</li>';
+		}
+		
+		$datasetFieldNames .= '</ul>';
+		
+		$linkHeader = '';
+		if ($fieldExists) {
+			$linkHeader = ze\admin::phrase('<p>Fields to be exported:</p>');
+		}
+		
+		$datasetExportFields = $datasetFieldNames;
+		$fields['download/desc']['snippet']['html'] = $linkHeader.'<p>' . $datasetExportFields . '</p>';
+	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		// Get user dataset columns
 		$dataset = ze\dataset::details($box['key']['dataset']);
 		$datasetColumns = [];
+		
+		if ($dataset['system_table'] == 'users') {
+			$datasetColumns[0] = 'user_id';
+		}
+		
 		$sql = '
-			SELECT f.id, f.db_column
+			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.label, f.default_label, f.field_name
 			FROM '.DB_PREFIX.'custom_dataset_fields f
 			INNER JOIN '.DB_PREFIX.'custom_dataset_tabs t
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
 			WHERE f.dataset_id = '.(int)$dataset['id']. '
-			AND f.db_column != ""
-			AND f.db_column NOT IN ("status", "screen_name_confirmed", "created_date", "modified_date", "last_login", "last_profile_update_in_frontend", "suspended_date")
+			AND f.include_in_export = 1
+			AND f.type != "textarea"
+			AND f.type != "editor"
 			ORDER BY t.ord, f.ord';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {

@@ -210,8 +210,29 @@ class server {
 	}
 	
 	
-	
-	
+	public static function sendEmailSimple(
+		$subject, $body, $isHTML,
+		$ignoreDebugMode = false,
+		$addressTo = false,
+		$nameTo = false, $addressFrom = false, $nameFrom = false
+	) {
+		
+		$addressToOverriddenBy = false;
+		
+		if ($addressTo === false) {
+			$addressTo = EMAIL_ADDRESS_GLOBAL_SUPPORT;
+			$addressFrom = \ze::setting('email_address_from') ?: EMAIL_ADDRESS_GLOBAL_SUPPORT;
+		}
+		
+		return \ze\server::sendEmail(
+			$subject, $body, $addressTo, $addressToOverriddenBy,
+			$nameTo, $addressFrom, $nameFrom, 
+			[], [],
+			'bulk', $isHTML, false,
+			false, false, false,
+			'', '', 'To', $ignoreDebugMode
+		);
+	}
 	
 
 	//Check whether we are allowed to call exec()

@@ -44,7 +44,7 @@ zenario__impersonate:
                     label: Log me in automatically as this extranet user
                     type: checkbox
     
-    max_height: 200
+    max_height: 220
     hide_tab_bar: true
     save_button_message: Impersonate this user
     cancel_button_message: Cancel

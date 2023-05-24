@@ -603,6 +603,7 @@ class dbAdm {
 		//- the previous revisions won't be applied.
 		if ($revisionNumber && self::$dbupCurrentRevision !== \ze\dbAdm::RUN_EVERY_UPDATE) {
 			\ze\dbAdm::setModuleRevisionNumber($revisionNumber, self::$dbupPath, self::$dbupUpdateFile);
+			self::$dbupCurrentRevision = $revisionNumber;
 	
 		} else {
 			\ze\db::updateDataRevisionNumber();
@@ -724,10 +725,12 @@ class dbAdm {
 
 
 	//Formerly "generateFilenameForBackups()"
-	public static function generateFilenameForBackups($gzip = true, $encrypt = false) {
+	public static function generateFilenameForBackups($gzip = true, $encrypt = false, $dataArchive = false) {
 		//Get the current date and time, and create a filename with that timestamp
 		return preg_replace('/[^\w\\.]+/', '-',
-			\ze\link::host(). '-'. SUBDIRECTORY. '-backup-'. \ze\sql::fetchValue("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d-%H.%i')"). '-'.
+			\ze\link::host(). '-'. SUBDIRECTORY.
+			($dataArchive? '-data-archive' : ''). '-backup-'.
+			\ze\sql::fetchValue("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d-%H.%i')"). '-'.
 			ZENARIO_VERSION. '-r'. LATEST_REVISION_NO.
 			'.sql'. ($gzip? '.gz' : ''). ($encrypt? '.encrypted' : ''));
 	}
@@ -957,6 +960,13 @@ class dbAdm {
 			strpos($result, ($mysqldump? 'mysqldump' : 'mysql'). '  Ver') !== false
 		 || strpos($result, 'Distrib ') !== false
 		);
+	}
+	
+	public static function testMySQLTimezoneHandling() {
+		$sql = 'SET time_zone = "UTC"';
+		$storeResult = true;
+		
+		return \ze::$dbL->con->query($sql, $storeResult ? MYSQLI_STORE_RESULT : MYSQLI_USE_RESULT);
 	}
 
 

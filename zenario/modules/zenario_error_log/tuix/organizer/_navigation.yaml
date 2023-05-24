@@ -1,6 +1,7 @@
 zenario__administration:
     nav:
         error_log:
+            priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
             label: Error log

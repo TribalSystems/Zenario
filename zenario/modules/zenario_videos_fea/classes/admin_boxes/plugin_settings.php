@@ -54,6 +54,11 @@ class zenario_videos_fea__admin_boxes__plugin_settings extends zenario_videos_fe
 			unset($fields['first_tab/show_video_language']['visible_if']);
 			$fields['first_tab/show_video_language']['hidden'] = true;
 		}
+		
+		//Build a path to the Videos dataset custom field picker
+		$dataset = ze\dataset::details('videos');
+		$customDatasetFieldsPath = "zenario__administration/panels/custom_fields_hierarchy/refiners/dataset_text_fields_only//" . $dataset['id'] . "//";
+		$fields['first_tab/show_dataset_fields']['pick_items']['path'] = $fields['first_tab/sort_by_custom_dataset_field']['pick_items']['path'] = $customDatasetFieldsPath;
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

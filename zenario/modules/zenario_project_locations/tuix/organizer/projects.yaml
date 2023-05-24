@@ -3,7 +3,6 @@ zenario__projects:
         projects: 
             panel: 
                 title: Projects
-                view_mode: list
                 db_items: 
                     table: |
                         [[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l

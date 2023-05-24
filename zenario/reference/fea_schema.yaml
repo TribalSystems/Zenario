@@ -97,8 +97,9 @@ additionalProperties:
                 - form
                 - list
                 - dash
+                - graph
             description: >
-                You should set this property to either form or list, depending on which type of FEA plugin
+                You should set this property to either form, list, dash or graph - depending on which type of FEA plugin
                 you are writing.
                 
                 You must set this, otherwise your FEA plugin will not do anything.
@@ -141,6 +142,26 @@ additionalProperties:
             description: >
                 The HTML tag to be used for the title.
                 If you do not specify this property, the h1 tag will be used.
+        
+        header_html:
+            type: string
+            description: >
+                Use this for FEA lists to add some custom HTML at the top of the plugin
+                before the title.
+        
+        body_html:
+            type: string
+            description: >
+                Use this for FEA lists to add some custom HTML after the title but before
+                the list.
+                
+                This works from version 9.4 onwards.
+        
+        footer_html:
+            type: string
+            description: >
+                Use this for FEA lists to add some custom HTML at the bottom of the plugin
+                after the list.
         
         no_items_message:
             type: string
@@ -1371,19 +1392,6 @@ additionalProperties:
                 
                 The format is the same as the visible_if property.
         
-        from_client:
-            type: object
-            description: >
-                This object, and any child objects and properties, will always be synced between the client
-                and the server.
-                
-                To help make TUIX forms and applications secure, and to make it harder for a developer to
-                unwittingly introduce security vulnerabilities in their code, only a few TUIX properties
-                that have a specific purpose can be synced between the client and the server.
-                
-                This object is provided as a free-for-all exception, so anyone making a custom application
-                can add anything they need synced in here.
-        
         missing_items_warning:
             type: string
             description: >
@@ -1396,3 +1404,82 @@ additionalProperties:
                 some text to this property, e.g. "Warning: ID [[items]] missing, save settings to clean up."
                 
                 This works from version 8.8 onwards.
+        
+        always_sync_this_data_between_client_and_server:
+            type: object
+            description: >
+                This object, and any child objects and properties, will always be synced between the client
+                and the server.
+                
+                To help make TUIX forms and applications secure, and to make it harder for a developer to
+                unwittingly introduce security vulnerabilities in their code, only a few TUIX properties
+                that have a specific purpose can be synced between the client and the server.
+                
+                This object is provided as a free-for-all exception, so anyone making a custom application
+                can add anything they need synced in here.
+                
+                This works from version 9.4 onwards.
+        
+        never_sync_this_data_between_client_and_server:
+            type: object
+            description: >
+                This object, and any child objects and properties, will never be synced between the client
+                and the server.
+                
+                This object allows you to send slightly larger data streams from the server to the client,
+                on a one-time-only basis.
+                
+                Anything in here won't be saved in the cache/fabs/ directory, and won't be sent back from
+                the client to the server.
+                
+                This is an exception to how TUIX forms, FEA forms and FEA dashes usually work, where a copy of the TUIX
+                sent to the client is kept on the server, and the two are kept in sync.
+                
+                Any data that is large, or does not need to be kept in sync between the client and the server,
+                should be put in here.
+                
+                This works from version 9.4 onwards.
+        
+        handle_signals:
+            type: object
+            description: >
+                A list of JavaScript signals that a "dash" or a "graph"-type FEA can listen to.
+                
+                To handle a signal, you should:
+                    1. Add its name to this list.
+                    2. (Optionally) create a method called signalNameOnRegister() in your dash/graph's library, to be called when the signal is registered.
+                    2. Create a method called signalName() in your dash/graph's library, to be called when the signal is sent.
+        
+        send_signals_on_events:
+            type: object
+            description: >
+                These are pre-defined JavaScript events in your FEA plugin that you can trigger signal to be sent on.
+                For each event, you can set the code-name for a signal to be sent when the event happens.
+            properties:
+                formRedraw:
+                    type: string
+                    description: >
+                        If you enter a code-name in this property, a signal with the name you provide in will be sent
+                        when a FEA form is redrawn,
+                        e.g. due to the redraw_onchange property being placed on a field.
+                formFormat:
+                    type: string
+                    description: >
+                        If you enter a code-name in this property, a signal with the name you provide in will be sent
+                        when a FEA form is formatted via AJAX and then redrawn,
+                        e.g. due to the format_onchange property being placed on a field.
+                formValidate:
+                    type: string
+                    description: >
+                        If you enter a code-name in this property, a signal with the name you provide in will be sent
+                        when a FEA form is validated via AJAX and then redrawn,
+                        e.g. due to the validate_onchange property being placed on a field.
+                formSave:
+                    type: string
+                    description: >
+                        If you enter a code-name in this property, a signal with the name you provide in will be sent
+                        sent when a FEA form is saved via AJAX and then redrawn,
+                        e.g. due to a button with the save_onchange property.
+                        
+                        Note: This signal will only fire if a form is "saved in place" and not actually closed.
+                        If saving the form causes some kind of conductor navigation, this signal won't fire.

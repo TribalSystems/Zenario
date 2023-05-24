@@ -128,7 +128,7 @@ $filePath = false;
 $filename = $_REQUEST['filename'] ?? false;
 $useCacheDir = true;
 $getUploadedFileInCacheDir = 
-		($_REQUEST['getUploadedFileInCacheDir'] ?? false) 
+		ze::request('getUploadedFileInCacheDir') 
 		&& (
 			ze\priv::check() 
 			|| (
@@ -142,11 +142,11 @@ $getUploadedFileInCacheDir =
 
 //Attempt to get the id from the request
 	//(This is only allowed under certain situations, as images may be protected or not public.)
-if ($usage == 'user' && ($_REQUEST['user_id'] ?? false)) {
-	$id = ze\row::get('users', 'image_id', ['id' => ($_REQUEST['user_id'] ?? false)]);
+if ($usage == 'user' && ze::request('user_id')) {
+	$id = ze\row::get('users', 'image_id', ['id' => ze::request('user_id')]);
 
-} elseif ($usage == 'template' && ($_REQUEST['layout_id'] ?? false)) {
-	$id = ze\row::get('layouts', 'image_id', ($_REQUEST['layout_id'] ?? false));
+} elseif ($usage == 'template' && ze::request('layout_id')) {
+	$id = ze\row::get('layouts', 'image_id', ze::request('layout_id'));
 
 } elseif ($adminBackend && !empty($_GET['id'])) {
 	$id = $_GET['id'];
@@ -208,7 +208,7 @@ if ($getUploadedFileInCacheDir) {
 	
 	$file = [];
 	
-	if (($filepath = ze\file::getPathOfUploadInCacheDir($_REQUEST['getUploadedFileInCacheDir'] ?? false))
+	if (($filepath = ze\file::getPathOfUploadInCacheDir(ze::request('getUploadedFileInCacheDir')))
 	 && ($file['mime_type'] = ze\file::mimeType($filepath))) {
 		
 		$file['data'] = file_get_contents($filepath);
@@ -244,23 +244,23 @@ if ($getUploadedFileInCacheDir) {
 			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 			   ON v.file_id = f.id";
 
-		if (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+		if (ze::request('cID') && ze::request('cType')) {
 			$sql .= "
 			WHERE f.`usage` = 'content'
-			  AND v.id = ". (int) ($_REQUEST['cID'] ?? false). "
-			  AND v.type = '". ze\escape::asciiInSQL($_REQUEST['cType'] ?? false). "'";
+			  AND v.id = ". (int) ze::request('cID'). "
+			  AND v.type = '". ze\escape::asciiInSQL(ze::request('cType')). "'";
 	
-			if (ze\priv::check() && ($_REQUEST['cVersion'] ?? false)) {
+			if (ze\priv::check() && ze::request('cVersion')) {
 				$sql .= "
-				  AND v.version = ". (int) ($_REQUEST['cVersion'] ?? false);
+				  AND v.version = ". (int) ze::request('cVersion');
 	
 			} elseif (ze\priv::check()) {
 				$sql .= "
-				  AND v.version = ". (int) ze\content::latestVersion($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false));
+				  AND v.version = ". (int) ze\content::latestVersion($_REQUEST['cID'] ?? false, ze::request('cType'));
 	
 			} else {
 				$sql .= "
-				  AND v.version = ". (int) ze\content::publishedVersion($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false));
+				  AND v.version = ". (int) ze\content::publishedVersion($_REQUEST['cID'] ?? false, ze::request('cType'));
 			}
 
 		} elseif ($checksum) {
@@ -445,7 +445,7 @@ if (!$filename && !empty($file['filename'])) {
 }
 
 if ($filename) {
-	if (($_REQUEST['download'] ?? false) || $usage == 'content') {
+	if (ze::request('download') || $usage == 'content') {
 		header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');
 	} else {
 		header('Content-Disposition: filename="'. urlencode($filename). '"');

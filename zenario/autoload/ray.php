@@ -121,12 +121,11 @@ class ray {
 	}
 
 	//Formerly "jsonEncodeForceObject()"
+	//Dump an array as JSON to send to the client.
+	//Also force any empty arrays to be objects, not arrays, but without using the JSON_FORCE_OBJECT logic
+	//which corrupts actual arrays.
 	public static function jsonDump(&$tags) {
-		if (version_compare(PHP_VERSION, '7.2') >= 0) {
-			echo json_encode($tags, JSON_FORCE_OBJECT | JSON_INVALID_UTF8_SUBSTITUTE);
-		} else {
-			echo json_encode($tags, JSON_FORCE_OBJECT);
-		}
+		echo str_replace('":[]', '":{}', json_encode($tags, JSON_INVALID_UTF8_SUBSTITUTE));
 	}
 
 	//Convert a value to a 1D array, or merge a 2D array into a 1D array.

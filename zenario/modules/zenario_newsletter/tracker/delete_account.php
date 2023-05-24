@@ -45,7 +45,7 @@ echo '
 if (!($newsletters = ze\module::activate('zenario_newsletter'))) {
 	ze\lang::phrase('Sorry, you cannot be automatically removed right now, as this site has disabled their newsletter system.', false, 'zenario_newsletter');
 	exit;
-} elseif (($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXX' || ($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
+} elseif (ze::request('t') == 'XXXXXXXXXXXXXXX' || ze::request('t') == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
 	echo ze\lang::phrase('Any user who clicks on this link in the actual Newsletter will have their account deleted.', false, 'zenario_newsletter');
 	exit;
 }
@@ -53,7 +53,7 @@ if (!($newsletters = ze\module::activate('zenario_newsletter'))) {
 $sql = "
 	SELECT user_id, newsletter_id
 	FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
-	WHERE delete_account_hash = '". ze\escape::sql($_REQUEST['t'] ?? false). "'";
+	WHERE delete_account_hash = '". ze\escape::sql(ze::request('t')). "'";
 
 $result = ze\sql::select($sql);
 if ($row = ze\sql::fetchAssoc($result)) {
@@ -64,7 +64,7 @@ if ($row = ze\sql::fetchAssoc($result)) {
 	$result = ze\sql::select($sql);
 	
 	if (ze\sql::numRows($result)) {
-		if ($_POST['confirm'] ?? false) {
+		if (ze::post('confirm')) {
 			ze\userAdm::delete($row['user_id']);
 			
 			echo ze\lang::phrase('Your account has been deleted.', false, 'zenario_newsletter');

@@ -84,7 +84,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 				
 				if ($item['date_uploaded']) {
-					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\admin::formatDateTime($item['date_uploaded'], '_MEDIUM', \ze::$defaultLang)]);
+					$item['date_uploaded'] = ze\admin::phrase('Uploaded [[date]]', ['date' => ze\admin::formatDateTime($item['date_uploaded'], '_MEDIUM', ze::$defaultLang)]);
 				}
 				
 				if ($item['extract_wordcount']) {
@@ -123,7 +123,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		$externalProgramError = false;
-		if (($_POST['reorder'] ?? false) || ($_POST['hierarchy'] ?? false)) {
+		if (ze::post('reorder') || ze::post('hierarchy')) {
 			$idsArray = explode(',', $ids);
 			$filenamesInFolder = [];
 			$folderNamesInFolder = [];
@@ -224,7 +224,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					ze\row::update('documents', $cols, $id);
 				}
 			}
-		} elseif ($_POST['upload'] ?? false) {
+		} elseif (ze::post('upload')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			
 			ze\fileAdm::exitIfUploadError(true, true, false, 'Filedata');
@@ -255,7 +255,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 			return $documentId;
 			
-		} elseif ($_POST['rescan'] ?? false) {
+		} elseif (ze::post('rescan')) {
 			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
 			$documentProperties = ze\document::addExtract($file_id);
 			if (empty($documentProperties['extract']) || empty($documentProperties['thumbnail_id'])) {
@@ -289,7 +289,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 			ze\row::update('documents', $documentProperties, ['id' => $ids]);
 			
-		} elseif ($_POST['rescan_image'] ?? false) {
+		} elseif (ze::post('rescan_image')) {
 			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
 			$documentProperties = [];
 			$extract = [];
@@ -301,7 +301,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				ze\row::update('documents', $documentProperties, ['id' => $ids]);
 			}
 			
-		} elseif ($_POST['rescan_text'] ?? false) { 
+		} elseif (ze::post('rescan_text')) { 
 			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
 			$documentProperties = ze\document::addExtract($file_id);
 			if (empty($documentProperties['extract'])) {
@@ -323,7 +323,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			}
 		
 		//Remove all of the custom data from a document
-		} elseif ($_POST['remove_metadata'] ?? false) {
+		} elseif (ze::post('remove_metadata')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			if ($dataset = ze\dataset::details('documents')) {
 				foreach (explode(',', $ids) as $id) {
@@ -332,12 +332,12 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				}
 			}
 			
-		} elseif ($_POST['delete'] ?? false) {
+		} elseif (ze::post('delete')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				ze\document::delete($id);
 			}
-		} elseif ($_POST['generate_public_link'] ?? false) {
+		} elseif (ze::post('generate_public_link')) {
 			$messageType = 'Success';
 			$html = '';
 			$idsArray = explode(',', $ids);
@@ -399,7 +399,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				echo '<!--Message_Type:' . $messageType . '-->' . $html;
 			}
 			
-		} elseif ($_POST['make_document_private'] ?? false) {
+		} elseif (ze::post('make_document_private')) {
 			$idsArray = explode(',', $ids);
 			$count = count($idsArray);
 			
@@ -410,7 +410,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				ze\document::deletePubliclink($id, $documentDeleted = false, $privacy = 'private');
 			}
 			
-		} elseif($_POST['make_offline'] ?? false) {
+		} elseif (ze::post('make_offline')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			$idsArray = explode(',', $ids);
 			$count = count($idsArray);
@@ -434,7 +434,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					}
 				}
 			}
-		} elseif ($_POST['regenerate_public_links'] ?? false) {
+		} elseif (ze::post('regenerate_public_links')) {
 			ze\priv::exitIfNot('_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS');
 			$errors = $exampleFile = false;
 			ze\document::checkAllPublicLinks($forceRemake = true, $errors, $exampleFile);

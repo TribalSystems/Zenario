@@ -1,0 +1,47 @@
+{% if Mode == 'search_entry_box' and (Results_From_Module) %}
+    {% set Column = Column + 1 %}
+    <div id="{{Container_Id}}_results_from_module" class="column_{{Column}} column column_results_from_module">
+{% endif %}
+
+{% if Mode == 'search_entry_box' and Results_From_Module_Heading_Text and not Results_From_Module_No_Results %}
+    <span class="column_title">{{Results_From_Module_Heading_Text|e}}</span>
+{% endif %}
+
+{% if Results_From_Module %}
+    {% for item in Results_From_Module %}
+        <a href="{{item.url}}" {% if Open_links_to_results_in_a_new_window %} target="_blank" {% endif %}>
+            <div class="search_result">
+                {% if item.Feature_image_HTML_tag %}
+                    <div class="search_result_image {{item.Icon_Class}}">{{item.Feature_image_HTML_tag}}</div>
+                {% endif %}
+                <div class="search_result_content">
+                    <div class="search_result_title">
+                        <span class="title">
+                            {{item.Result_No}}. {{item.title}}
+                            {{item.language_name}}
+                        </span>
+                        {% if Show_scores %}
+                            {{item.score}}
+                        {% endif %}
+                    </div>
+                    
+                    {% if item.Breadcrumb %}
+                        <div class="breadcrumb">{{item.Breadcrumb}}</div>
+                    {% endif %}
+
+                    <div class="search_result_summary">{{item.content_bodymain}}</div>
+                </div>
+            </div>
+        </a>
+    {% endfor %}
+{% endif %}
+
+{% if Results_From_Module_No_Results %}
+    <div class="search_no_results">
+        <p>{{Results_From_Module_No_Results|e}}</p>
+    </div>
+{% endif %}
+
+{% if Mode == 'search_entry_box' and (Results_From_Module or Results_From_Module_No_Results) %}
+    </div>
+{% endif %}

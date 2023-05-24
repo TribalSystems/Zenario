@@ -208,7 +208,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			$noContent = false;
 			$mainLinkArr = [];
 			$allIdsValue = '';
-			if (!empty($_POST['prepareDownloadData']) && $_POST['slotName'] == $this->slotName) {
+			if (!empty($_POST['prepareDownloadData']) && $_POST['slotName'] == $this->slotName && $this->checkPostIsMine()) {
 				$getIds = $_POST['imageIds'];
 				$zipFiles = [];
 				$zipFile = [];
@@ -330,10 +330,10 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 	function getUnpackedFilesSize($ids = '') {
 		$filesize = 0;
 		if ($fileIDs = explode(",", $ids)) {
-			foreach ($fileIDs as $fileID){
-				$fileDetails = ze\row::get('files', ['path', 'filename'], ['id' => $fileID]);
-				if (!empty($fileDetails) && $fileDetails['path'] && $fileDetails['filename']) {
-					$filesize += filesize(ze\file::docstorePath($fileDetails['path']));
+			foreach ($fileIDs as $fileID) {
+				$filePath = ze\file::docstorePath($fileID);
+				if (!empty($filePath)) {
+					$filesize += filesize($filePath);
 				}
 			}
 		}
@@ -408,7 +408,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 							rmdir($randomDir . '/' . $contentSubdirectory);
 
 							if (isset($errors)) {
-								return [false, implode('<br />', $errors)];
+								return [false, implode('\n', $errors)];
 							} elseif ($archiveEmpty) {
 								return [true, []];
 							} else {
@@ -624,5 +624,16 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 		}
 		
 		return true;
+	}
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		$title = ze\plugin::setting('title', $instanceId, $eggId);
+		
+		if ($title) {
+			return ze\admin::phrase('MIC:'). ' '. $title;
+		}
+			
+		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
 	}
 }

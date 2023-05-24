@@ -382,15 +382,15 @@ class zenario_common_features extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function getTranslationsAndPluginsLinkingToThisContentItem($ids, &$box, &$fields, &$values, $panelName, $totalRowNum) {
+	public static function getTranslationsAndPluginsLinkingToThisContentItem($ids, &$box, &$fields, &$values, $panelName, $totalRowNum, $getPlugins, $getTranslations) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	public static function addToMessage(&$message, $plugabbleCount, $versionControlledCount, $row, $linkToLibraryPlugin, $linkToVersionControlledPlugin) {
 		if ($plugabbleCount) {
 			$message .= ze\admin::nPhrase(
-				'<p>There is [[count]] "[[display_name]]" plugin linking to this content item. "[[link]]".</p>',
-				'<p>There are [[count]] "[[display_name]]" plugins linking to this content item. "[[link]]" and [[count2]] other[[s]].</p>', 
+				'<p>There is [[count]] [[display_name]] plugin linking to this content item: [[link]].</p>',
+				'<p>There are [[count]] [[display_name]] plugins linking to this content item: [[link]] and [[count2]] other[[s]].</p>', 
 				$plugabbleCount,
 				[
 					'count' => $plugabbleCount, 
@@ -401,8 +401,8 @@ class zenario_common_features extends ze\moduleBaseClass {
 		}
 		if ($versionControlledCount) {
 			$message .= ze\admin::nPhrase(
-				'<p>There is [[count]] "[[display_name]]" version controlled plugin linking to this content item. "[[link]]".</p>',
-				'<p>There are [[count]] "[[display_name]]" version controlled plugins linking to this content item. "[[link]]" plus [[count2]] other plugin[[s]].</p>',
+				'<p>There is [[count]] [[display_name]] version controlled plugin linking to this content item: [[link]].</p>',
+				'<p>There are [[count]] [[display_name]] version controlled plugins linking to this content item: [[link]] and [[count2]] other plugin[[s]].</p>',
 				$versionControlledCount,
 				[
 					'count' => $versionControlledCount, 
@@ -436,7 +436,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 					break;
 					
 				case 'trash':
-					if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
+					if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 						ze\contentAdm::trashContent($cID, $cType);
 					}
 					break;

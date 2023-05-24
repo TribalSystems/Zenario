@@ -163,7 +163,7 @@ plugin_settings:
                     value: ""
                     format_onchange: true
                     side_note: >
-                        Show a terms and condictions checkbox which is mandatory. Every registration will be recorded in the <a href='organizer.php#zenario__users/panels/consents' target='_blank'>consents log</a>.
+                        Show a terms and conditions checkbox which is mandatory. Every registration will be recorded in the <a href='organizer.php#zenario__users/panels/consents' target='_blank'>consents log</a>.
                 link_type:
                     plugin_setting:
                         name: link_type
@@ -330,10 +330,10 @@ plugin_settings:
                         name: selected_attachment
                         foreign_key_to: file
                     pick_items:
-                        path: zenario__content/panels/documents
-                        min_path: zenario__content/panels/documents
-                        max_path: zenario__content/panels/documents
-                        target_path: zenario__content/panels/documents
+                        path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
                         select_phrase: Select an attachment...
                         hide_remove_button: true
                     validation:

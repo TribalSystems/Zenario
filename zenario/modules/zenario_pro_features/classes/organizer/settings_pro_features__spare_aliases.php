@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__organizer__settings_pro_features__spare_aliases extends ze\moduleBaseClass {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId){
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM')) {
 			foreach (explode(',', $ids) as $checksum) {
 				ze\row::delete('spare_aliases', ['alias' => $ids]);
 			}

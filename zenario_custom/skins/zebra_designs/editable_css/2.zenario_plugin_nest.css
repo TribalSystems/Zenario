@@ -171,6 +171,141 @@
 	display:inline-block;
 }
 
+/* Nest top bar (banner plugins for buttons and menu vertical plugin)
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins_wrap:before,
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins_wrap:after {
+	content: '.';
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins_wrap:after {
+	clear: both;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins {
+	float:right;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins > x-zenario-admin-slot-wrapper,
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins > .zenario_banner {
+	 float:left;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner,
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical {
+	 position:relative;
+	 top:-3px;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner,
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical__default_style .extranet_user_greeting {
+	 font-size:0.813em;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner {
+	 margin-left:15px;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner .banner_title > * {
+	margin-bottom:0;
+	font-size:1em;
+	font-family:'roboto',Arial, Helvetica, sans-serif;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner a,
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical__default_style .extranet_user_greeting {
+	 line-height:24px;
+	 height:26px;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner a {
+	 display:inline-block;
+	 padding:0 15px;
+	 background:#000;
+	 color:#FFF;
+	 -webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins .zenario_banner a:hover {
+	text-decoration:none;
+	background: #b8babc;
+	color: #282e35;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins > x-zenario-admin-slot-wrapper:first-child .zenario_banner a,
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins > .zenario_banner:first-child a {
+	 background:#2a98ce;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins > x-zenario-admin-slot-wrapper:first-child .zenario_banner a:hover,
+.zenario_plugin_nest.nest_top_bar_extranet .nest_plugins > .zenario_banner:first-child a:hover {
+	 background:#00659b;
+	 color:#FFF;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical {
+	position:relative;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical__default_style .extranet_user_greeting {
+	padding-bottom:0;
+	min-width:160px;
+	color:#000;
+	cursor:pointer;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical__default_style .wrap_menu {
+	position:absolute;
+	top:32px;
+	right:0;
+	width:160px;
+	font-size:0.813em;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical__default_style .wrap_menu_inner {
+	padding:0 10px;
+	position: relative;
+	 -webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical__default_style .wrap_menu_inner:after {
+	bottom: 100%;
+	left: 50%;
+	border: solid transparent;
+	content: "";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-color: rgba(239, 239, 239, 0);
+	border-bottom-color: #EFEFEF;
+	border-width: 10px;
+	margin-left: -10px;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical .wrap_menu {
+	opacity:0;
+	visibility:none;
+}
+
+.zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical:hover .wrap_menu {
+	opacity:1;
+	visibility:visible;
+}
+
+
 /* Full boxes  
 --------------------------------------------------------------------------------------------------*/
 
@@ -225,6 +360,7 @@
 	overflow:hidden;
 	height:calc(100% - 40px);
 	padding:20px;
+	margin-top:0;
 	background:rgba(0,0,0,0.5);
 	left:0;
 	right:0;
@@ -271,14 +407,15 @@
 /* Accordion (note: make sure you have the JS file)
 --------------------------------------------------------------------------------------------------*/
 
-.nest_accordion.zenario_plugin_nest .zenario_banner {
+.nest_accordion.zenario_plugin_nest .zenario_banner,
+body.mobile .Gridbreak_Body .nest_accordion.zenario_plugin_nest .zenario_banner {
 	margin-bottom:20px;
 }
 
 .nest_accordion.zenario_plugin_nest .zenario_banner .banner_title,
-.nest_accordion.zenario_plugin_nest .zenario_banner .banner_text {
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_content_inner {
 	background:#eee;
-	padding:10px 20px;
+	padding:1em 20px;
 }
 
 .nest_accordion.zenario_plugin_nest .zenario_banner .banner_title {
@@ -286,9 +423,12 @@
 	cursor:pointer;
 }
 
-.nest_accordion.zenario_plugin_nest .zenario_banner .banner_text {
+.nest_accordion.zenario_plugin_nest .zenario_banner.active .banner_title {
+	background:#d5e4ec;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_content_inner {
 	display:none;
-	padding-top:5px;
 }
 
 .nest_accordion.zenario_plugin_nest .zenario_banner .banner_title > * {
@@ -322,6 +462,25 @@
 .nest_accordion.zenario_plugin_nest .zenario_banner .banner_title:hover *,
 .nest_accordion.zenario_plugin_nest .zenario_banner .banner_title:hover > *:after {
 	color:#2a98ce;
+}
+
+body.desktop .nest_accordion.zenario_plugin_nest .zenario_banner .banner_image {
+	float:left;
+	padding:0 1em 1em 0;
+}
+
+body.mobile .nest_accordion.zenario_plugin_nest .zenario_banner .banner_image {
+	display:block;
+	text-align:center;
+}
+
+body.mobile .nest_accordion.zenario_plugin_nest .zenario_banner .banner_image img {
+	margin:auto;
+}
+
+.nest_accordion.zenario_plugin_nest .zenario_banner .banner_more {
+	clear:both;
+	text-align:center;
 }
 
 /* Extra useful styles. Nested banners listing

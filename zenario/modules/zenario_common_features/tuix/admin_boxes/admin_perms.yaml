@@ -31,6 +31,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Author
+                    label_class: zfab_core_perm
                     redraw_onchange: true
                 perm_author_permissions:
                     is_admin_permission: true
@@ -41,8 +42,10 @@ zenario_admin:
                     values:
                         _PRIV_EDIT_DRAFT:
                             label: Edit a content item
+                            label_class: zfab_core_perm
                         _PRIV_MANAGE_MEDIA:
                             label: Manage images
+                            label_class: zfab_core_perm
                     value: "_PRIV_EDIT_DRAFT,_PRIV_MANAGE_MEDIA"
                     redraw_onchange: true
                 
@@ -55,6 +58,7 @@ zenario_admin:
                     disabled: true
                     full_width: true
                     post_field_label: Menu (requires Author permissions)
+                    label_class: zfab_core_perm
                     row_class: zenario_perms
                 perm_editmenu:
                     is_admin_permission: true
@@ -64,6 +68,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Menu
+                    label_class: zfab_core_perm
                 perm_editmenu_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -75,29 +80,35 @@ zenario_admin:
                     values:
                         _PRIV_VIEW_MENU_ITEM:
                             label: View a menu node's details
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_MENU_TEXT:
                             parent: _PRIV_VIEW_MENU_ITEM
                             label: Edit a menu node's text
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_MENU_ITEM:
                             parent: _PRIV_EDIT_MENU_TEXT
                             label: Edit all of a menu node's details
+                            label_class: zfab_core_perm
                         _PRIV_ADD_MENU_ITEM:
                             parent: _PRIV_EDIT_MENU_ITEM
                             label: Create a menu node
+                            label_class: zfab_core_perm
                         _PRIV_DELETE_MENU_ITEM:
                             parent: _PRIV_VIEW_MENU_ITEM
                             label: Delete a menu node
+                            label_class: zfab_core_perm
                         _PRIV_REORDER_MENU_ITEM:
                             parent: _PRIV_VIEW_MENU_ITEM
                             label: Reorder menu nodes
+                            label_class: zfab_core_perm
                         _PRIV_ADD_MENU_SECTION:
                             parent: _PRIV_VIEW_MENU_ITEM
                             label: Create a menu section
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_DELETE_MENU_SECTION:
                             parent: _PRIV_VIEW_MENU_ITEM
                             label: Delete a menu section
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                     value: "_PRIV_VIEW_MENU_ITEM,_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_ADD_MENU_ITEM,_PRIV_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
                 
                 perm_publish_disabled:
@@ -109,6 +120,7 @@ zenario_admin:
                     disabled: true
                     full_width: true
                     post_field_label: Publish (requires Author permissions)
+                    label_class: zfab_core_perm
                     row_class: zenario_perms
                 perm_publish:
                     is_admin_permission: true
@@ -118,6 +130,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Publisher
+                    label_class: zfab_core_perm
                 perm_publish_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -129,37 +142,44 @@ zenario_admin:
                     values:
                         _PRIV_PUBLISH_CONTENT_ITEM:
                             label: Publish a content item
-                        _PRIV_HIDE_CONTENT_ITEM:
-                            label: Hide, trash a content item
+                            label_class: zfab_core_perm
                         _PRIV_CANCEL_CHECKOUT:
                             label: Unlock a locked content item
+                            label_class: zfab_core_perm
                         _PRIV_DELETE_TRASHED_CONTENT_ITEMS:
-                            parent: _PRIV_HIDE_CONTENT_ITEM
+                            parent: _PRIV_PUBLISH_CONTENT_ITEM
                             label: Empty trash
+                            label_class: zfab_core_perm
                         _PRIV_MANAGE_CATEGORY:
                             label: Edit categories
+                            label_class: zfab_core_perm
                         _PRIV_MANAGE_EMAIL_TEMPLATE:
                             label: Edit email templates
-                        _PRIV_VIEW_LANGUAGE:
-                            label: View languages and their phrases
-                        _PRIV_MANAGE_LANGUAGE_CONFIG:
-                            parent: _PRIV_VIEW_LANGUAGE
-                            label: Add languages, edit language settings
-                        _PRIV_MANAGE_LANGUAGE_PHRASE:
-                            parent: _PRIV_VIEW_LANGUAGE
-                            label: Edit phrases
+                            label_class: zfab_core_perm
                         _PRIV_VIEW_REUSABLE_PLUGIN:
                             label: View settings of library plugins
+                            label_class: zfab_core_perm
                         _PRIV_MANAGE_REUSABLE_PLUGIN:
                             parent: _PRIV_VIEW_REUSABLE_PLUGIN
-                            label: Edit settings of library plugins (including Plugin Library in Organizer)
-                        _PRIV_MANAGE_SPARE_ALIAS:
-                            label: Edit page aliases
+                            label: Edit settings of library plugins
+                            label_class: zfab_core_perm
+                        _PRIV_VIEW_LANGUAGE:
+                            label: View phrases of enabled languages
+                            label_class: zfab_core_perm
+                        _PRIV_MANAGE_LANGUAGE_PHRASE:
+                            parent: _PRIV_VIEW_LANGUAGE
+                            label: Edit phrases of enabled languages
+                            label_class: zfab_core_perm
+                        _PRIV_MANAGE_LANGUAGE_CONFIG:
+                            parent: _PRIV_VIEW_LANGUAGE
+                            label: Add languages and their settings
+                            label_class: zfab_core_perm
                         #_PRIV_MANAGE_DOCUMENTS:
                         #    label: Manage documents
                         _PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST:
                             label: May receive content notifications
-                    value: "_PRIV_PUBLISH_CONTENT_ITEM,_PRIV_HIDE_CONTENT_ITEM,_PRIV_CANCEL_CHECKOUT,_PRIV_DELETE_TRASHED_CONTENT_ITEMS,_PRIV_MANAGE_CATEGORY,_PRIV_MANAGE_EMAIL_TEMPLATE,_PRIV_VIEW_LANGUAGE,_PRIV_MANAGE_LANGUAGE_CONFIG,_PRIV_MANAGE_LANGUAGE_PHRASE,_PRIV_VIEW_REUSABLE_PLUGIN,_PRIV_MANAGE_REUSABLE_PLUGIN,_PRIV_MANAGE_SPARE_ALIAS,_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST"
+                            label_class: zfab_core_perm
+                    value: "_PRIV_PUBLISH_CONTENT_ITEM,_PRIV_CANCEL_CHECKOUT,_PRIV_DELETE_TRASHED_CONTENT_ITEMS,_PRIV_MANAGE_CATEGORY,_PRIV_MANAGE_EMAIL_TEMPLATE,_PRIV_VIEW_LANGUAGE,_PRIV_MANAGE_LANGUAGE_CONFIG,_PRIV_MANAGE_LANGUAGE_PHRASE,_PRIV_VIEW_REUSABLE_PLUGIN,_PRIV_MANAGE_REUSABLE_PLUGIN,_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST"
                 
                 perm_designer_disabled:
                     is_admin_permission: false
@@ -170,6 +190,7 @@ zenario_admin:
                     disabled: true
                     full_width: true
                     post_field_label: Designer (requires Author permissions)
+                    label_class: zfab_core_perm
                     row_class: zenario_perms
                 perm_designer:
                     is_admin_permission: true
@@ -179,6 +200,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Designer
+                    label_class: zfab_core_perm
                 perm_designer_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -190,33 +212,46 @@ zenario_admin:
                     values:
                         _PRIV_VIEW_TEMPLATE:
                             label: View a layout's properties
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_TEMPLATE:
                             parent: _PRIV_VIEW_TEMPLATE
                             label: Edit layouts using Gridmaker
+                            label_class: zfab_core_perm
+                        _PRIV_EDIT_SITEWIDE:
+                            parent: _PRIV_EDIT_TEMPLATE
+                            label: Edit site-wide HTML/JS and header/footer
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_CSS:
                             label: Edit skin and plugin CSS
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_VIEW_SLOT:
-                            label: View plugins in slots (on content items and layouts)
+                            label: |
+                                In Organizer: view modules, and plugin, nest and slideshow libraries
+                            label_class: zfab_core_perm
                         _PRIV_MANAGE_ITEM_SLOT:
                             parent: _PRIV_VIEW_SLOT
-                            label: Edit plugins on content items
+                            label: |
+                                On content items: insert plugins; edit HTML/JavaScript in <head> and <body>
+                            label_class: zfab_core_perm
                         _PRIV_MANAGE_TEMPLATE_SLOT:
                             parent: _PRIV_MANAGE_ITEM_SLOT
-                            label: Edit plugins on layouts
+                            label: >
+                                On layouts and site-wide: insert plugins; edit HTML/JavaScript in <head> and <body>
+                            label_class: zfab_core_perm
                         _PRIV_RUN_MODULE:
                             label: Start a module
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_RESET_MODULE:
                             label: Uninitialise a module
-                            label_class: zfab_scary_option
-                    value: "_PRIV_VIEW_TEMPLATE,_PRIV_EDIT_TEMPLATE,_PRIV_VIEW_SLOT,_PRIV_MANAGE_ITEM_SLOT,_PRIV_MANAGE_TEMPLATE_SLOT"
+                            label_class: zfab_core_perm zfab_scary_option
+                    value: "_PRIV_VIEW_TEMPLATE,_PRIV_EDIT_TEMPLATE,_PRIV_EDIT_SITEWIDE,_PRIV_VIEW_SLOT,_PRIV_MANAGE_ITEM_SLOT,_PRIV_MANAGE_TEMPLATE_SLOT"
                 perm_manage:
                     is_admin_permission: true
                     grouping: specific_actions
                     type: checkbox
                     full_width: true
                     post_field_label: Supervisor
+                    label_class: zfab_core_perm
                 perm_manage_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -226,22 +261,23 @@ zenario_admin:
                     values:
                         _PRIV_VIEW_ADMIN:
                             label: View an admin's details
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_ADMIN:
                             parent: _PRIV_VIEW_ADMIN
                             label: Edit an admin's details
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_CREATE_ADMIN:
                             parent: _PRIV_EDIT_ADMIN
                             label: Create an admin
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_DELETE_ADMIN:
                             parent: _PRIV_VIEW_ADMIN
                             label: Trash an admin
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_CHANGE_ADMIN_PASSWORD:
                             parent: _PRIV_VIEW_ADMIN
                             label: Change an admin's password
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                     value: "_PRIV_VIEW_ADMIN"
                 # The Anonymous Comments Module or the Users Module will unhide these and
                 # add permissions here if either is running.
@@ -252,6 +288,7 @@ zenario_admin:
                     hidden: true
                     full_width: true
                     post_field_label: Users and contacts
+                    label_class: zfab_core_perm
                 perm_edit_users_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -265,6 +302,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Backups
+                    label_class: zfab_core_perm
                 perm_restore_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -274,21 +312,22 @@ zenario_admin:
                     values:
                         _PRIV_BACKUP_SITE:
                             label: Create a backup of the site
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_RESTORE_SITE:
                             parent: _PRIV_BACKUP_SITE
                             label: Restore the site from a backup
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_RESET_SITE:
                             parent: _PRIV_BACKUP_SITE
                             label: Reset the site
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                 perm_system:
                     is_admin_permission: true
                     grouping: specific_actions
                     type: checkbox
                     full_width: true
                     post_field_label: System Manager
+                    label_class: zfab_core_perm
                 perm_system_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -298,29 +337,33 @@ zenario_admin:
                     values:
                         _PRIV_VIEW_DIAGNOSTICS:
                             label: View diagnostics on login
+                            label_class: zfab_core_perm
                         _PRIV_APPLY_DATABASE_UPDATES:
                             label: Apply database updates
+                            label_class: zfab_core_perm
                         _PRIV_VIEW_SITE_SETTING:
                             label: View site settings
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_SITE_SETTING:
                             parent: _PRIV_VIEW_SITE_SETTING
                             label: Change site settings
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_EDIT_CONTENT_TYPE:
                             label: Change content type settings
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_MANAGE_SPARE_DOMAIN_NAME:
                             label: Manage spare domain names
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_MANAGE_DATASET:
                             label: Manage datasets
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_PROTECT_UNPROTECT_DATASET_FIELD:
                             parent: _PRIV_MANAGE_DATASET
                             label: Protect / unprotect dataset fields
-                            label_class: zfab_scary_option
+                            label_class: zfab_core_perm zfab_scary_option
                         _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS:
-                            label: Re-generate document public links
+                            label: Repair document public links
+                            label_class: zfab_core_perm
                     value: "_PRIV_VIEW_DIAGNOSTICS,_PRIV_APPLY_DATABASE_UPDATES,_PRIV_VIEW_SITE_SETTING,_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS"
                 perm_documents:
                     is_admin_permission: true
@@ -328,6 +371,7 @@ zenario_admin:
                     type: checkbox
                     full_width: true
                     post_field_label: Documents
+                    label_class: zfab_core_perm
                 perm_document_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -337,7 +381,9 @@ zenario_admin:
                     values:
                         _PRIV_VIEW_DOCUMENTS:
                             label: View documents
+                            label_class: zfab_core_perm
                         _PRIV_EDIT_DOCUMENTS:
                             parent: _PRIV_VIEW_DOCUMENTS
                             label: Upload, edit, delete documents
+                            label_class: zfab_core_perm
                     value: "_PRIV_VIEW_DOCUMENTS,_PRIV_EDIT_DOCUMENTS"

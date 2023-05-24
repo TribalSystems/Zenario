@@ -98,6 +98,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		('hta', 'application/hta', 0),
 		('htc', 'text/x-component', 0),
 		('ico', 'image/x-icon', 0),
+		('ics', 'text/calendar', 0),
 		('ief', 'image/ief', 0),
 		('iii', 'application/x-iphone', 0),
 		('ins', 'application/x-internet-signup', 0),

@@ -55,7 +55,6 @@ plugin_settings:
                     label: 'Other Location:'
                     plugin_setting:
                         name: location
-                        use_value_for_plugin_name: true
                     pick_items:
                         path: zenario__locations/panel
                         target_path: zenario__locations/panel

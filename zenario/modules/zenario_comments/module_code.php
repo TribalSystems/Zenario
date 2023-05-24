@@ -76,7 +76,12 @@ class zenario_comments extends zenario_anonymous_comments {
 	//Show detailed information on one user, to appear next to their post
 	function showUserInfo(&$mergeFields, &$sections, $userId, $post = false) {
 		if (!$userId || !ze::setting('user_use_screen_name')) {
-			$mergeFields['Username'] = $mergeFields['Username_Link'] = htmlspecialchars($this->phrase('Anonymous'));
+			if ($adminId = ze\admin::id()) {
+				$adminDetails = ze\admin::details($adminId);
+				$mergeFields['Username'] = $mergeFields['Username_Link'] = htmlspecialchars($adminDetails['first_name'] . ' ' . $adminDetails['last_name']);
+			} else {
+				$mergeFields['Username'] = $mergeFields['Username_Link'] = htmlspecialchars($this->phrase('Anonymous'));
+			}
 		
 			if ($this->setting('show_user_avatars')) {
 				$sections['No_Avatar'] = $sections['Posting_No_Avatar'] = true;
@@ -115,7 +120,9 @@ class zenario_comments extends zenario_anonymous_comments {
 		}
 		
 		if ($this->setting('show_user_online_status')) {
-			if ($forumDetails['online']) {
+			//If this is a user who has never posted before, their SQL lookup will be a boolean false.
+			//Show them as online right now.
+			if (!$forumDetails || (is_array($forumDetails) && !empty($forumDetails['online']))) {
 				$sections['Show_Online'] = $sections['Posting_Show_Online'] = true;
 			} else {
 				$sections['Show_Offline'] = $sections['Posting_Show_Offline'] = true;
@@ -124,7 +131,15 @@ class zenario_comments extends zenario_anonymous_comments {
 		
 		if ($this->setting('show_user_post_counts')) {
 			$sections['Show_Post_Count'] = $sections['Posting_Show_Post_Count'] = true;
-			$mrg = ['post_count' => $forumDetails['post_count']];
+			
+			//If this is a user who has never posted before, their SQL lookup will be a boolean false.
+			//Set the post count to 0 in that case.
+			if (is_array($forumDetails) && isset($forumDetails['post_count'])) {
+				$postCount = $forumDetails['post_count'];
+			} else {
+				$postCount = 0;
+			}
+			$mrg = ['post_count' => $postCount];
 			$mergeFields['Post_Count'] = $this->phrase('Post Count: [[post_count]]', $mrg);
 		}
 		
@@ -290,6 +305,19 @@ class zenario_comments extends zenario_anonymous_comments {
 			  	AND user_id = ". (int) $posterId;
 		
 		$result = ze\sql::update($sql);
+	}
+	
+	public static function deleteUserDataGetInfo($userIds) {
+		$sql = "
+			SELECT COUNT(id)
+			FROM " . DB_PREFIX . ZENARIO_ANONYMOUS_COMMENTS_PREFIX . "user_comments
+			WHERE poster_id IN (" . ze\escape::in($userIds) . ")";
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$userCommentsResults = ze\admin::phrase('Comments posted by this user will have the creator ID removed ([[count]] found)', ['count' => $count]);
+		
+		return $userCommentsResults;
 	}
 	
 	public static function eventUserDeleted($userId) {

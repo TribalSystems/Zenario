@@ -568,8 +568,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 							$box['tabs']['filters']['notices']['location_icon_not_found_on_filesystem']['show'] = true;
 							$box['tabs']['filters']['notices']['location_icon_not_found_on_filesystem']['message'] =
 								ze\admin::phrase(
-									'The code name of the map icon is "hotel" and so an icon was expected in folder <code>[[expectedIconFolder]]</code> with filename <code>[[expectedIconName]]</code>, but the file is missing.',
-									['expectedIconFolder' => htmlspecialchars($expectedIconFolder), 'expectedIconName' => htmlspecialchars($expectedIconName)]
+									'The code name of the map icon is "[[code_name]]" and so an icon was expected in folder <code>[[expectedIconFolder]]</code> with filename <code>[[expectedIconName]]</code>, but the file is missing.',
+									['code_name' => htmlspecialchars($values['filters/map_icon']), 'expectedIconFolder' => htmlspecialchars($expectedIconFolder), 'expectedIconName' => htmlspecialchars($expectedIconName)]
 								);
 						}
 					}
@@ -811,7 +811,15 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			$imageId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['sticky_flag' => '1', 'location_id' => $row['this_location_id']]);
 			
 			$row['alt_tag'] = ze\row::get('files', 'alt_tag', $imageId);
-			$row['list_image'] = self::getStickyImageLink($imageId);
+			
+			//This function will return an empty array if a location has no feature image,
+			//or if the plugin is set to not display images.
+			$imageUrlAndDimensions = self::getStickyImageLinkAndDimensions($imageId);
+			if (!empty($imageUrlAndDimensions)) {
+				$row['list_image'] = $imageUrlAndDimensions['url'];
+				$row['list_image_width'] = $imageUrlAndDimensions['width'];
+				$row['list_image_height'] = $imageUrlAndDimensions['height'];
+			}
 			
 			$row['descriptive_page'] = false;
 			if ($row['equiv_id'] && $row['content_type']) {
@@ -884,7 +892,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		}
 	}
 	
-	public function getStickyImageLink($imageId) {
+	public function getStickyImageLinkAndDimensions($imageId) {
 		if ($imageId && $this->setting('show_images')) {
 			$url = $width = $height = false;
 			
@@ -893,8 +901,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			$canvas = $this->setting('image_canvas'); 
 			
 			ze\file::imageLink($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas);
-			return $url;
+			return ['url' => $url, 'width' => $width, 'height' => $height];
 		}
-		return false;
+		
+		return [];
 	}
 }

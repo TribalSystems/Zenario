@@ -559,7 +559,7 @@ if (!$xml) {
 								[
 									'ord' => 0,
 									'module_id' => 0,
-									'name_or_slide_label' => zenario_pro_features::getValue($slide)],
+									'slide_label' => zenario_pro_features::getValue($slide)],
 								[
 									'instance_id' => $instanceId,
 									'is_slide' => 1,
@@ -581,8 +581,7 @@ if (!$xml) {
 								$nestedPlugins[$slideNum][$ord] = ze\row::set(
 									'nested_plugins',
 									[
-										'framework' => $egg->attributes()->framework,
-										'name_or_slide_label' => $egg->attributes()->name_or_slide_label],
+										'framework' => $egg->attributes()->framework],
 									[
 										'instance_id' => $instanceId,
 										'is_slide' => 0,

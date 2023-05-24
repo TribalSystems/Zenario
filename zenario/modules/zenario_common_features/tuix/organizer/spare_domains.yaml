@@ -3,11 +3,11 @@
 zenario__administration:
     panels:
         spare_domains:
+            priv: _PRIV_VIEW_SITE_SETTING
             title: Domain name redirects
             no_items_message: |
                 When a domain name redirect is defined visitors to that domain name are redirected
                 to a specified content item under the primary domain.
-            view_mode: list
 
             notice:
                 show: true

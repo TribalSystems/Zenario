@@ -64,7 +64,7 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	function getEncryptedColumns($table) {
-		$db = \ze::$dbL;
+		$db = ze::$dbL;
 		$tableName = $db->prefix. $table;
 		
 		$cols = [];
@@ -276,21 +276,21 @@ class zenario_users__organizer__users extends zenario_users {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if (($_POST['delete_user'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+		if (ze::post('delete_user') && ze\priv::check('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $id) {
 				ze\userAdm::delete($id);
 			}
 		
-		} elseif (($_POST['remove_users_from_this_group'] ?? false) && ($_POST['refiner__group_members'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+		} elseif (ze::post('remove_users_from_this_group') && ze::post('refiner__group_members') && ze\priv::check('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $id) {
-				ze\user::addToGroup($id, ($_POST['refiner__group_members'] ?? false), $remove = true);
+				ze\user::addToGroup($id, ze::post('refiner__group_members'), $remove = true);
 			}
 	
-		} elseif (($_POST['add_user_to_this_group'] ?? false) && ($_POST['refiner__group_members'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+		} elseif (ze::post('add_user_to_this_group') && ze::post('refiner__group_members') && ze\priv::check('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $userId) {
-				ze\user::addToGroup($userId, ($_POST['refiner__group_members'] ?? false));
+				ze\user::addToGroup($userId, ze::post('refiner__group_members'));
 			}
-		} elseif (($_POST['suspend_user'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+		} elseif (ze::post('suspend_user') && ze\priv::check('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $id) {
 				static::suspendUser($id);
 			}
@@ -300,10 +300,10 @@ class zenario_users__organizer__users extends zenario_users {
 			
 			
 		//Set a new avatar for a User/Users
-		} elseif (($_POST['upload_image'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+		} elseif (ze::post('upload_image') && ze\priv::check('_PRIV_EDIT_USER')) {
 			zenario_users::uploadUserImage($ids);
 		//Remove the image for each user
-		} elseif (($_POST['delete_image'] ?? false) && ze\priv::check('_PRIV_EDIT_USER')) {
+		} elseif (ze::post('delete_image') && ze\priv::check('_PRIV_EDIT_USER')) {
 			zenario_users::deleteUserImage($ids);
 		}
 	}

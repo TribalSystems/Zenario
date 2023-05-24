@@ -35,7 +35,7 @@ body #colorbox:not(.zenario_admin_cb) #cboxOverlay {
   	border: 5px solid #fff;
 	font-family:'robotolight',Arial, Helvetica, sans-serif;
 	font-size:100%;
-	line-height:22px;
+	line-height:1.5;
 }
 
 #colorbox:not(.zenario_admin_cb) #cboxLoadedContent {

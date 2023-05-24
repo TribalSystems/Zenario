@@ -3,10 +3,8 @@
 zenario__administration:
     panels:
         file_types:
+            priv: _PRIV_VIEW_SITE_SETTING
             title: File/MIME Types
-            view_mode: list
-            disable_grid_view: true
-            disable_summary_view: true
             db_items:
                 table: '[[DB_PREFIX]]document_types AS dt'
                 id_column: dt.type

@@ -705,7 +705,7 @@ methods.sendAJAXRequest = function(requests, after) {
 	get('organizer_preloader_circle').style.display = 'block';
 	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError)
 	var result = zenario.ajax(
-		URLBasePath + actionTarget,
+		zenario.addBasePath(actionTarget),
 		actionRequests,
 		true,
 		false,

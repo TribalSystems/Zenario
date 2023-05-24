@@ -28,20 +28,20 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (\ze::setting('dropbox_api_key')) {
+if (ze::setting('dropbox_api_key')) {
 	echo '
-		'. $scriptTag. ' src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="', htmlspecialchars(\ze::setting('dropbox_api_key')), '"></script>';
+		'. $scriptTag. ' src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="', htmlspecialchars(ze::setting('dropbox_api_key')), '"></script>';
 }
 
 if ($includeOrganizer) {
-	$moduleCodeHash = \ze\db::codeLastUpdated(). '___'. \ze::setting('yaml_version');
+	$moduleCodeHash = \ze\db::codeLastUpdated(). '___'. ze::setting('yaml_version');
 	
 	$jsModuleIds = '';
 	foreach (\ze\module::runningModules() as $module) {
-		if (\ze::moduleDir($module['class_name'], 'js/organizer.js', true)
-		 || \ze::moduleDir($module['class_name'], 'js/organizer.min.js', true)
-		 || \ze::moduleDir($module['class_name'], 'js/storekeeper.js', true)
-		 || \ze::moduleDir($module['class_name'], 'js/storekeeper.min.js', true)) {
+		if (ze::moduleDir($module['class_name'], 'js/organizer.js', true)
+		 || ze::moduleDir($module['class_name'], 'js/organizer.min.js', true)
+		 || ze::moduleDir($module['class_name'], 'js/storekeeper.js', true)
+		 || ze::moduleDir($module['class_name'], 'js/storekeeper.min.js', true)) {
 			$jsModuleIds .= ($jsModuleIds? ',' : ''). $module['id'];
 		}
 	}
@@ -60,7 +60,7 @@ if ($includeOrganizer) {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 			echo '
-'. $scriptTag. ' src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' , urlencode(\ze::setting('google_maps_api_key')) , '"></script>';
+'. $scriptTag. ' src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' , urlencode(ze::setting('google_maps_api_key')) , '"></script>';
 		}
 	}
 	
@@ -94,8 +94,8 @@ zenarioA.maxUploadF = "', \ze\escape::js(\ze\lang::formatFilesizeNicely($MaxFile
 
 
 $settings = [];
-if (!empty(\ze::$siteConfig)) {
-	foreach (\ze::$siteConfig[0] as $setting => &$value) {
+if (!empty(ze::$siteConfig)) {
+	foreach (ze::$siteConfig[0] as $setting => &$value) {
 		if ($value) {
 			if (is_numeric($value)) {
 				$settings[$setting] = $value + 0;
@@ -108,7 +108,9 @@ if (!empty(\ze::$siteConfig)) {
 			 || $setting == 'organizer_date_format'
 			 || $setting == 'primary_domain'
 			 || $setting == 'site_in_dev_mode'
-			 || $setting == 'vis_time_format') {
+			 || $setting == 'vis_time_format'
+			 || $setting == 'google_maps_api_key'
+			) {
 				$settings[$setting] = $value;
 			
 			} elseif (substr($setting, -5) == '_path') {
@@ -119,8 +121,8 @@ if (!empty(\ze::$siteConfig)) {
 }
 $adminSettings = [];
 
-if (!empty(\ze::$adminSettings)) {
-	foreach (\ze::$adminSettings as $setting => &$value) {
+if (!empty(ze::$adminSettings)) {
+	foreach (ze::$adminSettings as $setting => &$value) {
 		
 		//Don't shown the COOKIE settings on the client
 		if (!$setting
@@ -139,6 +141,8 @@ if (!empty(\ze::$adminSettings)) {
 
 //Add any privs here that you need to check for in JavaScript
 $adminPrivs = [
+	'_PRIV_EDIT_TEMPLATE' => \ze\priv::check('_PRIV_EDIT_TEMPLATE'),
+	'_PRIV_EDIT_SITEWIDE' => \ze\priv::check('_PRIV_EDIT_SITEWIDE'),
 	'_PRIV_EDIT_SITE_SETTING' => \ze\priv::check('_PRIV_EDIT_SITE_SETTING'),
 	'_PRIV_VIEW_DIAGNOSTICS' => \ze\priv::check('_PRIV_VIEW_DIAGNOSTICS')
 ];
@@ -156,8 +160,8 @@ if (empty($importantGetRequests)) {
 
 $adminHasSpecificPermsOnThisPage = 0;
 if ($adminHasSpecificPerms = \ze\admin::hasSpecificPerms()) {
-	if (\ze::$cID && \ze::$cType) {
-		$adminHasSpecificPermsOnThisPage = \ze\priv::check(false, \ze::$cID, \ze::$cType);
+	if (ze::$cID && ze::$cType) {
+		$adminHasSpecificPermsOnThisPage = \ze\priv::check(false, ze::$cID, ze::$cType);
 	}
 }
 
@@ -166,11 +170,11 @@ if ($adminHasSpecificPerms = \ze\admin::hasSpecificPerms()) {
 //Get a list of language names and flags for use in the formatting options
 //We only need enabled languages if this is not Organizer
 $langs = [];
-$onlyShowEnabledLanguages = (bool) \ze::$cID;
+$onlyShowEnabledLanguages = (bool) ze::$cID;
 if (!$onlyShowEnabledLanguages) {
 	$enabledLangs = \ze\lang::getLanguages();
 }
-foreach (\ze\lang::getLanguages(!\ze::$cID) as $lang) {
+foreach (\ze\lang::getLanguages(!ze::$cID) as $lang) {
 	$langs[$lang['id']] = ['name' => $lang['english_name']];
 	
 	if ($onlyShowEnabledLanguages || !empty($enabledLangs[$lang['id']])) {
@@ -188,17 +192,19 @@ while ($row = \ze\sql::fetchAssoc($result)) {
 }
 
 $draftMessage = false;
-if (\ze::$isDraft) {
-	$draftMessage = \ze\admin::phrase('This will only affect the draft version ([[version]]) of this content item.', ['version' => \ze::$cVersion]);
+if (ze::$isDraft) {
+	$draftMessage = \ze\admin::phrase('This will only affect the draft version ([[version]]) of this content item.', ['version' => ze::$cVersion]);
 }
 
 echo '
 '. $scriptTag. '>
 zenarioA.init(
-	', (int) \ze::$cVersion, ',
+	', (int) ze::$cVersion, ',
 	', (int) ($_SESSION['admin_userid'] ?? false), ',
 	"', \ze\escape::js((($_SESSION['page_toolbar'] ?? false) ?: 'preview')), '",
 	"', \ze\escape::js((($_SESSION['page_mode'] ?? false) ?: 'preview')), '",
+	"', \ze\escape::js(\ze::setting('min_extranet_user_password_length')), '",
+	"', \ze\escape::js(\ze::setting('min_extranet_user_password_score')), '",
 	', \ze\ring::engToBoolean($_SESSION['admin_show_grid'] ?? false), ',
 	', json_encode($settings), ',
 	', json_encode($adminSettings), ',

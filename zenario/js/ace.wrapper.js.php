@@ -44,8 +44,7 @@ ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/ext
 ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/ext-language_tools');
 
 //Set the Ace base-path
-echo '
-ace.config.set("basePath", URLBasePath + "zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/");';
+ze\cache::incJS('zenario/js/ace.integration');
 
 //Ensure that mode-JavaScript is already loaded at the start, so the Phi library can extent it
 ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/mode-javascript');

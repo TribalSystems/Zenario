@@ -56,7 +56,15 @@ zenario.lib(function(
 
 
 methods.microTemplate = function(template, data, filter) {
-	return zenarioT.microTemplate(template, data, filter);
+
+	var needsTidying = zenario.addLibPointers(data, thus),
+		html = zenarioT.microTemplate(template, data, filter);
+	
+	if (needsTidying) {
+		zenario.tidyLibPointers(data);
+	}
+
+	return html;
 };
 
 methods.start = function(path, key, tab, values) {	

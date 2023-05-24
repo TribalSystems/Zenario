@@ -35,7 +35,7 @@ require '../adminheader.inc.php';
 
 
 
-if (!$layout = ze\row::get('layouts', true, ($_REQUEST['id'] ?? false))) {
+if (!$layout = ze\row::get('layouts', true, ze::request('id'))) {
 	exit;
 }
 

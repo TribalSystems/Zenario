@@ -45,7 +45,7 @@ if ($methodCall == 'handleOrganizerPanelAJAX') {
 	ze::$tuixPath = $path = $_REQUEST['__path__'] ?? false;
 }
 
-$isForPlugin = ($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false) && ($_REQUEST['instanceId'] ?? false);
+$isForPlugin = ze::request('cID') && ze::request('cType') && ze::request('instanceId');
 
 //Check which method call is being requested
 //Some method calls are associated with instances and content items, and some are not
@@ -78,7 +78,7 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	
-	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
+	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ze::request('cVersion'), $checkRequestVars = true);
 	if (!$status || is_string($status)) {
 		exit;
 	}
@@ -98,7 +98,7 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	$instanceId = $_REQUEST['instanceId'] ?? false;
-	$slotName = ze\ring::HTMLId($_REQUEST['slotName'] ?? false);
+	$slotName = ze\ring::HTMLId(ze::request('slotName'));
 	
 	//Use exact matching if this is a call to refreshPlugin.
 	//Otherwise try to allow for the fact that people might have bad/old slot names/instance ids
@@ -177,15 +177,15 @@ if ($methodCall == 'refreshPlugin'
 		ze\cache::start();
 	}
 	
-	if ($_REQUEST['__pluginClassName__'] ?? false) {
+	if (ze::request('__pluginClassName__')) {
 		if (!($module = ze\module::activate($moduleClassName = $_REQUEST['__pluginClassName__'] ?? false))) {
 			exit;
 		}
-	} elseif ($_REQUEST['moduleClassName'] ?? false) {
+	} elseif (ze::request('moduleClassName')) {
 		if (!($module = ze\module::activate($moduleClassName = $_REQUEST['moduleClassName'] ?? false))) {
 			exit;
 		}
-	} elseif ($_REQUEST['__pluginName__'] ?? false) {
+	} elseif (ze::request('__pluginName__')) {
 		if (!($module = ze\module::activate($moduleClassName = $_REQUEST['__pluginName__'] ?? false))) {
 			exit;
 		}
@@ -199,7 +199,7 @@ if ($methodCall == 'refreshPlugin'
 	require ze::editionInclude('checkRequestVars');
 	
 
-} elseif (($_GET['method_call'] ?? false) == 'loadPhrase') {
+} elseif (ze::get('method_call') == 'loadPhrase') {
 	
 	//Look up one or more visitor phrases
 	require 'visitorheader.inc.php';
@@ -208,13 +208,13 @@ if ($methodCall == 'refreshPlugin'
 	if (isset($_GET['__code__'])) {
 		$codes = ze\ray::explodeDecodeAndTrim($_GET['__code__']);
 	}
-	$languageId = ($_GET['langId'] ?? false) ?: (($_SESSION['user_lang'] ?? false) ?: ze::$defaultLang);
+	$languageId = ze::get('langId') ?: (($_SESSION['user_lang'] ?? false) ?: ze::$defaultLang);
 	
 	$sql = "
 		SELECT code, local_text
 		FROM ". DB_PREFIX. "visitor_phrases
 		WHERE language_id = '". ze\escape::asciiInSQL($languageId). "'
-		  AND module_class_name = '". ze\escape::asciiInSQL($_GET['__class__'] ?? false). "'";
+		  AND module_class_name = '". ze\escape::asciiInSQL(ze::get('__class__')). "'";
 	
 	if (!empty($codes)) {
 		$sql .= "
@@ -238,7 +238,7 @@ if ($methodCall == 'refreshPlugin'
 	if (!empty($codes) && ze::isAdmin()) {
 		foreach ($codes as $code) {
 			if (!isset($phrases[$code])) {
-				$phrases[$code] = ze\lang::phrase($code, [], ($_GET['__class__'] ?? false), $languageId, ze\admin::phrase('JavaScript code'));
+				$phrases[$code] = ze\lang::phrase($code, [], ze::get('__class__'), $languageId, ze\admin::phrase('JavaScript code'));
 			}
 		}
 	}
@@ -275,7 +275,7 @@ if ($methodCall == 'refreshPlugin'
 	exit;
 	
 
-} elseif ($methodCall == 'handleAdminBoxAJAX' || $methodCall == 'handleWizardAJAX') {
+} elseif ($methodCall == 'handleAdminBoxAJAX') {
 	
 	require 'visitorheader.inc.php';
 	
@@ -296,16 +296,16 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	//Otherwise look for a Module Name
-	if ($_REQUEST['moduleClassName'] ?? false) {
-		if (!($module = ze\module::activate($_REQUEST['moduleClassName'] ?? false))) {
+	if (ze::request('moduleClassName')) {
+		if (!($module = ze\module::activate(ze::request('moduleClassName')))) {
 			exit;
 		}
-	} elseif ($_REQUEST['__pluginName__'] ?? false) {
-		if (!($module = ze\module::activate($_REQUEST['__pluginName__'] ?? false))) {
+	} elseif (ze::request('__pluginName__')) {
+		if (!($module = ze\module::activate(ze::request('__pluginName__')))) {
 			exit;
 		}
 	} else {
-		if (!($module = ze\module::activate($_REQUEST['moduleName'] ?? false))) {
+		if (!($module = ze\module::activate(ze::request('moduleName')))) {
 			exit;
 		}
 	}
@@ -331,8 +331,8 @@ if ($methodCall == 'showFile') {
 	
 	$requestedPath = $_REQUEST['path'] ?? false;
 
-	\ze::$tuixType = 'visitor';
-	\ze::$tuixPath = $requestedPath;
+	ze::$tuixType = 'visitor';
+	ze::$tuixPath = $requestedPath;
 	
 	if ($isForPlugin) {
 		
@@ -447,10 +447,10 @@ if ($methodCall == 'showFile') {
 	
 	//Handle the old name if it's not been changed yet
 	if (method_exists($module, 'storekeeperDownload')) {
-		$module->storekeeperDownload($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
+		$module->storekeeperDownload($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('refinerName'), ze::request('refinerId'));
 	}
 	
-	$module->organizerPanelDownload($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
+	$module->organizerPanelDownload($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('refinerName'), ze::request('refinerId'));
 	
 	exit;
 
@@ -461,7 +461,7 @@ if ($methodCall == 'showFile') {
 	$newIds = false;
 	$message = false;
 
-	if ($_REQUEST['_sk_form_submission'] ?? false) {
+	if (ze::request('_sk_form_submission')) {
 		ob_start();
 	} else {
 		ze\cache::start();
@@ -472,25 +472,25 @@ if ($methodCall == 'showFile') {
 		
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'adminToolbarAJAX')) {
-			$module->adminToolbarAJAX((int) ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), (int) ($_REQUEST['cVersion'] ?? false), ($_REQUEST['id'] ?? false));
+			$module->adminToolbarAJAX((int) ze::request('cID'), ze::request('cType'), (int) ze::request('cVersion'), ze::request('id'));
 		}
 		
-		$module->handleAdminToolbarAJAX((int) ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), (int) ($_REQUEST['cVersion'] ?? false), ($_REQUEST['id'] ?? false));
+		$module->handleAdminToolbarAJAX((int) ze::request('cID'), ze::request('cType'), (int) ze::request('cVersion'), ze::request('id'));
 	
 	} else {
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'storekeeperAJAX')) {
-			$module->storekeeperAJAX($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['id2'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
+			$module->storekeeperAJAX($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('id2'), ze::request('refinerName'), ze::request('refinerId'));
 		}
 		
-		$newIds = $module->handleOrganizerPanelAJAX($_REQUEST['__path__'] ?? false, ($_REQUEST['id'] ?? false), ($_REQUEST['id2'] ?? false), ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
+		$newIds = $module->handleOrganizerPanelAJAX($_REQUEST['__path__'] ?? false, ze::request('id'), ze::request('id2'), ze::request('refinerName'), ze::request('refinerId'));
 	}
 	
 	if ($newIds && !is_array($newIds)) {
 		$newIds = explode(',', $newIds);
 	}
 	
-	if ($_REQUEST['_sk_form_submission'] ?? false) {
+	if (ze::request('_sk_form_submission')) {
 		$message = trim(ob_get_contents());
 		ob_end_clean();
 		

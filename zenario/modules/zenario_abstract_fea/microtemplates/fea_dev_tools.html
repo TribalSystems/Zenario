@@ -5,22 +5,52 @@
 	<% var extended = $wrap.hasClass("zenario_slot_with_extending_modules"); %>
 	<% var $wrap = $("#" + m.thus.containerId + "-wrap"); %>
 
-	<div class="zenario_debug" style="z-index: 1;" onclick="{{m.lib.fun('debug')}}();" title="
+	<div class="zenario_debug" style="z-index: 1;"
+	
+		onclick="{{m.lib.fun('debug')}}();"
+	
+		onauxclick="
+			if (event.which == 2) {
+				event.preventDefault();
+				window.lib = {{m.lib.globalName|e}};
+				console.info('var lib = {{m.lib.globalName|e}};');
+			}
+		"
+	
+		title="
+			This plugin is a {{m.lib.tuix.fea_type|e}}-type FEA plugin of the {{m.lib.moduleClassName|e}} module, running in the {{m.lib.mode|e}} mode.
+			&lt;br/&gt;
+			&lt;br/&gt;
+			Left click this icon to open the TUIX Inspector.
+			&lt;br/&gt;
+			&lt;br/&gt;
+			Middle click this icon to run
+			&lt;br/&gt;
+			&lt;code style=&quot;font-size: 8px; white-space: nowrap;&quot; &gt;&nbsp;&nbsp;var lib = {{m.lib.globalName|e}};&lt;/code&gt;
+			&lt;br/&gt;
+			in the console, so you can more easily debug this instance.
 
-		<% if (cusTUIX) { %>
-			This plugin uses the TUIX snippet &ldquo;{{$wrap.data('tuix_snippet')|e}}&rdquo; to customise its appearance.
-			A different TUIX snippet can be chosen by an administrator in the settings of this plugin. 
-		<% } %>
-		<% if (extended) { %>
-			This plugin has been extended by {{$wrap.data('extnames')|e}}, which inserts objects.
-			Click this button to check the dev tools for more information.
-		<% } %>
-
-	" data-tooltip-options='{"tooltipClass": "zenario_admin_tooltip", "position": {"my": "right top", "at": "left"}}'><div></div></div>
+			<% if (cusTUIX) { %>
+				&lt;br/&gt;
+				&lt;br/&gt;
+				This plugin uses the TUIX snippet &ldquo;{{$wrap.data('tuix_snippet')|e}}&rdquo; to customise its appearance.
+				A different TUIX snippet can be chosen by an administrator in the settings of this plugin. 
+			<% } %>
+			<% if (extended) { %>
+				&lt;br/&gt;
+				&lt;br/&gt;
+				This plugin has been extended by {{$wrap.data('extnames')|e}}, which inserts objects.
+				Click this button to check the dev tools for more information.
+			<% } %>
+		"
+	
+		data-tooltip-options='{"tooltipClass": "zenario_admin_tooltip", "position": {"my": "right top", "at": "left"}}'
+	
+	><div></div></div>
 
 <% } %>
 
 
 <% if (m.lib.tsLink) { %>
-	<a class="zenario_tslink" target="_blank" href="{{URLBasePath + m.lib.tsLink|e}}" title="View/edit TUIX Snippet"></a>
+	<a class="zenario_tslink" target="_blank" href="{{zenario.addBasePath(m.lib.tsLink)|e}}" title="View/edit TUIX Snippet"></a>
 <% } %>

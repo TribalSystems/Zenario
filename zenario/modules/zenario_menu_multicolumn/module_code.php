@@ -182,17 +182,18 @@ class zenario_menu_multicolumn extends zenario_menu {
 				break;
 			
 			case 'zenario_menu':
+			case 'zenario_menu_text':
 				if ($box['key']['parentMenuID'] && !ze\menu::parentId($box['key']['parentMenuID'])) {
 					if ($box['key']['id']) {
 						$nodeLevel = self::getNodeLevel($box['key']['id']);
-						if($nodeLevel == 2){
+						if ($nodeLevel == 2) {
 							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = false;
 							$values['zenario_menu_multicolumn__top_of_column'] =
 							ze\row::get(
 								ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column',
 								'top_of_column',
 								$box['key']['id']);
-						}else{
+						} else {
 							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
 							$values['zenario_menu_multicolumn__top_of_column'] = 0;
 						}
@@ -205,16 +206,17 @@ class zenario_menu_multicolumn extends zenario_menu {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'zenario_menu':
+			case 'zenario_menu_text':
 				if ($box['key']['id']) {
-					if(isset($values['zenario_pro_features__invisible']) && $values['zenario_pro_features__invisible']){
-							$values['zenario_menu_multicolumn__top_of_column'] = 0;
-							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
-					}else if ($box['key']['parentMenuID'] && !ze\menu::parentId($box['key']['parentMenuID'])) {
+					if (isset($values['zenario_pro_features__invisible']) && $values['zenario_pro_features__invisible']) {
+						$values['zenario_menu_multicolumn__top_of_column'] = 0;
+						$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
+					} elseif ($box['key']['parentMenuID'] && !ze\menu::parentId($box['key']['parentMenuID'])) {
 						$nodeLevel = self::getNodeLevel($box['key']['id']);
 					
-						if($nodeLevel == 2){
+						if ($nodeLevel == 2) {
 							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = false;
-						}else{
+						} else {
 							$fields['zenario_menu_multicolumn__top_of_column']['hidden'] = true;
 							$values['zenario_menu_multicolumn__top_of_column'] = 0;
 						}
@@ -227,12 +229,14 @@ class zenario_menu_multicolumn extends zenario_menu {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'zenario_menu':
-				if (!empty($box['tabs']['advanced']['edit_mode']['on'])) {
+			case 'zenario_menu_text':
+				if (!empty($box['tabs']['text']['edit_mode']['on'])) {
 					if ($box['key']['id']) {
 						$details = [];
 						if (!$details['top_of_column'] = $values['zenario_menu_multicolumn__top_of_column']) {
 							$details['top_of_column'] = 0;
 						}
+						
 						ze\row::set(
 							ZENARIO_MENU_MULTICOLUMN_PREFIX. 'nodes_top_of_column',
 							$details,

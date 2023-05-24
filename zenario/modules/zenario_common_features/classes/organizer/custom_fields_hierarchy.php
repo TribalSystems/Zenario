@@ -72,6 +72,10 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 				)
 				AND f.is_system_field = 0 
 				AND f.type in ('text', 'date', 'radios', 'checkbox', 'textarea', 'consent', 'group', 'centralised_radios', 'url', 'select', 'dataset_select', 'centralised_select')";
+		} elseif ($refinerName == 'dataset_text_fields_only') {
+			$sql .= "
+				AND f.dataset_id = " . (int) $refinerId . "
+				AND f.type = 'text'";
 		} elseif ($refinerName == "exclude_image_pickers") {
 			$sql .= "
 				AND f.dataset_id = " . (int)$refinerId . "

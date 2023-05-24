@@ -32,17 +32,21 @@ class zenario_extranet_change_password extends zenario_extranet {
 	
 	public function init() {
 		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		ze::requireJsLib('zenario/js/password_functions.min.js');
 
 		$this->registerPluginPage();
 		
 		$this->mode = 'modeChangePassword';
+		
+		ze::requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		
 		if (!ze\user::id()) {
 			return ze\priv::check();
 		}
 		
 		$this->manageCookies();
 		
-		if ($_POST['extranet_change_password'] ?? false) {
+		if (ze::post('extranet_change_password')) {
 		
 			if ($this->changePassword()) {
 			
@@ -80,27 +84,29 @@ class zenario_extranet_change_password extends zenario_extranet {
 			return;
 		}
 		
-		$this->objects['Password_Requirements'] = ze\user::displayPasswordRequirementsNoteVisitor();
-		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Change_Password_Form'] = true;
+			$this->objects['Password_Requirements_Settings'] = [
+				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
+				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
+			];
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		
-		$this->callScript('zenario', 'updatePasswordNotifier', '#extranet_new_password', '#password_message');
+		$this->callScript('zenarioP', 'updatePasswordNotifier', '#extranet_new_password', $this->objects['Password_Requirements_Settings'], '#password_message', $adminFacing = false, $isInstaller = false);
 	}
 	
 	
 	//Attempt to change a user's password
 	protected function changePassword() {
 		
-		$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false,($_POST['extranet_new_password_confirm'] ?? false),($_POST['extranet_password'] ?? false),get_class($this),ze\user::id());
+		$errors = $this->validatePassword($_POST['extranet_new_password'] ?? false, ze::post('extranet_new_password_confirm'), ze::post('extranet_password'), get_class($this), ze\user::id());
 		
 		if (count($errors)) {
 			$this->errors = array_merge ($this->errors, $errors);
 			return false;
 		} else {
-			ze\userAdm::setPassword(ze\user::id(), ($_POST['extranet_new_password'] ?? false));
+			ze\userAdm::setPassword(ze\user::id(), ze::post('extranet_new_password'));
 			return true;
 		}
 	}

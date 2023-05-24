@@ -60,7 +60,7 @@ foreach([
 	). '~';
 }
 
-echo 'zenario._uAM(zenario.vphrase,', json_encode($output), ');';
+echo 'zenario._mkd(zenario.vphrase,', json_encode($output), ');';
 
 
 

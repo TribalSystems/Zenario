@@ -11,7 +11,7 @@ description: |
     <p>When you install this module it will automatically create a registration page on your site.</p>
     <p>The default behaviour is to have just one registration page, but on a multi-language site you may create one page for each language on your site by creating translations of the original content item in each language.</p>
     <p>To register, people must enter their email address (and choose a screen name, if you have enabled screen names in your site's settings).</p>
-    <p>We recommend that there plugin is set to send a verification email to each new user's email address,  and that the user chooses their own password; but other configurations are possible.</p>
+    <p>The default setup for this plugin will make it send a verification email to the email address given by a new user, and that the user chooses their own password; but other configurations are possible.</p>
     <p>It is possible for administrators to receive notification of each user who signs up, set this on the plugin's "User activation" tab.</p>
     <p>You can create your own or customize existing email templates. The email template can contain various merge fields:</p>
             <ul>

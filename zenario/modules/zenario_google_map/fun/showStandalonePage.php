@@ -56,16 +56,16 @@ echo '<!DOCTYPE HTML>
 					|| (name[0] && opener && opener[name[0]]);
 			},
 			el = document.getElementById("map"),
-			lat = "', ze\escape::js($_GET['lat'] ?? false), '",
-			lng = "', ze\escape::js($_GET['lng'] ?? false), '",
-			zoom = "', ze\escape::js($_GET['zoom'] ?? false), '",
-			addMarkerAtCentre = "', ze\escape::js($_GET['addMarkerAtCentre'] ?? false), '",
-			options = getFromOpener("', ze\escape::js($_GET['options'] ?? false), '") || {},
-			callback = getFromOpener("', ze\escape::js($_GET['callback'] ?? false), '"),
+			lat = "', ze\escape::js(ze::get('lat')), '",
+			lng = "', ze\escape::js(ze::get('lng')), '",
+			zoom = "', ze\escape::js(ze::get('zoom')), '",
+			addMarkerAtCentre = "', ze\escape::js(ze::get('addMarkerAtCentre')), '",
+			options = getFromOpener("', ze\escape::js(ze::get('options')), '") || {},
+			callback = getFromOpener("', ze\escape::js(ze::get('callback')), '"),
 			map,
 			marker,
-			stylesheet = "', ze\escape::js($_GET['stylesheet'] ?? false), '",
-			customIcon = "', ze\escape::js($_GET['customIcon'] ?? false), '",
+			stylesheet = "', ze\escape::js(ze::get('stylesheet')), '",
+			customIcon = "', ze\escape::js(ze::get('customIcon')), '",
 			addStylesheet = function(href) {
 				var sheet = document.createElement("link");
 				sheet.type = "text/css";

@@ -195,15 +195,25 @@ zenario_conductor.getToggle = function(slot, id) {
 //Change the value of a specific toggle on the current slide
 zenario_conductor.setToggle = function(slot, id, on, updateURL) {
 	slot = getSlot(slot);
-	var toggles = zenario_conductor.getToggles(slot);
+	var toggles = zenario_conductor.getToggles(slot),
+		stringifiedToggles;
+	
+	//Allow this function to toggle whatever the value is, if it's not specified
+	if (!defined(on)) {
+		on = !toggles[id];
+	}
 	
 	if (on) {
 		toggles[id] = true;
 	} else {
 		delete toggles[id];
 	}
-	
-	zenario_conductor.setVar(slot, 'toggles', _.keys(toggles).join('.'), updateURL);
+
+	zenario_conductor.setVar(slot, 'toggles', stringifiedToggles = _.keys(toggles).join('.'), updateURL);
+	zenario.sendSignal('toggleChange', {
+		toggles: toggles,
+		stringified: stringifiedToggles
+	});
 };
 
 
@@ -461,6 +471,9 @@ zenario_conductor.go = function(slot, command, requests, runAfter) {
 					}
 				});
 			}
+			
+			//Remove any existing signal handlers this we might have added
+			zenario.off(slot.slotName);
 		
 			//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
 			zenario.refreshPluginSlot(slot.slotName, 'lookup', zenario_conductor.request(slot, commandDetails, requests), true, scrollToTopOfSlot).after(function() {
@@ -790,7 +803,7 @@ zenario_plugin_nest.setSlideControlWidth = function(containerId) {
 
 
 
-zenario.shrtNms(zenario_conductor, true);
+zenario.shrtNms(zenario_conductor);
 
 
 

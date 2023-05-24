@@ -393,9 +393,19 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$box['title'] = 'Editing email settings';
 		}
 		
-		
-		
-		
+		if ($settingGroup == 'cookies') {
+			if (ze::setting('captcha_status_and_version') == 'enabled_v2' && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
+				$fields['recaptcha_policy/recaptcha_info']['hidden'] = true;
+				$fields['recaptcha_policy/recaptcha_warning']['hidden'] = false;
+			}
+		}
+
+		if ($settingGroup == 'head_and_foot' && !ze\priv::check('_PRIV_EDIT_SITEWIDE')) {
+			$box['tabs']['head']['edit_mode']['enabled'] =
+			$box['tabs']['body']['edit_mode']['enabled'] =
+			$box['tabs']['foot']['edit_mode']['enabled'] =
+			$box['tabs']['cookie_content']['edit_mode']['enabled'] = false;
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -625,6 +635,17 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 			
+			$box['tabs']['mysql']['notices']['error3']['show'] =
+			$box['tabs']['mysql']['notices']['success3']['show'] = false;
+			
+			if (!empty($fields['mysql/test3']['pressed'])) {
+				if (ze\dbAdm::testMySQLTimezoneHandling()) {
+					$box['tabs']['mysql']['notices']['success3']['show'] = true;
+				} else {
+					$box['tabs']['mysql']['notices']['error3']['show'] = true;
+				}
+			}
+			
 			if ($settingGroup == 'external_programs') {
 				foreach ([
 					'advpng' => 'png',
@@ -714,7 +735,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$values['test/test_send_from_address'] = $values['email/email_address_from'];
 			$values['test/test_send_subject'] = ze\admin::phrase('A test email from [[absCMSDirURL]]', $mrg);
 	
-			if (ze\ray::engToBooleanArray($fields['test/test_send_button'], 'pressed')) {
+			if (ze\ray::engToBooleanArray($fields['test/test_send_button'], 'pressed') && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 				$box['tabs']['test']['notices']['test_send']['show'] = true;
 		
 				$error = '';
@@ -877,7 +898,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		if (isset($values['filesizes/content_max_filesize']) && $values['filesizes/content_max_filesize'] && ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'],$values['filesizes/content_max_filesize_unit']) > ze\dbAdm::apacheMaxFilesize()) {
-			$box['tabs']['filesizes']['errors'][] = ze\admin::phrase('The Maximum Content File Size value should be not more than the Largest Possible Upload Size value.');
+			$box['tabs']['filesizes']['errors'][] = ze\admin::phrase('The maximum file size value should not exceed the server-wide maximum uploadable file size.');
 		}
 		if (!empty($values['smtp/smtp_specify_server'])) {
 			if (empty($values['smtp/smtp_host'])) {
@@ -955,6 +976,10 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (!ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
+			exit;
+		}
+
+		if ($settingGroup == 'head_and_foot' && !ze\priv::check('_PRIV_EDIT_SITEWIDE')) {
 			exit;
 		}
 
@@ -1083,6 +1108,35 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if ($settingGroup == 'logos_and_branding') {
 			ze\site::setSetting('site_disabled_title', $values['admin_login/site_disabled_title']);
 			ze\site::setSetting('site_disabled_message', $values['admin_login/site_disabled_message']);
+		}
+		
+		//In Zenario 9.4, a new setting for User Forms max attachment size was introduced.
+		//It can follow the global setting or be different.
+		//In case it's different, make sure that after changing the setting in this admin box,
+		//the Forms one is not suddenly larger. Set it to use the global file size.
+		//
+		//Also the setting for max user image file upload size was changed to work like the global setting
+		//(text field + unit selector). Replicate the same logic for it.
+		if ($settingGroup == 'files_and_images' && isset($values['filesizes/content_max_filesize']) && $values['filesizes/content_max_filesize']) {
+			$maxFileSize = ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'], $values['filesizes/content_max_filesize_unit']);
+			
+			if (ze::setting('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size') {
+				$maxUserFormsFileSize = ze\file::fileSizeBasedOnUnit(ze::setting('zenario_user_forms_content_max_filesize'), ze::setting('zenario_user_forms_content_max_filesize_unit'));
+				if ($maxUserFormsFileSize > $maxFileSize) {
+					ze\site::setSetting('zenario_user_forms_content_max_filesize', '');
+					ze\site::setSetting('zenario_user_forms_content_max_filesize_unit', '');
+					ze\site::setSetting('zenario_user_forms_max_attachment_file_size_override', 'use_global_max_attachment_file_size');
+				}
+			}
+			
+			if (ze::setting('max_user_image_filesize_override') == 'limit_max_attachment_file_size') {
+				$maxUserImageileSize = ze\file::fileSizeBasedOnUnit(ze::setting('max_user_image_filesize'), ze::setting('max_user_image_filesize_unit'));
+				if ($maxUserImageileSize > $maxFileSize) {
+					ze\site::setSetting('max_user_image_filesize', '');
+					ze\site::setSetting('max_user_image_filesize_unit', '');
+					ze\site::setSetting('max_user_image_filesize_override', 'use_global_max_attachment_file_size');
+				}
+			}
 		}
 
 		//Tidy up any files in the database 

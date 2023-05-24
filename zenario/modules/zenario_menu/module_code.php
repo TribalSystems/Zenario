@@ -133,9 +133,21 @@ class zenario_menu extends ze\moduleBaseClass {
 			if ($this->parentMenuId && $parentMenuDetails = ze\menu::getInLanguage($this->parentMenuId, $this->language)) {
 				$mrg['Parent_Name'] = htmlspecialchars($parentMenuDetails['name']);
 				if ($parentMenuDetails['cID']) {
+					//If there is a link in the target language, display it...
 					$mrg['Parent_Link'] = htmlspecialchars(
 						$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, $this->requests, $parentMenuDetails['alias'])
 					);
+				} else {
+					//...otherwise, try to get a link in the default language.
+					$parentMenuDetails = ze\menu::getInLanguage($this->parentMenuId, ze::$defaultLang);
+					if ($parentMenuDetails['cID']) {
+						if (empty($this->requests)) {
+							$this->requests = ['visLang' => ze::$visLang];
+						}
+						$mrg['Parent_Link'] = htmlspecialchars(
+							$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, $this->requests, $parentMenuDetails['alias'])
+						);
+					}
 				}
 			} else {
 				$homepage = $this->getHomepage(ze\content::visitorLangId());

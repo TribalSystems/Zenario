@@ -148,50 +148,5 @@ class zenario_html_snippet extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//...
 	}
-	
-	public function fillAdminSlotControls(&$controls) {
-		if (ze::$isTwig) return;
-		
-		//If this is a version controlled plugin and the current administrator is an author,
-		//show the cut/copy/patse options
-		if ($this->isVersionControlled && ze\priv::check('_PRIV_EDIT_DRAFT')) {
-			
-			//Check whether something compatible was previously copied
-			$copied =
-				!empty($_SESSION['admin_copied_contents']['class_name'])
-			 && ze::in($_SESSION['admin_copied_contents']['class_name'], 'zenario_html_snippet', 'zenario_twig_snippet', 'zenario_wysiwyg_editor');
-			
-			//If something has been entered, show the copy button
-			if (!$this->empty) {
-				$controls['actions']['copy_contents']['hidden'] = false;
-				$controls['actions']['copy_contents']['onclick'] =
-					str_replace('list,of,allowed,modules', 'zenario_html_snippet,zenario_twig_snippet,zenario_wysiwyg_editor',
-						$controls['actions']['copy_contents']['onclick']);
-			}
-			
-			//Check to see if this is the most recent version and the current administrator can make changes
-			if (ze::$cVersion == ze::$adminVersion
-			 && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
-				
-				if (!$this->empty) {
-					$controls['actions']['cut_contents']['hidden'] = false;
-					$controls['actions']['cut_contents']['onclick'] =
-						str_replace('list,of,allowed,modules', 'zenario_html_snippet,zenario_twig_snippet,zenario_wysiwyg_editor',
-							$controls['actions']['cut_contents']['onclick']);
-				}
-			
-				//If there is no contents here and something was copied, show the paste option
-				if ($this->empty && $copied) {
-					$controls['actions']['paste_contents']['hidden'] = false;
-				}
-			
-				//If there is contents here and something was copied, show the swap and overwrite options
-				if (!$this->empty && $copied) {
-					$controls['actions']['overwrite_contents']['hidden'] = false;
-					$controls['actions']['swap_contents']['hidden'] = false;
-				}
-			}
-		}
-	}
 
 }

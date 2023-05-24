@@ -3,7 +3,7 @@ zenario_import_user_forms:
     key:
         id: ''
         show_save_button: ''
-    title: 'Importing forms'
+    title: 'Importing a form design'
     hide_tab_bar: true
     save_button_message: Import now
     tab: file
@@ -18,7 +18,7 @@ zenario_import_user_forms:
                     upload:
                         extensions: .json
                     side_note: |
-                        Upload a forms file. You can get this by selecting one or more forms and clicking "Export". This will be a JSON file.
+                        Upload a Zenario form design file in .json format that has been exported from another Zenario site of the same version.
                 next:
                     value: Next
                     type: submit

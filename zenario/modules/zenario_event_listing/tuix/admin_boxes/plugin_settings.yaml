@@ -285,10 +285,10 @@ plugin_settings:
                         drag_and_drop: true
                         reorder_items: false
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     indent: 2
                     validation:

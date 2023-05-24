@@ -20,7 +20,7 @@ site_settings:
                             to reduce server on your server and make web pages load more quickly.
                             
                             Visitors' browsers may cache files, even if Zenario's caching in disabled.
-                            You may prevent this by enabling development mode,
+                            You may prevent this by enabling developer mode,
                             or by pressing the &quot;Clear cache and check for changes&quot; button.
                         
                 cache_images:
@@ -123,7 +123,7 @@ site_settings:
                                 will also trigger the deletion of every cached web page and plugin
                                 from the <code>cache/</code> directory,
                                 however the check for this slows down your site, so is only performed
-                                when the site is in development mode and is viewed by an administrator.
+                                when the site is in developer mode and is viewed by an administrator.
                             </p><p>
                                 If you wish to manually clear the cache you may do so by pressing this button.
                             </p>

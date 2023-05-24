@@ -43,7 +43,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		
 		
 		//Get a list of types of plugins that can be put in this nest
-		$key = ['status' => 'module_running', 'is_pluggable' => 1, 'nestable' => 1];
+		$key = ['status' => 'module_running', 'is_pluggable' => 1, 'nestable' => [1, 2]];
 		if ($instance['content_id']) {
 			$key['can_be_version_controlled'] = 1;
 		}
@@ -229,9 +229,6 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 						$statesToSlides[$state] = $item['ordinal'];
 					}
 				}
-				if (!empty($item['is_slide'])) {
-					$item['name_or_slide_label'] = zenario_plugin_nest::formatTitleTextAdmin($item['name_or_slide_label']);
-				}
 			}
 		}
 		
@@ -240,10 +237,20 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		foreach ($panel['items'] as $id => &$item) {
 			
 			if ($item['is_slide']) {
+				$item['name_or_slide_label'] = zenario_plugin_nest::formatTitleTextAdmin($item['name_or_slide_label']);
+			} else {
+				$item['name_or_slide_label'] = ze\pluginAdm::nestedPluginName($id, $refinerId, null, $item['module_class_name']);
+			}
+			
+			if ($item['is_slide']) {
 				$item['css_class'] = 'zenario_nest_tab';
 				$item['cols'] = ' ';
 				$item['small_screens'] = ' ';
 				$item['prefix'] = $item['ordinal']. '. ';
+				
+				if ($item['slide_permissions'] != 'public') {
+					$panel['columns']['slide_permissions']['always_show'] = true;
+				}
 				
 				//Get a list of slide numbers/states that this state can go to
 				if ($panel['key']['usesConductor'] && $item['states']) {
@@ -284,7 +291,7 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 				}
 
 				//If a slide uses a static method, display the details.
-				if ($item['module_class_name'] && $item['method_name']) {
+				if ($item['slide_perms_module_class_name'] && $item['slide_perms_method_name']) {
 					$item['uses_static_method'] = '[Static method used]';
 				}
 			

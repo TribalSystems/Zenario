@@ -1,14 +1,12 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__content:
+zenario__library:
     panels:
         categories:
             title: Content item categories
-            view_mode: list
             panel_type: multi_line_list
             css_class: two_line_list_panel
             use_tall_rows: true
-            disable_grid_view: Yes
             no_items_message: No categories found.
             db_items:
                 table: '[[DB_PREFIX]]categories AS cat'
@@ -25,7 +23,7 @@ zenario__content:
                 css_class: zenario_category_icon
                 tooltip_when_link_is_active: 'View sub-categories of "[[name]]".'
                 link:
-                    path: zenario__content/panels/categories
+                    path: zenario__library/panels/categories
                     refiner: parent_category
                     branch: Yes
             columns:

@@ -923,9 +923,7 @@ class db {
 		$debugBacktrace = debug_backtrace();
 		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
 		
-		if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-			\ze\db::reportError('Database error at', 'Database query error', $sqlErrno, $sqlError, $sql, $debugBacktrace);
-		}
+		\ze\db::reportError('Database error at', 'Database query error', $sqlErrno, $sqlError, $sql, $debugBacktrace);
 		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {
 			echo "Database query error\n\n". $sqlErrno. "\n\n". $sqlError. "\n\n". $sql. "\n\n";
@@ -984,6 +982,12 @@ class db {
 	
 	//Formerly "reportDatabaseError()"
 	public static function reportError($subjectPrefix, ...$errorInfo) {
+		
+		//Insert an artificial delay, intended to make it slightly harder to spider a site
+		//looking for vulnerabilities
+		if (!defined('RUNNING_FROM_COMMAND_LINE')) {
+			sleep(1);
+		}
 		
 		if (!\ze\db::errorEmailsEnabled()) {
 			return;
@@ -1121,9 +1125,7 @@ class db {
 		$debugBacktrace = debug_backtrace();
 		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
 	
-		if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-			\ze\db::reportError('Database error at', 'Database query error', $error, $debugBacktrace);
-		}
+		\ze\db::reportError('Database error at', 'Database query error', $error, $debugBacktrace);
 		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {
 			echo "Database query error\n\n". $error. "\n\n";

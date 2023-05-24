@@ -57,65 +57,80 @@ class welcome {
 	public static function passwordMessageSnippet($password, $isInstaller = false) {
 		$passwordMessageSnippet = '';
 
+		$passwordValidation = \ze\user::checkPasswordStrength($password, $checkIfEasilyGuessable = false);
 		$minScore = (int) (\ze::setting('min_extranet_user_password_score') ?: 2);
 
-		$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
-		$result = $zxcvbn->passwordStrength($password);
+		if ($password) {
+			if ($passwordValidation['min_length']) {
+				$zxcvbn = new \ZxcvbnPhp\Zxcvbn();
+				$result = $zxcvbn->passwordStrength($password);
 
-		if ($result && isset($result['score'])) {
-			switch ($result['score']) {
-				case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
-					if ($minScore < 4) {
-						$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
-					} elseif ($minScore == 4) {
-						$phrase = 'Password matches the requirements (score 4)';
-					}
+				if ($result && isset($result['score'])) {
+					switch ($result['score']) {
+						case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+							if ($minScore < 4) {
+								$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
+							} elseif ($minScore == 4) {
+								$phrase = 'Password matches the requirements (score 4)';
+							}
 
-					$passwordMessageSnippet = 
-						'<div>
-							<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
-						</div>';
-					break;
-				case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
-					if ($minScore == 4) {
-						$passwordMessageSnippet = 
-						'<div>
-							<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-						</div>';
-					} elseif ($minScore < 4) {
-						$passwordMessageSnippet = 
-							'<div>
-								<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
-							</div>';
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
+								</div>';
+							break;
+						case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
+							if ($minScore == 4) {
+								$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+								</div>';
+							} elseif ($minScore < 4) {
+								$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
+									</div>';
+							}
+							break;
+						case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+							if ($minScore == 2) {
+								if ($isInstaller) {
+									$phrase = \ze\admin::phrase('Password is easy to guess. Make your password stronger if this will be a production site.');
+								} else {
+									$phrase = \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]);
+								}
+								$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_orange">' . $phrase . '</span>
+									</div>';
+							} elseif ($minScore > 2) {
+								$passwordMessageSnippet = 
+									'<div>
+										<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+									</div>';
+							}
+							break;
+						case 1: //is still very guessable (guesses < 10^6)
+						case 0: //s extremely guessable (within 10^3 guesses)
+						default:
+							$passwordMessageSnippet = 
+								'<div>
+									<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+								</div>';
+							break;
 					}
-					break;
-				case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-					if ($minScore == 2) {
-						if ($isInstaller) {
-							$phrase = \ze\admin::phrase('Password is easy to guess. Make your password stronger if this will be a production site.');
-						} else {
-							$phrase = \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]);
-						}
-						$passwordMessageSnippet = 
-							'<div>
-								<span id="snippet_password_message" class="title_orange">' . $phrase . '</span>
-							</div>';
-					} elseif ($minScore > 2) {
-						$passwordMessageSnippet = 
-							'<div>
-								<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-							</div>';
-					}
-					break;
-				case 1: //is still very guessable (guesses < 10^6)
-				case 0: //s extremely guessable (within 10^3 guesses)
-				default:
-					$passwordMessageSnippet = 
-						'<div>
-							<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-						</div>';
-					break;
+				}
+			} else {
+				$passwordMessageSnippet = 
+					'<div>
+						<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password does not match the requirements') . '</span>
+					</div>';
 			}
+		} else {
+			$passwordMessageSnippet = 
+				'<div>
+					<span id="snippet_password_message" class="title_orange">' . \ze\admin::phrase('Please enter a password') . '</span>
+				</div>';
 		}
 		
 		return $passwordMessageSnippet;
@@ -503,6 +518,17 @@ class welcome {
 				\ze\admin::phrase('&nbsp;(<em>you have version [[version]]</em>)', ['version' => htmlspecialchars($apacheVer[1])]);
 		}
 	
+		if (!$fields['0/directory_indexing_warning']['hidden'] = !(
+			file_exists(CMS_ROOT. 'private/')
+		 && \ze\curl::checkEnabled()
+		 && ($headers = \ze\curl::fetchHeaders(\ze\link::absolute(). 'private/'))
+		 && (isset($headers['http_code']))
+		 && (strpos($headers['http_code'], '403') === false)
+		)) {
+			$fields['0/directory_indexing_warning']['row_class'] = $warning;
+			$apacheRecommendationMet = false;
+		}
+	
 		$phpInvalid = true;
 		$phpVersion = phpversion();
 		$fields['0/php_1']['post_field_html'] =
@@ -527,14 +553,23 @@ class welcome {
 			$phpWarning = true;
 		}
 	
+		//Some fields below will use an "OK" or "Failed, please enable" phrase.
+		//Set them here.
+		$okPhrase = 'OK';
+		$failedPhrase = 'Failed, please enable';
+		
 		$mysqlRequirementsMet = false;
 		if (!extension_loaded('mysqli')) {
 			$fields['0/mysql_1']['row_class'] = $invalid;
 			$fields['0/mysql_2']['row_class'] = $invalid;
 			$fields['0/mysql_2']['post_field_html'] = '';
+			
+			\ze\lang::applyMergeFields($fields['0/mysql_1']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/mysql_2']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 	
 		} else {
 			$fields['0/mysql_1']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/mysql_1']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 			
 			//Attempt to check the MySQL version.
 			//There's a simple test for this in PHP, but unfortunately it returns the version
@@ -605,16 +640,19 @@ class welcome {
 		if (!extension_loaded('ctype')) {
 			$mbRequirementsMet = false;
 			$fields['0/mb_1']['row_class'] = $invalid;
-	
+			\ze\lang::applyMergeFields($fields['0/mb_1']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
 			$fields['0/mb_1']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/mb_1']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		}
+		
 		if (!extension_loaded('mbstring')) {
 			$mbRequirementsMet = false;
 			$fields['0/mb_2']['row_class'] = $invalid;
-	
+			\ze\lang::applyMergeFields($fields['0/mb_2']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
 			$fields['0/mb_2']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/mb_2']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		}
 		
 		if ($isDiagnosticsPage) {
@@ -666,6 +704,23 @@ class welcome {
 						$fields['0/os_av']['snippet']['html'] = \ze\admin::phrase('Antivirus<br><small>ClamAV is installed, but files cannot be scanned. Please check that the <code>clamd</code> daemon is running, and that AppArmor is not blocking ClamAV.</small>');
 					}
 				}
+			}
+			
+			//Check if MySQL timezone is set up correctly.
+			if (\ze\dbAdm::testMySQLTimezoneHandling()) {
+				$fields['0/mysql_timezone_set']['row_class'] = $valid;
+			} else {
+				$osInvalid = true;
+				$fields['0/mysql_timezone_set']['row_class'] = $invalid;
+				
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tmysql~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				
+				$fields['0/mysql_timezone_set']['snippet']['html'] = \ze\admin::phrase(
+					'MySQL timezone handling<br><small>MySQL timezone handling is not correctly set up. [[link_start]]<em>Click for more info</em>[[link_end]].</small>',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			}
 			
 			$extract = '';
@@ -894,29 +949,40 @@ class welcome {
 			$fields['0/gd_2']['row_class'] = $invalid;
 			$fields['0/gd_3']['row_class'] = $invalid;
 			$fields['0/gd_4']['row_class'] = $invalid;
-	
+			
+			\ze\lang::applyMergeFields($fields['0/mb_1']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/gd_2']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/mb_3']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/mb_4']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
 			$fields['0/gd_1']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/gd_1']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		
 			if (\ze\ray::value($phpinfo, 'gd', 'GIF Read Support') != 'enabled') {
 				$gdRequirementsMet = false;
 				$fields['0/gd_2']['row_class'] = $invalid;
+				\ze\lang::applyMergeFields($fields['0/gd_2']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 			} else {
 				$fields['0/gd_2']['row_class'] = $valid;
+				\ze\lang::applyMergeFields($fields['0/gd_2']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 			}
 		
 			if (\ze\ray::value($phpinfo, 'gd', 'JPG Support') != 'enabled' && \ze\ray::value($phpinfo, 'gd', 'JPEG Support') != 'enabled') {
 				$gdRequirementsMet = false;
 				$fields['0/gd_3']['row_class'] = $invalid;
+				\ze\lang::applyMergeFields($fields['0/gd_3']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 			} else {
 				$fields['0/gd_3']['row_class'] = $valid;
+				\ze\lang::applyMergeFields($fields['0/gd_3']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 			}
 		
 			if (\ze\ray::value($phpinfo, 'gd', 'PNG Support') != 'enabled') {
 				$gdRequirementsMet = false;
 				$fields['0/gd_4']['row_class'] = $invalid;
+				\ze\lang::applyMergeFields($fields['0/gd_4']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 			} else {
 				$fields['0/gd_4']['row_class'] = $valid;
+				\ze\lang::applyMergeFields($fields['0/gd_4']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 			}
 		}
 	
@@ -951,23 +1017,28 @@ class welcome {
 		if (!extension_loaded('curl')) {
 			$optionalRequirementsMet = false;
 			$fields['0/optional_curl']['row_class'] = $warning;
-	
+			\ze\lang::applyMergeFields($fields['0/optional_curl']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
 			$fields['0/optional_curl']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/optional_curl']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		}
+		
 		if (!extension_loaded('zip')) {
 			$optionalRequirementsMet = false;
 			$fields['0/optional_zip']['row_class'] = $warning;
-	
+			\ze\lang::applyMergeFields($fields['0/optional_zip']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
 			$fields['0/optional_zip']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/optional_zip']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		}
 		
-		if (!function_exists('utf8_encode')) {
+		if (!function_exists('xml_parse')) {
 			$optionalRequirementsMet = false;
-			$fields['0/optional_utf8_encode']['row_class'] = $warning;
+			$fields['0/optional_xml']['row_class'] = $warning;
+			\ze\lang::applyMergeFields($fields['0/optional_xml']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
-			$fields['0/optional_utf8_encode']['row_class'] = $valid;
+			$fields['0/optional_xml']['row_class'] = $valid;
+			\ze\lang::applyMergeFields($fields['0/optional_xml']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		}
 	
 		$overall = 0;
@@ -1071,6 +1142,9 @@ class welcome {
 
 	//Formerly "installerAJAX()"
 	public static function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $installStatus, &$freshInstall, &$adminId) {
+		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
+		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
+		
 		$merge = [];
 
 		$merge['SUBDIRECTORY'] = SUBDIRECTORY;
@@ -1260,7 +1334,7 @@ class welcome {
 			
 		}
 		// To set default timezone
-		$fields['4/vis_timezone_settings']['values'] = static::getTimezonesLOV();
+		$fields['4/vis_timezone_settings']['values'] = \ze\dataset::getTimezonesLOV();
 		
 		//No validation for Step 4, but remember the theme and language chosen
 		if ($tags['tab'] > 4 || ($tags['tab'] == 4 && !empty($fields['4/next']['pressed']))) {
@@ -1806,14 +1880,26 @@ class welcome {
 					
 						$freshInstall = true;
 					
-						//Create an Admin, and give them all of the core permissions
+						//Create an Admin, and give them all of the core permissions.
+						//Also set the login IP address and browser information.
+						
+						require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
+						$browser = new \Browser();
+						
 						$details = [
 							'username' => $merge['USERNAME'],
 							'first_name' => $merge['admin_first_name'],
 							'last_name' => $merge['admin_last_name'],
 							'email' => $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'],
 							'created_date' => \ze\date::now(),
-							'status' => 'active'];
+							'status' => 'active',
+							'last_login' => \ze\date::now(),
+							'last_login_ip' => \ze\escape::sql(\ze\user::ip()),
+							'last_browser' => \ze\escape::sql($browser->getBrowser()),
+							'last_browser_version' => \ze\escape::sql($browser->getVersion()),
+							'last_platform' => \ze\escape::sql($browser->getPlatform())
+							
+						];
 					
 						$adminId = \ze\row::insert('admins', $details);
 						\ze\adminAdm::setPassword($adminId, $merge['PASSWORD']);
@@ -2042,8 +2128,8 @@ class welcome {
 			//Please note: usleep uses microseconds. There is no PHP function that accepts milliseconds.
 			usleep(500000);
 
-			if (empty($_SESSION['admin_failed_logins_count'])) {
-				$_SESSION['admin_failed_logins_count'] = 0;
+			if (empty($_SESSION['failed_login_count_since_last_successful_login'])) {
+				$_SESSION['failed_login_count_since_last_successful_login'] = 0;
 			}
 
 			$errorsExist = false;
@@ -2056,7 +2142,6 @@ class welcome {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator username or registered email.');
 				
 				if (!$errorsExist) {
-					$_SESSION['admin_failed_logins_count']++;
 					$errorsExist = true;
 				}
 			}
@@ -2065,7 +2150,6 @@ class welcome {
 				$tags['tabs']['login']['errors'][] = \ze\admin::phrase('Please enter your administrator password.');
 				
 				if (!$errorsExist) {
-					$_SESSION['admin_failed_logins_count']++;
 					$errorsExist = true;
 				}
 			}
@@ -2086,7 +2170,7 @@ class welcome {
 					$tags['tabs']['login']['errors']['details_wrong'] = \ze\admin::phrase('_ERROR_ADMIN_LOGIN_USERNAME');
 					
 					if (!$errorsExist) {
-						$_SESSION['admin_failed_logins_count']++;
+						$_SESSION['failed_login_count_since_last_successful_login']++;
 						$errorsExist = true;
 					}
 					
@@ -2466,7 +2550,7 @@ class welcome {
 	}
 
 	public static function clearLastLoggedInAdminCookieAfter3FailedLogins() {
-		if ($_SESSION['admin_failed_logins_count'] >= 3) {
+		if ($_SESSION['failed_login_count_since_last_successful_login'] >= 3) {
 			$cookieName = \ze\welcome::adminCaptchaCookieName();
 			\ze\cookie::clear($cookieName);
 			$acsn = \ze\welcome::adminCaptchaSettingName();
@@ -2652,7 +2736,9 @@ class welcome {
 
 	//Formerly "changePasswordAJAX()"
 	public static function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task) {
-	
+		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
+		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
+		
 		//Skip this screen if the Admin presses the "Skip" button
 		if (!empty($fields['change_password/skip']['pressed'])) {
 			\ze\admin::cancelPasswordChange($_SESSION['admin_userid'] ?? false);
@@ -2747,7 +2833,10 @@ class welcome {
 		return false;
 	}
 	
-	public static function newAdminAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $adminId) { 
+	public static function newAdminAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $adminId) {
+		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
+		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
+		
 		//Set password if the Admin presses the save and login button
 		if (!empty($fields['new_admin/save_password_and_login']['pressed'])) {
 			$password = $values['new_admin/password'];
@@ -2800,7 +2889,13 @@ class welcome {
 		
 		//Display last admin login time
 		$sql = '
-			SELECT id, username, last_login, last_login_ip, created_date
+			SELECT id, username, last_login, last_login_ip, created_date';
+		
+		if (\ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'failed_login_count_since_last_successful_login')) {
+			$sql .= ', failed_login_count_since_last_successful_login';
+		}
+		
+		$sql .= '
 			FROM ' . DB_PREFIX . 'admins
 			WHERE id = '. (int) \ze\admin::id(). '
 			  AND `status` = \'active\'
@@ -2868,7 +2963,12 @@ class welcome {
 						}
 					}
 
-					$adminhtml .= '<p class="warning">Your last login from ' . htmlspecialchars($lastIpString) . ' differs from your current IP address ' . htmlspecialchars($currentIpString) . '.</p>';
+					$adminhtml .= '<p class="warning">' .
+						\ze\admin::phrase(
+							'Your last login from [[last_ip]] differs from your current IP address [[current_ip]].',
+							['last_ip' => htmlspecialchars($lastIpString), 'current_ip' => htmlspecialchars($currentIpString)]
+						) .
+						'</p>';
 				}
 			}
 
@@ -2877,6 +2977,28 @@ class welcome {
 			}
 		}
 		
+		if (!empty($row['failed_login_count_since_last_successful_login']) && $row['failed_login_count_since_last_successful_login'] >= 1) {
+			if (!$adminhtml) {
+				if (\ze::request('task') == 'diagnostics' && $row['last_login']) {
+					$adminhtml .= '<h2>This login</h2>';
+			
+				} elseif (!empty($_SESSION['admin_last_login'])) {
+					$adminhtml .= '<h2>Your last login</h2>';
+				}	
+			} else {
+				$adminhtml .= '</p>';
+			}
+			
+			$adminhtml .= '<p class="warning">' .
+				\ze\admin::nPhrase(
+					'Warning: since your last login, there was [[count]] failed login attempt on your administrator account.',
+					'Warning: since your last login, there were [[count]] failed login attempts on your administrator account.',
+					$row['failed_login_count_since_last_successful_login'],
+					['count' => $row['failed_login_count_since_last_successful_login']]
+				) .
+				'</p>';
+		}
+
 		$fields['0/show_administrators_logins']['hidden'] = empty($adminhtml);
 		$fields['0/show_administrators_logins']['snippet']['html'] = $adminhtml;
 		$fields['0/show_administrators_logins']['row_class'] = 'section_valid';
@@ -3008,18 +3130,18 @@ class welcome {
 					if ($fileWritable) {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in directory <code>[[2dir]]</code> are not writable by the web server. <code>cd</code> to <code>public_html</code> directory, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('Some of the files in directory <code>[[2dir]]</code> are not writable by the web server. If you have file system access, go to the directory where Zenario is installed, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
 					} else {
 						$skinDirsValid = false;
 						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
-						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the directory <code>[[2dir]]</code> are not writable by the web server. <code>cd</code> to <code>public_html</code> directory, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
+						$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = \ze\admin::phrase('The files in the directory <code>[[2dir]]</code> are not writable by the web server. If you have file system access, go to the directory where Zenario is installed, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make them writeable.', $mrg);
 					}
 		
 				} elseif ($fileNotWritable !== false) {
 					$skinDirsValid = false;
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
 					$tags['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] =
-						\ze\admin::phrase('<code>[[short_path]]</code> is not writable by the web server. Use <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make it writeable.',
+						\ze\admin::phrase('<code>[[short_path]]</code> is not writable by the web server. If you have file system access, go to the directory where Zenario is installed, then run <code>./zenario/scripts/fix_cache_and_perms.sh</code> to make it writeable.',
 							['short_path' => htmlspecialchars('editable_css/'. $fileNotWritable), 'file' => htmlspecialchars($fileNotWritable)]);
 		
 				} else {
@@ -3234,7 +3356,7 @@ class welcome {
 				$show_warning = true;
 				$mrg = [
 					'exampleFile' => $exampleFile,
-					'manageDocumentsLink' => htmlspecialchars('organizer.php#zenario__content/panels/documents')
+					'manageDocumentsLink' => htmlspecialchars('organizer.php#zenario__library/panels/documents')
 				];
 				
 				$fields['0/public_documents']['row_class'] = 'warning';
@@ -3250,21 +3372,30 @@ class welcome {
 				$fields['0/public_documents']['hidden'] = true;
 			}
 			
-			$mrg = \ze\file::checkAllImagePublicLinks($check = true);
+			
+			if (!empty($fields['0/repair_public_images']['pressed'])) {
+				set_time_limit(60 * 10);
+				\ze\fileAdm::checkAllImagePublicLinks($check = false);
+				\ze\skinAdm::emptyPageCache();
+			}
+			
+			$mrg = \ze\fileAdm::checkAllImagePublicLinks($check = true);
 			if ($mrg && $mrg['numMissing']) {
 				$show_warning = true;
-				$mrg['manageImagesLink'] = htmlspecialchars('organizer.php#zenario__content/panels/image_library');
-				
 				$fields['0/public_images']['row_class'] = 'warning';
+				$fields['0/public_images']['hidden'] = false;
 				$fields['0/public_images']['snippet']['html'] =
-					\ze\admin::nPhrase('There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please <a href="[[manageImagesLink]]" target="_blank">regenerate the cache</a>, or check your public/images directory for possible permission problems.',
-						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other images. Please <a href="[[manageImagesLink]]" target="_blank">regenerate the cache</a>, or check your public/images directory for possible permission problems.',
+					\ze\admin::nPhrase('There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other images. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
 						abs($mrg['numMissing'] - 1), $mrg,
-						'There is a problem with the public link for the document &quot;[[exampleFile]]&quot;. Please <a href="[[manageImagesLink]]" target="_blank">regenerate the cache</a>, or check your public/images directory for possible permission problems.'
+						'There is a problem with the public link for the document &quot;[[exampleFile]]&quot;. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.'
 					);
+				
+				$fields['0/repair_public_images']['hidden'] = false;
 			} else {
 				$fields['0/public_images']['row_class'] = 'valid';
 				$fields['0/public_images']['hidden'] = true;
+				$fields['0/repair_public_images']['hidden'] = true;
 			}
 		
 			$warnings = \ze\welcome::getBackupWarnings();
@@ -3273,7 +3404,10 @@ class welcome {
 			if (isset($warnings['snippet']['html'])) {
 				$fields['0/site_automated_backups']['snippet']['html'] = $warnings['snippet']['html'];
 			}
-			$show_warning = !empty($warnings['show_warning']);
+			
+			if (!empty($warnings['show_warning'])) {
+				$show_warning = true;
+			}
 			
 			if (!defined('RESTORE_POLICY')) {
 				$show_warning = true;
@@ -3494,6 +3628,8 @@ class welcome {
 			}
 			
 			if (!$fields['0/missing_modules']['hidden'] = empty($missingModules)) {
+				$linkToModulesPanel = htmlspecialchars('organizer.php#zenario__modules/panels/modules');
+
 				$show_error = true;
 				$fields['0/missing_modules']['row_class'] = 'invalid';
 				
@@ -3501,7 +3637,7 @@ class welcome {
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 				
-				$fields['0/missing_modules']['snippet']['html'] =
+				$missingModulesSnippet =
 					\ze\admin::phrase(
 						'The following [[link_start]]modules[[link_end]] are no longer in the file system (the folders under zenario/modules may have been deleted, or a recent upgrade of Zenario may have removed them because they are no longer supported):',
 						['link_start' => $linkStart, 'link_end' => $linkEnd]
@@ -3509,6 +3645,9 @@ class welcome {
 					'<ul><li>'.
 						implode('</li><li>', $missingModules).
 					'</li></ul>';
+				$missingModulesSnippet .= \ze\admin::phrase('<br /><a href="[[modules_panel]]" target="_blank">Manage modules</a>', ['modules_panel' => $linkToModulesPanel]);
+
+				$fields['0/missing_modules']['snippet']['html'] = $missingModulesSnippet;
 			}
 		
 			$badSymlinks = [];
@@ -3645,7 +3784,7 @@ class welcome {
 					$fields['0/consent_table_encrypted']['row_class'] = 'warning';
 					
 					$fields['0/consent_table_encrypted']['snippet']['html'] = 
-						\ze\admin::phrase('The following columns should be encrypted and hashed in the table <code>consents</code>: [[columns]]. Put the site into development mode, cd to public_html, and run <code>php zenario/libs/not_to_redistribute/zewl/encrypt_and_hash_column.php consents [field name]</code>.', ['columns' => implode(', ', $unencryptedColumns)]);
+						\ze\admin::phrase('The following columns should be encrypted and hashed in the table <code>consents</code>: [[columns]]. Put the site into developer mode, cd to <code>public_html</code>, and run <code>php zenario/libs/not_to_redistribute/zewl/encrypt_and_hash_column.php consents [field name]</code>.', ['columns' => implode(', ', $unencryptedColumns)]);
 				}
 			} else {
 				//Otherwise, hide the warning.
@@ -3832,6 +3971,14 @@ class welcome {
 			foreach ($publicHtmlFolderContents as $file) {
 				if (is_file($file)) {
 					$fileParts = pathinfo($file);
+					
+					//Watch out for files created without an extension.
+					//They would cause a PHP error in the logic below, but we do want to warn
+					//that they are there, so handle this by listing them and then moving on.
+					if (!isset($fileParts['extension'])) {
+						$unknownFiles[] = $file;
+						continue;
+					}
 				
 					//Ignore hidden files that start with a . (like .htaccess)
 					if ($fileParts['filename'] === ''
@@ -3858,6 +4005,47 @@ class welcome {
 			} else {
 				//If there are no unknown files, hide the warning.
 				$fields['0/unknown_files_in_zenario_root_directory']['hidden'] = true;
+			}
+			
+			
+			$fields['0/zenario_max_upload_size_exceeds_site_wide_size']['hidden'] = true;
+			$apacheMaxFilesize = \ze\dbAdm::apacheMaxFilesize();
+			
+			$zenarioMaxFilesizeValue = \ze::setting('content_max_filesize');
+			$zenarioMaxFilesizeUnit = \ze::setting('content_max_filesize_unit');
+			$zenarioMaxFilesize = \ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			
+			if ($zenarioMaxFilesize > $apacheMaxFilesize) {
+				$fields['0/zenario_max_upload_size_exceeds_site_wide_size']['row_class'] = 'warning';
+                $fields['0/zenario_max_upload_size_exceeds_site_wide_size']['hidden'] = false;
+                $mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//files_and_images~.site_settings~tfilesizes~k{"id"%3A"files_and_images"}')];
+				
+				$show_warning = true; 
+				$fields['0/zenario_max_upload_size_exceeds_site_wide_size']['snippet']['html'] =
+					\ze\admin::phrase('The Zenario maximum file size value exceeds the server-wide maximum uploadable file size value. Please go to <a href="[[link]]" target="_blank"><em>Documents, images and file handling</em></a> in Configuration->Site Settings to change this.', $mrg);
+			}
+			
+			$fields['0/default_timezone_not_set']['hidden'] = true;
+			if (\ze\module::inc('zenario_timezones')) {
+                if(\ze::setting('zenario_timezones__default_timezone') == ""){
+                    $fields['0/default_timezone_not_set']['row_class'] = 'warning';
+                    $fields['0/default_timezone_not_set']['hidden'] = false;
+                    $mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//date_and_time~.site_settings~ttimezone_settings~k{"id"%3A"date_and_time"}')];
+				
+				    $show_warning = true; 
+				    $fields['0/default_timezone_not_set']['snippet']['html'] =
+						\ze\admin::phrase('The default timezone is not set. Please go to <a href="[[link]]" target="_blank"><em>Date and Time</em></a> in Configuration->Site Settings to set a timezone.', $mrg);
+			    }
+			}
+			
+			if (!defined('SESSION_TIMEOUT') || SESSION_TIMEOUT < 120 || SESSION_TIMEOUT > 21600) {
+				$fields['0/admin_timeout_not_set_up_correctly']['row_class'] = 'warning';
+				$fields['0/admin_timeout_not_set_up_correctly']['hidden'] = false;
+				$show_warning = true;
+				
+				$fields['0/admin_timeout_not_set_up_correctly']['snippet']['html'] = \ze\admin::phrase('The session timeout should preferably be between 120 (i.e. 2 minutes) and 21600 (6 hours). Please edit the zenario_siteconfig.php file and set the "SESSION_TIMEOUT" constant to be in this range.');
+			} else {
+				$fields['0/admin_timeout_not_set_up_correctly']['hidden'] = true;
 			}
 			
 			
@@ -3920,14 +4108,14 @@ class welcome {
 					if ($row['last_modified_datetime']) {
 						$item['unpublished_content_info'] =
 							\ze\admin::phrase('Last edit [[time]] by [[admin]].', [
-								'time' => \ze\admin::relativeDate($row['last_modified_datetime']),
+								'time' => \ze\admin::formatRelativeDateTime($row['last_modified_datetime']),
 								'admin' => \ze\admin::formatName($row['last_author'])
 							]);
 					} else {
 						//... otherwise, show created date and admin who created it.
 						$item['unpublished_content_info'] =
 							\ze\admin::phrase('Created [[time]] by [[admin]].', [
-								'time' => \ze\admin::relativeDate($row['created_datetime']),
+								'time' => \ze\admin::formatRelativeDateTime($row['created_datetime']),
 								'admin' => \ze\admin::formatName($row['creator'])
 							]);
 					}
@@ -3971,27 +4159,44 @@ class welcome {
 				$fields['0/administrator_inactive_4']['row_class'] = 
 				$fields['0/administrator_inactive_5']['row_class'] = 
 				$fields['0/administrator_more_inactive']['row_class'] = 
-				$fields['0/administrators_active']['row_class'] = 'valid';
+				$fields['0/administrators_active']['row_class'] =
+				$fields['0/administrator_with_3_or_more_failed_logins_1']['row_class'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_2']['row_class'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_3']['row_class'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_4']['row_class'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_5']['row_class'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_more']['row_class'] = 'valid';
+				
 				$fields['0/administrator_inactive_1']['hidden'] = 
 				$fields['0/administrator_inactive_2']['hidden'] = 
 				$fields['0/administrator_inactive_3']['hidden'] = 
 				$fields['0/administrator_inactive_4']['hidden'] = 
 				$fields['0/administrator_inactive_5']['hidden'] = 
-				$fields['0/administrator_more_inactive']['hidden'] = true;
+				$fields['0/administrator_more_inactive']['hidden'] =
+				$fields['0/administrator_with_3_or_more_failed_logins_1']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_2']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_3']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_4']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_5']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_more']['hidden'] = true;
+				
 				$fields['0/administrators_active']['hidden'] = false;
 				
 				$days = \ze\admin::getDaysBeforeAdminsAreInactive();
 				$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
 		
+				//Inactive admin count logic
+				$inactiveAdminCount = 0;
 				$sql = '
-					SELECT id, username, last_login, created_date
+					SELECT id, username, first_name, last_name, last_login, created_date, authtype
 					FROM ' . DB_PREFIX . 'admins
 					WHERE authtype = \'local\'
 					  AND `status` = \'active\'
 					ORDER BY last_login';
 				$result = \ze\sql::select($sql);
-				$inactiveAdminCount = 0;
+				
 				while ($row = \ze\sql::fetchAssoc($result)) {
+					$row['username'] = \ze\admin::formatName($row);
 					if (\ze\admin::isInactive($row['id'])) {
 						if (!$show_warning) {
 							$show_warning = true;
@@ -4009,12 +4214,18 @@ class welcome {
 								$row['last_login_date'] = \ze\admin::formatDate($row['last_login'], '_MEDIUM');
 								
 								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
-									\ze\admin::phrase("Administrator <a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago, consider whether this person's account should be trashed.", $row);
+									\ze\admin::phrase(
+										"Administrator <a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago, consider whether this person's account should be trashed.",
+										$row
+									);
 							} else {
 								$row['created_date'] = \ze\admin::formatDate($row['created_date'], '_MEDIUM');
 								
 								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
-									\ze\admin::phrase("Administrator account <a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] but has never logged in, consider whether this person's account should be trashed.", $row);
+									\ze\admin::phrase(
+										"Administrator account <a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] but has never logged in, consider whether this person's account should be trashed.",
+										$row
+									);
 							}
 						}
 					}
@@ -4029,6 +4240,57 @@ class welcome {
 						\ze\admin::nPhrase('1 other administrator is inactive. <a target="blank" href="[[link]]">View...</a>',
 							'[[count]] other administrators are inactive. <a target="blank" href="[[link]]">View...</a>',
 							abs($inactiveAdminCount - 5), $merge);
+				}
+				
+				//Failed login attempt count logic
+				if (\ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'failed_login_count_since_last_successful_login')) {
+					$adminsWith3OrMoreFailedLoginsCount = 0;
+					$sql = '
+						SELECT id, username, first_name, last_name, authtype, failed_login_count_since_last_successful_login
+						FROM ' . DB_PREFIX . 'admins
+						WHERE `status` = \'active\'
+						AND `id` != ' . \ze\admin::id() . '
+						ORDER BY last_login';
+					$result = \ze\sql::select($sql);
+					
+					while ($row = \ze\sql::fetchAssoc($result)) {
+						if ($row['failed_login_count_since_last_successful_login'] >= 1) {
+							
+							if (!$show_warning) {
+								$show_warning = true;
+							}
+						
+							if (++$adminsWith3OrMoreFailedLoginsCount <= 5) {
+								$linkStart = "<a target='blank' href='organizer.php#zenario__administration/panels/administrators//" . $row['id'] . "'>";
+								$linkEnd = "</a>";
+
+								$fields['0/administrator_with_3_or_more_failed_logins_'. $adminsWith3OrMoreFailedLoginsCount]['hidden'] = false;
+								$fields['0/administrator_with_3_or_more_failed_logins_'. $adminsWith3OrMoreFailedLoginsCount]['row_class'] = 'warning';
+							
+								$fields['0/administrator_with_3_or_more_failed_logins_'. $adminsWith3OrMoreFailedLoginsCount]['snippet']['html'] =
+									\ze\admin::nPhrase(
+										"Warning: administrator [[link_start]][[admin_name]][[link_end]] has had [[failed_login_count_since_last_successful_login]] failed login attempt since last login.",
+										"Warning: administrator [[link_start]][[admin_name]][[link_end]] has had [[failed_login_count_since_last_successful_login]] failed login attempts since last login.",
+										$row['failed_login_count_since_last_successful_login'],
+										['link_start' => $linkStart, 'link_end' => $linkEnd, 'admin_name' => \ze\admin::formatName($row), 'failed_login_count_since_last_successful_login' => $row['failed_login_count_since_last_successful_login']]
+									);
+							}
+						}
+					}
+					
+					if ($adminsWith3OrMoreFailedLoginsCount > 5) {
+						$linkStart = "<a target='blank' href='organizer.php#zenario__administration/panels/administrators'>";
+						$linkEnd = "</a>";
+				
+						$fields['0/administrator_with_3_or_more_failed_logins_more']['hidden'] = false;
+						$fields['0/administrator_with_3_or_more_failed_logins_more']['row_class'] = 'warning';
+						$fields['0/administrator_with_3_or_more_failed_logins_more']['snippet']['html'] =
+							\ze\admin::nPhrase('1 other administrator has had 3 or more failed login attempts. [[link_start]]View...[[link_end]]',
+								'[[count]] other administrators have had 3 or more failed login attempts. [[link_start]]View...[[link_end]]',
+								abs($adminsWith3OrMoreFailedLoginsCount - 5),
+								['link_start' => $linkStart, 'link_end' => $linkEnd]
+							);
+					}
 				}
 			
 				if ($show_error) {
@@ -4048,21 +4310,14 @@ class welcome {
 				$fields['0/administrator_inactive_4']['hidden'] = 
 				$fields['0/administrator_inactive_5']['hidden'] = 
 				$fields['0/administrator_more_inactive']['hidden'] =
-				$fields['0/administrators_active']['hidden'] = true;
+				$fields['0/administrators_active']['hidden'] =
+				$fields['0/administrator_with_3_or_more_failed_logins_1']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_2']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_3']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_4']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_5']['hidden'] = 
+				$fields['0/administrator_with_3_or_more_failed_logins_more']['hidden'] = true;
 			}
-			$fields['0/default_timezone_not_set']['hidden'] = true;
-			if (\ze\module::inc('zenario_timezones')) {
-                if(\ze::setting('zenario_timezones__default_timezone') == ""){
-                    $fields['0/default_timezone_not_set']['row_class'] = 'warning';
-                    $fields['0/default_timezone_not_set']['hidden'] = false;
-                    $mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//date_and_time~.site_settings~ttimezone_settings~k{"id"%3A"date_and_time"}')];
-				
-				    $show_warning = true; 
-				    $fields['0/default_timezone_not_set']['snippet']['html'] =
-					\ze\admin::phrase('The default timezone is not set. Please go to <a href="[[link]]" target="_blank"><em>Date and Time</em></a> in Configuration->Site Settings to set a timezone.', $mrg);
-			    }
-			}
-			
 		}
 		
 		//Strip any trailing slashes off of a directory path
@@ -4435,169 +4690,4 @@ class welcome {
 			WHERE m.class_name = '". \ze\escape::asciiInSQL($moduleClassName). "'";
 		\ze\sql::update($sql);
 	}
-	
-	public static $timezoneOffsets = [];
-	
-	
-	public static function getTimezonesLOV() {
-		$list = [];
-		$timezones = static::getTimezones(\ze\dataset::LIST_MODE_LIST);
-		
-		$ord = 0;
-		foreach ($timezones as $key => $label) {
-			$list[$key] = [
-				'ord' => ++$ord,
-				'label' => $label
-			];
-		}
-		
-		return $list;
-	}
-	
-	
-	public static function getTimezones($mode, $value = false) {
-		switch ($mode) {
-			case \ze\dataset::LIST_MODE_INFO:
-				return ['can_filter' => false];
-			case \ze\dataset::LIST_MODE_VALUE:
-				return \ze\ray::value(self::$timezones, $value);
-			case \ze\dataset::LIST_MODE_LIST:
-				// Get timezone offset from 0 and save against timezone code in array
-				$timezones = self::$timezones;
-				foreach ($timezones as $timezone => &$city) {
-					$dateTimeZone = new \DateTimeZone($timezone);
-					$dateTime = new \DateTime('now', $dateTimeZone);
-					$offset = $dateTimeZone->getOffset($dateTime) / 3600;
-					self::$timezoneOffsets[$timezone] = $offset;
-					$offset = number_format($offset, 2);
-					$offset = ($offset > 0 ? '+' . $offset : $offset);
-					$city = '(UTC '. $offset.') '.$city;
-				}
-				// Sort original array by offsets in offset array
-				uksort($timezones, "self::sortTimezones");
-				// Return sorted array
-				return $timezones;
-		}
-	}
-	
-	public static function sortTimezones($a, $b) {
-		
-		if (self::$timezoneOffsets[$a] == self::$timezoneOffsets[$b]) {
-			return self::$timezones[$a] <=> self::$timezones[$b];
-		} else {
-			return self::$timezoneOffsets[$a] <=> self::$timezoneOffsets[$b];
-		}
-	}
-	
-	public static $timezones = 
-		[
-			'Pacific/Midway'       => "Midway Island",
-			'US/Hawaii'            => "Hawaii",
-			'US/Alaska'            => "Alaska",
-			'US/Pacific'           => "Pacific Time (US & Canada)",
-			'America/Tijuana'      => "Tijuana",
-			'US/Mountain'          => "Mountain Time (US & Canada)",
-			'America/Chihuahua'    => "Chihuahua",
-			'America/Mazatlan'     => "Mazatlan",
-			'America/Mexico_City'  => "Mexico City",
-			'America/Monterrey'    => "Monterrey",
-			'Canada/Saskatchewan'  => "Saskatchewan",
-			'US/Central'           => "Central Time (US & Canada)",
-			'US/Eastern'           => "Eastern Time (US & Canada)",
-			'America/Bogota'       => "Bogota",
-			'America/Lima'         => "Lima",
-			'America/Caracas'      => "Caracas",
-			'Canada/Atlantic'      => "Atlantic Time (Canada)",
-			'America/La_Paz'       => "La Paz",
-			'America/Santiago'     => "Santiago",
-			'Canada/Newfoundland'  => "Newfoundland",
-			'America/Buenos_Aires' => "Buenos Aires",
-			'Atlantic/Stanley'     => "Stanley",
-			'Atlantic/Azores'      => "Azores",
-			'Atlantic/Cape_Verde'  => "Cape Verde Is.",
-			'Africa/Casablanca'    => "Casablanca",
-			'Europe/Dublin'        => "Dublin",
-			'Europe/Lisbon'        => "Lisbon",
-			'Europe/London'        => "London",
-			'Africa/Monrovia'      => "Monrovia",
-			'Europe/Amsterdam'     => "Amsterdam",
-			'Europe/Belgrade'      => "Belgrade",
-			'Europe/Berlin'        => "Berlin",
-			'Europe/Bratislava'    => "Bratislava",
-			'Europe/Brussels'      => "Brussels",
-			'Europe/Budapest'      => "Budapest",
-			'Europe/Copenhagen'    => "Copenhagen",
-			'Europe/Ljubljana'     => "Ljubljana",
-			'Europe/Madrid'        => "Madrid",
-			'Europe/Paris'         => "Paris",
-			'Europe/Prague'        => "Prague",
-			'Europe/Rome'          => "Rome",
-			'Europe/Sarajevo'      => "Sarajevo",
-			'Europe/Skopje'        => "Skopje",
-			'Europe/Stockholm'     => "Stockholm",
-			'Europe/Vienna'        => "Vienna",
-			'Europe/Warsaw'        => "Warsaw",
-			'Europe/Zagreb'        => "Zagreb",
-			'Europe/Athens'        => "Athens",
-			'Europe/Bucharest'     => "Bucharest",
-			'Africa/Cairo'         => "Cairo",
-			'Africa/Harare'        => "Harare",
-			'Europe/Helsinki'      => "Helsinki",
-			'Europe/Istanbul'      => "Istanbul",
-			'Asia/Jerusalem'       => "Jerusalem",
-			'Europe/Kiev'          => "Kyiv",
-			'Europe/Minsk'         => "Minsk",
-			'Europe/Riga'          => "Riga",
-			'Europe/Sofia'         => "Sofia",
-			'Europe/Tallinn'       => "Tallinn",
-			'Europe/Vilnius'       => "Vilnius",
-			'Asia/Baghdad'         => "Baghdad",
-			'Asia/Kuwait'          => "Kuwait",
-			'Africa/Nairobi'       => "Nairobi",
-			'Asia/Riyadh'          => "Riyadh",
-			'Asia/Tehran'          => "Tehran",
-			'Europe/Moscow'        => "Moscow",
-			'Asia/Baku'            => "Baku",
-			'Europe/Volgograd'     => "Volgograd",
-			'Asia/Muscat'          => "Muscat",
-			'Asia/Tbilisi'         => "Tbilisi",
-			'Asia/Yerevan'         => "Yerevan",
-			'Asia/Kabul'           => "Kabul",
-			'Asia/Karachi'         => "Karachi",
-			'Asia/Tashkent'        => "Tashkent",
-			'Asia/Kolkata'         => "Kolkata",
-			'Asia/Kathmandu'       => "Kathmandu",
-			'Asia/Yekaterinburg'   => "Ekaterinburg",
-			'Asia/Almaty'          => "Almaty",
-			'Asia/Dhaka'           => "Dhaka",
-			'Asia/Novosibirsk'     => "Novosibirsk",
-			'Asia/Bangkok'         => "Bangkok",
-			'Asia/Jakarta'         => "Jakarta",
-			'Asia/Krasnoyarsk'     => "Krasnoyarsk",
-			'Asia/Chongqing'       => "Beijing",
-			'Asia/Hong_Kong'       => "Hong Kong",
-			'Asia/Kuala_Lumpur'    => "Kuala Lumpur",
-			'Australia/Perth'      => "Perth",
-			'Asia/Singapore'       => "Singapore",
-			'Asia/Taipei'          => "Taipei",
-			'Asia/Ulaanbaatar'     => "Ulaan Bataar",
-			'Asia/Urumqi'          => "Urumqi",
-			'Asia/Irkutsk'         => "Irkutsk",
-			'Asia/Seoul'           => "Seoul",
-			'Asia/Tokyo'           => "Tokyo",
-			'Australia/Adelaide'   => "Adelaide",
-			'Australia/Darwin'     => "Darwin",
-			'Asia/Yakutsk'         => "Yakutsk",
-			'Australia/Brisbane'   => "Brisbane",
-			'Australia/Canberra'   => "Canberra",
-			'Pacific/Guam'         => "Guam",
-			'Australia/Hobart'     => "Hobart",
-			'Australia/Melbourne'  => "Melbourne",
-			'Pacific/Port_Moresby' => "Port Moresby",
-			'Australia/Sydney'     => "Sydney",
-			'Asia/Vladivostok'     => "Vladivostok",
-			'Asia/Magadan'         => "Magadan",
-			'Pacific/Auckland'     => "Auckland",
-			'Pacific/Fiji'         => "Fiji"
-		];
 }

@@ -193,7 +193,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_NEWSLETTER')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_EDIT_NEWSLETTER')) {
 			
 			foreach(explode(',', $ids) as $id) {
 				zenario_newsletter::deleteNewsletter($id);
@@ -201,7 +201,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		
 		
 		//Attempt to resume sending the newsletter
-		} elseif (($_POST['resume'] ?? false) && ze\priv::check('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsInProgress($ids)) {
+		} elseif (ze::post('resume') && ze\priv::check('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsInProgress($ids)) {
 			//Note: same code as above
 			set_time_limit(60 * 10);
 			self::sendNewsletter($ids);
@@ -219,7 +219,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		
 		
 		//Duplicate the newsletter
-		} elseif (($_POST['duplicate'] ?? false) && ze\priv::check('_PRIV_EDIT_NEWSLETTER')) {
+		} elseif (ze::post('duplicate') && ze\priv::check('_PRIV_EDIT_NEWSLETTER')) {
 
 			$admin_id = ze\admin::id();
 			$table_newsletters = DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters"; 

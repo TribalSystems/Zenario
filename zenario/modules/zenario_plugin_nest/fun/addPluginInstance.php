@@ -42,14 +42,6 @@ if (($instance = ze\plugin::details($addPluginInstance))
 	
 	$ord = 1 + (int) self::maxOrd($instanceId, $slideNum);
 	
-	//Updated Title of the plugin when "Copy plugin from existing..." without edit and re-save the plugin 
-	$nametitle = ze\row::get('plugin_settings', 'value', ['instance_id' => (int) $addPluginInstance, 'name'=>'nested_title']);
-	if ($nametitle) { 
-		$nametitleValue = $nametitle;
-	} else {
-		$nametitleValue = ze\module::displayName($instance['module_id']);
-	}
-	// End "Copy plugin from existing..."
 	$eggId = ze\row::insert(
 		'nested_plugins',
 		[
@@ -58,8 +50,9 @@ if (($instance = ze\plugin::details($addPluginInstance))
 			'ord' => $ord,
 			'module_id' => $instance['module_id'],
 			'framework' => $instance['framework'],
-			'css_class' => $instance['css_class'],
-			'name_or_slide_label' => $nametitleValue ]);
+			'css_class' => $instance['css_class']
+		]
+	);
 	
 	$sql = "
 		INSERT INTO ". DB_PREFIX. "plugin_settings (

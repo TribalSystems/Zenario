@@ -2,6 +2,10 @@
 ---
 full_slot:
     css_class: zenario_slotOuter zenario_slotWithContents
+    meta_info:
+        is_header: false
+        is_footer: false
+        is_sitewide: false
     info:
         edit_sc_title:
             label: 'Slot inspector'
@@ -130,60 +134,6 @@ full_slot:
                 view_settings: View plugin settings
             locked_label: View contents
             onclick: return zenarioA.pluginSlotEditSettings(this, slotName);
-        
-        copy_contents:
-            hidden: true
-            css_class: zenario_slotControl_cutCopyPaste
-            label: Copy contents
-            page_modes:
-                edit: true
-            onclick: >
-                zenarioA.copyContents(this, slotName, 'list,of,allowed,modules');
-                return false;
-        cut_contents:
-            hidden: true
-            css_class: zenario_slotControl_cutCopyPaste
-            label: Cut contents
-            page_modes:
-                edit: true
-            onclick: >
-                if (zenarioA.draft(this.id)) {
-                    zenarioA.cutContents(this, slotName, 'list,of,allowed,modules');
-                }
-                return false;
-        paste_contents:
-            hidden: true
-            css_class: zenario_slotControl_cutCopyPaste
-            label: Paste contents
-            page_modes:
-                edit: true
-            onclick: >
-                if (zenarioA.draft(this.id)) {
-                    zenarioA.pasteContents(this, slotName);
-                }
-                return false;
-        overwrite_contents:
-            hidden: true
-            css_class: zenario_slotControl_cutCopyPaste
-            label: Paste and overwrite existing
-            page_modes:
-                edit: true
-            onclick: >
-                if (zenarioA.draft(this.id)) {
-                    zenarioA.overwriteContents(this, slotName);
-                }
-                return false;
-        swap_contents:
-            hidden: true
-            css_class: zenario_slotControl_cutCopyPaste
-            label: Paste and copy existing to paste buffer
-            page_modes:
-                edit: true
-            onclick: >
-                if (zenarioA.draft(this.id)) {
-                    zenarioA.swapContents(this, slotName);
-                }
-                return false;
         
         # The old "CSS & framework" button, commented out now as it has been merged back into the plugin settings
         #framework_and_css:

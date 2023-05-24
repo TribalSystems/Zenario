@@ -14,21 +14,19 @@ zenario__modules:
             db_items:
                 table: |
                     [[DB_PREFIX]]nested_plugins AS np
-                    LEFT JOIN [[DB_PREFIX]]nested_plugins AS p
-                       ON p.instance_id = np.instance_id
-                      AND p.is_slide = 1
-                      AND p.slide_num = np.slide_num
+                    LEFT JOIN [[DB_PREFIX]]nested_plugins AS parentSlide
+                       ON parentSlide.instance_id = np.instance_id
+                      AND parentSlide.is_slide = 1
+                      AND parentSlide.slide_num = np.slide_num
                 id_column: np.id
             refiners:
                 nest:
                     sql: 'np.instance_id = [[REFINER_ID]]'
             refiner_required: true
-            view_mode: list
-            disable_grid_view: true
             hierarchy:
                 column: parent
                 db_column: |
-                    IF (np.is_slide, NULL, p.id)
+                    IF (np.is_slide, NULL, parentSlide.id)
                 max_depth: 2
                 send_full_hierarchy_onchange: true
                 start_with_all_items_open: true
@@ -39,10 +37,35 @@ zenario__modules:
                     show_by_default: true
                 name_or_slide_label:
                     title: Name
-                    db_column: np.name_or_slide_label
+                    db_column: np.slide_label
                     css_class: organizer_long_title
                     show_by_default: true
                     width: large
+                slide_permissions:
+                    title: Slide permissions
+                    db_column: |
+                        IF (np.is_slide, np.privacy, '')
+                    width: large
+                    format: enum
+                    values:
+                        public:
+                            label: 'Public, visible to everyone'
+                        logged_out:
+                            label: 'Public, only show to visitors who are NOT logged in'
+                        logged_in:
+                            label: 'Private, only show to extranet users'
+                        group_members:
+                            label: 'Private, only show to extranet users in group...'
+                        in_smart_group:
+                            label: 'Private, only show to extranet users in smart group...'
+                        logged_in_not_in_smart_group:
+                            label: 'Private, only show to extranet users NOT in smart group...'
+                        with_role:
+                            label: 'Private, only show to extranet users with role...'
+                        call_static_method:
+                            label: "Call a module's static method to decide visibility"
+                        send_signal:
+                            label: 'Send a signal to decide visibility'
                 states:
                     db_column: np.states
                 cols:
@@ -93,7 +116,7 @@ zenario__modules:
                 parent:
                     hidden: true
                     db_column: |
-                        IF (np.is_slide, NULL, p.id)
+                        IF (np.is_slide, NULL, parentSlide.id)
                 ordinal:
                     #hidden: true
                     db_column: IF (np.is_slide, np.slide_num, np.ord)
@@ -144,10 +167,10 @@ zenario__modules:
                            ON img_f.id = img_ps.foreign_key_id
                           AND `usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
-                module_class_name:
-                    db_column: p.module_class_name
-                method_name:
-                    db_column: p.method_name
+                slide_perms_module_class_name:
+                    db_column: np.module_class_name
+                slide_perms_method_name:
+                    db_column: np.method_name
                 uses_static_method:
                     show_by_default: true
                     title: "Static method"

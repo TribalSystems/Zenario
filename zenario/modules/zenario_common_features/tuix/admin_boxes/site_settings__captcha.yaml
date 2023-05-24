@@ -5,7 +5,7 @@ site_settings:
 	title: Editing captcha settings
 	tabs:
 		captcha_picture:
-			label: "reCaptcha 2.0"
+			label: "Google reCaptcha"
 			edit_mode:
 				enabled: Yes
 				priv: _PRIV_EDIT_SITE_SETTING
@@ -15,34 +15,49 @@ site_settings:
 					full_width: Yes
 					snippet:
 						html: |
-							This tab contains settings for reCAPTCHA.
-															This is a captcha that is used by some plugins in Zenario (for example User Forms).
+							This tab contains settings for reCaptcha.
+							This is a captcha that is used by some plugins in Zenario (for example User Forms).
+				captcha_status_and_version:
+					site_setting:
+						name: captcha_status_and_version
+					type: radios
+					value: not_enabled
+					values:
+						not_enabled:
+							label: "Google reCaptcha not enabled"
+							ord: 1
+						enabled_v2:
+							label: "Google reCaptcha v2"
+							ord: 2
+					redraw_onchange: true
 				google_recaptcha_site_key:
+					indent: 1
 					site_setting:
 						name: google_recaptcha_site_key
-					label: 'Site Key:'
+					label: 'Site key:'
 					type: text
 					value: ""
 					note_below: |
-						The site key to use for reCAPTCHA.
-														Sign-up for your site key at
-														<a href="https://www.google.com/recaptcha" target="_blank">
-															https://www.google.com/recaptcha
-														</a>
-														rather than using the default.
+						The site key to use for reCaptcha.
+						Sign-up for a site key at
+						<a href="https://www.google.com/recaptcha" target="_blank"> https://www.google.com/recaptcha</a>.
+					visible_if: lib.valueIn('captcha_status_and_version', 'enabled_v2')
+					validation:
+						required_if_not_hidden: "Please enter the site key."
 				google_recaptcha_secret_key:
+					indent: 1
 					site_setting:
 						name: google_recaptcha_secret_key
-					label: 'Secret Key:'
+					label: 'Secret key:'
 					type: text
 					value: ""
 					note_below: |
-						The secret key to use for reCAPTCHA.
-														Sign-up for your secret key at
-														<a href="https://www.google.com/recaptcha" target="_blank">
-															https://www.google.com/recaptcha
-														</a>
+						The secret key to use for reCaptcha.
+					visible_if: lib.valueIn('captcha_status_and_version', 'enabled_v2')
+					validation:
+						required_if_not_hidden: "Please enter the secret key."
 				google_recaptcha_widget_theme:
+					indent: 1
 					site_setting:
 						name: google_recaptcha_widget_theme
 					label: 'Theme:'
@@ -55,4 +70,5 @@ site_settings:
 						dark: Dark
 							ord: "2"
 							label: "Dark"
-					note_below: The theme to use for reCAPTCHA.
+					note_below: The theme to use for reCaptcha.
+					visible_if: lib.valueIn('captcha_status_and_version', 'enabled_v2')

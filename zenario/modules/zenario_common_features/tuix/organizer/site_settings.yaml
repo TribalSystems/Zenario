@@ -5,8 +5,6 @@ zenario__administration:
         site_settings:
             priv: _PRIV_VIEW_SITE_SETTING
             title: Site Settings
-            view_mode: list
-            disable_grid_view: true
             disable_periodic_refresh: true
             columns:
                 name:
@@ -116,13 +114,13 @@ zenario__administration:
                 urls_and_xml_sitemap:
                     name: URL format, aliases and XML sitemap
                     desc: Settings that affect how URLs for your site are generated, and to enable an XML sitemap.
-                    keywords: mod_rewrite suffix default behaviour for translations alias language code
+                    keywords: mod_rewrite suffix default behaviour for translations alias language code links
                 users:
                     name: Users
                     desc: Settings that affect extranet users & contacts.
                     keywords: >
                         screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
-                        country countries linked country linked countries
+                        country countries linked country linked countries permissions
                 optimisation:
                     name: Cache
                     desc: Settings that affect or speed up web pages.
@@ -148,12 +146,12 @@ zenario__administration:
                 site_enabled:
                     css_class: site_enabled
                     name: Site is ENABLED
-                    desc: Change site mode (production, development or disabled).
+                    desc: Enable or disable this site.
                     is_not_site_setting: true
                 site_disabled:
                     css_class: site_disabled
                     name: Site is DISABLED
-                    desc: Change site mode (production, development or disabled).
+                    desc: Enable this site.
                     is_not_site_setting: true
                 site_offline:
                     css_class: site_disabled

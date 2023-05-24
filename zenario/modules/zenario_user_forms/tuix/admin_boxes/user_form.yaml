@@ -27,10 +27,10 @@ zenario_user_form:
                     ord: 1.1
                     label: 'Form name:'
                     type: text
-                    side_note: This name is for admin use only and will not be seen by visitors
+                    side_note: For admin use only, will not be seen by visitors.
                 show_title:
                     ord: 2
-                    label: 'Show a title above the form'
+                    label: 'Show a title'
                     type: checkbox
                     redraw_onchange: true
                 title:
@@ -54,8 +54,7 @@ zenario_user_form:
                         h6: <h6>
                         p: <p>
                     value: h2
-                    side_note: |
-                        You can choose the HTML tag to use for the form title
+                    same_row: true
                     visible_if: zenarioAB.value('show_title');
                     indent: 1
                 submit_button_text:
@@ -72,12 +71,10 @@ zenario_user_form:
                     format_onchange: true
                 profanity_filter_text_fields:
                     ord: 12
-                    label: 'Filter text fields for profanities'
+                    label: 'Filter for profanities'
                     type: checkbox
                     side_note: |
-                        If this is enabled all submitted text and textarea fields will be checked for profanities. 
-                        If a profanity is found, the user will see a normal form response, but emails will not be sent 
-                        to the administrator nor the user.
+                        Scan text and textarea fields for profanities. Offending forms will be logged, but not emailed.
         
                 allow_partial_completion:
                     ord: 13
@@ -92,30 +89,41 @@ zenario_user_form:
                     ord: 13.1
                     snippet:
                         html: |
-                            <div class="zenario_fbWarning">In order to use this feature, the Extranet Base Module must be running.</div>
+                            <div class="zenario_fbWarning">In order to use this feature, the module "Extranet Base Module and login" (zenario_extranet) must be running.</div>
+                scheduled_task_manager_problem:
+                    type: hidden
+                    hidden: true
+                scheduled_task_manager_problem_message:
+                    indent: 1
+                    ord: 13.2
+                    hidden: true
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">[[scheduled_task_manager_problem]]</div>
                 partial_completion_mode__auto:
                     ord: 13.2
                     type: checkbox
-                    label: Automatically save when changing form step
+                    label: Auto-save data when user goes to next or previous form step
                     visible_if: zenarioAB.value('allow_partial_completion')
+                    value: 1
                     indent: 1
                 partial_completion_mode__button:
                     ord: 13.3
                     type: checkbox
-                    label: Show a save button on each form step
+                    label: Show a Save button (appears on each form step)
                     visible_if: zenarioAB.value('allow_partial_completion')
                     redraw_onchange: true
                     indent: 1
                 partial_completion_message:
                     ord: 14
-                    label: 'Complete later message:'
+                    label: |
+                        Messsage to show when user presses the Save button:
                     type: text
                     value: 'Your data will be here the next time you open this form.'
                     maxlength: 255
                     visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('partial_completion_mode__button')
-                    side_note: The message to display when a user chooses to complete this form at a later date.
                     validation:
-                        required_if_not_hidden: 'Please enter a complete later message.'
+                        required_if_not_hidden: 'Please enter a message.'
                     indent: 2  
                 allow_clear_partial_data:
                     ord: 14.1
@@ -126,9 +134,11 @@ zenario_user_form:
                     indent: 1
                 clear_partial_data_message:
                     ord: 14.2
-                    label: 'Clear uncompleted form data message'
+                    label: |
+                        Message to show when user presses the Clear button:
                     type: text
-                    value: 'Would you like to resume editing this form or clear your existing data?'
+                    value: |
+                        Would you like to resume editing this form or clear your existing data?
                     maxlength: 255
                     visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('allow_clear_partial_data')
                     validation:
@@ -136,15 +146,16 @@ zenario_user_form:
                     indent: 2
                 enable_partial_completion_get_request:
                     ord: 14.3
-                    label: 'Enable get request'
+                    label: 'Enable GET request'
                     type: checkbox
                     visible_if: zenarioAB.value('allow_partial_completion')
                     indent: 1
                     redraw_onchange: true
-                    side_note: Allows a user to have more than one saved response per form based on the value of a GET request.
+                    side_note: |
+                        Allows a user to have more than one saved response per form. User will then return to the appropriate form, based on the value of a GET request.
                 partial_completion_get_request:
                     ord: 14.4
-                    label: 'Get request:'
+                    label: 'GET request (advanced):'
                     type: text
                     maxlength: 250
                     validaiton:
@@ -763,8 +774,11 @@ zenario_user_form:
                     snippet:
                         html: This tab lets you enable features to control spam.
                 use_honeypot:
-                    label: 'Use honeypot'
+                    label: |
+                        Include a "honeypot" field in the form to confuse bots
                     type: checkbox
+                    note_below: |
+                        Recommended. But is not 100% effective at stopping bots.
                     format_onchange: true  
                     side_note: |
                         The form will contain a "honeypot" field. It is in the source of the page made invisible to human visitors using CSS. Because it's invisible, it will only normally be filled in by a "bot"; at the same time it's mandatory to leave it blank.
@@ -774,9 +788,17 @@ zenario_user_form:
                     maxlength: 255
                     indent: 1
                 use_captcha:
-                    label: 'Require anonymous visitors to complete a captcha'
+                    label: |
+                        Show a captcha to check that form user is a human
                     type: checkbox
-                    format_onchange: true  
+                    format_onchange: true
+                recaptcha_policy_warning:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                [[recaptcha_policy_warning]]
+                            </div>
                 captcha_type:
                     label: 'Type of captcha:'
                     type: select
@@ -785,8 +807,10 @@ zenario_user_form:
                     validation: 
                         required_if_not_hidden: Please select a type of captcha.
                     indent: 1
+                    format_onchange: true
                 extranet_users_use_captcha:
                     label: 'Require captcha even if user is an extranet user'
+                    note_below: Not recommended. Only use this if you suspect that extranet users are bots. 
                     type: checkbox
                     indent: 1
         translations:

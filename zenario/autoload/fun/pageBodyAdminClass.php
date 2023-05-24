@@ -35,17 +35,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Set up which toolbars will be on the Admin Toolbar, and which is currently picked
 $toolbars['preview'] = ['ord' => 10, 'label' => \ze\admin::phrase('Navigate')];
 
-if (\ze::$status != 'trashed' && (\ze::$cVersion == \ze::$adminVersion || (\ze::$visitorVersion && \ze::$cVersion == \ze::$visitorVersion))) {
+if (ze::$status != 'trashed' && (ze::$cVersion == ze::$adminVersion || (ze::$visitorVersion && ze::$cVersion == ze::$visitorVersion))) {
 	if (\ze\priv::check('_PRIV_VIEW_MENU_ITEM')) {
 		$toolbars['menu1'] = ['ord' => 20, 'label' => \ze\admin::phrase('Menu')];
 	}
 }
 
 //Only show one of rollback/edit, depending on the version in view and its status
-if (\ze::$cVersion != \ze::$adminVersion || \ze::$status == 'trashed') {
+if (ze::$cVersion != ze::$adminVersion || ze::$status == 'trashed') {
 	$toolbars['rollback'] = ['ord' => 41, 'label' => \ze\admin::phrase('Edit')];
 
-} elseif (\ze\priv::check('_PRIV_EDIT_DRAFT', \ze::$cID, \ze::$cType)) {
+} elseif (\ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	$toolbars['edit'] = ['ord' => 41, 'label' => \ze\admin::phrase('Edit')];
 
 } else {
@@ -53,7 +53,7 @@ if (\ze::$cVersion != \ze::$adminVersion || \ze::$status == 'trashed') {
 }
 
 //Only show slot/layout on the current version
-if (\ze::$cVersion == \ze::$adminVersion) {
+if (ze::$cVersion == ze::$adminVersion) {
 	
 	if (\ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 		$toolbars['layout'] = ['ord' => 51, 'label' => \ze\admin::phrase('Layout')];
@@ -61,10 +61,14 @@ if (\ze::$cVersion == \ze::$adminVersion) {
 }
 
 
-//Default to preview mode
-//If this Content Item is not the same Content Item as last time, default to Preview mode
+//Default to preview mode.
+//If we're coming back from Organizer, switch back to preview mode.
+//If this Content Item is not the same Content Item as last time, also switch back to preview mode.
 if (empty($_SESSION['page_mode'])
- || (!empty($_SESSION['last_item']) && $_SESSION['last_item'] != \ze::$cType. '_'. \ze::$cID. '.'. \ze::$cVersion)) {
+ || (isset($_SERVER['HTTP_REFERER'])
+  && ($parsedURL = parse_url($_SERVER['HTTP_REFERER']))
+  && (($parsedURL['path'] ?? '') == SUBDIRECTORY. 'organizer.php'))
+ || (!empty($_SESSION['last_item']) && $_SESSION['last_item'] != ze::$cType. '_'. ze::$cID. '.'. ze::$cVersion)) {
 	$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 }
 
@@ -77,10 +81,10 @@ if (empty($_SESSION['page_mode'])
 
 
 
-$_SESSION['last_item'] = \ze::$cType. '_'. \ze::$cID. '.'. \ze::$cVersion;
+$_SESSION['last_item'] = ze::$cType. '_'. ze::$cID. '.'. ze::$cVersion;
 
 //Check that we're about to use a toolbar that exists
-if (!\ze::$cID || !isset($toolbars[($_SESSION['page_toolbar'] ?? false)])) {
+if (!ze::$cID || !isset($toolbars[($_SESSION['page_toolbar'] ?? false)])) {
 	
 	//Allow switching between edit/edit_disabled/rollback. Default to preview mode otherwise.
 	if (($_SESSION['page_toolbar'] ?? false) == 'edit' || ($_SESSION['page_toolbar'] ?? false) == 'edit_disabled' || ($_SESSION['page_toolbar'] ?? false) == 'rollback') {
@@ -148,4 +152,4 @@ if (ze::$locked) {
 	$class .= ' zenario_pageIsntLocked';
 }
 
-$class .= ' zenario_status_'. \ze\contentAdm::versionStatus(\ze::$cVersion, \ze::$visitorVersion, \ze::$adminVersion, \ze::$status);
+$class .= ' zenario_status_'. \ze\contentAdm::versionStatus(ze::$cVersion, ze::$visitorVersion, ze::$adminVersion, ze::$status);

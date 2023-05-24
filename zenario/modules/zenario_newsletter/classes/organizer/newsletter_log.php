@@ -36,7 +36,7 @@ class zenario_newsletter__organizer__newsletter_log extends zenario_newsletter {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$details = $this->loadDetails($_GET['refiner__newsletter'] ?? false);
+		$details = $this->loadDetails(ze::get('refiner__newsletter'));
 		$panel['title'] = ze\admin::phrase('Recipients of the Newsletter "[[newsletter_name]]"', $details);
 		
 		foreach($panel['items'] as &$item) {

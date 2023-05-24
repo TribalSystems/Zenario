@@ -143,7 +143,7 @@ zenario__users:
                     width: xxsmall
                 user_type: {}
                 
-            default_sort_column: screen_name
+            default_sort_column: identifier
             label_format_for_picked_items: '[[identifier]]'
             
             quick_filter_buttons:

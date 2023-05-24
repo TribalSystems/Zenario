@@ -31,7 +31,7 @@ plugin_settings:
 						name: category
 					type: select  
 					empty_value: -- Select --
-					load_values_from_organizer_path: zenario__content/panels/categories
+					load_values_from_organizer_path: zenario__library/panels/categories
 					validation:
 						required_if_not_hidden: Please select a category
 				filter_by_release_date:

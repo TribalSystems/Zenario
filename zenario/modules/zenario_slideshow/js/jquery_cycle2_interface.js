@@ -38,6 +38,7 @@ methods.show = function(containerId, opt, startingSlide) {
 			startingSlide: startingSlide,
 			//autoHeight: 'container', //Has height issues when loading on firefox
 			maxZ: 90, //100 is default and Admin controls have z-index 99
+			autoHeight: 'container',
 			log: false
 		})
 		.on('cycle-before', function(event, optionHash, outgoingSlideEl, incomingSlideEl, forwardFlag) {

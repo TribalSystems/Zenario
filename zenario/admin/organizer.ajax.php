@@ -92,7 +92,7 @@ function searchOrganizerColumn(&$whereStatement, $columnName, $searchText, $exac
 $mode = false;
 $tagPath = '';
 $modules = [];
-$debugMode = (bool) ($_GET['_debug'] ?? false);
+$debugMode = (bool) ze::get('_debug');
 $customJoin = false;
 $organizerQueryIds = false;
 $organizerQueryDetails = false;
@@ -101,19 +101,19 @@ $compatibilityClassNames = [];
 ze::$tuixType = $type = 'organizer';
 
 //Work out which mode this should be for Organizer
-if ($_GET['_select_mode'] ?? false) {
+if (ze::get('_select_mode')) {
 	define('ORGANIZER_MODE', $mode = 'select');
-} elseif ($_GET['_quick_mode'] ?? false) {
+} elseif (ze::get('_quick_mode')) {
 	define('ORGANIZER_MODE', $mode = 'quick');
-} elseif ($_GET['_typeahead_search'] ?? false) {
+} elseif (ze::get('_typeahead_search')) {
 	define('ORGANIZER_MODE', $mode = 'typeahead_search');
-} elseif ($_GET['_get_item_name'] ?? false) {
+} elseif (ze::get('_get_item_name')) {
 	define('ORGANIZER_MODE', $mode = 'get_item_name');
 } elseif (!empty($_REQUEST['_get_item_links'])) {
 	define('ORGANIZER_MODE', $mode = 'get_item_links');
-} elseif ($_GET['_get_item_data'] ?? false) {
+} elseif (ze::get('_get_item_data')) {
 	define('ORGANIZER_MODE', $mode = 'get_item_data');
-} elseif ($_GET['_get_matched_ids'] ?? false) {
+} elseif (ze::get('_get_matched_ids')) {
 	define('ORGANIZER_MODE', $mode = 'get_matched_ids');
 } else {
 	define('ORGANIZER_MODE', $mode = 'full');
@@ -136,11 +136,11 @@ define('FOCUSED_LANGUAGE_ID', "'". ze\escape::sql(FOCUSED_LANGUAGE_ID__NO_QUOTES
 
 //See if there is a requested path.
 $requestedPath = false;
-if (($_GET['method_call'] ?? false) == 'showSitemap') {
+if (ze::get('method_call') == 'showSitemap') {
 	$requestedPath = 'zenario__content/hidden_nav/sitemap/panel';
 
-} elseif ($_REQUEST['path'] ?? false) {
-	$requestedPath = preg_replace('/[^\w\/]/', '', ($_REQUEST['path'] ?? false));
+} elseif (ze::request('path')) {
+	$requestedPath = preg_replace('/[^\w\/]/', '', ze::request('path'));
 }
 ze::$tuixPath = $requestedPath;
 
@@ -212,7 +212,7 @@ class zenario_organizer {
 	}
 }
 
-if ($_GET['_filters'] ?? false) {
+if (ze::get('_filters')) {
 	zenario_organizer::$filters = json_decode($_GET['_filters'] ?? false, true);
 }
 
@@ -322,8 +322,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 	}
 	
-	if ($_REQUEST['_combineItem'] ?? false) {
-		define('COMBINE_ITEM__NO_QUOTES', ($_REQUEST['_combineItem'] ?? false));
+	if (ze::request('_combineItem')) {
+		define('COMBINE_ITEM__NO_QUOTES', ze::request('_combineItem'));
 	}
 	
 	//Start to populate the Organizer Panel:
@@ -361,10 +361,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'lineStorekeeper')) {
-			$module->lineStorekeeper($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
+			$module->lineStorekeeper($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode);
 		}
 		
-		$module->preFillOrganizerPanel($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
+		$module->preFillOrganizerPanel($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode);
 	}
 	
 	
@@ -502,6 +502,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 									foreach (ze\dataset::fieldLOV($cfield, true) as $displayValue) {
 										$cCol['values'][$displayValue] = $displayValue;
 									}
+									$cCol['empty_value'] = ' ';
 								}
 								break;
 							}
@@ -511,6 +512,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						case 'centralised_select':
 							$cCol['format'] = 'enum';
 							$cCol['values'] = ze\dataset::fieldLOV($cfield, true);
+							$cCol['empty_value'] = ' ';
 							break;
 			
 						//Handle links to other datasets
@@ -553,14 +555,14 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		
 		//Apply a refiners, if this panel has any and one has been selected
-		if (($_GET['refinerName'] ?? false) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)])) {
+		if (ze::get('refinerName') && !empty($tags['refiners'][ze::get('refinerName')])) {
 			
 			$refinerWhere = false;
-			if (isset($_GET['_search']) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)]['sql_when_searching'])) {
-				$refinerWhere = ltrim($tags['refiners'][($_GET['refinerName'] ?? false)]['sql_when_searching']);
+			if (isset($_GET['_search']) && !empty($tags['refiners'][ze::get('refinerName')]['sql_when_searching'])) {
+				$refinerWhere = ltrim($tags['refiners'][ze::get('refinerName')]['sql_when_searching']);
 			
-			} elseif (!empty($tags['refiners'][($_GET['refinerName'] ?? false)]['sql'])) {
-				$refinerWhere = ltrim($tags['refiners'][($_GET['refinerName'] ?? false)]['sql']);
+			} elseif (!empty($tags['refiners'][ze::get('refinerName')]['sql'])) {
+				$refinerWhere = ltrim($tags['refiners'][ze::get('refinerName')]['sql']);
 			}
 			if ($refinerWhere !== false) {
 				if (substr($refinerWhere, 0, 3) == 'AND') {
@@ -581,11 +583,11 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			//Add any table-joins for refiners
 			$refinerJoin = false;
-			if (isset($_GET['_search']) && !empty($tags['refiners'][($_GET['refinerName'] ?? false)]['table_join_when_searching'])) {
-				$refinerJoin = $tags['refiners'][($_GET['refinerName'] ?? false)]['table_join_when_searching'];
+			if (isset($_GET['_search']) && !empty($tags['refiners'][ze::get('refinerName')]['table_join_when_searching'])) {
+				$refinerJoin = $tags['refiners'][ze::get('refinerName')]['table_join_when_searching'];
 			
-			} elseif (!empty($tags['refiners'][($_GET['refinerName'] ?? false)]['table_join'])) {
-				$refinerJoin = $tags['refiners'][($_GET['refinerName'] ?? false)]['table_join'];
+			} elseif (!empty($tags['refiners'][ze::get('refinerName')]['table_join'])) {
+				$refinerJoin = $tags['refiners'][ze::get('refinerName')]['table_join'];
 			}
 			if ($refinerJoin !== false) {
 				zenario_organizer::noteTableJoin($sortExtraTables, $refinerJoin);
@@ -871,7 +873,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Order by the sort column
 		if ($sortColumn) {
-			if ($_GET['_sort_desc'] ?? false) {
+			if (ze::get('_sort_desc')) {
 				$orderBy = $sortColumnDesc. ", ". $groupBy;
 			} else {
 				$orderBy = $sortColumn. ", ". $groupBy;
@@ -934,17 +936,17 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				//Note that this code is similar to the logic in zenario/ajax.php that normally handles
 				//the handleOrganizerPanelAJAX() and organizerPanelDownload() methods, except this version
 				//also runs preFillOrganizerPanel() and includes a list of ids
-				if (!($_REQUEST['__pluginClassName__'] ?? false)
-				 || empty($modules[($_REQUEST['__pluginClassName__'] ?? false)])) {
+				if (!ze::request('__pluginClassName__')
+				 || empty($modules[ze::request('__pluginClassName__')])) {
 					echo 'Error, could not find the module for this button on this panel.';
 					exit;
 				}
 			
-				if ($_POST['_download'] ?? false) {
-					$modules[($_REQUEST['__pluginClassName__'] ?? false)]->organizerPanelDownload($requestedPath, $_GET['id'], ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
+				if (ze::post('_download')) {
+					$modules[ze::request('__pluginClassName__')]->organizerPanelDownload($requestedPath, $_GET['id'], ze::request('refinerName'), ze::request('refinerId'));
 			
 				} else {
-					$newIds = $modules[($_REQUEST['__pluginClassName__'] ?? false)]->handleOrganizerPanelAJAX($requestedPath, $_GET['id'], '', ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false));
+					$newIds = $modules[ze::request('__pluginClassName__')]->handleOrganizerPanelAJAX($requestedPath, $_GET['id'], '', ze::request('refinerName'), ze::request('refinerId'));
 
 					if ($newIds && !is_array($newIds)) {
 						$newIds = explode(',', $newIds);
@@ -1210,7 +1212,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//When I do the work to add a new type of CSV export, the code to handle it should probably go here!
 		
-		//if (($_REQUEST['new_csv_mode'] ?? false) {
+		//if (ze::request('new_csv_mode') {
 		//	foreach ($tags['__item_sort_order__'] as $id) {
 		//		some_module::some_function($requestedPath, $id);
 		//	}
@@ -1359,10 +1361,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		
 		//Handle the old name if it's not been changed yet
 		if (method_exists($module, 'fillStorekeeper')) {
-			$module->fillStorekeeper($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
+			$module->fillStorekeeper($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode);
 		}
 		
-		$module->fillOrganizerPanel($requestedPath, $tags, ($_REQUEST['refinerName'] ?? false), ($_REQUEST['refinerId'] ?? false), $mode);
+		$module->fillOrganizerPanel($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode);
 	}
 	
 	//Set the current item count
@@ -1572,13 +1574,13 @@ if ($doExport) {
 	//Display the output as JSON to send to the client
 	header('Content-Type: text/javascript; charset=UTF-8');
 
-	if ($_REQUEST['_script'] ?? false) {
+	if (ze::request('_script')) {
 		echo 'zenarioO.lookForBranches(zenarioO.map = ';
 	}
 
 	ze\ray::jsonDump($tags);
 
-	if ($_REQUEST['_script'] ?? false) {
+	if (ze::request('_script')) {
 		echo ');';
 	}
 }

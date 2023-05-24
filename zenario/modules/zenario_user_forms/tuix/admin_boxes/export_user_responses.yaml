@@ -2,6 +2,7 @@ zenario_export_user_responses:
     priv: _PRIV_MANAGE_FORMS
     key:
         form_id: ''
+        user_id: ''
     title: Export user responses
     hide_tab_bar: true
     max_height: 300

@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__content:
+zenario__library:
     panels:
         documents:
             priv: _PRIV_VIEW_DOCUMENTS
@@ -158,14 +158,14 @@ zenario__content:
                     priv: _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS
                     hide_on_filter: true
                     hide_in_select_mode: true
-                    label: Re-generate public links
+                    label: Repair public links
                     ajax:
                         confirm:
                             message: |
-                                If you have any problems linking to public documents, this option will check every single public document and re-generate broken links.
+                                If you have any problems linking to public documents, this option will check every single public document and repair broken links.
                                 
-                                Are you sure you wish to check and re-generate links for public documents?
-                            button_message: Re-generate
+                                Are you sure you wish to check and repair links for public documents?
+                            button_message: Repair
                             cancel_button_message: Cancel
                             message_type: warning
                         request:

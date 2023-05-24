@@ -1,12 +1,7 @@
 <?php
 require '../../visitorheader.inc.php';
 
-if (!empty($_GET['isWizard'])) {
-	unset($_GET['isWizard']);
-	$return = 'zenario/wizard.php?';
-} else {
-	$return = 'zenario/admin/index.php?';
-}
+$return = 'zenario/admin/index.php?';
 
 $httpUserAgent = ($_SERVER['HTTP_USER_AGENT'] ?? '');
 

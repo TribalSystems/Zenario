@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_content_list extends ze\moduleBaseClass {
 	
 	protected $dataField;
+	protected $page;
 	protected $pages;
 	protected $totalPages;
 	protected $rows = false;
@@ -62,6 +63,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				v.writer_id,
 				IFNULL(v.release_date, c.first_created_datetime) AS `content_table_date`,
 				release_date,
+				tc.privacy,
 				". ($this->dataField ?: "''"). " AS `content_table_data`";
 		
 			$this->isRSS = $this->methodCallIs('showRSS');
@@ -183,6 +185,20 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$this->showInMenuMode();
 		}
 		
+		if ($this->setting('language_selection') == 'visitor_with_site_default_lang_fallback' && ze::$langId != ze::$defaultLang) {
+			//Only return content in the current language
+			$sql .= "
+				LEFT JOIN " . DB_PREFIX . "content_items AS vl
+			  		ON vl.equiv_id = c.equiv_id
+			  		AND vl.type = c.type
+			  		AND vl.language_id = '" . ze::$langId . "'
+				LEFT JOIN " . DB_PREFIX . "content_items AS dl
+					ON dl.equiv_id = vl.equiv_id
+					AND dl.type = vl.type
+					AND dl.language_id = '" . ze::$defaultLang . "'";
+		
+		}
+		
 		$this->isRSS = $this->methodCallIs('showRSS');
 		if ($this->setting('show_author') || ($this->isRSS && $this->setting('rss_include_item_author')) /* || $this->setting('show_author_image')*/) {
 			$sql .= '
@@ -287,12 +303,22 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 		}
 		
-		if ($this->setting('language_selection') == 'visitor') {
+		$languageSelectionSetting = $this->setting('language_selection');
+		if ($languageSelectionSetting == 'visitor' || ($languageSelectionSetting == 'visitor_with_site_default_lang_fallback' && ze::$langId == ze::$defaultLang)) {
 			//Only return content in the current language
 			$sql .= "
 			  AND c.language_id = '". ze\escape::asciiInSQL(ze::$langId). "'";
 		
-		} elseif ($this->setting('language_selection') == 'specific_languages') { 
+		} elseif ($languageSelectionSetting == 'visitor_with_site_default_lang_fallback') {
+			$sql .= "
+			  AND c.language_id IN ('". ze\escape::asciiInSQL(ze::$langId). "', '" . ze\escape::asciiInSQL(ze::$defaultLang) . "')
+			  AND (
+			  	dl.equiv_id IS NULL
+			  	OR (
+			  		dl.equiv_id IS NOT NULL AND c.language_id = '" . ze::$langId . "'
+			  	)
+			  )";
+		} elseif ($languageSelectionSetting == 'specific_languages') {
 			//Return content in languages selected by admin
 			$arr = [''];
 			foreach(explode(",", $this->setting('specific_languages')) as $langCode)  {
@@ -408,7 +434,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 	//Sort the Content
 	//Intended to be easily overwritten
 	protected function orderContentBy() {
-		$orderBy = "ORDER BY ";
+		$orderBy = "
+			ORDER BY ";
 
 		if ($this->setting('pinned_content_items') == 'prioritise_pinned') {
 			$orderBy .= "v.pinned DESC, ";
@@ -459,7 +486,9 @@ class zenario_content_list extends ze\moduleBaseClass {
 	
 	
 	protected function addExtraMergeFields(&$row, &$item) {
-	
+		if ($row['privacy'] != 'public') {
+			$item['Content_item_is_private'] = true;
+		}
 	}
 	
 	
@@ -482,7 +511,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		
 		//To add Zip settings
-		if (($this->zipArchiveName = $this->setting('zip_archive_name'))==''){
+		if (($this->zipArchiveName = $this->setting('zip_archive_name')) == '') {
 			switch ($this->setting('content_type')) {
 				case 'document':
 					$this->zipArchiveName = "documents.zip";
@@ -495,8 +524,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 					break;
 			}
 		} else {
-			$arr = explode(".",$this->zipArchiveName);
-			if ((count($arr)<2) || ($arr[count($arr)-1]!="zip") ){
+			$arr = explode(".", $this->zipArchiveName);
+			if ((count($arr)<2) || ($arr[count($arr)-1] != "zip")) {
 				$this->zipArchiveName .= ".zip";
 			}
 		}
@@ -526,7 +555,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$this->registerGetRequest('page', 1);
 		
 		//Pick a page to display
-		$this->page = is_numeric($_GET['page'] ?? false)? (int) ($_GET['page'] ?? false) : 1;
+		$this->page = is_numeric(ze::get('page'))? (int) ze::get('page') : 1;
 		
 		
 		//Loop through each item to display, and add its details to an array of merge fields
@@ -621,14 +650,31 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 				
 				$item['Content_Type'] = $row['type'];
-				$item['Title'] = $this->escapeIfRSS($row['title']);
+
+				$contentItemTitle = $row['title'];
+				$titleSource = $this->setting('title_source');
+
+				if ($titleSource == 'content_item_menu_node') {
+					$menu = ze\menu::getFromContentItem($row['id'], $row['type']);
+
+					if (!empty($menu)) {
+						$menuName = ze\menu::name($menu['mID']);
+						$contentItemTitle = $menuName ?: $row['title'];
+					}
+				}
+				$item['Title'] = $this->escapeIfRSS($contentItemTitle);
+
 				$item['Keywords'] = $this->escapeIfRSS($row['keywords']);
 				$item['Description'] = $this->escapeIfRSS($row['description']);
 				
 				if (($this->setting('show_dates') || ($this->isRSS && $this->setting('rss_include_item_author'))) && $row['release_date']) {
 					if (!$this->isRSS) {
 						if ($this->setting('date_format') == '_RELATIVE') {
-							$item['Date'] = ze\date::simpleFormatRelativeDate($row['release_date']);
+							if ($this->setting('show_times')) {
+								$item['Date'] = ze\date::formatRelativeDateTime($row['release_date'], 'month');
+							} else {
+								$item['Date'] = ze\date::formatRelativeDate($row['release_date']);
+							}
 						} else {
 							$item['Date'] = ze\date::format(
 								$row['release_date'],
@@ -894,6 +940,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$this->orderContentBy().
 				ze\sql::limit($this->page, $page_size, $this->setting('offset'));
 		}
+		
 		return ze\sql::select($sql);
 	}
 	
@@ -996,7 +1043,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$mainLinkArr = [];
 		$Link_To_Download_Page = false;
 		$allIdsValue = '';
-		if (!empty($_POST['prepareDownloadData']) && $_POST['slotName'] == $this->slotName) {
+		if (!empty($_POST['prepareDownloadData']) && $_POST['slotName'] == $this->slotName && $this->checkPostIsMine()) {
 			
 			$getIds = $_POST['documentIds'];
 			$zipFiles = [];
@@ -1042,14 +1089,14 @@ class zenario_content_list extends ze\moduleBaseClass {
 						} else {
 							$linkResult = $this->build($zipFileValue, 0);
 						}
-						if ($linkResult[0]){
-							if ($linkResult[1]){
+						if ($linkResult[0]) {
+							if ($linkResult[1]) {
 								
 								$downLoadpage = true;
 								
 								$fileNameArr['fileName'] = $linkResult[2];
 								$fileNameArr['linkName'] = $linkResult[1];
-								if (sizeof($zipFiles) > 1){
+								if (sizeof($zipFiles) > 1) {
 									$fileDocCtrValue = '';
 									$fileCtrVal = 0;
 									foreach($zipFileids as $filevaluectr) {
@@ -1071,11 +1118,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 								$noContent = true;
 							}
 						} else {
-							if ((int)($_SESSION['admin_userid'] ?? false)){
+							if ((int) ($_SESSION['admin_userid'] ?? false)) {
 								$downLoadpage = true;
 								$fileDocCtr++;
-								$filename='';
-								if($zipFileids[0]) {
+								$filename = '';
+								if ($zipFileids[0]) {
 									$latestVersion = ze\content::latestVersion($zipFileids[0], $cType);
 									$fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $zipFileids[0], 'type'=> $cType, 'version' => $latestVersion]);
 									$filename = ze\row::get('files', 'filename', ['id' => $fileID]);
@@ -1199,7 +1246,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			} elseif ($this->setting('category_filters_dropdown') == 'show_content_with_matching_categories') {
 				$contentItemCategories = ze\category::contentItemCategories(ze::$cID, ze::$cType);
 				
-				if (is_array($contentItemCategories) && count($contentItemCategories) > 0) {
+				if (!empty($contentItemCategories)) {
 					$categoryIds = [];
 					foreach ($contentItemCategories as $contentItemCategory) {
 						$categoryIds[] = $contentItemCategory['id'];
@@ -1318,7 +1365,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$box['tabs']['pagination']['fields']['pagination_style']['values'] = 
 					ze\pluginAdm::paginationOptions();
 				
-				if (!$box['tabs']['pagination']['fields']['maximum_results_number']['value']) {
+				if (empty($box['tabs']['pagination']['fields']['maximum_results_number']['value'])) {
 					$box['tabs']['pagination']['fields']['maximum_results_number']['value'] = 5;
 				}
 				
@@ -1376,19 +1423,25 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 
 				//RSS features
-				if (!$values['overall_list/rss_channel_description']) {
+				if (empty($values['overall_list/rss_channel_description'])) {
 					$values['overall_list/rss_channel_description'] = ze\admin::phrase('News feed from [[company_from]]', ['company_from' => ze::setting('email_name_from')]);
 				}
 
-				if (!$values['overall_list/rss_language_id']) {
+				if (empty($values['overall_list/rss_language_id'])) {
 					$values['overall_list/rss_language_id'] = ze::$defaultLang;
 				}
 
 				//Groupings for non-RSS settings
-				foreach ($box['tabs']['overall_list']['fields'] as &$field) {
-					if (empty($field['grouping'])) {
-						$field['grouping'] = 'options';
+				if (!empty($box['tabs']['overall_list']['fields'])) {
+					foreach ($box['tabs']['overall_list']['fields'] as &$field) {
+						if (empty($field['grouping'])) {
+							$field['grouping'] = 'options';
+						}
 					}
+				}
+				
+				if (!empty($fields['first_tab/language_selection']['values']['visitor_with_site_default_lang_fallback']['label'])) {
+					ze\lang::applyMergeFields($fields['first_tab/language_selection']['values']['visitor_with_site_default_lang_fallback']['label'], ['site_default_lang' => ze\lang::name(ze::$defaultLang)]);
 				}
 				
 				break;
@@ -1524,9 +1577,9 @@ class zenario_content_list extends ze\moduleBaseClass {
 					if ($filename = $this->getItemFilename($ID, $cType)) {
 						$latestVersion = ze\content::latestVersion($ID, $cType);
 						if ($fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
-							$fileDetails = ze\row::get('files', ['path', 'filename'], ['id' => $fileID]);
-							if (!empty($fileDetails) && $fileDetails['path'] && $fileDetails['filename']) {
-								$filesize += filesize(ze::setting("docstore_dir") . "/" . $fileDetails['path'] . "/" . $fileDetails['filename']);
+							$filePath = ze\file::docstorePath($fileID);
+							if (!empty($filePath)) {
+								$filesize += filesize($filePath);
 							}
 						}
 					}
@@ -1583,7 +1636,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				break;
 			
 			case 'plugin_settings':
-				if ($values['overall_list/rss_include_language_id'] && $values['overall_list/rss_language_id']) {
+				if (!empty($values['overall_list/rss_include_language_id']) && !empty($values['overall_list/rss_language_id'])) {
 					if ($values['overall_list/rss_language_id'] != ze\lang::sanitiseLanguageId($values['overall_list/rss_language_id'])) {
 						$fields['overall_list/rss_language_id']['error'] = ze\admin::phrase('The Language Code can only contain upper-case characters, lower-case letters, numbers or hyphens.');
 					
@@ -1593,7 +1646,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					}
 				}
 
-				if ($values['overall_list/enable_rss']) {
+				if (!empty($values['overall_list/enable_rss'])) {
 					if (!$values['overall_list/rss_include_item_title'] && !$values['overall_list/rss_include_item_description']) {
 						$fields['overall_list/rss_include_item_title']['error'] = $fields['overall_list/rss_include_item_description']['error'] = ze\admin::phrase('Please enable the title, description or both.');
 					}

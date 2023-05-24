@@ -51,18 +51,20 @@ plugin_settings:
                 enable_remember_me:
                     plugin_setting:
                         name: enable_remember_me
-                    label: 'Offer to remember screen name or email'
+                    label: |
+                        Offer to remember user's email address or screen name in a cookie
                     type: checkbox
                     value: "1"
-                    side_note: Allow User to have his screen name stored using a cookie.
+                    side_note: Allow user to have their email or screen name stored using a COOKIE_LAST_EXTRANET cookie.
                 enable_log_me_in:
                     plugin_setting:
                         name: enable_log_me_in
-                    label: 'Offer persistent login'
+                    label: |
+                        Offer easy login to users by using a cookie
                     type: checkbox
                     value: ""
                     side_note: >
-                        Allow User to stay logged in using a cookie until they
+                        Allow user to stay logged in using a LOG_ME_IN_COOKIE cookie until they
                         manually log out.
                                 
                 show_link_to_registration_page:
@@ -136,7 +138,7 @@ plugin_settings:
                     format_onchange: Yes
                     side_note: >
                         Refers to terms_and_conditions_accepted flag in Users dataset.
-                        If the user has not accepted the terms and condictions the
+                        If the user has not accepted the terms and conditions the
                         login will fail and the user will see an additional checkbox
                         asking them to accept the T's and C's.
                 link_type:

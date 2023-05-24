@@ -10,7 +10,7 @@ zenario_admin:
                 is_trashed:
                     show: false
                     type: warning
-                    message: This administrator is trashed and cannot log in.
+                    message: This administrator account is trashed and they cannot log in.
             label: Settings
             fields:
                 #description:

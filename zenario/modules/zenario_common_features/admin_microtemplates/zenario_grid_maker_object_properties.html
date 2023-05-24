@@ -6,7 +6,7 @@
 <form class="zenario_grid_form zenario_grid_properties_form" onsubmit="return false;">
 	<div class="content_wrap">
 		
-		<% switch (m.type) { %>
+		<% switch (m.object_type) { %>
 			<% case 'grouping': %>
 				<h3>Grouping</h3>
 				<p>Groupings are a way of putting one or more slots into a single container.</p>
@@ -43,14 +43,14 @@
 			<% break; %>
 		<% } %>
 		
-		<% switch (m.type) { %>
+		<% switch (m.object_type) { %>
 			<% case 'grouping': %>
 			<% case 'space': %>
 			<% case 'slot': %>
 				<pre>
 					&lt;div class=&quot;span
-						span{{m.data.width|escape}}{{m.cell.is_alpha? ' alpha' : ''}}{{m.cell.is_omega? ' omega' : ''}}{{m.type == 'space'? ' grid_space' : ''}}
-						{{m.type == 'slot'? 'slot <em>[[Name]]</em>' : ''}}
+						span{{m.data.width|escape}}{{m.cell.is_alpha? ' alpha' : ''}}{{m.cell.is_omega? ' omega' : ''}}{{m.object_type == 'space'? ' grid_space' : ''}}
+						{{m.object_type == 'slot'? 'slot <em>[[Name]]</em>' : ''}}
 						<em>[[Additional class name(s)]]</em>
 						<em>...</em>
 					&quot;&gt;
@@ -66,7 +66,7 @@
 <br/>				&nbsp; &nbsp; &nbsp; &nbsp; <em>...</em>
 <br/>				&nbsp; &nbsp; &lt;/div&gt;
 <br/>				&lt;/div&gt;
-					<% if (m.type == 'grid_break') { %>
+					<% if (m.object_type == 'grid_break') { %>
 <br/>					<em>&lt;!-- This is the gridbreak here --&gt;</em>
 					<% } else { %>
 <br/>					<em>&lt;!-- The gridbreak starts here --&gt;</em>
@@ -86,15 +86,15 @@
 		
 		<div id="zenario_grid_error"></div>
 	
-		<input type="hidden" name="type" value="{{m.type|e}}" maxlength="100"/>
+		<input type="hidden" name="type" value="{{m.object_type|e}}" maxlength="100"/>
 	
-		<% if (m.type == 'slot' || m.type == 'grid_break_with_slot') { %>
+		<% if (m.object_type == 'slot' || m.object_type == 'grid_break_with_slot') { %>
 			<p>{{zenarioA.phrase.gridSlotName}}</p>
 			<input type="text" name="name" value="{{m.data.name|e}}" maxlength="100"/>
 			<div id="zenario_grid_slot_contents"><span>{{zenarioGM.getSlotDescription(m.slot)}}</span></div>
 		<% } %>
 	
-		<% if (m.type != 'grid_break' && m.type != 'grid_break_with_slot') { %>
+		<% if (m.object_type != 'grid_break' && m.object_type != 'grid_break_with_slot') { %>
 			<div id="zenario_grid_slot_columns">
 				<span>
 					<span class="value">{{m.data.width|e}}</span>
@@ -103,24 +103,24 @@
 			</div>
 		<% } %>
 	
-		<% if (m.type != 'grid_break') { %>
+		<% if (m.object_type != 'grid_break') { %>
 			<p>{{zenarioA.phrase.gridCSSClass}}</p>
 			<input type="text" name="css_class" value="{{m.data.css_class|e}}" maxlength="100"/>
 		<% } %>
 	
-		<% if (m.type == 'space') { %>
+		<% if (m.object_type == 'space') { %>
 			<p>{{zenarioA.phrase.gridHtml}}</p>
 			<textarea name="html">{{m.data.html|e}}</textarea>
 		<% } %>
 	
 		<% var show = false, showFirst = false, showOnly = false; %>
 	
-		<% if (m.type == 'grid_break' || m.type == 'grid_break_with_slot') { %>
-			<% if (m.type == 'grid_break_with_slot') { %>
+		<% if (m.object_type == 'grid_break' || m.object_type == 'grid_break_with_slot') { %>
+			<% if (m.object_type == 'grid_break_with_slot') { %>
 				<% show = showOnly = true; %>
 			<% } %>
 	
-		<% } else if (m.lib.data.responsive && m.type == 'space') { %>
+		<% } else if (m.lib.data.responsive && m.object_type == 'space') { %>
 			<p>
 				<input type="radio" name="small" id="grid_resp_hide" value="hide" checked="checked"/>
 				<label for="grid_resp_hide">{{zenarioA.phrase.gridResp_hide}}</label>
@@ -146,7 +146,7 @@
 			<p>
 				<input type="radio" name="small" id="grid_resp_always" value="" {{(!m.data.small? 'checked="checked"' : '')}}/>
 				<label for="grid_resp_always">
-					<% if (m.type == 'grid_break_with_slot') { %>
+					<% if (m.object_type == 'grid_break_with_slot') { %>
 						{{zenarioA.phrase.gridResp_slot_always}}
 					<% } else { %>
 						{{zenarioA.phrase.gridResp_always}}
@@ -156,7 +156,7 @@
 				<br/>
 				<input type="radio" name="small" id="grid_resp_hide" value="hide" {{('hide' == m.data.small? 'checked="checked"' : '')}}/>
 				<label for="grid_resp_hide">
-					<% if (m.type == 'grid_break_with_slot') { %>
+					<% if (m.object_type == 'grid_break_with_slot') { %>
 						{{zenarioA.phrase.gridResp_slot_hide}}
 					<% } else { %>
 						{{zenarioA.phrase.gridResp_hide}}
@@ -172,7 +172,7 @@
 					<br/>
 					<input type="radio" name="small" id="grid_resp_only" value="only" {{('only' == m.data.small? 'checked="checked"' : '')}}/>
 					<label for="grid_resp_only">
-					<% if (m.type == 'grid_break_with_slot') { %>
+					<% if (m.object_type == 'grid_break_with_slot') { %>
 						{{zenarioA.phrase.gridResp_slot_only}}
 					<% } else { %>
 						{{zenarioA.phrase.gridResp_only}}
@@ -182,7 +182,7 @@
 			</p>
 		<% } %>
 		
-		<% if (m.type == 'grid_break' || m.type == 'grid_break_with_slot') { %>
+		<% if (m.object_type == 'grid_break' || m.object_type == 'grid_break_with_slot') { %>
 			<br/>
 			<p>
 				To style each container differently, you should give them a different CSS class name.

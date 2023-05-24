@@ -105,6 +105,24 @@ plugins/image/plugin.js
 	With:
 		generalFormItems.push({name: 'alt', type: 'textbox', label: 'Image alt tag', classes: 'image_alt'});
 
+  ...and the same for the image width/height:
+	Replace:
+            onchange: recalcSize, ariaLabel: 'Width'
+	With:
+            onchange: recalcSize, ariaLabel: 'Width', classes: 'image_width'
+	Replace:
+            onchange: recalcSize, ariaLabel: 'Height'
+	With:
+            onchange: recalcSize, ariaLabel: 'Height', classes: 'image_height'
+	Replace:
+          { name: 'constrain', type: 'checkbox', checked: true, text: 'Constrain proportions' }
+	With:
+          { name: 'constrain', type: 'checkbox', checked: true, text: 'Constrain proportions', classes: 'image_proportions' }
+
+
+
+
+
   Hacked the old (deprecated) alignment options back in:
 	Replace:
           data = {

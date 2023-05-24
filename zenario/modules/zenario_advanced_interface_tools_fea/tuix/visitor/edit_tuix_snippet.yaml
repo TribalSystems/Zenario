@@ -9,6 +9,16 @@ zenario_edit_tuix_snippet: &definition
     tab: details
     tabs:
         details:
+            notices:
+                note_about_editing_html:
+                    type: warning
+                    show: true
+                    message: >
+                        This interface allows you to enter tags and attributes that could
+                        potentially be used for cross-site scripting attacks (XSS) on this
+                        site.
+                        Please be sure that you understand what the code does, and do not
+                        copy-paste code from third party sources that you don't trust!
             edit_mode:
                 on: true
                 enabled: true

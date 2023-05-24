@@ -84,50 +84,57 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			$this->data['openForm'] = $this->openForm();
 			$this->data['closeForm'] = $this->closeForm();
 			
-			//Attempt to get a country to show
-			//Use the country in the request if there is one...
+			//Attempt to get a country to show:
 			$countryId = false;
-			if (!empty($_REQUEST['country_id']) && !empty($this->data['countries'][$_REQUEST['country_id']])) {
+			
+			//1) The plugin is set to display a default country, and the default country is on the list of countries...
+			if ($this->setting('default_country_options') == 'select_country' && ($defaultCountry = $this->setting('default_country')) && !empty($this->data['countries'][$defaultCountry])) {
+				if (!empty($_REQUEST['country_id'])) {
+					//Accept input from the country switcher...
+					$this->data['country_id'] = $_REQUEST['country_id'];
+				} else {
+					//... or use the plugin setting.
+					$this->data['country_id'] = $defaultCountry;
+				}
+			
+			//2) ...or the plugin is set to try a GeoIP lookup...
+			} elseif ($this->setting('default_country_options') == 'geo_ip' && ze\module::inc('zenario_geoip_lookup')) {
+				if (!empty($_REQUEST['country_id'])) {
+					//Accept input from the country switcher...
+					$this->data['country_id'] = $_REQUEST['country_id'];
+				} else {
+					//... or proceed with the GeoIP lookup.
+					$countryId = zenario_geoip_lookup::getCountryISOCodeForIp(ze\user::ip());
+				
+					//Country identified and is on the list of countries
+					if ($countryId && !empty($this->data['countries'][$countryId])) {
+						$this->data['country_id'] = $countryId;
+					//Country is not on the list of countries
+					} else {
+						$defaultGeoIpCountry = $this->setting('geo_ip_default_country');
+						
+						if ($defaultGeoIpCountry && !empty($this->data['countries'][$defaultGeoIpCountry])) {
+							$this->data['country_id'] = $defaultGeoIpCountry;
+						}
+					}
+				}
+			
+			//3) ...or the plugin is not set to use any defaults. In that case, use the country in the request if there is one...
+			} elseif (!empty($_REQUEST['country_id']) && !empty($this->data['countries'][$_REQUEST['country_id']])) {
 				$this->data['country_id'] = $_REQUEST['country_id'];
 			
-			//...or check in the cookies...
+			//4) ...or check in the cookies...
 			} elseif (!empty($_COOKIE['country_id']) && !empty($this->data['countries'][$_COOKIE['country_id']])) {
 				$this->data['country_id'] = $_COOKIE['country_id'];
 			
-			//...or check in the session...
+			//5) ...or check in the session.
 			} elseif (!empty($_SESSION['country_id']) && !empty($this->data['countries'][$_SESSION['country_id']])) {
 				$this->data['country_id'] = $_SESSION['country_id'];
+			}
 			
-			//...or try a geo-ip lookup...
-			} elseif (ze\module::inc('zenario_geoip_lookup')
-				&& $this->setting('default_country_options') == 'geo_ip'
-				&& ($countryId = zenario_geoip_lookup::getCountryISOCodeForIp(ze\user::ip()))
-				&& (!empty($this->data['countries'][$countryId]))
-			) {
-				$this->data['country_id'] = $countryId;
-			
-			//...or check the default option if geo-ip country not in the list...
-			} elseif (ze\module::inc('zenario_geoip_lookup')
-				&& $this->setting('default_country_options') == 'geo_ip'
-				&& empty($this->data['countries'][$countryId])
-				&& $this->setting('geo_ip_default_country')
-				&& !empty($this->data['countries'][$this->setting('geo_ip_default_country')])
-			) {
-				$this->data['country_id'] = $this->setting('geo_ip_default_country');
-				
-			//...or check the default option...
-			} elseif($this->setting('default_country_options') == 'select_country' 
-				&& $this->setting('default_country') 
-				&& !empty($this->data['countries'][$this->setting('default_country')])
-			) {
-				$this->data['country_id'] = $this->setting('default_country');
-			
-			//...otherwise pick the first in the list
-			} else {
-				foreach ($this->data['countries'] as $countryId => $countryName) {
-					$this->data['country_id'] = $countryId;
-					break;
-				}
+			//6) If all else fails, just show the whole world.
+			if (empty($this->data['country_id'])) {
+				$this->data['country_id'] = 'xx';
 			}
 		}
 		
@@ -149,7 +156,7 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 			$this->data['show_list_and_map_in_seperate_tabs'] = true;
 			$this->data['listViewOnClick'] = $this->refreshPluginSlotJS();
 			$this->data['mapViewOnClick'] = $this->refreshPluginSlotJS('map_view=1');
-			$this->data['currentView'] = ($_REQUEST['map_view'] ?? false) ? 'map' : 'list';
+			$this->data['currentView'] = ze::request('map_view') ? 'map' : 'list';
 		}
 		
 		$this->data['mapId'] = $this->containerId. '_map';
@@ -476,9 +483,19 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 		}
 		return $countries;
 	}
+	
+	protected function checkCountryHasLocations($countryId) {
+		$sql = "
+			SELECT 1
+			FROM " . DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations
+			WHERE status = 'active'
+			AND country_id = '" . ze\escape::sql($countryId) . "'";
+		$result = ze\sql::select($sql);
+		return ze\sql::fetchValue($result);
+	}
 
 	public function showSlot() {
-		if (!($_REQUEST['display_map'] ?? false)) {
+		if (!ze::request('display_map')) {
 			$this->twigFramework($this->data);
 		} else {
 			echo '
@@ -559,6 +576,33 @@ class zenario_location_map_and_listing extends ze\moduleBaseClass {
 				
 				if ($values['front_end_features/show_list_and_map_in_seperate_tabs']) {
 					$values['front_end_features/enable_postcode_search'] = false;
+				}
+				
+				if ($values['front_end_features/filter_by_country']) {
+					
+					$countryHasNoLocationsNotice = [
+						'show' => true,
+						'type' => 'warning',
+						'message' => ze\admin::phrase('Warning: the selected country has no locations. The results may be unpredictable.')
+					];
+					
+					if ($values['front_end_features/default_country_options'] == 'select_country') {
+						unset($fields['front_end_features/default_country']['notices_below']);
+						
+						if ($values['front_end_features/default_country']) {
+							if (!self::checkCountryHasLocations($values['front_end_features/default_country'])) {
+								$fields['front_end_features/default_country']['notices_below']['country_has_no_locations'] = $countryHasNoLocationsNotice;
+							}
+						}
+					} elseif ($values['front_end_features/default_country_options'] == 'geo_ip') {
+						unset($fields['front_end_features/geo_ip_default_country']['notices_below']);
+						
+						if ($values['front_end_features/geo_ip_default_country']) {
+							if (!self::checkCountryHasLocations($values['front_end_features/geo_ip_default_country'])) {
+								$fields['front_end_features/geo_ip_default_country']['notices_below']['country_has_no_locations'] = $countryHasNoLocationsNotice;
+							}
+						}
+					}
 				}
 				
 				$hidden = !$values['image/show_images'];

@@ -9,7 +9,11 @@
 <% } %>	
 <% foreach (m.notices as n => notice) { %>
 	<div class="{{notice.type|escape}}">
-		{{zenario.htmlspecialchars(notice.message, true)}}
+		<% if (notice.html) { %>
+			{{notice.message}}
+		<% } else { %>
+			{{zenario.htmlspecialchars(notice.message, true)}}
+		<% } %>
 	</div>
 <% } %>
 
@@ -19,6 +23,9 @@
 			field,
 			ff = m.fields[0],
 			fl = m.fields.length,
+			lf = m.fields[fl-1],
+			pgf = ff._lastVisibleGroupingField,
+			lgf = lf._lastVisibleGroupingField,
 			rowHasError = false;
 	%>
 	
@@ -30,12 +37,36 @@
 	<% } %>
 	
 	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
-		<% if (ff._lastVisibleGrouping) { %>
+		<% if (pgf) { %>
 			</fieldset>
+			<% if (pgf.post_grouping_html) { %>
+				{{pgf.post_grouping_html}}
+			<% } %>
+			<% if (!ff.grouping || m.grouping.start_new_grouping_wrapper) { %>
+				</x-zenario-grouping-wrapper>
+			<% } %>
 		<% } %>
 		<% if (ff.grouping) { %>
-			<% var grouping = m.grouping || {}; %>
-			<fieldset class="zfea_form_grouping zfea_form_grouping__{{ff.grouping|escape}} {{grouping.grouping_css_class|escape}}" style="{{grouping.grouping_style|escape}}">
+			<% if (!pgf || m.grouping.start_new_grouping_wrapper) { %>
+				<x-zenario-grouping-wrapper
+					class="
+						zfea_grouping_wrapper
+						{{m.grouping.grouping_wrapper_css_class|escape}}
+					"
+					style="{{m.grouping.grouping_wrapper_style|escape}}"
+				>
+					<% if (m.grouping.grouping_wrapper_icon_class) { %>
+						<div class="zfea_grouping_wrapper_icon {{m.grouping.grouping_wrapper_icon_class|escape}}">
+							<% if (zenario.defined(m.grouping.grouping_wrapper_record_count)) { %>
+								<span class="zfea_grouping_wrapper_record_count">{{m.grouping.grouping_wrapper_record_count|escape}}</span>
+							<% } %>
+						</div>
+					<% } %>
+			<% } %>
+			<% if (m.grouping.pre_grouping_html) { %>
+				{{m.grouping.pre_grouping_html}}
+			<% } %>
+			<fieldset class="zfea_form_grouping zfea_form_grouping__{{ff.grouping|escape}} {{m.grouping.grouping_css_class|escape}}" style="{{m.grouping.grouping_style|escape}}">
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
@@ -100,6 +131,10 @@
 	<% if (ff._isLastRow) { %>
 		<% if (ff.grouping) { %>
 			</fieldset>
+			<% if (lgf && lgf.post_grouping_html) { %>
+				{{lgf.post_grouping_html}}
+			<% } %>
+			</x-zenario-grouping-wrapper>
 		<% } %>
 	<% } %>
 <% } %>

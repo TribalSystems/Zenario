@@ -36,10 +36,10 @@ class zenario_common_features__organizer__languages extends ze\moduleBaseClass {
 	
 			case 'zenario__content/panels/languages':
 				//Check if a specific Content Type has been set
-				if ($_GET['refiner__content_type'] ?? false) {
+				if (ze::get('refiner__content_type')) {
 					$panel['key']['cType'] = $_GET['refiner__content_type'] ?? false;
-				} elseif ($_GET['refiner__template'] ?? false) {
-					$panel['key']['cType'] = ze\row::get('layouts', 'content_type', ($_GET['refiner__template'] ?? false));
+				} elseif (ze::get('refiner__template')) {
+					$panel['key']['cType'] = ze\row::get('layouts', 'content_type', ze::get('refiner__template'));
 				}
 		
 				break;
@@ -114,8 +114,8 @@ _text
 		switch ($path) {
 			
 			case 'zenario__content/panels/languages':
-				if ($_GET['refiner__template'] ?? false) {
-					$details = ze\row::get('layouts', ['name', 'content_type'], ($_GET['refiner__template'] ?? false));
+				if (ze::get('refiner__template')) {
+					$details = ze\row::get('layouts', ['name', 'content_type'], ze::get('refiner__template'));
 					$panel['title'] = ze\admin::phrase('Content using the Layout "[[name]]"', $details);
 					$panel['no_items_message'] = ze\admin::phrase('There is no Content using the Layout "[[name]]."', $details);
 	
@@ -127,7 +127,7 @@ _text
 							   ON v.id = c.id
 							  AND v.type = c.type
 							  AND v.version = c.admin_version
-							  AND v.layout_id = ". (int) ($_GET['refiner__template'] ?? false). "
+							  AND v.layout_id = ". (int) ze::get('refiner__template'). "
 							WHERE c.language_id = '". ze\escape::asciiInSQL($id). "'
 							  AND c.status NOT IN ('trashed','deleted')
 							  AND c.type = '". ze\escape::asciiInSQL($details['content_type']). "'";
@@ -137,9 +137,9 @@ _text
 						$item['item_count'] = $row[0];
 					}
 
-				} elseif ($_GET['refiner__content_type'] ?? false) {
+				} elseif (ze::get('refiner__content_type')) {
 					$mrg = [
-						'ctype' => ze\content::getContentTypeName($_GET['refiner__content_type'] ?? false)];
+						'ctype' => ze\content::getContentTypeName(ze::get('refiner__content_type'))];
 					$panel['title'] = ze\admin::phrase('[[ctype]] content items', $mrg);
 					$panel['no_items_message'] = ze\admin::phrase('There are no [[ctype]] content items.', $mrg);
 					
@@ -147,7 +147,7 @@ _text
 						$item['item_count'] = ze\row::count('content_items', [
 							'language_id' => $id,
 							'status' => ['!1' => 'trashed', '!2' => 'deleted'],
-							'type' => ($_GET['refiner__content_type'] ?? false)
+							'type' => ze::get('refiner__content_type')
 						]);
 					}
 
@@ -208,7 +208,7 @@ _text
 					
 							$cID = $cType = false;
 							if (ze\content::langSpecialPage('zenario_home', $cID, $cType, $id, true)) {
-								$item['frontend_link'] = ze\link::toItem($cID, $cType, false, 'zenario_sk_return=navigation_path');
+								$item['frontend_link'] = ze\link::toItem($cID, $cType);
 								$item['homepage_id'] = $cType. '_'. $cID;
 								$item['traits']['has_homepage'] = true;
 							}
@@ -276,7 +276,7 @@ _text
 
 	
 			case 'zenario__languages/panels/languages':
-				if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+				if (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 					$sql = "
 						DELETE
 						FROM " . DB_PREFIX . "visitor_phrases
@@ -289,8 +289,8 @@ _text
 				}
 		
 				// Enable a language
-				if (($_POST['enable_language'] ?? false) && ($_POST['id'] ?? false)) {
-					echo '<!--Open_Admin_Box:zenario_setup_language//' . ze\escape::hyp($_POST['id'] ?? false) . '-->';
+				if (ze::post('enable_language') && ze::post('id')) {
+					echo '<!--Open_Admin_Box:zenario_setup_language//' . ze\escape::hyp(ze::post('id')) . '-->';
 				}
 		
 				break;

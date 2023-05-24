@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: head_and_foot
-    title: Site-wide <head> and <body> HTML/Javascript
+    title: Site-wide <head> and <body> HTML/JavaScript
     tabs:
         head:
             label: <head> HTML/JS
@@ -10,6 +10,15 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             notices:
+                note_about_editing_html:
+                    type: warning
+                    show: true
+                    message: >
+                        This interface allows you to enter tags and attributes that could
+                        potentially be used for cross-site scripting attacks (XSS) on this
+                        site.
+                        Please be sure that you understand what the code does, and do not
+                        copy-paste code from third party sources that you don't trust!
                 always:
                     type: warning
                     show: true
@@ -26,23 +35,45 @@ site_settings:
                     site_setting:
                         name: sitewide_head
                     full_width: true
+                    row_class: zfab_use_wider_notes
                     type: code_editor
                     tall_as_possible: true
                     dont_trim: true
-                    language: html
+                    language: twig
                     value: ''
                     style: >
                         height: 25em;
                         width: 99%;
                     note_below: >
-                        HTML or Javascript entered here will take effect across the entire site. Use the Layout tab in the admin toolbar to enter HTML/JS to be applied to all content items with that layout; or the Slots/Plugins tab to enter additional HTML/JS for a specific content item.
                         Typically used for <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags.
+                        HTML or JavaScript entered here will take effect across the entire site.
+                        <br/>
+                        Use the Layout tab in the admin toolbar to enter HTML/JS to be applied to all content items with that layout; or the Edit tab to enter additional HTML/JS for a specific content item.
+                        <br/>
+                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
+                sitewide_head.is_twig:
+                    site_setting:
+                        name: sitewide_head.is_twig
+                    same_row: true
+                    <div class="zfab_is_twig">:
+                    type: checkbox
+                    label: Enable Twig code here
+                    </div>:
         body:
             label: Start of <body> HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             notices:
+                note_about_editing_html:
+                    type: warning
+                    show: true
+                    message: >
+                        This interface allows you to enter tags and attributes that could
+                        potentially be used for cross-site scripting attacks (XSS) on this
+                        site.
+                        Please be sure that you understand what the code does, and do not
+                        copy-paste code from third party sources that you don't trust!
                 always:
                     type: warning
                     show: true
@@ -63,17 +94,36 @@ site_settings:
                     type: code_editor
                     tall_as_possible: true
                     dont_trim: true
-                    language: html
+                    language: twig
                     value: ''
                     style: >
                         height: 25em;
                         width: 99%;
+                    note_below: >
+                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
+                sitewide_body.is_twig:
+                    site_setting:
+                        name: sitewide_body.is_twig
+                    same_row: true
+                    <div class="zfab_is_twig">:
+                    type: checkbox
+                    label: Enable Twig code here
+                    </div>:
         foot:
             label: End of </body> HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             notices:
+                note_about_editing_html:
+                    type: warning
+                    show: true
+                    message: >
+                        This interface allows you to enter tags and attributes that could
+                        potentially be used for cross-site scripting attacks (XSS) on this
+                        site.
+                        Please be sure that you understand what the code does, and do not
+                        copy-paste code from third party sources that you don't trust!
                 always:
                     type: warning
                     show: true
@@ -93,7 +143,7 @@ site_settings:
                     type: code_editor
                     tall_as_possible: true
                     dont_trim: true
-                    language: html
+                    language: twig
                     value: ''
                     style: >
                         height: 25em;
@@ -107,12 +157,30 @@ site_settings:
                             <li><a href="https://modernizr.com/" target="_blank">Modernizr</a></li>
                             <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a></li>
                         </ul>
+                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
+                sitewide_foot.is_twig:
+                    site_setting:
+                        name: sitewide_foot.is_twig
+                    same_row: true
+                    <div class="zfab_is_twig">:
+                    type: checkbox
+                    label: Enable Twig code here
+                    </div>:
         cookie_content:
             label: Cookie-creating HTML/JS
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             notices:
+                note_about_editing_html:
+                    type: warning
+                    show: true
+                    message: >
+                        This interface allows you to enter tags and attributes that could
+                        potentially be used for cross-site scripting attacks (XSS) on this
+                        site.
+                        Please be sure that you understand what the code does, and do not
+                        copy-paste code from third party sources that you don't trust!
                 not_required:
                     type: warning
                     show: true
@@ -165,11 +233,19 @@ site_settings:
                         name: sitewide_analytics_html
                     type: code_editor
                     dont_trim: true
-                    language: html
+                    language: twig
                     value: ''
                     style: >
                         height: 20em;
                         width: 99%;
+                sitewide_analytics_html.is_twig:
+                    site_setting:
+                        name: sitewide_analytics_html.is_twig
+                    same_row: true
+                    <div class="zfab_is_twig">:
+                    type: checkbox
+                    label: Enable Twig code here
+                    </div>:
                 
                 sitewide_social_media_html_location:
                     site_setting:
@@ -190,15 +266,25 @@ site_settings:
                         name: sitewide_social_media_html
                     type: code_editor
                     dont_trim: true
-                    language: html
+                    language: twig
                     value: ''
                     style: >
                         height: 20em;
                         width: 99%;
+                    note_below: >
+                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
+                sitewide_social_media_html.is_twig:
+                    site_setting:
+                        name: sitewide_social_media_html.is_twig
+                    same_row: true
+                    <div class="zfab_is_twig">:
+                    type: checkbox
+                    label: Enable Twig code here
+                    </div>:
     confirm:
         show: true
         message: >
-            <p>You are changing HTML that is used across the entire site.</p>
+            <p>You are changing HTML and/or JavaScript that is used across the entire site.</p>
 
             <p>The change will be <strong>immediate</strong> and cannot be undone.</p>
 

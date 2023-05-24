@@ -32,6 +32,13 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['menu_node_id'] = $box['key']['id'];
+			
+			$menuContentItem = ze\menu::getContentItem($box['key']['id']);
+			$box['key']['id'] = $menuContentItem['content_type'] . '_' . $menuContentItem['content_id'];
+		}
+
 		if (!ze\module::isRunning('zenario_extranet')) {
 			foreach ($fields['privacy/privacy']['values'] as $name => $setting) {
 				if ($name != 'public') {
@@ -87,11 +94,11 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		$tagIds = [];
 		$equivId = $cType = false;
 		
-		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
+		if (ze::request('equivId') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('equivId');
 		
-		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
+		} elseif (ze::request('cID') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('cID');
 		}
 		
 		$theseValues =
@@ -279,6 +286,12 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			
 			$this->savePrivacySettings($tagIds, $values);
+		}
+	}
+
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['id'] = $box['key']['menu_node_id'];
 		}
 	}
 }

@@ -8,10 +8,10 @@ license_info: 'Modified BSD License'
 display_name: Extranet Profile
 description: |
     <p>This module allows extranet users to view and edit their own profiles.</p>
-    <p>When the module is run, it automatically creates a Profile HTML page content item.</p>
-    <p>The default behaviour is to have just one Profile page, 
-        however on a multi-language site you may create a Profile page for each Language. To do this, just duplicate the content item in the site's default language.</p>
-    <p>This module uses a User Form to define which fields from the Users/Contacts Dataset are viewable and editable.</p>
+    <p>When the module is run, it automatically creates an HTML page content item, &quot;Edit your profile&quot;.</p>
+    <p>You will need to create a Form to define which fields are available for the logged-in user to edit; so please go to Organizer->Forms and create one, adding fields like first name, last name and so on. Then edit the plugin and select that form.</p>
+    <p>Note that this plugin does not allow a user to change their email address (only to view it). Please enable the module Extranet Change Email (zenario_extranet_change_email) to allow users to change their email address.</p>
+    <p>On a single-language site the normal setup is just to have a single content item containing this plugin, but on a multi-language site you may duplicate the original one to make one content item in each enabled language.</p>
 category: pluggable
 keywords: address, extranet, name, personal, profile, user, form
 

@@ -163,7 +163,7 @@ class zenario_forum_search extends zenario_forum {
 		//Note: this form should be changed to work via GET when that option is added to the API
 		$this->sections['Search'] = ['Open_Form' => $this->openForm(), 'Close_Form' => $this->closeForm()];
 		
-		if (($_REQUEST['searchString'] ?? false) && !$this->posts) {
+		if (ze::request('searchString') && !$this->posts) {
 			$this->sections['Search_No_Results'] = true;
 		}
 		

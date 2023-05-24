@@ -424,7 +424,11 @@ install:
                     autocomplete: "new-password"
                     type: password
                     oninput: |
-                        zenario.updatePasswordNotifier('#password', '#snippet_password_message', true);
+                        var settings = {
+                            min_extranet_user_password_length: lib.tuix.key.min_extranet_user_password_length,
+                            min_extranet_user_password_score: lib.tuix.key.min_extranet_user_password_score
+                        }
+                        zenarioP.updatePasswordNotifier('#password', settings, '#snippet_password_message', true);
                     row_class: row_form
                     return_key_presses_button: next
                 password_requirements:

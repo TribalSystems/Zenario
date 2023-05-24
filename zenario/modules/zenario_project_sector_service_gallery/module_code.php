@@ -206,7 +206,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 	protected function setPagination($url_params) {
 		$pageSize = $this->rowsPerPage;
 
-				if($_REQUEST['onlyList'] ?? false) {
+				if (ze::request('onlyList')) {
 					$this->page = (int) ($_GET['page'] ?? 1) ?: 1;
 				} else {
 					$this->page = 1;

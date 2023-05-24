@@ -46,7 +46,6 @@ zenario__modules:
             panel_type: multi_line_list
             use_tall_rows: true
             #two_line_list: true
-            #disable_grid_view: true
             
             columns:
                 ordinal:
@@ -64,7 +63,7 @@ zenario__modules:
                 slide_title:
                     parent: banner_title
                     title: Slide
-                    db_column: slide.name_or_slide_label
+                    db_column: slide.slide_label
                     always_show: true
                 link_type:
                     db_column: link_type_ps.value
@@ -164,6 +163,30 @@ zenario__modules:
                                 <td style="vertical-align: text-top;">When next displayed to a visitor, will be set to Public if on a public content item, or Private if on a private content item.</td>
                             </tr>
                         </table>
+                slide_permissions:
+                    title: Slide permissions
+                    db_column: slide.privacy
+                    width: large
+                    format: enum
+                    values:
+                        public:
+                            label: 'Public, visible to everyone'
+                        logged_out:
+                            label: 'Public, only show to visitors who are NOT logged in'
+                        logged_in:
+                            label: 'Private, only show to extranet users'
+                        group_members:
+                            label: 'Private, only show to extranet users in group...'
+                        in_smart_group:
+                            label: 'Private, only show to extranet users in smart group...'
+                        logged_in_not_in_smart_group:
+                            label: 'Private, only show to extranet users NOT in smart group...'
+                        with_role:
+                            label: 'Private, only show to extranet users with role...'
+                        call_static_method:
+                            label: "Call a module's static method to decide visibility"
+                        send_signal:
+                            label: 'Send a signal to decide visibility'
             item:
                 name: Image
                 names: Images
@@ -178,7 +201,7 @@ zenario__modules:
             collection_buttons:
                 upload_banner:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
-                    label: Upload
+                    label: Upload image
                     css_class: zenario_create_a_new
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
@@ -190,9 +213,9 @@ zenario__modules:
                 add_from_library:
                     label: Add image from image library
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Use
                         multiple_select: true
@@ -216,7 +239,7 @@ zenario__modules:
                     admin_box:
                         path: plugin_settings
                 tab_settings:
-                    label: Edit slide label and visibility
+                    label: Edit slide label and permissions
                     admin_box:
                         path: zenario_slide
                 view:

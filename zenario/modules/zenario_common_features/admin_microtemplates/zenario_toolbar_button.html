@@ -10,14 +10,14 @@
 		<% } %>
 	>
 		<% if (m.featured_image_container) { %>
-			<span class="content_item_images <% if (m.inline_images_count) { %> has_images_count <% } %>">
+			<span class="content_item_images <% if (m.record_count) { %> has_record_count <% } %>">
 			<% if (m.featured_image_src) { %>
 				<img src="{{m.featured_image_src}}" alt="{{m.featured_image_alt}}" />
 			<% } else { %>
 				<span class="content_item_no_image"></span>
 			<% } %>
-			<% if (m.inline_images_count) { %>
-				<span class="inline_images_count zenario_item_record_count">{{m.inline_images_count}}</span>
+			<% if (m.record_count) { %>
+				<span class="record_count zenario_item_record_count">{{m.record_count}}</span>
 			<% } %>
 			</span>
 		<% } %>

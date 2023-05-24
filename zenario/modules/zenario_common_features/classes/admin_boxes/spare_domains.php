@@ -40,6 +40,15 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($box['key']['id']) {
+			
+			//The Organizer panel this FAB opens from is one of the rare panels
+			//that use the encode_id_column option, so we may need to decode the ID.
+			$box['key']['id'] = ze\ring::decodeIdForOrganizer($box['key']['id']);
+			//As far as I know, no valid domain starts with a "~", so it's safe to call
+			//this even if it's already been called before as if the string does not start with
+			//a "~" this function will attempt to decode the same string a second time.
+			
+			
 			$record = ze\row::get('spare_domain_names', true, ['requested_url' => ze\ring::decodeIdForOrganizer($box['key']['id'])]);
 			//$this->fillFieldValues($values, $record);
 
@@ -108,12 +117,12 @@ class zenario_common_features__admin_boxes__spare_domains extends ze\moduleBaseC
 		$cID = $cType = false;
 		ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['details/content']);
 		
-		if ($requested_url = ze\ring::decodeIdForOrganizer($box['key']['id'])) {
+		if ($box['key']['id']) {
 			$sql = "
 				UPDATE ". DB_PREFIX. "spare_domain_names SET
 					content_id = ". (int) $cID. ",
 					content_type = '". ze\escape::asciiInSQL($cType). "'
-				WHERE requested_url = '". ze\escape::sql($requested_url). "'";
+				WHERE requested_url = '". ze\escape::sql($box['key']['id']). "'";
 			ze\sql::update($sql);
 			
 		} else {

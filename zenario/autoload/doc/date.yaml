@@ -33,3 +33,12 @@ now:
     <p>Gets the current time, in MySQL format.</p>
     <h2>Return Value</h2>
     <p>Returns the value of a&nbsp;<span class="code">SELECT NOW()</span> query in MySQL.</p>
+convertToUsersTimeZone:
+  summary: |
+    Convert a date into the current extranet user's timezone.
+  desc: |
+    <h2>Summary</h2>
+    <p>Convert a date into&nbsp;the current extranet user's timezone.</p>
+    <h2>Description</h2>
+    <p>Given a MySQL timestamp, a unix timestamp, or a PHP date object, this returns a PHP date object in the current extranet user's timezone.</p>
+    <p>If the current visitor is not logged in as an extranet user, or they have no timezone set, then this function will still return&nbsp;a PHP date object, but no conversion will happen.</p>

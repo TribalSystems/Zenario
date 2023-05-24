@@ -55,7 +55,7 @@ class date {
 
 
 	//Formerly "formatDateNicely()"
-	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false, $admin = false) {
+	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false, $adminPhrase = false) {
 		
 		if (empty($date)) {
 			return '';
@@ -94,7 +94,7 @@ class date {
 		}
 	
 		if (is_numeric($date)) {
-			$date = \ze\user::convertToUsersTimeZone($date);
+			$date = \ze\date::convertToUsersTimeZone($date);
 		}
 		if (is_object($date)) {
 			$sql = "SELECT DATE_FORMAT('". \ze\escape::sql($date->format('Y-m-d H:i:s')). "', '". \ze\escape::sql($format_type. $time_format). "')";
@@ -119,7 +119,7 @@ class date {
 				$returnDate .= $timezone;
 			}
 		
-		} elseif ($admin) {
+		} elseif ($adminPhrase) {
 			\ze\lang::applyMergeFields($returnDate, \ze\admin::$englishDatePhrases);
 		} else {
 			\ze\lang::replacePhraseCodesInString($returnDate, 'zenario_common_features', $languageId, 2, $cli);
@@ -129,15 +129,15 @@ class date {
 	}
 
 	//Formerly "formatDateTimeNicely()"
-	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false, $admin = false) {
-		return \ze\date::format($date, $format_type, $languageId, true, $rss, $cli, $admin);
+	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false, $adminPhrase = false) {
+		return \ze\date::format($date, $format_type, $languageId, true, $rss, $cli, $adminPhrase);
 	}
 
 	//Formerly "formatTimeNicely()"
 	public static function formatTime($time, $format_type) {
 	
 		if (is_numeric($time)) {
-			$time = \ze\user::convertToUsersTimeZone($time);
+			$time = \ze\date::convertToUsersTimeZone($time);
 		}
 		if (is_object($time)) {
 			$sql = "SELECT TIME_FORMAT('". \ze\escape::sql($time->format('Y-m-d H:i:s')). "', '". \ze\escape::sql($format_type). "')";
@@ -154,7 +154,7 @@ class date {
 	public static function formatTimeZone($date = null) {
 		
 		if (is_null($date)) {
-			$date = \ze\user::convertToUsersTimeZone(new \DateTime());
+			$date = \ze\date::convertToUsersTimeZone(new \DateTime());
 		}
 		
 		$text = $date->format('T');
@@ -177,7 +177,7 @@ class date {
 	public static function formatTimeZoneOffset($date = null) {
 		
 		if (is_null($date)) {
-			$date = \ze\user::convertToUsersTimeZone(new \DateTime());
+			$date = \ze\date::convertToUsersTimeZone(new \DateTime());
 		}
 		
 		return 'UTC '. $date->format('P');
@@ -236,18 +236,50 @@ class date {
 		//Catch the case where this is already a date object (i.e. this function won't cause an error if someone accidentally calls it twice!)
 		return $time;
 	}
+	
+	
+	//Given a MySQL timestamp, a unix timestamp, or a PHP date object, return a PHP date object in the current user's timezone
+	//Formerly "convertToUserTimezone()"
+	public static function convertToUsersTimeZone($time) {
+	
+		$time = \ze\date::new($time);
+	
+		//Get the user's timezone, if not already checked
+		if (\ze::$timezone === null) {
+			\ze::$timezone = \ze\user::timeZone();
+		}
+		if (\ze::$timezone) {
+			$time->setTimeZone(new \DateTimeZone(\ze::$timezone));
+		}
+	
+		return $time;
+	}
+	
+	
+	//Given a MySQL timestamp, a unix timestamp, or a PHP date object, return a PHP date object in the specified timezone
+	public static function convertToTimeZone($time, $timeZone = false) {
+	
+		$time = \ze\date::new($time);
+		$time->setTimeZone(new \DateTimeZone($timeZone));
+	
+		return $time;
+	}
 
 
 
-	const relativeFromTwig = true;
+	const formatRelativeDateTimeFromTwig = true;
 	//Formerly "getRelativeDate()"
-	public static function relative($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false, $showDateTime = false, $displayAdminPhrase = false) {
+	public static function formatRelativeDateTime(
+		$timestamp, $maxPeriod = "day", $addFullTime = true,
+		$format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false,
+		$showDateTime = false, $adminPhrase = false, $phrasePrefix = '[[time_elapsed]] ', $phraseSuffix = ' ago'
+	) {
 		if (is_object($timestamp)) {
 			$time = $timestamp;
 			$timestamp = (int) $time->format('U');
 		
 		} else {
-			$time = \ze\user::convertToUsersTimeZone($timestamp);
+			$time = \ze\date::convertToUsersTimeZone($timestamp);
 			if (!is_numeric($timestamp)) {
 				$timestamp = (int) $time->format('U');
 			}
@@ -255,10 +287,10 @@ class date {
 	
 		$etime = time() - (int) $timestamp;
 		if ($etime < 1) {
-			if ($displayAdminPhrase) {
-				return \ze\admin::phrase('[[time_elapsed]] secs ago', ['time_elapsed' => 0]);
+			if ($adminPhrase) {
+				return \ze\admin::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0]);
 			} else {
-				return \ze\lang::phrase('[[time_elapsed]] secs ago', ['time_elapsed' => 0], 'zenario_common_features', false, 1, $cli);
+				return \ze\lang::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0], 'zenario_common_features', $languageId, 1, $cli);
 			}
 		}
 	
@@ -280,25 +312,25 @@ class date {
 					$r = round($etime / $uValues[--$i]);
 				
 					if ($r > 1) {
-						if ($displayAdminPhrase) {
-							$relativeDate = \ze\admin::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', ['time_elapsed' => $r]);
+						if ($adminPhrase) {
+							$relativeDate = \ze\admin::phrase($phrasePrefix. $uPlurals[$i]. $phraseSuffix, ['time_elapsed' => $r]);
 						} else {
-							$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
+							$relativeDate = \ze\lang::phrase($phrasePrefix. $uPlurals[$i]. $phraseSuffix, ['time_elapsed' => $r], 'zenario_common_features', $languageId, 1, $cli);
 						}
 					} else {
 						
-						if ($displayAdminPhrase) {
-							$relativeDate = \ze\admin::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', ['time_elapsed' => $r]);
+						if ($adminPhrase) {
+							$relativeDate = \ze\admin::phrase($phrasePrefix. $units[$i]. $phraseSuffix, ['time_elapsed' => $r]);
 						} else {
-							$relativeDate = \ze\lang::phrase('[[time_elapsed]] ' . $units[$i] . ' ago', ['time_elapsed' => $r], 'zenario_common_features', false, 1, $cli);
+							$relativeDate = \ze\lang::phrase($phrasePrefix. $units[$i]. $phraseSuffix, ['time_elapsed' => $r], 'zenario_common_features', $languageId, 1, $cli);
 						}
 					}
 			
 					if ($addFullTime) {
 						if (is_string($addFullTime)) {
-							return $relativeDate. ' ('. \ze\date::format($time, $addFullTime, $languageId, $time_format, false, $cli, $displayAdminPhrase). ')';
+							return $relativeDate. ' ('. \ze\date::format($time, $addFullTime, $languageId, $time_format, false, $cli, $adminPhrase). ')';
 						} else {
-							return $relativeDate. ' ('. \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $displayAdminPhrase). ')';
+							return $relativeDate. ' ('. \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $adminPhrase). ')';
 						}
 					
 					} else {
@@ -312,11 +344,11 @@ class date {
 			$time_format = '';
 		}
 	
-		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $displayAdminPhrase);
+		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $adminPhrase);
 
 	}
 	//Added new relative date function for CSLs
-	public static function simpleFormatRelativeDate($timestamp) {
+	public static function formatRelativeDate($timestamp, $languageId = false, $adminPhrase = false) {
 		$originalTime = $timestamp;
 		
 		if (is_object($timestamp)) {
@@ -324,7 +356,7 @@ class date {
 			$timestamp = (int) $time->format('U');
 		
 		} else {
-			$time = \ze\user::convertToUsersTimeZone($timestamp);
+			$time = \ze\date::convertToUsersTimeZone($timestamp);
 			if (!is_numeric($timestamp)) {
 				$timestamp = (int) $time->format('U');
 			}
@@ -335,27 +367,39 @@ class date {
 		$dateDifference = floor($etime/(60*60*24));
 		if($dateDifference==0){
 			
-			$relativeDate = 'Today';
+			if ($adminPhrase) {
+				$relativeDate = \ze\admin::phrase('Today');
+			} else {
+				$relativeDate = \ze\lang::phrase('Today', false, 'zenario_common_features', $languageId, 1);
+			}
 			
 		} else if ($dateDifference > 1 && $dateDifference < 29){
 			
-			$relativeDate = $dateDifference.' days ago';
+			if ($adminPhrase) {
+				$relativeDate = \ze\admin::phrase('[[days]] days ago', ['days' => $dateDifference]);
+			} else {
+				$relativeDate = \ze\lang::phrase('[[days]] days ago', ['days' => $dateDifference], 'zenario_common_features', $languageId, 1);
+			}
 			
 		} else if ($dateDifference > 28){
 			
-			$relativeDate = \ze\date::format($originalTime,'_MEDIUM');
+			$relativeDate = \ze\date::format($originalTime, '_MEDIUM', $languageId, '', false, false, $adminPhrase);
 			
 		} else if($dateDifference > 0){
 			 
-			$relativeDate = 'Yesterday';
+			if ($adminPhrase) {
+				$relativeDate = \ze\admin::phrase('Yesterday');
+			} else {
+				$relativeDate = \ze\lang::phrase('Yesterday', false, 'zenario_common_features', $languageId, 1);
+			}
 			
 		} else if($dateDifference < -1){
 			
-			$relativeDate = \ze\date::format($originalTime,'_MEDIUM');
+			$relativeDate = \ze\date::format($originalTime, '_MEDIUM', $languageId, '', false, false, $adminPhrase);
 			
 		} else {
 			
-			$relativeDate = \ze\date::format($originalTime,'_MEDIUM');
+			$relativeDate = \ze\date::format($originalTime, '_MEDIUM', $languageId, '', false, false, $adminPhrase);
 		}  
 	
 		return $relativeDate;

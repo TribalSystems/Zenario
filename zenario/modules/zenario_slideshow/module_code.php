@@ -85,7 +85,7 @@ class zenario_slideshow extends zenario_plugin_nest {
 				'Class' => 'tab_'. $tabOrd. ' tab',
 				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
 				'Tab_Link' => $link,
-				'Tab_Name' => $this->formatTitleText($slide['name_or_slide_label'], true)
+				'Tab_Name' => $this->formatTitleText($slide['slide_label'], true)
 			];
 			
 			if (!$firstTabNum) {
@@ -141,10 +141,8 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		if ($animationLibrary = $this->setting('animation_library')) {
 			
-			if ($animationLibrary == 'cycle') {
-				ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery.cycle.all.min.js');
-			} elseif ($animationLibrary == 'cycle2') {
-				ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery.cycle2.min.js');
+			if ($animationLibrary == 'cycle2') {
+				ze::requireJsLib('zenario/libs/yarn/jquery-cycle2/build/jquery.cycle2.min.js');
 			}
 			
 			$opt = [
@@ -155,11 +153,6 @@ class zenario_slideshow extends zenario_plugin_nest {
 			];
 			
 			switch ($animationLibrary) {
-				case 'cycle':
-					$opt['fx'] = $this->setting('fx');
-					$opt['sync'] = (bool) $this->setting('sync');
-					$opt['speed'] = (int) $this->setting('speed');
-					break;
 				case 'cycle2':
 					$opt['fx'] = $this->setting('cycle2_fx');
 					$opt['sync'] = (bool) $this->setting('cycle2_sync');

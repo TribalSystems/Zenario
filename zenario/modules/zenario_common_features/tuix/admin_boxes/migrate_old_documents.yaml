@@ -77,9 +77,9 @@ zenario_migrate_old_documents:
                 folder:
                     label: 'Folder:'
                     pick_items:
-                        path: zenario__content/panels/documents
-                        target_path: zenario__content/panels/documents
-                        min_path: zenario__content/panels/documents
+                        path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
                     visible_if: zenarioAB.value('put_in_folder')
                     validation:
                         required_if_not_hidden: You must select a folder for the documents.

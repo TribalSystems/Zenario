@@ -74,5 +74,9 @@ inheritance:
     inherit_frameworks_from_module: zenario_comments
     include_javascript_from_module: zenario_comments
 signals:
-    signal:
+    -
         name: eventUserDeleted
+        static: true
+    -
+        name: deleteUserDataGetInfo
+        static: true

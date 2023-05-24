@@ -112,7 +112,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			if ($count > 1
 			 || count($tags) > 1) {
 				$box['tabs']['publish']['notices']['scheduled_warning']['message'] =
-					ze\admin::phrase('These items are scheduled to be published at various times. Please check each one for details.');
+					ze\admin::phrase('These items are scheduled to be published on various times. Please check each one for details.');
 			
 			} else {
 				$row['publication_time'] = 
@@ -123,9 +123,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					$row['first_name'] = $adminDetails['first_name'];
 					$row['last_name'] = $adminDetails['last_name'];
 
-					$scheduledWarningPhrase = "This item is scheduled by [[first_name]] [[last_name]] to be published at [[publication_time]].";
+					$scheduledWarningPhrase = "This item is scheduled by [[first_name]] [[last_name]] to be published on [[publication_time]].";
 				} else {
-					$scheduledWarningPhrase = "This item is scheduled to be published at [[publication_time]].";
+					$scheduledWarningPhrase = "This item is scheduled to be published on [[publication_time]].";
 				}
 
 				$box['tabs']['publish']['notices']['scheduled_warning']['message'] = ze\admin::phrase($scheduledWarningPhrase, $row);
@@ -229,12 +229,21 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			if ($cID && $cType && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 				if ($values['publish/publish_options'] == 'immediately') {
 					// Publish now
+					if ($box['tabs']['publish']['notices']['scheduled_warning']['show']) {
+						//If this content item was scheduled for publishing, but now an admin immediately publishes it,
+						//remove all the scheduled information.
+						$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
+						ze\row::update('content_item_versions', ['scheduled_publish_datetime' => NULL], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+
+						//Unlock content item
+						ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => NULL], ['id' => $cID, 'type' => $cType]);
+					}
 					ze\contentAdm::publishContent($cID, $cType);
 					if (ze\ring::chopPrefix($cType. '_'. $cID. '.', ze::session('last_item'))) {
 						unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
 					}
 				} elseif ($values['publish/publish_options'] == 'schedule') {
-					// Publish at a later date
+					// Publish on a later date
 					$scheduled_publish_datetime = $values['publish/publish_date'].' '.$values['publish/publish_hours'].':'.$values['publish/publish_mins'].':00';
 					$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
 					ze\row::update('content_item_versions', ['scheduled_publish_datetime' => $scheduled_publish_datetime], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);

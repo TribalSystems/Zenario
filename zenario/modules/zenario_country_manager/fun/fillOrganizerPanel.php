@@ -70,7 +70,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							break;
 					}
 				}
-				switch ($_GET['refinerName'] ?? false){
+				switch (ze::get('refinerName')){
 					case 'country_code_filter':
 						if ($country=$this->getEnglishCountryName($refinerId)){
 							$panel['title'] = 'Regions within "'. $country . '"';

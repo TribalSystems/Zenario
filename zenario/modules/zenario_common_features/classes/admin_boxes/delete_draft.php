@@ -34,14 +34,22 @@ class zenario_common_features__admin_boxes__delete_draft extends ze\moduleBaseCl
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
-		if (count($ids) > 1) {
+		$contentItemsCount = count($ids);
+
+		if ($contentItemsCount > 1) {
 			$box['tabs']['delete_draft']['notices']['delete_items']['show'] = true;
 		} else {
 			$box['tabs']['delete_draft']['notices']['delete_item']['show'] = true;
 		}
 		
 		ze\module::incSubclass('zenario_common_features');
-		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'delete_draft', $this->totalRowNum);
+		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'delete_draft', $this->totalRowNum, $getPlugins = true, $getTranslations = true);
+
+		$fields['delete_draft/links_warning_part_2']['snippet']['html'] = '<br /><p>' . ze\admin::nPhrase(
+			'Delete this draft?',
+			'Delete these drafts?',
+			$contentItemsCount
+		) . '</p>';
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

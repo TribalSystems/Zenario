@@ -677,8 +677,10 @@ zenario__content:
                         path: zenario_content_type_details
                         key:
                             id: ''
+                            openedFromCollectionButton: 1
                             
                 settings_ctype_list:
+                    priv: _PRIV_RUN_MODULE
                     parent: settings_dropdown
                     hide_in_select_mode: true
                     hide_on_refiner: &hide_settings_on_these_refiners
@@ -761,6 +763,8 @@ zenario__content:
                 privacy:
                     css_class: privacy_inline_button
                     tooltip: "[[privacy]]"
+                    admin_box:
+                        path: zenario_content_privacy
                 pinned:
                     ord: privacy.1
                     css_class: pinned
@@ -960,7 +964,7 @@ zenario__content:
                     parent: view_dropdown
                     label: Attached images
                     link:
-                        path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
                         branch: true
                         refiner: images_for_content_item
                     without_columns_set:
@@ -1247,7 +1251,7 @@ zenario__content:
                                 create_draft_by_copying: 1
                 
                 delete_archives:
-                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     visible_if_for_any_selected_items: |
@@ -1308,7 +1312,7 @@ zenario__content:
                         path: zenario_delete_media_content_item
                 hide:
                     parent: action_dropdown
-                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
@@ -1318,28 +1322,11 @@ zenario__content:
                         hideable: true
                     without_columns_set:
                         ghost: true
-                    ajax:
-                        confirm:
-                            message: |
-                                This action will hide the content item "[[tag]]".
-                                
-                                If it's in the menu, its menu node(s) will be hidden. 
-                                
-                                Are you sure you wish to proceed?
-                            multiple_select_message: |
-                                This action will hide the selected content items.
-                                
-                                Any menu nodes linking to the the items will be hidden.
-                                
-                                Are you sure you wish to proceed?
-                            button_message: Hide
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            hide: 1
+                    admin_box:
+                        path: zenario_hide
                 trash:
                     parent: action_dropdown
-                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true

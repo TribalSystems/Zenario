@@ -197,11 +197,11 @@ zenario_location_manager__location:
                 images:
                     label: 'Images:'
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select from image library...
                         multiple_select: true
                     upload:
                         multi: true
@@ -216,7 +216,7 @@ zenario_location_manager__location:
         location_preview:
             hidden: true
 zenario_location_manager__sector:
-    title: Creating a Sector
+    title: Creating a business sector
     key:
         id: ""
         parent_id: ""
@@ -235,9 +235,9 @@ zenario_location_manager__sector:
                     label: 'Name:'
                     type: text
                     validation:
-                        required: You must enter a name.
+                        required: Please enter a name.
 zenario_location_manager__score:
-    title: Editing a Score
+    title: Editing a score
     key:
         id: ""
     tabs:
@@ -251,7 +251,7 @@ zenario_location_manager__score:
                     label: 'Name:'
                     type: text
                     validation:
-                        required: You must enter a name.
+                        required: Please enter a name.
 zenario_content:
     tabs:
         meta_data:

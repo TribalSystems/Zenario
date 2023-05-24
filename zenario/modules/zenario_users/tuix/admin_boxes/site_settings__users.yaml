@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: users
-    title: Editing settings for Users/Contacts
+    title: Editing settings for Users and Contacts
     tabs:
         names:
             label: Identifiers
@@ -33,13 +33,12 @@ site_settings:
                     full_width: true
                     snippet:
                         p: |
-                            For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
-                            If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
-                            Login Module will have the option to allow users to log in using their screen name (rather than an email address).
+                            All users and contacts have a unique identifier. For most sites this is created automatically from the first and last names, while for sites with social features (e.g. where people post comments), a screen name will be used.
                 user_use_screen_name:
                     site_setting:
                         name: user_use_screen_name
                     label: 'Use screen names'
+                    side_note: Only recommended if the site will have users posting public messages such as comments and forum messages.
                     type: checkbox
                     format_onchange: true
                     value: 1
@@ -47,12 +46,10 @@ site_settings:
                     site_setting:
                         name: user_chars_from_first_name
                     pre_field_html: |
-                        For user records that do not have a screen name, or if screen names are not used on a site,
-                        an identifier will be generated to use instead of the screen name.
-                        This identifier will only displayed to administrators in the back-end, and will not be publically visible.
+                        If screen names are not used, a unique identifier will be auto-generated, for administrator use only. To avoid collisions, numeric digits may be appended automatically.
                         <br/>
                         <br/>
-                        This identifier should be&nbsp;
+                        Generate identifiers with&nbsp;
                     type: select
                     value: 99
                     values:
@@ -181,39 +178,6 @@ site_settings:
                     note_below: Length must be between 8 and 32 characters.
                     # The <br /> tags above are required, as Extranet Base module adds its own field
                     # with pre- and post-field HTML, which blends with the snippet above.
-                
-                # As of 18 Oct 2021, the character type requirements are being removed.
-                # info:
-                #     grouping: password_requirements
-                #     label: 'Character requirements:'
-                # a_z_lowercase_characters_in_user_password:
-                #     label: 'Passwords must contain a lowercase letter (a-z)'
-                #     grouping: password_requirements
-                #     site_setting:
-                #         name: a_z_lowercase_characters
-                #     type: checkbox
-                #     value: true
-                # a_z_uppercase_characters_in_user_password:
-                #     label: 'Passwords must contain an uppercase letter (A-Z)'
-                #     grouping: password_requirements
-                #     site_setting:
-                #         name: a_z_uppercase_characters
-                #     type: checkbox
-                #     value: true
-                # 0_9_numbers_in_user_password:
-                #     label: 'Passwords must contain a number (0-9)'
-                #     grouping: password_requirements
-                #     site_setting:
-                #         name: 0_9_numbers_in_user_password
-                #     type: checkbox
-                #     value: true
-                # symbols_in_user_password:
-                #     label: 'Passwords must contain a symbol'
-                #     grouping: password_requirements
-                #     site_setting:
-                #         name: symbols_in_user_password
-                #     type: checkbox
-                #     value: false
         activation_email_template:
             label: "Activation"
             edit_mode:
@@ -226,7 +190,7 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                Select the default email template for the activation of new users.
+                                Select the default email template to be sent to new users when their account is activated.
                             </p>
                 default_activation_email_template:
                     site_setting:
@@ -255,17 +219,59 @@ site_settings:
                     value: details
                     side_note: |
                         This defines which tab of User/Contact admin box contains the Groups checboxes. If creating a group, it will appear on this tab. Go to Datasets->Users to re-arrange.
+                max_user_image_filesize_override:
+                    site_setting:
+                        name: max_user_image_filesize_override
+                    label: "Maximum user image file size:"
+                    type: radios
+                    values:
+                        use_global_max_attachment_file_size:
+                            label: "Use global file upload size setting ([[global_max_attachment_file_size]])"
+                            ord: 1
+                        limit_max_attachment_file_size:
+                            label: "For user-uploaded files, restrict to lower limit..."
+                            ord: 2
+                    value: limit_max_attachment_file_size
+                    redraw_onchange: true
+                    notices_below:
+                        max_upload_size_site_setting_link:
+                            type: information
+                            size: small
+                            message: ""
+                            html: true
                 max_user_image_filesize:
+                    indent: 1
                     site_setting:
                         name: max_user_image_filesize
                     label: 'Maximum user image file size:'
                     type: text
-                    value: "50000"
+                    value: 50
                     side_note: >
-                        Maximum allowed file size for avatar images uploaded by extranet users, in bytes.
+                        Maximum allowed file size for all user images (e.g. avatars or location images) uploaded by extranet users.
                     validation:
                         required: Please enter a maximum user image file size.
                         numeric: The number must be numeric.
+                    decimal_places: ""
+                    visible_if: lib.value('max_user_image_filesize_override') == 'limit_max_attachment_file_size'
+                    maxlength: 10
+                    style: "width: 7em;"
+                max_user_image_filesize_unit:
+                    indent: 1
+                    site_setting:
+                        name: max_user_image_filesize_unit
+                    label: 'Unit:'
+                    same_row: true
+                    type: select
+                    values:
+                        KB:
+                            label: KB
+                        MB:
+                            label: MB
+                        GB:
+                            label: GB
+                    value: KB
+                    redraw_onchange: true
+                    visible_if: lib.value('max_user_image_filesize_override') == 'limit_max_attachment_file_size'
         
         countries:
             label: Countries
@@ -307,6 +313,7 @@ site_settings:
                     format_onchange: true
                     side_note: Accounts for users will be deleted where their status is Pending and the email verified flag is not set.
                 max_days_user_inactive:
+                    indent: 1
                     site_setting:
                         name: max_days_user_inactive
                     label: 'If a user fails to confirm their email address after signing up, delete account after:'

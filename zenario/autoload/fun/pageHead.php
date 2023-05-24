@@ -35,8 +35,6 @@ if (!\ze::$cacheWrappers) {
 }
 
 $isWelcome = $mode === true || $mode === 'welcome';
-$isWizard = $mode === 'wizard';
-$isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
 $httpUserAgent = ($_SERVER['HTTP_USER_AGENT'] ?? '');
 $isAdmin = \ze::isAdmin();
@@ -60,7 +58,7 @@ if (strpos($httpUserAgent, 'MSIE') === false) {
 		|| strpos($httpUserAgent, 'MSIE 9') !== false
 		|| strpos($httpUserAgent, 'MSIE 10') !== false;
 	
-	if ($isWelcomeOrWizard || $isAdmin) {
+	if ($isWelcome || $isAdmin) {
 		echo '
 <script type="text/javascript">
 	if (typeof JSON === "undefined" || ', \ze\ring::engToBoolean($notSupportedInAdminMode), ') {
@@ -68,7 +66,6 @@ if (strpos($httpUserAgent, 'MSIE') === false) {
 			\ze\escape::js(
 				\ze\link::absolute().
 				'zenario/admin/ie_compatibility_mode/index.php?'.
-				($isWizard? 'isWizard=1&' : '').
 				http_build_query($_GET)
 			),
 		'";
@@ -77,7 +74,7 @@ if (strpos($httpUserAgent, 'MSIE') === false) {
 	}
 }
 
-if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcomeOrWizard && !$oldIE)) {
+if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcome && !$oldIE)) {
 	$prefix = $absURL. 'zenario/';
 }
 
@@ -105,7 +102,7 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 }
 
 
-if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 'zenario')) {
+if ($isWelcome || ($isOrganizer && \ze::setting('organizer_favicon') == 'zenario')) {
 	echo "\n", '<link rel="shortcut icon" href="', \ze\link::absolute(), 'zenario/admin/images/favicon.ico"/>';
 
 } elseif (\ze::$dbL) {
@@ -137,14 +134,14 @@ if ($isWelcomeOrWizard || ($isOrganizer && \ze::setting('organizer_favicon') == 
 
 
 //Add CSS needed for the CMS in Admin mode
-if ($isWelcomeOrWizard || $isAdmin) {
+if ($isWelcome || $isAdmin) {
 	if (!\ze::$skinId) {
 		echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/colorbox/colorbox.css?', $v, '"/>';
 	}
 	
 	echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/jquery/css/jquery_ui/jquery-ui.css?', $v, '"/>
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.css?', $v, '"/>
 <link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/print.min.css"/>';
 	
 	//Add the CSS for admin mode... unless this is a layout preview

@@ -3,6 +3,7 @@
 zenario__layouts:
     panels:
         skin_files:
+            priv: _PRIV_VIEW_TEMPLATE
             title: Skin Files
             no_items_message: There are no files in this skin
             columns:
@@ -29,9 +30,6 @@ zenario__layouts:
                 subpath:
                     exists: true
             refiner_required: true
-            view_mode: list
-            disable_grid_view: true
-            disable_summary_view: true
             item:
                 name: Skin File
                 names: Skin Files

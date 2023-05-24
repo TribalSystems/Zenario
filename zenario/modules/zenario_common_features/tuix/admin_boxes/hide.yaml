@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_hide:
+    priv: _PRIV_PUBLISH_CONTENT_ITEM
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+    tabs:
+        hide:
+            edit_mode:
+                enabled: true
+                enable_revert: false
+            
+            notices:
+                hide_item:
+                    type: warning
+                    message: |
+                        When this content item is hidden, it will no longer be seen by visitors, nor appear in the menu navigation.
+                hide_items:
+                    type: warning
+                    message: |
+                        When these content items are hidden, they will no longer be seen by visitors, nor appear in the menu navigation.
+            fields:
+                links_warning:
+                    snippet:
+                        html: ''
+    
+    hide_tab_bar: true
+    save_button_message: Hide
+    cancel_button_message: Cancel

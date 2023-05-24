@@ -44,11 +44,11 @@ site_settings:
                             - .png
                         drag_and_drop: false
                     pick_items: 
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select from image library...
                     note_below: >
                         You may upload a <code>.gif</code> or a <code>.png</code> file. (<code>.svg</code> files are not supported.)
                         We recommend that the image be 144×144 pixels in size; larger images will be auto-downsized.
@@ -68,11 +68,11 @@ site_settings:
                             - .jpeg
                         drag_and_drop: false
                     pick_items: 
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
-                        select_phrase: Select image...
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select from image library...
                     note_below: >
                         When a content item doesn’t have a featured image, this image will be used for the content item's <code>og:image</code> meta data tags.<br>
                         You should upload a <code>.jpg</code>, <code>.jpeg</code>, <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
@@ -123,6 +123,12 @@ site_settings:
                             - .png
                             - .svg
                         drag_and_drop: true
+                    pick_items: 
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select from image library...
                     note_below: >
                         If your image is larger than 500p× wide by 250px high, it will be scaled down to fit.
                     validation:
@@ -185,6 +191,12 @@ site_settings:
                             - .png
                             - .svg
                         drag_and_drop: true
+                    pick_items: 
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select from image library...
                     validation:
                         required_if_not_hidden: >
                             Please upload an image.

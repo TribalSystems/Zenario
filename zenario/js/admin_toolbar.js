@@ -484,7 +484,7 @@ zenarioAT.draw = function() {
 						featured_image_container: button.featured_image_container,
 						featured_image_src: button.featured_image_src,
 						featured_image_alt: button.featured_image_alt,
-						inline_images_count: button.inline_images_count,
+						record_count: button.record_count,
 						label: button.label || button.name,
 						parent: button.parent,
 						tuix: button

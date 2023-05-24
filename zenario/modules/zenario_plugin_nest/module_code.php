@@ -139,12 +139,13 @@ class zenario_conductor__link {
 
 class zenario_plugin_nest extends ze\moduleBaseClass {
 	
-	protected static $addedSubtitle = false;
-	
 	protected $firstTab = false;
 	protected $lastTab = false;
+	protected $firstSlide;
+	protected $slides = [];
 	protected $slideNum = false;
 	protected $slideId = false;
+	protected $slideSetsTitle = '';
 	protected $slideLayoutId = false;
 	protected $state = false;
 	protected $usesConductor = false;
@@ -163,14 +164,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected $groupingColumns = 0;
 	protected $maxColumns = false;
 	protected $sameHeight = false;
-	
-	public $banner_canvas = false;
-	public $banner_width = 0;
-	public $banner_height = 0;
-	public $banner__enlarge_image = false;
-	public $banner__enlarge_canvas = false;
-	public $banner__enlarge_width = 0;
-	public $banner__enlarge_height = 0;
 	
 	protected $currentRequests = [];
 
@@ -236,8 +229,8 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				 && preg_match('/^[ab]?[a-z]$/i', $_REQUEST['state'])) {
 					$lookForState = strtolower($_REQUEST['state']);
 				
-				} elseif ($lookForSlideId = (int) ($_REQUEST['slideId'] ?? false)) {
-				} elseif ($lookForSlideNum = (int) ($_REQUEST['slideNum'] ?? false)) {
+				} elseif ($lookForSlideId = (int) ze::request('slideId')) {
+				} elseif ($lookForSlideNum = (int) ze::request('slideNum')) {
 				}
 				
 				
@@ -251,6 +244,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 						$this->firstSlide = $slide['id'];
 						$this->slideNum = $slide['slide_num'];
 						$this->slideId = $slide['id'];
+						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
 						$this->state = $slide['states'][0];
 						$defaultState = $slide['states'][0];
 					}
@@ -259,16 +253,19 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					if ($lookForState && in_array($lookForState, $slide['states'])) {
 						$this->slideNum = $slide['slide_num'];
 						$this->slideId = $slide['id'];
+						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
 						$this->state = $lookForState;
 					
 					} elseif ($lookForSlideId == $slide['id']) {
 						$this->slideNum = $slide['slide_num'];
 						$this->slideId = $slide['id'];
+						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
 						$this->state = $slide['states'][0];
 					
 					} elseif ($lookForSlideNum == $slide['slide_num']) {
 						$this->slideNum = $slide['slide_num'];
 						$this->slideId = $slide['id'];
+						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
 						$this->state = $slide['states'][0];
 					}
 					
@@ -282,11 +279,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 					$tabMergeFields = [
 						'TAB_ORDINAL' => $tabOrd];
 					
-					if (!$slide['invisible_in_nav']) {
-						$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
-						$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
-						$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['name_or_slide_label'], true);
-					}
+					$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
+					$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
+					$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['slide_label'], true);
 					
 					if ($conductorEnabled
 					 && $this->slideNum == $slide['slide_num']) {
@@ -529,13 +524,15 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				
 				$this->callScript('zenario_conductor', 'setCommands', $this->slotName, $this->commands, $this->state, $vars);
 				
-				//Add the current title of the current conductor slide to the page title
-				//(Though use a static variable to stop this happening twice if there are two nests on the same page.)
-				if (!self::$addedSubtitle) {
-					self::$addedSubtitle = true;
-					$this->setPageTitle(ze::$pageTitle. ': '. $this->formatTitleText($this->slides[$this->slideNum]['name_or_slide_label']));
+				//Add the current title of the current conductor slide to the page title if enabled in the slide's properties.
+				switch ($this->slideSetsTitle) {
+					case 'append':
+						$this->setPageTitle(ze::$pageTitle. ': '. $this->formatTitleText($this->slides[$this->slideNum]['slide_label']));
+						break;
+					case 'overwrite':
+						$this->setPageTitle($this->formatTitleText($this->slides[$this->slideNum]['slide_label']));
+						break;
 				}
-				
 				
 				if ($hideBackButtonIfNeeded) {
 					if (($backToState = $this->getBackState())
@@ -735,10 +732,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$sql = "
 			SELECT
 				id, id AS slide_id,
-				slide_num, css_class, name_or_slide_label,
+				slide_num, css_class, slide_label, set_page_title_with_conductor,
 				states, show_back, no_choice_no_going_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
 				request_vars, hierarchical_var, global_command,
-				invisible_in_nav,
 				privacy, at_location, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $this->instanceId. "
@@ -772,21 +768,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			$this->mergeFields['Nest'] = '';
 			
 			$this->removeHiddenTabs($this->slides, $this->cID, $this->cType, $this->cVersion, $this->instanceId);
-			
-			
-			if ($this->setting('banner_canvas')
-			 && $this->setting('banner_canvas') != 'unlimited') {
-				$this->banner_canvas = $this->setting('banner_canvas');
-				$this->banner_width = (int) $this->setting('banner_width');
-				$this->banner_height = (int) $this->setting('banner_height');
-			}
-			
-			if ($this->setting('enlarge_image')) {
-				$this->banner__enlarge_image = true;
-				$this->banner__enlarge_canvas = $this->setting('enlarge_canvas');
-				$this->banner__enlarge_width = (int) $this->setting('enlarge_width');
-				$this->banner__enlarge_height = (int) $this->setting('enlarge_height');
-			}
 			
 			
 			return !empty($this->slides);
@@ -1316,6 +1297,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				case 'showFile':
 				case 'showImage':
 				case 'showStandalonePage':
+				case 'showSingleSlot':
 				case 'showFloatingBox':
 				case 'showRSS':
 				case 'fillVisitorTUIX':
@@ -1323,7 +1305,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				case 'validateVisitorTUIX':
 				case 'saveVisitorTUIX':
 				case 'typeaheadSearchAJAX':
-					return (int) ($_REQUEST['eggId'] ?? false);
+					return (int) ze::request('eggId');
 			}
 		}
 		
@@ -1518,7 +1500,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				'ord' => 0,
 				'module_id' => 0,
 				'is_slide' => 1,
-				'name_or_slide_label' => $title]);
+				'slide_label' => $title]);
 	}
 	
 	public static function duplicatePlugin($eggId, $instanceId) {

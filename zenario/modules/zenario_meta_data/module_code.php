@@ -117,7 +117,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		
 		if ($this->setting('show_featured_image')) {
 			$sql = '
-				SELECT f.id, f.alt_tag
+				SELECT f.id, f.alt_tag, f.image_credit
 				FROM '.DB_PREFIX.'content_item_versions v
 				INNER JOIN '.DB_PREFIX.'files f
 					ON v.feature_image_id = f.id
@@ -129,11 +129,10 @@ class zenario_meta_data extends ze\moduleBaseClass {
 
 			//If there is no featured image, try to use the fallback image.
 			if (empty($file) && $this->setting('fall_back_to_default_image')) {
-				$file = ze\row::get('files', ['id', 'alt_tag'], $this->setting('default_image_id'));
+				$file = ze\row::get('files', ['id', 'alt_tag', 'image_credit'], $this->setting('default_image_id'));
 			}
 
 			if (!empty($file)) {
-				
 				$this->mergeFields['Featured_image'] = [
 					'html_tag' => $this->setting('sticky_image_label_html_tag'),
 					'label' => $this->phrase('Featured image'),
@@ -148,6 +147,16 @@ class zenario_meta_data extends ze\moduleBaseClass {
 						$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
 						$file['alt_tag']
 					);
+				
+				if ($this->setting('show_image_credit')) {
+					if (empty($file['image_credit'])) {
+						$caption = '';
+					} else {
+						$caption = htmlspecialchars($file['image_credit']);
+					}
+					
+					$this->mergeFields['Featured_image']['Image_credit'] = $caption;
+				}
 			}
 		}
 		
@@ -186,7 +195,10 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			$this->showSections['show_language_name'] = true;
 		}
 		
-		if (ze::setting('enable_display_categories_on_content_lists') && $this->setting('show_categories') && is_array($itemCats = ze\category::contentItemCategories($this->cID, $this->cType, true))) {
+		if (ze::setting('enable_display_categories_on_content_lists')
+		 && $this->setting('show_categories')
+		 && ($itemCats = ze\category::contentItemCategories($this->cID, $this->cType, true))
+		 && (!empty($itemCats))) {
 			$this->showSections['show_categories'] = true;
 			$this->showSections['categories'] = [];
 			

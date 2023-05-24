@@ -61,6 +61,12 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 				$item['isTrashed'] = true;
 			}
 			
+			if ($item['is_client_account']) {
+				$item['is_client_account'] = ze\admin::phrase('Client');
+			} else {
+				unset($item['is_client_account']);
+			}
+			
 			if (!empty($item['checksum'])) {
 				$item['hasImage'] = true;
 				$img = '&usage=admin&c='. $item['checksum'];
@@ -71,6 +77,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			//Show an inline warning button if this admin is inactive.
 			if (ze\admin::isInactive($id)) {
 				$item['is_inactive'] = true;
+				
 				if ($item['last_login']) {
 					$item['inactive_tooltip'] = ze\admin::phrase(
 						"This administrator hasn't logged in since [[last_login]], [[days]] days ago.", 
@@ -87,6 +94,17 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 						]
 					);
 				}
+			}
+			
+			if (!empty($item['failed_login_count_since_last_successful_login']) && $item['failed_login_count_since_last_successful_login'] >= 1) {
+				$item['admin_had_3_or_more_failed_login_attempts_since_last_successful_login'] = true;
+				
+				$item['3_or_more_failed_login_attempts_since_last_successful_login_tooltip'] = ze\admin::nPhrase(
+					"This administrator has had [[failed_login_count]] failed login attempt since the last successful login.",
+					"This administrator has had [[failed_login_count]] failed login attempts since the last successful login.",
+					$item['failed_login_count_since_last_successful_login'],
+					['failed_login_count' => $item['failed_login_count_since_last_successful_login']]
+				);
 			}
 			
 			$item['last_login'] = ze\admin::formatDateTime($item['last_login'], 'vis_date_format_med', $useDefaultLang = true);
@@ -129,6 +147,61 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			}
 			
 			unset($item['session_id']);
+			
+			//Permissions count
+			$adminPermissions = ze\row::get('admins', ['permissions', 'specific_content_items', 'specific_content_types'], ['id' => $item['id']]);
+			switch ($adminPermissions['permissions']) {
+				case 'all_permissions':
+					$item['permissions'] = ze\admin::phrase('All permissions');
+					break;
+				case 'specific_actions':
+					$adminPermissionsCount = ze\row::count('action_admin_link', ['admin_id' => $item['id']]);
+					if (!$adminPermissionsCount) {
+						$item['permissions'] = ze\admin::phrase('No permissions');
+					} else {
+						$item['permissions'] = ze\admin::phrase(
+							'Specific actions ([[perms_count]])',
+							['perms_count' => $adminPermissionsCount]
+						);
+					}
+					break;
+				case 'specific_areas':
+					$contentItemsCount = $contentTypesCount = 0;
+					$contentTypesFormattedNicely = [];
+					//Check specific content items first, then specific content types.
+					if (!empty($adminPermissions['specific_content_items'])) {
+						$contentItems = explode(',', $adminPermissions['specific_content_items']);
+						$contentItemsCount = count($contentItems );
+					}
+					
+					if (!empty($adminPermissions['specific_content_types'])) {
+						$contentTypes = explode(',', $adminPermissions['specific_content_types']);
+						foreach ($contentTypes as $contentType) {
+							$contentTypesFormattedNicely[] = ze\content::getContentTypeName($contentType, $plural = true);
+							$contentTypesCount++;
+						}
+					}
+					
+					if ($contentItemsCount > 0 && $contentTypesCount > 0) {
+						$item['permissions'] = ze\admin::phrase(
+							'Specific content items ([[content_item_count]]) and content types ([[content_types]])',
+							['content_item_count' => $contentItemsCount, 'content_types' => implode(', ', $contentTypesFormattedNicely)]
+						);
+					} else {
+						if ($contentItemsCount > 0) {
+							$item['permissions'] = ze\admin::phrase(
+								'Specific content items ([[content_item_count]])',
+								['content_item_count' => $contentItemsCount]
+							);
+						} elseif ($contentTypesCount > 0) {
+							$item['permissions'] = ze\admin::phrase(
+								'Specific content types ([[content_types]])',
+								['content_types' => implode(', ', $contentTypesFormattedNicely)]
+							);
+						}
+					}
+					break;
+			}
 		}
 		
 		if ($refinerName == 'trashed') {
@@ -149,11 +222,9 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			$panel['collection_buttons']['create']['css_class'] = '';
 		}
 		
-		if (ze\sql::numRows(ze\row::query(
-			'admins',
-			['id'],
-			['status' => 'active', 'authtype' => 'local']
-		)) < 2) {
+		$localAdminCountQuery = ze\row::query('admins', ['id'], ['status' => 'active', 'authtype' => 'local']);
+		$localAdminCount = ze\sql::numRows($localAdminCountQuery);
+		if ($localAdminCount < 2) {
 			if (isset($panel['collection_buttons']['copy_perms'])) {
 				$panel['collection_buttons']['copy_perms']['disabled'] = true;
 			}
@@ -165,6 +236,18 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			}
 		}
 		
+		//Display information about the maximum local admins number. 0 means unlimited.
+		$maxLocalAdmins = ze\site::description('max_local_administrators');
+		if ($maxLocalAdmins) {
+			$panel['notice']['show'] = true;
+			
+			$panel['notice']['message'] = ze\admin::nPhrase(
+				'This site has 1 client administrator out of a maximum of [[max_local_administrators]] allowed. Please contact support if you need more accounts.',
+				'This site has [[current_local_admin_count]] client administrators out of a maximum of [[max_local_administrators]] allowed. Please contact support if you need more accounts.',
+				$localAdminCount,
+				['current_local_admin_count' => $localAdminCount, 'max_local_administrators' => $maxLocalAdmins]
+			);
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

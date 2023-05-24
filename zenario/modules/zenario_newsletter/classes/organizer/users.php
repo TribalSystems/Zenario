@@ -33,7 +33,7 @@ class zenario_newsletter__organizer__users extends zenario_newsletter {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		 if ($refinerName == 'zenario_newsletter__recipients') {
 			
-			$details = $this->loadDetails($_GET['refiner__zenario_newsletter__recipients'] ?? false);
+			$details = $this->loadDetails(ze::get('refiner__zenario_newsletter__recipients'));
 			$panel['title'] = ze\admin::phrase('Recipients for the Newsletter "[[newsletter_name]]"', $details);
 			
 			foreach (['collection_buttons', 'item_buttons'] as $tag) {

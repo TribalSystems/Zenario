@@ -56,7 +56,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		$mimeType = $details['mime_type'];
 		$dimensionsString = '{{filesize}}';
 		if ($details['width'] && $details['height']) {
-			$dimensionsString .= ' [{{width}} × {{height}}px]';
+			$dimensionsString .= ', {{width}} × {{height}}px (w x h)';
 		} else {
 			$dimensionsString .= ', dimensions not set';
 		}
@@ -384,13 +384,10 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 
 		//If this is a MIC image, do not allow changing the image name.
 		if ($box['key']['mic_image']) {
-			$fields['details/filename']['read_only'] = true;
-			$fields['details/filename']['show_as_a_span'] = true;
-
 			unset($box['tabs']['details']['fields']['tags']);
+			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
 			unset($box['tabs']['details']['fields']['floating_box_title']);
 			
-			unset($box['tabs']['details']['fields']['filename']['side_note']);
 			$box['tabs']['details']['fields']['filename']['note_below'] = ze\admin::phrase(
 				'Stored in the docstore, folder name [[folder_name]]. Actual filename in the docstore may differ.',
 				['folder_name' => $details['path']]
@@ -417,7 +414,15 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			$box['tabs']['details']['fields']['tags']['value'] = implode(',', $pickedTagNames);
 			$box['tabs']['details']['fields']['tags']['tag_colors'] = ze\contentAdm::getImageTagColours($byId = false, $byName = true);
 
-			$box['tabs']['details']['fields']['floating_box_title']['value'] = $details['floating_box_title'];
+			if (ze::setting('show_default_floating_box_caption')) {
+				if ($details['floating_box_title']) {
+					$box['tabs']['details']['fields']['add_a_gallery_caption']['value'] = true;
+				}
+				$box['tabs']['details']['fields']['floating_box_title']['value'] = $details['floating_box_title'];
+			} else {
+				unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
+				unset($box['tabs']['details']['fields']['floating_box_title']);
+			}
 		}
 
 		$box['tabs']['details']['fields']['image_credit']['value'] = $details['image_credit'];
@@ -448,6 +453,10 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				
 				break;
 		}
+
+		$usageLinks = self::imageUsageLinks((int) $box['key']['id']);
+		$usage = ze\fileAdm::getImageUsage((int) $box['key']['id']);
+		$box['tabs']['details']['fields']['where_used']['snippet']['html'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -548,8 +557,12 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			'image_credit' => $values['details/image_credit']
 		];
 
-		if (!$box['key']['mic_image']) {
-			$details['floating_box_title'] = $values['details/floating_box_title'];
+		if (ze::setting('show_default_floating_box_caption') && !$box['key']['mic_image']) {
+			if ($values['details/add_a_gallery_caption']) {
+				$details['floating_box_title'] = $values['details/floating_box_title'];
+			} else {
+				$details['floating_box_title'] = '';
+			}
 		}
 		//Update the image's details
 		ze\row::update('files', $details, $box['key']['id']);
@@ -633,5 +646,19 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				}
 			}
 		}
+	}
+
+	protected function imageUsageLinks($id) {
+		return [
+			'plugins' => 'zenario__library/panels/image_library/hidden_nav/plugins_using_image//'. (int) $id. '//',
+			'nests' => 'zenario__library/panels/image_library/hidden_nav/nests_using_image//'. (int) $id. '//',
+			'slideshows' => 'zenario__library/panels/image_library/hidden_nav/slideshows_using_image//'. (int) $id. '//',
+			'content_items' => 'zenario__library/panels/image_library/hidden_nav/content_items_using_image//'. (int) $id. '//',
+
+			'menu_nodes' => 'zenario__library/panels/image_library/hidden_nav/menu_nodes_using_image//'. (int) $id. '//',
+			'email_templates' => 'zenario__library/panels/image_library/hidden_nav/email_templates_using_image//'. (int) $id. '//',
+			'newsletters' => 'zenario__library/panels/image_library/hidden_nav/newsletters_using_image//'. (int) $id. '//',
+			'newsletter_templates' => 'zenario__library/panels/image_library/hidden_nav/newsletter_templates_using_image//'. (int) $id. '//'
+		];
 	}
 }

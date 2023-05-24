@@ -81,13 +81,6 @@ body.webkit input {
 	background:url('../admin/images/welcome/border-line-grey-white.gif') repeat-x bottom;
 }
 
-.welcome .welcome_header_logo > img {
-	width:auto;
-	max-width: 300px;
-	max-height:60px;
-	height:auto;
-}
-
 /* Tables */
 
 .welcome #zenario_abtab {
@@ -1038,22 +1031,29 @@ input:-webkit-autofill.password:active {
 	margin-right: 40px;
 }
 
-.welcome .zenario_ab_tab__login .zenario_ab_row__remember_me {
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__remember_me {
 	position:relative;
-	display:inline-block;
-	cursor:pointer;
 	margin-bottom:0;
+}
+
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__remember_me > div {
+	cursor:pointer;
+}
+
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__remember_me,
+.welcome .zenario_ab_tab__login .zenario_ab_row__admin_link  {
+	padding: 4px 10px 5px;
+	background: #efefef;
 }
 
 .welcome .zenario_ab_tab__login .zenario_ab_row__admin_link {
 	font-size:11px;
-	padding: 4px 10px 10px;
-	background: #efefef;
+	padding-bottom:10px;
 }
 
 .welcome .zenario_ab_tab__login .zenario_ab_row__admin_link p {
-	background: url('../admin/images/icon-information.svg') no-repeat left 0 / 16px 16px;
-  	padding-left: 25px;
+	background: url('../admin/images/icon-information.svg') no-repeat 4px 0 / 16px 16px;
+  	padding-left: 27px;
   	margin: 0;
 }
 
@@ -1254,7 +1254,7 @@ input:-webkit-autofill.password:active {
 
 #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below {
 	position:absolute;
-	top:28px;
+	top:33px;
 	left:-35px;
 	background:#333333 url('../admin/images/welcome/admin-btn-for-tooltip.svg') no-repeat right 10px / 65px 47px;
 	color:#FFF;

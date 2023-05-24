@@ -56,7 +56,7 @@ class datasetAdm {
 	}
 
 	//Formerly "registerDatasetSystemField()"
-	public static function registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false) {
+	public static function registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false, $includeInExport = false) {
 	
 		if ($dbColumn === false) {
 			$dbColumn = $fieldName;
@@ -81,7 +81,8 @@ class datasetAdm {
 					'db_column' => $dbColumn,
 					'validation' => $validation,
 					'values_source' => $valuesSource,
-					'fundamental' => $fundamental],
+					'fundamental' => $fundamental,
+					'include_in_export' => $includeInExport],
 				$fieldId
 			);
 	
@@ -96,7 +97,8 @@ class datasetAdm {
 						'field_name' => $fieldName,
 						'validation' => $validation,
 						'values_source' => $valuesSource,
-						'fundamental' => $fundamental],
+						'fundamental' => $fundamental,
+						'include_in_export' => $includeInExport],
 					['dataset_id' => $datasetId, 'db_column' => $dbColumn, 'is_system_field' => 1]);
 		}
 	
@@ -227,7 +229,10 @@ class datasetAdm {
 	}
 
 	//Formerly "listCustomFields()"
-	public static function listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false, $putMergeFieldsIntoLabel = false, $specificTab = '') {
+	public static function listCustomFields(
+		$dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false,
+		$putMergeFieldsIntoLabel = false, $specificTab = '', $mergeFieldsOpen = '[[', $mergeFieldsClose = ']]'
+	) {
 		$dataset = \ze\dataset::details($dataset);
 	
 		$key = [];
@@ -337,7 +342,7 @@ class datasetAdm {
 			
 			if ($putMergeFieldsIntoLabel) {
 				if ($field['label']) {
-					$field['label'] = trim($field['label'], " \t\n\r\0\x0B:").': [['.$field['db_column'].']]';
+					$field['label'] = trim($field['label'], " \t\n\r\0\x0B:").': ' . $mergeFieldsOpen . $field['db_column'] . $mergeFieldsClose;
 				}
 			}
 		}

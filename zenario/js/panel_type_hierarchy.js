@@ -457,7 +457,7 @@ methods.scanNewHier = function(doSave) {
 		
 		//Save the data
 		zenario.ajax(
-			URLBasePath + actionTarget,
+			zenario.addBasePath(actionTarget),
 			actionRequests
 		).after(function(message) {
 			if (message) {

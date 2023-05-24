@@ -34,7 +34,11 @@ class zenario_plugin_nest__admin_boxes__plugin_settings extends ze\moduleBaseCla
 			$this->showHideImageOptions($fields, $values, 'size', $hidden = false, $fieldPrefix = 'banner_', $hasCanvas = true);
 			
 			if (isset($box['tabs']['size']['fields']['enlarge_canvas'])) {
-				$this->showHideImageOptions($fields, $values, 'size', $hidden = !$values['size/enlarge_image'], $fieldPrefix = 'enlarge_', $hasCanvas = true);
+				$this->showHideImageOptions($fields, $values, 'size', $hidden = $values['size/link_type'] != '_ENLARGE_IMAGE', $fieldPrefix = 'enlarge_', $hasCanvas = true);
+			}
+			
+			if (isset($box['tabs']['size']['fields']['mobile_canvas'])) {
+				$this->showHideImageOptions($fields, $values, 'size', $hidden = $values['size/mobile_behaviour'] != 'mobile_same_image_different_size', $fieldPrefix = 'mobile_', $hasCanvas = true);
 			}
 		}
 	}

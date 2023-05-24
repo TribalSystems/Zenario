@@ -1,0 +1,22 @@
+{% if Mode == 'search_entry_box' and (News_Search_Results or News_Search_No_Results) %}
+    {% set Column = Column + 1 %}
+    <div id="{{Container_Id}}_news_results" class="column_{{Column}} column column_news">
+{% endif %}
+
+{% if Mode == 'search_entry_box' and News_Column_Heading_Text and not News_Search_No_Results %}
+    <span class="column_title">{{News_Column_Heading_Text|e}}</span>
+{% endif %}
+
+{% if News_Search_Results %}
+    {% include advancedSearchCoreFrameworksPath ~ 'includes/populate_results_loop.twig.html' with {'Type': News_Search_Results} %}
+{% endif %}
+
+{% if News_Search_No_Results %}
+    <div class="search_no_results">
+        <p>{{News_No_Results_Text|e}}</p>
+    </div>
+{% endif %}
+
+{% if Mode == 'search_entry_box' and (News_Search_Results or News_Search_No_Results) %}
+    </div>
+{% endif %}

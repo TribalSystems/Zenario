@@ -23,4 +23,8 @@ style_formats:
 		title: "Paragraph tip info"
 		selector: "p"
 		classes: "tip_info"
+	-
+		title: "Table no styles"
+		selector: "table"
+		classes: "table_no_styles"
 

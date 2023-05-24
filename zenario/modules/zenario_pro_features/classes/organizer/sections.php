@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__organizer__sections extends ze\moduleBaseClass {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (($_POST['delete_menu_section'] ?? false) && ze\priv::check('_PRIV_DELETE_MENU_SECTION') && !ze\row::exists('menu_nodes', ['section_id' => $ids])) {
+		if (ze::post('delete_menu_section') && ze\priv::check('_PRIV_DELETE_MENU_SECTION') && !ze\row::exists('menu_nodes', ['section_id' => $ids])) {
 			if (ze\menu::sectionName($ids) == 'Main') {
 				echo ze\admin::phrase('You cannot delete the &quot;Main&quot; Menu Section');
 			

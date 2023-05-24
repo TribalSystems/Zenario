@@ -91,9 +91,11 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			$this->mergeFields['Title_Tags'] = $this->setting('title_tags');
 		}
 		
-		if ($this->mergeFields['Description'] = htmlspecialchars($version['description'])) {
-			$this->allowedChildSections['Summary_Section'] = true;
-			$this->allowedChildSections['Description_Section'] = true;
+		if (!is_null($version['description'])) {
+			if ($this->mergeFields['Description'] = htmlspecialchars($version['description'])) {
+				$this->allowedChildSections['Summary_Section'] = true;
+				$this->allowedChildSections['Description_Section'] = true;
+			}
 		}
 			
 		$type = explode('.', $version['filename']);
@@ -146,7 +148,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		$s3Link = '';
 		$s3Filesize = '';
 		
-		if (($_GET['download'] ?? false) && (!$this->eggId || $this->eggId == ($_GET['eggId'] ?? false))) {
+		if (ze::get('download') && (!$this->eggId || $this->eggId == ze::get('eggId'))) {
 			if (!ze\file::contentLink($url, $this->targetID, $this->targetType, $this->targetVersion)) {
 				
 				$body = ze\admin::phrase('An attempt to download the document [[url]] was unsuccessful.', ['url' => $this->linkToItem($this->targetID,$this->targetType,true)]);
@@ -285,8 +287,10 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			}
 		}
 		
-		if (!ze::isAdmin()) {
-			if($this->setting('show_permalink')) {
+		if ($this->setting('show_permalink')) {
+			ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
+
+			if (!ze::isAdmin()) {
 				ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 			}
 		}
@@ -320,6 +324,18 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 
 			if (isset($fields['awss3_file_downloads/s3_file_play_video_text']) && !$fields['awss3_file_downloads/s3_file_play_video_text']['value']) {
 				$fields['awss3_file_downloads/s3_file_play_video_text']['value'] = ze\admin::phrase('Play video');
+			}
+			
+			if (!class_exists('Aws\\S3\\S3Client')) {
+				$fields['awss3_file_downloads/aws_s3_support']['disabled'] = true;
+				
+				$awsPackageDocumentationHref = 'https://zenar.io/download-page/advanced-installation/installing-aws-s3-support';
+				$linkStart = '<a href="' . $awsPackageDocumentationHref . '" target="_blank">';
+				$linkEnd = '</a>';
+				$fields['awss3_file_downloads/aws_s3_support']['note_below'] = ze\admin::phrase(
+					'To use this feature, please [[link_start]]install the AWS library[[link_end]].',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
 			}
 		} elseif ($path == 'plugin_settings') {
 			if (ze::setting('aws_s3_support')) {
@@ -423,7 +439,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			case 'site_settings':
 				if ($settingGroup == 'files_and_images') {
 					
-					if ($values['awss3_file_downloads/aws_s3_support']) {
+					if ($values['awss3_file_downloads/aws_s3_support'] && class_exists('Aws\\S3\\S3Client')) {
 						$awsS3Region = $values['awss3_file_downloads/aws_s3_region'];
 						$awsS3KeyId = $values['awss3_file_downloads/aws_s3_key_id'];
 						$awsS3SecretKey = $values['awss3_file_downloads/aws_s3_secret_key'];
@@ -471,7 +487,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			case 'zenario__content/panels/content':
 			case 'zenario__content/panels/chained':
 				
-				if (isset($_GET['refiner__trash']) && !($_GET['refiner__template'] ?? false)) {
+				if (isset($_GET['refiner__trash']) && !ze::get('refiner__template')) {
 					unset($panel['item_buttons']['zenario_ctype_document__rescan_extract']);
 				}
 				
@@ -483,21 +499,21 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'zenario__content/panels/content':
 				//Handle creating multiple Documents immediately in Organizer
-				if (($_POST['create_multiple'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT', false, 'document')) {
+				if (ze::post('create_multiple') && ze\priv::check('_PRIV_EDIT_DRAFT', false, 'document')) {
 					$newIds = [];
 					
 					//This sholud only be allowed if we know what the language will be
-					if (($languageId = (($_POST['language'] ?? false) ?: ze::$defaultLang))) {
+					if (($languageId = (ze::post('language') ?: ze::$defaultLang))) {
 						
-						if ($_REQUEST['refiner__template'] ?? false) {
-							$cType = ze\row::get('layouts', 'content_type', ($_REQUEST['refiner__template'] ?? false));
+						if (ze::request('refiner__template')) {
+							$cType = ze\row::get('layouts', 'content_type', ze::request('refiner__template'));
 						} else {
 							$cType = $_POST['cType'] ?? false;
 						}
 						
 						if ($cType == 'document') {
 							
-							if ($_REQUEST['refiner__template'] ?? false) {
+							if (ze::request('refiner__template')) {
 								$layoutId = $_REQUEST['refiner__template'] ?? false;
 							} else {
 								$layoutId = ze\row::get('content_types', 'default_layout_id', ['content_type_id' => $cType]);
@@ -537,7 +553,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 					return $newIds;
 				
 				
-				} elseif (($_POST['rescan_extract'] ?? false) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
+				} elseif (ze::post('rescan_extract') && ze\priv::check('_PRIV_EDIT_DRAFT')) {
 					self::rescanExtract($ids, $showResultMessage = true);
 				}
 				
@@ -682,7 +698,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 						$file['mime_type'] = $image['mime'];
 					}
 					
-					$file['privacy'] = ze::oneOf(\ze::setting('default_image_privacy'), 'auto', 'public', 'private');
+					$file['privacy'] = ze::oneOf(ze::setting('default_image_privacy'), 'auto', 'public', 'private');
 					
 					$filenameArray = explode('.', $s3Filename);
 					$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));

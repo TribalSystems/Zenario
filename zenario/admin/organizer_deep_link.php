@@ -3,7 +3,7 @@ require '../adminheader.inc.php';
 $getId =  $_GET['id'] ?? false;
 $getPath =  $_GET['path'] ?? false;
 $categoryPath = ze\link::absolute(). 'organizer.php';
-if ( strpos( $getPath, 'zenario__content/panels/categories' ) !== false) {
+if ( strpos( $getPath, 'zenario__library/panels/categories' ) !== false) {
 	$sql = '
 			SELECT id,name,parent_id
 			FROM ' . DB_PREFIX . 'categories
@@ -31,7 +31,7 @@ if ( strpos( $getPath, 'zenario__content/panels/categories' ) !== false) {
 		}
 		
 	}
-	$categoryPath .= '#zenario__content/panels/categories';
+	$categoryPath .= '#zenario__library/panels/categories';
 	if (count($categoryIds) > 0) {
 		krsort($categoryIds);
 		$categoryIds[] = $currentCategoryId;

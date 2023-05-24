@@ -63,7 +63,8 @@ function removeUnwantedComposerCode($path) {
 }
 
 removeUnwantedCode('classlist-polyfill');
-removeUnwantedCode('lodash.get');	//Unwanted (dev?) dependancy from cytoscape
+removeUnwantedCode('lodash');		//Unwanted (dev?) dependancy from cytoscape and a few others?
+removeUnwantedCode('lodash.get');
 removeUnwantedCode('lodash.set');
 removeUnwantedCode('lodash.topath');
 removeUnwantedCode('lodash.debounce');
@@ -80,10 +81,32 @@ removeUnwantedCode('jquery/dist/core.js');
 removeUnwantedCode('jquery/dist/jquery.slim.js');
 removeUnwantedCode('jquery/dist/jquery.slim.min.js');
 removeUnwantedCode('jquery/dist/jquery.slim.min.map');
+removeUnwantedCode('jquery-cycle2/build/core');
+removeUnwantedCode('jquery-cycle2/build/plugin');
+removeUnwantedCode('jquery-cycle2/src');
 removeUnwantedCode('jquery-doubletaptogo/src');
+removeUnwantedCode('jquery-doubletaptogo/yarn.lock');
 removeUnwantedCode('jquery-lazy/node_modules');
 removeUnwantedCode('js-crc/build');
 removeUnwantedCode('js-crc/tests');
+removeUnwantedCode('moment/dist');
+removeUnwantedCode('moment/locale');
+removeUnwantedCode('moment/min');
+removeUnwantedCode('moment/src');
+removeUnwantedCode('moment-timezone/.github');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-10-year-range.js');
+//removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-10-year-range.min.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-1970-2030.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-1970-2030.min.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-2012-2022.min.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data.min.js');
+removeUnwantedCode('moment-timezone/builds/moment-timezone.min.js');
+removeUnwantedCode('moment-timezone/blah.tar.gz');
+removeUnwantedCode('moment-timezone/curlxx.tar.gz');
+removeUnwantedCode('moment-timezone/data');
+removeUnwantedCode('moment-timezone/tzdata-latest.tar.gz');
 removeUnwantedCode('rcrop/demos');
 removeUnwantedCode('rcrop/libs');
 removeUnwantedCode('respond.js/cross-domain');
@@ -105,7 +128,9 @@ removeUnwantedCode('util-deprecate');
 
 
 //Remove some clutter from composer libraries that we don't want
+removeUnwantedComposerCode('bin');
 removeUnwantedComposerCode('geoip2/geoip2/examples');
+removeUnwantedComposerCode('guzzlehttp/psr7/.github');
 removeUnwantedComposerCode('maxmind/web-service-common/dev-bin');
 removeUnwantedComposerCode('maxmind-db/reader/ext');
 removeUnwantedComposerCode('mustangostang/spyc/examples');
@@ -115,6 +140,7 @@ removeUnwantedComposerCode('powder96/numbers.php/examples');
 removeUnwantedComposerCode('smottt/wideimage/demo');
 removeUnwantedComposerCode('smottt/wideimage/test');
 removeUnwantedComposerCode('twig/twig/doc');
+removeUnwantedComposerCode('twig/twig/.github');
 
 
 

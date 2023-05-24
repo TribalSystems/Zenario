@@ -3,9 +3,6 @@ zenario__projects:
         project_services: 
             panel: 
                 title: Define project services
-                view_mode: list
-                disable_grid_view: Yes
-                disable_summary_view: Yes
                 default_sort_column: name
                 db_items: 
                     table: "[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services AS pservice"

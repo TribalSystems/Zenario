@@ -3,6 +3,7 @@
 zenario__content:
     panels:
         slots:
+            priv: _PRIV_VIEW_SLOT
             key:
                 cID: false
                 cType: false

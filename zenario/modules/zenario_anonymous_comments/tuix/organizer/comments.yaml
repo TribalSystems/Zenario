@@ -29,8 +29,6 @@ zenario__social:
                     where_statement: |
                         WHERE cm.status='pending'
                     id_column: cm.id
-                disable_grid_view: Yes
-                view_mode: summary
                 default_sort_column: comment_on_page
                 enable_close_up_view: Yes
                 default_sort_column: comment_last_edit
@@ -43,6 +41,7 @@ zenario__social:
                     comment_on_page:
                         show_by_default: Yes
                         title: Comment
+                        width: xxlarge
                     content_item:
                         title: Content Item
                         searchable: Yes
@@ -62,6 +61,8 @@ zenario__social:
                         db_column: IF(cm.date_updated,cm.date_updated,cm.date_posted)
                         show_by_default: Yes
                         format: datetime
+                    poster_name:
+                        db_column: cm.poster_name
                 item:
                     css_class: pending_comment
                     name: Pending comment

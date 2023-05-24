@@ -293,6 +293,9 @@ if (ze\priv::check()) {
 			//(But don't touch any other versions/content items, even if they're also hidden.)
 			ze\pluginAdm::unhide($cID, $cType, $cVersion, $slotName);
 	
+		} elseif (ze::post('addPluginInstance') && $level == 3 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+			ze\pluginAdm::updateSitewideSlot($slotName, ze::post('addPluginInstance'));
+	
 		//Insert a version-controlled plugin into a slot
 		} elseif (ze::get('addPlugin')) {
 			
@@ -320,7 +323,7 @@ if (ze\priv::check()) {
 			}
 	
 		} elseif (ze::post('addPlugin') && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId) {
-			ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, ze::post('addPlugin'));
+			ze\pluginAdm::updateLayoutSlot(false, $slotName, $layoutId, ze::post('addPlugin'));
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
@@ -508,7 +511,76 @@ if (ze\priv::check()) {
 					echo ze\admin::phrase('Plugin &ldquo;[[pluginName]]&rdquo; (from the [[moduleDisplayName]] module) is in slot [[slotName]] on layout [[codeName]], used on [[layoutUsage]]. [[organizerLink]]<br/><br/> Are you sure you wish to remove this plugin from slot on the layout?', $mrg);
 				}
 			}
-	
+		
+		//(Get the number of layouts and content items that use a site-wide slot)
+		} elseif ((ze::get('removeSlot') || ze::get('removePlugin') || ze::get('movePlugin')) && $level == 3) {
+			
+			$placement = ze\row::get(
+				'plugin_sitewide_link',
+				['module_id', 'instance_id'],
+				['slot_name' => $slotName]
+			);
+			
+			$mrg = [
+				'pages' => ze\layoutAdm::usage(false, false),
+				'published' => ze\layoutAdm::usage(false, true),
+				'layouts' => ze\row::count('layouts', ['header_and_footer' => 1]),
+				'slotName' => $slotName
+			];
+			
+			if ($placement) {
+				$mrg['moduleDisplayName'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
+				$mrg['pluginName'] = htmlspecialchars(ze\plugin::name($placement['instance_id']));
+			}
+			
+			
+			
+			//Removing a slot from Gridmaker
+			if (ze::get('removeSlot')) {
+				echo ze\admin::phrase('Are you sure you wish to remove [[slotName]]?', $mrg);
+				
+				if ($placement) {
+					echo '<br/><br/>';
+					echo ze\admin::phrase('Plugin &ldquo;[[pluginName]]&rdquo; (from the [[moduleDisplayName]] module) is in this slot.', $mrg);
+				}
+			
+			//Moving a plugin
+			} elseif (ze::get('movePlugin')) {
+				echo ze\admin::phrase('Are you sure you wish to move this plugin?', $mrg);
+			
+			} else {
+				echo ze\admin::phrase('Are you sure you wish to remove plugin &ldquo;[[pluginName]]&rdquo; ([[moduleDisplayName]] module) from the slot [[slotName]]?', $mrg);
+			}
+			
+			if ($placement || ze::get('movePlugin')) {
+				echo '<br/><br/>';
+				echo
+					ze\admin::nPhrase('This will affect [[layouts]] layout.',
+						'This will affect [[layouts]] layouts.',
+						$mrg['layouts'], $mrg,
+						'This will not affect any layout.'
+					);
+			
+				echo '<br/><br/>';
+				echo
+					ze\admin::nPhrase('This will affect [[pages]] (<b>[[published]] published</b>) content item.',
+						'This will affect [[pages]] (<b>[[published]] published</b>) content items.',
+						$mrg['pages'], $mrg,
+						'This will not affect any content items.'
+					);
+			
+			} else {
+				echo '<br/><br/>';
+				echo ze\admin::phrase("There's nothing using this slot.");
+			}
+			
+			if (!empty($_REQUEST['willRemoveGrouping'])) {
+				echo '<br/><br/>';
+				echo ze\admin::phrase("Removing the last slot in the grouping will also delete the grouping.");
+			}
+			
+		
+		//(Get the number of layouts and content items that use a site-wide slot)
 		} elseif ((ze::post('removePlugin') && $level == 1 && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion))
 				|| (ze::post('showPlugin') && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion))) {
 			ze\pluginAdm::updateItemSlot(
@@ -516,14 +588,15 @@ if (ze\priv::check()) {
 				$slotName, $cID, $cType, $cVersion);
 	
 		} elseif (ze::post('removePlugin') && $level == 2 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
-			ze\pluginAdm::updateLayoutSlot(
-				'',
-				$slotName, $layoutId);
+			ze\pluginAdm::updateLayoutSlot(false, $slotName, $layoutId);
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
 			//(But don't touch any other versions/content items, even if they're also hidden.)
 			ze\pluginAdm::unhide($cID, $cType, $cVersion, $slotName);
+	
+		} elseif (ze::post('removePlugin') && $level == 3 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+			ze\pluginAdm::updateSitewideSlot($slotName, false);
 	
 		//Handle moving modules
 		//Move a Plugin from one slot to another, at a specific level.
@@ -551,6 +624,11 @@ if (ze\priv::check()) {
 							['content_id' => $row['id'], 'content_type' => $row['type'], 'content_version' => $row['version']];
 					}
 				}
+		
+			//Logic for moving site-wide slots
+			} elseif ($level == 3 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+				//We only need to handle library plugins at this level, as we don't allow versoin controlled plugins on the site-wide layer
+				$tables['plugin_sitewide_link'] = [[]];
 		
 			} else {
 				exit;

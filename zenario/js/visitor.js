@@ -54,10 +54,11 @@ zenario.lib(function(
 	var plgslt_ = 'plgslt_',
 		TOOTIPS_SELECTOR = '*[title]:not(iframe)',
 		userAgent = navigator.userAgent,
+		documentBody = document.body,
 		scrollBody,
 		di,
 		docClasses = {},
-		docClassesSplit = document.body.className.split(' '),
+		docClassesSplit = documentBody.className.split(' '),
 		zenarioCSSJSVersionNumber,
 		canSetAllCookies,
 		canSetNecessaryCookies,
@@ -249,7 +250,7 @@ zenario.lib(function(
 		if (defined(e.pageX)) {
 			return e.pageX;
 		} else {
-			return e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+			return e.clientX + documentBody.scrollLeft + document.documentElement.scrollLeft;
 		}
 	};
 
@@ -257,7 +258,7 @@ zenario.lib(function(
 		if (defined(e.pageY)) {
 			return e.pageY;
 		} else {
-			return e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			return e.clientY + documentBody.scrollTop + document.documentElement.scrollTop;
 		}
 	};
 
@@ -513,176 +514,6 @@ zenario.lib(function(
 			zenario.urlRequest(requests);
 	};
 	
-	zenario.checkPasswordStrength = function(password, settings) {
-		var min_pass_length,
-			min_pass_score;
-		
-		if (!_.isString(password)) {
-			password = '';
-		}
-		
-		settings = settings || zenario.passVars;
-		if (settings) {
-			if (settings.min_extranet_user_password_length > 0) {
-				min_pass_length = settings.min_extranet_user_password_length;
-			} else {
-				min_pass_length = 10;
-			}
-
-			if (settings.min_extranet_user_password_score >= 2) {
-				min_pass_score = settings.min_extranet_user_password_score;
-			} else {
-				min_pass_score = 2;
-			}
-		} else {
-			settings = {};
-			min_pass_length = 10;
-			min_pass_score = 2;
-			// settings['a_z_lowercase_characters'] = 
-			// settings['a_z_uppercase_characters'] = 
-			// settings['0_9_numbers_in_user_password'] = true;
-			// settings['symbols_in_user_password'] = false;
-		}
-
-		//The settings are being removed now. Setting everything to false.
-		settings['a_z_lowercase_characters'] =
-		settings['a_z_uppercase_characters'] =
-		settings['0_9_numbers_in_user_password'] =
-		settings['symbols_in_user_password'] = false;
-	
-		var validation = [],
-			lower = password.match(/[a-z]/g) ? true : false,
-			upper = password.match(/[A-Z]/g) ? true : false,
-			numbers = password.match(/[0-9]/g) ? true : false,
-			symbols = password.match(/[^a-zA-Z0-9]/g) ? true : false,
-			password_requirement_match = true;
-	
-		if (    (password.length < min_pass_length)
-				|| (settings['a_z_lowercase_characters'] && !lower)
-				|| (settings['a_z_uppercase_characters'] && !upper)
-				|| (settings['0_9_numbers_in_user_password'] && !numbers)
-				|| (settings['symbols_in_user_password'] && !symbols)) {
-				
-					password_requirement_match = false;
-		}
-	
-		validation['password_length'] = password.length;
-		validation['min_length'] = (password.length >= min_pass_length);
-		validation['min_pass_score'] = min_pass_score;
-		validation['lowercase'] = lower;
-		validation['uppercase'] = upper;
-		validation['numbers'] = numbers;
-		validation['symbols'] = symbols;
-		validation['password_matches_requirements'] = password_requirement_match;
-	
-		return validation;
-	};
-	
-	zenario.updatePasswordNotifier = function(passwordField, passwordMessageField, isInstaller) {
-		var password = $(passwordField).val();
-		var validation = zenario.checkPasswordStrength(password);
-						
-		$('#min_length').attr('class', validation['min_length'] ? 'pass' : 'fail');
-		$('#lowercase').attr('class', validation['lowercase'] ? 'pass' : 'fail');
-		$('#uppercase').attr('class', validation['uppercase'] ? 'pass' : 'fail');
-		$('#numbers').attr('class', validation['numbers'] ? 'pass' : 'fail');
-		$('#symbols').attr('class', validation['symbols'] ? 'pass' : 'fail');
-
-		var result = zxcvbn(password);
-		
-		//Update the password message field if there is one...
-		if (passwordMessageField) {
-			passwordMessageField = $(passwordMessageField);
-			
-			if (validation['password_matches_requirements']) {
-				
-				passwordMessageField.removeClass('title_red');
-				passwordMessageField.removeClass('title_orange');
-				passwordMessageField.removeClass('title_green');
-
-				if (result) {
-					switch (result.score) {
-						case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
-							if (validation.min_pass_score < 4) {
-								passwordMessageField.addClass('title_green');	
-								passwordMessageField.text('Password is very strong and exceeds requirements (score 4, max)');
-							} else if (validation.min_pass_score == 4) {
-								passwordMessageField.addClass('title_green');	
-								passwordMessageField.text('Password matches the requirements (score 4, max)');
-							}
-							break;
-						case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
-							if (validation.min_pass_score == 4) {
-								passwordMessageField.addClass('title_red');
-								passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
-							} else if (validation.min_pass_score < 4) {
-								passwordMessageField.addClass('title_green');	
-								passwordMessageField.text('Password matches the requirements (score 3)');
-							}
-							break;
-						case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-							if (validation.min_pass_score == 2) {
-								passwordMessageField.addClass('title_orange');
-								if (isInstaller) {
-									passwordMessageField.text('Password is easy to guess. Make your password stronger if this will be a production site.');
-								} else {
-									passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
-								}
-							} else if (validation.min_pass_score > 2) {
-								passwordMessageField.addClass('title_red');
-								passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
-							}
-							break;
-						case 1: //is still very guessable (guesses < 10^6)
-						case 0: //s extremely guessable (within 10^3 guesses)
-						default:
-							passwordMessageField.addClass('title_red');
-							passwordMessageField.text('Password is too easy to guess (score ' + result.score + ')');
-					}
-				}
-			} else {
-				passwordMessageField.removeClass('title_red');
-				passwordMessageField.removeClass('title_orange');
-				passwordMessageField.removeClass('title_green');
-
-				if (validation['password_length'] > 0) {
-					passwordMessageField.text('Password does not match the requirements');
-					passwordMessageField.addClass('title_red');
-				} else {
-					passwordMessageField.text('Please enter a password');
-					passwordMessageField.addClass('title_orange');
-				}
-			}
-		} else {
-			//...otherwise change the password input field border colour.
-			passwordField = $(passwordField);
-
-			passwordField.removeClass('border_red');
-			passwordField.removeClass('border_orange');
-			passwordField.removeClass('border_green');
-			
-			if (validation['password_matches_requirements']) {
-				if (result) {
-					switch (result.score) {
-						case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
-						case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
-							passwordField.addClass('border_green');
-							break;
-						case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-							passwordField.addClass('title_orange');
-							break;
-						case 1: //is still very guessable (guesses < 10^6)
-						case 0: //s extremely guessable (within 10^3 guesses)
-						default:
-							passwordField.addClass('title_red');
-					}
-				}
-			} else {
-				passwordField.addClass('border_red');
-			}
-		}
-	}
-	
 var chopLeft = function(s, n) {
 		return s.substr(0, n || 1);
 	},
@@ -901,15 +732,14 @@ methods.checkComplete = function() {
 
 //A version of nonAsyncAJAX for modules
 //As this uses zenario.nonAsyncAJAX() we should start to avoid using this from now on...
-zenario.moduleNonAsyncAJAX =
-
-//Some old deprecated names
-zenario.handlePluginAJAX =
-zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCache) {
-	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?moduleClassName=' + moduleClassName + '&method_call=handleAJAX' + zenario.urlRequest(requests), post, json, useCache);
+zenario.moduleNonAsyncAJAX = function(moduleClassName, requests, post, json, useCache) {
+	return zenario.nonAsyncAJAX(zenario.AJAXLink(moduleClassName, requests), post, json, useCache);
 };
 
-
+//The non-deprecated replacement for the above!
+zenario.moduleAJAX = function(moduleClassName, requests, post, json, useCache) {
+	return zenario.ajax(zenario.AJAXLink(moduleClassName, requests), post, json, useCache);
+};
 
 
 
@@ -1242,16 +1072,30 @@ zenario.stopPoking = function(lib) {
 	lib.poking = false;
 };
 
-zenario.startPoking = function(lib, interval) {
+zenario.startPoking = function(lib, interval, timeout) {
+	
 	if (!lib.poking) {
-		lib.poking = setInterval(zenario.poke, interval || 2 * 60 * 1000);
+		//Set a time, default 3 hours from now or use the timeout parameter if provided, when this should automatically stop.
+		var timeoutAt = new Date()*1 + (timeout || 3 * 60 * 60 * 1000);
+		
+		//Set an interval, default every 5 minutes or use the interval parameter if provided.
+		lib.poking = setInterval(function() {
+			
+			//If we're past the timeout, stop poking.
+			if (new Date()*1 > timeoutAt) {
+				zenario.stopPoking(lib);
+			
+			//Otherwise give the server a poke to keep the session alive.
+			} else {
+				zenario.poke();
+			}
+		}, interval || 5 * 60 * 1000);
 	}
 };
 
 zenario.poke = function() {
 	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel, onError) {
 	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1', undefined, undefined, undefined, undefined, undefined, undefined, undefined, function() {});
-
 };
 
 
@@ -1334,12 +1178,12 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 
 //Lazy-load the datepicker library when needed
 zenario.loadDatePicker = function(async) {
-	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
+	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
 		async, $.datepicker);
 };
 //Lazy-load the autocomplete library when needed
 zenario.loadAutocomplete = function(async) {
-	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jquery/jquery-ui.autocomplete.min.js?v=' + zenarioCSSJSVersionNumber,
+	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.autocomplete.min.js?v=' + zenarioCSSJSVersionNumber,
 		async, $.autocomplete);
 };
 
@@ -2183,6 +2027,39 @@ zenario.unpackAndMerge = function(target, string) {
 };
 
 
+//As per https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
+zenario.offerDownload = function(filename, body) {
+	
+	var $el = $('<a class="testing" style="position: absolute; z-index: 999;">Did this work?</a>'),
+		el = $el[0];
+	
+	$el
+		.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(body))
+		.attr('download', filename)
+		.hide()
+		.appendTo(documentBody);
+	
+	el.click();
+	$el.remove();
+};
+
+//As per https://stackoverflow.com/questions/46637955/write-a-string-containing-commas-and-double-quotes-to-csv
+zenario.csvEscape = function(string) {
+	if (!_.isString(string)) {
+		if (!defined(string)
+		 || !defined(string.toString)) {
+			return '';
+		}
+		string = string.toString();
+	}
+	
+	if (string.replace(/ /g, '').match(/[\s,"]/)) {
+		return '"' + string.replace(/"/g, '""') + '"';
+	}
+	return string;
+};
+
+
 zenario.hypEscape = function(string) {
 	return string.replace(/`/g, "`t").replace(/\-/g, "`h").replace(/\:/g, "`c").replace(/\n/g, "`n").replace(/\r/g, "`r").replace(/\&/g, "`a").replace(/\"/g, "`q").replace(/\</g, "`l").replace(/\>/g, "`g");
 };
@@ -2264,7 +2141,7 @@ zenario.enc = function(id, className, moduleClassNameForPhrases, feaPaths, jsNot
 	}
 	
 	if (typeof window[className] != 'object') {
-		window[className] = new zenario.moduleBaseClass(
+		window[className] = new zenario.__moduleBaseClass(
 			id, className, moduleClassNameForPhrases,
 			zenario);
 		
@@ -2390,10 +2267,10 @@ zenario.slot = function(pluginInstances) {
 
 
 var signalsInProgress = {},
-	signalHandlers = {},
 	signalHandlersBySlot = {},
 	standardEvents = {},
 	bespokeEvents = {
+		//slotUnload: true,
 		resizeToMobile: true,
 		resizeToDesktop: true
 	},
@@ -2449,6 +2326,24 @@ zenario.off = function(slotName, containerId, eventName) {
 	var slot = zenario.slots[slotName];
 	
 	if (slot) {
+		
+		//Currently not implemented:
+		//Have a special event called "slotUnload" that fires when a slot is being unloaded like this.
+		//(This used to be used to work-around a bug that I've since fixed, and isn't currently used by anything now.
+		// However I'm keeping the code around but commented out, just in case I need to use it again!)
+		//var containers, ci,
+		//	handlers, hi, handler;
+		//if (!containerId && !eventName) {
+		//	if (containers = slot.events.slotUnload) {
+		//		foreach (containers as ci => handlers) {
+		//			foreach (handlers as hi => handler) {
+		//				returnValue = handler();
+		//			}
+		//		}
+		//	}
+		//}
+		
+		
 		if (containerId) {
 			if (!defined(eventName)) {
 				for (eventName in slot.events) {
@@ -2553,6 +2448,11 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	
 	//Allow modules to reject the AJAX reload and request an entire page reload
 	forceReloadHref = flags.FORCE_PAGE_RELOAD;
+	
+	//Allow the AJAX request to specifically override the default recordInURL setting by sending a flag.
+	if (defined(flags.RECORD_IN_URL)) {
+		recordInURL = engToBoolean(flags.RECORD_IN_URL);
+	}
 	
 	//Don't try and do an AJAX reload if text has <script> or <styles> tags in
 		//However, if this was a POST submission, ignore this check as we don't want to re-submit the post data
@@ -3157,6 +3057,8 @@ zenario.inDoc = function(el) {
 //with a jQuery-based version (which should be a little more efficient)
 zenarioL.set = function(condition, metClassName, notMetClassName, tmp) {
 	
+	notMetClassName = notMetClassName || ('not_' + metClassName);
+	
 	if (!condition) {
 		tmp = metClassName;
 		metClassName = notMetClassName;
@@ -3485,48 +3387,7 @@ zenario.formatDate = function(date, showTime, format) {
 		}
 		
 		if (showTime) {
-			
-			var hours = date.getHours(),
-				minutes = date.getMinutes(),
-				isPM = hours > 11,
-				amOrPM = '',
-				timeformat = (zenarioA.siteSettings && zenarioA.siteSettings.vis_time_format) || '%H:%i';
-			
-			switch (timeformat) {
-				case '%k:%i': //'9:00 - 17:00'
-					break;
-				case '%H:%i': //'09:00 - 17:00'
-					hours = zenario.rightHandedSubStr('0' + hours, 2);
-					break;
-				case '%l:%i %p': //'9:00 AM - 5:00 PM'
-					hours = (hours % 12) || 12;
-					amOrPM = isPM? zenarioA.phrase.pm : zenarioA.phrase.am;
-					break;
-				case '%h:%i %p': //'09:00 AM - 05:00 PM'
-					hours = (hours % 12) || 12;
-					amOrPM = isPM? zenarioA.phrase.pm : zenarioA.phrase.am;
-					hours = zenario.rightHandedSubStr('0' + hours, 2);
-					break;
-			}
-			
-			
-			out += ' ' + hours + ':' + zenario.rightHandedSubStr('0' + date.getMinutes(), 2);
-			
-			if (showTime == 'datetime_with_seconds') {
-				out += ':' + zenario.rightHandedSubStr('0' + date.getSeconds(), 2);
-			}
-			
-			if (amOrPM) {
-				out += ' ' + amOrPM;
-			}
-			
-			if (unix && date.getTimezoneOffset() != (new Date()).getTimezoneOffset()) {
-				if (date.getTimezoneOffset() > 0) {
-					out += ' (UCT -' + (date.getTimezoneOffset() / 60) + ')';
-				} else {
-					out += ' (UCT +' + (date.getTimezoneOffset() / -60) + ')';
-				}
-			}
+			out += ' ' + zenario.formatTime(date, undefined, showTime == 'datetime_with_seconds', undefined, unix);
 		}
 		
 		return out;
@@ -3535,6 +3396,54 @@ zenario.formatDate = function(date, showTime, format) {
 		return '';
 	}
 };
+
+zenario.formatTime = function(date, timeformat, addSeconds, phrase, unix) {
+			
+	var hours = date.getHours(),
+		minutes = date.getMinutes(),
+		isPM = hours > 11,
+		amOrPM = '',
+		timeformat = timeformat || (zenarioA.siteSettings && zenarioA.siteSettings.vis_time_format) || '%H:%i';
+		phrase = phrase || zenarioA.phrase;
+	
+	switch (timeformat) {
+		case '%k:%i': //'9:00 - 17:00'
+			break;
+		case '%H:%i': //'09:00 - 17:00'
+			hours = zenario.rightHandedSubStr('0' + hours, 2);
+			break;
+		case '%l:%i %p': //'9:00 AM - 5:00 PM'
+			hours = (hours % 12) || 12;
+			amOrPM = isPM? phrase.pm : phrase.am;
+			break;
+		case '%h:%i %p': //'09:00 AM - 05:00 PM'
+			hours = (hours % 12) || 12;
+			amOrPM = isPM? phrase.pm : phrase.am;
+			hours = zenario.rightHandedSubStr('0' + hours, 2);
+			break;
+	}
+	
+	
+	var out = hours + ':' + zenario.rightHandedSubStr('0' + date.getMinutes(), 2);
+	
+	if (addSeconds) {
+		out += ':' + zenario.rightHandedSubStr('0' + date.getSeconds(), 2);
+	}
+	
+	if (amOrPM) {
+		out += ' ' + amOrPM;
+	}
+	
+	if (unix && date.getTimezoneOffset() != (new Date()).getTimezoneOffset()) {
+		if (date.getTimezoneOffset() > 0) {
+			out += ' (UCT -' + (date.getTimezoneOffset() / 60) + ')';
+		} else {
+			out += ' (UCT +' + (date.getTimezoneOffset() / -60) + ')';
+		}
+	}
+	
+	return out;
+}
 
 
 
@@ -3707,7 +3616,7 @@ zenario.addPluginJavaScript = function(moduleId, callback) {
 		filePath += '&admin=1';
 	}
 	
-	return zenario.loadLibrary(URLBasePath + filePath, callback);
+	return zenario.loadLibrary(zenario.addBasePath(filePath), callback);
 };
 
 zenario.rightHandedSubStr = function(string, ammount) {
@@ -3973,12 +3882,6 @@ zenario.init = function(
 	langId,
 	
 	datePickerFormat,
-	minPasswordLength,
-	minPasswordScore,
-	lowercaseCharsInPassword,
-	uppercaseCharsInPassword,
-	numbersInPassword,
-	symbolsInPassword,
 	
 	indexDotPHP,
 	canSetAllCookiesInput,
@@ -3989,8 +3892,6 @@ zenario.init = function(
 	
 	equivId,
 	cID,
-	cType,
-	skinId,
 	isPublic,
 	
 	slashesInURL,
@@ -4005,15 +3906,6 @@ zenario.init = function(
 	zenario.langId = langId;
 	zenario.dpf = datePickerFormat;
 	
-	zenario.passVars = {
-		min_extranet_user_password_length: minPasswordLength,
-		min_extranet_user_password_score: minPasswordScore,
-		a_z_lowercase_characters: lowercaseCharsInPassword,
-		a_z_uppercase_characters: uppercaseCharsInPassword,
-		"0_9_numbers_in_user_password": numbersInPassword,
-		symbols_in_user_password: symbolsInPassword
-	}
-	
 	zenario.indexDotPHP = indexDotPHP;
 	canSetAllCookies = canSetAllCookiesInput;
 	canSetNecessaryCookies = canSetNecessaryCookiesInput;
@@ -4023,8 +3915,7 @@ zenario.init = function(
 
 	zenario.equivId = equivId || undefined;
 	zenario.cID = cID || undefined;
-	zenario.cType = cType || undefined;
-	zenario.skinId = skinId || undefined;
+	zenario.cType = zenarioL.cType || undefined;
 	zenario.isPublic = isPublic;
 	
 	zenario.slashesInURL = !!slashesInURL;
@@ -4167,50 +4058,64 @@ zenario.exitFullScreen = function() {
 
 
 
+//Some utility functions for the logic just below.
+//Given a slightly managled string generated by the string-replace below, convert it into a valid base-13 number.
+var shuffleReplacements = {c: '0', d: '1', f: '2', g: '3', l: '4', m: '5', n: '6', p: '7', r: '8', s: '9', t: 'a', v: 'b', y: 'c', '2': 2},
+	shuffleTo13 = function(chr) {
+		return shuffleReplacements[chr];
+	};
 
-
-
-
-var shrtNms =
-zenario.shrtNms = function(lib, wipeOldShortcuts) {
-	var funs = [],
-		f, fun,
-		shortName, name,
-		first;
+//Given a name of a function, some up with a shorter name for it
+zenario.shrtn = function(name) {
+	//Strip out several letters from the names that have low information value.
+	//This specific list was chosen by experimenting with and finding different
+	//combinations that don't cause name-clashes later.
+	name = name.toLowerCase().replace(/[^cdfglmnprstvy2]/g, '');
 	
-	foreach (lib as name => fun) {
-		if (name != 'has'
-		 && name != 'lib'
-		 && name != 'init'
-		 && typeof fun == 'function') {
-			if (wipeOldShortcuts && chopLeft(name) == '_') {
-				delete lib[name];
-			} else {
-				funs.push(name);
-			}
-		}
+	//The max int in JavaScript is 9007199254740991.
+	//Throw away a few digits on the left if needed so that we stay well below this number.
+	name = name.substr(-13);
+	
+	//Catch the case where we're about to have a number starting with a 0.
+	//Put (what will be) a 1 in front to not lose that information.
+	if (name[0] == 'c') {
+		name = 'd' + name;
 	}
 	
-	funs.sort();
+	//Convert the resulting string into a number
+	name = name.replace(/./g, shuffleTo13);
 	
-	foreach (funs as f => name) {
-		shortName = '_' + chopLeft(name) + chopRight(name, 1).replace(/([A-Z])[A-Z]*([A-Z][a-z])/g, '$1$2').replace(/([A-Z])[A-Z]+$/g, '$1').replace(/[a-z]/g, '');
-		
-		if (defined(lib[shortName])) {
-			shortName = '_' + chopLeft(name) + chopRight(name, 1).replace(/([A-Z][A-Z])[A-Z]*([A-Z][a-z])/g, '$1$2').replace(/([A-Z][A-Z])[A-Z]+$/g, '$1').replace(/([a-z])[a-z]*/g, '$1');
-		}
-		
-		if (!defined(lib[shortName])) {
-			lib[shortName] = lib[name];
-			
-			//This code would list out the shortnames,
-			//so they can be copy-pasted into zenario/includes/js_minify.inc.php
-			//if/when there are changes/new functions
-			
-			//if (shortName.length < name.length) {
-			//	var libName = lib.globalName || '_';
-			//	console.log("'" + libName + "." + name + "(' => '" + libName + "." + shortName + "(',");
-			//}
+	name = parseInt(name, 13);
+	
+	//Apply a mod to greatly reduce the length of the short name.
+	//46655 here was chosen because we're going to use base 36 later on, and it's 36 ** 3 - 1,
+	//which keeps the lengths all under 3 characters, yet is also large enough to avoid clashes
+	//with the whitelist of names to shorten that we use.
+	//I did find a few smaller numbers, e.g. 6114 gave the smallest average length. However this
+	//was only 4% shorter on average, and I'd like more name-space than this so that any function we
+	//add in the future is less likely to clash.
+	name = name % 46655;
+	
+	//Take this number and convert it into base 36 to get something that's valid to use
+	//as a short name.
+	name = '_' + name.toString(36);
+	
+	return name;
+};
+
+
+//Automatically create "short names" for all of our encapsulated functions.
+//The minifier uses these to make the minified code smaller.
+var shrtNms =
+zenario.shrtNms = function(lib) {
+	var longName, fun;
+	
+	//Given a library, loop through all of its properties.
+	//We're looking for functions with names that are 6 or more characters long.
+	foreach (lib as longName => fun) {
+		if (longName.length > 5
+		 && typeof fun == 'function') {
+			lib[zenario.shrtn(longName)] = lib[longName];
 		}
 	}
 };

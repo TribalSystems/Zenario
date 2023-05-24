@@ -34,14 +34,26 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
-		if (count($ids) > 1) {
+		$contentItemsCount = count($ids);
+
+		if ($contentItemsCount > 1) {
 			$box['tabs']['trash']['notices']['trash_items']['show'] = true;
 		} else {
 			$box['tabs']['trash']['notices']['trash_item']['show'] = true;
 		}
+
+		if (!ze\module::isRunning('zenario_pro_features')) {
+			$box['max_height'] = 160;
+		}
 		
 		ze\module::incSubclass('zenario_common_features');
-		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'trash', $this->totalRowNum);
+		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'trash', $this->totalRowNum, $getPlugins = true, $getTranslations = true);
+
+		$fields['trash/links_warning_part_2']['snippet']['html'] = '<br /><p>' . ze\admin::nPhrase(
+			'Trash this content item?',
+			'Trash these content items?',
+			$contentItemsCount
+		) . '</p>';
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -86,7 +98,7 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 		foreach ($ids as $tagId) {
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-			if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
+			if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 				ze\contentAdm::trashContent($cID, $cType, false, $values['trash/trash_options']);
 			}
 		}

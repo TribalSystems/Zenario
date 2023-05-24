@@ -380,6 +380,27 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		return $cleared;
 	}
 	
+	public static function deleteUserDataGetInfo($userIds) {
+		$totalCount = 0;
+		if (!empty($userIds)) {
+			foreach ($userIds as $userId) {
+				if ($userEmail = ze\row::get('users', 'email', $userId)) {
+					$sql = '
+						SELECT COUNT(id)
+						FROM ' . DB_PREFIX . ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log
+						WHERE email_address_to = "' . ze\escape::sql($userEmail) . '"';
+					$result = ze\sql::select($sql);
+					$count = ze\sql::fetchValue($result);
+					
+					$totalCount += $count;
+				}
+			}
+		}
+		
+		$sentEmailLogResults = ze\admin::phrase('Log of sent emails ([[count]] found)', ['count' => $totalCount]);
+		return $sentEmailLogResults;
+	}
+	
 	public static function eventUserDeleted($userId, $deleteAllData) {
 		//When deleting all data about a user, delete their sent email log message content but keep the header
 		if ($deleteAllData) {
@@ -556,7 +577,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 	
 	public static function putBodyInTemplate(&$body) {
 		$template = ze::setting('standard_email_template');
-		ze\lang::applyMergeFields($template, ['email_body_content' => $body]);
+		ze\lang::applyMergeFields($template, ['email_body_content' => $body, 'cms_url' => ze\link::absolute()]);
 		$body = $template;
 	}
 	

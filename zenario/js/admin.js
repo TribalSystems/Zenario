@@ -1114,16 +1114,26 @@ zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentC
 };
 
 zenarioA.addNewReusablePlugin = function(path, key, row) {
-	var instanceId = key.id, slotName = zenarioA.pickNewPluginSlotName, level = zenarioA.pickNewPluginLevel;
 	
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {addPluginInstance: instanceId, slotName: slotName, level: level, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+	var instanceId = key.id,
+		slotName = zenarioA.pickNewPluginSlotName,
+		level = zenarioA.pickNewPluginLevel,
+		request = {
+			addPluginInstance: instanceId,
+			slotName: slotName,
+			level: level,
+			cID: zenario.cID,
+			cType: zenario.cType,
+			cVersion: zenario.cVersion
+		};
 	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenario.refreshPluginSlot(slotName, '');
-	}
+	zenario.moduleAJAX('zenario_common_features', request, true).after(function(error) {
+		if (error) {
+			zenarioA.showMessage(error);
+		} else {
+			zenario.refreshPluginSlot(slotName, '');
+		}
+	});
 };
 
 
@@ -1137,22 +1147,23 @@ zenarioA.addNewWireframePlugin = function(el, slotName, moduleId) {
 			cID: zenario.cID,
 			cType: zenario.cType,
 			cVersion: zenario.cVersion
-		},
-		html = zenario.moduleNonAsyncAJAX('zenario_common_features', req, false);
+		};
 	
-	if (zenarioA.loggedOut(html)) {
-		return;
-	}
-	
-	zenarioA.floatingBox(html, $(el).text(), 'warning', false, false, undefined, undefined, function() {
-	
-		var error = zenario.moduleNonAsyncAJAX('zenario_common_features', req, true);
-	
-		if (error) {
-			zenarioA.showMessage(error);
-		} else {
-			zenario.refreshPluginSlot(slotName, '');
+	zenario.moduleAJAX('zenario_common_features', req, false).after(function(html) {
+		if (zenarioA.loggedOut(html)) {
+			return;
 		}
+		
+		zenarioA.floatingBox(html, $(el).text(), 'warning', false, false, undefined, undefined, function() {
+	
+			zenario.moduleAJAX('zenario_common_features', req, true).after(function(error) {
+				if (error) {
+					zenarioA.showMessage(error);
+				} else {
+					zenario.refreshPluginSlot(slotName, '');
+				}
+			});
+		});
 	});
 	
 	return false;
@@ -1188,12 +1199,17 @@ zenarioA.pluginSlotEditSettings = function(el, slotName, fabPath, requests, tab)
 };
 
 //Moving modules
-zenarioA.movePlugin = function(el, slotName) {
+zenarioA.movePlugin = function(el, slotName, siteWide) {
 	el.blur();
 	
 	zenarioA.floatingBox(phrase.movePluginDesc, true, 'question', true, true, undefined, undefined, function() {
+		
 		zenarioA.moveSource = slotName;
-		$('.zenario_slotPluginControlBox').addClass('zenario_moveDestination');
+		zenarioA.moveSitewide = siteWide;
+		
+		//Only suggest that slots in the body be moved to other slots in the body.
+		//And vice versa, only suggest that slots in the site-wide header/footer be moved to other site-wide slots.
+		$(siteWide? '.zenario_slot_in_header,.zenario_slot_in_footer' : '.zenario_slot_in_body').siblings('.zenario_slotPluginControlBox').addClass('zenario_moveDestination');
 		$('#' + plgslt_ + slotName + '-control_box').removeClass('zenario_moveDestination').addClass('zenario_moveSource');
 	});
 	
@@ -1203,21 +1219,25 @@ zenarioA.movePlugin = function(el, slotName) {
 zenarioA.doMovePlugin = function(el, moveDestination) {
 	el.blur();
 	
-	var moveSource = zenarioA.moveSource;
+	var moveSource = zenarioA.moveSource,
+		siteWide = zenarioA.moveSitewide;
+	
 	zenarioA.cancelMovePlugin(el);
 	
 	if (moveSource && moveDestination) {
 		if (zenarioA.toolbar == 'edit') {
 			zenarioA.doMovePlugin2(moveSource, moveDestination, 1);
+		
 		} else if (zenarioA.toolbar == 'layout') {
-			var html = zenario.moduleNonAsyncAJAX('zenario_common_features', {movePlugin: 1, level: 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false);
+			zenario.moduleAJAX('zenario_common_features', {movePlugin: 1, level: siteWide? 3 : 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false).after(function(html) {
 			
-			if (zenarioA.loggedOut(html)) {
-				return;
-			}
+				if (zenarioA.loggedOut(html)) {
+					return;
+				}
 			
-			zenarioA.floatingBox(html, phrase.movePlugin, 'warning', false, false, undefined, undefined, function() {
-				zenarioA.doMovePlugin2(moveSource, moveDestination, 2);
+				zenarioA.floatingBox(html, phrase.movePlugin, 'warning', false, false, undefined, undefined, function() {
+					zenarioA.doMovePlugin2(moveSource, moveDestination, siteWide? 3 : 2);
+				});
 			});
 		}
 	}
@@ -1226,123 +1246,24 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 };
 
 zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {movePlugin: 1, level: level, slotNameSource: moveSource, slotNameDestination: moveDestination, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenario.refreshPluginSlot(moveSource, '', zenarioA.importantGetRequests);
-		zenario.refreshPluginSlot(moveDestination, '', zenarioA.importantGetRequests);
-	}
+	zenario.moduleAJAX('zenario_common_features', {movePlugin: 1, level: level, slotNameSource: moveSource, slotNameDestination: moveDestination, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true).after(function(error) {
+	
+		if (error) {
+			zenarioA.showMessage(error);
+		} else {
+			zenario.refreshPluginSlot(moveSource, '', zenarioA.importantGetRequests);
+			zenario.refreshPluginSlot(moveDestination, '', zenarioA.importantGetRequests);
+		}
+	});
 };
 
 zenarioA.cancelMovePlugin = function(el) {
 	if (el) el.blur();
 	
 	delete zenarioA.moveSource;
+	delete zenarioA.moveSitewide;
 	$('.zenario_slotPluginControlBox').removeClass('zenario_moveDestination').removeClass('zenario_moveSource');
-	
-	return false;
-};
-
-
-
-
-zenarioA.refreshAllSlotsWithCutCopyPaste = function(allowedModules) {
-	
-	//Try to get a list of every type of plugin affected
-	var slotName,
-		module,
-		modules = zenarioT.csvToObject(allowedModules);
-	
-	modules.zenario_banner = true;
-	modules.zenario_html_snippet = true;
-	modules.zenario_wysiwyg_editor = true;
-	
-	//Reload the contents of every slot these plugins are in (version controlled plugins only)
-	foreach (modules as module) {
-		if (window[module]
-		 && window[module].slots) {
-			foreach (window[module].slots as slotName) {
-				if (zenario.slots[slotName]
-				 && zenario.slots[slotName].isVersionControlled) {
-					window[module].refreshPluginSlot(slotName, false, false, false);
-				}
-			}	
-		}
-	};
-};
-	
-zenarioA.copyContents = function(el, slotName, allowedModules) {
-	el.blur();
-	
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {copyContents: 1, allowedModules: allowedModules, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
-	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenarioA.refreshAllSlotsWithCutCopyPaste(allowedModules);
-	}
-};
-
-zenarioA.cutContents = function(el, slotName, allowedModules) {
-	el.blur();
-	
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {cutContents: 1, allowedModules: allowedModules, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
-	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenarioA.refreshAllSlotsWithCutCopyPaste(allowedModules);
-	}
-};
-
-zenarioA.pasteContents = function(el, slotName) {
-	el.blur();
-	
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {pasteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
-	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
-	}
-};
-
-zenarioA.overwriteContents = function(el, slotName) {
-	el.blur();
-	
-	zenarioA.floatingBox(phrase.overwriteContentsConfirm, $(el).text(), 'warning', false, false, undefined, undefined, function() {
-		var error = 
-			zenario.moduleNonAsyncAJAX('zenario_common_features', {overwriteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
-	
-		if (error) {
-			zenarioA.showMessage(error);
-		} else {
-			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
-		}
-	});
-	
-	return false;
-};
-
-zenarioA.swapContents = function(el, slotName) {
-	el.blur();
-	
-	zenarioA.floatingBox(phrase.swapContentsConfirm, $(el).text(), 'warning', false, false, undefined, undefined, function() {
-		var error = 
-			zenario.moduleNonAsyncAJAX('zenario_common_features', {swapContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
-	
-		if (error) {
-			zenarioA.showMessage(error);
-		} else {
-			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
-		}
-	});
 	
 	return false;
 };
@@ -1364,24 +1285,25 @@ zenarioA.removePlugin = function(el, slotName, level) {
 			cVersion: zenario.cVersion
 		},
 		doRemovePlugin = function() {
-			var error = 
-				zenario.moduleNonAsyncAJAX('zenario_common_features', req, true);
+			zenario.moduleAJAX('zenario_common_features', req, true).after(function(error) {
 	
-			if (error) {
-				zenarioA.showMessage(error);
-			} else {
-				zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
-			}
+				if (error) {
+					zenarioA.showMessage(error);
+				} else {
+					zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+				}
+			});
 		};
 	
 	if (level > 1) {
-		var html = zenario.moduleNonAsyncAJAX('zenario_common_features', req, false);
+		zenario.moduleAJAX('zenario_common_features', req, false).after(function(html) {
 		
-		if (zenarioA.loggedOut(html)) {
-			return;
-		}
+			if (zenarioA.loggedOut(html)) {
+				return;
+			}
 	
-		zenarioA.floatingBox(html, phrase.remove, true, false, false, undefined, undefined, doRemovePlugin);
+			zenarioA.floatingBox(html, phrase.remove, true, false, false, undefined, undefined, doRemovePlugin);
+		});
 	} else {
 		doRemovePlugin();
 	}
@@ -1393,28 +1315,28 @@ zenarioA.removePlugin = function(el, slotName, level) {
 zenarioA.hidePlugin = function(el, slotName) {
 	el.blur();
 	
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {hidePlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+	zenario.moduleAJAX('zenario_common_features', {hidePlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true).after(function(error) {
 	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
-	}
+		if (error) {
+			zenarioA.showMessage(error);
+		} else {
+			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+		}
+	});
 };
 
 	
 zenarioA.showPlugin = function(el, slotName) {
 	el.blur();
 	
-	var error = 
-		zenario.moduleNonAsyncAJAX('zenario_common_features', {showPlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+	zenario.moduleAJAX('zenario_common_features', {showPlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true).after(function(error) {
 	
-	if (error) {
-		zenarioA.showMessage(error);
-	} else {
-		zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
-	}
+		if (error) {
+			zenarioA.showMessage(error);
+		} else {
+			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+		}
+	});
 };
 
 
@@ -2079,14 +2001,7 @@ zenarioA.addImagePropertiesButtons = function(path) {
 					$el.before($imagePropertiesButton);
 				
 					$imagePropertiesButton.on('click', function() {
-						zenarioAB.open('zenario_image', {
-							id: mobImageId,
-							slotName: slotName,
-							instanceId: instanceId,
-							eggId: eggId
-						}, 'crop_1');
-						
-						return false;
+						return zenarioA.imageProperties(mobImageId, slotName, instanceId, eggId);
 					});
 				}
 			}
@@ -2095,12 +2010,15 @@ zenarioA.addImagePropertiesButtons = function(path) {
 };
 
 zenarioA.imageProperties = function(imageId, slotName, instanceId, eggId) {
-	zenarioAB.open('zenario_image', {
-		id: imageId,
-		slotName: slotName,
-		instanceId: instanceId,
-		eggId: eggId
-	}, 'crop_1');
+	
+	if (zenarioA.checkForEdits()) {
+		zenarioAB.open('zenario_image', {
+			id: imageId,
+			slotName: slotName,
+			instanceId: instanceId,
+			eggId: eggId
+		}, 'crop_1');
+	}
 	
 	return false;
 };
@@ -2169,7 +2087,7 @@ zenarioA.enableDragDropUploadInTinyMCE = function(enableImages, prefix, el) {
 				request = {
 					method_call: 'handleOrganizerPanelAJAX',
 					__pluginClassName__: 'zenario_common_features',
-					__path__: 'zenario__content/panels/image_library',
+					__path__: 'zenario__library/panels/image_library',
 					upload: 1};
 			
 			zenarioT.setHTML5UploadFromDragDrop(
@@ -2275,16 +2193,16 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 		 && zenario_wysiwyg_editor.poking) {
 			pick_items = {
 				path: 'zenario__content/panels/content/item_buttons/images//' + zenario.cType + '_' + zenario.cID + '//',
-				target_path: 'zenario__content/panels/image_library',
-				min_path: 'zenario__content/panels/image_library',
-				max_path: 'zenario__content/panels/image_library',
+				target_path: 'zenario__library/panels/image_library',
+				min_path: 'zenario__library/panels/image_library',
+				max_path: 'zenario__library/panels/image_library',
 				disallow_refiners_looping_on_min_path: false};
 		
 		} else {
 			pick_items = {
-				path: 'zenario__content/panels/image_library',
-				target_path: 'zenario__content/panels/image_library',
-				min_path: 'zenario__content/panels/image_library',
+				path: 'zenario__library/panels/image_library',
+				target_path: 'zenario__library/panels/image_library',
+				min_path: 'zenario__library/panels/image_library',
 				max_path: false,
 				disallow_refiners_looping_on_min_path: false};
 		}
@@ -2303,10 +2221,10 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 	//Link to a document (currently the link must be to a public document).
 	} else if (type == 'zenario_document') {
 		zenarioA.organizerSelect('zenarioA', 'setDocumentURL', false,
-						'zenario__content/panels/documents',
-						'zenario__content/panels/documents',
-						'zenario__content/panels/documents',
-						'zenario__content/panels/documents',
+						'zenario__library/panels/documents',
+						'zenario__library/panels/documents',
+						'zenario__library/panels/documents',
+						'zenario__library/panels/documents',
 						false, undefined, undefined, undefined, true,
 						undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
 						{disabled_if: 'item && item.privacy != "public" && item.privacy != "Public"'});
@@ -2357,6 +2275,13 @@ zenarioA.setEditorField = function(value, el, onlyIfEmpty) {
 	zenario.fireChangeEvent(el);
 };
 
+//We've made a few custom modifications to TinyMCE to be able to mark some fields that we
+//wish to interact with using a custom CSS class.
+//This function will access those.
+zenarioA.getEditorField = function(className) {
+	return $('.mce-panel input.mce-' + className)[0];
+};
+
 //This handles the return results of the file browser for a link to a content item
 zenarioA.setLinkURL = function(path, key, row) {
 	
@@ -2368,7 +2293,7 @@ zenarioA.setLinkURL = function(path, key, row) {
 		return;
 	}
 	
-	zenarioA.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
+	zenarioA.setEditorField(row.title, zenarioA.getEditorField('link_text_to_display'), true);
 	zenarioA.setEditorField(URL);
 };
 
@@ -2377,17 +2302,18 @@ zenarioA.setDocumentURL = function(path, key, row) {
 	var documentURL = row.frontend_link;
 	
 	if (zenarioA.tinyMCE_fromFAB) {
-		documentURL = URLBasePath + documentURL;
+		documentURL = zenario.addBasePath(documentURL);
 	}
 	
-	zenarioA.setEditorField(row.name, $('.mce-panel input.mce-link_text_to_display')[0], true);
+	zenarioA.setEditorField(row.name, zenarioA.getEditorField('link_text_to_display'), true);
 	zenarioA.setEditorField(documentURL);
 }
 
 //This handles the return results of the file browser for an image
 zenarioA.setImageURL = function(path, key, row) {
-
-	var imageURL = 'zenario/file.php?c=' + (row.short_checksum || row.checksum);
+	
+	var $constrainProportionsCheckbox = $('.mce-panel .mce-image_proportions'),
+		imageURL = 'zenario/file.php?c=' + (row.short_checksum || row.checksum);
 	
 	if (key.usage && key.usage != 'image') {
 		imageURL += '&usage=' + encodeURIComponent(key.usage);
@@ -2396,11 +2322,30 @@ zenarioA.setImageURL = function(path, key, row) {
 	imageURL += '&filename=' + encodeURIComponent(row.filename);
 	
 	if (zenarioA.tinyMCE_fromFAB) {
-		imageURL = URLBasePath + imageURL;
+		imageURL = zenario.addBasePath(imageURL);
 	}
 	
-	zenarioA.setEditorField(row.alt_tag, $('.mce-panel input.mce-image_alt')[0], true);
 	zenarioA.setEditorField(imageURL);
+	zenarioA.setEditorField(row.alt_tag, zenarioA.getEditorField('image_alt'));
+	
+	//There's a bug in TinyMCE where the width and height in the box is misread in certain situations
+	//and it puts garbage into the width and/or height boxes.
+	//Temporarily disable the "Constrain proportions" option as a work-around to fix this.
+	if ($constrainProportionsCheckbox.hasClass('mce-checked')) {
+		$constrainProportionsCheckbox.click();
+	}
+	
+	//If we know what the width and height should be, try to change them back to what we
+	//think they should be to prevent this issue.
+	if (row.width) {
+		zenarioA.setEditorField(row.width, zenarioA.getEditorField('image_width'));
+	}
+	if (row.height) {
+		zenarioA.setEditorField(row.height, zenarioA.getEditorField('image_height'));
+	}
+	
+	//Re-enable the "Constrain proportions" option
+	$constrainProportionsCheckbox.click();
 };
 
 
@@ -2417,8 +2362,8 @@ zenarioA.getSkinDesc = function() {
 		zenarioA.skinDesc = {};
 		
 		var desc;
-		if (zenario.skinId
-		 && (desc = zenario.moduleNonAsyncAJAX('zenario_common_features', {skinId: zenario.skinId}, false, true))
+		if (zenarioL.skinId
+		 && (desc = zenario.moduleNonAsyncAJAX('zenario_common_features', {skinId: zenarioL.skinId}, false, true))
 		 && (typeof desc == 'object')) {
 			zenarioA.skinDesc = desc;
 		}
@@ -3363,6 +3308,15 @@ zenarioA.addLinkStatus = function($el, status) {
 	}
 };
 
+//Check if an admin had a specific privilege when the page was displayed.
+//Only works for a few specific cases - i.e. the list that's hard-coded in zenario/autoload/fun/pageFootInAdminMode.php
+zenarioA.hasPriv = function(priv) {
+   return !!zenarioA.adminPrivs[priv];
+};
+zenarioA.hasNoPriv = function(priv) {
+   return !zenarioA.adminPrivs[priv];
+};
+
 
 zenarioA.init = function(
 	cVersion,
@@ -3370,6 +3324,10 @@ zenarioA.init = function(
 	
 	toolbar,
 	pageMode,
+	
+	minPasswordLength,
+	minPasswordScore,
+	
 	showGridOn,
 	siteSettings,
 	adminSettings,
@@ -3398,6 +3356,11 @@ zenarioA.init = function(
 	zenarioA.lang = lang;
 	zenarioA.spareDomains = spareDomains;
 	zenarioA.draftMessage = draftMessage;
+	
+	zenarioA.passVars = {
+		min_extranet_user_password_length: minPasswordLength,
+		min_extranet_user_password_score: minPasswordScore
+	};
 	
 	//Add CSS classes for every priv needed in JavaScript
 	var priv, hasPriv;
@@ -3429,9 +3392,70 @@ zenarioA.init = function(
 };
 
 
+//A developer tool, checks a library to see if it will work with the short-names system
+zenarioA.reviewShortNames = function(lib, globalName) {
+	var longName, shortName, fun, mapping = {}, error = false, output = '';
+	
+	globalName = globalName || lib.globalName;
+	
+	//Given a library, loop through all of its properties.
+	//We're looking for functions with names that are 6 or more characters long.
+	foreach (lib as longName => fun) {
+		if (longName.length > 5
+		 && longName[0] != '_'
+		 && typeof fun == 'function') {
+			
+			shortName = zenario.shrtn(longName);
+			
+			if (mapping[shortName]) {
+				console.warn(
+					globalName + '.' + mapping[shortName], 'and',
+					globalName + '.' + longName, 'clash on',
+					globalName + '.' + shortName
+				);
+				error = true;
+			}
+			
+			mapping[shortName] = longName;
+			
+			output += "\n\t\t'" + globalName + "." + longName + "(',";
+		}
+	}
+	
+	if (error) {
+		return false;
+	} else {
+		console.log('All okay');
+		return output;
+	}
+};
+
+//To get a list of functions compatible with the short-name system from a library,
+//you need to be on a page in admin mode, with that library on the page, then call
+//the zenarioA.reviewShortNames() function.
+//E.g.:
+//	zenarioA.reviewShortNames(_, '_');
+//	zenarioA.reviewShortNames(zenario, 'zenario');
+//	zenarioA.reviewShortNames(zenarioT);
+//	zenarioA.reviewShortNames(zenarioA);
+//	zenarioA.reviewShortNames(zenarioAB);
+//	zenarioA.reviewShortNames(zenarioAT);
+//	zenarioA.reviewShortNames(zenarioO);
+//	zenarioA.reviewShortNames(zenarioGM);
+//	zenarioA.reviewShortNames(zenario_conductor);
+//The names you generate should be placed in the whitelist in zenario/includes/js_minify.inc.php
+
+
+
+
 
 //Calculate function short names, we need to do this before calling any functions!
 zenario.shrtNms(zenarioA);
+
+
+
+
+
 
 
 });

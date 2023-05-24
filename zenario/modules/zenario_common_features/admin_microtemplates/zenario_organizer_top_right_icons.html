@@ -1,4 +1,4 @@
-<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
+<% if (zenarioA.hasPriv('_PRIV_EDIT_SITE_SETTING')) { %>
 	<div
 		data-position="bottom-right-aligned"
 		onclick="zenarioAB.enableOrDisableSite();"
@@ -10,7 +10,7 @@
 		<% if (zenarioA.siteSettings.site_enabled) { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 				class="organizer_enabled_disabled site_enabled_development"
-				title="Site enabled, but in development mode"
+				title="Site enabled, but in developer mode"
 			<% } else { %>
 				class="organizer_enabled_disabled site_enabled"
 				title="Site enabled"
@@ -18,7 +18,7 @@
 		<% } else { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
 				class="organizer_enabled_disabled site_disabled"
-				title="Site disabled and in development mode"
+				title="Site disabled and in developer mode"
 			<% } else { %>
 				class="organizer_enabled_disabled site_disabled"
 				title="Site disabled"
@@ -26,7 +26,7 @@
 		<% } %>
 	></div>
 <% } %>
-<% if (zenarioA.adminPrivs._PRIV_EDIT_SITE_SETTING) { %>
+<% if (zenarioA.hasPriv('_PRIV_EDIT_SITE_SETTING')) { %>
 	<div
 	class="organizer_help_box"
 	data-step="16" data-position="bottom-right-aligned"
@@ -48,7 +48,7 @@
 		{position: {collision: 'flipfit'}}
 	"
 ></div>
-<% if (zenarioA.adminPrivs._PRIV_VIEW_DIAGNOSTICS) { %>
+<% if (zenarioA.hasPriv('_PRIV_VIEW_DIAGNOSTICS')) { %>
 	<div
 		class="organizer_diagnostics"
 		onclick="zenario.goToURL(URLBasePath + 'zenario/admin/welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"

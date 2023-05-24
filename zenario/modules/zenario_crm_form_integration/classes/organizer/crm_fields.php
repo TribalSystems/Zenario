@@ -47,7 +47,7 @@ class zenario_crm_form_integration__organizer__crm_fields extends zenario_crm_fo
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		//Handle reordering of CRM fields
-		if ($_POST['reorder'] ?? false) {
+		if (ze::post('reorder')) {
 			$ids = explode(',', $ids);
 			foreach ($ids as $id) {
 				if (!empty($_POST['ordinals'][$id])) {

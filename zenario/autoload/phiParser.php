@@ -225,8 +225,9 @@ class phiToken {
 				$this->breaker = true;
 				break;
 			
-			//Ignore any semicolons; the new version of Phi doesn't use or read them
+			//From 9.4 onwards, stop ignoring semicolons, and complain if they're used
 			case 'SEMICOLON':
+				throw new \Twig\Error\Error('Semicolons are no longer used for line endings in Phi scripts, please remove them.', $this->line + 1, $source = null);
 			
 			//Ignore
 			case 'T_COMMENT':					#	// or #, and /* */	comments

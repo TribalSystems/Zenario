@@ -38,7 +38,6 @@ $content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cType]);
 $chain = ze\row::get('translation_chains', true, ['equiv_id' => $content['equiv_id'], 'type' => $cType]);
 $version = ze\row::get('content_item_versions', true, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 $menuItems = ze\menu::getFromContentItem($cID, $cType, true, false, true, true);
-// mail('support@tribalsystems.uk', 'Menu items array', print_r($menuItems, true));
 
 $tagId = $cType. '_'. $cID;
 $isMultilingual = ze\lang::count() > 1;
@@ -51,7 +50,7 @@ if (!$content || !$version) {
 	$LayoutIdentifier = ze\layoutAdm::codeName(ze::$layoutId);
 	$layout['usage'] = ze\layoutAdm::usage(ze::$layoutId);
 	
-	$adminToolbar['sections']['layout']['buttons']['settings']['label'] = ze\admin::phrase('Edit layout settings', ['name' => $LayoutIdentifier]);
+	$adminToolbar['sections']['layout']['buttons']['settings']['label'] = ze\admin::phrase('Edit [[name]] settings', ['name' => $LayoutIdentifier]);
 	$adminToolbar['sections']['layout']['buttons']['settings']['admin_box']['key']['id'] = ze::$layoutId;
 	
 	//Hide "copy from.." when content type is document.
@@ -67,16 +66,17 @@ if (!$content || !$version) {
 	}
 		
 	//Set the link to Gridmaker
-	if (isset($adminToolbar['sections']['layout']['buttons']['edit_grid'])) {
-		//To Do: only set the link if this Layout was actually made using Gridmaker
-			//(Maybe you could check to see if a grid css file exists?)
-		if (true) {
-			$adminToolbar['sections']['layout']['buttons']['edit_grid']['popout']['href'] .= '&id='. ze::$layoutId;
-		} else {
-			unset($adminToolbar['sections']['layout']['buttons']['edit_grid']);
-		}
-		
-		$adminToolbar['sections']['layout']['buttons']['edit_grid']['label'] = ze\admin::phrase('Edit [[name]] with Gridmaker', ['name' => $LayoutIdentifier]);
+	if (isset($adminToolbar['sections']['layout']['buttons']['edit_body_slots'])) {
+		$adminToolbar['sections']['layout']['buttons']['edit_body_slots']['popout']['href'] .= '&id='. ze::$layoutId;
+		$adminToolbar['sections']['layout']['buttons']['edit_body_slots']['label'] = ze\admin::phrase('Edit [[name]]', ['name' => $LayoutIdentifier]);
+	}
+	
+	//Don't show the links to edit the header/footer if this layout doesn't use them
+	if (!$layout['header_and_footer'] && isset($adminToolbar['sections']['layout']['buttons']['edit_head_slots'])) {
+		$adminToolbar['sections']['layout']['buttons']['edit_head_slots']['disabled'] =
+		$adminToolbar['sections']['layout']['buttons']['edit_foot_slots']['disabled'] = true;
+		$adminToolbar['sections']['layout']['buttons']['edit_head_slots']['tooltip'] =
+		$adminToolbar['sections']['layout']['buttons']['edit_foot_slots']['tooltip'] = ze\admin::phrase('This layout does not use the site-wide header/footer.');
 	}
 	
 	if (!ze::$skinId
@@ -126,8 +126,8 @@ if (!$content || !$version) {
 	);
 
 	if ($inlineImages) {
-		$adminToolbar['sections']['edit']['buttons']['view_items_images']['inline_images_count'] =
-		$adminToolbar['sections']['restricted_editing']['buttons']['view_items_images']['inline_images_count'] = count($inlineImages);
+		$adminToolbar['sections']['edit']['buttons']['view_items_images']['record_count'] =
+		$adminToolbar['sections']['restricted_editing']['buttons']['view_items_images']['record_count'] = count($inlineImages);
 	}
 }
 
@@ -744,37 +744,29 @@ if (isset($adminToolbar['sections']['edit'])
 
 
 if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_head'])) {
-	$adminToolbar_edit_buttons_head = &$adminToolbar['sections']['slot_controls']['buttons']['item_head'];
-	if(!isset($adminToolbar_edit_buttons_head['tooltip'])) {
-		$adminToolbar_edit_buttons_head['tooltip'] = '';
-	}
 	if ($version['head_html'] === null) {
-		$adminToolbar_edit_buttons_head['css_class'] = 'head_slot_empty';
-		$adminToolbar_edit_buttons_head['tooltip'] .= ze\admin::phrase('Empty');
+		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['css_class'] = 'head_slot_empty';
+		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['tooltip'] = ze\admin::phrase('Empty');
 	} else {
-		$adminToolbar_edit_buttons_head['css_class'] = 'head_slot_full';
-		$adminToolbar_edit_buttons_head['tooltip'] .= ze\admin::phrase('Populated');
+		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['css_class'] = 'head_slot_full';
+		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['tooltip'] = ze\admin::phrase('Populated');
 	}
 	if ($version['head_visitor_only']) {
-		$adminToolbar_edit_buttons_head['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
+		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
 	}
 }
 
 
 if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_foot'])) {
-	$adminToolbar_edit_buttons_foot = &$adminToolbar['sections']['slot_controls']['buttons']['item_foot'];
-	if(!isset($adminToolbar_edit_buttons_foot['tooltip'])) {
-		$adminToolbar_edit_buttons_foot['tooltip'] = '';
-	}
 	if ($version['foot_html'] === null) {
- 		$adminToolbar_edit_buttons_foot['css_class'] = 'foot_slot_empty';
- 		$adminToolbar_edit_buttons_foot['tooltip'] .= ze\admin::phrase('Empty');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['css_class'] = 'foot_slot_empty';
+ 		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['tooltip'] = ze\admin::phrase('Empty');
  	} else {
- 		$adminToolbar_edit_buttons_foot['css_class'] = 'foot_slot_full';
- 		$adminToolbar_edit_buttons_foot['tooltip'] .= ze\admin::phrase('Populated');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['css_class'] = 'foot_slot_full';
+ 		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['tooltip'] = ze\admin::phrase('Populated');
  	}
  	if ($version['foot_visitor_only']) {
- 		$adminToolbar_edit_buttons_foot['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
  	}
 }
 
@@ -797,60 +789,71 @@ if (isset($adminToolbar['sections']['layout'])) {
  		:	'zenario__layouts/panels/layouts/trash////'. ze::$layoutId;
  	
  	
- 	$adminToolbar_buttons_head = &$adminToolbar['sections']['slot_controls']['buttons']['layout_head'];
-	if(!isset($adminToolbar_buttons_head['tooltip'])) {
-		$adminToolbar_buttons_head['tooltip'] = '';
-	}
  	if ($version['head_overwrite']) {
 		if ($layout['head_html'] === null) {
-			$adminToolbar_buttons_head['css_class'] = 'head_slot_empty_overwritten';
-	 		$adminToolbar_buttons_head['tooltip'] .= ze\admin::phrase('Empty');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['css_class'] = 'head_slot_empty_overwritten';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] = ze\admin::phrase('Empty');
 		} else {
-			$adminToolbar_buttons_head['css_class'] = 'head_slot_full_overwritten';
-	 		$adminToolbar_buttons_head['tooltip'] .= ze\admin::phrase('Populated');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['css_class'] = 'head_slot_full_overwritten';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] = ze\admin::phrase('Populated');
 		}
- 		$adminToolbar_buttons_head['tooltip'] .= '<br/>'. ze\admin::phrase('Is overridden by a more granular entry');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] .= '<br/>'. ze\admin::phrase('Is overridden by a more granular entry');
  	} else {
 		if ($layout['head_html'] === null) {
-			$adminToolbar_buttons_head['css_class'] = 'head_slot_empty';
-	 		$adminToolbar_buttons_head['tooltip'] .= ze\admin::phrase('Empty');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['css_class'] = 'head_slot_empty';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] = ze\admin::phrase('Empty');
 		} else {
-			$adminToolbar_buttons_head['css_class'] = 'head_slot_full';
-	 		$adminToolbar_buttons_head['tooltip'] .= ze\admin::phrase('Populated');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['css_class'] = 'head_slot_full';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] = ze\admin::phrase('Populated');
 		}
  	}
  	if ($layout['head_visitor_only']) {
- 		$adminToolbar_buttons_head['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
  	}
+ 	$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['label'] = ze\admin::phrase('<head> HTML/JS for [[name]]', ['name' => $LayoutIdentifier]);
  	
  	
  	
- 	$adminToolbar_buttons_foot = &$adminToolbar['sections']['slot_controls']['buttons']['layout_foot'];
-	if(!isset($adminToolbar_buttons_foot['tooltip'])) {
-		$adminToolbar_buttons_foot['tooltip'] = '';
-	}
  	if ($version['foot_overwrite']) {
 		if ($layout['foot_html'] === null) {
-			$adminToolbar_buttons_foot['css_class'] = 'foot_slot_empty_overwritten';
-	 		$adminToolbar_buttons_foot['tooltip'] .= ze\admin::phrase('Empty');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['css_class'] = 'foot_slot_empty_overwritten';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['tooltip'] = ze\admin::phrase('Empty');
 		} else {
-			$adminToolbar_buttons_foot['css_class'] = 'foot_slot_full_overwritten';
-	 		$adminToolbar_buttons_foot['tooltip'] .= ze\admin::phrase('Populated');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['css_class'] = 'foot_slot_full_overwritten';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['tooltip'] = ze\admin::phrase('Populated');
 		}
- 		$adminToolbar_buttons_foot['tooltip'] .= '<br/>'. ze\admin::phrase('Is overridden by a more granular entry');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['tooltip'] .= '<br/>'. ze\admin::phrase('Is overridden by a more granular entry');
  	} else {
 		if ($layout['foot_html'] === null) {
-			$adminToolbar_buttons_foot['css_class'] = 'foot_slot_empty';
-	 		$adminToolbar_buttons_foot['tooltip'] .= ze\admin::phrase('Empty');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['css_class'] = 'foot_slot_empty';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['tooltip'] = ze\admin::phrase('Empty');
 		} else {
-			$adminToolbar_buttons_foot['css_class'] = 'foot_slot_full';
-	 		$adminToolbar_buttons_foot['tooltip'] .= ze\admin::phrase('Populated');
+			$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['css_class'] = 'foot_slot_full';
+	 		$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['tooltip'] = ze\admin::phrase('Populated');
 		}
  	}
  	if ($layout['foot_visitor_only']) {
- 		$adminToolbar_buttons_foot['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
+ 		$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
  	}
+ 	$adminToolbar['sections']['slot_controls']['buttons']['layout_foot']['label'] = ze\admin::phrase('HTML/JS before </body> for [[name]]', ['name' => $LayoutIdentifier]);
+
+
+	$siteWideHead = ze::setting('sitewide_head');
+	$siteWideBody = ze::setting('sitewide_body');
+	$siteWideFoot = ze::setting('sitewide_foot');
+	$siteWideAnalyticsHtml = ze::setting('sitewide_analytics_html');
+	$siteWideSocialMediaHtml = ze::setting('sitewide_social_media_html');
+
+	if ($siteWideHead || $siteWideBody || $siteWideFoot || $siteWideAnalyticsHtml || $siteWideSocialMediaHtml) {
+		$adminToolbar['sections']['slot_controls']['buttons']['global']['css_class'] = 'global_slot_full';
+		$adminToolbar['sections']['slot_controls']['buttons']['global']['tooltip'] = ze\admin::phrase('Populated');
+	} else {
+		$adminToolbar['sections']['slot_controls']['buttons']['global']['css_class'] = 'global_slot_empty';
+		$adminToolbar['sections']['slot_controls']['buttons']['global']['tooltip'] = ze\admin::phrase('Empty');
+	}
 }
+
+
 
 
 
@@ -1160,7 +1163,7 @@ if (ze::$layoutId < 10) {
 $layoutLabel .= ze::$layoutId;
 $adminToolbar['sections']['icons']['buttons']['layout_id']['label'] = $layoutLabel;
 $sql = '
-	SELECT 
+	SELECT
 		COUNT(DISTINCT c.tag_id) AS item_count, 
 		l.name, l.status, ct.content_type_name_en AS default_layout_for_ctype
 	FROM '.DB_PREFIX.'content_item_versions v
@@ -1177,20 +1180,63 @@ $layoutDetails = ze\sql::fetchAssoc($result);
 $layoutName = $layoutDetails['name'];
 $layoutItemCount = $layoutDetails['item_count'];
 
+//Check if the only content items using this layout are trashed.
+$sql = '
+	SELECT
+		COUNT(DISTINCT c.tag_id) AS item_count, 
+		l.name, l.status, ct.content_type_name_en AS default_layout_for_ctype
+	FROM '.DB_PREFIX.'content_item_versions v
+	INNER JOIN '.DB_PREFIX.'layouts l
+		ON v.layout_id = l.layout_id
+	INNER JOIN '.DB_PREFIX.'content_items c
+		ON (v.version = c.admin_version) AND (v.tag_id = c.tag_id)
+	LEFT JOIN ' . DB_PREFIX . 'content_types ct
+		ON ct.default_layout_id = l.layout_id
+	WHERE v.layout_id = '.(int)ze::$layoutId. '
+	AND c.status = "trashed"';
+$result = ze\sql::select($sql);
+$layoutDetailsForTrashedItems = ze\sql::fetchAssoc($result);
+$layoutTrashedItemCount = $layoutDetailsForTrashedItems['item_count'];
+
 if ($layoutDetails['status'] == 'active') {
 	$layoutStatus = '';
 } elseif ($layoutDetails['status'] == 'suspended') {
 	$layoutStatus = 'Layout is retired';
+} elseif(!$layoutDetails['item_count'] && !$layoutDetails['status']) {
+	if ($layoutTrashedItemCount) {
+		if ($layoutDetailsForTrashedItems['status'] == 'active') {
+			$layoutStatus = '';
+		} elseif ($layoutDetailsForTrashedItems['status'] == 'suspended') {
+			$layoutStatus = 'Layout is retired';
+		}
+	}
 }
 
 $isDefaultForAContentType = $layoutDetails['default_layout_for_ctype'] ? 'Default layout for content type ' . $layoutDetails['default_layout_for_ctype'] : '';
 
-if ($layoutItemCount == 1) {
-	$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
-		'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content item uses this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+if ($layoutItemCount) {
+	if ($layoutItemCount == 1) {
+		$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+			'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content item uses this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+	} else {
+		if ($layoutTrashedItemCount) {
+			$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+				'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content items (' . (int) $layoutTrashedItemCount . ' trashed) use this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+		} else {
+			$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+				'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content items use this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+	}
+	}
 } else {
-	$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
-		'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutItemCount.' content items use this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+	if ($layoutTrashedItemCount) {
+		if ($layoutTrashedItemCount == 1) {
+			$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+				'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutTrashedItemCount.' trashed content item uses this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+		} else {
+			$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+				'Layout '.$layoutLabel.'<br />'.$layoutName.'<br />'.$layoutTrashedItemCount.' content items (all trashed) use this layout<br /> '.$layoutStatus.'<br />'.$isDefaultForAContentType;
+		}
+	}	
 }
 	
 $adminToolbar['sections']['icons']['buttons']['layout_id']['css_class'] .= ' layout_status_' . $layoutDetails['status'];
@@ -1217,6 +1263,10 @@ if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
 	$adminToolbar['sections']['icons']['buttons']['no_alias']['label'] = ze\admin::phrase('Content item has no alias');
 	unset($adminToolbar['sections']['icons']['buttons']['no_alias']['tooltip']);
 	$adminToolbar['sections']['icons']['buttons']['alias']['label'] = ze\admin::phrase('Set an alias');
+}
+
+if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
+	$adminToolbar['sections']['icons']['buttons']['alias']['hidden'] = true;
 }
 
 
@@ -1402,13 +1452,38 @@ if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'
 
 //Get the slots on this Layout, and add a button for each
 $ord = 2000;
+$first = true;
+$lastIsHeader = 0;
+$lastIsFooter = 0;
 $lookForSlots = ['layout_id' => ze::$layoutId];
-foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
+foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name', 'is_header', 'is_footer'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
+	
+	$cssClass = 'zenario_atSlotControl';
+	
+	if ($first) {
+		$first = false;
+	} else {
+		if ($lastIsHeader != $slot['is_header']
+		 || $lastIsFooter != $slot['is_footer']) {
+			$cssClass.= ' zenario_atSeparator';
+		}
+	}
+	$lastIsHeader = $slot['is_header'];
+	$lastIsFooter = $slot['is_footer'];
+	
+	if ($slot['is_header']) {
+		$cssClass.= ' zenario_atHeaderSlotControl';
+	} elseif ($slot['is_footer']) {
+		$cssClass.= ' zenario_atFooterSlotControl';
+	} else {
+		$cssClass.= ' zenario_atBodySlotControl';
+	}
+	
 	$adminToolbar['sections']['slot_controls']['buttons']['slot_'. $slot['slot_name']] =
 		[
 			'ord' => ++$ord,
 			'parent' => 'slot_control_dropdown',
-			'css_class' => 'zenario_atSlotControl',
+			'css_class' => $cssClass,
 			'label' => $slot['slot_name'],
 			
 			//Little hack - only show the slot control if the slot is visible and the opacity is over 0.3.

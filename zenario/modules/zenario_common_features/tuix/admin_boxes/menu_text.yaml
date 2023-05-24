@@ -4,7 +4,7 @@ zenario_menu_text:
     priv: _PRIV_EDIT_MENU_TEXT
     title: false
     hide_tab_bar: true
-    max_height: 200
+    max_height: 300
     key:
         id: ""
         languageId: ""

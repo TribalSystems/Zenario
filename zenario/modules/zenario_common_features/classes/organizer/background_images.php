@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 //The "Background Images" panel is handled using the same logic as the image library
-ze\module::incSubclass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
+ze\module::incSubclass('zenario_common_features', 'organizer', 'zenario__library/panels/image_library');
 
 class zenario_common_features__organizer__background_images extends zenario_common_features__organizer__image_library {
 	

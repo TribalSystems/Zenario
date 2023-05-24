@@ -486,6 +486,36 @@ body.no_js input.jquery_datepicker {
 	color:#00AB00;
 }
 
+.title_red,
+.title_orange,
+.title_yellow,
+.title_green {
+    display:inline;
+    padding: 2px 5px !important;
+    text-align: center;
+    font-family:Verdana,Arial,sans-serif;
+    font-size:13px;
+	-webkit-transition: all 0.5s ease-in-out;
+  	-moz-transition: all 0.5s ease-in-out;
+  	transition: all 0.5s ease-in-out;
+}
+
+.title_red {
+	color:#ff3939;
+}
+
+.title_orange {
+	color:#FF9900;
+}
+
+.title_yellow {
+	color:#e6af0b;
+}
+
+.title_green {
+	color:#24ae2d;
+}
+
 /*
 	Tooltip for password, applies just visitor
 */

@@ -5,7 +5,7 @@ zenario__administration:
         error_log:
             item_buttons:
                 create_alias:
-                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     label: Fix this error
                     admin_box:
                         path: zenario_pro_features_spare_alias
@@ -13,7 +13,7 @@ zenario__administration:
                             id_is_error_log_id: true
                     visible_if_for_all_selected_items: !item.connected_spare_alias_destination
                 edit_alias:
-                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     label: Edit spare alias
                     admin_box:
                         path: zenario_pro_features_spare_alias
@@ -21,7 +21,7 @@ zenario__administration:
                             id_is_error_log_id: true
                     visible_if_for_all_selected_items: item.connected_spare_alias_destination
                 delete_log:
-                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     hide_when_no_search_results: true
                     label: Delete all like this
                     admin_box:

@@ -4,9 +4,6 @@ zenario__languages:
     panels:
         phrases:
             title: Phrases
-            view_mode: list
-            disable_grid_view: true
-            disable_summary_view: true
             php: true
             db_items:
                 table: >

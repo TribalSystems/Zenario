@@ -46,6 +46,7 @@ x-zenario-admin-slot-wrapper {
 	display: inline;
 }
 
+body.zenario_pageMode_edit .zenario_level3 .zenario_slotEggControlBox,
 body.zenario_pageMode_edit .zenario_level2 .zenario_slotEggControlBox,
 body.zenario_pageMode_layout .zenario_level1 .zenario_slotEggControlBox {
 	display: none;
@@ -1065,19 +1066,39 @@ body.zenario_pageMode_edit.zenario_pageLocked div.zenario_slotAdminControlBox a.
 
 /* Control button and dropdown background colors depending on modes */
 
-/* Layout mode / purple */
+/* Layout mode / purple-indigo */
 
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap,
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotAdminControlBox a.zenario_slotButton,
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info,
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview, 
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
-	background-color:#451d8b; /* purple */
+	background-color:#451d8b; /* purple-indigo */
 }
 
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap,
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotAdminControlBox a.zenario_slotButton {
-	border-color:#451d8b; /* purple */
+	border-color:#451d8b; /* purple-indigo */
+}
+
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotControlsWrap,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotAdminControlBox a.zenario_slotButton,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotControlsWrap .zenario_slotControlsWrap_info,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview, 
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotControlsWrap,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotAdminControlBox a.zenario_slotButton,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotControlsWrap .zenario_slotControlsWrap_info,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview, 
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info {
+	background-color:#753599; /* purple-header-footer */
+}
+
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotControlsWrap,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_headerSlotWrap div.zenario_slotAdminControlBox a.zenario_slotButton,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotControlsWrap,
+body.zenario_pageMode_template .zenario_slotOuter.zenario_footerSlotWrap div.zenario_slotAdminControlBox a.zenario_slotButton {
+	border-color:#753599; /* purple-header-footer */
 }
 
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc,

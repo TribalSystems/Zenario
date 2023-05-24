@@ -246,7 +246,7 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 				if($this->setting('use_custom_url_request') && ($urlRequest = $this->setting('url_request'))){
 					return ($_GET[$urlRequest] ?? false);
 				}else{
-					return ($_GET['l_id'] ?? false);
+					return ze::get('l_id');
 				}
 		}
 		return false;

@@ -4,7 +4,9 @@ zenario__administration:
     panels:
         administrators:
             priv: _PRIV_VIEW_ADMIN
-            panel_type: list_with_caching_disabled
+            panel_type: multi_line_list_or_grid
+            css_class: three_line_list_panel
+            use_tall_rows: true
             title: Administrators
             no_items_message: This site has no administrators. Click "Create" to create one.
             db_items:
@@ -17,22 +19,37 @@ zenario__administration:
                 trashed:
                     sql: "status = 'deleted'"
             default_sort_column: full_name
+            notice:
+                show: false
+                type: information
+                message: ''
+                    
             columns:
+                id:
+                    db_column: a.id
+                    hidden: true
                 full_name:
-                    title: Name
+                    title: Name and details
                     db_column: CONCAT(a.first_name, ' ', a.last_name)
                     show_by_default: true
                     always_show: true
                     searchable: true
                     width: large
                 username:
+                    parent: full_name
                     title: Username
                     db_column: a.username
                     show_by_default: true
                     always_show: true
                     searchable: true
+                email_address:
+                    parent: full_name
+                    title: Email
+                    db_column: a.email
+                    always_show: true
+                    searchable: true
                 authtype:
-                    title: Auth type
+                    title: Account type
                     db_column: a.authtype
                     format: enum
                     values:
@@ -41,46 +58,18 @@ zenario__administration:
                     show_by_default: true
                     disallow_sorting: true
                     width: small
+                is_client_account:
+                    parent: authtype
+                    title: Is client account
+                    show_by_default: true
+                    db_column: a.is_client_account
+                    disallow_sorting: true
                 permissions:
                     title: Permissions
-                    db_column: |
-                        CASE a.permissions
-                            WHEN 'specific_actions' THEN
-                                IF ((
-                                    SELECT 1
-                                    FROM [[DB_PREFIX]]action_admin_link
-                                    AS aal
-                                    WHERE aal.admin_id = a.id
-                                    LIMIT 1
-                                ),
-                                    'specific_actions',
-                                    'no_actions'
-                                )
-                            WHEN 'specific_areas' THEN
-                                CONCAT(
-                                    'specific',
-                                    IF (a.specific_content_items != '', '_content_items', ''),
-                                    IF (a.specific_content_types != '', '_content_types', '')
-                                )
-                            ELSE a.permissions
-                        END
-                    format: enum
-                    values:
-                        all_permissions: All permissions
-                        no_actions: No permissions
-                        specific_actions: Specific actions
-                        specific_content_items: Specific content items
-                        specific_content_types: Specific content types
-                        specific_content_items_content_types: Specific content items and content types
                     show_by_default: true
                     always_show: true
                     disallow_sorting: true
                     width: large
-                is_client_account:
-                    title: Is client account
-                    format: yes_or_no
-                    db_column: a.is_client_account
-                    disallow_sorting: true
                 is_inactive:
                     format: yes_or_no
                 csuper:
@@ -106,6 +95,10 @@ zenario__administration:
                         IF(a.last_login_ip<>'',CONCAT(a.last_platform, ' ', a.last_browser, ' v. ', a.last_browser_version, ' from ', a.last_login_ip), '')
                     width: xlarge
                     disallow_sorting: true
+                failed_login_count_since_last_successful_login:
+                    db_column: a.failed_login_count_since_last_successful_login
+                    hidden: true
+                
                 filename:
                     db_column: f.filename
                     table_join: >
@@ -245,6 +238,14 @@ zenario__administration:
                         path: zenario_admin
                     tooltip: |
                         [[inactive_tooltip]]
+                3_or_more_failed_login_attempts_since_last_successful_login:
+                    visible_if: |
+                        zenario.engToBoolean(item.admin_had_3_or_more_failed_login_attempts_since_last_successful_login)
+                    css_class: zenario_ib_warning
+                    admin_box:
+                        path: zenario_admin
+                    tooltip: |
+                        [[3_or_more_failed_login_attempts_since_last_successful_login_tooltip]]
 
             
             trash:

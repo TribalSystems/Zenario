@@ -46,3 +46,6 @@ signals:
     - 
         name: eventUserDeleted
         static: true
+    - 
+        name: deleteUserDataGetInfo
+        static: true

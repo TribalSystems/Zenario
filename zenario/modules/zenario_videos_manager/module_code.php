@@ -139,7 +139,7 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 			],
 			'unlisted' => [
 				'label' => "Private/unlisted",
-				'note' => "Vimeo 'Private' with code 'unlisted'. People with private link can view video, and it can be embedded and viewed on external sites. Effectively shareable. (Requires Vimeo Plus/Pro/Business/Premium account.)",
+				'note' => "Vimeo 'Private' with code 'unlisted'. People with private link can view video, and it can be embedded and viewed on external sites. Effectively shareable.",
 				'visitor_note' => "You may share this video with others"
 			]
 		];

@@ -6,6 +6,9 @@ zenario_content_layout:
         id: ""
         cID: ""
         cType: ""
+
+        idInOrganizer: ''
+        id_is_menu_node_id: false
     identifier:
         css_class: content_draft
         label: Content item ID

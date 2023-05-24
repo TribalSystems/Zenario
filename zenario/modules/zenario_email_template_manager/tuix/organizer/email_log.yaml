@@ -9,8 +9,6 @@ zenario__email_template_manager:
                 show: false
                 type: information
                 message: ''
-            view_mode: list
-            disable_grid_view: true
             no_items_message: Email log is empty
             enable_close_up_view: true
             slidedown_view_microtemplate: zenario_slidedown_view_logged_email

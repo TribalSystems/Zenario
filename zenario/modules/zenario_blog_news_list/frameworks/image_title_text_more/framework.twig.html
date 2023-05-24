@@ -63,7 +63,7 @@
 		{% endif %}
 		<div class="content_list_listing{% if Content_Items_Equal_Height %} setmychildren {% endif %}">
 			{% for item in Row %}
-				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
+				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %}">
 					{% if Show_Featured_Image %}
 						<div class="sticky_image">
 							<a {{item.Link}}{{item.Target_Blank}}>
@@ -75,10 +75,13 @@
 					{% endif %}
 					<div class="content_list_text">
 						{% if Show_Item_Title %}
-							<h2 class="content_list_title {{item.Content_Type|e}}">
+							{% if item.Pinned or item.Pinned_Text %}
+								<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
+							{% endif %}
+							<{{Item_Title_Tags}} class="content_list_title {{item.Content_Type|e}}">
 								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
 								{% if item.Language %}<span>({{item.Language|e}})</span>{% endif %}
-							</h2>
+							</{{Item_Title_Tags}}>
 						{% endif %}
 						{% if Show_Author_Image %}
 							<div class="content_list_author_image">
@@ -95,6 +98,16 @@
 							<div class="content_list_excerpt">{{item.Excerpt_Text}}</div>
 						{% endif %}
 					</div>
+					
+					{% if item.Logged_in_user_is_admin and item.Content_panel_organizer_href_start %}
+						<div class="content_list_infoIcon">
+							<a
+								class="zenario_front_end_picked_item_info"
+								href="{{item.Content_panel_organizer_href_start}}"
+								target="_blank"
+							>i</a>
+						</div>
+					{% endif %}
 					
 					{% if Show_Category and item.Category %}
 						<a class="content_list_category_link" href="#" onclick="{{item.Category_Link}}">

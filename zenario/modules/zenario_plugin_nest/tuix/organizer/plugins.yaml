@@ -3,6 +3,7 @@
 zenario__modules:
     panels:
         plugins:
+            priv: _PRIV_VIEW_SLOT
             columns:
                 contents:
                     width: xlarge

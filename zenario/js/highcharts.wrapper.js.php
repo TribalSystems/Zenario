@@ -34,7 +34,6 @@ ze\cache::start();
 
 
 //Run pre-load actions
-
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
@@ -46,6 +45,7 @@ ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/solid-gauge');
 //ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/adapt-chart-to-legend');
 ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/exporting');
 ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/export-csv');
+ze\cache::incJS('zenario/libs/not_to_redistribute/highcharts/modules/no-data-to-display');
 
 //Run post-display actions
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

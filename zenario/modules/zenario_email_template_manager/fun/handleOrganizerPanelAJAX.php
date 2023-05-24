@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario__email_template_manager/panels/email_templates':
-		if ((($_POST['action'] ?? false) == 'delete_template') && ze\priv::check('_PRIV_MANAGE_EMAIL_TEMPLATE')) {
+		if ((ze::post('action') == 'delete_template') && ze\priv::check('_PRIV_MANAGE_EMAIL_TEMPLATE')) {
 			foreach (explode(',',$ids) as $code) {
 				$sql = "
 					DELETE FROM "

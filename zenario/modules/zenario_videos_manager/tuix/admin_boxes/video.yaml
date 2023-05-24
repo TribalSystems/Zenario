@@ -21,7 +21,7 @@ zenario_videos_manager__video:
                     label: 'URL:'
                     type: text
                     maxlength: 255
-                    note_below: Enter a URL on YouTube or Vimeo, e.g. https://youtu.be/12345. You can then press the "Fetch" button to get the video's thumbnail and descriptive text.
+                    note_below: Enter a URL on YouTube, e.g. https://youtu.be/12345 or Vimeo, e.g. https://vimeo.com/12345 or https://vimeo.com/12345/98765 if the video is unlisted. You can then press the "Fetch" button to get the video's thumbnail and descriptive text.
                     row_class: zenario_row_full_width_field
                     onclick: "if ($(this).val()=='') {$(this).val('https://')}"
                     validation:

@@ -67,12 +67,12 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if ($_POST['reorder'] ?? false) {
+		if (ze::post('reorder')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::update('document_rules', ['ordinal' => $_POST['ordinals'][$id]], $id);
 			}
 			
-		} elseif ($_POST['duplicate'] ?? false) {
+		} elseif (ze::post('duplicate')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if ($rule = ze\row::get('document_rules', true, $id)) {
@@ -89,7 +89,7 @@ class zenario_common_features__organizer__document_rules extends ze\moduleBaseCl
 				}
 			}
 			
-		} elseif ($_POST['delete'] ?? false) {
+		} elseif (ze::post('delete')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::delete('document_rules', $id);

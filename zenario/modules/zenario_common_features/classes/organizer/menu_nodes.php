@@ -33,10 +33,14 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 	protected $numSyncAssistLangs = 0;
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if (!ze\module::isRunning('zenario_users')) {
+			unset($panel['inline_buttons']['linked_content_item_privacy']['admin_box']);
+		}
+
 		if ($path != 'zenario__menu/panels/menu_nodes') return;
 		
-		if (!(($_GET['refiner__language'] ?? false) && ($_GET['refiner__language'] ?? false) != ze::$defaultLang)
-		 && !($_GET['refiner__show_language_choice'] ?? false)
+		if (!(ze::get('refiner__language') && ze::get('refiner__language') != ze::$defaultLang)
+		 && !ze::get('refiner__show_language_choice')
 		 && !ze::in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_missing_items'];
 		}
@@ -70,12 +74,12 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		if ($refinerName == 'following_item_link') {
 			$menuItem = ze\menu::details($refinerId);
 
-		} elseif ($_GET['refiner__children'] ?? false) {
-			$menuParent = ze\menu::details($_GET['refiner__children'] ?? false);
+		} elseif (ze::get('refiner__children')) {
+			$menuParent = ze\menu::details(ze::get('refiner__children'));
 		}
 
-		$panel['key']['languageId'] = ze::ifNull($_GET['refiner__language'] ?? false, ze::ifNull($_GET['languageId'] ?? false, ($_GET['language'] ?? false), ze::$defaultLang));
-		$panel['key']['sectionId'] = ze\menu::sectionId(ze::ifNull($menuItem['section_id'] ?? false, $menuParent['section_id'] ?? false, ($_GET['refiner__section'] ?? false)));
+		$panel['key']['languageId'] = ze::ifNull($_GET['refiner__language'] ?? false, ze::ifNull($_GET['languageId'] ?? false, ze::get('language'), ze::$defaultLang));
+		$panel['key']['sectionId'] = ze\menu::sectionId(ze::ifNull($menuItem['section_id'] ?? false, $menuParent['section_id'] ?? false, ze::get('refiner__section')));
 		$panel['key']['parentId'] =
 		$panel['key']['parentMenuID'] = $menuParent['id'] ?? false;
 		
@@ -185,6 +189,31 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		//to edit specific menu items, we'll need to check if the current admin can edit each
 		//item.
 		$checkSpecificPerms = ze::in($mode, 'full', 'quick', 'select') && ze\admin::hasSpecificPerms();
+
+		//Get all enabled content types. This data will be used to:
+		//1) Check if a content type can be pinned,
+		//2) Generate "Create menu node and _content type_ item" buttons.
+		$enabledContentTypes = ze\content::getContentTypes();
+		$enabledContentTypesIds = array_column($enabledContentTypes, 'content_type_id');
+		
+		//As HTML pages are always enabled, include them in here for pinning check...
+		array_unshift($enabledContentTypesIds, 'html');
+		$pinningEnabledSql = '
+			SELECT content_type_id
+			FROM ' . DB_PREFIX . 'content_types
+			WHERE content_type_id IN (' . ze\escape::in($enabledContentTypesIds) . ')
+			AND allow_pinned_content = 1';
+		$pinningEnabledResult = ze\sql::select($pinningEnabledSql);
+		$pinningEnabled = ze\sql::fetchValues($pinningEnabledResult);
+
+		//...and category check.
+		$categoriesEnabledSql = '
+			SELECT content_type_id
+			FROM ' . DB_PREFIX . 'content_types
+			WHERE content_type_id IN (' . ze\escape::in($enabledContentTypesIds) . ')
+			AND enable_categories = 1';
+		$categoriesEnabledResult = ze\sql::select($categoriesEnabledSql);
+		$categoriesEnabled = ze\sql::fetchValues($categoriesEnabledResult);
         
 		foreach ($panel['items'] as &$item) {
 	
@@ -305,7 +334,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			}
 	
 			if (!empty($internalTarget)) {
-				$item['frontend_link'] = ze\link::toItem($item['target_content_id'], $item['target_content_type'], false, 'zenario_sk_return=navigation_path');
+				$item['frontend_link'] = ze\link::toItem($item['target_content_id'], $item['target_content_type']);
 				$item['content'] = true;
 	
 			} elseif (!empty($item['target'])) {
@@ -355,6 +384,65 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			if ($item['module_class_name'] && $item['method_name']) {
 				$item['uses_static_method'] = '[Static method used]';
 			}
+
+			$item['linked_content_item'] = false;
+			$item['linked_content_item_status'] = '';
+
+			$menuContentItem = ze\menu::getContentItem($item['mid']);
+			if ($menuContentItem) {
+				//Display extra buttons if a menu node has a linked content item:
+				$item['linked_content_item'] = true;
+				
+				//content item status...
+				$menuContentItem['latest_version'] = ze\content::latestVersion($menuContentItem['content_id'], $menuContentItem['content_type']);
+				$menuContentItemStatus = ze\row::get('content_items', 'status', ['id' => $menuContentItem['content_id'], 'type' => $menuContentItem['content_type']]);
+				$item['linked_content_item_status'] = ze\contentAdm::getItemIconClass($menuContentItem['content_id'], $menuContentItem['content_type'], true, $menuContentItemStatus);
+				$item['linked_content_item_status_label'] = ze\contentAdm::statusPhrase($menuContentItemStatus);
+
+				//content item layout...
+				$menuContentItemLayoutId = ze\content::layoutId($menuContentItem['content_id'], $menuContentItem['content_type']);
+				$item['linked_content_item_layout'] = ze\layoutAdm::codeName($menuContentItemLayoutId);
+				
+				$menuContentItemLayoutStatus = ze\row::get('layouts', 'status', ['layout_id' => $menuContentItemLayoutId]);
+				$item['row_class'] .= ' layout_status_' . $menuContentItemLayoutStatus;
+
+				//content item privacy...
+				$menuContentItemPrivacyAndLocation = ze\row::get('translation_chains', ['privacy', 'at_location'], ['equiv_id' => $menuContentItem['equiv_id'], 'type' => $menuContentItem['content_type']]);
+				//If this content item is set to a group or smart group,
+				//go get a better description which includes the name.
+				if (ze::in($menuContentItemPrivacyAndLocation['privacy'], 'group_members', 'with_role', 'in_smart_group', 'logged_in_not_in_smart_group')) {
+					$menuContentItemPrivacyData = [
+						'id' => $menuContentItem['content_id'],
+						'type' => $menuContentItem['content_type'],
+						'equiv_id' => $menuContentItem['equiv_id'],
+						'privacy' => $menuContentItemPrivacyAndLocation['privacy'],
+						'at_location' => $menuContentItemPrivacyAndLocation['at_location']
+					];
+
+					$item['linked_content_item_privacy'] =
+						ze\admin::phrase('Permissions: [[privacyDesc]]', ['privacyDesc' => ze\contentAdm::privacyDesc($menuContentItemPrivacyData)]);
+				} else {
+					$item['linked_content_item_privacy'] = $menuContentItemPrivacyAndLocation['privacy'];
+				}
+
+				$item['row_class'] .= ' privacy_' . $menuContentItemPrivacyAndLocation['privacy'];
+
+				//content item pinned status...
+				if (in_array($menuContentItem['content_type'], $pinningEnabled)) {
+					$item['linked_content_item_allow_pinning'] = true;
+					$item['linked_content_item_pinned'] = ze\row::get('content_item_versions', 'pinned', ['id' => $menuContentItem['content_id'], 'type' => $menuContentItem['content_type'], 'version' => $menuContentItem['latest_version']]);
+				} else {
+					$item['linked_content_item_allow_pinning'] = false;
+				}
+				
+				//content item categories...
+				if (in_array($menuContentItem['content_type'], $categoriesEnabled)) {
+					$item['linked_content_item_categories_enabled'] = true;
+					$item['linked_content_item_categories_count'] = ze\row::count('category_item_link', ['equiv_id' => $menuContentItem['equiv_id'], 'content_type' => $menuContentItem['content_type']]);
+				} else {
+					$item['linked_content_item_categories_enabled'] = false;
+				}
+			}
 		}
 
 		if (!$isFlatView) {
@@ -363,7 +451,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		
 		$j=0;  
                     
-        foreach(ze\content::getContentTypes() as $content){
+        foreach($enabledContentTypes as $content){
 
             $j++;
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en'];
@@ -390,23 +478,23 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		if ($path != 'zenario__menu/panels/menu_nodes') return;
 		
 		// mass_add_to_menu used in both content and menu nodes
-		if (($_POST['mass_add_to_menu'] ?? false) && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
+		if (ze::post('mass_add_to_menu') && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
 			// Get tag ID from menu node ID
 			$menuNodeDetails = ze\menu::details($ids);
 			$ids = $menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'];
 			ze\menuAdm::addContentItems($menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'], $ids2);
 	
 		//Unlink a Menu Node from its Content Item
-		} elseif (($_POST['detach'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+		} elseif (ze::post('detach') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 	
 			$submission = [
 				'target_loc' => 'none'];
 	
-			ze\menuAdm::save($submission, ($_POST['mID'] ?? false));
-			ze\menuAdm::ensureContentItemHasPrimaryNode(ze\content::equivId($_POST['cID'] ?? false, ($_POST['cType'] ?? false)), ($_POST['cType'] ?? false));
+			ze\menuAdm::save($submission, ze::post('mID'));
+			ze\menuAdm::ensureContentItemHasPrimaryNode(ze\content::equivId($_POST['cID'] ?? false, ze::post('cType')), ze::post('cType'));
 	
 		//Move one or more Menu Nodes to a different parent and/or the top level
-		} elseif (($_POST['move'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+		} elseif (ze::post('move') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 	
 			//By default, just move to the top level
 			$languageId = $_POST['languageId'] ?? false;
@@ -451,24 +539,24 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$languageId);
 	
 
-		} elseif (($_POST['remove'] ?? false) && ze\priv::check('_PRIV_DELETE_MENU_ITEM') && ($_REQUEST['languageId'] ?? false) != ze::$defaultLang) {
+		} elseif (ze::post('remove') && ze\priv::check('_PRIV_DELETE_MENU_ITEM') && ze::request('languageId') != ze::$defaultLang) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				//Only remove translation if another translation still exists
 				if (($result = ze\row::query('menu_text', 'menu_id', ['menu_id' => $id]))
 				 && (ze\sql::fetchRow($result))
 				 && (ze\sql::fetchRow($result))) {
-					ze\menuAdm::removeText($id, ($_REQUEST['languageId'] ?? false));
+					ze\menuAdm::removeText($id, ze::request('languageId'));
 				}
 			}
 
-		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_DELETE_MENU_ITEM')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_DELETE_MENU_ITEM')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id]);
 				ze\menuAdm::delete($id);
 			}
 
 		//Move or reorder Menu Nodes
-		} elseif ((($_POST['reorder'] ?? false) || ($_POST['hierarchy'] ?? false)) && ze\priv::check('_PRIV_REORDER_MENU_ITEM')) {
+		} elseif ((ze::post('reorder') || ze::post('hierarchy')) && ze\priv::check('_PRIV_REORDER_MENU_ITEM')) {
 			$sectionIds = [];
 	
 			//Loop through each moved Menu Node
@@ -511,7 +599,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				}
 			}
 			
-		} elseif ($_POST['make_primary'] ?? false) {
+		} elseif (ze::post('make_primary')) {
 			$menuNodeDetails = ze\menu::details($ids);
 			$submission = [
 				'equiv_id' => $menuNodeDetails['equiv_id'],
@@ -521,7 +609,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			ze\menuAdm::save($submission, $ids);
 			
 		//Duplicate menu node under iteself
-		} elseif (($_POST['duplicate_as_child'] ?? false) && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
+		} elseif (ze::post('duplicate_as_child') && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
 			$menuNodeDetails = ze\menu::details($ids);
 			
 			//We want this to be in the first position under the menu node, so we need to work out the $position to pass.

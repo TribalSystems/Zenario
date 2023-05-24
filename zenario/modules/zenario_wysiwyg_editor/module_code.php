@@ -84,23 +84,24 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		//...your PHP code...//
 	}
 	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		switch ($path) {
-			case 'plugin_settings':
-				
-				if ($box['key']['isVersionControlled']) {
-					$box['tabs']['first_tab']['hidden'] = 
-					$fields['first_tab/html']['hidden'] = true;
-				}
-				
-				break;
-		}
-	}
-	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				if (!$box['key']['isVersionControlled']) {
+				
+				//For version controlled WYIWYG Editors, only let someone edit the content inline on the page itself,
+				//or in the metadata FAB.
+				//Don't allow them to edit in the content in the plugin settings, even though it technically
+				//is a plugin setting.
+				if ($box['key']['isVersionControlled']) {
+					$box['tabs']['first_tab']['hidden'] = 
+					$fields['first_tab/html']['hidden'] = true;
+					
+					//Hidden plugin settings are usually deleted upon being saved,
+					//so as a workaround to stop this from happening,
+					//clear the flags that say the content is a plugin setting.
+					unset($fields['first_tab/html']['plugin_setting']);
+				
+				} else {
 					//Try and ensure that we use relative URLs where possible
 					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['first_tab']['fields']['html']);
 				}
@@ -141,7 +142,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		if ($this->isVersionControlled) {
 			
 			//Handle submitting revisions by AJAX
-			if ($_POST['_zenario_save_content_'] ?? false) {
+			if (ze::post('_zenario_save_content_')) {
 				$this->saveContent();
 				exit;
 			}
@@ -154,7 +155,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 				
 				//Open the editor immediately if it is in the URL
-				if (($_REQUEST['content__edit_container'] ?? false) == $this->containerId) {
+				if (ze::request('content__edit_container') == $this->containerId) {
 					$this->editing = true;
 					$this->markSlotAsBeingEdited();
 					$this->openEditor();
@@ -211,7 +212,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		if (!ze::$isDraft
 		 || !ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)
 		 || !$this->isVersionControlled
-		 || (!$this->editing && ($_REQUEST['content__edit_container'] ?? false))) {
+		 || (!$this->editing && ze::request('content__edit_container'))) {
 			echo $this->setting('html');
 			return;
 		}
@@ -250,8 +251,6 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	}
 	
 	public function fillAdminSlotControls(&$controls) {
-		zenario_html_snippet::fillAdminSlotControls($controls);
-		
 	 	//Add an "Edit Inline" option for Wireframe HTML areas
 		if ($this->isVersionControlled
 		 && ze::$cVersion == ze::$adminVersion
@@ -265,10 +264,8 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 					'onclick' => htmlspecialchars_decode($this->editInlineButtonOnClick())];
 				
 				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box
-				//The only thing you can change is the CSS and framework
 				if (isset($controls['actions']['settings'])) {
-					$controls['actions']['settings']['label'] = ze\admin::phrase('CSS & framework');
-					$controls['actions']['settings']['ord'] = 9;
+					$controls['actions']['settings']['hidden'] = true;
 				}
 			
 			//You also shouldn't be able to access any of the slot controls whilst the WYSIWYG Editor is open!

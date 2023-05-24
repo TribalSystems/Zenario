@@ -40,14 +40,23 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$fields['anti_spam/captcha_type']['values'] = ['math' => 'Maths (Securimage)'];
 		
-		$link = ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//captcha";
+		$link = ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//api_keys";
 		
 		if (ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
 			$fields['anti_spam/captcha_type']['values']['pictures'] = 'Pictures (Google reCaptcha 2.0)';
 			$fields['anti_spam/captcha_type']['note_below'] = 'Captcha settings can be found in <a href="' . $link. '" target="_blank">Configuration->Site Settings</a>, in the API Keys interface';
 		} else {
-			$fields['anti_spam/captcha_type']['note_below'] = 'To enable more kinds of captcha, please check your <a href="' . $link. '" target="_blank">API key details</a> and ensure all keys are completed.';
+			$fields['anti_spam/captcha_type']['note_below'] = 'To enable Google reCaptcha, go to <a href="' . $link. '" target="_blank">API keys</a> in site settings and add the keys.';
 		}
+
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//cookies~.site_settings~trecaptcha_policy~k{\"id\"%3A\"cookies\"}' target='_blank'>";
+		$linkEnd = "</a>";
+
+		$recaptchaPolicyWarningPhrase = ze\admin::phrase(
+			'The reCaptcha policy is set to display the form without Captcha if the user has not accepted Functionality and Analytics cookies (or All cookies. See [[link_start]]Cookie control[[link_end]] site setting.',
+			['link_start' => $linkStart, 'link_end' => $linkEnd]
+		);
+		ze\lang::applyMergeFields($fields['anti_spam/recaptcha_policy_warning']['snippet']['html'], ['recaptcha_policy_warning' => $recaptchaPolicyWarningPhrase]);
 		
 		//Hide profanity settings checkbox if site setting is not checked
 		$profanityFilterSetting = ze::setting('zenario_user_forms_set_profanity_filter');
@@ -79,7 +88,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 					$fields['data/active_timers']['values'] = $timerTemplates;
 			}
 		
-		if (($_GET['refinerName'] ?? false) == 'archived') {
+		if (ze::get('refinerName') == 'archived') {
 			foreach($box['tabs'] as &$tab) {
 				$tab['edit_mode']['enabled'] = false;
 			}
@@ -348,6 +357,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 			$values['data/make_urls_non_clickable_user'] = $record['make_urls_non_clickable_user'];
 			$values['data/make_urls_non_clickable_admin'] = $record['make_urls_non_clickable_admin'];
+
+			$values['details/profanity_filter_text_fields'] = (bool) $record['profanity_filter_text'];
 			
 		} else {
 			unset($box['tabs']['translations']);
@@ -449,6 +460,47 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 
 		if (ze\module::inc('zenario_extranet')) {
 			$fields['details/extranet_module_not_running_snippet']['hidden'] = true;
+		}
+		
+		$scheduledTaskManagerProblemMessage = '';
+		$linkStart = "<a href='" . ze\link::absolute() . "organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks' target='_blank'>";
+		$linkEnd = "</a>";
+		
+		if (ze\module::inc('zenario_scheduled_task_manager')) {
+			if (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
+				$values['details/scheduled_task_manager_problem'] = true;
+				$scheduledTaskManagerProblemMessage = ze\admin::phrase(
+					'In order to use this feature, the [[link_start]]Scheduled Task Manager[[link_end]] master switch must be on. The form will not be displayed to visitors otherwise.',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
+				$values['details/scheduled_task_manager_problem'] = true;
+				$scheduledTaskManagerProblemMessage = ze\admin::phrase(
+					'In order to use this feature, the [[link_start]]Scheduled Task Manager[[link_end]] must be running, and the crontab should be correctly invoking it. The form will not be displayed to visitors otherwise.',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			} else {
+				if (!ze\row::get('jobs', 'status', ['job_name' => 'jobDataProtectionCleanup', 'enabled' => true])) {
+					$values['details/scheduled_task_manager_problem'] = true;
+					$scheduledTaskManagerProblemMessage = ze\admin::phrase(
+						'In order to use this feature, the scheduled task [[link_start]]jobDataProtectionCleanup[[link_end]] must be running. Without this the form will not be displayed. You must enable this scheduled task for data protection around saved responses.',
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+				}
+			}
+		} else {
+			$values['details/scheduled_task_manager_problem'] = true;
+			$linkStart = "<a href='" . ze\link::absolute() . "organizer.php#zenario__modules/panels/modules~-zenario_scheduled_task_manager' target='_blank'>";
+			
+			$scheduledTaskManagerProblemMessage = ze\admin::phrase(
+				'In order to use this feature, the [[link_start]]Scheduled Task Manager[[link_end]] must be running. The form will not be displayed to visitors otherwise.',
+				['link_start' => $linkStart, 'link_end' => $linkEnd]
+			);
+		}
+		
+		if ($scheduledTaskManagerProblemMessage) {
+			ze\lang::applyMergeFields($fields['details/scheduled_task_manager_problem_message']['snippet']['html'], ['scheduled_task_manager_problem' => $scheduledTaskManagerProblemMessage]);
+			$fields['details/scheduled_task_manager_problem_message']['hidden'] = false;
 		}
 	}
 	
@@ -658,7 +710,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 
 			$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{\"id\"%3A\"data_protection\"}' target='_blank'>";
-			$linkEnd = "</a>";		
+			$linkEnd = "</a>";
 			
 			if ($numDaysOrWeeks) {
 				$durationSnippet = ze\admin::phrase(
@@ -674,6 +726,14 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['details/allow_partial_completion']['note_below'] = $durationSnippet;
 		} else {
 			unset($fields['details/allow_partial_completion']['note_below']);
+		}
+
+		$recaptchaFormPolicy = ze::setting('recaptcha_form_policy');
+		if ($values['anti_spam/use_captcha'] && $values['anti_spam/captcha_type'] == 'pictures' && $recaptchaFormPolicy == 'show_form_without_recaptcha') {
+			
+			$fields['anti_spam/recaptcha_policy_warning']['hidden'] = false;
+		} else {
+			$fields['anti_spam/recaptcha_policy_warning']['hidden'] = true;
 		}
 	}
 	
@@ -698,7 +758,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		}
 		
 		if ($values['details/allow_partial_completion'] && !$values['details/partial_completion_mode__auto'] && !$values['details/partial_completion_mode__button']) {
-			$errors[] = ze\admin::phrase('Please select a method to for the "Save and complete later" feature.');
+			$errors[] = ze\admin::phrase('You wish to enable the "Save and complete later" feature. Please select at least one method for saving user data (either auto-save, or a Save button, or both).');
 		}
 
 		if ($values['data/send_email_to_user'] && !($values['data/send_email_to_logged_in_user'] || $values['data/send_email_to_email_from_field'])) {

@@ -14,7 +14,7 @@
 				<a {{item.Link}}{{item.Target_Blank}} class="content_list_data_row_link">
 			{% endif %}
 			
-			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
+			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %}">
 				{% if Show_Featured_Image %}
 					<div class="sticky_image">
 						{% if item.Featured_Image_HTML %}

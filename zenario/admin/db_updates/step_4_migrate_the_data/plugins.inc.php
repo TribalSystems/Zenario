@@ -205,7 +205,11 @@ function convertSpecialPageToPluginPage($specialPage, $pluginPageModule = '', $p
 }
 
 
-function renamePluginSetting($moduleNames, $oldPluginSettingName, $newPluginSettingName, $checkNonNestedPlugins = true, $checkNestedPlugins = true) {
+function renamePluginSetting(
+	$moduleNames, $oldPluginSettingName, $newPluginSettingName,
+	$checkNonNestedPlugins = true, $checkNestedPlugins = true,
+	$extraSetSQL = '', $extraWhereSQL = ''
+) {
 	
 	if ($checkNonNestedPlugins) {
 		$sql = "
@@ -217,7 +221,9 @@ function renamePluginSetting($moduleNames, $oldPluginSettingName, $newPluginSett
 			  AND ps.egg_id = 0
 			  AND ps.name = '". ze\escape::sql($oldPluginSettingName). "'
 			SET ps.name = '". ze\escape::sql($newPluginSettingName). "'
-			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")";
+			". $extraSetSQL. "
+			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")
+			". $extraWhereSQL;
 		ze\sql::update($sql);
 	}
 
@@ -231,7 +237,9 @@ function renamePluginSetting($moduleNames, $oldPluginSettingName, $newPluginSett
 			  AND ps.egg_id = np.id
 			  AND ps.name = '". ze\escape::sql($oldPluginSettingName). "'
 			SET ps.name = '". ze\escape::sql($newPluginSettingName). "'
-			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")";
+			". $extraSetSQL. "
+			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")
+			". $extraWhereSQL;
 		ze\sql::update($sql);
 	}
 }
@@ -435,5 +443,31 @@ if (ze\dbAdm::needRevision(56290)) {
 	}
 	
 	ze\dbAdm::revision(56290);
+}
+
+
+//Change the format of the "enlarge image" plugin settings in nests and slideshow to be a select list rather than a checkbox,
+//to be consistent with everything else
+if (ze\dbAdm::needRevision(57100)) {
+	renamePluginSetting(['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple'], 'enlarge_image', 'link_type', true, false,
+		$extraSetSQL = ", ps.value = '_ENLARGE_IMAGE'",
+		$extraWhereSQL = "AND ps.value IS NOT NULL AND ps.value"
+	);
+	
+	
+	ze\dbAdm::revision(57100);
+}
+
+
+//Remove the old jQuery Cycle plugin.
+//Anything that had it selected should now use Cycle 2
+if (ze\dbAdm::needRevision(57130)) {
+	renamePluginSetting(['zenario_slideshow', 'zenario_slideshow_simple'], 'animation_library', 'animation_library', true, false,
+		$extraSetSQL = ", ps.value = 'cycle2'",
+		$extraWhereSQL = "AND ps.value = 'cycle'"
+	);
+	
+	
+	ze\dbAdm::revision(57130);
 }
 

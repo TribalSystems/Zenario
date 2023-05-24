@@ -1,6 +1,6 @@
 <% var e, error, n, notice; %>
 
-<% if (zenario.engToBoolean(m.errors)) { %>
+<% if (!_.isEmpty(m.errors)) { %>
 	<div class="zfab_error_wrap"><div><div class="zfab_error messageDisplay">
 		<% foreach (m.errors as e => error) { %>
 			<div class="zfab_error_inner">
@@ -11,20 +11,64 @@
 <% } %>	
 <% foreach (m.notices as n => notice) { %>
 	<div class="{{notice.type|escape}}DisplayRow"><div><div class="messageDisplay"><div>
-		{{zenario.htmlspecialchars(notice.message, true)}}
+		<% if (notice.html) { %>
+			{{notice.message}}
+		<% } else { %>
+			{{zenario.htmlspecialchars(notice.message, true)}}
+		<% } %>
 	</div></div></div></div>
 <% } %>
 
 <% if (m.fields) { %>
-	<% var ff = m.fields[0]; %>
+	<%
+		var f,
+			field,
+			ff = m.fields[0],
+			fl = m.fields.length,
+			lf = m.fields[fl-1],
+			pgf = ff._lastVisibleGroupingField,
+			lgf = lf._lastVisibleGroupingField,
+			rowHasError = false;
+	%>
+	
+	<% foreach (m.fields as f => field) { %>
+		<% if (field.error) { %>
+			<% rowHasError = true; %>
+			<% break; %>
+		<% } %>	
+	<% } %>	
 	
 	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
-		<% if (ff._lastVisibleGrouping) { %>
+		<% if (pgf) { %>
 			</fieldset>
+			<% if (pgf.post_grouping_html) { %>
+				{{pgf.post_grouping_html}}
+			<% } %>
+			<% if (!ff.grouping || m.grouping.start_new_grouping_wrapper) { %>
+				</x-zenario-grouping-wrapper>
+			<% } %>
 		<% } %>
 		<% if (ff.grouping) { %>
-			<% var grouping = m.grouping || {}; %>
-			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{grouping.grouping_css_class|escape}}" style="{{grouping.grouping_style|escape}}">
+			<% if (!pgf || m.grouping.start_new_grouping_wrapper) { %>
+				<x-zenario-grouping-wrapper
+					class="
+						zenario_ab_grouping_wrapper
+						{{m.grouping.grouping_wrapper_css_class|escape}}
+					"
+					style="{{m.grouping.grouping_wrapper_style|escape}}"
+				>
+					<% if (m.grouping.grouping_wrapper_icon_class) { %>
+						<div class="zenario_ab_grouping_wrapper_icon {{m.grouping.grouping_wrapper_icon_class|escape}}">
+							<% if (zenario.defined(m.grouping.grouping_wrapper_record_count)) { %>
+								<span class="zenario_ab_grouping_wrapper_record_count">{{m.grouping.grouping_wrapper_record_count|escape}}</span>
+							<% } %>
+						</div>
+					<% } %>
+			<% } %>
+			<% if (m.grouping.pre_grouping_html) { %>
+				{{m.grouping.pre_grouping_html}}
+			<% } %>
+			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{m.grouping.grouping_css_class|escape}}" style="{{m.grouping.grouping_style|escape}}">
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
@@ -34,11 +78,25 @@
 	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
 		zenario_ab_row
 		zenario_ab_row__{{ff._id|escape}}
+		{{rowHasError? 'zenario_row_with_error' : ''}}
+		{{ff.error? 'zenario_row_with_error_on_first_field' : ''}}
 		{{ff.row_class|escape}}
 		{{ff.pressed? 'zenario_row_pressed' : ''}}
+		{{ff.type=='checkbox'? 'zenario_single_line' : ''}}
 		{{ff.onoff? 'zenario_onoffswitch zenario_onoffswitch_welcome' : ''}}
 		{{ff._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		{{ff.indent? 'zenario_indent_level zenario_indent_level_' +  (1*ff.indent) : ''}}
 		zenario_row_for_{{ff.snippet? 'snippet' : ff.upload? 'upload' : ff.pick_items? 'pick_items' : ff.type |escape}}
+		
+		<% if (fl > 1) { %>
+			zfab_row_with_multiple_fields zfab_row_with_{{fl}}_fields
+		<% } else { %>
+			zfab_row_with_1_field
+		<% } %>
+		
+		<% if (ff.pre_field_html || ff.post_field_html) { %>
+			zfab_row_with_pre_or_post_field_html
+		<% } %>
 	">
 		<% if (zenario.engToBoolean(ff.full_width)) { %>
 			<div >
@@ -55,6 +113,7 @@
 					zfab_row_fields
 					{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}}
 					{{ff._showOnOpen? 'zenario_show_on_open' : ''}}
+					{{ff.type=='checkbox'? 'zenario_input_checkbox' : ''}}
 				">
 					{{zenarioT.microTemplate('zenario_welcome_field', m.fields)}}
 				</div>
@@ -64,6 +123,10 @@
 	<% if (ff._isLastRow) { %>
 		<% if (ff.grouping) { %>
 			</fieldset>
+			<% if (lgf && lgf.post_grouping_html) { %>
+				{{lgf.post_grouping_html}}
+			<% } %>
+			</x-zenario-grouping-wrapper>
 		<% } %>
 	<% } %>
 <% } %>

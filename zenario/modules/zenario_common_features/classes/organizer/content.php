@@ -32,6 +32,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	protected $numSyncAssistLangs = 0;
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if (!ze\module::isRunning('zenario_users')) {
+			unset($panel['inline_buttons']['privacy']['admin_box']);
+		}
+
 		if (ze::in($mode, 'full', 'quick', 'select', 'typeahead_search', 'get_matched_ids')
 		 && !isset($_GET['refiner__trash'])
 		 && isset($panel['db_items']['custom_where_statement__not_trashed'])) {
@@ -126,8 +130,8 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			if (!$langIdFilter = zenario_organizer::filterValue('language_id')) {
 				
 				//If an item was selected, use the language from that...
-				if ($_REQUEST['_item'] ?? false) {
-					$langIdFilter = ze\row::get('content_items', 'language_id', ['tag_id' => ($_REQUEST['_item'] ?? false)]);
+				if (ze::request('_item')) {
+					$langIdFilter = ze\row::get('content_items', 'language_id', ['tag_id' => ze::request('_item')]);
 				}
 				//...otherwise use the default language
 				if (!$langIdFilter) {
@@ -140,16 +144,16 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		}
 		
 		//Check if a specific Content Type and/or layout has been set, either by using a content-type refiner or a layout's refiner
-		if ($_GET['refiner__template'] ?? false) {
+		if (ze::get('refiner__template')) {
 			$panel['key']['layoutId'] = $_GET['refiner__template'] ?? false;
-			$panel['key']['cType'] = ze\row::get('layouts', 'content_type', ($_GET['refiner__template'] ?? false));
+			$panel['key']['cType'] = ze\row::get('layouts', 'content_type', ze::get('refiner__template'));
 			
 			//When viewing content items that use a particular layout,
 			//hide "Create" and "Export" buttons, and Settings Dropdown.
 			$panel['collection_buttons']['create']['hidden'] = true;
 			$panel['collection_buttons']['export']['hidden'] = true;
 			$panel['collection_buttons']['settings_dropdown']['hidden'] = true;
-		} elseif ($_GET['refiner__content_type'] ?? false) {
+		} elseif (ze::get('refiner__content_type')) {
 			$panel['key']['cType'] = $_GET['refiner__content_type'] ?? false;
 		}
 		
@@ -274,7 +278,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		if ($contentType = ($_REQUEST['refiner__content_type'] ?? false)){
+		if ($contentType = ze::request('refiner__content_type')){
 			//Hide the content type quick filter when viewing
 			//specific content types, rather than "All content items" panel.
 			unset($panel['quick_filter_buttons']['content_type']);
@@ -438,13 +442,13 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			unset($panel['columns']['status']);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif ($_GET['refiner__following_item_link'] ?? false) {
+		} elseif (ze::get('refiner__following_item_link')) {
 			$panel['title'] = ze\admin::phrase('Linked content item');
 			unset($panel['collection_buttons']['create']);
 			unset($panel['item_buttons']['trash']);
 			unset($panel['item_buttons']['delete']);
 
-		} elseif (($_GET['refinerName'] ?? false) == 'find_duplicates') {
+		} elseif (ze::get('refinerName') == 'find_duplicates') {
 			$panel['notice']['show'] = true;
 			unset($panel['collection_buttons']['create']);
 			$panel['title'] = ze\admin::phrase('Items with duplicate file attachments');
@@ -536,7 +540,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['no_items_message'] = ze\admin::phrase('There are no [[content_type_plural_lower_en]].', $mrg);
 			unset($panel['columns']['type']);
 
-		} elseif ($_GET['refiner__menu_children'] ?? false) {
+		} elseif (ze::get('refiner__menu_children')) {
 			$mrg = [
 				'name' => ze\menu::name($_GET['refiner__menu_children'] ?? false, true)];
 			$panel['title'] = ze\admin::phrase('Content items under the menu node "[[name]]"', $mrg);
@@ -550,37 +554,37 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items in [[language]].', $mrg);
 			$panel['columns']['language_id']['hidden'] = true;
 
-		} elseif ($_GET['refiner__category'] ?? false) {
+		} elseif (ze::get('refiner__category')) {
 			unset($panel['collection_buttons']['create']);
 			$mrg = [
-				'category' => ze\category::name($_GET['refiner__category'] ?? false)];
+				'category' => ze\category::name(ze::get('refiner__category'))];
 			$panel['title'] = ze\admin::phrase('Content items in the category "[[category]]"', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items in the category "[[category]]".', $mrg);
 
-		} elseif ($_GET['refiner__module_usage'] ?? false) {
+		} elseif (ze::get('refiner__module_usage')) {
 			$mrg = [
-				'name' => ze\module::displayName($_GET['refiner__module_usage'] ?? false)];
+				'name' => ze\module::displayName(ze::get('refiner__module_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which module "[[name]]" is used', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the module "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif ($_GET['refiner__module_effective_usage'] ?? false) {
+		} elseif (ze::get('refiner__module_effective_usage')) {
 			$mrg = [
-				'name' => ze\module::displayName($_GET['refiner__module_effective_usage'] ?? false)];
+				'name' => ze\module::displayName(ze::get('refiner__module_effective_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which module "[[name]]" is used (effective usage)', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the module "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif ($_GET['refiner__plugin_instance_usage'] ?? false) {
+		} elseif (ze::get('refiner__plugin_instance_usage')) {
 			$mrg = [
-				'name' => ze\plugin::name($_GET['refiner__plugin_instance_usage'] ?? false)];
+				'name' => ze\plugin::name(ze::get('refiner__plugin_instance_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which the plugin "[[name]]" is used', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the plugin "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
 
-		} elseif ($_GET['refiner__plugin_instance_effective_usage'] ?? false) {
+		} elseif (ze::get('refiner__plugin_instance_effective_usage')) {
 			$mrg = [
-				'name' => ze\plugin::name($_GET['refiner__plugin_instance_effective_usage'] ?? false)];
+				'name' => ze\plugin::name(ze::get('refiner__plugin_instance_effective_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which the plugin "[[name]]" appears (effective usage)', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the plugin "[[name]]".', $mrg);
 			unset($panel['collection_buttons']['create']);
@@ -628,11 +632,11 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			}
 			
 			if (!empty($item['created_datetime'])) {
-				$item['created_datetime'] = ze\date::relative($item['created_datetime'], "day", true, 'vis_date_format_med', $languageId = false, true, false, false, $showAdminPhrase = true);
+				$item['created_datetime'] = ze\admin::formatRelativeDateTime($item['created_datetime']);
 			}
 			
 			if (!empty($item['last_modified_datetime'])) {
-				$item['last_modified_datetime'] = ze\date::relative($item['last_modified_datetime'], "day", true, 'vis_date_format_med', $languageId = false, true, false, false, $showAdminPhrase = true);
+				$item['last_modified_datetime'] = ze\admin::formatRelativeDateTime($item['last_modified_datetime']);
 				$item['unpublished_content_info'] =
 					 ze\admin::phrase('Last edit [[time]] by [[admin]].', [
 						'time' => $item['last_modified_datetime'],
@@ -672,7 +676,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$item['publication_time'] = 
 						ze\admin::formatDateTime($item['scheduled_publish_datetime'], 'vis_date_format_med');
 				
-					$item['tooltip'] = ze\admin::phrase("Scheduled to be published at [[publication_time]].", $item);
+					$item['tooltip'] = ze\admin::phrase("Scheduled to be published on [[publication_time]].", $item);
 				}
 				
 				// Change code for Special pages tooltip
@@ -863,7 +867,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if ($mode == 'get_item_links') {
 					$item['name'] = $item['tag'];
 			
-					if (($_GET['languageId'] ?? false) && $item['language_id'] != $_GET['languageId'] ?? false) {
+					if (ze::get('languageId') && $item['language_id'] != $_GET['languageId'] ?? false) {
 						$item['name'] .= ' ('. $item['language_id']. ')';
 					}
 			
@@ -971,7 +975,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 								'ord' => $ord += 0.001,
 								'title' => $lang['id'],
 								'width' => 'xxsmall',
-								'show_by_default' => (!($_REQUEST['refiner__content_type'] ?? false) || ($_REQUEST['refiner__content_type'] ?? false) == 'html')
+								'show_by_default' => (!ze::request('refiner__content_type') || ze::request('refiner__content_type') == 'html')
 							];
 					}
 				}
@@ -1075,7 +1079,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
-					if (ze\contentAdm::allowHide($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
+					if (ze\contentAdm::allowHide($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 						ze\contentAdm::hideContent($cID, $cType);
 					}
 				}
@@ -1096,7 +1100,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 			}
 		// Set unlock ajax message
-		} elseif ($_GET['unlock'] ?? false) {
+		} elseif (ze::get('unlock')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					$contentInfo = ze\row::get('content_items', ['admin_version', 'lock_owner_id'], ['id'=>$cID, 'type'=>$cType]);
@@ -1150,10 +1154,10 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$cVersionTo = false;
 					ze\contentAdm::createDraft($content['id'], $content['id'], $content['type'], $cVersionTo, ze::post('cVersion') ?: $content['admin_version']);
 			
-					if (($_GET['method_call'] ?? false) == 'handleAdminToolbarAJAX') {
+					if (ze::get('method_call') == 'handleAdminToolbarAJAX') {
 						$_SESSION['last_item'] = $content['type']. '_'. $content['id']. '.'. $cVersionTo;
 				
-						if ($_REQUEST['switch_to_edit_mode'] ?? false) {
+						if (ze::request('switch_to_edit_mode')) {
 							$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'edit';
 						}
 					}
@@ -1181,11 +1185,11 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				}
 			}
 
-		} elseif (ze::post('delete_archives') && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM')) {
+		} elseif (ze::post('delete_archives') && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if ((ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id))
-				 && (ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType))) {
+				 && (ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType))) {
 					ze\contentAdm::deleteArchive($cID, $cType);
 				}
 			}

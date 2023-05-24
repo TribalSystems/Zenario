@@ -44,13 +44,11 @@ ze\dbAdm::revision(43, "
 	) VALUES (
 		'zenario_extranet_change_password',
 		'zenario_extranet_change_password_notification_en',
-		'Zenario Extranet Change Password Notification',
-		'Zenario Extranet Change Password Notification',
-		'<h1>Zenario Extranet Change Password Notification</h1>
-		<p>Dear [[first_name]],</p>
-		<p>Your Extranet Passsword has just been changed</p>
-		<p>&nbsp;</p>
-		<p>This is an automated email, please do not try to reply.</p>',
+		'To User: Password changed notification',
+		'You have changed your password',
+		'<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Your have successfully changed your password.</p>
+		<p>&nbsp;</p>',
 		NOW(),
 		". (int) ze\admin::id(). ",
 		0,
@@ -62,10 +60,9 @@ ze\dbAdm::revision(43, "
 <<<_sql
 	UPDATE [[DB_PREFIX]]email_templates
 	SET `body` = 
-		'<p>Dear [[first_name]],</p>
-		<p>Your Extranet Passsword has just been changed.</p>
+		'<p>Dear [[first_name]] [[last_name]],</p>
+		<p>You have successfully changed your password.</p>
 		<p>&nbsp;</p>
-		<p>This is an auto-generated email from [[cms_url]] .</p>
 		'
 	WHERE `code` = 'zenario_extranet_change_password_notification_en'
 _sql

@@ -465,22 +465,6 @@ if (ze\dbAdm::needRevision(51053)) {
 }
 
 
-//Work around a bug where the fea_type property in TUIX files is only read when the files change,
-//however in some weird cases it was possible for the checksum of the file to be recorded before
-//the code that read the value was implemented.
-//(Note: this was back-patched to 8.7, but is safe to re-run.)
-if (ze\dbAdm::needRevision(51900)) {
-	
-	if (is_dir(CMS_ROOT. 'cache/tuix')) {
-		ze\row::update('tuix_file_contents', ['last_modified' => 0, 'checksum' => ''], []);
-		ze\cache::deleteDir(CMS_ROOT. 'cache/tuix', 1);
-		ze\cache::cleanDirs(true);
-	}
-	
-	ze\dbAdm::revision(51900);
-}
-
-
 //There was a conductor bug where if you re-ordered the slides, the slide numbers got updated on the
 //slides themselves but not on the nests going between them.
 //Fix any bad data where this has happened.
@@ -767,17 +751,17 @@ if (ze\dbAdm::needRevision(52220)) {
 	if ($filesizevalue && !$filesizeUnit) {
 		
 		if ($filesizevalue < 1000000) {
-			$fileValue = 1;
-			$fileUnit = 'MB';
+			$newFileValue = 1;
+			$newFileUnit = 'MB';
 		} else {
 			$fileSizeConvertValue = ze\file::fileSizeConvert($filesizevalue);
 			$convertArray = explode(' ', $fileSizeConvertValue);
-			$fileValue = $convertArray[0];
-			$fileUnit = $convertArray[1];
+			$newFileValue = $convertArray[0];
+			$newFileUnit = $convertArray[1];
 		}
 		
-		ze\site::setSetting('content_max_filesize', $filesizevalue);
-		ze\site::setSetting('content_max_filesize_unit', $filesizeUnit);
+		ze\site::setSetting('content_max_filesize', $newFileValue);
+		ze\site::setSetting('content_max_filesize_unit', $newFileUnit);
 	
 	} elseif (!$filesizevalue) {
 		ze\site::setSetting('content_max_filesize', 20);
@@ -812,16 +796,8 @@ if (ze\dbAdm::needRevision(52526)) {
 			if (($data = ze\gridAdm::readCode($html, false, false))
 			 && (!empty($data['cells']))
 			 && (ze\gridAdm::validateData($data))) {
-				
-				$layout['json_data'] = $data;
-				$layout['json_data_hash'] = ze::hash64(json_encode($data), 8);
-				
-				ze\row::update('layouts', [
-					'json_data' => $layout['json_data'],
-					'json_data_hash' => $layout['json_data_hash']
-				], $layout['layout_id']);
-				
-				ze\gridAdm::updateMetaInfoInDB($data, $layout);
+				ze\gridAdm::trimData($data);
+				ze\gridAdm::saveLayoutData($layout['layout_id'], $data);
 			}
 		
 		//If the layout doesn't already exist, check:
@@ -1276,4 +1252,247 @@ if (ze\dbAdm::needRevision(56251)) {
 	}
 
 	ze\dbAdm::revision(56251);
+}
+
+
+//Clear out the cache/tuix/ directory, as I've changed the naming format
+//Note: This is a re-issued revision. It's been run before in previous versions, but I'm bumping it
+//as I want to run it again.
+if (ze\dbAdm::needRevision(56600)) {
+	
+	if (is_dir(CMS_ROOT. 'cache/tuix')) {
+		ze\row::update('tuix_file_contents', ['last_modified' => 0, 'checksum' => ''], []);
+		ze\cache::deleteDir(CMS_ROOT. 'cache/tuix', 1);
+		ze\cache::cleanDirs(true);
+	}
+	
+	ze\dbAdm::revision(56600);
+}
+
+
+//A little bit more migration for the data in the layout_head_and_foot table.
+//In the step 2 migraiton file, we tried to match a layout to the header/footer that looked like
+//it was the most common one, and copy the basic settings.
+//There are some more settings that need to be copied in the JSON data though, so try to come back
+//and copy those now.
+//Note: this will only work when migrating an existing site, not when doing a fresh install
+//or site reset. There's another revision just below that will handle this case.
+if (ze\dbAdm::needRevision(56660)) {
+	
+	$headerInfo = ze\row::get('layout_head_and_foot', true, ['for' => 'sitewide']);
+	if ($headerInfo) {
+		if ($layoutData = ze\row::get('layouts', 'json_data', [
+			'cols' => $headerInfo['cols'],
+			'min_width' => $headerInfo['min_width'],
+			'max_width' => $headerInfo['max_width'],
+			'fluid' => $headerInfo['fluid'],
+			'responsive' => $headerInfo['responsive']
+		])) {
+			unset($layoutData['cells']);
+			ze\row::update('layout_head_and_foot', [
+				'head_json_data' => $layoutData,
+				'foot_json_data' => (object) []		//N.b. I want an empty object here, not an empty array.
+			], []);
+		}
+	}
+	
+	ze\dbAdm::revision(56660);
+}
+
+
+//Catch the case where this is a fresh install, site reset, or we couldn't migrate the settings
+//from a layout to the site-wide header.
+if (ze\dbAdm::needRevision(56790)) {
+	
+	$headerInfo = ze\row::get('layout_head_and_foot', true, ['for' => 'sitewide']);
+	if (!$headerInfo
+	  || empty($headerInfo['cols'])
+	  || empty($headerInfo['head_json_data'])) {
+		
+		//Several things in the CMS will break if there is no layout header information.
+		//Save some default values into the header to address this. 
+		$data = \ze\gridAdm::sensibleDefault();
+		$details = ['foot_json_data' => (object) []];	//N.b. I want an empty object here, not an empty array.
+		
+		ze\gridAdm::trimData($data);
+		ze\gridAdm::updateHeaderMetaInfoInDB($data, $details);
+	}
+	
+	ze\dbAdm::revision(56790);
+}
+
+
+//We've recently discovered a bug where some SVG files had their width and height incorrectly
+//read as 100✖️100 because our functions incorrectly read their metadata.
+//This has been fixed, but we need to watch out for any SVG that looks like it might have been
+//affected and rescan it.
+if (ze\dbAdm::needRevision(57200)) {
+	
+	if (function_exists('simplexml_load_string')) {
+		foreach (ze\row::getValues('files', 'id', [
+			'mime_type' => 'image/svg+xml', 'width' => 100, 'height' => 100
+		]) as $imageId) {
+			$file = ze\row::get('files', ['width', 'height', 'data'], $imageId);
+			
+			if (ze\file::getWidthAndHeightOfSVG($file, $file['data'])) {
+				unset($file['data']);
+				ze\row::update('files', $file, $imageId);
+			}
+			unset($file);
+		}
+	}
+
+	ze\dbAdm::revision(57200);
+}
+
+//In 9.4, the Maximum user image file size setting was updated
+//to match similar changes to maximum file upload size from revision 52220
+//(from a field that only accepts bytes to a shorter field with a unit selector).
+//Update the value to work correctly.
+if (ze\dbAdm::needRevision(57211)) {
+	if (ze\module::inc('zenario_users')) {
+		$filesizevalue = ze::setting('max_user_image_filesize', false);
+		$filesizeUnit = ze::setting('max_user_image_filesize_unit', false, );
+	
+		if ($filesizevalue && !$filesizeUnit) {
+		
+			if ($filesizevalue < 1000000) {
+				$newFileValue = 50;
+				$newFileUnit = 'KB';
+			} else {
+				$fileSizeConvertValue = ze\file::fileSizeConvert($filesizevalue);
+				$convertArray = explode(' ', $fileSizeConvertValue);
+				$newFileValue = $convertArray[0];
+				$newFileUnit = $convertArray[1];
+			}
+		
+			ze\site::setSetting('max_user_image_filesize', $newFileValue);
+			ze\site::setSetting('max_user_image_filesize_unit', $newFileUnit);
+	
+		} elseif (!$filesizevalue) {
+			ze\site::setSetting('max_user_image_filesize', 50);
+			ze\site::setSetting('max_user_image_filesize_unit', 'KB');
+		}
+	}
+	
+	ze\dbAdm::revision(57211);
+}
+
+//On a very small number of sites, people replied on being able to access the ze\row library in Twig Snippets,
+//however this has recently been locked down as a measure to improve security.
+//They now need to specifically create functions for the queries they'll need, and whitelist them.
+//There are actually only a few small number of places where we know someone has done this, so I can write
+//a SQL statement that should catch and fix the known bad cases.
+if (ze\dbAdm::needRevision(57700)) {
+	
+	$sql = "
+		SELECT id, custom_yaml
+		FROM ". DB_PREFIX. "tuix_snippets
+		WHERE custom_yaml LIKE '%ze(%'
+	";
+	
+	foreach (ze\sql::select($sql) as $ts) {
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'date\', \'relative\'',
+			'ze(\'date\', \'formatRelativeDateTime\'',
+		$ts['custom_yaml']);
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'user\', \'can\'',
+			'ze(\'user\', \'currentUserCan\'',
+		$ts['custom_yaml']);
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'row\', \'get\', constant(\'ASSETWOLF_2_PREFIX\') ~ \'nodes\', \'schema_id\', nodeId)',
+			'ze(\'assetwolf\', \'nodeSchemaId\', nodeId)',
+		$ts['custom_yaml']);
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'row\', \'get\', constant(\'ASSETWOLF_2_PREFIX\') ~ \'schema_fields\', \'metric_id\', {"key" : id, "schema_id": schemaId})',
+			'ze(\'assetwolf\', \'fieldMetricId\', id, schemaId)',
+		$ts['custom_yaml']);
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'row\', \'get\', constant(\'ASSETWOLF_2_PREFIX\') ~ \'metrics\', \'period\', metricId)',
+			'ze(\'assetwolf\', \'metricPeriod\', metricId)',
+		$ts['custom_yaml']);
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'row\', \'get\', constant(\'ASSETWOLF_2_PREFIX\') ~ \'metrics\', \'run_frequency\', metricId)',
+			'ze(\'assetwolf\', \'metricRunFrequency\', metricId)',
+		$ts['custom_yaml']);
+		
+		$ts['custom_yaml'] = str_replace(
+			'ze(\'row\\\\da\', \'getValues\', \'datapoints\', \'timestamp_1\', {node_id: item.id}, [\'timestamp_1\', \'DESC\'], false, false, 2)',
+			'ze(\'assetwolf\', \'lastTwoDatapointsFromNode\', item.id)',
+		$ts['custom_yaml']);
+		
+		
+		try {
+			$tuix = \Spyc::YAMLLoadString(trim($ts['custom_yaml']));
+			$ts['custom_json'] = json_encode($tuix, JSON_FORCE_OBJECT);
+	
+		} catch (\Exception $e) {
+			$ts['custom_json'] = '';
+		}
+		
+		ze\row::update('tuix_snippets', [
+			'custom_yaml' => $ts['custom_yaml'],
+			'custom_json' => $ts['custom_json']
+		], $ts['id']);
+	}
+	
+	ze\dbAdm::revision(57700);
+}
+
+
+//Same as above, but this time replace a line where the constant() function was used
+if (ze\dbAdm::needRevision(57710)) {
+	
+	$sql = "
+		SELECT id, custom_yaml
+		FROM ". DB_PREFIX. "tuix_snippets
+		WHERE custom_yaml LIKE '%constant(%'
+	";
+	
+	foreach (ze\sql::select($sql) as $ts) {
+		
+		$ts['custom_yaml'] = str_replace(
+			'constant(\'ASSETWOLF_TSM\')',
+			'ze(\'assetwolf\', \'timestampMultipler\')',
+		$ts['custom_yaml']);
+		
+		
+		try {
+			$tuix = \Spyc::YAMLLoadString(trim($ts['custom_yaml']));
+			$ts['custom_json'] = json_encode($tuix, JSON_FORCE_OBJECT);
+	
+		} catch (\Exception $e) {
+			$ts['custom_json'] = '';
+		}
+		
+		ze\row::update('tuix_snippets', [
+			'custom_yaml' => $ts['custom_yaml'],
+			'custom_json' => $ts['custom_json']
+		], $ts['id']);
+	}
+	
+	ze\dbAdm::revision(57710);
+}
+
+//Update the Captcha radios to correctly migrate if a site was using Captcha.
+//Please note: this was backpatched from 9.5 to 9.4, and is safe to run multiple times.
+if (ze\dbAdm::needRevision(57711)) {
+	$captchaRadiosValue = ze::setting('captcha_status_and_version');
+	if ($captchaRadiosValue == 'not_enabled') {
+		$siteKey = ze::setting('google_recaptcha_site_key');
+		$secretKey = ze::setting('google_recaptcha_secret_key');
+		
+		if (!empty($siteKey) && !empty($secretKey)) {
+			ze\site::setSetting('captcha_status_and_version', 'enabled_v2');
+		}
+	}
+	
+	ze\dbAdm::revision(57711);
 }

@@ -31,7 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
+		ze\priv::exitIfNot('_PRIV_VIEW_TEMPLATE');
+
 		$file = false;
 		
 		switch ($box['key']['type']) {
@@ -50,8 +51,8 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 			
 			case 'framework':
 				
-				$moduleId = ze::ifNull($_REQUEST['refiner__module'] ?? false, ($_REQUEST['moduleId'] ?? false));
-				$framework = ze\ring::decodeIdForOrganizer(ze::ifNull($_REQUEST['id'] ?? false, ($_REQUEST['framework'] ?? false)));
+				$moduleId = ze::ifNull($_REQUEST['refiner__module'] ?? false, ze::request('moduleId'));
+				$framework = ze\ring::decodeIdForOrganizer(ze::ifNull($_REQUEST['id'] ?? false, ze::request('framework')));
 				
 				if ($module = ze\module::details($moduleId)) {
 					$file = ze\plugin::frameworkPath($framework, $module['class_name']);
@@ -65,9 +66,9 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 			case 'skin_file':
 				
 				
-				$skinId = ze\ring::decodeIdForOrganizer($_REQUEST['refiner__skin'] ?? false);
+				$skinId = ze\ring::decodeIdForOrganizer(ze::request('refiner__skin'));
 				$filename =
-				$subpath = ze\ring::decodeIdForOrganizer($_REQUEST['id'] ?? false);
+				$subpath = ze\ring::decodeIdForOrganizer(ze::request('id'));
 				
 				if (strpos($subpath, './') === false
 				 && strpos($subpath, '.\\') === false

@@ -4,8 +4,8 @@ zenario_slide:
     lovs:
         title_merge_fields:
             country:
-                label: 'Country'
-            '[[company_id]]':
+                label: 'Can be used when "countryId" is in the URL'
+            '[[countryId]]':
                 parent: country
                 data-class: country_icon
                 label: 'Country ID: [[countryId]]'

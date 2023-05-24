@@ -4,7 +4,6 @@ zenario__languages:
     panels:
         countries:
             title: Countries
-            view_mode: list
             multiple_select_mode_title: Select countries
             select_mode_title: Select a country
             db_items:
@@ -168,7 +167,6 @@ zenario__languages:
         regions:
             title: Regions
             name: Regions
-            view_mode: list
             no_items_message: No regions found.
             db_items:
                 table: |

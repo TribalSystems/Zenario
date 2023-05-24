@@ -404,7 +404,7 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 			field.is_consent = true;
 		}
 		
-		field.name = datasetField.label;
+		field.name = datasetField.label.replace(/:$/, "");
 		field.label = datasetField.label;
 		field.dataset_field_id = datasetFieldId;
 		field.values_source = datasetField.values_source;
@@ -1352,6 +1352,8 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 						tags.tabs[tab].fields.field_validation_error_message.value = 'Please enter a valid URL.';
 					} else if (item.field_validation == 'number') {
 						tags.tabs[tab].fields.field_validation_error_message.value = 'Please enter a valid number.';
+					} else if (item.field_validation == 'phone_number') {
+						tags.tabs[tab].fields.field_validation_error_message.value = 'Please enter a valid phone number, which may contain 0-9 + - ( ) and spaces.';
 					} else if (item.field_validation == 'integer') {
 						tags.tabs[tab].fields.field_validation_error_message.value = 'Please enter a valid integer.';
 					} else if (item.field_validation == 'floating_point') {

@@ -133,6 +133,12 @@ properties:
              or if your module uses the <code>showInFloatingBox()</code> init function,
              or nesting is just counterintuitive to what your module does,
              then you should not set this property.)
+    nestable_only:
+        type: boolean
+        description: >
+            Set this property if the plugins from your module should ONLY work when in a nest.
+            
+            You can use this from version 7.3 onwards.
     vlp_class_name:
         type: string
         default: "(Your module's class name)"

@@ -31,7 +31,7 @@ $html = '';
 $slotWrapperClasses = [];
 
 //Don't try to add and slot controls if this is a layout preview
-if (\ze::$cID === -1) {
+if (ze::$cID === -1) {
 	return;
 }
 
@@ -46,6 +46,13 @@ if (!empty($slotContents) && is_array($slotContents)) {
 	$removedColumns = false;
 	\ze\tuix::parse2($tagsEmpty, $removedColumns, 'slot_controls', $path);
 	$tagsEmpty = $tagsEmpty[$path];
+	
+	$swTagsEmpty = [];
+	$swModulesEmpty = [];
+	\ze\tuix::load($swModulesEmpty, $swTagsEmpty, 'slot_controls', $path = 'empty_sitewide_slot');
+	$removedColumns = false;
+	\ze\tuix::parse2($swTagsEmpty, $removedColumns, 'slot_controls', $path);
+	$swTagsEmpty = $swTagsEmpty[$path];
 	
 	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms'];
 	
@@ -63,10 +70,20 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		$isVersionControlled = !empty($instance['content_id']);
 		$containerId = 'plgslt_'. $slotName;
 		
+		//Check the meta-info for slots in the header and footer.
+		$isHeader = !empty($instance['is_header']);
+		$isFooter = !empty($instance['is_footer']);
+		$isSitewide = $isHeader || $isFooter;
+		
 		if ($empty = empty($instance['instance_id'])) {
 			//If the slot is empty, use a copy of the array from above
-			$tags = $tagsEmpty;
-			$modules = &$modulesEmpty;
+			if ($isSitewide) {
+				$tags = $swTagsEmpty;
+				$modules = &$swModulesEmpty;
+			} else {
+				$tags = $tagsEmpty;
+				$modules = &$modulesEmpty;
+			}
 			$moduleId = 0;
 			$instanceId = 0;
 		
@@ -81,10 +98,34 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			
 			$modules = [];
 			$tags = [];
-			\ze\tuix::load($modules, $tags, 'slot_controls', $path = 'full_slot', '', $compatibilityClassNames);
+			\ze\tuix::load($modules, $tags, 'slot_controls', $path = $isSitewide? 'full_sitewide_slot' : 'full_slot', '', $compatibilityClassNames);
 			$removedColumns = false;
 			\ze\tuix::parse2($tags, $removedColumns, 'slot_controls', $path);
 			$tags = $tags[$path];
+		}
+		
+		//All of the slot controls for the site-wide slots use the ~header~ mergefield.
+		//This should either say "header" or "footer", depending on whether this slot is in the header or footer.
+		if ($isSitewide) {
+			if ($isHeader) {
+				$replace = 'header';
+			} else {
+				$replace = 'footer';
+			}
+			foreach (['info', 'actions', 're_move_place', 'overridden_info', 'overridden_actions'] as $section) {
+				if (!empty($tags[$section]) && is_array($tags[$section])) {
+					foreach ($tags[$section] as $id => &$control) {
+						if (is_array($control)) {
+							if (isset($control['label'])) {
+								$control['label'] = str_replace('~header~', $replace, $control['label']);
+							}
+							if (isset($control['label_like4like'])) {
+								$control['label_like4like'] = str_replace('~header~', $replace, $control['label_like4like']);
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		//Call the fill method for each Module that added tags
@@ -95,7 +136,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			
 			$activeModules[$className]->fillAllAdminSlotControls(
 				$tags,
-				\ze::$cID, \ze::$cType, \ze::$cVersion,
+				ze::$cID, ze::$cType, ze::$cVersion,
 				$slotName, $containerId,
 				$level, $moduleId, $instanceId, $isVersionControlled
 			);
@@ -190,7 +231,15 @@ if (!empty($slotContents) && is_array($slotContents)) {
 								
 							$thisHtml .= htmlspecialchars($control['onclick']). '"';
 						}
-						$thisHtml .= '>'. $control['label']. '</div>';
+						$thisHtml .= '>'. $control['label'];
+						
+						
+						if (!empty($control['link_to_new_tab'])) {
+							$thisHtml .= ' <a href="'. htmlspecialchars($control['link_to_new_tab']). '" target="_blank" onclick="zenarioA.closeSlotControls(); zenario.stop(event);" class="zenario_linkToNewTab"></a>';
+						}
+						
+						
+						$thisHtml .= '</div>';
 					}
 				}
 				
@@ -219,6 +268,18 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			$slotWrapperClass .= ' zenario_showSlotInLayoutMode';
 		} else {
 			$slotWrapperClass .= ' zenario_hideSlotInLayoutMode';
+		}
+		
+		if ($isSitewide) {
+			$slotWrapperClass .= ' zenario_sitewideSlotWrap';
+		} else {
+			$slotWrapperClass .= ' zenario_bodySlotWrap';
+		}
+		if ($isHeader) {
+			$slotWrapperClass .= ' zenario_headerSlotWrap';
+		}
+		if ($isFooter) {
+			$slotWrapperClass .= ' zenario_footerSlotWrap';
 		}
 		
 		if ($ajaxReload) {

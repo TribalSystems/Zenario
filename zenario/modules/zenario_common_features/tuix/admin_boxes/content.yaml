@@ -7,6 +7,8 @@ zenario_content:
         cID: ''
         cType: ''
         cVersion: ''
+        is_special_page: false
+        special_page_type: ''
         
         source_cID: ''
         source_cVersion: ''
@@ -83,7 +85,7 @@ zenario_content:
                         zenarioAB.contentTitleChange();
                         cnt = $('#title').val().length;
                         if (cnt < 1) {
-                            seo_message_title = 'Please enter a title.';
+                            seo_message_title = 'Please enter a meta tag title.';
                         } else if (cnt < 12) {
                             seo_message_title = 'For good SEO and on-site search, make the title longer.';
                         } else if (cnt < 26) {
@@ -97,10 +99,16 @@ zenario_content:
                         $('#row__title .zenario_note_below_plain .zenario_note_content').text(seo_message_title);
                         
                         zenarioAB.updateSEP();
+                auto_populate_title_from_filename:
+                    ord: 20.1
+                    label: "Auto-populate from file name"
+                    type: checkbox
+                    format_onchange: true
                 language_id:
                     ord: 30
                     label: 'Language:'
                     type: select
+                    show_as_a_span: false
                 language_id_on_load:
                     hidden: true
                     type: text
@@ -116,7 +124,7 @@ zenario_content:
                     change_month_and_year: true
                     allow_typing_in_date_field: true
                     side_note: |
-                        The release date is the publicly-displayed date of this content item. It may be different from the date you edit or publish it.
+                        The official, or publicly-displayed date, of this content item. It may be different from the date you publish the page.
                 menu:
                     ord: 33
                     type: grouping
@@ -215,14 +223,14 @@ zenario_content:
                     grouping: menu
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
-                    label: 'Menu node text:'
+                    label: 'Menu navigation text:'
                     type: text
                     maxlength: 255
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
-                        required_if_not_hidden: Please enter some text for the menu node.
+                        required_if_not_hidden: Please enter some text for menu navigation.
                     side_note: |
-                        The title of this content item as you want it to appear in the menu navigation. We suggest the same as browser title, or shorter.
+                        Brief text in the menu navigation linking to this content item. We suggest the same as browser title, or shorter.
                 menu_id_when_editing:
                     type: hidden
                     hidden: true
@@ -286,19 +294,41 @@ zenario_content:
                     ord: 1004
                     same_row: true
                     type: hidden
+                content_item_is_public:
+                    type: hidden
+                    hidden: true
                 alias:
                     ord: 50
                     label: 'Alias:'
                     type: text
                     maxlength: 75
+                    note_below: 'alias'
+                    show_plain_note_below: true
+                    progress_bar: true
+                    read_only: false
                     oninput: |
                         zenarioAB.updateSEP();
                         $('#suggest_alias_from_title').show();
+
+                        cnt = $('#alias').val().length;
+                        if (lib.value('content_item_is_public')) {
+                            if (cnt < 1) {
+                                seo_message_title = 'For good SEO, set up an alias for this content item.';
+                            } else {
+                                seo_message_title = 'This content item has an alias.';
+                            }
+                        } else {
+                            if (cnt < 1) {
+                                seo_message_title = 'This content item does not have an alias. It is good practice to set one, even if the content item is not public.';
+                            } else {
+                                seo_message_title = 'This content item has an alias.';
+                            }
+                        }
+
+                        $('#row__alias .zenario_note_below_plain .zenario_note_content').text(seo_message_title);
                     onchange: |
                         zenarioAB.tuix.___alias_changed = true;
                         $('#alias_changed').val(1);
-                    side_note: |
-                        A unique name for the page, which appears at the end of the URL. Cannot have spaces or special characters.
                 suggest_alias_from_title:
                     ord: alias.01
                     type: button
@@ -329,37 +359,26 @@ zenario_content:
                     label: 'Description meta tag:'
                     type: textarea
                     style: height:45px
-                    side_note: |
-                        The meta description to be embedded within the head of the page. May be visible in search engine result listings.
                     note_below: 'description'
+                    show_plain_note_below: true
+                    progress_bar: true
                     oninput: |
                         cnt = $('#description').val().length;
-                        if(cnt<1) {
-                            $('#snippet__description_length').attr('class','description_red');
-                            seo_message_description = 'For good SEO, enter a description. If this field is left blank, search engines will auto-generate a description which may not be as well-worded.';
-                        } else if (cnt<50) {
-                            $('#snippet__description_length').attr('class','description_orange');
+                        if (cnt < 1) {
+                            seo_message_description = 'For good SEO, enter a description. It may be visible in search engine result listings. If left blank, search engines will auto-generate one, which may not be as well-worded.';
+                        } else if (cnt < 50) {
                             seo_message_description = 'For good SEO, make the description longer to entice people to click through from a result list.';
-                        } else if (cnt<100) {
-                            $('#snippet__description_length').attr('class','description_yellow');
+                        } else if (cnt < 100) {
                             seo_message_description = 'For good SEO, make the description a little longer to entice people to click through from a result list.';
-                        } else if (cnt<156) {
-                            $('#snippet__description_length').attr('class','description_green');
+                        } else if (cnt < 156) {
                             seo_message_description = 'This is a good description length for SEO.';
                         } else {
-                            $('#snippet__description_length').attr('class','description_yellow');
                             seo_message_description = 'The description is a little long for good SEO as it may not be fully visible.';
                         }
-                        $('#snippet__description_counter').html(cnt);
+
                         $('#row__description .zenario_note_below_plain .zenario_note_content').text(seo_message_description);
                     
                         zenarioAB.updateSEP();
-                    post_field_html: |
-                        <div class="snippet__description" >
-                            <div id="snippet__description_length" class="[[initial_class_name]]">
-                                <span id="snippet__description_counter">[[initial_characters_count]]</span>
-                            </div>
-                        </div>
                 
                 sitemap:
                     ord: 75
@@ -434,7 +453,7 @@ zenario_content:
                     oninput: "$('#snippet__keywords_counter').html($('#keywords').val().length);"
                     post_field_html: |
                         <div class="snippet__keywords" >
-                            <div id="snippet__keywords_length" class="[[initial_class_name]]">
+                            <div id="snippet__keywords_length">
                                 <span id="snippet__keywords_counter">[[initial_characters_count]]</span>
                             </div>
                         </div>
@@ -442,9 +461,9 @@ zenario_content:
                     ord: 100
                     label: 'Writer:'
                     pick_items:
-                        path: zenario__content/panels/writer_profiles
-                        target_path: zenario__content/panels/writer_profiles
-                        min_path: zenario__content/panels/writer_profiles
+                        path: zenario__library/panels/writer_profiles
+                        target_path: zenario__library/panels/writer_profiles
+                        min_path: zenario__library/panels/writer_profiles
                         select_phrase: Select a writer...
                         nothing_selected_phrase: Nobody selected
                     format_onchange: true
@@ -452,7 +471,7 @@ zenario_content:
                     label: 'Pin'
                     ord: 135
                     type: checkbox
-                    side_note: 'Pinned content items always appear first on content summary lists.'
+                    side_note: 'Pinned items appear first on content summary lists.'
                     redraw_onchange: true
                 pinned_duration:
                     indent: 1
@@ -462,15 +481,15 @@ zenario_content:
                     values:
                         fixed_date:
                             ord: 1
-                            label: 'Until date:'
+                            label: 'Pin until...'
                             split_values_if_selected: true
                         fixed_duration:
                             ord: 2
-                            label: 'For fixed duration:'
+                            label: 'Pin for...'
                             split_values_if_selected: true
                         until_unpinned:
                             ord: 3
-                            label: 'Until unpinned'
+                            label: 'Pin indefinitely'
                     redraw_onchange: true
                     visible_if: lib.value('pinned')
                     validation:
@@ -541,7 +560,7 @@ zenario_content:
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is set up correctly, but the scheduled unpinning task (jobUnpinContent) is not enabled. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 content_summary:
-                    label: 'Summary:'
+                    label: 'Short summary:'
                     ord: 130
                     type: editor
                     dont_trim: true
@@ -550,7 +569,7 @@ zenario_content:
                     style: |
                         height: 12em;
                     side_note: >
-                        2-3 lines describing the page. Content Summary List plugins usually list Titles and Summaries.
+                        Summary of the article or page. This may appear on this site in a content summary list. You may include simple HTML but not images.
                 lock_summary_view_mode:
                     label: 'Protected'
                     ord: 140
@@ -909,12 +928,13 @@ zenario_content:
                         drag_and_drop: true
                         accept: ''
                         extensions: []
-                        
-                file_is_missing:
-                    ord: 20.1
-                    hidden: true
-                    snippet:
-                        html: '<div class="zenario_fbError">File is missing from the doctore directory at [[path]].</div>'
+                    notices_below:
+                        file_is_missing:
+                            hidden: true
+                            type: error
+                            size: small
+                            message: "File is missing from the doctore directory at [[path]]."
+                            html: true
                         
                 s3_document_desc:
                     ord: 21
@@ -963,7 +983,7 @@ zenario_content:
         
         # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
         privacy:
-            ord: 50
+            ord: 35
             hidden: true
             fields: {}
         

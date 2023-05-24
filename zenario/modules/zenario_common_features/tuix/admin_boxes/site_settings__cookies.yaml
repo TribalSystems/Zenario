@@ -2,11 +2,11 @@
 ---
 site_settings:
     setting_group: cookies
-    title: Editing cookie settings
+    title: Cookie control
     hide_tab_bar: false
     tabs:
         cookies:
-            label: Cookie Policy
+            label: Cookie policy
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -191,6 +191,53 @@ site_settings:
                                 Extranet plugins will only be loaded when a user accepts Functionality-type cookies.
                             </div>
                     visible_if: zenarioAB.value('cookie_require_consent') == 'explicit'
+        
+        recaptcha_policy:
+            label: reCaptcha policy
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                Zenario forms and other interfaces can combat spam by displaying a captcha using Google reCaptcha 2.0, to discern between a human visitor and a bot.
+                            </p>
+                            <p>
+                                The Google reCaptcha system issues cookies to a visitor's browser when they view the captcha.
+                            </p>
+                            <p>
+                                This could potentially contravene a visitor's choices of whether to accept cookies. If a visitor hasn't accepted "all cookies", or at least Analytical and Functional cookies, when they see a form that uses reCaptcha 2.0, then the reCaptcha could be placing cookies on their browser that they have not agreed to accept.
+                            </p>
+                recaptcha_warning:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                Zenario is storing a Site Key and Secret Key in "API keys", so it looks like reCaptcha may be in use.
+                            </div>
+                    hidden: true
+                recaptcha_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                Zenario is not storing a Site Key or Secret Key in "API keys", so reCaptcha may not be in use.
+                            </div>
+                    hidden: false
+                recaptcha_form_policy:
+                    site_setting:
+                        name: recaptcha_form_policy
+                    label: What should happen when a visitor hasn't accepted "all cookies", or Analytical and Functional cookies, and they view a form that uses Google reCaptcha 2.0?
+                    type: radios
+                    values:
+                        require_visitor_accepts_analytics_and_functional_cookies:
+                            ord: 1
+                            label: Require visitor to accept Analytics and Functional cookies before showing the form
+                        show_form_without_recaptcha:
+                            ord: 2
+                            label: Show the form anyway, without the reCaptcha
+                    value: require_visitor_accepts_analytics_and_functional_cookies
         
         cookie_timeouts:
             label: Timeouts

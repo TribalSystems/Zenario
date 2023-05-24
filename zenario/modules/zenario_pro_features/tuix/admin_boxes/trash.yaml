@@ -1,0 +1,86 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_trash:
+    tabs:
+        trash:
+            fields:
+                #This dummy field is required so that the Pro Features module can insert code into the Common Features admin box.
+                dummy_field:
+                    type: text
+                    show_as_a_span: true
+                    hidden: true
+            pro_features_trash_template_fields:
+                grouping_top__znz:
+                    type: grouping
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: zfab_grouping_wrapper_shown_by_checkbox
+                    grouping_css_class: zenario_grouping__top
+                create_spare_alias__znz:
+                    grouping: grouping_top__znz
+                    label: 'Create a spare alias for [[content_item]]'
+                    type: checkbox
+                    format_onchange: true
+                grouping_left__znz:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__left
+                alias__znz:
+                    indent: 1
+                    grouping: grouping_left__znz
+                    label: 'Spare alias:'
+                    type: text
+                    show_as_a_span: true
+                    maxlength: 255
+                    style: 'width:350px'
+                    post_field_html: |
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size:30px;position:absolute;">⟶</span>
+                preview__znz:
+                    indent: 1
+                    grouping: grouping_left__znz
+                    pre_field_html: 'Preview:<br>'
+                    snippet:
+                        html: ''
+                redirect_target_url__znz:
+                    grouping: grouping_left__znz
+                    type: text
+                    hidden: true
+                grouping_right__znz:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__right
+                target_loc__znz:
+                    indent: 1
+                    grouping: grouping_right__znz
+                    label: 'Redirect to:'
+                    type: select
+                    value: int
+                    values:
+                        int:
+                            ord: 1
+                            label: A content item
+                        ext:
+                            ord: 2
+                            label: An external URL
+                    format_onchange: Yes
+                hyperlink_target__znz:
+                    indent: 1
+                    grouping: grouping_right__znz
+                    label: 'Content item:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select content item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                    format_onchange: Yes
+                    indent: 1
+                ext_url__znz:
+                    indent: 1
+                    grouping: grouping_right__znz
+                    label: 'External URL:'
+                    type: url
+                    maxlength: "255"
+                    validation:
+                        required_if_not_hidden: Please enter a URL
+                    indent: 1

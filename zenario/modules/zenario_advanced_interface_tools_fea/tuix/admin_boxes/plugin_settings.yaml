@@ -10,7 +10,6 @@ plugin_settings:
                 mode: 
                     plugin_setting: 
                         name: mode
-                        use_value_for_plugin_name: 1
                     label: Mode
                     type: select
                     css_class: iconselectmenu
@@ -71,7 +70,6 @@ plugin_settings:
                 #microtemplate:
                 #    plugin_setting:
                 #        name: microtemplate
-                #        use_value_for_plugin_name: 1
                 #    visible_if: 
                 #        lib.modeIn:
                 #            - list_tuix_snippets

@@ -32,11 +32,21 @@ class zenario_users__admin_boxes__user__delete extends zenario_users {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$userIds = explode(',', $box['key']['id']);
 		if (count($userIds) > 1) {
-			$box['tabs']['details']['notices']['are_you_sure']['message'] = ze\admin::phrase('Are you sure you wish to delete the selected users?');
+			$box['tabs']['details']['notices']['are_you_sure']['message'] = ze\admin::phrase('Are you sure you wish to delete the selected accounts?');
 		} else {
 			$user = ze\user::details($userIds[0]);
 			ze\lang::applyMergeFields($box['tabs']['details']['notices']['are_you_sure']['message'], $user);
 		}
+		
+		//Get all the modules that will be deleting user data.
+		$allDataExplained = '';
+		$moduleDataResponses = ze\module::sendSignal('deleteUserDataGetInfo', [$userIds]);
+		if (!empty($moduleDataResponses)) {
+			$allDataExplained .= '<p>' . ze\admin::phrase('If deleting all data, the following will be removed:') . '<p>';
+			$allDataExplained .= implode('<br />', $moduleDataResponses);
+		}
+		
+		ze\lang::applyMergeFields($box['tabs']['details']['fields']['all_data_explained']['snippet']['html'], ['all_data_explained' => $allDataExplained]);
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

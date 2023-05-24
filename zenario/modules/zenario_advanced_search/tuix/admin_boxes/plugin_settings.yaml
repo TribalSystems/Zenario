@@ -8,7 +8,6 @@ plugin_settings:
                 mode:
                     plugin_setting:
                         name: mode
-                        use_value_for_plugin_name: 1
                     label: Mode
                     type: select
                     css_class: iconselectmenu
@@ -84,6 +83,12 @@ plugin_settings:
                     value: false
                     visible_if: 
                         lib.modeIn: search_page
+                open_links_to_results_in_a_new_window:
+                    plugin_setting:
+                        name: open_links_to_results_in_a_new_window
+                    label: 'Open links to results in a new window'
+                    type: checkbox
+                    value: false
                 
                 keyboard_delay_before_submit:
                     plugin_setting:
@@ -114,7 +119,7 @@ plugin_settings:
                     values:
                         1:
                             ord: 1
-                            label: "Only show links to private content items to authorized visitors"
+                            label: "Only show links to private content items to authorised visitors"
                         0:
                             ord: 2
                             label: "Show links to private content items to all visitors"
@@ -169,7 +174,7 @@ plugin_settings:
                     value: ""
                     side_note: >
                         Categories containing matching content items will be
-                        displayed to the visitor so that he may refine his search.
+                        displayed to the visitor so that they may refine their search.
                     visible_if: lib.modeIn('search_page')
                 
                 use_pagination:
@@ -188,28 +193,15 @@ plugin_settings:
                     type: select
                     value: zenario_common_features::pagCloseWithNPIfNeeded
                     visible_if: lib.modeIn('search_page') && lib.value('use_pagination')
-                page_size:
-                    plugin_setting:
-                        name: page_size
-                    label: 'Page size:'
-                    type: select
-                    values:
-                        maximum_of:
-                            label: Maximum of...
-                    value: maximum_of
-                    format_onchange: true
                 maximum_results_number:
                     plugin_setting:
                         name: maximum_results_number
-                    indent: 1
                     type: text
-                    same_row: true
+                    label: 'Maximum number of results:'
                     maxlength: 5
                     value: 20
                     style: "width: 5em;"
                     format_onchange: true
-                    visible_if: |
-                        zenarioAB.value('page_size') == 'maximum_of'
                     validation:
                         numeric: The page size must be a number.
                         required_if_not_hidden: Please enter the page size.
@@ -279,7 +271,7 @@ plugin_settings:
                     
         content_types:
             ord: "2"
-            label: Content items to search
+            label: Content to search
             fields:
                 #################
                 ## Search HTML ##
@@ -291,11 +283,35 @@ plugin_settings:
                     type: checkbox
                     value: "1"
                     format_onchange: true
+                html_limit_search_scope_by_category:
+                    plugin_setting:
+                        name: html_limit_search_scope_by_category
+                    indent: 1
+                    label: 'Limit search scope by category'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_html')
+                html_category_support_not_enabled_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">Categories are not enabled for the HTML page content type.</div>'
+                    #If category support is enabled for the HTML content type, this field will be unset in the module code.
+                    visible_if: lib.value('search_html') && lib.value('html_limit_search_scope_by_category')
+                html_limit_search_scope_choose_categories:
+                    plugin_setting:
+                        name: html_limit_search_scope_choose_categories
+                    indent: 2
+                    type: checkboxes
+                    visible_if: lib.value('search_html') && lib.value('html_limit_search_scope_by_category')
+                    values: {}
+                    validation:
+                        required_if_not_hidden: "Please select at least one category."
                 html_column_heading_text:
                     plugin_setting:
                         name: html_column_heading_text
                     indent: 1
                     type: text
+                    show_phrase_icon: true
                     label: 'Tab/column heading text:'
                     visible_if: lib.value('search_html')
                     validation:
@@ -441,11 +457,35 @@ plugin_settings:
                         html: '<div class="zenario_fbWarning">The Document content type module is not running; start the module to make the search work as expected.</div>'
                     #If the Document content type module is running, this field will be unset in the module code.
                     visible_if: lib.value('search_document')
+                document_limit_search_scope_by_category:
+                    plugin_setting:
+                        name: document_limit_search_scope_by_category
+                    indent: 1
+                    label: 'Limit search scope by category'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_document')
+                document_category_support_not_enabled_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">Categories are not enabled for the Document content type.</div>'
+                    #If category support is enabled for the Document content type, this field will be unset in the module code.
+                    visible_if: lib.value('search_document') && lib.value('document_limit_search_scope_by_category')
+                document_limit_search_scope_choose_categories:
+                    plugin_setting:
+                        name: document_limit_search_scope_choose_categories
+                    indent: 2
+                    type: checkboxes
+                    visible_if: lib.value('search_document') && lib.value('document_limit_search_scope_by_category')
+                    values: {}
+                    validation:
+                        required_if_not_hidden: "Please select at least one category."
                 document_column_heading_text:
                     plugin_setting:
                         name: document_column_heading_text
                     indent: 1
                     type: text
+                    show_phrase_icon: true
                     label: 'Tab/column heading text:'
                     visible_if: lib.value('search_document')
                     validation:
@@ -560,6 +600,15 @@ plugin_settings:
                     label: 'Show menu path if available'
                     type: checkbox
                     visible_if: lib.value('search_document')
+                document_use_download_page:
+                    plugin_setting:
+                        name: document_use_download_page
+                    indent: 1
+                    label: 'Use a download page'
+                    type: checkbox
+                    value: false
+                    side_note: "Link to the download page, recommended if document content items may have S3 versions. If not checked, direct link to the file."
+                    visible_if: lib.value('search_document')
                 document_column_width:
                     plugin_setting:
                         name: document_column_width
@@ -591,11 +640,35 @@ plugin_settings:
                         html: '<div class="zenario_fbWarning">The News content type module is not running; start the module to make the search work as expected.</div>'
                     #If the News content type module is running, this field will be unset in the module code.
                     visible_if: lib.value('search_news')
+                news_limit_search_scope_by_category:
+                    plugin_setting:
+                        name: news_limit_search_scope_by_category
+                    indent: 1
+                    label: 'Limit search scope by category'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_news')
+                news_category_support_not_enabled_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">Categories are not enabled for the News content type.</div>'
+                    #If category support is enabled for the News content type, this field will be unset in the module code.
+                    visible_if: lib.value('search_news') && lib.value('news_limit_search_scope_by_category')
+                news_limit_search_scope_choose_categories:
+                    plugin_setting:
+                        name: news_limit_search_scope_choose_categories
+                    indent: 2
+                    type: checkboxes
+                    visible_if: lib.value('search_news') && lib.value('news_limit_search_scope_by_category')
+                    values: {}
+                    validation:
+                        required_if_not_hidden: "Please select at least one category."
                 news_column_heading_text:
                     plugin_setting:
                         name: news_column_heading_text
                     indent: 1
                     type: text
+                    show_phrase_icon: true
                     label: 'Tab/column heading text:'
                     visible_if: lib.value('search_news')
                     validation:
@@ -741,11 +814,35 @@ plugin_settings:
                         html: '<div class="zenario_fbWarning">The Blog content type module is not running; start the module to make the search work as expected.</div>'
                     #If the Blog content type module is running, this field will be unset in the module code.
                     visible_if: lib.value('search_blog')
+                blog_limit_search_scope_by_category:
+                    plugin_setting:
+                        name: blog_limit_search_scope_by_category
+                    indent: 1
+                    label: 'Limit search scope by category'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: lib.value('search_blog')
+                blog_category_support_not_enabled_warning:
+                    indent: 1
+                    snippet:
+                        html: '<div class="zenario_fbWarning">Categories are not enabled for the Blog content type.</div>'
+                    #If category support is enabled for the Blog content type, this field will be unset in the module code.
+                    visible_if: lib.value('search_blog') && lib.value('blog_limit_search_scope_by_category')
+                blog_limit_search_scope_choose_categories:
+                    plugin_setting:
+                        name: blog_limit_search_scope_choose_categories
+                    indent: 2
+                    type: checkboxes
+                    visible_if: lib.value('search_blog') && lib.value('blog_limit_search_scope_by_category')
+                    values: {}
+                    validation:
+                        required_if_not_hidden: "Please select at least one category."
                 blog_column_heading_text:
                     plugin_setting:
                         name: blog_column_heading_text
                     indent: 1
                     type: text
+                    show_phrase_icon: true
                     label: 'Tab/column heading text:'
                     visible_if: lib.value('search_blog')
                     validation:
@@ -878,6 +975,150 @@ plugin_settings:
                 ###########
                 ## Other ##
                 ###########
+                search_in_other_modules:
+                    plugin_setting:
+                        name: search_in_other_modules
+                    label: 'Search in other modules'
+                    type: checkbox
+                    format_onchange: true
+                module_to_search:
+                    indent: 1
+                    plugin_setting:
+                        name: module_to_search
+                    label: 'Select module to search:'
+                    type: select
+                    values: {}
+                    empty_value: '-- Select module --'
+                    #This module sends a signal and populates the names of modules that respond to it.
+                    visible_if: lib.value('search_in_other_modules')
+                    validation:
+                        required_if_not_hidden: 'Please select a module.'
+                other_module_column_heading_text:
+                    plugin_setting:
+                        name: other_module_column_heading_text
+                    indent: 1
+                    type: text
+                    show_phrase_icon: true
+                    label: 'Tab/column heading text:'
+                    visible_if: lib.value('search_in_other_modules')
+                    validation:
+                        required_if_not_hidden: 'Please type in the heading text.'
+                    value: 
+                other_module_show_image:
+                    plugin_setting:
+                        name: other_module_show_image
+                    label: 'Show item image'
+                    type: checkbox
+                    value: "1"
+                    side_note: Display the item's image if available.
+                    format_onchange: Yes
+                    indent: 1
+                    visible_if: lib.value('search_in_other_modules')
+                other_module_image_canvas:
+                    plugin_setting:
+                        name: other_module_image_canvas
+                    label: 'Canvas for image:'
+                    type: select
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    value: fixed_width
+                    format_onchange: Yes
+                    indent: 2
+                other_module_image_width:
+                    plugin_setting:
+                        name: other_module_image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width for listing photo.
+                        numeric: The width must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                other_module_image_height:
+                    plugin_setting:
+                        name: other_module_image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height for listing photo.
+                        numeric: The height must be a number.
+                    value: "80"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 3
+                other_module_view_item_content_item:
+                    indent: 1
+                    visible_if: lib.value('search_in_other_modules')
+                    plugin_setting:
+                        name: other_module_view_item_content_item
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Content item for viewing results:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_language_and_content_type//html//
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item.
+                other_module_view_item_conductor_state:
+                    indent: 1
+                    visible_if: lib.value('search_in_other_modules')
+                    label: 'Conductor state for viewing results:'
+                    note_below: 'Type in the conductor state of the slide for the FEA View mode (found in the URL, e.g. <code>state=c</code>).'
+                    plugin_setting: 
+                        name: other_module_view_item_conductor_state
+                    type: text
+                    value: b
+                    maxlength: 2
+                    style: "width: 2em;"
+                    validation:
+                        required_if_not_hidden: Please enter the conductor state.
+                other_module_column_width:
+                    plugin_setting:
+                        name: other_module_column_width
+                    indent: 1
+                    label: 'Width of column (desktop view only):'
+                    validation:
+                        numeric: "The width must be a number."
+                        required_if_not_hidden: 'Please type in the width.'
+                    type: text
+                    maxlength: 5
+                    decimal_places: 2
+                    style: "width: 4em;"
+                    post_field_html: "%"
+                    visible_if: lib.value('search_in_other_modules') && lib.modeIn('search_entry_box')
+                search_result_types_order:
+                    plugin_setting:
+                        name: search_result_types_order
+                    label: 'Search result types order:'
+                    pick_items: 
+                        multiple_select: true
+                        nothing_selected_phrase: Select one or more meta data fields.
+                        hide_select_button: true
+                        hide_info_button: true
+                        reorder_items: true
                 show_scores:
                     plugin_setting:
                         name: show_scores
@@ -906,7 +1147,18 @@ plugin_settings:
                                 Items published in the last 90 days have their scores multiplied by 6.<br />
                                 Items published in the last 365 days have their scores multiplied by 3.<br />
                             </div>
+                content_item_search:
+                    type: grouping
+                    snippet:
+                        label: Content item search
+                        label_class: subheading
+                other_module_search:
+                    type: grouping
+                    snippet:
+                        label: Other module search
+                        label_class: subheading
                 alias_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: alias_weighting
                     label: 'Alias weighting:'
@@ -922,6 +1174,7 @@ plugin_settings:
                             label: High (score of 12)
                     value: _LOW
                 title_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: title_weighting
                     label: 'Title weighting:'
@@ -929,6 +1182,7 @@ plugin_settings:
                     values: *weightings_values
                     value: _HIGH
                 keywords_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: keywords_weighting
                     label: 'Keywords weighting:'
@@ -936,6 +1190,7 @@ plugin_settings:
                     values: *weightings_values
                     value: _MEDIUM
                 description_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: description_weighting
                     label: 'Description weighting:'
@@ -943,6 +1198,7 @@ plugin_settings:
                     values: *weightings_values
                     value: _LOW
                 content_summary_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: content_summary_weighting
                     label: 'Content Summary weighting:'
@@ -950,6 +1206,7 @@ plugin_settings:
                     values: *weightings_values
                     value: _LOW
                 content_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: content_weighting
                     label: 'Content weighting:'
@@ -957,6 +1214,7 @@ plugin_settings:
                     values: *weightings_values
                     value: _LOW
                 filename_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: filename_weighting
                     label: 'Filename weighting:'
@@ -964,9 +1222,27 @@ plugin_settings:
                     values: *weightings_values
                     value: _LOW
                 extract_weighting:
+                    grouping: content_item_search
                     plugin_setting:
                         name: extract_weighting
                     label: 'File extract weighting:'
+                    type: select
+                    values: *weightings_values
+                    value: _LOW
+
+                other_module_title_weighting:
+                    grouping: other_module_search
+                    plugin_setting:
+                        name: other_module_title_weighting
+                    label: 'Title weighting:'
+                    type: select
+                    values: *weightings_values
+                    value: _HIGH
+                other_module_description_weighting:
+                    grouping: other_module_search
+                    plugin_setting:
+                        name: other_module_description_weighting
+                    label: 'Description weighting:'
                     type: select
                     values: *weightings_values
                     value: _LOW

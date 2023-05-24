@@ -47,13 +47,13 @@ if (!ze\module::inc('zenario_newsletter')) {
 	echo ze\lang::phrase('Sorry, you cannot be automatically unsubscribed right now, as this site has disabled their newsletter system.');
 	exit;
 
-} elseif (($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXX' || ($_REQUEST['t'] ?? false) == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
+} elseif (ze::request('t') == 'XXXXXXXXXXXXXXX' || ze::request('t') == 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX') {
 	echo ze\lang::phrase('Any user who clicks on this link in the actual Newsletter will be automatically unsubscribed.');
 	exit;
 }
 
 
-if ($link = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', ['user_id', 'newsletter_id'], ['remove_hash' => ($_REQUEST['t'] ?? false)])) {
+if ($link = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', ['user_id', 'newsletter_id'], ['remove_hash' => ze::request('t')])) {
 	
 	if (!ze\user::isInGroup(ze::setting('zenario_newsletter__all_newsletters_opt_out'), $link['user_id'])) {
 	
@@ -62,7 +62,7 @@ if ($link = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_user_link', ['use
 		    echo '<p>'.ze\lang::phrase('No action has been taken.').'</p>';
 		}
 		
-		elseif (!($_POST['confirm'] ?? false) && !($_POST['cancel'] ?? false)) {
+		elseif (!ze::post('confirm') && !ze::post('cancel')) {
 			
 			echo '<h1>'.ze\lang::phrase('Unsubscribe').'</h1>';
 			echo '

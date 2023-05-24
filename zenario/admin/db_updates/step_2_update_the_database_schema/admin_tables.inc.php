@@ -107,4 +107,17 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]admin_organizer_prefs`
 	MODIFY COLUMN `checksum` varchar(22) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '{}'
 _sql
+
+
+//
+//	Zenario 9.4
+//
+
+//In 9.4, we started counting admin failed logins.
+//have been using "ascii"
+);	ze\dbAdm::revision(57301
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]admins`
+	ADD COLUMN `failed_login_count_since_last_successful_login` int unsigned NOT NULL DEFAULT 0 AFTER `last_login_ip`
+_sql
 );

@@ -9,3 +9,8 @@ Disallow: /zenario_custom/
 Disallow: /zenario_extra_modules/
 Disallow: /*?slotName*
 Disallow: /*?tag*
+Allow: /zenario/js/*
+Allow: /zenario/libs/manually_maintained/*
+Allow: /zenario/libs/yarn/*
+Allow: /zenario/styles/*
+Allow: /zenario_custom/skins/*

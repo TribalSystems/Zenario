@@ -31,9 +31,6 @@ plugin_settings:
                 menu_show_all_branches:
                     value: "1"
                     hidden: true
-                reverse_order:
-                    value: ""
-                    hidden: true
                 page_size:
                     plugin_setting:
                         name: max_items_per_column

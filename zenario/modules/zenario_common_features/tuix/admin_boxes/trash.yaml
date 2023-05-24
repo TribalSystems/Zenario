@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_trash:
-    priv: _PRIV_HIDE_CONTENT_ITEM
+    priv: _PRIV_PUBLISH_CONTENT_ITEM
     key:
         id: ""
         cID: ""
@@ -16,28 +16,19 @@ zenario_trash:
                 trash_item:
                     type: warning
                     message: |
-                            If you trash this content item it will:
-                             - no longer be visible to visitors
-                             - be removed from the menu
-                             - lose its alias
-                            
-                            Are you sure you wish to trash this content item?
+                        When this content item is trashed, it will no longer be seen by visitors, will not appear in the menu navigation, and it will lose its alias.
                 trash_items:
                     type: warning
                     message: |
-                            Trashed content items will:
-                             - be no longer visible to visitors
-                             - be removed from the menu
-                             - lose their alias
-                            
-                            Are you sure you wish to trash these content items?
-                    
-            
+                        When these content items are trashed, they will no longer be seen by visitors, will not appear in the menu navigation, and it will lose their aliases.
             fields:
                 links_warning:
                     snippet:
                         html:
-                    hidden: true
+                links_warning_part_2:
+                    ord: 9999999999
+                    snippet:
+                        html:
                 trash_options:
                     type: radios
                     values:
@@ -103,19 +94,18 @@ zenario_trash:
                 action__znz:    
                     <td>:
                     type: select
-                    empty_value: ' -- Please choose what to do with this translation -- '
+                    empty_value: ' - Choose what to do with translation - '
                     values:
                         keep:
-                            label: Keep translation
+                            label: Keep translation in '[[language_id]]'
                         trash:
-                            label: Trash translation
+                            label: Trash translation in '[[language_id]]'
                     validate_onchange: true
                     validation:
                         only_validate_when_saving: true
                         required: true
                     </td></tr>:
     
-    max_height: 160
     hide_tab_bar: true
     save_button_message: Trash
     cancel_button_message: Cancel

@@ -31,6 +31,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_plugin_nest__organizer__plugins extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		switch ($refinerName) {
+			case 'nests':
+				$panel['item']['css_class'] = 'nest_library';
+				break;
+			case 'slideshows':
+				$panel['item']['css_class'] = 'slideshow_library';
+				break;
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

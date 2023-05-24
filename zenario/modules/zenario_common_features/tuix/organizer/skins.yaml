@@ -3,19 +3,16 @@
 zenario__layouts:
     panels:
         skins:
-            #back_link: zenario__layouts/panels/layouts
+            priv: _PRIV_VIEW_TEMPLATE
             title: Skins
             db_items:
                 table: >
                     [[DB_PREFIX]]skins AS s
                 id_column: s.id
             no_items_message: There are no Skins.
-            view_mode: list
             panel_type: multi_line_list
             use_tall_rows: true
             disable_close_up_view: true
-            disable_grid_view: true
-            disable_summary_view: true
             default_sort_column: path
             label_format_for_grid_view: '[[display_name]]'
             columns:
@@ -86,6 +83,7 @@ zenario__layouts:
                 css_class: skin
                 tooltip_when_link_is_active: 'View files in Skin &quot;[[name]]&quot;'
                 link:
+                    priv: _PRIV_VIEW_TEMPLATE
                     path: zenario__layouts/panels/skin_files
                     branch: true
                     refiner: skin

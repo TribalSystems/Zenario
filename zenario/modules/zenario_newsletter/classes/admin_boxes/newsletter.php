@@ -142,12 +142,12 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$pick_items['path'] = 'zenario__email_template_manager/panels/newsletters/item_buttons/images//'. (int) $box['key']['id']. '//';
 			$pick_items['min_path'] =
 			$pick_items['max_path'] =
-			$pick_items['target_path'] = 'zenario__content/panels/image_library';
+			$pick_items['target_path'] = 'zenario__library/panels/image_library';
 		} else {
 			$pick_items['path'] =
 			$pick_items['min_path'] =
 			$pick_items['max_path'] =
-			$pick_items['target_path'] = 'zenario__content/panels/image_library';
+			$pick_items['target_path'] = 'zenario__library/panels/image_library';
 		}
 		
 		

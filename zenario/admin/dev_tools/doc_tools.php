@@ -11,7 +11,7 @@ echo
 <head>
 	<title>';
 	
-		switch ($_GET['mode'] ?? false) {
+		switch (ze::get('mode')) {
 			case 'admin_box_schema';
 				$schema = 'admin_box_schema.yaml';
 				echo ze\admin::phrase('Schema for Admin Box');
@@ -50,7 +50,7 @@ echo '
     <script src="', $docsonBaseUrl, '/lib/require.js"></script></head>
     <script src="doc_tools.js?v=6"></script>';
     
-    if ($_GET['linkToRef'] ?? false) {
+    if (ze::get('linkToRef')) {
     	echo "
     		<style>
     			html, body {
@@ -132,10 +132,10 @@ echo '
     require(["docson", "lib/jquery"], function(docson) {
         $(function() {
         	var schema = docTools.parseSchema(
-        		', json_encode($_GET['mode'] ?? false), ',
+        		', json_encode(ze::get('mode')), ',
         		', json_encode($schema), ',
-        		', json_encode($_GET['tag'] ?? false), ',
-        		', ze\ring::engToBoolean($_GET['linkToRef'] ?? false), ');
+        		', json_encode(ze::get('tag')), ',
+        		', ze\ring::engToBoolean(ze::get('linkToRef')), ');
             docson.templateBaseUrl= "', $docsonBaseUrl, '/templates";
             docson.doc("doc", schema);
         });

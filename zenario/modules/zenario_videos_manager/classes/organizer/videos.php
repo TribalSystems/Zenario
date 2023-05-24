@@ -30,6 +30,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if ($categoryId = ze::get('refiner__category')) {
+			$categoryName = ze\row::get(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', 'name', ['id' => $categoryId]);
+			$panel['title'] = ze\admin::phrase('Videos in the category "[[category_name]]"', ['category_name' => $categoryName]);
+			$panel['no_items_message'] = ze\admin::phrase('There are no videos in the category "[[category_name]]".', ['category_name' => $categoryName]);
+			$panel['collection_buttons']['add_embed_code']['hidden'] = true;
+		}
+		
 		$documentEnvelopesModuleIsRunning = ze\module::inc('zenario_document_envelopes_fea');
 		$languages = ze\dataset::centralisedListValues('zenario_document_envelopes_fea::getEnvelopeLanguages');
 		
@@ -58,14 +65,16 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 				$parsed = parse_url($item['url']);
 				if ($parsed) {
 					$url = false;
-					if (strpos($parsed['host'], 'vimeo.com') !== false) {
-						$vimeoVideoId = $parsed['path'];
-						if (substr($vimeoVideoId, 0, 1) == '/') {
-							$vimeoVideoId = substr($vimeoVideoId, 1);
-						}
+					if (isset($parsed['host'])) {
+						if (strpos($parsed['host'], 'vimeo.com') !== false) {
+							$vimeoVideoId = $parsed['path'];
+							if (substr($vimeoVideoId, 0, 1) == '/') {
+								$vimeoVideoId = substr($vimeoVideoId, 1);
+							}
 
-						//Remember the Zenario video ID for easier processing later.
-						$vimeoVideos[$vimeoVideoId] = $id;
+							//Remember the Zenario video ID for easier processing later.
+							$vimeoVideos[$vimeoVideoId][] = $id;
+						}
 					}
 				}
 			}
@@ -93,15 +102,15 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 							//Match the Vimeo ID to Zenario video ID...
 							$videoId = str_replace('/videos/', '', $video['uri']);
 							
-							$itemId = $vimeoVideos[$videoId];
+							$itemIds = isset($vimeoVideos[$videoId]) ? $vimeoVideos[$videoId] : false;
 							//Handle unlisted videos, which have an additional string after the URL.
 							//Vimeo response only contains the first part.
-							if (!$itemId) {
-								foreach ($vimeoVideos as $vimeoId => $zenarioId) {
+							if (!$itemIds) {
+								foreach ($vimeoVideos as $vimeoId => $zenarioIds) {
 									if (stristr($vimeoId, $videoId) === false) {
 										continue;
 									} else {
-										$itemId = $zenarioId;
+										$itemIds = $zenarioIds;
 										break;
 									}
 								}
@@ -116,7 +125,9 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 							}
 
 							//... and populate the value.
-							$panel['items'][$itemId]['video_privacy'] = $privacyString;
+							foreach ($itemIds as $itemId) {
+								$panel['items'][$itemId]['video_privacy'] = $privacyString;
+							}
 						}
 					}
 				}

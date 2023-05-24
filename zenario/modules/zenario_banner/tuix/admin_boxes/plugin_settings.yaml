@@ -7,79 +7,8 @@ plugin_settings:
                 format_on_edit: true
                 format_on_cancel_edit: true
                 format_on_revert: true
-            label: 'Title & HTML'
+            label: 'Image & link'
             fields:
-                title:
-                    plugin_setting:
-                        name: title
-                        is_searchable_content: true
-                        use_value_for_plugin_name: true
-                        translate: true
-                    label: 'Title:'
-                    type: text
-                    width: "150"
-                    maxlength: "255"
-                    value: ""
-                
-                title_tags:
-                    plugin_setting:
-                        name: title_tags
-                    type: select
-                    values:
-                        h1: <h1>
-                        h2: <h2>
-                        h3: <h3>
-                        h4: <h4>
-                        h5: <h5>
-                        h6: <h6>
-                        p: <p>
-                    value: h2
-                    same_row: true
-                
-                set_an_anchor:
-                    plugin_setting:
-                        name: set_an_anchor
-                    label: 'Set an anchor'
-                    type: checkbox
-                    value: false
-                    format_onchange: true
-                anchor_name:
-                    plugin_setting:
-                        name: anchor_name
-                    indent: 1
-                    type: text
-                    label: 'Anchor name:'
-                    validation:
-                        required_if_not_hidden: 'Please enter the anchor name.'
-                    visible_if: zenarioAB.value('set_an_anchor')
-                    #This field has an oninput event, set in the fillAdminBox method,
-                    #and a side_note, set in the formatAdminBox method.
-                
-                text:
-                    plugin_setting:
-                        name: text
-                        is_searchable_content: true
-                        translate: true
-                    label: 'Description (HTML):'
-                    type: editor
-                    dont_trim: true
-                    insert_link_button:
-                        exists: true
-                    cols: "80"
-                    rows: "10"
-                    value: ""
-                more_link_text:
-                    plugin_setting:
-                        name: more_link_text
-                        is_searchable_content: true
-                        translate: true
-                    label: |
-                        Text for "More info" link:
-                    type: text
-                    width: "150"
-                    maxlength: "255"
-                    value: ""
-                
                 translate_text:
                     plugin_setting:
                         name: translate_text
@@ -87,10 +16,8 @@ plugin_settings:
                     type: checkbox
                     value: 1
                     format_onchange: true
-            
-        image_and_link:
-            label: Image/link
-            fields:
+                
+                #Previously, all the fields below were on the 2nd tab. As of 9.4, they are now on the first tab.
                 image_source:
                     plugin_setting:
                         name: image_source
@@ -111,14 +38,13 @@ plugin_settings:
                     plugin_setting:
                         name: image
                         foreign_key_to: file
-                        use_value_for_plugin_name: 2
                         
                     label: 'Image for desktop browsers:'
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     value: ""
                     format_onchange: true
@@ -140,19 +66,30 @@ plugin_settings:
                         name: canvas
                     label: 'Image canvas:'
                     type: select
-                    value: unlimited
+                    format_onchange: true
                     values:
-                        unlimited:
-                            label: Unlimited size
-                        fixed_width:
-                            label: Constrain by width
-                        fixed_height:
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            label: Constrain by width and height
                         crop_and_zoom:
                             label: Crop and zoom
-                    format_onchange: true
+                        fixed_width:
+                            custom__label_raster: Constrain by width
+                            custom__label_svg: Set width
+                        fixed_height:
+                            custom__label_raster: Constrain by height
+                            custom__label_svg: Set height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                        unlimited:
+                            ord: 99
+                            custom__label_raster: Unlimited size
+                            custom__label_svg: Use base width and height
+                        
+                        # A bit of a work-around here.
+                        # We need a default value that changes, depending on whether the plugin is non-nested, or inside a nest.
+                        # That's not tech we have, so we'll have a dummy default value, that we'll change to whatever it should be
+                        # as soon as we see it in the PHP code.
+                        DEFAULT:
+                            hidden: true
+                    value: DEFAULT
                 retina:
                     indent: 2
                     plugin_setting:
@@ -166,11 +103,6 @@ plugin_settings:
                         !zenarioAB.svgSelected('images')
                     side_note: |
                         Display image at double density.
-                nest_canvas_setting:
-                    indent: 1
-                    hide_with_previous_field: true
-                    snippet:
-                        html: '<div class="zenario_fbInfo">[[nest_canvas_setting]]</div>'
                 width:
                     indent: 2
                     plugin_setting:
@@ -180,8 +112,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
                         numeric: The width must be a number.
-                    value: ""
-                    maxlength: "5"
+                    value: 600
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 height:
@@ -193,8 +125,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
                         numeric: The height must be a number.
-                    value: ""
-                    maxlength: "5"
+                    value: 400
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 stretched_image_warning:
@@ -212,9 +144,8 @@ plugin_settings:
                         !zenarioAB.svgSelected('images')
                     plugin_setting:
                         name: webp
-                        save_value_when_hidden: true
                     type: checkbox
-                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
                     value: 1
                 show_caption_on_image:
                     indent: 1
@@ -251,10 +182,10 @@ plugin_settings:
                         foreign_key_to: file
                     label: 'Change image on rollover:'
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     value: ""
                     upload:
@@ -274,7 +205,7 @@ plugin_settings:
                         translate: true
                     label: 'Overwrite image alt-tag:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                 
                 show_image_credit:
@@ -299,7 +230,8 @@ plugin_settings:
                     format_onchange: true
                     values:
                         mobile_same_image:
-                            label: 'Same image as for desktop'
+                            custom__label_raster: 'Same image as for desktop'
+                            custom__label_svg: 'Same image as for desktop'
                         mobile_same_image_different_size:
                             label: 'Same image, different size'
                         mobile_change_image:
@@ -315,10 +247,10 @@ plugin_settings:
                         foreign_key_to: file
                     label: 'Image for mobile browsers:'
                     pick_items:
-                        path: zenario__content/panels/image_library
-                        min_path: zenario__content/panels/image_library
-                        max_path: zenario__content/panels/image_library
-                        target_path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
                         select_phrase: Select mobile image...
                     value: ""
                     format_onchange: true
@@ -334,24 +266,29 @@ plugin_settings:
                         reorder_items: false
                     indent: 1
                 mobile_canvas:
+                    indent: 1
                     plugin_setting:
                         name: mobile_canvas
                     label: 'Mobile image canvas:'
                     type: select
-                    value: unlimited
+                    format_onchange: true
+                    value: crop_and_zoom
                     values:
-                        unlimited:
-                            label: Unlimited size
-                        fixed_width:
-                            label: Constrain by width
-                        fixed_height:
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            label: Constrain by width and height
                         crop_and_zoom:
                             label: Crop and zoom
-                    format_onchange: true
-                    indent: 1
+                        fixed_width:
+                            custom__label_raster: Constrain by width
+                            custom__label_svg: Set width
+                        fixed_height:
+                            custom__label_raster: Constrain by height
+                            custom__label_svg: Set height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                        unlimited:
+                            ord: 99
+                            custom__label_raster: Unlimited size
+                            custom__label_svg: Use base width and height
+                    
                 mobile_retina:
                     indent: 2
                     plugin_setting:
@@ -372,8 +309,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: ""
-                    maxlength: "5"
+                    value: 360
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
@@ -385,8 +322,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: ""
-                    maxlength: "5"
+                    value: 240
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
@@ -394,14 +331,13 @@ plugin_settings:
                     indent: 2
                     plugin_setting:
                         name: mobile_webp
-                        save_value_when_hidden: true
                     hide_with_previous_outdented_field: true
                     visible_if: |
                         !zenarioAB.svgSelected('mobile_image') &&
                         !zenarioAB.svgSelected('image') &&
                         !zenarioAB.svgSelected('images')
                     type: checkbox
-                    label: 'Link to WebP-format (with fallback for browsers not supporting WebP), recommended for smaller file size'
+                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
                     value: 1
                 
                 ##########################
@@ -461,15 +397,14 @@ plugin_settings:
                     label: 'Overwrite default floating box caption (may contain HTML):'
                     type: textarea
                     dont_trim: true
-                    cols: "70"
-                    rows: "4"
+                    cols: 70
+                    rows: 4
                     value: ""
                 hyperlink_target:
                     indent: 1
                     plugin_setting:
                         name: hyperlink_target
                         foreign_key_to: content
-                        use_value_for_plugin_name: 4
                     label: 'Content item:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
@@ -481,6 +416,11 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a content item
                     format_onchange: true
+                    notices_below:
+                        featured_image_filename:
+                            hidden: true
+                            type: ''
+                            message: ''
                 use_translation:
                     indent: 1
                     plugin_setting:
@@ -501,16 +441,16 @@ plugin_settings:
                     value: _ALWAYS_SHOW
                     values:
                         _ALWAYS_SHOW:
-                            ord: "1"
+                            ord: 1
                             label: Show to visitors and extranet users, even if the target content item is private
                         _PRIVATE:
-                            ord: "2"
+                            ord: 2
                             label: Obey the privacy setting of the content item
                         _LOGGED_OUT:
-                            ord: "3"
+                            ord: 3
                             label: Show to visitors, hide from extranet users
                         _LOGGED_IN:
-                            ord: "4"
+                            ord: 4
                             label: Only show to extranet users
                 use_download_page:
                     indent: 1
@@ -529,7 +469,7 @@ plugin_settings:
                         name: url
                     label: 'External URL:'
                     type: url
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                     validation:
                         required_if_not_hidden: "Please enter a URL."
@@ -541,7 +481,7 @@ plugin_settings:
                     type: text
                     placeholder: "mailto:example@email.com"
                     onblur: "if (this.value && !this.value.match('mailto:')) {this.value = 'mailto:' + this.value;}"
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                     validation:
                         required_if_not_hidden: "Please enter an email address."
@@ -590,16 +530,15 @@ plugin_settings:
                     plugin_setting:
                         name: document_id
                         foreign_key_to: document
-                        use_value_for_plugin_name: 7
                     indent: 1
                     format_onchange: true
                     visible_if: |
                         zenarioAB.value('link_type') == '_DOCUMENT'
                     pick_items:
-                        path: zenario__content/panels/documents
-                        min_path: zenario__content/panels/documents
-                        max_path: zenario__content/panels/documents
-                        target_path: zenario__content/panels/documents
+                        path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
                         select_phrase: Select a document...
                         disabled_if_for_all_selected_items: |
                             item && item.type == 'folder'
@@ -610,6 +549,17 @@ plugin_settings:
                     indent: 1
                     same_row: true
                     visible_if: zenarioAB.value('link_type') == '_DOCUMENT'
+                more_link_text:
+                    plugin_setting:
+                        name: more_link_text
+                        is_searchable_content: true
+                        translate: true
+                    label: |
+                        Text for "More info" link:
+                    type: text
+                    width: 150
+                    maxlength: 255
+                    value: ""
                 
                 
                 enlarge_canvas:
@@ -639,7 +589,7 @@ plugin_settings:
                         required_if_not_hidden: Please enter an enlarged width.
                         numeric: The enlarged width must be a number.
                     value: ""
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 enlarge_height:
@@ -652,7 +602,7 @@ plugin_settings:
                         required_if_not_hidden: Please enter an enlarged height.
                         numeric: The enlarged height must be a number.
                     value: ""
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 show_caption_on_enlarged_image:
@@ -662,4 +612,67 @@ plugin_settings:
                     label: "Show caption on enlarged image"
                     type: checkbox
                     hidden: true
+            
+        title_and_description:
+            label: 'Title & description'
+            fields:
+                title:
+                    plugin_setting:
+                        name: title
+                        is_searchable_content: true
+                        translate: true
+                    label: 'Title:'
+                    type: text
+                    width: 150
+                    maxlength: 255
+                    value: ""
+                
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title HTML tags:'
+                    type: select
+                    values:
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h2
+                    same_row: true
+                
+                set_an_anchor:
+                    plugin_setting:
+                        name: set_an_anchor
+                    label: 'Set an anchor'
+                    type: checkbox
+                    value: false
+                    format_onchange: true
+                anchor_name:
+                    plugin_setting:
+                        name: anchor_name
+                    indent: 1
+                    type: text
+                    label: 'Anchor name:'
+                    validation:
+                        required_if_not_hidden: 'Please enter the anchor name.'
+                    visible_if: zenarioAB.value('set_an_anchor')
+                    #This field has an oninput event, set in the fillAdminBox method,
+                    #and a side_note, set in the formatAdminBox method.
+                
+                text:
+                    plugin_setting:
+                        name: text
+                        is_searchable_content: true
+                        translate: true
+                    label: 'Description (HTML):'
+                    type: editor
+                    dont_trim: true
+                    insert_link_button:
+                        exists: true
+                    cols: 80
+                    rows: 10
+                    value: ""
     module_class_name: zenario_banner

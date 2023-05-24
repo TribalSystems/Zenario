@@ -90,7 +90,7 @@ if ($type != 'submit' && $postValue !== null) {
 	$value = call_user_func([$attributes['source_module'], $attributes['source_method']], $this->currentTwigVars, $attributes);
 
 	//Disallow caching for programatically generated values
-	\ze::$slotContents[$this->slotName]['disallow_caching'] = true;
+	ze::$slotContents[$this->slotName]['disallow_caching'] = true;
 
 //Check for a value set as an attribute
 } elseif (isset($attributes['value']) && ($type == 'button' || $type == 'submit' || $postValue === null)) {

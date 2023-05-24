@@ -83,7 +83,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$pluginAdminName = \ze\admin::phrase('plugin');
 				$ucPluginAdminName = \ze\admin::phrase('Plugin');
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests or slideshows match your search');
-				$panel['key']['containingModuleId'] = (int) ze::get('refiner__plugin');
+				$panel['key']['containingModuleId'] = (int) (ze::get('refiner__plugin') ?: $refinerId);
 				break;
 			
 			default:
@@ -179,7 +179,13 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		
 		if (!$panel['key']['moduleId'] && isset($panel['collection_buttons']['create_dropdown'])) {
 			//Get a list of modules that can be pluggable
-			$key = ['status' => 'module_running', 'is_pluggable' => 1];
+			$key = [
+				'status' => 'module_running',
+				'is_pluggable' => 1,
+				'nestable' => ['!' => 2],
+				'class_name' => ['!' => ['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple']]
+			];
+			
 			if ($panel['key']['moduleIds']) {
 				$key['id'] = explode(',', $panel['key']['moduleIds']);
 			}
@@ -414,10 +420,17 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$item['usage_layouts'] = $usage['layouts'];
 			
 				$usageLinks = [
-					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//' . (int)$id . '//', 
-					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//' . (int)$id . '//'
+					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $id. '//', 
+					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $id. '//'
 				];
-				$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+				$whereUsed = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+				
+				//A bit of a stupid hack here! If the name starts with "site-wide", just make sure the first letter is a capital letter.
+				if ($whereUsed[0] === 's') {
+					$whereUsed[0] = 'S';
+				}
+				
+				$item['where_used'] = $whereUsed;
 			}
 		}
 
@@ -445,7 +458,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\pluginAdm::delete($id);
 			}

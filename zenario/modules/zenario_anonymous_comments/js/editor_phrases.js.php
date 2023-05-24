@@ -79,7 +79,7 @@ foreach([
 
 echo '
 window.anonymousCommentsPhrase = window.anonymousCommentsPhrase || {};
-zenario._uAM(window.anonymousCommentsPhrase,', json_encode($output), ');';
+zenario._mkd(window.anonymousCommentsPhrase,', json_encode($output), ');';
 
 
 

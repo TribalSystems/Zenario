@@ -4,8 +4,6 @@ zenario__content:
     panels:
         document_rules:
             priv: _PRIV_VIEW_DOCUMENTS
-            view_mode: list
-            disable_grid_view: true
             item:
                 css_class: zenario_document_auto_set_rule
             title: Rules for auto-setting document metadata

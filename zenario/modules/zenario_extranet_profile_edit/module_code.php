@@ -37,8 +37,24 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 			$this->data['extranet_no_user'] = true;
 			return true;
 		}
+		
+		//This plugin must have a form selected
+		$formId = $this->setting('user_form');
+		if (!$formId) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("No form has been selected, please edit plugin settings to select a form.")) . '</p>';
+			}
+			return true;
+		}
+		
 		$rv = parent::init();
-		$this->allowSave = $this->setting('enable_edit_profile');
+		
+		if (!$this->form) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("The selected form could not be found, please edit plugin settings to select a different form.")) . '</p>';
+			}
+			return true;
+		}
 		
 		if (!empty($_GET['extranet_edit_profile']) || !empty($this->errors)) {
 			$this->data['extranet_profile_mode_class'] = 'extranet_edit_profile';
@@ -62,7 +78,8 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 		return $rv;
 	}
 	
-	protected function getFormTitle($overwrite = false) {
+	protected function getFormTitle($overwrite = false, $fallback = '') {
+		//The $fallback parameter is to match the User Forms function definition.
 		$title = '';
 		if ($this->setting('show_title_message')) {
 			$title .= '<h1>';

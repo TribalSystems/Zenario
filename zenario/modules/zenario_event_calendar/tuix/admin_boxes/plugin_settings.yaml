@@ -204,10 +204,10 @@ plugin_settings:
                     plugin_setting:
                         name: category
                     pick_items:
-                        path: zenario__content/panels/categories
-                        min_path: zenario__content/panels/categories
-                        max_path: zenario__content/panels/categories
-                        target_path: zenario__content/panels/categories
+                        path: zenario__library/panels/categories
+                        min_path: zenario__library/panels/categories
+                        max_path: zenario__library/panels/categories
+                        target_path: zenario__library/panels/categories
                         select_phrase: Select category...
         popout:
             label: Popup

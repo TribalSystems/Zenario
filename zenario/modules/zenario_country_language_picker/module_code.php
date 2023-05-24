@@ -86,7 +86,7 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 			
 			$this->callScript('zenario_country_language_picker','disablePageScrolling');
 			
-		} elseif (($_REQUEST['showInFloatingBox'] ?? false)=='1') {
+		} elseif (ze::request('showInFloatingBox') =='1') {
 			$floatingBoxParams = [
 				'escKey' => false, 
 				'overlayClose' => false, 
@@ -149,7 +149,7 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 	}
 	
 	public function handlePluginAJAX() {
-		if ($_POST['changeCountry'] ?? false) {
+		if (ze::post('changeCountry')) {
 			self::clearCountryIdAndLanguage();
 		}
 	}

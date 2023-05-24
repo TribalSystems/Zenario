@@ -37,6 +37,20 @@ system_requirements:
                     snippet:
                         html: Apache http server version 2.4.7 or later
                     visible_if: zenarioAW.togglePressed(field)
+                directory_indexing_warning:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            In your Apache config you have directory indexing enabled.
+                            
+                            This can be a serious secuirity vulnerability as it allows
+                            visitors to browse and view private images and downloads.
+                            
+                            Please add <code>Options -Indexes</code> to either your
+                            Apache config or your .htaccess file to disable this.
+                    visible_if: zenarioAW.togglePressed(field)
                 php:
                     grouping: sub_table
                     full_width: true
@@ -175,7 +189,7 @@ system_requirements:
                     snippet:
                         html: |
                             curl extension enabled in PHP
-                            <br/><small>Needed for translating pages using Google Translate and GeoIP services.</small>
+                            <br/><small>Needed for some security checks, for GeoIP services, and potentially other custom uses.</small>
                     visible_if: zenarioAW.togglePressed(field)
                 optional_zip:
                     grouping: sub_table
@@ -186,7 +200,7 @@ system_requirements:
                             zip extension enabled in PHP
                             <br/><small>Needed for creating document extracts</small>
                     visible_if: zenarioAW.togglePressed(field)
-                optional_utf8_encode:
+                optional_xml:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field

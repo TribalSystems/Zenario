@@ -91,8 +91,8 @@ VALUES
 'To Admin: User activation notification',
 'User account activated',
 '<p>Dear Admin,</p>
-<p>The account for the User [[first_name]] [[last_name]] has been activated.</p>
-<p>You can see the User\'s details in Organizer by clicking the link below:</p>
+<p>The account for the user [[first_name]] [[last_name]] has been activated.</p>
+<p>You can see the user\'s details in Organizer by clicking the link below:</p>
 <p><a href=\"[[organizer_link]]\">[[organizer_link]]</a></p>
 <p>&nbsp;</p>
 <p>This is an auto-generated email from [[cms_url]] .</p>',

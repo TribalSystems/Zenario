@@ -140,10 +140,10 @@ zenario_menu:
                     visible_if: |
                         zenarioAB.value('target_loc') == 'doc'
                     pick_items:
-                        path: zenario__content/panels/documents/refiners/public_documents_only////
-                        min_path: zenario__content/panels/documents
-                        max_path: zenario__content/panels/documents
-                        target_path: zenario__content/panels/documents
+                        path: zenario__library/panels/documents/refiners/public_documents_only////
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
                         disallow_refiners_looping_on_min_path: true
                         select_phrase: Select a document...
                         disabled_if_for_all_selected_items: |

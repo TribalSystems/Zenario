@@ -15,24 +15,39 @@ plugin_settings:
                         required: 'Please enter the feed source.'
 
                 cache:
-                    label: 'Time in minutes to cache feed content:'
+                    label: 'How long to cache feed content:'
                     type: select
                     plugin_setting:
                         name: cache
                     values:
                         1:
-                            label: "1"
+                            label: "1 minute"
                         2:
-                            label: "2"
+                            label: "2 minutes"
                         5:
-                            label: "5"
+                            label: "5 minutes"
                         10:
-                            label: "10"
+                            label: "10 minutes"
                         30:
-                            label: "30"
+                            label: "30 minutes"
                         60:
-                            label: "60"
-                    value: "10"
+                            label: "60 minutes"
+                    value: 10
+                feed_going_offline_tolerance:
+                    label: 'Tolerance for feed going offline:'
+                    type: select
+                    plugin_setting:
+                        name: feed_going_offline_tolerance
+                    values:
+                        30:
+                            label: "30 minutes"
+                        60:
+                            label: "60 minutes"
+                        120:
+                            label: "2 hours"
+                        240:
+                            label: "4 hours"
+                    value: 30
                 rss_date_format:
                     label: 'RSS source date format:'
                     type: radios

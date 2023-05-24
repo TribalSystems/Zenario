@@ -63,13 +63,18 @@ zenario.lib(function(
 	
 
 
+
+//Create an instance of the admin forms library for the view options box
+var zenarioGMC = window.zenarioGMC = new zenarioAF();
+zenarioGMC.init('zenarioGMC', 'zenario_admin_box');
+
+
 var formId = 'settings',
-	linksId = 'download_links',
-	closeButtonId = 'close_button';
+	closeButtonId = 'close_button',
+	shiftIsPressed = false;
 
 
 
-zenarioGM.editing = false;
 zenarioGM.data = {};
 zenarioGM.layoutName = '';
 zenarioGM.openedSkinId = '';
@@ -97,6 +102,185 @@ zenarioGM.addToolbarId = 'grid_add_toolbar';
 
 
 
+
+
+
+
+
+
+
+zenarioGM.controls = {};
+
+zenarioGM.init = function(controls, mode, headerInfo, layoutData, layoutId, layoutName, slotContents, allSlotsUsedInLayouts) {
+	
+	allSlotsUsedInLayouts = allSlotsUsedInLayouts || [];
+	headerInfo = headerInfo || {};
+	headerInfo.head_json_data = zenarioGM.checkDataFormat(headerInfo.head_json_data);
+	headerInfo.foot_json_data = zenarioGM.checkDataFormat(headerInfo.foot_json_data);
+	
+	zenarioGM.controls = controls;
+	zenarioGM.mode = mode;
+	zenarioGM.headerInfo = headerInfo;
+	
+	switch (mode) {
+		case 'head':
+			zenarioGM.data = headerInfo.head_json_data;
+			break;
+			
+		case 'body':
+			layoutData = zenarioGM.checkDataFormat(layoutData);
+			zenarioGM.data = layoutData;
+			
+			if (layoutName) {
+				zenarioGM.layoutName = layoutName;
+			}
+			if (layoutId) {
+				zenarioGM.layoutId = layoutId;
+			}
+			break;
+		
+		case 'foot':
+			zenarioGM.data = headerInfo.foot_json_data;
+			zenarioGM.useSettingsFromHeader(zenarioGM.data);
+			break;
+	}
+	
+	zenarioL.set(zenarioGM.mode == 'head', 'zenario_gm_editing_header');
+	zenarioL.set(zenarioGM.mode == 'body', 'zenario_gm_editing_body', 'zenario_gm_editing_sitewide');
+	zenarioL.set(zenarioGM.mode == 'foot', 'zenario_gm_editing_footer');
+	
+	
+	
+	//Work out a list of slots used in the header and footer
+	var i, cell, name,
+		headerCells = headerInfo.head_json_data.cells,
+		footerCells = headerInfo.foot_json_data.cells,
+		slotsUsedInHeader = {},
+		slotsUsedInLayouts = {},
+		slotsUsedInFooter = {};
+	
+	foreach (headerCells as i => cell) {
+		if (cell.slot && cell.name) {
+			slotsUsedInHeader[cell.name.toLowerCase()] = true;
+		}
+	}
+	foreach (footerCells as i => cell) {
+		if (cell.slot && cell.name) {
+			slotsUsedInFooter[cell.name.toLowerCase()] = true;
+		}
+	}
+	
+	//Work out a list of slots used in layouts, excluding the header and footer slots.
+	//(Note: Currently the allSlotsUsedInLayouts variable is only populated when editing the header or footer, and is not provided when editing a layout.)
+	if (!_.isEmpty(allSlotsUsedInLayouts)) {
+		foreach (allSlotsUsedInLayouts as i => name) {
+			slotsUsedInLayouts[name.toLowerCase()] = true;
+		}
+		
+		//We'll always insist that "Slot_Main" is kept free for layouts
+		slotsUsedInLayouts.slot_main = true;
+	}
+	
+	zenarioGM.slotsUsedInHeader = slotsUsedInHeader;
+	zenarioGM.slotsUsedInLayouts = slotsUsedInLayouts;
+	zenarioGM.slotsUsedInFooter = slotsUsedInFooter;
+	
+	
+	zenarioGM.slotContents = slotContents || {};
+	
+	zenarioGM.checkData(layoutName);
+	zenarioGM.checkDataR(zenarioGM.data.cells);
+	zenarioGM.rememberNames(zenarioGM.data.cells);
+	
+	
+	//Set up the close button, with a confirm if there are unsaved changes
+	if (closeButtonId) {
+		if (windowParent
+		 && !windowParent.zenarioGM
+		 && windowParent.$
+		 && windowParent.$.colorbox) {
+		
+			$('#' + closeButtonId).click(function() {
+				if (zenarioGM.savedAtPos == zenarioGM.pos
+				 || confirm(phrase.gridConfirmClose)) {
+					
+					zenario.stopPoking(zenarioGM);
+					
+					if (windowParent.zenario
+					 && windowParent.zenario.cID) {
+						//If it looks like this is a window opened from the front end, reload the window
+						windowParent.location.reload(true);
+					} else {
+						windowParent.$.colorbox.close();
+					}
+				}
+			});
+		} else {
+			get(closeButtonId).style.display = 'none';
+		}
+	}
+	
+	zenario.startPoking(zenarioGM);
+};
+
+
+
+zenarioGM.checkDataFormat = function(data) {
+	
+	if (typeof data == 'string') {
+		data = JSON.parse(data);
+	}
+	
+	if (!data || _.isArray(data)) {
+		return {};
+	
+	} else {
+		return data;
+	}
+};
+
+
+
+zenarioGM.tooltips = function(sel) {
+    return zenario.tooltips(sel);
+};
+
+
+zenarioGM.microTemplate = function(template, data, filter) {
+	
+	var html,
+		needsTidying;
+	
+	needsTidying = zenario.addLibPointers(data, zenarioGM);
+	
+		html = zenarioT.microTemplate(template, data, filter);
+	
+	if (needsTidying) {
+		zenario.tidyLibPointers(data);
+	}
+	
+	return html;
+};
+
+zenarioGM.ajaxURL = function() {
+	return URLBasePath + 'zenario/admin/grid_maker/ajax.php';
+};
+
+zenarioGM.ajaxData = function() {
+	return JSON.stringify(zenarioGM.data);
+};
+
+zenarioGM.modeIs = function(m) {
+	return zenarioGM.mode == m;
+};
+
+zenarioGM.modeIsNot = function(m) {
+	return zenarioGM.mode != m;
+};
+
+zenarioGM.isExistingLayout = function() {
+	return !!zenarioGM.layoutId;
+};
 
 
 
@@ -178,6 +362,32 @@ zenarioGM.checkDataNonZeroAndNumeric = function(data, warning) {
 	if (data.minWidth > data.maxWidth) {
 		data.minWidth = data.maxWidth;
 		warnFlu = true;
+	}
+	
+	if (data.gutterLeftEdgeFlu
+	 && data.gutterLeftEdgeFlu > 10.0) {
+		data.gutterLeftEdgeFlu = 10.0;
+		warnFlu = true;
+	}
+	
+	if (data.gutterRightEdgeFlu
+	 && data.gutterRightEdgeFlu > 10.0) {
+		data.gutterRightEdgeFlu = 10.0;
+		warnFlu = true;
+	}
+	
+	var tenPercent = Math.floor(data.maxWidth / 10);
+	
+	if (data.gutterLeftEdge
+	 && data.gutterLeftEdge > tenPercent) {
+		data.gutterLeftEdge = tenPercent;
+		warnFix = true;
+	}
+	
+	if (data.gutterRightEdge
+	 && data.gutterRightEdge > tenPercent) {
+		data.gutterRightEdge = tenPercent;
+		warnFix = true;
 	}
 	
 	return warning || (data.fluid? warnFlu : warnFix);
@@ -334,7 +544,12 @@ zenarioGM.checkData = function(layoutName, familyName) {
 		zenarioGM.data.cells = [];
 	}
 	
+	
+	if (zenarioGM.mode == 'body' && zenarioGM.data.headerAndFooter) {
+		zenarioGM.useSettingsFromHeader(zenarioGM.data);
+	
 	//If switching from a fixed grid to a flexi grid, try to migrate the existing settings to populate the new settings
+	} else
 	if (zenarioGM.data.fluid
 	 && !defined(zenarioGM.data.gutterFlu)
 	 && defined(zenarioGM.data.gutter)) {
@@ -376,7 +591,7 @@ zenarioGM.checkData = function(layoutName, familyName) {
 		
 		//Because percentage based numbers won't convert perfectly to pixels, we might be off of the total size slightly.
 		//Attempt to correct this by changing the col-width/gutter to the next best values.
-		if (selected = zenarioGM.recalcColumnAndGutterOptions(zenarioGM.data, true, scale)) {
+		if (selected = zenarioGM.recalcColumnAndGutterOptions(zenarioGM.data)) {
 			zenarioGM.data.colWidth = selected.colWidth;
 			zenarioGM.data.gutter = selected.gutter;
 		} else {
@@ -398,18 +613,16 @@ zenarioGM.checkData = function(layoutName, familyName) {
 		delete zenarioGM.data.gutterRightEdgeFlu;
 	}
 	
-	//if (change) {
-	//	change(zenarioGM.data);
-	//}
+	//Automatically remove some old now-unused settings
+	delete zenarioGM.data.bp1;
+	delete zenarioGM.data.bp2;
+	delete zenarioGM.data.break1;
+	delete zenarioGM.data.break2;
 	
 	if (!zenarioGM.history.length) {
 		zenarioGM.pos = 0;
 		zenarioGM.history = [zenarioGM.ajaxData()];
 	}
-};
-
-zenarioGM.tooltips = function(sel) {
-    return zenario.tooltips(sel);
 };
 
 zenarioGM.checkCellsEmpty = function(data) {
@@ -434,7 +647,8 @@ zenarioGM.deleteCell = function(el) {
 		data,
 		slot,
 		doDelete,
-		willRemoveGrouping = false;
+		willRemoveGrouping = false,
+		objectType = $(el).data('object_type');
 	
 	//Try to get the cell that the delete button was for
 	if ((cell = $(el).data('for'))
@@ -460,99 +674,41 @@ zenarioGM.deleteCell = function(el) {
 		
 		//Remove the deleted element
 		doDelete = function() {
+			
+			var msg;
+			if (slot.slot) {
+				if (slot.grid_break) {
+					msg = phrase.growlGridBreakWithSlotDeleted;
+				} else if (willRemoveGrouping) {
+					msg = phrase.growlSlotAndGroupingDeleted;
+				} else {
+					msg = phrase.growlSlotDeleted;
+				}
+			} else {
+				if (slot.grid_break) {
+					msg = phrase.growlGridBreakDeleted;
+				} else if (willRemoveGrouping) {
+					msg = phrase.growlSpaceAndGroupingDeleted;
+				} else {
+					msg = phrase.growlSpaceDeleted;
+				}
+			}
+			
 			data.cells.splice(i, 1);
 			zenarioGM.change();
-			toastr.success(willRemoveGrouping? phrase.growlSlotAndGroupingDeleted : phrase.growlSlotDeleted);
+			
+			toastr.success(msg);
 		};
 		
 		//If this slot was never saved, allow it to be instantly deleted.
 		//If this slot has been previously saved, show a prompt with some info first
-		if (slot.oName
-		 && zenarioGM.layoutId) {
+		if (slot.oName) {
 			zenarioGM.confirmDeleteSlot(slot, doDelete, willRemoveGrouping);
 		} else {
 			doDelete();
 		}
 	}
 };
-
-//Add something (using the popup form)
-//Not currently used
-//zenarioGM.add = function(el, type, respClass) {
-//	//Try to get the level that the add button was for
-//	var $el = $(el),
-//		levels = zenarioGM.getLevels($el),
-//		newWidth = $el.attr('data-new-width') || 1,
-//		data = zenarioGM.data;
-//	
-//	$.colorbox.close();
-//		
-//	if (defined(levels) && levels !== false) {
-//		//The data variable should be a pointer to the right location in the zenarioGM.data object.
-//		//(This will either be the zenarioGM.data object or a subsection if the cells being re-ordered are
-//		// children of another cell.)
-//		if (levels) {
-//			levels = levels.split('-');
-//			foreach (levels as var l) {
-//				l *= 1;
-//				data = data.cells[1*levels[l]];
-//			}
-//		}
-//		
-//		if (type == 'slot') {
-//			data.cells.push({
-//				width: newWidth,
-//				slot: true,
-//				name: zenarioGM.uniqueRandomName(),
-//				flash: true
-//			});
-//			toastr.success(phrase.growlSlotAdded);
-//		
-//		} else if (type == 'space') {
-//			data.cells.push({
-//				width: newWidth,
-//				space: true,
-//				css_class: zenarioGM.randomName(2, 'Space_'),
-//				flash: true
-//			});
-//			toastr.success(phrase.growlSpaceAdded);
-//		
-//		} else if (type == 'grouping') {
-//			data.cells.push({
-//				width: newWidth,
-//				css_class: zenarioGM.randomName(2, 'Grouping_'),
-//				flash: true,
-//				cells: [
-//					{width: newWidth, slot: true, name: zenarioGM.uniqueRandomName()},
-//					{width: newWidth, slot: true, name: zenarioGM.uniqueRandomName()}
-//				]
-//			});
-//			toastr.success(phrase.growlChildrenAdded);
-//		
-//		} else if (type == 'grid_break') {
-//			data.cells.push({
-//				width: data.cols,
-//				grid_break: true,
-//				grid_css_class: zenarioGM.randomName(2, 'Grid_'),
-//				flash: true
-//			});
-//			toastr.success(phrase.growlGridBreakAdded);
-//		
-//		} else if (type == 'grid_break_with_slot') {
-//			data.cells.push({
-//				width: data.cols,
-//				grid_break: true,
-//				slot: true,
-//				grid_css_class: zenarioGM.randomName(2, 'Grid_'),
-//				name: zenarioGM.uniqueRandomName(),
-//				flash: true
-//			});
-//			toastr.success(phrase.growlSlotAdded);
-//		}
-//		
-//		zenarioGM.change();
-//	}
-//};
 
 zenarioGM.getLevels = function($el) {
 	var levels = $el.data('levels');
@@ -567,13 +723,76 @@ zenarioGM.getLevels = function($el) {
 //Generate a random slot name
 zenarioGM.randomName = function(length, prefix) {
 	var aToZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-		text = prefix || 'Slot_';
+		text;
+	
+	if (prefix) {
+		text = prefix;
+	} else {
+		switch (zenarioGM.mode) {
+			case 'head':
+				text = 'Slot_Header_';
+				break;
+			case 'body':
+				text = 'Slot_';
+				break;
+			case 'foot':
+				text = 'Slot_Footer_';
+				break;
+		}
+	}
 	
 	for (var i = 0; i < length; ++i) {
 		text += aToZ.charAt(Math.floor(Math.random() * 26));
 	}
 	
 	return text;
+};
+
+zenarioGM.checkWhichNamesAreInUse = function() {
+	zenarioGM.names = {};
+	zenarioGM.randomNameCount = 0;
+	
+	var i, slots, name,
+		//usesHeaderAndFooter = !!zenarioGM.data.headerAndFooter,
+		checkForClashesWithSlotsInHeader = false,
+		checkForClashesWithSlotsInLayouts = false,
+		checkForClashesWithSlotsInFooter = false;
+	
+	switch (zenarioGM.mode) {
+		case 'head':
+			checkForClashesWithSlotsInLayouts =
+			checkForClashesWithSlotsInFooter = true;
+			break;
+		case 'body':
+			checkForClashesWithSlotsInHeader =
+			checkForClashesWithSlotsInFooter = true;//usesHeaderAndFooter;
+			break;
+		case 'foot':
+			checkForClashesWithSlotsInHeader =
+			checkForClashesWithSlotsInLayouts = true;
+			break;
+	}
+	
+	if (checkForClashesWithSlotsInHeader) {
+		slots = zenarioGM.slotsUsedInHeader;
+		foreach (slots as name) {
+			zenarioGM.registerNewName(name);
+		}
+	}
+	
+	if (checkForClashesWithSlotsInLayouts) {
+		slots = zenarioGM.slotsUsedInLayouts;
+		foreach (slots as name) {
+			zenarioGM.registerNewName(name);
+		}
+	}
+	
+	if (checkForClashesWithSlotsInFooter) {
+		slots = zenarioGM.slotsUsedInFooter;
+		foreach (slots as name) {
+			zenarioGM.registerNewName(name);
+		}
+	}
 };
 
 //Keep calling the zenarioGM.randomName() function until we get an unused one
@@ -600,35 +819,9 @@ zenarioGM.registerNewName = function(name) {
 	return zenarioGM.names[name.toLowerCase()] = name;
 };
 
-//Redraw the editor
-zenarioGM.change = function(historic, doNotRedrawForm) {
-	
-	//Call the onchange function if there is one for this editor
-	//if (change) {
-	//	change(zenarioGM.data);
-	//}
-	
-	//Add this change to the history (unless this change was triggered by going through the history).
-	if (!historic) {
-		//If we have been previously navigating the history, forget any future changes that were undone
-		if (zenarioGM.pos < zenarioGM.history.length - 1) {
-			zenarioGM.history.splice(zenarioGM.pos + 1, zenarioGM.history.length - 1 - zenarioGM.pos);
-		}
-		
-		//Add the current state to the history
-		zenarioGM.history.push(zenarioGM.ajaxData());
-		
-		//Set our currently position to the current state in the history
-		zenarioGM.pos = zenarioGM.history.length - 1;
-		
-		//Check if we've just destoryed a point in the undo history where we saved.
-		//If so, clear the pointer that recorded that we'd saved there.
-		if (zenarioGM.savedAtPos >= zenarioGM.pos) {
-			zenarioGM.savedAtPos = -1;
-		}
-	}
-	
-	zenarioGM.draw(doNotRedrawForm);
+zenarioGM.renameSlot = function(oldName, newName) {
+	delete zenarioGM.names[oldName.toLowerCase()];
+	zenarioGM.registerNewName(newName);
 };
 
 //Go backwards or forwards in the history by n steps
@@ -666,26 +859,36 @@ zenarioGM.canRedo = function() {
 	return zenarioGM.pos < zenarioGM.history.length - 1;
 };
 
-
-
-
-
-
-zenarioGM.microTemplate = function(template, data, filter) {
+//Redraw the editor
+zenarioGM.change = function(historic) {
 	
-	var html,
-		needsTidying;
-	
-	needsTidying = zenario.addLibPointers(data, zenarioGM);
-	
-		html = zenarioT.microTemplate(template, data, filter);
-	
-	if (needsTidying) {
-		zenario.tidyLibPointers(data);
+	//Add this change to the history (unless this change was triggered by going through the history).
+	if (!historic) {
+		//If we have been previously navigating the history, forget any future changes that were undone
+		if (zenarioGM.pos < zenarioGM.history.length - 1) {
+			zenarioGM.history.splice(zenarioGM.pos + 1, zenarioGM.history.length - 1 - zenarioGM.pos);
+		}
+		
+		//Add the current state to the history
+		zenarioGM.history.push(zenarioGM.ajaxData());
+		
+		//Set our currently position to the current state in the history
+		zenarioGM.pos = zenarioGM.history.length - 1;
+		
+		//Check if we've just destoryed a point in the undo history where we saved.
+		//If so, clear the pointer that recorded that we'd saved there.
+		if (zenarioGM.savedAtPos >= zenarioGM.pos) {
+			zenarioGM.savedAtPos = -1;
+		}
 	}
 	
-	return html;
+	zenarioGM.draw();
+	zenarioGM.refocus();
 };
+
+
+
+
 
 
 
@@ -696,80 +899,13 @@ zenarioGM.cellLabel = function(cell) {
 };
 
 
-
-
-zenarioGM.init = function(data, layoutId, layoutName, slotContents) {
-	if (typeof data == 'object') {
-		zenarioGM.data = data;
-	} else {
-		zenarioGM.data = JSON.parse(data);
-	}
-	
-	if (layoutName) {
-		zenarioGM.layoutName = layoutName;
-	}
-	if (layoutId) {
-		zenarioGM.layoutId = layoutId;
-	}
-	
-	zenarioGM.slotContents = slotContents || {};
-	
-	zenarioGM.checkData(layoutName);
-	zenarioGM.checkDataR(zenarioGM.data.cells);
-	zenarioGM.rememberNames(zenarioGM.data.cells);
-	
-	
-	zenarioGM.editing = true; //added to make the Slots tab selected on first load--JS
-	
-	//If nothing has been created yet, start on the editor
-	if (!zenarioGM.data.cells.length) {
-		zenarioGM.editing = true;
-	}
-
-	//Set up the close button, with a confirm if there are unsaved changes
-	if (closeButtonId) {
-		if (windowParent
-		 && !windowParent.zenarioGM
-		 && windowParent.$
-		 && windowParent.$.colorbox) {
-		
-			$('#' + closeButtonId).click(function() {
-				if (zenarioGM.savedAtPos == zenarioGM.pos
-				 || confirm(phrase.gridConfirmClose)) {
-					
-					zenario.stopPoking(zenarioGM);
-					
-					if (windowParent.zenario
-					 && windowParent.zenario.cID) {
-						//If it looks like this is a window opened from the front end, reload the window
-						windowParent.location.reload(true);
-					} else {
-						windowParent.$.colorbox.close();
-					}
-				}
-			});
-		} else {
-			get(closeButtonId).style.display = 'none';
-		}
-	}
-	
-	zenario.startPoking(zenarioGM);
-};
-
 zenarioGM.scaleWidth = function(width) {
 	return 0.5*width;
 };
 
-zenarioGM.draw = function(doNotRedrawForm) {
-	if (!doNotRedrawForm) {
-		zenarioGM.drawOptions();
-	}
-
-	if (zenarioGM.editing) {
-		zenarioGM.drawEditor();
-	} else {
-		zenarioGM.drawPreview();
-	}
+zenarioGM.draw = function() {
+	zenarioGM.drawOptions();
+	zenarioGM.drawEditor();
 };
 
 var tlGutterWidthPercent, tlColWidthPercent;
@@ -778,17 +914,13 @@ var tlGutterWidthPercent, tlColWidthPercent;
 zenarioGM.drawEditor = function(
 	thisContId, thisCellId, 
 	levels,
-	gCols, gColWidth, gGutter, gGutterLeftEdge, gGutterRightEdge,
+	cols, gColWidth, gGutter, gGutterLeftEdge, gGutterRightEdge,
 	gGutterNested,
 	gColWidthPercent, gGutterWidthPercent
 ) {
 	var data,
 		level = 0,
 		gridScrollTop = 0;
-	
-	if (!levels) {
-		$('#' + formId + '--tabs').removeClass('zenario_grid_tabs_grid_selected').addClass('zenario_grid_tabs_slots_selected');
-	}
 	
 	//zenarioGM.data should contain all of the information on the boxes
 	//You can have boxes within boxes, so this can be recursive
@@ -807,15 +939,14 @@ zenarioGM.drawEditor = function(
 		data = zenarioGM.data;
 		level = 0;
 		levels = [];
-		zenarioGM.names = {};
-		zenarioGM.randomNameCount = 0;
+		zenarioGM.checkWhichNamesAreInUse();
 	}
 	
 	if (!defined(thisContId)) {
 		thisContId = zenarioGM.gridId;
 	}
-	if (!defined(gCols)) {
-		gCols = zenarioGM.data.cols;
+	if (!defined(cols)) {
+		cols = zenarioGM.data.cols;
 	}
 	if (!defined(gColWidth)) {
 		if (zenarioGM.data.fluid) {
@@ -851,7 +982,7 @@ zenarioGM.drawEditor = function(
 		cells = data.cells,
 		elId = zenarioGM.gridId + '__cell' + levels.join('-'),
 		gColAndGutterWidth = gColWidth + gGutter,
-		wrapWidth = gCols * gColAndGutterWidth,
+		wrapWidth = cols * gColAndGutterWidth,
 		wrapPaddingLeft = 0,
 		wrapPaddingRight = 0,
 		wrapWidthAdjustmentLeft = 0,
@@ -887,6 +1018,7 @@ zenarioGM.drawEditor = function(
 	//of things wrapping onto new lines when dragging things around.
 	if (level == 0) {
 		html += '<div class="zenario_overflow_wrap">';
+		html += '<div class="wiggly_line wiggly_line_for_footer"><div class="wiggle wiggle1"></div><div class="wiggle wiggle2"></div></div>';
 		html += '<ul id="' + elId + 's" class="zenario_grids" style="width: ' + zenarioGM.scaleWidth(wrapWidth + Math.abs(gGutterRight - gGutterRightEdge) + 1) + 'px;';
 	} else {
 		html += '<ul id="' + elId + 's" class="zenario_grids" style="width: ' + zenarioGM.scaleWidth(wrapWidth) + 'px;';
@@ -901,7 +1033,7 @@ zenarioGM.drawEditor = function(
 	
 	//If this is the outer-most tag, add a pink striped background so we can easily see the grid
 	if (level == 0) {
-		html += 'background-image: url(' + htmlspecialchars(URLBasePath) + 'zenario/admin/grid_maker/grid_bg.php?gColWidth=' + gColWidth + '&gCols=' + gCols + '&gGutter=' + gGutter + '&gGutterLeftEdge=' + gGutterLeftEdge + '&gGutterRightEdge=' + gGutterRightEdge + ');';
+		html += 'background-image: url(' + htmlspecialchars(URLBasePath) + 'zenario/admin/grid_maker/grid_bg.php?gColWidth=' + gColWidth + '&cols=' + cols + '&gGutter=' + gGutter + '&gGutterLeftEdge=' + gGutterLeftEdge + '&gGutterRightEdge=' + gGutterRightEdge + ');';
 		
 		//Remember the width and height for typical new elements.
 		//This will be used later when trying to drag them in from the "add" toolbar
@@ -911,7 +1043,7 @@ zenarioGM.drawEditor = function(
 		zenarioGM.gGutterRightEdge = gGutterRightEdge;
 		zenarioGM.gColAndGutterWidth = gColAndGutterWidth;
 		zenarioGM.typAddSlot = 2 * gColAndGutterWidth - gGutter;
-		zenarioGM.typAddBreak = gCols * gColAndGutterWidth - gGutter;
+		zenarioGM.typAddBreak = cols * gColAndGutterWidth - gGutter;
 	}
 		
 	html += '">';
@@ -926,7 +1058,7 @@ zenarioGM.drawEditor = function(
 						'class', zenarioGM.getSlotCSSName(data),
 						'title', phrase.gridEditProperties,
 						'data-for', thisCellId,
-						'data-type', 'grouping',
+						'data-object_type', 'grouping',
 							data.css_class?
 								htmlspecialchars(data.css_class)
 							 :	phrase.gridEditPlaceholder
@@ -952,24 +1084,24 @@ zenarioGM.drawEditor = function(
 	//We actually need to run this twice: calling the drawEditor() function recursively will accurately tell us the widths of
 	//nested cells, so we need to check this after drawEditor() has run recursively, but drawEditor() needs to know the widths
 	//in advance so we'll calculate it before as well.
-	widthSoFarThisLine = gCols;
+	widthSoFarThisLine = cols;
 	var lastI = false;
 	foreach (cells as var i) {
 		if (cells[i].grid_break) {
-			cells[i].width = gCols;
+			cells[i].width = cols;
 		
 		} else {
-			cells[i].width = Math.min(gCols, cells[i].width || 1);
+			cells[i].width = Math.min(cols, cells[i].width || 1);
 		}
 		
 		widthSoFarThisLine += cells[i].width;
 		
-		if (cells[i].width == gCols
-		 || widthSoFarThisLine % gCols == 0) {
+		if (cells[i].width == cols
+		 || widthSoFarThisLine % cols == 0) {
 			cells[i].atRightEdge = true;
 		}
 		
-		if (widthSoFarThisLine > gCols) {
+		if (widthSoFarThisLine > cols) {
 			widthSoFarThisLine = cells[i].width;
 			
 			if (lastI !== false) {
@@ -988,7 +1120,7 @@ zenarioGM.drawEditor = function(
 	//(Nested cells should still be full-sized upon creation)
 	if (level == 0) {
 		//Make them about 2-columns wide (depending on the number of columns)
-		var partialWidth = Math.max(1, Math.round(gCols / 5));
+		var partialWidth = Math.max(1, Math.round(cols / 5));
 	}
 	
 	//Draw each cell as a <li>, giving each a unique id, and storing some information against each
@@ -1022,7 +1154,7 @@ zenarioGM.drawEditor = function(
 			'data-levels', levels.join('-'),
 			'data-gutter', gGutter,
 			'data-minwidth', (gColAndGutterWidth * 1 - gGutter),
-			'data-maxwidth', (gColAndGutterWidth * gCols - gGutter),
+			'data-maxwidth', (gColAndGutterWidth * cols - gGutter),
 			'data-is_alpha', engToBoolean(cells[i].isAlpha),
 			'data-is_omega', engToBoolean(cells[i].isOmega),
 			'data-at_right_edge', engToBoolean(cells[i].atRightEdge),
@@ -1093,7 +1225,7 @@ zenarioGM.drawEditor = function(
 						' title="' + phrase.gridEditProperties + '"' +
 						' class="' + htmlspecialchars(zenarioGM.getSlotCSSName(cells[i])) + '"' +
 						' data-for="' + elId + '-' + i + '"' +
-						' data-type="' + (cells[i].grid_break? 'grid_break' : 'space') + '"';
+						' data-object_type="' + (cells[i].grid_break? 'grid_break' : 'space') + '"';
 				
 				var displayName;
 				
@@ -1140,7 +1272,7 @@ zenarioGM.drawEditor = function(
 								'class', 'zenario_grid_slot_name ' + zenarioGM.getSlotCSSName(cells[i]),
 								'title', phrase.gridEditProperties,
 								'data-for', elId + '-' + i,
-								'data-type', cells[i].grid_break? 'grid_break_with_slot' : 'slot',
+								'data-object_type', cells[i].grid_break? 'grid_break_with_slot' : 'slot',
 								nHTML
 							)
 							+
@@ -1181,6 +1313,7 @@ zenarioGM.drawEditor = function(
 	html += '</ul>';
 	
 	if (level == 0) {
+		html += '<div class="wiggly_line wiggly_line_for_header"><div class="wiggle wiggle1"></div><div class="wiggle wiggle2"></div></div>';
 		html += '</div>';
 	}
 	
@@ -1243,7 +1376,7 @@ zenarioGM.drawEditor = function(
 		//its contents may be on more than one line).
 		//So keep track of how much width we've used, versus how wide a row is. If we've gone over, start a new line.
 		widthSoFarThisLine += cells[i].width;
-		if (widthSoFarThisLine > gCols) {
+		if (widthSoFarThisLine > cols) {
 			var eye = 0, maxHeight = 0;
 			
 			//Set the height of everything on the line we've just had to the tallest thing on that line
@@ -1556,13 +1689,28 @@ zenarioGM.drawEditor = function(
 							name: zenarioGM.uniqueRandomName(),
 							flash: true
 						};
-						msg = phrase.growlSlotAdded;
+						msg = phrase.growlGridBreakWithSlotAdded;
 						break;
 					
 					//If this was an existing elements that was just moved, cut it out from the old position 
 					default:
 						moved = fromContainer.cells.splice(fromPos, 1)[0];
 						msg = phrase.growlSlotMoved;
+						if (moved.cells) {
+							msg = phrase.growlGroupingMoved;
+						} else if (moved.slot) {
+							if (moved.grid_break) {
+								msg = phrase.growlGridBreakWithSlotMoved;
+							} else {
+								msg = phrase.growlSlotMoved;
+							}
+						} else {
+							if (moved.grid_break) {
+								msg = phrase.growlGridBreakMoved;
+							} else {
+								msg = phrase.growlSpaceMoved;
+							}
+						}
 				}
 				
 				//Insert into the new position
@@ -1724,8 +1872,12 @@ zenarioGM.drawEditor = function(
 		});
 		
 		//Set the width of the overal content to the grid's full width, and add tooltips
-		$('#' + thisContId).width(wrapWidth + wrapPaddingLeft + wrapPaddingRight).addClass('zenario_grid_wrapper');
+		var gmEditorWidth = wrapWidth + wrapPaddingLeft + wrapPaddingRight;
+		$('#' + thisContId).width(gmEditorWidth).addClass('zenario_grid_wrapper');
 		zenarioGM.tooltips('#' + thisContId);
+		
+		//Set the width of the wiggly lines, if they're there
+		$('.wiggly_line,.wiggle').width(zenarioGM.scaleWidth(gmEditorWidth));
 		
 		//Attach the delete function to the delete buttons
 		$('#' + thisContId + ' .zenario_grid_delete').click(function() {
@@ -1744,7 +1896,7 @@ zenarioGM.drawEditor = function(
 		//you are then prompted to rename it immediate afterwards
 		setTimeout(function() { delete zenarioGM.stopRenames; }, 100);
 		
-		zenarioGM.drawLinks();
+		zenarioGM.setHeight();
 		
 		//Fade in any newly added objects
 		$('#' + thisContId + ' .zenario_grid_newly_added .zenario_cell_in_grid').effect({effect: 'highlight', duration: 1000, easing: 'zenarioOmmitEnd'});
@@ -1823,150 +1975,6 @@ zenarioGM.getSlotDescription = function(slot) {
 	return pluginDesc;
 };
 
-zenarioGM.drawOptions = function() {
-	var m = {formId: formId},
-		html = zenarioGM.microTemplate(zenarioGM.mtPrefix + 'top', m);
-		
-	
-	
-	$('.ui-tooltip').remove();
-	get(formId).innerHTML = html;
-	zenarioA.tooltips('#' + formId + '  *[title]');
-	
-	if (!zenarioGM.data.fluid) {
-		zenarioGM.recalcColumnAndGutterOptions(zenarioGM.data);
-	}
-	
-	//Refresh the previews every time a field is changed
-	$('#' + formId + ' input.zenario_grid_setting_min_width').change(zenarioGM.recalcOnChange).spinner({stop: zenarioGM.recalcOnInc, min: 100, step: 10}).after('<span class="zenario_grid_unit">px</span>');
-	$('#' + formId + ' input.zenario_grid_setting_max_width').change(zenarioGM.recalcOnChange).spinner({stop: zenarioGM.recalcOnInc, min: 320, step: 10}).after('<span class="zenario_grid_unit">px</span>');
-	$('#' + formId + ' input.zenario_grid_setting_gutter_flu').change(zenarioGM.recalcOnChange).spinner({stop: zenarioGM.recalcOnInc, min: 0, step: 0.1}).after('<span class="zenario_grid_unit">%</span>');
-	$('#' + formId + ' input.zenario_grid_setting_gutter_left_flu').change(zenarioGM.recalcOnChange).spinner({stop: zenarioGM.recalcOnInc, min: 0, step: 0.1}).after('<span class="zenario_grid_unit">%</span>');
-	$('#' + formId + ' input.zenario_grid_setting_gutter_right_flu').change(zenarioGM.recalcOnChange).spinner({stop: zenarioGM.recalcOnInc, min: 0, step: 0.1}).after('<span class="zenario_grid_unit">%</span>');
-	
-	//For fixed grids, also recalculate the numbers every time a field is changed
-	$('#' + formId + ' input.zenario_grid_setting_full_width').change(zenarioGM.recalcOnChange).keyup(zenarioGM.recalcOnKeyUp).spinner({stop: zenarioGM.recalcOnInc, min: 320, step: 10}).after('<span class="zenario_grid_unit">px</span>');
-	$('#' + formId + ' input.zenario_grid_setting_cols').change(zenarioGM.recalcOnChange).keyup(zenarioGM.recalcOnKeyUp).spinner({stop: zenarioGM.recalcOnInc, min: 1, step: 1});
-	$('#' + formId + ' input.zenario_grid_setting_gutter_left').change(zenarioGM.recalcOnChange).keyup(zenarioGM.recalcOnKeyUp).spinner({stop: zenarioGM.recalcOnInc, min: 0, step: 1}).after('<span class="zenario_grid_unit">px</span>');
-	$('#' + formId + ' input.zenario_grid_setting_gutter_right').change(zenarioGM.recalcOnChange).keyup(zenarioGM.recalcOnKeyUp).spinner({stop: zenarioGM.recalcOnInc, min: 0, step: 1}).after('<span class="zenario_grid_unit">px</span>');
-	
-	$('#' + formId + ' select.zenario_grid_setting_col_and_gutter').change(zenarioGM.recalcOnChange);
-	
-	//$('#' + formId + ' input.zenario_grid_setting_col_width').change(zenarioGM.recalcOnChange).keyup(zenarioGM.recalcOnKeyUp).spinner({stop: zenarioGM.recalcOnInc, min: 1, step: 1});
-	//$('#' + formId + ' input.zenario_grid_setting_gutter').change(zenarioGM.recalcOnChange).keyup(zenarioGM.recalcOnKeyUp).spinner({stop: zenarioGM.recalcOnInc, min: 0, step: 1});
-	
-	//Update the settings and redraw the UI when one of the settings buttons is pressed
-	$('#' + formId + ' input.zenario_grid_setting_fixed').change(zenarioGM.updateAndChange);
-	$('#' + formId + ' input.zenario_grid_setting_flu').change(zenarioGM.updateAndChange);
-	$('#' + formId + ' input.zenario_grid_setting_responsive').change(zenarioGM.updateAndChange);
-	$('#' + formId + ' input.zenario_grid_setting_mirror').change(zenarioGM.updateAndChange);
-	
-	
-	if (zenarioGM.canUndo()) {
-		$('#' + formId + ' .zenario_grid_setting_undo').click(function() {
-			zenarioGM.undo();
-		});
-	}
-	
-	if (zenarioGM.canRedo()) {
-		$('#' + formId + ' .zenario_grid_setting_redo').click(function() {
-			zenarioGM.redo();
-		});
-	}
-	
-	$('#' + formId + ' .zenario_grid_setting_preview_grid').click(function() {
-		zenarioGM.editing = false;
-		zenarioGM.drawPreview();
-	});
-	
-	$('#' + formId + ' .zenario_grid_setting_edit_slots').click(function() {
-		zenarioGM.editing = true;
-		zenarioGM.drawEditor();
-	});
-};
-
-//Calucate valid width/gutter options for the select list
-zenarioGM.recalcColumnAndGutterOptions = function(data, justCalc, scale) {
-	
-	var sel = false,
-		width = (scale? scale : 1 * $('#' + formId + '--setting_full_width').val()) - data.gutterLeftEdge - data.gutterRightEdge,
-		colWidth = Math.floor(width / data.cols),
-		gutter = 0,
-		selected = false, i=0;
-	
-	if (!justCalc) {
-		sel = get(formId + '--setting_col_width');
-	}
-	
-	//Don't attempt to do anything if there are no columns as this will cause an error
-	if (!data.cols) {
-		return false;
-	}
-	
-	//Remove all of the current options
-	if (sel) {
-		for (i = sel.length - 1; i >= 0; --i) {
-			sel.remove(i);
-		}
-	}
-	
-	//Special case for one column - there's just one entry
-	if (data.cols == 1) {
-		if (sel) {
-			sel.add(new Option(colWidth + ' px / ' + gutter + ' px', colWidth + '/' + gutter), ++i);
-		}
-		
-		selected = {colWidth: colWidth, gutter: gutter};
-	
-	} else {
-		var gaps = (data.cols - 1),
-			const1 = width / gaps,
-			const2 = data.cols / gaps,
-			thisClose,
-			closest = 999999,
-			i;
-		
-		//Loop through all of the possible widths
-		i = -1;
-		for (; colWidth > gutter; --colWidth) {
-			//Calculate the size of the gutter that would be needed
-				//data.cols * colWidth + (data.cols - 1) * gutter = width
-				//data.cols * colWidth + gaps * gutter = width
-				//gaps * gutter = width - data.cols * colWidth
-				//gutter = (width - data.cols * colWidth) / gaps
-				//gutter = const1 - data.cols * colWidth / gaps
-			gutter = const1 - const2 * colWidth;
-			
-			//(Try to work around various rounding errors in JavaScript by stripping some precision off)
-			gutter = Math.round(gutter * 10000) / 10000;
-			
-			//Only add this comination in if it is a whole number
-			if (gutter == Math.floor(gutter)) {
-				if (sel) {
-					sel.add(new Option(colWidth + ' px / ' + gutter + ' px', colWidth + '/' + gutter), ++i);
-				}
-				
-				//Work out how far away from the previous selected value this is,
-				//and reselect the new option that's the best match for the previously selected option
-				thisClose = Math.abs(data.gutter / data.colWidth - gutter / colWidth);
-				if (closest > thisClose) {
-					if (sel) {
-						sel.selectedIndex = i;
-					}
-					
-					closest = thisClose;
-					selected = {colWidth: colWidth, gutter: gutter};
-				}
-			}
-		}
-	}
-	
-	//Return the newly selected option
-	return selected;
-};
-
-
-
 
 
 zenarioGM.editProperties = function(el) {
@@ -1982,7 +1990,7 @@ zenarioGM.editProperties = function(el) {
 	 && ($cell = $('#' + $cell))) {
 		cell = $cell.data(),
 		i = cell.i,
-		m.type = $(el).data('type'),
+		m.object_type = $(el).data('object_type'),
 		levels = zenarioGM.getLevels($cell);
 		data = zenarioGM.data;
 	
@@ -2029,135 +2037,131 @@ zenarioGM.editProperties = function(el) {
 
 
 
+//Rename a slot
+zenarioGM.saveProperties = function(el, params) {
+	//Try to get the cell that the name was for
+	var cell;
+	if ((cell = $(el).data('for'))
+	 && (cell = $('#' + cell))) {
+		var i = cell.data('i'),
+			levels = zenarioGM.getLevels(cell),
+			data = zenarioGM.data;
+		
+		//The data variable should be a pointer to the right location in the zenarioGM.data object.
+		//(This will either be the zenarioGM.data object or a subsection if the cells being re-ordered are
+		// children of another cell.)
+		if (levels) {
+			levels = levels.split('-');
+			foreach (levels as var l) {
+				l *= 1;
+				data = data.cells[1*levels[l]];
+			}
+		}
+		
+		if (data.cells[i].slot) {
+			
+			var name,
+				hasError = false,
+				errorMessage;
+				
+			if (hasError = !params.name) {
+				errorMessage = phrase.gridErrorNameIncomplete;
+		
+			} else if (hasError = params.name != params.name.replace(/[^a-zA-Z0-9_]/g, '')) {
+				errorMessage = phrase.gridErrorNameFormat;
+		
+			} else if (hasError = params.name != data.cells[i].name && zenarioGM.checkIfNameUsed(params.name)) {
+				name = params.name.toLowerCase();
+				
+				if (zenarioGM.mode != 'head' && zenarioGM.slotsUsedInHeader[name]) {
+					errorMessage = phrase.gridErrorNameInUseHeader;
+				
+				} else if (zenarioGM.mode != 'body' && zenarioGM.slotsUsedInLayouts[name]) {
+					errorMessage = phrase.gridErrorNameInUseLayout;
+				
+				} else if (zenarioGM.mode != 'foot' && zenarioGM.slotsUsedInFooter[name]) {
+					errorMessage = phrase.gridErrorNameInUseFooter;
+				
+				} else {
+					switch (zenarioGM.mode) {
+						case 'head':
+							errorMessage = phrase.gridErrorNameInUseHeader;
+							break;
+						case 'body':
+							errorMessage = phrase.gridErrorNameInUseThisLayout;
+							break;
+						case 'foot':
+							errorMessage = phrase.gridErrorNameInUseFooter;
+							break;
+					}
+				}
+			}
+			
+			if (hasError) {
+				$('#zenario_grid_error').html(errorMessage).slideDown();
+				return;
+			}
+			
+			//Rename the slot
+			zenarioGM.renameSlot(data.cells[i].name, params.name);
+		}
+		
+		foreach (params as var j) {
+			if (params[j] != '') {
+				data.cells[i][j] = params[j];
+			} else {
+				delete data.cells[i][j];
+			}
+		}
 
-zenarioGM.ajaxURL = function() {
-	return URLBasePath + 'zenario/admin/grid_maker/ajax.php';
-};
-
-zenarioGM.ajaxData = function() {
-	return JSON.stringify(zenarioGM.data);
-};
-
-zenarioGM.ajaxSrc = function() {
-	var data = zenarioGM.ajaxData(),
-		src = zenarioGM.ajaxURL() + '?data=' + encodeURIComponent(data);
-	
-	if (src.length > 400) {
-		src = zenarioGM.ajaxURL() + '?cdata=' + zenario.nonAsyncAJAX(zenarioGM.ajaxURL(), {compress: 1, data: data});
+		zenarioGM.change();
 	}
 	
-	return src;
+	$.colorbox.close();
 };
 
-zenarioGM.drawPreview = function() {
-	
-	
-	zenarioGM.clearAddToolbar();
+
+
+zenarioGM.setHeight = function() {
 	zenarioGM.checkData();
 	
-	var topHack = 5,
-		leftHack = 10,
-		min = 100,
-		max = Math.max(zenarioGM.desktopSmallestSize, Math.round(($(window).width() - zenarioGM.previewPaddingLeftRight) / 100) * 100),
-		startingValue = Math.min(max - 20, zenarioGM.data.maxWidth),
-		m = {
-			gridId: zenarioGM.gridId,
-			topHack: topHack,
-			leftHack: leftHack,
-			min: min,
-			max: max,
-			startingValue: startingValue
-		},
-		html = zenarioGM.microTemplate(zenarioGM.mtPrefix + 'preview', m);
+	//The links and form will have a set height.
+	//Work out the height of the window, and give the preview/editor the remaining height.
+	var sel = $('#' + zenarioGM.gridId);
 	
-	$('#' + zenarioGM.gridId).css('margin', 'auto');
-	
-	$('.ui-tooltip').remove();
-	get(zenarioGM.gridId).innerHTML = html;
-	zenarioA.tooltips('#' + zenarioGM.gridId + '  *[title]');
-	
-	//I want to set an iframe up so that the preview shows in the iframe.
-	//I would want to use GET, but the grid data can be too large for GET on some servers so I need to use post.
-	//To do this, I need to create a form that's pointed at the iframe, then submit it.
-	$('<form action="' + htmlspecialchars(zenarioGM.ajaxURL()) + '" method="post" target="' + zenarioGM.gridId + '-iframe"><input name="data" value="' + htmlspecialchars(zenarioGM.ajaxData()) + '"/></form>')
-		.appendTo('body').hide().submit().remove();
-	
-	$('#' + zenarioGM.gridId + '-slider').slider({
-		min: min,
-		max: max,
-		step: 10,
-		animate: true,
-		value: startingValue,
-		start:
-			function(event, ui) {
-				$('#' + zenarioGM.gridId + '-slider_overlay').css('display', 'block');
-			},
-		stop:
-			function(event, ui) {
-				$('#' + zenarioGM.gridId + '-slider_overlay').css('display', 'none');
-			},
-		slide:
-			function(event, ui) {
-				$('#' + zenarioGM.gridId + '-slider_val').val(ui.value);
-				$('#' + zenarioGM.gridId + '-iframe').clearQueue();
-				$('#' + zenarioGM.gridId + '-size').clearQueue();
-				
-				if (event.originalEvent && (event.originalEvent.type == 'mousedown' || event.originalEvent.type == 'touchstart')) {
-					$('#' + zenarioGM.gridId + '-iframe').animate({width: ui.value});
-					$('#' + zenarioGM.gridId + '-size').animate({marginLeft: ui.value});
-				} else {
-					$('#' + zenarioGM.gridId + '-iframe').width(ui.value);
-					$('#' + zenarioGM.gridId + '-size').css('marginLeft', ui.value + 'px');
-				}
-				
-				zenarioGM.resizePreview();
-			}
-	});
-	
-	var sliderValChange = function() {
-		var val = 1 * this.value;
-		
-		if (val && val >= min && val <= max) {
-			$('#' + zenarioGM.gridId + '-slider').slider('value', val);
-			$('#' + zenarioGM.gridId + '-iframe').clearQueue().animate({width: val});
-			$('#' + zenarioGM.gridId + '-size').clearQueue().animate({marginLeft: val});
-		}
-	};
-	
-	$('#' + zenarioGM.gridId + '-slider_val').change(sliderValChange);
-	
-	zenarioGM.resizePreview();
-	
-	var changeFun = function(size) {
-		$('#' + zenarioGM.gridId + '-slider_val').val(size);
-		$('#' + zenarioGM.gridId + '-slider').slider('value', size);
-		$('#' + zenarioGM.gridId + '-size').clearQueue().animate({marginLeft: size});
-		$('#' + zenarioGM.gridId + '-iframe').clearQueue().animate({width: size}, {complete: zenarioGM.resizePreview});
-		
-		if (zenarioGM.lastToast) {
-			zenarioGM.lastToast.remove();
-		}
-		zenarioGM.lastToast = toastr.info(phrase.gridDisplayingAt.replace('[[pixels]]', size));
-	};
-	
-	$('#' + zenarioGM.gridId + '-slider_mobile').click(
-		function() {
-			changeFun(zenarioGM.mobileWidth);
-		});
-	
-	$('#' + zenarioGM.gridId + '-slider_tablet').click(
-		function() {
-			changeFun(zenarioGM.tabletWidth);
-		});
-	
-	$('#' + zenarioGM.gridId + '-slider_desktop').click(
-		function() {
-			changeFun(max);
-		});
-	
-	$('#' + formId + '--tabs').removeClass('zenario_grid_tabs_slots_selected').addClass('zenario_grid_tabs_grid_selected');
-	zenarioGM.drawLinks();
+	sel.height(0);
+	sel.height(Math.max(zenarioGM.gridAreaSmallestHeight, $(window).height() - $('body').height() - zenarioGM.bodyPadding));
 };
+
+
+zenarioGM.confirmDeleteSlot = function(slot, doDelete, willRemoveGrouping) {
+	
+	var url = URLBasePath + 'zenario/ajax.php?moduleClassName=zenario_common_features&method_call=handleAJAX',
+		requests = {
+			removeSlot: 1,
+			level: zenarioGM.mode == 'body'? 2 : 3,
+			slotName: slot.oName,
+			layoutId: zenarioGM.layoutId,
+			willRemoveGrouping: willRemoveGrouping? '1' : ''
+		};
+	
+	zenario.ajax(url + zenario.urlRequest(requests)).after(function(message) {
+		
+		zenarioA.floatingBox(message, zenarioA.phrase.gridDelete, 'warning', false, false, true, undefined, doDelete);
+	});
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 zenarioGM.clearAddToolbar = function() {
 	$('#' + zenarioGM.addToolbarId).hide().html('');
@@ -2206,98 +2210,358 @@ $(document).ready(function(){
     $(this).css("cursor", "pointer");
  });
 });
-zenarioGM.resizePreview = function() {
-	var iframe, iframeHeight = 0;
+
+
+
+
+
+
+
+
+
+zenarioGM.drawOptions = function() {
 	
-	if ((iframe = get(zenarioGM.gridId + '-iframe'))
-	 && (iframe.contentWindow
-	  && iframe.contentWindow.document
-	  && iframe.contentWindow.document.body)) {
-		var topHack = 5,
-			leftHack = 10,
-			initialHeight = 360,
-			minWidth = 100,
-			iframeHeight = $(iframe.contentWindow.document.body).height() || initialHeight;
+	
+	var fields = zenario.clone(zenarioGM.controls.controlFields),
+		cb = new zenario.callback,
+		fieldName, val, colAndGutter;
+	
+	foreach (zenarioGM.data as fieldName => val) {
+		if (fields[fieldName]) {
+			fields[fieldName].value = val;
+		}
+	}
+	fields.fullWidth.value = zenarioGM.data.maxWidth;
+	
+	if (zenarioGM.data.fluid) {
+		fields.type.value = 'fluid';
+	} else {
+		fields.type.value = 'fixed';
 		
-		if(iframeHeight < initialHeight) iframeHeight = initialHeight;
-		
-		$('#' + zenarioGM.gridId + '-iframe').height(iframeHeight);
-		$('#' + zenarioGM.gridId + '-slider_overlay').height(iframeHeight);
-		$('#' + zenarioGM.gridId + '-slider a')
-			.css('position', 'absolute')
-			.css('z-index', 20)
-			.css('top', '-' + (iframeHeight + topHack) + 'px')
-			.height(iframeHeight + topHack)
-			.html('<span style="margin-top: ' + Math.ceil((iframeHeight + topHack) / 2) + 'px;"></span>');
+		if (colAndGutter = zenarioGM.recalcColumnAndGutterOptions(zenarioGM.data)) {
+			fields.colAndGutter.value = colAndGutter.value;
+			fields.colAndGutter.values = colAndGutter.values;
+		}
 	}
 	
-	zenarioGM.lastIframeHeight = iframeHeight;
+	
+	get(formId).innerHTML = zenarioGMC.drawTUIX(fields, undefined /* nb overrides the microtemplate for the current tab */, cb);
+	
+	zenario.addJQueryElements('#' + formId + ' ', true);
+	cb.done();
+	
+	//As the user focuses fields, note down what they last focused, just in case the
+	//form needs to be redrawn and we need to remember where they last were.
+	$('#' + formId + ' input').focus(function(){
+		if (this.id) {
+			zenarioGM.ae = this.id;
+		}
+	});
 };
 
+//Should we be allowed to change the grid settings in the controls?
+zenarioGM.disableChangingSettings = function() {
+	switch (zenarioGM.mode) {
+		case 'head':
+			return false;
+		case 'body':
+			return !!zenarioGM.data.headerAndFooter;
+		case 'foot':
+			return true;
+	}
+};
 
-zenarioGM.drawLinks = function() {
-	zenarioGM.checkData();
+//Calucate valid width/gutter options for the select list
+zenarioGM.recalcColumnAndGutterOptions = function(data) {
 	
-	var src = zenarioGM.ajaxSrc(),
-		m = {
-			src: src
-		},
-		html = zenarioGM.microTemplate(zenarioGM.mtPrefix + 'bottom_links', m);
+	//Don't attempt to do anything if there are no columns as this will cause an error
+	if (!data.cols) {
+		return false;
+	}
 	
-	$('.ui-tooltip').remove();
-	//get(linksId).innerHTML =html;
-	zenarioA.tooltips('#' + linksId + '  *[title]');
+	var width = data.maxWidth - data.gutterLeftEdge - data.gutterRightEdge,
+		colWidth = Math.floor(width / data.cols),
+		gutter = 0,
+		output = {colWidth: colWidth, gutter: gutter, value: colWidth + '/' + gutter},
+		values = {},
+		i = 0;
 	
-	
-	//The links and form will have a set height.
-	//Work out the height of the window, and give the preview/editor the remaining height.
-	var sel = $('#' + zenarioGM.gridId);
-	
-	if (zenarioGM.editing) {
-		sel.addClass('zenario_grid_slot_view').removeClass('zenario_grid_grid_view');
+	//Special case for one column - there's just one entry
+	if (data.cols == 1) {
+		
+		values[colWidth + '/' + gutter] = {
+			ord: ++i,
+			label: colWidth + ' px / ' + gutter + ' px'
+		};
+		
+		output.colWidth = colWidth;
+		output.gutter = gutter;
+		output.value = colWidth + '/' + gutter;
 	
 	} else {
-		sel.addClass('zenario_grid_grid_view').removeClass('zenario_grid_slot_view');
-		sel.css({height: 'auto'});
-		sel = $('#' + zenarioGM.gridId + ' .zenario_grid_preview_frame');
+		var gaps = (data.cols - 1),
+			const1 = width / gaps,
+			const2 = data.cols / gaps,
+			thisClose,
+			closest = 999999,
+			i;
+		
+		//Loop through all of the possible widths
+		i = -1;
+		for (; colWidth > gutter; --colWidth) {
+			//Calculate the size of the gutter that would be needed
+				//data.cols * colWidth + (data.cols - 1) * gutter = width
+				//data.cols * colWidth + gaps * gutter = width
+				//gaps * gutter = width - data.cols * colWidth
+				//gutter = (width - data.cols * colWidth) / gaps
+				//gutter = const1 - data.cols * colWidth / gaps
+			gutter = const1 - const2 * colWidth;
+			
+			//(Try to work around various rounding errors in JavaScript by stripping some precision off)
+			gutter = Math.round(gutter * 10000) / 10000;
+			
+			//Only add this comination in if it is a whole number
+			if (gutter == Math.floor(gutter)) {
+				values[colWidth + '/' + gutter] = {
+					ord: ++i,
+					label: colWidth + ' px / ' + gutter + ' px'
+				};
+				
+				//Work out how far away from the previous selected value this is,
+				//and reselect the new option that's the best match for the previously selected option
+				thisClose = Math.abs(data.gutter / data.colWidth - gutter / colWidth);
+				if (closest > thisClose) {
+					closest = thisClose;
+					output.colWidth = colWidth;
+					output.gutter = gutter;
+					output.value = colWidth + '/' + gutter;
+				}
+			}
+		}
 	}
 	
-	sel.height(0);
-	sel.height(Math.max(zenarioGM.gridAreaSmallestHeight, $(window).height() - $('body').height() - zenarioGM.bodyPadding));
-	
-	
-	var cssClasses1 = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_copy_box', 'zenario_grid_copy_css_box'];
-	$('#' + linksId + ' a.zenario_grid_copy_css').colorbox({
-		onOpen: function() { zenario.addClassesToColorbox(cssClasses1); },
-		onClosed: function() { zenario.removeClassesToColorbox(cssClasses1); },
-		onComplete: function() { $('#colorbox textarea').focus();}
-	});
-	
-	var cssClasses2 = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_copy_box', 'zenario_grid_copy_html_box'];
-	$('#' + linksId + ' a.zenario_grid_copy_html').colorbox({
-		onOpen: function() { zenario.addClassesToColorbox(cssClasses2); },
-		onClosed: function() { zenario.removeClassesToColorbox(cssClasses2); },
-		onComplete: function() { $('#colorbox textarea').focus();}
-	});
+	//Return the newly selected option
+	output.values = values;
+	return output;
 };
 
 
-zenarioGM.confirmDeleteSlot = function(slot, doDelete, willRemoveGrouping) {
+
+
+
+
+//Read the settings from the settings form
+zenarioGM.readSettings = function(data) {
 	
-	var url = URLBasePath + 'zenario/ajax.php?moduleClassName=zenario_common_features&method_call=handleAJAX',
-		requests = {
-			removeSlot: 1,
-			level: 2,
-			slotName: slot.oName,
-			layoutId: zenarioGM.layoutId,
-			willRemoveGrouping: willRemoveGrouping? '1' : ''
-		};
 	
-	zenario.ajax(url + zenario.urlRequest(requests)).after(function(message) {
+	var controls = zenarioGMC.readTab(),
+		colAndGutter;
+	
+	if (zenarioGM.mode == 'body') {
+		data.headerAndFooter = controls.headerAndFooter;
+	}
+	
+	if (data.headerAndFooter) {
+		zenarioGM.useSettingsFromHeader(data);
+	} else {
+		data.fluid = controls.type == 'fluid';
+		data.responsive = !!controls.responsive;
+		data.mirror = !!controls.mirror;
+		data.cols = 1 * controls.cols;
+	
+		if (data.fluid) {
+			data.minWidth = 1 * controls.minWidth;
+			data.maxWidth = 1 * controls.maxWidth;
+			data.gutterFlu = 1 * controls.gutterFlu;
+			data.gutterLeftEdgeFlu = 1 * controls.gutterLeftEdgeFlu;
+			data.gutterRightEdgeFlu = 1 * controls.gutterRightEdgeFlu;
+		} else {
+			data.maxWidth = 1 * controls.fullWidth;
+			data.gutterLeftEdge = 1 * controls.gutterLeftEdge;
+			data.gutterRightEdge = 1 * controls.gutterRightEdge;
 		
-		zenarioA.floatingBox(message, zenarioA.phrase.gridDelete, 'warning', false, false, true, undefined, doDelete);
-	});
+			if ((colAndGutter = controls.colAndGutter)
+			 && (colAndGutter = colAndGutter.split('/'))) {
+				data.colWidth = 1 * colAndGutter[0];
+				data.gutter = 1 * colAndGutter[1];
+			}
+		}
+	}
 };
+
+zenarioGM.useSettingsFromHeader = function(data) {
+	
+	var headerInfo = zenarioGM.headerInfo,
+		headerData = headerInfo.head_json_data;
+	
+	data.fluid = !!headerData.fluid;
+	data.responsive = !!headerData.responsive;
+	data.mirror = !!headerData.mirror;
+	data.cols = 1 * headerData.cols;
+
+	if (data.fluid) {
+		data.minWidth = 1 * headerData.minWidth;
+		data.maxWidth = 1 * headerData.maxWidth;
+		data.gutterFlu = 1 * headerData.gutterFlu;
+		data.gutterLeftEdgeFlu = 1 * headerData.gutterLeftEdgeFlu;
+		data.gutterRightEdgeFlu = 1 * headerData.gutterRightEdgeFlu;
+	} else {
+		data.maxWidth = 1 * headerData.maxWidth;
+		data.gutterLeftEdge = 1 * headerData.gutterLeftEdge;
+		data.gutterRightEdge = 1 * headerData.gutterRightEdge;
+		data.colWidth = 1 * headerData.colWidth;
+		data.gutter = 1 * headerData.gutter;
+	}
+};
+
+//Read the settings from the settings form and update the editor accordingly
+zenarioGM.updateAndChange = function() {
+   
+	zenarioGM.update();
+	zenarioGM.change();
+};
+
+zenarioGM.update = function() {
+	zenarioGM.readSettings(zenarioGM.data);
+	zenarioGM.checkData();
+};
+
+
+zenarioGM.recalcOnChange = function(el, e, fieldCodeName) {
+	zenarioGM.recalc(el, e, fieldCodeName);
+	return false;
+};
+
+zenarioGM.recalc = function(el, e, fieldCodeName) {
+	var data = $.extend(false, {}, zenarioGM.data),
+		checkForChanges = false,
+		warning = false,
+		className = el.className,
+		newData,
+		scopeOfChange;
+	
+	if (data.fluid) {
+		delete data.gutter;
+		delete data.gutterLeftEdge;
+		delete data.gutterRightEdge;
+		delete data.colWidth;
+	
+	} else {
+		delete data.gutterFlu;
+		delete data.gutterLeftEdgeFlu;
+		delete data.gutterRightEdgeFlu;
+	}
+	
+	checkForChanges = JSON.stringify(data);
+	
+	//Read and validate the settings
+	zenarioGM.readSettings(data);
+	warning = zenarioGM.checkDataNonZeroAndNumeric(data, warning);
+	
+	if (data.fluid) {
+		delete data.gutter;
+		delete data.gutterLeftEdge;
+		delete data.gutterRightEdge;
+		delete data.colWidth;
+	
+	} else {
+		delete data.gutterFlu;
+		delete data.gutterLeftEdgeFlu;
+		delete data.gutterRightEdgeFlu;
+		
+		switch (fieldCodeName) {
+			case 'fullWidth':
+				scopeOfChange = 1;
+				break;
+			case 'cols':
+				scopeOfChange = 2;
+				break;
+			case 'gutterLeftEdge':
+				scopeOfChange = 3;
+				break;
+			case 'gutterRightEdge':
+				scopeOfChange = 4;
+				break;
+			case 'colAndGutter':
+				scopeOfChange = 5;
+				break;
+		}
+		
+		//Read the settings from the settings form for a fixed grid, and recalculate the numbers to try and meet the target width
+		//Any numbers to the right of the field that was just edited may change, any numbers to the left should stay fixed
+		if (scopeOfChange) {
+			//Do some basic validation
+			do {
+				if (!data.maxWidth || (data.cols < 1)) {
+					warning = true;
+					break;
+				}
+				
+				//If the left and right edges are too big for the column width, either throw a warning or reset them to 0,
+				//depending on what field was just changed.
+				if (data.gutterLeftEdge + data.cols + data.gutterRightEdge > data.maxWidth) {
+					if (scopeOfChange < 3) {
+						data.gutterLeftEdge = 
+						data.gutterRightEdge = 0;
+					} else {
+						warning = true;
+						break;
+					}
+				}
+				
+				//If the width or outer gutter was changed, try to change the column and gutter width
+				//to a new value that matches the new settings, but it as close as possible to the previous value
+				if (scopeOfChange < 5) {
+					if (newData = zenarioGM.recalcColumnAndGutterOptions(data)) {
+						data.colWidth = newData.colWidth;
+						data.gutter = newData.gutter;
+					}
+				}
+				
+				//Validate the newly changed settings
+				warning = zenarioGM.checkDataNonZeroAndNumeric(data, warning);
+				
+			} while (false);
+		}
+	}
+	
+	//If nothing was changed, don't take any more actions.
+	if (checkForChanges != JSON.stringify(data)) {
+		if (warning) {
+			//If there were errors, roll back to the previous state
+			zenarioGM.revert();
+		} else {
+			
+			//For text fields, if the DoM model fired the onchange event, assume this was because the
+			//user was pressing the enter or tab buttons.
+			//I'm assuming that the user would expect to see the next field focused, however the redraw will kill that logic.
+			//Attempt to fake it.
+			if (el.type == 'text') {
+				
+				var drawnSortedFields = zenarioGMC.drawnSortedFields,
+					fi = drawnSortedFields.lastIndexOf(fieldCodeName),
+					nextFieldCodeName = fi > 0 && drawnSortedFields[fi + (shiftIsPressed? -1 : 1)];
+				
+				if (nextFieldCodeName) {
+					zenarioGM.ae = nextFieldCodeName;
+				}
+			}
+			
+			//If there were no errors, upgrade the grid straight away
+			zenarioGM.readSettings(zenarioGM.data);
+			zenarioGM.checkDataNonZeroAndNumeric(zenarioGM.data);
+			zenarioGM.change(false, true);
+		}
+	}
+	
+	return !warning;
+};
+
+
+
+
+
+
 
 
 
@@ -2308,20 +2572,19 @@ zenarioGM.save = function(saveAs) {
 		saveAs = true;
 	}
 	
-	var data;
+	var ajaxURL = zenarioGM.ajaxURL(),
+		request = {
+			data: zenarioGM.ajaxData(),
+			mode: zenarioGM.mode
+		};
 	
-	if (saveAs) {
+	if (saveAs && zenarioGM.mode == 'body') {
 		var cssClasses = ['zenario_admin_cb', 'zenario_grid_box', 'zenario_grid_new_layout_box'];
 		
-		if (data = zenario.nonAsyncAJAX(
-			zenarioGM.ajaxURL(),
-			{
-				saveas: 1,
-				data: zenarioGM.ajaxData(),
-				layoutId: zenarioGM.layoutId
-			},
-			true
-		)) {
+		request.layoutId = zenarioGM.layoutId;
+		request.saveas = 1;
+		
+		zenario.ajax(ajaxURL, request, true).after(function(data) {
 			
 			$.colorbox({
 				transition: 'none',
@@ -2334,42 +2597,31 @@ zenarioGM.save = function(saveAs) {
 					$('#zenario_grid_new_layout_save').click(function() {
 						$('#zenario_grid_error').hide();
 						
-						if (data = zenario.nonAsyncAJAX(
-							zenarioGM.ajaxURL(), {
-								saveas: 1,
-								confirm: 1,
-								data: zenarioGM.ajaxData(),
-								layoutId: zenarioGM.layoutId,
-								layoutName: zenarioGM.newLayoutName = get('zenario_grid_layout_name').value
-							},
-							true
-						)) {
+						request.confirm = 1;
+						request.layoutName = zenarioGM.newLayoutName = get('zenario_grid_layout_name').value;
+						zenario.ajax(ajaxURL, request, true).after(function(data) {
 							if (data.error) {
 								$('#zenario_grid_error').html(htmlspecialchars(data.error)).slideDown();
 							} else {
 								$.colorbox.close();
 								zenarioGM.layoutName = zenarioGM.newLayoutName;
 								zenarioGM.markAsSaved(data);
+								zenarioGM.drawOptions();
 							}
-						} else {
-							$.colorbox.close();
-						}
+						});
 					});
 					get('zenario_grid_layout_name').focus();
 				}
 			});
-		}
+		});
 	
 	} else {
-		if (data = zenario.nonAsyncAJAX(
-			zenarioGM.ajaxURL(),
-			{
-				save: 1,
-				data: zenarioGM.ajaxData(),
-				layoutId: zenarioGM.layoutId
-			},
-			true
-		)) {
+		if (zenarioGM.mode == 'body') {
+			request.layoutId = zenarioGM.layoutId;
+		}
+		request.save = 1;
+		
+		zenario.ajax(ajaxURL, request, true).after(function(data) {
 			if (data.success) {
 				zenarioGM.markAsSaved(data, true);
 			
@@ -2377,81 +2629,15 @@ zenarioGM.save = function(saveAs) {
 				zenarioA.floatingBox(data.message, phrase.gridSave, 'warning', true, true);
 				
 				$('#zenario_fbMessageButtons .submit_selected').click(function() {
-					setTimeout(function() {
-						var data;
-						if (data = zenario.nonAsyncAJAX(
-							zenarioGM.ajaxURL(),
-							{
-								save: 1,
-								data: zenarioGM.ajaxData(),
-								layoutId: zenarioGM.layoutId,
-								confirm: 1
-							},
-							true
-						)) {
-							zenarioGM.markAsSaved(data);
-						}
-					}, 50);
+					request.confirm = 1;
+					zenario.ajax(ajaxURL, request, true).after(function(data) {
+						zenarioGM.markAsSaved(data);
+						zenarioGM.drawOptions();
+					});
 				});
 			}
-		}
+		});
 	}
-};
-
-
-
-//Rename a slot
-zenarioGM.saveProperties = function(el, params) {
-	//Try to get the cell that the name was for
-	var cell;
-	if ((cell = $(el).data('for'))
-	 && (cell = $('#' + cell))) {
-		var i = cell.data('i'),
-			levels = zenarioGM.getLevels(cell),
-			data = zenarioGM.data;
-		
-		//The data variable should be a pointer to the right location in the zenarioGM.data object.
-		//(This will either be the zenarioGM.data object or a subsection if the cells being re-ordered are
-		// children of another cell.)
-		if (levels) {
-			levels = levels.split('-');
-			foreach (levels as var l) {
-				l *= 1;
-				data = data.cells[1*levels[l]];
-			}
-		}
-		
-		if (data.cells[i].slot) {
-			if (!params.name) {
-				$('#zenario_grid_error').html(phrase.gridErrorNameIncomplete).slideDown();
-				return;
-		
-			} else if (params.name != params.name.replace(/[^a-zA-Z0-9_]/g, '')) {
-				$('#zenario_grid_error').html(phrase.gridErrorNameFormat).slideDown();
-				return;
-		
-			} else if (params.name != data.cells[i].name && zenarioGM.checkIfNameUsed(params.name)) {
-				$('#zenario_grid_error').html(phrase.gridErrorNameInUse).slideDown();
-				return;
-			}
-			
-			//Rename the slot
-			delete zenarioGM.names[data.cells[i].name];
-			zenarioGM.registerNewName(params.name);
-		}
-		
-		foreach (params as var j) {
-			if (params[j] != '') {
-				data.cells[i][j] = params[j];
-			} else {
-				delete data.cells[i][j];
-			}
-		}
-
-		zenarioGM.change();
-	}
-	
-	$.colorbox.close();
 };
 
 //Remember that we last saved at this point in the undo-history
@@ -2487,228 +2673,32 @@ zenarioGM.markAsSaved = function(data, useMessageBoxForSuccessMessage) {
 	}
 };
 
-
-//Read the settings from the settings form
-zenarioGM.readSettings = function(data) {
-	data.fluid = $('#' + formId + ' input.zenario_grid_setting_flu').prop('checked');
-	data.responsive = $('#' + formId + ' input.zenario_grid_setting_responsive').prop('checked');
-	data.mirror = $('#' + formId + ' input.zenario_grid_setting_mirror').prop('checked');
-	data.cols = 1 * $('#' + formId + ' input.zenario_grid_setting_cols').val();
-	
-	var sel;
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_full_width')).length) {
-		data.maxWidth = 1 * sel.val();
-	} else
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_max_width')).length) {
-		data.maxWidth = 1 * sel.val();
-	}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_min_width')).length) {
-		data.minWidth = 1 * sel.val();
-	}
-	//if ((sel = $('#' + formId + ' input.zenario_grid_setting_col_width')).length) {
-	//	data.colWidth = 1 * sel.val();
-	//}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_gutter_left')).length) {
-		data.gutterLeftEdge = 1 * sel.val();
-	}
-	//if ((sel = $('#' + formId + ' input.zenario_grid_setting_gutter')).length) {
-	//	data.gutter = 1 * sel.val();
-	//}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_gutter_right')).length) {
-		data.gutterRightEdge = 1 * sel.val();
-	}
-	
-	if ((sel = $('#' + formId + ' select.zenario_grid_setting_col_and_gutter')).length
-	 && (sel = sel.val())
-	 && (sel = sel.split('/'))) {
-		data.colWidth = 1 * sel[0];
-		data.gutter = 1 * sel[1];
-	}
-	
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_gutter_left_flu')).length) {
-		data.gutterLeftEdgeFlu = 1 * sel.val();
-	}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_gutter_flu')).length) {
-		data.gutterFlu = 1 * sel.val();
-	}
-	if ((sel = $('#' + formId + ' input.zenario_grid_setting_gutter_right_flu')).length) {
-		data.gutterRightEdgeFlu = 1 * sel.val();
+zenarioGM.refocus = function() {
+	//If possible, try to restore the previously focused field after a form redraw.
+	var activeElement;
+	if (zenarioGM.ae && (activeElement = get(zenarioGM.ae))) {
+		if (activeElement.focus) activeElement.focus();
+		if (activeElement.select) activeElement.select();
 	}
 };
 
-//Read the settings from the settings form and update the editor accordingly
-zenarioGM.updateAndChange = function() {
-   
-	zenarioGM.update();
-	zenarioGM.change();
-};
-
-zenarioGM.update = function() {
-	zenarioGM.readSettings(zenarioGM.data);
-	zenarioGM.checkData();
-};
 
 
-zenarioGM.recalcOnKeyUp = function() {
-	zenarioGM.recalc(this);
-};
+//Calculate function short names, we need to do this before calling any functions!
+zenario.shrtNms(zenarioGM);
 
-zenarioGM.recalcOnChange = function() {
-	zenarioGM.recalc(this, true, true);
-};
 
-zenarioGM.recalcOnInc = function(event, ui) {
-	if (event.originalEvent && event.originalEvent.type == 'mouseup') {
-		return zenarioGM.recalc(this, true);
+//Keep track of whether the shift key is pressed.
+$(document).keydown(function(e) {
+	if (e.keyCode == 16) {
+		shiftIsPressed = true;
 	}
-};
-
-zenarioGM.recalc = function(el, redraw, forceChange) {
-	var data = $.extend(false, {}, zenarioGM.data),
-		checkForChanges = false,
-		warning = false,
-		level = 0,
-		className = el.className,
-		newData,
-		contentWidth;
-	
-	if (data.fluid) {
-		delete data.gutter;
-		delete data.gutterLeftEdge;
-		delete data.gutterRightEdge;
-	
-	} else {
-		delete data.gutterFlu;
-		delete data.gutterLeftEdgeFlu;
-		delete data.gutterRightEdgeFlu;
+});
+$(document).keyup(function(e) {
+	if (e.keyCode == 16) {
+		shiftIsPressed = false;
 	}
-	
-	if (!forceChange) {
-		checkForChanges = JSON.stringify(data);
-	}
-	
-	//Read and validate the settings
-	zenarioGM.readSettings(data);
-	warning = zenarioGM.checkDataNonZeroAndNumeric(data, warning);
-	
-	if (data.fluid) {
-		delete data.gutter;
-		delete data.gutterLeftEdge;
-		delete data.gutterRightEdge;
-	
-	} else {
-		//Work out which field was just changed
-		switch (className.split(' ')[0]) { 
-			case 'zenario_grid_setting_full_width':
-				level = 1;
-				break;
-			case 'zenario_grid_setting_cols':
-				level = 2;
-				break;
-			case 'zenario_grid_setting_gutter_left':
-				level = 3;
-				break;
-			case 'zenario_grid_setting_gutter_right':
-				level = 4;
-				break;
-			case 'zenario_grid_setting_col_and_gutter':
-				level = 5;
-				break;
-		}
-		
-		//Read the settings from the settings form for a fixed grid, and recalculate the numbers to try an meet the target width
-		//Any numbers to the right of the field that was just edited may change, any numbers to the left should stay fixed
-		if (level) {
-			//Check to see if the field has actually changed, and don't do anything if not
-			if (!forceChange && $(el).val() == $(el).attr('data-initial-value')) {
-				return;
-			} else {
-				$(el).attr('data-initial-value', $(el).val());
-			}
-			
-			do {
-			//Do some basic validation
-				if (!data.maxWidth || (data.cols < 1)) {
-					warning = true;
-					break;
-				}
-				
-				//If the left and right edges are too big for the column width, either throw a warning or reset them to 0,
-				//depending on what field was just changed.
-				if (data.gutterLeftEdge + data.cols + data.gutterRightEdge > data.maxWidth) {
-					if (level < 3) {
-						data.gutterLeftEdge = 
-						data.gutterRightEdge = 0;
-					} else {
-						warning = true;
-						break;
-					}
-				}
-				
-				if (level < 5) {
-					if (newData = zenarioGM.recalcColumnAndGutterOptions(data)) {
-						data.colWidth = newData.colWidth;
-						data.gutter = newData.gutter;
-					}
-				}
-				
-				//Validate the newly changed settings
-				warning = zenarioGM.checkDataNonZeroAndNumeric(data, warning);
-				
-				contentWidth = data.cols * data.colWidth + (data.cols - 1) * data.gutter;
-				
-				
-				//Update the changed fields to the right of the current field, and also the current content width
-				var f = 0, fields = [
-					{l: 3, c: 'zenario_grid_setting_gutter_left', v: data.gutterLeftEdge},
-					{l: 4, c: 'zenario_grid_setting_gutter_right', v: data.gutterRightEdge},
-					{l: 5, c: 'zenario_grid_setting_col_and_gutter', v: data.colWidth + '/' + data.gutter}];
-				
-				foreach (fields as f) {
-					if (level < fields[f].l) {
-						var field = $('#' + formId + ' .' + fields[f].c);
-						if (field.val() != fields[f].v) {
-							field.animate({opacity: 0.3}, 'fast').val(fields[f].v).animate({opacity: 1}, 'fast');
-						}
-					}
-				}
-				
-			} while (false);
-		}
-		
-		delete data.gutterFlu;
-		delete data.gutterLeftEdgeFlu;
-		delete data.gutterRightEdgeFlu;
-	}
-	
-	//If nothing was changed, don't take any more actions.
-	if (forceChange || checkForChanges != JSON.stringify(data)) {
-		//Remove any previous warnings
-		$('#' + formId + ' .zenario_grid_setting_warning').removeClass('zenario_grid_setting_warning');
-		
-		if (redraw) {
-			if (warning) {
-				//If there were errors, roll back to the previous state
-				zenarioGM.revert();
-			} else {
-				//If there were no errors, upgrade the grid straight away
-				zenarioGM.readSettings(zenarioGM.data);
-				zenarioGM.checkDataNonZeroAndNumeric(zenarioGM.data);
-				zenarioGM.change(false, true);
-			}
-		} else {
-			//Add a warning to the current field if there was something wrong
-			if (warning) {
-				$(el).parent().addClass('zenario_grid_setting_warning');
-			}
-		}
-	}
-	
-	return !warning;
-};
-
-
-
+});
 
 
 

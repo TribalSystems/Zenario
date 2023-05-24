@@ -135,7 +135,7 @@ class zenario_abstract_list extends zenario_abstract_manager {
 			$this->registerGetRequest('page', 1);
 		
 			//Pick a page to display
-			$this->page = is_numeric($_REQUEST['page'] ?? false)? (int) ($_REQUEST['page'] ?? false) : 1;
+			$this->page = is_numeric(ze::request('page'))? (int) ze::request('page') : 1;
 			
 			//Get a count of how many items we have to display
 			$sql = "

@@ -43,7 +43,6 @@ if (($egg = ze\pluginAdm::getNestDetails($eggId, $instanceId)) && (!$egg['is_sli
 		);
 		
 		ze\row::update('nested_plugins', [
-			'name_or_slide_label' => ze\admin::phrase('[[name_or_slide_label]] (copy)', $egg),
 			'ord' => $egg['ord'] + 1,
 			'framework' => $egg['framework'],
 			'css_class' => $egg['css_class'],

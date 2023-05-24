@@ -51,13 +51,10 @@ $isNest = !empty(ze::$slotContents[$slotName]['is_nest']);
 $isSlideshow = !empty(ze::$slotContents[$slotName]['is_slideshow']);
 
 
-//Check to see if there are entries on the item and layout layer
+//Check to see if an entry on the item layer is overwriting an entry on a layer above
 $overriddenPlugin = false;
 if ($level == 1) {
-	$overriddenPlugin = ze\row::get(
-		'plugin_layout_link',
-		['module_id', 'instance_id'],
-		['slot_name' => $slotName, 'layout_id' => ze::$layoutId]);
+	$overriddenPlugin = ze::$slotContents[$slotName]['overridden'] ?? false;
 
 	//Treat the case of hidden (item layer) and empty (layout layer) as just empty
 	if (!$overriddenPlugin && !$moduleId) {
@@ -73,11 +70,10 @@ switch ($level) {
 	case 1:
 		$pageMode = ['edit' => true];
 		
-		//$controls['info']['slot_name_in_item_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
-		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
+		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty', $mrg);
 		
 		//Show the "in this slot" blurb when looking at the wrong layer and it needs to be made clear
-		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('This slot on this content item contains:');
+		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('On this content item this slot contains:');
 		$controls['info']['in_this_slot']['page_modes'] = ['layout' => true];
 		unset($controls['info']['in_this_slot']['hidden']);
 		
@@ -99,11 +95,11 @@ switch ($level) {
 	case 2:
 		$pageMode = ['layout' => true];
 		
-		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
+		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span>', $mrg);
 		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
 		
 		//Only show the "in this slot" blurb when looking at the wrong layer and it needs to be made clear
-		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('This slot on this layout contains:');
+		$controls['info']['in_this_slot']['label'] = ze\admin::phrase('On this layout this slot contains:');
 		$controls['info']['in_this_slot']['page_modes'] = ['edit' => true];
 		unset($controls['info']['in_this_slot']['hidden']);
 		
@@ -111,9 +107,26 @@ switch ($level) {
 		
 		break;
 	
+	case 3:
+		//Also show site-wide slots on the layout tab.
+		//(That's slightly miscategorising them, but adding a new admin toolbar tab for them would cause more clutter than we'd like.)
+		$pageMode = ['layout' => true];
+		
+		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span>', $mrg);
+		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> contains:', $mrg);
+		
+		$couldChange = $canChange = ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT');
+		
+		break;
+	
 	default:
-		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this content item', $mrg);
-		$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
+		if (empty($controls['meta_info']['is_sitewide'])) {
+			$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty on this layout', $mrg);
+		} else {
+			$controls['info']['slot_name_in_layout_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span> is empty', $mrg);
+		}
+		$controls['info']['slot_name_in_edit_mode']['label'] = ze\admin::phrase('<span>[[slotName]]</span>', $mrg);
+		
 		$couldChange = $canChange = false;
 		break;
 }
@@ -138,7 +151,7 @@ if (!$moduleId) {
 	
 		//On the Layout Layer, add an option to insert a Wireframe version of each Plugin
 		//that is flagged as uses wireframe.
-		if (ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+		if (empty($controls['meta_info']['is_sitewide']) && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			$i = 0;
 			foreach (ze\row::getAssocs(
 				'modules',
@@ -255,11 +268,11 @@ if (!$moduleId) {
 		unset($controls['actions']['switch_to_edit_settings']);
 		unset($controls['actions']['switch_to_layout']);
 	
-	} elseif ($isVersionControlled && $level == 2) {
+	} elseif ($isVersionControlled && $level > 1) {
 		unset($controls['actions']['switch_to_edit_settings']);
 		unset($controls['actions']['switch_to_layout']);
 	
-	} elseif ($level == 2) {
+	} elseif ($level > 1) {
 		unset($controls['actions']['switch_to_edit']);
 		unset($controls['actions']['switch_to_edit_settings']);
 	

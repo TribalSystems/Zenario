@@ -12,9 +12,6 @@
 .zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title {
 	font-size:2em;
 	margin-bottom:5px;
-}
-
-.zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title a {
 	display:block;
 	padding:8px 8px 8px 14px;
 }
@@ -88,13 +85,9 @@
 
 /* Colors */
 
-.zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title a {
+.zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title {
 	background:#2a98ce;
 	color:#fff;
-}
-
-.zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title a:hover {
-	background:#00659b;
 }
 
 .zenario_menu_vertical__default_style .wrap_menu_inner {

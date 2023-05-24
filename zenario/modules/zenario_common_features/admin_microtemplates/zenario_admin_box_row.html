@@ -1,6 +1,6 @@
 <% var e, error, n, notice; %>
 
-<% if (zenario.engToBoolean(m.errors)) { %>
+<% if (!_.isEmpty(m.errors)) { %>
 	<div class="zfab_error_wrap zfab_row"><div class="zfab_row_inner"><div class="messageDisplay zfab_error">
 		<% foreach (m.errors as e => error) { %>
 			<div class="zfab_error_inner">
@@ -31,6 +31,9 @@
 			field,
 			ff = m.fields[0],
 			fl = m.fields.length,
+			lf = m.fields[fl-1],
+			pgf = ff._lastVisibleGroupingField,
+			lgf = lf._lastVisibleGroupingField,
 			rowHasError = false,
 			hadKeySymbol = false,
 			hadProtectedSymbol = false;
@@ -41,15 +44,39 @@
 			<% rowHasError = true; %>
 			<% break; %>
 		<% } %>	
-	<% } %>	
+	<% } %>
 	
 	<% if (ff._lastVisibleGrouping !== ff.grouping) { %>
-		<% if (ff._lastVisibleGrouping) { %>
+		<% if (pgf) { %>
 			</fieldset>
+			<% if (pgf.post_grouping_html) { %>
+				{{pgf.post_grouping_html}}
+			<% } %>
+			<% if (!ff.grouping || m.grouping.start_new_grouping_wrapper) { %>
+				</x-zenario-grouping-wrapper>
+			<% } %>
 		<% } %>
 		<% if (ff.grouping) { %>
-			<% var grouping = m.grouping || {}; %>
-			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{grouping.grouping_css_class|escape}}" style="{{grouping.grouping_style|escape}}">
+			<% if (!pgf || m.grouping.start_new_grouping_wrapper) { %>
+				<x-zenario-grouping-wrapper
+					class="
+						zfab_grouping_wrapper
+						{{m.grouping.grouping_wrapper_css_class|escape}}
+					"
+					style="{{m.grouping.grouping_wrapper_style|escape}}"
+				>
+					<% if (m.grouping.grouping_wrapper_icon_class) { %>
+						<div class="zfab_grouping_wrapper_icon {{m.grouping.grouping_wrapper_icon_class|escape}}">
+							<% if (zenario.defined(m.grouping.grouping_wrapper_record_count)) { %>
+								<span class="zfab_grouping_wrapper_record_count">{{m.grouping.grouping_wrapper_record_count|escape}}</span>
+							<% } %>
+						</div>
+					<% } %>
+			<% } %>
+			<% if (m.grouping.pre_grouping_html) { %>
+				{{m.grouping.pre_grouping_html}}
+			<% } %>
+			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{m.grouping.grouping_css_class|escape}}" style="{{m.grouping.grouping_style|escape}}">
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
@@ -120,23 +147,26 @@
 				zfab_row_fields
 				{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}}
 				{{ff._showOnOpen? 'zenario_show_on_open' : ''}}
-				{{ff.type=='checkbox'? 'zenario_input_checkbox' : ''}}
 			">
 				<% foreach (m.fields as f => field) { %>
+					
+					<% var showEncryptedIcon = !hadKeySymbol && field.encrypted; %>
+					<% var showProtectedIcon = !hadProtectedSymbol && field.site_setting && field.site_setting.protect_from_database_restore; %>
+					<% var showPhraseIcon = field.show_phrase_icon; %>
+					
 					{{field._html}}
 					
-					<% if (!hadKeySymbol && field.encrypted) { %>
+					<% if (showEncryptedIcon) { %>
 						<span class="zfab_encrypted_field">🔑 </span>
 					<% } %>
-					
-					<% if (!hadProtectedSymbol && field.site_setting && field.site_setting.protect_from_database_restore) { %>
+			
+					<% if (showProtectedIcon) { %>
 						<span class="zfab_protected_from_database_restore" title="{{zenarioA.phrase.siteSettingProtected|e}}"> </span>
 					<% } %>
-					
-					<% if (field.show_phrase_icon) { %>
+			
+					<% if (showPhraseIcon) { %>
 						<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>
 					<% } %>
-					
 				<% } %>
 			</div>
 			<% var nb; %>
@@ -167,6 +197,10 @@
 	<% if (ff._isLastRow) { %>
 		<% if (ff.grouping) { %>
 			</fieldset>
+			<% if (lgf && lgf.post_grouping_html) { %>
+				{{lgf.post_grouping_html}}
+			<% } %>
+			</x-zenario-grouping-wrapper>
 		<% } %>
 	<% } %>
 <% } %>

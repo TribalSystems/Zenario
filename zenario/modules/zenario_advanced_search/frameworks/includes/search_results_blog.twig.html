@@ -1,0 +1,22 @@
+{% if Mode == 'search_entry_box' and (Blog_Search_Results or Blog_Search_No_Results) %}
+    {% set Column = Column + 1 %}
+    <div id="{{Container_Id}}_blog_results" class="column_{{Column}} column column_blog">
+{% endif %}
+
+{% if Mode == 'search_entry_box' and Blog_Column_Heading_Text and not Blog_Search_No_Results %}
+    <span class="column_title">{{Blog_Column_Heading_Text|e}}</span>
+{% endif %}
+
+{% if Blog_Search_Results %}
+    {% include advancedSearchCoreFrameworksPath ~ 'includes/populate_results_loop.twig.html' with {'Type': Blog_Search_Results} %}
+{% endif %}
+
+{% if Blog_Search_No_Results %}
+    <div class="search_no_results">
+        <p>{{Blog_No_Results_Text|e}}</p>
+    </div>
+{% endif %}
+
+{% if Mode == 'search_entry_box' and (Blog_Search_Results or Blog_Search_No_Results) %}
+    </div>
+{% endif %}

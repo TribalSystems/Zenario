@@ -4,14 +4,13 @@ zenario__locations:
     ord: -890
     css_class: locations_top_level
     label: Locations
-    tooltip: Store data about real-world places, addresses and organizations
+    tooltip: Define real-world places and organisations
     priv:
         - _PRIV_MANAGE_LOCATIONS
         - _PRIV_EXPORT_LOCATIONS
     nav:
         locations: 
             label: Locations
-            tooltip: Store data about real-world places, addresses and organizations
             keywords: "geo, places, place, map"
             priv:
                 - _PRIV_MANAGE_LOCATIONS
@@ -28,8 +27,7 @@ zenario__locations:
                 refiner: parent_locations
         sectors:
             priv: _PRIV_MANAGE_LOCATIONS
-            label: Sectors
-            tooltip: Business sectors or other classifications of location
+            label: Business sectors
             visible_if: >
                 (!zenarioA.siteSettings.zenario_location_manager__sector_management
                 ||

@@ -3,6 +3,7 @@
 zenario__administration:
     panels:
         error_log:
+            priv: _PRIV_VIEW_SITE_SETTING
             item:
                 css_class: zenario_error_log
             title: Error log
@@ -11,8 +12,6 @@ zenario__administration:
                 type: information
                 message: ''
             no_items_message: The error log is empty
-            view_mode: list
-            disable_grid_view: true
             db_items:
                 table: |
                     [[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log el
@@ -52,7 +51,7 @@ zenario__administration:
                     item_link: content_item_or_url
             collection_buttons:
                 clear_log:
-                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     hide_when_no_search_results: true
                     label: Clear log
                     admin_box:

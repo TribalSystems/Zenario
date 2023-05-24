@@ -208,22 +208,18 @@ foreach ([
 if ((is_dir($dir = 'zenario/libs/manually_maintained/mit/jquery/')) && ($scan = scandir($dir))) {
 	foreach ($scan as $file) {
 		if (substr($file, -3) == '.js'
-		 && substr($file, -7) != '.min.js'
-		 && substr($file, -9) != '.nomin.js'
-		 && substr($file, -8) != '.pack.js') {
+		 && substr($file, -7) != '.min.js') {
 			$file = substr($file, 0, -3);
 			minify($dir, $file, $level);
 		}
 	}
 }
-
-//Minify jquery css files
-if ((is_dir($dir = 'zenario/libs/manually_maintained/mit/jquery/css/')) && ($scan = scandir($dir))) {
+if ((is_dir($dir = 'zenario/libs/manually_maintained/mit/jqueryui/')) && ($scan = scandir($dir))) {
 	foreach ($scan as $file) {
-		if (substr($file, -4) == '.css'
-		 && substr($file, -8) != '.min.css') {
-			$file = substr($file, 0, -4);
-			minify($dir, $file, $level, '.css');
+		if (substr($file, -3) == '.js'
+		 && substr($file, -7) != '.min.js') {
+			$file = substr($file, 0, -3);
+			minify($dir, $file, $level);
 		}
 	}
 }
@@ -280,6 +276,7 @@ minify('zenario/libs/manually_maintained/mit/slimmenu/', 'jquery.slimmenu', $lev
 //Minify and/or re-minify some of the YARN packages
 minify('zenario/libs/yarn/js-crc/src/', 'crc', $level, '.js');
 minify('zenario/libs/yarn/jquery-doubletaptogo/dist/', 'jquery.dcd.doubletaptogo', $level, '.js');
+minify('zenario/libs/yarn/moment/', 'moment', $level, '.js');
 minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.css');
 minify('zenario/libs/yarn/spectrum-colorpicker/', 'spectrum', $level, '.js');
 minify('zenario/libs/yarn/toastr/build/', 'toastr', $level, '.css');

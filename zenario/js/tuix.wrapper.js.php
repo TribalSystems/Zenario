@@ -49,11 +49,11 @@ ze\cache::incJS('zenario/js/form');
 	//Warning: Some of these need to be included in a specific order for dependancy reasons!
 ze\cache::incJS('zenario/libs/manually_maintained/bsd/tokenize/jquery.tokenize');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jpaginator/jPaginator');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.autocomplete');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.selectmenu');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.iconselectmenu');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.sortable');
-ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery-ui.slider');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.autocomplete');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.selectmenu');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.iconselectmenu');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.slider');
 ze\cache::incJS('zenario/libs/yarn/jquery-multiselect/jquery-MultiSelect');
 ze\cache::incJS('zenario/libs/yarn/underscore.string/dist/underscore.string');
 

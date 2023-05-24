@@ -70,7 +70,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			if ($details['content_item_count'] == 1) {
 				$sql = '
 					SELECT DISTINCT
-						ci.id, ci.type, ci.alias, civ.layout_id
+						ci.id, ci.type, ci.alias, civ.layout_id, ci.status
 					FROM ' . DB_PREFIX . 'content_items ci
 					LEFT JOIN ' . DB_PREFIX . 'content_item_versions civ
 						ON civ.id = ci.id
@@ -80,15 +80,36 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 				
 				$result = ze\sql::select($sql);
 				$contentItem = (ze\sql::fetchAssoc($result));
-				$contentItem = ze\content::formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias']);
+				$contentItemFormattedTag = ze\content::formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias']);
 				
-				$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
-					'<a href="' . $link . '" target="_blank">' . $contentItem . '</a> uses this layout.');
+				if ($contentItem['status'] == 'trashed') {
+					$link = ze\link::absolute() . '/organizer.php#zenario__content/panels/content/refiners/trash////' . htmlspecialchars($contentItemFormattedTag);
 					
+					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+						'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> (trashed content item) uses this layout. To delete this layout you must first empty the trash. Alternatively you may Retire this layout, so as to keep it but not allow it to be chosen again.'
+					);
+				} else {
+					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+						'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> uses this layout.'
+					);
+				}
 			} elseif ($details['content_item_count'] > 1) {
-				$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
-					'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> use this layout.',
-					['content_item_count' => $details['content_item_count']]);
+				$usageByTrashedContentItems = ze\layoutAdm::usageByTrashedContentItems($box['key']['id'], $countItems = false);
+				$usageByTrashedContentItemsCount = count($usageByTrashedContentItems);
+				
+				if ($details['content_item_count'] == $usageByTrashedContentItemsCount) {
+					$link = ze\link::absolute() . '/organizer.php#zenario__content/panels/content/refiners/trash////';
+					
+					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+						'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> (all trashed) use this layout. To delete this layout you must first empty the trash. Alternatively you may Retire this layout, so as to keep it but not allow it to be chosen again.',
+						['content_item_count' => $details['content_item_count']]
+					);
+				} else {
+					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+						'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> ([[trashed_count]] trashed) use this layout.',
+						['content_item_count' => $details['content_item_count'], 'trashed_count' => $usageByTrashedContentItemsCount]
+					);
+				}
 			}
 		
 		

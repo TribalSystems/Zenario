@@ -308,8 +308,18 @@
 			
 				//The contents of the infoWindow are stored on the page.
 				//All infoWindows appear above the marker.
+				//To build the info window, load the information from the list.
+				var infoWindowParentElOriginal = parent.$('#' + location.htmlId + "_basic_details");
+				var infoWindowParentEl = infoWindowParentElOriginal.clone();
+				
+				//Then remove the width and height of images, as Google Maps info window logic
+				//will handle that on its own. Otherwise, the images might appear stretched.
+				var infoWindowImage = infoWindowParentEl.find('img');
+				infoWindowImage.removeAttr("width");
+				infoWindowImage.removeAttr("height");
+				
 				infoWindow = new google.maps.InfoWindow({
-					content: parent.$('#' + location.htmlId + "_basic_details").html(),
+					content: infoWindowParentEl.html(),
 					pixelOffset: new google.maps.Size(0, (-height))
 				});
 		

@@ -1322,8 +1322,8 @@ _sql
 	CREATE TABLE `[[DB_PREFIX]]layout_slot_link` (
 	`layout_id` int(10) unsigned NOT NULL,
 	`slot_name` varchar(100) NOT NULL,
-	`ord` smallint(4) unsigned NOT NULL DEFAULT '0',
-	`cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
+	`ord` smallint(4) unsigned NOT NULL default 0,
+	`cols` tinyint(2) unsigned NOT NULL default 0,
 	`small_screens` enum('show','hide','only','first') DEFAULT 'show',
 	PRIMARY KEY (`layout_id`,`slot_name`)
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
@@ -1360,7 +1360,7 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
 	CHANGE COLUMN `target_loc` `target_loc` enum('int', 'doc', 'ext', 'none') NOT NULL DEFAULT 'none',
-	ADD COLUMN `document_id` int(10) unsigned NOT NULL DEFAULT '0' AFTER `use_download_page`,
+	ADD COLUMN `document_id` int(10) unsigned NOT NULL default 0 AFTER `use_download_page`,
 	ADD KEY `document_id` (`document_id`)
 _sql
 
@@ -1987,10 +1987,144 @@ _sql
 _sql
 
 
-//Post branch fix.
+//
+//	Zenario 9.4
+//
+
+
+
+
+//Admin-facing names for nested plugins are no longer stored in the database.
+//The name_or_slide_label ne name_or_title column is now only used for storing slide labels.
+//Rename it again to make this clear.
+);	ze\dbAdm::revision( 56500
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	CHANGE COLUMN `name_or_slide_label` `slide_label` varchar(250) COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]nested_plugins`
+	SET slide_label = ''
+	WHERE is_slide = 0
+_sql
+
+
+//Add a table to store details on the standard head and foot for for layouts
+);  ze\dbAdm::revision(56659
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]layout_head_and_foot`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]layout_head_and_foot` (
+		`for` enum('sitewide') NOT NULL,
+		`cols` tinyint(2) unsigned NOT NULL DEFAULT 0,
+		`min_width` smallint(4) unsigned NOT NULL default 0,
+		`max_width` smallint(4) unsigned NOT NULL default 0,
+		`fluid` tinyint(1) unsigned NOT NULL default 0,
+		`responsive` tinyint(1) unsigned NOT NULL default 0,
+		`head_json_data` json DEFAULT NULL,
+		`foot_json_data` json DEFAULT NULL,
+		PRIMARY KEY (`for`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
+_sql
+
+//Also try to find the combination of settings that is most commonly used,
+//and pre-populate it.
+//Note: this will only work when migrating an existing site, not when doing a fresh install
+//or site reset. There's another revision in step 4 that will handle this case.
+, <<<_sql
+	INSERT INTO [[DB_PREFIX]]layout_head_and_foot
+	SELECT
+		'sitewide',
+		l.cols, l.min_width, l.max_width, l.fluid, l.responsive,
+		null, null
+	FROM (
+		SELECT
+			COUNT(DISTINCT c.tag_id) AS citems, 
+			l.cols, l.min_width, l.max_width, l.fluid, l.responsive
+		FROM [[DB_PREFIX]]content_items AS c
+		INNER JOIN [[DB_PREFIX]]content_item_versions AS v
+		   ON v.id = c.id
+		  AND v.type = c.type
+		  AND v.version = c.admin_version
+		INNER JOIN [[DB_PREFIX]]layouts AS l
+		   ON l.layout_id = v.layout_id
+		GROUP BY l.cols, l.min_width, l.max_width, l.fluid, l.responsive
+		ORDER BY 1 DESC
+		LIMIT 1
+	) AS l
+_sql
+
+
+//Add some more metadata to the layouts table, so we can easily see which layouts
+//use the standard header and footer
+);	ze\dbAdm::revision( 56660
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts`
+	ADD COLUMN `header_and_footer` tinyint(1) unsigned NOT NULL default 0
+	AFTER `responsive`
+_sql
+
+
+//Add some more metadata to the layout_slot_link table, so we can easily see which slots
+//use the standard header and footer
+);	ze\dbAdm::revision( 56750
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layout_slot_link`
+	ADD COLUMN `is_header` tinyint(1) unsigned NOT NULL default 0
+	AFTER `small_screens`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layout_slot_link`
+	ADD COLUMN `is_footer` tinyint(1) unsigned NOT NULL default 0
+	AFTER `is_header`
+_sql
+
+
+//Revert the above update, as the spec has now changed a bit!
+	//(DB updates #56750 and #56779 could probably be removed completely in a future,
+	// when our dev sites have had enough time to all get both updates.)
+);	ze\dbAdm::revision( 56779
+, <<<_sql
+	DELETE pll.*
+	FROM `[[DB_PREFIX]]layout_slot_link` AS lsl
+	INNER JOIN `[[DB_PREFIX]]plugin_layout_link` AS pll
+	   ON pll.layout_id = lsl.layout_id
+	  AND pll.slot_name = lsl.slot_name
+	WHERE (lsl.is_header = 1 OR lsl.is_footer = 1)
+_sql
+
+, <<<_sql
+	DELETE pil.*
+	FROM `[[DB_PREFIX]]layout_slot_link` AS lsl
+	INNER JOIN `[[DB_PREFIX]]plugin_item_link` AS pil
+	   ON pil.slot_name = lsl.slot_name
+	WHERE (lsl.is_header = 1 OR lsl.is_footer = 1)
+_sql
+
+
+//Create a linking table to store which plugin instances have been placed in the header and footer
+);	ze\dbAdm::revision( 56785
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_sitewide_link`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]plugin_sitewide_link` (
+		`module_id` int(10) unsigned NOT NULL,
+		`instance_id` int(10) unsigned NOT NULL,
+		`slot_name` varchar(100) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+		PRIMARY KEY (`slot_name`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
+_sql
+
+
 //Fix some bad data where some nests/slideshows were not flagged as nests/slideshows in the database.
-//(N.b. this was added in an after-branch patch in 9.2 revision 55053, but is safe to repeat.)
-);	ze\dbAdm::revision( 56353
+//(N.b. this was added in an after-branch patch in 9.2 revision 55053, and 9.3 revision 56353, but is safe to repeat.)
+);	ze\dbAdm::revision( 57000
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
 		pi.is_nest = 0,
@@ -2029,12 +2163,38 @@ _sql
 	WHERE ii.foreign_key_to = 'library_plugin'
 _sql
 
+//Remove the "invisible in nav" option for slides
+);	ze\dbAdm::revision( 46050
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	DROP COLUMN `invisible_in_nav`
+_sql
+
+//Remove support for module-powered TUIX installation wizards.
+);	ze\dbAdm::revision( 57210
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]tuix_file_contents`
+	WHERE `type` = 'wizards'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]tuix_file_contents`
+	MODIFY COLUMN `type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls','visitor') NOT NULL
+_sql
+
+//Remove unused settings
+);	ze\dbAdm::revision( 57212
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name IN ("max_content_image_filesize", "max_content_image_filesize_unit")
+_sql
+
 //Bugfixes: moved logic to add columns from:
 //Email Template Manager, Common Features and Users.
 //Also added checks to make sure the columns exist before attempting to add them again.
 //Please note: this set of updates was backpatched from HEAD to 9.3.
 //It was added to 9.3 as a post-branch fix.
-);	if (ze\dbAdm::needRevision(56356) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'email_templates LIKE "include_a_fixed_attachment"')) ze\dbAdm::revision(56356
+);	if (ze\dbAdm::needRevision(57302) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'email_templates LIKE "include_a_fixed_attachment"')) ze\dbAdm::revision(57302
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]email_templates`
 	ADD COLUMN `include_a_fixed_attachment` tinyint(1) NOT NULL default 0,
@@ -2043,19 +2203,19 @@ _sql
 	ADD COLUMN `when_sending_attachments` enum('send_organizer_link', 'send_actual_file') DEFAULT 'send_organizer_link'
 _sql
 
-);	if (ze\dbAdm::needRevision(56357) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_item_versions LIKE "sensitive_content_message"')) ze\dbAdm::revision(56357
+);	if (ze\dbAdm::needRevision(57303) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_item_versions LIKE "sensitive_content_message"')) ze\dbAdm::revision(57303
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]]content_item_versions
 	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
 _sql
 
-);	if (ze\dbAdm::needRevision(56358) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'layouts LIKE "sensitive_content_message"')) ze\dbAdm::revision(56358
+);	if (ze\dbAdm::needRevision(57304) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'layouts LIKE "sensitive_content_message"')) ze\dbAdm::revision(57304
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]]layouts
 	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
 _sql
 
-);	if (ze\dbAdm::needRevision(56359) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'users LIKE "consent_hash"')) ze\dbAdm::revision(56359
+);	if (ze\dbAdm::needRevision(57305) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'users LIKE "consent_hash"')) ze\dbAdm::revision(57305
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]]users 
 	ADD COLUMN `consent_hash` varchar(28) NULL
@@ -2064,17 +2224,35 @@ _sql
 //In addition to the previous comment, this update was in Zenario User Consent Forms.
 //A core table column should not have different sizes depending on what module is or isn't running,
 //so this will be standardised.
-);	ze\dbAdm::revision( 56360
+);	ze\dbAdm::revision( 57306
 , <<<_sql
 	ALTER TABLE [[DB_PREFIX]]users 
 	MODIFY COLUMN `consent_hash` varchar(35) NULL
+_sql
+
+//Add a setting to control whether conductor should change the page title
+);	ze\dbAdm::revision(57550
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `set_page_title_with_conductor` enum('dont_set', 'append', 'overwrite') CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'append'
+	AFTER `slide_label`
+_sql
+
+
+
+//This update is just to fix a typo in a CSS class name for auto-created layouts for content types
+);	ze\dbAdm::revision(57712
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]layouts`
+	SET json_data = REPLACE(json_data, 'Gribreak_Body', 'Gridbreak_Body')
+	WHERE json_data like '%Gribreak_Body%'
 _sql
 
 
 //Update the home page layout for everyone who has the wrong path to the wow.js library.
 //Please note: this patch was made in 9.5 and backpatched to 9.3 and 9.4.
 //However this code is safe to run more than once without a specific check needed.
-);	ze\dbAdm::revision( 56365
+);	ze\dbAdm::revision( 57715
 , <<<_sql
 	UPDATE IGNORE `[[DB_PREFIX]]layouts`
 	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')

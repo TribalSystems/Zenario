@@ -195,10 +195,13 @@ class zenario_country_manager extends ze\moduleBaseClass {
 		$rv = [];
 		if ($fuse--) {
 			$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions',['country_id','parent_id'],['id' => $regionId]);
-			if ($region['country_id']) {
-				$rv =  ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries',['id','english_name','active'],['id' => $region['country_id']]);
-			} elseif ($region['parent_id']) {
-				$rv = self::getCountryOfRegion($region['parent_id'],$fuse);
+			
+			if (!empty($region) && is_array($region)) {
+				if (!empty($region['country_id'])) {
+					$rv =  ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries',['id','english_name','active'],['id' => $region['country_id']]);
+				} elseif (!empty($region['parent_id'])) {
+					$rv = self::getCountryOfRegion($region['parent_id'],$fuse);
+				}
 			}
 		}
 		return $rv;

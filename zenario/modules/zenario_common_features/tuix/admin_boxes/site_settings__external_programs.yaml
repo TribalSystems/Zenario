@@ -524,7 +524,7 @@ site_settings:
                     message: advpng is not correctly set up.
                     
         mysql:
-            label: Backup/restore
+            label: MySQL
             edit_mode:
                 priv: _PRIV_EDIT_SITE_SETTING
                 enabled: true
@@ -595,6 +595,30 @@ site_settings:
                     class: submit
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
+                mysql_timezone:
+                    label: 'MySQL timezone'
+                    snippet:
+                        html: |
+                            <p>
+                                If the Scheduled Task Manager module is enabled, MySQL timezone handling must be set up correctly.
+                            </p><p>
+                                If MySQL timezone data cannot be loaded, your server administrator will need to run:
+                                <br/>
+                                <code>&nbsp; &nbsp; mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql -p</code>
+                                <br/>
+                                (example on Ubuntu).
+                            </p>
+                    style: >
+                        margin-right: 0.5em;
+                test3:
+                    same_row: true
+                    visible_if:
+                        zenarioAB.value: mysql_path
+                    type: submit
+                    value: Test
+                    class: submit
+                    can_be_pressed_in_view_mode: true
+                    format_onchange: true
             show_errors_after_field: desc
             notices:
                 success:
@@ -613,6 +637,14 @@ site_settings:
                     show: false
                     type: error
                     message: mysqldump is not correctly set up.
+                success3:
+                    show: false
+                    type: success
+                    message: MySQL timezone handling is set up correctly.
+                error3:
+                    show: false
+                    type: error
+                    message: MySQL timezone handling is not correctly set up.
         antivirus:
             label: Antivirus
             edit_mode:

@@ -39,7 +39,7 @@ class zenario_common_features__organizer__document_tags extends ze\moduleBaseCla
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($_POST['delete'] ?? false) {
+		if (ze::post('delete')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
 				ze\document::deleteTag($id);

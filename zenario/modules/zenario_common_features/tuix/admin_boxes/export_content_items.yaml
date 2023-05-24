@@ -5,6 +5,9 @@ zenario_export_content_items:
         type: ''
         wasFiltered: false
         exportDuplicates: false
+        numLanguages: 0
+        contentTypeDetails: {}
+        headers: {}
     title: Export
     hide_tab_bar: Yes
     save_button_message: Export

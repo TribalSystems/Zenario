@@ -150,7 +150,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$instance = ze\plugin::details($_GET['refiner__nest'] ?? false);
+		$instance = ze\plugin::details(ze::get('refiner__nest'));
 		$c = $instance['class_name'];
 		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
 		
@@ -162,7 +162,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 		
 		//Get all of the existing slides and states
 		$coloursForStates = [];
-		$slides = ze\row::getAssocs('nested_plugins', ['id', 'slide_num', 'name_or_slide_label', 'states', 'request_vars'], ['instance_id' => $instance['instance_id'], 'is_slide' => 1]);
+		$slides = ze\row::getAssocs('nested_plugins', ['id', 'slide_num', 'slide_label', 'states', 'request_vars'], ['instance_id' => $instance['instance_id'], 'is_slide' => 1]);
 		
 		if (count($slides) < 1) {
 			$panel['no_items_message'] = ze\admin::phrase('Please add at least one slide to this nest to use the nest conductor.');
@@ -181,7 +181,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 			//Start adding elements for each slide, state and path
 			$ord = 100;
 			foreach ($slides as $slide) {
-				$slide['name_or_slide_label'] = zenario_plugin_nest::formatTitleTextAdmin($slide['name_or_slide_label']);
+				$slide['slide_label'] = zenario_plugin_nest::formatTitleTextAdmin($slide['slide_label']);
 				
 				$states = ze\ray::explodeAndTrim($slide['states']);
 				$multipleStates = count($states) > 1;
@@ -199,7 +199,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 				if ($showVars) {
 					$panel['items'][$id]['label'] = $slide['request_vars'];
 				} else {
-					$panel['items'][$id]['label'] = $slide['name_or_slide_label'];
+					$panel['items'][$id]['label'] = $slide['slide_label'];
 				}
 				
 				if ($multipleStates) {
@@ -235,9 +235,9 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 					
 					//Add item buttons for adding and moving paths to each state
 					if ($multipleStates) {
-						$label = ze\admin::phrase('[[slide_num]][[state]]. [[name_or_slide_label]]', $slide);
+						$label = ze\admin::phrase('[[slide_num]][[state]]. [[slide_label]]', $slide);
 					} else {
-						$label = ze\admin::phrase('[[slide_num]]. [[name_or_slide_label]]', $slide);
+						$label = ze\admin::phrase('[[slide_num]]. [[slide_label]]', $slide);
 					}
 					
 					$panel['item_buttons']['add_path_'. $state] = [
@@ -380,7 +380,7 @@ class zenario_plugin_nest__organizer__conductor extends zenario_plugin_nest__org
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		$instance = ze\plugin::details($_REQUEST['refiner__nest'] ?? false);
+		$instance = ze\plugin::details(ze::request('refiner__nest'));
 		$this->exitIfNoEditPermsOnNest($instance);
 		
 		

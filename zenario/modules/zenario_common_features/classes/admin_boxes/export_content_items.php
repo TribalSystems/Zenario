@@ -30,44 +30,97 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__admin_boxes__export_content_items extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($box['key']['exportDuplicates']) {
-			$headers = [
-				'File ID',
-				'Checksum',
-				'Filename',
-				'ID/Alias',
-				'Title',
-				'Description',
-				'Keywords',
-				'Release date',
-				'Version',
-				'Status',
-				'Last edited',
-				'Last edited by',
-				'Page word count',
-				'Attachment word count'
+		$box['key']['numLanguages'] = ze\lang::count();
+		if ($box['key']['type'] || $box['key']['exportDuplicates']) {
+			$box['key']['contentTypeDetails'] = ze\contentAdm::cTypeDetails($box['key']['type']);
+			$box['key']['contentTypeDetails']['export_filename'] = false;
+			
+			if (ze::in($box['key']['type'], 'audio', 'document', 'picture', 'video')) {
+				$box['key']['contentTypeDetails']['export_filename'] = true;
+			}
+		} else {
+			$box['key']['contentTypeDetails'] = [
+				'description_field' => 'mandatory',
+				'keywords_field' => 'mandatory',
+				'release_date_field' => 'mandatory',
+				'writer_field' => 'mandatory',
+				'enable_categories' => true,
+				'export_filename' => true
 			];
+		}
+		
+		$headers = [];
+		
+		if ($box['key']['exportDuplicates']) {
+			$headers[] = 'File ID';
+			$headers[] = 'Checksum';
+			$headers[] = 'Filename';
 
 			if (ze\module::inc('zenario_ctype_document_extra_data')) {
 				$headers[] = 'Reference/case no.';
 			}
-		} else {
-			$headers = [
-				'ID',
-				'Alias',
-				'Language',
-				'Title',
-				'Description',
-				'Keywords',
-				'Status',
-				'Date/time first created',
-				'First created by',
-				'Date/time latest version created',
-				'Latest version created by',
-				'Images and animations',
-				'Translations'
-			];
 		}
+		
+		$headers[] = 'ID';
+		$headers[] = 'Alias';
+		
+		if ($box['key']['numLanguages'] > 1) {
+			$headers[] = 'Language';
+			$headers[] = 'Translations';
+		}
+		
+		$headers[] = 'Title';
+		
+		if (ze::in($box['key']['contentTypeDetails']['description_field'], 'optional', 'mandatory')) {
+			$headers[] = 'Description';
+		}
+	
+		if (ze::in($box['key']['contentTypeDetails']['keywords_field'], 'optional', 'mandatory')) {
+			$headers[] = 'Keywords';
+		}
+		
+		$headers[] = 'Status';
+		$headers[] = 'Date/time first created';
+		$headers[] = 'First created by';
+		$headers[] = 'Date/time latest version created';
+		$headers[] = 'Latest version created by';
+		
+		if ($box['key']['contentTypeDetails']['enable_categories']) {
+			$headers[] = 'Categories';
+		}
+		
+		if (ze::in($box['key']['contentTypeDetails']['release_date_field'], 'optional', 'mandatory')) {
+			$headers[] = 'Release date';
+		}
+		
+		if (ze::in($box['key']['contentTypeDetails']['writer_field'], 'optional', 'mandatory')) {
+			$headers[] = 'Writer';
+		}
+		
+		if ($box['key']['exportDuplicates']) {
+			$headers[] = 'Version';
+			$headers[] = 'Page word count';
+			$headers[] = 'Attachment word count';
+		}
+		
+		if (!$box['key']['exportDuplicates'] && $box['key']['contentTypeDetails']['export_filename']) {
+			//In "Export duplicates" version, the filename is already added at the top. No need to add it again.
+			$headers[] = 'Filename';
+		}
+		
+		$headers[] = 'Menu path';
+		$headers[] = 'Layout';
+		
+		if (!$box['key']['exportDuplicates']) {
+			$headers[] = 'Images and animations';
+			
+			$exportAccesses = (ze::setting('period_to_delete_the_user_content_access_log'));
+			if ($exportAccesses) {
+				$headers[] = 'Accesses';
+			}
+		}
+		
+		$box['key']['headers'] = $headers;
 		
 		$datasetFieldNames = '<ul>';
 		foreach ($headers as $row) {
@@ -86,95 +139,74 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		$fields['download/desc']['snippet']['html'] = $linkHeader.'<p>'.$datasetFieldNames. '</p>';
 	}
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-		//Get row headers:
-		//If exporting from the "Find duplicates" panel, use a different set.
-		if ($box['key']['exportDuplicates']) {
-			$headers = [
-				'File ID',
-				'Checksum',
-				'Filename',
-				'ID',
-				'Alias',
-				'Title',
-				'Description',
-				'Keywords',
-				'Release date',
-				'Version',
-				'Status',
-				'Last edited',
-				'Last edited by',
-				'Page word count',
-				'Attachment word count'
-			];
-
-			if (ze\module::inc('zenario_ctype_document_extra_data')) {
-				$headers[] = 'Reference/case no.';
-			}
-		} else {
-			$headers = [
-				'ID',
-				'Alias',
-				'Language',
-				'Title',
-				'Description',
-				'Keywords',
-				'Status',
-				'Date/time first created',
-				'First created by',
-				'Date/time latest version created',
-				'Latest version created by',
-				'Images and animations',
-				'Translations'
-			];
-		}
-		
-		$exportAccesses = (ze::setting('period_to_delete_the_user_content_access_log'));
-		if (!$box['key']['exportDuplicates'] && $exportAccesses) {
-			$headers[] = 'Accesses';
-		}
-		
 		//Get Rows
+		$sql = '
+			SELECT';
+		
+		if ($box['key']['exportDuplicates'] || $box['key']['contentTypeDetails']['export_filename']) {
+			$sql .= '
+				f.id AS file_id,
+				v.filename,';
+		}
+		
 		if ($box['key']['exportDuplicates']) {
-			$sql = '
-				SELECT
-					f.id AS file_id,
-					f.short_checksum,
-					v.filename,
-					c.tag_id,
-					c.alias,
-					v.title,
-					v.description,
-					v.keywords,
-					v.release_date,
-					v.version AS version_id,
-					c.status,
-					v.last_modified_datetime,
-					v.last_author_id,
+			$sql .= '
+					f.short_checksum,';
+			
+			$sql .= '
 					IFNULL(cc.text_wordcount, 0) AS text_wordcount,
-					IFNULL(cc.extract_wordcount, 0) AS extract_wordcount';
+					IFNULL(cc.extract_wordcount, 0) AS extract_wordcount,';
 			
 			if (ze\module::inc('zenario_ctype_document_extra_data')) {
 				$sql .= ',
-					extra.ref_no';
+					extra.ref_no,';
 			}
-		} else {
-			$sql = '
-				SELECT
-					c.id,
-					c.type,
-					c.equiv_id,
-					c.tag_id,
-					c.alias,
-					c.language_id,
-					v.title,
-					v.description,
-					v.keywords,
-					c.status,
-					c.first_created_datetime,
-					v.creating_author_id,
-					v.created_datetime,
-					v.last_author_id,
+		}
+		
+		$sql .= '
+				c.id,
+				c.type,
+				c.equiv_id,
+				c.tag_id,
+				c.alias,';
+		
+		if ($box['key']['numLanguages'] > 1) {
+			$sql .= '
+				c.language_id,';
+		}
+		
+		$sql .= '
+				v.title,
+				v.version AS version_id,
+				c.status,
+				c.first_created_datetime,
+				v.creating_author_id,
+				v.created_datetime,
+				v.last_author_id,
+				v.last_modified_datetime';
+		
+		if (ze::in($box['key']['contentTypeDetails']['description_field'], 'optional', 'mandatory')) {
+			$sql .= ',
+			v.description';
+		}
+		
+		if (ze::in($box['key']['contentTypeDetails']['keywords_field'], 'optional', 'mandatory')) {
+			$sql .= ',
+				v.keywords';
+		}
+		
+		if (ze::in($box['key']['contentTypeDetails']['release_date_field'], 'optional', 'mandatory')) {
+			$sql .= ',
+			v.release_date';
+		}
+		
+		if (ze::in($box['key']['contentTypeDetails']['writer_field'], 'optional', 'mandatory')) {
+			$sql .= ',
+			wp.first_name AS writer_first_name, wp.last_name AS writer_last_name';
+		}
+		
+		if (!$box['key']['exportDuplicates']) {
+			$sql .= ',
 					(
 						SELECT COUNT(DISTINCT ii.image_id)
 						FROM ' . DB_PREFIX . 'inline_images AS ii
@@ -184,6 +216,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 						AND ii.foreign_key_version = v.version
 					) AS inline_files';
 			
+			$exportAccesses = (ze::setting('period_to_delete_the_user_content_access_log'));
 			if ($exportAccesses) {
 				$sql .= ',
 					IF(COUNT(uca.user_id) > 0, COUNT(uca.user_id), 0) AS accesses';
@@ -197,7 +230,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 				AND c.type = v.type
 				AND c.admin_version = v.version';
 		
-		if ($box['key']['exportDuplicates']) {
+		if ($box['key']['exportDuplicates'] || $box['key']['contentTypeDetails']['export_filename']) {
 			$sql .= '
 			LEFT JOIN ' . DB_PREFIX . 'files AS f
                 ON f.id = v.file_id
@@ -205,7 +238,9 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 				ON v.id = cc.content_id
 				AND v.type = cc.content_type
 				AND v.version = cc.content_version';
-			
+		}
+		
+		if ($box['key']['exportDuplicates']) {
 			if (ze\module::inc('zenario_ctype_document_extra_data')) {
 				$sql .= '
 					LEFT JOIN ' . DB_PREFIX . ZENARIO_CTYPE_DOCUMENT_EXTRA_DATA_PREFIX . 'document_extra_data extra
@@ -215,7 +250,13 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			}
 		}
 		
-		if ($exportAccesses) {
+		if (ze::in($box['key']['contentTypeDetails']['writer_field'], 'optional', 'mandatory')) {
+			$sql .= '
+			LEFT JOIN ' . DB_PREFIX . 'writer_profiles AS wp
+				ON v.writer_id = wp.id';
+		}
+		
+		if (!$box['key']['exportDuplicates'] && $exportAccesses) {
 			$sql .= '
 				LEFT JOIN ' . DB_PREFIX . 'user_content_accesslog AS uca
 					ON v.id = uca.content_id
@@ -262,41 +303,87 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$contentItem = [];
+			
 			if ($box['key']['exportDuplicates']) {
 				$contentItem['file_id'] = $row['file_id'];
 				$contentItem['short_checksum'] = $row['short_checksum'];
 				$contentItem['filename'] = $row['filename'];
-				$contentItem['tag_id'] = $row['tag_id'];
-				$contentItem['alias'] = $row['alias'];
-				$contentItem['title'] = $row['title'];
-				$contentItem['description'] = $row['description'];
-				$contentItem['keywords'] = $row['keywords'];
-				$contentItem['release_date'] = ze\admin::formatDate($row['release_date'], '_MEDIUM');
-				$contentItem['version_id'] = $row['version_id'];
-				$contentItem['status'] = isset($statusEnglishNames[$row['status']]) ? $statusEnglishNames[$row['status']] : $row['status'];
-				$contentItem['last_modified_datetime'] = ze\admin::formatDateTime($row['last_modified_datetime'], '_MEDIUM');
-				$contentItem['last_author'] = self::getAdminFullname($row['last_author_id'], $admins);
-				$contentItem['text_wordcount'] = $row['text_wordcount'];
-				$contentItem['extract_wordcount'] = $row['extract_wordcount'];
-
+				
 				if (ze\module::inc('zenario_ctype_document_extra_data')) {
 					$contentItem['ref_no'] = $row['ref_no'];
 				}
-			} else {
-				$contentItem['tag_id'] = $row['tag_id'];
-				$contentItem['alias'] = $row['alias'];
+			}
+			
+			$contentItem['tag_id'] = $row['tag_id'];
+			$contentItem['alias'] = $row['alias'];
+			
+			if ($box['key']['numLanguages'] > 1) {
 				$contentItem['language'] = ze\lang::name($row['language_id']);
-				$contentItem['title'] = $row['title'];
-				$contentItem['description'] = $row['description'];
-				$contentItem['keywords'] = $row['keywords'];
-				$contentItem['status'] = isset($statusEnglishNames[$row['status']]) ? $statusEnglishNames[$row['status']] : $row['status'];
-				$contentItem['first_created_datetime'] = ze\admin::formatDateTime($row['first_created_datetime'], '_MEDIUM');
-				$contentItem['creating_author'] = self::getAdminFullname($row['creating_author_id'], $admins);
-				$contentItem['created_datetime'] = ze\admin::formatDateTime($row['created_datetime'], '_MEDIUM');
-				$contentItem['last_author'] = self::getAdminFullname($row['last_author_id'], $admins);
-				$contentItem['inline_files'] = (string)$row['inline_files'];
 				$contentItem['translations'] = self::getTranslationCount($row['id'], $row['type'], $row['equiv_id'], $row['language_id'], $languages);
-				
+			}
+			
+			$contentItem['title'] = $row['title'];
+			
+			if (ze::in($box['key']['contentTypeDetails']['description_field'], 'optional', 'mandatory')) {
+				$contentItem['description'] = $row['description'];
+			}
+			
+			if (ze::in($box['key']['contentTypeDetails']['keywords_field'], 'optional', 'mandatory')) {
+				$contentItem['keywords'] = $row['keywords'];
+			}
+			
+			$contentItem['status'] = isset($statusEnglishNames[$row['status']]) ? $statusEnglishNames[$row['status']] : $row['status'];
+			$contentItem['first_created_datetime'] = ze\admin::formatDateTime($row['first_created_datetime'], '_MEDIUM');
+			$contentItem['creating_author'] = self::getAdminFullname($row['creating_author_id'], $admins);
+			
+			$contentItem['last_modified_datetime'] = ze\admin::formatDateTime($row['last_modified_datetime'], '_MEDIUM');
+			$contentItem['last_author'] = self::getAdminFullname($row['last_author_id'], $admins);
+			
+			if ($box['key']['contentTypeDetails']['enable_categories']) {
+				$contentItemCategories = ze\category::contentItemCategories($row['id'], $row['type']);
+				if (!empty($contentItemCategories)) {
+					$contentItem['categories'] = [];
+					
+					foreach ($contentItemCategories as $category) {
+						$contentItem['categories'][] = ($category['public_name'] ?: $category['name']);
+					}
+					
+					$contentItem['categories'] = implode(', ', $contentItem['categories']);
+				} else {
+					$contentItem['categories'] = '';
+				}
+			}
+			
+			if (ze::in($box['key']['contentTypeDetails']['release_date_field'], 'optional', 'mandatory')) {
+				$contentItem['release_date'] = ze\admin::formatDate($row['release_date'], '_MEDIUM');
+			}
+			
+			if (ze::in($box['key']['contentTypeDetails']['writer_field'], 'optional', 'mandatory')) {
+				$contentItem['writer_name'] = trim(implode(" ", [$row['writer_first_name'], $row['writer_last_name']]));
+			}
+			
+			if ($box['key']['exportDuplicates']) {
+				$contentItem['version_id'] = $row['version_id'];
+				$contentItem['text_wordcount'] = $row['text_wordcount'];
+				$contentItem['extract_wordcount'] = $row['extract_wordcount'];
+			}
+			
+			if ($box['key']['exportDuplicates'] || $box['key']['contentTypeDetails']['export_filename']) {
+				$contentItem['filename'] = $row['filename'];
+			}
+			
+			$menuArray = ze\menu::getFromContentItem($row['id'], $row['type']);
+			if (!empty($menuArray)) {
+				$contentItem['menu'] = ze\menuAdm::pathWithSection($menuArray['mID']);
+			} else {
+				$contentItem['menu'] = ze\lang::phrase('not in menu');
+			}
+			
+			$contentItem['layout'] = ze\layoutAdm::codeName(ze\content::layoutId($row['id'], $row['type'], $row['version_id']));
+			
+			if (!$box['key']['exportDuplicates']) {
+				$contentItem['inline_files'] = (string)$row['inline_files'];
+			
 				if ($exportAccesses) {
 					$contentItem['accesses'] = $row['accesses'];
 				}
@@ -305,6 +392,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			$rows[] = $contentItem;
 						
 		}
+		
 		// Download file
 		$downloadFileName = 'Content items export '.date('Y-m-d');
 		if ($values['download/type'] == 'csv') {
@@ -314,7 +402,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			$f = fopen($filename, 'wb');
 			
 			// Write column headers then data to CSV
-			fputcsv($f, $headers);
+			fputcsv($f, $box['key']['headers']);
 			foreach ($rows as $row) {
 				fputcsv($f, $row);
 			}
@@ -331,7 +419,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		} else {
 			require_once CMS_ROOT.'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 			$objPHPExcel = new PHPExcel();
-			$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, 'A1');
+			$objPHPExcel->getActiveSheet()->fromArray($box['key']['headers'], NULL, 'A1');
 			$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, 'A2');
 			header('Content-Type: application/vnd.ms-excel');
 			header('Content-Disposition: attachment; filename="'.$downloadFileName.'.xls"');
@@ -346,10 +434,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		if (isset($admins[$adminId])) {
 			$creatingAuthor = $admins[$adminId];
 		} else {
-			$creatingAuthorDetails = ze\row::get('admins', ['first_name', 'last_name'], $adminId);
-			if ($creatingAuthorDetails) {
-				$creatingAuthor = $creatingAuthorDetails['first_name'] . ' ' . $creatingAuthorDetails['last_name'];
-			}
+			$creatingAuthor = ze\admin::formatName($adminId);
 			$admins[$adminId] = $creatingAuthor;
 		}
 		return $creatingAuthor;

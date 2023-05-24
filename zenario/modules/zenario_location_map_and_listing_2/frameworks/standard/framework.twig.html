@@ -185,7 +185,12 @@
 						<div id="{{location.htmlId|escape}}_basic_details">
 							{% if this.setting('show_images') and location.list_image %}
 								<div class="image list lmal_location_image"> 
-									<img src="{{location.list_image}}" alt="{{location.alt_tag|escape}}">
+									<img
+										src="{{location.list_image}}"
+										alt="{{location.alt_tag|escape}}"
+										{% if location.list_image_width %} width="{{location.list_image_width|e}}" {% endif %}
+										{% if location.list_image_height %} height="{{location.list_image_height|e}}" {% endif %}
+									>
 								</div>
 							{% endif %}
 							<div class="lmal_location_content"> 

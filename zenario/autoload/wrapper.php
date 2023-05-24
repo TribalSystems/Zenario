@@ -108,6 +108,10 @@ class wrapper {
 				$addedSkin = true;
 			}
 		} while (--$limit && $addedSkin);
+		
+		
+		//Get an array of which modules are currently running
+		$runningModules = array_flip(\ze\row::getValues('modules', 'class_name', ['is_pluggable' => 1, 'status' => ['module_running', 'module_is_abstract']]));
 	
 	
 		foreach ($skins as $skinName) {
@@ -151,6 +155,34 @@ class wrapper {
 				
 					$file = $fb[1];
 					$isEditableFile = $fb[3];
+					
+					//Watch out for CSS files that are for plugins.
+					//These will be in one of two formats:
+						//2.name.css for every plugin of a module
+						//2.name_123.css for a specific plugin
+					if ($isEditableFile) {
+						$nameparts = explode('.', $file);
+						if (isset($nameparts[2])
+						 && $nameparts[0] == '2') {
+							
+							//For each plugin-related CSS file, check to see if its module is in the
+							//list of running modules.
+							//First, check the "2.name.css" format.
+							$moduleName1 = $nameparts[1];
+							if (!isset($runningModules[$moduleName1])) {
+								
+								//If that didn't match, maybe the file was using the "2.name_123.css" format
+								//instead? Chop the "_123" off of the end and try again.
+								$moduleName2 = explode('_', $moduleName1);
+								array_pop($moduleName2);
+								$moduleName2 = implode('_', $moduleName2);
+								
+								if (!isset($runningModules[$moduleName2])) {
+									continue;
+								}
+							}
+						}
+					}
 				
 					//Look for overridden CSS files
 					if ($linkV !== false

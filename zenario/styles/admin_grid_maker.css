@@ -22,21 +22,6 @@ body.iframe {
 	padding:6px;
 }
 
-#settings .ui-spinner-disabled {
-	opacity: 0.7;
-}
-
-#settings .ui-spinner-disabled a {
-	display: none;
-}
-
-#settings .ui-spinner span.zenario_grid_unit {
-	position: relative;
-	right: 25px;
-	top: 2px
-}
-
-
 span.zenario_grid_setting_warning,
 span.zenario_grid_setting_warning input {
 	background-image: none;
@@ -251,7 +236,10 @@ div.zenario_grid_object_properties span {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	/*max-width:calc(100% - 30px);*/
+}
+
+div.zenario_grid_object_properties span.zenario_grid_object_edit_properties {
+	max-width:calc(100% - 30px);
 }
 
 div.zenario_grid_object_properties span,
@@ -515,10 +503,6 @@ div.zenario_grid_break_outer_wrap div.zenario_grid_border {
 	margin-bottom: 0;
 }
 
-.zenario_grid_preview iframe {
-	border: 1px solid black;
-}
-
 /*  Different Grid Heights, taller  */
 
 body.iframe div.zenario_grid_border {
@@ -529,26 +513,6 @@ body.iframe div.zenario_grid_border {
 
 body.iframe > .slot > div.zenario_grid_border {
 	height: 40px;
-}
-
-body.iframe .zenario_grid_bg_preview .small_slot div.zenario_grid_border {
-	height: 45px;
-}
-
-body.iframe .zenario_grid_bg_preview .medium_slot div.zenario_grid_border {
-	height: 75px;
-}
-
-body.iframe .zenario_grid_bg_preview .large_slot div.zenario_grid_border {
-	height: 115px;
-}
-
-body.iframe .zenario_grid_bg_preview .xlarge_slot div.zenario_grid_border {
-	height: 165px;
-}
-
-body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
-	height: 215px;
 }
 
 
@@ -562,13 +526,15 @@ body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
 --------------------------------------------------------------------------------------------------*/
 
 #settings .zenario_grid_options {
+	display: block;
 	clear:both;
 	background:url('../admin/images/grid_maker/border.gif') repeat-x bottom;
 	padding-left:25px;
 }
 
 #settings .zenario_grid_options .zenario_grid_type,
-#settings .zenario_grid_options .zenario_grid_resp_and_rtl {
+#settings .zenario_grid_options .zenario_grid_resp_and_rtl,
+#settings .zenario_grid_options .zenario_grid_dims {
 	float:left;
 }
 
@@ -683,39 +649,6 @@ body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
 	cursor:default !important;
 }
 
-#settings #settings--tabs {
-	display:inline-block;
-	float:left;
-	height:36px;
-	padding-top:14px;
-	font-weight:bold;
-}
-
-#settings #settings--tabs a {
-	display:block;
-	width:102px;
-	height:24px;
-	padding-top:12px;
-	text-align:center;
-	float:left;
-	margin-right:3px;
-	color:#E2E2E2;
-	text-shadow:0 1px 1px #000;
-	background:url('../admin/images/grid_maker/tab-off-state.gif') no-repeat bottom;
-	cursor:pointer;
-}
-
-#settings #settings--tabs a:hover {
-	background:url('../admin/images/grid_maker/tab-over-state.gif') no-repeat bottom;
-}
-
-#settings #settings--tabs.zenario_grid_tabs_grid_selected a.zenario_grid_setting_preview_grid,
-#settings #settings--tabs.zenario_grid_tabs_slots_selected a.zenario_grid_setting_edit_slots {
-	color:#333;
-	text-shadow:none;
-	background:url('../admin/images/grid_maker/tab-on-sate.gif') no-repeat bottom;
-}
-
 #settings .download_links_box_middle {
 	display:inline-block;
 	float:left;
@@ -760,40 +693,7 @@ body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
 	border:0;
 }
 
-#settings .ui-spinner .ui-spinner-input {
-	margin-right:28px;
-	padding:4px 0;
-	text-align:right;
-}
 
-#settings .ui-spinner .zenario_grid_setting_cols {
-	width:30px;
-}
-
-#settings .ui-spinner-button {
-	width:21px;
-}
-
-#settings .ui-spinner-button .ui-icon {
-	width:21px;
-	height:15px;
-}
-
-#settings .ui-state-default.ui-spinner-up .ui-icon {
-	background:url('../admin/images/grid_maker/nudge-btn-off-state-up.gif') no-repeat bottom;
-}
-
-#settings .ui-state-default.ui-spinner-up .ui-icon:hover {
-	background:url('../admin/images/grid_maker/nudge-btn-over-state-up.gif') no-repeat bottom;
-}
-
-#settings .ui-state-default.ui-spinner-down .ui-icon {
-	background:url('../admin/images/grid_maker/nudge-btn-off-state-down.gif') no-repeat bottom;
-}
-
-#settings .ui-state-default.ui-spinner-down .ui-icon:hover {
-	background:url('../admin/images/grid_maker/nudge-btn-over-state-down.gif') no-repeat bottom;
-}
 
 /* Grid area 
 --------------------------------------------------------------------------------------------------*/
@@ -813,111 +713,8 @@ body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
 	position:relative;
 }
 
-.grid_panel_wrap #grid.zenario_grid_slot_view,
-.grid_panel_wrap #grid.zenario_grid_grid_view .zenario_grid_preview_frame {
-	overflow: hidden;
-	overflow-y: auto;
-}
-
 .grid_panel_wrap #grid.zenario_grid_slot_view {
 	overflow-x:auto;
-}
-
-body.iframe .zenario_grid_bg_preview,
-#grid .zenario_grid_bg_preview {
-	background:#FFF;
-	padding:1px 0;
-	min-height: 50px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_size_wrap {
-	height: 15px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_size {
-	width:63px;
-	height:31px;
-	padding:8px 5px 0;
-	background:url('../admin/images/grid_maker/dragger-size-box.png') no-repeat;
-	position: relative;
-	right: 36px;
-	z-index: 2;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_size input.zenario_grid_preview_value {
-	width: 63px;
-	height:24px;
-	border:0;
-	background:#333;
-	color:#FFF;
-	text-align:center;
-	padding:0;
-}
-
-#grid div.zenario_grid_preview_ruler {
-	height: 18px;
-	background: white top left url('../admin/grid_maker/ruler_bg.php');
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons {
-	width:198px;
-	height:51px;
-	margin:0 0 0 25px;
-	background:#333333;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	font-size:11px;
-	text-shadow:0 1px 1px #000;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a {
-	display:block;
-	width:66px;
-	height:51px;
-	float:left;
-	text-align:center;
-	cursor:pointer;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a:hover {
-	color:#42BFF7;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons span {
-	width:66px;
-	height:19px;
-	padding-top:32px;
-	display:block;
-	background:url('../admin/images/grid_maker/vertical-divider.gif') no-repeat left 12px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons:first-child span {
-	background:none;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a.zenario_grid_preview_mobile {
-	background:url('../admin/images/grid_maker/mobile-icon-white.svg') no-repeat center 10px / auto 16px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a.zenario_grid_preview_tablet {
-	background:url('../admin/images/grid_maker/tablet-icon-white.svg') no-repeat center 10px / auto 16px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a.zenario_grid_preview_desktop {
-	background:url('../admin/images/grid_maker/desktop-icon-white.svg') no-repeat center 10px / auto 14px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a.zenario_grid_preview_mobile:hover {
-	background:url('../admin/images/grid_maker/mobile-icon-blue.svg') no-repeat center 10px / auto 16px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a.zenario_grid_preview_tablet:hover {
-	background:url('../admin/images/grid_maker/tablet-icon-blue.svg') no-repeat center 10px / auto 16px;
-}
-
-#grid .zenario_grid_preview .zenario_grid_preview_resize_buttons a.zenario_grid_preview_desktop:hover {
-	background:url('../admin/images/grid_maker/desktop-icon-blue.svg') no-repeat center 10px / auto 14px;
 }
 
 #grid-slider .ui-state-default, 
@@ -975,97 +772,7 @@ body.iframe .zenario_grid_bg_preview,
     border-top-left-radius: 2px;
 }
 
-/* Download links area 
---------------------------------------------------------------------------------------------------*/
-
-#download_links {
-	width:100%;
-	overflow:hidden;
-	background:#707070;
-}
-
-#download_links h3 {
-	font-size:14px;
-	font-weight:bold;
-	text-shadow:0 1px 1px #000;
-	padding-bottom:15px;
-	margin:0;
-}
-
-#download_links h3 small {
-	font-weight:normal;
-	font-size:11px;
-	padding-left:10px;
-}
-
-#download_links h3 large {
-	font-size: 15px;
-}
-
-#download_links .download_links_box_left,
-#download_links .download_links_box_middle,
-#download_links .download_links_box_right {
-	display:inline-block;
-	float:left;
-	padding:15px 35px 15px 50px;
-}
-
-#download_links div.zenario_grid_save_tf,
-#download_links div.zenario_grid_downloads,
-#download_links div.zenario_grid_save_css {
-	background:#333;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	padding:10px 20px;
-}
-
-#download_links .zenario_grid_downloads {
-	text-align: center;
-}
-
-#download_links div.zenario_grid_save_css {
-	float: left;
-	clear: both;
-}
-
-#download_links div.zenario_grid_save_tf .nice_button:hover,
-#download_links div.zenario_grid_save_css .nice_button:hover {
-	opacity:0.8;
-}
-
-#download_links div.zenario_grid_disabled .nice_button:hover {
-	opacity:1;
-}
-
-#download_links div.zenario_grid_save_tf {
-	float: left;
-}
-
-#download_links div.zenario_grid_downloads {
-	float: right;
-}
-
-#download_links div.zenario_grid_save,
-#download_links div.zenario_grid_save_as,
-#download_links div.zenario_grid_download_image,
-#download_links div.zenario_grid_download_css,
-#download_links div.zenario_grid_download_html,
-#download_links div.zenario_grid_download_zip {
-	float: left;
-}
-
-#download_links .zenario_grid_disabled {
-}
-
-#download_links .zenario_grid_save_and_save_as_disabled {
-}
-
-#download_links .zenario_grid_export_section_disabled {
-}
-
 #settings .zenario_grid_options:after,
-#download_links:after,
 div.zenario_grid_cell_size:after {
     content: ".";
     display: block;
@@ -1074,28 +781,8 @@ div.zenario_grid_cell_size:after {
     visibility: hidden;
 }
 
-.ie #settings .zenario_grid_options,
-.ie .#download_links {
+.ie #settings .zenario_grid_options {
     zoom: 1;
-}
-
-div.zenario_grid_preview_overlay {
-	position: absolute;
-	width: 100%;
-	z-index: 10;
-	display: none;
-}
-
-#grid-slider.zenario_grid_preview_resize {
-	visibility: hidden;
-}
-
-#grid-slider.zenario_grid_preview_resize .ui-slider-handle {
-	visibility: visible;
-}
-
-input.zenario_grid_preview_mobile {
-	clear: left;
 }
 
 
@@ -1108,6 +795,154 @@ div.zenario_grid_download_bg {
 	height: 30em;
 }
 
+
+
+/* Wiggly lines for the header and footer
+--------------------------------------------------------------------------------------------------*/
+
+/*
+	Note: This is some initial placeholder code,
+	copied from https://stackoverflow.com/questions/17285514/is-it-possible-to-make-a-squiggly-line
+*/
+
+div.wiggly_line {
+    position: relative;
+    height: 15px;
+    display: none;
+}
+
+body.zenario_gm_editing_header div.wiggly_line_for_header,
+body.zenario_gm_editing_footer div.wiggly_line_for_footer {
+	display: block;
+}
+
+body.zenario_gm_editing_header .zenario_overflow_wrap {
+	position:relative;
+	padding-bottom:15px;
+}
+
+body.zenario_gm_editing_header .zenario_overflow_wrap .wiggly_line_for_header {
+	position:absolute;
+	bottom:0;
+	transform:rotate(-180deg);
+}
+
+div.wiggly_line.wiggly_line_for_footer,
+div.wiggly_line.wiggly_line_for_header {
+	border-bottom:5px solid #C6D5DD;
+}
+
+div.wiggly_line.wiggly_line_for_footer:before,
+div.wiggly_line.wiggly_line_for_header:after {
+  	content: "";
+  	position: absolute;
+  	left: 0;
+  	bottom: 0;
+  	right: 0;
+  	background-repeat: repeat;
+  	height: 10px;
+  	background-size: 20px 20px;
+  	background-image:radial-gradient(circle at 10px -5px, transparent 12px, #C6D5DD 13px);
+}
+
+div.wiggly_line.wiggly_line_for_footer:after,
+div.wiggly_line.wiggly_line_for_header:before {
+  	content: "";
+  	position: absolute;
+  	left: 0;
+  	bottom: 0;
+  	right: 0;
+  	background-repeat: repeat;
+  	height: 15px;
+  	background-size: 40px 20px;
+  	background-image:radial-gradient(circle at 10px 15px, #C6D5DD 12px, transparent 13px);
+}
+
+
+
+/* Some placeholder styles for the reworked header
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_gmControls {
+	display: inline-block;
+	float: left;
+	width: auto;
+	border: none;
+	padding: 12px 0;
+}
+
+.zenario_gmControls_right {
+	float: right;
+	padding-right: 50px;
+}
+
+.zenario_gmControls_sepBlock {
+	padding-left: 2px;
+	background: url('../admin/images/grid_maker/vertical-divider.gif') no-repeat left;
+}
+
+.zenario_gmControls_newLine {
+	clear: left;
+}
+
+.zenario_gmControls .zfab_row,
+.zenario_gmControls .zfab_row .title,
+.zenario_gmControls .zfab_row .zfab_row_fields {
+	display: inline-block;
+}
+
+.zenario_gmControls input {
+    margin-left: 5px;
+}
+
+.zenario_gmControls .zenario_group_2_cols {
+    min-width: unset;
+}
+
+.zenario_gmControls .zenario_field_tooltip {
+	display: inline-block;
+	margin-right: 20px;
+	margin-left: 5px;
+	width: 16px;
+	height: 16px;
+	text-indent: -99999px;
+	background: url('../admin/images/grid_maker/icon-info.svg') no-repeat 0 0 / 16px 16px;
+}
+
+.zenario_gmControls .unredo {
+	width: 30px;
+	height: 30px;
+	display: block;
+	float: left;
+	font-size: 0;
+	line-height: 0;
+	margin-left: 10px;
+	cursor: pointer;
+	border: none;
+}
+
+.zenario_gmControls .undo {
+	background:url('../admin/images/grid_maker/undo-off-state.svg') no-repeat 0 0 / 30px 30px;
+}
+
+.zenario_gmControls .redo {
+	background:url('../admin/images/grid_maker/redo-off-state.svg') no-repeat 0 0 / 30px 30px;
+}
+
+.zenario_gmControls .undo.enabled:hover {
+	background:url('../admin/images/grid_maker/undo-hover-state.svg') no-repeat 0 0 / 30px 30px;
+}
+
+.zenario_gmControls .redo.enabled:hover {
+	background:url('../admin/images/grid_maker/redo-hover-state.svg') no-repeat 0 0 / 30px 30px;
+}
+
+.zenario_gmControls .unredo.disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+
 /* Buttons
 --------------------------------------------------------------------------------------------------*/
 
@@ -1118,7 +953,6 @@ div.zenario_grid_download_bg {
 		border-radius: 4px;
 	}
 
-	#download_links .nice_button,
 	form.zenario_grid_form .nice_button,
 	#settings .nice_button {
 		float: left;
@@ -1131,21 +965,15 @@ div.zenario_grid_download_bg {
 		margin-right:10px;
 	}
 	
-	#download_links .zenario_grid_downloads .nice_button {
-		margin-right:5px;
-	}
-	
 	#settings .nice_button {
 		margin-right:0;
 	}
 	
-	#download_links .nice_button .r,
 	form.zenario_grid_form .nice_button .r,
 	#settings .nice_button .r {
 		float:right;
 	}
 	
-	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button .i,
 	#settings .nice_button .i {
 		border: none;
@@ -1153,7 +981,6 @@ div.zenario_grid_download_bg {
 		margin: 0;
 	}
 	
-	#download_links .nice_button:hover,
 	form.zenario_grid_form .nice_button:hover,
 	#settings .nice_button:hover {
 		cursor:pointer;
@@ -1162,13 +989,11 @@ div.zenario_grid_download_bg {
 
 	/* Fix for IE7 */
 
-	#download_links .nice_button .r,
 	form.zenario_grid_form .nice_button .r,
 	#settings .nice_button .r {
 		float: none;
 	}
 
-	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button .i,
 	#settings .nice_button .i {
 		float: none;
@@ -1177,9 +1002,6 @@ div.zenario_grid_download_bg {
 	
 	/* default settings */
 
-	#download_links .nice_button,
-	#download_links .nice_button .r,
-	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button,
 	form.zenario_grid_form .nice_button .r,
 	form.zenario_grid_form .nice_button .i,
@@ -1189,19 +1011,14 @@ div.zenario_grid_download_bg {
 		height: 30px;
 	}
 	
-	#download_links .download_btn,
-	#download_links .download_btn .r,
-	#download_links .download_btn .i,
 	form.zenario_grid_form .nice_button,
 	form.zenario_grid_form .nice_button .r,
 	form.zenario_grid_form .nice_button .i  {
 		height: 31px;
 	}
 	
-	#download_links .nice_button,
 	form.zenario_grid_form .nice_button,
 	#settings .nice_button,
-	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button .i,
 	#settings .nice_button .i {
 		background: #36b6d3; /* Old browsers */
@@ -1215,10 +1032,8 @@ div.zenario_grid_download_bg {
 		border-radius:4px;
 	}
 	
-	#download_links .nice_button:hover,
 	form.zenario_grid_form .nice_button:hover,
 	#settings .nice_button:hover,
-	#download_links .nice_button .i:hover,
 	form.zenario_grid_form .nice_button .i:hover,
 	#settings .nice_button .i:hover {
 		background: #0085ac; /* Old browsers */
@@ -1228,51 +1043,25 @@ div.zenario_grid_download_bg {
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0085ac', endColorstr='#36b6d3',GradientType=0 ); /* IE6-9 */
 	}
 	
-	#download_links .nice_button,
 	form.zenario_grid_form .nice_button,
 	#settings .nice_button,
-	#download_links .zenario_grid_disabled .nice_button {		
 		-webkit-transition: all 0.3s ease-in-out;
 		-moz-transition: all 0.3s ease-in-out;
 		-o-transition: all 0.3s ease-in-out;
 		transition: all 0.3s ease-in-out;
 	}
 	
-	#download_links .zenario_grid_disabled .nice_button,
-	#download_links .zenario_grid_disabled .nice_button:hover {
-		background: #dbd9da; /* Old browsers */
-		background: -moz-linear-gradient(top, #dbd9da 0%, #d3d3d3 34%, #cccccc 65%, #cdcbcc 100%); /* FF3.6-15 */
-		background: -webkit-linear-gradient(top, #dbd9da 0%,#d3d3d3 34%,#cccccc 65%,#cdcbcc 100%); /* Chrome10-25,Safari5.1-6 */
-		background: linear-gradient(to bottom, #dbd9da 0%,#d3d3d3 34%,#cccccc 65%,#cdcbcc 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dbd9da', endColorstr='#cdcbcc',GradientType=0 ); /* IE6-9 */
-	}
-	
-	#download_links .download_btn {
-		background:#4BD74A;
-	}
-	
-	#download_links .download_btn:hover {
-		background:#57F555;
-	}
-	
-	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button .i,
 	#settings .nice_button .i {
 		padding: 0px 15px 4px 15px;
 	}
 	
-	#download_links .nice_button a.i,
 	form.zenario_grid_form .nice_button a.i,
 	#settings .nice_button a.i {
 		height:24px;
 		padding: 6px 15px 0 15px;
 	}
 	
-	#download_links .download_btn a.i {
-		padding-right:32px;
-	}
-	
-	#download_links .nice_button .i,
 	form.zenario_grid_form .nice_button .i,
 	#settings .nice_button .i {
     	font-weight:bold;
@@ -1282,26 +1071,6 @@ div.zenario_grid_download_bg {
 		cursor:pointer;
 	}
 	
-	#download_links div.zenario_grid_disabled .nice_button:hover,
-	#download_links div.zenario_grid_disabled .nice_button .i {
-		cursor:default;
-	}
-	
-	#download_links .zenario_grid_disabled .nice_button .i {
-		color:#888;
-		font-weight:normal;
-		text-shadow:0 1px 1px #FFF;
-	}
-	
-	#download_links .download_btn .i {
-    	font-weight:normal;
-		color:#333;
-		font-size:13px;
-		text-shadow:0 1px 1px #FFF;
-	}
-	
-	#download_links .nice_button a,
-	#download_links .nice_button a:hover,
 	form.zenario_grid_form .nice_button a,
 	form.zenario_grid_form .nice_button a:hover,
 	#settings .nice_button a,
@@ -1593,7 +1362,12 @@ div.zenario_grid_download_bg {
 	}
 	
 	#toast-container {
-		margin-right:70px;
+		margin-right:240px;
+	}
+	
+	.zenario_gm_editing_header #toast-container,
+	.zenario_gm_editing_footer #toast-container {
+		margin-right:140px;
 	}
 	
 	#toast-container .toast-message {
@@ -1652,3 +1426,18 @@ div.zenario_grid_download_bg {
     #colorbox.zenario_grid_maker #cboxClose {
 		display:none;
 	}
+	
+
+/* RESPONSIVE STYLES
+--------------------------------------------------------------------------------------------------*/
+
+/* Layout max-width: 1280px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1281px) {
+
+	.zenario_grouping__resp_area.zenario_gmControls {
+		clear:left;
+	}
+
+}

@@ -42,9 +42,9 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 		if ($path != 'zenario_menu_text') return;
 		
 		//Try to get the Menu Id from the request
-		$box['key']['id'] = ze::ifNull($box['key']['mID'] ?? false, ($_REQUEST['mID'] ?? false), $box['key']['id']);
+		$box['key']['id'] = ze::ifNull($box['key']['mID'] ?? false, ze::request('mID'), $box['key']['id']);
 		
-		if (!$box['key']['languageId'] = ze::ifNull($box['key']['languageId'], ($_REQUEST['target_language_id'] ?? false), ($_REQUEST['languageId'] ?? false))) {
+		if (!$box['key']['languageId'] = ze::ifNull($box['key']['languageId'], ze::request('target_language_id'), ze::request('languageId'))) {
 			$box['key']['languageId'] = ze::$defaultLang;
 		}
 		

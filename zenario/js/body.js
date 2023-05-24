@@ -28,17 +28,13 @@
 
 //These functions are included on every page, just after the body tag, so they're written to be
 //as small as possible when minified
-(function(document, window, script) {
+(function(document, window, cType, layoutId, skinId, URLBasePath) {
 	
-	//Add polyfills for IE
-	if (!document.currentScript) {
-		script = document.createElement('script');
-		script.src = URLBasePath + 'zenario/js/ie.wrapper.js.php';
-		document.head.appendChild(script);
-	}
+	window.URLBasePath = URLBasePath;
 	
 	//This function sets/modifies a CSS class on the document.body.
-	var windowDotaddEventListener = window.addEventListener,
+	var script,
+		windowDotaddEventListener = window.addEventListener,
 	
 		//Create a function that runs code as soon as the DOM is ready.
 		//This uses jQuery's $(function() { ... }) function if possible, however if jQuery is not yet loaded
@@ -55,7 +51,9 @@
 		
 		zenarioL = window.zenarioL = {},
 		lSet = zenarioL.set = function(condition, metClassName, notMetClassName, tmp) {
-		
+			
+			notMetClassName = notMetClassName || ('not_' + metClassName);
+			
 			if (!condition) {
 				tmp = metClassName;
 				metClassName = notMetClassName;
@@ -92,6 +90,17 @@
 			lResize(window.zenarioGrid = zenarioGrid);
 		};
 	
+	zenarioL.cType = cType;
+	zenarioL.layoutId = layoutId;
+	zenarioL.skinId = skinId;
+	
+	//Add polyfills for IE
+	if (!document.currentScript) {
+		script = document.createElement('script');
+		script.src = URLBasePath + 'zenario/js/ie.wrapper.js.php';
+		document.head.appendChild(script);
+	}
+	
 	//Start off with empty settings for the grid
 	lInit({});
 	
@@ -101,7 +110,7 @@
 	
 	//Add a CSS class for whether this is retina or not.
 	//(Note that this won't work for IE 10 or earlier).
-	lSet(window.devicePixelRatio > 1, 'retina', 'not_retina');
+	lSet(window.devicePixelRatio > 1, 'retina');
 	
 	//Add a CSS class for whether this is a touch screen or not
 	lSet(('ontouchstart' in window) || navigator.msMaxTouchPoints, 'touchscreen', 'non_touchscreen');
@@ -142,6 +151,7 @@
 	//This file needs to be broken up into sections after it is minified.
 	//The minifier has special logic specifically just for this.
 	ZENARIO_END_OF_SECTION();
-
-
-})(document, window);
+	
+	
+	
+})(document, window, cType, layoutId, skinId, URLBasePath);

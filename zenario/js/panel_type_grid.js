@@ -69,7 +69,7 @@ var methods = methodsOf(
 //Use this to add any requests you need to the AJAX URL used to call your panel
 methods.returnAJAXRequests = function() {
 	return {
-		skinId: zenario.skinId || (windowParent && windowParent.zenario && windowParent.zenario.skinId)
+		skinId: zenarioL.skinId || (windowParent && windowParent.zenario && windowParent.zenarioL.skinId)
 	};
 };
 

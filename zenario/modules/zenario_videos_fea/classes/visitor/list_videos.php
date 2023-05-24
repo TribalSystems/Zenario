@@ -62,13 +62,30 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 				v.short_description AS description,
 				v.date,
 				v.url';
+		
+		if ($datasetFieldIds = $this->setting('show_dataset_fields')) {
+			$datasetFieldIds = explode(',', $datasetFieldIds);
+			foreach ($datasetFieldIds as $datasetFieldId) {
+				$datasetField = ze\row::get('custom_dataset_fields', ['db_column', 'is_system_field', 'type'], $datasetFieldId);
+				if ($datasetField && $datasetField['db_column']) {
+					if ($datasetField['is_system_field']) {
+						$sql .= ', v.' . ze\escape::sql($datasetField['db_column']) . ' ';
+					} else {
+						$sql .= ', vcd.' . ze\escape::sql($datasetField['db_column']) . ' ';
+					}
+				}
+			}
+		}
+		
 		return $sql;
 	}
 	protected function populateItemsFrom($path, &$tags, &$fields, &$values) {
 		$sql = '
 			FROM ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos v
 			LEFT JOIN ' . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link cvl
-				ON v.id = cvl.video_id';
+				ON v.id = cvl.video_id
+			LEFT JOIN '. DB_PREFIX. ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos_custom_data AS vcd
+				ON v.id = vcd.video_id';
 		return $sql;
 	}
 	protected function populateItemsWhere($path, &$tags, &$fields, &$values) {
@@ -136,6 +153,17 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 		} elseif ($orderBy == 'date') {
 			$sql = '
 				ORDER BY v.date DESC, v.title';
+		} elseif ($orderBy == 'custom_dataset_field' && ($datasetFieldId = $this->setting('sort_by_custom_dataset_field'))) {
+			$datasetField = ze\row::get('custom_dataset_fields', ['db_column', 'is_system_field', 'type'], $datasetFieldId);
+			if ($datasetField && $datasetField['db_column']) {
+				if ($datasetField['is_system_field']) {
+					$sql = '
+						ORDER BY v.' . ze\escape::sql($datasetField['db_column']) . ' ASC, v.title ASC';
+				} else {
+					$sql = '
+						ORDER BY  vcd.' . ze\escape::sql($datasetField['db_column']) . ' ASC, v.title ASC';
+				}
+			}
 		}
 		return $sql;
 	}
@@ -184,6 +212,19 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
+		//If displaying custom fields, set up the tuix columns
+		if ($datasetFieldIds = $this->setting('show_dataset_fields')) {
+			$datasetFieldIds = explode(',', $datasetFieldIds);
+			foreach ($datasetFieldIds as $datasetFieldId) {
+				$datasetField = ze\row::get('custom_dataset_fields', ['db_column', 'label'], $datasetFieldId);
+				if ($datasetField && $datasetField['db_column']) {
+					$tags['columns'][$datasetField['db_column']] = [
+						'title' => $datasetField['label']
+					];
+				}
+			}
+		}
+		
 		parent::fillVisitorTUIX($path, $tags, $fields, $values);
 		$this->translatePhrasesInTUIX($tags, $path);
 		$this->populateItems($path, $tags, $fields, $values);
@@ -219,7 +260,7 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 	
 	public function handlePluginAJAX() {
 		$videoId = $_POST['id'] ?? false;
-		switch ($_POST['action'] ?? false) {
+		switch (ze::post('action')) {
 			default:
 				echo 'Error, unrecognised command';
 		}

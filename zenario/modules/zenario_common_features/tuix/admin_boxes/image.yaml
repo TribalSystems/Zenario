@@ -20,10 +20,23 @@ zenario_image:
                 image:
                     image: {}
                 
+                filename:
+                    label: 'Filename when downloaded:'
+                    type: text
+                    maxlength: "255"
+                
+                size:
+                    snippet:
+                        html: ""
+                
+                where_used:
+                    label: "Where it's used"
+                    snippet:
+                        html: ""
+                
                 privacy_public: &privacy
                     hidden: true
                     show_as_a_span: true
-                    label: 'Privacy:'
                     type: text
                     value: Public
                     note_below: ''
@@ -44,18 +57,7 @@ zenario_image:
                         div_class: zenario_fbWarning
                         div: |
                             This image is missing from the directory public/images.
-                            Please close this box and click "Re-generate cache".
-                            
-                filename:
-                    label: 'Filename:'
-                    type: text
-                    maxlength: "255"
-                    side_note: |
-                        You may edit the filename for better search engine optimisation (SEO). Best is short and descriptive, separate words with hyphens. Should be unique on this site.
-                size:
-                    label: 'Size & dimensions (w × h):'
-                    snippet:
-                        html: ""
+                            Please close this box and click "Repair public links".
                 
                 alt_tag:
                     label: 'Alt tag:'
@@ -84,7 +86,14 @@ zenario_image:
                     label: 'Image credit:'
                     type: text
                     maxlength: "255"
+                
+                add_a_gallery_caption:
+                    label: 'Add a gallery caption'
+                    type: checkbox
+                    redraw_onchange: true
+                    side_note: "If you have an image gallery and want to show this image in the gallery, check here to add a caption."
                 floating_box_title:
+                    indent: 1
                     label: 'Caption:'
                     type: editor
                     dont_trim: true
@@ -92,6 +101,9 @@ zenario_image:
                         height: 5em;
                     side_note: >
                         If image is displayed in an enlarged box, use this caption.
+                    visible_if:
+                        lib.value: add_a_gallery_caption
+
             show_errors_after_field: image
         
         crops:
@@ -110,6 +122,8 @@ zenario_image:
                             <p>
                                 Crop and zoom is available for this image size (defined in plugin settings). Adjust the visible area using the handles, for this aspect ratio.
                             </p>
+                #This usage column is used for the cropping logic.
+                #It is separate to the "Where used" column.
                 usage:
                     snippet:
                         html: ''

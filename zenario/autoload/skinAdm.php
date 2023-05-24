@@ -353,9 +353,7 @@ class skinAdm {
 		if ($changed) {
 			if ($skinChanges) {
 				//Clear the page cache completely if a Skin or a Template Family has changed
-				$sql = '';
-				$ids = $values = [];
-				\ze::$dbL->reviewQueryForChanges($sql, $ids, $values, $table = 'template_family');
+				\ze\pageCache::clear('--layout-or-skin-files-changed--');
 		
 		
 				//Mark all current Template Families/Template Files/Skins as missing

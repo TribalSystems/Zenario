@@ -1,5 +1,6 @@
 .zenario_meta_data {
 	overflow:hidden;
+	clear:both;
 }
 
 .zenario_meta_data .writer_image {
@@ -41,10 +42,26 @@
 	padding-top:5px;
 }
 
+.zenario_meta_data .sticky_image {
+	display:inline-block;
+	margin:auto;
+	position:relative;
+}
+
+.zenario_meta_data .sticky_image img {
+	display:block;
+}
+
 /* For shaded background add the class 'shaded_bg' to the Meta Data plugin */
 
 .zenario_meta_data.shaded_bg {
 	overflow:hidden;
 	padding:20px;
 	background:#eaf0f4;
+}
+
+/* Center align meta data on masthead */
+
+.Slot_Masthead .zenario_meta_data {
+	text-align:center;
 }

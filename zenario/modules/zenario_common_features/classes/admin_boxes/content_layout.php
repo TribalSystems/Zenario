@@ -35,8 +35,20 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 		$tagSQL = "";
 		$cID = $cType = false;
 		$canEdit = true;
+
+		if ($box['key']['id_is_menu_node_id']) {
+			$total = 1;
+			$box['key']['idInOrganizer'] = $box['key']['id'];
+
+			$menuContentItem = ze\menu::getContentItem($box['key']['idInOrganizer']);
+			$cID = $box['key']['cID'] = $menuContentItem['content_id'];
+			$cType = $box['key']['cType'] = $menuContentItem['content_type'];
+
+			$tagSQL = "'". ze\escape::sql($box['key']['id'] = $cType. '_'. $cID). "'";
+			$canEdit = ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType);
+		}
 		
-		if (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
+		if (ze::request('cID') && ze::request('cType')) {
 			$total = 1;
 			$cID = $box['key']['cID'] = $_REQUEST['cID'] ?? false;
 			$cType = $box['key']['cType'] = $_REQUEST['cType'] ?? false;
@@ -279,5 +291,13 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 			}
 		}
 		
+	}
+
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		//Restore the prefix on the id, if it was there
+		if ($box['key']['idInOrganizer']) {
+			$box['key']['id'] = $box['key']['idInOrganizer'];
+		}
 	}
 }

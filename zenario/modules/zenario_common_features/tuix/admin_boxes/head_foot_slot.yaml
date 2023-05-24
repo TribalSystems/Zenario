@@ -12,6 +12,16 @@ zenario_head_foot_slot:
     hide_tab_bar: true
     tabs:
         slot:
+            notices:
+                note_about_editing_html:
+                    type: warning
+                    show: true
+                    message: >
+                        This interface allows you to enter tags and attributes that could
+                        potentially be used for cross-site scripting attacks (XSS) on this
+                        site.
+                        Please be sure that you understand what the code does, and do not
+                        copy-paste code from third party sources that you don't trust!
             edit_mode:
                 enabled: true
             fields:

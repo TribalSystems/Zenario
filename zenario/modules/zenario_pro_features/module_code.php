@@ -328,7 +328,7 @@ class zenario_pro_features extends zenario_common_features {
 	
 	function handleAJAX() {
 		
-		if ($_POST['getBottomLeftInfo'] ?? false) {
+		if (ze::post('getBottomLeftInfo')) {
 			
 			//Note: this AJAX request used to return info about optimisation settings in positions 0 and 1.
 			//We're since removed this info, but I don't want to re-adjust the other indices,
@@ -583,6 +583,10 @@ class zenario_pro_features extends zenario_common_features {
 	}
 	
 	public static function importContentItem($input, $isXML, $onlyValidate, &$targetCID, &$targetCType, &$error, $cID = false, $cType = false) {
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+
+	public static function trashAdminBoxPreviewOnKeyup($tagId) {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	

@@ -30,14 +30,14 @@ zenario__content:
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_content
     label: Content items
-    tooltip: "Create version-controlled content: HTML pages, news, blogs and more"
+    tooltip: "HTML pages, news, blogs, documents, events, audio and other content"
     panel:
         loading_message:
             no_items_message: Loading...
     nav:
         special:
             ord: 20
-            css_class: special_content_published
+            css_class: zenario_separator_before_this special_content_published
             label: Special pages
             tooltip: HTML pages including the home page, not-found (404) and other essential content items that cannot be trashed.
             link:
@@ -68,35 +68,11 @@ zenario__content:
                 path: zenario__content/panels/content
         trash:
             ord: 24
-            css_class: content_trashed zenario_separator_after_this
+            css_class: content_trashed
             label: Trashed content
             tooltip: Trashed content items
             link:
                 path: zenario__content/panels/content/refiners/trash////
-        categories:
-            ord: 25
-            css_class: zenario_category_icon
-            label: Categories
-            tooltip: When listing content items in a Content Summary List, they can be filtered by category. Create categories & sub-categories.
-            link:
-                path: zenario__content/panels/categories
-        image_library:
-            ord: 26
-            css_class: media_image
-            label: Image library
-            tooltip: |
-                Images on all content items are stored in a central library, even if not currently used. Manage images here.
-            link:
-                path: zenario__content/panels/image_library
-        writer_profiles:
-            #MIC images has ord 27 if enabled. Writer profiles panel goes after it.
-            ord: 28
-            css_class: writer_profile
-            label: Writer profiles
-            tooltip: |
-                Manage writer profiles
-            link:
-                path: zenario__content/panels/writer_profiles
     data-step: 11
     data-position: right
     data-intro: >
@@ -119,33 +95,60 @@ zenario__menu:
     data-intro: >
         <p><strong>Menu</strong></p>
         <p>Manage the menu navigation for your website, you can arrange and edit the menu items as required.</p>       
-zenario__documents:
+zenario__library:
     ord: -970
-    priv: _PRIV_VIEW_DOCUMENTS
     visible_if: >
         zenarioA.siteSettings.default_language
-    css_class: zenario_cms_core_documents
-    label: Documents
-    tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
+    css_class: zenario_cms_core_library
+    label: Library
+    tooltip: "Central resources: images, categories, writer profiles, documents in a hierarchy, tags"
     youtube_video_id: jR8CDnaoMSo
     youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
     nav:
+        image_library:
+            ord: 1
+            css_class: media_image
+            label: Image library
+            tooltip: |
+                Images on all content items are stored in a central library, edit them here.
+            link:
+                path: zenario__library/panels/image_library
+        #MIC images will be here if the module is enabled. (ord: 2)
+        categories:
+            ord: 3
+            css_class: zenario_category_icon
+            label: Categories
+            tooltip: Edit categories of content item, used when listing items in Content Summary List (CSL) plugins.
+            link:
+                path: zenario__library/panels/categories
+        writer_profiles:
+            ord: 4
+            css_class: writer_profile
+            label: Writer profiles
+            tooltip: |
+                Manage writer profiles
+            link:
+                path: zenario__library/panels/writer_profiles
+        #Spare aliases will be here if the Pro Features module is enabled. (ord: 5)
         documents:
+            ord: 6
             priv: _PRIV_VIEW_DOCUMENTS
-            label: Documents
+            label: Hierarchical documents
             tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
             link:
-                path: zenario__content/panels/documents
+                path: zenario__library/panels/documents
         document_tags:
+            ord: 7
             priv: _PRIV_VIEW_DOCUMENTS
-            label: Tags
+            label: Document tags
             tooltip: >
                 Manage tags for documents
             link:
-                path: zenario__content/panels/document_tags
+                path: zenario__library/panels/document_tags
 
 zenario__layouts:
     ord: 9100
+    priv: _PRIV_VIEW_TEMPLATE
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_templates
@@ -170,6 +173,7 @@ zenario__layouts:
             empty: false
             css_class: archived_layout
         skins:
+            priv: _PRIV_VIEW_TEMPLATE
             css_class: skin
             label: Skins
             tooltip: Skins, the styling and appearance of your site
@@ -178,22 +182,23 @@ zenario__layouts:
                 path: zenario__layouts/panels/skins
 zenario__modules:
     ord: 9200
+    priv: _PRIV_VIEW_SLOT
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_plugins
     label: Modules
-    tooltip: Manage modules and their plugins
+    tooltip: Enable modules for enhanced Zenario functionality; view plugins, nests and slideshows
     nav:
         modules:
-            label: All modules
-            tooltip: Software modules that add plugins to front-end pages, and Organizer functionality
+            label: Modules
+            tooltip: View modules that add plugins to front-end pages and other functionality
             link:
                 path: zenario__modules/panels/modules
         plugins:
             css_class: module
             label: Plugin library
             tooltip: >
-                Library of plugins that may be used on visitor-facing pages
+                Plugins that may be used on visitor-facing pages
             link:
                 path: zenario__modules/panels/plugins
         tuix_snippets:
@@ -243,6 +248,7 @@ zenario__languages:
                 path: zenario__languages/panels/salutations
 zenario__administration:
     ord: 9400
+    priv: _PRIV_VIEW_SITE_SETTING
     css_class: zenario_cms_core_administration
     label: Configuration
     tooltip: >
@@ -289,6 +295,7 @@ zenario__administration:
             link:
                 path: zenario__administration/panels/administrators
         content_types:
+            priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
             label: Content types
@@ -304,6 +311,7 @@ zenario__administration:
             link:
                 path: zenario__administration/panels/backups
         custom_datasets:
+            priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
             label: Datasets
@@ -313,6 +321,7 @@ zenario__administration:
             link:
                 path: zenario__administration/panels/custom_datasets
         spare_domains:
+            priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
             #css_class: alias_urls_collection
@@ -323,6 +332,7 @@ zenario__administration:
                 path: zenario__administration/panels/spare_domains
         file_types:
             ord: 10001
+            priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
             css_class: zenario_separator_before_this dropbox_file

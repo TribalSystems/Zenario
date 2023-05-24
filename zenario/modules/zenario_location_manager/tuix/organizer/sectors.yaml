@@ -5,9 +5,8 @@ zenario__locations:
         sectors:
             panel:
                 priv: _PRIV_MANAGE_LOCATIONS
-                title: Sectors (top level)
-                no_items_message: No sectors defined, click "Define a sector" to create one.
-                view_mode: list
+                title: Business sectors (top level)
+                no_items_message: No sectors defined, click "Create a sector" to create one.
                 db_items:
                     table: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
                     id_column: s.id
@@ -36,7 +35,7 @@ zenario__locations:
                         align_right: Yes
                         width: xsmall
                     subsectors:
-                        title: Sub-Sectors
+                        title: Sub-sectors
                         db_column: |
                             (
                                                                 SELECT COUNT(DISTINCT s2.id)
@@ -68,7 +67,7 @@ zenario__locations:
                     create_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
                         ord: "1"
-                        label: Define a sector
+                        label: Create a sector
                         css_class: zenario_create_a_new
                         admin_box:
                             path: zenario_location_manager__sector

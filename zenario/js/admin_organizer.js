@@ -622,7 +622,7 @@ zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
 
 
 
-zenarioO.callPanelOnUnload = function() {
+zenarioO.runPanelOnUnload = function() {
 	//If there is already a panel being displayed, attempt to call it's onUnload function
 	if (zenarioO.path
 	 && zenarioO.pi
@@ -901,7 +901,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	}
 	
 	if (!returnURL) {
-		zenarioO.callPanelOnUnload();
+		zenarioO.runPanelOnUnload();
 	}
 	
 	
@@ -2057,7 +2057,7 @@ zenarioO.getFooter = function() {
 
 zenarioO.setPanel = function() {
 	
-	var i,
+	var id,
 		$header = zenarioO.getHeader(),
 		$panel = zenarioO.getPanel(),
 		$footer = zenarioO.getFooter(),
@@ -2076,12 +2076,15 @@ zenarioO.setPanel = function() {
 	
 	var selectedItems = _.clone(zenarioO.pi.returnSelectedItems());
 	
-	foreach (selectedItems as var i) {
+	foreach (selectedItems as id) {
 		//Remove any items that have disappeared since this panel was last shown
 		if (!zenarioO.tuix.items
-		 || !zenarioO.tuix.items[i]) {
-			delete selectedItems[i];
-			itemsGone = true;
+		 || !zenarioO.tuix.items[id]) {
+			delete selectedItems[id];
+			
+			if (id !== '') {
+				itemsGone = true;
+			}
 		
 		} else {
 			++n;
@@ -2615,35 +2618,9 @@ zenarioO.noItemsSelected = function() {
 
 
 
-//Given an existing URL, attempt to add an extra parameter to it
-zenarioO.parseReturnLink = function(url, replaceWith) {
-	
-	var lookFor = 'zenario_sk_return=navigation_path';
-	
-	if (!defined(replaceWith)) {
-		if (url && zenario.currentHash && !zenario.browserIsIE(7)) {
-			replaceWith = 'zenario_sk_return=' + zenario.currentHash.replace('#', '');
-		} else {
-			replaceWith = '';
-		}
-	}
-	
-	url = ('' + url);
-	
-	
-	//We have a placeholder pattern that's usually used for this.
-	//If we see the placeholder pattern in the URL, put our replacement in there.
-	if (url.indexOf(lookFor) != -1) {
-		url = url.replace(lookFor, replaceWith);
-	
-	//Otherwise just try and add the request on to the end of the URL
-	} else if (url.indexOf('?') != -1) {
-		url += '&' + replaceWith;
-	
-	} else {
-		url += '?' + replaceWith;
-	}
-	
+//We've deleted return links as a feature, so this function
+//no longer does anything.
+zenarioO.parseReturnLink = function(url) {
 	return zenario.addBasePath(url);
 };
 
@@ -3425,20 +3402,29 @@ zenarioO.refreshPage = function(hash, dontAutoDetectMode, task, force) {
 };
 
 //Refresh the panel to show an item after a button click or admin box is saved.
-zenarioO.refreshToShowItem = function(itemId, growlIfItemIsVisible, growlIfItemIsNotVisible) {
+zenarioO.refreshToShowItem = function(itemId, growlIfItemIsVisible, growlIfItemIsNotVisible, fabPath) {
 	if (zenarioO.stop) {
 		return false;
 	}
 	
-	//If this is the admin or the site settings panel, do a SK reload instead
-	if (zenarioO.path == 'zenario__administration/panels/site_settings') {
+	var i, itemIds,
+		currentOrganizerPath = zenarioO.path,
+		panelIsSiteSettings = currentOrganizerPath == 'zenario__administration/panels/site_settings',
+		fabWasSiteSettings = fabPath == 'site_settings',
+		path = currentOrganizerPath,
+		selectedItems;
+	
+	//If the site settings FAB was opened from another panel, don't try to interpret that as the ID of an item in the current panel.
+	if (fabWasSiteSettings && !panelIsSiteSettings) {
+		itemId = undefined;
+	}
+	
+	//If this is the site settings panel, or the site settings FAB was opened from another panel,
+	//do a full page reload instead as something important may have changed.
+	if (fabWasSiteSettings || panelIsSiteSettings) {
 		zenarioO.reloadPage();
 		return;
 	}
-	
-	var i, itemIds,
-		path = zenarioO.path,
-		selectedItems;
 	
 	//Normally, when refreshing to show one item, the system checks to
 	//see what page that item is on, and specifically shows that page.
@@ -3871,7 +3857,7 @@ zenarioO.setViewOptions = function() {
 		if ((column = zenarioO.tuix.columns[c])
 		 && (zenarioO.isShowableColumn(c, false))) {
 			
-			alwaysShown = zenarioO.view_mode == 'grid' || engToBoolean(column.always_show);
+			alwaysShown = engToBoolean(column.always_show);
 			
 			fields['start_of_row__' + c] = {
 				ord: 100 * colNo,
@@ -3916,9 +3902,7 @@ zenarioO.setViewOptions = function() {
 					type: 'checkbox',
 					onclick: "zenarioO.showHideColumnInCSV(this, '" + htmlspecialchars(c) + "');",
 					value: value,
-					'class': zenarioO.view_mode == 'grid' ||
-							 engToBoolean(column.always_show)?
-								'alwaysShown' : ''
+					'class': engToBoolean(column.always_show)? 'alwaysShown' : ''
 				};
 			}
 			
@@ -4405,6 +4389,8 @@ zenarioO.changeSortOrder = function(c) {
 		zenarioO.sortBy = c;
 		zenarioO.sortDesc = false;
 	}
+	
+	zenarioO.deselectAllItems();
 	
 	zenarioO.checkPrefs();
 	zenarioO.prefs[zenarioO.path].sortBy = zenarioO.sortBy;
@@ -6192,6 +6178,9 @@ zenarioO.getInlineButtons = function(id) {
 		if (buttons[bi].tooltip) {
 			buttons[bi].tooltip = zenarioO.applyMergeFields(buttons[bi].tooltip, false, id);
 		}
+		if (buttons[bi].css_class) {
+			buttons[bi].css_class = zenarioO.applyMergeFields(buttons[bi].css_class, false, id);
+		}
 		if (buttons[bi].label) {
 			buttons[bi].label = zenarioO.applyMergeFields(buttons[bi].label, false, id);
 		}
@@ -6932,7 +6921,6 @@ zenario.shrtNms(zenarioO);
 
 
 zenarioVO.init('zenarioVO', 'zenario_filters');
-zenario.shrtNms(zenarioVO);
 
 
 zenarioO.resetBranches();

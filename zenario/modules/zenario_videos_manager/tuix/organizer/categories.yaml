@@ -14,6 +14,7 @@ zenario_videos_manager:
                 name:
                     title: Name
                     db_column: c.name
+                    searchable: true
                     width: xlarge
                     always_show: true
                 number_of_videos:
@@ -30,6 +31,12 @@ zenario_videos_manager:
                     label: Edit
                     admin_box:
                         path: zenario_videos_manager__category
+                view_videos_in_category:
+                    label: View videos in this category
+                    link:
+                        path: zenario_videos_manager/panels/videos
+                        refiner: category
+                        branch: Yes
                 delete:
                     hide_in_select_mode: true
                     label: Delete

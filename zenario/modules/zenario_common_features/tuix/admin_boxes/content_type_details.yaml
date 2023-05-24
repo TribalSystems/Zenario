@@ -2,8 +2,9 @@
 ---
 zenario_content_type_details:
     key:
-        id: ""
+        id: ''
         idFromOrganizer: ''
+        openedFromCollectionButton: ''
     identifier:
         label: Content type
     hide_tab_bar: true

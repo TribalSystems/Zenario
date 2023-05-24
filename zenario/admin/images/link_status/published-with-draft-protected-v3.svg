@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-miterlimit:1;">
+    <g id="triangle" transform="matrix(0.0137501,0,0,0.0151249,0.270919,-0.601271)">
+        <path d="M702.45,131.59C656.259,53.219 540.7,53.219 494.51,131.59L32.9,914.79C-13.264,993.122 44.49,1091 136.87,1091L1060.08,1091C1152.46,1091 1210.22,993.125 1164.05,914.79L702.45,131.59Z" style="fill:rgb(248,174,223);fill-rule:nonzero;stroke:black;stroke-opacity:0.75;stroke-width:69.19px;"/>
+    </g>
+    <g id="triangle1" serif:id="triangle" transform="matrix(0.0137501,0,0,0.0151249,0.270919,-0.601271)">
+        <path d="M960.062,568.683L633.522,1091L1060.08,1091C1152.46,1091 1210.22,993.125 1164.05,914.79L960.062,568.683Z" style="fill:rgb(255,85,0);fill-rule:nonzero;"/>
+    </g>
+    <g id="keyhole" transform="matrix(0.0888889,0,0,0.0888889,8.5,9.87495)">
+        <g transform="matrix(1,0,0,1,-45,-45)">
+            <path d="M63.4,27.6C63.4,17.4 55.2,9.2 45,9.2C34.8,9.2 26.6,17.4 26.6,27.6C26.6,34.3 30.2,40.2 35.6,43.4L31.2,76.8C31.2,79 32.9,80.8 35,80.8L55,80.8C57.1,80.8 58.8,79 58.8,76.8L54.4,43.4C59.8,40.1 63.4,34.3 63.4,27.6Z" style="fill-rule:nonzero;"/>
+        </g>
+    </g>
+</svg>

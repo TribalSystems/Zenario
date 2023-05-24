@@ -69,12 +69,12 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
-		if (($_POST['load_smart_group'] ?? false) && ze\priv::check('_PRIV_VIEW_USER')) {
+		if (ze::post('load_smart_group') && ze\priv::check('_PRIV_VIEW_USER')) {
 			header('Content-Type: text/javascript; charset=UTF-8');
 			echo ze\row::get('smart_groups', 'values', $ids);
 			exit;
 	
-		} elseif (($_POST['save_smart_group'] ?? false) && ze\priv::check('_PRIV_MANAGE_GROUP')) {
+		} elseif (ze::post('save_smart_group') && ze\priv::check('_PRIV_MANAGE_GROUP')) {
 			$json = [];
 			$key = [];
 			$values = [];
@@ -85,11 +85,11 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 					$values['name'] = $_POST['name'] ?? false;
 	
 			} else {
-				$key = ['name' => ($_POST['name'] ?? false)];
+				$key = ['name' => ze::post('name')];
 				$json['exists'] = ze\row::exists('smart_groups', $key);
 			}
 	
-			if ($json['exists'] && !($_POST['confirm'] ?? false)) {
+			if ($json['exists'] && !ze::post('confirm')) {
 				$json['message'] = ze\admin::phrase('The Smart Group "[[name]]" already exists, do you want to overwrite it?', $key);
 				$json['message_type'] = 'warning';
 				$json['confirm_button_message'] = ze\admin::phrase('Overwrite Smart Group');
@@ -120,7 +120,7 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 			exit;
 	
 		
-		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_GROUP')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_GROUP')) {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::delete('smart_groups', $id);
 				ze\row::delete('smart_group_rules', ['smart_group_id' => $id]);

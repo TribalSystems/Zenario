@@ -32,10 +32,10 @@ zenario_newsletter_template:
                     rows: 30
                     insert_image_button:
                         pick_items:
-                            path: zenario__content/panels/image_library
-                            target_path: zenario__content/panels/image_library
-                            min_path: zenario__content/panels/image_library
-                            max_path: zenario__content/panels/image_library
+                            path: zenario__library/panels/image_library
+                            target_path: zenario__library/panels/image_library
+                            min_path: zenario__library/panels/image_library
+                            max_path: zenario__library/panels/image_library
                             disallow_refiners_looping_on_min_path: true
                     insert_link_button:
                         exists: true

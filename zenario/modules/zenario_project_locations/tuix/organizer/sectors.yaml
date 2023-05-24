@@ -3,9 +3,6 @@ zenario__projects:
         project_sectors: 
             panel: 
                 title: Define project sectors
-                view_mode: list
-                disable_grid_view: Yes
-                disable_summary_view: Yes
                 db_items: 
                     table: "[[DB_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors AS psector"
                     id_column: psector.id

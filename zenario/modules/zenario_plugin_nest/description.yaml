@@ -16,7 +16,7 @@ description: |
         The links to each slide can be invisible, appear visually as a tab, or in some other visual form,
         depending on the CSS and framework.
     </p><p>
-        You can restrict a slide's visibility:
+        You can set permissions on a slide-by-slide basis:
         <ul>
             <li>to logged-in extranet users</li>
             <li>to logged-in extranet users in a given group</li>
@@ -30,7 +30,7 @@ description: |
                 create multiple slides, with a WYSIWYG Editor or Banner on each slide, to create a tabbed area
             </li>
             <li>
-                hide the tab links and use slides with different logic for their visibility
+                hide the tab links and use slides with different permissions
                 to create a nest that shows different plugins for different extranet users
             </li>
         </ul>

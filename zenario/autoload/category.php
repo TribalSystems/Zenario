@@ -46,51 +46,47 @@ class category {
 		return \ze\lang::phrase('_CATEGORY_'. $catId, false, 'zenario_common_features', $languageId);
 	}
 
-	//Formerly "getContentItemCategories()"
-	public static function contentItemCategories($cID, $cType, $publicOnly = false, $langId = false, $sql = false) {
+	const contentItemCategoriesFromTwig = true;
+	public static function contentItemCategories($cID, $cType, $publicOnly = true, $langId = false) {
 	
 		$equivId = \ze\content::equivId($cID, $cType);
-
-		if ($sql === false) {
-			$sql = "
-				SELECT 
-					c.id,
-					c.parent_id,
-					c.name,
-					c.code_name,
-					c.public,
-					c.landing_page_equiv_id,
-					c.landing_page_content_type
-				FROM " . DB_PREFIX . "categories AS c
-				INNER JOIN " . DB_PREFIX . "category_item_link AS cil
-					ON c.id = cil.category_id
-				WHERE cil.equiv_id = " . (int) $equivId . "
-					AND cil.content_type = '" . \ze\escape::asciiInSQL($cType) . "'";
-		}
+		
+		$sql = "
+			SELECT 
+				c.id,
+				c.parent_id,
+				c.name,
+				c.code_name,
+				c.public,
+				c.landing_page_equiv_id,
+				c.landing_page_content_type
+			FROM " . DB_PREFIX . "categories AS c
+			INNER JOIN " . DB_PREFIX . "category_item_link AS cil
+				ON c.id = cil.category_id
+			WHERE cil.equiv_id = " . (int) $equivId . "
+				AND cil.content_type = '" . \ze\escape::asciiInSQL($cType) . "'";
 	
 		if ($publicOnly) {
 			$sql .= "
 				AND c.public = 1";
 		}
-				
-		$result = \ze\sql::select($sql);
-	
-		if (\ze\sql::numRows($result)>0) {
-			$categories = [];
-			
-			while ($row = \ze\sql::fetchAssoc($result)) {
-				if (!$row['public']) {
-					$row['public_name'] = false;
-				} else {
-					$row['public_name'] = \ze\lang::phrase('_CATEGORY_'. $row['id'], false, 'zenario_common_features', $langId);
-				}
-			
-				$categories[] = $row;
+		
+		$categories = [];
+		foreach (\ze\sql::select($sql) as $row) {
+			if (!$row['public']) {
+				$row['public_name'] = false;
+			} else {
+				$row['public_name'] = \ze\lang::phrase('_CATEGORY_'. $row['id'], false, 'zenario_common_features', $langId);
 			}
 		
-			return $categories;
-		} else {
-			return false;
+			$categories[] = $row;
 		}
+		
+		return $categories;
+	}
+	
+	//Old alias of the above funciton
+	public static function getContentItemCategories($cID, $cType, $publicOnly = true, $langId = false) {
+		return \ze\category::contentItemCategories($cID, $cType, $publicOnly, $langId);
 	}
 }

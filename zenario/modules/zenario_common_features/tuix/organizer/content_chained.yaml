@@ -10,9 +10,6 @@ zenario__content:
                 layoutId: ''
                 equivId: ""
             enable_close_up_view: true
-            view_mode: list
-            disable_grid_view: true
-            disable_summary_view: true
             hide_filter_warning: true
             db_items:
                 table: >
@@ -412,7 +409,7 @@ zenario__content:
                             remove_translation_from_chain: 1
                 hide:
                     parent: action_dropdown
-                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
@@ -473,7 +470,7 @@ zenario__content:
                     admin_box:
                         path: zenario_delete_draft
                 trash:
-                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && item.id != item.equiv_id
@@ -487,7 +484,7 @@ zenario__content:
                     admin_box:
                         path: zenario_trash
                 delete_archives:
-                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if_for_any_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && item.archives_exist

@@ -279,9 +279,14 @@ class zenario_blog_news_list extends zenario_content_list {
 				'Row' => $this->items,
 				'Show_Date' => $this->setting('show_dates'),
 				'Show_Author' => $this->setting('show_author'),
-				'Show_Author_Image' => $this->setting('show_author_image'),
+				
+				//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
+				//Commenting out the code on 08 Nov 2022 in Blog And News List module to match CSL.
+				//'Show_Author_Image' => $this->setting('show_author_image'),
+				
 				'Show_Excerpt' => (bool) $this->dataField,
 				'Show_Item_Title' => (bool)$this->setting('show_titles'),
+				'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
 				'Show_Featured_Image' => (bool) $this->setting('show_featured_image'),
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),

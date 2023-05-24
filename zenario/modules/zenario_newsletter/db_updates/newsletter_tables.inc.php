@@ -775,53 +775,54 @@ _sql
 	DROP COLUMN `time_received`
 _sql
 
-//Add some missing keys
-);	ze\dbAdm::revision( 158
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	DROP INDEX `username`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	DROP INDEX `email`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	DROP INDEX `email_sent`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	DROP INDEX `time_clicked_through`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD INDEX `username` (`newsletter_id`, `username`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD INDEX `email` (`newsletter_id`, `email`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD INDEX `email_sent` (`newsletter_id`, `email_sent`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD INDEX `time_clicked_through` (`newsletter_id`, `time_clicked_through`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD INDEX `email_overridden_by` (`newsletter_id`, `email_overridden_by`)
-_sql
 );
+
+//Add some missing keys
+if (ze\dbAdm::needRevision(158)) {
+	foreach (['username', 'email', 'email_sent', 'time_clicked_through'] as $indexName) {
+		$sql = "
+			SELECT COUNT(*)
+			FROM information_schema.statistics
+			WHERE `TABLE_SCHEMA` = DATABASE()
+			AND `TABLE_NAME` = '" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link') . "'
+			AND `INDEX_NAME` = '" . ze\escape::sql($indexName) . "'";
+		$result = ze\sql::fetchValue($sql);
+	
+		if ($result) {
+			$sql = "
+				ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+				DROP INDEX `" . ze\escape::sql($indexName) . "`";
+			ze\sql::update($sql);
+		}
+	}
+	
+	$sql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+		ADD INDEX `username` (`newsletter_id`, `username`)";
+	ze\sql::update($sql);
+	
+	$sql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+		ADD INDEX `email` (`newsletter_id`, `email`)";
+	ze\sql::update($sql);
+	
+	$sql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+		ADD INDEX `email_sent` (`newsletter_id`, `email_sent`)";
+	ze\sql::update($sql);
+	
+	$sql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+		ADD INDEX `time_clicked_through` (`newsletter_id`, `time_clicked_through`)";
+	ze\sql::update($sql);
+	
+	$sql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+		ADD INDEX `email_overridden_by` (`newsletter_id`, `email_overridden_by`)";
+	ze\sql::update($sql);
+	
+	ze\dbAdm::revision(158);
+}
 
 
 
@@ -893,28 +894,44 @@ if (ze\dbAdm::needRevision(162)) {
 	ze\dbAdm::revision(162);
 }
 
-
-
-
 //Re-add the time_received column
-ze\dbAdm::revision( 164
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD COLUMN `time_received` datetime NULL 
-_sql
+if (ze\dbAdm::needRevision(164)) {
+	if (!ze::$dbL->checkTableDef(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link', 'time_received')) {
+		$sql = "
+			ALTER TABLE `" . DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link`
+			ADD COLUMN `time_received` datetime NULL";
+		ze\sql::update($sql);
+	}
+	
+	ze\dbAdm::revision(164);
+}
 
-);	ze\dbAdm::revision( 165
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	DROP INDEX `time_received`
-_sql
+if (ze\dbAdm::needRevision(165)) {
+	$indexName = 'time_received';
+	$sql = "
+		SELECT COUNT(*)
+		FROM information_schema.statistics
+		WHERE `TABLE_SCHEMA` = DATABASE()
+		AND `TABLE_NAME` = '" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link') . "'
+		AND `INDEX_NAME` = '" . ze\escape::sql($indexName) . "'";
+	$result = ze\sql::fetchValue($sql);
 
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
-	ADD INDEX `time_received` (`newsletter_id`, `time_received`)
-_sql
+	if ($result) {
+		$sql = "
+			ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+			DROP INDEX `" . ze\escape::sql($indexName) . "`";
+		ze\sql::update($sql);
+	}
+	
+	$sql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletter_user_link") . "`
+		ADD INDEX `time_received` (`newsletter_id`, `time_received`)";
+	ze\sql::update($sql);
+	
+	ze\dbAdm::revision(165);
+}
 
-);	ze\dbAdm::revision( 166
+ze\dbAdm::revision( 166
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	CHANGE COLUMN `username` `identifier` varchar(50) NOT NULL
@@ -1064,13 +1081,20 @@ _sql
 _sql
 
 
-);	ze\dbAdm::revision( 182
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
-	DROP COLUMN `identifier`
-_sql
+);
 
-);	ze\dbAdm::revision( 184
+if (ze\dbAdm::needRevision(182)) {
+	if (ze::$dbL->checkTableDef(DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletters_hyperlinks', 'identifier')) {
+		$sql = "
+			ALTER TABLE `" . DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters_hyperlinks`
+			DROP COLUMN `identifier`";
+		ze\sql::update($sql);
+	}
+	
+	ze\dbAdm::revision(182);
+}
+
+ze\dbAdm::revision( 184
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	MODIFY COLUMN `date_created` datetime NULL DEFAULT NULL

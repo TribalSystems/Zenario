@@ -1,0 +1,36 @@
+{% include this.frameworkBaseDir() ~ 'includes/title_anchor.twig.html' %}
+
+<div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" {{Wrap}}>
+	{% include this.frameworkBaseDir() ~ 'includes/privacy_warning.twig.html' %}
+	
+	{% if (Title or Text or More_Link_Text) %}
+		<div class="banner_content">
+
+			{% if Title %}
+				<div class="banner_title">
+					<{{Title_Tags}}>
+						{% if Image_Link_Href and not Enlarge_Image %}
+							<a {{Image_Link_Href}}{{Target_Blank}} {% if External_Url_Class %} class="{{External_Url_Class|e}}" {% endif %}>{{Title}}</a>
+						{% else %}
+							{{Title}}
+						{% endif %}
+					</{{Title_Tags_Close}}>
+				</div>
+			{% endif %}
+
+			<div class="banner_content_inner">
+				{% if Image %}
+					{% include this.frameworkBaseDir() ~ 'includes/image.twig.html' %}
+				{% endif %}
+	
+				{% include this.frameworkBaseDir() ~ 'includes/banner_text.twig.html' %}
+
+				{% if More_Link_Text %}
+					<div class="banner_more">
+						<a {{Image_Link_Href}}{{Target_Blank}} {% if External_Url_Class %} class="{{External_Url_Class|e}}" {% endif %}>{{More_Link_Text}}</a>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	{% endif %}
+</div></div></div>

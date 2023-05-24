@@ -6,8 +6,6 @@ zenario__users:
             priv: _PRIV_VIEW_USER
             panel_type: multi_line_list_or_grid
             use_tall_rows: true
-            view_mode: list
-            disable_grid_view: true
             
             item:
                 name: Smart group

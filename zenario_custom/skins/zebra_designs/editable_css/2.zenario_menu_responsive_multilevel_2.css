@@ -1,0 +1,180 @@
+/* Customized styles
+--------------------------------------------------------------------------------------------------*/
+
+.menu-collapser {
+	width:50px;
+	height:50px;
+	line-height:50px;
+	background:#FFF;
+	padding:0;
+	position:absolute;
+	z-index:59;
+	top:0;
+	left:0;
+}
+
+.collapse-button {
+	width:50px;
+	border:0;
+	border-color:none;
+	padding:11px 10px;
+	right:0;
+	-webkit-border-radius:0;
+	-moz-border-radius:0;
+	border-radius:0;
+	-webkit-box-shadow:none;
+	-moz-box-shadow:none;
+	box-shadow:none;
+}
+
+.menu-collapser,
+.collapse-button,
+.collapse-button:hover,
+.collapse-button:focus,
+.collapse-button:active {
+	background:transparent;
+}
+
+.collapse-button .icon-bar {
+	width:30px;
+	height:5px;
+	margin:0 0 4px 0;
+}
+
+.collapse-button .icon-bar,
+.collapse-button:hover .icon-bar,
+.collapse-button:focus .icon-bar,
+.collapse-button:active .icon-bar {
+	background-color:#000;
+	box-shadow:none;
+}
+
+.zenario_skin ul.slimmenu,
+.zenario_skin ul.slimmenu li ul {
+	margin:0;
+	padding:0;
+}
+
+ul.slimmenu {
+	position:relative;
+	z-index:59;
+	top:50px;
+	text-align:left;
+}
+
+ul.slimmenu > li {
+	border:0;
+}
+
+ul.slimmenu li a {
+	color:#FFF;
+	font-size:14px;
+	font-weight:400;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	text-shadow:none;
+	padding:7px 64px 6px 16px;
+}
+
+ul.slimmenu li ul li a {
+	padding-left:25px;
+}
+
+ul.slimmenu li ul li li a {
+	padding-left:35px;
+}
+
+ul.slimmenu li ul li li li a {
+	padding-left:45px;
+}
+
+ul.slimmenu li ul li li li li a {
+	padding-left:55px;
+}
+
+ul.slimmenu li {
+	background-color:#555;
+}
+
+ul.slimmenu li ul li {
+	background-color:#CCC;
+}
+
+ul.slimmenu li.level1_on,
+ul.slimmenu li > ul li.level2_on,
+ul.slimmenu li > ul li > ul li.level3_on,
+ul.slimmenu li > ul li > ul li > ul li.level4_on {
+	background:#000;
+}
+
+ul.slimmenu li ul li a {
+	color:#000;
+}
+
+ul.slimmenu li.level1_on > a,
+ul.slimmenu li > ul li.level2_on > a,
+ul.slimmenu li > ul li > ul li.level3_on > a,
+ul.slimmenu li > ul li > ul li > ul li.level4_on > a {
+color:#FFF;
+}
+
+ul.slimmenu.collapsed li .sub-collapser {
+	height:35px;
+}
+
+ul.slimmenu li .sub-collapser {
+	width:40px;
+}
+
+ul.slimmenu span.sub-collapser i::before,
+ul.slimmenu span.sub-collapser.expanded i::before {
+	content:"";
+}
+
+ul.slimmenu.collapsed li a {
+	border-bottom:1px solid #FFF;
+}
+
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li .sub-collapser:before {
+	font-family: 'FontAwesome';
+	content: "\f105";
+	line-height:35px;
+	font-size:26px;
+}
+
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li .sub-collapser.expanded:before {
+	content: "\f107";
+}
+
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li.level1 .sub-collapser:before,
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li.level1_on > .sub-collapser:before,
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li.level1_on li.level2_on .sub-collapser:before {
+	color:#FFF;
+}
+
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li.level1_on li.level2 .sub-collapser:before {
+	color:#3c3c3c;
+}
+
+.zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li.level1_on li.level2_on .sub-collapser:before {
+	color:#FFF;
+}
+
+/* ADMIN HACKS */
+
+	/*.zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_responsive_multilevel_2 {
+		display:none;
+	}*/
+	
+	.zenario_adminLoggedIn.zenario_pageMode_menu .zenario_menu_responsive_multilevel_2,
+	.zenario_adminLoggedIn.zenario_pageMode_template .zenario_menu_responsive_multilevel_2,
+	.zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_responsive_multilevel_2 .menu-collapser,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .zenario_menu_responsive_multilevel_2 .menu-collapser,
+	.zenario_adminLoggedIn.zenario_pageMode_template .zenario_menu_responsive_multilevel_2 .menu-collapser {
+		position:relative;
+	}
+	
+	.zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_responsive_multilevel_2 ul.slimmenu,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .zenario_menu_responsive_multilevel_2 ul.slimmenu,
+	.zenario_adminLoggedIn.zenario_pageMode_template .zenario_menu_responsive_multilevel_2 ul.slimmenu {
+		position:absolute;
+	}

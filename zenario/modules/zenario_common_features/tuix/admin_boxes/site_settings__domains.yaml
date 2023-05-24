@@ -153,21 +153,22 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                If you have a second domain name pointing to this site, you may use this as a cookie-free domain
-                                from which to serve images, CSS files and JavaScript files.
+                                You may be able to improve site performance by having a
+                                separate domain from which to serve images, CSS and
+                                JavaScript files. This will avoid the visitor's browser
+                                sending cookies on every request.
                             </p><p>
-                                This must be a domain that points to this site, and to be cookie-free it must not share cookies with this domain.
-                            </p><p>
-                                For example, if your primary domain was <code>www.example.com</code>, you could use  <code>static.example.com</code> as a cookie-free domain.
-                                However if your primary domain was  <code>example.com</code>, you couldn't use  <code>static.example.com</code> as a cookie-free domain as this
-                                subdomain would share cookies with  <code>example.com</code> - but you could set up a whole new domain (e.g. <code>example-images.com</code>)
-                                to use as a cookie-free domain.
+                                Such a domain should be configured in DNS and Apache so as
+                                to point to this site's Zenario root directory (e.g.
+                                <code>public_html</code>), but it must <u>not</u> be a
+                                subdomain of this site's domain. (If it is a sub-domain it
+                                will share the cookies of the main domain).
                             </p>
                 use_cookie_free_domain:
                     site_setting:
                         name: use_cookie_free_domain
                         protect_from_database_restore: true
-                    label: 'Use a cookie-free domain for hosting static files:'
+                    label: 'Use a cookie-free domain for hosting static files'
                     type: checkbox
                     value: ""
                     redraw_onchange: true
@@ -180,9 +181,15 @@ site_settings:
                     indent: 1
                     label: 'Cookie-free domain:'
                     type: text
-                    style: |
-                        width: 15em;
                     note_below: |
                         Please enter a domain name in this box, e.g. example.com.
                         <br/>
                         The domain you enter will be checked to see if it points to this site before this box is saved.
+                    oninput: |
+                        var string = $(this).val();
+                        var pattern = /^((http|https|ftp):\/\/)/;
+                        
+                        if (pattern.test(string)) {
+                            var stringWithoutProtocol = string.replace(pattern, "");
+                            $(this).val(stringWithoutProtocol);
+                        }

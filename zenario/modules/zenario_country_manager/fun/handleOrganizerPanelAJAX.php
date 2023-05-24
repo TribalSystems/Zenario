@@ -29,13 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 		if (ze\priv::check("_PRIV_MANAGE_COUNTRY")){
 			foreach (explode(',',$ids) as $id) {
-				if (($_POST['action'] ?? false) == 'activate_country') {
+				if (ze::post('action') == 'activate_country') {
 					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['active' => 1], ['id' => $id]);
 				}
-				if (($_POST['action'] ?? false) == 'suspend_country') {
+				if (ze::post('action') == 'suspend_country') {
 					ze\row::update(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", ['active' => 0], ['id' => $id]);
 				}
-				if (($_POST['action'] ?? false) == 'delete_country') {
+				if (ze::post('action') == 'delete_country') {
 					
 					//Check if the country has regions. If yes, do not delete the country.
 					$result = ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ["id", "name"], ["country_id" => $id]);
@@ -69,7 +69,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					}
 				}
 
-				if (($_POST['action'] ?? false) == 'delete_region') {
+				if (ze::post('action') == 'delete_region') {
 					
 					//Check if the region has subregions. If yes, do not delete the region.
 					$result = ze\row::getArray(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", ["id", "name"], ["parent_id" => $id]);

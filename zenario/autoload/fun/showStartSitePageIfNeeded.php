@@ -34,9 +34,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //if someone tries to access it.
 
 $logoURL = $logoWidth = $logoHeight = false;
-if (\ze::$dbL
- && \ze::setting('brand_logo') == 'custom'
- && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, \ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+if (ze::$dbL
+ && ze::setting('brand_logo') == 'custom'
+ && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;
 } else {
 	$logoURL = 'zenario/admin/images/zenario-logo-black.svg';
@@ -45,7 +45,7 @@ if (\ze::$dbL
 }
 
 
-$errorTitle = \ze::setting('site_disabled_title');
+$errorTitle = ze::setting('site_disabled_title');
 
 
 //Display a different message and/or destination URL depending on the situation.
@@ -54,18 +54,18 @@ if ($reportDBOutOfDate && \ze\priv::check()) {
 	$adminLink = \ze\link::absolute(). 'admin.php';
 
 //If there's a specifc page in the request, keep the admin on that page after they log in
-} elseif ($_REQUEST['cID'] ?? false) {
-	$errorMessage = \ze::setting('site_disabled_message');
-	$adminLink = \ze\link::absolute(). 'admin.php?cID='. rawurlencode($_REQUEST['cID'] ?? false). '&cType='. rawurlencode($_REQUEST['cType'] ?? false);
+} elseif (ze::request('cID')) {
+	$errorMessage = ze::setting('site_disabled_message');
+	$adminLink = \ze\link::absolute(). 'admin.php?cID='. rawurlencode(ze::request('cID')). '&cType='. rawurlencode(ze::request('cType'));
 
 //If you need to enable a language, the "here" link should point to the languages panel
 } elseif (!\ze\row::exists('languages', [])) {
-	$errorMessage = \ze::setting('site_disabled_message');
+	$errorMessage = ze::setting('site_disabled_message');
 	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__languages/panels/languages';
 
 //If you need to enable your site, the "here" link should point to the "Set-up" panel to do that
 } else {
-	$errorMessage = \ze::setting('site_disabled_message');
+	$errorMessage = ze::setting('site_disabled_message');
 	$adminLink = \ze\link::absolute(). 'admin.php?og=zenario__organizer/panels/start_page';
 }
 

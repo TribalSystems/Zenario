@@ -32,16 +32,10 @@ switch ($path) {
 	case 'zenario_email_template':
 		
 		$href = 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
-		$mrg = ['link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">view</a>'];
+		$mrg = ['standard_email_template_link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">View the standard header and footer</a>'];
 		ze\lang::applyMergeFields(
-			$fields['meta_data/use_standard_email_template']['values']['yes']['pre_field_html'],
+			$fields['meta_data/use_standard_email_template']['note_below'],
 			$mrg);
-		//ze\lang::applyMergeFields(
-		//	$fields['meta_data/use_standard_email_template']['values']['yes']['label'],
-		//	$mrg);
-		//ze\lang::applyMergeFields(
-		//	$fields['meta_data/use_standard_email_template']['values']['twig']['label'],
-		//	$mrg);
 				
 		if ($box['key']['id']) {
 			$details = $this->getTemplateByCode($box['key']['id']);
@@ -177,13 +171,17 @@ switch ($path) {
 		} else {
 			$box['tabs']['meta_data']['notices']['debug_mode']['show'] = false;
 		}
+
+		if (isset($fields['meta_data/test_send_button']) && !ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
+			$fields['meta_data/test_send_button']['disabled'] = true;
+		}
 		
 		break;
 		
 	case 'zenario_email_log_view':
 		if ($box['key']['id']) {
 			$logRecord = self::getLogRecordById($box['key']['id']);
-			if(count($logRecord)) {
+			if (is_array($logRecord) && count($logRecord) > 0) {
 				$box['title'] = 'Email sent to "' .  htmlspecialchars($logRecord['email_address_to'] ?? false) . '" on ' .  ze\admin::formatDate($logRecord['sent_datetime'] ?? false) . ' ' . ze\date::formatTime($logRecord['sent_datetime'] ?? false,ze::setting('vis_time_format'),'');
 				$values['email_subject'] = $logRecord['email_subject'];
 				$values['email_address_to'] = $logRecord['email_address_to'];
@@ -238,6 +236,8 @@ switch ($path) {
 				}
 				$html .= implode('<br/>', $info);
 				$fields['email/sent_form_text']['snippet']['html'] = $html;
+			} else {
+				exit('The requested ID was not found in the database. Please refresh Organizer and try again.');
 			}
 		}
 		break;

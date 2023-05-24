@@ -999,3 +999,12 @@ _sql
 _sql
 
 );
+
+if (ze\dbAdm::needRevision(183)) {
+	$keySql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations") . "`
+		ADD FULLTEXT KEY `description_fulltext_key` (`description`)";
+	ze\sql::update($keySql);
+	
+	ze\dbAdm::revision(183);
+}

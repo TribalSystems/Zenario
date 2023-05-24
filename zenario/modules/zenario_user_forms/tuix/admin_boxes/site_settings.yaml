@@ -8,10 +8,19 @@ site_settings:
             edit_mode:
                 enabled: Yes
             fields:
+                site_settings:
+                    type: grouping
+                file_size:
+                    type: grouping
+                    snippet:
+                        label: File size
+                        label_class: subheading
                 data_protection_link:
+                    grouping: site_settings
                     snippet:
                         html: ''
                 zenario_user_forms_admin_email_attachments:
+                    grouping: site_settings
                     site_setting:
                         name: zenario_user_forms_admin_email_attachments
                     label: 'When sending response emails to administrators, attach uploaded files'
@@ -19,12 +28,67 @@ site_settings:
                     side_note: |
                         Emails sent to administrators will include attachments. If not set, administrators will need to log in to Zenario to retrieve uploads.
                 zenario_user_forms_enable_predefined_text:
+                    grouping: site_settings
                     site_setting:
                         name: zenario_user_forms_enable_predefined_text
                     label: 'Enable pre-defined text'
                     type: checkbox
                     side_note: |
                         Textareas in a form can have text pre-defined. The text is stored next to other fields. When a button next to the textarea is clicked by a visitor, the other fields are evaluated and if they have been checked the respective text is added to the textarea.
+                zenario_user_forms_max_attachment_file_size_override:
+                    grouping: file_size
+                    site_setting:
+                        name: zenario_user_forms_max_attachment_file_size_override
+                    label: "Maximum attachment file size:"
+                    type: radios
+                    values:
+                        use_global_max_attachment_file_size:
+                            label: "Use global file upload size setting ([[global_max_attachment_file_size]])"
+                            ord: 1
+                        limit_max_attachment_file_size:
+                            label: "Limit attachment file size to (cannot be higher than global setting)..."
+                            ord: 2
+                    value: use_global_max_attachment_file_size
+                    redraw_onchange: true
+                    notices_below:
+                        max_upload_size_site_setting_link:
+                            type: information
+                            size: small
+                            message: ""
+                            html: true
+                zenario_user_forms_content_max_filesize:
+                    grouping: file_size
+                    indent: 1
+                    site_setting:
+                        name: zenario_user_forms_content_max_filesize
+                    label: 'User Forms maximum file size:'
+                    type: text
+                    value: 20
+                    validation:
+                        required_if_not_hidden: Please enter a maximum content file size.
+                        numeric: Must be numeric.
+                    decimal_places: ""
+                    visible_if: lib.value('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size'
+                    maxlength: 10
+                    style: "width: 7em;"
+                zenario_user_forms_content_max_filesize_unit:
+                    grouping: file_size
+                    indent: 1
+                    site_setting:
+                        name: zenario_user_forms_content_max_filesize_unit
+                    label: 'Unit:'
+                    same_row: true
+                    type: select
+                    values:
+                        KB:
+                            label: KB
+                        MB:
+                            label: MB
+                        GB:
+                            label: GB
+                    value: MB
+                    redraw_onchange: true
+                    visible_if: lib.value('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size'
         zenario_user_forms_profanity_filter:
             label:  Profanity filter
             edit_mode:
@@ -36,8 +100,8 @@ site_settings:
                     label: 'Enable profanity filtering'
                     row_class: sub_field
                     type: checkbox
-                    side_note: |
-                        Check this box if you would like to enable profanity filtering on text fields in forms. If this is checked a new property will be available in the form properties section of the forms.
+                    note_below: |
+                        Scan text and textarea fields for swear words. Must be enabled on each specific form using the "Filter for profanities" option. Blocked forms will be logged, but not emailed.
                     redraw_onchange: true
                     disabled: false
                 zenario_user_forms_set_profanity_tolerence:
@@ -47,17 +111,15 @@ site_settings:
                     type: select
                     values:
                         5:
-                            ord: 0
-                            label: Low
-                        10:
                             ord: 1
+                            label: Low (blocks most forms with profanities)
+                        10:
+                            ord: 2
                             label: Medium
                         15:
-                            ord: 2
-                            label: High
+                            ord: 3
+                            label: High (blocks only the worst profanities)
                     value: 5
-                    side_note: |
-                        You can set the tolerance level of profanity which will be allowed. Setting a higher tolerance can allow offensive swear words to be emailed.
                     visible_if: |
                         zenarioAB.value('zenario_user_forms_set_profanity_filter')
                     disabled: false

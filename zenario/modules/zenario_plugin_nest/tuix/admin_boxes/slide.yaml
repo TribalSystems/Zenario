@@ -25,14 +25,13 @@ zenario_slide:
             edit_mode:
                 enabled: true
             fields:
-                name_or_slide_label:
+                slide_label:
                     row_class: zenario_row_with_dropdown
                     label: 'Slide label:'
                     type: text
                     maxlength: 100
                     validation:
                         required: Please enter a label for the link to this slide
-                
                 title_merge_fields:
                     same_row: true
                     visible_if: |
@@ -46,19 +45,27 @@ zenario_slide:
                     style: |
                         width: 400px;
                     onchange: |
-                        var domTitle = lib.get('name_or_slide_label');
+                        var domTitle = lib.get('slide_label');
                         lib.insertText(domTitle, $(this).val())
                         $(this).val('').iconselectmenu('refresh');
                         $(domTitle).change();
                 
-                invisible_in_nav:
-                    visible_if: |
-                        !tuix.key.usesConductor
-                    label: 'Hide the tab-link to this slide'
-                    type: checkbox
-                    side_note: >
-                        If hidden, the tab-link to this slide will not appear,
-                        but the slide may still be accessed.
+                slide_label_notices:
+                    notices_below:
+                        appearance: {}
+                
+                set_page_title_with_conductor:
+                    visible_if: tuix.key.usesConductor
+                    label: 'Set the page title:'
+                    type: select
+                    value: append
+                    values:
+                        dont_set:
+                            label: "Don't set"
+                        append:
+                            label: Append slide label to page title
+                        overwrite:
+                            label: Overwrite page title with slide label
                 
                 show_refresh:
                     visible_if: tuix.key.usesConductor
@@ -116,8 +123,12 @@ zenario_slide:
                             Please don't enter any special characters in the command's name
                 
                 apply_slide_specific_permissions:
-                    label: 'Apply slide-specific permissions'
-                    note_below: Use this to determine which kinds of user or anonymous visitor can see this slide. In a conductor-driven nest you should use User Permissions (in Organizer->Site Settings, User Permissions interface) and leave this unchecked.
+                    label: |
+                        Set slide permissions...
+                    note_below: |
+                        Use this to determine which kinds of user or visitor can see this slide.
+                        If using a conductor-driven nest, you should use User Permissions
+                        (in Organizer->Site Settings, User Permissions interface) and leave this unchecked.
                     type: checkbox
                     redraw_onchange: true
                 
@@ -125,23 +136,29 @@ zenario_slide:
                     indent: 1
                     visible_if:
                         lib.value: apply_slide_specific_permissions
-                    label: 'Visibility:'
+                    label: |
+                        Visibility:
                     type: radios
                     value: public
                     values:
                         logged_in:
-                            label: Private, only show to extranet users
+                            label: |
+                                Private: only show to extranet users
                         group_members:
-                            label: 'Private, only show to extranet users in group(s)...'
+                            label: |
+                                Private: only show to users in group...
                             split_values_if_selected: true
                         in_smart_group:
-                            label: 'Private, only show to extranet users in smart group...'
+                            label: |
+                                Private: only show to users in smart group...
                             split_values_if_selected: true
                         logged_in_not_in_smart_group:
-                            label: 'Private, only show to extranet users NOT in smart group...'
+                            label: |
+                                Private: only show to users NOT in smart group...
                             split_values_if_selected: true
                         with_role:
-                            label: 'Private, only show to extranet users with role...'
+                            label: |
+                                Private: only show to users with role...
                             type: checkboxes
                             values: ""
                             checking_child_checks_parents: true
@@ -151,7 +168,7 @@ zenario_slide:
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
                         hidden:
-                            label: Hidden
+                            label: Always hidden
                     format_onchange: true
                     validation:
                         required_if_not_hidden: Please select a visibility option

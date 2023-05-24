@@ -10,8 +10,6 @@ zenario__social:
             tooltip: View and manage the forums on your site
             panel:
                 php: Yes
-                view_mode: summary
-                disable_grid_view: Yes
                 title: Forums
                 select_mode_title: Select a Forum
                 no_items_message: |
@@ -99,7 +97,7 @@ zenario__social:
                         priv: _PRIV_MODERATE_USER_COMMENTS
                         hide_in_select_mode: Yes
                         css_class: zenario_item_unlocked
-                        tooltip: Lock Forum
+                        name: Lock Forum
                         ajax:
                             confirm:
                                 message: 'Are you sure you wish to lock the "[[title]]" Forum? This will prevent any further messages being posted.'
@@ -114,7 +112,7 @@ zenario__social:
                         priv: _PRIV_MODERATE_USER_COMMENTS
                         hide_in_select_mode: Yes
                         css_class: zenario_item_locked_by_you
-                        tooltip: Unlock Forum
+                        name: Unlock Forum
                         ajax:
                             confirm:
                                 message: 'Are you sure you wish to unlock the "[[title]]" Forum? This will allow messages to be posted.'

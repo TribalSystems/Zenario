@@ -26,7 +26,6 @@ a.nice_button,
 	text-align:center;
 	-webkit-transition: all 0.2s ease-in-out;
   	-moz-transition: all 0.2s ease-in-out;
-  	-o-transition: all 0.2s ease-in-out;
   	transition: all 0.2s ease-in-out;
   	cursor:pointer;
 }
@@ -255,7 +254,7 @@ p.phone:before {
 	margin-bottom:30px;
 }
 
-/* Image Credits, banner and MIC plugin
+/* Image Credits, banner, MIC plugin, meta data
 --------------------------------------------------------------------------------------------------*/
 
 .zenario_banner .banner_image {
@@ -271,30 +270,42 @@ p.phone:before {
 	position:relative;
 }
 
-span.banner_image_credit {
+span.banner_image_credit,
+.zenario_meta_data .sticky_image span.image_credit {
 	font-size:12px;
 	color:#333;
 }
 
-body.desktop span.banner_image_credit {
+body.desktop span.banner_image_credit,
+body.desktop .zenario_meta_data .sticky_image span.image_credit {
 	letter-spacing:0.02em;
 }
 
 .zenario_banner .banner_wrap_inner > a span.banner_image_credit,
 .zenario_banner .banner_image span.banner_image_credit,
-body.desktop .zenario_multiple_image_container .banner_image span.banner_image_credit {
+body.desktop .zenario_multiple_image_container .banner_image span.banner_image_credit,
+.zenario_meta_data .sticky_image span.image_credit {
 	position:absolute;
 	left:0;
 	bottom:0;
 	padding:0 8px;
 	background:rgba(255,255,255,0.4);
+  	white-space:nowrap;
+}
+
+.zenario_meta_data .sticky_image span.image_credit {
+	padding-bottom:2px;
+}
+
+.zenario_banner .banner_wrap_inner > a span.banner_image_credit,
+.zenario_banner .banner_image span.banner_image_credit,
+body.desktop .zenario_multiple_image_container .banner_image span.banner_image_credit {
   	-webkit-transform: translateY(100%) rotate(-90deg);
   	-moz-transform: translateY(100%) rotate(-90deg);
   	transform: translateY(100%) rotate(-90deg);
   	-webkit-transform-origin: 0 0;
   	-moz-transform-origin: 0 0;
   	transform-origin: 0 0;
-  	white-space:nowrap;
 }
 
 .zenario_banner .banner_image picture + span.banner_image_credit,
@@ -571,6 +582,13 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
 	position:absolute;
 	top:25px;
 	left:-40px;
+}
+
+/* Password tooltip
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_password_requirements_tooltip ul li.fail {
+	color:#e77676;
 }
 
 /* Use these classes for responsive videos

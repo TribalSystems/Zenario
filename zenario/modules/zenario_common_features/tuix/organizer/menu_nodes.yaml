@@ -172,6 +172,8 @@ zenario__menu:
                     db_column: mi.document_id
                 ext_url:
                     db_column: mt.ext_url
+                target_content_tag:
+                    hidden: true
                 target_content_id:
                     db_column: c.id
                 target_content_type:
@@ -190,6 +192,42 @@ zenario__menu:
                     show_by_default: true
                     title: "Static method"
                     #Values for columns like this one are set in the PHP class file.
+                linked_content_item_status:
+                    hidden: true
+                linked_content_item_status_label:
+                    hidden: true
+                linked_content_item_layout:
+                    hidden: true
+                linked_content_item_allow_pinning:
+                    hidden: true
+                linked_content_item_pinned:
+                    hidden: true
+                linked_content_item_categories_enabled:
+                    hidden: true
+                linked_content_item_categories_count:
+                    hidden: true
+                linked_content_item_privacy:
+                    hidden: true
+                    format: enum
+                    values:
+                        public:
+                            label: 'Permissions: Public, visible to everyone'
+                        logged_out:
+                            label: 'Permissions: Public, only show to visitors who are NOT logged in'
+                        logged_in:
+                            label: 'Permissions: Private, only show to extranet users'
+                        group_members:
+                            label: 'Permissions: Private, only show to extranet users in group...'
+                        in_smart_group:
+                            label: 'Permissions: Private, only show to extranet users in smart group...'
+                        logged_in_not_in_smart_group:
+                            label: 'Permissions: Private, only show to extranet users NOT in smart group...'
+                        with_role:
+                            label: 'Permissions: Private, only show to extranet users with role...'
+                        call_static_method:
+                            label: "Permissions: Call a module's static method to decide"
+                        send_signal:
+                            label: 'Permissions: Send a signal to decide'
             item:
                 name: Menu node
                 names: Menu nodes
@@ -224,6 +262,73 @@ zenario__menu:
                         iframe: true
                         transition: none
             inline_buttons:
+                #Icons for displaying the linked content item status
+                linked_content_item_status_inline_button:
+                    css_class: organizer_item_image [[linked_content_item_status]]
+                    tooltip: "[[linked_content_item_status_label]]"
+                    visible_if: item.redundancy != 'secondary' && item.linked_content_item
+                
+                layout:
+                    css_class: zenario_layout_inline_button
+                    label: |
+                        [[linked_content_item_layout]]
+                    admin_box:
+                        priv: _PRIV_EDIT_DRAFT
+                        path: zenario_content_layout
+                        key:
+                            id_is_menu_node_id: true
+                    visible_if: item.redundancy != 'secondary' && item.linked_content_item && zenarioA.checkSpecificPerms(id)
+                cant_change_layout:
+                    css_class: zenario_layout_inline_button
+                    label: |
+                        [[linked_content_item_layout]]
+                    visible_if: item.redundancy != 'secondary' && item.linked_content_item && !zenarioA.checkSpecificPerms(id)
+                
+                linked_content_item_privacy:
+                    css_class: privacy_inline_button
+                    tooltip: "[[linked_content_item_privacy]]"
+                    admin_box:
+                        path: zenario_content_privacy
+                        key:
+                            id_is_menu_node_id: true
+                    visible_if: item.redundancy != 'secondary' && item.linked_content_item
+                
+                linked_content_item_pinned:
+                    css_class: pinned
+                    tooltip: "This content item is pinned"
+                    admin_box:
+                        path: zenario_content
+                        key:
+                            id_is_menu_node_id: 1
+                            edit_linked_content_item: 1
+                    visible_if: item.redundancy != 'secondary' && item.linked_content_item_allow_pinning && item.linked_content_item_pinned == 1
+                linked_content_item_not_pinned:
+                    css_class: not_pinned
+                    tooltip: "This content item is not pinned"
+                    admin_box:
+                        path: zenario_content
+                        key:
+                            id_is_menu_node_id: 1
+                            edit_linked_content_item: 1
+                    visible_if: item.redundancy != 'secondary' && item.linked_content_item_allow_pinning && item.linked_content_item_pinned == 0
+                
+                linked_content_item_no_categories:
+                    css_class: no_categories
+                    tooltip: "Content item is not in any categories"
+                    admin_box:
+                        path: zenario_content_categories
+                        key:
+                            id_is_menu_node_id: 1
+                    visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count == 0)
+                linked_content_item_one_or_more_categories:
+                    css_class: one_or_more_categories
+                    tooltip: "Content item is in one or more categories"
+                    admin_box:
+                        path: zenario_content_categories
+                        key:
+                            id_is_menu_node_id: 1
+                    visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count > 0)
+                
                 view_frontend:
                     css_class: view_frontend
                     tooltip: View in front-end
@@ -238,6 +343,7 @@ zenario__menu:
                         iframe: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
+            
             item_buttons:
                 create_child_dropdown:
                     hide_when_children_are_not_visible: true

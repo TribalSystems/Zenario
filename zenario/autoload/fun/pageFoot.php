@@ -29,24 +29,22 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $v = $w = 'v='. \ze\db::codeVersion();
 
-if (!\ze::$cacheWrappers) {
+if (!ze::$cacheWrappers) {
 	$w .= '&amp;no_cache=1';
 }
 
 $isWelcome = $mode === true || $mode === 'welcome';
-$isWizard = $mode === 'wizard';
-$isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
-$isAdmin = \ze::isAdmin();
+$isAdmin = ze::isAdmin();
 
-if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcomeOrWizard)) {
+if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcome)) {
 	$prefix = $absURL. 'zenario/';
 }
 
 if (!$isAdmin
- && !$isWelcomeOrWizard
+ && !$isWelcome
  && $defer
- && \ze::setting('defer_js')) {
+ && ze::setting('defer_js')) {
 	$scriptTag = '<script type="text/javascript" defer';
 	$inlineStart = "zOnLoad(function() {";
 	$inlineStop = '});';
@@ -59,21 +57,21 @@ if (!$isAdmin
 //Write the URLBasePath to the page, and add JS needed for the CMS
 echo '
 '. $scriptTag. ' src="', $prefix, 'libs/yarn/jquery/dist/jquery.min.js?', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/jquery/jquery-ui.visitor.min.js?', $v, '"></script>
+'. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.visitor.min.js?', $v, '"></script>
 '. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w;
 
 //Have the option to include some common libraries in with the main wrapper, if enabled in the site settings.
 $libs = [];
-if (\ze::setting('lib.colorbox')) {
+if (ze::setting('lib.colorbox')) {
 	$libs[] = 'cb';
 }
-if (\ze::setting('lib.doubletaptogo')) {
+if (ze::setting('lib.doubletaptogo')) {
 	$libs[] = 'dt';
 }
-if (\ze::setting('lib.lazy')) {
+if (ze::setting('lib.lazy')) {
 	$libs[] = 'l';
 }
-if (\ze::setting('lib.modernizr')) {
+if (ze::setting('lib.modernizr')) {
 	$libs[] = 'm';
 }
 
@@ -113,31 +111,24 @@ if (\ze\cookie::canSetAll()) {
 	//As with ($_SESSION['extranetUserID'] ?? false), anything that changes behaviour by Extranet User should not allow the page to be cached.
 echo '
 '. $scriptTag. '>'. $inlineStart. 'zenario.init("'.
-	\ze::setting('css_js_version'). '",',
+	ze::setting('css_js_version'). '",',
 	(int) ($_SESSION['extranetUserID'] ?? 0), ',"',
 	\ze\escape::js(\ze\content::currentLangId()), '","',
-	\ze\escape::js(\ze::setting('vis_date_format_datepicker')), '","',
-	\ze\escape::js(\ze::setting('min_extranet_user_password_length')), '","',
-	\ze\escape::js(\ze::setting('min_extranet_user_password_score')), '","',
-	\ze\escape::js(\ze::setting('a_z_lowercase_characters')), '","',
-	\ze\escape::js(\ze::setting('a_z_uppercase_characters')), '","',
-	\ze\escape::js(\ze::setting('0_9_numbers_in_user_password')), '","',
-	\ze\escape::js(\ze::setting('symbols_in_user_password')), '","',
+	\ze\escape::js(ze::setting('vis_date_format_datepicker')), '","',
 	\ze\escape::js(DIRECTORY_INDEX_FILENAME), '",',
 	(int) $canSetAll, ',',
 	(int) $canSetNecessary, ',',
 	(int) $canSetFunctional, ',',
 	(int) $canSetAnalytic, ',',
 	(int) $canSetSocial, ',',
-	(int) \ze::$equivId, ',',
-	(int) \ze::$cID, ',"', \ze\escape::js(\ze::$cType), '",',
-	(int) \ze::$skinId, ',',
-	json_encode(\ze::$isPublic), ',',
-	(int) \ze::setting('mod_rewrite_slashes'), ',"',
-	\ze\escape::js(\ze::$langs[\ze::$visLang]['thousands_sep'] ?? ''), '","', \ze\escape::js(\ze::$langs[\ze::$visLang]['dec_point'] ?? ''), '"';
+	(int) ze::$equivId, ',',
+	(int) ze::$cID, ',',
+	json_encode(ze::$isPublic), ',',
+	(int) ze::setting('mod_rewrite_slashes'), ',"',
+	\ze\escape::js(ze::$langs[ze::$visLang]['thousands_sep'] ?? ''), '","', \ze\escape::js(ze::$langs[ze::$visLang]['dec_point'] ?? ''), '"';
 
-if (\ze::$visLang && \ze::$visLang != $currentLangId) {
-	echo ',"', \ze\escape::js(\ze::$visLang), '"';
+if (ze::$visLang && ze::$visLang != $currentLangId) {
+	echo ',"', \ze\escape::js(ze::$visLang), '"';
 }
 
 
@@ -153,42 +144,41 @@ if ($isAdmin) {
 	//Write all of the slot controls to the page
 	echo '
 <div id="zenario_slotControls">';
-	\ze\pluginAdm::setupSlotControls(\ze::$slotContents, false);
+	\ze\pluginAdm::setupSlotControls(ze::$slotContents, false);
 	
 	echo '
 </div>';
 	
 	//Note down that we need various extra libraries in admin mode...
-	\ze::requireJsLib('zenario/js/ace.wrapper.js.php');
-	\ze::requireJsLib('zenario/libs/yarn/rcrop/dist/rcrop.min.js', 'zenario/libs/yarn/rcrop/dist/rcrop.min.css');
+	ze::requireJsLib('zenario/js/ace.wrapper.js.php');
+	ze::requireJsLib('zenario/libs/yarn/rcrop/dist/rcrop.min.js', 'zenario/libs/yarn/rcrop/dist/rcrop.min.css');
 	//Debug version of the above line
-	//\ze::requireJsLib('zenario/libs/yarn/rcrop/src/js/rcrop.js', 'zenario/libs/yarn/rcrop/dist/rcrop.css');
+	//ze::requireJsLib('zenario/libs/yarn/rcrop/src/js/rcrop.js', 'zenario/libs/yarn/rcrop/dist/rcrop.css');
 }
 
 
-if ($isAdmin || $isWelcomeOrWizard) {
+if ($isAdmin || $isWelcome) {
 	//...or on the admin-login screen
-	\ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
-	\ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
-	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.interactions.min.js');
-	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.datepicker.min.js');
-	\ze::requireJsLib('zenario/libs/manually_maintained/mit/jquery/jquery-ui.progressbar.min.js');
-	\ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
-	\ze::requireJsLib('zenario/js/admin.wrapper.js.php');
-	\ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+	ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
+	ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+	ze::requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
+	ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
+	ze::requireJsLib('zenario/js/admin.wrapper.js.php');
+	ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+	\ze::requireJsLib('zenario/js/password_functions.min.js');
 }
 
 
 //Catch the case where a dev has requested a specific library that's already being included in the main wrapper
-if (\ze::setting('lib.colorbox')) {
-	unset(\ze::$jsLibs['zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js']);
+if (ze::setting('lib.colorbox')) {
+	unset(ze::$jsLibs['zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js']);
 }
-if (\ze::setting('lib.doubletaptogo')) {
-	unset(\ze::$jsLibs['zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo.min.js']);
+if (ze::setting('lib.doubletaptogo')) {
+	unset(ze::$jsLibs['zenario/libs/yarn/jquery-doubletaptogo/dist/jquery.dcd.doubletaptogo.min.js']);
 }
 
 //Loop through all of the libraries we're trying to include
-foreach (\ze::$jsLibs as $lib => $stylesheet) {
+foreach (ze::$jsLibs as $lib => $stylesheet) {
 	
 	//Allow up to one stylesheet per library
 	if ($stylesheet) {
@@ -259,28 +249,28 @@ foreach (\ze::$jsLibs as $lib => $stylesheet) {
 }
 	
 
-if ($isAdmin && !$isWelcomeOrWizard) {
+if ($isAdmin && !$isWelcome) {
 	require CMS_ROOT. 'zenario/autoload/fun/pageFootInAdminMode.php';
 }
 
 
 //Add JS needed for modules
-if (!$isWelcomeOrWizard && \ze::$pluginJS) {
+if (!$isWelcome && ze::$pluginJS) {
 	if ($isAdmin) {
-		\ze::$pluginJS .= '&amp;admin=1';
+		ze::$pluginJS .= '&amp;admin=1';
 	}
 	
 	echo '
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', \ze::$pluginJS, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', ze::$pluginJS, '"></script>';
 }
 
 
 //Add JS needed for modules in Admin Mode in the frontend
-if ($isAdmin && \ze::$cID) {
+if ($isAdmin && ze::$cID) {
 	$jsModuleIds = '';
 	foreach (\ze\module::runningModules() as $module) {
-		if (\ze::moduleDir($module['class_name'], 'js/admin_frontend.js', true)
-		 || \ze::moduleDir($module['class_name'], 'js/admin_frontend.min.js', true)) {
+		if (ze::moduleDir($module['class_name'], 'js/admin_frontend.js', true)
+		 || ze::moduleDir($module['class_name'], 'js/admin_frontend.min.js', true)) {
 			$jsModuleIds .= ($jsModuleIds? ',' : ''). $module['id'];
 		}
 	}
@@ -307,10 +297,10 @@ if ($isAdmin && \ze::$cID) {
 }
 
 //Are there plugins on this page..?
-if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
+if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 	//Include the JS for any plugin instances on the page, if they have any
 	$scriptTypes = [[], [], []];
-	foreach(\ze::$slotContents as $slotName => &$instance) {
+	foreach(ze::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
 			$scriptTypesHere = [];
 			$instance['class']->zAPICheckRequestedScripts($scriptTypesHere);
@@ -346,11 +336,11 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 			}
 		}
 		
-		echo "\n", '})(zenario._cS);'. $inlineStop. '</script>';
+		echo "\n", '})(zenario._ioe);'. $inlineStop. '</script>';
 	}
 	
 	//Include the Foot for any plugin instances on the page, if they have one
-	foreach(\ze::$slotContents as $slotName => &$instance) {
+	foreach(ze::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
 			\ze\plugin::preSlot($slotName, 'addToPageFoot');
 				$instance['class']->addToPageFoot();
@@ -360,13 +350,13 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 }
 
 //Are there Plugins on this page..?
-if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
+if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 	echo '
 '. $scriptTag. '>'. $inlineStart;
 	//Add encapculated objects for slots
 	$i = 0;
-	echo "\n", 'zenario._s([';
-	foreach (\ze::$slotContents as $slotName => &$instance) {
+	echo "\n", 'zenario.slot([';
+	foreach (ze::$slotContents as $slotName => &$instance) {
 		if (isset($instance['class']) || $isAdmin) {
 			echo
 				$i++? ',' : '',
@@ -419,7 +409,7 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 			}
 		}
 				
-		echo "\n", '})(zenario._cS);';
+		echo "\n", '})(zenario._ioe);';
 	}
 	
 	echo $inlineStop. '</script>';
@@ -428,15 +418,15 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 
 //Check to see if there is anything we need to output from the head/foot slots.
 //We need to pay attention to the logic for showing to admins, cookie consent, and overriding
-if (\ze::$cID && \ze::$cID !== -1) {
+if (ze::$cID && ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML = false;
 	
 	$sql = "
 		SELECT foot_html, foot_cc, foot_cc_specific_cookie_types, foot_visitor_only, foot_overwrite
 		FROM ". DB_PREFIX. "content_item_versions
-		WHERE id = ". (int) \ze::$cID. "
-		  AND type = '". \ze\escape::asciiInSQL(\ze::$cType). "'
-		  AND version = ". (int) \ze::$cVersion;
+		WHERE id = ". (int) ze::$cID. "
+		  AND type = '". \ze\escape::asciiInSQL(ze::$cType). "'
+		  AND version = ". (int) ze::$cVersion;
 	$result = \ze\sql::select($sql);
 	$itemHTML = \ze\sql::fetchAssoc($result);
 	
@@ -448,7 +438,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 			break;
 		case 'specific_types':
 			$cookieType = $itemHTML['foot_cc_specific_cookie_types'];
-			if (!(\ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
+			if (!(ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
 				unset($itemHTML);
 			}
 			break;
@@ -458,7 +448,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 		$sql = "
 			SELECT foot_html, foot_cc, foot_cc_specific_cookie_types, foot_visitor_only
 			FROM ". DB_PREFIX. "layouts
-			WHERE layout_id = ". (int) \ze::$layoutId;
+			WHERE layout_id = ". (int) ze::$layoutId;
 		$result = \ze\sql::select($sql);
 		$templateHTML = \ze\sql::fetchAssoc($result);
 		
@@ -470,7 +460,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 				break;
 			case 'specific_types':
 				$cookieType = $templateHTML['foot_cc_specific_cookie_types'];
-				if (!(\ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
+				if (!(ze::in($cookieType, 'functionality', 'analytics', 'social_media') && \ze\cookie::canSet($cookieType))) {
 					unset($templateHTML);
 				}
 				break;
@@ -486,14 +476,14 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	}
 }
 
-if (\ze::$cID && $includeAdminToolbar && $isAdmin && !$isWelcomeOrWizard) {
+if (ze::$cID && $includeAdminToolbar && $isAdmin && !$isWelcome) {
 	$data_rev = (int) \ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'data_rev']);
 	
 	$params = htmlspecialchars(http_build_query([
-		'id' => \ze::$cType. '_'. \ze::$cID,
-		'cID' => \ze::$cID,
-		'cType' => \ze::$cType,
-		'cVersion' => \ze::$cVersion,
+		'id' => ze::$cType. '_'. ze::$cID,
+		'cID' => ze::$cID,
+		'cType' => ze::$cType,
+		'cVersion' => ze::$cVersion,
 		'get' => $importantGetRequests,
 		'_script' => 1,
 		'data_rev' => (int) \ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'data_rev'])

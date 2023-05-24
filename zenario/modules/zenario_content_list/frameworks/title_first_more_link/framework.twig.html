@@ -7,7 +7,7 @@
 	
 	{% if Rows %}
 		{% for item in Row %}
-			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %}">
+			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %}">
 				<div class="content_list_title_date">
 					{% include this.frameworkBaseDir() ~ 'includes/title.twig.html' %}
 				</div>

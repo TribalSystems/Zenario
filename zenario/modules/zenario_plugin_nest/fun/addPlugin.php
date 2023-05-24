@@ -48,8 +48,9 @@ if ($module = ze\module::details($addPlugin)) {
 			'slide_num' => $slideNum,
 			'ord' => $ord,
 			'module_id' => $addPlugin,
-			'framework' => $module['default_framework'],
-			'name_or_slide_label' => ($displayName ?: $module['display_name'])]);
+			'framework' => $module['default_framework']
+		]
+	);
 
 } else {
 	return false;

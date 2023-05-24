@@ -99,8 +99,16 @@ class zenario_forum_list extends zenario_content_list {
 	}
 	
 	protected function orderContentBy() {
-		return "
-		ORDER BY f.ordinal";
+		$orderBy = "
+			ORDER BY ";
+		
+		if ($this->setting('pinned_content_items') == 'prioritise_pinned') {
+			$orderBy .= "v.pinned DESC, ";
+		}
+		
+		$orderBy .= "f.ordinal";
+		
+		return $orderBy;
 	}
 	
 	

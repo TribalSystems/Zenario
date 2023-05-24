@@ -5,34 +5,34 @@
 require '../../visitorheader.inc.php';
 
 
-$fluid = (int) ($_GET['fluid'] ?? false);
-//$border = (int) ($_GET['border'] ?? false);
-$save = (int) ($_GET['save'] ?? false);
-$gCols = (int) ($_GET['gCols'] ?? false);
-$gColWidth = (int) ($_GET['gColWidth'] ?? false);
-$gGutter = (float) ($_GET['gGutter'] ?? false);
-$gGutterLeftEdge = (float) ($_GET['gGutterLeftEdge'] ?? false);
-$gGutterRightEdge = (float) ($_GET['gGutterRightEdge'] ?? false);
-$minWidth = (int) ($_GET['minWidth'] ?? false);
-$maxWidth = (int) ($_GET['maxWidth'] ?? false);
-$minHeight = (int) ($_GET['minHeight'] ?? false);
-if(!$minHeight) $minHeight = ($_GET['png'] ?? false) ? 500 : 50;
+$fluid = (int) ze::get('fluid');
+//$border = (int) ze::get('border');
+$save = (int) ze::get('save');
+$cols = (int) ze::get('cols');
+$gColWidth = (int) ze::get('gColWidth');
+$gGutter = (float) ze::get('gGutter');
+$gGutterLeftEdge = (float) ze::get('gGutterLeftEdge');
+$gGutterRightEdge = (float) ze::get('gGutterRightEdge');
+$minWidth = (int) ze::get('minWidth');
+$maxWidth = (int) ze::get('maxWidth');
+$minHeight = (int) ze::get('minHeight');
+if(!$minHeight) $minHeight = ze::get('png') ? 500 : 50;
 
 if ($fluid) {
 	$width = $maxWidth;
 } else {
-	$width = $gCols * $gColWidth + ($gCols - 1) * $gGutter + $gGutterLeftEdge + $gGutterRightEdge;
+	$width = $cols * $gColWidth + ($cols - 1) * $gGutter + $gGutterLeftEdge + $gGutterRightEdge;
 }
 
-if ($gCols < 1
+if ($cols < 1
  || $width > 4000) {
 	exit;
 }
 
-function imageWithBars(&$img, $gCols, $gColWidth, $gGutter, $gGutterLeftEdge, $r, $g, $b, $a = 0) {
+function imageWithBars(&$img, $cols, $gColWidth, $gGutter, $gGutterLeftEdge, $r, $g, $b, $a = 0) {
 	global $minHeight;
 	
-	for ($i = 0; $i < $gCols; ++$i) {
+	for ($i = 0; $i < $cols; ++$i) {
 		$start = $i * $gColWidth + $i * $gGutter + $gGutterLeftEdge;
 		imagefilledrectangle($img->getHandle(), round($start), 0, round($start + $gColWidth - 1), $minHeight, $img->getExactColorAlpha($r, $g, $b, $a));
 	}
@@ -42,14 +42,14 @@ $img = WideImage\WideImage::createTrueColorImage($width, $minHeight);
 imagefilledrectangle($img->getHandle(), 0, 0, $width, $minHeight, $img->getExactColorAlpha(0x8b, 0xa9, 0xba, 0x40));
 
 if ($fluid) {
-	$gColWidthMax = $maxWidth * (100 - ($gCols - 1) * $gGutter - $gGutterLeftEdge - $gGutterRightEdge) / $gCols / 100;
+	$gColWidthMax = $maxWidth * (100 - ($cols - 1) * $gGutter - $gGutterLeftEdge - $gGutterRightEdge) / $cols / 100;
 	$gGutterLeftEdge = $gGutterLeftEdge * $maxWidth / 100;
 	$gGutterRightEdge = $gGutterRightEdge * $maxWidth / 100;
 	
-	imageWithBars($img, $gCols, $gColWidthMax, $gGutter * $maxWidth / 100, $gGutterLeftEdge, 0xce, 0xd7, 0xdd, 0x40);
+	imageWithBars($img, $cols, $gColWidthMax, $gGutter * $maxWidth / 100, $gGutterLeftEdge, 0xce, 0xd7, 0xdd, 0x40);
 	
 } else {
-	imageWithBars($img, $gCols, $gColWidth, $gGutter, $gGutterLeftEdge, 0xce, 0xd7, 0xdd, 0x40);
+	imageWithBars($img, $cols, $gColWidth, $gGutter, $gGutterLeftEdge, 0xce, 0xd7, 0xdd, 0x40);
 }
 
 

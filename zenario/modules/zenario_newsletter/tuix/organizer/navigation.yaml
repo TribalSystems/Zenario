@@ -3,25 +3,9 @@
 zenario__email_template_manager:
     nav:
         newsletters:
+            priv: _PRIV_EDIT_NEWSLETTER
             css_class: zenario_newsletter_draft
             label: Newsletters
             tooltip: Write a Newsletter and send it to registered Users
             link:
                 path: zenario__email_template_manager/panels/newsletters
-            #link:
-            #    path: zenario__email_template_manager/panels/newsletters
-            #    refiner: drafts
-#        newsletters_outbox:
-#            label: Outbox
-#            tooltip: Newsletter outbox
-#            link:
-#                path: zenario_newsletter/panels/newsletters
-#                refiner: outbox
-#                branch: Yes
-#        newsletters_archive:
-#            label: Archive
-#            tooltip: Newsletter archive
-#            link:
-#                path: zenario_newsletter/panels/newsletters
-#                refiner: archive
-#                branch: Yes

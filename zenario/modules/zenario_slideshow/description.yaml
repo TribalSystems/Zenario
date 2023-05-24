@@ -23,7 +23,7 @@ description: |
         The links to each slide can be invisible, appear visually as a tab, or in some other visual form,
         depending on the CSS and framework.
     </p><p>
-        You can restrict visibility on a slide-by-slide basis, so that only extranet users can see a slide, only users in a given group, only users in a given smart group, or you can create visibility rules (such as by-country control) by calling a static method from another module (e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module).
+        You can set permissions on a slide-by-slide basis, so that only extranet users can see a slide, only users in a given group, only users in a given smart group, or you can create rules (such as by-country control) by calling a static method from another module (e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module).
     </p>
 category: pluggable
 keywords: >

@@ -134,7 +134,10 @@ class pluginAdm {
 			} else {
 				$preselectCurrentChoice = 'false';
 			}
-			$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
+			
+			if (isset($button['onclick'])) {
+				$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
+			}
 		}
 		
 		
@@ -183,84 +186,24 @@ class pluginAdm {
 			}
 		
 			//$info['module_name']['css_class'] = 'zenario_slotControl_reusable';
-		
+			
+			
 			$mrg = \ze\plugin::details($instanceId);
 			$mrg['instance_name'] = htmlspecialchars($mrg['instance_name']);
-			$mrg['content_items'] = \ze\pluginAdm::usage($instanceId, $publishedOnly = false, $itemLayerOnly = true);
-		
-			$getPluginsUsageOnLayouts = \ze\pluginAdm::usageOnLayouts($instanceId);
-			$mrg['layouts_active'] = $getPluginsUsageOnLayouts['active'];
-			$mrg['layouts_archived'] = $getPluginsUsageOnLayouts['archived'];
-		
 			$mrg['plugins_link'] = htmlspecialchars($skLink. $pluginsLink);
-			$mrg['content_items_link'] = htmlspecialchars($skLink. '#zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $instanceId. '//');
-			$mrg['layouts_link'] = $skLink. htmlspecialchars('#zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $instanceId. '//');
-		
-			//Not used on any layouts
-			if (!$mrg['layouts_active'] && !$mrg['layouts_archived']) {
-				//Not used on any content items
-				if (!$mrg['content_items']) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
 			
-				//Used on this content item only
-				} elseif ($mrg['content_items'] == 1 && $level == 1) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this content item only', $mrg);
+			$tagId = $cType. '_'. $cID;
+			$usage = \ze\pluginAdm::getUsage($instanceId, \ze::$layoutId, $tagId);
 			
-				} elseif ($mrg['content_items'] == 1) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[content_items_link]]">1 content item</a>', $mrg);
-			
-				} else {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
-				}
-		
-			//Just used on this layout
-			} elseif (($mrg['layouts_active'] + $mrg['layouts_archived']) == 1 && $level == 2) {
-				//Not used on any content items
-				if (!$mrg['content_items']) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout only', $mrg);
-			
-				//Used on this content item only
-				} elseif ($mrg['content_items'] == 1 && $level == 1) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on this content item (are you sure you want that setup?)', $mrg);
-			
-				} elseif ($mrg['content_items'] == 1) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on <a target="_blank" href="[[content_items_link]]">1 content item</a>', $mrg);
-			
-				} else {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on this layout and on <a target="_blank" href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
-				}
-		
+			if (empty($usage)) {
+				$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
 			} else {
-			
-				if ($mrg['layouts_archived']) {
-					if ($mrg['layouts_active'] == 1) {
-						$mrg['layouts'] = \ze\admin::phrase('1 layout (and [[layouts_archived]] archived)', $mrg);
-					} else {
-						$mrg['layouts'] = \ze\admin::phrase('[[layouts_active]] layouts (and [[layouts_archived]] archived)', $mrg);
-					}
-				} else {
-					if ($mrg['layouts_active'] == 1) {
-						$mrg['layouts'] = \ze\admin::phrase('1 layout', $mrg);
-					} else {
-						$mrg['layouts'] = \ze\admin::phrase('[[layouts_active]] layouts', $mrg);
-					}
-				}
-				
-			
-				//Not used on any content items
-				if (!$mrg['content_items']) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a>', $mrg);
-			
-				//Used on this content item only
-				} elseif ($mrg['content_items'] == 1 && $level == 1) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a> and on this content item', $mrg);
-			
-				} elseif ($mrg['content_items'] == 1) {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a> and on <a target="_blank" href="[[content_items_link]]">1 content item</a>', $mrg);
-			
-				} else {
-					$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on <a target="_blank" href="[[layouts_link]]">[[layouts]]</a> and on <a target="_blank" href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
-				}
+				$usageLinks = [
+					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $instanceId. '//', 
+					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $instanceId. '//'
+				];
+				$mrg['usage_text'] = implode(', ', \ze\miscAdm::getUsageText($usage, $usageLinks, true));
+				$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>; used on [[usage_text]]', $mrg);
 			}
 		}
 		
@@ -466,7 +409,6 @@ class pluginAdm {
 					css_class,
 					makes_breadcrumbs,
 					is_slide,
-					invisible_in_nav,
 					show_back,
 					no_choice_no_going_back,
 					show_embed,
@@ -477,7 +419,8 @@ class pluginAdm {
 					hierarchical_var,
 					global_command,
 					states,
-					name_or_slide_label,
+					slide_label,
+					set_page_title_with_conductor,
 					privacy,
 					smart_group_id,
 					module_class_name,
@@ -496,7 +439,6 @@ class pluginAdm {
 					css_class,
 					makes_breadcrumbs,
 					is_slide,
-					invisible_in_nav,
 					show_back,
 					no_choice_no_going_back,
 					show_embed,
@@ -507,7 +449,8 @@ class pluginAdm {
 					hierarchical_var,
 					global_command,
 					states,
-					name_or_slide_label,
+					slide_label,
+					set_page_title_with_conductor,
 					privacy,
 					smart_group_id,
 					module_class_name,
@@ -695,37 +638,6 @@ class pluginAdm {
 		return true;
 	}
 
-
-
-	//Check how many content items use a Library plugin
-	//Formerly "getPluginsUsageOnLayouts()"
-	public static function usageOnLayouts($instanceIds) {
-	
-		$usage = ['active' => 0, 'archived' => 0];
-	
-		$sql = "
-			SELECT l.status, COUNT(DISTINCT l.layout_id)
-			FROM ". DB_PREFIX. "plugin_layout_link AS pll
-			INNER JOIN ". DB_PREFIX. "layouts AS l
-			   ON l.layout_id = pll.layout_id
-			INNER JOIN ". DB_PREFIX. "layout_slot_link AS s
-			   ON s.layout_id = l.layout_id
-			  AND s.slot_name = pll.slot_name
-			WHERE pll.instance_id IN (". \ze\escape::in($instanceIds, 'numeric'). ")
-			GROUP BY l.status";
-		
-		$result = \ze\sql::select($sql);
-		while ($row = \ze\sql::fetchRow($result)) {
-			if ($row[0] == 'active') {
-				$usage['active'] = $row[1];
-			} else {
-				$usage['archived'] = $row[1];
-			}
-		}
-	
-		return $usage;
-	}
-
 	//Check how many content items use a Library plugin
 	//Formerly "checkInstancesUsage()"
 	public static function usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false, $publicPagesOnly = false) {
@@ -839,7 +751,7 @@ class pluginAdm {
 	}
 	
 	
-	public static function getUsage($instanceId) {
+	public static function getUsage($instanceId, $thisLayoutId = null, $thisTagId = null) {
 		if (is_array($instanceId)) {
 			$instanceIdSQL = ' IN (' . \ze\escape::in($instanceId) . ')';
 		} else {
@@ -850,19 +762,55 @@ class pluginAdm {
 		$usage = [];
 
 		if ($instanceId) {
+			//Check if this is used in the sitewide header
+			$sql = "
+				SELECT 1
+				FROM " . DB_PREFIX . "plugin_sitewide_link AS psl
+				INNER JOIN " . DB_PREFIX . "layout_slot_link AS lsl
+				   ON lsl.slot_name = psl.slot_name
+				  AND lsl.is_header = 1
+				WHERE psl.instance_id ". $instanceIdSQL. "
+				LIMIT 1";
+			$usage['swHeader'] = (bool) \ze\sql::numRows($sql);
+			
+			
+			//Check if this is used in the sitewide footer
+			$sql = "
+				SELECT 1
+				FROM " . DB_PREFIX . "plugin_sitewide_link AS psl
+				INNER JOIN " . DB_PREFIX . "layout_slot_link AS lsl
+				   ON lsl.slot_name = psl.slot_name
+				  AND lsl.is_footer = 1
+				WHERE psl.instance_id ". $instanceIdSQL. "
+				LIMIT 1";
+			$usage['swFooter'] = (bool) \ze\sql::numRows($sql);
+			
+			
 			//Count how many layouts use this plugin, and get one example
 			$sql = "
-				SELECT DISTINCT pll.layout_id
+				SELECT DISTINCT l.layout_id
 				FROM " . DB_PREFIX . "plugin_layout_link AS pll
 				INNER JOIN " . DB_PREFIX . "layouts AS l
-					ON l.layout_id = pll.layout_id
-				WHERE pll.instance_id " . $instanceIdSQL . "
-					AND l.status = 'active'";
+				   ON l.layout_id = pll.layout_id
+				  AND l.status = 'active'
+				WHERE pll.instance_id ". $instanceIdSQL;
+			
+			if ($thisLayoutId !== null) {
+				$sql .= "
+				ORDER BY l.layout_id = ". (int) $thisLayoutId. " DESC";
+			}
+			
 			$result = \ze\sql::select($sql);
 			
 			if ($usage['layouts'] = \ze\sql::numRows($result)) {
 				$usage['layout'] = \ze\sql::fetchValue($result);
+				
+				if ($thisLayoutId !== null
+				 && $thisLayoutId == $usage['layout']) {
+					$usage['layout'] = 'THIS';
+				}
 			}
+			
 			
 			//Count how many content items use this plugin, and get one example
 			$usage['content_items'] = [];
@@ -894,10 +842,21 @@ class pluginAdm {
 					ON tiil.layout_id = liil.layout_id
 					AND tiil.slot_name = pil.slot_name
 				WHERE pil.instance_id " . $instanceIdSQL;
+			
+			if ($thisTagId !== null) {
+				$sql .= "
+				ORDER BY ci.tag_id = '". \ze\escape::sql($thisTagId). "' DESC";
+			}
+			
 			$result = \ze\sql::select($sql);
 			
 			if ($usage['content_items'] = \ze\sql::numRows($result)) {
 				$usage['content_item'] = \ze\sql::fetchValue($result);
+				
+				if ($thisTagId !== null
+				 && $thisTagId == $usage['content_item']) {
+					$usage['content_item'] = 'THIS';
+				}
 			}
 		}
 		return $usage;
@@ -1054,7 +1013,26 @@ class pluginAdm {
 			$details = \ze\plugin::details($instanceId);
 			$moduleId = $details['module_id'];
 		}
-	
+		
+		
+		//Check this slot exists
+		$key = [
+			'layout_id' => ($layoutId = \ze\content::layoutId($cID, $cType, $cVersion)),
+			'slot_name' => $slotName
+		];
+		
+		//Allow site-wide slots to be hidden and unhidden on a per-content item basis,
+		//but don't allow site-wide slots to be replace by a plugin on a content item.
+		if ($moduleId || $instanceId) {
+			$key['is_header'] = 0;
+			$key['is_footer'] = 0;
+		}
+		
+		if (!\ze\row::exists('layout_slot_link', $key)) {
+			return false;
+		}
+		
+		
 		if ($moduleId || $instanceId !== '') {
 			$placementId = \ze\row::set(
 				'plugin_item_link',
@@ -1076,19 +1054,27 @@ class pluginAdm {
 					'content_type' => $cType,
 					'content_version' => $cVersion]);
 		}
+		
+		return true;
 	}
 	
 
 	//Formerly "updatePluginInstanceInTemplateSlot()"
-	public static function updateLayoutSlot($instanceId, $slotName, $layoutId, $moduleId = false, $cID = false, $cType = false, $cVersion = false, $copySwatchUp = false, $copySwatchDown = false) {
-	
-		if ($cID && $cType && !$cVersion) {
-			$cVersion = \ze\content::latestVersion($cID, $cType);
-		}
+	public static function updateLayoutSlot($instanceId, $slotName, $layoutId, $moduleId = false) {
 	
 		if (!$moduleId && $instanceId) {
 			$details = \ze\plugin::details($instanceId);
 			$moduleId = $details['module_id'];
+		}
+		
+		//Check this slot exists, and isn't a site-wide slot
+		if (!\ze\row::exists('layout_slot_link', [
+			'layout_id' => $layoutId,
+			'slot_name' => $slotName,
+			'is_header' => 0,
+			'is_footer' => 0
+		])) {
+			return false;
 		}
 		
 		if ($moduleId) {
@@ -1108,6 +1094,44 @@ class pluginAdm {
 					'slot_name' => $slotName,
 					'layout_id' => $layoutId]);
 		}
+		
+		return true;
+	}
+	
+
+	//Formerly "updatePluginInstanceInTemplateSlot()"
+	public static function updateSitewideSlot($slotName, $instanceId, $moduleId = false) {
+	
+		if (!$moduleId && $instanceId) {
+			$details = \ze\plugin::details($instanceId);
+			$moduleId = $details['module_id'];
+		}
+		
+		//Check this slot exists, and is a site-wide slot
+		$lsl = \ze\row::get('layout_slot_link', ['is_header', 'is_footer'], [
+			'slot_name' => $slotName
+		]);
+		if (!$lsl || (!$lsl['is_header'] && !$lsl['is_footer'])) {
+			return false;
+		}
+		
+		if ($moduleId) {
+			$placementId = \ze\row::set(
+				'plugin_sitewide_link',
+				[
+					'module_id' => $moduleId,
+					'instance_id' => $instanceId],
+				[
+					'slot_name' => $slotName]);
+		
+		} else {
+			\ze\row::delete(
+				'plugin_sitewide_link',
+				[
+					'slot_name' => $slotName]);
+		}
+		
+		return true;
 	}
 
 	//Remove the "hide plugin on this content item" option if it has been set
@@ -1158,7 +1182,7 @@ class pluginAdm {
 				states,
 				show_back,
 				show_refresh,
-				name_or_slide_label,
+				slide_label,
 				cols, small_screens
 			FROM ". DB_PREFIX. "nested_plugins
 			WHERE id = ". (int) $eggId;
@@ -1173,8 +1197,19 @@ class pluginAdm {
 	}
 
 	//Formerly "getNestedPluginName()"
-	public static function nestedPluginName($id) {
-		return \ze\row::get('nested_plugins', 'name_or_slide_label', $id);
+	public static function nestedPluginName($eggId, $instanceId = null, $moduleId = null, $moduleClassName = null) {
+		if ($instanceId === null
+		 || ($moduleId === null && $moduleClassName === null)) {
+			$egg = \ze\row::get('nested_plugins', ['instance_id', 'module_id'], $eggId);
+			$instanceId = $egg['instance_id'];
+			$moduleId = $egg['module_id'];
+		}
+		if ($moduleClassName === null) {
+			$moduleClassName = \ze\module::className($moduleId);
+		}
+		if (\ze\module::inc($moduleClassName)) {
+			return call_user_func([$moduleClassName, 'nestedPluginName'], $eggId, $instanceId, $moduleClassName);
+		}
 	}
 
 	//Formerly "conductorEnabled()"
@@ -1335,7 +1370,7 @@ class pluginAdm {
 
 		//Look for slides with no back links going from them. These are top-level slides
 		$sql = '
-			SELECT slide.id, slide.slide_num, slide.name_or_slide_label, slide.states
+			SELECT slide.id, slide.slide_num, slide.slide_label, slide.states
 			FROM '. DB_PREFIX. 'nested_plugins AS slide
 			LEFT JOIN '. DB_PREFIX. 'nested_paths AS path
 			   ON path.instance_id = slide.instance_id
@@ -1379,7 +1414,7 @@ class pluginAdm {
 				foreach ($states as $fromState => $fromSlide) {
 				
 					$sql = '
-						SELECT slide.id, slide.slide_num, slide.name_or_slide_label, slide.states, path.request_vars, path.hierarchical_var, path.to_state
+						SELECT slide.id, slide.slide_num, slide.slide_label, slide.states, path.request_vars, path.hierarchical_var, path.to_state
 						FROM '. DB_PREFIX. 'nested_paths AS path
 						INNER JOIN '. DB_PREFIX. 'nested_plugins AS slide
 						   ON path.instance_id = slide.instance_id

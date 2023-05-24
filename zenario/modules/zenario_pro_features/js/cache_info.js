@@ -38,9 +38,10 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		clear_cache_by = {},
 		lType = type.toLowerCase(),
 		pluginDesc = '',
-		si, slot;
+		si, slot,
+		i, slotNameNestId;
 	
-	for (var slotNameNestId in zenarioCD.slots) {
+	for (slotNameNestId in zenarioCD.slots) {
 		if (!slotName
 		 || slotNameNestId == slotName
 		 || slotNameNestId.substr(0, slotName.length + 1) == slotName + '-'
@@ -53,13 +54,13 @@ zenarioCI.box = function(slotName, type, cantCache) {
 				break;
 			
 			} else {
-				for (var i in slot.cache_if) {
+				for (i in slot.cache_if) {
 					if (!slot.cache_if[i]) {
 						delete cache_if[i];
 					}
 				}
 				if (slot.clear_cache_by) {
-					for (var i in slot.clear_cache_by) {
+					for (i in slot.clear_cache_by) {
 						if (slot.clear_cache_by[i]) {
 							clear_cache_by[i] = true;
 						}
@@ -69,26 +70,11 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		}
 	}
 	
-	if (slotName && (slot = zenario.slots[slotName])) {
+	if (slotName) {
+		pluginDesc = zenarioCI.pluginDesc(slotName);
 		
-		//N.b. similar logic to the following is also used inline in zenario/js/admin_grid_maker.js
-		pluginDesc = ', ';
-		
-		if (slot.isVersionControlled) {
-			pluginDesc += slot.moduleClassName + ',';
-		} else {
-			switch (slot.moduleClassName) {
-				case 'zenario_plugin_nest':
-					pluginDesc += 'N';
-					break;
-				case 'zenario_slideshow':
-				case 'zenario_slideshow_simple':
-					pluginDesc += 'S';
-					break;
-				default:
-					pluginDesc += 'P';
-			}
-			pluginDesc += ('' + slot.instanceId).padStart(2, '0') + ' (' + slot.moduleClassName + '),';
+		if (pluginDesc) {
+			pluginDesc = ',' + pluginDesc + ',';
 		}
 	}
 	
@@ -96,6 +82,26 @@ zenarioCI.box = function(slotName, type, cantCache) {
 	if (cantCache) {
 		css = 'zenario_cache_disabled';
 		html += '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' does not support caching.</h1><h2>The developer did not enable support for caching for this ' + lType + '.</h2>';
+		
+		if (!slotName) {
+			html += '<ul>';
+			for (slotNameNestId in zenarioCD.slots) {
+			
+				slot = zenarioCD.slots[slotNameNestId];
+			
+				if (!slot.cache_if || !slot.cache_if.a || slot.disallow_caching) {
+					var blockingPlugin = zenarioCI.pluginDesc(slotNameNestId);
+					
+					if (blockingPlugin) {
+						blockingPlugin = 'Blocked by ' + blockingPlugin + ' in slot ' + slotNameNestId;
+					} else {
+						blockingPlugin = 'Blocked by slot ' + slotNameNestId;
+					}
+					html += '<li>' + zenario.htmlspecialchars(blockingPlugin) + '.</li>';
+				}
+			}
+			html += '</ul>';
+		}
 	
 	} else {
 		
@@ -129,7 +135,7 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		
 		html += '<h2>The caching rules for this ' + lType + ' are as follows:</h2>';
 		html += '<table><tr><th>Request contents</th><th>This request</th><th>' + type + ' requirements</th><th>Result</th></tr>';
-		for (var i in load) {
+		for (i in load) {
 			ruleNotMet = zenarioCD.load[i] && !cache_if[i];
 			
 			if (ruleNotMet) {
@@ -146,7 +152,7 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		
 		
 		var found = false;
-		for (var i in by) {
+		for (i in by) {
 			if (clear_cache_by[i]) {
 				if (!found) {
 					html += '<h2>This ' + lType + '\ will be cleared from the cache when any of the following change:</h2><ul>';
@@ -176,10 +182,42 @@ zenarioCI.box = function(slotName, type, cantCache) {
 	}
 	
 	return '<x-zenario-cache-info class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></x-zenario-cache-info>';
-}
+};
 
 
-
+zenarioCI.pluginDesc = function(slotName) {
+	
+	var slot, pluginDesc = '';
+	
+	if (slot = zenario.slots[slotName]) {
+		
+		//N.b. similar logic to the following is also used inline in zenario/js/admin_grid_maker.js
+		if (slot.isVersionControlled) {
+			pluginDesc += slot.moduleClassName;
+		
+		} else if (slotName.split('-')[1]) {
+			pluginDesc += 'nested ' + slot.moduleClassName;
+		
+		} else {
+			switch (slot.moduleClassName) {
+				case 'zenario_plugin_nest':
+					pluginDesc += 'N';
+					break;
+				case 'zenario_slideshow':
+				case 'zenario_slideshow_simple':
+					pluginDesc += 'S';
+					break;
+				default:
+					pluginDesc += 'P';
+			}
+			pluginDesc += ('' + slot.instanceId).padStart(2, '0') + ' (' + slot.moduleClassName + ')';
+		}
+		
+		pluginDesc = ' ' + pluginDesc;
+	}
+	
+	return pluginDesc;
+};
 
 
 
@@ -205,7 +243,7 @@ zenarioCI.init = function(canCache) {
 		
 		zenarioCI.inited = true;
 	}
-}
+};
 
 
 

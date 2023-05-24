@@ -77,4 +77,15 @@ zenario_slideshow.resume = function(el) {
 
 
 
+//Experimental Swiper JS integration for Zenario.
+//Warning, this is very experimental and not fully implemented!
+zenario_slideshow.swiper = function(slotName, selector, options) {
+	var swiper = new Swiper(selector, options);
+	zenario.on(slotName, undefined, 'resize', function() {
+		swiper.update();
+	});
+};
+
+
+
 })(zenario, zenario_slideshow, zenario.getContainerIdFromEl);

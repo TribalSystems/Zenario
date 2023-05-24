@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__categories extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__content/panels/categories') return;
+		if ($path != 'zenario__library/panels/categories') return;
 		
 		if (!$refinerName && !ze::in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 			$panel['title'] = ze\admin::phrase('Categories (top level)');
@@ -44,7 +44,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__content/panels/categories') return;
+		if ($path != 'zenario__library/panels/categories') return;
 		
 		$langs = ze\lang::getLanguages();
 		foreach($langs as $lang) {
@@ -124,18 +124,18 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 		}
 		
 		
-		if ($_GET['refiner__parent_category'] ?? false) {
+		if (ze::get('refiner__parent_category')) {
 			$mrg = [
-				'category' => ze\category::name($_GET['refiner__parent_category'] ?? false)];
+				'category' => ze\category::name(ze::get('refiner__parent_category'))];
 			$panel['title'] = ze\admin::phrase('Sub-categories of "[[category]]"', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('Category "[[category]]" has no sub-categories.', $mrg);
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($path != 'zenario__content/panels/categories') return;
+		if ($path != 'zenario__library/panels/categories') return;
 		
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_CATEGORY')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_CATEGORY')) {
 			foreach (explode(',', $ids) as $id) {
 				zenario_common_features::deleteCategory($id);
 			}

@@ -282,9 +282,10 @@ additionalProperties:
         cancel_button_message:
             type: string
             description: >
-                Including this property will remove the close button at the top right of the box
-                and add a "cancel" button with the specified message at the bottom next to
-                the "save" button.
+                Including this property will add a "cancel" button with the specified message at
+                the bottom next to the "save" button.
+                Pressing this button is exactly the same as pressing the close button at the top
+                right of the box.
         
         error_on_form_message:
             type: string
@@ -818,12 +819,11 @@ additionalProperties:
                                 grouping:
                                     type: string
                                     description: >
-                                        Set this property to the name of a grouping to have this field
-                                        appear in the grouping.
+                                        Use this property to place this field inside a grouping.
+                                        You need to enter the codename of the grouping that you wish this field
+                                        appear in.
                                         
-                                        
-                                        To create a grouping, you can make a field with <code>type: grouping</code> and
-                                        give it a name, e.g. <code>name: my_grouping_name</code>
+                                        To create a grouping, you can make a field with <code>type: grouping</code>
                                         
                                         
                                         This works from version 7.1 onwards.
@@ -866,6 +866,22 @@ additionalProperties:
                                     type: string
                                     description: >
                                         Some HTML code to be placed just after the field.
+                                
+                                pre_field_text:
+                                    type: string
+                                    description: >
+                                        Some plain text to be placed just before the field.
+                                        Works in a similar way to the pre_field_html property, except when using a FEA plugin the text you enter here will be translated.
+                                        
+                                        This works from version 9.4 onwards.
+                                post_field_text:
+                                    type: string
+                                    description: >
+                                        Some plain text to be placed just before the field.
+                                        Works in a similar way to the pre_field_html property, except when using a FEA plugin the text you enter here will be translated.
+                                        
+                                        This works from version 9.4 onwards.
+                                
                                 side_note:
                                     type: string
                                     description: >
@@ -885,6 +901,50 @@ additionalProperties:
                                     type: boolean
                                     description: >
                                         If this property is set, the note_below will be displayed as plain text.
+                                
+                                notices_above:
+                                    type: object
+                                    description: >
+                                        This allows you to display one or more messages above the field.
+                                        
+                                        This works from 9.4 onwards.
+                                    additionalProperties: &notices
+                                        type: object
+                                        required:
+                                            - type
+                                        properties:
+                                            hidden: *hidden
+                                            visible_if: *visible_if
+                                            type:
+                                                enum:
+                                                    - error
+                                                    - warning
+                                                    - question
+                                                    - information
+                                                    - success
+                                                description: >
+                                                    The type of notice. A different styling will be applied for each different type.
+                                            size:
+                                                enum:
+                                                    - small
+                                                    - large
+                                                description: >
+                                                    The size of the icon to show. Can be small or large. Defaults to small if not set.
+                                            message:
+                                                type: string
+                                                description: >
+                                                    A message to show.
+                                            html:
+                                                type: boolean
+                                                description: >
+                                                    If this is set, the message will not be html-escaped.
+                                notices_below:
+                                    type: object
+                                    description: >
+                                        This allows you to display one or more messages below the field.
+                                        
+                                        This works from 9.4 onwards.
+                                    additionalProperties: *notices
                                 
                                 show_phrase_icon:
                                     type: boolean
@@ -989,19 +1049,11 @@ additionalProperties:
                                     type: string
                                     default: (defaults to the code name/id)
                                     description: >
-                                        The name property is used for <code>type: grouping</code> and
-                                        <code>type: radio</code> fields.
+                                        The name property is used for <code>type: radio</code> fields.
                                         
                                         
                                         If you have multiple <code>type: radio</code> fields on one tab, you can bind them together into
                                         a radiogroup by giving them all the same name, e.g. <code>name: my_radiogroup</code>.
-                                        
-                                        
-                                        To create a grouping, you can make a field with <code>type: grouping</code> and
-                                        give it a name, e.g. <code>name: my_grouping_name</code>
-                                        
-                                        You can put fields in the grouping by adding the <code>grouping</code> property to
-                                        them, e.g. <code>grouping: my_grouping_name</code>
                                         
                                         
                                         This works from version 7.1 onwards.
@@ -1869,6 +1921,18 @@ additionalProperties:
                                         be present. If they're not there, you may need to add them!
                                         
                                         This works from version 9.0 onwards.
+                                        
+                                        
+                                        From 9.4 onwards there is an experimental feature where you can use this
+                                        option for a select list as well.
+                                        
+                                        For this to work, your select list must have only two values visible:
+                                          - The "on" value in the first position
+                                          - The "off" value in the second position
+                                        
+                                        If this requirement is not met the select list will be displayed as a normal
+                                        select list.
+                                        
                                 indeterminate:
                                     type: boolean
                                     description: >
@@ -1998,28 +2062,6 @@ additionalProperties:
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
                                         
-                                        save_value_when_hidden:
-                                            type: boolean
-                                            description: >
-                                                By default, if a plugin setting is hidden then it won't be saved into the
-                                                database, and the default value will be used instead.
-                                                
-                                                If you still want the value of the field to be read and saved even
-                                                when it is hidden, set this property to true.
-                                        
-                                                This works from version 8.2 onwards.
-                                        
-                                        save_empty_value_when_hidden:
-                                            type: boolean
-                                            description: >
-                                                By default, if a plugin setting is hidden then it won't be saved into the
-                                                database, and the default value will be used instead.
-                                                
-                                                If the default value is not empty, but you want an empty value for this field
-                                                to be saved if it is hidden, then set this property to true.
-                                        
-                                                This works from version 8.2 onwards.
-                                        
                                         dont_save_default_value:
                                             type: boolean
                                             description: >
@@ -2118,25 +2160,6 @@ additionalProperties:
                                                 
                                                 Note: if an Admin exports a Content Item as HTML and then imports it,
                                                 this will break the reference, and this option will do nothing.
-                                                
-                                                
-                                                This property must be written in your .yaml file.
-                                                It can't be changed in php.
-                                        use_value_for_plugin_name:
-                                            type: integer
-                                            static: true
-                                            description: >
-                                                This property marks that if this setting has a value, this should be used to
-                                                overwrite the name of a Nested Plugin. (It does nothing for Plugins that are
-                                                not Nested.)
-                                                
-                                                If you have a Organizer picker or list of values, the display value will be
-                                                used for the name and not the actual value.
-                                                
-                                                This property takes a numeric value, which is used as a priority in case you have
-                                                marked more than one field with <code>use_value_for_plugin_name</code>. I.e., a field
-                                                marked with a 1 will be used instead of a field marked with a 2, unless the
-                                                first field was hidden or empty.
                                                 
                                                 
                                                 This property must be written in your .yaml file.
@@ -2375,6 +2398,15 @@ additionalProperties:
                                                     
                                                     This works from version 9.3 onwards.
                                             
+                                            tooltip:
+                                                type: string
+                                                description: >
+                                                    This adds a (?) mark symbol after a checkbox
+                                                    or radio's label, with a tooltip displayed when the user
+                                                    hovers their mouse cursor over the (?) mark symbol.
+                                    
+                                                    This works from version 9.4 onwards.
+                                            
                                             accesskey:
                                                 type: *stringy
                                                 description: Sets the accesskey HTML attribute on a checkbox or radio option.
@@ -2587,6 +2619,46 @@ additionalProperties:
                                             type: string
                                             description: >
                                                 Inline styles to add to the slider.
+                                
+                                spinner:
+                                    type: object
+                                    description: >
+                                        Using this property, you can put a jQueryUI-powered spinner after a text field.
+                                        See https://jqueryui.com/spinner/ for more info.
+                                        
+                                        This works from version 9.4 onwards.
+                                    properties:
+                                        min:
+                                            type: number
+                                            default: 0
+                                            description: >
+                                                The smallest possible value.
+                                        max:
+                                            type: number
+                                            default: 100
+                                            description: >
+                                                The largest possible value.
+                                        step:
+                                            type: number
+                                            default: 1
+                                            description: >
+                                                The step-size.
+                                        incremental:
+                                            type: boolean
+                                            description: >
+                                                When set to true, the stepping delta will increase when spun incessantly. 
+                                        page:
+                                            type: number
+                                            default: 0
+                                            description: >
+                                                The number of steps to take when paging via the pageUp/pageDown methods.
+                                        numberFormat:
+                                            type: string
+                                        units:
+                                            type: string
+                                            description: >
+                                                This will add a label just after the value, intended to be for displaying
+                                                the units of the field.
                                     
                                 pressed:
                                     type: boolean
@@ -2793,13 +2865,72 @@ additionalProperties:
                                         Adds an inline style to a <code>type: grouping</code> field.
                                         
                                         This works from version 7.7 onwards.
-                                        
                                 grouping_css_class:
                                     type: string
                                     description: >
                                         This lets you add a CSS class for a <code>type: grouping</code> field.
                                         
                                         This works from version 7.7 onwards.
+                                start_new_grouping_wrapper:
+                                    type: boolean
+                                    description: >
+                                        When you have more than one grouping next to each other, they'll be wrapped
+                                        by a <x-zenario-grouping-wrapper> HTML element.
+                                        
+                                        If you have multiple groupings next to each other, but want to close the current
+                                        <x-zenario-grouping-wrapper> tag and open a new one such that different groupings
+                                        are wrapped in different wrappers, set this property to true.
+                                        
+                                        This works from version 9.4 onwards.
+                                grouping_wrapper_style:
+                                    type: string
+                                    description: >
+                                        Sets an inline style on the <x-zenario-grouping-wrapper> HTML element.
+                                        
+                                        Only has an effect if the <x-zenario-grouping-wrapper> is being opened;
+                                        i.e. this is the very first grouping in a series of groupings, or the
+                                        start_new_grouping_wrapper has been set to true.
+                                        
+                                        This works from version 9.4 onwards.
+                                grouping_wrapper_css_class:
+                                    type: string
+                                    description: >
+                                        This lets you add a CSS class on the <x-zenario-grouping-wrapper> HTML element.
+                                        
+                                        Only has an effect if the <x-zenario-grouping-wrapper> is being opened;
+                                        i.e. this is the very first grouping in a series of groupings, or the
+                                        start_new_grouping_wrapper has been set to true.
+                                        
+                                        This works from version 9.4 onwards.
+                                grouping_wrapper_icon_class:
+                                    type: string
+                                    description: >
+                                        If you set this property, an empty <div> will appear inside the
+                                        <x-zenario-grouping-wrapper> HTML element with the specified CSS class name.
+                                        
+                                        You can use this to style an icon.
+                                    
+                                        This works from version 9.4 onwards.
+                                grouping_wrapper_record_count:
+                                    type: string
+                                    description: >
+                                        If you've added an icon using the grouping_wrapper_icon_class property, you can
+                                        set this to add a record count inside it.
+                                    
+                                        This works from version 9.4 onwards.
+                                pre_grouping_html:
+                                    type: string
+                                    description: >
+                                        Some HTML code to be placed just before the <fieldset> for this grouping is opened.
+                                        
+                                        This works from version 9.4 onwards.
+                                post_grouping_html:
+                                    type: string
+                                    description: >
+                                        Some HTML code to be placed just after the <fieldset> for this grouping is closed.
+                                        
+                                        This works from version 9.4 onwards.
+
                                 
                                 
                                 dont_trim:
@@ -3015,8 +3146,8 @@ additionalProperties:
         go_to_url:
             type: string
             description: >
-                    This property is used in the installer and in wizards. If set, the installer
-                    or the wizard will close and navigate to the specified path or URL.
+                    This property is used in the installer. If set, the installer will close
+                    and navigate to the specified path or URL.
         
         module_class_name:
             type: string
@@ -3032,19 +3163,6 @@ additionalProperties:
                     property in your .yaml file to indicate that the tabs and fields inside this file
                     are only for a specific settings group.
         
-        from_client:
-            type: object
-            description: >
-                This object, and any child objects and properties, will always be synced between the client
-                and the server.
-                
-                To help make TUIX forms and applications secure, and to make it harder for a developer to
-                unwittingly introduce security vulnerabilities in their code, only a few TUIX properties
-                that have a specific purpose can be synced between the client and the server.
-                
-                This object is provided as a free-for-all exception, so anyone making a custom application
-                can add anything they need synced in here.
-        
         missing_items_warning:
             type: string
             description: >
@@ -3057,6 +3175,39 @@ additionalProperties:
                 some text to this property, e.g. "Warning: ID [[items]] missing, save settings to clean up."
                 
                 This works from version 8.8 onwards.
+        
+        always_sync_this_data_between_client_and_server:
+            type: object
+            description: >
+                This object, and any child objects and properties, will always be synced between the client
+                and the server.
+                
+                To help make TUIX forms and applications secure, and to make it harder for a developer to
+                unwittingly introduce security vulnerabilities in their code, only a few TUIX properties
+                that have a specific purpose can be synced between the client and the server.
+                
+                This object is provided as a free-for-all exception, so anyone making a custom application
+                can add anything they need synced in here.
+        
+        never_sync_this_data_between_client_and_server:
+            type: object
+            description: >
+                This object, and any child objects and properties, will never be synced between the client
+                and the server.
+                
+                This object allows you to send slightly larger data streams from the server to the client,
+                on a one-time-only basis.
+                
+                Anything in here won't be saved in the cache/fabs/ directory, and won't be between the client
+                and the server.
+                
+                This is an exception to how TUIX forms and FABs usually work, where a copy of the TUIX
+                sent to the client is kept on the server, and the two are kept in sync.
+                
+                Any data that is large, or does not need to be kept in sync between the client and the server,
+                should be put in here.
+                
+                This works from version 9.4 onwards.
                 
             
                                             

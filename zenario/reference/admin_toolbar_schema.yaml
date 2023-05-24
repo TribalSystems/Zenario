@@ -599,3 +599,9 @@ properties:
                                 
                                         You can see http://www.jacklmoore.com/colorbox/ for a description of
                                         what other properties are available.
+                            
+                            record_count:
+                                type: *variable
+                                description: >
+                                    Use this property to display a record count on a button.
+                                    For example, display a count of images associated with a content item.

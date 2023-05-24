@@ -81,7 +81,6 @@ if (ze\dbAdm::needRevision(166)) {
 	
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'phone');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'fax');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'email', 'email', 'email');
 	ze\datasetAdm::registerSystemField($datasetId, 'url', 'details', 'url');
 	ze\datasetAdm::registerSystemField($datasetId, 'textarea', 'summary', 'summary');
 	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'url last accessed', 'last_accessed');

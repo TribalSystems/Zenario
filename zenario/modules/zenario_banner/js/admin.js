@@ -68,7 +68,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	}
 	
 	$editor.tinymce({
-		script_url: URLBasePath + zenario.tinyMCEPath,
+		script_url: zenario.addBasePath(zenario.tinyMCEPath),
 
 		plugins: ["advlist autolink lists link charmap hr anchor",
 		"searchreplace code",

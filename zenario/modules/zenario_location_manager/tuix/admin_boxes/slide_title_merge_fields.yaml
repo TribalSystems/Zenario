@@ -4,11 +4,11 @@ zenario_slide:
     lovs:
         title_merge_fields:
             location:
-                label: 'Location'
-            '[[location_id]]':
+                label: 'Can be used when "locationId" is in the URL'
+            '[[locationId]]':
                 parent: location
                 data-class: location_icon
-                label: 'Location ID: [[location_id]]'
+                label: 'Location ID: [[locationId]]'
             '[[zenario_location_manager:name]]':
                 parent: location
                 data-class: location_icon

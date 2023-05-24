@@ -38,7 +38,7 @@ require '../adminheader.inc.php';
 $mode = false;
 $tagPath = '';
 $modules = [];
-$debugMode = (bool) ($_GET['_debug'] ?? false);
+$debugMode = (bool) ze::get('_debug');
 $settingGroup = '';
 $compatibilityClassNames = [];
 ze::$tuixType = $type = 'admin_toolbar';
@@ -96,7 +96,7 @@ if ($debugMode) {
 
 //Apply the modules' specific logic
 foreach ($modules as $className => &$module) {
-	$module->fillAdminToolbar($tags, (int) ($_REQUEST['cID'] ?? false), ($_REQUEST['cType'] ?? false), (int) ($_REQUEST['cVersion'] ?? false));
+	$module->fillAdminToolbar($tags, (int) ze::request('cID'), ze::request('cType'), (int) ze::request('cVersion'));
 }
 
 
@@ -104,12 +104,12 @@ foreach ($modules as $className => &$module) {
 //Display the output as JSON
 header('Content-Type: text/javascript; charset=UTF-8');
 	
-if ($_REQUEST['_script'] ?? false) {
+if (ze::request('_script')) {
 	echo 'zenarioAT.init2(';
 }
 
 ze\ray::jsonDump($tags);
 
-if ($_REQUEST['_script'] ?? false) {
+if (ze::request('_script')) {
 	echo ');';
 }

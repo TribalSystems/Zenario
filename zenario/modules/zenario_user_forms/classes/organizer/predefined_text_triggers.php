@@ -39,7 +39,7 @@ class zenario_user_forms__organizer__predefined_text_triggers extends zenario_us
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($_POST['reorder'] ?? false) {
+		if (ze::post('reorder')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'predefined_text_triggers', ['ord' => $_POST['ordinals'][$id]], $id);
 			}

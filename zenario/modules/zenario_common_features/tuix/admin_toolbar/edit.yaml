@@ -56,8 +56,8 @@ sections:
                 featured_image_alt: ''
                 label: Images
                 organizer_quick:
-                    target_path: zenario__content/panels/image_library
-                    min_path: zenario__content/panels/image_library
+                    target_path: zenario__library/panels/image_library
+                    min_path: zenario__library/panels/image_library
                     disallow_refiners_looping_on_min_path: true
             lock_dropdown: &lock_dropdown
                 label: Locking
@@ -121,7 +121,7 @@ sections:
                         request:
                             create_draft_by_copying: 1
             delete_archives:
-                priv: _PRIV_HIDE_CONTENT_ITEM
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 parent: action_dropdown

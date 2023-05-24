@@ -29,19 +29,19 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Requests for Menu Nodes
-if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
+if (ze::request('mID') && ze::post('menu_item')) {
 	//Most of the logic for Menu Nodes is already included for Storekeeper, so include those functions
-	$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', ($_REQUEST['mID'] ?? false), $ids, false, false);
+	$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', ze::request('mID'), $ids, false, false);
 	
-	if (($_POST['make_primary'] ?? false) && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+	if (ze::post('make_primary') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 		$_SESSION['page_toolbar'] = 'menu1';
 	}
-} elseif ($_POST['rollback'] ?? false) {
+} elseif (ze::post('rollback')) {
 	$cVersionTo = false;
 	ze\contentAdm::createDraft($cID, $cID, $cType, $cVersionTo, $cVersion);
 		
-} elseif ($_POST['trash'] ?? false) {
-	if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_HIDE_CONTENT_ITEM', $cID, $cType)) {
+} elseif (ze::post('trash')) {
+	if (ze\contentAdm::allowTrash($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 		$menu = ze\menu::getFromContentItem($cID, $cType);
 		
 		ze\contentAdm::trashContent($cID, $cType);
@@ -55,7 +55,7 @@ if (($_REQUEST['mID'] ?? false) && ($_POST['menu_item'] ?? false)) {
 	}
 
 //Delete the draft of a Content Item
-} elseif ($_POST['delete'] ?? false) {
+} elseif (ze::post('delete')) {
 	if (ze\contentAdm::allowDelete($cID, $cType) && ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 		$menu = ze\menu::getFromContentItem($cID, $cType);
 		

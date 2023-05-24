@@ -41,7 +41,7 @@ class zenario_common_features__admin_boxes__delete_media_content_item extends ze
 		}
 		
 		ze\module::incSubclass('zenario_common_features');
-		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'delete_media_content_item', $this->totalRowNum);
+		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'delete_media_content_item', $this->totalRowNum, $getPlugins = true, $getTranslations = true);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

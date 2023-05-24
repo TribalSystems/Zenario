@@ -83,6 +83,8 @@ site_settings:
                             label: ''
                         '[[_MONTH_LONG_%m]] %D, %Y':
                             label: ''
+                        '[[_WEEKDAY_%w]] %e [[_MONTH_LONG_%m]] %Y':
+                            label: ''
                         '[[_WEEKDAY_%w]] %D [[_MONTH_LONG_%m]] %Y':
                             label: ''
                         '[[_WEEKDAY_%w]] [[_MONTH_LONG_%m]] %D, %Y':

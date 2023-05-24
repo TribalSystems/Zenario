@@ -32,7 +32,7 @@ foreach (explode(',', $eggIds) as $eggId) {
 	if (($egg = ze\pluginAdm::getNestDetails($eggId))
 	 && (!$egg['is_slide'])) {
 		if ($pluginName === null) {
-			$pluginName = $egg['name_or_slide_label'];
+			$pluginName = ze\pluginAdm::nestedPluginName($eggId, $egg['instance_id'], $egg['module_id']);
 		} else {
 			$pluginName = false;
 		}

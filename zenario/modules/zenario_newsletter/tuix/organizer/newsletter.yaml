@@ -10,7 +10,6 @@ zenario__email_template_manager:
                 id_column: n.id
                 custom_where_statement_if_no_refiner: |
                     WHERE n.status = '_DRAFT'
-            view_mode: list
             default_sort_column: date_sent
             bold_columns_in_list_view: newsletter_name
             default_sort_desc: true
@@ -38,6 +37,7 @@ zenario__email_template_manager:
                     searchable: true
                     always_show: true
                     width: xsmall
+                    align_right: true
                 status:
                     db_column: n.status
                     hidden: true
@@ -235,15 +235,6 @@ zenario__email_template_manager:
                         path: zenario__email_template_manager/panels/newsletter_log
                         branch: true
                         refiner: newsletter
-                    hide_in_select_mode: true
-                images:
-                    css_class: view_items_images
-                    parent: view_dropdown
-                    label: Images
-                    link:
-                        path: zenario__content/panels/image_library
-                        branch: true
-                        refiner: images_for_newsletter
                     hide_in_select_mode: true
                 click_throughs:
                     parent: view_dropdown

@@ -20,13 +20,12 @@ plugin_settings:
                     plugin_setting:
                         name: image
                         foreign_key_to: 'multiple_files'
-                        use_value_for_plugin_name: false
                     label: Images
                     pick_items:
-                        path: zenario__content/panels/mic_image_library
-                        min_path: zenario__content/panels/mic_image_library
-                        max_path: zenario__content/panels/mic_image_library
-                        target_path: zenario__content/panels/mic_image_library
+                        path: zenario__library/panels/mic_image_library
+                        min_path: zenario__library/panels/mic_image_library
+                        max_path: zenario__library/panels/mic_image_library
+                        target_path: zenario__library/panels/mic_image_library
                         multiple_select: true
                         select_phrase: Select from Organizer...
                     format_onchange: true
@@ -50,18 +49,18 @@ plugin_settings:
                         name: canvas
                     label: 'Thumbnail image canvas:'
                     type: select
-                    value: fixed_width_and_height
+                    value: crop_and_zoom
                     values:
-                        unlimited:
-                            label: Unlimited size
+                        crop_and_zoom:
+                            label: Crop and zoom
                         fixed_width:
                             label: Constrain by width
                         fixed_height:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
-                        crop_and_zoom:
-                            label: Crop and zoom
+                        unlimited:
+                            label: Unlimited size
                     format_onchange: true
                 retina:
                     indent: 1
@@ -85,8 +84,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
                         numeric: The width must be a number.
-                    value: ""
-                    maxlength: "5"
+                    value: 600
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 height:
@@ -98,8 +97,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
                         numeric: The height must be a number.
-                    value: ""
-                    maxlength: "5"
+                    value: 400
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 
@@ -164,12 +163,11 @@ plugin_settings:
                     plugin_setting:
                         name: title
                         is_searchable_content: true
-                        use_value_for_plugin_name: true
                         translate: true
                     label: 'Title:'
                     type: text
-                    width: "150"
-                    maxlength: "255"
+                    width: 150
+                    maxlength: 255
                     value: ""
                 
                 title_tags:
@@ -222,10 +220,10 @@ plugin_settings:
                     row_class: zfab_just_show_image_thumb
                     readonly: true
                     pick_items:
-                        path: zenario__content/panels/mic_image_library
-                        min_path: zenario__content/panels/mic_image_library
-                        max_path: zenario__content/panels/mic_image_library
-                        target_path: zenario__content/panels/mic_image_library
+                        path: zenario__library/panels/mic_image_library
+                        min_path: zenario__library/panels/mic_image_library
+                        max_path: zenario__library/panels/mic_image_library
+                        target_path: zenario__library/panels/mic_image_library
                     value: znz
                     upload:
                         multi: true
@@ -313,7 +311,7 @@ plugin_settings:
                     plugin_setting:
                         name: url_znz
                     type: url
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                 
                 link_to_anchor_znz:
@@ -381,7 +379,7 @@ plugin_settings:
                         required_if_not_hidden: Please enter an enlarged width.
                         numeric: The enlarged width must be a number.
                     value: ""
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 enlarge_height:
@@ -395,7 +393,7 @@ plugin_settings:
                         required_if_not_hidden: Please enter an enlarged height.
                         numeric: The enlarged height must be a number.
                     value: ""
-                    maxlength: "5"
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 show_caption_on_enlarged_image:

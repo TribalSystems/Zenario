@@ -109,7 +109,7 @@ switch ($path) {
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] = false;
 		$box['tabs']['meta_data']['notices']['test_send_sucesses']['show'] = false;
 		$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['show'] = false;
-		if ($fields['meta_data/test_send_button']['pressed'] ?? false) {
+		if (($fields['meta_data/test_send_button']['pressed'] ?? false) && ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 			$error = '';
 			$success = '';
 			if (!$values['meta_data/test_send_email_address']) {

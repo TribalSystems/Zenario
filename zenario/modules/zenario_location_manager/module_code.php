@@ -91,7 +91,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			case 'zenario__locations/panel':
 				
 				// Get panel type and add filter if map to remove locations without map coordinates
-				if (($_GET['panel_type'] ?? false) === 'google_map') {
+				if (ze::get('panel_type') === 'google_map') {
 					$panel['db_items']['where_statement'] = '
 						WHERE l.latitude IS NOT NULL 
 						AND l.longitude IS NOT NULL
@@ -193,8 +193,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$panel['columns']['last_edited_by']['values'] = $admins;
 				
 				
-				$panel['columns']['timezone']['values'] = zenario_timezones::getTimezonesLOV();
-				//static::getTimezones(ze\dataset::LIST_MODE_LIST)
+				$panel['columns']['timezone']['values'] = ze\dataset::getTimezonesLOV();
 				
 	
 				foreach ($panel['items'] as $id => &$item) {
@@ -457,7 +456,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			
 		$defaultTZ = ze::setting('zenario_timezones__default_timezone');
 		
-		$field['values'] = zenario_timezones::getTimezonesLOV();
+		$field['values'] = ze\dataset::getTimezonesLOV();
 		
 		if ($defaultTZ && isset($field['values'][$defaultTZ]['label'])) {
 			$field['empty_value'] =
@@ -758,7 +757,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				if ($box['key']['id']) {
 					$sectorDetails = self::getSectorDetails($box['key']['id']);
                   
-                 	$box['title'] = ze\admin::phrase('Editing the sector "[[name]]"',['name' => $sectorDetails['name']]);
+                 	$box['title'] = ze\admin::phrase('Editing business sector "[[name]]"',['name' => $sectorDetails['name']]);
                         
 					
                     $values['details/name'] = $sectorDetails['name'];
@@ -1027,27 +1026,39 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					$sticky = 1;
 					$usedImages = [];
 					foreach (explode(',', $values['images/images']) as $image) {
-						$image_id = 0;
+						$imageId = 0;
 						if ($filepath = ze\file::getPathOfUploadInCacheDir($image)) {
-							$image_id = self::addImage($box['key']['id'], $filepath);
+							$imageId = self::addImage($box['key']['id'], $filepath);
 						} else {
-							$image_id = (int) $image;
+							$imageId = (int) $image;
 						}
 						
-						if ($image_id) {
-							$usedImages[$image_id] = true;
-							ze\row::set(
-								ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
-								['ordinal' => ++$ord, 'sticky_flag' => $sticky], 
-								['image_id' => $image_id, 'location_id' => $box['key']['id']]
-							);
+						if ($imageId) {
+							$imageFilenameAndUsage = ze\row::get('files', ['filename', 'usage'], ['id' => $imageId]);
+							if ($imageFilenameAndUsage['usage'] == 'location') {
+								$usedImages[$imageId] = true;
+								ze\row::set(
+									ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
+									['ordinal' => ++$ord, 'sticky_flag' => $sticky], 
+									['image_id' => $imageId, 'location_id' => $box['key']['id']]
+								);
+							} else {
+								$newImageId = ze\file::copyInDatabase('location', $imageId, $imageFilenameAndUsage['filename']);
+								$usedImages[$newImageId] = true;
+									ze\row::set(
+									ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
+									['ordinal' => ++$ord, 'sticky_flag' => $sticky], 
+									['image_id' => $newImageId, 'location_id' => $box['key']['id']]
+								);
+							}
+							
 							$sticky = 0;
 						}
 					}
 					
-					foreach (self::locationsImages($box['key']['id']) as $image_id) {
-						if (empty($usedImages[$image_id])) {
-							self::deleteImage($box['key']['id'], $image_id);
+					foreach (self::locationsImages($box['key']['id']) as $imageId) {
+						if (empty($usedImages[$imageId])) {
+							self::deleteImage($box['key']['id'], $imageId);
 						}
 					}
 				}
@@ -1578,7 +1589,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						break;
 				}
 			case 'zenario__locations/location_sectors/panel':
-				switch ($_POST['action'] ?? false){
+				switch (ze::post('action')){
 					case 'remove_sector':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
@@ -2039,8 +2050,8 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function deleteLocation($locationId) {
-		foreach (self::locationsImages($locationId) as $image_id) {
-			self::deleteImage($locationId, $image_id);
+		foreach (self::locationsImages($locationId) as $imageId) {
+			self::deleteImage($locationId, $imageId);
 		}
 		
 		ze\row::delete(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', $locationId);
@@ -2237,7 +2248,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 
 		
-	public static function makeLocationImageSticky($locationId, $image_id) {
+	public static function makeLocationImageSticky($locationId, $imageId) {
 		$sql = "
 			UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
 				sticky_flag = 0
@@ -2248,7 +2259,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			UPDATE " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images SET
 				sticky_flag = 1
 			WHERE location_id = " . (int) $locationId . "
-			  AND image_id = ". (int) $image_id;
+			  AND image_id = ". (int) $imageId;
 		ze\sql::update($sql);
 	}
 	
@@ -2444,14 +2455,14 @@ class zenario_location_manager extends ze\moduleBaseClass {
         return ze\row::getValues(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['location_id' => $locationId], 'ordinal');
     }
     public static function addImage($locationId, $location, $filename = false) {
-        $image_id = ze\file::addToDatabase('location', $location, $filename, true);
+        $imageId = ze\file::addToDatabase('location', $location, $filename, true);
         
         if (!$filename) {
         	$filename = basename($location);
         }
         
-        ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', ['filename' => $filename], ['image_id' => $image_id, 'location_id' => $locationId]);
-        return $image_id;
+        ze\row::set(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', ['filename' => $filename], ['image_id' => $imageId, 'location_id' => $locationId]);
+        return $imageId;
     }
     
     public static function deleteImage($locationId, $imageId) {

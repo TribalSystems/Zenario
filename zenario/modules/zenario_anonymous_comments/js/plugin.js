@@ -78,7 +78,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 	}
 	
 	options = {
-		script_url: URLBasePath + zenario.tinyMCEPath,
+		script_url: zenario.addBasePath(zenario.tinyMCEPath),
 		browser_spellcheck: true,
 		height: 250,
 		menubar: false,

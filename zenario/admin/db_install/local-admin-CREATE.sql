@@ -12,7 +12,7 @@ CREATE TABLE `[[DB_PREFIX]]action_admin_link` (
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_organizer_prefs`;
 CREATE TABLE `[[DB_PREFIX]]admin_organizer_prefs` (
   `admin_id` int(10) unsigned NOT NULL,
-  `checksum` varchar(22) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '{}',
+  `checksum` varchar(22) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '{}',
   `prefs` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
   PRIMARY KEY (`admin_id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
@@ -42,7 +42,6 @@ CREATE TABLE `[[DB_PREFIX]]admins` (
   `reset_password_time` datetime DEFAULT NULL,
   `status` enum('active','deleted') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'deleted',
   `permissions` enum('all_permissions','specific_actions','specific_areas') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'specific_actions',
-  `specific_languages` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
   `specific_content_items` text CHARACTER SET ascii COLLATE ascii_general_ci,
   `specific_content_types` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
   `last_login` datetime DEFAULT NULL,

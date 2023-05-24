@@ -49,6 +49,8 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	protected $feedTitle = '';
 	protected $field = '';
 	protected $pattern = '';
+	protected $feedIsOffline = false;
+	protected $lastModifiedDate = '';
 	
 	function init() {
 		
@@ -161,8 +163,6 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 		}
 	}
 
-
-
 	function characterDataHandler($xmlParser, $data) {
 		if ($this->insideItem) {
 			switch ($this->tag) {
@@ -200,7 +200,7 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	}
 	
 	function showSlot() {
-		$this->itemCount = $this->setting( 'number_feeds_to_show' );
+		$this->itemCount = $this->setting('number_feeds_to_show');
 		
 		$items = $this->getRssFeed();
 		
@@ -286,9 +286,57 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	protected function getLiveFeed() {
 		$feedSource = $this->setting('feed_source');
 		$feed = '';
+		
+		//Set the timeout for getting the feed
+		$context = stream_context_create(
+			[
+				'http' => [
+					'timeout' => 3	//Timeout in seconds
+				]
+			]
+		);
 
 		if ($feedSource) {
-			$feed = @file_get_contents($feedSource);
+			//First check if the source is valid and can be accessed.
+			$result = ze\curl::fetch($feedSource);
+			
+			if ($result) {
+				$feed = file_get_contents($feedSource, 0, $context);
+			} else {
+				//If the source is invalid, or offline, check if the reader is still within the tolerance period.
+				$sql = "
+					SELECT store, last_updated
+					FROM ". DB_PREFIX. "plugin_instance_store
+					WHERE method_name = '". ze\escape::sql('getLiveFeed'). "'
+					  AND request = '". ze\escape::sql($this->setting('feed_source')). "'
+					  AND instance_id = ". (int) $this->instanceId;
+				$result = ze\sql::select($sql);
+				
+				$cachedFeed = ze\sql::fetchAssoc($result);
+				
+				if (!empty($cachedFeed) && is_array($cachedFeed)) {
+					$dateTime = new DateTime($cachedFeed['last_updated']);
+					
+					$feedGoingOfflineToleranceInMins = (int) $this->setting('feed_going_offline_tolerance');
+					$dateTime->modify('+' . $feedGoingOfflineToleranceInMins . ' minutes');
+					$timestampLastUpdatedPlusTolerancePeriod = $dateTime->getTimestamp();
+					unset($dateTime);
+			
+					$timestampNow = strtotime(ze\date::now());
+			
+					if ($timestampLastUpdatedPlusTolerancePeriod >= $timestampNow) {
+						//If the reader is still within the tolerance period of the feed going offline,
+						//just return the last cached value...
+						$feed = $cachedFeed['store'];
+						$this->feedIsOffline = true;
+						$this->lastModifiedDate = $cachedFeed['last_updated'];
+					} else {
+						//... otherwise, try to force download the feed
+						//and trigger an error email.
+						$feed = file_get_contents($feedSource);
+					}
+				}
+			}
 		}
 
 		if (!$feed) { 
@@ -309,8 +357,23 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	protected function getRssFeed() {
 		$this->content = [];
 		$xml = $this->cache('getLiveFeed', 60 * (int) $this->setting('cache'), $this->setting('feed_source'));
-		xml_parse( $this->xmlParser, $xml );
-		xml_parser_free( $this->xmlParser );
+		
+		if ($this->feedIsOffline) {
+			$sql = "
+				UPDATE ". DB_PREFIX. "plugin_instance_store SET
+					last_updated = '" . ze\escape::sql($this->lastModifiedDate) . "'
+				WHERE
+					method_name = '". ze\escape::sql('getLiveFeed'). "'
+					AND request = '". ze\escape::sql($this->setting('feed_source')). "'
+					AND instance_id = ". (int) $this->instanceId;
+			ze\sql::update($sql);
+			
+			$this->feedIsOffline = false;
+			$this->lastModifiedDate = '';
+		}
+		
+		xml_parse($this->xmlParser, $xml);
+		xml_parser_free($this->xmlParser);
 		if (!is_array($this->newsDates) || count($this->newsDates) == 0) {
 			return [];
 		} elseif ($this->setting('news_order') == 'asc') {
@@ -324,7 +387,7 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 		return $this->content;
 	}
 	
-	protected function truncateNicely( $string, $max ) {
+	protected function truncateNicely($string, $max) {
 		$string = trim( $string );
 		if (strlen($string) > $max) {
 			$breakpoint2 = strpos($string, ' ', $max); // find last ' '
@@ -346,7 +409,6 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 				$box['tabs']['filtering']['fields']['regexp']['hidden'] = $values['filtering/regexp_field'] == 'do_no_filter';
 				$box['tabs']['display']['fields']['title_tags']['hidden'] = $values['display/title'] == 'dont_show';
 				break;
-				
 		}
 	}
 }

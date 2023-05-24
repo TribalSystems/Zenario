@@ -77,7 +77,6 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {
-			
 			if ($addFullDetails) {
 				//Get plugin instances using this form...
 				$usage = [];
@@ -132,6 +131,8 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			
 			if ($item['latest_response']) {
 				$item['latest_response'] = ze\admin::formatDateTime($item['latest_response'], '_MEDIUM');
+			} else {
+				$item['latest_response'] = ze\admin::phrase('None stored');
 			}
 
 			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['save_record', 'save_data'], $id);
@@ -190,14 +191,23 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			} else {
 				$crmPhrase = ze\admin::phrase("Doesn't send to a CRM");
 			}
-
-			$item['user_record_and_crm_info'] = $createsUserRecordPhrase . ", " . $crmPhrase;
+			
+			$valuesToImplode = [$createsUserRecordPhrase, $crmPhrase];
+			
+			if ($item['allows_save_and_complete_later']) {
+				$saveAndCompleteLaterPhrase = ze\admin::phrase('Allows save and complete later');
+				$valuesToImplode[] = $saveAndCompleteLaterPhrase;
+			} else {
+				$saveAndCompleteLaterPhrase = '';
+			}
+			
+			$item['form_extra_info'] = implode(", ", $valuesToImplode);
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_FORMS');
-		if ($_POST['archive_form'] ?? false) {
+		if (ze::post('archive_form')) {
 			foreach (explode(',', $ids) as $id) {
 				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['status' => 'archived'], ['id' => $id]);
 
@@ -208,7 +218,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 					zenario_user_forms::deleteFormPartialResponse($row['id']);
 				}
 			}
-		} elseif ($_POST['delete_form'] ?? false) {
+		} elseif (ze::post('delete_form')) {
 			foreach (explode(',', $ids) as $formId) {
 				$error = zenario_user_forms::deleteForm($formId);
 				if (ze::isError($error)) {
@@ -218,7 +228,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 				}
 				
 			}
-		} elseif ($_POST['duplicate_form'] ?? false) {
+		} elseif (ze::post('duplicate_form')) {
 			static::duplicateForm($ids);
 		}
 	}
@@ -264,7 +274,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		ze\priv::exitIfNot('_PRIV_MANAGE_FORMS');
-		if ($_POST['export_forms'] ?? false) {
+		if (ze::post('export_forms')) {
 			$formsJSON = json_encode(static::getFormsExportJSON($ids));
 			
 			$filename = tempnam(sys_get_temp_dir(), 'forms_export');

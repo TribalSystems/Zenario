@@ -39,11 +39,11 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 		$tagIds = [];
 		$equivId = $cType = false;
 		
-		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
+		if (ze::request('equivId') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('equivId');
 		
-		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
+		} elseif (ze::request('cID') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('cID');
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes

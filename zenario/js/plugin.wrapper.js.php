@@ -53,10 +53,6 @@ if (!empty($_GET['admin_frontend'])) {
 } elseif (!empty($_GET['organizer'])) {
 	$mode = 'organizer';
 	$ETag .= '--organizer';
-
-} elseif (!empty($_GET['wizard'])) {
-	$mode = 'wizard';
-	$ETag .= '--wizard';
 }
 
 $flagJsAsNotLoaded = $mode !== 'visitor';
@@ -72,7 +68,7 @@ if ($moduleIds === []) {
 
 //Run pre-load actions
 
-if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
+if (\ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 
 ze\cache::start();
@@ -165,7 +161,7 @@ if (!empty($moduleDetails)) {
 	echo "\n", '})(zenario.enc);';
 
 	foreach ($moduleDetails as $module) {
-		if ($jsDir = ze::moduleDir($module['class_name'], 'js/')) {
+		if ($jsDir = \ze::moduleDir($module['class_name'], 'js/')) {
 			if (!empty($_GET['admin_frontend'])) {
 				//Add the Plugins's Admin Frontend library
 				ze\cache::incJS($jsDir. 'admin_frontend', true);
@@ -174,9 +170,6 @@ if (!empty($moduleDetails)) {
 				//Add the any JavaScript needed for Organizer
 				ze\cache::incJS($jsDir. 'organizer', true);
 				ze\cache::incJS($jsDir. 'storekeeper', true);
-	
-			} elseif (!empty($_GET['wizard'])) {
-				ze\cache::incJS($jsDir. 'wizard', true);
 	
 			} else {
 				//Add the Plugin's library include if it exists
@@ -187,7 +180,7 @@ if (!empty($moduleDetails)) {
 					ze\cache::incJS($jsDir. 'admin', true);
 				}
 				
-				if ($jsDir = ze::moduleDir($module['class_name'], 'microtemplates/', true)) {
+				if ($jsDir = \ze::moduleDir($module['class_name'], 'microtemplates/', true)) {
 					$includeMicrotemplates[] = $jsDir;
 				}
 			}
@@ -217,4 +210,4 @@ if (!empty($_GET['organizer'])) {
 
 
 //Run post-display actions
-if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';
+if (\ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

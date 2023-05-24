@@ -51,10 +51,10 @@ class zenario_project_locations extends ze\moduleBaseClass {
 
 		$this->country_id = $_REQUEST['country_id'] ?? false;
 		/*if($this->country_id)*/ $this->sections['HasRegions'] = true;
-		$this->region_id = (int)($_REQUEST['region_id'] ?? false);
+		$this->region_id = (int)ze::request('region_id');
 		if($this->region_id) $this->sections['HasSubRegions'] = true;
-		$this->service_id = (int)($_REQUEST['service_id'] ?? false);
-		$this->sector_id = (int)($_REQUEST['sector_id'] ?? false);
+		$this->service_id = (int)ze::request('service_id');
+		$this->sector_id = (int)ze::request('sector_id');
 		$this->rowsPerPage = $this->setting('search_results_per_page');
 		return true;
 		   
@@ -229,7 +229,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 	protected function setPagination($url_params) {
 		$pageSize = $this->rowsPerPage;
 	
-                if($_REQUEST['onlyList'] ?? false) {
+                if (ze::request('onlyList')) {
                     $this->page = (int) ($_GET['page'] ?? 1) ?: 1;
                 } else {
                     $this->page = 1;
@@ -752,7 +752,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			case 'zenario__projects/nav/project_services/panel':
 				
 				//Handle the case where an Admin presses the delete button.
-				if (($_POST['action'] ?? false) == 'delete_project_service'
+				if (ze::post('action') == 'delete_project_service'
 				 && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::delete(ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_services', $id);
@@ -782,7 +782,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			case 'zenario__projects/nav/project_sectors/panel':
 				
 				//Handle the case where an Admin presses the delete button.
-				if (($_POST['action'] ?? false) == 'delete_project_sector'
+				if (ze::post('action') == 'delete_project_sector'
 				 && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::delete(ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_location_sectors', $id);
@@ -792,7 +792,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			case 'zenario__projects/nav/projects/panel':
 				
 				//Handle the case where an Admin presses the delete button.
-				if (($_POST['action'] ?? false) == 'delete_location'
+				if (ze::post('action') == 'delete_location'
 				 && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::delete(ZENARIO_PROJECT_LOCATIONS_PREFIX.'project_locations', $id);
@@ -827,13 +827,13 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				
 					
 				//Upload a new image
-				if (($_POST['upload'] ?? false) && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
+				if (ze::post('upload') && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
 					$image_id = ze\file::addToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 					return $image_id;
 				
 				//Delete an image
-				} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
+				} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					foreach (explode(',', $ids) as $id) {
 						if (!ze\row::exists(ZENARIO_PROJECT_LOCATIONS_PREFIX. 'project_locations', ['image_id' => $id])) {
 							ze\row::delete( 'files', ['id' => $id, 'usage' => 'project_locations']);

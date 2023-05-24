@@ -43,7 +43,10 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 		//Load list of dataset fields
 		$datasetId = $box['key']['dataset'];
 		$dataset = ze\dataset::details($datasetId);
-		$datasetFields = ze\datasetAdm::listCustomFields($datasetId, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		$datasetFields = ze\datasetAdm::listCustomFields(
+			$datasetId, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = false,
+			$putMergeFieldsIntoLabel = true, '', $mergeFieldsOpen = '(', $mergeFieldsClose = ')'
+		);
 
 		//Roles should not be listed as a potential option.
 		if (isset($datasetFields['tab__zenario_organization_manager__roles'])) {
@@ -208,6 +211,11 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 			}
 			
 		} elseif ($box['tab'] == 'headers') {
+			if ($box['old_values']['insert_or_update'] != $values['file/type']) {
+				$box['key']['update_preview'] = 1;
+				$box['old_values']['key_line'] = $values['headers/key_line'];
+			}
+			
 			if ($box['old_values']['key_line'] != $values['headers/key_line']) {
 				$box['old_values']['key_line'] = $values['headers/key_line'];
 				//Actions when key line is changed
@@ -263,9 +271,13 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				$previewString = '';
 				$currentLineHeaders = [];
 				$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
+				
+				$readableLineCount = 0;
+				
 				if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
 					$file = fopen($path, 'r');
 					if ($file) {
+						
 						$lineNumber = 0;
 						while ($line = fgets($file)) {
 							++$lineNumber;
@@ -294,6 +306,11 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 
 							$headers = [];
 						}
+						
+						rewind($file);
+						while ($line = fgets($file)) {
+							$readableLineCount++;
+						}
 
 						//... and use the temporary variable to restore them here.
 						//The $headers variable will be looped through a few lines below.
@@ -311,6 +328,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					//Load spreadsheet
 					$objPHPExcel = $objReader->load($path);
 					$worksheet = $objPHPExcel->getSheet(0);
+					$readableLineCount = $worksheet->getHighestDataRow();
 					
 					$lineNumber = 0;
 					$blankLimit = 5;
@@ -360,6 +378,17 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					//The $headers variable will be looped through a few lines below.
 					$headers = $currentLineHeaders;
 				}
+				
+				if (trim($previewString)) {
+					if ($readableLineCount > 5) {
+						$previewString .= ze\admin::phrase('[No further lines shown in preview]');
+					} elseif ($readableLineCount > 0) {
+						$previewString .= ze\admin::phrase('[End of file encountered]');
+					}
+				} else {
+					$previewString = ze\admin::phrase('[No lines found in file]');
+				}
+				
 				$values['headers/key_lines_preview'] = $previewString;
 				$box['key']['guess_key_line'] = 0;
 				$box['old_values']['key_line'] = $values['headers/key_line'];
@@ -433,7 +462,13 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 							break;
 						case 'centralised_radios':
 						case 'centralised_select':
-							$desc .= ', value ID';
+							if ($datasetField['db_column'] == 'country') {
+								//If this is a centralised selector for countries, override the description...
+								$desc = ze\admin::phrase('ISO code in centralised list');
+							} else {
+								//... otherwise follow the usual convention (field type, value ID)
+								$desc .= ', value ID';
+							}
 							break;
 						case 'editor': 
 						case 'text':
@@ -465,10 +500,16 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					$headerList[] = $values['headers/' . $name];
 				}
 			}
+			
 			$headerList = implode(',', $headerList);
 			if ($box['old_values']['header_list'] != $headerList) {
 				$box['old_values']['header_list'] = $headerList;
 				//Actions when header list is changed
+				$box['key']['update_preview'] = 1;
+			}
+			
+			if ($box['old_values']['insert_options'] != $values['headers/insert_options']) {
+				$box['old_values']['insert_options'] = $values['headers/insert_options'];
 				$box['key']['update_preview'] = 1;
 			}
 			
@@ -497,6 +538,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				$previewString = '';
 				$totalReadableLinesWithoutErrors = 0;
 				$totalUpdateCount = 0;
+				$totalWarningCount = 0;
 				$totalErrorCount = 0;
 				$values['preview/problems'] = '';
 				
@@ -523,7 +565,9 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 							//Validate line
 							if ($lineNumber > $values['headers/key_line'] && !$lineIsEmpty) {
 								$line = str_getcsv($line);
-								$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
+								
+								$warningCountBefore = $totalWarningCount;
+								$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount, $totalWarningCount);
 								
 								//Make sure the line has the correct number of fields
 								if (count($line) < count($lineDatasetFields)) {
@@ -535,7 +579,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								}
 								
 								$totalErrorCount += $errorCount;
-								if (!$lineIsEmpty && !$errorCount) {
+								if (!$lineIsEmpty && (!$errorCount || ($warningCountBefore < $totalWarningCount))) {
 									++$totalReadableLinesWithoutErrors;
 								} else {
 									$linesToSkip[] = $lineNumber;
@@ -579,9 +623,11 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 
 						//Validate line
 						if ($lineNumber > $values['headers/key_line'] && !$lineIsEmpty) {
-							$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount);
+							$warningCountBefore = $totalWarningCount;
+							$errorCount = $this->validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, $values, $totalUpdateCount, $totalWarningCount);
+							
 							$totalErrorCount += $errorCount;
-							if (!$lineIsEmpty && !$errorCount) {
+							if (!$lineIsEmpty && (!$errorCount || ($warningCountBefore < $totalWarningCount))) {
 								++$totalReadableLinesWithoutErrors;
 							} else {
 								$linesToSkip[] = $lineNumber;
@@ -596,7 +642,13 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 
 				$totalReadableLines = $totalReadableLinesWithoutErrors + count($linesToSkip);
 				$values['preview/csv_preview'] = $previewString;
-				$fields['preview/problems']['label'] = ze\admin::nphrase('Problems (1 error)', 'Problems ([[n]] errors):', $totalErrorCount, ['n' => $totalErrorCount]);
+				
+				//Build the label for the problems/warnings field
+				$problemsPhrase = ze\admin::phrase('Problems');
+				$errorsPhrase = ze\admin::nphrase('1 error', '[[n]] errors', $totalErrorCount, ['n' => $totalErrorCount]);
+				$warningsPhrase = ze\admin::nphrase('1 warning', '[[n]] warnings', $totalWarningCount, ['n' => $totalWarningCount]);
+				$fields['preview/problems']['label'] = $problemsPhrase . ' (' . $errorsPhrase . ', ' . $warningsPhrase . '):';
+				
 				$fields['preview/total_readable_lines']['snippet']['html'] = '<b>' . ze\admin::phrase('Total readable lines (header and data):') . '</b> '. $totalReadableLines;
 				
 				$box['key']['lines_to_skip'] = implode(',', $linesToSkip);
@@ -714,6 +766,12 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 										continue 3;
 									}
 									$field['maxlength'] = 255;
+									
+									if (defined('ZENARIO_LOCATION_MANAGER_PREFIX') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+										if (ze::in($datasetField['db_column'], 'latitude', 'longitude')) {
+											$field['disabled'] = true;
+										}
+									}
 									break;
 								case 'radios':
 								case 'select':
@@ -736,7 +794,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 											unset($field['values']['active']);
 										}
 									} else {
-										$field['empty_value'] = "-- Don't import --";
+										$field['empty_value'] = "-- Don't set --";
 									}
 									break;
 								default:
@@ -775,12 +833,12 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	
 	private $centralisedLists = [];
 	
-	private function validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, &$values, &$totalUpdateCount) {
+	private function validateImportRecord($lineNumber, $line, $lineDatasetFields, $dataset, &$values, &$totalUpdateCount, &$totalWarningCount) {
 		$errorCount = 0;
 		$userSystemFields = [];
 		$columnNumberLink = [];
 		$mergeOrOverwriteRecord = false;
-		
+		$errorInLine = false;
 		
 		//Validate fields in record
 		foreach ($lineDatasetFields as $index => $datasetField) {
@@ -796,11 +854,13 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				if (!$value) {
 					$error = ze\admin::phrase('ID field is blank');
 					$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+					$errorInLine = true;
 				} else {
 					//Record duplicates of chosen ID field in import
 					if ($lineNumbers = $this->checkUniqueValue($lineNumber, $value, $this->unqiueIds)) {
 						$error = ze\admin::phrase('More than one line in the file has a matching ID column ([[lines]])', ['lines' => implode(', ', $lineNumbers)]);
 						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						$errorInLine = true;
 					}
 					
 					//Check single matching record exists
@@ -816,9 +876,11 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if ($existingRecordCount == 0) {
 						$error = ze\admin::phrase('No existing record found for ID column "[[db_column]]"', $datasetField);
 						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						$errorInLine = true;
 					} elseif ($existingRecordCount > 1) {
 						$error = ze\admin::phrase('More than one existing record found for ID column "[[db_column]]"', $datasetField);
 						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						$errorInLine = true;
 					}
 				}
 			}
@@ -837,6 +899,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if ($lineNumbers = $this->checkUniqueValue($lineNumber, $value, $this->uniqueEmails)) {
 						$error = ze\admin::phrase('More than one line in the file has the same email address ([[lines]])', ['lines' => implode(', ', $lineNumbers)]);
 						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						$errorInLine = true;
 					} elseif ($values['file/type'] == 'insert_data' && $values['headers/insert_options'] != 'no_update') {
 						$count = ze\row::count($dataset['system_table'], [$datasetField['db_column'] => $value]);
 						if ($count >= 1) {
@@ -848,6 +911,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if ($lineNumbers = $this->checkUniqueValue($lineNumber, $value, $this->uniqueScreenNames)) {
 						$error = ze\admin::phrase('More than one line in the file has the same screen name ([[lines]])', ['lines' => implode(', ', $lineNumbers)]);
 						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						$errorInLine = true;
 					}
 				}
 			}
@@ -863,6 +927,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 									$error = 'Value is in incorrect format for email';
 								}
 								$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+								$errorInLine = true;
 							}
 						}
 						break;
@@ -872,6 +937,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								$error = 'Value is in incorrect format for emails';
 							}
 							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+							$errorInLine = true;
 						}
 						break;
 					case 'no_spaces':
@@ -880,6 +946,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								$error = 'Value cannot contain spaces';
 							}
 							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+							$errorInLine = true;
 						}
 						break;
 					case 'numeric':
@@ -888,6 +955,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								$error = 'Value must be numeric';
 							}
 							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+							$errorInLine = true;
 						}
 						break;
 					case 'screen_name':
@@ -896,6 +964,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								$error = 'Screen name is invalid';
 							}
 							$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+							$errorInLine = true;
 						}
 						break;
 				}
@@ -907,6 +976,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					$error = 'Value is required but missing';
 				}
 				$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+				$errorInLine = true;
 			}
 			
 			//Validate fields with a values source
@@ -925,13 +995,25 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 							$cannotImport = false;
 						}
 					}
-					if ($cannotImport) {
+					
+					//Don't bother scanning values if the line is already going to be skipped.
+					if ($cannotImport && !$errorInLine) {
 						$displayValue = $value;
 						if (strlen($value) >= 33) {
 							$displayValue = substr($value, 0, 30) . '...';
 						}
-						$error = ze\admin::phrase('Unknown list value "[[value]]"', ['value' => $displayValue]);
-						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
+						
+						if ($value) {
+							$error = ze\admin::phrase('Unknown list value "[[value]]"', ['value' => $displayValue]);
+						} else {
+							$error = ze\admin::phrase('Lookup value is empty');
+						}
+						
+						if (empty($datasetField['required'])) {
+							$errorCount--;
+							$totalWarningCount++;
+						}
+						$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber, $isWarning = true);
 					}
 				}
 			}
@@ -945,19 +1027,31 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if (isset($columnNumberLink[$dbColumn])) {
 						$columnNumber = $columnNumberLink[$dbColumn];
 					}
-					switch ($error) {
-						case '_ERROR_SCREEN_NAME_INVALID':
-							$error = ze\admin::phrase('Screen name invalid');
-							break;
-						case '_ERROR_SCREEN_NAME_IN_USE':
-							$error = ze\admin::phrase('Screen name in use');
-							break;
-						case '_ERROR_EMAIL_INVALID':
-							$error = ze\admin::phrase('Value is in incorrect format for email');
-							break;
-						case '_ERROR_EMAIL_NAME_IN_USE':
-							$error = ze\admin::phrase('Email is duplicate');
-							break;
+					
+					if ($dbColumn == 'email') {
+						if (!empty($line[$columnNumber - 1])) {
+							switch ($values['headers/insert_options']) {
+								case 'no_update':
+									$skipMergeOrOverwriteAction = 'skip';
+									break;
+								case 'merge':
+									$skipMergeOrOverwriteAction = 'merge';
+									break;
+								case 'overwrite':
+									$skipMergeOrOverwriteAction = 'overwrite';
+									break;
+								default:
+									$skipMergeOrOverwriteAction = '';
+									break;
+							}
+						
+							//The $columnNumber variable starts from 1, but the index needs to be starting from 0
+							$userEmailAddress = $line[$columnNumber - 1];
+						
+							$error = ze\admin::phrase('The email address [[email_address]] is already in use by another user, will [[skip_merge_or_overwrite]]', ['email_address' => $userEmailAddress, 'skip_merge_or_overwrite' => $skipMergeOrOverwriteAction]);
+						} else {
+							$error = ze\admin::phrase('The record has no email address, will skip');
+						}
 					}
 					$this->writeError($error, $errorCount, $values, $lineNumber, $columnNumber);
 				}
@@ -971,13 +1065,21 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 		return $errorCount;
 	}
 	
-	private function writeError($error, &$errorCount, &$values, $lineNumber, $columnNumber = false) {
+	private function writeError($error, &$errorCount, &$values, $lineNumber, $columnNumber = false, $isWarning = false) {
 		++$errorCount;
-		if ($columnNumber) {
-			$error = ze\admin::phrase('Error (Line [[line]], Value [[value]]): [[message]]', ['line' => $lineNumber, 'value' => $columnNumber, 'message' => $error]);
+		
+		if ($isWarning) {
+			$errorOrWarning = 'Warning';
 		} else {
-			$error = ze\admin::phrase('Error (Line [[line]]): [[message]]', ['line' => $lineNumber, 'message' => $error]);
+			$errorOrWarning = 'Error';
 		}
+		
+		if ($columnNumber) {
+			$error = ze\admin::phrase($errorOrWarning . ' (Line [[line]], Value [[value]]): [[message]]', ['line' => $lineNumber, 'value' => $columnNumber, 'message' => $error]);
+		} else {
+			$error = ze\admin::phrase($errorOrWarning . ' (Line [[line]]): [[message]]', ['line' => $lineNumber, 'message' => $error]);
+		}
+		
 		$values['preview/problems'] .= $error . PHP_EOL;
 	}
 	
@@ -995,7 +1097,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$admin = ze\row::get('admins', ['username', 'authtype'], ze\admin::id());
+		$currentAdminId = ze\admin::id();
+		$admin = ze\row::get('admins', ['username', 'authtype'], $currentAdminId);
 		
 		//Include required modules
 		$dataset = ze\dataset::details($box['key']['dataset']);
@@ -1102,7 +1205,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				} elseif ($datasetField = $datasetFields[$datasetFieldId] ?? false) {
 					//When importing country, try and match text to Id
 					if (!empty($datasetField['values_source']) && $datasetField['values_source'] == 'zenario_country_manager::getActiveCountries') {
-						if (!$countryList) {
+						if (!$countryList && !empty($fieldIdDetails)) {
 							$countryList = ze\dataset::centralisedListValues($fieldIdDetails[$fieldId]['values_source']);
 							$countryList = array_map('strtolower', $countryList);
 							$countryListFlipped = array_flip($countryList);
@@ -1131,7 +1234,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						$recordId = ze\row::get($dataset['system_table'], $systemIdCol, ['email' => $data['email']]);
 					}
 					if ($values['headers/insert_options'] == 'overwrite' && $recordId) {
-						$data['last_edited_admin_id'] = ze\admin::id();
+						$data['last_edited_admin_id'] = $currentAdminId;
 						ze\userAdm::save($data, $recordId);
 						ze\row::set($dataset['table'], $customData, $recordId);
 						continue;
@@ -1145,7 +1248,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								}
 							}
 							
-							$data['last_edited_admin_id'] = ze\admin::id();
+							$data['last_edited_admin_id'] = $currentAdminId;
 							ze\userAdm::save($data, $recordId);
 						}
 						
@@ -1191,7 +1294,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						unset($data['screen_name']);
 					}
 					
-					$data['created_admin_id'] = ze\admin::id();
+					$data['created_admin_id'] = $currentAdminId;
 					$recordId = ze\userAdm::save($data);
 					
 					if (!ze::isError($recordId)) {
@@ -1249,7 +1352,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					if ($dataset['system_table'] && $data) {
 						if ($dataset['system_table'] == 'users') {
 							
-							$data['last_edited_admin_id'] = ze\admin::id();
+							$data['last_edited_admin_id'] = $currentAdminId;
 							ze\userAdm::save($data, $recordId);
 						} else {
 							ze\row::update($dataset['system_table'], $data, $recordId);
@@ -1260,6 +1363,29 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 					}
 				}
 			}
+		}
+		
+		// Send report email
+		if ($values['actions/email_report']) {
+			$adminDetails = ze\admin::details($currentAdminId);
+			$path = ze\file::getPathOfUploadInCacheDir($values['file/file']);
+			$filename = pathinfo($path, PATHINFO_BASENAME);
+			$createOrUpdate = 'Insert or update';
+			if ($values['file/type'] == 'update_data') {
+				$createOrUpdate = 'Update only';
+			}
+			$body = ze\admin::phrase("Import settings") . " \n\n";
+			$body .= ze\admin::phrase('File:') . ' ' . $filename . "\n";
+			$body .= ze\admin::phrase('Mode:') . ' ' . $createOrUpdate . "\n";
+			$body .= ze\admin::phrase('Key line:') . ' ' . $values['headers/key_line'] . "\n";
+			$body .= strip_tags($fields['actions/records_statement']['snippet']['html']) . "\n\n";
+			$body .= ze\admin::phrase("Error log:") . " \n\n";
+			$errorLog = ($values['preview/problems'] ? $values['preview/problems'] : ze\admin::phrase('No errors or warnings'));
+			$body .= $errorLog;
+			
+			$addressToOverriddenBy = false;
+			$isHTML = false;
+			ze\server::sendEmail('Dataset Import Report', $body, $adminDetails['email'], $addressToOverriddenBy, false, false, false, [], [], 'bulk', $isHTML);
 		}
 	}
 	

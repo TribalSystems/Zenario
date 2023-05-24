@@ -86,33 +86,7 @@ sections:
             usage:
                 hidden: true
                 label:
-            edit_grid:
-                priv: _PRIV_EDIT_TEMPLATE
-                hide_in_select_mode: true
-                label: Edit layout with Gridmaker
-                popout:
-                    href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
-                    width: 100%
-                    height: 100%
-                    maxWidth: 100%
-                    maxHeight: 100%
-                    initialWidth: 100%
-                    initialHeight: 100%
-                    iframe: true
-                    escKey: false
-                    fixed: true
-                    transition: none
-                    css_class: zenario_grid_maker
-                with_columns_set:
-                    traits.grid: true
-                without_columns_set:
-                    missing: true
-            settings:
-                priv: _PRIV_VIEW_TEMPLATE
-                hide_in_select_mode: true
-                label: Layout settings
-                admin_box:
-                    path: zenario_layout
+            
             edit_css:
                 priv: _PRIV_EDIT_CSS
                 label: CSS
@@ -143,6 +117,64 @@ sections:
                     fixed: true
                     transition: none
                     css_class: zenario_help_window
+            
+            edit_grid:
+                hide_when_children_are_not_visible: true
+                label: Edit with Gridmaker
+            edit_body_slots:
+                parent: edit_grid
+                priv: _PRIV_EDIT_TEMPLATE
+                label: Edit layout
+                popout:
+                    href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
+                    width: 100%
+                    height: 100%
+                    maxWidth: 100%
+                    maxHeight: 100%
+                    initialWidth: 100%
+                    initialHeight: 100%
+                    iframe: true
+                    escKey: false
+                    fixed: true
+                    transition: none
+                    css_class: zenario_grid_maker
+            edit_head_slots:
+                parent: edit_grid
+                priv: _PRIV_EDIT_SITEWIDE
+                label: Edit site-wide header
+                popout:
+                    href: zenario/admin/grid_maker/grid_maker.php?edit_head_slots=1
+                    width: 100%
+                    height: 100%
+                    maxWidth: 100%
+                    maxHeight: 100%
+                    initialWidth: 100%
+                    initialHeight: 100%
+                    iframe: true
+                    escKey: false
+                    transition: none
+                    css_class: zenario_grid_maker
+            edit_foot_slots:
+                parent: edit_grid
+                priv: _PRIV_EDIT_SITEWIDE
+                label: Edit site-wide footer
+                popout:
+                    href: zenario/admin/grid_maker/grid_maker.php?edit_foot_slots=1
+                    width: 100%
+                    height: 100%
+                    maxWidth: 100%
+                    maxHeight: 100%
+                    initialWidth: 100%
+                    initialHeight: 100%
+                    iframe: true
+                    escKey: false
+                    transition: none
+                    css_class: zenario_grid_maker
+            settings:
+                priv: _PRIV_VIEW_TEMPLATE
+                label: Layout settings
+                admin_box:
+                    path: zenario_layout
 
             skq:
                 label: Organize layouts
@@ -157,7 +189,7 @@ sections:
     slot_controls:
         buttons:
             head_foot_dropdown:
-                label: Head/Foot
+                label: <head> and <body> HTML/JS
                 hide_when_children_are_not_visible: false
             item_head:
                 parent: head_foot_dropdown
@@ -166,7 +198,7 @@ sections:
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
-                label: <head> HTML
+                label: <head> HTML/JS
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
@@ -179,26 +211,16 @@ sections:
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
-                label: HTML before </body>
+                label: HTML/JS before </body>
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
                         mode: foot
                         level: item
-            global:
-                parent: head_foot_dropdown
-                appears_in_toolbars:
-                    layout: true
-                label: Site-wide <head> and <body>
-                admin_box:
-                    path: site_settings
-                    key:
-                        id: head_and_foot
             layout_head:
                 parent: head_foot_dropdown
                 appears_in_toolbars:
                     layout: true
-                label: Layout-wide <head> HTML
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
@@ -208,12 +230,20 @@ sections:
                 parent: head_foot_dropdown
                 appears_in_toolbars:
                     layout: true
-                label: Layout-wide HTML before </body>
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
                         mode: foot
                         level: layout
+            global:
+                parent: head_foot_dropdown
+                appears_in_toolbars:
+                    layout: true
+                label: Site-wide <head> and <body>
+                admin_box:
+                    path: site_settings
+                    key:
+                        id: head_and_foot
                         
             slot_control_dropdown:
                 css_class: zenario_at_slot_control_dropdown
@@ -309,24 +339,13 @@ sections:
                         create_draft: 1
             hide_content:
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_HIDE_CONTENT_ITEM
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Hide content item
+                label: Hide
                 css_class: zenario_at_big_action_button zenario_hide_content 
-                ajax:
-                    confirm:
-                        message: |
-                            Hiding this content item will make it not visible to visitors. Any menu nodes linking to it will also be hidden.
-                            
-                            You can restore the item to public view by creating a new draft and then re-publishing.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Hide
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        hide: 1
+                admin_box:
+                    path: zenario_hide
             delete_draft:
                 appears_in_toolbars: *publish_appears_in_toolbars
                 priv: _PRIV_EDIT_DRAFT
@@ -358,10 +377,10 @@ sections:
                     path: zenario_delete_media_content_item
             trash_content:
                 appears_in_toolbars: *publish_appears_in_toolbars
-                priv: _PRIV_HIDE_CONTENT_ITEM
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Trash content item
+                label: Trash
                 css_class: zenario_at_big_action_button zenario_delete 
                 
                 admin_box:

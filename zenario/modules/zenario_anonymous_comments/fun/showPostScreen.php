@@ -57,6 +57,7 @@ if (isset($_POST['comm_message'])) {
 
 } elseif ($quoteMode == 'edit' && !empty($this->post['id'])) {
 	$this->sections['Post_Message']['Post_Text'] =  zenario_anonymous_comments::sanitiseHTML($this->post['message_text'], $this->setting('enable_images'), $this->setting('enable_links'));
+	$this->sections['Edit_mode'] = true;
 	
 } elseif ($quoteMode == 'quote' && $this->canQuotePost() && !empty($this->post['id'])) {
 	
@@ -83,7 +84,7 @@ $this->sections['Post_Message']['Post_Text'] = '
 	<div id="toolbar_container_for_'. $this->getEditorId(). '" class="zenario_tinymce_toolbar_container"></div>
 	<div id="'. $this->getEditorId(). '" name="comm_message">'. $this->sections['Post_Message']['Post_Text']. '</div>';
 
-$form_attributes = ' class="'. htmlspecialchars($_REQUEST['comm_request'] ?? false). '"';
+$form_attributes = ' class="'. htmlspecialchars(ze::request('comm_request')). '"';
 if($this->form_encode_type){
 	$form_attributes .= ' enctype="' . $this->form_encode_type . '"';
 }
@@ -102,7 +103,7 @@ $this->sections['Post_Message']['Open_Form'] = $this->openForm($onSubmit, $form_
 $this->sections['Post_Message']['Close_Form'] = $this->closeForm();
 
 
-if (($_REQUEST['comm_request'] ?? false) != 'report_post') {
+if (ze::request('comm_request') != 'report_post') {
 	if ($this->setting('comments_require_approval') && !$this->modPrivs) {
 		$this->sections['Show_Post_Screening_Notice'] = true;
 	}
@@ -112,7 +113,7 @@ if (!empty($this->post) && $quoteMode != 'quote') {
 	$this->getExtraPostInfo($this->post, $this->sections['Post_Message'], $this->sections , true);
 }
 
-//if ($_POST['comm_enter_text'] ?? false) {
+//if (ze::post('comm_enter_text')) {
 //	//Hack for a bug in Firefox and reloading TinyMCE via AJAX
 //	$this->callScript(
 //		'zenario_anonymous_comments', 'loadWithDelay',
@@ -128,7 +129,7 @@ if (!empty($this->post) && $quoteMode != 'quote') {
 //}
 
 
-if (($_REQUEST['comm_request'] ?? false) == 'post_reply') {
+if (ze::request('comm_request') == 'post_reply') {
 	if ($this->enableCaptcha()) {
 		$this->sections['Captcha'] = true;
 		$this->mergeFields['Captcha'] = $this->captcha2();

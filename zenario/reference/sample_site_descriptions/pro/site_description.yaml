@@ -15,7 +15,7 @@
 #   in admin mode, as if you had pressed the "Clear cache and check for changes" button.
 ---
 
-# The edition of the CMS, e.g. Community, Pro, ProBusiness or Enterprise
+# The Zenario edition: ProBusiness
 edition: ProBusiness
 
 # The name of a license, e.g. BSD
@@ -28,9 +28,9 @@ max_local_administrators: 5
 max_enabled_languages: 0
 
 
-# Whether to enable a CAPTCHA on the admin login.
-# If enabled, an admin must complete a CAPTCHA before each login attempt.
-# To enable this, go to Organizer->Site Settings->Captcha and set a Site Key and Secret Key.
+# Whether to enable a captcha on the admin login.
+# If enabled, an admin must complete a captcha before each login attempt.
+# To enable this, go to Organizer->Site Settings->API Keys, then reCaptcha, where you can set a Site Key and Secret Key.
 enable_captcha_for_admin_logins: false
 
 # Whether to enable two-factor authentication.

@@ -230,6 +230,7 @@ class phi {
 			$whitelist['getInheritedMetadata'] = 'ze\\assetwolf::getInheritedMetadataFromPhi';
 			$whitelist['getLocationMetadata'] = 'ze\\assetwolf::getLocationMetadataFromPhi';
 			$whitelist['getParentNodeId'] = 'ze\\assetwolf::getParentNodeId';
+			$whitelist['formatValue'] = 'ze\\assetwolf::formatValue';
 			$whitelist['query'] = 'ze\\assetwolf::query';
 			
 			//Deprecated

@@ -1,0 +1,114 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+full_sitewide_slot:
+    css_class: zenario_slotOuter zenario_slotWithContents
+    meta_info:
+        is_sitewide: true
+    info:
+        edit_sc_title:
+            label: 'Slot inspector'
+            css_class: zenario_slotControl_title
+            page_modes:
+                edit: true
+        layout_sc_title:
+            label: Site-wide ~header~ slot inspector
+            css_class: zenario_slotControl_title
+            page_modes:
+                layout: true
+        slot_name_in_edit_mode:
+            css_class: zenario_slotControl_slotName
+            page_modes:
+                edit: true
+        slot_name_in_layout_mode:
+            css_class: zenario_slotControl_slotName
+            page_modes:
+                layout: true
+        in_this_slot:
+            css_class: zenario_slotControl_inThisSlot
+            label: 'On the site-wide ~header~ this slot contains:'
+            page_modes:
+                edit: true
+        module_name:
+            css_class: zenario_slotControl_module
+            page_modes:
+                edit: true
+                layout: true
+        reusable_plugin_details:
+            css_class: zenario_slotControl_reusable zenario_slotControl_reusablePluginDetails
+            page_modes:
+                edit: true
+                layout: true
+        plugin_images:
+            css_class: zenario_slotControl_pluginImages
+            hidden: true
+            page_modes:
+                edit: true
+                layout: true
+        menu_section:
+            css_class: zenario_slotControl_menuSection
+            hidden: true
+            page_modes:
+                edit: true
+                layout: true
+        mobile:
+            css_class: zenario_slotControl_onlyMobile
+            label: Only shown on mobile
+            page_modes:
+                edit: true
+                layout: true
+        desktop:
+            css_class: zenario_slotControl_onlyDesktop
+            label: Only shown on desktop
+            page_modes:
+                edit: true
+                layout: true
+    actions:
+        switch_to_layout:
+            page_modes:
+                edit: true
+            onclick: zenarioAT.clickTab('layout'); return false;
+            label: Switch to Layout mode to edit plugin settings
+        
+        settings:
+            label:
+                settings: Edit plugin settings
+                view_settings: View plugin settings
+            onclick: return zenarioA.pluginSlotEditSettings(this, slotName);
+    
+    re_move_place:
+        move_on_layout_layer:
+            page_modes:
+                layout: true
+            onclick: return zenarioA.movePlugin(this, slotName, true);
+            label: Move ~plugin~
+        
+        replace_reusable_on_layout_layer:
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Replace with a plugin on the site-wide ~header~...
+            label_like4like: Replace with a different plugin on the site-wide ~header~...
+            page_modes:
+                layout: true
+            onclick: return zenarioA.pickNewPlugin(this, slotName, 3, false, [[preselectCurrentChoice]]);
+        
+        hide_plugin:
+            page_modes:
+                edit: true
+            onclick: >
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to show nothing on this content item?', 'Hide')) {
+                    zenarioA.hidePlugin(this, slotName);
+                }
+                return false;
+            label: Show nothing on this content item
+        
+        remove_from_layout_layer:
+            ord: 99
+            page_modes:
+                layout: true
+            onclick: return zenarioA.removePlugin(this, slotName, 3);
+            label: Remove ~plugin~ from the the site-wider ~header~
+    no_perms:
+        cant_design:
+            page_modes:
+                edit: true
+            css_class: zenario_slotControl_no_perms
+            label: 'Limited options: you lack Designer permission'

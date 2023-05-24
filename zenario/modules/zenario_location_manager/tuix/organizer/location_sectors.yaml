@@ -4,7 +4,6 @@ zenario__locations:
     location_sectors:
         panel:
             title: Sectors
-            view_mode: list
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'
                 id_column: s.id

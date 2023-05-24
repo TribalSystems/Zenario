@@ -8,6 +8,8 @@ zenario_content_privacy:
         originalId: ""
         equivId: ""
         cType: ""
+        id_is_menu_node_id: false
+        menu_node_id: ''
     identifier:
         css_class: content_draft
         label: Content item ID
@@ -26,7 +28,7 @@ zenario_content_privacy:
                 privacy_settings_disabled_note:
                     pre_field_html: '<div class="zenario_fbInfo">'
                     snippet:
-                        html: 'The Extranet Base Module needs to be running in order to show options for making the item private.'
+                        html: 'Zenario can show options for making content items private, i.e. needing a password to access them. To do this, the module "Extranet Base Module and login" (zenario_extranet) must be running.'
                     post_field_html: '</div>'
                     hidden: true
                 

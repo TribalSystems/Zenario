@@ -58,6 +58,8 @@ zenario_content:
                         21: "21"
                         22: "22"
                         23: "23"
+                    last_value: ""
+                    format_onchange: true
                 start_time_minutes:
                     hidden: Yes
                     same_row: Yes
@@ -77,6 +79,8 @@ zenario_content:
                         50: "50"
                         55: "55"
                         59: "59"
+                    last_value: ""
+                    format_onchange: true
                 end_time_hours:
                     indent: 1
                     hidden: Yes
@@ -129,9 +133,9 @@ zenario_content:
                         59: "59"
                 late_evening_event:
                     indent: 1
-                    label: 'Runs past midnight'
+                    label: '+1 day'
                     type: checkbox
-                    side_note: Check this if your event runs past midnight and its end time is on the following day.
+                    side_note: Check this if your event runs past midnight and the end time is next day.
                 locations_snippet:
                     snippet:
                         html: '<span class="title">Where it's on:</span>'

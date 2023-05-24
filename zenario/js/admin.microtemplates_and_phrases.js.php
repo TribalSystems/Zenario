@@ -120,15 +120,15 @@ foreach([
 	'login' => 'Login',
 	'logout' => 'Logout',
 	
-	'link_status__content_not_found' => 'Link is broken.',
-	'link_status__hidden' => 'Links to a content item that is hidden.',
-	'link_status__published_with_draft' => 'Links to a content item with an unpublished draft.',
-	'link_status__published_with_draft_401' => 'Links to a private content item that you would not be able to see without admin access, and which also has an unpublished draft.',
-	'link_status__published_with_draft_403' => 'Links to a private content item that your current extranet user cannot see, and which also has an unpublished draft.',
-	'link_status__published_401' => 'Links to a private content item that you would not be able to see without admin access.',
-	'link_status__published_403' => 'Links to a private content item that your current extranet user would not be able to see without admin access.',
-	'link_status__spare_alias' => 'This link points to a spare alias.',
-	'link_status__spare_domain' => 'This link points to a spare domain.',
+	'link_status__content_not_found' => 'Link is broken',
+	'link_status__hidden' => 'Links to a content item that is not published',
+	'link_status__published_with_draft' => 'Links to a content item with a draft that is unpublished',
+	'link_status__published_with_draft_401' => 'Links to a private content item with an unpublished draft (but you can access it as an administrator)',
+	'link_status__published_with_draft_403' => 'Links to a private content item with an unpublished draft, with a higher level of access than your current extranet user account',
+	'link_status__published_401' => 'Links to a private content item (but you can access it as an administrator)',
+	'link_status__published_403' => 'Links to a private content item with a higher level of access than your current extranet user account (but you can access it as an administrator)',
+	'link_status__spare_alias' => 'This link points to a spare alias; you probably should change this to the real alias',
+	'link_status__spare_domain' => 'This link points to a spare domain; you probably should change this to remove the domain',
 	
 	'menuFeatureImage' => "Menu node's feature image",
 	'menuImage' => "Menu node's image",
@@ -263,18 +263,29 @@ _help
 	//Phrases specifically used by Gridmaker
 	'gridAdd' => 'Add...',
 	'growlSlotAdded' => 'A slot has been added, use the resize handle in the lower right corner to change its size',
-	'growlSlotAndGroupingDeleted' => 'The slot and its grouping have been deleted',
-	'growlSlotDeleted' => 'The slot has been deleted',
-	'growlSlotMoved' => 'The slot has been moved',
 	'growlSpaceAdded' => 'Whitespace has been added; drag the bottom-right resize tool to change its width',	
 	'growlChildrenAdded' => 'Slots have been added; drag the bottom-right resize tool to change their width',	
 	'growlGridBreakAdded' => 'A gridbreak has been added',	
+	'growlGridBreakWithSlotAdded' => 'A gridbreak + slot have been added',
+	
+	'growlSlotDeleted' => 'The slot has been deleted',
+	'growlSpaceDeleted' => 'The whitespace has been deleted',
+	'growlGridBreakDeleted' => 'The gridbreak has been deleted',
+	'growlGridBreakWithSlotDeleted' => 'The gridbreak + slot have been deleted',
+	'growlSlotAndGroupingDeleted' => 'The slot and its grouping have been deleted',
+	'growlSpaceAndGroupingDeleted' => 'The whitespace and its grouping have been deleted',
+	
+	'growlSlotMoved' => 'The slot has been moved',
+	'growlSpaceMoved' => 'The whitespace has been moved',
+	'growlGridBreakMoved' => 'The gridbreak has been moved',
+	'growlGridBreakWithSlotMoved' => 'The gridbreak + slot have been moved',
+	'growlGroupingMoved' => 'The grouping has been moved',
+	
 	'gridAddChildren' => 'Multiple slots in a grouping',
 	'gridAddGridBreak' => 'Gridbreak',
 	'gridAddGridBreakWithSlot' => 'Gridbreak + slot',
 	'gridAddSlot' => 'Slot',//Changed "Add a slot" to "Slot"
 	'gridAddSpace' => 'Whitespace',//Changed "Add whitespace" to "Whitespace"
-	'gridCols' => 'Cols:',//Changed "Columns:" to "Cols:"--JS
 	'gridConfirmClose' => 'You have unsaved changes. Are you sure you wish to close and abandon these changes?',
 	'gridContentWidth' => 'Content width:',
 	'gridContentWidthTooltip' => 'Content width|This is the largest possible thing you could place in the grid',
@@ -283,52 +294,33 @@ _help
 	'gridDesktop' => 'Desktop',
 	'gridDisplayingAt' => 'Displaying at [[pixels]] pixels wide',
 	'gridDotTplDotPHP' => '.tpl.php',
-	'gridDownloadCSS' => 'CSS',
-	'gridDownloadHTML' => 'tpl file',
-	'gridDownloadImage' => 'png',
-	'gridDownloadTitle' => 'Downloads <small>Save to your local disk</small>',
-	'gridDownloadZip' => 'zip',
 	'gridEditPlaceholder' => '<em>[Edit]</em>',
 	'gridEditProperties' => 'Edit properties',
-	'gridEditSlots' => 'Slots',//Changed "Slot view" to "Slots"--JS
 	'gridEmptySpace' => 'Empty Space|Drag to move or drag the corder to resize',
 	'gridErrorNameFormat' => 'The slot class name may only contain the letters a-z, digits or underscores',
 	'gridErrorNameIncomplete' => 'Please enter a name for this slot.',
-	'gridErrorNameInUse' => 'This slot class name is already in use',
+	'gridErrorNameInUseFooter' => 'This slot name is already in use in the site-wide footer.',
+	'gridErrorNameInUseHeader' => 'This slot name is already in use in the site-wide header.',
+	'gridErrorNameInUseLayout' => 'This slot name is already in use in a layout.',
+	'gridErrorNameInUseThisLayout' => 'This slot name is already in use on this layout.',
 	'gridExportToFSDisabled' => "Saving to the server's file system is disabled because you don't have the required administrator permission.",
-	'gridFixed' => 'Fixed width',
-	'gridFixedTooltip' => 'Fixed|In a fixed grid, all of the widths are specified in &quot;px&quot;. On a normal computer screen, one &quot;px&quot; will be one pixel tall and one pixel wide. On a retina screen, one &quot;px&quot; may be two pixels tall and two pixels wide, or sometimes higher.',
-	'gridFluid' => 'Fluid',
-	'gridFluidTooltip' => 'Fluid|In a fluid grid, all of the widths are specified in percentages, and the size of your columns and gutters will vary depending on the screen size. Fluid grids can be prone to pixel rounding errors, especially in Internet Explorer 6 and 7.',
-	'gridFullWidth' => 'Full w:',//Changed "Full width:" to "Full w:"--JS
 	'gridGridBreak' => 'Gridbreak|Drag to move',
 	'gridGridBreakWithSlot' => 'Gridbreak + slot|Drag to move',
 	'gridGridCSSClass' => 'CSS class name(s) for the following container:',
-	'gridGutter' => 'G:', //Changed "Gutter:" to "G:"--JS
-	'gridGutterAndWidth' => 'Col / g:', //Changed "Column / gutter:" to "Col / g:"--JS
-	'gridGutterLeftEdge' => 'LM:',//Changed "L g:" to "LM"--JS
-	'gridGutterRightEdge' => 'RM:',//Changed "L g:" to "RM"--JS
 	'gridHtml' => 'Custom HTML:',
 	'gridIncNestedRules' => 'CSS rules for nested cells:',
 	'gridIncNestedRulesTooltip' => "Include CSS rules for cells with nested cells|Cells with nested cells need additional CSS rules. If you're not using nested cells, you can omit these rules for a smaller download.",
 	'gridLayoutName' => 'Layout name:',
-	'gridMaxWidth' => 'Max-w:',//Changed "Max-width:" to "Max-w:"--JS
-	'gridMinWidth' => 'Min-w:',//Changed "Min-width:" to "Min-w"--JS
 	'gridMirror' => 'Right-to-left',
-	'gridMirrorTooltip' => 'Display right-to-left|Check this option to display slots from the right to the left, e.g. for creating an Arabic, Hebrew or Urdu language version of an English language site.<br/><br/>The slots will appear right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will be added. (This effect is not displayed when managing slots in &quot;Slots&quot;.)',
 	'gridMobile' => 'Mobile',
 	'gridNewSkinMessage' => 'You have created a new Grid Skin. Before you can see this Skin on a page, you must edit the settings of a Layout and select it. All content items using that Layout will then use your new Skin.',
 	'gridPlusAdd' => '+ Add',
-	'gridPreviewGrid' => 'Preview',//Changed "Grid view" to "Preview"--JS
-	'gridRedo' => 'Redo',
 	'gridSaveProperties' => 'Save',
 	'gridSlotHtmlBefore' => 'HTML before slot:',
 	'gridSlotHtmlAfter' => 'HTML after slot:',
 	'gridSlotName' => 'Name (which is also its CSS class name):',
 	'gridResizeNestedCells' => 'Resize the boundary for these nested cells',
 	'gridResizeSlot' => 'Resize slot',
-	'gridResponsive' => 'Responsive',
-	'gridResponsiveTooltip' => 'Responsive|Your grid has a minimum size. If your grid is not responsive, visitors with smaller screens than the minimum size will see scrollbars on your site. If your grid is responsive, it will turn itself off below the minimum size, and visitors with smaller screens than the minimum size will see your slots one after the other taking up all of the available space. (This effect is not displayed when managing slots in the editor.)',
 	'gridResp_always' => 'Show on desktop and mobile',
 	'gridResp_first' => 'Move to start of row on mobile',
 	'gridResp_hide' => 'Show on desktop only',
@@ -338,7 +330,6 @@ _help
 	'gridResp_slot_only' => 'Show the slot on mobile only',
 	'gridSave' => 'Save',
 	'gridSaveAs' => 'Save a copy',
-	'gridSaveTemplate' => '',
 	'gridSaveCSS' => 'Save your CSS (grid)',
 	'gridSaveTemplateFile' => 'Save your layout',
 	'gridSaveText' => 'Enter a name for your new layout.',
@@ -347,13 +338,22 @@ _help
 	'gridTablet' => 'Tablet',
 	'gridTemplateFileName' => 'Template filename:',
 	'gridTitle' => 'Editing [[layoutName]] with Gridmaker',
-	'gridUndo' => 'Undo'
+	'password_score_4_matches_requirements' => 'Password matches the requirements (score 4, max)',
+	'password_score_4_exceeds_requirements' => 'Password is very strong and exceeds requirements (score 4, max)',
+	'password_score_3_matches_requirements' => 'Password matches the requirements (score 3)',
+	'password_score_3_too_easy_to_guess' => 'Password is too easy to guess (score 3)',
+	'password_score_2_matches_requirements_but_easy_to_guess' => 'Password is easy to guess. Make your password stronger if this will be a production site.',
+	'password_score_2_too_easy_to_guess' => 'Password is too easy to guess (score 2)',
+	'password_score_1_too_easy_to_guess' => 'Password is too easy to guess (score 1)',
+	'password_score_0_too_easy_to_guess' => 'Password is too easy to guess (score 0)',
+	'password_does_not_match_the_requirements' => 'Password does not match the requirements',
+	'enter_password' => 'Please enter a password'
 
 ] as $code => $phrase) {
 	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick($phrase). '~';
 }
 
-echo 'zenario._uAM(zenarioA.phrase,', json_encode($output), ');';
+echo 'zenario._mkd(zenarioA.phrase,', json_encode($output), ');';
 
 
 

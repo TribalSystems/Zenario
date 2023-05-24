@@ -433,7 +433,7 @@ methods.setupReordering = function($panel) {
 					delete zenario.rev;
 				
 					$.post(
-						URLBasePath + actionTarget,
+						zenario.addBasePath(actionTarget),
 						actionRequests,
 						//Refresh the panel to show the new order
 						function () {

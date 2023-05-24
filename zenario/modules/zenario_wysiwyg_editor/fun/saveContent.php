@@ -53,7 +53,7 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	ze\contentAdm::updateVersion(ze::$cID, ze::$cType, ze::$cVersion);
 
 	
-	if (($_POST['_sync_summary'] ?? false) && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {
+	if (ze::post('_sync_summary') && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {
 		$this->syncSummary($this->cID, $this->cType, $this->cVersion, zenario_wysiwyg_editor::generateSummary($html));
 	}
 }

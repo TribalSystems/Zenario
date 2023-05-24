@@ -7,8 +7,8 @@ zenario__email_template_manager:
             #Each module that is supposed to extend this panel needs to have a yaml file with a dummy button,
             #and populate the items in the fillOrganizerPanel method.
             #The first module to extend this panel is Zenario User Timers.
-            title: Timer plans
-            no_items_message: There are no timer plans to display
+            title: Other emails
+            no_items_message: There are no emails to display
             panel_type: multi_line_list
             css_class: two_line_list_panel
             use_tall_rows: true

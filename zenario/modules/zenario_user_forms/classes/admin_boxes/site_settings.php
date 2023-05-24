@@ -49,6 +49,28 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 			
 			$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$fields['zenario_user_forms_emails/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store form responses.', ['link' => htmlspecialchars($link)]);
+			
+			//Max file upload size settings
+			$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+			
+			$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+			$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+			$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			
+			$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+			$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+			
+			ze\lang::applyMergeFields(
+				$fields['zenario_user_forms_emails/zenario_user_forms_max_attachment_file_size_override']['values']['use_global_max_attachment_file_size']['label'],
+				['global_max_attachment_file_size' => $maxFileSizeFormatted]
+			);
+			
+			$linkStart = "<a target='_blank' href='" . ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//files_and_images~.site_settings~tfilesizes~k{"id"%3A"files_and_images"}' . "'>";
+			$linkEnd = '</a>';
+			$fields['zenario_user_forms_emails/zenario_user_forms_max_attachment_file_size_override']['notices_below']['max_upload_size_site_setting_link']['message'] = ze\admin::phrase(
+				'See the [[link_start]]Documents, images and file handling[[link_end]] panel to change the global setting.',
+				['link_start' => $linkStart, 'link_end' => $linkEnd]
+			);
 		
 		} elseif ($settingGroup == 'data_protection') {
 			
@@ -69,7 +91,34 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($settingGroup == 'data_protection') {
+		if ($settingGroup == 'zenario_user_forms__site_settings_group') {
+			//Max file upload size settings
+			if ($values['zenario_user_forms_emails/zenario_user_forms_max_attachment_file_size_override'] == 'limit_max_attachment_file_size') {
+				if ($values['zenario_user_forms_emails/zenario_user_forms_content_max_filesize'] && $values['zenario_user_forms_emails/zenario_user_forms_content_max_filesize_unit']) {
+					$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+			
+					$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+					$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+					$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			
+					$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+					$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+			
+					$userFormsMaxFilesizeValue = $values['zenario_user_forms_emails/zenario_user_forms_content_max_filesize'];
+					$userFormsMaxFilesizeUnit = $values['zenario_user_forms_emails/zenario_user_forms_content_max_filesize_unit'];
+					$userFormsMaxFilesize = ze\file::fileSizeBasedOnUnit($userFormsMaxFilesizeValue, $userFormsMaxFilesizeUnit);
+			
+					if ($userFormsMaxFilesize > $maxFileSize) {
+						$fields['zenario_user_forms_emails/zenario_user_forms_content_max_filesize']['error'] =
+							ze\admin::phrase(
+								'The User Forms maximum file size may not exceed [[global_max_attachment_file_size]].',
+								['global_max_attachment_file_size' => $maxFileSizeFormatted]
+							);
+						$fields['zenario_user_forms_emails/zenario_user_forms_content_max_filesize_unit']['error'] = true;
+					}
+				}
+			}
+		} elseif ($settingGroup == 'data_protection') {
 			//Make sure you cannot ask content to be stored longer than headers
 			$headersDays = $values['data_protection/period_to_delete_the_form_response_log_headers'];
 			$contentDays = $values['data_protection/period_to_delete_the_form_response_log_content'];

@@ -243,6 +243,7 @@ class ComposerStaticInitd108887f563898da1ddc24b69f86a202
         'NumbersPHP\\Tests\\MatrixTest' => __DIR__ . '/..' . '/powder96/numbers.php/test/NumbersPHP/Tests/MatrixTest.php',
         'NumbersPHP\\Tests\\PrimeTest' => __DIR__ . '/..' . '/powder96/numbers.php/test/NumbersPHP/Tests/PrimeTest.php',
         'NumbersPHP\\Tests\\StatisticTest' => __DIR__ . '/..' . '/powder96/numbers.php/test/NumbersPHP/Tests/StatisticTest.php',
+        'PHPMailer\\PHPMailer\\DSNConfigurator' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/DSNConfigurator.php',
         'PHPMailer\\PHPMailer\\Exception' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/Exception.php',
         'PHPMailer\\PHPMailer\\OAuth' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuth.php',
         'PHPMailer\\PHPMailer\\OAuthTokenProvider' => __DIR__ . '/..' . '/phpmailer/phpmailer/src/OAuthTokenProvider.php',

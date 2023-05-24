@@ -537,7 +537,12 @@ class contentAdm {
 	}
 
 	//Formerly "syncInlineFileLinks()"
-	public static function syncInlineFileLinks(&$files, &$html, &$htmlChanged, $usage = 'image', $publishingAPublicPage = false) {
+	public static function syncInlineFileLinks(
+		&$files, &$html, &$htmlChanged,
+		$usage = 'image',
+		$publishingAPublicPage = false,
+		$fixWhereLinksGo = true, $fixPublicDir = false
+	) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
@@ -1050,7 +1055,7 @@ class contentAdm {
 		}
 		
 		//Check specific language permissions
-		if (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_HIDE_CONTENT_ITEM', $contentItemLanguageId)) {
+		if (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_PUBLISH_CONTENT_ITEM', $contentItemLanguageId)) {
 			return false;
 		}
 
@@ -1079,7 +1084,7 @@ class contentAdm {
 			return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
 			
 		//Check specific language permissions
-		} elseif (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_HIDE_CONTENT_ITEM', $contentItemLanguageId)) {
+		} elseif (\ze\lang::count() > 1 && $contentItemLanguageId && !\ze\priv::onLanguage('_PRIV_PUBLISH_CONTENT_ITEM', $contentItemLanguageId)) {
 			return false;
 		
 		} else {

@@ -262,7 +262,7 @@ plugin_settings:
                         fixed_position:
                             ord: 2
                             label: 'Fixed position'
-                    value: 'auto_position_at_centre'
+                    value: auto_position_at_centre
                     redraw_onchange: true
                     note_below: |
                         To ascertain latitude and longitude, go to Google Maps and read off the numbers in the URL.
@@ -305,7 +305,7 @@ plugin_settings:
                         set_manually:
                             ord: 2
                             label: 'Manually set a zoom level'
-                    value: 'auto_include_all_locations'
+                    value: auto_include_all_locations
                     redraw_onchange: true
                     note_below: 'Use 1 for a world-level view, or any integer up to 25 for a close-up view. (Higher zoom levels may not be available, depending on the region or country)'
                 zoom_level:

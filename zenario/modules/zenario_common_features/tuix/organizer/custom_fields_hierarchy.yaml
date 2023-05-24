@@ -16,6 +16,7 @@ zenario__administration:
                 custom_fields_only: {}
                 user_fields: {}
                 user_custom_fields_only: {}
+                dataset_text_fields_only: {}
                 exclude_image_pickers: {}
             
             disable_periodic_refresh: true

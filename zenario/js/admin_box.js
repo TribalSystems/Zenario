@@ -52,8 +52,6 @@ zenario.lib(function(
 var FAB_NAME = 'AdminFloatingBox',
 	FAB_LEFT = 50,
 	FAB_TOP = 2,
-	FAB_PADDING_HEIGHT = 193,
-	FAB_TAB_BAR_HEIGHT = 53,
 	FAB_WIDTH = 960,
 	PLUGIN_SETTINGS_WIDTH = 800,
 	PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW = 1100,
@@ -160,12 +158,6 @@ zenarioAB.size = function(refresh) {
 		previewHidden = false,
 		newWidth,
 		windowSizedChanged,
-		boxHeight,
-		maxBoxWidth,
-		tabContainerHeight,
-		maxTabContainerHeight,
-		paddingHeight,
-		hideTabBar,
 		global_area,
 		tuix = zenarioAB.tuix || {};
 	
@@ -176,7 +168,10 @@ zenarioAB.size = function(refresh) {
 		if (windowSizedChanged || refresh) {
 			zenarioAB.lastSize = width + 'x' + height;
 			
-			hideTabBar = engToBoolean(tuix.hide_tab_bar);
+			var $box = $('#zenario_fabBox'),
+				$tabContainer = $('#zenario_fbAdminInner'),
+				hideTabBar = engToBoolean(tuix.hide_tab_bar), 
+				maxTabContainerHeight = 1 * tuix.max_height;
 			
 			if (get('zenario_fbMain')) {
 				if (hideTabBar) {
@@ -188,39 +183,41 @@ zenarioAB.size = function(refresh) {
 				}
 			}
 			
-			paddingHeight = FAB_PADDING_HEIGHT;
-			if (hideTabBar) {
-				paddingHeight -= FAB_TAB_BAR_HEIGHT;
-			}
 			
-			paddingHeight += $('#zenario_fabTitleWrap').height();
 			
-			boxHeight = Math.floor(height * 0.96);
-			maxBoxWidth = Math.floor(width * 0.96);
-			tabContainerHeight = boxHeight - paddingHeight;
+			//Reset the size of elements before calculating any sizes
+			$box.height('auto');
+			$tabContainer.height(100);
 			
-			maxTabContainerHeight = 1 * tuix.max_height;
+			//Get the height of the box before we set the tab container's height properly,
+			//and compare it against the size of the window that we have to work in.
+			//Use these numbers to work out how large the tab container can be.
+			var initialHeight = $box.height(),
+				heightAvailable = Math.floor(height * 0.96),
+				widthAvailable = Math.floor(width * 0.96),
+				tabContainerHeight = heightAvailable - initialHeight + 100;
+			
 			
 			if (maxTabContainerHeight
 			 && tabContainerHeight > maxTabContainerHeight) {
 				tabContainerHeight = maxTabContainerHeight;
-				boxHeight = maxTabContainerHeight + paddingHeight;
+				heightAvailable = tabContainerHeight + initialHeight - 100;
 			}
 	
 			if (tabContainerHeight && tabContainerHeight > 0) {
-				$('#zenario_fbAdminInner').height(tabContainerHeight);
+				$tabContainer.height(tabContainerHeight);
 			}
 			zenarioAB.tabContainerHeight = tabContainerHeight;
 	
-			if (boxHeight && boxHeight > 0) {
-				$('#zenario_fabBox').height(boxHeight);
-				$('#zenario_fabPreview').height(boxHeight);
+			if (heightAvailable && heightAvailable > 0) {
+				$box.height(heightAvailable);
+				$('#zenario_fabPreview').height(heightAvailable);
 			}
 			
 			if (!tuix.css_class
 			 || !tuix.css_class.match(/zenario_fab_plugin\b/)) {
 				
-				$('#zenario_fabBox').width(FAB_WIDTH);
+				$box.width(FAB_WIDTH);
 				newWidth = FAB_WIDTH;
 				
 				zenarioAB.previewChecksum =
@@ -230,9 +227,9 @@ zenarioAB.size = function(refresh) {
 				previewHidden = true;
 			
 			} else {
-				$('#zenario_fabBox').width(PLUGIN_SETTINGS_WIDTH);
+				$box.width(PLUGIN_SETTINGS_WIDTH);
 				
-				previewHidden = !zenarioAB.hasPreviewWindow || maxBoxWidth < PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW;
+				previewHidden = !zenarioAB.hasPreviewWindow || widthAvailable < PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW;
 			
 				if (previewHidden) {
 					newWidth = PLUGIN_SETTINGS_WIDTH;
@@ -246,9 +243,9 @@ zenarioAB.size = function(refresh) {
 					//If we found the width of the slot earlier, don't allow the preview window to be larger than that.
 					//Also don't let the combined width of the preview window and the admin box be larger than the window!
 					if (zenarioAB.previewSlotWidth) {
-						newWidth = Math.min(maxBoxWidth, PLUGIN_SETTINGS_WIDTH + PLUGIN_SETTINGS_BORDER_WIDTH + zenarioAB.previewSlotWidth);
+						newWidth = Math.min(widthAvailable, PLUGIN_SETTINGS_WIDTH + PLUGIN_SETTINGS_BORDER_WIDTH + zenarioAB.previewSlotWidth);
 					} else {
-						newWidth = maxBoxWidth;
+						newWidth = widthAvailable;
 					}
 				
 					//Note down the size that the preview window will be after all of thise
@@ -552,6 +549,8 @@ zenarioAB.contentTitleChange = function() {
 	if (aliasDOM && !aliasDOM.disabled && !aliasDOM.readOnly && !zenarioAB.tuix.___alias_changed) {
 		aliasDOM.value = zenarioAB.generateAlias(get('title').value);
 		zenarioAB.validateAlias();
+
+		$('#alias').trigger('input');
 	}
 };
 

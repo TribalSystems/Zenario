@@ -104,7 +104,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					//Edit an existing Content Item based on its Menu Node
 					$box['key']['cID'] = $menuContentItem['equiv_id'];
 					$box['key']['cType'] = $menuContentItem['content_type'];
-					ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ze::$defaultLang));
+					ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], ze::ifNull($box['key']['target_language_id'], ze::get('languageId'), ze::$defaultLang));
 					$box['key']['source_cID'] = $box['key']['cID'];
 			
 					$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
@@ -117,7 +117,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 
 			} else {
-				$box['key']['target_menu_section'] = ze::ifNull($box['key']['target_menu_section'], ($_REQUEST['sectionId'] ?? false), ($_REQUEST['refiner__section'] ?? false));
+				$box['key']['target_menu_section'] = ze::ifNull($box['key']['target_menu_section'], ze::request('sectionId'), ze::request('refiner__section'));
 			}
 			$box['key']['id'] = false;
 		}
@@ -126,11 +126,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Include the option to duplicate a Content Item based on a MenuId
 			if ($box['key']['duplicate_from_menu']) {
 				//Handle the case where a language id is in the primary key
-				if ($box['key']['id'] && !is_numeric($box['key']['id']) && ($_GET['refiner__menu_node_translations'] ?? false)) {
+				if ($box['key']['id'] && !is_numeric($box['key']['id']) && ze::get('refiner__menu_node_translations')) {
 					$box['key']['target_language_id'] = $box['key']['id'];
 					$box['key']['id'] = $_GET['refiner__menu_node_translations'] ?? false;
 		
-				} elseif (is_numeric($box['key']['id']) && ($_GET['refiner__language'] ?? false)) {
+				} elseif (is_numeric($box['key']['id']) && ze::get('refiner__language')) {
 					$box['key']['target_language_id'] = $_GET['refiner__language'] ?? false;
 				}
 		
@@ -150,9 +150,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Version for opening from the "translation chain" panel in Organizer:
 			if (
 				$box['key']['translate']
-			 && ($_REQUEST['refinerName'] ?? false) == 'zenario_trans__chained_in_link'
+			 && ze::request('refinerName') == 'zenario_trans__chained_in_link'
 			 && !ze\content::getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], $box['key']['id'])
-			 && ze\content::getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], ($_REQUEST['refiner__zenario_trans__chained_in_link'] ?? false))
+			 && ze\content::getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], ze::request('refiner__zenario_trans__chained_in_link'))
 			) {
 				$box['key']['target_language_id'] = $box['key']['id'];
 				$box['key']['id'] = null;
@@ -160,10 +160,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Version for opening from the "translation chain" panel in the menu area in Organizer:
 			if (
 				$box['key']['translate']
-			 && ($_REQUEST['refinerName'] ?? false) == 'zenario_trans__chained_in_link__from_menu_node'
-			 && ($_REQUEST['equivId'] ?? false)
-			 && ($_REQUEST['cType'] ?? false)
-			 && ($_REQUEST['language'] ?? false)
+			 && ze::request('refinerName') == 'zenario_trans__chained_in_link__from_menu_node'
+			 && ze::request('equivId')
+			 && ze::request('cType')
+			 && ze::request('language')
 			) {
 				$box['key']['target_language_id'] = $box['key']['id'];
 				$box['key']['source_cID'] = $_REQUEST['equivId'] ?? false;
@@ -172,7 +172,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Version for opening from the Admin Toolbar
 			if (
 				$box['key']['translate']
-			 && ($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)
+			 && ze::request('cID') && ze::request('cType')
 			 && !ze\content::getCIDAndCTypeFromTagId($box['key']['source_cID'], $box['key']['cType'], $box['key']['id'])
 			) {
 				$box['key']['target_language_id'] = $box['key']['id'];
@@ -240,8 +240,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		//If creating a new Content Item from the Content Items (and missing translations) in Language Panel,
 		//or the Content Items in the language X Panel, don't allow the language to be changed
-		if (($_GET['refinerName'] ?? false) == 'language'
-		 || (isset($_GET['refiner__language_equivs']) && ($_GET['refiner__language'] ?? false))) {
+		if (ze::get('refinerName') == 'language'
+		 || (isset($_GET['refiner__language_equivs']) && ze::get('refiner__language'))) {
 			$box['key']['target_language_id'] = $_GET['refiner__language'] ?? false;
 		}
 		
@@ -287,7 +287,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 
 		//Enforce a specific Content Type
-		if ($_REQUEST['refiner__content_type'] ?? false) {
+		if (ze::request('refiner__content_type')) {
 			$box['key']['target_cType'] = $_REQUEST['refiner__content_type'] ?? false;
 		}
 		
@@ -382,10 +382,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//On the language selector, disable languages for which translations already exist,
 			//and mark the currently selected language.
 			if (!ze\content::isSpecialPage($box['key']['cID'], $box['key']['cType'])) {
-				if ($content['language_id'] && $fields['meta_data/language_id']['values'][$content['language_id']]) {
-					$fields['meta_data/language_id']['values'][$content['language_id']]['label'] .= ' (' . ze\admin::phrase('selected') . ')';
-				}
-
 				$contentEquivId = ze\content::equivId($content['id'], $content['type']);
 				$otherTranslationsResult =
 					ze\row::query(
@@ -403,12 +399,13 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			}
 
+			$values['meta_data/alias'] = $content['alias'];
+
 			if ($box['key']['duplicate'] || $box['key']['translate']) {
 				//Don't allow the layout to be changed when duplicating
 				$fields['meta_data/layout_id']['readonly'] = true;
 				
 				if ($box['key']['translate']) {
-					$values['meta_data/alias'] = $content['alias'];
 					$box['tabs']['categories']['hidden'] = true;
 					$box['tabs']['privacy']['hidden'] = true;
 		
@@ -508,24 +505,32 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					);
 
 				//The options to set the alias, categories or privacy (if it is there!) should be hidden when not creating something
-				$fields['meta_data/alias']['hidden'] = true;
 				$box['tabs']['categories']['hidden'] = true;
 				$box['tabs']['privacy']['hidden'] = true;
+
+				//Alias should be displayed but as a span.
+				$fields['meta_data/alias']['read_only'] = true;
+
 				// Change code for Special page FAB
-				$specialpagesresult = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $content['equiv_id'], 'content_type' =>$content['type']]);
+				$specialpagesresult = ze\row::get('special_pages', ['page_type'], ['equiv_id' => $content['equiv_id'], 'content_type' => $content['type']]);
 				$pagetype = '';
 
-				if ($specialpagesresult){
-					$pagetype = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialpagesresult['page_type'], true)); 
+				if ($specialpagesresult) {
+					$pagetype = str_replace('_', ' ', ze\ring::chopPrefix('zenario_', $specialpagesresult['page_type'], true));
+					
+					$box['key']['is_special_page'] = true;
+					$box['key']['special_page_type'] = $specialpagesresult['page_type'];
 				}
-				if($pagetype){
-						$fields['meta_data/special_page_message']['hidden'] = false;
-						$fields['meta_data/special_page_message']['snippet']['html']= 'This is a special page: '.$pagetype.' page';
-				}
-				if (array_key_exists("refinerName",$_GET)){
-					if($_GET['refinerName'] == 'special_pages'){
 
-						if($specialpagesresult['page_type']=='zenario_not_found' || $specialpagesresult['page_type']=='zenario_no_access'){
+				if ($pagetype) {
+					$fields['meta_data/special_page_message']['hidden'] = false;
+					$fields['meta_data/special_page_message']['snippet']['html'] = 'This is a special page: ' . $pagetype . ' page';
+				}
+
+				if (array_key_exists("refinerName",$_GET)) {
+					if ($_GET['refinerName'] == 'special_pages') {
+
+						if ($specialpagesresult['page_type'] == 'zenario_not_found' || $specialpagesresult['page_type'] == 'zenario_no_access') {
 							$fields['meta_data/no_menu_warning']['hidden'] = true;
 						}
 					}
@@ -686,8 +691,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 				
 					if ($fileInfo['path'] && !ze\file::docstorePath($fileInfo['path'])) {
-						ze\lang::applyMergeFields($fields['file/file_is_missing']['snippet']['html'], ['path' => $fileInfo['path']]);
-						$fields['file/file_is_missing']['hidden'] = false;
+						ze\lang::applyMergeFields($fields['file/file']['notices_below']['file_is_missing']['message'], ['path' => $fileInfo['path']]);
+						$fields['file/file']['notices_below']['file_is_missing']['hidden'] = false;
 					}
 
 					$fields['file/file']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'] ?? '', 'folder_name' => $fileInfo['path'] ?? '']);
@@ -742,15 +747,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//Set default values
 		if ($content) {
 			if ($box['key']['duplicate'] || $box['key']['translate']) {
-				$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::ifNull($_GET['languageId'] ?? false, ($_GET['language'] ?? false), $content['language_id']));
+				$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::ifNull($_GET['languageId'] ?? false, ze::get('language'), $content['language_id']));
 			}
 		} else {
-			$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ($_GET['languageId'] ?? false), ze::$defaultLang);
+			$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::get('languageId'), ze::$defaultLang);
 		}
 		
 		if (!$version) {
 			//Attempt to work out the default template and Content Type for a new Content Item
-			if (($layoutId = ze::ifNull($box['key']['target_template_id'], ($_GET['refiner__template'] ?? false)))
+			if (($layoutId = ze::ifNull($box['key']['target_template_id'], ze::get('refiner__template')))
 			 && ($box['key']['cType'] = ze\row::get('layouts', 'content_type', $layoutId))) {
 		
 	
@@ -807,7 +812,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (isset($box['tabs']['categories']['fields']['desc'])) {
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/categories'). '" target="_blank"']);
 		
 				if (ze\row::exists('categories', [])) {
 					$fields['categories/no_categories']['hidden'] = true;
@@ -846,6 +851,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 
+		//Only display the "Auto-populate from file name" checkbox
+		//for audio/video/picture/document content item.
+		if (!($contentType && ze::in($contentType['content_type_id'], 'audio', 'document', 'picture', 'video'))) {
+			unset($box['tabs']['meta_data']['fields']['auto_populate_title_from_filename']);
+		}
+
 		if ($box['key']['source_cID']) {
 			if ($box['key']['cID'] != $box['key']['source_cID']) {
 				if ($box['key']['target_language_id'] && $box['key']['target_language_id'] != $content['language_id']) {
@@ -879,7 +890,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 							['tag' => $tag, 'status' => $status, 'version' => $box['key']['source_cVersion']]);
 				} else {
 					$box['title'] =
-						ze\admin::phrase('Editing metadata (version-controlled) of content item "[[tag]]", version [[version]] ([[status]])',
+						ze\admin::phrase('Editing metadata of content item "[[tag]]", version [[version]] ([[status]])',
 							['tag' => $tag, 'status' => $status, 'version' => $box['key']['source_cVersion']]);
 				}
 			}
@@ -889,6 +900,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		if ($lockLanguageId || ($box['key']['cID'] && $box['key']['cType'] && ze\content::isSpecialPage($box['key']['cID'], $box['key']['cType']))) {
 			$box['tabs']['meta_data']['fields']['language_id']['show_as_a_span'] = true;
+		}
+		
+		if ($content && $content['language_id'] && $fields['meta_data/language_id']['values'][$content['language_id']] && !$fields['meta_data/language_id']['show_as_a_span']) {
+			$fields['meta_data/language_id']['values'][$content['language_id']]['label'] .= ' (' . ze\admin::phrase('selected') . ')';
 		}
 
 
@@ -1099,6 +1114,17 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (!$contentType['enable_css_tab']) {
 			$box['tabs']['css']['hidden'] = true;
 		}
+		
+		if ($fields['meta_data/alias']['read_only']) {
+			$editAliasLinkHref = ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//' . $box['key']['id'] . '~.zenario_alias~tmeta_data~k{"id"%3A"' . $box['key']['id'] . '"}';
+			$editAliasLinkStart = "<a href='" . $editAliasLinkHref . "' target='_blank'>";
+			$editAliasLinkEnd = '</a>';
+			$viewTranslationChainPhrase = ze\admin::phrase(
+				'[[line_break]][[div_start]][[link_start]]Edit alias[[link_end]][[div_end]]',
+				['line_break' => '<br />', 'link_start' => $editAliasLinkStart, 'link_end' => $editAliasLinkEnd, 'div_start' => '<div class="edit_alias_link">', 'div_end' => '</div>']
+			);
+			$fields['meta_data/alias']['post_field_html'] = $viewTranslationChainPhrase;
+		}
 	}
 	
 
@@ -1186,55 +1212,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$specialPage = false;
 		}
 
-		$descriptionCounterHTML = '
-			<div class="snippet__description" >
-				<div id="snippet__description_length" class="[[initial_class_name]]">
-					<span id="snippet__description_counter">[[initial_characters_count]]</span>
-				</div>
-			</div>';
-
 		$keywordsCounterHTML = '
 			<div class="snippet__keywords" >
 				<div id="snippet__keywords_length" >
 					<span id="snippet__keywords_counter">[[initial_characters_count]]</span>
 				</div>
 			</div>';
-
-
-		if (strlen($values['meta_data/title']) < 1) {
-			$fields['meta_data/title']['note_below'] = 'Please enter a title.';
-		} elseif (strlen($values['meta_data/title']) < 20)  {
-			$fields['meta_data/title']['note_below'] = 'For good SEO, make the title longer.';
-		} elseif (strlen($values['meta_data/title']) < 40)  {
-			$fields['meta_data/title']['note_below'] = 'For good SEO, make the title a little longer.';
-		} elseif (strlen($values['meta_data/title']) < 66)  {
-			$fields['meta_data/title']['note_below'] = 'This is a good title length for SEO.';
-		} else {
-			$fields['meta_data/title']['note_below'] = 'The title may not be fully visible in search engine results.';
-		}
-
-		$fields['meta_data/title']['onclick'] = $fields['meta_data/title']['oninput'];
-
-
-		if (strlen($values['meta_data/description'])<1) {
-			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_red', $descriptionCounterHTML);
-			$fields['meta_data/description']['note_below'] = 'For good SEO, enter a description. If this field is left blank, search engines will auto-generate a description which may not be as well-worded.';
-		} elseif (strlen($values['meta_data/description'])<50)  {
-			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_orange', $descriptionCounterHTML);
-			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description longer to entice people to click through from a result list.';
-		} elseif (strlen($values['meta_data/description'])<100)  {
-			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_yellow', $descriptionCounterHTML);
-			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description a little longer to entice people to click through from a result list.';
-		} elseif (strlen($values['meta_data/description'])<156)  {
-			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_green', $descriptionCounterHTML);
-			$fields['meta_data/description']['note_below'] = 'This is a good description length for SEO.';
-		} else {
-			$descriptionCounterHTML = str_replace('[[initial_class_name]]', 'description_yellow', $descriptionCounterHTML);
-			$fields['meta_data/description']['note_below'] = 'The description is a little long for good SEO as it may not be fully visible.';
-		}
-		$descriptionCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/description']), $descriptionCounterHTML);
-		$box['tabs']['meta_data']['fields']['description']['post_field_html'] = $descriptionCounterHTML;
-
 
 		$keywordsCounterHTML = str_replace('[[initial_characters_count]]', strlen($values['meta_data/keywords']) , $keywordsCounterHTML);
 		$box['tabs']['meta_data']['fields']['keywords']['post_field_html'] = $keywordsCounterHTML;
@@ -1515,8 +1498,31 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
+		if (isset($box['tabs']['meta_data']['fields']['auto_populate_title_from_filename'])) {
+			if ($values['meta_data/auto_populate_title_from_filename']) {
+				$fields['meta_data/title']['disabled'] = true;
+				$fields['meta_data/title']['placeholder'] = ze\admin::phrase('Will auto-populate from file name');
+			} else {
+				$fields['meta_data/title']['disabled'] = false;
+				unset($fields['meta_data/title']['placeholder']);
+			}
+		}
 		
 		$this->autoSetTitle($box, $fields, $values);
+
+		//Only show the SEO messages (title, description) for public content items, but not for the "Not found" and "No access" special pages.
+		//If the Zenario Users module is not running, ignore the privacy check.
+		//Also always display the message for alias field.
+		$this->setAliasMessageAndEvent($box, $fields, $values);
+		
+		if (empty($values['privacy/privacy']) || ($values['privacy/privacy'] == 'public' && !ze::in($box['key']['special_page_type'], 'zenario_not_found', 'zenario_no_access'))) {
+			$this->setSeoMessagesAndEvents($box, $fields, $values);
+		} else {
+			unset($box['tabs']['meta_data']['fields']['title']['note_below']);
+			unset($box['tabs']['meta_data']['fields']['description']['note_below']);
+			$box['tabs']['meta_data']['fields']['title']['progress_bar'] = false;
+			$box['tabs']['meta_data']['fields']['description']['progress_bar'] = false;
+		}
 	}
 	
 	public function autoSetTitle(&$box, &$fields, &$values) {
@@ -1589,11 +1595,28 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					['cType' => $box['key']['cType']]);
 		}
 
+		$titleIsMissing = false;
 		if (!$values['meta_data/title']) {
-			$fields['meta_data/title']['error'] = ze\admin::phrase('Please enter a title.');
+			if (isset($box['tabs']['meta_data']['fields']['auto_populate_title_from_filename']) && $values['meta_data/auto_populate_title_from_filename']) {
+				//If autopopulating the title from filename, do not display errors when the filename is blank while switching tabs.
+				//Complain when the admin tries to save.
+				if ($saving && !$values['file/file']) {
+					$titleIsMissing = true;
+				}
+			} else {
+				$titleIsMissing = true;
+			}
 		}
 
-		if (!empty($values['meta_data/alias'])) {
+		if ($titleIsMissing) {
+			if (isset($box['tabs']['meta_data']['fields']['auto_populate_title_from_filename']) && $values['meta_data/auto_populate_title_from_filename']) {
+				$fields['meta_data/title']['error'] = ze\admin::phrase("You've specified that the title should be auto-populated from the file name, but no local file has been attached. Please either attach a file or uncheck \"Auto-populate\" and enter a title manually.");
+			} else {
+				$fields['meta_data/title']['error'] = ze\admin::phrase("Please enter a title.");
+			}
+		}
+
+		if (!empty($values['meta_data/alias'] && !$fields['meta_data/alias']['read_only'])) {
 			$errors = false;
 			if ($box['key']['translate']) {
 				if (ze::setting('translations_different_aliases')) {
@@ -1714,8 +1737,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			}
 
-			//Set the title
+			//Set the title.
+			//If this is an audio/video/picture/document content item,
+			//and the "Auto-populate from file name" checkbox is ticked, this will be blank for now.
 			$version['title'] = $values['meta_data/title'];
+
 			$version['description'] = $values['meta_data/description'];
 			$version['keywords'] = $values['meta_data/keywords'];
 			$version['release_date'] = $values['meta_data/release_date'];
@@ -1856,6 +1882,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 								ze\file::deleteMediaContentItemFileIfUnused($box['key']['cID'], $box['key']['cType'], $currentDraftFileId);
 						}
 					}
+
+					//If the "Auto-populate from file name" checkbox is ticked, use the file name as title.
+					if (isset($box['tabs']['meta_data']['fields']['auto_populate_title_from_filename']) && $values['meta_data/auto_populate_title_from_filename']) {
+						$filename = ze\row::get('files', 'filename', ['id' => $version['file_id']]);
+						$version['title'] = $filename;
+					}
 				}
 			}
 			
@@ -1980,9 +2012,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
-		if (!array_key_exists("refinerName",$_GET)){
-			if ($values['meta_data/alias']) {
-				ze\tuix::closeWithFlags(['go_to_url' => $values['meta_data/alias']]);
+		if (!array_key_exists("refinerName", $_GET)){
+			$contentItemLink = ze\link::toItem($box['key']['cID'], $box['key']['cType']);
+			if ($contentItemLink) {
+				ze\tuix::closeWithFlags(['go_to_url' => $contentItemLink]);
 				exit;
 			}
 		}
@@ -1991,7 +2024,60 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 	
 	
 	
-	
+	protected function setSeoMessagesAndEvents(&$box, &$fields, &$values) {
+		$box['tabs']['meta_data']['fields']['title']['progress_bar'] = true;
+		$box['tabs']['meta_data']['fields']['title']['note_below'] = 'title';
+
+		if (strlen($values['meta_data/title']) < 1) {
+			$fields['meta_data/title']['note_below'] = 'Please enter a meta tag title.';
+		} elseif (strlen($values['meta_data/title']) < 12)  {
+			$fields['meta_data/title']['note_below'] = 'For good SEO and on-site search, make the title longer.';
+		} elseif (strlen($values['meta_data/title']) < 26)  {
+			$fields['meta_data/title']['note_below'] = 'For good SEO and on-site search, make the title a little longer.';
+		} elseif (strlen($values['meta_data/title']) < 66)  {
+			$fields['meta_data/title']['note_below'] = 'This is a good title length.';
+		} else {
+			$fields['meta_data/title']['note_below'] = 'The title may not be fully visible in search engine results.';
+		}
+
+		$fields['meta_data/title']['onclick'] = $fields['meta_data/title']['oninput'];
+
+		$box['tabs']['meta_data']['fields']['description']['progress_bar'] = true;
+		$box['tabs']['meta_data']['fields']['description']['note_below'] = 'description';
+
+		if (strlen($values['meta_data/description']) < 1) {
+			$fields['meta_data/description']['note_below'] = 'For good SEO, enter a description. It may be visible in search engine result listings. If left blank, search engines will auto-generate one, which may not be as well-worded.';
+		} elseif (strlen($values['meta_data/description']) < 50)  {
+			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description longer to entice people to click through from a result list.';
+		} elseif (strlen($values['meta_data/description']) < 100)  {
+			$fields['meta_data/description']['note_below'] = 'For good SEO, make the description a little longer to entice people to click through from a result list.';
+		} elseif (strlen($values['meta_data/description']) < 156)  {
+			$fields['meta_data/description']['note_below'] = 'This is a good description length for SEO.';
+		} else {
+			$fields['meta_data/description']['note_below'] = 'The description is a little long for good SEO as it may not be fully visible.';
+		}
+	}
+
+	protected function setAliasMessageAndEvent(&$box, &$fields, &$values) {
+		$box['tabs']['meta_data']['fields']['alias']['progress_bar'] = true;
+		$box['tabs']['meta_data']['fields']['alias']['note_below'] = 'alias';
+		
+		if (empty($values['privacy/privacy']) || ($values['privacy/privacy'] == 'public')) {
+			$values['meta_data/content_item_is_public'] = true;
+			if (strlen($values['meta_data/alias']) < 1) {
+				$fields['meta_data/alias']['note_below'] = 'For good SEO, set up an alias for this content item.';
+			} else {
+				$fields['meta_data/alias']['note_below'] = 'This content item has an alias.';
+			}
+		} else {
+			$values['meta_data/content_item_is_public'] = false;
+			if (strlen($values['meta_data/alias']) < 1) {
+				$fields['meta_data/alias']['note_below'] = 'This content item does not have an alias. It is good practice to set one, even if the content item is not public.';
+			} else {
+				$fields['meta_data/alias']['note_below'] = 'This content item has an alias.';
+			}
+		}
+	}
 	
 	protected function fillMenu(&$box, &$fields, &$values, $contentType, $content, $version) {
 		

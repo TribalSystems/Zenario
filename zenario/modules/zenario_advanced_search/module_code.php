@@ -35,30 +35,71 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 	protected $cTypeToSearch = '%all%';
 	protected $searchString;
 	protected $results;
+	protected $searchResultTypesOrder;
+	protected $releaseDateSetting;
 	
+	protected $category = false;
 	protected $category00_id = 0;
 	protected $category01_id = 0;
 	protected $category02_id = 0;
 	protected $language_id = '';
 	protected $keywords = '';
 	
+	protected $page = 0;
+	
 	public function init() {
-		$defaultTab = $this->setting('search_html')? 'html' : ($this->setting('search_document')? 'document' : (($this->setting('search_news')? 'news' : 'blog')));
+		$this->searchResultTypesOrder = $this->setting('search_result_types_order');
 
-		if ($_REQUEST['clearSearch'] ?? false) {
+		if (!$this->searchResultTypesOrder) {
+			//Fallback code for plugins created before the order setting was introduced
+			$order = [];
+			if ($this->setting('search_html')) {
+				$order[] = 'html';
+			}
+
+			if ($this->setting('search_document')) {
+				$order[] = 'document';
+			}
+
+			if ($this->setting('search_news')) {
+				$order[] = 'news';
+			}
+
+			if ($this->setting('search_blog')) {
+				$order[] = 'blog';
+			}
+
+			if ($this->setting('search_in_other_modules')) {
+				$order[] = 'other_modules';
+			}
+
+			$this->searchResultTypesOrder = implode(',', $order);
+		}
+
+		$searchResultTypesOrderFirstElement = explode(',', $this->searchResultTypesOrder)[0];
+		if (ze::in($searchResultTypesOrderFirstElement, 'html', 'document', 'news', 'blog')) {
+			$defaultTab = $searchResultTypesOrderFirstElement;
+		} elseif ($searchResultTypesOrderFirstElement == 'other_modules') {
+			$defaultTab = 'results_from_module';
+		}
+
+		if (ze::request('clearSearch')) {
 			$_REQUEST['language_id'] = $_POST['language_id'] = '0';
 			$_REQUEST['category00_id'] = $_POST['category00_id'] = '0';
 			$_REQUEST['category01_id'] = $_POST['category01_id'] = '0';
-			$_REQUEST['category02_id'] = $_POST['category02_id'] = '0';
 			$_REQUEST['category02_id'] = $_POST['category02_id'] = '0';
 			$_REQUEST['searchString'] = $_POST['searchString'] = '';
 			$_REQUEST['ctab'] = $_POST['ctab'] = $defaultTab;
 		}
 		
-		$this->cTypeToSearch = (($_REQUEST['ctab'] ?? false) ?: $defaultTab);
+		$this->cTypeToSearch = (ze::request('ctab') ?: $defaultTab);
 		//Catch the case where a hacker is trying to break the page
 		if (!ze::in($this->cTypeToSearch, 'html', 'document', 'news', 'blog')) {
-			$this->cTypeToSearch = $defaultTab;
+			if ($this->cTypeToSearch == 'results_from_module') {
+				$this->cTypeToSearch = 'results_from_module';
+			} else {
+				$this->cTypeToSearch = $defaultTab;
+			}
 		}
 		
 		$this->allowCaching(
@@ -73,7 +114,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$this->mergeFields['Delay'] = (int) $this->setting('keyboard_delay_before_submit');
 		$mode = $this->setting('mode');
 		
-		$this->category00_id = (int)($_REQUEST['category00_id'] ?? false);
+		$this->category00_id = (int)ze::request('category00_id');
 		if ($mode == 'search_page' && $this->category00_id) {
 			$this->mergeFields['category00_id'] = $this->category00_id;
 			if (count($this->getCategoryOptionsWithParentId($this->category00_id)) > 1) {
@@ -81,7 +122,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			}
 		}
 		
-		$this->category01_id = (int)($_REQUEST['category01_id'] ?? false);
+		$this->category01_id = (int)ze::request('category01_id');
 		if ($mode == 'search_page' && $this->category01_id) {
 			$this->mergeFields['category01_id'] = $this->category01_id;
 			if (count($this->getCategoryOptionsWithParentId($this->category01_id)) > 1) {
@@ -89,7 +130,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			}
 		}
 		
-		$this->category02_id = (int)($_REQUEST['category02_id'] ?? false);
+		$this->category02_id = (int)ze::request('category02_id');
 		if ($mode == 'search_page' && $this->category02_id) {
 			$this->mergeFields['category02_id'] = $this->category02_id;
 		}
@@ -97,7 +138,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$this->keywords = $_REQUEST['keywords'] ?? false;
 		
 		$this->category = false;
-		if ($this->setting('enable_categories') && (int) ($_REQUEST['category'] ?? false)) {
+		if ($this->setting('enable_categories') && (int) ze::request('category')) {
 			$this->category = $_REQUEST['category'] ?? false;
 		}
 
@@ -108,6 +149,23 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			//However, once the user actually searches for something, carry on as normal.
 			$this->searchString = substr($_REQUEST['searchString'] ?? '', 0, 100);
 			$this->page = (int) ($_REQUEST['page'] ?? 1) ?: 1;
+			
+			//Remember the search parameters
+			$params = [];
+			foreach (['page', 'ctab', 'language_id', 'category00_id', 'category01_id', 'category02_id', 'searchString'] as $param) {
+				if (!empty($_POST[$param])) {
+					$params[$param] = $_POST[$param];
+				} elseif (!empty($_REQUEST[$param])) {
+					$params[$param] = $_REQUEST[$param];
+				}
+			}
+			
+			$this->callScript(
+				'zenario', 
+				'recordRequestsInURL',
+				$this->containerId,
+				$params
+			);
 		}
 
 		if ($this->setting('mode') == 'search_entry_box') {
@@ -119,11 +177,18 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					$this->styles[] = 'body.mobile #' . $this->containerId . '_' . $contentType . '_results { width: 100% }';
 				}
 			}
+
+			if ($this->setting('search_in_other_modules')) {
+				$this->styles[] = '#' . $this->containerId . '_results_from_module { width: ' . $this->setting('other_module_column_width') . '% }';
+				$this->styles[] = 'body.mobile #' . $this->containerId . '_results_from_module { width: 100% }';
+			}
 		}
 
 		if ($this->styles !== [] && $this->methodCallIs('refreshPlugin')) {
 			$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, implode("\n", $this->styles));
 		}
+
+		$this->mergeFields['Default_Tab'] = $defaultTab;
 		
 		return true;
 	}
@@ -257,6 +322,24 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		if ($this->searchString) {
 			$this->doSearch($this->mergeFields['Mode']);
+
+			//Order the result types using the plugin setting.
+			//Also pass the order to the framework so that the correct snipipets can be called in the right order.
+			$this->mergeFields['Search_Result_Types_Order'] = explode(',', $this->searchResultTypesOrder);
+
+			if ($this->mergeFields['Search_Result_Types_Order']) {
+				$searchResultTabs = [];
+				foreach ($this->mergeFields['Search_Result_Types_Order'] as $searchResultType) {
+					if (ze::in($searchResultType, 'html', 'document', 'news', 'blog')) {
+						$searchResultTabs[$searchResultType] = $this->mergeFields['Search_Result_Tab'][$searchResultType];
+					} elseif ($searchResultType == 'other_modules') {
+						$searchResultTabs['Results_From_Module'] = $this->mergeFields['Search_Result_Tab']['Results_From_Module'];
+					}
+				}
+
+				$this->mergeFields['Search_Result_Tab'] = $searchResultTabs;
+				unset($searchResultTabs);
+			}
 			
 			//If this is the "Search entry box" mode, display nothing when there are no results.
 			//But in "Search page" mode, still display the results div with tabs showing 0 results.
@@ -276,6 +359,21 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				}
 
 				switch ($type) {
+					case 'html':
+						$this->mergeFields['Html_Page_Column_Heading_Text'] = $this->phrase($this->setting('html_column_heading_text'));
+
+						if ($result['Record_Count']) {
+							$this->mergeFields['Search_Result_Rows'] = true;
+							$this->mergeFields['Html_Page_Search_Results'] = $result['search_results'];
+						} else {
+							$this->mergeFields['Html_Page_Search_No_Results'] = true;
+
+							if ($this->setting('html_show_message_if_no_results') && $this->setting('html_no_results_text')) {
+								$this->mergeFields['Html_No_Results_Text'] = $this->phrase($this->setting('html_no_results_text'));
+							}
+						}
+
+						break;
 					case 'document':
 						$this->mergeFields['Document_Column_Heading_Text'] = $this->phrase($this->setting('document_column_heading_text'));
 
@@ -304,6 +402,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 								$this->mergeFields['News_No_Results_Text'] = $this->phrase($this->setting('news_no_results_text'));
 							}
 						}
+
 						break;
 					case 'blog':
 						$this->mergeFields['Blog_Column_Heading_Text'] = $this->phrase($this->setting('blog_column_heading_text'));
@@ -318,20 +417,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 								$this->mergeFields['Blog_No_Results_Text'] = $this->phrase($this->setting('blog_no_results_text'));
 							}
 						}
+
 						break;
-					default:
-						$this->mergeFields['Html_Page_Column_Heading_Text'] = $this->phrase($this->setting('html_column_heading_text'));
-
-						if ($result['Record_Count']) {
-							$this->mergeFields['Search_Result_Rows'] = true;
-							$this->mergeFields['Html_Page_Search_Results'] = $result['search_results'];
-						} else {
-							$this->mergeFields['Html_Page_Search_No_Results'] = true;
-
-							if ($this->setting('html_show_message_if_no_results') && $this->setting('html_no_results_text')) {
-								$this->mergeFields['Html_No_Results_Text'] = $this->phrase($this->setting('html_no_results_text'));
-							}
-						}
 				}
 
 				if (ze::in($type, 'document', 'news', 'html', 'blog')) {
@@ -351,6 +438,11 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						}
 					}
 				}
+			}
+
+			if ($this->setting('search_in_other_modules') && !empty($this->mergeFields['Results_From_Module'])) {
+				$this->mergeFields['Search_Result_Rows'] = true;
+				$this->mergeFields['All_results_without_limit'] += $this->mergeFields['Search_Result_Tab']['Results_From_Module']['Record_Count'];
 			}
 		}
 
@@ -377,6 +469,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$this->mergeFields['Show_Clear_Search_Button'] = $this->mergeFields['Mode'] == 'search_page' && $this->setting('show_clear_search_button');
 
 		$this->mergeFields['Show_scores'] = ($this->setting('show_scores') && ze\admin::id());
+		$this->mergeFields['Open_links_to_results_in_a_new_window'] = $this->setting('open_links_to_results_in_a_new_window');
 		
 		if ($this->mergeFields['Mode'] == 'search_page' && $this->setting('enable_categories')) {
 			$this->mergeFields['HasCategory00'] = true;
@@ -443,83 +536,87 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		}
 
 		foreach ($contentTypes as $contentType) {
-			$results = &$this->results[$contentType];
-			if ($results['Record_Count'] && $results['search_results']) {
-				foreach($results['search_results'] as $i => &$result) {
+			if (ze::in($contentType, 'html', 'document', 'news', 'blog')) {
+				$results = &$this->results[$contentType];
+				if ($results['Record_Count'] && $results['search_results']) {
+					foreach($results['search_results'] as $i => &$result) {
 
-					if ($this->setting('limit_num_of_chars_in_title') && ($charLimit = $this->setting('title_char_limit_value'))) {
-						self::applyCharacterLimit($charLimit, $result['title']);
-					}
-					
-					$result['Result_No'] = $results['offset'] + $i;
-					
-					$result['title']		= htmlspecialchars($result['title']);
-					$result['keywords']		= htmlspecialchars($result['keywords']);
-					$result['description']	= htmlspecialchars($result['description']);
-					$result['language_id']	= htmlspecialchars($result['language_id']);
-
-					//Language name
-					$result['language_name'] = false;
-					if ($contentPluginSettings[$result['type']]['show_language']) {
-						$result['language_name'] = '<span>('.htmlspecialchars(ze\lang::name($result['language_id'], false)).')</span>';
-					}
-
-					$result['score']	= htmlspecialchars($result['score']);
-
-					if ($contentPluginSettings[$result['type']]['show_summary']) {
-						$result['content_bodymain'] = strip_tags($result['content_summary']);
+						if ($this->setting('limit_num_of_chars_in_title') && ($charLimit = $this->setting('title_char_limit_value'))) {
+							self::applyCharacterLimit($charLimit, $result['title']);
+						}
 						
-						if ($this->setting('limit_num_of_chars_in_summary') && ($charLimit = $this->setting('summary_char_limit_value'))) {
-							self::applyCharacterLimit($charLimit, $result['content_bodymain']);
-						}
-					}
-					
-					$requests = '';
-					if ($result['type'] == 'document' && $result['file_id']) {
-						$requests = 'download=1';
-					}
-					$result['url'] = htmlspecialchars($this->linkToItem($result['id'], $result['type'], false, $requests, $result['alias']));
-					
-					//Menu path
-					if ($contentPluginSettings[$result['type']]['show_menu_path_if_available']) {
-						$menu_item = ze\menu::getFromContentItem($result['id'], $result['type']);
-						if ($menu_item) {
-							$homePagecID = $homePagecType = false;
-							ze\content::langSpecialPage('zenario_home', $homePagecID, $homePagecType, ze\content::visitorLangId(), true);
+						$result['Result_No'] = $results['offset'] + $i;
+						
+						$result['title']		= htmlspecialchars($result['title']);
+						$result['keywords']		= htmlspecialchars($result['keywords']);
+						$result['description']	= htmlspecialchars($result['description']);
+						$result['language_id']	= htmlspecialchars($result['language_id']);
 
-							$breadcrumbs = [];
-							$breadcrumbs[] = $menu_item['name'];
-							while ($menu_item && $menu_item['parent_id']) {
-								$menu_item = ze\menu::details($menu_item['parent_id'], ze::$visLang);
-								if ($menu_item ) {
-									$breadcrumbs[] = $menu_item['name'];
-								}
-							}
-
-							if ($homePagecID && $homePagecType) {
-								$breadcrumbs[] = $this->phrase('Home');
-							}
-							krsort($breadcrumbs);
-							$result['Breadcrumb'] = implode(' &raquo; ', $breadcrumbs);
+						//Language name
+						$result['language_name'] = false;
+						if ($contentPluginSettings[$result['type']]['show_language']) {
+							$result['language_name'] = '<span>('.htmlspecialchars(ze\lang::name($result['language_id'], false)).')</span>';
 						}
-					}
-					
-					$img_tag = '';
-					if ($contentPluginSettings[$result['type']]['show_feature_image']) {
-						$url_img = '';
-						$width = (int)$contentPluginSettings[$result['type']]['feature_image_width'];
-						$height = (int)$contentPluginSettings[$result['type']]['feature_image_height'];
+
+						$result['score']	= htmlspecialchars($result['score']);
+
+						if ($contentPluginSettings[$result['type']]['show_summary']) {
+							$result['content_bodymain'] = strip_tags($result['content_summary']);
 							
-						ze\file::imageLink($width, $height, $url_img, $result['feature_image_id'], $width, $height, $contentPluginSettings[$result['type']]['feature_image_canvas']);
-						if ($url_img) {
-							$img_tag =  '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;" />';
+							if ($this->setting('limit_num_of_chars_in_summary') && ($charLimit = $this->setting('summary_char_limit_value'))) {
+								self::applyCharacterLimit($charLimit, $result['content_bodymain']);
+							}
 						}
-					}
-					
-					if ($img_tag) {
-						$result['Feature_image_HTML_tag'] = $img_tag;
-					} else {
-						$this->getStyledExtensionIcon(pathinfo($result['filename'], PATHINFO_EXTENSION), $result);
+						
+						$requests = '';
+						if ($result['type'] == 'document' && !$this->setting('document_use_download_page') && $result['file_id']) {
+							//Only generate a direct download link if the plugin is set not to use a download page,
+							//and there is a local file available (not if a document is only stored on S3).
+							$requests = 'download=1';
+						}
+						$result['url'] = htmlspecialchars($this->linkToItem($result['id'], $result['type'], false, $requests, $result['alias']));
+						
+						//Menu path
+						if ($contentPluginSettings[$result['type']]['show_menu_path_if_available']) {
+							$menu_item = ze\menu::getFromContentItem($result['id'], $result['type']);
+							if ($menu_item) {
+								$homePagecID = $homePagecType = false;
+								ze\content::langSpecialPage('zenario_home', $homePagecID, $homePagecType, ze\content::visitorLangId(), true);
+
+								$breadcrumbs = [];
+								$breadcrumbs[] = $menu_item['name'];
+								while ($menu_item && $menu_item['parent_id']) {
+									$menu_item = ze\menu::details($menu_item['parent_id'], ze::$visLang);
+									if ($menu_item ) {
+										$breadcrumbs[] = $menu_item['name'];
+									}
+								}
+
+								if ($homePagecID && $homePagecType) {
+									$breadcrumbs[] = $this->phrase('Home');
+								}
+								krsort($breadcrumbs);
+								$result['Breadcrumb'] = implode(' &raquo; ', $breadcrumbs);
+							}
+						}
+						
+						$img_tag = '';
+						if ($contentPluginSettings[$result['type']]['show_feature_image']) {
+							$url_img = '';
+							$width = (int)$contentPluginSettings[$result['type']]['feature_image_width'];
+							$height = (int)$contentPluginSettings[$result['type']]['feature_image_height'];
+								
+							ze\file::imageLink($width, $height, $url_img, $result['feature_image_id'], $width, $height, $contentPluginSettings[$result['type']]['feature_image_canvas']);
+							if ($url_img) {
+								$img_tag =  '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;" />';
+							}
+						}
+						
+						if ($img_tag) {
+							$result['Feature_image_HTML_tag'] = $img_tag;
+						} else {
+							$this->getStyledExtensionIcon(pathinfo($result['filename'], PATHINFO_EXTENSION), $result);
+						}
 					}
 				}
 			}
@@ -535,13 +632,126 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				];
 			}
 		}
+
+		if ($this->setting('search_in_other_modules')) {
+			$moduleToSearch = $this->setting('module_to_search');
+			$this->mergeFields['Search_Result_Tab']['Results_From_Module'] = [];
+			if (ze\module::inc($moduleToSearch)) {
+				$usePagination = $this->setting('use_pagination');
+				$pageSize = (int) $this->setting('maximum_results_number') ?: 999999;
+				if ($this->page == 1) {
+					$record_number = 1;
+				} else {
+					$record_number = (($this->page - 1) * $pageSize) + 1;
+				}
+
+				$showImage = $this->setting('other_module_show_image');
+				$otherModuleCanvas = $this->setting('other_module_image_canvas');
+				$otherModuleWidth = (int) $this->setting('other_module_image_width');
+				$otherModuleHeight = (int) $this->setting('other_module_image_height');
+				$contentItem = $this->setting('other_module_view_item_content_item');
+				$conductorState = $this->setting('other_module_view_item_conductor_state');
+				$pagination = [];
+
+				/* Spec for searching other modules:
+					1) There are 5 function parameters that the function definition needs to use: ($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999)
+					2) The target module will need its own logic for returning results, including a DB key if appropriate
+					3) Expecting the module's function to return an array: ['Record_Count' => $recordCount, 'Results' => $resultsFromModule]
+					4) Expecting the following properties for each result: item_id, title, thumbnail_Id, filename, score
+					5) To view results from another module, Advanced Search uses a content item picker and a conductor state to generate "View" links
+				*/
+				$weights = [
+					'_NONE'		=> 0,
+					'_LOW'		=> 1,
+					'_MEDIUM'	=> 3,
+					'_HIGH'		=> 12
+				];
+
+				//Get the weights values
+				$weightingsForModule = ['title' =>  $weights[$this->setting('other_module_title_weighting')], 'description' =>  $weights[$this->setting('other_module_description_weighting')]];
+
+				$resultsFromModule = $moduleToSearch::searchFromModule($this->searchString, $weightingsForModule, $usePagination, $this->page, $pageSize, $weightingsForModule);
+				$countResultsFromModule = $resultsFromModule['Record_Count'];
+				if ($countResultsFromModule > 0) {
+					$this->mergeFields['Search_Result_Rows'] = true;
+					foreach ($resultsFromModule['Results'] as &$resultFromModule) {
+						$resultFromModule['Result_No'] = $record_number;
+						$record_number++;
+
+						$img_tag = '';
+						if ($showImage) {
+							$url_img = '';
+							$width = (int) $otherModuleWidth;
+							$height = (int) $otherModuleHeight;
+								
+							ze\file::imageLink($width, $height, $url_img, $resultFromModule['thumbnail_Id'], $otherModuleWidth, $otherModuleHeight, $otherModuleCanvas);
+							if ($url_img) {
+								$img_tag =  '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;" />';
+							}
+						}
+						
+						if ($img_tag) {
+							$resultFromModule['Feature_image_HTML_tag'] = $img_tag;
+						} else {
+							$this->getStyledExtensionIcon(pathinfo(($resultFromModule['filename'] ?: ''), PATHINFO_EXTENSION), $resultFromModule);
+						}
+
+						if ($contentItem && $conductorState) {
+							$cID = $cType = false;
+							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $contentItem);
+							$resultFromModule['url'] = ze\link::toItem($cID, $cType, true, 'id=' . $resultFromModule['item_id'] . '&state=' . htmlspecialchars($conductorState));
+						}
+					}
+
+					if ('results_from_module' == $this->cTypeToSearch) {
+						if ($usePagination) {
+							$numberOfPages = ceil($countResultsFromModule/$pageSize);
+							
+							for ($i=1;$i<=$numberOfPages;$i++) {
+								$pagination[$i] = '&page='. $i. '&ctab=results_from_module' . $this->getSearchRequestParameters() . '&searchString=' . rawurlencode($this->searchString);
+							}
+						
+						} else {
+							$pagination = [];
+						}
+
+						if ($this->mergeFields['Mode'] == 'search_page') {
+							$this->mergeFields['Search_Pagination'] = '';
+							$this->pagination(
+								'pagination_style',
+								$this->page, $pagination,
+								$this->mergeFields['Search_Pagination']);
+						}
+					}
+					
+					if ('results_from_module' == $this->cTypeToSearch || $mode == 'search_entry_box') {
+						$this->mergeFields['Results_From_Module'] = $resultsFromModule['Results'];
+					}
+				}
+
+				if ($countResultsFromModule > 0 || $this->mergeFields['Mode'] == 'search_page') {
+					$resultsFromModulePhrase = $this->phrase($this->setting('other_module_column_heading_text') ?: 'Other results');
+					$this->mergeFields['Search_Result_Tab']['Results_From_Module'] = [
+						'Type' => $resultsFromModulePhrase,
+						'Record_Count' => $countResultsFromModule,
+						"pagination" => $pagination,
+						"Tab_On" => 'results_from_module' == $this->cTypeToSearch ? '_on' : null,
+						"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode('results_from_module'). $this->getSearchRequestParameters() . '&searchString='. rawurlencode($this->searchString))
+					];
+
+					$this->mergeFields['Results_From_Module_Heading_Text'] = $resultsFromModulePhrase;
+				}
+			}
+		}
 	}
 	
 	protected function drawSearchBox($cID = false, $cType = false) {
 		
 		$this->mergeFields['Search_Box'] = true;
 
-		if ($this->setting('mode') == 'search_entry_box' && $this->setting('use_specific_search_results_page')) {
+		$this->mergeFields['Use_specific_search_results_page'] = $this->setting('use_specific_search_results_page');
+
+		if ($this->setting('mode') == 'search_entry_box' && $this->mergeFields['Use_specific_search_results_page']) {
 			$cID = $cType = $state = false;
 			$this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page');
 
@@ -606,6 +816,15 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$sessionId = session_id();
 		$randomNumber = rand(1, 9999);
 		
+		$searchPrivateItems = $this->setting('show_private_items');
+		if ($this->setting('hide_private_items') == 1) {
+			//Only show links to private content items to authorised visitors
+			$hidePrivateItems = true;
+		} else {
+			//Show links to private content items to all visitors
+			$hidePrivateItems = false;
+		}
+		
 		$tempTableName1 = 'search_flat_table_' . $sessionId . "_" . $randomNumber;
 		$tempTableName1WithPrefix = DB_PREFIX . $tempTableName1;
 
@@ -639,7 +858,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		//Add fields to the query
 		$sqlFields = "
-			SELECT v.id, v.type, v.published_datetime, v.release_date";
+			SELECT DISTINCT v.id, v.type, v.published_datetime, v.release_date";
 		
 		$allowPinnedContent = ze\row::get('content_types', 'allow_pinned_content', ['content_type_id' => $cType]);
 		if ($allowPinnedContent) {
@@ -773,12 +992,24 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					AND cc.content_type = v.type
 					AND cc.content_version = v.version";
 		}
+
+		$limitSearchScopeByCategory = $this->setting($cType . '_limit_search_scope_by_category');
+		$categories = '';
+		if ($limitSearchScopeByCategory) {
+			$categories = $this->setting($cType . '_limit_search_scope_choose_categories');
+
+			$joinSQL .= "
+				INNER JOIN " . DB_PREFIX . "category_item_link AS cil2
+					ON cil2.equiv_id = c.equiv_id
+					AND cil2.content_type = c.type
+					AND cil2.category_id IN (" . ze\escape::in($categories) . ")";
+		}
 		
 		$joinSQL .= $this->getCategoriesSQLFilter();
 		
 		
-		if ($this->setting('show_private_items')) {
-			$sqlFrom = ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), '', $joinSQL);
+		if ($searchPrivateItems) {
+			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL);
 		} else {
 			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
 		}
@@ -794,6 +1025,11 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		if ($sqlWhere) {
 			$sql .= "
 				AND (". $sqlWhere. ")";
+			
+			if ($limitSearchScopeByCategory && $categories) {
+				$sqlWhere .= "
+					AND cil2.category_id IN (" . ze\escape::in($categories) . ")";
+			}
 		} else {
 			$sql .= "
 				AND false";
@@ -810,14 +1046,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		
 		if (!$onlyShowFirstPage) {
-			$result = ze\sql::select("SELECT COUNT(*) ". $sql);
+			$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sql);
 			$row = ze\sql::fetchRow($result);
 			$recordCount = $row[0];
 			
 			if ($recordCount > 0 && $cType == $this->cTypeToSearch) {
 				
 				if ($this->setting('use_pagination')) {
-					$pageSize = (int) $this->setting('maximum_results_number') ?:999999;
+					$pageSize = (int) $this->setting('maximum_results_number') ?: 999999;
 					$numberOfPages = ceil($recordCount/$pageSize);
 					
 					for ($i=1;$i<=$numberOfPages;$i++) {
@@ -1103,11 +1339,18 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		//Count (used later)...
 		$resultsCountSql = "
-			SELECT COUNT(*)";
+			SELECT DISTINCT COUNT(*)";
 
 		//... and actual columns
 		$resultsSql = "
-			SELECT v.id, v.type, score, tc.privacy, v.file_id, v.s3_file_id";
+			SELECT DISTINCT v.id, v.type, score, tc.privacy, v.file_id, v.s3_file_id";
+			
+		if ($allowPinnedContent) {
+			$resultsSql .= ', v.pinned';
+		} else {
+			$resultsSql .= ', 0 AS pinned';
+		}
+		
 		foreach ($fields as $field) {
 			if (substr($field['name'], 0, 3) != 'cc.') {
 				$columnName = substr($field['name'], (strpos($field['name'], '.') + 1));
@@ -1128,8 +1371,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				ON results.id = v.id
 				AND results.type = v.type";
 		
-		if ($this->setting('show_private_items')) {
-			$sqlFrom = ze\content::sqlToSearchContentTable($this->setting('hide_private_items'), '', $joinSQL);
+		if ($searchPrivateItems) {
+			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL);
 		} else {
 			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
 		}
@@ -1146,7 +1389,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		$resultsSql .= "c.id, c.type";
 
-		$pageSize = $this->setting('maximum_results_number') ?:999999;
+		$pageSize = $this->setting('maximum_results_number') ?: 999999;
 		if (!$onlyShowFirstPage) {
 			$resultsSql .= ze\sql::limit($this->page, $pageSize);
 		} else {
@@ -1186,8 +1429,20 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			"search_results" => $searchresults,
 			"pagination" => $pagination,
 			"offset" => $record_number,
-			"Tab_On" => $cType == $this->cTypeToSearch? '_on' :null,
+			"Tab_On" => $cType == $this->cTypeToSearch ? '_on' : null,
 			"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode($cType). $this->getSearchRequestParameters() . '&searchString='. rawurlencode($this->searchString))
 		];
+	}
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		switch (ze\plugin::setting('mode', $instanceId, $eggId)) {
+			case 'search_entry_box':
+				return ze\admin::phrase('Advanced search: Inline search entry box');
+			case 'search_page':
+				return ze\admin::phrase('Advanced search: Full page search and results');
+		}
+			
+		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
 	}
 }

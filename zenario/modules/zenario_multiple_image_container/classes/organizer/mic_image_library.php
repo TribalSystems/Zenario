@@ -112,7 +112,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 
     public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		//Upload a new file
-		if (($_POST['upload'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		if (ze::post('upload') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			
 			ze\fileAdm::exitIfUploadError(false, false, true, 'Filedata');
 			
@@ -144,14 +144,14 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 				echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG or SVG image.');
 				return false;
 			}
-		} elseif ($_POST['copy_to_image_library'] ?? false) {
+		} elseif (ze::post('copy_to_image_library')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
 					$location = ze\file::docstorePath($file['path']);
 					ze\file::addToDatabase('image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, false, false, false, false, $file['image_credit']);
 				}
 			}
-		} elseif (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\contentAdm::deleteUnusedImage($id);
 			}
@@ -213,8 +213,8 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 
 	protected function imageUsageLinks($id) {
 		return [
-			'plugins' => 'zenario__content/panels/image_library/hidden_nav/plugins_using_image//'. (int) $id. '//',
-			'nests' => 'zenario__content/panels/image_library/hidden_nav/nests_using_image//'. (int) $id. '//'
+			'plugins' => 'zenario__library/panels/image_library/hidden_nav/plugins_using_image//'. (int) $id. '//',
+			'nests' => 'zenario__library/panels/image_library/hidden_nav/nests_using_image//'. (int) $id. '//'
 		];
 	}
 }

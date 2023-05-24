@@ -5,8 +5,6 @@ zenario__administration:
         backups:
             priv: _PRIV_BACKUP_SITE
             title: Backups of the Zenario database
-            view_mode: list
-            disable_grid_view: true
             #no_items_message is set in the PHP class file.
             disable_periodic_refresh: true
             columns:
@@ -93,6 +91,10 @@ zenario__administration:
                     parent: action_dropdown
                     priv: _PRIV_RESTORE_SITE
                     label: Restore this database backup
+                    disabled_if: |
+                        item.filename.match(/-data-archive-/)
+                    disabled_tooltip: |
+                        The restore functionality is not implemented for data archive backups. Please use mysql in terminal.
                     ajax:
                         confirm:
                             message: |

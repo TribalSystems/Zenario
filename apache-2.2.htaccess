@@ -16,8 +16,8 @@ Options -Indexes
 #ErrorDocument 404 /SUBDIRCTORY/index.php?cID=~
 
 <ifModule mod_headers.c>
-	Header set Content-Security-Policy "default-src *; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
-	Header set Feature-Policy "sync-xhr *; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none'; speaker 'none';"
+	Header set Content-Security-Policy "default-src *; font-src * data:; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
+	Header set Permissions-Policy "sync-xhr=(self), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=()"
 	Header set Referrer-Policy strict-origin-when-cross-origin
 	Header set X-Content-Type-Options nosniff
 	Header set X-Frame-Options SAMEORIGIN
@@ -33,7 +33,7 @@ Options -Indexes
 	AddType application/font-woff .woff2
 	AddType text/css .css
 	AddType text/javascript .js
-
+	AddType image/webp .webp
 	
 	ExpiresActive On
 	ExpiresByType application/font-woff "access plus 1 year"
@@ -42,6 +42,7 @@ Options -Indexes
 	ExpiresByType image/gif "access plus 1 year"
 	ExpiresByType image/jpeg "access plus 1 year"
 	ExpiresByType image/png "access plus 1 year"
+	ExpiresByType image/webp "access plus 1 year"
 	ExpiresByType image/svg+xml "access plus 1 year"
 	ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
 	ExpiresByType image/x-icon "access plus 1 year"

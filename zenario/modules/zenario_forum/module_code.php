@@ -39,6 +39,11 @@ class zenario_forum extends zenario_comments {
 	protected $allow_uploads = false;
 	static $forum_post_upload_dbkey = 'form_post_upload';
 	
+	protected $forumId;
+	protected $forumLocked;
+	protected $threads;
+	protected $threadId;
+	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -109,7 +114,7 @@ class zenario_forum extends zenario_comments {
 		}
 
 		//Require the phrases
-		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. \ze::$visLang);
+		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
 		
 		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;
@@ -122,13 +127,13 @@ class zenario_forum extends zenario_comments {
 			if (!$this->loadForumInfo()) {
 				return $this->show = false;
 			
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'add_thread' && $this->newThreadPageIsForumPage() && $this->canMakeThread()) {
+			} elseif (ze::request('comm_request') == 'add_thread' && $this->newThreadPageIsForumPage() && $this->canMakeThread()) {
 				$this->mode = 'showAddThread';
 				$this->useCannonicalURLs = false;
 				$this->allowCaching(false);
 				$_GET['comm_enter_text'] = 1;
 			
-			} elseif (($_REQUEST['forum_thread'] ?? false) && $this->threadPageIsForumPage() && $this->loadThreadInfo()) {
+			} elseif (ze::request('forum_thread') && $this->threadPageIsForumPage() && $this->loadThreadInfo()) {
 				$this->mode = 'showPosts';
 				$this->useCannonicalURLs = false;
 				$this->allowCaching(false);
@@ -143,7 +148,7 @@ class zenario_forum extends zenario_comments {
 				if ($this->loadThreadInfo()) {
 					$this->mode = 'showPosts';
 				} else {
-					if ($_REQUEST['forum_thread'] ?? false) {
+					if (ze::request('forum_thread')) {
 						$this->clearRequest('forum_thread');
 						if ($this->loadThreadInfo()) {
 							$this->mode = 'showPosts';
@@ -194,6 +199,8 @@ class zenario_forum extends zenario_comments {
 			$this->threadActionHandler();
 			
 			$this->threadSelectMode();
+			
+			$this->mergeFields['User_is_admin'] = ze\admin::id();
 			
 			if ($this->useCannonicalURLs) {
 				$this->setPageTitle($this->thread['title']);
@@ -396,7 +403,7 @@ class zenario_forum extends zenario_comments {
 	}
 	
 	function checkConfirmKey() {
-		return ($_GET['comm_key'] ?? false) && ($_GET['comm_key'] ?? false) == ($_SESSION['confirm_key'] ?? false);
+		return ze::get('comm_key') && ze::get('comm_key') == ($_SESSION['confirm_key'] ?? false);
 	}
 	
 	
@@ -612,18 +619,18 @@ class zenario_forum extends zenario_comments {
 		$actionTaken = true;
 		
 		//Note that some forum actions work via GET, so need checkConfirmKey() for extra security
-		if (($_GET['comm_request'] ?? false) == 'mark_forum_read' && ($_SESSION['extranetUserID'] ?? false) && $this->checkConfirmKey()) {
+		if (ze::get('comm_request') == 'mark_forum_read' && ($_SESSION['extranetUserID'] ?? false) && $this->checkConfirmKey()) {
 			//Mark all of the Threads in a Forum as read for a User
 			$this->markForumRead($_SESSION['extranetUserID'] ?? false);
 		
-		} elseif (($_GET['comm_request'] ?? false) == 'move_thread'  && $this->canMoveThread() && $this->checkConfirmKey()) {
+		} elseif (ze::get('comm_request') == 'move_thread'  && $this->canMoveThread() && $this->checkConfirmKey()) {
 			//Move a Thread from another Forum into this Forum
-			$this->moveThreadIntoForum($_GET['forum_thread_to_move'] ?? false);
+			$this->moveThreadIntoForum(ze::get('forum_thread_to_move'));
 		
-		} elseif (($_POST['comm_request'] ?? false) == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
+		} elseif (ze::post('comm_request') == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
 			$this->subs(true, false);
 			
-		} elseif (($_POST['comm_request'] ?? false) == 'unsubs_forum' && $this->canSubsForum()) {
+		} elseif (ze::post('comm_request') == 'unsubs_forum' && $this->canSubsForum()) {
 			$this->subs(false, false);
 		
 		} else {
@@ -758,10 +765,10 @@ class zenario_forum extends zenario_comments {
 				forum_id
 			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads AS t";
 		
-		if ($_REQUEST['forum_thread'] ?? false) {
+		if (ze::request('forum_thread')) {
 			$sql .= "
 			WHERE forum_id = ". (int) $this->forumId. "
-			  AND id = ". (int) ($_REQUEST['forum_thread'] ?? false);
+			  AND id = ". (int) ze::request('forum_thread');
 		} else {
 			$sql .= "
 			WHERE forum_id = ". (int) $this->forumId. "
@@ -841,9 +848,9 @@ class zenario_forum extends zenario_comments {
 			FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts
 			WHERE thread_id = ". (int) $this->threadId;
 		
-		if ($_REQUEST['comm_post'] ?? false) {
+		if (ze::request('comm_post')) {
 			$sql .= "
-			  AND id = ". (int) ($_REQUEST['comm_post'] ?? false);
+			  AND id = ". (int) ze::request('comm_post');
 		} else {
 			$sql .= "
 			ORDER BY id".
@@ -852,7 +859,7 @@ class zenario_forum extends zenario_comments {
 		
 		$result = ze\sql::select($sql);
 
-		if ($_REQUEST['comm_post'] ?? false) {
+		if (ze::request('comm_post')) {
 			if (!$this->posts[] = $this->post = ze\sql::fetchAssoc($result)) {
 				$this->clearRequest('comm_post');
 				$this->clearRequest('comm_request');
@@ -1119,16 +1126,16 @@ class zenario_forum extends zenario_comments {
 	
 	
 	function forumSelectMode() {
-		if ($_REQUEST['comm_confirm'] ?? false) {
+		if (ze::request('comm_confirm')) {
 			$this->scrollToTopOfSlot(false);
 			
-			if (($_REQUEST['comm_request'] ?? false) == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
+			if (ze::request('comm_request') == 'subs_forum' && $this->canSubsForum() && !$this->hasSubsForum()) {
 				$this->showConfirmBox($this->phrase(
 					'Are you sure you wish to subscribe? A notification email will be sent to &quot;[[email]]&quot; when a new thread is created in this forum.',
 					['email' => htmlspecialchars(ze\user::email())]), $this->phrase('Subscribe to this forum')
 				);
 				
-			} elseif (($_REQUEST['comm_request'] ?? false) == 'unsubs_forum' && $this->canSubsForum() && $this->hasSubsForum()) {
+			} elseif (ze::request('comm_request') == 'unsubs_forum' && $this->canSubsForum() && $this->hasSubsForum()) {
 				$this->showConfirmBox($this->phrase('Are you sure you wish to unsubscribe, and no longer be notified of new threads created in this forum?'), $this->phrase('Unsubscribe from this forum'));
 			}
 			
@@ -1243,10 +1250,72 @@ class zenario_forum extends zenario_comments {
 	
 	
 	
-	
+	public static function deleteUserDataGetInfo($userIds) {
+		$sql = "
+			SELECT COUNT(id)
+			FROM " . DB_PREFIX . ZENARIO_FORUM_PREFIX . "forums
+			WHERE updater_id IN (" . ze\escape::in($userIds) . ")";
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$forumsResults = ze\admin::phrase('Forums started by this user will have the updater ID removed ([[count]] found)', ['count' => $count]);
+
+		$sql = "
+			SELECT COUNT(id)
+			FROM " . DB_PREFIX . ZENARIO_FORUM_PREFIX . "threads
+			WHERE poster_id IN (" . ze\escape::in($userIds) . ")";
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$threadsResults = ze\admin::phrase('Threads posted by this user will have the creator ID removed ([[count]] found)', ['count' => $count]);
+
+		$sql = "
+			SELECT COUNT(id)
+			FROM " . DB_PREFIX . ZENARIO_FORUM_PREFIX . "user_posts
+			WHERE poster_id IN (" . ze\escape::in($userIds) . ")";
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$userPostsResults = ze\admin::phrase('This user\'s posts will have the creator ID removed ([[count]] found)', ['count' => $count]);
+		
+		return implode('<br />', [$forumsResults, $threadsResults, $userPostsResults]);
+	}
 	
 	//Empty a user's history in the user_unread_threads table if they are deleted
 	public static function eventUserDeleted($userId) {
-		require ze::funIncPath(__FILE__, __FUNCTION__);
+		$sql = "
+			DELETE FROM ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_unread_threads
+			WHERE reader_id = ". (int) $userId;
+		ze\sql::update($sql, false, false);
+
+		$sql = "
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
+				updater_id = 0
+			WHERE updater_id = ". (int) $userId;
+		ze\sql::update($sql);
+
+		$sql = "
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+				poster_id = 0
+			WHERE poster_id = ". (int) $userId;
+		ze\sql::update($sql);
+
+		$sql = "
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
+				updater_id = 0
+			WHERE updater_id = ". (int) $userId;
+		ze\sql::update($sql);
+
+		$sql = "
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+				poster_id = 0
+			WHERE poster_id = ". (int) $userId;
+		ze\sql::update($sql);
+
+		$sql = "
+			UPDATE ". DB_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
+				updater_id = 0
+			WHERE updater_id = ". (int) $userId;
+		ze\sql::update($sql);
 	}
 }

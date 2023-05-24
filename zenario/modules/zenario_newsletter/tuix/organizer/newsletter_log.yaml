@@ -5,7 +5,6 @@ zenario__email_template_manager:
         newsletter_log:
             priv: _PRIV_VIEW_USER
             title: Log
-            view_mode: list
             db_items:
                 table: |
                     [[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul

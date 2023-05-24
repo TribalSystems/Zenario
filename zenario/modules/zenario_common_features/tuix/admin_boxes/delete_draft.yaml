@@ -15,31 +15,23 @@ zenario_delete_draft:
             notices:
                 delete_item:
                     type: warning
-                    message: |
-                            If you delete this draft it will:
-                             - no longer be available to visitors or admins
-                             - be removed from the menu if no published versions exist
-                            
-                            Deleting this draft will not affect the published version of this item, if it exists.
-                            
-                            This cannot be undone. Are you sure you wish to proceed?
+                    message: ||
+                        When this draft is deleted, it will no longer be available to visitors or admins, and will be removed from the menu if no published versions exist.
+                        Deleting this draft will not affect the published version of this item, if it exists. This cannot be undone.
                 delete_items:
                     type: warning
                     message: |
-                            Deleted drafts will:
-                             - no longer be available to visitors or admins
-                             - be removed from the menu if no published versions exist
-                            
-                            Deleting a draft will not affect any published versions of these items, if they exist.
-                            
-                            This cannot be undone. Are you sure you wish to proceed?
-                    
-            
+                        When these drafts are deleted, they will no longer be available to visitors or admins, and will be removed from the menu if no published versions exist.
+                        Deleting a draft will not affect any published versions of these items, if they exist. This cannot be undone.
             fields:
                 links_warning:
                     snippet:
                         html:
                     hidden: true
+                links_warning_part_2:
+                    ord: 9999999999
+                    snippet:
+                        html:
                 delete_options:
                     type: radios
                     values:

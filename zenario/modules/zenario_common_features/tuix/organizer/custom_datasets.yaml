@@ -3,12 +3,11 @@
 zenario__administration:
     panels:
         custom_datasets:
+            priv: _PRIV_VIEW_SITE_SETTING
             title: Custom Datasets
             no_items_message: >
                 There are no modules running that use datasets.
             default_sort_column: label
-            view_mode: list
-            disable_grid_view: true
             columns:
                 label:
                     title: Dataset

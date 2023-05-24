@@ -28,14 +28,16 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$egg = ze\row::get('nested_plugins', ['instance_id', 'name_or_slide_label'], $eggId);
 
 //Display a confirmation box, asking the admin if they want to delete the plugin
+$mrg = [
+	'plugin_name' => ze\pluginAdm::nestedPluginName($eggId)
+];
 $message =
-	'<p>'. ze\admin::phrase('Are you sure you wish to duplicate the plugin &quot;[[name_or_slide_label|escape]]&quot;?', $egg). '</p>';
+	'<p>'. ze\admin::phrase('Are you sure you wish to duplicate the plugin &quot;[[plugin_name|escape]]&quot;?', $mrg). '</p>';
 
-$usage = ze\pluginAdm::usage($egg['instance_id'], false);
-$usagePublished = ze\pluginAdm::usage($egg['instance_id'], true);
+$usage = ze\pluginAdm::usage($eggId, false);
+$usagePublished = ze\pluginAdm::usage($eggId, true);
 
 if ($usage > 1 || $usagePublished > 0) {
 	$message .=
@@ -44,7 +46,7 @@ if ($usage > 1 || $usagePublished > 0) {
 			[
 				'pages' => (int) $usage,
 				'published' => (int) $usagePublished,
-				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($egg['instance_id']))]
+				'link' => htmlspecialchars(ze\pluginAdm::usageOrganizerLink($eggId))]
 		). '</p>';
 }
 

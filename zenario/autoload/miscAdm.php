@@ -130,6 +130,15 @@ class miscAdm {
 		$includeLinks = $usageLinks !== false;
 		
 		
+		//Site-wide header and footer
+		if (!empty($usage['swHeader'])) {
+			$usageText[] = \ze\admin::phrase('site-wide header');
+		}
+		if (!empty($usage['swFooter'])) {
+			$usageText[] = \ze\admin::phrase('site-wide footer');
+		}
+		
+		
 		//Modules
 		if (!empty($usage['modules'])) {
 			$moduleId = $usage['module'];
@@ -219,6 +228,8 @@ class miscAdm {
 		if (!empty($usage['plugins'])) {
 			$instanceId = $usage['plugin'];
 			$name = \ze\plugin::name($instanceId);
+			
+			if ($instanceId == 5) var_dump($usage);
 			
 			if ($includeLinks) {
 				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
@@ -332,26 +343,32 @@ class miscAdm {
 		
 		//Check if this links to any content items
 		if (!empty($usage['content_items'])) {
-			$name = \ze\content::formatTagFromTagId($usage['content_item']);
 			
-			//Show a link to the content item
-			if ($includeLinks) {
-				$cID = $cType = false;
-				\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $usage['content_item']);
+			if ($usage['content_item'] == 'THIS') {
+				$name = \ze\admin::phrase('this content item');
+			
+			} else {
+				$name = \ze\content::formatTagFromTagId($usage['content_item']);
 				
-				if ($citem = \ze\sql::fetchAssoc('
-					SELECT alias, equiv_id, language_id, status
-					FROM '. DB_PREFIX. 'content_items
-					WHERE type = \''. \ze\escape::asciiInSQL($cType). '\'
-					  AND id = '. (int) $cID
-				)) {
-					$name = 
-						'<a target="_blank" href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, true, '', $citem['alias'], false, false, $citem['equiv_id'], $citem['language_id'])). '">
-							<span class="listicon organizer_item_image '. \ze\contentAdm::getItemIconClass($cID, $cType, true, $citem['status']). '">
-							</span>'. htmlspecialchars(\ze\content::formatTag($cID, $cType, $citem['alias'], $citem['language_id'])).
-						'</a>';
-				} else {
-					$name = htmlspecialchars($usage['content_item']);
+				//Show a link to the content item
+				if ($includeLinks) {
+					$cID = $cType = false;
+					\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $usage['content_item']);
+				
+					if ($citem = \ze\sql::fetchAssoc('
+						SELECT alias, equiv_id, language_id, status
+						FROM '. DB_PREFIX. 'content_items
+						WHERE type = \''. \ze\escape::asciiInSQL($cType). '\'
+						  AND id = '. (int) $cID
+					)) {
+						$name = 
+							'<a target="_blank" href="'. htmlspecialchars(\ze\link::toItem($cID, $cType, true, '', $citem['alias'], false, false, $citem['equiv_id'], $citem['language_id'])). '">
+								<span class="listicon organizer_item_image '. \ze\contentAdm::getItemIconClass($cID, $cType, true, $citem['status']). '">
+								</span>'. htmlspecialchars(\ze\content::formatTag($cID, $cType, $citem['alias'], $citem['language_id'])).
+							'</a>';
+					} else {
+						$name = htmlspecialchars($usage['content_item']);
+					}
 				}
 			}
 			
@@ -382,17 +399,23 @@ class miscAdm {
 		
 		//Check if this links to any layouts
 		if (!empty($usage['layouts'])) {
-			$layoutId = $usage['layout'];
-			$name = \ze\layoutAdm::codeName($layoutId);
 			
-			//Show a link to the layout in organizer
-			if ($includeLinks) {
-				$link = 'zenario__layouts/panels/layouts//'. (int) $layoutId;
-				$name =
-					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
-						<span
-							class="listicon organizer_item_image template"
-						></span>'. htmlspecialchars($name). '</a>';
+			if ($usage['layout'] == 'THIS') {
+				$name = \ze\admin::phrase('this layout');
+			
+			} else {
+				$layoutId = $usage['layout'];
+				$name = \ze\layoutAdm::codeName($layoutId);
+			
+				//Show a link to the layout in organizer
+				if ($includeLinks) {
+					$link = 'zenario__layouts/panels/layouts//'. (int) $layoutId;
+					$name =
+						'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
+							<span
+								class="listicon organizer_item_image template"
+							></span>'. htmlspecialchars($name). '</a>';
+				}
 			}
 			
 			//Add other item text
@@ -821,7 +844,7 @@ class miscAdm {
 		
 				//Fill the list of slides
 				$result = \ze\sql::select("
-					SELECT id, slide_num, states, name_or_slide_label
+					SELECT id, slide_num, states, slide_label
 					FROM ". DB_PREFIX. "nested_plugins
 					WHERE instance_id = ". (int) $box['key']['instanceId']. "
 					  AND slide_num != ". (int) $box['key']['slideNum']. "
@@ -831,7 +854,7 @@ class miscAdm {
 				while ($row = \ze\sql::fetchAssoc($result)) {
 					//Format the name so people aren't looking at the merge fields
 					if ($incNest) {
-						$row['name_or_slide_label'] = \zenario_plugin_nest::formatTitleTextAdmin($row['name_or_slide_label']);
+						$row['slide_label'] = \zenario_plugin_nest::formatTitleTextAdmin($row['slide_label']);
 					}
 		
 					$states = \ze\ray::explodeAndTrim($row['states']);
@@ -840,7 +863,7 @@ class miscAdm {
 						$row['state'] = $state;
 						$box['lovs']['slides_and_states'][$state] = [
 							'ord' => ++$ord,
-							'label' => \ze\admin::phrase('Slide [[slide_num]][[state]]: [[name_or_slide_label]]', $row)
+							'label' => \ze\admin::phrase('Slide [[slide_num]][[state]]: [[slide_label]]', $row)
 						];
 					}
 				}
@@ -1049,7 +1072,6 @@ class miscAdm {
 			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/organizer');
 			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/slot_controls');
 			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/visitor');
-			\ze\cache::deleteDir(CMS_ROOT. 'cache/tuix/wizards');
 			
 			
 			//Look to see what datasets are on the system, and which datasets extend which FABs
@@ -1074,7 +1096,7 @@ class miscAdm {
 			}
 	
 			$contents = [];
-			foreach (['admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'visitor', 'wizards'] as $type) {
+			foreach (['admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'visitor'] as $type) {
 				foreach (\ze::moduleDirs('tuix/'. $type. '/') as $moduleClassName => $dir) {
 			
 					foreach (scandir($dir) as $file) {

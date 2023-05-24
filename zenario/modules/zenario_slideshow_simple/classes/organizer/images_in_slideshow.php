@@ -64,6 +64,10 @@ class zenario_slideshow_simple__organizer__images_in_slideshow extends zenario_s
 		
 		foreach ($panel['items'] as $eggId => &$item) {
 			
+			if ($item['slide_permissions'] != 'public') {
+				$panel['columns']['slide_permissions']['always_show'] = true;
+			}
+			
 			if ($item['checksum']) {
 				$img = '&c='. $item['checksum'];
 				$item['image'] = 'zenario/file.php?og=1'. $img;

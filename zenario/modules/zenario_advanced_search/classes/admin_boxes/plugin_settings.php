@@ -47,19 +47,23 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				}
 
 				if (!$values['content_types/html_column_width']) {
-					$values['content_types/html_column_width'] = 25;
+					$values['content_types/html_column_width'] = 20;
 				}
 
 				if (!$values['content_types/document_column_width']) {
-					$values['content_types/document_column_width'] = 25;
+					$values['content_types/document_column_width'] = 20;
 				}
 
 				if (!$values['content_types/news_column_width']) {
-					$values['content_types/news_column_width'] = 25;
+					$values['content_types/news_column_width'] = 20;
 				}
 
 				if (!$values['content_types/blog_column_width']) {
-					$values['content_types/blog_column_width'] = 25;
+					$values['content_types/blog_column_width'] = 20;
+				}
+
+				if (!$values['content_types/other_module_column_width']) {
+					$values['content_types/other_module_column_width'] = 20;
 				}
 
 				if (!$values['first_tab/title_char_limit_value']) {
@@ -75,9 +79,30 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$fields['first_tab/let_user_select_language']['hidden'] = true;
 				}
 
-				foreach (['document', 'news', 'blog'] as $cType) {
-					if (ze\module::isRunning('zenario_ctype_' . $cType)) {
+				//Set up category checkboxes for limiting the scope.
+				//Set up for HTML pages first...
+				ze\categoryAdm::setupFABCheckboxes($fields['content_types/html_limit_search_scope_choose_categories'], $showTotals = true);
+				//... then for other content types.
+				$fields['content_types/document_limit_search_scope_choose_categories']['values'] =
+				$fields['content_types/news_limit_search_scope_choose_categories']['values'] =
+				$fields['content_types/blog_limit_search_scope_choose_categories']['values'] = $fields['content_types/html_limit_search_scope_choose_categories']['values'];
+
+				foreach (['html', 'document', 'news', 'blog'] as $cType) {
+					//Content type HTML page is always enabled.
+					if ($cType != 'html' && ze\module::isRunning('zenario_ctype_' . $cType)) {
 						unset($box['tabs']['content_types']['fields'][$cType . '_ctype_not_running_warning']);
+					}
+
+					if (ze\row::exists('content_types', ['enable_categories' => 1, 'content_type_id' => $cType])) {
+						unset($box['tabs']['content_types']['fields'][$cType . '_category_support_not_enabled_warning']);
+					}
+				}
+
+				$searchInOtherModules = ze\module::sendSignal("signalAdvancedSearchPopulateValuesSearchInOtherModules", []);
+				if (!empty($searchInOtherModules) && is_array($searchInOtherModules)) {
+					$ord = 0;
+					foreach ($searchInOtherModules as $module) {
+						$fields['content_types/module_to_search']['values'][$module] = ['ord' => ++$ord, 'label' => ze\module::getModuleDisplayNameByClassName($module) . ' (' . $module . ')'];
 					}
 				}
 
@@ -95,70 +120,157 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$this->showHideImageOptions($fields, $values, 'content_types', $hidden, $contentType . '_feature_image_');
 
 					//Default column heading text
-					if (
-						$values['content_types/search_' . $contentType]
-						&& !$values['content_types/' . $contentType . '_column_heading_text']
-					) {
-						$columnHeadingText = '';
-						switch ($contentType) {
-							case 'html':
-								$columnHeadingText = 'HTML pages';
-								break;
-							case 'document':
-								$columnHeadingText = 'Documents';
-								break;
-							case 'news':
-								$columnHeadingText = 'News articles';
-								break;
-							case 'blog':
-								$columnHeadingText = 'Blog posts';
-								break;
-						}
+					$columnHeadingText = '';
+					switch ($contentType) {
+						case 'html':
+							$columnHeadingText = 'HTML pages';
+							break;
+						case 'document':
+							$columnHeadingText = 'Documents';
+							break;
+						case 'news':
+							$columnHeadingText = 'News articles';
+							break;
+						case 'blog':
+							$columnHeadingText = 'Blog posts';
+							break;
+					}
 
-						$values['content_types/' . $contentType . '_column_heading_text'] = $columnHeadingText;
+					if (!$values['content_types/' . $contentType . '_column_heading_text']) {
+						$fields['content_types/' . $contentType . '_column_heading_text']['value'] = $columnHeadingText;
+					} else {
+						$fields['content_types/' . $contentType . '_column_heading_text']['value'] = $values['content_types/' . $contentType . '_column_heading_text'];
 					}
 					
 					//Default "No results" text
-					if (
-						$values['content_types/search_' . $contentType]
-						&& $values['content_types/' . $contentType . '_show_message_if_no_results']
-						&& !$values['content_types/' . $contentType . '_no_results_text']
-					) {
-						$noResultsText = '';
-						switch ($contentType) {
-							case 'html':
-								$noResultsText = 'No results found';
-								break;
-							case 'document':
-								$noResultsText = 'No documents found';
-								break;
-							case 'news':
-								$noResultsText = 'No news articles found';
-								break;
-							case 'blog':
-								$noResultsText = 'No blog posts found';
-								break;
-						}
-
-						$values['content_types/' . $contentType . '_no_results_text'] = $noResultsText;
+					$noResultsText = '';
+					switch ($contentType) {
+						case 'html':
+							$noResultsText = 'No results found';
+							break;
+						case 'document':
+							$noResultsText = 'No documents found';
+							break;
+						case 'news':
+							$noResultsText = 'No news articles found';
+							break;
+						case 'blog':
+							$noResultsText = 'No blog posts found';
+							break;
 					}
+
+					$fields['content_types/' . $contentType . '_no_results_text']['value'] = $noResultsText;
 				}
+
+				if (!$values['content_types/other_module_column_heading_text']) {
+					$fields['content_types/other_module_column_heading_text']['value'] = 'Other results';
+				} else {
+					$fields['content_types/other_module_column_heading_text']['value'] = $values['content_types/other_module_column_heading_text'];
+				}
+
+				$hidden = !$values['content_types/search_in_other_modules'] || !$values['content_types/other_module_show_image'];
+				$this->showHideImageOptions($fields, $values, 'content_types', $hidden, 'other_module_image_');
+
+				$fields['weightings/other_module_title_weighting']['hidden'] =
+				$fields['weightings/other_module_description_weighting']['hidden'] =
+					!($values['content_types/search_in_other_modules'] && $values['content_types/module_to_search']);
 				
 				if ($box['tabs']['first_tab']['fields']['search_placeholder'] == true
 					&& empty($box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'])) {
 					$box['tabs']['first_tab']['fields']['search_placeholder_phrase']['value'] = 'Search the site';
 				}
 
-				if (!$values['first_tab/page_size'] || $values['first_tab/page_size'] != 'maximum_of') {
-					$values['first_tab/page_size'] = 'maximum_of';
-					if (!$values['first_tab/maximum_results_number']) {
-						$values['first_tab/maximum_results_number'] = 20;
-					}
+				if (!$values['first_tab/maximum_results_number']) {
+					$values['first_tab/maximum_results_number'] = 20;
 				}
 
 				if (!$values['first_tab/keyboard_delay_before_submit']) {
 					$values['first_tab/keyboard_delay_before_submit'] = 500;
 				}
+
+				/**********************
+                ** Order of elements **
+                *********************/
+
+				//All available fields in Details tab
+				$availableFields = [
+					'html',
+					'document',
+					'news',
+					'blog',
+					'other_modules'
+				];
+													
+				$fieldsWithNiceNames = [];
+				
+				//Give these fields nice names
+				foreach ($availableFields as $field) {
+
+					if ((ze::in($field, 'html', 'document', 'news', 'blog') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])) {
+						switch ($field) {
+							case 'html':
+								$niceName = ze\admin::phrase('HTML pages');
+								break;
+							case 'document':
+								$niceName = ze\admin::phrase('Documents');
+								break;
+							case 'news':
+								$niceName = ze\admin::phrase('News');
+								break;
+							case 'blog':
+								$niceName = ze\admin::phrase('Blog');
+								break;
+							case 'other_modules':
+								$niceName = ze\admin::phrase('Results from other modules');
+								break;
+							default:
+								$niceName = '';
+								break;
+						}
+							
+						$fieldsWithNiceNames[$field] = $niceName;
+					}
+				}
+				
+				//Check if this is the first time the admin box has been run...
+				if (isset($fields['content_types/search_result_types_order']['current_value'])) {
+					//... if not (e.g. switching a tab), use current order instead of getting it from the database...
+					$searchResultTypesFields = explode(',', $fields['content_types/search_result_types_order']['current_value']);
+				} elseif (!empty($fields['content_types/search_result_types_order']['value'])) {
+					//... if yes (opening the admin box), get the order from the database...
+					$searchResultTypesFields = explode(',', $fields['content_types/search_result_types_order']['value']);
+				} else {
+					//... or if the plugin has never been used before, use the default order.
+					$searchResultTypesFields = $availableFields;
+				}
+				
+				$fieldsInOrder = [];
+				
+				//Only process fields selected on Details page
+				foreach ($searchResultTypesFields as $field) {
+					if ($field) {
+						if ((ze::in($field, 'html', 'document', 'news', 'blog') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])) {
+							$fieldsInOrder[$field] = $fieldsWithNiceNames[$field];
+						}
+					}
+						
+				}
+				
+				//If a previously unselected field has been selected now, add it
+				foreach ($fieldsWithNiceNames as $field => $value) {
+					if (
+						!isset($searchResultTypesFields[$field])
+						&& (ze::in($field, 'html', 'document', 'news', 'blog') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])
+					) {
+						$fieldsInOrder[$field] = $value;
+					}
+				}
+				
+				$fields['content_types/search_result_types_order']['values'] = [];
+				$fields['content_types/search_result_types_order']['values'] = $fieldsInOrder;
+				
+				$fields['content_types/search_result_types_order']['current_value'] 
+					= $fields['content_types/search_result_types_order']['value'] = implode(",", array_keys($fields['content_types/search_result_types_order']['values']));
 				
 				break;
 		}
@@ -181,9 +293,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$box['tabs']['weightings']['errors'][] = ze\admin::phrase('Please choose at least one weighting.');
 				}
 				
-				if ($values['first_tab/page_size'] == 'maximum_of' && $values['first_tab/maximum_results_number'] < 0) {
+				if ($values['first_tab/maximum_results_number'] < 0) {
 					$box['tabs']['first_tab']['fields']['maximum_results_number']['error'] = ze\admin::phrase('The page size cannot be a negative number.');
-				} elseif ($values['first_tab/page_size'] == 'maximum_of' && $values['first_tab/maximum_results_number'] > 999) {
+				} elseif ($values['first_tab/maximum_results_number'] > 999) {
 					$box['tabs']['first_tab']['fields']['maximum_results_number']['error'] = ze\admin::phrase('The page size cannot exceed 999.');
 				}
 
@@ -204,11 +316,16 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$enabledColumns[] = 'blog';
 				}
 
+				if ($values['content_types/search_in_other_modules']) {
+					$enabledColumns[] = 'other_module';
+				}
+
 				if (empty($enabledColumns)) {
 					$fields['content_types/search_html']['error'] =
 					$fields['content_types/search_document']['error'] =
 					$fields['content_types/search_news']['error'] =
-					$fields['content_types/search_blog']['error'] = ze\admin::phrase('Please select at least 1 content type.');
+					$fields['content_types/search_blog']['error'] =
+					$fields['content_types/search_in_other_modules']['error'] = ze\admin::phrase('Please select at least 1 content type or search in other module.');
 				} else {
 					$columnWidthSum = 0;
 					foreach ($enabledColumns as $enabledColumn) {

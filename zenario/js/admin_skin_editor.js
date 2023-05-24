@@ -71,7 +71,7 @@ zenarioSE.open = function(path, skinId, callBack) {
 		cID: zenario.cID,
 		cType: zenario.cType,
 		cVersion: zenario.cVersion,
-		skinId: skinId || zenario.skinId
+		skinId: skinId || zenarioL.skinId
 	}, undefined, undefined, callBack);
 	//methods.open = function(path, key, tab, values, callBack, createAnotherObject, reopening, passMatchedIds) {
 };

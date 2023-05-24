@@ -35,7 +35,7 @@ $imgs = [];
 foreach ($images as $imageId) {
 	if ($image = ze\row::get('files', ['filename', 'usage'], $imageId)) {
 		if ($image['usage'] == 'image') {
-			$orgLink = ze\link::absolute() . 'organizer.php#zenario__content/panels/image_library//'. $imageId;
+			$orgLink = ze\link::absolute() . 'organizer.php#zenario__library/panels/image_library//'. $imageId;
 			
 			$imgs[$image['filename']] = '
 				<span

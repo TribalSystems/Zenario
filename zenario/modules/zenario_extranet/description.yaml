@@ -15,7 +15,7 @@ description: |
     <p>There is a User Redirector module, so that when a user logs in they can be redirected to the correct page, based on the User Redirector plugin settings. The redirection is based on group membership and roles.</p>
     <p>There are further modules, for: Registration, Password Reset, Change Password, Change Email, Edit Profile and Logout.</p>
 category: management
-keywords: base, extranet, login, password, private, user
+keywords: base, extranet, login, password, private, user, users
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:

@@ -63,8 +63,8 @@ if (!ze\priv::check()) {
 	 || ($location[0] ?? false) == 'ajax'
 	 || ($location[1] ?? false) == 'ajax'
 	 || ($location[1] ?? false) == 'admin_boxes'
-	 || ($_REQUEST['method_call'] ?? false) == 'handleOrganizerPanelAJAX'
-	 || ($_REQUEST['method_call'] ?? false) == 'handleAdminToolbarAJAX') {
+	 || ze::request('method_call') == 'handleOrganizerPanelAJAX'
+	 || ze::request('method_call') == 'handleAdminToolbarAJAX') {
 		
 		header('Zenario-Admin-Logged_Out: 1');
 		echo '<!--Logged_Out-->', ze\admin::phrase('You have been logged out.');

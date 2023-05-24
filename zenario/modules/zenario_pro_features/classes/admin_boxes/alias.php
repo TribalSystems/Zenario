@@ -88,7 +88,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		//Check permissions
-		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
+		if (ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM')) {
 			$box['tabs']['meta_data']['notices']['alias_cannot_also_be_spare_alias']['show'] = false;
 			
 			foreach (ze\ray::explodeAndTrim($values['spare_aliases']) as $alias) {
@@ -142,7 +142,7 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Check permissions
-		if (ze\priv::check('_PRIV_MANAGE_SPARE_ALIAS')) {
+		if (ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM')) {
 			
 			$spareAliases = [];
 			$key = [

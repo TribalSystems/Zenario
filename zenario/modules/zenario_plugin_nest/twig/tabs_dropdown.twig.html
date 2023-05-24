@@ -7,19 +7,17 @@
 			<ul>
 				<li>
 					{% if slides[slideNum] %}
-						<a>{{slides[slideNum].name_or_slide_label|trans}}</a>
+						<a>{{slides[slideNum].slide_label|trans}}</a>
 					{% endif %}
 					<ul>
 						{% for slide in slides %}
-							{% if not slide.invisible_in_nav %}
-								<li class="
-									{% if slide.slideNum == slideNum %}
-										current
-									{% endif %}
-								">
-									<a {{parentNest.refreshPluginSlotTabAnchor('slideId=' ~ slide.id, false)}}>{{slide.name_or_slide_label|trans}}</a>
-								</li>
-							{% endif %}
+							<li class="
+								{% if slide.slideNum == slideNum %}
+									current
+								{% endif %}
+							">
+								<a {{parentNest.refreshPluginSlotTabAnchor('slideId=' ~ slide.id, false)}}>{{slide.slide_label|trans}}</a>
+							</li>
 						{% endfor %}
 					</ul>
 				</li>

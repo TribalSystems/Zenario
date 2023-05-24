@@ -28,9 +28,13 @@
 		<% if (m.lovField.icon_class !== undefined) { %>
 			<span class="zfab_label_icon {{m.lovField.icon_class|escape}}"></span>
 		<% } %>
-		{{m.lovField.label}}
+		{{m.lovField.label|e}}
 	</label>
 
+	<% if (m.lovField.tooltip) { %>
+		{{m.thus.postFieldTooltip(m.lovField)}}
+	<% } %>
+	
 	<% if (m.lovField.post_field_html !== undefined) { %>
 		{{m.lovField.post_field_html}}
 	<% } %>

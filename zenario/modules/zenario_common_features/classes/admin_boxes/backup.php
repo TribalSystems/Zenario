@@ -33,7 +33,12 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 	 public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$values['details/username'] = $_SESSION['admin_username'] ?? false;
 		
-		if (!$box['key']['id']) {
+		$filename = '';
+		
+		if ($box['key']['id']) {
+			$filename = ze\ring::decodeIdForOrganizer($box['key']['id']);
+		
+		} else {
 			if ($size = ze\sql::fetchValue('
 				SELECT SUM(data_length + index_length)
 				FROM information_schema.tables
@@ -54,35 +59,57 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 			}
 		}
 		
-		
-		
-		$contains = ze\admin::phrase('This backup will contain:');
-		$contains .= '<ul>';
-		
-		if (\ze\db::hasGlobal()) {
-			$contains .= '<li>'. ze\admin::phrase("The site's local database."). '</li>';
-		} else {
-			$contains .= '<li>'. ze\admin::phrase("The site's database."). '</li>';
-		}
-		
-		$contains .= '</ul>';
-		$contains .= ze\admin::phrase('This backup will <u>not</u> contain:');
-		$contains .= '<ul>';
-		
-		if (\ze\db::hasDataArchive()) {
+		//Catch the case where someone is trying to downlaod a copy of the data archive.
+		//This needs a different "contains" message.
+		if (false != strpos($filename, '-data-archive-')) {
+			$fields['details/desc3']['hidden'] = true;
+			$fields['details/desc3']['snippet']['html'] = '';
+			
+			$contains = ze\admin::phrase('This backup will contain:');
+			$contains .= '<ul>';
 			$contains .= '<li>'. ze\admin::phrase('The data archive database.'). '</li>';
-		}
-		if (\ze\db::hasGlobal()) {
-			$contains .= '<li>'. ze\admin::phrase('The global database.'). '</li>';
-		}
+			$contains .= '</ul>';
+			$contains .= ze\admin::phrase('This backup will <u>not</u> contain:');
+			$contains .= '<ul>';
+			$contains .= '<li>'. ze\admin::phrase("The site's local database."). '</li>';
 		
-		$contains .= '<li>'. ze\admin::phrase('The <code>docstore/</code> directory.'). '</li>';
-		$contains .= '<li>'. ze\admin::phrase('The <code>zenario_custom/</code> directory.'). '</li>';
+			if (\ze\db::hasGlobal()) {
+				$contains .= '<li>'. ze\admin::phrase('The global database.'). '</li>';
+			}
 		
-		if (\ze\db::hasDataArchive()) {
-			$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your archived data, custom frameworks, custom modules, documents, layouts and skins.');
+			$contains .= '<li>'. ze\admin::phrase('The <code>docstore/</code> directory.'). '</li>';
+			$contains .= '<li>'. ze\admin::phrase('The <code>zenario_custom/</code> directory.'). '</li>';
+			$contains .= '</ul>';
+		
 		} else {
-			$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your custom frameworks, custom modules, documents, layouts and skins.');
+			$contains = ze\admin::phrase('This backup will contain:');
+			$contains .= '<ul>';
+		
+			if (\ze\db::hasGlobal()) {
+				$contains .= '<li>'. ze\admin::phrase("The site's local database."). '</li>';
+			} else {
+				$contains .= '<li>'. ze\admin::phrase("The site's database."). '</li>';
+			}
+		
+			$contains .= '</ul>';
+			$contains .= ze\admin::phrase('This backup will <u>not</u> contain:');
+			$contains .= '<ul>';
+		
+			if (\ze\db::hasDataArchive()) {
+				$contains .= '<li>'. ze\admin::phrase('The data archive database.'). '</li>';
+			}
+			if (\ze\db::hasGlobal()) {
+				$contains .= '<li>'. ze\admin::phrase('The global database.'). '</li>';
+			}
+		
+			$contains .= '<li>'. ze\admin::phrase('The <code>docstore/</code> directory.'). '</li>';
+			$contains .= '<li>'. ze\admin::phrase('The <code>zenario_custom/</code> directory.'). '</li>';
+		
+			if (\ze\db::hasDataArchive()) {
+				$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your archived data, custom frameworks, custom modules, documents, layouts and skins.');
+			} else {
+				$contains .= '</ul>'. ze\admin::phrase('You should back up and restore these separately to preserve your custom frameworks, custom modules, documents, layouts and skins.');
+			}
 		}
 		
 		$fields['details/desc2']['snippet']['html'] = $contains;

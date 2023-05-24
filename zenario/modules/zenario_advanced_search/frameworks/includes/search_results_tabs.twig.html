@@ -1,0 +1,11 @@
+{% if Search_Result_Tabs %}
+    <div id="search_results_tabs">
+        {% for item in Search_Result_Tab %}
+            <div class="search_results_tab{{item.Tab_On}}">
+                <a {{item.Tab_Onclick}}>
+                    {{item.Type}} ({{item.Record_Count}})
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

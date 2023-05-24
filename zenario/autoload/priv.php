@@ -142,7 +142,6 @@ class priv {
 							case '_PRIV_VIEW_SITE_SETTING':
 							case '_PRIV_VIEW_MENU_ITEM':
 							case '_PRIV_EDIT_MENU_TEXT':
-							case '_PRIV_HIDE_CONTENT_ITEM':
 							case '_PRIV_PUBLISH_CONTENT_ITEM':
 							case '_PRIV_VIEW_LANGUAGE':
 							case '_PRIV_MANAGE_LANGUAGE_PHRASE':

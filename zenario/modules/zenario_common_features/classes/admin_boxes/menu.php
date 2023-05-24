@@ -36,7 +36,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$box['key']['id'] = $_REQUEST['mID'];
 		}
 		
-		if (!$box['key']['languageId'] = ze::ifNull($box['key']['languageId'], ($_REQUEST['target_language_id'] ?? false), ($_REQUEST['languageId'] ?? false))) {
+		if (!$box['key']['languageId'] = ze::ifNull($box['key']['languageId'], ze::request('target_language_id'), ze::request('languageId'))) {
 			$box['key']['languageId'] = ze::$defaultLang;
 		}
 		
@@ -129,10 +129,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			ze\priv::exitIfNot('_PRIV_ADD_MENU_ITEM');
 			//Convert the location requests from the old format
 			if (!$box['key']['parentMenuID']) {
-				$box['key']['parentMenuID'] = ze::ifNull($_REQUEST['target_menu_parent'] ?? false, ($_REQUEST['parentMenuID'] ?? false));
+				$box['key']['parentMenuID'] = ze::ifNull($_REQUEST['target_menu_parent'] ?? false, ze::request('parentMenuID'));
 			}
 	
-			if (!$box['key']['sectionId'] = ze::ifNull($box['key']['sectionId'], ($_REQUEST['target_menu_section'] ?? false), ($_REQUEST['sectionId'] ?? false))) {
+			if (!$box['key']['sectionId'] = ze::ifNull($box['key']['sectionId'], ze::request('target_menu_section'), ze::request('sectionId'))) {
 				exit;
 			}
 			
@@ -242,9 +242,9 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 
 		//Attempt to load a list of CSS Class Names from an xml file description in the current Skin to add choices in for the CSS Class Picker
 		$skinId = false;
-		if ((($_REQUEST['cID'] ?? false)
-		  && ($_REQUEST['cType'] ?? false)
-		  && $layoutId = ze\content::layoutId($_REQUEST['cID'] ?? false, ($_REQUEST['cType'] ?? false)))
+		if ((ze::request('cID')
+		  && ze::request('cType')
+		  && $layoutId = ze\content::layoutId($_REQUEST['cID'] ?? false, ze::request('cType')))
 		 || ($menu
 		  && $menu['equiv_id']
 		  && $menu['content_type']
@@ -267,10 +267,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		$values['advanced/add_custom_get_requests'] = (is_array($menu) && !empty($menu['custom_get_requests']));
 		if ($box['key']['id'] && $values['advanced/add_custom_get_requests']) {
 			$values['advanced/custom_get_requests'] = str_replace('&', ',', $menu['custom_get_requests']);
-			$explodedGetRequests = explode(',', $values['advanced/custom_get_requests']);
-			foreach ($explodedGetRequests as $request) {
-				$fields['advanced/custom_get_requests']['values'][$request] = $request;
-			}
+			
+			//This code is needed to get the "allow_typing_anything" picker working if there should be
+			//previously existing values
+			ze\tuix::setupAllowTypingAnythingPicker($fields['advanced/custom_get_requests'], $values['advanced/custom_get_requests']);
 		}
 		
 		$i = -1;

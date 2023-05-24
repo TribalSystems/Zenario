@@ -2,6 +2,10 @@
 ---
 empty_slot:
     css_class: zenario_slotOuter zenario_slotWithNoContents
+    meta_info:
+        is_header: false
+        is_footer: false
+        is_sitewide: false
     info:
         edit_sc_title:
             label: 'Slot inspector'
@@ -63,7 +67,7 @@ empty_slot:
     actions:
         insert_reusable_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert plugin on this content item...
+            label: Insert a plugin...
             page_modes:
                 edit: true
             onclick: |
@@ -75,7 +79,7 @@ empty_slot:
         insert_reusable_on_layout_layer:
             ord: 997
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert plugin on this layout...
+            label: Insert a plugin on this layout...
             page_modes:
                 layout: true
             onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false);

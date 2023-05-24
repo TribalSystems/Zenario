@@ -37,45 +37,6 @@ public static function round($n) {
 	return round($n, 3, PHP_ROUND_HALF_DOWN);
 }
 
-
-public static function checkForRenamedSlots(&$data, &$newNames, &$oldToNewNames) {
-	
-	//Loop through the current grouping, looking for more cells and possibly more groupings
-	foreach ($data['cells'] as &$cell) {
-		//Keep checking groupings recursively
-		if (!empty($cell['cells'])) {
-			self::checkForRenamedSlots($cell, $newNames, $oldToNewNames);
-		
-		//Check for renamed slots
-		} else
-		if (!empty($cell['name'])) {
-			$newNames[$cell['name']] = $cell['name'];
-			
-			if (!empty($cell['oName']) && $cell['name'] != $cell['oName']) {
-				$oldToNewNames[$cell['oName']] = $cell['name'];
-			}
-		}
-	}
-}
-
-//Reduce the size of the data string
-public static function trimData(&$data) {
-	
-	//Loop through the current grouping, looking for more cells and possibly more groupings
-	foreach ($data['cells'] as &$cell) {
-		//Keep checking groupings recursively
-		if (!empty($cell['cells'])) {
-			self::trimData($cell);
-		}
-		
-		//Remove the original names as there is no need to save them
-		unset($cell['oName']);
-		
-		//Remove a deprecated property
-		unset($cell['type']);
-	}
-}
-
 //Given some grid data, return a nested array with all of the possible
 //size-permutations of groupings that have been used
 protected static function checkGroupings(&$data, &$groupings, $parentWidth, $maxDepth = 0) {
@@ -171,22 +132,25 @@ public static function generateCSS(&$css, $data) {
  * ';
 	
 	if ($data['fluid']) {
-		$data['gColWidth'] = (100 - ($data['gCols'] - 1) * $data['gGutter'] - $data['gGutterLeftEdge'] - $data['gGutterRightEdge']) / $data['gCols'];
+		$data['gColWidth'] = (100 - ($data['cols'] - 1) * $data['gGutter'] - $data['gGutterLeftEdge'] - $data['gGutterRightEdge']) / $data['cols'];
 		$gGutterLeft = $data['gGutter'] / 2;
 		$gGutterRight = $data['gGutter'] / 2;
 		
-		$css .= $data['minWidth']. ' - '. $data['maxWidth']. ' fluid'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['gCols']. ' col'. ($data['gCols'] > 1? 's' : ''). ')';
+		$css .= $data['minWidth']. ' - '. $data['maxWidth']. ' fluid'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['cols']. ' col'. ($data['cols'] > 1? 's' : ''). ')';
 	} else {
 		$gGutterLeft = ceil($data['gGutter'] / 2);
 		$gGutterRight = floor($data['gGutter'] / 2);
 		
-		$css .= $data['minWidth']. ' fixed'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['gCols']. ' col'. ($data['gCols'] > 1? 's' : ''). ')';
+		$css .= $data['minWidth']. ' fixed'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['cols']. ' col'. ($data['cols'] > 1? 's' : ''). ')';
 	}
 	
 	$css .= '
  * This file was created by the Zenario Gridmaker system, DO NOT EDIT
  * Based on the 960 Grid System, see zenario/libs/manually_maintained/mit/960gs/README.md for more info
 */';
+	
+	$container_cols = '.container_'. $data['cols'];
+	
 	
 	
 	//Calculate an array with all of the possible size-permutations of groupings that have been used
@@ -195,18 +159,24 @@ public static function generateCSS(&$css, $data) {
 	//Always include the rules for the top-level parent slots. This fixes a few bugs, including:
 		//We always add the rule for a slot of size 1 for the "Show Grid" button on the Admin Toolbar to work
 		//We need to add rules for all of the basic top-level sizes, otherwise the "width " option on the slot dropdowns won't work on fluid grids
-	$j = $data['gCols'];
+	$j = $data['cols'];
 	for ($i = 1; $i < $j; ++$i) {
 		$groupings[$i] = [];
 	}
 	
 	$maxDepth = 0;
 	if (!empty($data['cells'])) {
-		$maxDepth = self::checkGroupings($data, $groupings, $data['gCols']);
+		$maxDepth = self::checkGroupings($data, $groupings, $data['cols']);
 	}
 	
+	//Nests that use minigrids can add an extra level of depth to the nested grid layouts.
+	//Always take the maximum possible depth we think we have and add one to it, to account
+	//for any minigrids on the page.
+	++$maxDepth;
 	
-	//For fixed grids, there's no need to generate rules further than a depth of 1
+	//For fixed grids, there's actually no need to generate rules further than a depth of 1.
+	//It's only when you use %s that you need to pay attention to your parent's width when
+	//specifying your own.
 	if (!$data['fluid'] && $maxDepth > 1) {
 		$maxDepth = 1;
 	}
@@ -238,7 +208,7 @@ body {
 	min-width: '. $data['minWidth']. 'px;
 }
 
-.container_'. $data['gCols']. ' {';
+'. $container_cols. ' {';
 	
 	if ($data['mirror']) {
 		$css .= '
@@ -259,10 +229,10 @@ body {
 	padding: 0;
 }
 
-.container_'. $data['gCols']. ' .span {';
+'. $container_cols. ' .span {';
 	
 	//Grid cells and gutters
-	if ($data['gCols'] > 1) {
+	if ($data['cols'] > 1) {
 		$css .= '
 	display: inline;
 	float: left;';
@@ -289,19 +259,17 @@ body {
 		$css .= '
 ';
 		//Fluid widths and margins for cells (and any nested cells)
-		self::generateCSSR($css, $data, $groupings, $data['gCols'], '.container_'. $data['gCols']. ' ');
+		self::generateCSSR($css, $data, $groupings, $data['cols'], ''. $container_cols. ' ');
 		
 		//Full width cells
 		$css .= '
-.container_'. $data['gCols']. ' .span1_1 {
+'. $container_cols. ' .span1_1 {
 	width: '. (100 - $data['gGutterLeftEdge'] - $data['gGutterRightEdge']). '%;
 }
 ';
 		
-		$maxI  = (int) $maxDepth + 1;
-	
-		$prefix = '';
-		for ($i = 0; $i < $maxI; ++$i) {
+		$prefix = ''. $container_cols. ' ';
+		for ($i = 0; $i < $maxDepth; ++$i) {
 			$prefix .= '.span ';
 			$css .= ($i? ',' : ''). "\n". $prefix. '.span1_1';
 		}
@@ -312,8 +280,11 @@ body {
 	
 	} else {
 		//Widths for cells
-		for ($i = 1; $i <= $data['gCols']; ++$i) {
-			$css .= "\n\n.container_". $data['gCols']. " .span". $i. " {\n\twidth: ". ($i * $data['gColWidth'] + ($i - 1) * $data['gGutter']). "px;\n}";
+		for ($i = 1; $i <= $data['cols']; ++$i) {
+			$css .=
+				"\n\n".
+				$container_cols. ' .span'. $i.
+				 " {\n\twidth: ". ($i * $data['gColWidth'] + ($i - 1) * $data['gGutter']). "px;\n}";
 		}
 	}
 	
@@ -321,11 +292,11 @@ body {
 		//The outermost gutters of the page
 		$css .= '
 
-.container_'. $data['gCols']. ' .alpha {
+'. $container_cols. ' .alpha {
 	margin-left: '. $data['gGutterLeftEdge']. '%;
 }
 
-.container_'. $data['gCols']. ' .omega {
+'. $container_cols. ' .omega {
 	margin-right: '. $data['gGutterRightEdge']. '%;
 }';
 	
@@ -333,11 +304,11 @@ body {
 		//The outermost gutters of the page
 		$css .= '
 
-.container_'. $data['gCols']. ' .alpha {
+'. $container_cols. ' .alpha {
 	margin-left: '. $data['gGutterLeftEdge']. 'px;
 }
 
-.container_'. $data['gCols']. ' .omega {
+'. $container_cols. ' .omega {
 	margin-right: '. $data['gGutterRightEdge']. 'px;
 }';
 	}
@@ -376,7 +347,8 @@ body {
 	margin-left: -50px;
 }';
 	
-	if ($data['gCols'] > 1) {
+	
+	if ($data['cols'] > 1) {
 		//Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width
 		$css .= '
 
@@ -430,7 +402,7 @@ body.ie7 .container {
 		$css .= '
 
 
-.container_'. $data['gCols']. ':after,
+'. $container_cols. ':after,
 .grid_clear {
 	clear: both;
 }';
@@ -487,7 +459,7 @@ public static function generateHTML(&$html, &$data, &$slots) {
 	if (!empty($data['cells']) && is_array($data['cells'])) {
 		$ord = 0;
 		$lines = [];
-		self::generateHTMLR($html, $lines, $data, $data, $slots, $ord, $data['gCols'], 0);
+		self::generateHTMLR($html, $lines, $data, $data, $slots, $ord, $data['cols'], 0);
 		unset($lines);
 	}
 		
@@ -496,13 +468,13 @@ public static function generateHTML(&$html, &$data, &$slots) {
 ';
 	
 	$trimmedData = $data;
-	self::trimData($trimmedData);
+	\ze\gridAdm::trimData($trimmedData);
 	
 	
 	$html .= "\n";
 }
 
-public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slots, &$ord, $gCols, $level) {
+public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slots, &$ord, $cols, $level) {
 	$gridOpen = false;
 	$firstLine = true;
 	$gridCSSClass = 'Gridbreak_A';
@@ -534,7 +506,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 		}
 		
 		if (!empty($cell['grid_break']) && $level == 0) {
-			$cell['width'] = $gCols;
+			$cell['width'] = $cols;
 			
 			$cell['class'] = '';
 			if (isset($cell['css_class'])) {
@@ -546,7 +518,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 				$cell['width'] = 1;
 			}
 		
-			$cell['class'] = \ze\content::rationalNumberGridClass($cell['width'] = min($gCols, $cell['width']), $gCols);
+			$cell['class'] = \ze\content::rationalNumberGridClass($cell['width'] = min($cols, $cell['width']), $cols);
 			if (isset($cell['css_class'])) {
 				$cell['class'] .= ' '. $cell['css_class'];
 			}
@@ -554,10 +526,10 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 		
 		
 		//Keep track of how much width we've used, versus how wide a row is. If we've gone over, start a new line.
-		if ($widthSoFarThisLine + $cell['width'] > $gCols) {
+		if ($widthSoFarThisLine + $cell['width'] > $cols) {
 			//Also add a space if needed, if the grids didn't quite match the line-length
-			if ($gCols > $widthSoFarThisLine) {
-				$lines[$lineNum]['line'][] = ['space' => true, 'width' => $gCols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($gCols - $widthSoFarThisLine, $gCols)];
+			if ($cols > $widthSoFarThisLine) {
+				$lines[$lineNum]['line'][] = ['space' => true, 'width' => $cols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($cols - $widthSoFarThisLine, $cols)];
 			}
 			$lines[++$lineNum] = ['height' => 1, 'line' => []];
 			$widthSoFarThisLine = 0;
@@ -570,8 +542,8 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 	}
 	
 	//Add an empty space onto the end if we didn't finish one line exactly
-	if ($gCols > $widthSoFarThisLine) {
-		$lines[$lineNum]['line'][] = ['space' => true, 'width' => $gCols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($gCols - $widthSoFarThisLine, $gCols)];
+	if ($cols > $widthSoFarThisLine) {
+		$lines[$lineNum]['line'][] = ['space' => true, 'width' => $cols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($cols - $widthSoFarThisLine, $cols)];
 	}
 	
 	foreach ($lines as &$line) {
@@ -617,7 +589,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 				
 				$html .= '">';
 				
-				$html .= "\n\t<". "?php ze\\plugin::slot('". \ze\ring::HTMLId($line['line'][0]['name']). "', 'outside_of_grid'); ?". ">";
+				$html .= "\n\t<". "?php \ze\\plugin::slot('". \ze\ring::HTMLId($line['line'][0]['name']). "', 'outside_of_grid'); ?". ">";
 				$slots[$line['line'][0]['name']] = $line['line'][0];
 				$slots[$line['line'][0]['name']]['ord'] = ++$ord;
 			
@@ -652,7 +624,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 				 && empty($line['line'][$i - 1]['space']['css_class'])) {
 					//Add the space on the second space to the first space 
 					$line['line'][$i - 1]['width'] += $line['line'][$i]['width'];
-					$line['line'][$i - 1]['class'] = \ze\content::rationalNumberGridClass($line['line'][$i - 1]['width'], $gCols);
+					$line['line'][$i - 1]['class'] = \ze\content::rationalNumberGridClass($line['line'][$i - 1]['width'], $cols);
 					//Then delete the second space
 					array_splice($line['line'], $i, 1);
 				}
@@ -674,7 +646,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 				if ($level == 0 && !$gridOpen) {
 					//Open the grid if it is not already open
 					$html .= "\n". '<div class="'. htmlspecialchars($gridCSSClass). '">';
-					$html .= "\n\t". '<div class="container container_'. $gCols. '">';
+					$html .= "\n\t". '<div class="container container_'. $cols. '">';
 					$gridCSSClass = '';
 			
 				} elseif (!$firstLine) {
@@ -741,7 +713,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 						
 						$html .= ' '. \ze\ring::HTMLId($line['line'][$i]['name']). '">';
 				
-						$html .= $nl. "\t<". "?php ze\\plugin::slot('". \ze\ring::HTMLId($line['line'][$i]['name']). "', 'grid'); ?". ">";
+						$html .= $nl. "\t<". "?php \ze\\plugin::slot('". \ze\ring::HTMLId($line['line'][$i]['name']). "', 'grid'); ?". ">";
 						$slots[$line['line'][$i]['name']] = $line['line'][$i];
 						$slots[$line['line'][$i]['name']]['ord'] = ++$ord;
 					
@@ -789,7 +761,20 @@ private static function updateMetaInfoInDBR(&$data, &$slots) {
 	}
 }
 
-public static function updateMetaInfoInDB(&$data, &$layout) {
+public static function updateHeaderMetaInfoInDB($data, $details = []) {
+	
+	$details['head_json_data'] = $data;
+	
+	$details['cols'] = $data['cols'] ?? false;
+	$details['min_width'] = $data['minWidth'] ?? false;
+	$details['max_width'] = $data['maxWidth'] ?? false;
+	$details['fluid'] = $data['fluid'] ?? false;
+	$details['responsive'] = $data['responsive'] ?? false;
+					
+	\ze\row::set('layout_head_and_foot', $details, ['for' => 'sitewide']);
+}
+
+public static function updateMetaInfoInDB(&$data, $layoutId) {
 					
 	//Update the information on the grid in the layouts table
 	\ze\row::update('layouts',
@@ -798,9 +783,11 @@ public static function updateMetaInfoInDB(&$data, &$layout) {
 			'min_width' => ($data['minWidth'] ?? false),
 			'max_width' => ($data['maxWidth'] ?? false),
 			'fluid' => ($data['fluid'] ?? false),
-			'responsive' => ($data['responsive'] ?? false)
+			'responsive' => ($data['responsive'] ?? false),
+			'header_and_footer' => ($data['headerAndFooter'] ?? false)
 		],
-		$layout['layout_id']);
+		$layoutId
+	);
 	
 	$slots = [];
 	self::updateMetaInfoInDBR($data, $slots);
@@ -808,7 +795,7 @@ public static function updateMetaInfoInDB(&$data, &$layout) {
 	//Remove any deleted slots from the database
 	$sql = "
 		DELETE FROM ". DB_PREFIX. "layout_slot_link
-		WHERE layout_id = '". \ze\escape::sql($layout['layout_id']). "'";
+		WHERE layout_id = ". (int) $layoutId;
 
 	if (!empty($slots)) {
 		$sql .= "
@@ -825,125 +812,16 @@ public static function updateMetaInfoInDB(&$data, &$layout) {
 		[
 			'ord' => $ord,
 			'cols' => $cell['width'],
-			'small_screens' => (($cell['small'] ?? false) ?: 'show')
+			'small_screens' => ($cell['small'] ?? false) ?: 'show',
+			'is_header' => !empty($cell['isHeader']),
+			'is_footer' => !empty($cell['isFooter'])
 		],
 		[
-			'layout_id' => $layout['layout_id'],
+			'layout_id' => $layoutId,
 			'slot_name' => $cell['name']]
 		);
 	}
 
-}
-
-public static function generateThumbnail(&$data, $highlightSlot, $requestedWidth, $requestedHeight) {
-	
-	$html = '';
-	$lines = [];
-	$slots = [];
-	$rows = self::generateHTMLR($html, $lines, $data, $data, $slots, $ord, $data['gCols'], 0);
-	unset($html);
-	
-	
-	$cols = (int) $data['gCols'];
-	$colSize = 8;
-	$marginSize = 2;
-	$outerMarginSize = 2;
-	$rowSize = 3;
-	$vMarginSize = 2;
-
-	$width = $cols * $colSize + ($cols-1) * $marginSize + 2 * $outerMarginSize;
-	$height = $rows * $rowSize + ($rows-1) * $vMarginSize + 2 * $outerMarginSize;
-	
-	$startX = $outerMarginSize;
-	$startY = $outerMarginSize;
-
-	$img = \WideImage\WideImage::createTrueColorImage($width, $height);
-	
-	$bgColour = $img->getExactColor(0xe4, 0xaa, 0xb0);
-	
-	if ($highlightSlot) {
-		$slotColour = $img->getExactColor(0xe8, 0xdc, 0xdd);
-		$highlightColour = $img->getExactColor(0xff, 0xff, 0x80);
-	} else {
-		$slotColour = $img->getExactColor(0xf7, 0xef, 0xef);
-		$highlightColour = false;
-	}
-	
-	imagefilledrectangle($img->getHandle(), 0, 0, $width, $height, $bgColour);
-	
-	
-	
-	if (!empty($data['cells']) && is_array($data['cells'])) {
-		self::generateThumbnailR(
-			$img, $lines,
-			$startX, $startY,
-			$colSize, $marginSize, $rowSize, $vMarginSize,
-			$slotColour, $highlightSlot, $highlightColour
-		);
-	}
-	
-	if (($requestedWidth = (int) $requestedWidth)
-	 && ($requestedHeight = (int) $requestedHeight)) {
-		$new = $img->resize($requestedWidth, $requestedHeight, 'fill');
-		$new->output('png');
-	} else {
-		$img->output('png');
-	}
-}
-
-
-public static function generateThumbnailR(
-	&$img, &$lines,
-	$startX, $startY,
-	$colSize, $marginSize, $rowSize, $vMarginSize,
-	$slotColour, $highlightSlot, $highlightColour
-) {
-	
-	$y = $startY;
-	
-	if (!empty($lines)) {
-		foreach ($lines as &$line) {
-			
-			$x = $startX;
-			$height = (int) $line['height'];
-			$y2 = $y + $height * $rowSize + ($height - 1) * $vMarginSize;
-			
-			if (!empty($line['line'])) {
-				foreach ($line['line'] as &$cell) {
-					$x2 = $x + $colSize * $cell['width'] + $marginSize * ($cell['width'] - 1);
-					
-					//print_r([$x, $y, $x2, $y2]);
-					
-					if (!empty($cell['name'])) {
-						
-						//N.b. the ability to set custom heights for slots has been removed in version 9.3.
-						//Everything now works as if you chose the "small" option.
-						$height = 1;
-						
-						$y3 = $y + $height * $rowSize + ($height - 1) * $vMarginSize;
-						
-						if ($highlightSlot == $cell['name']) {
-							imagefilledrectangle($img->getHandle(), $x, $y, $x2-1, $y3-1, $highlightColour);
-						} else {
-							imagefilledrectangle($img->getHandle(), $x, $y, $x2-1, $y3-1, $slotColour);
-						}
-					
-					} elseif (!empty($cell['lines'])) {
-						self::generateThumbnailR(
-							$img, $cell['lines'],
-							$x, $y,
-							$colSize, $marginSize, $rowSize, $vMarginSize,
-							$slotColour, $highlightSlot, $highlightColour
-						);
-					}
-					
-					$x = $x2 + $marginSize;
-				}
-			}
-			
-			$y = $y2 + $vMarginSize;
-		}
-	}
 }
 
 
@@ -953,22 +831,344 @@ public static function getLayoutData($layoutId) {
 	return \ze\row::get('layouts', 'json_data', $layoutId);
 }
 
+
+public static function checkData(&$data) {
+	if ($data && is_array($data)) {
+		
+		//Disallow editing of grids made using bootstrap compatability mode, we don't support this option any more.
+		if (!empty($data['bootstrap'])) {
+			return false;
+		}
+		
+		//Automatically remove some old now-unused settings
+		unset(
+			$data['bp1'],
+			$data['bp2'],
+			$data['break1'],
+			$data['break2']
+		);
+		
+		$data['fluid'] = !empty($data['fluid']);
+		$data['mirror'] = !empty($data['mirror']);
+		$data['responsive'] = !empty($data['responsive']);
+		
+		$data['cols'] = (int) ($data['cols'] ?? 0);
+		
+		//Calculate some redundant variables needed to generate the grid
+		if ($data['fluid']) {
+			$data['gColWidth'] = 0;
+			$data['gGutter'] = (float) ($data['gutterFlu'] ?? 0.0);
+			$data['gGutterLeftEdge'] = (float) ($data['gutterLeftEdgeFlu'] ?? 0.0);
+			$data['gGutterRightEdge'] = (float) ($data['gutterRightEdgeFlu'] ?? 0.0);
+			$data['minWidth'] = (int) ($data['minWidth'] ?? 0);
+			$data['maxWidth'] = (int) ($data['maxWidth'] ?? 0);
+		
+		} else {
+			$data['gColWidth'] = (int) ($data['colWidth'] ?? 0);
+			$data['gGutter'] = (int) ($data['gutter'] ?? 0);
+			$data['gGutterLeftEdge'] = (int) ($data['gutterLeftEdge'] ?? 0);
+			$data['gGutterRightEdge'] = (int) ($data['gutterRightEdge'] ?? 0);
+			$data['minWidth'] =
+			$data['maxWidth'] =
+				$data['cols'] * $data['gColWidth']
+			  + $data['gGutterLeftEdge']
+			  + $data['gGutterRightEdge']
+			  + ($data['cols'] - 1) * $data['gGutter'];
+		}
+		
+		//Require at least one column, and widths to be set
+		if ($data['cols'] < 1
+		 || $data['minWidth'] < 1
+		 || $data['maxWidth'] < 1
+		 || (!$data['fluid'] && ! $data['gColWidth'])) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	return false;
+}
+
+
+//If this is from an existing Layout, check what the slot names originally were and what they are now.
+//N.b. relies on the oName property being set on the renamed slots
+public static function checkForRenamedSlots($data, &$oldToNewNames) {
+	
+	//Loop through the current grouping, looking for more cells and possibly more groupings
+	foreach ($data['cells'] as &$cell) {
+		//Keep checking groupings recursively
+		if (!empty($cell['cells'])) {
+			self::checkForRenamedSlots($cell, $oldToNewNames);
+		
+		//Check for renamed slots
+		} else
+		if (!empty($cell['name'])) {
+			if (!empty($cell['oName']) && $cell['name'] != $cell['oName']) {
+				$oldToNewNames[$cell['oName']] = $cell['name'];
+			}
+		}
+	}
+}
+
+//Clean up some junk from the slot data that doesn't need to be saved
+public static function trimData(&$data, $top = true) {
+	
+	//Loop through the current grouping, looking for more cells and possibly more groupings
+	if (!empty($data['cells'])) {
+		foreach ($data['cells'] as &$cell) {
+			//Keep checking groupings recursively
+			self::trimData($cell, false);
+		
+			//Remove the original names as there is no need to save them
+			unset($cell['oName']);
+		
+			//Remove a deprecated property
+			unset($cell['type']);
+		}
+	}
+	
+	//Remove specific settings for fixed/fluid grids, if the other choice was chosen
+	if (!empty($data['fluid'])) {
+		unset($data['gutter']);
+		unset($data['gutterLeftEdge']);
+		unset($data['gutterRightEdge']);
+		unset($data['colWidth']);
+	} else {
+		unset($data['gutterFlu']);
+		unset($data['gutterLeftEdgeFlu']);
+		unset($data['gutterRightEdgeFlu']);
+	}
+	
+	//Remove the redundant calculated values that were added to help draw the grid
+	unset($data['gColWidth']);
+	unset($data['gGutter']);
+	unset($data['gGutterLeftEdge']);
+	unset($data['gGutterRightEdge']);
+}
+
+//Strip the header and footer definition from a layout, for when we want to edit it.
+public static function trimHeadAndFootSlots(&$body) {
+	$cells = [];
+	
+	if (!empty($body['cells'])) {
+		foreach ($body['cells'] as $cell) {
+			if (empty($cell['isHeader'])
+			 && empty($cell['isFooter'])) {
+				$cells[] = $cell;
+			}
+		}
+	}
+	
+	$body['cells'] = $cells;
+}
+
+//Add the header and footer definition to a layout, for when we want to save it.
+public static function addHeadAndFootSlots(&$body, $head, $foot) {
+	$cells = [];
+	
+	if (!empty($head['cells'])) {
+		foreach ($head['cells'] as $cell) {
+			self::addPropertyR($cell, 'isHeader');
+			$cells[] = $cell;
+		}
+	}
+	
+	if (!empty($body['cells'])) {
+		foreach ($body['cells'] as $cell) {
+			if (empty($cell['isHeader'])
+			 && empty($cell['isFooter'])) {
+				$cells[] = $cell;
+			}
+		}
+	}
+	
+	if (!empty($foot['cells'])) {
+		foreach ($foot['cells'] as $cell) {
+			self::addPropertyR($cell, 'isFooter');
+			$cells[] = $cell;
+		}
+	}
+	
+	$body['cells'] = $cells;
+}
+
+
+protected static function addPropertyR(&$data, $prop) {
+	$data[$prop] = true;
+	
+	if (!empty($data['cells'])) {
+		foreach ($data['cells'] as &$cell) {
+			self::addPropertyR($cell, $prop);
+		}
+	}
+}
+
+
+public static function updateHeadAndFootInAllLayouts($oldToNewNames) {
+	$hf = \ze\row::get('layout_head_and_foot', ['head_json_data', 'foot_json_data'], ['for' => 'sitewide']);
+	$head = $hf['head_json_data'];
+	$foot = $hf['foot_json_data'];
+	
+	foreach (\ze\sql::select('
+		SELECT layout_id, json_data
+		FROM '. DB_PREFIX. 'layouts
+		WHERE header_and_footer = 1
+	') as $layout) {
+		$body = $layout['json_data'];
+		$layoutId = $layout['layout_id'];
+		
+		if (empty($body) || !is_array($body)) {
+			$body = [];
+		}
+		
+		\ze\gridAdm::updateHeadAndFootInLayout($body, $head, $foot);
+		\ze\gridAdm::saveLayoutData($layoutId, $body, $oldToNewNames);
+	}
+	
+	
+	//Look for any renamed slots
+	if (!empty($oldToNewNames)) {
+	
+		foreach ($oldToNewNames as $oldName => $newName) {
+			//Try to catch the case where two slots have their names switched.
+			//Don't change the data in the database if this has happened.
+			if (empty($oldToNewNames[$newName])
+			 && !\ze\row::exists('plugin_sitewide_link', ['slot_name' => $newName])) {
+				$sql = "
+					UPDATE IGNORE ".  DB_PREFIX. "plugin_sitewide_link
+					SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
+					WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'";
+				\ze\sql::update($sql);
+			}
+		}
+	}
+}
+
+
+public static function updateHeadAndFootInLayout(&$body, $head = null, $foot = null) {
+	
+	if (is_null($head)
+	 || is_null($foot)) {
+		$hf = \ze\row::get('layout_head_and_foot', ['head_json_data', 'foot_json_data'], ['for' => 'sitewide']);
+		$head = $hf['head_json_data'];
+		$foot = $hf['foot_json_data'];
+	}
+	
+	\ze\gridAdm::trimData($body);
+	\ze\gridAdm::trimHeadAndFootSlots($body);
+	\ze\gridAdm::addHeadAndFootSlots($body, $head, $foot);
+	
+	foreach ($head as $prop => $value) {
+		if ($prop != 'cells') {
+			$body[$prop] = $value;
+		}
+	}
+}
+
+
+public static function updateHeadAndFootAndSaveLayoutData($layoutId, $data, $oldToNewNames = []) {
+	
+	if (!empty($data['headerAndFooter'])) {
+		\ze\gridAdm::updateHeadAndFootInLayout($data);
+	} else {
+		\ze\gridAdm::trimHeadAndFootSlots($data);
+	}
+	
+	\ze\gridAdm::trimData($data);
+	\ze\gridAdm::saveLayoutData($layoutId, $data, $oldToNewNames);
+}
+
+
+public static function saveLayoutData($layoutId, $body, $oldToNewNames = []) {
+	
+	$layoutDetails = [];
+	$layoutDetails['json_data'] = $body;
+	$layoutDetails['json_data_hash'] = \ze::hash64(json_encode($body), 8);
+	\ze\row::update('layouts', $layoutDetails, $layoutId);
+	
+	
+	//Look for any renamed slots
+	if (!empty($oldToNewNames)) {
+	
+		foreach ($oldToNewNames as $oldName => $newName) {
+			//Try to catch the case where two slots have their names switched.
+			//Don't change the data in the database if this has happened.
+			if (empty($oldToNewNames[$newName])
+			 && !\ze\row::exists(
+					'layout_slot_link',
+					[
+						'layout_id' => $layoutId,
+						'slot_name' => $newName]
+			)) {
+				//Switch the slot names in the system
+				$sql = "
+					UPDATE IGNORE ".  DB_PREFIX. "plugin_layout_link
+					SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
+					WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+					  AND layout_id = ". (int) $layoutId;
+				\ze\sql::update($sql);
+			
+				$sql = "
+					UPDATE IGNORE ".  DB_PREFIX. "layout_slot_link
+					SET slot_name = '". \ze\escape::asciiInSQL($newName). "'
+					WHERE slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+					  AND layout_id = ". (int) $layoutId;
+				\ze\sql::update($sql);
+			
+				$sql = "
+					UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
+					INNER JOIN ".  DB_PREFIX. "plugin_instances AS pi
+					   ON pi.content_id = v.id
+					  AND pi.content_type = v.type
+					  AND pi.content_version = v.version
+					SET pi.slot_name = '". \ze\escape::asciiInSQL($newName). "'
+					WHERE pi.slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+					  AND v.layout_id = ". (int) $layoutId;
+				\ze\sql::update($sql);
+			
+				$sql = "
+					UPDATE IGNORE ".  DB_PREFIX. "content_item_versions AS v
+					INNER JOIN ".  DB_PREFIX. "plugin_item_link AS pil
+					   ON pil.content_id = v.id
+					  AND pil.content_type = v.type
+					  AND pil.content_version = v.version
+					SET pil.slot_name = '". \ze\escape::asciiInSQL($newName). "'
+					WHERE pil.slot_name = '". \ze\escape::asciiInSQL($oldName). "'
+					  AND v.layout_id = ". (int) $layoutId;
+				\ze\sql::update($sql);
+			}
+		}
+	}
+
+	//Update the new slots in the DB
+	\ze\gridAdm::updateMetaInfoInDB($body, $layoutId);
+
+}
+
+
+public static function sensibleDefault() {
+	//Just get some options that are a sensible default to start with
+	return [
+		'cols' => 12,
+		'fluid' => true,
+		"responsive" => true,
+		'mirror' => false,
+		'maxWidth' => 1240,
+		'minWidth' => 769,
+		"gutterFlu" => 1,
+		"gutterLeftEdgeFlu" => 1,
+		"gutterRightEdgeFlu" => 1
+	];
+}
+
 //
-//	Source Code and Checksums for Grid Layouts
+//	Source Code and Checksums for Grid Layouts (Deprecated)
 //
 //When writing layout files to the disk, we used to add their source-code and a checksum to them.
 //There's no point in doing this now we store them by ID in the database, however when migrating
 //from old versions you might still see files with these, and it's useful to be able to read
 //them for migration purposes.
-
-public static function addCode(&$html, &$data) {
-	$html .=
-		'<'. '?php //data:'.
-			strtr(base64_encode(
-				gzcompress(json_encode($data))
-			), ' +/=', '~-_,').
-		'//v2// ?'. '>';
-}
 
 public static function readCode(&$html, $justCheck = false, $quickCheck = false) {
 	$parts = explode('<?'. 'php //data:', $html, 2);
@@ -1003,209 +1203,5 @@ public static function readCode(&$html, $justCheck = false, $quickCheck = false)
 	return false;
 }
 
-public static function addChecksum(&$html) {
-	$html .= '<?'. 'php //checksum:'. self::oldHash64(trim($html)). '// ?'. '>';
-}
 
-public static function checkChecksum(&$html) {
-	$parts = explode('<?'. 'php //checksum:', $html, 2);
-	
-	if (empty($parts[1])) {
-		return false;
 	}
-	
-	$parts[1] = str_replace(['//', '?'. '>', ' '], '', $parts[1]);
-	
-	return self::oldHash64(trim($parts[0])) == $parts[1];
-}
-
-//This old version of hash64, before we changed it.
-//I'm keeping it here because I don't want to break everyone's images.
-public static function oldHash64($text, $len = 28) {
-	return substr(strtr(base64_encode(sha1($text, true)), ' +/=', '~-_,'), 0, $len);
-}
-
-
-public static function validateData(&$data) {
-	if ($data && is_array($data)) {
-		
-		if (!empty($data['bootstrap'])) {
-			return false;
-		}
-		
-		if ((($data['fluid'] = !empty($data['fluid'])) || true)
-		 && (($data['mirror'] = !empty($data['mirror'])) || true)
-		 && (($data['responsive'] = !empty($data['responsive'])) || true)
-		 && (($data['gCols'] = (int) ($data['cols'] ?? false)))
-		 && (($data['gColWidth'] = (int) ($data['colWidth'] ?? false)) || $data['fluid'])
-		 && (($data['gGutter'] = $data['fluid']? (float) ($data['gutterFlu'] ?? false) : (int) ($data['gutter'] ?? false)) || true)
-		 && (($data['gGutterLeftEdge'] = $data['fluid']? (float) ($data['gutterLeftEdgeFlu'] ?? false) : (int) ($data['gutterLeftEdge'] ?? false)) || true)
-		 && (($data['gGutterRightEdge'] = $data['fluid']? (float) ($data['gutterRightEdgeFlu'] ?? false) : (int) ($data['gutterRightEdge'] ?? false)) || true)
-		 && ($data['minWidth'] = $data['fluid']? (int) ($data['minWidth'] ?? false) : $data['gCols'] * $data['gColWidth'] + $data['gGutterLeftEdge'] + $data['gGutterRightEdge'] + ($data['gCols'] - 1) * $data['gGutter'])
-		 && ($data['maxWidth'] = $data['fluid']? (int) ($data['maxWidth'] ?? false) : $data['minWidth'])
-		 && ($data['gCols'] >= 1)
-		) {
-			return true;
-		}
-	}
-	
-	return false;
-}
-
-
-public static function calcTemplateFamilyName($data) {
-	
-	//New logic
-	return 'grid_templates';
-	
-	//Old logic
-	return $data['gCols']. '-col-grid';
-}
-
-//Given a template file, strip out anything but the slots and return the size.
-//Comparing sizes before and after can be used as a rough estimate to whether slots have been added or removed.
-public static function compactedSize($html) {
-	//Strip out all spaces, comments, PHP code, and any HTML that's not a <div> tag, then return the string's length.
-		//Also remove the word "responsive" to prevent a bug where if you check/uncheck the "responsive" keyword on
-		//enough slots that could trigger the warning about slots being added/removed.
-	return strlen(preg_replace('/\s+/', '', str_replace(' responsive ', ' ', strip_tags($html, '<div>'))));
-}
-
-
-public static function generateDirectory(&$data, &$slots, $writeToFS = false, $preview = false, $tFileBaseName = 'layout') {
-	$html = $css = '';
-	
-	if ($writeToFS) {
-		self::$mode = 'fs';
-	} else {
-		self::$mode = 'zip';
-	}
-
-
-	$status = [];
-	
-	
-	if (self::$mode == 'zip') {
-		if (!class_exists('ZipArchive')) {
-			return new \ze\error('_ZENARIO_GRID_MAKER_ERROR_004');
-		}
-		
-		self::$out = new ZipArchive();
-
-		//Make a new directory to construct the output in
-		if (($dirOut = \ze\cache::createRandomDir(15, 'downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip')))
-		 && (is_writable($dirOut))
-		 && (true === self::$out->open($filepath = $dirOut. $tFamilyName. '.zip', ZIPARCHIVE::CREATE))) {
-		} else {
-			return new \ze\error('_ZENARIO_GRID_MAKER_ERROR_005');
-		}
-	
-	} else {
-		return false;
-	}
-	
-	
-	if (!$preview) {
-		
-		
-		try {
-			
-		
-		} catch (\Exception $e) {
-			if (self::$mode == 'zip') {
-				self::$out->close();
-			}
-			
-			return new \ze\error($e->getMessage());
-		}
-	}
-	
-	
-	if (self::$mode == 'zip') {
-		self::$out->close();
-		
-		//Return the path to the zip, so it can be offered for download
-		return $filepath;
-	}
-}
-
-protected static $mode;
-protected static $out;
-protected static $tempDir;
-protected static $tempDirR;
-
-
-
-//I don't think the function below is used...
-////Copy a directory and its contents
-////Note that $from needs to be the full path, but $to is relative to the source/target directory
-//protected static function copyDirR($from, $to, $excludeFilter = false, $limit = 9) {
-//	
-//	if (!--$limit) {
-//		return;
-//	}
-//	
-//	self::mkdir($to);
-//	
-//	foreach (scandir($from) as $file) {
-//		if ($excludeFilter && strpos($file, $excludeFilter) !== false) {
-//			continue;
-//		}
-//		
-//		if (substr($file, 0, 1) != '.') {
-//			if (is_dir($from. '/'. $file)) {
-//				self::copyDirR($from. '/'. $file, $to. '/'. $file, $limit);
-//			} else {
-//				self::copy($from. '/'. $file, $to. '/'. $file, $limit);
-//			}
-//		}
-//	}
-//}
-
-//Make a new directory in the target directory
-protected static function mkdir($path) {
-
-	if (self::$mode == 'fs') {
-		if (!is_dir($dir = self::$tempDir. $path)) {
-			if (!@mkdir($dir)) {
-				throw new Exception('_ZENARIO_GRID_MAKER_ERROR_002');
-			} else {
-				\ze\cache::chmod($dir, 0777);
-			}
-		}
-		\ze\db::updateDataRevisionNumber();
-	
-	} elseif (self::$mode == 'zip') {
-		self::$out->addEmptyDir($path);
-	}
-}
-
-//Create a new file in the target directory
-protected static function put($path, $contents, $isExecutable) {
-	if (self::$mode == 'fs') {
-		if (!@file_put_contents(self::$tempDir. $path, $contents)) {
-			throw new Exception('_ZENARIO_GRID_MAKER_ERROR_003');
-		}
-		\ze\cache::chmod(self::$tempDir. $path, $isExecutable? 0664 : 0666);
-		\ze\db::updateDataRevisionNumber();
-	
-	} elseif (self::$mode == 'zip') {
-		self::$out->addFromString($path, $contents);
-	}
-}
-
-//Copy a file
-//Note that $from needs to be the full path, but $to is relative to the source/target directory
-protected static function copy($from, $to, $isExecutable) {
-	if (self::$mode == 'fs') {
-		copy($from, self::$tempDir. $to);
-		\ze\cache::chmod(self::$tempDir. $to, $isExecutable? 0664 : 0666);
-		\ze\db::updateDataRevisionNumber();
-	
-	} elseif (self::$mode == 'zip') {
-		self::$out->addFile($from, $to);
-	}
-}
-
-
-  }

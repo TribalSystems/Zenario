@@ -3,7 +3,13 @@
 zenario_slide:
     lovs:
         title_merge_fields:
+            user:
+                label: 'Can be used when "userId" is in the URL'
+            '[[userId]]':
+                parent: user
+                data-class: user_icon
+                label: 'User ID: [[userId]]'
             '[[zenario_users:name]]':
-                parent: misc
+                parent: user
                 data-class: user_icon
                 label: 'User first and last name: [[zenario_users:name]]'

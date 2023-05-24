@@ -8,7 +8,6 @@ plugin_settings:
                 mode: 
                     plugin_setting: 
                         name: mode
-                        use_value_for_plugin_name: 1
                     label: Mode
                     type: select
                     css_class: iconselectmenu
@@ -148,7 +147,7 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                     pick_items:
-                        path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     validation:
                         required_if_not_hidden: Please choose a default image.
@@ -217,6 +216,20 @@ plugin_settings:
                     label: Date
                     type: checkbox
                     value: 1
+                show_dataset_fields:
+                    grouping: show_fields
+                    visible_if:
+                        lib.modeIn: list_videos
+                    plugin_setting:
+                        name: show_dataset_fields
+                    label: 'Show dataset fields:'
+                    pick_items:
+                        path: ''
+                        multiple_select: true
+                        reorder_items: true
+                        visible_if_for_all_selected_items: item.is_field
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select dataset fields...
                 
                 enable.view_video:
                     grouping: item_buttons
@@ -423,4 +436,20 @@ plugin_settings:
                             label: Alphabetical on title
                         date:
                             label: Most recent date first
+                        custom_dataset_field:
+                            label: Sort by custom dataset field...
                     value: alphabetic
+                    redraw_onchange: true
+                sort_by_custom_dataset_field:
+                    grouping: options
+                    indent: 1
+                    visible_if: lib.modeIn('list_videos') && (lib.value('order_by') == 'custom_dataset_field')
+                    plugin_setting:
+                        name: sort_by_custom_dataset_field
+                    label: 'Dataset field:'
+                    pick_items:
+                        path: ''
+                        reorder_items: true
+                        visible_if_for_all_selected_items: item.is_field
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select dataset field...

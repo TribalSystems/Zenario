@@ -37,9 +37,9 @@ class tuix {
 	//Formerly "tuixCacheDir()"
 	public static function cacheDir($path) {
 	
-		$path = str_replace(['/tuix/', '/zenario/'], '/', \ze\ring::chopPrefix(CMS_ROOT, $path, true));
+		$path = str_replace('/tuix/', '/', \ze\ring::chopPrefix('zenario/', \ze\ring::chopPrefix(CMS_ROOT, $path, true), true));
 	
-		$dir = str_replace('%', ' ', rawurlencode(dirname($path)));
+		$dir = str_replace(' 2F', '-', str_replace('%', ' ', rawurlencode(dirname($path))));
 		$file = explode('.', basename($path), 2);
 		$file = $file[0];
 	
@@ -715,7 +715,7 @@ class tuix {
 						$addClass = true;
 					}
 		
-				} elseif ($type == 'admin_boxes' || $type == 'wizards') {
+				} elseif ($type == 'admin_boxes') {
 					if ($parentsParent === false
 					 || $parent == 'tabs'
 					 || $parent == 'fields') {
@@ -854,7 +854,7 @@ class tuix {
 						|| $parentKey == 'top_right_buttons'
 						|| $parentKey == 'nav';
 	
-		} elseif ($type == 'admin_boxes' || $type == 'welcome' || $type == 'wizards') {
+		} elseif ($type == 'admin_boxes' || $type == 'welcome') {
 			$orderItems = $parentKey == 'tabs'
 						|| $parentKey == 'fields'
 						|| $parentParentKey == 'lovs'
@@ -1161,7 +1161,9 @@ class tuix {
 			switch ($tags['fea_type']) {
 				case 'form':
 				case 'dash':
+				case 'graph':
 					return true;
+				case 'list':
 				default:
 					return false;
 			}
@@ -1299,8 +1301,16 @@ class tuix {
 				}
 			}
 		}
-	
-	
+		
+		//Also strip out the "never_sync_this_data_between_client_and_server" object
+		//and make sure it's not saved, if it is there
+		$notToSave = null;
+		if (isset($tags['never_sync_this_data_between_client_and_server'])) {
+			$notToSave = $tags['never_sync_this_data_between_client_and_server'];
+			unset($tags['never_sync_this_data_between_client_and_server']);
+		}
+		
+		
 		//If we can, use SSL to encode the file so it's a bit harder for someone browsing the server to read them.
 		//Firstly, if there's not already a password, we'll set one up in _sync.password.
 		//Then encode the tags (but temporarily remove the password when we do this,
@@ -1333,6 +1343,11 @@ class tuix {
 			}
 		}
 		unset($currentValues);
+		
+		//Put the "never_sync_this_data_between_client_and_server" object back in
+		if ($notToSave !== null) {
+			$tags['never_sync_this_data_between_client_and_server'] = $notToSave;
+		}
 	
 	
 		return $string;
@@ -1902,6 +1917,8 @@ class tuix {
 				default:
 					if (isset($t[$i='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='pre_field_text'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='post_field_text'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='multiple_select_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
@@ -2095,8 +2112,7 @@ class tuix {
 				'plugin_setting' => [
 					'name' => $ppath,
 					'value' => $defaultText,
-					'dont_save_default_value' => true,
-					'save_empty_value_when_hidden' => false
+					'dont_save_default_value' => true
 				],
 				'ord' => ++$ord,
 				'same_row' => true,
@@ -2460,6 +2476,15 @@ class tuix {
 
 
 
+	//This code is needed to get the "allow_typing_anything" picker working if there should be
+	//previously existing values.
+	public static function setupAllowTypingAnythingPicker(&$field, $initialValue) {
+		$field['values'] = [];
+		foreach (\ze\ray::explodeAndTrim($initialValue) as $value) {
+			$field['values'][$value] = $value;
+		}
+	}
+
 
 
 
@@ -2488,9 +2513,9 @@ class tuix {
 	public static function syncFromClientToServer(&$serverTags, &$clientTags, $key1 = false, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false) {
 		
 		if ($key1 === false) {
-			if (isset($clientTags['from_client'])) {
-				$serverTags['from_client'] = [];
-				\ze\tuix::syncAllTagsToServer($serverTags['from_client'], $clientTags['from_client']);
+			if (isset($clientTags['always_sync_this_data_between_client_and_server'])) {
+				$serverTags['always_sync_this_data_between_client_and_server'] = [];
+				\ze\tuix::syncAllTagsToServer($serverTags['always_sync_this_data_between_client_and_server'], $clientTags['always_sync_this_data_between_client_and_server']);
 			}
 		}
 		
@@ -2538,7 +2563,7 @@ class tuix {
 		}
 	}
 
-	//This function is similar to the above, except it is specifically coded to handle the "from_client" object,
+	//This function is similar to the above, except it is specifically coded to handle the "always_sync_this_data_between_client_and_server" object,
 	//where everything is allowed through
 	public static function syncAllTagsToServer(&$serverTags, &$clientTags) {
 		
@@ -2791,18 +2816,6 @@ class tuix {
 
 	public static function visitorTUIX($owningModule, $requestedPath, &$tags, $filling = true, $validating = false, $saving = false, $debugMode = false) {
 		
-		////Exit if no path is specified
-		//if (!$requestedPath) {
-		//	echo 'No path specified!';
-		//	exit;
-		//}
-		//
-		////Check to see if this path is allowed.
-		//} else if (!$owningModule->returnVisitorTUIXEnabled($requestedPath)) {
-		//	echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
-		//	exit;
-		//}
-		
 		\ze::$tuixType = $type = 'visitor';
 		\ze::$tuixPath = $requestedPath;
 		
@@ -3025,10 +3038,13 @@ class tuix {
 	
 	
 	//JSON encode some TUIX, and also apply some common replacements as a simple way to try and get the size down a bit
+	//Also force any empty arrays to be objects, not arrays, but without using the JSON_FORCE_OBJECT logic
+	//which corrupts actual arrays.
 	public static function stringify($tags) {
 		return str_replace([
 			'%',
 			
+			'":[]',
 			'":false',
 			'":true',
 			'"pre_field_html":',
@@ -3069,6 +3085,7 @@ class tuix {
 		], [
 			'%C',
 			
+			'":{}',
 			'%0',
 			'%1',
 			'%2',
@@ -3106,7 +3123,7 @@ class tuix {
 			'%z',
 			
 			'%S', '~', '%P', '+'
-		], json_encode($tags, JSON_FORCE_OBJECT));
+		], json_encode($tags, JSON_INVALID_UTF8_SUBSTITUTE));
 	}
 	
 	//Reverse of the above, if ever needed

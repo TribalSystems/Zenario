@@ -27,18 +27,18 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 56365);	//N.b. 9.4 starts at revision #56500
-define('LATEST_BIG_CHANGE_REVISION_NO', 56360);
-define('INSTALLER_REVISION_NO', 53100);
+define('LATEST_REVISION_NO', 57715);	//N.b. 9.5 starts at revision #57770
+define('LATEST_BIG_CHANGE_REVISION_NO', 57550);
+define('INSTALLER_REVISION_NO', 56900);
 define('INSTALLER_DEFAULT_THEME', 'zebra_designs');
 define('EARLIEST_SUPPORTED_MIGRATION', 45400);
 
 define('ZENARIO_IS_HEAD', false);
-define('ZENARIO_VERSION', '9.3');
+define('ZENARIO_VERSION', '9.4');
 define('ZENARIO_MAJOR_VERSION', '9');
-define('ZENARIO_MINOR_VERSION', '3');
-define('ZENARIO_CHANGELOG_URL', 'https://zenar.io/zenario-93');
+define('ZENARIO_MINOR_VERSION', '4');
+define('ZENARIO_CHANGELOG_URL', 'https://zenar.io/zenario-94');
 define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '58670');
+define('ZENARIO_REVISION', '58686');
 
 define('TINYMCE_DIR', 'zenario/libs/manually_maintained/lgpl/tinymce_4_7_3/');

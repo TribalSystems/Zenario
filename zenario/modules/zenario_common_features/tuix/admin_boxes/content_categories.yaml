@@ -7,6 +7,8 @@ zenario_content_categories:
         originalId: ""
         equivId: ""
         cType: ""
+        id_is_menu_node_id: false
+        menu_node_id: ''
     hide_tab_bar: false
     tabs:
         categories:

@@ -211,19 +211,23 @@ plugin_settings:
                         min_path: zenario__languages/panels/countries
                         target_path: zenario__languages/panels/countries
                     validation:
-                        required_if_not_hidden: 'Please select a default country'
+                        required_if_not_hidden: 'Please select a default country.'
+                    format_onchange: true
                 geo_ip_default_country:
                     indent: 2
                     visible_if: |
                         zenarioAB.value('filter_by_country') && zenarioAB.value('default_country_options') == 'geo_ip'
                     plugin_setting:
                         name: geo_ip_default_country
-                    label: 'Default country if looked up country not in list:'
+                    label: "Default country if visitor GeoIP country is not among the locations' countries:"
                     pick_items:
                         path: zenario__languages/panels/countries//
                         max_path: zenario__languages/panels/countries
                         min_path: zenario__languages/panels/countries
                         target_path: zenario__languages/panels/countries
+                    validation:
+                        required_if_not_hidden: 'Please select a default country.'
+                    format_onchange: true
             
                 list_by_field:
                     plugin_setting:

@@ -55,7 +55,7 @@ zenario_document_properties:
                 tags:
                     label: 'Document tags:'
                     type: checkboxes
-                    load_values_from_organizer_path: zenario__content/panels/document_tags
+                    load_values_from_organizer_path: zenario__library/panels/document_tags
                 link_to_add_tags:
                     full_width: true
                     snippet:

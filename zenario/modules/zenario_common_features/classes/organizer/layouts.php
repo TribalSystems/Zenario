@@ -83,15 +83,15 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			$panel['title'] = ze\admin::phrase('Layouts available for the "[[name]]" content type', ['name' => ze\content::getContentTypeName($refinerId)]);
 			$panel['no_items_message'] = ze\admin::phrase('There are no layouts available for the "[[name]]" content type', ['name' => ze\content::getContentTypeName($refinerId)]);
 		
-		} elseif ($_GET['refiner__module_usage'] ?? false) {
+		} elseif (ze::get('refiner__module_usage')) {
 			$mrg = [
-				'name' => ze\module::displayName($_GET['refiner__module_usage'] ?? false)];
+				'name' => ze\module::displayName(ze::get('refiner__module_usage'))];
 			$panel['title'] = ze\admin::phrase('Layouts on which the module "[[name]]" is used (layout layer)', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no layouts using the module "[[name]]".', $mrg);
 		
-		} elseif ($_GET['refiner__plugin_instance_usage'] ?? false) {
+		} elseif (ze::get('refiner__plugin_instance_usage')) {
 			$mrg = [
-				'name' => ze\plugin::name($_GET['refiner__plugin_instance_usage'] ?? false)];
+				'name' => ze\plugin::name(ze::get('refiner__plugin_instance_usage'))];
 			$panel['title'] = ze\admin::phrase('Layouts on which the plugin "[[name]]" is used (layout layer)', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no layouts using the plugin "[[name]]".', $mrg);
 		
@@ -119,19 +119,22 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				$item['status'] = 'active_default';
 			}
 			
-			if (!empty($item['cols'])) {
+			if ($item['header_and_footer']) {
+				$summary .= ze\admin::phrase('Uses site-wide header and footer');
+			
+			} elseif (!empty($item['cols'])) {
 				if (!empty($item['fluid'])) {
-					$summary .= 'Fluid / '. $item['min_width']. ' - '. $item['max_width']. ' px ';
+					$summary .= ze\admin::phrase('Fluid / [[min_width]] - [[max_width]] px', $item). ' ';
 				} else {
-					$summary .= 'Fixed width / '. $item['min_width']. ' px ';
+					$summary .= ze\admin::phrase('Fixed width / [[max_width]] px', $item). ' ';
 				}
 				if (!empty($item['responsive'])) {
-					$summary .= '/ Responsive ';
+					$summary .= ze\admin::phrase('/ Responsive', $item). ' ';
 				}
-				$summary .= '/ '. $item['cols']. ' columns';
+				$summary .= ze\admin::phrase('/ [[cols]] columns', $item);
 			}
 			
-			$summary .= ' <br/>' . htmlspecialchars($item['skin_name']). ' skin';
+			$summary .= ' <br/>' . ze\admin::phrase('[[skin_name]] skin', ['skin_name' => htmlspecialchars($item['skin_name'])]);
 			
 			$item['summary'] = $summary;
 			
@@ -145,17 +148,18 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			
 			//Show how many items use a specific layout, and display links if possible.
 			$usageContentItems = ze\layoutAdm::usage($id, false, $countItems = false);
-			$usage = [
-				'content_item' => $usageContentItems[0] ?? null,
-				'content_items' => count($usageContentItems)
-			];
-	
-			$usageLinks = [
-				'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $id. '//'
-			];
+			$usageByTrashedContentItems = '';
 			
-			$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 			if (count($usageContentItems) > 0) {
+				$usage = [
+					'content_item' => $usageContentItems[0] ?? null,
+					'content_items' => count($usageContentItems)
+				];
+	
+				$usageLinks = [
+					'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $id. '//'
+				];
+				
 				$contentTypeEnname='';
 				foreach (ze\content::getContentTypes() as $cType) {
 					if($cType['content_type_id'] == $item['content_type']) {
@@ -173,12 +177,41 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 					$item['default_used'] = ze\admin::phrase('Used by [[typeCount]] [[contentTypes]]', ['contentTypes' => $contentTypeEnname, 'typeCount' => count($usageContentItems)]);
 				}
 			} else {
+				$usageByTrashedContentItems = ze\layoutAdm::usageByTrashedContentItems($id, $countItems = false);
+				$usageByTrashedContentItemsCount = count($usageByTrashedContentItems);
+				$usage = [
+					'content_item' => $usageByTrashedContentItems[0] ?? null,
+					'content_items' => $usageByTrashedContentItemsCount
+				];
+	
+				$usageLinks = [
+					'content_items' => 'zenario__content/panels/content/refiners/trash////'
+				];
+				
 				if (ze\row::exists('content_types', ['default_layout_id' => $id])) {
-					$item['default_used'] = ze\admin::phrase('Not used, default for this content type.');
+					if ($usageByTrashedContentItemsCount) {
+						$item['default_used'] = ze\admin::nPhrase(
+							'Only used by [[count]] trashed content item, default for this content type.',
+							'Only used by [[count]] trashed content items, default for this content type.',
+							$usageByTrashedContentItemsCount
+						);
+					} else {
+						$item['default_used'] = ze\admin::phrase('Not used, default for this content type.');
+					}
 				} else {
-					$item['default_used'] = ze\admin::phrase('Not used');
+					if ($usageByTrashedContentItemsCount) {
+						$item['default_used'] = ze\admin::nPhrase(
+							'Only used by [[count]] trashed content item',
+							'Only used by [[count]] trashed content items',
+							$usageByTrashedContentItemsCount
+						);
+					} else {
+						$item['default_used'] = ze\admin::phrase('Not used');
+					}
 				}
 			}
+			
+			$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 			
 			$item['row_class'] = ' layout_status_' . $item['status'];
 		}
@@ -188,7 +221,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		if ($path != 'zenario__layouts/panels/layouts') return;
 		
 		//Delete a layout if it is not in use
-		if (($_POST['delete'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
+		if (ze::post('delete') && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (!ze\row::exists('content_types', ['default_layout_id' => $id])
 				 && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
@@ -198,7 +231,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
 		
 		//Archive/retire a layout
-		} elseif (($_POST['archive'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
+		} elseif (ze::post('archive') && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (!ze\row::exists('content_types', ['default_layout_id' => $id])) {
 					ze\row::update('layouts', ['status' => 'suspended'], $id);
@@ -206,7 +239,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			}
 		
 		//Restore a layout
-		} elseif (($_POST['restore'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
+		} elseif (ze::post('restore') && ze\priv::check('_PRIV_EDIT_TEMPLATE')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				ze\row::update('layouts', ['status' => 'active'], $id);
 			}

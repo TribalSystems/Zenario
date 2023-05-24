@@ -78,7 +78,7 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
 	var $editor = $('div#' + editorId);
 	
 	$editor.tinymce({
-		script_url: URLBasePath + zenario.tinyMCEPath,
+		script_url: zenario.addBasePath(zenario.tinyMCEPath),
 
 		plugins: ["advlist autolink lists link image charmap hr anchor",
         "searchreplace code",

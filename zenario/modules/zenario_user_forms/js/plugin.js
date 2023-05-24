@@ -1,7 +1,22 @@
 (function(module) {
 	'use strict';
 	
-	module.initForm = function(containerId, slotName, ajaxURL, formHTML, formFinalSubmitSuccessfull, inFullScreen, allowProgressBarNavigation, page, maxPageReached, showLeavingPageMessage, isErrors, phrases) {
+	module.initForm = function(
+		containerId,
+		slotName,
+		ajaxURL,
+		formHTML,
+		formFinalSubmitSuccessfull,
+		inFullScreen,
+		allowProgressBarNavigation,
+		page,
+		maxPageReached,
+		showLeavingPageMessage,
+		isErrors,
+		phrases,
+		maxUploadSize,
+		maxUploadSizeFormatted
+	) {
 		this.containerId = containerId;
 		var that = this;
 		
@@ -499,6 +514,10 @@
 				$(this).find('.file_picker_field').fileupload({
 					url: ajaxURL + '&fileUpload=1',
 					dataType: 'json',
+					maxFileSize: maxUploadSize,
+					messages: {
+						maxFileSize: 'Exceeded filesize limit of ' + maxUploadSizeFormatted + '.',
+					},
 					start: function(e) {
 						updateProgressBar(fieldId, 0, true);
 					},
@@ -521,7 +540,6 @@
 						updateProgressBar(fieldId, 0, false);
 					}
 				});
-				
 				
 			});
 		})();
@@ -668,6 +686,10 @@
 					url: ajaxURL + '&fileUpload=1',
 					dataType: 'json',
 					dropZone: $popup1FileList,
+					maxFileSize: maxUploadSize,
+					messages: {
+						maxFileSize: 'Exceeded filesize limit of ' + maxUploadSizeFormatted + '.',
+					},
 					start: function(e) {
 						updateProgressBar(fieldId, 'popup_1', 0, true);
 					},
@@ -712,6 +734,10 @@
 					url: ajaxURL + '&fileUpload=1&thumbnail=1',
 					dataType: 'json',
 					dropZone: $popup2FileList,
+					maxFileSize: maxUploadSize,
+					messages: {
+						maxFileSize: 'Exceeded filesize limit of ' + maxUploadSizeFormatted + '.',
+					},
 					start: function(e) {
 						updateProgressBar(fieldId, 'popup_2', 0, true);
 					},

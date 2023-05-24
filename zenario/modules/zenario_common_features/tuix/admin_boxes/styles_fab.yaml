@@ -98,6 +98,18 @@ styles_fab_white: &styles_fab
                         before_field: true
                     validation:
                         numeric: This must be numeric
+                spinner:
+                    label: Spinner
+                    type: text
+                    value: 960
+                    size: 4
+                    spinner:
+                        range: min
+                        min: 100
+                        step: 10
+                        units: px
+                    validation:
+                        numeric: This must be numeric
                 url:
                     label: URL
                     type: url
@@ -220,7 +232,7 @@ styles_fab_white: &styles_fab
                             - .png
                         drag_and_drop: true
                     pick_items:
-                        path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
                         multiple_select: false
                         reorder_items: false
                     redraw_onchange: true
@@ -236,7 +248,7 @@ styles_fab_white: &styles_fab
                             - .png
                         drag_and_drop: true
                     pick_items:
-                        path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
                         multiple_select: true
                         reorder_items: false
                     redraw_onchange: true
@@ -252,7 +264,7 @@ styles_fab_white: &styles_fab
                             - .png
                         drag_and_drop: true
                     pick_items:
-                        path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
                         multiple_select: true
                         reorder_items: true
                     redraw_onchange: true

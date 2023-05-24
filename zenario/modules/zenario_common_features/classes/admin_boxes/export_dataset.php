@@ -43,11 +43,21 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		$result = ze\sql::select($sql);
 		$datasetFieldNames = '<ul>';
 		$fieldExists = false;
+		
+		if ($dataset['system_table'] == 'users') {
+			$datasetFieldNames .= '<li>' . ze\admin::phrase('User ID (user_id)') . '</li>';
+		}
+		
 		while ($row = ze\sql::fetchAssoc($result)) {
-			
-			if ($row['label']) {
+			if ($row['label'] || $row['default_label']) {
 				$fieldExists = true;
-				$datasetFieldNames .= '<li>'.str_replace(":","",$row['label']).'</li>';
+				$datasetFieldNames .= '<li>' . str_replace(":", "", ($row['label'] ?: $row['default_label'])) . ' (' . $row['db_column'] . ')';
+				
+				if (ze::in($row['type'], 'select', 'centralised_select', 'radios', 'centralised_radios')) {
+					$datasetFieldNames .= ', ' . ze\admin::phrase('will export the database value and label');
+				}
+				
+				$datasetFieldNames .= '</li>';
 			}
 		}
 		$datasetFieldNames .= '</ul>';
@@ -89,6 +99,11 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		$customFields = [];
 		$checkboxFields = [];
 		
+		//These two arrays will be used to display labels for select lists and radios
+		//in addition to displaying the numeric value of an option.
+		$selectAndRadioFields = [];
+		$selectAndRadioFieldValueLabels = [];
+		
 		$datasetColumns = [];
 		$datasetColumnIdLink = [];
 		$datasetFields = [];
@@ -108,6 +123,11 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 			} else {
 				$customFields[] = $row['db_column'];
 			}
+			
+			if (ze::in($row['type'], 'select', 'centralised_select', 'radios', 'centralised_radios')) {
+				$selectAndRadioFields[$row['id']] =  $row['db_column'] . '_value_label';
+			}
+			
 			$datasetColumnIdLink[$row['db_column']] = $row['id'];
 			
 			$datasetColumns[$row['id']] = !empty($row['db_column']) ? $row['db_column'] : $row['field_name'];
@@ -116,6 +136,10 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 			$datasetFields[$row['id']] = $row;
 			$rowTemplate[$row['id']] = '';
 		}
+		
+		//Sort the column names for radios and select lists by key, ASC.
+		//This will be useful to make sure the correct value is displayed in the correct column.
+		ksort($selectAndRadioFields);
 
 		if ($dataset['system_table'] == 'users' && ze\module::inc('zenario_user_activity_bands') && ze::setting('zenario_user_activity_bands__add_activity_band_column')) {
 			$datasetColumns[] = 'activity_bands';
@@ -167,6 +191,16 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 						// Set value
 						$datasetFieldId = $datasetColumnIdLink[$col];
 						$data[$row[$idColumn]][$datasetFieldId] = self::formatDatasetFieldValue($value, $datasetFields[$datasetFieldId]);
+						
+						if (ze::in($datasetFields[$datasetFieldId]['type'], 'select', 'centralised_select', 'radios', 'centralised_radios')) {
+							$lov = ze\dataset::fieldLOV($datasetFields[$datasetFieldId]['id']);
+			
+							if (!empty($lov[$value])) {
+								$value = $lov[$value];
+							}
+							
+							$selectAndRadioFieldValueLabels[$row[$idColumn]][$datasetFieldId] = $value ?: '';
+						}
 					}
 					
 					if ($locationContentItemFieldId && ($recordTable['table'] == $dataset['system_table'])) {
@@ -175,6 +209,13 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 				}
 			}
 		}
+		
+		//Sort the labels for radios and select lists options by key, ASC.
+		//This will be useful to make sure the correct value is displayed in the correct column.
+		foreach ($selectAndRadioFieldValueLabels as &$selectAndRadioFieldValueLabelsRow) {
+			ksort($selectAndRadioFieldValueLabelsRow);
+		}
+		
 		foreach ($checkboxFields as $fieldId) {
 			$sql = '
 				SELECT l.linking_id, GROUP_CONCAT(v.label ORDER BY v.ord) AS labels
@@ -210,11 +251,22 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		if ($dataset['system_table'] == 'users') {
 			array_unshift($datasetColumns, 'user_id');
 		}
+		
+		//If exporting select lists and/or radios, display the selected option label in addition to the numeric value.
+		if (count($selectAndRadioFields) > 0) {
+			foreach ($selectAndRadioFields as $selectAndRadioField) {
+				$datasetColumns[] = $selectAndRadioField;
+			}
+			
+			foreach ($data as $rowId => $row) {
+				foreach ($selectAndRadioFieldValueLabels[$rowId] as $selectAndRadioFieldValueLabel) {
+					$data[$rowId][] = $selectAndRadioFieldValueLabel;
+				}
+			}
+		}
 
 		$downloadFileName = $dataset['label'].' export '.date('Y-m-d');
 		if ($values['download/type'] == 'csv') {
-			$columnCount = count($datasetColumns);
-			
 			// Create temp file to write CSV to
 			$filename = tempnam(sys_get_temp_dir(), 'tmpsamplefile');
 			$f = fopen($filename, 'wb');
@@ -253,12 +305,13 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 				return '0';
 			}
 		}
+		
 		return $value;
 	}
 	
 	private static function getExportableDatasetFieldsSQL($datasetId) {
 		$sql = '
-			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.label, f.field_name
+			SELECT f.id, f.db_column, f.is_system_field, f.type, f.tab_name, f.label, f.default_label, f.field_name
 			FROM '.DB_PREFIX.'custom_dataset_fields f
 			INNER JOIN '.DB_PREFIX.'custom_dataset_tabs t
 				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)

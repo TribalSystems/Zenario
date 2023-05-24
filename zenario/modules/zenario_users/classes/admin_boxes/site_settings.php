@@ -69,9 +69,11 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 						ze\admin::phrase('The scheduled task manager module must be running and the task "jobSendInactiveUserEmail" must be enabled to remove inactive users.');
 				}
 		
-				// Show list of users dataset tabs
+				// Show list of users dataset tabs.
+				// Please note: as of Zenario 9.4, task T12219, "Users and Contacts settings box, should not allow Groups tab to be on Dates",
+				// do not show the "Dates/History" tab.
 				$dataset = ze\dataset::details('users');
-				$result = ze\row::query('custom_dataset_tabs', ['label', 'default_label', 'ord', 'name'], ['dataset_id' => $dataset['id']], 'label');
+				$result = ze\row::query('custom_dataset_tabs', ['label', 'default_label', 'ord', 'name'], ['dataset_id' => $dataset['id'], 'name' => ['!' => 'dates']], 'label');
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$label = $row['label'] ? $row['label'] : $row['default_label'];
 					if ($label !== false && $label !== '') {
@@ -89,6 +91,29 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				
 				$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 				$fields['names/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to keep user sign-in and content-access logs.', ['link' => htmlspecialchars($link)]);
+				
+				//Max file upload size settings
+				$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+			
+				$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+				$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+				$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			
+				$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+				$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+			
+				ze\lang::applyMergeFields(
+					$fields['groups/max_user_image_filesize_override']['values']['use_global_max_attachment_file_size']['label'],
+					['global_max_attachment_file_size' => $maxFileSizeFormatted]
+				);
+			
+				$linkStart = "<a target='_blank' href='" . ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//files_and_images~.site_settings~tfilesizes~k{"id"%3A"files_and_images"}' . "'>";
+				$linkEnd = '</a>';
+				$fields['groups/max_user_image_filesize_override']['notices_below']['max_upload_size_site_setting_link']['message'] = ze\admin::phrase(
+					'See the [[link_start]]Documents, images and file handling[[link_end]] panel to change the global setting.',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+				
 				break;
 			
 			case 'perms':
@@ -315,6 +340,33 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 						'To match score [[score]], the password length needs to be at least [[min_length]] characters.',
 						['score' => $values['passwords/min_extranet_user_password_score'], 'min_length' => $requiredMinLength]
 					);
+				}
+				
+				//Max file upload size settings
+				if ($values['groups/max_user_image_filesize_override'] == 'limit_max_attachment_file_size') {
+					if ($values['groups/max_user_image_filesize'] && $values['groups/max_user_image_filesize_unit']) {
+						$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+			
+						$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+						$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+						$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			
+						$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+						$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+			
+						$usersMaxFilesizeValue = $values['groups/max_user_image_filesize'];
+						$usersMaxFilesizeUnit = $values['groups/max_user_image_filesize_unit'];
+						$usersMaxFilesize = ze\file::fileSizeBasedOnUnit($usersMaxFilesizeValue, $usersMaxFilesizeUnit);
+			
+						if ($usersMaxFilesize > $maxFileSize) {
+							$fields['groups/max_user_image_filesize']['error'] =
+								ze\admin::phrase(
+									'The maximum user image file size may not exceed [[global_max_attachment_file_size]].',
+									['global_max_attachment_file_size' => $maxFileSizeFormatted]
+								);
+							$fields['groups/max_user_image_filesize_unit']['error'] = true;
+						}
+					}
 				}
 				
 				break;

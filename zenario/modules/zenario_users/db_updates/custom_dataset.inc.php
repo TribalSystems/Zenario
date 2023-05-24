@@ -52,13 +52,13 @@ if (ze\dbAdm::needRevision(50)) {
 	//(Again, if you upgrade from version 7 or earlier these will have also been done manually
 	// by the migration script, but they're also safe to call again.)
 	ze\datasetAdm::registerSystemField($datasetId, 'text', '', 'identifier', 'identifier', 'none', '', false, true);
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'email', 'email', 'email');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'email', 'email', 'email', '', false, false, $includeInExport = true);
 	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'email_verified');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'salutation');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'first_name');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'last_name');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'first_name', false, 'none', '', false, false, $includeInExport = true);
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'last_name', false, 'none', '', false, false, $includeInExport = true);
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'screen_name', 'screen_name', 'screen_name');
-	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true);
+	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true, false, $includeInExport = true);
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'password');
 	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'password_needs_changing');
 	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'terms_and_conditions_accepted');
@@ -191,7 +191,7 @@ if (ze\dbAdm::needRevision(93)) {
 		'_PRIV_VIEW_USER',
 		'_PRIV_EDIT_USER');
 	
-	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true);
+	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true, false, $includeInExport = true);
 	
 	ze\dbAdm::revision(93);
 }

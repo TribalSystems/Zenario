@@ -197,16 +197,16 @@ zenario__administration:
                     ord: 20
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
                     css_class: suspend
-                    label: Suspend task
+                    label: Disable task
                     multiple_select: true
-                    multiple_select_label: Suspend selected tasks
+                    multiple_select_label: Disable selected tasks
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to suspend the task with the name "[[job_name]]"?
+                                Are you sure you wish to disable the task with the name "[[job_name]]"?
                             multiple_select_message: |
-                                Are you sure you wish to suspend these [[item_count]] scheduled tasks?
-                            button_message: "Suspend"
+                                Are you sure you wish to dsable the [[item_count]] selected scheduled tasks?
+                            button_message: "Disable"
                             message_type: warning
                             cancel_button_message: Cancel
                             message_type: warning
@@ -249,8 +249,6 @@ zenario__administration:
                 log:
                     panel:
                         title: Log
-                        view_mode: list
-                        disable_grid_view: true
                         slidedown_view_microtemplate: summary
                         default_sort_desc: 
                             exists: true

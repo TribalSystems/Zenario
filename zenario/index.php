@@ -148,7 +148,7 @@ require ze::editionInclude('index.pre_header');
 
 
 //Look up more details on the content item we are going to show
-$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ($_REQUEST['cVersion'] ?? false), $checkRequestVars = true);
+$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ze::request('cVersion'), $checkRequestVars = true);
 	//N.b. an empty string ('') is used for a private page, if a visitor is not logged in
 	//A 0 is used if a visitor is logged in and still can't see the page
 
@@ -235,12 +235,12 @@ $overrideSettings = false;
 $overrideFrameworkAndCSS = false;
 
 if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
- && (($_REQUEST['instanceId'] ?? false) || ($_REQUEST['slotName'] ?? false))) {
+ && (ze::request('instanceId') || ze::request('slotName'))) {
 	
 	$specificInstance = $_REQUEST['instanceId'] ?? false;
 	if ($specificSlot = $_REQUEST['slotName'] ?? false) {
-		if (!$hideLayout = (bool) ($_REQUEST['hideLayout'] ?? false)) {
-			$fakeLayout = (bool) ($_REQUEST['fakeLayout'] ?? false);
+		if (!$hideLayout = (bool) ze::request('hideLayout')) {
+			$fakeLayout = (bool) ze::request('fakeLayout');
 		}
 	}
 	
@@ -472,13 +472,13 @@ echo '
 <meta name="skin" content="' . ze::$skinName . '"/>';
 
 ze\content::pageHead('zenario/', false, true, $overrideFrameworkAndCSS);
-echo "\n", ze::setting('sitewide_head'), "\n";
+ze\content::sitewideHTML('sitewide_head');
 
 if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'head') {
-	echo "\n", ze::setting('sitewide_analytics_html'), "\n";
+	ze\content::sitewideHTML('sitewide_analytics_html');
 }
 if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'head') {
-	echo "\n", ze::setting('sitewide_social_media_html'), "\n";
+	ze\content::sitewideHTML('sitewide_social_media_html');
 }
 
 echo "</head>";
@@ -638,12 +638,12 @@ if ($specificInstance || $specificSlot) {
 }
 
 
-echo "\n", ze::setting('sitewide_foot'), "\n";
+ze\content::sitewideHTML('sitewide_foot');
 if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'foot') {
-	echo "\n", ze::setting('sitewide_analytics_html'), "\n";
+	ze\content::sitewideHTML('sitewide_analytics_html');
 }
 if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'foot') {
-	echo "\n", ze::setting('sitewide_social_media_html'), "\n";
+	ze\content::sitewideHTML('sitewide_social_media_html');
 }
 
 //Run post-display actions

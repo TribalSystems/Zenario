@@ -36,9 +36,14 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		return $this->idVarName;
 	}
 	
+	//Get the library's global name, using the same format that the setupAndInit() method will use to generate it
+	public function libName() {
+		return str_replace('-', '__', $this->moduleClassName. '_'. $this->containerId);
+	}
+	
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
-		if (\ze::$isTwig) return;
+		if (ze::$isTwig) return;
 		
 		if (!$this->isSubClass()) {
 			if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
@@ -259,7 +264,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 	
 	protected function isFeaAJAX() {
-		switch ($_REQUEST['method_call'] ?? false) {
+		switch (ze::request('method_call')) {
 			case 'fillVisitorTUIX':
 			case 'formatVisitorTUIX':
 			case 'validateVisitorTUIX':
@@ -280,7 +285,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		if (!static::$_addedLibs) {
 			static::$_addedLibs = true;
 			ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
-			ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. \ze::$visLang);
+			ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
 			ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		}
 	}
@@ -519,7 +524,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			}
 			unset($sql, $row);
 			
-			if ((!$page = (int) ($_REQUEST['page'] ?? false))
+			if ((!$page = (int) ze::request('page'))
 			 || ($page > ceil($itemCount / $pageSize))) {
 				$page = 1;
 			}
@@ -643,20 +648,20 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	
 	protected function setupOverridesForPhrases(&$box, &$fields, &$values) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
 	//Add dataset fields onto an FEA form
 	//Called in fillVisitorTUIX
 	protected function setupDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId, $startOrd = 99, $edit = true, $flat = true) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	//Save dataset fields on an FEA form added by setupDatasetFields(...)
 	//Called in saveVisitorTUIX
 	protected function saveDatasetFields(&$tags, &$fields, &$values, $tab, $dataset, $datasetFieldIds, $recordId) {
-		return require \ze::funIncPath(__FILE__, __FUNCTION__);
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	protected function includeEditor() {
@@ -664,6 +669,51 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			ze::requireJsLib('zenario/js/ace.wrapper.js.php');
 			ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 			ze::requireJsLib('zenario/libs/yarn/spectrum-colorpicker/spectrum.min.js', 'zenario/libs/yarn/spectrum-colorpicker/spectrum.min.css');
+		}
+	}
+	
+	
+	//Try to generate a sensible display name for a plugin, based on the mode selected
+	//and (for list-type plugins) the microtemplate used.
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		if ($mode = ze\plugin::setting('mode', $instanceId, $eggId)) {
+			$label = self::pluginModeDisplayName($moduleClassName, $mode);
+			
+			if (!is_null($label)) {
+				switch (ze\plugin::setting('microtemplate', $instanceId, $eggId)) {
+					case 'fea_list_blocks':
+						$label .= ' ('. ze\admin::phrase('Block view'). ')';
+						break;
+					case 'fea_list_responsive':
+						$label .= ' ('. ze\admin::phrase('Responsive'). ')';
+						break;
+				}
+			
+				return $label;
+			}
+		}
+			
+		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
+	}
+	
+	//Get the display name of a plugin's mode, given the code name for that mode.
+	//(Assumes the name can be found and read from the plugin setting YAML file.)
+	public static function pluginModeDisplayName($moduleClassName, $mode) {
+		
+		$yamlPath = ze::moduleDir($moduleClassName, 'tuix/admin_boxes/plugin_settings_mode.yaml', true);
+		
+		if (!$yamlPath) {
+			$yamlPath = ze::moduleDir($moduleClassName, 'tuix/admin_boxes/plugin_settings.yaml', true);
+		}
+		
+		if ($yamlPath) {
+			$tags = ze\tuix::readFile(CMS_ROOT. $yamlPath);
+			$modes = $tags['plugin_settings']['tabs']['global_area']['fields']['mode']['values']
+				  ?? $tags['plugin_settings']['tabs']['first_tab']['fields']['mode']['values']
+				  ?? null;
+			
+			return $modes[$mode]['label'] ?? null;
 		}
 	}
 	

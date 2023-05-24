@@ -55,7 +55,7 @@ zenario__content:
                     visible_if_for_all_selected_items: >
                         zenario.engToBoolean(item.usage_count)
                     link:
-                        path: zenario__content/panels/image_library
+                        path: zenario__library/panels/image_library
                         refiner: tag
                 
                 delete_unused:

@@ -728,14 +728,14 @@ define(
         items: [
           {
             name: 'width', type: 'textbox', maxLength: 5, size: 5,
-            onchange: recalcSize, ariaLabel: 'Width'
+            onchange: recalcSize, ariaLabel: 'Width', classes: 'image_width'
           },
           { type: 'label', text: 'x' },
           {
             name: 'height', type: 'textbox', maxLength: 5, size: 5,
-            onchange: recalcSize, ariaLabel: 'Height'
+            onchange: recalcSize, ariaLabel: 'Height', classes: 'image_height'
           },
-          { name: 'constrain', type: 'checkbox', checked: true, text: 'Constrain proportions' }
+          { name: 'constrain', type: 'checkbox', checked: true, text: 'Constrain proportions', classes: 'image_proportions' }
         ]
       };
     };

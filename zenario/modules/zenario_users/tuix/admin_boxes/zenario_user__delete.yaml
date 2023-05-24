@@ -4,7 +4,6 @@ zenario_user__delete:
     priv: _PRIV_EDIT_USER
     key:
         id: ""
-    max_height: 150
     hide_tab_bar: true
     save_button_message: Delete
     cancel_button_message: Cancel
@@ -18,13 +17,22 @@ zenario_user__delete:
                     show: true
                     type: warning
                     message: >
-                        Are you sure you wish to delete the user "[[identifier]]"?
+                        Are you sure you wish to delete the account of [[identifier]]?
             fields:
                 delete_options:
                     type: radios
                     values:
                         delete_account:
-                            label: Delete account
+                            label: Delete account (account only)
                         delete_all_data:
-                            label: Delete account and all other data (email sent log, form responses, etc.)
+                            label: Delete account and all other data (record of emails sent to this account, form responses, etc.)
                     value: delete_account
+                    redraw_onchange: true
+                all_data_explained:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                [[all_data_explained]]
+                            </div>
+                    visible_if: lib.value('delete_options') == 'delete_all_data'

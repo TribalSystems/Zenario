@@ -11,7 +11,7 @@ if ($_GET["section_id"] ?? false) {
 		if ($menuArray = ze\menu::getStructure($cachingRestrictions, ($_GET["section_id"] ?? false),false,($_GET["menu_id"] ?? false),0,100,false,false,false,true)) {
 			$levelNodesCount = [];
 		
-			generateMenuForJSON($menuArray, $levelNodesCount,($_GET['sk'] ?? false), ($_GET['language'] ?? false));
+			generateMenuForJSON($menuArray, $levelNodesCount,ze::get('sk'), ze::get('language'));
 		}
 		
 		$menuNode = ze\menu::details($_GET["menu_id"] ?? false,"en-gb");
@@ -38,7 +38,7 @@ if ($_GET["section_id"] ?? false) {
 		if ($menuArray = ze\menu::getStructure($cachingRestrictions,($_GET["section_id"] ?? false),false,0,0,100,false,false,false,true)) {
 			$levelNodesCount = [];
 			
-			generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['sk'] ?? false), ($_GET['language'] ?? false));
+			generateMenuForJSON($menuArray, $levelNodesCount, ze::get('sk'), ze::get('language'));
 		}
 		
 		$top = ze\menu::sectionName($_GET["section_id"] ?? false);

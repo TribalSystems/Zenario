@@ -1,0 +1,89 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+empty_sitewide_slot:
+    css_class: zenario_slotOuter zenario_slotWithNoContents
+    meta_info:
+        is_sitewide: true
+    info:
+        edit_sc_title:
+            label: 'Slot inspector'
+            css_class: zenario_slotControl_title
+            page_modes:
+                edit: true
+        layout_sc_title:
+            label: Site-wide ~header~ slot inspector
+            css_class: zenario_slotControl_title
+            page_modes:
+                layout: true
+        slot_name_in_edit_mode:
+            css_class: zenario_slotControl_slotName
+            page_modes:
+                edit: true
+        slot_name_in_layout_mode:
+            css_class: zenario_slotControl_slotName
+            page_modes:
+                layout: true
+        in_this_slot:
+            hidden: true
+            css_class: zenario_slotControl_inThisSlot
+        mobile:
+            css_class: zenario_slotControl_onlyMobile
+            label: Only shown on mobile
+            page_modes:
+                edit: true
+                layout: true
+        desktop:
+            css_class: zenario_slotControl_onlyDesktop
+            label: Only shown on desktop
+            page_modes:
+                edit: true
+                layout: true
+    actions:
+        insert_reusable_on_layout_layer:
+            ord: 997
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert a plugin into the site-wide ~header~...
+            page_modes:
+                layout: true
+            onclick: return zenarioA.pickNewPlugin(this, slotName, 3, false);
+    
+    
+    overridden_info:
+        in_this_slot:
+            css_class: zenario_slotControl_inThisSlot
+            label: 'On the site-wide ~header~ (overridden):'
+            page_modes:
+                edit: true
+        module_name:
+            css_class: zenario_slotControl_module
+            page_modes:
+                edit: true
+                layout: true
+        reusable_plugin_details:
+            css_class: zenario_slotControl_reusable zenario_slotControl_reusablePluginDetails
+            page_modes:
+                edit: true
+                layout: true
+    overridden_actions:
+        show_plugin:
+            ord: 89
+            page_modes:
+                edit: true
+            onclick: >
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to stop hiding ~plugin~ on this content item?', 'Show')) {
+                    zenarioA.showPlugin(this, slotName);
+                }
+                return false;
+            label: Stop hiding ~plugin~ on this content item
+        remove_from_layout_layer:
+            page_modes:
+                layout: true
+            onclick: return zenarioA.removePlugin(this, slotName, 3);
+            label: Remove ~plugin~ from the the site-wide ~header~
+    
+    no_perms:
+        cant_design:
+            page_modes:
+                edit: true
+            css_class: zenario_slotControl_no_perms
+            label: 'Limited options: you lack Designer permission'

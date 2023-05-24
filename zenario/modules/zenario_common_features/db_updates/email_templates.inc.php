@@ -75,42 +75,6 @@ ze\dbAdm::revision(217, "
 	SET value = "zenario_common_features__notification_to_new_admin_no_password"
 	WHERE name = "notification_to_new_admin"
 _sql
-,
-	"
-	INSERT INTO [[DB_PREFIX]]email_templates (
-		module_class_name,
-		`code`,
-		template_name,
-		`subject`,
-		`body`,
-		date_created,
-		created_by_id,
-		allow_attachments,
-		use_standard_email_template
-	) VALUES (
-		'zenario_common_features',
-		'zenario_common_features__to_admin_contact_form_submission',
-		'To Admin: Contact Form Submission',
-		'Contact Form Submission',
-		'<p>Dear Admin,</p>
-<p>A Contact Us popup form submission has been made with the following details:</p>
-<p><strong>Name:</strong> [[first_name]] [[last_name]]</p>
-<p><strong>Email:</strong> [[email]]</p>
-<p><strong>Message:</strong></p>
-<p>[[unlinked_textarea_4]]</p>
-<p><strong>User has accepted terms and conditions:</strong> [[terms_and_conditions_accepted]]</p>
-<p>&nbsp;</p>
-<p>This is an auto-generated email from [[cms_url]] .</p>',
-		NOW(),
-		". (int) ze\admin::id(). ",
-		0,
-		1
-	)
-	ON DUPLICATE KEY UPDATE
-		module_class_name = VALUES(module_class_name),
-		`subject` = VALUES(`subject`),
-		`body` = VALUES(`body`)
-	"
 
 ); ze\dbAdm::revision(228,
 <<<_sql

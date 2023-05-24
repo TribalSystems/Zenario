@@ -1,7 +1,7 @@
 .zenario_skin {
 	font-family:'robotolight',Arial, Helvetica, sans-serif;
 	font-size:100%;
-	line-height:22px;
+	line-height:1.5;
 }
 
 .zenario_skin h1,
@@ -72,7 +72,7 @@
 .zenario_skin h4,
 .zenario_skin h5,
 .zenario_skin h6 {
-	line-height:1.2em;
+	line-height:1.2;
 }
 
 .zenario_skin h1,
@@ -85,7 +85,7 @@
 }
 
 .zenario_skin p {
-	line-height:1.5em;
+	line-height:1.5;
 	margin-bottom:15px;
 }
 
@@ -105,7 +105,7 @@
 
 .zenario_skin ul li {
 	list-style:disc;
-	line-height:1.5em;
+	line-height:1.5;
 }
 
 .zenario_skin hr {
@@ -120,14 +120,19 @@
 	margin-bottom:15px;
 }
 
-.zenario_skin table tr th {
+.zenario_skin table:not(.table_no_styles) tr th {
 	background:#CCC;
 }
 
-.zenario_skin table tr th,
-.zenario_skin table tr td {
+.zenario_skin table:not(.table_no_styles) tr th,
+.zenario_skin table:not(.table_no_styles) tr td {
 	border:1px solid #ccc;
 	padding:10px;
+}
+
+.zenario_skin table.table_no_styles tr th,
+.zenario_skin table.table_no_styles tr td {
+	padding:revert-layer;
 }
 
 /*  Styles for text.
@@ -135,28 +140,28 @@
 	so they will be selectable in in the WYSIWYG Editor.  
 --------------------------------------------------------------------------------------------------*/
 
-.x-small {
+.zenario_skin .x-small {
 	font-size: .7em;
 }
 
-.small {
+.zenario_skin .small {
 	font-size: .85em;
 }
 
-.medium {
+.zenario_skin .medium {
 	font-size: 1em;
 }
 
-.large {
+.zenario_skin .large {
 	font-size: 1.3em;
-	line-height:1.2em;
+	line-height:1.2;
 }
 
-.x-large {
+.zenario_skin .x-large {
 	font-size: 2em;
-	line-height:1.2em;
+	line-height:1.2;
 }
 
-.code {
+.zenario_skin .code {
     font-family: monospace;
 }

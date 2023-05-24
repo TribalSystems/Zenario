@@ -769,18 +769,18 @@ getValueArrayofArrays:
         <p>
             An object, two levels deep.
         </p>
-getValues1D:
-    summary: |
-        Gets all of the values of the fields on every tab, ignoring what tab each field is on.
-    desc: |
-        <h2>Description</h2>
-        <p>
-            Gets all of the values of the fields on every tab, ignoring what tab each field is on.
-        </p>
-        <h2>Return Value</h2>
-        <p>
-            An object, one levels deep.
-        </p>
+#getValues1D:
+#    summary: |
+#        Gets all of the values of the fields on every tab, ignoring what tab each field is on.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            Gets all of the values of the fields on every tab, ignoring what tab each field is on.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            An object, one levels deep.
+#        </p>
 goToNextTab:
     summary: |
         Navigates to the tab that's immediately after the current tab, if possible.

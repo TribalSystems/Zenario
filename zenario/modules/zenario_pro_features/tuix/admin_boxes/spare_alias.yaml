@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_pro_features_spare_alias:
-    priv: _PRIV_MANAGE_SPARE_ALIAS
+    priv: _PRIV_PUBLISH_CONTENT_ITEM
     title: Creating a spare alias (301 redirect)
     key:
         id: ""
@@ -25,10 +25,10 @@ zenario_pro_features_spare_alias:
                             <p>If you change the alias of a content item, it's advisable to make its old alias be a spare alias, to avoid visitors seeing a Not Found error (404).</p>
                             <p>Any number of spare aliases can point to the same content item.</p>
                 grouping_left:
-                    name: left
                     type: grouping
+                    grouping_css_class: zenario_grouping__left
                 alias:
-                    grouping: left
+                    grouping: grouping_left
                     label: 'Spare alias:'
                     type: text
                     maxlength: 255
@@ -63,19 +63,19 @@ zenario_pro_features_spare_alias:
                     post_field_html: |
                         &nbsp;&nbsp;&nbsp;&nbsp;<span style="font-size:30px;position:absolute;">⟶</span>
                 preview:
-                    grouping: left
+                    grouping: grouping_left
                     pre_field_html: 'Preview:<br>'
                     snippet:
                         html: ''
                 redirect_target_url:
-                    grouping: left
+                    grouping: grouping_left
                     type: text
                     style: display:none;
                 grouping_right:
-                    name: right
                     type: grouping
+                    grouping_css_class: zenario_grouping__right
                 target_loc:
-                    grouping: right
+                    grouping: grouping_right
                     label: 'Redirect to:'
                     type: select
                     value: int
@@ -88,7 +88,7 @@ zenario_pro_features_spare_alias:
                             label: An external URL
                     format_onchange: Yes
                 hyperlink_target:
-                    grouping: right
+                    grouping: grouping_right
                     label: 'Content item:'
                     pick_items:
                         path: zenario__content/panels/content
@@ -102,7 +102,7 @@ zenario_pro_features_spare_alias:
                     format_onchange: Yes
                     indent: 1
                 ext_url:
-                    grouping: right
+                    grouping: grouping_right
                     label: 'External URL:'
                     type: url
                     maxlength: "255"
@@ -112,12 +112,12 @@ zenario_pro_features_spare_alias:
                     onkeyup: |
                         $('#alias').keyup();
                 delete_error_log:
-                    grouping: right
+                    grouping: grouping_right
                     label: ''                    
                     type: checkbox
                     value: false
                 delete_alias:              
-                    type: hidden  
+                    type: hidden
     confirm:
         show: false
         html: true

@@ -154,7 +154,7 @@ plugin_settings:
                 allow_user_edit_own_post:
                     plugin_setting:
                         name: allow_user_edit_own_post
-                    label: 'Allow extranet users to edit their own posts'
+                    label: 'Allow extranet users to edit their own posts (for 1 hour of writing them)'
                     side_note: "Only allowed until moderator approves the post."
                     type: checkbox
                     value: 1

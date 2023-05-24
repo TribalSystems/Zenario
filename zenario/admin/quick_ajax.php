@@ -284,9 +284,9 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	echo ze\userAdm::generateIdentifier(false, [
-		'first_name' => ($_POST['first_name'] ?? false),
-		'last_name' => ($_POST['last_name'] ?? false),
-		'email' => ($_POST['email'] ?? false),
+		'first_name' => ze::post('first_name'),
+		'last_name' => ze::post('last_name'),
+		'email' => ze::post('email'),
 		'screen_name' => ''
 	]);
 
@@ -298,10 +298,10 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	if ($alias = $_POST['alias'] ?? false) {
 		
-		$lines = ze\contentAdm::validateAlias($alias, ($_POST['cID'] ?? false), ($_POST['cType'] ?? false), ($_POST['equivId'] ?? false));
+		$lines = ze\contentAdm::validateAlias($alias, ze::post('cID'), ze::post('cType'), ze::post('equivId'));
 		
 		if (!$equivId = $_POST['equivId'] ?? false) {
-			$equivId = ze\content::equivId($_POST['cID'] ?? false, ($_POST['cType'] ?? false));
+			$equivId = ze\content::equivId($_POST['cID'] ?? false, ze::post('cType'));
 		}
 		
 		if (empty($lines) && $alias) {
@@ -310,26 +310,26 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				FROM ". DB_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias < '". ze\escape::sql($alias). "'
-				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL($_POST['cType'] ?? false). "'))
+				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL(ze::post('cType')). "'))
 				ORDER BY alias DESC, language_id DESC";
 			$result = ze\sql::select($sql);
 			$lastAlias = ze\sql::fetchRow($result);
 			
-			if (($_POST['cID'] ?? false) && ($_POST['cType'] ?? false)) {
+			if (ze::post('cID') && ze::post('cType')) {
 				$sql = "
 					SELECT lang_code_in_url, language_id, alias
 					FROM ". DB_PREFIX. "content_items
-					WHERE id = ". (int) ($_POST['cID'] ?? false). "
-					  AND type = '". ze\escape::asciiInSQL($_POST['cType'] ?? false). "'";
+					WHERE id = ". (int) ze::post('cID'). "
+					  AND type = '". ze\escape::asciiInSQL(ze::post('cType')). "'";
 				$result = ze\sql::select($sql);
 				$thisAlias = ze\sql::fetchRow($result);
 				$thisAlias[2] = $alias;
 			
 			} else {
-				$thisAlias = ['default', ($_POST['langId'] ?? false), $alias];
+				$thisAlias = ['default', ze::post('langId'), $alias];
 			}
 			
-			if ($_POST['lang_code_in_url'] ?? false) {
+			if (ze::post('lang_code_in_url')) {
 				$thisAlias[0] = $_POST['lang_code_in_url'] ?? false;
 			}
 			
@@ -338,7 +338,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 				FROM ". DB_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias > '". ze\escape::sql($alias). "'
-				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL($_POST['cType'] ?? false). "'))
+				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". ze\escape::asciiInSQL(ze::post('cType')). "'))
 				ORDER BY alias, language_id";
 			$result = ze\sql::select($sql);
 			$nextAlias = ze\sql::fetchRow($result);

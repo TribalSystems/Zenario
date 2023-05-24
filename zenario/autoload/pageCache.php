@@ -95,9 +95,18 @@ class pageCache {
 		}
 	}
 	
+	//Shortcut function for manually calling reviewQuery() to clear the page cache
+	public static function clear($reason) {
+		$sql = '';
+		$ids = $values = [];
+		\ze\pageCache::reviewQuery($sql, $ids, $values, $reason);
+	}
+	
 	//Attempt to check which table or tables are being changed, and clear the page cache accordingly.
 	public static function reviewQuery(&$sql, &$ids, &$values, $table = false, $runSql = false) {
 		
+		$defaultStatementReached = true;
+		$tableNameRecognised = true;
 		
 		//For some queries, I'd like to run the cache logic before the rows are changed;
 		//e.g. if a row is deleted then it's too late to see what was there afterwards.
@@ -387,6 +396,9 @@ class pageCache {
 					//Completely empty the cache if a Visitor Phrase changes
 					case 'visitor_phrases':
 					
+					//Clear the page cache completely if a Skin or a Template Family has changed
+					case '--layout-or-skin-files-changed--':
+					
 					//Completely empty the cache if something changes on the Layout Layer
 					case 'plugin_layout_link':
 					case 'layouts':
@@ -396,15 +408,40 @@ class pageCache {
 					case 'languages':
 					case 'site_settings':
 					case 'special_pages':
+						$defaultStatementReached = false;
 					
 					//Also clear the cache for anything we don't recognise
 					default:
+						if ($defaultStatementReached) {
+							$tableNameRecognised = false;
+						}
+						
 						self::$clearCacheBy['all'] = true;
 						//self::$debug2 .= "\nclear all\n";
 				}
 			}
 			
 			if (!self::$clearOnShutdownRegistered && (!empty(self::$clearCacheBy) || !empty(self::$clearTags))) {
+				
+				//Send a debug email to help developers debug why the cache was cleared.
+				//This is just some rough-and-ready test code at the moment, but at some point
+				//it might be nice to spend some more time on this and turn it into a proper
+				//logging feature you can turn on in the site settings!
+				#\ze\server::sendEmailSimple(
+				#	$tableNameRecognised? 'Cache cleared!' : 'Cache cleared due to a table not in the list!', 
+				#	$sql.
+				#	"\n\n".
+				#	print_r($ids, true).
+				#	"\n\n".
+				#	print_r($values, true).
+				#	"\n\n".
+				#	print_r($table, true).
+				#	"\n\n".
+				#	print_r($runSql, true),
+				#	false
+				#);
+													
+				
 				register_shutdown_function(['ze\\pageCache', 'clearOnShutdown']);
 				self::$clearOnShutdownRegistered = true;
 			}

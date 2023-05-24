@@ -56,6 +56,11 @@ ze\cache::incJS('zenario/libs/yarn/toastr/toastr');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jquery/jquery.selectboxes');
 ze\cache::incJS('zenario/libs/manually_maintained/mit/jssor/jssor.slider.mini');
 ze\cache::incJS('zenario/libs/manually_maintained/public_domain/mousehold/mousehold');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.interactions');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.spinner');
+ze\cache::incJS('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.progressbar');
+
+
 
 
 //Run post-display actions

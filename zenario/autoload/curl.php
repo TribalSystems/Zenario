@@ -86,11 +86,22 @@ class curl {
 	
 		return $result;
 	}
+	
+	public static function fetchHeaders($URL, $post = false, $options = [], $saveToFile = false) {
+		$options[CURLOPT_HEADER] = true;
+		$options[CURLOPT_NOBODY] = true;
+		
+		if ($result = \ze\curl::fetch($URL, $post, $options, $saveToFile)) {
+			return \ze\curl::getHeadersFromResponse($result);
+		}
+		
+		return false;
+	}
 
 	// Takes a curl response header as a string and returns an array of headers
 	public static function getHeadersFromResponse($string) {
 		$headers = [];
-		foreach (explode("\n", $string) as $i => $line) {
+		foreach (\ze\ray::explodeAndTrim($string, false, "\n") as $i => $line) {
 			if ($i == 0) {
 				$headers["http_code"] = $line;
 			} else {

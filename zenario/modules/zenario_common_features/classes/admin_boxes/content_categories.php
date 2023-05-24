@@ -31,7 +31,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__content_categories extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
+		if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['menu_node_id'] = $box['key']['id'];
+			
+			$menuContentItem = ze\menu::getContentItem($box['key']['id']);
+			$box['key']['id'] = $menuContentItem['content_type'] . '_' . $menuContentItem['content_id'];
+		}
+
 		$box['key']['originalId'] = $box['key']['id'];
 		
 		$total = 0;
@@ -39,11 +45,11 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 		$tagIds = [];
 		$equivId = $cType = false;
 		
-		if (($_REQUEST['equivId'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['equivId'] ?? false);
+		if (ze::request('equivId') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('equivId');
 		
-		} elseif (($_REQUEST['cID'] ?? false) && ($_REQUEST['cType'] ?? false)) {
-			$box['key']['id'] = ($_REQUEST['cType'] ?? false). '_'. ($_REQUEST['cID'] ?? false);
+		} elseif (ze::request('cID') && ze::request('cType')) {
+			$box['key']['id'] = ze::request('cType'). '_'. ze::request('cID');
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
@@ -75,7 +81,7 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 			$fields['categories/no_categories']['hidden'] = true;
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/categories'). '" target="_blank"']);
 			
 			
 			$inCats = [];
@@ -178,6 +184,8 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//...
+		if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['id'] = $box['key']['menu_node_id'];
+		}
 	}
 }

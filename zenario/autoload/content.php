@@ -33,13 +33,11 @@ class content {
 
 
 	const currentLangIdFromTwig = true;
-	//Formerly "currentLangId()"
 	public static function currentLangId() {
 		return \ze::$langId ?? $_SESSION['user_lang'] ?? \ze::$defaultLang;
 	}
 	
 	const visitorLangIdFromTwig = true;
-	//Formerly "visitorLangId()"
 	public static function visitorLangId() {
 		return \ze::$visLang ?? $_SESSION['user_lang'] ?? \ze::$defaultLang;
 	}
@@ -49,7 +47,6 @@ class content {
 
 
 	//Special case for if the installer needs to be run
-	//Formerly "showStartSitePageIfNeeded()"
 	public static function showStartSitePageIfNeeded($reportDBOutOfDate = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -79,7 +76,6 @@ class content {
 
 
 
-	//Formerly "getContentTypes()"
 	public static function getContentTypes($contentType = false, $onlyCreatable = false) {
 	
 		$key = [];
@@ -92,14 +88,16 @@ class content {
 		return \ze\row::getAssocs('content_types', ['content_type_id', 'content_type_name_en', 'default_layout_id'], $key, 'content_type_id');
 	}
 
-	//Formerly "getContentTypeName()"
-	public static function getContentTypeName($cType) {
-		return \ze\row::get('content_types', 'content_type_name_en', $cType);
+	public static function getContentTypeName($cType, $plural = false) {
+		if ($plural) {
+			return \ze\row::get('content_types', 'content_type_plural_en', $cType);
+		} else {
+			return \ze\row::get('content_types', 'content_type_name_en', $cType);
+		}
 	}
 
 
 
-	//Formerly "getCIDAndCTypeFromTagId()"
 	public static function getCIDAndCTypeFromTagId(&$cID, &$cType, $tagId) {
 		if ($tagId
 		 && ($tagId = explode('_', trim($tagId), 2))
@@ -114,7 +112,6 @@ class content {
 		}
 	}
 
-	//Formerly "getEquivIdAndCTypeFromTagId()"
 	public static function getEquivIdAndCTypeFromTagId(&$equivId, &$cType, $tagId) {
 		if ((\ze\content::getCIDAndCTypeFromTagId($equivId, $cType, $tagId))
 		 && ($equivId = \ze\content::equivId($equivId, $cType))) {
@@ -129,7 +126,6 @@ class content {
 		return \ze\row::get('content_items', \ze\priv::check()? 'admin_version' : 'visitor_version', ['id' => $cID, 'type' => $cType]);
 	}
 
-	//Formerly "isDraft()"
 	public static function isDraft($statusOrCID, $cType = false, $cVersion = false) {
 	
 		if (is_numeric($statusOrCID) && $cType) {
@@ -147,7 +143,6 @@ class content {
 			|| $statusOrCID == 'trashed_with_draft';
 	}
 
-	//Formerly "isPublished()"
 	public static function isPublished($statusOrCID, $cType = false, $cVersion = false) {
 	
 		if (is_numeric($statusOrCID) && $cType) {
@@ -165,7 +160,6 @@ class content {
 
 	//Automatically generate SQL to search through Content, for example for a content list
 	//A bit of a techy function so we've included the full code here, so you can see exactly what it does
-	//Formerly "sqlToSearchContentTable()"
 	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false) {
 
 
@@ -294,13 +288,11 @@ class content {
 
 
 
-	//Formerly "equivId()"
 	public static function equivId($cID, $cType) {
 		return \ze\row::get('content_items', 'equiv_id', ['id' => $cID, 'type' => $cType]);
 	}
 
 	const langEquivalentItemFromTwig = true;
-	//Formerly "langEquivalentItem()"
 	public static function langEquivalentItem(&$cID, &$cType, $langId = false, $checkVisible = false) {
 	
 		//Catch the case where a tag id is entered, not a cID and cType
@@ -373,7 +365,6 @@ class content {
 		return false;
 	}
 
-	//Formerly "equivalences()"
 	public static function equivalences($cID, $cType, $includeCurrent = true, $equivId = false) {
 		if ($equivId === false) {
 			$equivId = \ze\content::equivId($cID, $cType);
@@ -399,7 +390,6 @@ class content {
 	//Attempt to get a special page
 	//We should never show unpublished pages to Visitors, and never return a Special Page in the wrong language if $languageMustMatch was set
 	//Otherwise return a $cID and $cType as best we can
-	//Formerly "langSpecialPage()"
 	public static function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false, $languageMustMatch = false, $skipPermsCheck = false) {
 		//Assume that we'll want the special page in the language that the Visitor is currently viewing, if a language is not specified
 		if ($preferredLanguageId === false) {
@@ -462,7 +452,6 @@ class content {
 
 
 
-	//Formerly "isSpecialPage()"
 	public static function isSpecialPage($cID, $cType) {
 		$specialPage = array_search($cType. '_'. $cID, \ze::$specialPages);
 	
@@ -857,7 +846,6 @@ class content {
 	const checkPermFromTwig = true;
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//(Admins can see all Content Items that exist)
-	//Formerly "checkPerm()"
 	public static function checkPerm($cID, $cType = 'html', $requestVersion = false, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 		$content = $chain = false;
 		return (bool) \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
@@ -874,7 +862,6 @@ class content {
 	//Check to see if a Content Item exists, and the current visitor/user/admin can see a Content Item
 	//Works like \ze\content::checkPerm() above, except that it will return a permissions error code
 	//It also looks up some details on the Content Item
-	//Formerly "getShowableContent()"
 	public static function getShowableContent(&$content, &$chain, &$version, $cID, $cType = 'html', $requestVersion = false, $checkRequestVars = false, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 
 		$versionNumber = \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
@@ -911,7 +898,6 @@ class content {
 	}
 
 
-	//Formerly "checkPermAndGetShowableContent()"
 	public static function checkPermAndGetShowableContent(&$content, &$chain, $cID, $cType, $requestVersion, $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 		// Returns the version of this content item which should normally be returned
 		if ($cID
@@ -1000,7 +986,6 @@ class content {
 		return false;
 	}
 
-	//Formerly "checkItemPrivacy()"
 	public static function checkItemPrivacy($privacy, $privacySettings, $cID, $cType, $cVersion) {
 	
 		//Check if a user is logged in.
@@ -1148,7 +1133,6 @@ class content {
 		return false;
 	}
 
-	//Formerly "setShowableContent()"
 	public static function setShowableContent(&$content, &$chain, &$version, $checkTranslations) {
 		\ze::$equivId = $content['equiv_id'];
 		\ze::$cID = $content['id'];
@@ -1342,7 +1326,6 @@ class content {
 		return \ze\row::get('content_item_versions', 'description', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
 
-	//Formerly "formatTagFromTagId()"
 	public static function formatTagFromTagId($tagId, $neverAddLanguage = false) {
 		$cID = $cType = false;
 		if (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
@@ -1352,7 +1335,6 @@ class content {
 		}
 	}
 
-	//Formerly "formatTag()"
 	public static function formatTag($cID, $cType, $alias = -1, $langId = false, $neverAddLanguage = false) {
 		$content = false;
 		$friendlyURL = '';
@@ -1398,7 +1380,6 @@ class content {
 	}
 
 
-	//Formerly "cutTitle()"
 	public static function cutTitle($title, $max_title_length = 20, $cutText = '...') {
 		if (strlen($title) > $max_title_length) {
 			return mb_substr($title, 0, floor($max_title_length/2)). $cutText. mb_substr($title, -floor($max_title_length/2));
@@ -1487,7 +1468,6 @@ class content {
 
 
 	//Whether to show untranslated content items
-	//Formerly "showUntranslatedContentItems()"
 	public static function showUntranslatedContentItems($langId = false) {
 	
 		if ($langId === false) {
@@ -1520,6 +1500,7 @@ class content {
 				l.name,
 				l.content_type,
 				l.status,
+				l.header_and_footer,
 				l.skin_id,
 				l.css_class,
 				l.bg_image_id,
@@ -1563,6 +1544,19 @@ class content {
 	}
 
 
+	//Allow access to some of the layout parameters from Twig
+	const layoutIsResponsiveFromTwig = true;
+	public static function layoutIsResponsive() {
+		return \ze::$responsive;
+	}
+	const layoutMinWidthFromTwig = true;
+	public static function layoutMinWidth() {
+		return \ze::$minWidth;
+	}
+	const layoutMaxWidthFromTwig = true;
+	public static function layoutMaxWidth() {
+		return \ze::$maxWidth;
+	}
 	
 	public static function layoutHtmlPath($layoutId, $reportErrors = false) {
 		return self::generateLayoutFiles($layoutId, true, false, $reportErrors);
@@ -1585,6 +1579,7 @@ class content {
 						$html = '';
 						$slots = [];
 						$data = \ze\row::get('layouts', 'json_data', $layoutId);
+						\ze\gridAdm::checkData($data);
 					
 						\ze\gridAdm::generateHTML($html, $data, $slots);
 					
@@ -1607,6 +1602,7 @@ class content {
 						$html = '';
 						if ($data === null) {
 							$data = \ze\row::get('layouts', 'json_data', $layoutId);
+							\ze\gridAdm::checkData($data);
 						}
 					
 						\ze\gridAdm::generateCSS($css, $data);
@@ -1646,6 +1642,37 @@ class content {
 	}
 	
 	
+	//	Output site-wide HTML  //
+	
+	public static function sitewideHTML($setting) {
+		
+		$string = \ze::setting($setting);
+		
+		if (\ze::setting($setting. '.is_twig')) {
+			//Add the CMS' environment variables
+			$vars = [
+				'equivId' => \ze::$equivId,
+				'cID' => \ze::$cID,
+				'cType' => \ze::$cType,
+				'cVersion' => \ze::$cVersion,
+				'isDraft' => \ze::$isDraft,
+				'alias' => \ze::$alias,
+				'langId' => \ze::$langId,
+				'adminId' => \ze::$adminId,
+				'userId' => \ze::$userId,
+				'vars' => \ze::$vars
+			];
+		
+			$string = \ze\twig::render("\n". $string, $vars);
+		}
+		
+		echo "\n", $string, "\n";
+	}
+	
+	
+	
+	
+	
 	//	Skins  //
 
 	//Formerly "getSkinFromId()"
@@ -1670,7 +1697,6 @@ class content {
 	
 
 	//Find the lowest common denominator of two numbers
-	//Formerly "rationalNumber()"
 	public static function rationalNumber(&$a, &$b) {
 	  for ($i = min($a, $b); $i > 1; --$i) {
 		  if (($a % $i == 0)
@@ -1682,7 +1708,6 @@ class content {
 	}
 
 	//Give a grid's cell a class-name based on how many columns it takes up, and the ratio out of the total width that it takes up
-	//Formerly "rationalNumberGridClass()"
 	public static function rationalNumberGridClass($a, $b) {
 		$w = $a;
 		\ze\content::rationalNumber($a, $b);

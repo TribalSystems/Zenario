@@ -397,7 +397,20 @@ class userAdm {
 	public static function delete($userId, $deleteAllData = false) {
 		\ze\module::sendSignal('eventUserDeleted', [$userId, $deleteAllData]);
 	
-		\ze\row::delete('users', $userId);
+		$deleteUserAccount = true;
+		if (\ze\module::inc('zenario_user_hierarchy')) {
+			$userHasChildren = \zenario_user_hierarchy::getUserChildrenIds($userId);
+			if ($userHasChildren) {
+				$deleteUserAccount = false;
+			}
+		}
+		
+		if ($deleteUserAccount) {
+			\ze\row::delete('users', $userId);
+		} else {
+			\ze\row::set('users', ['first_name' => 'Deleted', 'last_name' => 'User', 'email' => ''], ['id' => $userId]);
+		}
+		
 		\ze\row::delete('users_custom_data', ['user_id' => $userId]);
 		\ze\row::delete('user_country_link', ['user_id' => $userId]);
 	

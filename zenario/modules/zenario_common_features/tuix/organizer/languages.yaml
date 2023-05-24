@@ -4,8 +4,6 @@ zenario__languages:
     panels:
         languages:
             title: Enabled languages
-            view_mode: list
-            disable_grid_view: No
             db_items:
                 table: |
                     [[DB_PREFIX]]visitor_phrases AS vp

@@ -36,8 +36,8 @@ if (!empty($_SESSION['extranetUserID']) && ze\module::inc('zenario_users')) {
 }
 
 $request = '';
-if ($_POST['forum_thread'] ?? false) {
-   $request = '&forum_thread='. (int) ($_POST['forum_thread'] ?? false);
+if (ze::post('forum_thread')) {
+   $request = '&forum_thread='. (int) ze::post('forum_thread');
 }
 
 $mergeFields['link'] = $this->linkToItem($this->cID, $this->cType, true, $request) ;

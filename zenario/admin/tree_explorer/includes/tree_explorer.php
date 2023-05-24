@@ -12,7 +12,7 @@ if (($_GET["type"] ?? false)=="section") {
 	$top = "Showing menu tree in menu section \"" . ze\menu::sectionName($_GET["id"] ?? false) . "\"";
 
 	if ($menuArray = ze\menu::getStructure($cachingRestrictions,($_GET["id"] ?? false),false,0,0,100,false,false,true)) {
-		generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['og'] ?? false), ($_GET['language'] ?? false));
+		generateMenuForJSON($menuArray, $levelNodesCount, ze::get('og'), ze::get('language'));
 	}
 
 } elseif (($_GET["type"] ?? false)=="menu_node") {
@@ -29,14 +29,14 @@ if (($_GET["type"] ?? false)=="section") {
 	$top = "Showing menu tree beneath menu node \"" . $menuNode['name'] . "\"";
 
 	if ($menuArray = ze\menu::getStructure($cachingRestrictions,$sectionId,false,($_GET["id"] ?? false),0,100,false,false,true)) {
-		generateMenuForJSON($menuArray, $levelNodesCount, ($_GET['og'] ?? false), ($_GET['language'] ?? false));
+		generateMenuForJSON($menuArray, $levelNodesCount, ze::get('og'), ze::get('language'));
 	}
 
 } else {
 	exit;
 }
 
-if ($_GET['og'] ?? false) {
+if (ze::get('og')) {
 	$parameters .= '&og=1';
 }
 

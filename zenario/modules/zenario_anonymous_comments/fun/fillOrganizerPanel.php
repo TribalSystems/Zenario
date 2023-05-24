@@ -33,14 +33,16 @@ switch ($path) {
 		foreach ($panel['items'] as $id => &$item) {
 			$item['comment_on_page'] =
 				ze\admin::phrase(
-					'Pending comment on "[[page_title]]", left on [[comment_last_edit]]', 
+					'Comment on [[alias]] by [[poster_name]]', 
 					[
-						'page_title' => ze\link::toItem($item['content_id'], $item['content_type'], $fullPath = false, $request = '', $alias = false, $autoAddImportantRequests = false, $forceAliasInAdminMode = true),
-						'comment_last_edit' => ze\admin::formatDateTime($item['comment_last_edit'])]);
+						'alias' => ze\content::formatTag($item['content_id'], $item['content_type']),
+						'poster_name' => $item['poster_name']
+					]
+				);
 			
 			$item['summary'] = zenario_anonymous_comments::sanitiseHTML($item['summary'], true, true);
 	
-			$item['frontend_link'] = ze\link::toItem($item['content_id'], $item['content_type'], false, 'zenario_sk_return=navigation_path#zenario_comments_start_here');
+			$item['frontend_link'] = ze\link::toItem($item['content_id'], $item['content_type']);
 		}
 		
 		break;

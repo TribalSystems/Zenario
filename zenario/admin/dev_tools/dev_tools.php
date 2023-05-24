@@ -18,7 +18,7 @@ echo
 <head>
 	<title>';
 	
-		switch ($_GET['mode'] ?? false) {
+		switch (ze::get('mode')) {
 			case 'zenarioAB':
 				echo ze\admin::phrase('TUIX Inspector for an Admin Box');
 				break;
@@ -26,7 +26,7 @@ echo
 				echo ze\admin::phrase('TUIX Inspector for the Admin Toolbar');
 				break;
 			case 'zenarioO':
-				if (ze\ring::engToBoolean($_GET['orgMap'] ?? false)) {
+				if (ze\ring::engToBoolean(ze::get('orgMap'))) {
 					echo ze\admin::phrase("TUIX Inspector for Organizer's map");
 				} else {
 					echo ze\admin::phrase('TUIX Inspector for an Organizer panel');
@@ -70,7 +70,7 @@ ze\content::pageFoot($prefix, false, false, false);
 
 
 
-switch ($_GET['mode'] ?? false) {
+switch (ze::get('mode')) {
 	case 'zenarioAB':
 		$schemaName = 
 		$schemaNameForURL = 'admin_box_schema';
@@ -140,7 +140,7 @@ echo '
 <script type="text/javascript" src="doc_tools.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/dev_tools.min.js?v=', $v, '"></script>
 <script type="text/javascript">
-	devTools.init(\'', ze\escape::js($_GET['mode'] ?? false), '\', \'', ze\escape::js($schemaNameForURL), '\', schema, ', ze\ring::engToBoolean($_GET['orgMap'] ?? false), ');
+	devTools.init(\'', ze\escape::js(ze::get('mode')), '\', \'', ze\escape::js($schemaNameForURL), '\', schema, ', ze\ring::engToBoolean(ze::get('orgMap')), ');
 </script>
 </body>
 </html>';

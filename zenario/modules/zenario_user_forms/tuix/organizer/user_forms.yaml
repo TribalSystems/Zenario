@@ -4,7 +4,6 @@ zenario__user_forms:
     panels:
         user_forms:
             title: Forms
-            view_mode: list
             no_items_message: No forms have been created.
             select_mode_title: Select a form...
             panel_type: multi_line_list
@@ -47,8 +46,8 @@ zenario__user_forms:
                     db_column: f.type
                     parent: name
                     always_show: true
-                user_record_and_crm_info:
-                    title: User record and CRM info
+                form_extra_info:
+                    title: Form extra info
                     parent: name
                     always_show: true
                 form_email_addresses:
@@ -72,10 +71,29 @@ zenario__user_forms:
                 response_count:
                     title: Responses
                     db_column: |
-                        (
-                        SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
-                        WHERE form_id = f.id
+                        CONCAT_WS(
+                            ' ',
+                            (
+                                SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                                WHERE form_id = f.id
+                            ),
+                        'submitted'
                         )
+                    align_right: true
+                    width: small
+                    show_by_default: true
+                partial_response_count:
+                    title: Partial responses
+                    db_column: |
+                        CONCAT_WS(
+                            ' ',
+                            (
+                                SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response
+                                WHERE form_id = f.id
+                            ),
+                            'saved pending'
+                        )
+                    parent: response_count
                     align_right: true
                     width: small
                     show_by_default: true
@@ -89,7 +107,6 @@ zenario__user_forms:
                         )
                     #format: datetime
                     show_by_default: true
-                    width: small
                 crm:
                     title: CRM
                     show_by_default: true
@@ -99,6 +116,10 @@ zenario__user_forms:
                     width: xlarge
                     html: true
                 plugin_is_used:
+                    hidden: true
+                allows_save_and_complete_later:
+                    title: Save and complete later status
+                    db_column: f.allow_partial_completion
                     hidden: true
             default_sort_column: name
             
@@ -136,8 +157,16 @@ zenario__user_forms:
 #                        path: zenario_user_form
 #                        key:
 #                            type: profile
-                create_registration_form:
+                import_form:
                     ord: 4
+                    priv: _PRIV_MANAGE_FORMS
+                    parent: advanced_dropdown
+                    label: Import form design
+                    admin_box:
+                        path: zenario_import_user_forms
+                    hide_on_refiner: archived
+                create_registration_form:
+                    ord: 5
                     priv: _PRIV_MANAGE_FORMS
                     parent: advanced_dropdown
                     label: Create registration form
@@ -145,14 +174,6 @@ zenario__user_forms:
                         path: zenario_user_form
                         key:
                             type: registration
-                import_form:
-                    ord: 5
-                    priv: _PRIV_MANAGE_FORMS
-                    parent: advanced_dropdown
-                    label: Import form design
-                    admin_box:
-                        path: zenario_import_user_forms
-                    hide_on_refiner: archived
             
             item_buttons:
                 edit_form_fields_gui:
@@ -192,7 +213,7 @@ zenario__user_forms:
                     hide_when_children_are_not_visible: true
                 view_responses:
                     ord: 1
-                    label: Responses
+                    label: Responses for this form
                     parent: view_dropdown
                     priv: _PRIV_VIEW_FORM_RESPONSES
                     link:
@@ -225,12 +246,12 @@ zenario__user_forms:
                     priv: _PRIV_MANAGE_FORMS
                     parent: advanced_dropdown
                     hide_in_select_mode: true
-                    label: Export form specification
+                    label: Export form design
                     multiple_select: true
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you want to export the selected form specifications?
+                                Are you sure you want to export the selected form design? You can then import it into a different Zenario site of the same version.
                             button_message: 'Export'
                             cancel_button_message: Cancel
                             message_type: warning

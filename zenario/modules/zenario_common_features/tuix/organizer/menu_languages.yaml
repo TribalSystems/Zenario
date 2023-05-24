@@ -10,8 +10,6 @@ zenario__menu:
             no_items_message: >
                 No Languages have been enabled. You must enable a Language
                 before creating any Menu Nodes.
-            view_mode: list
-            disable_grid_view: true
             php: true
             db_items:
                 table: '[[DB_PREFIX]]languages AS l'
