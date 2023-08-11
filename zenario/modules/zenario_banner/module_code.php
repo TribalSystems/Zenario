@@ -122,7 +122,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			
 			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+				$atAll = true, $ifUserLoggedIn = $this->setting('hide_private_item') == '_ALWAYS_SHOW', $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 			$this->clearCacheBy(
 				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 			
@@ -146,10 +146,6 @@ class zenario_banner extends ze\moduleBaseClass {
 							return false;
 						}
 						break;
-					
-					default:
-						$this->allowCaching(
-							$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 				}
 			}
 		

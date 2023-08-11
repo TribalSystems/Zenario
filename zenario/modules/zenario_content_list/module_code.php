@@ -536,8 +536,12 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = !$this->setting('hide_private_items'), $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+		
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = $this->setting('only_show_child_items'), $clearByUser = (bool) $this->setting('hide_private_items'), $clearByFile = $this->setting('show_featured_image'), $clearByModuleData = false);
+			$clearByContent = true, $clearByMenu = ($this->setting('only_show_child_items') || ($this->setting('title_source') == 'content_item_menu_node')),
+			$clearByUser = (bool) $this->setting('hide_private_items'),
+			$clearByFile = $this->setting('show_featured_image'), $clearByModuleData = false
+		);
 		
 		
 		if ($this->setting('data_field') == 'description') {

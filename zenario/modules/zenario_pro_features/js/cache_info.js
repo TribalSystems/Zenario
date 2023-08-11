@@ -103,6 +103,10 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			html += '</ul>';
 		}
 	
+	} else if (type == 'Page' && zenarioCD.load.l) {
+		css = 'zenario_cache_disabled';
+		html += '<h1 class="' + css + '">Location-dependant redirect logic in use on this ' + lType + '.</h1><h2>This ' + lType + ' cannot be cached but plugins on the ' + lType + ' may still be cached.</h2>';
+	
 	} else {
 		
 		css = 'zenario_cache_in_use';
@@ -120,7 +124,6 @@ zenarioCI.box = function(slotName, type, cantCache) {
 				g: 'Additional GET parameters‡',
 				p: 'POST request',
 				u: 'Logged in extranet user',
-				l: 'Location dependant logic',
 				content: 'Other content items, any changes to categories',
 				menu: 'Menu nodes',
 				user: "Users, and their group memberships",
@@ -128,10 +131,6 @@ zenarioCI.box = function(slotName, type, cantCache) {
 				module: 'Any data added by a module'
 			};
 		
-		
-		if (type == 'Page') {
-			load.l = 'LOCATION';
-		}
 		
 		html += '<h2>The caching rules for this ' + lType + ' are as follows:</h2>';
 		html += '<table><tr><th>Request contents</th><th>This request</th><th>' + type + ' requirements</th><th>Result</th></tr>';

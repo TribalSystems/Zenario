@@ -1002,3 +1002,10 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
     line-height: 1.3em;
     background:none;
 }
+
+/* modal window button  */
+
+.zenario_user_forms .user_form_click_here h3 {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1em;
+}

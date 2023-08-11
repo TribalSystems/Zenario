@@ -55,6 +55,12 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 		}
 	}
 	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		if ($values['impersonate/user_id'] && !ze\row::exists('users', ['id' => $values['impersonate/user_id'], 'status' => 'active'])) {
+			$fields['impersonate/user_id']['error'] = ze\admin::phrase('Please select an active extranet user');
+		}
+	}
+	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (ze\priv::check('_PRIV_IMPERSONATE_USER')) {
 			$this->impersonateUser($values['impersonate/user_id'],

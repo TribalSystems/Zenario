@@ -168,17 +168,21 @@ class wrapper {
 							//For each plugin-related CSS file, check to see if its module is in the
 							//list of running modules.
 							//First, check the "2.name.css" format.
-							$moduleName1 = $nameparts[1];
-							if (!isset($runningModules[$moduleName1])) {
+							$moduleName = $nameparts[1];
+							if (!isset($runningModules[$moduleName])) {
 								
-								//If that didn't match, maybe the file was using the "2.name_123.css" format
-								//instead? Chop the "_123" off of the end and try again.
-								$moduleName2 = explode('_', $moduleName1);
-								array_pop($moduleName2);
-								$moduleName2 = implode('_', $moduleName2);
+								//If that didn't match, maybe the file was using the "2.name_123.css" or
+								//"2.name_123_456.css" formats instead?
+								//Try chopping some parts off a couple of times.
+								$explodedName = explode('_', $moduleName);
 								
-								if (!isset($runningModules[$moduleName2])) {
-									continue;
+								array_pop($explodedName);
+								if (!isset($runningModules[implode('_', $explodedName)])) {
+									
+									array_pop($explodedName);
+									if (!isset($runningModules[implode('_', $explodedName)])) {
+										continue;
+									}
 								}
 							}
 						}

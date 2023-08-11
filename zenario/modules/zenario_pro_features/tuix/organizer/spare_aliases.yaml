@@ -67,12 +67,12 @@ zenario__library:
                             message: |
                                 Are you sure that you wish to remove the spare alias "[[alias]]"?
                                 
-                                                                            No content items will be deleted.
+                                No content items will be deleted.
                             multiple_select_message: |
-                                Are you sure that you wish to remove these spare aliases selected?
+                                Are you sure that you wish to delete the selected spare aliases?
                                 
-                                                                            No content items will be deleted.
-                            button_message: Remove
+                                No content items will be deleted.
+                            button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:

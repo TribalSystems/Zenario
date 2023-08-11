@@ -68,9 +68,6 @@ if (ze::setting('lib.colorbox')) {
 if (ze::setting('lib.doubletaptogo')) {
 	$libs[] = 'dt';
 }
-if (ze::setting('lib.lazy')) {
-	$libs[] = 'l';
-}
 if (ze::setting('lib.modernizr')) {
 	$libs[] = 'm';
 }

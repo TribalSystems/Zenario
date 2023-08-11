@@ -14,7 +14,8 @@
 a.nice_button,
 .zenario_user_forms .repeat_block_buttons .add,
 .zenario_ctype_event .event_more_info a,
-.zenario_ctype_document_search .search_results .result .result_info a {
+.zenario_ctype_document_search .search_results .result .result_info a,
+.zenario_user_forms .user_form_click_here h3 {
 	display:inline-block;
 	min-width:120px;
 	height:45px;
@@ -40,7 +41,8 @@ a.nice_button,
 a.nice_button:hover,
 .zenario_user_forms .repeat_block_buttons .add:hover,
 .zenario_ctype_event .event_more_info a:hover,
-.zenario_ctype_document_search .search_results .result .result_info a:hover {
+.zenario_ctype_document_search .search_results .result .result_info a:hover,
+.zenario_user_forms .user_form_click_here h3:hover {
 	background:#b8babc;
 	color:#282e35;
 	text-decoration:none;

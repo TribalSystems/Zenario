@@ -25,8 +25,14 @@ zenario__content:
                     title: Slot name
                     disallow_sorting: true
                     always_show: true
+                sitewide:
+                    title: Slot contents (site-wide)
+                    always_show: true
+                    disallow_sorting: true
+                    width: large
+                    html: true
                 layout:
-                    title: Slot contents
+                    title: Slot contents (layout)
                     always_show: true
                     disallow_sorting: true
                     width: large
@@ -67,7 +73,7 @@ zenario__content:
                         request:
                             addPlugin: ''
                     with_columns_set:
-                        traits.empty: true
+                        empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
             
@@ -91,7 +97,7 @@ zenario__content:
                             level: 2
                             addPluginInstance: 1
                     with_columns_set:
-                        traits.empty: true
+                        empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
                 
@@ -108,7 +114,7 @@ zenario__content:
                             level: 1
                             addPluginInstance: 1
                     with_columns_set:
-                        traits.empty: true
+                        empty: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                         
@@ -130,8 +136,8 @@ zenario__content:
                             level: 2
                             removePlugin: 1
                     with_columns_set:
-                        traits.full: true
-                        traits.layout: true
+                        full: true
+                        layout: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
                 
@@ -140,7 +146,7 @@ zenario__content:
                     label: Remove plugin from slot
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to remove [[content_item]] from the slot on this content item?'
+                            message: 'Are you sure you wish to remove [[content_item_plain_text]] from the slot on this content item?'
                             button_message: Remove
                             cancel_button_message: Cancel
                             message_type: warning
@@ -148,8 +154,8 @@ zenario__content:
                             level: 1
                             removePlugin: 1
                     with_columns_set:
-                        traits.full: true
-                        traits.content_item: true
+                        full: true
+                        content_item: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                 
@@ -165,9 +171,9 @@ zenario__content:
                             level: 1
                             hidePlugin: 1
                     with_columns_set:
-                        traits.full: true
-                        traits.reusable: true
-                        traits.layout: true
+                        full: true
+                        reusable: true
+                        layout: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
                 
@@ -184,7 +190,7 @@ zenario__content:
                             level: 1
                             showPlugin: 1
                     with_columns_set:
-                        traits.opaque: true
-                        traits.layout: true
+                        opaque: true
+                        layout: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'

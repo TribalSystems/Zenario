@@ -2258,4 +2258,15 @@ _sql
 	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
 	WHERE foot_html like '%zenario/libs/yarn/wowjs%'
 _sql
+
+
+//Another update to fix the wrong path to the wow.js library, this time in the versions table.
+//Please note: this patch was made in 9.6 and backpatched to 9.5 and 9.4.
+//However this code is safe to run more than once without a specific check needed.
+);	ze\dbAdm::revision( 57716
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]content_item_versions`
+	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
+	WHERE foot_html like '%zenario/libs/yarn/wowjs%'
+_sql
 );

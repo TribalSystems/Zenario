@@ -841,7 +841,6 @@ zenarioA.getGridSlotDetails = function(slotName) {
 var stoppingWrapperClicks = false;
 zenarioA.adminSlotWrapperClick = function(slotName, e, isEgg) {
 	
-	
 	if (stoppingWrapperClicks) {
 		return false;
 	}
@@ -872,7 +871,7 @@ zenarioA.adminSlotWrapperClick = function(slotName, e, isEgg) {
 	}
 	
 	//This line tries to open the drop-down menu near where the mouse cursor is
-	zenarioA.openSlotControls(slotControlsBox, e, slotName);
+	zenarioA.openSlotControls(slotControlsBox, e, slotName, false, true);
 	
 	//This (commented out) line would try to open the drop-down menu in its usual place
 	//at the top-right of the slot.
@@ -897,7 +896,7 @@ zenarioA.suspendStopWrapperClicks = function() {
 
 
 //Show the drop-down menu for the slot
-zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
+zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFromClickingOnSlot) {
 	
 	var closeAsIsAlreadyOpen = !isFromAdminToolbar && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible'),
 		left,
@@ -942,10 +941,29 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 			
 			left = 200;
 			top = 0;
+		
+		} else if (isFromClickingOnSlot) {
+			left = -3;
+			top = -3;
+		
 		} else {
 			left = -width + 44;
 			top = 32;
 		}
+		
+		
+		//Work-around to fix a bug that can happen with the z-index/layout.
+		//Sometimes the slot controls will open but the browser won't consider
+		//the pointer is over it, and will think the admin is moving their mouse
+		//over the page below to try and close them.
+		//We'll re-use the "keepSlotControlsOpen" tech as a work-around to stop this,
+		//by adding a 350ms grace-period after the slot-controls have been opened,
+		//where the slot-controls won't close.
+		if (isFromClickingOnSlot && !keepSlotControlsOpen) {
+			zenarioA.keepSlotControlsOpen();
+			setTimeout(zenarioA.allowSlotControlsToBeClosedOnceMore, 350);
+		}
+		
 		
 		zenarioA.openBox(
 			undefined,
@@ -1030,6 +1048,7 @@ zenarioA.copyEmbedHTML = function(link, slotName) {
 	zenarioA.closeSlotControls();
 };
 
+
 zenarioA.dontCloseSlotControls = function() {
 	if (slotControlClose) {
 		clearTimeout(slotControlClose);
@@ -1044,7 +1063,28 @@ zenarioA.closeSlotControlsAfterDelay = function() {
 	}
 };
 
+
+//These functions were written for a new feature in 9.5.
+//However they're also used as part of a bug-fix, and that bugfix needs to be patched
+//back to 9.4. So I've patched them back as well, even though they're not being used for
+//their original intended purpose.
+var keepSlotControlsOpen;
+
+zenarioA.keepSlotControlsOpen = function() {
+	keepSlotControlsOpen = true;
+};
+
+zenarioA.allowSlotControlsToBeClosedOnceMore = function() {
+	keepSlotControlsOpen = false;
+};
+
+
 zenarioA.closeSlotControls = function() {
+	
+	if (keepSlotControlsOpen) {
+		return;
+	}
+	
 	zenarioA.dontCloseSlotControls();
 	if (openSlotControlsBox) {
 		zenarioA.closeBox(openSlotControlsBox, true, {effect: 'fade', duration: 200});

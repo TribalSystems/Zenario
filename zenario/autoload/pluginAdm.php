@@ -1015,25 +1015,26 @@ class pluginAdm {
 		}
 		
 		
-		//Check this slot exists
-		$key = [
-			'layout_id' => ($layoutId = \ze\content::layoutId($cID, $cType, $cVersion)),
-			'slot_name' => $slotName
-		];
-		
-		//Allow site-wide slots to be hidden and unhidden on a per-content item basis,
-		//but don't allow site-wide slots to be replace by a plugin on a content item.
-		if ($moduleId || $instanceId) {
-			$key['is_header'] = 0;
-			$key['is_footer'] = 0;
-		}
-		
-		if (!\ze\row::exists('layout_slot_link', $key)) {
-			return false;
-		}
-		
-		
 		if ($moduleId || $instanceId !== '') {
+			
+			//If trying to add a new plugin, check this slot exists
+			$key = [
+				'layout_id' => ($layoutId = \ze\content::layoutId($cID, $cType, $cVersion)),
+				'slot_name' => $slotName
+			];
+		
+			//Allow site-wide slots to be hidden and unhidden on a per-content item basis,
+			//but don't allow site-wide slots to be replace by a plugin on a content item.
+			if ($moduleId || $instanceId) {
+				$key['is_header'] = 0;
+				$key['is_footer'] = 0;
+			}
+		
+			if (!\ze\row::exists('layout_slot_link', $key)) {
+				return false;
+			}
+			
+			
 			$placementId = \ze\row::set(
 				'plugin_item_link',
 				[
@@ -1067,17 +1068,17 @@ class pluginAdm {
 			$moduleId = $details['module_id'];
 		}
 		
-		//Check this slot exists, and isn't a site-wide slot
-		if (!\ze\row::exists('layout_slot_link', [
-			'layout_id' => $layoutId,
-			'slot_name' => $slotName,
-			'is_header' => 0,
-			'is_footer' => 0
-		])) {
-			return false;
-		}
-		
 		if ($moduleId) {
+			//When trying to add a plugin, check this slot exists, and isn't a site-wide slot
+			if (!\ze\row::exists('layout_slot_link', [
+				'layout_id' => $layoutId,
+				'slot_name' => $slotName,
+				'is_header' => 0,
+				'is_footer' => 0
+			])) {
+				return false;
+			}
+			
 			$placementId = \ze\row::set(
 				'plugin_layout_link',
 				[
@@ -1107,15 +1108,15 @@ class pluginAdm {
 			$moduleId = $details['module_id'];
 		}
 		
-		//Check this slot exists, and is a site-wide slot
-		$lsl = \ze\row::get('layout_slot_link', ['is_header', 'is_footer'], [
-			'slot_name' => $slotName
-		]);
-		if (!$lsl || (!$lsl['is_header'] && !$lsl['is_footer'])) {
-			return false;
-		}
-		
 		if ($moduleId) {
+			//When trying to add a plugin, check this slot exists, and is a site-wide slot
+			$lsl = \ze\row::get('layout_slot_link', ['is_header', 'is_footer'], [
+				'slot_name' => $slotName
+			]);
+			if (!$lsl || (!$lsl['is_header'] && !$lsl['is_footer'])) {
+				return false;
+			}
+			
 			$placementId = \ze\row::set(
 				'plugin_sitewide_link',
 				[

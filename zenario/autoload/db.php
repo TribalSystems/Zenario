@@ -753,9 +753,9 @@ class db {
 			$errorText = 'Database connection failure, could not connect to '. $dbname. ' at '. $dbhost;
 			
 			if ($con) {
-				\ze\db::reportError('Database error at', $errorText, @mysqli_errno($con), @mysqli_error($con));
+				\ze\db::reportDatabaseError('Database error at', $errorText, @mysqli_errno($con), @mysqli_error($con));
 			} else {
-				\ze\db::reportError('Database error at', $errorText);
+				\ze\db::reportDatabaseError('Database error at', $errorText);
 			}
 		}
 	
@@ -923,7 +923,7 @@ class db {
 		$debugBacktrace = debug_backtrace();
 		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
 		
-		\ze\db::reportError('Database error at', 'Database query error', $sqlErrno, $sqlError, $sql, $debugBacktrace);
+		\ze\db::reportDatabaseError('Database error at', 'Database query error', $sqlErrno, $sqlError, $sql, $debugBacktrace);
 		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {
 			echo "Database query error\n\n". $sqlErrno. "\n\n". $sqlError. "\n\n". $sql. "\n\n";
@@ -980,8 +980,20 @@ class db {
 		return defined('EMAIL_ADDRESS_GLOBAL_SUPPORT') && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true;
 	}
 	
-	//Formerly "reportDatabaseError()"
 	public static function reportError($subjectPrefix, ...$errorInfo) {
+		\ze\db::reportErrorInternal(false, $subjectPrefix, $errorInfo);
+	}
+	
+	public static function reportDatabaseError($subjectPrefix, ...$errorInfo) {
+		\ze\db::reportErrorInternal(true, $subjectPrefix, $errorInfo);
+	}
+	
+	private static function reportErrorInternal($dbError, $subjectPrefix, $errorInfo) {
+		
+		//
+		// Send a mail about the db error to the support box
+		//
+		
 		
 		//Insert an artificial delay, intended to make it slightly harder to spider a site
 		//looking for vulnerabilities
@@ -1014,15 +1026,16 @@ class db {
 		}
 	
 		$body .= "\n\n". implode("\n\n", $errorInfo);
-	
-		// Mail it
+		
+		
+		//Don't allow the sendEmail functions to connect to the database if this is a database error!
+		if ($dbError) {
+			$lastDB = \ze::$dbL;
+			\ze::$dbL = null;
+		}
 		
 		$addressToOverriddenBy = false;
-	
-		//A little hack - don't allow \ze\server::sendEmail() to connect to the database
-		$lastDB = \ze::$dbL;
-		\ze::$dbL = null;
-	
+		
 		\ze\server::sendEmail(
 			$subject, $body,
 			EMAIL_ADDRESS_GLOBAL_SUPPORT,
@@ -1038,7 +1051,9 @@ class db {
 										//even if debug mode is on.
 		);
 	
-		\ze::$dbL = $lastDB;
+		if ($dbError) {
+			\ze::$dbL = $lastDB;
+		}
 	}
 
 
@@ -1125,7 +1140,7 @@ class db {
 		$debugBacktrace = debug_backtrace();
 		$debugBacktrace = \ze\db::trimDebugBacktrace($debugBacktrace);
 	
-		\ze\db::reportError('Database error at', 'Database query error', $error, $debugBacktrace);
+		\ze\db::reportDatabaseError('Database error at', 'Database query error', $error, $debugBacktrace);
 		
 		if (defined('RUNNING_FROM_COMMAND_LINE')) {
 			echo "Database query error\n\n". $error. "\n\n";

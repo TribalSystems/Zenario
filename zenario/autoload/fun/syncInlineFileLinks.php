@@ -214,7 +214,7 @@ if ($usage == 'image'
 				$changed = true;
 			
 			//Otherwise attempt to regenerate the public link if needed
-			} elseif ($needsChanging) {
+			} elseif ($needsChanging && $file) {
 				$rememberWhatThisWas = ze::$mustUseFullPath;
 				ze::$mustUseFullPath = false;
 				

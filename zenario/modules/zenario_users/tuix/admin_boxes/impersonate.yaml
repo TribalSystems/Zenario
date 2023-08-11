@@ -18,6 +18,7 @@ zenario__impersonate:
                         target_path: zenario__users/panels/users
                         min_path: zenario__users/panels/users
                         max_path: zenario__users/panels/users
+                        disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Select
                         select_phrase: Select extranet user...
                         nothing_selected_phrase: No extranet user selected

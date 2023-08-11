@@ -49,7 +49,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							} else {
 								$field['value'] = ze::setting($setting);
 							}
-					
+							
+							if (!empty($field['site_setting']['encrypt']) && \ze\zewl::init()) {
+								$field['encrypted'] = true;
+							}
+							
+							
 							if ($setting == 'default_template_family') {
 								$field['values'] = [$field['value'] => $field['value']];
 					

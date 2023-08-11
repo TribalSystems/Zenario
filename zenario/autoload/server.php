@@ -71,7 +71,7 @@ class server {
 	
 	
 		if ($addressFrom === false) {
-			$addressFrom = \ze::setting('email_address_from');
+			$addressFrom = \ze::setting('email_address_from') ?: EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 		if (!$nameFrom) {
 			$nameFrom = \ze::setting('email_name_from');
@@ -219,9 +219,9 @@ class server {
 		
 		$addressToOverriddenBy = false;
 		
-		if ($addressTo === false) {
+		if ($addressTo === ''
+		 || $addressTo === false) {
 			$addressTo = EMAIL_ADDRESS_GLOBAL_SUPPORT;
-			$addressFrom = \ze::setting('email_address_from') ?: EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 		
 		return \ze\server::sendEmail(

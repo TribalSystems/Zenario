@@ -2055,6 +2055,9 @@ zenarioO.getFooter = function() {
 };
 
 
+var previouslySelectedItems,
+	nextItemInPreviousView;
+
 zenarioO.setPanel = function() {
 	
 	var id,
@@ -2076,13 +2079,16 @@ zenarioO.setPanel = function() {
 	
 	var selectedItems = _.clone(zenarioO.pi.returnSelectedItems());
 	
+	//Remove any items that we are trying to select, but are not in the current view.
 	foreach (selectedItems as id) {
-		//Remove any items that have disappeared since this panel was last shown
 		if (!zenarioO.tuix.items
 		 || !zenarioO.tuix.items[id]) {
 			delete selectedItems[id];
 			
-			if (id !== '') {
+			//Check if these are items that were in the previous view, that have disappeared since this panel was last shown.
+			if (id !== ''
+			 && previouslySelectedItems
+			 && previouslySelectedItems[id]) {
 				itemsGone = true;
 			}
 		
@@ -2095,10 +2101,10 @@ zenarioO.setPanel = function() {
 	//If the admin just pressed a button, and that caused the item(s) that were selected to disappear,
 	//then try to select the next item.
 	if (itemsGone && n == 0) {
-		if (zenarioO.selectNextItem
+		if (nextItemInPreviousView
 		 && zenarioO.tuix.items
-		 && zenarioO.tuix.items[zenarioO.selectNextItem]) {
-			selectedItems[zenarioO.selectNextItem] = true;
+		 && zenarioO.tuix.items[nextItemInPreviousView]) {
+			selectedItems[nextItemInPreviousView] = true;
 			++n;
 		}
 	
@@ -2107,7 +2113,8 @@ zenarioO.setPanel = function() {
 		selectedItems = {};
 		n = 0;
 	}
-	delete zenarioO.selectNextItem;
+	previouslySelectedItems =
+	nextItemInPreviousView = undefined;
 	
 	//If we don't have any record of any selected items, but we were asked to select one in the URL,
 	//then select that one
@@ -3438,7 +3445,8 @@ zenarioO.refreshToShowItem = function(itemId, growlIfItemIsVisible, growlIfItemI
 	//T10250, When deleting an item in Organizer, select the next one
 	//If an item or items are currently selected, remember which item is next in
 	//the list after them for use in our logic later.
-	zenarioO.selectNextItem = zenarioO.getNextItem();
+	previouslySelectedItems = _.clone(zenarioO.pi.returnSelectedItems());
+	nextItemInPreviousView = zenarioO.getNextItem();
 	
 	
 	//Accept a string, array or object as an input

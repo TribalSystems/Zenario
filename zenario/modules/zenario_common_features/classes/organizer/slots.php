@@ -53,10 +53,9 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 		
 				$panel['title'] = ze\admin::phrase('Slots on the Content Item "[[tag]]"', ['tag' => ze\content::formatTagFromTagId($refinerId)]);
 				$panel['no_items_message'] = ze\admin::phrase('There are no slots on the chosen Layout.'); 
-				$panel['columns']['layout']['title'] = ze\admin::phrase('Slot contents (layout)');
 		
 		
-				$layers = [1 => 'content_item', 2 => 'layout'];
+				$layers = [1 => 'content_item', 2 => 'layout', 3 => 'sitewide'];
 		
 		
 				//Check that there is a draft and the admin has permissions to make changes.
@@ -100,7 +99,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 				unset($panel['columns']['content_item']);
 				unset($panel['item_buttons']['edit_wireframe']);
 				
-				$layers = [2 => 'layout'];
+				$layers = [2 => 'layout', 3 => 'sitewide'];
 	
 				//On the Layout Layer, add an option to insert a Wireframe version of each Plugin
 				//that is flagged as uses wireframe.
@@ -139,15 +138,26 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 
 		//Get the slots on this Layout, and calculate their contents
 		$ord = 0;
-		foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
-			$panel['items'][$slot['slot_name']] =
-				[
-					'ord' => $slot['ord']? $slot['ord'] : ++$ord,
-					'slotname' => $slot['slot_name'],
-					'visitor_sees' => ze\admin::phrase('Nothing'),
-					'content_item' => ze\admin::phrase('Transparent'),
-					'layout' => ze\admin::phrase('Empty'),
-					'traits' => ['empty' => true]];
+		foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name', 'is_header', 'is_footer'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
+			$item = [
+				'ord' => $slot['ord']? $slot['ord'] : ++$ord,
+				'slotname' => $slot['slot_name'],
+				'empty' => true
+			];
+			
+			if ($slot['is_header'] || $slot['is_footer']) {
+				$item['visitor_sees'] = ze\admin::phrase('Nothing');
+				$item['content_item'] = ze\admin::phrase('Transparent');
+				$item['layout'] = ze\admin::phrase('-');
+				$item['sitewide'] = ze\admin::phrase('Empty');
+			} else {
+				$item['visitor_sees'] = ze\admin::phrase('Nothing');
+				$item['content_item'] = ze\admin::phrase('Transparent');
+				$item['layout'] = ze\admin::phrase('Empty');
+				$item['sitewide'] = ze\admin::phrase('-');
+			}
+			
+			$panel['items'][$slot['slot_name']] = $item;
 		}
 
 
@@ -172,14 +182,14 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 						$usageLinks = [
 							'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layout['layout_id']. '//'
 						];
-						unset($panel['items'][$slotName]['traits']['empty']);
+						unset($panel['items'][$slotName]['empty']);
 				
 						if (!$slot['module_id']) {
-							$panel['items'][$slotName]['traits']['opaque'] = true;
+							$panel['items'][$slotName]['opaque'] = true;
 				
 						} else {
 							$panel['items'][$slotName]['module_id'] = $slot['module_id'];
-							$panel['items'][$slotName]['traits']['full'] = true;
+							$panel['items'][$slotName]['full'] = true;
 							$panel['items'][$slotName]['instance_id'] = $slot['instance_id'];
 							
 					
@@ -213,7 +223,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 								$panel['items'][$slotName]['visitor_sees'] =
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 								
-								$panel['items'][$slotName]['traits']['reusable'] = true;
+								$panel['items'][$slotName]['reusable'] = true;
 							} else {
 								$usage = [
 									'modules' => 1,
@@ -221,7 +231,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 								];
 								$panel['items'][$slotName]['visitor_sees'] =
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
-								$panel['items'][$slotName]['traits']['wireframe'] = true;
+								$panel['items'][$slotName]['wireframe'] = true;
 								
 								//Show how many items use a specific to slotName, and display links if possible.
 								$usageContentItems = ze\layoutAdm::slotUsage($layout['layout_id'], $slotName);
@@ -249,7 +259,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 			
 			
 					if ($slot['level'] == $level) {
-						$panel['items'][$slotName]['traits'][$layer] = true;
+						$panel['items'][$slotName][$layer] = true;
 				
 						if (!$slot['module_id']) {
 							$panel['items'][$slotName][$layer] = ze\admin::phrase('Opaque');
@@ -293,6 +303,8 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 							}
 						}
+						
+						$panel['items'][$slotName][$layer. '_plain_text'] = htmlspecialchars_decode(strip_tags($panel['items'][$slotName][$layer]));
 					}
 				}
 			}

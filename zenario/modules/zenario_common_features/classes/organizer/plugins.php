@@ -179,29 +179,30 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		
 		if (!$panel['key']['moduleId'] && isset($panel['collection_buttons']['create_dropdown'])) {
 			//Get a list of modules that can be pluggable
+			if ($isSlideshow) {
+				//Show the modules in reverse order for slideshows
+				$orderBy = ['display_name', 'DESC'];
+				$classNames = ['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple'];
+			} else {
+				$orderBy = 'display_name';
+				$classNames = ['!' => ['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple']];
+			}
+			
 			$key = [
 				'status' => 'module_running',
 				'is_pluggable' => 1,
 				'nestable' => ['!' => 2],
-				'class_name' => ['!' => ['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple']]
+				'class_name' => $classNames
 			];
 			
 			if ($panel['key']['moduleIds']) {
 				$key['id'] = explode(',', $panel['key']['moduleIds']);
 			}
 			
-			//Show the modules in reverse order for slideshows
-			if ($refinerName == 'slideshows') {
-				$orderBy = ['display_name', 'DESC'];
-			} else {
-				$orderBy = 'display_name';
-			}
-			
-			
 			$modules = ze\row::getValues('modules', 'display_name', $key, $orderBy);
-			$ord = 222;
 			
 			//Automatically create drop-down menus for quickly adding plugins
+			$ord = 222;
 			foreach ($modules as $moduleId => $name) {
 				$panel['collection_buttons']['create_plugin_'. $moduleId] =
 					[

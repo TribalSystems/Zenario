@@ -1238,23 +1238,6 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	/*overflow:hidden;*/
 }
 
-/* Replace overflow:hidden rule on span.zenario_field_widget_wrap */
-	#zenario_fbAdminInner .div_table .zfab_row span.zenario_field_widget_wrap:before,
-	#zenario_fbAdminInner .div_table .zfab_row span.zenario_field_widget_wrap:after {
-		content: '.';
-		width: 0;
-		height: 0;
-		font-size: 0;
-		line-height: 0;
-		display: block;
-		overflow: hidden;
-		visibility: hidden;
-	}
-
-	#zenario_fbAdminInner .div_table .zfab_row span.zenario_field_widget_wrap:after {
-		clear: both;
-	}
-
 #zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__url span.zenario_field_widget_wrap,
 #zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__ext_url span.zenario_field_widget_wrap,
 #zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_url span.zenario_field_widget_wrap {

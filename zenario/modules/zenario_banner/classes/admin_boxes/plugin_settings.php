@@ -553,11 +553,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			
 			$fields['title_and_description/title']['side_note'] = 
 			$fields['first_tab/more_link_text']['side_note'] = 
-                                ze\admin::phrase('
-                                        To make a phrase that gets managed by the translation system, check the checkbox to make this plugin multilingual, and enter text in [[def_lang_name]] between double square brackets, [[Like this]], wherever you see the speech bubbles icon.<br />
-                                        <a href="[[phrases_panel]]" target="_blank">View phrases</a>.',
-                                                ['def_lang_name' => $mrg['def_lang_name'], 'Like this' => '[[Like this]]', 'phrases_panel' => $mrg['phrases_panel']]
-                                );
+				ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer.</a>.', $mrg);
 		}
 		
 
