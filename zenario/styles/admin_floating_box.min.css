@@ -327,6 +327,7 @@ body.zenario_fbAdminFloatingBox__isOpen>div.ui-selectmenu-menu .ui-menu-item{fon
 #colorbox.zenario_css_class_picker #cboxLoadedContent{background:transparent}#colorbox.zenario_css_class_picker p.zenario_css_picker_source{font-size:11px;margin-top:10px;text-align:center}
 #colorbox.zenario_css_class_picker p:hover{opacity:.8}#zenario_fbAdminFloatingBox.zenario_fab_plugin{padding:0}#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabBox{background:#333}
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead{border-bottom:1px solid #000;position:relative;background:url('../admin/images/popup-panel-top-lines.png') no-repeat center top #333;cursor:move}
+#zenario_fbAdminFloatingBox .zenario_fabHead .zenario_no_drag,#zenario_fbAdminInfoBox .zenario_infoBoxHead .zenario_no_drag,#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead .zenario_no_drag{cursor:auto}
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead{padding-top:0;border-bottom:1px solid #747474}#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead>div{padding:10px 50px 20px 18px;border-bottom:1px solid #000}
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead #zenario_fabTitleWrap #zenario_fabTitle{font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif}
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead #zenario_fabTitleWrap #zenario_fabTitle{font-size:10px;color:#43d4f4}#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead .zenario_fabClose{float:none;position:absolute;top:10px;right:25px;margin:0}

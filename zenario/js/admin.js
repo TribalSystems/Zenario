@@ -943,8 +943,8 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFrom
 			top = 0;
 		
 		} else if (isFromClickingOnSlot) {
-			left = -3;
-			top = -3;
+			left = 2;
+			top = 2;
 		
 		} else {
 			left = -width + 44;
@@ -960,8 +960,17 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFrom
 		//by adding a 350ms grace-period after the slot-controls have been opened,
 		//where the slot-controls won't close.
 		if (isFromClickingOnSlot && !keepSlotControlsOpen) {
-			zenarioA.keepSlotControlsOpen();
-			setTimeout(zenarioA.allowSlotControlsToBeClosedOnceMore, 350);
+	
+			//For WYSIWYG Editors in edit mode, don't use this hack to try to force the slot drop-down menu open,
+			//as it does not interact properly with the zenario_wysiwyg_editor.listenForDoubleClick() function.
+			//Check for the same logic as in zenario_wysiwyg_editor.listenForDoubleClick() and don't run this code if
+			//it will be running.
+			if (zenarioA.toolbar == 'edit'
+			 && zenario.slots[slotName].hasDoubleClick) {
+			} else {
+				zenarioA.keepSlotControlsOpen();
+				setTimeout(zenarioA.allowSlotControlsToBeClosedOnceMore, 350);
+			}
 		}
 		
 		

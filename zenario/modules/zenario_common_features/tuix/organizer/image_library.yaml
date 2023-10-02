@@ -209,6 +209,8 @@ zenario__library:
                             WHERE image_id = f.id
                               AND in_use = 1
                               AND archived = 0
+                              AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+                              AND foreign_key_id != 0
                             LIMIT 1
                         )
                     format: yes_or_no
@@ -229,6 +231,7 @@ zenario__library:
                             FROM [[DB_PREFIX]]inline_images
                             WHERE image_id = f.id
                               AND foreign_key_to = 'content'
+                              AND foreign_key_id != 0
                               AND archived = 0
                             LIMIT 1
                         )
@@ -242,6 +245,7 @@ zenario__library:
                             FROM [[DB_PREFIX]]inline_images
                             WHERE image_id = f.id
                               AND foreign_key_to = 'library_plugin'
+                              AND foreign_key_id != 0
                               AND is_nest = 0
                             LIMIT 1
                         )
@@ -255,6 +259,7 @@ zenario__library:
                             FROM [[DB_PREFIX]]inline_images
                             WHERE image_id = f.id
                               AND foreign_key_to = 'library_plugin'
+                              AND foreign_key_id != 0
                               AND is_nest = 1
                               AND is_slideshow = 0
                             LIMIT 1
@@ -269,6 +274,7 @@ zenario__library:
                             FROM [[DB_PREFIX]]inline_images
                             WHERE image_id = f.id
                               AND foreign_key_to = 'library_plugin'
+                              AND foreign_key_id != 0
                               AND is_slideshow = 1
                             LIMIT 1
                         )
@@ -282,6 +288,7 @@ zenario__library:
                             FROM [[DB_PREFIX]]inline_images
                             WHERE image_id = f.id
                               AND foreign_key_to = 'menu_node'
+                              AND foreign_key_id != 0
                             LIMIT 1
                         )
                     format: yes_or_no
@@ -294,6 +301,7 @@ zenario__library:
                             FROM [[DB_PREFIX]]inline_images
                             WHERE image_id = f.id
                               AND foreign_key_to = 'email_template'
+                              AND foreign_key_id != 0
                             LIMIT 1
                         )
                     format: yes_or_no
@@ -673,9 +681,8 @@ zenario__library:
                     disabled_if_for_any_selected_items: |
                         item.in_use_here || item.is_featured_image
                     disabled_tooltip: |
-                        You cannot detach an image that is in use.
-                        
-                        First remove the image from where it is used (WYSIWYG Editor or Banner), then you can detach it.
+                        You can't detach an image that's in use. You should make sure the image is not the featured image
+                        for this content item, nor in use within a WYSIWYG area, and then it can be detached.
                     ajax:
                         confirm:
                             message: |

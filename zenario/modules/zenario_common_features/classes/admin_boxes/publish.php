@@ -66,8 +66,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				$string = "Scheduled publishing is not available. The Scheduled Task Manager is installed but the scheduled publishing task (jobPublishContent) is not enabled. [[link_start]]Click for more info.[[link_end]]";
 
 				$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
-				$fields['publish/publish_options']['values']['schedule']['post_field_html'] = "<br /><br />";
-				$fields['publish/publish_options']['values']['schedule']['post_field_html'] .= ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+				$fields['publish/publish_options']['values']['schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			} else {
 				$values['publish/publish_date'] = date('Y-m-d');
 			}

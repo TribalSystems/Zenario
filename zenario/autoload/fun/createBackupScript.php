@@ -103,7 +103,7 @@ password="'. DBPASS. '"';
 	
 	//Call mysqldump to make the backup file
 	\ze\dbAdm::callMySQL(true,
-		' --defaults-extra-file='. escapeshellarg($passwordFile). ' --add-drop-table --default-character-set=utf8 --skip-set-charset --skip-add-locks --order-by-primary '.
+		' --defaults-extra-file='. escapeshellarg($passwordFile). ' --add-drop-table --default-character-set=utf8 --skip-set-charset --skip-add-locks --no-tablespaces --order-by-primary '.
 		escapeshellarg(DBNAME).
 		$postProcessing. ' > '.
 		escapeshellarg($backupPath));

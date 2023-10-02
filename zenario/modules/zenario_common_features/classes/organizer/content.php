@@ -278,13 +278,13 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		if ($contentType = ze::request('refiner__content_type')){
+		if ($panel['key']['cType']) {
 			//Hide the content type quick filter when viewing
 			//specific content types, rather than "All content items" panel.
 			unset($panel['quick_filter_buttons']['content_type']);
 			unset($panel['quick_filter_buttons']['all_content_types']);
 			
-			if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'=>$contentType])){
+			if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'=> $panel['key']['cType']])){
 				unset($panel['inline_buttons']['no_categories']);
 				unset($panel['inline_buttons']['one_or_more_categories']);
 			}
@@ -297,7 +297,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 
 			//Only populate the content type quick filter
 			//when viewing the "All content items" panel.
-			if (!$contentType) {
+			if (!$panel['key']['cType']) {
 				$panel['quick_filter_buttons'][$cType['content_type_id']] = [
 					'ord' => ++$ord,
 					'parent' => 'content_type',

@@ -37,6 +37,16 @@ if ($hasCanvas) {
 	$fields[$canvas]['hidden'] = $hidden;
 }
 
+if (!$hidden && empty($values[$canvas])) {
+	//Watch our for an issue where the canvas value is set to a blank value when it was previous hidden and has just been revealed.
+	//The browser would normally deal with this by simply selecting the first option in the list, however we need to apply this
+	//logic earlier to not mess up the formatting logic below!
+	if (!empty($fields[$canvas]['values'])) {
+		$values[$canvas] = array_keys($fields[$canvas]['values'])[0];
+	}
+}
+
+
 $fields[$width]['hidden'] = $hidden
 	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
 $fields[$height]['hidden'] = $hidden

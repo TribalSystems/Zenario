@@ -177,13 +177,17 @@ class layoutAdm {
 					slot_name,
 					`ord`,
 					`cols`,
-					small_screens
+					small_screens,
+					is_header,
+					is_footer
 				) SELECT 
 					". (int) $layoutId.  ",
 					slot_name,
 					`ord`,
 					`cols`,
-					small_screens
+					small_screens,
+					is_header,
+					is_footer
 				FROM ". DB_PREFIX. "layout_slot_link
 				WHERE layout_id = ". (int) $sourceLayoutId;
 			\ze\sql::update($sql);

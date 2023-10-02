@@ -296,6 +296,9 @@ zenario_wysiwyg_editor.doClose = function(slotName) {
 
 
 zenario_wysiwyg_editor.listenForDoubleClick = function(slotName, containerId, buttonSelector) {
+	
+	zenario.slots[slotName].hasDoubleClick = true;
+	
 	$('div#'+containerId).off('dblclick').on('dblclick', function() {
 		if (zenarioA.toolbar == 'edit') {
 			$(buttonSelector).click();

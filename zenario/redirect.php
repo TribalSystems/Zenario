@@ -47,6 +47,31 @@ if (!defined('SUBDIRECTORY')) {
 //hardcoded the subdirectory in by handling them in PHP
 if (!empty($_GET['redirect'])) {
 	
+	
+	# Redirect anyone trying to access the admin login using "admin/" to just "admin", without the slash.
+	# This should not be done silently, we want the visitor to see their URL changing in their browser,
+	# so we need to use a PHP script for this.
+	if ($_GET['redirect'] == 'admin') {
+		$query = $_GET;
+		unset($query['redirect']);
+		
+		if (empty($query)) {
+			header(
+				'location: '. SUBDIRECTORY. 'admin',
+				true, 301);
+		} else {
+			header(
+				'location: '. SUBDIRECTORY. 'admin?'. http_build_query($query),
+				true, 301);
+		}
+		exit;
+	}
+	
+	
+	//
+	// Correct any bad relative-URLs
+	//
+	
 	//Only allow this script to redirect to certain directories, it's not a free-for-all
 	$dir = 'zenario';
 	if (!empty($_GET['redirectdir'])) {
@@ -60,6 +85,9 @@ if (!empty($_GET['redirect'])) {
 		}
 	}
 	
+	//Only accept absolute paths from the URL.
+	//(This is a bit paranoid, but I don't want someone using this as part of a XSS attack
+	// if they find some other weakness they can exploit.)
 	if (false !== strpos($_GET['redirect'], '?')
 	 || false !== strpos($_GET['redirect'], '&')
 	 || false !== strpos($_GET['redirect'], '../')) {

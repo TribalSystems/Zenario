@@ -622,7 +622,13 @@ class contentAdm {
 	//Formerly "deleteUnusedImage()"
 	public static function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {
 	
-		$key = ['image_id' => $imageId, 'in_use' => 1, 'archived' => 0];
+		$key = [
+			'image_id' => $imageId,
+			'in_use' => 1,
+			'archived' => 0,
+			'foreign_key_to' => ['content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template'],
+			'foreign_key_id' => ['!' => 0]
+		];
 	
 		//Check that the file is the correct usage, and is not used anywhere!
 		if (($image = \ze\row::get('files', ['archived', 'usage'], $imageId))

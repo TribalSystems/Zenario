@@ -488,10 +488,12 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 							['used_images' => $usedImages]
 						);
 					}
+				} else {
+					$phrase = ze\admin::phrase('Are you sure you wish to delete these unused images?');
 				}
 
 				echo '
-					<p>', $phrase;
+					<p>', $phrase, '</p>';
 			}
 		
 		} elseif (ze::post('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {

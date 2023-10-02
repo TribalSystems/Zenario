@@ -665,26 +665,9 @@ class dbAdm {
 		$errors = [];
 		$warnings = [];
 	
-		//Check the docstore directory is correctly defined, exists, and has the correct permissions
-		if (!\ze::setting('docstore_dir')) {
-			$errors[] = \ze\admin::phrase('_NOT_DEFINED_DOCSTORE_DIR'). '<br />'. \ze\admin::phrase('_FIX_DOCSTORE_DIR_TO_BACKUP');
-	
-		} else {
-			//$docpath = \ze::setting('docstore_dir');
-		
-			//if (!file_exists($docpath)) {
-				//$mrg = ['dirpath' => $docpath];
-				//$errors[] = \ze\admin::phrase('_FIX_DOCSTORE_DIR_TO_BACKUP'). '<br />'. \ze\admin::phrase('_DIRECTORY_DOES_NOT_EXIST', $mrg);
-		
-			//} elseif (!is_readable($docpath) || !is_writeable($docpath)) {
-				//$mrg = ['dirpath' => $docpath];
-				//$errors[] = \ze\admin::phrase('_FIX_DOCSTORE_DIR_TO_BACKUP'). '<br />'. \ze\admin::phrase('_DIRECTORY_NOT_READ_AND_WRITEABLE', $mrg);
-			//}
-		}
-	
 		//Check the backup directory is correctly defined, exists, and has the correct permissions
 		if (!\ze::setting('backup_dir')) {
-			$errors[] = \ze\admin::phrase('_NOT_DEFINED_BACKUP_DIR');
+			$errors[] = \ze\admin::phrase('Backup directory is not defined. Please go to "Site settings -> Backup" in Organizer to set this.');
 	
 		} else {
 			$dirpath = \ze::setting('backup_dir');

@@ -3578,6 +3578,12 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 	cursor:move;
 }
 
+#zenario_fbAdminFloatingBox .zenario_fabHead .zenario_no_drag,
+#zenario_fbAdminInfoBox .zenario_infoBoxHead .zenario_no_drag,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead .zenario_no_drag {
+	cursor: auto;
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead {
 	padding-top:0;
 	border-bottom:1px solid #747474;
