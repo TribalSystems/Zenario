@@ -3,6 +3,9 @@
 zenario_head_foot_slot:
     key:
         id: ""
+        id_is_menu_node_id: ''
+        menu_node_id: ''
+        edit_linked_content_item: ''
         mode: ""
         level: ""
         cID: ""

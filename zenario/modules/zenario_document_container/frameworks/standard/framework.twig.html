@@ -1,5 +1,4 @@
 {% if error == false %}
-	
 	{% if Documents or Download_Archive %}
 		{% if main_folder_title %}
 			<div class="folder_title"><{{Title_Tags}}>{{main_folder_title}}</{{Title_Tags}}></div>
@@ -29,7 +28,7 @@
 							<p class="privacy_warning">{{ze('admin', 'phrase', 'Warning: the document \"[[Document_Link_Text]]\" is offline, so it will not appear to visitors.', item)}}</p>
 						{% endif %}
 					</div>
-				{% else %}	
+				{% else %}
 					<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
 						{% if item.Thumbnail %}
 							<div class="thumbnail thumbnail_{{item.Document_Mime}}">
@@ -66,7 +65,7 @@
 					{% else %}
 						<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Link_Text}}</h3></div>
 					{% endif %}
-				{% endif %}	
+				{% endif %}
 			</div>
 		{% endfor %}
 	{% endif %}

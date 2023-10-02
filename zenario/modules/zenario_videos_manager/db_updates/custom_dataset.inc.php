@@ -41,8 +41,21 @@ if (ze\dbAdm::needRevision(10)) {
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'title', 'title');
 	ze\datasetAdm::registerSystemField($datasetId, 'textarea', 'details', 'short_description', 'short_description');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'description', 'description');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'date', 'date');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'details', 'categories');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'details', 'categories', 'categories');
 	
 	ze\dbAdm::revision(10);
+}
+
+if (ze\dbAdm::needRevision(15)) {
+	$datasetId = ze\datasetAdm::register(
+		'Videos',
+		ZENARIO_VIDEOS_MANAGER_PREFIX. 'videos_custom_data',
+		ZENARIO_VIDEOS_MANAGER_PREFIX. 'videos',
+		'zenario_videos_manager__video',
+		'zenario_videos_manager/panels/videos'
+	);
+	
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'date', 'date');
+	
+	ze\dbAdm::revision(15);
 }

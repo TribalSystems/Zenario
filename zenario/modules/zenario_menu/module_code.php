@@ -365,6 +365,10 @@ class zenario_menu extends ze\moduleBaseClass {
 		if (!empty($row['id'])) {
 			$objects['id'] = $row['id'];
 		}
+		
+		if (!empty($row['ext_url'])) {
+			$objects['Class'] .= ' link_external';
+		}
 
 		if (!empty($row['privacy'])) {
 			$objects['privacy'] = $row['privacy'];

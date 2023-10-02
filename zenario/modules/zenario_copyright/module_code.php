@@ -91,31 +91,4 @@ class zenario_copyright extends ze\moduleBaseClass {
 	public function showSlot() {
 		$this->twigFramework($this->data);
 	}
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		switch ($path) {
-			case 'plugin_settings':
-				if (!$values['first_tab/display_single_year']) {
-					$values['first_tab/display_single_year'] = 'current_year';
-				}
-				
-				if (!$values['first_tab/end_year_type']) {
-					$values['first_tab/end_year_type'] = 'current_year';
-				}
-				break;
-		}
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path) {
-			case 'plugin_settings':
-				if (($values['first_tab/year_display'] == 'display_single_year' && $values['first_tab/display_single_year'] == 'current_year')
-				 || ($values['first_tab/year_display'] == 'display_year_range' && $values['first_tab/end_year_type'] == 'current_year')) {
-					 $box['tabs']['first_tab']['notices']['caching_note']['show'] = true;
-				} else {
-					$box['tabs']['first_tab']['notices']['caching_note']['show'] = false;
-				}
-				break;
-		}
-	}
 }

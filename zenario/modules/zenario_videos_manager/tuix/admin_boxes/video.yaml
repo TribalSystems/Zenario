@@ -72,6 +72,7 @@ zenario_videos_manager__video:
                 description:
                     label: 'Full description (HTML):'
                     type: editor
+                    editor_type: standard
                 date:
                     label: 'Date:'
                     type: date
@@ -86,10 +87,7 @@ zenario_videos_manager__video:
                 categories:
                     label: 'Categories:'
                     type: checkboxes
-                categories_not_found:
+                no_categories:
                     label: 'Categories:'
-                    type: text
-                    show_as_a_span: true
-                    read_only: true
-                    hidden: true
-                    value: 'No categories found'
+                    snippet:
+                        html: ''

@@ -34,7 +34,6 @@ class ring {
 	//so "ring" will have to do!
 
 
-	//Formerly "addAmp()"
 	public static function addAmp($request) {
 		if (is_array($request)) {
 			$request = http_build_query($request);
@@ -47,7 +46,6 @@ class ring {
 		}
 	}
 
-	//Formerly "addQu()"
 	public static function addQu($request) {
 		if (is_array($request)) {
 			$request = http_build_query($request);
@@ -68,12 +66,10 @@ class ring {
 	}
 
 
-	//Formerly "base64Decode()"
 	public static function base64Decode($text) {
 		return base64_decode(strtr($text, '-_', '+/'));
 	}
 
-	//Formerly "base64To16()"
 	public static function base64To16($text) {
 		$data = unpack('H*', \ze\ring::base64Decode($text));
 		if (!empty($data[1])) {
@@ -124,7 +120,6 @@ class ring {
 		}
 	}
 
-	//Formerly "explodeAndSet()"
 	public static function explodeAndSet($delimiter, $string, &...$args) {
 		$vals = explode($delimiter, $string, count($args));
 	
@@ -144,8 +139,11 @@ class ring {
 		}
 	}
 
-	//Formerly "displayHTMLAsPlainText()"
 	public static function displayHTMLAsPlainText(&$text, $excerptLength = 200, $stripTitles = false, $highlightTerm = false, $excerptCutOffPhrase = '...') {
+		if (!$text) {
+			$text = '';
+		}
+		
 		if ($stripTitles) {
 			$text = preg_replace('@<h\d>.*?</h\d>@is', '', $text);
 		}
@@ -181,7 +179,6 @@ class ring {
 	}
 
 
-	//Formerly "engToBoolean()"
 	public static function engToBoolean($text) {
 		if (is_object($text) && get_class($text) == 'ze\error') {
 			return 0;
@@ -196,12 +193,10 @@ class ring {
 
 	//Encode a random name to something suitable for a HTML ID by replacing anything
 	//non-alphanumeric with an underscore
-	//Formerly "HTMLId()"
 	public static function HTMLId($text) {
 		return preg_replace('/[^a-zA-Z0-9]/', '_', $text);
 	}
 
-	//Formerly "urlRequest()"
 	public static function urlRequest($arr, $tidyClutter = false) {
 		if (!$arr) {
 			return '';
@@ -225,7 +220,6 @@ class ring {
 	}
 
 	//Attempt to check if an email address looks valid
-	//Formerly "validateEmailAddress()"
 	public static function validateEmailAddress($email, $multiple = false) {
 		$valid = false;
 	
@@ -251,21 +245,39 @@ class ring {
 	}
 
 	//Validate a screen name
-	//Formerly "validateScreenName()"
-	public static function validateScreenName($screenName, $allowMultilingualChars = true) {
+	public static function validateScreenName($screenName) {
+		$invalid = @preg_match('/[^a-zA-Z0-9\-\_\.]/', $screenName) ?: 0;
 	
+		return !$invalid;
+	}
+	
+	public static function checkStringHasSpecialCharacters($string, $allowMultilingualChars = true) {
 		//Attempt to validate allowing UTF-8 characters through
-		$invalid = $allowMultilingualChars? @preg_match('/[^\p{L}\p{M} \d\-\_]/u', $screenName) : 0;
+		$invalid = $allowMultilingualChars? @preg_match('/[^\p{L}\p{M} \d\-\_]/u', $string) : 0;
 	
 		//Fall back to traditional pattern matching if that fails
 		if ($invalid !== 0 && $invalid !== 1) {
-			$invalid = preg_match('/[^\w \d\-\_]/u', $screenName);
+			$invalid = preg_match('/[^\w \d\-\_]/u', $string);
 		}
 	
 		return !$invalid;
 	}
-
-	//Formerly "sanitiseHTML()"
+	
+	public static function convertAccentsInStringToAscii($string) {
+		$a = array('À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Æ', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ð', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'ß', 'à', 'á', 'â', 'ã', 'ä', 'å', 'æ', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Ā', 'ā', 'Ă', 'ă', 'Ą', 'ą', 'Ć', 'ć', 'Ĉ', 'ĉ', 'Ċ', 'ċ', 'Č', 'č', 'Ď', 'ď', 'Đ', 'đ', 'Ē', 'ē', 'Ĕ', 'ĕ', 'Ė', 'ė', 'Ę', 'ę', 'Ě', 'ě', 'Ĝ', 'ĝ', 'Ğ', 'ğ', 'Ġ', 'ġ', 'Ģ', 'ģ', 'Ĥ', 'ĥ', 'Ħ', 'ħ', 'Ĩ', 'ĩ', 'Ī', 'ī', 'Ĭ', 'ĭ', 'Į', 'į', 'İ', 'ı', 'Ĳ', 'ĳ', 'Ĵ', 'ĵ', 'Ķ', 'ķ', 'Ĺ', 'ĺ', 'Ļ', 'ļ', 'Ľ', 'ľ', 'Ŀ', 'ŀ', 'Ł', 'ł', 'Ń', 'ń', 'Ņ', 'ņ', 'Ň', 'ň', 'ŉ', 'Ō', 'ō', 'Ŏ', 'ŏ', 'Ő', 'ő', 'Œ', 'œ', 'Ŕ', 'ŕ', 'Ŗ', 'ŗ', 'Ř', 'ř', 'Ś', 'ś', 'Ŝ', 'ŝ', 'Ş', 'ş', 'Š', 'š', 'Ţ', 'ţ', 'Ť', 'ť', 'Ŧ', 'ŧ', 'Ũ', 'ũ', 'Ū', 'ū', 'Ŭ', 'ŭ', 'Ů', 'ů', 'Ű', 'ű', 'Ų', 'ų', 'Ŵ', 'ŵ', 'Ŷ', 'ŷ', 'Ÿ', 'Ź', 'ź', 'Ż', 'ż', 'Ž', 'ž', 'ſ', 'ƒ', 'Ơ', 'ơ', 'Ư', 'ư', 'Ǎ', 'ǎ', 'Ǐ', 'ǐ', 'Ǒ', 'ǒ', 'Ǔ', 'ǔ', 'Ǖ', 'ǖ', 'Ǘ', 'ǘ', 'Ǚ', 'ǚ', 'Ǜ', 'ǜ', 'Ǻ', 'ǻ', 'Ǽ', 'ǽ', 'Ǿ', 'ǿ');
+		$b = array('A', 'A', 'A', 'A', 'A', 'A', 'AE', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'D', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 's', 'a', 'a', 'a', 'a', 'a', 'a', 'ae', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'A', 'a', 'A', 'a', 'A', 'a', 'C', 'c', 'C', 'c', 'C', 'c', 'C', 'c', 'D', 'd', 'D', 'd', 'E', 'e', 'E', 'e', 'E', 'e', 'E', 'e', 'E', 'e', 'G', 'g', 'G', 'g', 'G', 'g', 'G', 'g', 'H', 'h', 'H', 'h', 'I', 'i', 'I', 'i', 'I', 'i', 'I', 'i', 'I', 'i', 'IJ', 'ij', 'J', 'j', 'K', 'k', 'L', 'l', 'L', 'l', 'L', 'l', 'L', 'l', 'l', 'l', 'N', 'n', 'N', 'n', 'N', 'n', 'n', 'O', 'o', 'O', 'o', 'O', 'o', 'OE', 'oe', 'R', 'r', 'R', 'r', 'R', 'r', 'S', 's', 'S', 's', 'S', 's', 'S', 's', 'T', 't', 'T', 't', 'T', 't', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'W', 'w', 'Y', 'y', 'Y', 'Z', 'z', 'Z', 'z', 'Z', 'z', 's', 'f', 'O', 'o', 'U', 'u', 'A', 'a', 'I', 'i', 'O', 'o', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'U', 'u', 'A', 'a', 'AE', 'ae', 'O', 'o');
+		return str_replace($a, $b, $string);
+	}
+	
+	public static function validateAnchorTag($string) {
+		//Do not allow spaces or any of the following: #%^[]{}\"<>`\'
+		$invalid = @preg_match('/[\#\%\^\[\]\{\}\\\"\<\>\`\'\s]/', $string) ?: 0;
+	
+		return !$invalid;
+	}
+	
+	//A very restrictive HTML sanitiser.
+	//Aimed at sanitising HTML provided by users, e.g. in comments and forum posts.
 	public static function sanitiseHTML($html, $allowable_tags = '', $allowedStyles = [], $allowedAttributes = []) {
 
 		$DOMDocument = new \DOMDocument('1.0', 'UTF-8');
@@ -323,7 +335,62 @@ class ring {
 		return strip_tags($DOMDocument->saveHTML(), $allowable_tags);
 	}
 
-	//Formerly "trimNonWordCharactersUnicode()"
+	//A less restrictive HTML sanitiser.
+	//Aimed at sanitising HTML provided by admins, e.g. in WYSIWYG Editors
+	public static function sanitiseWYSIWYGEditorHTML($html, $preserveMergeFields = false) {
+		
+		//By default HTMLPurifier will mangle any spaces and merge fields in attributes, and doesn't have any config option
+		//to disable this other than to switch off some of its security, which we don't want to do.
+		//Instead, we're using a hack to prevent this happening.
+		//For the hack to work, we'll need to use a ~ as a special character so before doing anything else, escape any existing ~s in the string.
+		if ($preserveMergeFields) {
+			$html = str_replace('~', '~t', $html);
+		}
+		
+		//Run HTMLPurifier
+		$config = \HTMLPurifier_Config::createDefault();
+		$config->set('Attr.EnableID', true);
+		$config->set('Attr.AllowedFrameTargets', ['_blank' => true]);
+		$config->set('Cache.DefinitionImpl', null);
+		$purifier = new \HTMLPurifier($config);
+		$html = $purifier->purify($html);
+		
+		
+		//If we want to use preserve mergefields, we'll need to scan through the tags HTMLPurifier just generated.
+		if ($preserveMergeFields) {
+			//Convert the HTML to an object
+			$DOMDocument = new \DOMDocument('1.0', 'UTF-8');
+			libxml_use_internal_errors(true);
+				$DOMDocument->loadHTML('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head><body>' . $html. '</body></html>');
+			libxml_use_internal_errors(false);
+
+			$elements = $DOMDocument->getElementsByTagName('*');
+			
+			//Scan through all elements/attributes, looking for mangled spaces, square brackets and curley brackets.
+			//Replace them with more ~-escaped characters.
+			foreach ($elements as $item) {
+				if ($item->attributes
+				 && $item->attributes->length) {
+					foreach ($item->attributes as $a => $b) {
+						$item->setAttribute($a, str_replace('%7B', '~c', str_replace('%7D', '~v', str_replace('%5B', '~l', str_replace('%5D', '~r', str_replace('%20', '~s', $item->getAttribute($a)))))));
+					}
+				}
+			}
+			
+			//Convert back to a string
+			$html = $DOMDocument->saveHTML();
+			$start = strpos($html, '<body>') + 6;
+			$stop = strrpos($html, '</body>') - $start;
+			$html = substr($html, $start, $stop);
+			
+			//Convert the escaped characters back to the characters they should be
+			$html = str_replace('~t', '~', str_replace('~c', '{', str_replace('~v', '}', str_replace('~l', '[', str_replace('~r', ']', str_replace('~s', ' ', $html))))));
+		}
+		
+		return $html;
+	}
+	
+	
 	public static function trimNonWordCharactersUnicode($string) {
 		$out = @preg_replace('/[^\p{L}\p{M}\d\-]/u', '', $string);
 	
@@ -339,7 +406,6 @@ class ring {
 	private static $rngIsSeeded = false;
 
 	//Check if the random number generator has been seeded yet, and seed it if not
-	//Formerly "seedRandomNumberGeneratorIfNeeded()"
 	public static function seedRandomNumberGeneratorIfNeeded() {
 		if (!self::$rngIsSeeded) {
 			//If we need to seed the random number generator, get the number of microseconds
@@ -382,5 +448,58 @@ class ring {
 	
 		return $stringOut;
 	}
-
+	
+	public static function stringContainsTooManyProfanities($text = '', $toleranceLevel = "none") {
+		if (is_numeric($toleranceLevel)) {
+			$toleranceLevelNumeric = (int) $toleranceLevel;
+		} else {
+			switch ($toleranceLevel) {
+				case 'high':
+					$toleranceLevelNumeric = 15;
+					break;
+				case 'medium':
+					$toleranceLevelNumeric = 10;
+					break;
+				case 'low':
+					$toleranceLevelNumeric = 5;
+					break;
+				case 'none':
+				default:
+					$toleranceLevelNumeric = 0;
+					break;
+			}
+		}
+		
+		$path = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
+		$file = fopen($path, "r");
+		$rating = 0;
+		
+		if (is_string($text)) {
+			while(!feof($file)) {
+				$line = fgetcsv($file);
+				$word = str_replace('-', '\\W*', $line[0]);
+				$level = $line[1];
+			
+				preg_match_all("#\b". $word ."(?:es|s)?\b#si", $text, $matches, PREG_SET_ORDER);
+				$rating += count($matches) * $level;
+			}
+		
+			fclose($file);
+		}
+		
+		return $rating > $toleranceLevelNumeric;
+	}
+	
+	public static function randomFromSetNoProfanities($requiredLength = 5, $set = 'ABCDEFGHIJKLMNPQRSTUVWXYZ', $toleranceLevel = 'none') {
+	
+		//Make sure the generated code does not end up being a swear word.
+		$code = '';
+		do {
+			//The letter O is omitted to avoid confusion with the number 0.
+			$code = \ze\ring::randomFromSet($requiredLength, $set);
+			$codeContainsProfanities = \ze\ring::stringContainsTooManyProfanities($code, $toleranceLevel);
+		} while ($codeContainsProfanities);
+		
+		return $code;
+	}
 }

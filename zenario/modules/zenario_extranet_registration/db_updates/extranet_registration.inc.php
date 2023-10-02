@@ -230,4 +230,19 @@ _sql
 	WHERE `code` = "zenario_extranet_registration__to_admin_user_activation_notification_en"
 _sql
 
+); ze\dbAdm::revision(115,
+<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `template_name` = 'To User: Account activated by user'
+	WHERE `code` = "zenario_extranet_registration__to_user_account_activation_en"
+	AND `template_name` = 'To User: Account activation'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_PREFIX]]email_templates
+	SET `template_name` = 'To Admin: Account activated by user (admin notification)'
+	WHERE `code` = "zenario_extranet_registration__to_admin_user_activation_notification_en"
+	AND `template_name` = 'To Admin: User activation notification'
+_sql
+
 );

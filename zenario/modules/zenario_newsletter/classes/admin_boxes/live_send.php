@@ -72,7 +72,6 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				$fields['send/send_time_options']['values']['schedule']['post_field_html'] = "<br /><br />";
 				$fields['send/send_time_options']['values']['schedule']['post_field_html'] .= ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			} else {
-				$values['send/send_date'] = date('Y-m-d');
 				for ($i = 0; $i <= 23; $i++) {
 					$iPadded = (string)str_pad($i, 2, '0', STR_PAD_LEFT);
 					$fields['send/send_hours']['values'][$iPadded] = $iPadded;
@@ -83,6 +82,15 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 					$fields['send/send_mins']['values'][$iPadded] = $iPadded;
 				}
 				
+				//Set the default date to be +1 hr in the future. Round up to the nearest 5 mins.
+				//This will push the date +1 day forward if needed.
+				$sdate = ze\date::new(ze\date::now());
+				$sdate->modify('+1 hour');
+				$sdate->setTime($sdate->format('H'), ceil($sdate->format('i') / 5) * 5, 0);
+				
+				$values['send/send_hours'] = $sdate->format('G');
+				$values['send/send_mins'] = $sdate->format('i');
+				$values['send/send_date'] = $sdate->format('Y-m-d');
 			}
 		
 		} else {
@@ -126,15 +134,16 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 						status = '_IN_PROGRESS',
 						sent_by_id = ". (int) $_SESSION['admin_userid']. ",
 						smart_group_descriptions_when_sent_out = " . ($smartGroupDescriptions?("'" . ze\escape::sql($smartGroupDescriptions) . "'"): 'NULL' ) . ",
-						url = '". ze\escape::sql(zenario_newsletter::getTrackerURL()). "'";
+						url = '". ze\escape::sql(zenario_newsletter::getTrackerURL()). "',";
 				if ($values['send/send_time_options'] == 'schedule') {
 					$scheduledSendDate = $values['send/send_date'] . ' ' . $values['send/send_hours'] . ':' . $values['send/send_mins'] . ':00';
 					$sql .= "
-						,scheduled_send_datetime = '" . ze\escape::sql($scheduledSendDate) . "'
-						,date_sent = '" . ze\escape::sql($scheduledSendDate) . "'";
+						scheduled_send_datetime = '" . ze\escape::sql($scheduledSendDate) . "',
+						date_sent = '" . ze\escape::sql($scheduledSendDate) . "',
+						send_copy_to_admin_options = '" . $values['send/admin_options'] . "'";
 				} else {
 					$sql .= "
-						,date_sent = NOW()";
+						date_sent = NOW()";
 				}
 				$sql .= "
 					WHERE id = ". (int) $ids;

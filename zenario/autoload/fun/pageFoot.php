@@ -56,9 +56,9 @@ if (!$isAdmin
 
 //Write the URLBasePath to the page, and add JS needed for the CMS
 echo '
-'. $scriptTag. ' src="', $prefix, 'libs/yarn/jquery/dist/jquery.min.js?', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.visitor.min.js?', $v, '"></script>
-'. $scriptTag. ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w;
+', $scriptTag, ' src="', $prefix, 'libs/yarn/jquery/dist/jquery.min.js?', $v, '"></script>
+', $scriptTag, ' src="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.visitor.min.js?', $v, '"></script>
+', $scriptTag, ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w;
 
 //Have the option to include some common libraries in with the main wrapper, if enabled in the site settings.
 $libs = [];
@@ -107,8 +107,8 @@ if (\ze\cookie::canSetAll()) {
 	//Note that page caching may cause the wrong user id to be set.
 	//As with ($_SESSION['extranetUserID'] ?? false), anything that changes behaviour by Extranet User should not allow the page to be cached.
 echo '
-'. $scriptTag. '>'. $inlineStart. 'zenario.init("'.
-	ze::setting('css_js_version'). '",',
+', $scriptTag, '>', $inlineStart, 'zenario.init("',
+	ze::setting('css_js_version'), '",',
 	(int) ($_SESSION['extranetUserID'] ?? 0), ',"',
 	\ze\escape::js(\ze\content::currentLangId()), '","',
 	\ze\escape::js(ze::setting('vis_date_format_datepicker')), '","',
@@ -129,7 +129,7 @@ if (ze::$visLang && ze::$visLang != $currentLangId) {
 }
 
 
-echo ');'. $inlineStop. '</script>';
+echo ');', $inlineStop, '</script>';
 
 
 
@@ -258,7 +258,7 @@ if (!$isWelcome && ze::$pluginJS) {
 	}
 	
 	echo '
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', ze::$pluginJS, '"></script>';
+', $scriptTag, ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', ze::$pluginJS, '"></script>';
 }
 
 
@@ -274,13 +274,13 @@ if ($isAdmin && ze::$cID) {
 	
 	if ($jsModuleIds) {
 		echo '
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', $jsModuleIds, '&amp;admin_frontend=1"></script>';
+', $scriptTag, ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', $jsModuleIds, '&amp;admin_frontend=1"></script>';
 	}
 	
 	//If we've just made a draft, and there's a callback, perform the callback
 	if (!empty($_SESSION['zenario_draft_callback'])) {
 		echo '
-		'. $scriptTag. '>
+		', $scriptTag, '>
 			$(document).ready(function() {
 				zenarioA.draftDoCallback(
 					"', \ze\escape::js($_SESSION['zenario_draft_callback']), '",
@@ -297,10 +297,10 @@ if ($isAdmin && ze::$cID) {
 if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 	//Include the JS for any plugin instances on the page, if they have any
 	$scriptTypes = [[], [], []];
-	foreach(ze::$slotContents as $slotName => &$instance) {
-		if (!empty($instance['class'])) {
+	foreach(ze::$slotContents as $slotName => &$slot) {
+		if ($slot->class()) {
 			$scriptTypesHere = [];
-			$instance['class']->zAPICheckRequestedScripts($scriptTypesHere);
+			$slot->class()->zAPICheckRequestedScripts($scriptTypesHere);
 			
 			if (!empty($scriptTypesHere[0])) {
 				$scriptTypes[0][] = &$scriptTypesHere[0];
@@ -316,7 +316,7 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 	
 	if (!empty($scriptTypes[0])
 	 || !empty($scriptTypes[1])) {
-		echo "\n". ''. $scriptTag. '>'. $inlineStart. '(function(c) {';
+		echo "\n", '', $scriptTag, '>', $inlineStart, '(function(c) {';
 		
 		if (!empty($scriptTypes[0])) {
 			foreach ($scriptTypes[0] as &$scriptsForPlugin) {
@@ -333,14 +333,14 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 			}
 		}
 		
-		echo "\n", '})(zenario._ioe);'. $inlineStop. '</script>';
+		echo "\n", '})(zenario._ioe);', $inlineStop, '</script>';
 	}
 	
 	//Include the Foot for any plugin instances on the page, if they have one
-	foreach(ze::$slotContents as $slotName => &$instance) {
-		if (!empty($instance['class'])) {
+	foreach(ze::$slotContents as $slotName => &$slot) {
+		if ($slot->class()) {
 			\ze\plugin::preSlot($slotName, 'addToPageFoot');
-				$instance['class']->addToPageFoot();
+				$slot->class()->addToPageFoot();
 			\ze\plugin::postSlot($slotName, 'addToPageFoot');
 		}
 	}
@@ -349,20 +349,20 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 //Are there Plugins on this page..?
 if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 	echo '
-'. $scriptTag. '>'. $inlineStart;
+', $scriptTag, '>', $inlineStart;
 	//Add encapculated objects for slots
 	$i = 0;
 	echo "\n", 'zenario.slot([';
-	foreach (ze::$slotContents as $slotName => &$instance) {
-		if (isset($instance['class']) || $isAdmin) {
+	foreach (ze::$slotContents as $slotName => &$slot) {
+		if ($slot->class() || $isAdmin) {
 			echo
 				$i++? ',' : '',
 				'["',
 					preg_replace('/[^\w-]/', '', $slotName), '",',
-					(int) ($instance['instance_id'] ?? false), ',',
-					(int) ($instance['module_id'] ?? false);
+					(int) $slot->instanceId(), ',',
+					(int) $slot->moduleId();
 			
-			if (isset($instance['class']) && $instance['class']) {
+			if ($slot->class()) {
 				
 				//For filled slots, set the level, slide id and whether this looks like the main slot.
 				//The slide id is used for Plugin Nests, and is the id of the current slide being displayed.
@@ -370,15 +370,15 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 				//in the hashes used for AJAX reloads to make the hashs look a little friendlier
 				//In admin mode we also note down which plugins are version controlled
 				
-				echo ',', (int) ($instance['level'] ?? false);
+				echo ',', (int) $slot->level();
 				
-				$slideId = $instance['class']->zAPIGetTabId();
-				$isMainSlot = isset($instance['class']) && ($instance['level'] ?? false) == 1 && substr($slotName, 0, 1) == 'M';
-				$beingEdited = $instance['class']->beingEdited();
-				$isVersionControlled = (int) !empty($instance['content_id']);
+				$slideId = $slot->class()->zAPIGetTabId();
+				$isMainSlot = $slot->level() == 1 && substr($slotName, 0, 1) == 'M';
+				$beingEdited = $slot->beingEdited();
+				$isVersionControlled = $slot->isVersionControlled();
 				
 				if ($isAdmin) {
-					$isMenu = (int) $instance['class']->shownInMenuMode();
+					$isMenu = $slot->shownInMenuMode()? 1 : 0;
 					
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled, ',', (int) $isMenu;
 				} elseif ($isVersionControlled) {
@@ -398,7 +398,7 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 	echo ']);';
 	
 	if (!empty($scriptTypes[2])) {
-		echo "\n". '(function(c) {';
+		echo "\n", '(function(c) {';
 		
 		foreach ($scriptTypes[2] as &$scriptsForPlugin) {
 			foreach ($scriptsForPlugin as &$script) {
@@ -409,7 +409,7 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 		echo "\n", '})(zenario._ioe);';
 	}
 	
-	echo $inlineStop. '</script>';
+	echo $inlineStop, '</script>';
 }
 
 
@@ -417,6 +417,17 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 //We need to pay attention to the logic for showing to admins, cookie consent, and overriding
 if (ze::$cID && ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML = false;
+	
+	
+	//Include the site-wide foot first
+	ze\content::sitewideHTML('sitewide_foot');
+	if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'foot') {
+		ze\content::sitewideHTML('sitewide_analytics_html');
+	}
+	if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'foot') {
+		ze\content::sitewideHTML('sitewide_social_media_html');
+	}
+	
 	
 	$sql = "
 		SELECT foot_html, foot_cc, foot_cc_specific_cookie_types, foot_visitor_only, foot_overwrite
@@ -464,12 +475,12 @@ if (ze::$cID && ze::$cID !== -1) {
 		}
 		
 		if (!empty($templateHTML['foot_html']) && (empty($templateHTML['foot_visitor_only']) || !$isAdmin)) {
-			echo "\n\n". $templateHTML['foot_html'], "\n\n";
+			echo "\n\n", $templateHTML['foot_html'], "\n\n";
 		}
 	}
 	
 	if (!empty($itemHTML['foot_html']) && (empty($itemHTML['foot_visitor_only']) || !$isAdmin)) {
-		echo "\n\n". $itemHTML['foot_html'], "\n\n";
+		echo "\n\n", $itemHTML['foot_html'], "\n\n";
 	}
 }
 
@@ -487,5 +498,5 @@ if (ze::$cID && $includeAdminToolbar && $isAdmin && !$isWelcome) {
 	]));
 	
 	echo '
-'. $scriptTag. ' src="', $prefix, 'admin/admin_toolbar.ajax.php?', $v, '&amp;', $params, '"></script>';
+', $scriptTag, ' src="', $prefix, 'admin/admin_toolbar.ajax.php?', $v, '&amp;', $params, '"></script>';
 }

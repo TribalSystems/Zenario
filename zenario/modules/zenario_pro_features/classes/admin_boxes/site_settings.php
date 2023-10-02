@@ -32,12 +32,6 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
 		
-		if (isset($box['tabs']['admin_domain']['fields']['admin_use_ssl'])) {
-			if (!ze::setting('admin_use_ssl') && ze\link::protocol() != 'https://') {
-				$box['tabs']['admin_domain']['fields']['admin_use_ssl']['readonly'] = true;
-			}
-		}
-		
 		$userIP = ze\user::ip();
 		$selectedIP = ze::setting('limit_caching_debug_info_by_ip');
 		$effectiveIP = $selectedIP ?: $userIP;
@@ -125,8 +119,7 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 			
 			if ($values['caching/caching_enabled']) {
 				if (!$values['caching/cache_web_pages']
-				 && !$values['caching/cache_css_js_wrappers']
-				 && !$values['caching/cache_ajax']) {
+				 && !$values['caching/cache_css_js_wrappers']) {
 					$box['tabs']['caching']['errors'][] =
 						ze\admin::phrase('Please select which things you wish to cache.');
 				}

@@ -11,7 +11,7 @@ description: |
     <p>This module creates the Event content type, such that administrators can create Event content items.</p>
     <p>Events typically have a title, description and summary, further HTML details, and information about when and where the event is.</p>
     <p>Events can have start and end dates and times, an external informational URL, and other information.</p>
-    <p>If you also have the Location Manager module running, then a Location can be chosen for the venue of an Event, so that the Event content item can display an address and Google map.</p>
+    <p>If you also have the Location Manager module running, then a location can be chosen for the venue of an Event, so that the Event content item can display an address and Google map.</p>
     <p>This module creates a plugin; usually only one such plugin is needed for all events. The plugin should be placed on the default layout for Event content items, and then every Event created will have its information displayed in a uniform way.</p>
     <p>Look out for additional modules, such as Event Listing and Event Calendar, which can be used to highlight events on a home page or an event landing page.</p>
 category: content_type

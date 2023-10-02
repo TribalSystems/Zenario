@@ -44,8 +44,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $userId = false;
 	
 	public function init() {
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable.min.js');
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable.min.js');
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
@@ -262,6 +262,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->displayMode == 'in_modal_window') {
 			if ($reloadedWithAjax || ze::get('showInFloatingBox')) {
 				$showInFloatingBox = true;
+				
+				$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+				
 				$floatingBoxParams = [
 					'escKey' => false, 
 					'overlayClose' => false, 
@@ -463,7 +466,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						//If this is the "Extranet Profile" plugin, it will have its own success message (the "profile_updated" plugin setting).
 						//It will be added later on as a global success message if not blank.
 						//Otherwise, the setting check will return false or an empty string, and the form success message setting will be used instead.
-						if (!empty($this->setting('profile_updated'))) {
+						if ($this->moduleClassName == 'zenario_extranet_profile_edit' && !empty($this->setting('profile_updated'))) {
 							$html = '<div class="success">' . $this->setting('profile_updated') . '</div>';
 						} else {
 							$html = $this->getSuccessMessageHTML();
@@ -474,6 +477,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						
 						if ($this->form['show_success_message_and_the_form']) {
 							$html .= $this->getFormHTML($pageId);
+						}
+						
+						//If this is the "Extranet Profile" plugin, clear out the extranet_edit_profile parameter from the URL.
+						if ($this->moduleClassName == 'zenario_extranet_profile_edit') {
+							ze\escape::flag('RECORD_IN_URL', 1);
 						}
 						
 						$this->data['form_HTML'] = $html;
@@ -700,6 +708,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			echo json_encode($data);
 			
+		} elseif (isset($_GET['validateFormFieldJs'])) {
+			$formId = ze::request('formId');
+			$fieldId = ze::request('fieldId');
+			$fieldValue = ze::request('fieldValue');
+			$conditionalFieldValue = ze::request('conditionalFieldValue') ?: null;
+			$this->fields = $this->getFormFields($formId);
+			if (is_numeric($fieldId)) {
+				$error = $this->validateFormField($fieldId, $ignoreRequiredFields = false, $fieldValue, $conditionalFieldValue);
+			} else {
+				$error = false;
+			}
+			echo $error;
 		}
 	}
 	
@@ -1870,6 +1890,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		} else {
 			if (!empty($this->pages) && $pageId && isset($this->pages[$pageId])) {
+				$usersDataset = ze\dataset::details('users');
+				
 				foreach ($this->pages[$pageId]['fields'] as $i => $fieldId) {
 					$field = $this->fields[$fieldId];
 					if ($field['type'] == 'repeat_start') {
@@ -2075,9 +2097,30 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$html = '';
 		$errorHTML = '';
 		$extraClasses = '';
-		if (isset($this->errors[$fieldId])) {
-			$errorHTML = '<div class="form_error">' . htmlspecialchars($this->errors[$fieldId]) . '</div>';
+		if (
+			isset($this->errors[$fieldId])
+			|| (
+				ze::in($field['type'], 'checkbox', 'url', 'text', 'textarea')
+				&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
+			)
+		) {
+			$errorHTML = '<div id="' . htmlspecialchars($fieldElementId) . '__error_message" class="form_error"';
+			
+			if (isset($this->errors[$fieldId])) {
+				$errorHTML .= ' style="display: block;"';
+			} else {
+				$errorHTML .= ' style="display: none;"';
+			}
+			
+			if (isset($this->errors[$fieldId])) {
+				$errorMessage = $this->errors[$fieldId];
+			} else {
+				$errorMessage = '';
+			}
+			
+			$errorHTML .= '>' . htmlspecialchars($errorMessage) . '</div>';
 		}
+		
 		if ($value) {
 			$extraClasses .= ' has_value';
 		}
@@ -2092,6 +2135,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= $errorHTML;
 			}
 		}
+		
+		$containerElementId = htmlspecialchars($this->containerId) . '_field_' . htmlspecialchars($fieldId);
 		
 		switch ($field['type']) {
 			case 'group':
@@ -2109,8 +2154,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field"';
 				}
-				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '"/>';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '"';
+				
+				if ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation']) {
+					$html .= $this->addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId);
+				}
+				
+				$html .= '/>';
 				$html .= '<label class="field_title" for="' . htmlspecialchars($fieldElementId) . '">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</label>';
+				
 				break;
 			
 			case 'restatement':
@@ -2145,6 +2197,32 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$html .= '<div id="' . htmlspecialchars($this->containerId) . '_field_' . htmlspecialchars($fieldId) . '_calculation_code" style="display:none;">';
 					$html .= htmlspecialchars(json_encode($calculationCode));
 					$html .= '</div>';
+				}
+				
+				//If the calling module is Extranet Profile, and the form includes the Email field,
+				//show it as read-only, as it's not supposed to be editable.
+				//A user's email can be changed using the Extranet Change Email plugin.
+				//Also display a note explaining that this is not an editable field,
+				//and if Extranet Change Email module is running, link to the special page.
+				if (
+					$this->moduleClassName == 'zenario_extranet_profile_edit'
+					&& ($field['dataset_id'] && $field['dataset_id'] == $this->dataset['id'])
+					&& ($field['db_column'] && $field['db_column'] == 'email')
+				) {
+					$readonly = true;
+					
+					if (ze\module::isRunning('zenario_extranet_change_email')) {
+						$cID = $cType = false;
+						ze\content::langSpecialPage('zenario_change_email', $cID, $cType);
+						$changePasswordPageLink = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = true);
+						
+						$linkStart = '<a href="' . htmlspecialchars($changePasswordPageLink) . '" target="_blank">';
+						$linkEnd = '</a>';
+						
+						$field['extranet_profile_edit_note'] = $this->phrase('To update your email, please [[link_start]]click here[[link_end]].', ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+					} else {
+						$field['extranet_profile_edit_note'] = 'This field may not be edited.';
+					}
 				}
 				
 				//Suggested value options for text fields
@@ -2245,8 +2323,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$maxlength = 100;
 						break;
 				}	
-				$html .= ' maxlength="' . htmlspecialchars($maxlength) . '" />';
+				$html .= ' maxlength="' . htmlspecialchars($maxlength) . '" ';
+				
+				if (
+					($field['type'] == 'text' || $field['type'] == 'url')
+					&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
+				) {
+					$html .= $this->addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId);
+				}
+				
+				$html .= '/>';
 				$html .= $suggestedValuesHTML;
+				
 				break;
 				
 			case 'date':
@@ -2270,13 +2358,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$html .= ' readonly';
 				}
 				
-				$html .= ' id="' . htmlspecialchars($fieldElementId) . '"/>';
+				$html .= ' id="' . htmlspecialchars($fieldElementId) . '"';
+				$html .= '/>';
 				$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '__0"';
 				if ($value !== false) {
 					$html .= ' value="' . htmlspecialchars($value) . '"';
 				}
 				$html .= '/>';
-				$html .= '<input type="button" class="clear_date" value="x" id="' . htmlspecialchars($fieldElementId) . '__clear"/>';
+				$html .= '<input type="button" class="clear_date" value="x" id="' . htmlspecialchars($fieldElementId) . '__clear" onclick="$(\'#' . htmlspecialchars($fieldElementId) . '\').change();"/>';
+				
 				break;
 				
 			case 'textarea':
@@ -2294,11 +2384,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field" ';
 				}
-				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '">';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '"';
+				
+				if ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation']) {
+					$html .= $this->addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId);
+				}
+				
+				$html .= '>';
 				if ($value !== false) {
 					$html .= htmlspecialchars($value);
 				}
 				$html .= '</textarea>';
+				
 				break;
 				
 			case 'section_description':
@@ -2327,7 +2424,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$keys = array_keys($fieldLOV);
 					$lastValue = end($keys);
 				}
-				$html .= '">';
+				$html .= '"';
+				$html .= '>';
 				
 				foreach ($fieldLOV as $valueId => $label) {
 					$radioElementId = $fieldElementId . '_' . $valueId;
@@ -2362,6 +2460,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($readonly && !empty($value)) {
 					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="'.htmlspecialchars($value).'" />';
 				}
+				
 				break;
 				
 			case 'centralised_radios':
@@ -2404,10 +2503,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($readonly) {
 					$html .= 'disabled ';
 				}
+				
 				if ($hidden) {
 					$html .= ' autocomplete="hidden-field" ';
 				}
-				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '">';
+				
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($fieldElementId) . '"';
+				$html .= '>';
 				$html .= '<option value="">' . htmlspecialchars(static::fPhrase('-- Select --', [], $t)) . '</option>';
 				foreach ($fieldLOV as $valueId => $label) {
 					$html .= '<option value="' . htmlspecialchars($valueId) . '"';
@@ -2427,6 +2529,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($readonly) {
 					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($value) . '"/>';
 				}
+				
 				break;
 				
 			case 'centralised_select':
@@ -2444,6 +2547,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['filter_on_field' => $fieldId])) {
 					$html .= ' class="source_field"';
 				}
+				
 				$html .= '>';
 				$html .= '<option value="">' . htmlspecialchars(static::fPhrase('-- Select --', [], $t)) . '</option>';
 				foreach ($fieldLOV as $valueId => $label) {
@@ -2465,6 +2569,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($readonly) {
 					$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($value) . '"/>';
 				}
+				
 				break;
 			
 			case 'checkboxes':
@@ -2703,12 +2808,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$html .= $errorHTML;
 		}
 		
+		if (!empty($field['extranet_profile_edit_note'])) {
+			$html .= '<div class="extranet_profile_edit_note">'. static::fPhrase($field['extranet_profile_edit_note'], [], $t) .'</div>'; //can be HTML
+		}
+		
 		if (!empty($field['note_to_user'])) {
 			$html .= '<div class="note_to_user">'. static::fPhrase($field['note_to_user'], [], $t) .'</div>'; //can be HTML
 		}
 		
 		//Field containing div open
-		$containerHTML = '<div id="' . htmlspecialchars($this->containerId) . '_field_' . htmlspecialchars($fieldId) . '" data-id="' . htmlspecialchars($fieldId) . '" ';
+		$containerHTML = '<div id="' . $containerElementId . '" data-id="' . htmlspecialchars($fieldId) . '" ';
 		if ($field['visibility'] == 'visible_on_condition') {
 			$containerHTML .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
 		}
@@ -2825,7 +2934,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return ['valuesHtml' => $html, 'values' => $values];
 	}
 	
-	protected function getFieldCurrentValue($fieldId, $recursionCount = 1) {
+	protected function getFieldCurrentValue($fieldId, $recursionCount = 1, $jsValidateValue = null) {
 		if (!isset($this->fields[$fieldId]) || $recursionCount > 999) {
 			return false;
 		}
@@ -2904,6 +3013,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$mergeName = $this->getFormFieldMergeName($field);
 		if (!empty($_POST['preload_from_post']) && $mergeName && isset($_POST[$mergeName])) {
 			$value = $_POST[$mergeName];
+		}
+		
+		if (!is_null($jsValidateValue)) {
+			$value = $jsValidateValue;
 		}
 		
 		$value = is_null($value) ? false : $value;
@@ -3321,7 +3434,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
 		$sizesToCheck[] = $zenarioMaxFilesize;
 	
-		if (ze::setting('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size') {
+		if (ze::setting('zenario_user_forms_max_attachment_file_size_override')) {
 			$userFormsMaxFilesizeValue = ze::setting('zenario_user_forms_content_max_filesize');
 			$userFormsMaxFilesizeUnit = ze::setting('zenario_user_forms_content_max_filesize_unit');
 			$userFormsMaxFilesize = ze\file::fileSizeBasedOnUnit($userFormsMaxFilesizeValue, $userFormsMaxFilesizeUnit);
@@ -3474,13 +3587,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return empty($this->errors);
 	}
 	
-	private function validateFormField($fieldId, $ignoreRequiredFields) {
+	private function validateFormField($fieldId, $ignoreRequiredFields, $jsValidateValue = null, $jsValidateConditionalFieldValue = null) {
 		//Don't overwrite existing error (e.g. file upload errors are assigned before this function is called)
 		if (isset($this->errors[$fieldId])) {
 			return false;
 		}
 		$field = $this->fields[$fieldId];
-		$value = $this->getFieldCurrentValue($fieldId);
+		$value = $this->getFieldCurrentValue($fieldId, 1, $jsValidateValue);
 		$t = $this->form['translate_text'];
 		
 		//If mandatory if visible, copy visibility settings into mandatory settings
@@ -3494,7 +3607,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($field['mandatory_condition_field_id']) {
 			$requiredFieldId = $field['mandatory_condition_field_id'];
 			$requiredField = $this->fields[$requiredFieldId];
-			$requiredFieldValue = $this->getFieldCurrentValue($requiredFieldId);
+			$requiredFieldValue = $this->getFieldCurrentValue($requiredFieldId, 1, $jsValidateConditionalFieldValue);
 			switch ($requiredField['type']) {
 				case 'checkbox':
 				case 'group':
@@ -3599,8 +3712,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 		
-		//Text field validation
-		if ($field['type'] == 'text' && $field['field_validation'] && $value !== '' && $value !== false) {
+		//Text/URL field validation
+		if (($field['type'] == 'text' || $field['type'] == 'url') && $field['field_validation'] && $value !== '' && $value !== false) {
 			switch ($field['field_validation']) {
 				case 'email':
 					if (!ze\ring::validateEmailAddress($value)) {
@@ -3836,8 +3949,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($fieldId = ($this->datasetFieldsColumnLink['first_name'] ?? false)) {
 				$firstName = $this->fields[$fieldId]['value'];
 				if ($this->fields[$fieldId]['split_first_name_last_name']) {
-					$lastName = trim(mb_substr($firstName, mb_strpos($firstName, ' ', null, 'UTF-8'), null, 'UTF-8'));
-					$firstName = trim(mb_substr($firstName, 0, mb_strpos($firstName, ' ', null, 'UTF-8'), 'UTF-8'));
+					$lastName = trim(mb_substr($firstName, mb_strpos($firstName, ' ', 0, 'UTF-8'), null, 'UTF-8'));
+					$firstName = trim(mb_substr($firstName, 0, mb_strpos($firstName, ' ', 0, 'UTF-8'), 'UTF-8'));
 				}
 			} else {
 			    $firstName = ze\row::get('users', 'first_name', $userId);
@@ -3846,11 +3959,23 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($fieldId = ($this->datasetFieldsColumnLink['last_name'] ?? false)) {
 				$lastName = $this->fields[$fieldId]['value'];
 				if ($this->fields[$fieldId]['split_first_name_last_name']) {
-					$firstName = trim(mb_substr($lastName, 0, mb_strpos($lastName, ' ', null, 'UTF-8'), 'UTF-8'));
-					$lastName = trim(mb_substr($lastName, mb_strpos($lastName, ' ', null, 'UTF-8'), null, 'UTF-8'));
+					$firstName = trim(mb_substr($lastName, 0, mb_strpos($lastName, ' ', 0, 'UTF-8'), 'UTF-8'));
+					$lastName = trim(mb_substr($lastName, mb_strpos($lastName, ' ', 0, 'UTF-8'), null, 'UTF-8'));
 				}
 			} else {
 			    $lastName = ze\row::get('users', 'last_name', $userId);
+			}
+			
+			if (!$email) {
+				$email = '';
+			}
+			
+			if (!$firstName) {
+				$firstName = '';
+			}
+			
+			if (!$lastName) {
+				$lastName = '';
 			}
 			
 			foreach ($consentFields as $fieldId) {
@@ -4378,7 +4503,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return false;
 		}
 		
-		$responseId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['user_id' => $userId, 'form_id' => $this->form['id'], 'response_datetime' => ze\date::now(), 'profanity_filter_score' => $rating, 'profanity_tolerance_limit' => $tolerence, 'blocked_by_profanity_filter' => $blocked]);
+		$responseId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['user_id' => (int) $userId, 'form_id' => $this->form['id'], 'response_datetime' => ze\date::now(), 'profanity_filter_score' => $rating, 'profanity_tolerance_limit' => $tolerence, 'blocked_by_profanity_filter' => $blocked]);
 		
 		if ($this->form['period_to_delete_response_content'] === '0'
 			|| ($this->form['period_to_delete_response_content'] === '' && ze::setting('period_to_delete_the_form_response_log_content') === '0')
@@ -4515,7 +4640,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	//This function takes loaded data for the $value parameter
 	public static function getFieldDisplayValue($field, $value, $html = false, $includeDownloadLinks = false) {
 		$display = '';
-		switch ($field['type']) {
+		if (!empty($field['type'])) {
+			$fieldType = $field['type'];
+		} else {
+			$fieldType = '';
+		}
+		
+		switch ($fieldType) {
 			case 'checkbox':
 			case 'group':
 				$display = $value ? 'Yes' : 'No';
@@ -4535,7 +4666,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				break;
 			case 'date':
-				$display = ze\date::format($value, '_MEDIUM');
+				$display = ze\date::format($value);
 				break;
 			case 'centralised_radios':
 			case 'centralised_select':
@@ -4951,6 +5082,41 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$pattern = '/^[0-9\+\-\(\)\s]{1,20}$/';
 		
 		return preg_match($pattern, $input);
+	}
+	
+	private function addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId) {
+		$eventType = '';
+		
+		switch ($field['type']) {
+			case 'group':
+			case 'checkbox':
+				$eventType = 'onchange';
+				break;
+			case 'url':
+			case 'text':
+			case 'textarea':
+				$eventType = 'onblur';
+				break;
+		}
+		
+		if ($field['mandatory_condition_field_id']) {
+			$mandatoryConditionFieldType = $this->fields[$field['mandatory_condition_field_id']]['type'];
+		} else {
+			$mandatoryConditionFieldType = null;
+		}
+		
+		return ' ' . $eventType . '="zenario_user_forms.validateFormFieldJs(\'' .
+			ze\escape::js($this->containerId) . '\', \'' .
+			ze\escape::js($this->form['id']) . '\', \'' .
+			ze\escape::js($fieldId) . '\', \'' .
+			ze\escape::js($containerElementId) . '\', \'' .
+			ze\escape::js($fieldElementId) . '\', \'' .
+			ze\escape::js($field['type']) . '\', ' .
+			ze\escape::js($field['is_required']) . ', \'' .
+			ze\escape::js($field['mandatory_if_visible']) . '\', \'' .
+			ze\escape::js($field['mandatory_condition_field_id']) . '\', \'' .
+			ze\escape::js($mandatoryConditionFieldType) . '\', \'' .
+			ze\escape::js($field['field_validation']) . '\');"';
 	}
 	
 	public static function fPhrase($text, $replace, $translate) {
@@ -5527,7 +5693,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $fields;
 	}
 	
-	public static function clearOldData() {
+	public static function clearOldData($logResult = false) {
 		$cleared = 0;
 		
 		//Delete form response headers
@@ -5551,11 +5717,32 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$sql .= '
 						AND response_datetime < "' . ze\escape::sql($date) . '"';
 				}
-			
+				
 				$result = ze\sql::select($sql);
+				
+				$deletedHeadersForFormsWithIndividualSettings = 0;
+				
 				while ($row = ze\sql::fetchAssoc($result)) {
 					static::deleteFormResponse($row['id']);
+					$deletedHeadersForFormsWithIndividualSettings++;
 				}
+				
+				if ($logResult) {
+					if ($deletedHeadersForFormsWithIndividualSettings == 0) {
+						echo ze\admin::phrase('Deleting response headers for forms with individual settings: no action taken.');
+					} elseif ($deletedHeadersForFormsWithIndividualSettings > 0) {
+						echo ze\admin::nPhrase(
+							'Deleted response headers for 1 form with individual settings.',
+							'Deleted response headers for [[count]] forms with individual settings.',
+							$deletedHeadersForFormsWithIndividualSettings,
+							['count' => $deletedHeadersForFormsWithIndividualSettings]
+						);
+					}
+					
+					echo "\n";
+				}
+				
+				$cleared += ze\sql::numRows($result);
 			}
 		}
 		
@@ -5575,9 +5762,29 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			
 			$result = ze\sql::select($sql);
+			
+			$deletedHeadersForFormsWithoutIndividualSettings = 0;
+			
 			while ($row = ze\sql::fetchAssoc($result)) {
 				static::deleteFormResponse($row['id']);
+				$deletedHeadersForFormsWithoutIndividualSettings++;
 			}
+			
+			if ($logResult) {
+				if ($deletedHeadersForFormsWithoutIndividualSettings == 0) {
+					echo ze\admin::phrase('Deleting headers for forms without individual settings: no action taken.');
+				} elseif ($deletedHeadersForFormsWithoutIndividualSettings > 0) {
+					echo ze\admin::nPhrase(
+						'Deleted response headers for 1 form without individual settings.',
+						'Deleted response headers for [[count]] forms without individual settings.',
+						$deletedHeadersForFormsWithoutIndividualSettings,
+						['count' => $deletedHeadersForFormsWithoutIndividualSettings]
+					);
+				}
+				
+				echo "\n";
+			}
+			
 			$cleared += ze\sql::numRows($result);
 		}
 		
@@ -5616,7 +5823,25 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						AND response_datetime < "' . ze\escape::sql($date) . '"';
 				}
 				ze\sql::update($sql);
-				$cleared += ze\sql::affectedRows();
+				
+				$deletedFormResponsesWithIndividualSettings = ze\sql::affectedRows();
+				
+				if ($logResult) {
+					if ($deletedFormResponsesWithIndividualSettings == 0) {
+						echo ze\admin::phrase('Deleting response content for forms with individual settings: no action taken.');
+					} elseif ($deletedFormResponsesWithIndividualSettings > 0) {
+						echo ze\admin::nPhrase(
+							'Deleting response content for forms with individual settings: 1 deleted.',
+							'Deleting response content for forms with individual settings: [[count]] deleted.',
+							$deletedFormResponsesWithIndividualSettings,
+							['count' => $deletedFormResponsesWithIndividualSettings]
+						);
+					}
+					
+					echo "\n";
+				}
+				
+				$cleared += $deletedFormResponsesWithIndividualSettings;
 			}
 		}
 		
@@ -5650,6 +5875,23 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					AND ur.response_datetime < "' . ze\escape::sql($date) . '"';
 			}
 			ze\sql::update($sql);
+			
+			$deletedFormResponsesWithoutIndividualSettings = ze\sql::affectedRows();
+			
+			if ($logResult) {
+				if ($deletedFormResponsesWithoutIndividualSettings == 0) {
+					echo ze\admin::phrase('Deleting response content for forms without individual settings: no action taken.');
+				} elseif ($deletedFormResponsesWithoutIndividualSettings > 0) {
+					echo ze\admin::nPhrase(
+						'Deleting response content for forms without individual settings: 1 deleted.',
+						'Deleting response content for forms without individual settings: [[count]] deleted.',
+						$deletedFormResponsesWithoutIndividualSettings,
+						['count' => $deletedFormResponsesWithoutIndividualSettings]
+					);
+				}
+				
+				echo "\n";
+			}
 
 			$cleared += ze\sql::affectedRows();
 		}
@@ -5665,10 +5907,30 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				WHERE response_datetime < "' . ze\escape::sql($date) . '"';
 			
 			$result = ze\sql::select($sql);
+			
+			$deletedPartialFormResponses = 0;
+			
 			while ($row = ze\sql::fetchAssoc($result)) {
 				static::deleteFormPartialResponse($row['id']);
-				$cleared += ze\sql::numRows($result);
+				$deletedPartialFormResponses++;
 			}
+			
+			if ($logResult) {
+				if ($deletedPartialFormResponses == 0) {
+					echo ze\admin::phrase('Deleting partial form responses: no action taken.');
+				} elseif ($deletedPartialFormResponses > 0) {
+					echo ze\admin::nPhrase(
+						'Deleting partial form responses: 1 deleted.',
+						'Deleting partial form responses: [[count]] deleted.',
+						$deletedPartialFormResponses,
+						['count' => $deletedPartialFormResponses]
+					);
+				}
+				
+				echo "\n";
+			}
+			
+			$cleared += $deletedPartialFormResponses;
 		}
 
 		//Before 9.3, Zenario did not remove files from the files table
@@ -5732,7 +5994,25 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					WHERE `usage` = 'forms'
 					AND id IN (" . ze\escape::in($filesToDelete) . ")";
 				ze\sql::update($sql);
-				$cleared += ze\sql::affectedRows();
+				
+				$deletedFilesFromOldPartialResponses = ze\sql::affectedRows();
+				
+				if ($logResult) {
+					if ($deletedFilesFromOldPartialResponses == 0) {
+						echo ze\admin::phrase('Deleting old files from deleted partial responses: no action taken.');
+					} elseif ($deletedFilesFromOldPartialResponses > 0) {
+						echo ze\admin::nPhrase(
+							'Deleting old files from deleted partial responses: 1 deleted.',
+							'Deleting old files from deleted partial responses: [[count]] deleted.',
+							$deletedFilesFromOldPartialResponses,
+							['count' => $deletedFilesFromOldPartialResponses]
+						);
+					}
+					
+					echo "\n";
+				}
+				
+				$cleared += $deletedFilesFromOldPartialResponses;
 			}
 		}
 		
@@ -5795,6 +6075,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	public static function deleteUserDataGetInfo($userIds) {
+		if ($userIds) {
+			$recordCount = ' ([[count]] found)';
+		} else {
+			$recordCount = '';
+		}
+		
 		$sql = '
 			SELECT COUNT(id)
 			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
@@ -5802,7 +6088,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
 		
-		$formResponses = ze\admin::phrase('Form responses ([[count]] found)', ['count' => $count]);
+		$formResponses = ze\admin::phrase('Form responses' . $recordCount, ['count' => $count]);
 		
 		$sql = '
 			SELECT COUNT(id)
@@ -5811,7 +6097,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
 		
-		$formPartialResponses = ze\admin::phrase('Saved but unsubmitted form responses ([[count]] found)', ['count' => $count]);
+		$formPartialResponses = ze\admin::phrase('Saved but unsubmitted form responses' . $recordCount, ['count' => $count]);
 		
 		return implode('<br />', [$formResponses, $formPartialResponses]);
 	}
@@ -5869,7 +6155,9 @@ class calculator {
     }
 
     private function compute($input){
-        $compute = create_function('', 'return '.$input.';');
+    	//Previously:
+    	//$compute = create_function('', 'return '.$input.';');
+        $compute = function() { return $input; };
         return 0 + $compute();
     }
 

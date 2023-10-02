@@ -34,7 +34,7 @@ class zenario_videos_fea extends zenario_abstract_fea {
 	
 	public function init() {
 		if ($this->subClass = $this->runSubClass(__FILE__)) {
-			self::requireJSLibsForFEAs();
+			$this->requireJSLibsForFEAs();
 			return $this->subClass->init();
 		}
 		return false;
@@ -64,5 +64,20 @@ class zenario_videos_fea extends zenario_abstract_fea {
 		}
 	}
 	
+	public static function requestVarDisplayName($name) {
+		switch ($name) {
+			case 'title':
+				return 'Video title';
+		}
+	}
+	
+	public static function requestVarMergeField($field) {
+		if ($field == 'title') {
+			$videoTitle = ze\row::get(ZENARIO_VIDEOS_MANAGER_PREFIX. 'videos', 'title', ['id' => (int) ze::get('videoId')]);
+			return $videoTitle;
+		} else {
+			return '';
+		}
+	}
 }
 require_once CMS_ROOT. ze::moduleDir('zenario_videos_fea', 'classes/visitor/_base.php');

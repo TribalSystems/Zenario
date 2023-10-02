@@ -96,18 +96,18 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 	zenario_pro_features::closeTag($isXML, $f, 'template');
 	
 	$slotContents = [];
-	ze\plugin::slotContents(
+	ze\plugin::checkSlotContents(
 		$slotContents,
 		$cID, $cType, $cVersion,
-		$version['layout_id'],
-		$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-		$runPlugins = false);
+		$version['layout_id']
+	);
 	$slotsOnTemplate = zenario_pro_features::getSlotsOnTemplate($version['layout_id']);
 	
 	foreach ($slotsOnTemplate as $slotName) {
-		if (!empty($slotContents[$slotName]['content_id'])
-		 && !empty($slotContents[$slotName]['instance_id'])
-		 && ($instance = ze\plugin::details($slotContents[$slotName]['instance_id']))) {
+		if (isset($slotContents[$slotName])
+		 && $slotContents[$slotName]->cID()
+		 && $slotContents[$slotName]->instanceId()
+		 && ($instance = ze\plugin::details($slotContents[$slotName]->instanceId()))) {
 			zenario_pro_features::openTagStart($isXML, $f, 'plugin');
 			zenario_pro_features::addAtt($isXML, $f, 'class', $instance['class_name']);
 			zenario_pro_features::addAtt($isXML, $f, 'slot', $slotName);
@@ -122,7 +122,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 				LEFT JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
 				   ON psd.module_id = pi.module_id
 				  AND psd.name = ps.name
-				WHERE ps.instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
+				WHERE ps.instance_id = ". (int) $slotContents[$slotName]->instanceId(). "
 				  AND ps.egg_id = 0";		//Add support for Nests..?
 			
 			$result = ze\sql::select($sql);
@@ -165,7 +165,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 			$sql = "
 				SELECT id, slide_num, ord, module_id, framework, is_slide, slide_label
 				FROM ". DB_PREFIX. "nested_plugins
-				WHERE instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
+				WHERE instance_id = ". (int) $slotContents[$slotName]->instanceId(). "
 				ORDER BY slide_num, is_slide DESC, ord";
 			
 			$eggsResult = ze\sql::select($sql);
@@ -192,7 +192,7 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 						LEFT JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
 						   ON psd.module_id = ". (int) $egg['module_id']. "
 						  AND psd.name = ps.name
-						WHERE ps.instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
+						WHERE ps.instance_id = ". (int) $slotContents[$slotName]->instanceId(). "
 						  AND ps.egg_id = ". (int) $egg['id'];
 					
 					$nestedResult = ze\sql::select($sql);

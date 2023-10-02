@@ -7,7 +7,7 @@
 		<div class="banner_title">
 			<{{Title_Tags}}>
 				{% if Image_Link_Href and not Enlarge_Image %}
-					<a {{Image_Link_Href}}{{Target_Blank}}>{{Title}}</a>
+					<a {{Image_Link_Href}}{{Target_Blank}} {% if External_Url_Class %} class="{{External_Url_Class|e}}" {% endif %}>{{Title}}</a>
 				{% else %}
 					{{Title}}
 				{% endif %}
@@ -23,7 +23,7 @@
 
 	{% if More_Link_Text %}
 		<div class="banner_more">
-			<a {{Image_Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
+			<a {{Image_Link_Href}}{{Target_Blank}} {% if External_Url_Class %} class="{{External_Url_Class|e}}" {% endif %}>{{More_Link_Text}}</a>
 		</div>
 	{% endif %}
 </div></div></div>

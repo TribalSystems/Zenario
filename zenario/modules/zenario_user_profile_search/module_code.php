@@ -44,7 +44,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 	protected $data = [];
 	
 	public function init() {
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		
 		$this->country_id_to_search = $_REQUEST['country_id_to_search'] ?? false;
 		$this->name_to_search = $_REQUEST['name_to_search'] ?? false;

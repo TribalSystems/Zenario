@@ -126,7 +126,7 @@ class zenario_users extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function clearOldData() {
+	public static function clearOldData($logResult = false) {
 		$cleared = 0;
 		//Clear user content access log
 		$days = ze::setting('period_to_delete_the_user_content_access_log');
@@ -138,7 +138,25 @@ class zenario_users extends ze\moduleBaseClass {
 					WHERE hit_datetime < '".ze\escape::sql($date)."'";
 			}
 			ze\sql::update($sql);
-			$cleared += ze\sql::affectedRows();
+			
+			$deletedUserContentAccessLogs = ze\sql::affectedRows();
+			
+			if ($logResult) {
+				if ($deletedUserContentAccessLogs == 0) {
+					echo ze\admin::phrase('Deleting user content access logs: no action taken.');
+				} elseif ($deletedUserContentAccessLogs > 0) {
+					echo ze\admin::nPhrase(
+						'Deleted 1 user content access log.',
+						'Deleted [[count]] user content access logs.',
+						$deletedUserContentAccessLogs,
+						['count' => $deletedUserContentAccessLogs]
+					);
+				}
+				
+				echo "\n";
+			}
+			
+			$cleared += $deletedUserContentAccessLogs;
 		}
 		
 		//Clear user signin log
@@ -151,8 +169,27 @@ class zenario_users extends ze\moduleBaseClass {
 					WHERE login_datetime < '".ze\escape::sql($date)."'";
 			}
 			ze\sql::update($sql);
-			$cleared += ze\sql::affectedRows();
+			
+			$deletedUserSignInLogs = ze\sql::affectedRows();
+			
+			if ($logResult) {
+				if ($deletedUserSignInLogs == 0) {
+					echo ze\admin::phrase('Deleting user sign in logs: no action taken.');
+				} elseif ($deletedUserSignInLogs > 0) {
+					echo ze\admin::nPhrase(
+						'Deleted 1 user sign in log.',
+						'Deleted [[count]] user sign in logs.',
+						$deletedUserSignInLogs,
+						['count' => $deletedUserSignInLogs]
+					);
+				}
+				
+				echo "\n";
+			}
+			
+			$cleared += $deletedUserSignInLogs;
 		}
+		
 		return $cleared;
 	}
 	
@@ -181,61 +218,19 @@ class zenario_users extends ze\moduleBaseClass {
 	
 	//Various API and internal functions
 	
-	protected static function savePrivacySettings($tagIds, $values) {
-		$equivId = $cType = false;
-		foreach ($tagIds as $tagId) {
-			if (ze\content::getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
-				
-				$key = ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType];
-				$chain = ['privacy' => $values['privacy/privacy']];
-				
-				if ($chain['privacy'] == 'group_members') {
-					ze\miscAdm::updateLinkingTable('group_link', $key, 'link_to_id', $values['privacy/group_ids']);
-				} else {
-					ze\row::delete('group_link', $key);
-				}
-				
-				$key['link_to'] = 'role';
-				if ($chain['privacy'] == 'with_role') {
-					ze\miscAdm::updateLinkingTable('group_link', $key, 'link_to_id', $values['privacy/role_ids']);
-					$chain['at_location'] = $values['privacy/at_location'];
-				} else {
-					ze\row::delete('group_link', $key);
-					$chain['at_location'] = 'any';
-				}
-				
-				$key = ['equiv_id' => $equivId, 'content_type' => $cType];
-				if ($chain['privacy'] == 'call_static_method') {
-					ze\row::set('translation_chain_privacy', [
-						'module_class_name' => $values['privacy/module_class_name'],
-						'method_name' => $values['privacy/method_name'],
-						'param_1' => $values['privacy/param_1'],
-						'param_2' => $values['privacy/param_2']
-					], $key);
-				} else {
-					ze\row::delete('translation_chain_privacy', $key);
-				}
-				
-				if (ze::in($chain['privacy'], 'in_smart_group', 'logged_in_not_in_smart_group')) {
-					$chain['smart_group_id'] = $values['privacy/smart_group_id'];
-				} else {
-					$chain['smart_group_id'] = 0;
-				}
-				
-				//Save the privacy settings
-				ze\row::set(
-					'translation_chains',
-					$chain,
-					['equiv_id' => $equivId, 'type' => $cType]);
-			}
-		}
-	}
-	
 	protected function impersonateUser($userId, $logAdminOut = false, $rememberMe = false, $logMeIn = false) {
 		
 		//Log the admin out of admin mode
 		if ($logAdminOut) {
 			ze\admin::unsetSession(false);
+		}
+		
+		//If the admin is already impersonating a user, and trying to switch to a different user,
+		//log out as the previous user before attempting to impersonate a new one.
+		if ($currentlyImpersonatedUser = ze\user::id()) {
+			ze\user::logOut();
+			ze\cookie::clear('LOG_ME_IN_COOKIE');
+			unset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE']);
 		}
 		
 		//Log the admin in as the target user

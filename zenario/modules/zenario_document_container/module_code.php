@@ -42,7 +42,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 		//the option to select "Auto" for this library, so this line is currently not needed.
 		//if ($this->setting('show_thumbnails')
 		// && $this->setting('lazy_load_images')) {
-		//	ze::requireJsLib('zenario/libs/yarn/jquery-lazy/jquery.lazy.min.js');
+		//	$this->requireJsLib('zenario/libs/yarn/jquery-lazy/jquery.lazy.min.js');
 		//}
 		
 		return true;
@@ -181,7 +181,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				$document['File_Size'] = ze\file::fileSizeConvert($file['size']);
 			}
 			if ($this->setting('show_upload_date')) {
-				$uploadDate = ze\date::formatDateTime($document['file_datetime'], '_MEDIUM');
+				$uploadDate = ze\date::formatDateTime($document['file_datetime']);
 				$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', ['date' => $uploadDate]);
 			}
 			

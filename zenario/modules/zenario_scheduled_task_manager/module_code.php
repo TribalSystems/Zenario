@@ -568,7 +568,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	}
 	
 	
-	public static function clearOldData() {
+	public static function clearOldData($logResult = false) {
 		$days = ze::setting('period_to_delete_job_logs');
 		if ($days && is_numeric($days)) {
 			$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
@@ -576,7 +576,25 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				DELETE FROM ". DB_PREFIX. "job_logs
 				WHERE started < '".ze\escape::sql($date)."'";
 			ze\sql::update($sql);
-			return ze\sql::affectedRows();
+			
+			$deletedJobLogs = ze\sql::affectedRows();
+			
+			if ($logResult) {
+				if ($deletedJobLogs == 0) {
+					echo ze\admin::phrase('Deleting job logs: no action taken.');
+				} elseif ($deletedJobLogs > 0) {
+					echo ze\admin::nPhrase(
+						'Deleted 1 job log.',
+						'Deleted [[count]] job logs.',
+						$deletedJobLogs,
+						['count' => $deletedJobLogs]
+					);
+				}
+				
+				echo "\n";
+			}
+			
+			return $deletedJobLogs;
 		}
 		return false;
 	}
@@ -623,20 +641,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		}
 		
 		foreach ($emails as $email => $dummy) {
-			$addressToOverriddenBy = false;
-			ze\server::sendEmail(
-				$subject, $body,
-				$email,
-				$addressToOverriddenBy,
-				$nameTo = false,
-				$addressFrom = false,
-				$nameFrom = false,
-				false, false, false,
-				$isHTML = false,
-				false, false, false, false, '', '', 'To',
-				$ignoreDebugMode = true		//Scheduled task logs should always be sent to the intended recipient,
-											//even if debug mode is on.
-			);
+			\ze\server::sendEmailSimple($subject, $body, $isHTML = false, $ignoreDebugMode = true, $email);
+				//Scheduled task logs should always be sent to the intended recipient,
+				//even if debug mode is on.
 		}
 	}
 	

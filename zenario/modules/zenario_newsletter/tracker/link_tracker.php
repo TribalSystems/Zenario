@@ -70,14 +70,17 @@ if ($urlNLink
 	}
 } elseif ($urlNLink && ze\module::inc('zenario_newsletter')) {
 
-$hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["id", "hyperlink", "link_ordinal", "clickthrough_count"], ['hyperlink_hash' => $urlNLink]);
+	$hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["id", "hyperlink", "link_ordinal", "clickthrough_count"], ['hyperlink_hash' => $urlNLink]);
 	
-	$hyperlinkDetails["clickthrough_count"] = $hyperlinkDetails["clickthrough_count"] + 1;
+	if ($hyperlinkDetails) {
+		$hyperlinkDetails["clickthrough_count"] = $hyperlinkDetails["clickthrough_count"] + 1;
 	
-	ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
+		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
+	}
 
 }
-if($hyperlinkDetails) {
+
+if ($hyperlinkDetails) {
 	header('Location: '. $hyperlinkDetails["hyperlink"], true, 307);
 } else {
 

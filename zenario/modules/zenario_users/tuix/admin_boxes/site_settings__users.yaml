@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: users
-    title: Editing settings for Users and Contacts
+    title: Editing settings for User and Contact data
     tabs:
         names:
             label: Identifiers
@@ -12,22 +12,6 @@ site_settings:
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
 
-            notices:
-                turning_off_screen_names:
-                    show: false
-                    type: warning
-                    message: >
-                        If you turn off screen names, the identifier for all users and contacts
-                        will be changed to first name+last name (+suffix number, if non-unique).
-                        For users and contacts without a first name or last name,
-                        the start of their email address will be used instead.
-                turning_on_screen_names:
-                    show: false
-                    type: warning
-                    message: >
-                        If you turn on screen names, the identifier for all users and contacts will be changed
-                        to their screen name if they have one.
-        
             fields:
                 description:
                     full_width: true
@@ -40,7 +24,6 @@ site_settings:
                     label: 'Use screen names'
                     side_note: Only recommended if the site will have users posting public messages such as comments and forum messages.
                     type: checkbox
-                    format_onchange: true
                     value: 1
                 user_chars_from_first_name:
                     site_setting:
@@ -158,7 +141,7 @@ site_settings:
                                 2: Moderate password, somewhat guessable, provides some protection from unthrottled online attacks.<br />
                                 1: Weak password, very guessable.<br />
                                 0: Very weak password, extremely guessable.<br />
-                            </div><br /><br /><br />
+                            </div>
                 min_extranet_user_password_length:
                     label: 'Minimum length:'
                     grouping: password_requirements
@@ -179,7 +162,7 @@ site_settings:
                     # The <br /> tags above are required, as Extranet Base module adds its own field
                     # with pre- and post-field HTML, which blends with the snippet above.
         activation_email_template:
-            label: "Activation"
+            label: "Emails"
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -190,12 +173,15 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                Select the default email template to be sent to new users when their account is activated.
+                                Select the default email template to be sent to new users when an administrator activates their account or resets heir password.
+                            </p>
+                            <p>
+                                (Where a user signs up or resets their own password, the choice of email template is determined by the relevant extranet-related plugin.)
                             </p>
                 default_activation_email_template:
                     site_setting:
                         name: default_activation_email_template
-                    label: 'Email template:'
+                    label: 'Activation email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
@@ -204,6 +190,24 @@ site_settings:
                         select_phrase: Select email template...
                         hide_remove_button: Yes
                     value: zenario_users__to_user_account_activated
+                default_password_reset_email_template:
+                    site_setting:
+                        name: default_password_reset_email_template
+                    label: 'Password reset email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: Yes
+                    value: zenario_users__to_user_password_reset
+                extranet_not_running:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                The "Extranet Base Module and Login" module is not running, so no user-related email settings are available.
+                            </div>
         groups:
             label: Options
             edit_mode:
@@ -211,7 +215,15 @@ site_settings:
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
             fields:
+                groups:
+                    type: grouping
+                user_image_options:
+                    type: grouping
+                    snippet:
+                        label: "Maximum file size for user-related images:"
+                        label_class: subheading
                 default_groups_dataset_tab:
+                    grouping: groups
                     site_setting:
                         name: default_groups_dataset_tab
                     label: 'Default Groups tab in the User/Contact admin box:'
@@ -220,42 +232,32 @@ site_settings:
                     side_note: |
                         This defines which tab of User/Contact admin box contains the Groups checboxes. If creating a group, it will appear on this tab. Go to Datasets->Users to re-arrange.
                 max_user_image_filesize_override:
+                    grouping: user_image_options
                     site_setting:
                         name: max_user_image_filesize_override
-                    label: "Maximum user image file size:"
-                    type: radios
-                    values:
-                        use_global_max_attachment_file_size:
-                            label: "Use global file upload size setting ([[global_max_attachment_file_size]])"
-                            ord: 1
-                        limit_max_attachment_file_size:
-                            label: "For user-uploaded files, restrict to lower limit..."
-                            ord: 2
-                    value: limit_max_attachment_file_size
+                    label: "Restrict user/contact-related images to..."
+                    type: checkbox
+                    value: false
                     redraw_onchange: true
-                    notices_below:
-                        max_upload_size_site_setting_link:
-                            type: information
-                            size: small
-                            message: ""
-                            html: true
                 max_user_image_filesize:
+                    grouping: user_image_options
                     indent: 1
                     site_setting:
                         name: max_user_image_filesize
-                    label: 'Maximum user image file size:'
+                    label: 'Maximum image file size:'
                     type: text
                     value: 50
                     side_note: >
-                        Maximum allowed file size for all user images (e.g. avatars or location images) uploaded by extranet users.
+                        Maximum allowed file size for all user/contact images (e.g. avatars or location images) uploaded by extranet users.
                     validation:
-                        required: Please enter a maximum user image file size.
+                        required_if_not_hidden: Please enter a maximum allowed image file size.
                         numeric: The number must be numeric.
                     decimal_places: ""
-                    visible_if: lib.value('max_user_image_filesize_override') == 'limit_max_attachment_file_size'
+                    visible_if: lib.value('max_user_image_filesize_override')
                     maxlength: 10
                     style: "width: 7em;"
                 max_user_image_filesize_unit:
+                    grouping: user_image_options
                     indent: 1
                     site_setting:
                         name: max_user_image_filesize_unit
@@ -271,7 +273,29 @@ site_settings:
                             label: GB
                     value: KB
                     redraw_onchange: true
-                    visible_if: lib.value('max_user_image_filesize_override') == 'limit_max_attachment_file_size'
+                    visible_if: lib.value('max_user_image_filesize_override')
+                apply_file_size_limit_to:
+                    grouping: user_image_options
+                    indent: 1
+                    site_setting:
+                        name: apply_file_size_limit_to
+                    type: select
+                    values:
+                        uploads_by_users:
+                            ord: 1
+                            label: 'Apply only to uploads by users'
+                        always_apply:
+                            ord: 2
+                            label: 'Apply always'
+                    value: uploads_by_users
+                    visible_if: lib.value('max_user_image_filesize_override')
+                global_upload_setting_info:
+                    grouping: user_image_options
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                [[global_upload_setting_string]]
+                            </div>
         
         countries:
             label: Countries
@@ -282,12 +306,12 @@ site_settings:
                 description:
                     snippet:
                         p: |
-                            Use this to enable the linked countries feature for extranet users.
+                            Use this to enable country-based permissions for extranet users.
                             When editing an extranet user, you will be able to set which countries they are associated with.
                 users_use_linked_countries:
                     site_setting:
                         name: users_use_linked_countries
-                    label: 'Enable linked countries'
+                    label: 'Enable country-based permissions'
                     type: checkbox
                     value: ''
         

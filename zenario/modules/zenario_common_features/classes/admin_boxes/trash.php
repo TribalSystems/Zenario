@@ -33,6 +33,16 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 	protected $totalRowNum = 0;
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if ($box['key']['id_is_menu_node_id'] && ($menuContentItem = ze\menu::getContentItem($box['key']['id']))) {
+			//Trash an existing Content Item based on its Menu Node:
+			//Work out what the content item should be, then proceed with the rest of the logic
+			$box['key']['cID'] = $menuContentItem['equiv_id'];
+			$box['key']['cType'] = $menuContentItem['content_type'];
+			
+			$box['key']['menu_node_id'] = $box['key']['id'];
+			$box['key']['id'] = $box['key']['cType'] . '_' . $box['key']['cID'];
+		}
+		
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
 		$contentItemsCount = count($ids);
 
@@ -45,6 +55,15 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 		if (!ze\module::isRunning('zenario_pro_features')) {
 			$box['max_height'] = 160;
 		}
+		
+		//Look for any access codes in use
+		ze\contentAdm::checkForAccessCodes($box, $fields['trash/access_codes_warning'], $ids, $contentItemsCount,
+			'This content item has a staging code ([[access_code]]). This will be removed when it is trashed.',
+			'One content item has a staging code ([[access_code]]). This will be removed when it is trashed.',
+			'[[count]] content items have a staging code. These will be removed when it is trashed.'
+		);
+
+		
 		
 		ze\module::incSubclass('zenario_common_features');
 		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'trash', $this->totalRowNum, $getPlugins = true, $getTranslations = true);
@@ -105,12 +124,23 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 		
 		//Trash any translations flagged for trashing
 		zenario_common_features::deleteOrTrashTranslations($fields, $values, $tabName = 'trash');
+		
+		if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['id'] = $box['key']['menu_node_id'];
+		}
 
 		//If it looks like this was opened from the front-end
 		//(i.e. there's no sign of any of Organizer's variables)
-		//then try to redirect the admin to whatever the visitor URL should be
+		//then try to redirect the admin to whatever the visitor URL should be.
+		//Save the target URL, so that if Pro Features is running, it has a chance to run its code.
 		if ($goToContentItem) {
-			ze\tuix::closeWithFlags(['go_to_url' => $goToContentItem]);
+			$box['key']['go_to_url_after_trashing'] = $goToContentItem;
+		}
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($box['key']['go_to_url_after_trashing']) {
+			ze\tuix::closeWithFlags(['go_to_url' => $box['key']['go_to_url_after_trashing']]);
 		}
 	}
 }

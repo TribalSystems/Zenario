@@ -137,7 +137,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			$result = ze\sql::select($sql);
 			$archiveExists = ze\sql::fetchAssoc($result);
 			
-			if($archiveExists) {
+			if ($archiveExists) {
 				foreach($panel['items'] as $id => &$item) {
 					//For calculating percentages
 					$sql = '
@@ -190,6 +190,19 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 				}
 			}
 		}
+		
+		if ($refinerName == 'outbox') {
+			foreach($panel['items'] as $id => &$item) {
+				if ($item['scheduled_send_datetime']) {
+					$item['css_class'] = 'scheduled_tasks_on_icon';
+					
+					$item['sending_time'] = 
+						ze\admin::formatDateTime($item['scheduled_send_datetime'], 'vis_date_format_med');
+				
+					$item['tooltip'] = ze\admin::phrase("Scheduled to be sent on [[sending_time]].", $item);
+				}
+			}
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
@@ -199,7 +212,10 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 				zenario_newsletter::deleteNewsletter($id);
 			}
 		
-		
+		} elseif (ze::post('cancel_scheduled_sending') && ze\priv::check('_PRIV_EDIT_NEWSLETTER')) {
+			foreach(explode(',', $ids) as $id) {
+				zenario_newsletter::cancelScheduledNewsletterSending($id);
+			}
 		//Attempt to resume sending the newsletter
 		} elseif (ze::post('resume') && ze\priv::check('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsInProgress($ids)) {
 			//Note: same code as above
@@ -224,7 +240,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			$admin_id = ze\admin::id();
 			$table_newsletters = DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters"; 
 			$copy_cols = "subject, email_address_from, email_name_from, url, body, 
-				status, delete_account_text, smart_group_descriptions_when_sent_out";
+				status, unsubscribe_text, delete_account_text, smart_group_descriptions_when_sent_out";
 			
 			$sql = "INSERT INTO $table_newsletters(newsletter_name, $copy_cols, date_created, created_by_id)
 				    SELECT CONCAT(nli.newsletter_name, ' (copy ', IFNULL((SELECT COUNT(*) 

@@ -3,7 +3,6 @@
 zenario__layouts:
     panels:
         skins:
-            priv: _PRIV_VIEW_TEMPLATE
             title: Skins
             db_items:
                 table: >
@@ -83,7 +82,6 @@ zenario__layouts:
                 css_class: skin
                 tooltip_when_link_is_active: 'View files in Skin &quot;[[name]]&quot;'
                 link:
-                    priv: _PRIV_VIEW_TEMPLATE
                     path: zenario__layouts/panels/skin_files
                     branch: true
                     refiner: skin

@@ -173,7 +173,7 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 	}
 	
 	protected function formatItemRow(&$item, $path, &$tags, &$fields, &$values) {
-		$item['date'] = ze\date::format($item['date'], '_MEDIUM');
+		$item['date'] = ze\date::format($item['date']);
 		$item['description'] = nl2br(htmlspecialchars($item['description']));
 		$item['title'] = $this->rapInViewVideoAnchor($item['title'], $item['id']);
 		

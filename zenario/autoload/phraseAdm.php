@@ -29,9 +29,9 @@
 
 namespace ze;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 class phraseAdm {
-
-
 
 	//Formerly "secondsToAdminPhrase()"
 	public static function seconds($seconds) {
@@ -64,10 +64,6 @@ class phraseAdm {
 	
 		return $t;
 	}
-
-
-
-
 
 	//check if a Visitor Phrase is protected
 	//Formerly "checkIfPhraseIsProtected()"
@@ -138,13 +134,11 @@ class phraseAdm {
 
 	}
 
-
 	//Given an uploaded XML file, pharse that file looking for visitor language phrases
 	//Formerly "importVisitorLanguagePack()"
 	public static function importVisitorLanguagePack($file, &$languageIdFound, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false, $checkPerms = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
-
 
 	//Formerly "scanModulePhraseDir()"
 	public static function scanModulePhraseDir($moduleName, $scanMode) {
@@ -174,5 +168,4 @@ class phraseAdm {
 	
 		return $importFiles;
 	}
-
 }

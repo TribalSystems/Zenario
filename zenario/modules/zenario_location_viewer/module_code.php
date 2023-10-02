@@ -157,13 +157,14 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 		}
 		
 		
-		if(is_array($locationDetails) && $locationDetails){
+		if (is_array($locationDetails) && $locationDetails) {
 		
-			foreach($locationDetails as $key=> $details){
-				$locationDetails[$key]=nl2br($details);
+			foreach ($locationDetails as $key => $details) {
+				$locationDetails[$key] = nl2br($details ?: '');
 			}
 		
 		}
+		
 		$this->data['location'] = $locationDetails;
 		return true;
 	}

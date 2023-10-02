@@ -24,6 +24,13 @@ zenario_delete_draft:
                         When these drafts are deleted, they will no longer be available to visitors or admins, and will be removed from the menu if no published versions exist.
                         Deleting a draft will not affect any published versions of these items, if they exist. This cannot be undone.
             fields:
+                access_codes_warning:
+                    snippet: {}
+                    notices_above:
+                        access_codes_warning:
+                            hidden: false
+                            type: information
+                            message: ''
                 links_warning:
                     snippet:
                         html:

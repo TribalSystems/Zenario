@@ -39,9 +39,10 @@ if (!defined('CMS_ROOT')) {
 }
 
 require CMS_ROOT. 'zenario/basicheader.inc.php';
-
-
 clearstatcache();
+
+//Remove a file or directory that a package manager downloaded for us, but we don't want
+//and wish to remove to tidy up clutter and use less space on the disk.
 function removeUnwantedCode($path, $packageManager = 'yarn') {
 	$check = CMS_ROOT. 'zenario/libs/'. $packageManager. '/'. $path;
 	if (file_exists($check)) {
@@ -57,11 +58,104 @@ function removeUnwantedCode($path, $packageManager = 'yarn') {
 	}
 }
 
+//Given a repo downloaded using yarn, go through and remove everything but the things we
+//actually want.
+function filterWantedCode($path, ...$keeps) {
+	
+	//Hard-coded to only work for yarn repos for now; generally composer repos are much
+	//tidier and don't need this!
+	$packageManager = 'yarn';
+	$dir = CMS_ROOT. 'zenario/libs/'. $packageManager. '/'. $path;
+	
+	foreach (scandir($dir) as $actualName) {
+		
+		//To make the rules easier to specify, all logic is done using lower-case.
+		$name = strtolower($actualName);
+		
+		//To make the rules easier to specify, exclude some known filetypes from the logic
+		//so we don't need to specify them.
+		foreach ([
+			'.txt', '.md', '.markdown',
+			'.map', '.js', '.css', '.min'
+		] as $removeExtension) {
+			$name = ze\ring::chopSuffix($name, $removeExtension, $returnStringOnFailure = true);
+		}
+		
+		if ($name == '.'
+		 || $name == '..'
+			
+			//Have some exceptions that are always kept and never filtered
+		 || $name == 'authors'
+		 || $name == 'bower.json'
+		 || $name == 'changelog'
+		 || $name == 'code_of_conduct'
+		 || $name == 'composer.json'
+		 || $name == 'contributing'
+		 || $name == 'license'
+		 || $name == 'package.json'
+		 || $name == 'readme'
+		
+			//Keep anything named in the inputs
+		 || in_array($name, $keeps)) {
+			//Keep this file
+		} else {
+			removeUnwantedCode($path. '/'. $actualName, $packageManager);
+		}
+	}
+}
+
 function removeUnwantedComposerCode($path) {
 	removeUnwantedCode($path, 'composer_dist');
 	removeUnwantedCode($path, 'composer_no_dist');
 }
 
+function copyMod($path, $packageManager = 'yarn') {
+	$from = CMS_ROOT. 'zenario/libs/mods/'. $path;
+	$to = CMS_ROOT. 'zenario/libs/'. $packageManager. '/'. $path;
+	
+	if (file_exists($to)) {
+		exec('rm '. escapeshellarg($to));
+	}
+	
+	exec('cp '. escapeshellarg($from). ' '. escapeshellarg($to));
+}
+
+
+//Add our custom mod files to some third-party libraries
+copyMod('ace-builds/src-min-noconflict/mode-phi.js');
+
+
+//Remove some clutter from composer libraries that we don't want
+filterWantedCode('ace-builds', 'src-min-noconflict');
+removeUnwantedCode('ace-builds/src-min-noconflict/mode-xquery.js');		//Remove the xquery language as those files are quite large
+removeUnwantedCode('ace-builds/src-min-noconflict/worker-xquery.js');
+filterWantedCode('animate.css', 'animate');
+filterWantedCode('cytoscape', 'dist');
+filterWantedCode('@fortawesome/fontawesome-free', 'attribution.js', 'css', 'webfonts');
+filterWantedCode('@fortawesome/fontawesome-free/css', 'all', 'v4-shims');
+removeUnwantedCode('jquery/src');
+filterWantedCode('jquery/dist', 'core', 'jquery');
+filterWantedCode('jquery-cycle2', 'build');
+filterWantedCode('jquery-cycle2/build', 'jquery.cycle2');
+filterWantedCode('jquery-doubletaptogo', 'dist');
+filterWantedCode('jquery-lazy', 'jquery.lazy');
+filterWantedCode('jquery-multiselect', 'jquery-multiselect');
+filterWantedCode('js-crc', 'src');
+filterWantedCode('moment', 'moment');
+filterWantedCode('moment-timezone', 'builds');
+filterWantedCode('moment-timezone/builds', 'moment-timezone-with-data-10-year-range');
+removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-10-year-range.js');
+filterWantedCode('rcrop', 'dist');
+filterWantedCode('spectrum-colorpicker', 'i18n', 'spectrum', 'themes');
+filterWantedCode('swiper', 'swiper-bundle');
+filterWantedCode('toastr', 'build', 'toastr');
+filterWantedCode('underscore.string', 'dist');
+filterWantedCode('wow.js', 'dist');
+filterWantedCode('wow.js/dist', 'wow');
+filterWantedCode('zxcvbn', 'dist');
+
+//Remove some optional dependancies that the yarn packages we've asked for installed,
+//but I don't actually think we need
 removeUnwantedCode('classlist-polyfill');
 removeUnwantedCode('lodash');		//Unwanted (dev?) dependancy from cytoscape and a few others?
 removeUnwantedCode('lodash.get');
@@ -70,67 +164,22 @@ removeUnwantedCode('lodash.topath');
 removeUnwantedCode('lodash.debounce');
 removeUnwantedCode('lodash.throttle');
 removeUnwantedCode('heap');
-removeUnwantedCode('cytoscape/.browserslist');
-removeUnwantedCode('cytoscape/.github');
-removeUnwantedCode('cytoscape/.size-snapshot.json');
-removeUnwantedCode('cytoscape/license-update.js');
-removeUnwantedCode('cytoscape/rollup.config.js');
-removeUnwantedCode('cytoscape/src');
-removeUnwantedCode('jquery/src');
-removeUnwantedCode('jquery/dist/core.js');
-removeUnwantedCode('jquery/dist/jquery.slim.js');
-removeUnwantedCode('jquery/dist/jquery.slim.min.js');
-removeUnwantedCode('jquery/dist/jquery.slim.min.map');
-removeUnwantedCode('jquery-cycle2/build/core');
-removeUnwantedCode('jquery-cycle2/build/plugin');
-removeUnwantedCode('jquery-cycle2/src');
-removeUnwantedCode('jquery-doubletaptogo/src');
-removeUnwantedCode('jquery-doubletaptogo/yarn.lock');
-removeUnwantedCode('jquery-lazy/node_modules');
-removeUnwantedCode('js-crc/build');
-removeUnwantedCode('js-crc/tests');
-removeUnwantedCode('moment/dist');
-removeUnwantedCode('moment/locale');
-removeUnwantedCode('moment/min');
-removeUnwantedCode('moment/src');
-removeUnwantedCode('moment-timezone/.github');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-10-year-range.js');
-//removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-10-year-range.min.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-1970-2030.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-1970-2030.min.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-2012-2022.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data-2012-2022.min.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone-with-data.min.js');
-removeUnwantedCode('moment-timezone/builds/moment-timezone.min.js');
-removeUnwantedCode('moment-timezone/blah.tar.gz');
-removeUnwantedCode('moment-timezone/curlxx.tar.gz');
-removeUnwantedCode('moment-timezone/data');
-removeUnwantedCode('moment-timezone/tzdata-latest.tar.gz');
-removeUnwantedCode('rcrop/demos');
-removeUnwantedCode('rcrop/libs');
-removeUnwantedCode('respond.js/cross-domain');
-removeUnwantedCode('respond.js/src');
-removeUnwantedCode('respond.js/test');
-removeUnwantedCode('spectrum-colorpicker/build');
-removeUnwantedCode('spectrum-colorpicker/docs');
-removeUnwantedCode('spectrum-colorpicker/example');
-removeUnwantedCode('spectrum-colorpicker/test');
-removeUnwantedCode('toastr/node_modules');
-removeUnwantedCode('toastr/nuget');
-removeUnwantedCode('toastr/tests');
-removeUnwantedCode('wow.js/css');
-removeUnwantedCode('wow.js/spec');
-
-//Remove some optional dependancies that the yarn packages we've asked for installed, but I don't actuall think we need
 removeUnwantedCode('sprintf-js');
+removeUnwantedCode('ssr-window');
 removeUnwantedCode('util-deprecate');
+
+
+//Doing all of this will mean that Yarn's cache meta info of what files it has downloaded
+//is out of date. We'll need to delete this so Yarn knows it has been modified.
+removeUnwantedCode('.yarn-integrity');
 
 
 //Remove some clutter from composer libraries that we don't want
 removeUnwantedComposerCode('bin');
+//removeUnwantedComposerCode('aws/aws-sdk-php/src/data');	# Actually this seems to be needed...
 removeUnwantedComposerCode('geoip2/geoip2/examples');
 removeUnwantedComposerCode('guzzlehttp/psr7/.github');
+removeUnwantedComposerCode('matthiasmullie/minify/bin');
 removeUnwantedComposerCode('maxmind/web-service-common/dev-bin');
 removeUnwantedComposerCode('maxmind-db/reader/ext');
 removeUnwantedComposerCode('mustangostang/spyc/examples');

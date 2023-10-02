@@ -14,6 +14,7 @@
 	"dependencies": {
 		"@fortawesome\/fontawesome-free": "6.*",
 		"SVG-Sanitizer": "TribalSystems\/SVG-Sanitizer",
+		"ace-builds": "1.*",
 		"animate.css": "3.*",
 		"bez": "*",
 		"cytoscape": "*",
@@ -23,16 +24,15 @@
 		"jquery-lazy": "*",
 		"jquery-multiselect": "*",
 		"js-crc": "emn178\/js-crc",
-		"mdn-polyfills": "*",
 		"moment": "^2.29.4",
 		"moment-timezone": "^0.5.34",
 		"rcrop": "aewebsolutions\/rcrop",
-		"respond.js": "*",
 		"spectrum-colorpicker": "*",
+		"swiper": "9.*",
 		"toastr": "*",
 		"underscore.string": "*",
 		"wow.js": "^1.2.2",
 		"zxcvbn": "^4.4.2"
 	},
-	"version": "9.4.59574"
+	"version": "9.5.59574"
 }

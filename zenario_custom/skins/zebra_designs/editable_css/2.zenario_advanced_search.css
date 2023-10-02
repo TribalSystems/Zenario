@@ -482,7 +482,6 @@ body.webkit .zenario_advanced_search .search_entry_box_panel .search_area .zenar
 	padding-top:15px;
 }
 
-
 .zenario_advanced_search .search_button_panel.active:before {
 	content: "";
   	width: 100%;
@@ -494,4 +493,10 @@ body.webkit .zenario_advanced_search .search_entry_box_panel .search_area .zenar
   	right: 0;
   	bottom: 0;
   	z-index: 96;
+}
+
+/* Plugin on Header */
+
+body.desktop .Gridbreak_Header .zenario_advanced_search {
+	padding-top: 30px;
 }

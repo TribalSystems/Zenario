@@ -275,7 +275,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 	
 	public static function jobPublishContent($serverTime) {
 		$sql = "
-			SELECT v.id, v.type, v.version, c.status
+			SELECT v.id, v.type, v.version, c.status, c.lock_owner_id, v.last_author_id, v.creating_author_id, v.scheduled_publish_datetime
 			FROM ". DB_PREFIX. "content_item_versions AS v
 			INNER JOIN ". DB_PREFIX. "content_items AS c
 			   ON c.id = v.id
@@ -284,17 +284,82 @@ class zenario_common_features extends ze\moduleBaseClass {
 		$result = ze\sql::select($sql);
 		
 		$action = false;
-		while($citem = ze\sql::fetchAssoc($result)) {
+		$emailTemplateManagerModuleRunning = ze\module::inc('zenario_email_template_manager');
+		$contentItemPublishedEmailText = self::getEmailTextContentItemPublished();
+		$addressFrom = ze::setting('email_address_from');
+		$nameFrom = ze::setting('email_name_from');
+		$subject = ze\admin::phrase('Content item published');
+		
+		while ($citem = ze\sql::fetchAssoc($result)) {
 			
 			if ($citem['status'] == 'hidden' || ze\content::isDraft($citem['status'])) {
 				// Publish marked draft items
-				$adminId = ze\row::get('content_items', 'lock_owner_id', ['id'=>$citem['id'], 'type'=>$citem['type']]);
+				$adminId = $citem['lock_owner_id'];
 				ze\contentAdm::publishContent($citem['id'], $citem['type'], $adminId);
 				$action = true;
-				echo ze\admin::phrase('Published content item [[tag]]', ['tag' => ze\content::formatTag($citem['id'], $citem['type'])]), "\n";
+				$tag = ze\content::formatTag($citem['id'], $citem['type']);
+				$contentItemTitle = ze\content::title($citem['id'], $citem['type'], $citem['version']);
+				echo ze\admin::phrase('Published content item [[tag]]', ['tag' => $tag]), "\n";
+				
+				//Send emails to concerned admins:
+				//Admin who requested the scheduled publish...
+				$lockingAdminDetails = ze\admin::details($citem['lock_owner_id']);
+				
+				//... and the last editor, or the author if the content item has never been edited.
+				if ($citem['last_author_id'] != 0) {
+					$lastEditAdminId = $citem['last_author_id'];
+				} else {
+					$lastEditAdminId = $citem['creating_author_id'];
+				}
+				
+				$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
+				
+				if ($emailTemplateManagerModuleRunning) {
+					$text = $contentItemPublishedEmailText;
+					zenario_email_template_manager::putBodyInTemplate($text);
+					
+					$mergeFields = [
+						'admin_first_name' => $lockingAdminDetails['first_name'],
+						'admin_last_name' => $lockingAdminDetails['last_name'],
+						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $citem['type']]),
+						'content_item_title' => $contentItemTitle,
+						'date_and_time' => ze\date::formatDateTime($citem['scheduled_publish_datetime']),
+						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
+						'content_item' => $tag,
+						'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
+					];
+					
+					zenario_email_template_manager::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+					echo ze\admin::phrase(
+						'Sent notification to "' . htmlspecialchars($lockingAdminDetails['email']) . '" admin for content item [[tag]]',
+						['tag' => $tag]
+					), "\n";
+				}
+				
+				if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
+					$text = $contentItemPublishedEmailText;
+					zenario_email_template_manager::putBodyInTemplate($text);
+					
+					$mergeFields = [
+						'admin_first_name' => $lastEditingAdminDetails['first_name'],
+						'admin_last_name' => $lastEditingAdminDetails['last_name'],
+						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $citem['type']]),
+						'content_item_title' => $contentItemTitle,
+						'date_and_time' => ze\date::formatDateTime($citem['scheduled_publish_datetime']),
+						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
+						'content_item' => $tag,
+						'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
+					];
+					
+					zenario_email_template_manager::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+					echo ze\admin::phrase(
+						'Sent notification to "' . htmlspecialchars($lastEditingAdminDetails['email']) . '" admin for content item [[tag]]',
+						['tag' => $tag]
+					), "\n";
+				}
 			}
 			
-			// Update scheduled time
+			//Update scheduled time
 			ze\row::update('content_item_versions',
 				['scheduled_publish_datetime' => null],
 				['id' => $citem['id'], 'type' => $citem['type'], 'version' => $citem['version']]
@@ -353,15 +418,46 @@ class zenario_common_features extends ze\moduleBaseClass {
 			'zenario_user_forms'
 		];
 		
+		$logResult = true;
+		
 		foreach ($modulesWithDataToClear as $moduleName) {
 			if (ze\module::inc($moduleName)) {
-				$actionsTaken += call_user_func([$moduleName, 'clearOldData']);
+				$actionsTaken += call_user_func([$moduleName, 'clearOldData'], $logResult);
 			}
 		}
 		
 		return $actionsTaken > 0;
 	}
 	
+	
+	
+	public static function deleteUserDataGetInfo($userIds) {
+		if ($userIds) {
+			$recordCount = ' ([[count]] found)';
+		} else {
+			$recordCount = '';
+		}
+		
+		$sql = '
+			SELECT COUNT(id)
+			FROM ' . DB_PREFIX . 'user_signin_log
+			WHERE user_id IN (' . ze\escape::in($userIds) . ')';
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$userSignInLog = ze\admin::phrase('User sign-in log' . $recordCount, ['count' => $count]);
+		
+		$sql = '
+			SELECT COUNT(id)
+			FROM ' . DB_PREFIX . 'user_content_accesslog
+			WHERE user_id IN (' . ze\escape::in($userIds) . ')';
+		$result = ze\sql::select($sql);
+		$count = ze\sql::fetchValue($result);
+		
+		$userContentAccessLog = ze\admin::phrase('User content access log' . $recordCount, ['count' => $count]);
+		
+		return implode('<br />', [$userSignInLog, $userContentAccessLog]);
+	}
 	
 	
 	
@@ -442,5 +538,20 @@ class zenario_common_features extends ze\moduleBaseClass {
 					break;
 			}
 		}
+	}
+	
+	public static function getEmailTextContentItemPublished() {
+		$emailText = "
+Dear [[admin_first_name]] [[admin_last_name]],
+
+You are receiving this email because a content item ([[content_type]], \"[[content_item_title]]\") has been published.
+
+Content item: [[content_item]]
+Date and time for publishing: [[date_and_time]]
+Requesting admin: [[requesting_admin]]
+
+<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[content_item_url]]\">View content item</a></p>";
+		
+		return nl2br($emailText);
 	}
 }

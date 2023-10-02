@@ -39,12 +39,14 @@ class module {
 				id AS module_id,
 				class_name,
 				class_name AS name,
+				class_name AS moduleClassName,
 				display_name,
 				vlp_class,
 				status,
 				default_framework,
 				css_class_name,
 				is_pluggable,
+				nestable,
 				can_be_version_controlled
 			FROM " . DB_PREFIX . "modules";
 	
@@ -57,11 +59,12 @@ class module {
 				WHERE id = " . (int) $idOrName;
 		}
 	
-		$result = \ze\sql::select($sql);
-	
-		if (!$module = \ze\sql::fetchAssoc($result)) {
+		if (!$module = \ze\sql::fetchAssoc($sql)) {
 			return false;
 		} else {
+			
+			$module['nestable_only'] = $module['nestable'] == 2;
+			
 			return $module;
 		}
 	}
@@ -134,7 +137,7 @@ class module {
 		
 			$class = new $module['class_name'];
 		
-			$class->setInstance([false, false, false, false, false, false, $module['class_name'], $module['vlp_class'], $module['id'], false, false, false, false]);
+			$class->setInstance([false, false, false, false, false, $module['class_name'], $module['vlp_class'], $module['id'], false, false, false, false]);
 
 			return $class;
 		} else {
@@ -151,7 +154,6 @@ class module {
 
 
 
-	const incFromTwig = true;
 	//Formerly "inc()"
 	public static function inc($module) {
 		
@@ -429,7 +431,7 @@ class module {
 
 
 	//Formerly "getModulePrefix()"
-	public static function prefix($module, $mustBeRunning = true, $oldFormat = false) {
+	public static function prefix($module, $mustBeRunning = true, $define = false) {
 	
 		if (!is_array($module)) {
 			$module = \ze\sql::fetchAssoc("
@@ -443,14 +445,14 @@ class module {
 		if (!$module) {
 			return false;
 		} else {
-			return \ze\module::setPrefix($module, false, $oldFormat);
+			return \ze\module::setPrefix($module, $define);
 		}
 	}
 
 
 	//Define a plugin's database table prefix
 	//Formerly "setModulePrefix()"
-	public static function setPrefix(&$module, $define = true, $oldFormat = false) {
+	public static function setPrefix(&$module, $define = true) {
 	
 		if (empty($module['class_name'])) {
 			return false;
@@ -472,25 +474,15 @@ class module {
 			return false;
 		}
 	
-		if ($oldFormat === 1) {
-			$prefix = 'plg'. $id. '_';
+		$className = $module['class_name'];
 	
-		} else {
-			$className = $module['class_name'];
-		
-			if ($oldFormat === 2) {
-				$oldFormat = false;
-				$className = str_replace('zenario_', 'tribiq_', $className);
+		$prefix = 'mod'. $id. '_';
+		foreach (explode('_', $className) as $frag) {
+			if ($frag !== '') {
+				$prefix .= $frag[0];
 			}
-		
-			$prefix = 'mod'. $id. '_';
-			foreach (explode('_', $className) as $frag) {
-				if ($frag !== '') {
-					$prefix .= $frag[0];
-				}
-			}
-			$prefix .= '_';
 		}
+		$prefix .= '_';
 	
 		if ($define) {
 			define($module['prefix'], $prefix);

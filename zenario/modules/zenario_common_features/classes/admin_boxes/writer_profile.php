@@ -143,7 +143,7 @@ class zenario_common_features__admin_boxes__writer_profile extends ze\moduleBase
             'first_name' => $values['details/first_name'],
             'last_name' => $values['details/last_name'],
             'email' => $values['details/email'],
-            'profile' => $values['details/profile']
+            'profile' => ze\ring::sanitiseWYSIWYGEditorHTML($values['details/profile'])
         ];
 
         if (!empty($values['details/photo'])) {

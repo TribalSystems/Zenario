@@ -63,7 +63,7 @@ zenario_user__details:
                         zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                         && zenarioA.siteSettings.users_use_linked_countries
-                    label: "Linked countries:"
+                    label: "Country-based permissions:"
                     pick_items:
                         path: zenario__languages/panels/countries/refiners/active////
                         min_path: zenario__languages/panels/countries
@@ -87,13 +87,13 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details') != 'contact'
                         && zenarioA.siteSettings.user_use_screen_name
                     maxlength: 50
+                    note_below: "When suggesting a screen name, the first namd and/or last name will be used. If neither is provided, the suggestion may be blank. Please note: the suggested screen name may not be unique. If it is not, we recommend adding numbers at the end of it."
                     
                 suggest_screen_name:
                     grouping: screen_name_grouping
                     same_row: true
                     visible_if: |
-                        !zenarioAB.tuix.key.id
-                        && zenarioAB.value('status', 'details')
+                        zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                         && zenarioA.siteSettings.user_use_screen_name
                     dataset_label: '[Suggest screen name button]'
@@ -129,13 +129,12 @@ zenario_user__details:
                     type: grouping
                     name: password_grouping
                 
-                change_password:
-                    dataset_label: '[Change password toggle]'
+                password_when_editing:
                     grouping: password_grouping
-                    priv: _PRIV_EDIT_USER
-                    type: toggle
-                    redraw_onchange: true
-                    post_field_label: Change password
+                    label: "Password:"
+                    snippet:
+                        html: "[[change_password_link]]"
+                    note_below: "Passwords are 1-way encrypted. They can be changed but not read from the database"
                     visible_if: |
                         zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
@@ -145,7 +144,7 @@ zenario_user__details:
                     label: "Password:"
                     type: password
                     visible_if: |
-                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        !zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     
@@ -177,7 +176,7 @@ zenario_user__details:
                     grouping: password_grouping
                     same_row: true
                     visible_if: |
-                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        !zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     value: Reveal
@@ -204,7 +203,7 @@ zenario_user__details:
                     grouping: password_grouping
                     same_row: true
                     visible_if: |
-                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        !zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     dataset_label: '[Suggest password button]'
@@ -226,7 +225,7 @@ zenario_user__details:
                     grouping: password_grouping
                     indent: 1
                     visible_if: |
-                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        !zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     post_field_html: |
@@ -236,7 +235,8 @@ zenario_user__details:
                 password_needs_changing:
                     priv: _PRIV_EDIT_USER
                     visible_if: |
-                        zenarioAB.value('status', 'details')
+                        !zenarioAB.tuix.key.id
+                        && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     label: "Must change password on next login"
                     type: checkbox
@@ -284,7 +284,7 @@ zenario_user__details:
                 last_login: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last Login:"
+                    label: "Last login:"
                     type: DateTime
                     change_month_and_year: true
                     readonly: true
@@ -292,7 +292,7 @@ zenario_user__details:
                 last_profile_update_in_frontend: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last profile update:"
+                    label: "Profile last updated:"
                     type: DateTime
                     change_month_and_year: true
                     readonly: true
@@ -300,7 +300,7 @@ zenario_user__details:
                 suspended_date: 
                     visible_if: |
                         zenarioAB.value('status', 'details') == 'suspended'
-                    label: "Suspended date:"
+                    label: "Date suspended:"
                     type: DateTime
                     change_month_and_year: true
                     readonly: true

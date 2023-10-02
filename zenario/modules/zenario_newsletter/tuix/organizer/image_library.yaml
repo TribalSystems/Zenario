@@ -48,3 +48,44 @@ zenario__library:
                     link:
                         path: zenario__email_template_manager/panels/newsletter_templates
                         refiner: newsletter_templates_using_image
+            collection_buttons:
+                add_to_newsletter:
+                    class_name: zenario_common_features
+                    priv: _PRIV_EDIT_NEWSLETTER
+                    only_show_on_refiner: images_for_newsletter
+                    css_class: add
+                    label: Pick an image from the library
+                    pick_items:
+                        class_name: zenario_common_features
+                        path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Use
+                        multiple_select: true
+                        request:
+                            add: 1
+            item_buttons:
+                remove_from_newsletter:
+                    class_name: zenario_common_features
+                    only_show_on_refiner: images_for_newsletter
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Detach from newsletter
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    disabled_if_for_any_selected_items: |
+                        item.in_use_here
+                    disabled_tooltip: |
+                        You cannot detach an image that is in use.
+                    ajax:
+                        class_name: zenario_common_features
+                        confirm:
+                            message: |
+                                Are you sure you wish to detach the image "[[filename]]" from this newsletter?
+                            multiple_select_message: |
+                                Are you sure you wish to detach these images from this newsletter?
+                            button_message: Detach
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove: 1

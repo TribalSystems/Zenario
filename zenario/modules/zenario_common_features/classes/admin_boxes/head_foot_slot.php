@@ -80,6 +80,17 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 		
 		//Work out whether this is for the item or the layout layer
 		if ($box['key']['level'] == 'item') {
+			if ($box['key']['id'] && $box['key']['id_is_menu_node_id'] && ($menuContentItem = ze\menu::getContentItem($box['key']['id']))) {
+				//Edit an existing Content Item based on its Menu Node:
+				//Work out what the content item should be, then proceed with the rest of the logic
+				$box['key']['cID'] = $menuContentItem['equiv_id'];
+				$box['key']['cType'] = $menuContentItem['content_type'];
+				
+				$box['key']['menu_node_id'] = $box['key']['id'];
+				$box['key']['id'] = $box['key']['cType'] . '_' . $box['key']['cID'];
+
+			}
+			
 			if (!(($box['key']['cID'] && $box['key']['cType']) || ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']))
 			 || !($box['key']['cVersion'] || ($box['key']['cVersion'] = ze\content::latestVersion($box['key']['cID'], $box['key']['cType'])))
 			 || !($box['key']['layoutId'] = ze\content::layoutId($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']))) {
@@ -210,6 +221,10 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $cols);
 		} else {
 			ze\row::update($t['table'], $cols, $t['key']);
+		}
+		
+		if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['id'] = $box['key']['menu_node_id'];
 		}
 	}
 }

@@ -83,6 +83,53 @@ themes/modern/theme.js:
 
       return Settings.isInline(editor) ? Inline.render(editor, theme, args) : Iframe.render(editor, theme, args);
 
+themes/modern/theme.js AND themes/inlite/theme.js:
+  Replaced the phrase "Formats" with "Custom formats"
+  
+  Replace:
+  var registerMenuItems = function (editor, formatMenu) {
+      editor.addMenuItem('formats', {
+        text: 'Formats',
+        menu: formatMenu
+      });
+    };
+  
+  With:
+  var registerMenuItems = function (editor, formatMenu) {
+      editor.addMenuItem('formats', {
+        text: 'Custom formats',
+        menu: formatMenu
+      });
+    };
+  
+  And raplace:
+  var registerButtons = function (editor, formatMenu) {
+      editor.addButton('styleselect', {
+        type: 'menubutton',
+        text: 'Formats',
+        menu: formatMenu,
+        onShowMenu: function () {
+          if (editor.settings.style_formats_autohide) {
+            hideFormatMenuItems(editor, this.menu);
+          }
+        }
+      });
+    };
+  
+  With:
+  var registerButtons = function (editor, formatMenu) {
+      editor.addButton('styleselect', {
+        type: 'menubutton',
+        text: 'Custom formats',
+        menu: formatMenu,
+        onShowMenu: function () {
+          if (editor.settings.style_formats_autohide) {
+            hideFormatMenuItems(editor, this.menu);
+          }
+        }
+      });
+    };
+
 plugins/image/plugin.js
 #  Hack to fix a bug where the scroll changes when editing an existing image
 #	Replace:

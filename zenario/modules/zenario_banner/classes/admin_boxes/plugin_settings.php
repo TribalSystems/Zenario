@@ -192,11 +192,6 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			}
 		}
 
-		$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_special_characters'] =
-			$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_spaces'] =
-			$box['tabs']['first_tab']['fields']['anchor_name']['validation']['no_commas'] =
-				ze\admin::phrase('Anchor name cannot contain spaces or special characters.');
-		
 		$box['tabs']['first_tab']['fields']['anchor_name']['oninput'] = '
 			var side_note = document.getElementById("row__anchor_name").getElementsByClassName("zenario_note_content")[0];
 			var anchor_name = document.getElementById("row__anchor_name").getElementsByClassName("zfab_row_fields")[0].firstElementChild.value;
@@ -209,9 +204,31 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 				side_note.textContent =
 					"You can link to this anchor using #" + anchor_name + ". Please make sure your anchor is unique within the page on which you place this plugin.";
 			}';
+		
+		
+		//Don't show the option to pick a translation chain when not linking to a content item, on single-language sites,
+		//or on version controlled plugins.
+		$fields['first_tab/use_translation']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
+		 || $box['key']['isVersionControlled']
+		 || ze\lang::count() < 2;
+		
+		//On multilingual sites, default the set the value of the use_translation option to enabled by default.
+		//We'll achieve this by changing the value on opening the FAB, if we see it hidden.
+		if (!empty($fields['first_tab/use_translation']['hidden'])
+		 && !$box['key']['isVersionControlled']
+		 && ze\lang::count() >= 2) {
+			$values['first_tab/use_translation'] = 1;
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		//The tag IDs in translation chain pickers have a slightly different format.
+		//This is needed for a technical reason, as meta-info about the selected items are stored by ID.
+		//When displaying, change between formats depending on whether we are showing a specific content item or a translation chain.
+		$values['first_tab/hyperlink_target'] =
+			ze\contentAdm::convertBetweenTagIdAndTranslationChainId($values['first_tab/hyperlink_target'], $values['first_tab/use_translation']);
 		
 		
 		//If an SVG image is selected, tweak the canvas options slightly.
@@ -335,6 +352,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		$fields['first_tab/use_rollover']['hidden'] = ($values['first_tab/image_source'] != '_CUSTOM_IMAGE' || $values['first_tab/image_source'] != '_PRODUCT_IMAGE');
 		
 		$fields['first_tab/rollover_image']['hidden'] = 
+		$fields['first_tab/rollover_tech']['hidden'] = 
 			$values['first_tab/advanced_behaviour'] != 'use_rollover'
 			|| !($values['first_tab/image_source'] == '_CUSTOM_IMAGE' || $values['first_tab/image_source'] == '_PRODUCT_IMAGE');
 			
@@ -456,14 +474,16 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] =
 			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] = true;
 			
-			if ($imagePicked && ($filename = ze\row::get('files', 'filename', $imageId))) {
-				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = false;
-				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = 'information';
-				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = ze\admin::phrase('Featured image filename: [[filename]]', ['filename' => $filename]);
-			} else {
-				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = false;
-				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = 'warning';
-				$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = ze\admin::phrase('Warning: the selected content item has no featured image.');
+			if (!empty($cID) && !empty($cType)) {
+				if ($imagePicked && ($filename = ze\row::get('files', 'filename', $imageId))) {
+					$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = false;
+					$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = 'information';
+					$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = ze\admin::phrase('Featured image filename: [[filename]]', ['filename' => $filename]);
+				} else {
+					$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = false;
+					$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = 'warning';
+					$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['message'] = ze\admin::phrase('Warning: the selected content item has no featured image.');
+				}
 			}
 		} else {
 			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['hidden'] =
@@ -475,6 +495,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		$fields['first_tab/hyperlink_target']['hidden'] = 
 		$fields['first_tab/hide_private_item']['hidden'] = 
 		$fields['first_tab/use_download_page']['hidden'] = 
+		$fields['first_tab/add_referrer']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM';
 
 		$fields['first_tab/get_translation']['hidden'] = 
@@ -489,11 +510,46 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		 && $values['first_tab/link_type'] != '_EXTERNAL_URL'
 		 && $values['first_tab/link_type'] != '_EMAIL'
 		 && $values['first_tab/link_type'] != '_PRODUCT_DESCRIPTION_PAGE'; //This value is for Storefront Banner
-
+		
+		//Don't show the option to pick a translation chain when not linking to a content item, on single-language sites,
+		//or on version controlled plugins.
 		$fields['first_tab/use_translation']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled']
 		 || ze\lang::count() < 2;
+		
+		//Format the picker slightly differently when selecting a translation chain v.s selecting a content item.
+		//Note: these are cosmetic changes only, for backwards compatibility reasons the values in the database and logic in the
+		//PHP code is still exactly the same as it was in Zenario 9.4.
+		if ($values['first_tab/use_translation'] && empty($fields['first_tab/use_translation']['hidden'])) {
+			$fields['first_tab/hyperlink_target']['pick_items'] = $fields['first_tab/hyperlink_target__translation']['pick_items'];
+			$fields['first_tab/hyperlink_target']['validation'] = $fields['first_tab/hyperlink_target__translation']['validation'];
+		
+		} else {
+			$fields['first_tab/hyperlink_target']['pick_items'] = $fields['first_tab/hyperlink_target__specific']['pick_items'];
+			$fields['first_tab/hyperlink_target']['validation'] = $fields['first_tab/hyperlink_target__specific']['validation'];
+			
+			if (!empty($fields['first_tab/use_translation']['hidden'])) {
+				$fields['first_tab/hyperlink_target']['label'] = ze\admin::phrase('Content item:');
+			}
+		}
+		
+		//On a multilingual site, if the “specific” option is selected, there should be a box below saying “this will link to the content item in [[language name]]”
+		$fields['first_tab/hyperlink_target']['notices_below']['in_language']['hidden'] = true;
+		$fields['first_tab/hyperlink_target']['notices_below']['in_language']['message'] = '';
+		$cID = $cType = false;
+		if (empty($fields['first_tab/use_translation']['hidden'])
+		 && !$values['first_tab/use_translation']
+		 && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
+		 && ($langId = ze\content::langId($cID, $cType))) {
+			
+			$mrg = ['language_name' => ze\lang::name($langId)];
+			
+			$fields['first_tab/hyperlink_target']['notices_below']['in_language']['hidden'] = false;
+			$fields['first_tab/hyperlink_target']['notices_below']['in_language']['message'] =
+				ze\admin::phrase('This will link to the content item in [[language_name]]', $mrg);
+		}
+		
 
 		$fields['first_tab/url']['hidden'] = 
 			$values['first_tab/link_type'] != '_EXTERNAL_URL';
@@ -561,15 +617,9 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		$fields['first_tab/mobile_image']['hidden'] = $fields['first_tab/mobile_behaviour']['hidden'] || $values['first_tab/mobile_behaviour'] != 'mobile_change_image';
 		
 		//Only show mobile options if "Mobile behaviour" is set to either "Different image", or "Same image, different size".
-		$hideMobileOptions = (
-			(
-				($values['first_tab/mobile_behaviour'] != 'mobile_change_image')
-				&& ($values['first_tab/mobile_behaviour'] != 'mobile_same_image_different_size')
-			)
-			|| $fields['first_tab/mobile_behaviour']['hidden']
-		);
-			
+		$hideMobileOptions = !empty($fields['first_tab/mobile_behaviour']['hidden']) || !ze::in($values['first_tab/mobile_behaviour'], 'mobile_change_image', 'mobile_same_image_different_size');
 		$this->showHideImageOptions($fields, $values, 'first_tab', $hideMobileOptions, 'mobile_');
+		
 		if ($values['first_tab/mobile_canvas'] != "unlimited") {
 			$fields['first_tab/mobile_canvas']['side_note'] = $retinaSideNote;
 		} else {
@@ -598,8 +648,8 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		}
 		
 		if ($values['title_and_description/set_an_anchor']) {
-			$anchorName = $values['first_tab/anchor_name'] ?: '[anchorname]';
-			$box['tabs']['first_tab']['fields']['anchor_name']['side_note'] =
+			$anchorName = $values['title_and_description/anchor_name'] ?: '[anchorname]';
+			$box['tabs']['title_and_description']['fields']['anchor_name']['side_note'] =
 				ze\admin::phrase(
 					'You can link to this anchor using #[[anchor_name]]. Please make sure your anchor is unique within the page on which you place this plugin.',
 					['anchor_name' => htmlspecialchars($anchorName)]
@@ -637,7 +687,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		if ($values['first_tab/link_type'] == '_CONTENT_ITEM') {
 			$cID = $cType = false;
 			if (!empty($values['first_tab/hyperlink_target'])
-			 && ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target'])) {
+			 && ze\content::getEquivIdAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target'])) {
 			
 				$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $cID, 'type' => $cType]);
 				
@@ -656,6 +706,12 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
+		//The tag IDs in translation chain pickers have a slightly different format.
+		//This is needed for a technical reason, as meta-info about the selected items are stored by ID.
+		//For backwards compatibility reasons, always save the value in the old format
+		$values['first_tab/hyperlink_target'] =
+			ze\contentAdm::convertBetweenTagIdAndTranslationChainId($values['first_tab/hyperlink_target'], false);
+
 		if (!empty($fields['first_tab/alt_tag'])
 		 && empty($fields['first_tab/alt_tag']['hidden'])
 		 && $changes['first_tab/alt_tag']

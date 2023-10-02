@@ -38,7 +38,6 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		}
 		
 		if (ze::post('extranet_add_image')) {
-			
 		  
 		  if (empty($_FILES['extranet_upload_image']['name'])) {
 			$this->sections['Errors'] = true;
@@ -64,7 +63,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 			$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
 			$sizesToCheck[] = $zenarioMaxFilesize;
 
-			if (ze::setting('max_user_image_filesize_override') == 'limit_max_attachment_file_size') {
+			if (ze::setting('max_user_image_filesize_override')) {
 				$usersMaxFilesizeValue = ze::setting('max_user_image_filesize');
 				$usersMaxFilesizeUnit = ze::setting('max_user_image_filesize_unit');
 				$usersMaxFilesize = ze\file::fileSizeBasedOnUnit($usersMaxFilesizeValue, $usersMaxFilesizeUnit);
@@ -97,14 +96,9 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 					}
 				} else {
 					$this->sections['Errors'] = true;
-					$this->sections['Error'] = ['Error' => $this->phrase('Your uploaded image was too small. Your image should be at least [[width]] pixels wide and [[height]] pixels high.', 
-																					[	'width' => $minWidth,
-																							'height' => $minHeight
-																						] 
-																			)];
+					$this->sections['Error'] = ['Error' => $this->phrase(
+						'Your uploaded image was too small. Your image should be at least [[width]] pixels wide and [[height]] pixels high.', ['width' => $minWidth, 'height' => $minHeight])];
 				}
-							
-
 			}
 		  }
 		
@@ -127,10 +121,8 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		
 		$this->mergeFields['Image_Title'] = $this->setting('title');
 		
-		if($this->setting('allow_upload')) {
+		if ($this->setting('allow_upload')) {
 			$this->sections['Allow_Upload'] = true;
-			
-			
 		}
 		
 		$this->sections['Remove_Image'] = (bool) ($this->setting('allow_remove') && (!ze::post('extranet_remove_image')));
@@ -148,6 +140,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 			}
 			return;
 		}
+		
 		echo $this->openForm('', 'enctype="multipart/form-data"');
 			$this->framework('Outer', $this->mergeFields, $this->sections);
 		echo $this->closeForm();
@@ -183,10 +176,8 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if(!$values['allow_upload']) {
+		if (!$values['allow_upload']) {
 
 		}
 	}
-
 }
-?>

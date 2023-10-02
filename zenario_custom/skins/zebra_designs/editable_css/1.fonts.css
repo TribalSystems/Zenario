@@ -4,13 +4,24 @@
 	line-height:1.5;
 }
 
+.zenario_skin strong {
+	font-family:'robotoregular',Arial, Helvetica, sans-serif;
+}
+
 .zenario_skin h1,
 .zenario_skin h2,
 .zenario_skin h3,
 .zenario_skin h4,
 .zenario_skin h5,
 .zenario_skin h6,
-#colorbox h1, #colorbox h2, #colorbox h3, #colorbox h4, #colorbox h5, #colorbox h6 {
+#colorbox h1, #colorbox h2, #colorbox h3, #colorbox h4, #colorbox h5, #colorbox h6,
+.zenario_skin h1 strong,
+.zenario_skin h2 strong,
+.zenario_skin h3 strong,
+.zenario_skin h4 strong,
+.zenario_skin h5 strong,
+.zenario_skin h6 strong,
+#colorbox h1 strong, #colorbox h2 strong, #colorbox h3 strong, #colorbox h4 strong, #colorbox h5 strong, #colorbox h6 strong {
 	font-family: 'cardoregular','Times New Roman','Georgia',serif;
 }
 

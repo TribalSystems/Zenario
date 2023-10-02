@@ -53,9 +53,7 @@ if (ze\dbAdm::needRevision(166)) {
 		'zenario_location_manager__location',
 		'zenario__locations/panel',
 		''
-		//, '_PRIV_MANAGE_LOCATION'
 	);
-	//ze\datasetAdm::register($label, $table, $system_table = '', $extends_admin_box = '', $extends_organizer_panel = '', $view_priv = '', $edit_priv = '')
 	
 	
 	//Register system fields
@@ -63,35 +61,34 @@ if (ze\dbAdm::needRevision(166)) {
 	// is optional, but when they are registered automatically they default to the "other_system_field" type and are
 	// not selectable in things such as User Forms. Specifically registering them like this will ensure they are
 	// usable.)
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'external_id');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'external_id', 'external_id');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'name', 'description', 'none', '', false, true);
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'address_line_1', 'address1');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'address_line_2', 'address2');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'locality');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'city');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'state');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'postcode');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'locality', 'locality');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'city', 'city');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'state', 'state');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'postcode', 'postcode');
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_select', 'details', 'country', 'country_id', 'none', 'zenario_country_manager::getActiveCountries');
-	ze\datasetAdm::registerSystemField($datasetId, 'dataset_picker', 'details', 'region', '');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'hide_pin');
+	ze\datasetAdm::registerSystemField($datasetId, 'dataset_picker', 'details', 'region');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'hide_pin', 'hide_pin');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'marker_lng', 'latitude');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'marker_lat', 'longitude');
-	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'last_updated');
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'last_updated', 'last_updated');
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'last_updated_by', 'last_updated_admin_id');
 	
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'phone');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'fax');
-	ze\datasetAdm::registerSystemField($datasetId, 'url', 'details', 'url');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'phone', 'phone');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'fax', 'fax');
+	ze\datasetAdm::registerSystemField($datasetId, 'url', 'details', 'url', 'url');
 	ze\datasetAdm::registerSystemField($datasetId, 'textarea', 'summary', 'summary');
 	ze\datasetAdm::registerSystemField($datasetId, 'date', 'details', 'url last accessed', 'last_accessed');
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_location_manager::locationStatus');
 	
 	//sectors
 	
-	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'sectors', 'sectors');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkboxes', 'sectors', 'sectors', 'sectors');
 	
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_select', 'details', 'timezone', 'timezone', 'none', 'zenario_timezones::getTimezones');
-	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 
 	ze\dbAdm::revision(166);
 }

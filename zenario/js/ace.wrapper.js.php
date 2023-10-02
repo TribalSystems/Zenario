@@ -39,15 +39,15 @@ if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php'
 
 
 //Include Ace Editor and extensions
-ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/ace');
-ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/ext-modelist');
-ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/ext-language_tools');
+ze\cache::incJS('zenario/libs/yarn/ace-builds/src-min-noconflict/ace');
+ze\cache::incJS('zenario/libs/yarn/ace-builds/src-min-noconflict/ext-modelist');
+ze\cache::incJS('zenario/libs/yarn/ace-builds/src-min-noconflict/ext-language_tools');
 
 //Set the Ace base-path
 ze\cache::incJS('zenario/js/ace.integration');
 
 //Ensure that mode-JavaScript is already loaded at the start, so the Phi library can extent it
-ze\cache::incJS('zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/mode-javascript');
+ze\cache::incJS('zenario/libs/yarn/ace-builds/src-min-noconflict/mode-javascript');
 
 //Run post-display actions
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

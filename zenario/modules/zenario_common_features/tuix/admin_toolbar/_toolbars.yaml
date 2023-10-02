@@ -171,7 +171,6 @@ sections:
                     transition: none
                     css_class: zenario_grid_maker
             settings:
-                priv: _PRIV_VIEW_TEMPLATE
                 label: Layout settings
                 admin_box:
                     path: zenario_layout

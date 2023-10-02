@@ -63,6 +63,9 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (ze\priv::check('_PRIV_IMPERSONATE_USER')) {
+			//If the admin is already impersonating a user, and trying to switch to a different user,
+			//then they will be automatically logged out as the previous user before attempting to impersonate a new one.
+			//They will remain logged in as admin.
 			$this->impersonateUser($values['impersonate/user_id'],
 				$values['impersonate/options'] == 'logout',
 				$values['impersonate/remember_me'],

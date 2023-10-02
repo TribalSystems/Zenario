@@ -80,11 +80,11 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
 	$editor.tinymce({
 		script_url: zenario.addBasePath(zenario.tinyMCEPath),
 
-		plugins: ["advlist autolink lists link image charmap hr anchor",
+		plugins: ["advlist autolink lists link image charmap hr anchor emoticons",
         "searchreplace code",
         "nonbreaking zenario_save table contextmenu directionality",
         "paste autoresize",
-        "colorpicker textcolor visualblocks preview"],
+        "colorpicker textcolor visualblocks"],
         
         image_advtab: true,
         visual_table_class: ' ',
@@ -110,16 +110,14 @@ nonbreaking	nonbreaking
 directionality	ltr rtl
 */
 		menu: {
-			file: {title: 'File', items: ''},
-			edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall'},
-			insert: {title: 'Insert', items: 'link image | anchor hr charmap'},
-			view: {title: 'Elements', items: 'visualblocks'},
-			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' blockquote | removeformat'},
+			edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace'},
+			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' align'},
+			insert: {title: 'Insert', items: 'image link | anchor hr charmap'},
 			table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
-			tools: {title: 'Tools', items: 'searchreplace | code'}
+			view: {title: 'View', items: 'code | visualblocks'}
 		},
 		
-		toolbar: 'undo redo | image link unlink | bold italic underline strikethrough superscript subscript forecolor backcolor removeformat' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | formatselect | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | save save_and_close cancel',
+		toolbar: 'undo redo | formatselect' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | bold italic underline | image link unlink | bullist numlist | blockquote | forecolor backcolor | charmap emoticons | save save_and_close cancel',
 		statusbar: false,
 		
 		

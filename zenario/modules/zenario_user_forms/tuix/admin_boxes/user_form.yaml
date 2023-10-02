@@ -89,7 +89,7 @@ zenario_user_form:
                     ord: 13.1
                     snippet:
                         html: |
-                            <div class="zenario_fbWarning">In order to use this feature, the module "Extranet Base Module and login" (zenario_extranet) must be running.</div>
+                            <div class="zenario_fbWarning">In order to use this feature, the module "Extranet Base Module and Login" (zenario_extranet) must be running.</div>
                 scheduled_task_manager_problem:
                     type: hidden
                     hidden: true
@@ -671,6 +671,8 @@ zenario_user_form:
                     indent: 1
                     validation:
                         required_if_not_hidden: Please enter a success message for when the form is submitted.
+                    note_below: |
+                        Some modules (e.g. Extranet Profile) may override this setting. Check their plugin settings (e.g. "Profile updated message" setting).
                 # END actions after form submissions 
                 
                 line_br_4:

@@ -240,6 +240,12 @@ body .zenario_slotWithContents .zenario_slot .zenario_slot  {
 	outline-style: solid;
 }
 
+.zenario_slotParent .zenario_slot.zenario_plugin_nest,
+.zenario_slotParent .zenario_slot.zenario_slideshow {
+	outline-style: double;
+	outline-width: medium;
+}
+
 /*  When editing a slot, remove all of the slot borders, except for the one you're currently editing.  */
 body.zenario_being_edited .zenario_slotOuter .zenario_slot {
 	outline-width: 0;
@@ -279,6 +285,7 @@ body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .
 	outline-style:dashed;
 }
 
+
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_plugin_nest:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_hideSlotInEditMode > .zenario_slot.zenario_slideshow:hover,
 body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1):hover > .zenario_slot.zenario_plugin_nest {
@@ -304,13 +311,19 @@ body.zenario_pageMode_layout .zenario_level1 > div.zenario_slot {
 
 body.zenario_skq_open .zenario_slot ,
 body.zenario_pageMode_preview .zenario_slot ,
-body.zenario_pageMode_menu .zenario_slot ,
+body.zenario_pageMode_preview .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_preview .zenario_slot.zenario_slideshow,
+body.zenario_pageMode_preview .zenario_slotParent .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_preview .zenario_slotParent .zenario_slot.zenario_slideshow,
+body.zenario_pageMode_menu .zenario_slot,
+body.zenario_pageMode_menu .zenario_slot.zenario_nest,
+body.zenario_pageMode_menu .zenario_slot.zenario_slideshow,
+body.zenario_pageMode_menu .zenario_slotParent .zenario_slot.zenario_plugin_nest,
+body.zenario_pageMode_menu .zenario_slotParent .zenario_slot.zenario_slideshow,
 body.zenario_pageMode_rollback .zenario_slotWithNoContents .zenario_slot ,
 body.zenario_pageMode_rollback .zenario_reusable .zenario_slot ,
 body.zenario_pageMode_edit_disabled .zenario_slotWithNoContents .zenario_slot ,
-body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode .zenario_slot /*,
-body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot,
-body.zenario_pageMode_layout .zenario_hideSlotInLayoutMode .zenario_slot*/ {
+body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode .zenario_slot {
 	outline: none;
 }
 
@@ -321,11 +334,6 @@ body.zenario_pageMode_menu .zenario_showSlotInMenuMode > div,
 
 
 /* Show/hide Plugin information in Edit Mode */
-body.zenario_pageMode_edit .hide_in_edit_mode,
-body.zenario_pageMode_edit_disabled .hide_in_edit_mode {
-	display: none;
-}
-
 body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .only_show_in_edit_mode {
 	display: none;
 }
@@ -389,18 +397,12 @@ div.zenario_missing_slots {
 
 /*  Hide/Show "Only show on small screens" slots in Admin Mode on the Menu/Edit/Layout tabs only when zenario_show_empty_slots_and_mobile_only_slots is on */
 
-.slot.responsive_only {
+body.zenario_adminToolbarShown .slot.responsive_only {
 	display:none;
 }
 
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_menu .container .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit .container .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_edit_disabled .container .slot.responsive_only,
-body.zenario_show_empty_slots_and_mobile_only_slots.zenario_pageMode_layout .container .slot.responsive_only {
+body.zenario_adminToolbarShown.zenario_pageModeIsnt_preview.zenario_show_empty_slots_and_mobile_only_slots .slot.responsive_only,
+body.zenario_adminToolbarShown.zenario_pageModeIsnt_preview.zenario_show_empty_slots_and_mobile_only_slots .container .slot.responsive_only {
 	display: block;
 }
 
@@ -444,32 +446,10 @@ body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_sh
 	border-radius:5px;
 }
 
-body.zenario_pageMode_edit .zenario_versionControlledPlugin > .zenario_slot,
-body.zenario_pageMode_menu .zenario_versionControlledPlugin > .zenario_slot,
-body.zenario_pageMode_template .zenario_versionControlledPlugin > .zenario_slot,
-body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1 > .zenario_slot,
-body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1 > .zenario_slot:not(.zenario_showSlotInMenuMode),
-body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 > .zenario_slot,
-body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2 > .zenario_slot,
-body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_showSlotInMenuMode) > .zenario_slot {
-	/*mix-blend-mode:luminosity;*/
-	/*filter: grayscale(50%);*/
-}
-
-body.zenario_pageMode_menu .zenario_versionControlledPlugin:hover,
-body.zenario_pageMode_template .zenario_versionControlledPlugin:hover,
-body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level1:hover,
-body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level1:hover,
-body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1:hover,
-body.zenario_pageMode_edit .zenario_libraryPlugin.zenario_level2:hover,
-body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:hover {
-	
-}
-
-body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
-body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest,
-body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_slideshow,
-body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_slideshow {
+body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest:hover,
+body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_plugin_nest:hover,
+body.zenario_pageMode_edit .zenario_libraryPlugin > .zenario_slot.zenario_slideshow:hover,
+body.zenario_pageMode_template .zenario_libraryPlugin > .zenario_slot.zenario_slideshow:hover {
 	outline-style:double;
 	outline-width:medium;
 }

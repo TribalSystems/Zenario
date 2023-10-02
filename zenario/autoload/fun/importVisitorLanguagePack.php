@@ -77,19 +77,17 @@ if (\ze::in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 } else {
 	$csv = false;
 
-	require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
-	
 	switch ($mimeType) {
 		case 'application/vnd.ms-excel':
-			$objReader = PHPExcel_IOFactory::createReader('Excel5');
+			$objReader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xls');
 			break;
 		
 		case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-			$objReader = PHPExcel_IOFactory::createReader('Excel2007');
+			$objReader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
 			break;
 		
 		case 'application/vnd.oasis.opendocument.spreadsheet':
-			$objReader = PHPExcel_IOFactory::createReader('OOCalc');
+			$objReader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Ods');
 			break;
 		
 		default:
@@ -97,8 +95,8 @@ if (\ze::in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 			return $numberOf;
 	}
 	
-	$objPHPExcel = $objReader->load($file);
-	$sheet = $objPHPExcel->getActiveSheet();
+	$objPHPSpreadsheet = $objReader->load($file);
+	$sheet = $objPHPSpreadsheet->getActiveSheet();
 	$maxI = $sheet->getHighestRow();
 }
 

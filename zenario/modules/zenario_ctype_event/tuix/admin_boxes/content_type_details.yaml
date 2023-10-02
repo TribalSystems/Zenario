@@ -29,6 +29,6 @@ zenario_content_type_details:
                     indent: 1
                     hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: 1
-                    label: Enable text entry field for address
+                    label: Allow addresses not in database (enable address text entry field)
                     type: checkbox
                     value: true

@@ -84,7 +84,11 @@
 		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioT.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}} 
 		 
 		<% if (m.canClickThrough) { %>
-			<a class="organizer_doubleclick" onclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);"></a>
+			<a
+				class="organizer_doubleclick"
+				title="{{m.tooltip_when_link_is_active|escape}}"
+				onclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);"
+			></a>
 		<% } %>
 	</div>
 	

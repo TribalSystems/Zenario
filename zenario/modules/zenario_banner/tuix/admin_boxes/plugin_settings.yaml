@@ -111,7 +111,9 @@ plugin_settings:
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
-                        numeric: The width must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     value: 600
                     maxlength: 5
                     style: 'width: 5em;'
@@ -124,7 +126,9 @@ plugin_settings:
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
-                        numeric: The height must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     value: 400
                     maxlength: 5
                     style: 'width: 5em;'
@@ -198,6 +202,19 @@ plugin_settings:
                             - .png
                         drag_and_drop: false
                         reorder_items: false
+                rollover_tech:
+                    indent: 2
+                    plugin_setting:
+                        name: rollover_tech
+                        foreign_key_to: file
+                    label: 'Rollover implementation:'
+                    type: select
+                    value: js
+                    values:
+                        js:
+                            label: Mouseover and mouseout JavaScript events
+                        css:
+                            label: CSS :hover rule
                 alt_tag:
                     indent: 1
                     plugin_setting:
@@ -308,7 +325,9 @@ plugin_settings:
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width.
-                        numeric: The width must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     value: 360
                     maxlength: 5
                     style: 'width: 5em;'
@@ -321,7 +340,9 @@ plugin_settings:
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height.
-                        numeric: The height must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     value: 240
                     maxlength: 5
                     style: 'width: 5em;'
@@ -400,37 +421,65 @@ plugin_settings:
                     cols: 70
                     rows: 4
                     value: ""
-                hyperlink_target:
-                    indent: 1
-                    plugin_setting:
-                        name: hyperlink_target
-                        foreign_key_to: content
-                    label: 'Content item:'
-                    pick_items:
+                
+                # Format the picker slightly differently when selecting a translation chain v.s selecting a content item.
+                # Note: these are cosmetic changes only, for backwards compatibility reasons the values in the database and logic in the
+                # PHP code is still exactly the same as it was in Zenario 9.4.
+                hyperlink_target__specific:
+                    hidden: true
+                    pick_items: &hyperlink_target__specific__pick_items
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         select_phrase: Select a content item...
                         hide_remove_button: true
-                    validation:
+                    validation: &hyperlink_target__specific__validation
                         required_if_not_hidden: Please select a content item
-                    format_onchange: true
-                    notices_below:
-                        featured_image_filename:
-                            hidden: true
-                            type: ''
-                            message: ''
+                hyperlink_target__translation:
+                    hidden: true
+                    pick_items:
+                        path: zenario__content/panels/translation_chains
+                        min_path: zenario__content/panels/translation_chains
+                        max_path: zenario__content/panels/translation_chains
+                        target_path: zenario__content/panels/translation_chains
+                        select_phrase: Select a translation chain...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a translation chain
+                
                 use_translation:
                     indent: 1
                     plugin_setting:
                         name: use_translation
-                    label: "Link to content item in this page's language, if it exists"
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        If the destination content item has a translation in the visitor's language, link to that.
-                        (Recommended for banners placed on the layout)
+                    type: radios
+                    value: 0
+                    values:
+                        0:
+                            ord: 1
+                            label: 'Link to a content item in a specific language:'
+                        1:
+                            ord: 0
+                            label: "Link to a translation in the visitor's language (recommended):"
+                    format_onchange: true
+                hyperlink_target:
+                    indent: 1
+                    plugin_setting:
+                        name: hyperlink_target
+                        foreign_key_to: content
+                    pick_items: *hyperlink_target__specific__pick_items
+                    validation: *hyperlink_target__specific__validation
+                    format_onchange: true
+                    notices_below:
+                        in_language:
+                            hidden: true
+                            type: information
+                            message: ''
+                        featured_image_filename:
+                            hidden: true
+                            type: ''
+                            message: ''
+                
                 hide_private_item:
                     indent: 1
                     plugin_setting:
@@ -523,6 +572,7 @@ plugin_settings:
                         zenarioAB.value('link_type') == '_CONTENT_ITEM' && zenarioAB.value('link_to_anchor')
                     validation:
                         required_if_not_hidden: Please enter an anchor name.
+                        anchor_tag: 'Anchor tags may not contain spaces or any of the following: #%^[]{}\"<>`\''
                     side_note: >
                         If you have an anchor on the page, you can specify it here and you'll be
                         taken to its location on navigation.
@@ -587,7 +637,9 @@ plugin_settings:
                     type: text
                     validation:
                         required_if_not_hidden: Please enter an enlarged width.
-                        numeric: The enlarged width must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     value: ""
                     maxlength: 5
                     style: 'width: 5em;'
@@ -600,7 +652,9 @@ plugin_settings:
                     type: text
                     validation:
                         required_if_not_hidden: Please enter an enlarged height.
-                        numeric: The enlarged height must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     value: ""
                     maxlength: 5
                     style: 'width: 5em;'
@@ -656,9 +710,10 @@ plugin_settings:
                     indent: 1
                     type: text
                     label: 'Anchor name:'
+                    visible_if: zenarioAB.value('set_an_anchor')
                     validation:
                         required_if_not_hidden: 'Please enter the anchor name.'
-                    visible_if: zenarioAB.value('set_an_anchor')
+                        anchor_tag: 'Anchor tags may not contain spaces or any of the following: #%^[]{}\"<>`\''
                     #This field has an oninput event, set in the fillAdminBox method,
                     #and a side_note, set in the formatAdminBox method.
                 
@@ -669,9 +724,8 @@ plugin_settings:
                         translate: true
                     label: 'Description (HTML):'
                     type: editor
+                    editor_type: standard_with_links
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
                     cols: 80
                     rows: 10
                     value: ""

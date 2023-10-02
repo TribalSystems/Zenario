@@ -200,19 +200,34 @@ class pageCache {
 					case 'action_admin_link':
 					case 'admins':
 					case 'admin_actions':
-					case 'admin_roles':
 					case 'admin_organizer_prefs':
+					case 'admin_roles':
+					case 'admin_settings':
+					case 'admin_setting_defaults':
 					
 					//Tables for other types of cache; again ignore these
 					case 'content_cache':
+					case 'lock__clean_dirs':
 					case 'plugin_instance_store':
 					
+					//Ignore the email/log tables
+					case 'consents':
+					case 'email_template_sending_log':
+					case 'error_404_log':
+					case 'job_logs':
+					case 'last_sent_warning_emails':
+					case 'user_content_accesslog':
+					case 'user_signin_log':
+					
 					//These tables are all used in Admin Mode, but not really used to display anything to Visitors; ignore these as well
+					case 'custom_datasets':
+					case 'custom_dataset_tabs':
+					case 'document_public_redirects':
 					case 'document_types':
+					case 'document_rules':
 					case 'email_templates':
 					case 'inline_images':
 					case 'jobs':
-					case 'job_logs':
 					case 'local_revision_numbers':
 					case 'menu_hierarchy':
 					case 'menu_positions':
@@ -221,12 +236,15 @@ class pageCache {
 					case 'plugin_setting_defs':
 					case 'signals':
 					case 'skins':
-					case 'spare_domain_names':
 					case 'spare_aliases':
 					case 'layout_slot_link':
-					case 'custom_datasets':
-					case 'custom_dataset_tabs':
-					case 'user_content_accesslog':
+					
+					//I am 99.99% sure these tables are now just junk and are no longer used.
+					//I think we can ignore these.
+					case 'characteristic_user_link':
+					case 'user_characteristic_values':
+					case 'user_characteristic_values_link':
+					case 'user_sync_log':
 					
 					//Anything that relies on group-membership or private items should never be cached, so we can ignore these tables too
 					case 'group_link':
@@ -235,11 +253,21 @@ class pageCache {
 					
 					//File
 					case 'files':
+					case 'cropped_images':
+					case 'image_tags':
+					case 'image_tag_link':
 						self::$clearCacheBy['file'] = true;
 						break;
 					
 					//Documents
 					case 'documents':
+					
+					//Document related tables.
+						//Some of these entries may be a little redundant as the documents table will likely also
+						//change at the same time as these, but better to list them here anyway and be safe.
+					case 'document_tags':
+					case 'document_tag_link':
+					case 'documents_custom_data':
 						//If a document id changed, clear anything that links to a file
 						self::$clearCacheBy['file'] = true;
 						//If we ever implement code snippets instead of links to documents, we will need
@@ -248,16 +276,26 @@ class pageCache {
 						break;
 					
 					//Menu
+					case 'menu_node_feature_image':
 					case 'menu_nodes':
 					case 'menu_sections':
 					case 'menu_text':
 						self::$clearCacheBy['menu'] = true;
 						break;
 					
-					//User
-					case 'custom_dataset_values_link':
+					//User-related
+						//Note: This section may likely be removed soon and moved to the "ignore" list,
+						//as we don't think we actually have any plugin that shows user-related data
+						//and is also cached!
 					case 'groups':
+					case 'user_country_link':
 					case 'users':
+					case 'users_custom_data':
+					case 'custom_dataset_files_link':
+					case 'custom_dataset_values_link':
+					case 'smart_group_opt_outs':
+					case 'smart_group_rules':
+					case 'smart_groups':
 						self::$clearCacheBy['user'] = true;
 						break;
 					
@@ -276,6 +314,20 @@ class pageCache {
 						 && !is_array($ids['equiv_id']) && !is_array($ids['content_type'])) {
 							//If we've got exact information on the Content Item, clear the cache intelligently
 							self::clearContentItem($ids['equiv_id'], $ids['content_type'], false, false, $clearEquivs = true);
+							self::$clearCacheBy['content'] = true;
+						
+						} else {
+							//Otherwise clear the whole cache
+							self::$clearCacheBy['all'] = true;
+							//self::$debug2 .= "\nclear all\n";
+						}
+						break;
+						
+					case 'translation_chains':
+						if (!empty($ids['equiv_id']) && !empty($ids['type'])
+						 && !is_array($ids['equiv_id']) && !is_array($ids['type'])) {
+							//If we've got exact information on the Content Item, clear the cache intelligently
+							self::clearContentItem($ids['equiv_id'], $ids['type'], false, false, $clearEquivs = true);
 							self::$clearCacheBy['content'] = true;
 						
 						} else {
@@ -323,40 +375,44 @@ class pageCache {
 						}
 						break;
 					
+					//We don't support version controlled nests/slideshows any more, so changes to nests/slideshows/conductors
+					//should always count as a change to a library plugin, and trigger a cache clear
+					case 'nested_paths':
 					case 'nested_plugins':
+						self::$clearCacheBy['all'] = true;
+						//self::$debug2 .= "\nclear all\n";
+						break;
+					
 					case 'plugin_settings':
-						if (\ze::in($table, 'nested_plugins', 'plugin_settings')) {
-							//If we can get the instance id we'll continue into the logic for the plugin_instances table
+						//If we can get the instance id we'll continue into the logic for the plugin_instances table
+						
+						//Grab the instance id if it is in the array
+						if (!empty($ids['instance_id'])
+						 && !is_array($ids['instance_id'])) {
+							$table = 'plugin_instances';
+							$ids = ['id' => $ids['instance_id']];
+						
+						//Attempt to look up an instance id from a nested Plugin
+						} else
+						if (!empty($ids['id'])
+						 && !is_array($ids['id'])) {
+							$result = \ze\sql::select("SELECT instance_id FROM ". DB_PREFIX. $table. " WHERE id = ". (int) $ids['id']);
 							
-							//Grab the instance id if it is in the array
-							if (!empty($ids['instance_id'])
-							 && !is_array($ids['instance_id'])) {
+							if ($row = \ze\sql::fetchAssoc($result)) {
 								$table = 'plugin_instances';
-								$ids = ['id' => $ids['instance_id']];
-							
-							//Attempt to look up an instance id from a nested Plugin
-							} else
-							if ($table == 'plugin_settings'
-							 && !empty($ids['id'])
-							 && !is_array($ids['id'])) {
-								$result = \ze\sql::select("SELECT instance_id FROM ". DB_PREFIX. $table. " WHERE id = ". (int) $ids['id']);
-								
-								if ($row = \ze\sql::fetchAssoc($result)) {
-									$table = 'plugin_instances';
-									$ids = ['id' => $row['instance_id']];
-								
-								} else {
-									//If we couldn't find this setting/nested Plugin, then it may already have been deleted.
-									//In this case there's no need to clear the cache again
-									break;
-								}
+								$ids = ['id' => $row['instance_id']];
 							
 							} else {
-								//Otherwise don't use the logic for another table, and clear the whole cache instead
-								self::$clearCacheBy['all'] = true;
-								//self::$debug2 .= "\nclear all\n";
+								//If we couldn't find this setting/nested Plugin, then it may already have been deleted.
+								//In this case there's no need to clear the cache again
 								break;
 							}
+						
+						} else {
+							//Otherwise don't use the logic for another table, and clear the whole cache instead
+							self::$clearCacheBy['all'] = true;
+							//self::$debug2 .= "\nclear all\n";
+							break;
 						}
 						
 					case 'plugin_instances':
@@ -400,14 +456,22 @@ class pageCache {
 					case '--layout-or-skin-files-changed--':
 					
 					//Completely empty the cache if something changes on the Layout Layer
+					case 'plugin_sitewide_link':
 					case 'plugin_layout_link':
 					case 'layouts':
+					case 'layout_head_and_foot':
+					
 					//Completely clear the cache if any of these change, as there's no better way to handle things
+					case 'centralised_lists':
 					case 'content_types':
 					case 'custom_dataset_fields':
+					case 'custom_dataset_field_values':
 					case 'languages':
+					case 'plugin_pages_by_mode':
 					case 'site_settings':
 					case 'special_pages':
+					case 'user_perm_settings':
+					case 'writer_profiles':
 						$defaultStatementReached = false;
 					
 					//Also clear the cache for anything we don't recognise

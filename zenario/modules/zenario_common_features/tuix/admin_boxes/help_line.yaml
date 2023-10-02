@@ -6,7 +6,6 @@ zenario_help_line:
         currentUrl: ""
     hide_tab_bar: true
     title: Zenario support line
-    max_height: "500"
     save_button_message: "Send"
     tabs: 
         site: 
@@ -36,27 +35,18 @@ zenario_help_line:
                         required: Please enter an Email Address.
                         email: Please enter a valid Email Address.
                 current_url:
-                    label: 'Send the current URL'
-                    type: radios
-                    values:
-                        current_location:
-                            label: "I need help on the current view of the site "
-                            side_note: Organizer or front-end URL will be sent
-                        general_ques:
-                            label: "I have a general question"
-                    value: current_location
-                    format_onchange: true
-               
+                    label: "Current URL:"
+                    type: text
+                    readonly: true
+                email_will_be_sent_to:
+                    label: "The email will be sent to:"
+                    type: text
+                    readonly: true
                 query_message:
                     label: "Your query:"
-                    type: textarea
-                    dont_trim: true
+                    type: editor
+                    editor_type: summary
                     validation:
                         required: Please enter your query.
-                    rows: 12
-                
-                
-                
-              
-               
-                
+                    style: |
+                        height: 52em;

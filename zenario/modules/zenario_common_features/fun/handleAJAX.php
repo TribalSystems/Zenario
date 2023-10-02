@@ -126,6 +126,48 @@ if (ze\priv::check()) {
 		
 		
 		
+		//This section would show info about file modification times and browser cache clears.
+		//Commented out for now as we need to think of a way of writing the description to make it more clear to users.
+		#$section = ['title' => ze\admin::phrase('Timestamps when files on the disk were last modified'), 'fields' => []];
+		#
+		#$section['fields'][] = ['label' => ze\admin::phrase('Zenario will clear the relevant things from the cache if these change')];
+		#
+		#if ($v = \ze::setting('css_skin_version')) {
+		#	$value = \ze\admin::phrase('[[time10]] ([[time36]])', [
+		#		'time36' => $v,
+		#		'time10' => \ze\admin::formatDateTime(base_convert($v, 36, 10))
+		#	]);
+		#} else {
+		#	$value = \ze\admin::phrase('n/a');
+		#}
+		#$section['fields'][] = ['label' => ze\admin::phrase('Skin CSS files:'), 'value' => $value];
+		#
+		#
+		#if ($v = \ze::setting('css_js_version')) {
+		#	$value = \ze\admin::phrase('[[time10]] ([[time36]])', [
+		#		'time36' => $v,
+		#		'time10' => \ze\admin::formatDateTime(base_convert($v, 36, 10))
+		#	]);
+		#} else {
+		#	$value = \ze\admin::phrase('n/a');
+		#}
+		#$section['fields'][] = ['label' => ze\admin::phrase('All CSS and JS files:'), 'value' => $value];
+		#
+		#
+		#if ($v = \ze::setting('yaml_version')) {
+		#	$value = \ze\admin::phrase('[[time10]] ([[time36]])', [
+		#		'time36' => $v,
+		#		'time10' => \ze\admin::formatDateTime(base_convert($v, 36, 10))
+		#	]);
+		#} else {
+		#	$value = \ze\admin::phrase('n/a');
+		#}
+		#$section['fields'][] = ['label' => ze\admin::phrase('YAML files:'), 'value' => $value];
+		#
+		#$infoBox['sections'][] = $section;
+		
+		
+		
 		if (!(defined('ZENARIO_IS_DEMO_SITE') && ZENARIO_IS_DEMO_SITE)) {
 			$section = ['title' => ze\admin::phrase('Installation Information'), 'fields' => []];
 			
@@ -198,31 +240,10 @@ if (ze\priv::check()) {
 					}
 				}
 				
-				if (defined('MONGODB_DBNAME') && MONGODB_DBNAME) {
-					
-					$host = 'localhost';
-					if (defined('MONGODB_CONNECTION_URI')) {
-						$host = MONGODB_CONNECTION_URI;
-						
-						$pos = strrpos($host, '@');
-						if ($pos !== false) {
-							$host = substr($host, $pos + 1);
-						}
-						
-						$pos = strrpos($host, '://');
-						if ($pos !== false) {
-							$host = substr($host, $pos + 3);
-						}
-					}
-					
-					$section['fields'][] = ['label' => ze\admin::phrase('MongoDB database (deprecated):'), 'value' =>
-						ze\admin::phrase('[[DBNAME]] on [[DBHOST]]', ['DBNAME' => MONGODB_DBNAME, 'DBHOST' => $host])];
-				}
-				
 				$infoBox['sections'][] = $section;
 			
 			} elseif (ze\priv::check('_PRIV_EDIT_ADMIN')) {
-				$section['fields'][] = ['label' => ze\admin::phrase('Enable developer tools to see full info')/*, 'value' => ''*/];
+				$section['fields'][] = ['label' => ze\admin::phrase('Enable developer tools to see full info')];
 				$infoBox['sections'][] = $section;
 			}
 		}

@@ -208,7 +208,11 @@ zenarioGM.init = function(controls, mode, headerInfo, layoutData, layoutId, layo
 					
 					if (windowParent.zenario
 					 && windowParent.zenario.cID) {
-						//If it looks like this is a window opened from the front end, reload the window
+						//If it looks like this is a window opened from the front end, reload the window.
+						//Also try to set a flag to show empty slots after the reload.
+						//(I am forced to implement this using purely client-side code though, as the
+						//"show empty slots" button has no server-side component.)
+						zenario.sSetItem(true, 'show_empty_slots_next_page_load', '1');
 						windowParent.location.reload(true);
 					} else {
 						windowParent.$.colorbox.close();
@@ -1946,13 +1950,16 @@ zenarioGM.getSlotDescription = function(slot) {
 	
 	if (slot) {
 		
-		pluginDesc = htmlspecialchars(slot.display_name);
+		pluginDesc = htmlspecialchars(slot.moduleDisplayName);
 		
 		//N.b. similar logic to the following is also used inline in zenario/modules/zenario_pro_features/js/cache_info.js
-		if (slot.instance_id) {
+		if (slot.isVersionControlled) {
+			pluginDesc += ' (' + phrase.versionControlled + ')';
+		
+		} else {
 			pluginDesc += ', ';
 			
-			switch (slot.class_name) {
+			switch (slot.moduleCSSClassName) {
 				case 'zenario_plugin_nest':
 					pluginDesc += 'N';
 					break;
@@ -1963,9 +1970,7 @@ zenarioGM.getSlotDescription = function(slot) {
 				default:
 					pluginDesc += 'P';
 			}
-			pluginDesc += ('' + slot.instance_id).padStart(2, '0');
-		} else {
-			pluginDesc += ' (' + phrase.versionControlled + ')';
+			pluginDesc += ('' + slot.instanceId).padStart(2, '0');
 		}
 		
 	} else {
@@ -2013,7 +2018,8 @@ zenarioGM.editProperties = function(el) {
 			html: zenarioGM.microTemplate(zenarioGM.mtPrefix + 'object_properties', m),
 			height: '99%',
 			width: 720,
-		
+			
+			className: cssClasses.join(' '),
 			onOpen: function() { zenario.addClassesToColorbox(cssClasses); },
 			onClosed: function() { zenario.removeClassesToColorbox(cssClasses); },
 		
@@ -2589,7 +2595,10 @@ zenarioGM.save = function(saveAs) {
 			$.colorbox({
 				transition: 'none',
 				html: zenarioGM.microTemplate(zenarioGM.mtPrefix + 'save_prompt', {name: zenarioGM.newLayoutName || data.oldLayoutName || ''}),
+				//height: '99%',
+				width: 720,
 				
+				className: cssClasses.join(' '),
 				onOpen: function() { zenario.addClassesToColorbox(cssClasses); },
 				onClosed: function() { zenario.removeClassesToColorbox(cssClasses); },
 				

@@ -27,6 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	
@@ -319,15 +322,14 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				} else {
 					$csv = fopen('php://temp/', 'r+');
 					
-					require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 					//Get file type
-					$inputFileType = PHPExcel_IOFactory::identify($path);
+					$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($path);
 					//Create reader object
-					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objReader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
 					$objReader->setReadDataOnly(true);
 					//Load spreadsheet
-					$objPHPExcel = $objReader->load($path);
-					$worksheet = $objPHPExcel->getSheet(0);
+					$objPHPSpreadsheet = $objReader->load($path);
+					$worksheet = $objPHPSpreadsheet->getSheet(0);
 					$readableLineCount = $worksheet->getHighestDataRow();
 					
 					$lineNumber = 0;
@@ -592,15 +594,14 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				} else {
 					$csv = fopen('php://temp/', 'r+');
 					
-					require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 					//Get file type
-					$inputFileType = PHPExcel_IOFactory::identify($path);
+					$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($path);
 					//Create reader object
-					$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+					$objReader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
 					$objReader->setReadDataOnly(true);
 					//Load spreadsheet
-					$objPHPExcel = $objReader->load($path);
-					$worksheet = $objPHPExcel->getSheet(0);
+					$objPHPSpreadsheet = $objReader->load($path);
+					$worksheet = $objPHPSpreadsheet->getSheet(0);
 				
 					$lineNumber = 0;
 					foreach ($worksheet->getRowIterator() as $row) {
@@ -1166,15 +1167,14 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				}
 			}
 		} else {
-			require_once CMS_ROOT . 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 			//Get file type
-			$inputFileType = PHPExcel_IOFactory::identify($path);
+			$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($path);
 			//Create reader object
-			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+			$objReader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
 			$objReader->setReadDataOnly(true);
 			//Load spreadsheet
-			$objPHPExcel = $objReader->load($path);
-			$worksheet = $objPHPExcel->getSheet(0);
+			$objPHPSpreadsheet = $objReader->load($path);
+			$worksheet = $objPHPSpreadsheet->getSheet(0);
 		
 			$lineNumber = 0;
 			foreach ($worksheet->getRowIterator() as $row) {
@@ -1385,7 +1385,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 			
 			$addressToOverriddenBy = false;
 			$isHTML = false;
-			ze\server::sendEmail('Dataset Import Report', $body, $adminDetails['email'], $addressToOverriddenBy, false, false, false, [], [], 'bulk', $isHTML);
+			ze\server::sendEmailAdvanced('Dataset Import Report', $body, $adminDetails['email'], $addressToOverriddenBy, false, false, false, [], [], 'bulk', $isHTML);
 		}
 	}
 	

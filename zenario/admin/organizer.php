@@ -209,19 +209,6 @@ echo '
 		zenarioA.isFullOrganizerWindow = true;';
 
 
-//If a toast was displayed shortly before Organizer was reloaded for some reason,
-//atttempt to display it again.
-if (!empty($_SESSION['_remember_toast'])
- && json_decode($_SESSION['_remember_toast'])) {
- 	
- 	echo '
- 		zenarioA.toast(', $_SESSION['_remember_toast'], ');';
- 	//N.b. this should already be json_encoded so I don't need to escape this, but I still need
- 	//the call to json_decode() above to check it is actually valid JSON and not a XSS attack!
-}
-unset($_SESSION['_remember_toast']);
-
-
 echo '
 	</script>';
 

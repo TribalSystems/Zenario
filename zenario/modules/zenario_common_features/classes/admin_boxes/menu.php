@@ -48,8 +48,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		
 		$menu = false;
 		if ($box['key']['id'] && ($menu = ze\menu::details($box['key']['id'], ze::$defaultLang))) {
-			ze\priv::exitIfNot('_PRIV_VIEW_MENU_ITEM');
-	
 			$box['key']['sectionId'] = $menu['section_id'];
 			$box['key']['parentMenuID'] = $menu['parent_id'];
 	
@@ -146,7 +144,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$values['text/menu_title'] = $box['key']['suggestedName'] ?? false;
 		}
 
-
 		//For multilingual sites, add extra fields for each enabled language
 		$langs = ze\lang::getLanguages($includeAllLanguages = false, $orderByEnglishName = true, $defaultLangFirst = true);
 		$lastMenuURL = false;
@@ -229,7 +226,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			
 		}
 
-
 		$fields['text/menu_title']['hidden'] = true;
 		$fields['text/path_of__menu_title']['hidden'] = true;
 		$fields['text/parent_path_of__menu_title']['hidden'] = true;
@@ -238,7 +234,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$fields['text/hyperlink_target']['note_below'] = '';
 			$fields['text/target_loc']['values']['exts']['hidden'] = true;
 		}
-
 
 		//Attempt to load a list of CSS Class Names from an xml file description in the current Skin to add choices in for the CSS Class Picker
 		$skinId = false;
@@ -305,11 +300,66 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		
 		$fields['advanced/content_restriction_desc']['snippet']['html'] =
 			ze\admin::phrase($fields['advanced/content_restriction_desc']['snippet']['html'], $mrg);
+		
+		//Images tab
+		$nodeId = $box['key']['id'];
+		$row = ze\row::get('menu_node_feature_image',
+			['use_feature_image', 'image_id', 'use_rollover_image', 'rollover_image_id', 'title', 'text', 'link_type', 'link_visibility', 'dest_url', 'open_in_new_window', 'overwrite_alt_tag'],
+			['node_id' => $nodeId]);
+		
+		if ($row && is_array($row)) {
+			if ($row['image_id']) {
+				$box['key']['feature_image_id'] = $row['image_id'];
+				
+				$file = ze\row::get('files', ['alt_tag'], $row['image_id']);
+				if ($file){
+					$fields['feature_image/promo__overwrite_alt_tag']['multiple_edit']['original_value'] = $file['alt_tag'];
+				}
+				
+				if ($row['overwrite_alt_tag']) {
+					$values['feature_image/promo__overwrite_alt_tag'] = $row['overwrite_alt_tag'];
+					$fields['feature_image/promo__overwrite_alt_tag']['multiple_edit']['changed'] = true;
+				} else {
+					if ($file){
+						$values['feature_image/promo__overwrite_alt_tag'] = $file['alt_tag'];
+					}
+				}
+			}
 
+			$values['feature_image/promo__feature_image_checkbox'] = $row['use_feature_image'];
+			$values['feature_image/promo__feature_image'] = $row['image_id'];
+			$values['feature_image/promo__use_rollover'] = $row['use_rollover_image'];
+			$values['feature_image/promo__rollover_image'] = $row['rollover_image_id'];
+			$values['feature_image/promo__title'] = $row['title'];
+			$values['feature_image/promo__text'] = $row['text'];
+			$values['feature_image/promo__link_type'] = empty($row['link_type']) ? 'no_link' : $row['link_type'];
+			switch($row['link_type']) {
+				case 'content_item':
+					$values['feature_image/promo__hyperlink_target'] = $row['dest_url'];
+					break;
+				case 'external_url':
+					$values['feature_image/promo__url'] = $row['dest_url'];
+					break;
+			}
+			$values['feature_image/promo__hide_private_item'] = empty($row['link_visibility']) ? 'always_show' : $row['link_visibility'];
+			$values['feature_image/promo__target_blank'] = $row['open_in_new_window'];
+		} else {
+			$box['key']['feature_image_id'] = '';
+		}
+
+		if ($box['key']['id'] && ($menu = ze\menu::details($box['key']['id']))) {
+			if($menu['image_id']){
+				$values['feature_image/show_image'] = true;
+			}else{
+				$menu['image_id']=false;
+			}
+			$values['feature_image/image_id'] = $menu['image_id'];
+			$values['feature_image/use_rollover_image'] = (bool) $menu['rollover_image_id'];
+			$values['feature_image/rollover_image_id'] = $menu['rollover_image_id'];
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($path != 'zenario_menu') return;
 		$fields['advanced/menu__module_class_name']['hidden'] = 
 		$fields['advanced/menu__method_name']['hidden'] = 
 		$fields['advanced/menu__param_1']['hidden'] = 
@@ -398,13 +448,94 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$values['text/target_loc'] != 'exts';
 			
 		}
+		
+		//Images tab
+		$fields['feature_image/rollover_image_id']['hidden'] = 
+			$fields['feature_image/use_rollover_image']['hidden'] =
+			!$values['feature_image/show_image'];
+		
+		$imageId = $values['feature_image/promo__feature_image'];
+		$rolloverImageId = $values['feature_image/promo__rollover_image'];
+		
+		if ($imageId != $box['key']['feature_image_id']) {
+			$alt_tag = '';
+			if ($imageDetails = ze\row::get('files', ['alt_tag'], $imageId)) {
+				$alt_tag = $imageDetails['alt_tag'];
+			}
+			$fields['feature_image/promo__overwrite_alt_tag']['changed'] = false;
+			$fields['feature_image/promo__overwrite_alt_tag']['multiple_edit']['original_value'] = 
+			$values['feature_image/promo__overwrite_alt_tag'] = 
+				$alt_tag;
+		}
+		
+		$fields['feature_image/promo__feature_image']['hidden'] =
+		$fields['feature_image/promo__use_rollover']['hidden'] =
+		$fields['feature_image/promo__title']['hidden'] =
+		$fields['feature_image/promo__text']['hidden'] =
+		$fields['feature_image/promo__link_type']['hidden'] =
+			!$values['feature_image/promo__feature_image_checkbox'];
+		
+		$fields['feature_image/promo__overwrite_alt_tag']['hidden'] =
+		$hidden = 
+			!($values['feature_image/promo__feature_image_checkbox'] && $imageId);
+		
+		$fields['feature_image/promo__rollover_image']['hidden'] =
+			!empty($fields['feature_image/promo__use_rollover']['hidden']) || 
+			!$values['feature_image/promo__use_rollover'];
+		
+		$fields['feature_image/promo__hyperlink_target']['hidden'] =
+		$fields['feature_image/promo__hide_private_item']['hidden'] =
+			!empty($fields['feature_image/promo__link_type']['hidden']) ||
+			!($values['feature_image/promo__link_type'] == 'content_item');
+		
+		$fields['feature_image/promo__url']['hidden'] =
+			!empty($fields['feature_image/promo__link_type']['hidden']) ||
+			!($values['feature_image/promo__link_type'] == 'external_url');
+		
+		$fields['feature_image/promo__target_blank']['hidden'] =
+			!empty($fields['feature_image/promo__link_type']['hidden']) ||
+			!($values['feature_image/promo__link_type'] == 'external_url' ||
+			$values['feature_image/promo__link_type'] == 'content_item');
+			
+		$cachingRestrictions = [];
+		$fields['text/menu_node_will_appear_to_unauthorised_visitors_or_users']['hidden'] = true;
+		if ($box['key']['id']) {
+			//If this node links to either:
+			//1) a private content item, and is supposed to obey the privacy setting of said content item, OR
+			//2) a private/offline document,
+			//AND has one or more public children, display a warning.
+			if (
+				($values['text/target_loc'] == 'int' && $values['text/hide_private_item'] == 1)
+				|| (
+					$values['text/target_loc'] == 'doc'
+					&& $values['text/document_id']
+					&& ($targetDocumentPrivacy = ze\row::get('documents', 'privacy', $values['text/document_id']))
+					&& ze::in($targetDocumentPrivacy, 'private', 'offline')
+				)
+			) {
+				$menuStructure = ze\menu::getStructure($cachingRestrictions, $box['key']['sectionId'], false, $box['key']['parentMenuID']);
+		
+				foreach ($menuStructure as $row) {
+					if ($row['mID'] == $box['key']['id']) {
+						if (
+							($values['text/target_loc'] == 'int' && !ze\menu::shouldShow($row, $cachingRestrictions, ze::$defaultLang, false, $adminMode = false))
+							|| ($values['text/target_loc'] == 'doc' && !empty($targetDocumentPrivacy) && ze::in($targetDocumentPrivacy, 'private', 'offline'))
+						) {
+							if ($row['children']) {
+								if ($this->checkAnyNodeChildrenShouldShow($row['children'])) {
+									$fields['text/menu_node_will_appear_to_unauthorised_visitors_or_users']['hidden'] = false;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($path != 'zenario_menu') return;
-		
-		
+		//Images tab
 		$langs = ze\lang::getLanguages();
 		$numLangs = count($langs);
 
@@ -515,7 +646,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($path != 'zenario_menu') return;
 		
 		$id = $box['key']['id'] ?? false;
 		$parent_menu_id = $box['key']['parentMenuID'] ?? false;
@@ -633,5 +763,131 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], $box['key']['languageId']);
 			}
 		}
+		
+		//Images tab
+		$id = $box['key']['id'];
+		
+		if ($imageId = $values['feature_image/image_id']) {
+			if ($path = ze\file::getPathOfUploadInCacheDir($imageId)) {
+				$imageId = ze\file::addToDatabase('image', $path);
+			}
+		}
+		
+		if (!$values['feature_image/show_image']) {
+			$imageId = 0;
+		} 
+		
+		
+		if ($imageId) {
+			ze\row::set('inline_images', ['image_id' => $imageId, 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image']);
+		} else {
+			ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image']);
+		}
+		$submission['image_id'] = $imageId;
+
+		if ($values['show_image']
+			&& $values['use_rollover_image']
+			&& $rolloverImageId = $values['feature_image/rollover_image_id']
+			) {
+				if ($path = ze\file::getPathOfUploadInCacheDir($rolloverImageId)) {
+					$rolloverImageId = ze\file::addToDatabase('image', $path);
+	
+				}
+				$submission['rollover_image_id'] = $rolloverImageId;
+				ze\row::set('inline_images', ['image_id' => $rolloverImageId, 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
+		} else {
+			$submission['rollover_image_id'] = 0;
+			ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image']);
+		}
+		ze\menuAdm::save($submission, $id);
+		
+		$row = [];
+		$nodeId = $box['key']['id'];
+		
+		$featureImage = [
+			'use_feature_image' => 0,
+			'image_id' => 0,
+			'use_rollover_image' => 0,
+			'rollover_image_id' => 0,
+			'title' => '',
+			'text' => '',
+			'link_type' => 'no_link',
+			'link_visibility' => 'always_show',
+			'dest_url' => '',
+			'open_in_new_window' => 0
+		];
+		
+		if ($values['feature_image/promo__feature_image_checkbox'] ) {
+			$featureImage['use_feature_image'] = 1;
+			$featureImage['image_id'] = $values['feature_image/promo__feature_image'];
+			if ($location = ze\file::getPathOfUploadInCacheDir($values['feature_image/promo__feature_image'])) {
+				$featureImage['image_id'] = ze\file::addToDatabase('image', $location);
+			}
+			
+			
+			if ($values['feature_image/promo__use_rollover']) {
+				$featureImage['use_rollover_image'] = 1;
+				$featureImage['rollover_image_id'] = $values['feature_image/promo__rollover_image'];
+				if ($location = ze\file::getPathOfUploadInCacheDir($values['feature_image/promo__rollover_image'])) {
+					$featureImage['rollover_image_id'] = ze\file::addToDatabase('image', $location);
+				}
+			}
+			
+			
+			$featureImage['title'] = $values['feature_image/promo__title'];
+			$featureImage['text'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['feature_image/promo__text']);
+			$featureImage['link_type'] = $values['feature_image/promo__link_type'];
+			switch($featureImage['link_type']) {
+				case 'content_item':
+					$featureImage['dest_url'] = $values['feature_image/promo__hyperlink_target'];
+					break;
+				case 'external_url':
+					$featureImage['dest_url'] = $values['feature_image/promo__url'];
+					break;
+			}
+			$featureImage['link_visibility'] = $values['feature_image/promo__hide_private_item'];
+			$featureImage['open_in_new_window'] = $values['feature_image/promo__target_blank'];
+		}
+		
+		if ($featureImage['image_id']) {
+			ze\row::set('inline_images', ['image_id' => $featureImage['image_id'], 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'feature_image']);
+		} else {
+			ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'feature_image']);
+		}
+		
+		if ($featureImage['rollover_image_id']) {
+			ze\row::set('inline_images', ['image_id' => $featureImage['rollover_image_id'], 'in_use' => 1], ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image']);
+		} else {
+			ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image']);
+		}
+		
+
+		$featureImage['overwrite_alt_tag'] = $values['feature_image/promo__overwrite_alt_tag'];
+
+		ze\row::set('menu_node_feature_image', $featureImage, ['node_id' => $nodeId]);
+	}
+	
+	private function checkAnyNodeChildrenShouldShow ($nodeArray) {
+		$shouldShow = false;
+		$cachingRestrictions = [];
+		foreach ($nodeArray as $node) {
+			if ($node['children']) {
+				$shouldShow = $this->checkAnyNodeChildrenShouldShow($node['children']);
+			} elseif ($node['target_loc'] == 'int' && $node['equiv_id'] && $node['cType']) {
+				$havePerm = ze\content::checkPerm($node['cID'],  $node['cType'], false, false, false, false);
+				if ($havePerm) {
+					$shouldShow = true;
+					break;
+				}
+			} elseif ($node['target_loc'] == 'doc' && $node['document_id']) {
+				$targetDocumentPrivacy = ze\row::get('documents', 'privacy', $node['document_id']);
+				if ($targetDocumentPrivacy == 'public') {
+					$shouldShow = true;
+					break;
+				}
+			}
+		}
+		
+		return $shouldShow;
 	}
 }

@@ -1,0 +1,27 @@
+# You must use a tab-size of 4 spaces to edit this file.
+zenario_export_spare_aliases:
+    download: true
+    title: Export spare aliases
+    hide_tab_bar: true
+    save_button_message: Export
+    cancel_button_message: Cancel
+    tabs:
+        download:
+            label: File
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: ''
+                type:
+                    label: 'Format:'
+                    type: radios
+                    values:
+                        csv: 'CSV'
+                        excel: 'Excel'
+                    value: csv
+                    validation:
+                        required: Please select a download format.
+    confirm:
+        download: true

@@ -15,13 +15,10 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            <p>
-                                If your site can be accessed using more than one domain name, please set your primary one here.
-                                Links to your site will use this domain.
-                            </p><p>
-                                If you use a non-default port number (i.e. not 80), then this domain should also include
-                                the port number,  e.g. <code>example.com:443</code>
-                            </p>
+                            <p>Most sites have one main, or primary domain name, although they may have other domain names.</p>
+                            <p>If no primary domain is set, Zenario will serve content from any domain name pointing to the site, and will not perform redirects.</p>
+                            <p>If you would like Zenario to redirect all web traffic to a primary domain name, you can enable that redirection here (recommended).</p>
+                            <p>For safety, the name is chosen according to the domain you're currently using to access this admin box; if you require this to be a different domain then you must log into Zenario using that domain.</p>
                 primary_domain:
                     site_setting:
                         name: primary_domain
@@ -32,10 +29,10 @@ site_settings:
                     values:
                         none:
                             ord: 1
-                            label: No primary domain; allow visitors to view site on any domain pointing to it
+                            label: No primary domain (the site will be viewable via any domain pointing to the server)
                         new:
                             ord: 4
-                            label: 'Set a new domain as the primary domain; redirect all visitors to there:'
+                            label: 'Set a new domain as the primary domain (advanced)...'
                     redraw_onchange: true
                                 
                 new:
@@ -153,22 +150,23 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                You may be able to improve site performance by having a
-                                separate domain from which to serve images, CSS and
-                                JavaScript files. This will avoid the visitor's browser
-                                sending cookies on every request.
+                                You may be able to improve site performance by having Zenario
+                                serve static files (images, CSS, JavaScript) from a separate domain.
+                                This will avoid the visitor's browser sending cookies on every request.
                             </p><p>
                                 Such a domain should be configured in DNS and Apache so as
                                 to point to this site's Zenario root directory (e.g.
                                 <code>public_html</code>), but it must <u>not</u> be a
                                 subdomain of this site's domain. (If it is a sub-domain it
                                 will share the cookies of the main domain).
+                            </p><p>
+                                Note that the cookie-free domain will only be applied in visitor mode, and not in admin mode.
                             </p>
                 use_cookie_free_domain:
                     site_setting:
                         name: use_cookie_free_domain
                         protect_from_database_restore: true
-                    label: 'Use a cookie-free domain for hosting static files'
+                    label: 'Use a cookie-free domain for static files'
                     type: checkbox
                     value: ""
                     redraw_onchange: true
@@ -182,9 +180,7 @@ site_settings:
                     label: 'Cookie-free domain:'
                     type: text
                     note_below: |
-                        Please enter a domain name in this box, e.g. example.com.
-                        <br/>
-                        The domain you enter will be checked to see if it points to this site before this box is saved.
+                        Zenario will check the domain you enter to ensure it points to this site.
                     oninput: |
                         var string = $(this).val();
                         var pattern = /^((http|https|ftp):\/\/)/;

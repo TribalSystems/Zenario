@@ -87,7 +87,7 @@ properties:
         type: boolean
         description: >
             If you set this property, your module will be loaded every time a Twig framework is generated,
-            and designers will be able to call your public methods from their twig frameworks.
+            and designers will be able to call your public methods from their Twig frameworks.
             
             Note: this will make all of your public methods available.
             If you want to make an exception, e.g. your saveAdminBox() or handleOrganizerPanelAJAX() methods,

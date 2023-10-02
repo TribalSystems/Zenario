@@ -160,6 +160,12 @@ class user {
 
 	}
 	
+	public static function idAndSessionIsValid($userId, $loggedIntoSite) {
+		
+		return 
+			$loggedIntoSite == COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id')
+		 && \ze\row::exists('users', ['id' => (int) $userId, 'status' => 'active']);
+	}
 	
 
 	//Attempt to automatically log a User in if the cookie is set on the User's Machine
@@ -182,10 +188,7 @@ class user {
 		
 			//Check the session to see if the extranet user is for a different site that this one.
 			//Also automatically log out any Users who have been suspended.
-			} else
-			if (empty($_SESSION['extranetUser_logged_into_site'])
-			 || $_SESSION['extranetUser_logged_into_site'] != COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id')
-			 || !\ze\row::exists('users', ['id' => (int) $_SESSION['extranetUserID'], 'status' => 'active'])) {
+			} elseif (!\ze\user::idAndSessionIsValid($_SESSION['extranetUserID'], $_SESSION['extranetUser_logged_into_site'] ?? '')) {
 				\ze\user::logOut();
 			}
 		}
@@ -229,10 +232,13 @@ class user {
 	public static function logOut() {
 		unset(
 			$_SESSION['extranetUserID'],
+			$_SESSION['extranetUser_logged_into_site'],
 			$_SESSION['extranetUserImpersonated'],
 			$_SESSION['extranetUserID_pending'],
 			$_SESSION['extranetUser_firstname'],
-			$_SESSION['extranetUserSteps']
+			$_SESSION['extranetUserSteps'],
+			$_SESSION['zenario_loggingInUserID'],
+			$_SESSION['zenario_loggingInUserSite']
 		);
 		
 		\ze\cookie::antiSessionFixationScript();
@@ -240,70 +246,56 @@ class user {
 		$_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'] = true;
 	}
 
-	//Formerly "userEmail()"
-	public static function email($userId = null) {
-		if ($userId === null) {
-			$userId = $_SESSION['extranetUserID'] ?? false;
-		}
-	
-		if ($userId) {
-			return \ze\row::get('users', 'email', $userId);
-		} else {
-			return false;
-		}
+	public static function fieldDisplayValue($cfield, $userId = null, $returnCSV = true) {
+		return \ze\dataset::fieldValue('users', $cfield, $userId ?? $_SESSION['extranetUserID'] ?? null, $returnCSV, true);
 	}
 
-	//Formerly "userId()"
+	public static function fieldValue($cfield, $userId = null, $returnCSV = true) {
+		return \ze\dataset::fieldValue('users', $cfield, $userId ?? $_SESSION['extranetUserID'] ?? null, $returnCSV, false);
+	}
+
 	public static function id() {
-		return ($_SESSION['extranetUserID'] ?? false);
+		return $_SESSION['extranetUserID'] ?? null;
 	}
 
-	//Formerly "getUserScreenName()", "userScreenName()"
-	public static function screenName($userId = 'session') {
-		if ($userId === 'session') {
-			$userId = $_SESSION['extranetUserID'] ?? false;
-		}
-	
-		if ($userId) {
-			return \ze\row::get('users', 'screen_name', $userId);
-		} else {
-			return false;
-		}
+	public static function identifier($userId = null) {
+		return \ze\row::get('users', 'identifier', $userId ?? $_SESSION['extranetUserID'] ?? null);
 	}
 
-	//Formerly "userFieldDisplayValue()"
-	public static function fieldDisplayValue($cfield, $userId = -1, $returnCSV = true) {
-		if ($userId === -1) {
-			$userId = $_SESSION['extranetUserID'] ?? false;
-		}
-		return \ze\dataset::fieldValue('users', $cfield, $userId, $returnCSV, true);
+	const emailFromTwig = true;
+	public static function email($userId = null) {
+		return \ze\row::get('users', 'email', $userId ?? $_SESSION['extranetUserID'] ?? null);
 	}
 
-	//Formerly "userFieldValue()"
-	public static function fieldValue($cfield, $userId = -1, $returnCSV = true) {
-		if ($userId === -1) {
-			$userId = $_SESSION['extranetUserID'] ?? false;
-		}
-		return \ze\dataset::fieldValue('users', $cfield, $userId, $returnCSV, false);
-	}
-	
-
-
-	//Formerly "getUserIdentifier()"
-	public static function identifier($userId) {
-		return \ze\row::get('users', 'identifier', $userId);
+	const screenNameFromTwig = true;
+	public static function screenName($userId = null) {
+		return \ze\row::get('users', 'screen_name', $userId ?? $_SESSION['extranetUserID'] ?? null);
 	}
 
-	//Formerly "userFirstAndLastName()", "getUserFirstNameSpaceLastName()"
+	const salutationFromTwig = true;
+	public static function salutation($userId = null) {
+		return \ze\row::get('users', 'salutation', $userId ?? $_SESSION['extranetUserID']);
+	}
+
+	const firstNameFromTwig = true;
+	public static function firstName($userId = null) {
+		return \ze\row::get('users', 'first_name', $userId ?? $_SESSION['extranetUserID']);
+	}
+
+	const lastNameFromTwig = true;
+	public static function lastName($userId = null) {
+		return \ze\row::get('users', 'last_name', $userId ?? $_SESSION['extranetUserID']);
+	}
+
+	const nameFromTwig = true;
 	public static function name($userId = null) {
-		if ($userId === null) {
-			$userId = $_SESSION['extranetUserID'] ?? false;
-		}
-		if ($row = \ze\row::get('users', ['first_name', 'last_name'], $userId)) {
+		if ($row = \ze\row::get('users', ['first_name', 'last_name'], $userId ?? $_SESSION['extranetUserID'])) {
 			return $row['first_name']. ' '. $row['last_name'];
 		}
 		return null;
 	}
+	
+	
 
 	//Formerly "getUserIdFromScreenName()"
 	public static function getIdFromScreenName($screenName) {
@@ -366,6 +358,38 @@ class user {
 			}
 		}
 		return $user;
+	}
+	
+	public static function userDetailsForEmails($userId) {
+		$allowedFields = \ze\user::allowedUserFieldsForEmails();
+		$result = \ze\row::get('users', $allowedFields, $userId);
+		
+		foreach ($result as &$value) {
+			if (!$value) {
+				$value = '';
+			}
+		}
+		
+		return $result;
+	}
+	
+	public static function allowedUserFieldsForEmails() {
+		$allowedFields = [
+			'salutation', 'first_name', 'last_name', 'identifier', 'screen_name',
+			'email', 'status',
+			'last_login', 'screen_name_confirmed', 'reset_password_time', 'last_profile_update_in_frontend',
+			'created_date', 'modified_date', 'suspended_date', 'last_updated_timestamp'
+		];
+		
+		return $allowedFields;
+	}
+	
+	public static function allowedSpecialUserFieldsForEmails() {
+		$allowedFields = [
+			'password', 'hash', 'email_confirmation_link', 'cms_url', 'user_groups'
+		];
+		
+		return $allowedFields;
 	}
 
 	//Formerly "checkUsersPassword()"

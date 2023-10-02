@@ -29,6 +29,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_user_forms__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		if (!empty($box['key']['eggId'])) {
+			$fields['first_tab/display_mode']['values']['in_modal_window']['note_below'] = 
+				ze\admin::phrase('If you use the modal window mode, then any other plugins in the nest on this slide will appear in the popup as well.');
+		}
+		
+	}
+	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (isset($fields['first_tab/display_text'])) {
 			$fields['first_tab/display_text']['hidden'] = ($values['first_tab/display_mode'] != 'in_modal_window');

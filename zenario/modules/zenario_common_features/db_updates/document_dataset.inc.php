@@ -51,7 +51,6 @@ if (ze\dbAdm::needRevision(159)) {
 	// usable.)
 	//(Again, if you upgrade from version 7 or earlier these will have also been done manually
 	// by the migration script, but they're also safe to call again.)
-	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 	
 	ze\dbAdm::revision(159);
 }
@@ -61,12 +60,12 @@ if (ze\dbAdm::needRevision(225)) {
 	
 	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'details', 'document_title', 'title');
 	ze\datasetAdm::registerSystemField($dataset['id'], 'date', 'details', 'date_uploaded', 'file_datetime');
-	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'details', 'document_name', '');
-	ze\datasetAdm::registerSystemField($dataset['id'], 'checkboxes', 'details', 'tags', '');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'details', 'document_name');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'checkboxes', 'details', 'tags');
 	ze\datasetAdm::registerSystemField($dataset['id'], 'radios', 'details', 'privacy', 'privacy');
 	
-	ze\datasetAdm::registerSystemField($dataset['id'], 'textarea', 'extract', 'extract', '');
-	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'extract', 'extract_wordcount', '');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'textarea', 'extract', 'extract');
+	ze\datasetAdm::registerSystemField($dataset['id'], 'text', 'extract', 'extract_wordcount');
 	
 	ze\dbAdm::revision(225);
 }

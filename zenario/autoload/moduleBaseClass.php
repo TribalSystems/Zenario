@@ -43,7 +43,6 @@ class moduleAPI {
 	protected $eggId;
 	protected $fieldInfo;
 	protected $instanceId;
-	protected $instanceName;
 	protected $inLibrary;
 	protected $isVersionControlled;
 	protected $isWireframe;
@@ -91,27 +90,13 @@ class moduleAPI {
 	public final function allowCaching(
 		$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
 	) {
-		$vs = &\ze::$slotContents[$this->slotNameNestId]['cache_if'];
-		
-		foreach (['a' => $atAll, 'u' => $ifUserLoggedIn, 'g' => $ifGetSet, 'p' => $ifPostSet, 's' => $ifSessionSet, 'c' => $ifCookieSet] as $if => $set) {
-			if (!isset($vs[$if])) {
-				$vs[$if] = true;
-			}
-			$vs[$if] = $vs[$if] && $vs['a'] && $set;
-		}
+		\ze::$slotContents[$this->slotNameNestId]->allowCaching($atAll, $ifUserLoggedIn, $ifGetSet, $ifPostSet, $ifSessionSet, $ifCookieSet);
 	}
 	
 	public final function clearCacheBy(
 		$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
 	) {
-		$vs = &\ze::$slotContents[$this->slotNameNestId]['clear_cache_by'];
-		
-		foreach (['content' => $clearByContent, 'menu' => $clearByMenu, 'user' => $clearByUser, 'file' => $clearByFile, 'module' => $clearByModuleData] as $if => $set) {
-			if (!isset($vs[$if])) {
-				$vs[$if] = false;
-			}
-			$vs[$if] = $vs[$if] || $set;
-		}
+		\ze::$slotContents[$this->slotNameNestId]->clearCacheBy($clearByContent, $clearByMenu, $clearByUser, $clearByFile, $clearByModuleData);
 	}
 	
 	public final function callScriptBeforeAJAXReload($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
@@ -148,6 +133,13 @@ class moduleAPI {
 	}
 	
 	public final function requireJsLib($lib, $stylesheet = null) {
+		
+		//Record that a plugin in this slot is requesting this library, so if the plugin is cached
+		//this request should be cached as well.
+		//(But do not do this on AJAX reloads, these are not cached and don't need this recorded.)
+		if (isset(\ze::$slotContents[$this->slotName])) {
+			\ze::$slotContents[$this->slotName]->requireJsLib($lib, $stylesheet);
+		}
 		\ze::requireJsLib($lib, $stylesheet);
 	}
 	
@@ -387,15 +379,11 @@ class moduleAPI {
 	}
 	
 	public final function slideNum() {
-		if (isset(\ze::$slotContents[$this->slotNameNestId]['slide_num'])) {
-			return \ze::$slotContents[$this->slotNameNestId]['slide_num'];
-		}
+		return \ze::$slotContents[$this->slotNameNestId]->slideNum();
 	}
 	
 	public final function eggOrd() {
-		if (isset(\ze::$slotContents[$this->slotNameNestId]['egg_ord'])) {
-			return \ze::$slotContents[$this->slotNameNestId]['egg_ord'];
-		}
+		return \ze::$slotContents[$this->slotNameNestId]->eggOrd();
 	}
 	
 	public final function closeForm() {
@@ -462,7 +450,7 @@ class moduleAPI {
 		
 		$class->setInstanceVariables([
 			$this->cID, $this->cType, $this->cVersion, $this->slotName,
-			$this->instanceName, $this->instanceId,
+			$this->instanceId,
 			$this->moduleClassName, $this->moduleClassNameForPhrases,
 			$this->moduleId,
 			$this->framework,
@@ -573,6 +561,7 @@ class moduleAPI {
 	
 	
 	
+	
 	  ////////////////////////////////
 	 //  Initialization Functions  //
 	////////////////////////////////
@@ -627,23 +616,27 @@ class moduleAPI {
 	}
 
 	public final function forcePageReload($reload = true) {
-		$this->zAPIForcePageReload($reload);
+		\ze::$slotContents[$this->slotName]->forcePageReload($reload);
 	}
 
 	public final function headerRedirect($link) {
-		$this->zAPIHeaderRedirect($link);
+		\ze::$slotContents[$this->slotName]->headerRedirect($link);
+	}
+	
+	protected final function showInMenuMode($shownInMenuMode = true) {
+		\ze::$slotContents[$this->slotName]->showInMenuMode($shownInMenuMode);
 	}
 
 	protected final function markSlotAsBeingEdited($beingEdited = true) {
-		$this->zAPIMarkSlotAsBeingEdited($beingEdited);
-	}
-
-	public final function showInFloatingBox($showInFloatingBox = true, $floatingBoxParams = false) {
-		$this->cmsApiShowInFloatingBox($showInFloatingBox, $floatingBoxParams);
+		\ze::$slotContents[$this->slotName]->markSlotAsBeingEdited($beingEdited);
 	}
 
 	protected final function scrollToTopOfSlot($scrollToTop = true) {
-		$this->cmsApiScrollToTopOfSlot($scrollToTop);
+		\ze::$slotContents[$this->slotName]->scrollToTopOfSlot($scrollToTop);
+	}
+
+	public final function showInFloatingBox($shownInFloatingBox = true, $floatingBoxParams = false) {
+		\ze::$slotContents[$this->slotName]->showInFloatingBox($shownInFloatingBox, $floatingBoxParams);
 	}
 
 	public final function registerGetRequest($request, $defaultValue = '') {
@@ -654,39 +647,35 @@ class moduleAPI {
 	}
 	
 	public final function setPageTitle($title) {
-		\ze::$slotContents[$this->slotName]['page_title'] = $title;
+		\ze::$slotContents[$this->slotName]->setPageTitle($title);
 		\ze::$pageTitle = $title;
 	}
 	
 	public final function setPageDesc($description) {
-		\ze::$slotContents[$this->slotName]['page_desc'] = $description;
+		\ze::$slotContents[$this->slotName]->setPageDesc($description);
 		\ze::$pageDesc = $description;
 	}
 	
 	public final function setPageImage($imageId) {
-		\ze::$slotContents[$this->slotName]['page_image'] = $imageId;
+		\ze::$slotContents[$this->slotName]->setPageImage($imageId);
 		\ze::$pageImage = $imageId;
 	}
 	
 	public final function setPageKeywords($keywords) {
-		\ze::$slotContents[$this->slotName]['page_keywords'] = $keywords;
+		\ze::$slotContents[$this->slotName]->setPageKeywords($keywords);
 		\ze::$pageKeywords = $keywords;
 	}
 	
 	public final function setPageOGType($type) {
-		\ze::$slotContents[$this->slotName]['page_og_type'] = $type;
+		\ze::$slotContents[$this->slotName]->setPageOGType($type);
 		\ze::$pageOGType = $type;
 	}
 
 	public final function setMenuTitle($title) {
-		\ze::$slotContents[$this->slotName]['menu_title'] = $title;
+		\ze::$slotContents[$this->slotName]->setMenuTitle($title);
 		\ze::$menuTitle = $title;
 	}
 	
-
-	protected final function showInMenuMode($shownInMenuMode = true) {
-		$this->zAPIShowInMenuMode($shownInMenuMode);
-	}
 	
 	protected final function registerPluginPage($mode = null, $moduleClassName = null) {
 		if (\ze::isAdmin() && \ze::$equivId) {
@@ -933,46 +922,6 @@ class moduleAPI {
 	//Plugin Settings
 	protected $zAPISettings = [];
 
-	//Disable AJAX Relaod
-	private $zAPIForcePageReloadVar = false;
-	public final function checkForcePageReloadVar() {
-		return $this->zAPIForcePageReloadVar;
-	}
-	protected final function zAPIForcePageReload($reload) {
-		$this->zAPIForcePageReloadVar = $reload;
-	}
-	
-	//Reload to a different location
-	private $zAPIHeaderRedirectLocation = false;
-	protected final function zAPIHeaderRedirect($location) {
-		$this->zAPIHeaderRedirectLocation = $location;
-	}
-	public final function checkHeaderRedirectLocation() {
-		return $this->zAPIHeaderRedirectLocation;
-	}
-
-	//How to display after an AJAX reload
-	private $zAPIShowInFloatingBox = false;
-	private $zAPIFloatingBoxParams = false;
-	public final function getFloatingBoxParams() {
-		return $this->zAPIFloatingBoxParams;
-	}
-	public final function checkShowInFloatingBoxVar() {
-		return $this->zAPIShowInFloatingBox;
-	}
-	protected final function cmsApiShowInFloatingBox($showInFloatingBox, $floatingBoxParams) {
-		$this->zAPIShowInFloatingBox = $showInFloatingBox;
-		$this->zAPIFloatingBoxParams = $floatingBoxParams;
-	}
-	
-	private $zAPIScrollToTop = null;
-	public final function checkScrollToTopVar() {
-		return $this->zAPIScrollToTop;
-	}
-	protected final function cmsApiScrollToTopOfSlot($scrollToTop) {
-		$this->zAPIScrollToTop = $scrollToTop;
-	}
-
 	//A list of JavaScript functions to run
 	private $zAPIScripts = [[], [], []];
 	public final function zAPICallScriptWhenLoaded($scriptType, &$script) {
@@ -984,24 +933,6 @@ class moduleAPI {
 	}
 	public final function zAPICheckRequestedScripts(&$scripts) {
 		$scripts = $this->zAPIScripts;
-	}
-	
-	//Mark this Plugin as Menu-related
-	private $zAPIShownInMenuMode;
-	public final function shownInMenuMode() {
-		return $this->zAPIShownInMenuMode;
-	}
-	protected final function zAPIShowInMenuMode($shownInMenuMode) {
-		$this->zAPIShownInMenuMode = $shownInMenuMode;
-	}
-	
-	//Mark this Plugin as being editing
-	private $zAPISlotBeingEdited;
-	public final function beingEdited() {
-		return $this->zAPISlotBeingEdited;
-	}
-	protected final function zAPIMarkSlotAsBeingEdited($beingEdited) {
-		$this->zAPISlotBeingEdited = $beingEdited;
 	}
 	
 	public final function zAPIGetTabId() {
@@ -1019,30 +950,19 @@ class moduleAPI {
 	
 	
 	public final function zAPICacheFoot($html) {
-		if (isset(\ze::$slotContents[$this->slotName]['cache_path'])) {
-			file_put_contents(CMS_ROOT. \ze::$slotContents[$this->slotName]['cache_path']. 'foot.html', $html, FILE_APPEND);
+		if ($path = \ze::$slotContents[$this->slotName]->cachePath()) {
+			file_put_contents(CMS_ROOT. $path. 'foot.html', $html, FILE_APPEND);
 		}
-	}
-	
-	public final function zAPIGetCachableVars(&$a) {
-		$a = [
-			$this->framework,
-			$this->zAPIScripts,
-			false, //not used any more
-			$this->slideId,
-			$this->cssClass,
-			$this->eggId,
-			$this->slideId];
 	}
 	
 	public final function wrapperClass() {
 		
 		$cssClass = $this->cssClass;
 		
-		if (!empty(\ze::$slotContents[$this->slotName]['is_header'])) {
+		if (!empty(\ze::$slotContents[$this->slotName]->isHeader())) {
 			$cssClass .= ' zenario_slot_in_header';
 		
-		} elseif (!empty(\ze::$slotContents[$this->slotName]['is_footer'])) {
+		} elseif (!empty(\ze::$slotContents[$this->slotName]->isFooter())) {
 			$cssClass .= ' zenario_slot_in_footer';
 		
 		} else {
@@ -1056,16 +976,26 @@ class moduleAPI {
 		return $cssClass;
 	}
 	
+	public final function zAPIGetCachableVars() {
+		return [
+			$this->framework,
+			$this->zAPIScripts,
+			$this->slideId,
+			$this->cssClass,
+			$this->eggId,
+			$this->slideId
+		];
+	}
+	
 	public final function zAPISetCachableVars(&$a) {
 		if (\ze::$isTwig) return;
 		
 		$this->framework = $a[0];
 		$this->zAPIScripts = $a[1];
-		//$a[2] isn't used anymore
-		$this->slideId = $a[3];
-		$this->cssClass = $a[4];
-		$this->eggId = $a[5];
-		$this->slideId = $a[6];
+		$this->slideId = $a[2];
+		$this->cssClass = $a[3];
+		$this->eggId = $a[4];
+		$this->slideId = $a[5];
 	}
 	
 	
@@ -1077,7 +1007,7 @@ class moduleAPI {
 		
 		//Set the variables above from the array given
 		list($this->cID, $this->cType, $this->cVersion, $this->slotName,
-			 $this->instanceName, $this->instanceId,
+			 $this->instanceId,
 			 $this->moduleClassName, $this->moduleClassNameForPhrases,
 			 $this->moduleId,
 			 $this->framework,
@@ -1104,17 +1034,18 @@ class moduleAPI {
 			
 			if ($eggId) {
 				
-				//Come up with a container id for this nested plugin.
-				if ($eggId < 0) {
-					//If it's from Slide Designer, use the slot name, slide id and ordinal
-					$slotNameNestId .= '-'. $slideId. $eggId;
-				} else {
-					//If it has an id, we can just use that with the slot name.
-					$slotNameNestId .= '-'. $eggId;
-				}
+				#//Come up with a container id for this nested plugin.
+				#if ($eggId < 0) {
+				#	//If it's from Slide Designer, use the slot name, slide id and ordinal
+				#	$slotNameNestId .= '-'. $slideId. $eggId;
+				#} else {
+				#	//If it has an id, we can just use that with the slot name.
+				#	$slotNameNestId .= '-'. $eggId;
+				#}
+				$slotNameNestId .= '-'. $eggId;
 				
-				if (!empty(\ze::$slotContents[$this->slotName]['class'])) {
-					$this->parentNest = \ze::$slotContents[$this->slotName]['class'];
+				if (!empty(\ze::$slotContents[$this->slotName])) {
+					$this->parentNest = \ze::$slotContents[$this->slotName]->class();
 				}
 			}
 			
@@ -1137,7 +1068,7 @@ class moduleAPI {
 	
 	public final function setErrorMessage($errorMessage) {
 		if (!empty(\ze::$slotContents[$this->slotNameNestId])) {
-			\ze::$slotContents[$this->slotNameNestId]['error'] = $errorMessage;
+			\ze::$slotContents[$this->slotNameNestId]->setErrorMessage($errorMessage);
 		}
 	}
 	
@@ -1242,7 +1173,7 @@ class moduleAPI {
 			
 			if ($this->shouldShowLayoutPreview()
 			 && !$this->eggId
-			 && !empty($slot['module_id'])) {
+			 && $slot->moduleId()) {
 			
 				$this->cssClass .= ' zenario_slot_with_layout_preview';
 				
@@ -1263,8 +1194,8 @@ class moduleAPI {
 			} else {
 				//Check whether the plugin's init function returned true
 				$status = false;
-				if (isset($slot['init'])) {
-					$status = $slot['init'];
+				if ($slot->init()) {
+					$status = $slot->init();
 				}
 				
 				if ($status) {
@@ -1294,25 +1225,25 @@ class moduleAPI {
 		
 		$slot = &\ze::$slotContents[$this->slotNameNestId];
 		
-		if (!empty($slot['isSuspended'])) {
+		if ($slot->isSuspended()) {
 			return \ze\admin::phrase('This module is suspended');
 		
-		} elseif (empty($slot['init'])) {
-			if (empty($slot['error'])) {
-				if (empty($slot['module_id'])) {
-					if (!empty($slot['is_header'])) {
+		} elseif (!$slot->init()) {
+			if ($slot->overriddenSlot()) {
+				return \ze\admin::phrase('This slot is set to show nothing on this content item');
+			} else {
+				if ($slot->moduleId()) {
+					return \ze\admin::phrase('This is a plugin (its current settings result in no output)');
+				} else {
+					if ($slot->isHeader()) {
 						return \ze\admin::phrase('This is an empty slot on the site-wide header');
 	
-					} elseif (!empty($slot['is_footer'])) {
+					} elseif ($slot->isFooter()) {
 						return \ze\admin::phrase('This is an empty slot on the site-wide footer');
 					} else {
 						return \ze\admin::phrase('This is an empty slot');
 					}
-				} else {
-					return \ze\admin::phrase('This is a plugin (its current settings result in no output)');
 				}
-			} else {
-				return \ze\admin::phrase('This slot is set to show nothing on this content item');
 			}
 		
 		} elseif (isset($this->parentNest)) {
@@ -1322,7 +1253,7 @@ class moduleAPI {
 			return \ze\admin::phrase('This is a version-controlled editable area on the content item, double-click to edit');
 		
 		} elseif ($this->slotLevel == 3) {
-			if (!empty($slot['is_header'])) {
+			if ($slot->isHeader()) {
 				return \ze\admin::phrase('This is a plugin on the site-wide header');
 		
 			} else {
@@ -1423,6 +1354,23 @@ class moduleAPI {
 		}
 	}
 	
+	
+	//Commonly used functions to add styles to the page for any responsive images used by a plugin
+	protected function addStylesOnAJAXReload($styles) {
+	
+		//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
+		//Otherwise we can use addStylesToPageHead() below.
+		if ($styles !== [] && $this->methodCallIs('refreshPlugin')) {
+			$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, implode("\n", $styles));
+		}
+	}
+	
+	public function addStylesToPageHead($styles) {
+		if ($styles !== []) {
+			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", implode("\n", $styles), "\n", '</style>';
+		}
+	}
+	
 	//This is a utility function to deal with the standard image resize options on tuix plugin settings.
 	protected function showHideImageOptions(&$fields, $values, $tab, $hidden = false, $fieldPrefix = '', $hasCanvas = true, $sameLineLabel = 'Size (width × height):') {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
@@ -1455,7 +1403,7 @@ class moduleAPI {
 		}
 	}
 	
-	protected function listImagesOnSlotControls(&$controls, $images) {
+	protected function listImagesOnSlotControls(&$controls, $images, $fullList) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1500,7 +1448,7 @@ class moduleAPI {
 			$this->zAPISubClasses[$codeName]->zAPIrunSubClassSafetyCatch = true;
 			$this->zAPISubClasses[$codeName]->setInstanceVariables([
 				$this->cID, $this->cType, $this->cVersion, $this->slotName,
-				$this->instanceName, $this->instanceId,
+				$this->instanceId,
 				$this->moduleClassName, $this->moduleClassNameForPhrases,
 				$this->moduleId,
 				$this->framework,
@@ -1597,7 +1545,7 @@ class moduleAPI {
 				}
 				
 				//Disallow caching for programatically generated lists of values
-				\ze::$slotContents[$this->slotName]['disallow_caching'] = true;
+				\ze::$slotContents[$this->slotName]->disallowCaching();
 			
 			//Generate a LOV by calling one of the Plugin's own methods non-statically
 			} elseif (!empty($attributes['source_method'])) {
@@ -1860,6 +1808,15 @@ class moduleBaseClass extends moduleAPI {
 		
 		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->returnVisitorTUIXEnabled($path);
+		}
+		return false;
+	}
+	
+	public function returnVisitorTUIXEnabledForPopouts($path) {
+		if (\ze::$isTwig) return;
+		
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
+			return $this->subClass->returnVisitorTUIXEnabledForPopouts($path);
 		}
 		return false;
 	}

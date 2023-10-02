@@ -33,10 +33,6 @@ require 'basicheader.inc.php';
 ze\cookie::startSession();
 
 
-//Run pre-load actions
-if (ze::$canCache) require CMS_ROOT. 'zenario/includes/ajax.pre_load.inc.php';
-
-
 $type = false;
 $path = false;
 $methodCall = $_REQUEST['method_call'] ?? false;
@@ -97,39 +93,29 @@ if ($methodCall == 'refreshPlugin'
 		$_REQUEST['eggId'] = $_GET['eggId'] = $rss[0];
 	}
 	
-	$instanceId = $_REQUEST['instanceId'] ?? false;
-	$slotName = ze\ring::HTMLId(ze::request('slotName'));
-	
-	//Use exact matching if this is a call to refreshPlugin.
-	//Otherwise try to allow for the fact that people might have bad/old slot names/instance ids
-	$exactMatch = $methodCall == 'refreshPlugin';
+
+	[$slotName, $instanceId, $slideId, $slideNum, $state, $eggId, $overrideSettings, $overrideFrameworkAndCSS] =
+		ze\plugin::getSlotVarsFromRequest();
 	
 	
 	if ($instanceId || $slotName) {
-	
-		$overrideSettings = false;
-		if (!empty($_REQUEST['overrideSettings']) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
-			$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
-		}
-		$overrideFrameworkAndCSS = false;
-		if (!empty($_REQUEST['overrideFrameworkAndCSS']) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
-			$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
-		}
 		
-		ze\plugin::slotContents(
+		ze\plugin::runSlotContents(
 			ze::$slotContents,
 			ze::$cID, ze::$cType, ze::$cVersion,
-			ze::$layoutId,
-			$instanceId, $slotName, $ajaxReload = true,
-			$runPlugins = true, $exactMatch, $overrideSettings, $overrideFrameworkAndCSS);
+			ze::$layoutId, $singleSlot = true, $slotName,
+			$instanceId, $slideId, $slideNum, $state, $eggId,
+			$overrideSettings, $overrideFrameworkAndCSS, $isAjaxReload = true
+		);
 		
-		foreach (ze::$slotContents as $s => &$instance) {
-			$slotName = $s;
-			$moduleClassName = $instance['class_name'] ?? false;
-			$instanceId = $instance['instance_id'] ?? false;
+		foreach (ze::$slotContents as $s => &$slot) {
+			$slotNameNestId = $s;
+			$moduleClassName = $slot->moduleClassName();
+			$instanceId = $slot->instanceId();
 			$instanceFound = true;
 			break;
 		}
+		unset($slot);
 	}
 	
 	if (!$instanceFound) {
@@ -139,11 +125,12 @@ if ($methodCall == 'refreshPlugin'
 		} else {
 			ze\plugin::setupNewBaseClass($slotName);
 			$instanceId = 0;
+			$slotNameNestId = $slotName;
 		}
 	
 	} else
-	if (empty(ze::$slotContents[$slotName]['class'])
-	 || (empty(ze::$slotContents[$slotName]['init'])
+	if (empty(ze::$slotContents[$slotNameNestId]->class())
+	 || (empty(ze::$slotContents[$slotNameNestId]->init())
 	  && !($continueIfNoAccess = $methodCall == 'refreshPlugin' && ze::isAdmin()))) {
 	  	
 	  	if (ze::isAdmin()) {
@@ -312,13 +299,14 @@ if ($methodCall == 'refreshPlugin'
 }
 
 
+
 //Check which method call is being requested and then launch that method
 
 //Output a file
 if ($methodCall == 'showFile') {
 	
 	if ($isForPlugin) {
-		$module = &ze::$slotContents[$slotName]['class'];
+		$module = ze::$slotContents[$slotNameNestId]->class();
 	}
 	$module->showFile();
 	
@@ -335,14 +323,7 @@ if ($methodCall == 'showFile') {
 	ze::$tuixPath = $requestedPath;
 	
 	if ($isForPlugin) {
-		
-		if (($eggId = $_REQUEST['eggId'] ?? null)
-		 && ($slotNameNestId = $slotName. '-'. $eggId)
-		 && (isset(ze::$slotContents[$slotNameNestId]['class']))) {
-			$module = &ze::$slotContents[$slotNameNestId]['class'];
-		} else {
-			$module = &ze::$slotContents[$slotName]['class'];
-		}
+		$module = ze::$slotContents[$slotNameNestId]->class();
 	}
 	
 	$module = $module->runSubClass(get_class($module)) ?: $module;
@@ -354,7 +335,10 @@ if ($methodCall == 'showFile') {
 		exit;
 
 	//Check to see if this path is allowed.
-	} else if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
+	} elseif (
+		!$module->returnVisitorTUIXEnabled($requestedPath)
+	 || (!$isForPlugin && !$module->returnVisitorTUIXEnabledForPopouts($requestedPath))
+	) {
 	  	
 	  	if (ze::isAdmin()) {
 			echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
@@ -398,7 +382,7 @@ if ($methodCall == 'showFile') {
 } elseif ($methodCall == 'showImage') {
 	
 	if ($isForPlugin) {
-		$module = &ze::$slotContents[$slotName]['class'];
+		$module = ze::$slotContents[$slotNameNestId]->class();
 	}
 	$module->showImage();
 	
@@ -407,14 +391,14 @@ if ($methodCall == 'showFile') {
 } elseif ($methodCall == 'showRSS') {
 	
 	header('Content-Type: application/xml; charset=UTF-8');
-	ze::$slotContents[$slotName]['class']->showRSS();
+	ze::$slotContents[$slotNameNestId]->class()->showRSS();
 
 
 //Show a standalone page
 } elseif ($methodCall == 'showStandalonePage') {
 	
 	if ($isForPlugin) {
-		$module = &ze::$slotContents[$slotName]['class'];
+		$module = ze::$slotContents[$slotNameNestId]->class();
 	}
 	$module->showStandalonePage();
 	
@@ -422,18 +406,18 @@ if ($methodCall == 'showFile') {
 //Show a thickbox
 } elseif ($methodCall == 'showFloatingBox') {
 	
-	ze::$slotContents[$slotName]['class']->show(false, 'showFloatingBox');
+	ze::$slotContents[$slotNameNestId]->class()->show(false, 'showFloatingBox');
 	
 
 //Handle an AJAX ze::request (Plugin)
 } elseif ($methodCall == 'handlePluginAJAX' || $methodCall == 'pluginAJAX') {
 	
 	//Handle the old name if it's not been changed yet
-	if (method_exists(ze::$slotContents[$slotName]['class'], 'pluginAJAX')) {
-		ze::$slotContents[$slotName]['class']->pluginAJAX();
+	if (method_exists(ze::$slotContents[$slotNameNestId]->class(), 'pluginAJAX')) {
+		ze::$slotContents[$slotNameNestId]->class()->pluginAJAX();
 	}
 	
-	ze::$slotContents[$slotName]['class']->handlePluginAJAX();
+	ze::$slotContents[$slotNameNestId]->class()->handlePluginAJAX();
 
 
 //Handle an AJAX ze::request (Module)
@@ -574,18 +558,19 @@ if ($methodCall == 'showFile') {
 //Refresh a Plugin in a slot
 } elseif ($methodCall == 'refreshPlugin') {
 	
-	$module = &ze::$slotContents[$slotName]['class'];
+	$slot = ze::$slotContents[$slotName];
+	$module = ze::$slotContents[$slotNameNestId]->class();
 	
 	//Display an info section at the top of the result, to help the CMS pick up on a few things
 	$showInfo = true;
 	
-	if ($url = $module->checkHeaderRedirectLocation()) {
+	if ($url = $slot->headerRedirectLink()) {
 		if (!ze::isAdmin()) {
 			$showInfo = false;
 		}
 		ze\escape::flag('FORCE_PAGE_RELOAD', $url);
 	
-	} elseif ($module->checkForcePageReloadVar()) {
+	} elseif ($slot->pageNeedsReloading()) {
 		if (!ze::isAdmin()) {
 			$showInfo = false;
 		}
@@ -594,22 +579,22 @@ if ($methodCall == 'showFile') {
 	}
 	
 	if ($showInfo) {
-		ze\escape::flag('INSTANCE_ID', (int) ze\ray::value(ze::$slotContents[$slotName], 'instance_id'));
+		ze\escape::flag('INSTANCE_ID', (int) $slot->instanceId());
 		
-		if ($module->checkScrollToTopVar() === true) {
+		if ($slot->scrollToTop() === true) {
 			ze\escape::flag('SCROLL_TO_TOP');
 		}
 		
 		//Lets a Plugin will be placed in a floating box when it reloads
-		if (($showInFloatingBox = $module->checkShowInFloatingBoxVar()) === true) {
+		if ($slot->shownInFloatingBox()) {
 			ze\escape::flag('SHOW_IN_FLOATING_BOX');
-			if (($params = $module->getFloatingBoxParams()) && is_array($params)) {
+			if (($params = $slot->floatingBoxParams()) && is_array($params)) {
 				ze\escape::flag('FLOATING_BOX_PARAMS', json_encode($params));
 			}
 		}
 		
 		//Display the level this Module is at
-		$slotLevel = ze\ray::value(ze::$slotContents[$slotName], 'level');
+		$slotLevel = $slot->level();
 		ze\escape::flag('LEVEL', $slotLevel);
 		
 		if ($slideId = (int) $module->zAPIGetTabId()) {
@@ -622,26 +607,26 @@ if ($methodCall == 'showFile') {
 		$slotControlHTML = null;
 			
 		if (ze::isAdmin()) {
-			$slotContents = [$slotName => &ze::$slotContents[$slotName]];
+			$slotContents = [$slotName => &$slot];
 			$slotControlHTML = ze\pluginAdm::setupSlotControls($slotContents, true);
 			
-			$moduleId = ze\ray::value(ze::$slotContents[$slotName], 'module_id');
+			$moduleId = $slot->moduleId();
 			ze\escape::flag('MODULE_ID', $moduleId);
 			
-			ze\escape::flag('NAMESPACE', ze\ray::value(ze::$slotContents[$slotName], 'class_name'));
+			ze\escape::flag('NAMESPACE', $slot->moduleClassName());
 			
 			ze\escape::flag('WHAT_THIS_IS', $module->returnWhatThisIs());
 			
-			if (!empty(ze::$slotContents[$slotName]['instance_id'])) {
-				if (!empty(ze::$slotContents[$slotName]['content_id'])) {
+			if (!empty($slot->instanceId())) {
+				if (!empty($slot->cID())) {
 					ze\escape::flag('WIREFRAME');
 				}
-				if (ze::$slotContents[$slotName]['class']->shownInMenuMode()) {
+				if ($slot->shownInMenuMode()) {
 					ze\escape::flag('IS_MENU');
 				}
 			}
 		
-			if ($module->beingEdited()) {
+			if ($slot->beingEdited()) {
 				ze\escape::flag('IN_EDIT_MODE');
 			}
 		
@@ -659,17 +644,17 @@ if ($methodCall == 'showFile') {
 		
 		ze\escape::flag('CSS_CLASS', $cssClass);
 		
-		if (empty(ze::$slotContents[$slotName]['instance_id'])
-		 || !empty(ze::$slotContents[$slotName]['isSuspended'])) {
+		if (empty($slot->instanceId())
+		 || !empty($slot->isSuspended())) {
 			
-			if (empty(ze::$slotContents[$slotName]['error'])) {
+			if (empty($slot->error())) {
 				echo ze\admin::phrase('[Empty Slot]');
 			} else {
-				echo '<em>', htmlspecialchars(ze::$slotContents[$slotName]['error']), '</em>';
+				echo '<em>', htmlspecialchars($slot->error()), '</em>';
 			}
 		
-		} elseif (empty(ze::$slotContents[$slotName]['init'])) {
-			\ze\pluginAdm::showInitialisationError(ze::$slotContents[$slotName], ze::$slotContents[$slotName]['init'] ?? null);
+		} elseif (empty($slot->init())) {
+			\ze\pluginAdm::showInitialisationError($slot, $slot->init() ?? null);
 		
 		} else {
 			$module->showSlot();

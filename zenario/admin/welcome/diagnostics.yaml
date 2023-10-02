@@ -86,7 +86,7 @@ diagnostics:
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: PHP version 7.2 or later
+                        html: PHP version 7.2 or later, version 8.0 or later recommended
                     visible_if: zenarioAW.togglePressed(field)
                 opcache_misconfigured:
                     grouping: sub_table
@@ -582,13 +582,11 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                
-                admin_timeout_not_set_up_correctly:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: ''
-                    visible_if: zenarioAW.togglePressed(field)
+                missing_tables: *blank_child
+                unknown_tables: *blank_child
+                unknown_module_tables: *blank_child
+                
+                admin_timeout_not_set_up_correctly: *blank_child
                 public_documents: *blank_child
                 public_images: *blank_child
                 repair_public_images:
@@ -600,25 +598,22 @@ diagnostics:
                         margin: auto;
                         display: inherit;
                     hide_on_install: true
+                
+                print_css: *blank_child
+                unminified_skins: *blank_child
+                minify_skins:
+                    grouping: sub_table
+                    full_width: true
+                    type: submit
+                    value: Minify skin files
+                    style: |
+                        margin: auto;
+                        display: inherit;
+                    hide_on_install: true
                     
                 site_automated_backups: *blank_child
                 restore_policy_not_set: *blank_child
                 scheduled_task_manager: *blank_child
-                spare_domains_without_primary_domain:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_level
-                    snippet:
-                        html: |
-                            Domain name redirects have been created for this site, but they will not function because no primary domain is defined.
-                            Please go to
-                            <a href="organizer.php#zenario__administration/panels/site_settings//domains~.site_settings~tprimary_domain~k{&quot;id&quot;%3A&quot;domains&quot;}" target="_blank">
-                                <em>Domains</em> in the site settings
-                            </a>
-                            to define a primary domain.
-                            
-                    hide_on_install: true
-                    visible_if: zenarioAW.togglePressed(field)
                 forwarded_ip_misconfigured:
                     grouping: sub_table
                     full_width: true
@@ -863,3 +858,34 @@ diagnostics:
                     same_row: true
                     style: |
                         float: right;
+                
+                # For T12576 (not yet implmented)
+                #check_again:
+                #    value: Check again
+                #    type: submit
+                #    style: |
+                #        float: left;
+                #        position: relative;
+                #        left: 47px;
+                #continue:
+                #    value: Continue
+                #    type: submit
+                #    full_width: true
+                #    same_row: true
+                #    style: |
+                #        float: right;
+                #continue_to:
+                #    type: select
+                #    values:
+                #        default:
+                #            label: Whatever you just came from
+                #        citem:
+                #            label: Continue to html_123
+                #        home:
+                #            label: Continue to home page
+                #        organizer:
+                #            label: Continue to Organizer
+                #    full_width: true
+                #    same_row: true
+                #    style: |
+                #        float: right;

@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-$methodCall = isset($_REQUEST['method_call'])? $_REQUEST['method_call'] : false;
+$methodCall = $_REQUEST['method_call'] ?? false;
 
 //Check to see if this file is being directly accessed, when the index.php file in the directory below should be used to access this file
 if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
@@ -68,6 +68,7 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 }
 
 require 'basicheader.inc.php';
+
 ze\cookie::startSession();
 
 
@@ -101,6 +102,14 @@ if (ze::$canCache) require CMS_ROOT. 'zenario/includes/index.pre_load.inc.php';
 
 define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
+
+//T12563 Cookie-free domain for static files: make sure no regular admins or visitors us this domain
+if (($cfDomain = ze::setting('cookie_free_domain'))
+ && ($cfDomain === ($_SERVER['HTTP_HOST'] ?? ''))
+ && ($cDomain = \ze::setting('primary_domain') ?: \ze::setting('last_primary_domain'))) {
+	header('location: '. ze\link::protocol(). $cDomain. SUBDIRECTORY. DIRECTORY_INDEX_FILENAME);
+	exit;
+}
 
 
 if ($isAdmin = ze::isAdmin()) {
@@ -227,43 +236,34 @@ ze\content::setShowableContent($content, $chain, $version, true);
 require ze::editionInclude('index.pre_get_contents');
 
 
-$fakeLayout = false;
-$hideLayout = false;
-$specificSlot = false;
-$specificInstance = false;
-$overrideSettings = false;
-$overrideFrameworkAndCSS = false;
+[$slotName, $instanceId, $slideId, $slideNum, $state, $eggId, $overrideSettings, $overrideFrameworkAndCSS] =
+	ze\plugin::getSlotVarsFromRequest();
 
-if (($methodCall == 'showSingleSlot' || $methodCall == 'showIframe')
- && (ze::request('instanceId') || ze::request('slotName'))) {
+$hideLayout = false;
+$fakeLayout = false;
+$singleSlot = false;
+
+if ($methodCall == 'showSingleSlot' || $methodCall == 'showIframe') {
+	$singleSlot = true;
 	
-	$specificInstance = $_REQUEST['instanceId'] ?? false;
-	if ($specificSlot = $_REQUEST['slotName'] ?? false) {
+	if ($slotName) {
 		if (!$hideLayout = (bool) ze::request('hideLayout')) {
 			$fakeLayout = (bool) ze::request('fakeLayout');
 		}
 	}
-	
-	if ($fakeLayout && !empty($_REQUEST['overrideSettings']) && ze\priv::check('_PRIV_EDIT_DRAFT')) {
-		$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
-	}
-	
-	if ($fakeLayout
-	 && !empty($_REQUEST['overrideFrameworkAndCSS'])
-	 && (ze\priv::check('_PRIV_EDIT_DRAFT') || ze\priv::check('_PRIV_EDIT_CSS'))) {
-		$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
-	}
-
-} elseif (!empty($_REQUEST['overrideFrameworkAndCSS']) && ze\priv::check('_PRIV_EDIT_CSS')) {
-	$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
+} else {
+	$overrideSettings = false;
 }
 
-ze\plugin::slotContents(
+ze\plugin::runSlotContents(
 	ze::$slotContents,
 	ze::$cID, ze::$cType, ze::$cVersion,
-	ze::$layoutId,
-	$specificInstance, $specificSlot,
-	false, true, false, $overrideSettings, $overrideFrameworkAndCSS);
+	ze::$layoutId, $singleSlot, $slotName,
+	$instanceId, $slideId, $slideNum, $state, $eggId,
+	$overrideSettings, $overrideFrameworkAndCSS
+);
+
+
 ze\cache::start();
 
 
@@ -279,21 +279,21 @@ do {
 	switch (ze::setting('xframe_target')) {
 		case 'all_slots':
 			//Only allow slots to be shown
-			if (!$specificSlot) {
+			if (!$singleSlot) {
 				break 2;
 			}
 			break;
 		
 		case 'slots_with_nests':
 			//Only allow slots with nests in them to be shown
-			if (!$specificSlot || empty(ze::$slotContents[$specificSlot]['is_nest'])) {
+			if (!$singleSlot || !$slotName || empty(ze::$slotContents[$slotName]->isNest())) {
 				break 2;
 			}
 			break;
 		
 		default:
 			//Allow either slots or whole content items
-			if (!$specificSlot && $methodCall) {
+			if (!$singleSlot && $methodCall) {
 				break 2;
 			}
 	}
@@ -472,14 +472,6 @@ echo '
 <meta name="skin" content="' . ze::$skinName . '"/>';
 
 ze\content::pageHead('zenario/', false, true, $overrideFrameworkAndCSS);
-ze\content::sitewideHTML('sitewide_head');
-
-if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'head') {
-	ze\content::sitewideHTML('sitewide_analytics_html');
-}
-if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'head') {
-	ze\content::sitewideHTML('sitewide_social_media_html');
-}
 
 echo "</head>";
 
@@ -528,12 +520,12 @@ $skinDiv .= '">';
 
 
 //Functionality for only showing one Plugin in a slot
-if ($specificInstance || $specificSlot) {
+if ($singleSlot) {
 	
 	//Just show the plugin, without any of the <div>s from the layout around it
 	if ($hideLayout) {
 		ze\content::pageBody('zenario_showing_plugin_without_layout', '', true);
-		ze\plugin::slot($specificSlot, 'grid');
+		ze\plugin::slot($slotName, 'grid', $eggId);
 	
 	//Try and "fake" the grid, to get as many styles from the Skin as possible,
 	//while still showing the plugin on its own taking up the full width
@@ -557,7 +549,7 @@ if ($specificInstance || $specificSlot) {
 					"
 					', empty($_GET['grid_pxWidth'])? '' : 'style="max-width: '. (int) $_GET['grid_pxWidth']. 'px;"', '
 				>';
-					ze\plugin::slot($specificSlot, 'grid');
+					ze\plugin::slot($slotName, 'grid', $eggId);
 		echo '
 				</div>
 			</div>
@@ -605,8 +597,9 @@ if ($specificInstance || $specificSlot) {
 
 //Normal functionality; show the whole page
 } else {
-	ze\content::pageBody('', '', true, true);
-	ze\cookie::showConsentBox();
+	$includeAdminToolbar = $isAdmin && empty($_SESSION['hide_admin_toolbar']);
+	ze\content::pageBody('', '', true, $includeAdminToolbar);
+	ze\cookie::showConsentBox($isAdmin, true, $includeAdminToolbar);
 	
 	if (ze\module::inc('zenario_sensitive_content_message')) {
 		
@@ -624,7 +617,7 @@ if ($specificInstance || $specificSlot) {
 	}
 	
 	echo "\n", '</div></div></div>';
-	ze\content::pageFoot('zenario/', false, true, true, true);
+	ze\content::pageFoot('zenario/', false, true, $includeAdminToolbar, true);
 	
 	//If someone just changed the CSS for a plugin, scroll down to that plugin to show the changes
 	if ($isAdmin && !empty($_SESSION['scroll_slot_on_'. ze::$cType. '_'. ze::$cID])) {
@@ -635,15 +628,6 @@ if ($specificInstance || $specificSlot) {
 		
 		unset($_SESSION['scroll_slot_on_'. ze::$cType. '_'. ze::$cID]);
 	}
-}
-
-
-ze\content::sitewideHTML('sitewide_foot');
-if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'foot') {
-	ze\content::sitewideHTML('sitewide_analytics_html');
-}
-if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'foot') {
-	ze\content::sitewideHTML('sitewide_social_media_html');
 }
 
 //Run post-display actions

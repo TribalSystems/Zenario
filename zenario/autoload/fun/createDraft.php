@@ -256,7 +256,7 @@ if ($newDraftCreated) {
 		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
 		
-		\ze\pluginAdm::duplicateVC($cIDTo, $cIDFrom, $cType, $cVersionTo, $cVersionFrom, $cTypeFrom);
+		\ze\pluginAdm::duplicateVC($cIDFrom, $cTypeFrom, $cVersionFrom, $cIDTo, $cTypeTo, $cVersionTo);
 		\ze\pluginAdm::removeUnusedVCs($cIDTo, $cTypeTo, $cVersionTo);
 		\ze\contentAdm::flagImagesInArchivedVersions($cIDTo, $cTypeTo);
 		\ze\contentAdm::syncInlineFileContentLink($cIDTo, $cTypeTo, $cVersionTo);

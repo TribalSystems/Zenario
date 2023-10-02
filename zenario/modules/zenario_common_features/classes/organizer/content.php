@@ -274,6 +274,13 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				unset($panel['columns']['sync_assist']);
 			}
 		}
+		
+		//If this is the Translations panel, and it was accessed from the menu nodes panel,
+		//make sure the admin box for creating/editing has the correct parameters.
+		if ($path == 'zenario__content/panels/chained' && $refinerName == 'zenario_trans__chained_in_link__from_menu_node' && ($menu = ze\menu::details($refinerId))) {
+			$panel['item_buttons']['create_translation']['admin_box']['key']['id_is_parent_menu_node_id'] = 1;
+			$panel['item_buttons']['create_translation']['admin_box']['key']['edit_linked_content_item'] = 1;
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -823,7 +830,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		
 				} elseif ($item['status'] != 'trashed') {
 					$item['unlinked'] = true;
-					$item['menu'] = ze\admin::phrase('Orphaned');
+					$item['menu'] = ze\admin::phrase('Not in menu');
 					$item['cell_css_classes']['menu'] = 'orange';
 				}
 		
@@ -1120,7 +1127,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 						['id' => $cID, 'type' => $cType, 'version' => $cVersion]
 					)) {
 						$mrg = $adminDetails;
-						$mrg['publicationTime'] = ze\admin::formatDateTime($date, 'vis_date_format_long');
+						$mrg['publicationTime'] = ze\admin::formatDateTime($date, 'vis_date_format_med');
 						echo ze\admin::phrase('It has been scheduled by [[first_name]] [[last_name]] to be published on [[publicationTime]].', $mrg);
 					} else {
 						echo ze\admin::phrase('Other administrators will then be able to edit it.');
@@ -1132,7 +1139,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		} elseif (ze::post('unlock')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
-					// Unlock the item & remove scheduled publication
+					// Unlock the item
 					if (ze\priv::check('_PRIV_CANCEL_CHECKOUT') || ze\priv::check(false, $cID, $cType)) {
 						$cVersion = ze\row::get('content_items', 'admin_version', ['id'=>$cID, 'type'=>$cType]);
 						ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => null], ['id' => $cID, 'type' => $cType]);

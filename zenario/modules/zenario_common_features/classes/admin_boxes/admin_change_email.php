@@ -79,8 +79,6 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 					unset($tagsToParse);
 				}
 		
-				$addressToOverriddenBy = false;
-
 				foreach (['old_email' => $details['email'], 'new_email' => $values['details/new_email']] as $key => $emailTo) {
 					//Do not send the confirmation code to the old address!
 					if ($key == 'old_email') {
@@ -104,18 +102,14 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 						$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 					};
 					
-					ze\server::sendEmail(
-						$subject, $message,
+					ze\server::sendEmailSimple(
+						$subject, $message, $isHTML = true,
+						//Admin email change emails should always be sent to the intended recipient,
+						//even if debug mode is on.
+						$ignoreDebugMode = true,
 						$emailTo,
-						$addressToOverriddenBy,
-						$nameTo = $merge['NAME'],
-						$addressFrom = false,
-						$nameFrom = $emailTemplate['from'],
-						false, false, false,
-						$isHTML = true,
-						false, false, false, false, '', '', 'To',
-						$ignoreDebugMode = true);	//Admin email change emails should always be sent to the intended recipient,
-													//even if debug mode is on.
+						$nameTo = $merge['NAME'], $addressFrom = false, $nameFrom = $emailTemplate['from']
+					);
 				}
 
 				$box['tabs']['details']['notices']['code_send_success']['show'] = true;
@@ -217,21 +211,15 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 			$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 		};
 
-		$addressToOverriddenBy = false;
-
 		foreach ([$merge['OLD_EMAIL'], $merge['NEW_EMAIL']] as $emailTo) {
-			ze\server::sendEmail(
-				$subject, $message,
+			ze\server::sendEmailSimple(
+				$subject, $message, $isHTML = true,
+				//Admin email change emails should always be sent to the intended recipient,
+				//even if debug mode is on.
+				$ignoreDebugMode = true,
 				$emailTo,
-				$addressToOverriddenBy,
-				$nameTo = $merge['NAME'],
-				$addressFrom = false,
-				$nameFrom = $emailTemplate['from'],
-				false, false, false,
-				$isHTML = true,
-				false, false, false, false, '', '', 'To',
-				$ignoreDebugMode = true);	//Admin email change emails should always be sent to the intended recipient,
-											//even if debug mode is on.
+				$nameTo = $merge['NAME'], $addressFrom = false, $nameFrom = $emailTemplate['from']
+			);
 		}
 
 		unset($_SESSION['ADMIN_CHANGE_EMAIL_EDIT_SELF_CODE'], $_SESSION['ADMIN_CHANGE_EMAIL_EDIT_SELF_NEW_EMAIL'], $_SESSION['ADMIN_CHANGE_EMAIL_EDIT_SELF_TIMESTAMP_SET']);

@@ -169,8 +169,8 @@ class link {
 
 	//Formerly "cookieFreeDomain()"
 	public static function cookieFreeDomain() {
-		if (\ze\link::protocol() == 'http://' && \ze::setting('use_cookie_free_domain') && \ze::setting('cookie_free_domain') && !\ze\priv::check()) {
-			return 'http://'. \ze::setting('cookie_free_domain'). SUBDIRECTORY;
+		if (\ze::setting('use_cookie_free_domain') && \ze::setting('cookie_free_domain') && !\ze\priv::check()) {
+			return \ze\link::protocol(). \ze::setting('cookie_free_domain'). SUBDIRECTORY;
 		} else {
 			return false;
 		}

@@ -48,7 +48,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		//Only load data if this isn't the map
 		if (!empty($_REQUEST['display_map'])) {
 			if (!empty($this->setting('show_map'))) {
-				ze::requireJsLib('https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')));
+				$this->requireJsLib('https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')));
 			}
 			return true;
 		}

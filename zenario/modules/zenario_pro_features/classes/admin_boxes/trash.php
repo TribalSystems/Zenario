@@ -99,6 +99,20 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
             $fields['trash/preview__' . $i]['snippet']['html'] = '<a id="spare_alias_preview__' . htmlspecialchars($i) . '" data-base="' . ze\link::absolute() . '" data-suffix="' . $suffix . '" href="' . ze\link::absolute() . $alias . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
         }
 	}
+	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		$ids = ze\ray::explodeAndTrim($box['key']['id']);
+		
+		$i = 10000;
+        foreach ($ids as $tagId) {
+            $i++;
+            if ($values['trash/create_spare_alias__' . $i] && $values['trash/target_loc__' . $i] == 'int' && $values['trash/hyperlink_target__' . $i]) {
+            	if ($values['trash/hyperlink_target__' . $i] == $tagId) {
+            		$fields['trash/hyperlink_target__' . $i]['error'] = ze\admin::phrase('The spare alias cannot redirect to the same content item.');
+            	}
+            }
+        }
+	}
 
     public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_PUBLISH_CONTENT_ITEM');

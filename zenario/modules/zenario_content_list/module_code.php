@@ -35,6 +35,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 	protected $totalPages;
 	protected $rows = false;
 	protected $items = false;
+	protected $styles = [];
 	protected $sql;
 	protected $isRSS = false;
 	
@@ -506,7 +507,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//To add Toastr library if permalink is set
 		if (!ze::isAdmin()) {
 			if($this->setting('show_permalink')) {
-				ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
+				$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 			}
 		}
 		
@@ -574,6 +575,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 			while($row = ze\sql::fetchAssoc($result)) {
 				$item = [];
 				if ($this->setting('show_text_preview') && $this->dataField == 'v.description') {
+					if (!$row['content_table_data']) {
+						$row['content_table_data'] = '';
+					}
+					
 					if ($this->isRSS) {
 						$item['Excerpt_Text'] = $this->escapeIfRSS($row['content_table_data']);
 					} else {
@@ -699,14 +704,73 @@ class zenario_content_list extends ze\moduleBaseClass {
 				
 				//Try to set the feature image (aka sticky image) for this row
 				if ($this->setting('show_featured_image')) {
-					$item['Featured_Image_HTML'] =
-						ze\file::featureImageHTML(
-							$row['id'], $row['type'], $row['version'],
-							$this->setting('fall_back_to_default_image'), $this->setting('default_image_id'),
-							$this->setting('width'), $this->setting('height'),
-							$this->setting('canvas'), $this->setting('retina'), $this->setting('webp'),
-							$row['title']
+					
+					$imageId = ze\file::featureImageId(
+						$row['id'], $row['type'], $row['version'],
+						$this->setting('fall_back_to_default_image'), $this->setting('default_image_id')
+					);
+					
+					if ($imageId) {
+						//Start prepping some parameters for a call to the ze\file::imageHTML() function
+						$useRollover = $cssRollover = $jsRollover =
+						$showAsBackgroundImage = $lazyLoad = $hideOnMob = $changeOnMob =
+						$mobImageId = $mobMaxWidth = $mobMaxHeight = $mobCanvas = $mobRetina = false;
+						$cssClass = $styles = $attributes = '';
+						$altTag = $row['title'];
+						$preferInlineStypes = false;
+						
+						//Get the resize options for the image from the plugin settings
+						$setCanvas = $this->setting('canvas');
+						$setWidth = $this->setting('width');
+						$setHeight = $this->setting('height');
+						$setRetina = $this->setting('retina');
+						$makeWebP = $this->setting('webp');
+						
+						$setMobBehaviour = $this->setting('mobile_behaviour');
+						$setMobWidth = $this->setting('mobile_width');
+						$setMobHeight = $this->setting('mobile_height');
+						$setMobCanvas = $this->setting('mobile_canvas');
+						$setMobRetina = $this->setting('mobile_retina');
+						$mobWebP = $this->setting('mobile_webp');
+						
+						$htmlID = $this->containerId. '_'. $item['Id']. '_img';
+
+						//Change some parameters based on the option chosen for "mobile behaviour" in the plugin settings
+						//But note this needs a responsive layout with a minimum width set to work.
+						//It's also not currently compatible with the "Lazy load" option.
+						if (ze::$minWidth) {
+							switch ($setMobBehaviour) {
+		
+								//Same image as for desktop, but use a different size
+								case 'mobile_same_image_different_size':
+									$changeOnMob = true;
+									$preferInlineStypes = false;
+									$mobImageId = $imageId;
+									$mobMaxWidth = $setMobWidth;
+									$mobMaxHeight = $setMobHeight;
+									$mobCanvas = $setMobCanvas;
+									$mobRetina = $setMobRetina;
+									break;
+		
+								//Don't show an image
+								case 'mobile_hide_image':
+									$hideOnMob = true;
+									break;
+							}
+						}
+
+						$item['Featured_Image_HTML'] = ze\file::imageHTML(
+							$this->styles, $preferInlineStypes,
+							$imageId, $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+							$altTag, $htmlID, $cssClass, $styles, $attributes,
+							$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
+							$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP
 						);
+						
+					} else {
+						$item['Featured_Image_HTML'] = '';
+					}
+	
 				}
 				
 				$this->getStyledExtensionIcon(pathinfo($row['filename'], PATHINFO_EXTENSION), $item);
@@ -847,7 +911,24 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 		}
 		
+		//If we're reloading via AJAX, our addToPageHead() method won't be called, and the addStylesOnAJAXReload() function will add the styles.
+		//Otherwise the styles will be added using addToPageHead() and addStylesOnAJAXReload() as as normal.
+		$this->addStylesOnAJAXReload($this->styles);
+		
 		return !empty($this->items) || ((bool)$this->setting('show_headings_if_no_items'));
+	}
+	
+	public function addToPageHead() {
+		$this->addStylesToPageHead($this->styles);
+		
+		if ($this->setting('enable_rss')) {
+			echo '
+				<link
+					rel="alternate"
+					type="application/rss+xml"
+					href="'. htmlspecialchars($this->showRSSLink(true)). '"
+					title="'. htmlspecialchars(ze\content::title($this->cID, $this->cType, $this->cVersion)). '" />';
+		}
 	}
 	
 	// Gets a content item's lowest level public category (return false if there are multiple)
@@ -972,18 +1053,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		
 		return $getFileIDs;
-	}
-
-	public function addToPageHead() {
-		if ($this->setting('enable_rss')) {
-			echo '
-				<link
-					rel="alternate"
-					type="application/rss+xml"
-					href="'. htmlspecialchars($this->showRSSLink(true)). '"
-					title="'. htmlspecialchars(ze\content::title($this->cID, $this->cType, $this->cVersion)). '" />';
-
-		}
 	}
 	
 	
@@ -1169,7 +1238,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'RSS_Link' => $this->setting('enable_rss')? $this->escapeIfRSS($this->showRSSLink(true)) : null,
 			'Title_With_Content' => $titleWithContent,
 			'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
-			'Title_Tags' => $this->setting('heading_tags') ? $this->setting('heading_tags') : 'h1'
+			'Title_Tags' => $this->setting('heading_tags') ?: 'h2',
+			'Title_Tags_If_No_Items' => $this->setting('heading_tags_if_no_items') ?: 'h2'
 		];
 		
 		$inner = [

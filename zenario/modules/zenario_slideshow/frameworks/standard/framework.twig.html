@@ -1,0 +1,5 @@
+{% set aLib = this.setting('animation_library') %}
+
+{% if aLib %}
+	{% include this.frameworkDir() ~ 'animation_libraries/' ~ aLib ~ '.twig.html' %}
+{% endif %}

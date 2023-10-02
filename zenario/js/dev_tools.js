@@ -151,7 +151,6 @@ devTools.init = function(mode, schemaName, schema, orgMap) {
 		devTools.schema = false;
 	}
 	
-	
 	editor.setTheme('ace/theme/textmate');
     //editor.setTheme('ace/theme/idle_fingers');
     //editor.setTheme('ace/theme/tomorrow_night_bright');
@@ -159,6 +158,16 @@ devTools.init = function(mode, schemaName, schema, orgMap) {
     editor.commands.removeCommand('blockoutdent');
 	
 	editor.setBehavioursEnabled(false);
+	
+	//Workaround for a bug where ace doesn't account for the annotations when calculating the gutter width
+	editor.session.gutterRenderer =  {
+		getWidth: function(session, lastLineNumber, config) {
+			return 16 + lastLineNumber.toString().length * config.characterWidth;
+		},
+		getText: function(session, row) {
+			return row;
+		}
+	};
 	
 	
     document.getElementById('editor').style.fontSize='13px';
@@ -454,8 +463,7 @@ devTools.setupCopyButton = function() {
 	
 	if (selectedView && filePathsUsed[selectedView] && zenario.canCopy()) {
 		$copy.show().on('click', function() {
-			zenario.copy(filePathsUsed[selectedView]);
-			toastr.success(zenarioA.phrase.copied);
+			zenarioA.copy(filePathsUsed[selectedView]);
 		});
 	} else {
 		$copy.off().hide();
@@ -1402,5 +1410,10 @@ editor.session.setUseSoftTabs(false);
 
 },
 	window.devTools = function() {},
-	window.editor = ace.edit('editor')
+	window.editor = ace.edit('editor', {
+		//Disable workers to prevent a couple of bugs.
+		//If workers are enabled, Ace starts generating Content Security Policy errors unless you modify your CSP.
+		//Also even if you do that, there's a second bug where all of your annotations disappear!
+		useWorker: false
+	})
 );

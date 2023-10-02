@@ -38,8 +38,15 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		
 		switch ($refinerName) {
 			case 'images_for_content_item':
+			case 'images_for_menu_node_linked_content_item':
+				if ($refinerName == 'images_for_menu_node_linked_content_item' && ($menuContentItem = ze\menu::getContentItem($refinerId))) {
+					$contentItemTagId = $menuContentItem['content_type'] . '_' . $menuContentItem['equiv_id'];
+				} else {
+					$contentItemTagId = $refinerId;
+				}
+				
 				$cID = $cType = false;
-				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $refinerId);
+				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $contentItemTagId);
 	
 				if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 					unset($panel['collection_buttons']['add']);
@@ -99,6 +106,32 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				}
 		
 				break;
+			
+			
+			case 'images_for_newsletter':
+				$details = [];
+				if (ze\module::inc('zenario_newsletter')) {
+					$details = zenario_newsletter::details($refinerId);
+				}
+				
+				$panel['title'] = ze\admin::phrase('Images in the Newsletter "[[newsletter_name]]"', $details);
+				$panel['no_items_message'] = ze\admin::phrase('There are no images in this Newsletter.');
+		
+				if ($details['status'] != '_DRAFT') {
+					unset($panel['collection_buttons']['add']);
+					unset($panel['collection_buttons']['upload']);
+					unset($panel['collection_buttons']['delete_inline_file']);
+				}
+				
+				unset(
+					$panel['columns']['is_featured_image'],
+					$panel['item_buttons']['flag_as_feature'],
+					$panel['item_buttons']['unflag_as_feature']
+				);
+				
+				unset($panel['item_buttons']['send_to_documents']);
+				
+				break;
 
 	
 			case 'tag':
@@ -124,6 +157,13 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		
 		
 				break;
+		}
+		
+		if ($refinerName != 'images_for_content_item' && $refinerName != 'images_for_menu_node_linked_content_item') {
+			unset($panel['collection_buttons']['add_to_content_item']);
+			unset($panel['item_buttons']['flag_as_feature']);
+			unset($panel['item_buttons']['unflag_as_feature']);
+			unset($panel['item_buttons']['remove_from_content']);
 		}
 
 		$addFullDetails = ze::in($mode, 'full', 'quick', 'select');
@@ -261,11 +301,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				
 				if (isset($item['privacy'])) {
 					if ($item['privacy'] == 'auto') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is hidden. (It will become public when placed on a public content item, or private when placed on a private content item.)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] will auto-detect whether it is public or private. (When first used on a published content item, it will become public if the content item is public, or become private if the content item is private.)', ['name' => htmlspecialchars($item['filename'])]);
 					} elseif ($item['privacy'] == 'private') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (Only a logged-in extranet user can access this image via an internal link; URL will change from time to time.)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They will not be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
 					} elseif ($item['privacy'] == 'public') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (Any visitor who knows the public link can access it.)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (The URL for the image will stay the same, and may be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
 					}
 				}
 			}
@@ -337,7 +377,14 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($refinerName) {
 			case 'images_for_content_item':
-				if (!$content = ze\row::get('content_items', ['id', 'type', 'admin_version'], ['tag_id' => $refinerId])) {
+			case 'images_for_menu_node_linked_content_item':
+				if ($refinerName == 'images_for_menu_node_linked_content_item' && ($menuContentItem = ze\menu::getContentItem($refinerId))) {
+					$contentItemTagId = $menuContentItem['content_type'] . '_' . $menuContentItem['equiv_id'];
+				} else {
+					$contentItemTagId = $refinerId;
+				}
+				
+				if (!$content = ze\row::get('content_items', ['id', 'type', 'admin_version'], ['tag_id' => $contentItemTagId])) {
 					exit;
 
 				} elseif (ze::post('flag_as_feature') && ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
@@ -356,6 +403,15 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						'foreign_key_version' => $content['admin_version']];
 					$privCheck = ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']);
 				}
+				
+				break;
+				
+			
+			case 'images_for_newsletter':
+				$key = [
+					'foreign_key_to' => 'newsletter',
+					'foreign_key_id' => $refinerId];
+				$privCheck = ze\priv::check('_PRIV_EDIT_NEWSLETTER');
 				
 				break;
 			
@@ -391,7 +447,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 					ze\row::set('inline_images', [], $key);
 				}
 				
-				if ($refinerName == 'images_for_content_item') {
+				if ($refinerName == 'images_for_content_item' || $refinerName == 'images_for_menu_node_linked_content_item') {
 					self::setFirstUploadedImageAsFeatureImage($content, $fileId);
 				
 				//If uploading an image when viewing an image tag, assign that tag to the new image
@@ -424,7 +480,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				ze\row::set('inline_images', [], $key);
 				
 				if (!$i) {
-					if ($refinerName == 'images_for_content_item') {
+					if ($refinerName == 'images_for_content_item' || $refinerName == 'images_for_menu_node_linked_content_item') {
 						self::setFirstUploadedImageAsFeatureImage($content, $id);
 					}
 				}
@@ -509,40 +565,8 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				ze\row::delete('inline_images', $key);
 			}
 		
-		} elseif (ze::post('view_public_link')) {
-
-			$rememberWhatThisWas = ze::$mustUseFullPath;
-			ze::$mustUseFullPath = false;
-
-			$width = $height = $url = false;
-			if (ze\file::imageLink($width, $height, $url, $ids)) {
-				$mergeFields = [
-					'Copy_phrase' => ze\admin::phrase('Copy'),
-					'Copied_phrase' => ze\admin::phrase('Copied'),
-					'Heading_phrase' => ze\admin::phrase('The URL to your image is shown below:'),
-					'Full_hyperlink_phrase' => ze\admin::phrase('Full hyperlink:'),
-					'Full_hyperlink_value' => htmlspecialchars(ze\link::absolute(). $url),
-					'Internal_hyperlink_phrase' => ze\admin::phrase('Internal hyperlink:'),
-					'Internal_hyperlink_value' => htmlspecialchars($url),
-					'Private_links_phrase' => ze\admin::phrase('If this image is made private, these links will stop working.')
-				];
-				
-				$frameworkPath = ze::moduleDir('zenario_common_features', 'twig/image_url.twig.html');
-				$html = ze\twig::render($frameworkPath, $mergeFields);
-
-				echo $html;
-
-			} else {
-				echo
-					'<!--Message_Type:Error-->',
-					ze\admin::phrase('Could not generate public link');
-			}
-
-			ze::$mustUseFullPath = $rememberWhatThisWas;
-		
-		
-		//Send an image to Documents
 		} elseif (ze::post('send_to_documents')) {
+			//Send an image to Documents
 			if ($file = \ze\row::get('files', ['filename', 'location', 'data', 'privacy'], $ids)) {
 			
 				if ($file['location'] == 'db') {

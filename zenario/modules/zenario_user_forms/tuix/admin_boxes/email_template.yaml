@@ -8,7 +8,7 @@ zenario_email_template:
                     ord: 12.1
                     label: 'Insert merge fields from a form:'
                     type: select
-                    empty_value: -- Select Form --
+                    empty_value: -- Select form --
                     format_onchange: true
                     side_note: |
                         Add forms fields and their merge fields onto the current email body by selecting a form and then choosing all or individual form fields
@@ -16,6 +16,6 @@ zenario_email_template:
                     ord: 12.2
                     same_row: 1
                     type: select
-                    empty_value: -- Select Field --
+                    empty_value: -- Select field --
                     format_onchange: true
                     hidden: true

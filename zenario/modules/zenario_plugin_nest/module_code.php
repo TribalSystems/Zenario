@@ -152,11 +152,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	protected $commands = [];
 	protected $forwardCommand = false;
 	protected $statesToSlides = [];
-	protected $editingTabNum = false;
 	protected $mergeFields = [];
 	protected $sections = [];
 	protected $tabs = [];
-	protected $modules = [];
 	protected $show = false;
 	protected $minigrid = [];
 	protected $minigridInUse = false;
@@ -183,7 +181,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$hideBackButtonIfNeeded = false;
 		
 		//Flag that this plugin is actually a nest
-		ze::$slotContents[$this->slotName]['is_nest'] = true;
+		ze::$slotContents[$this->slotName]->flagAsNest();
 		
 		$conductorEnabled = $this->setting('nest_type') == 'conductor';
 		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
@@ -193,208 +191,185 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$specificEgg = $this->specificEgg();
-		
-		if ($specificEgg && $specificEgg > 0) {
+		if ($this->loadTabs()) {
 			
-			$this->slideNum = ze\row::get('nested_plugins', 'slide_num', $specificEgg) ?: 1;
+			//Check to see if a slide or a state is requested in the URL
+			$lookForState =
+			$lookForSlideId =
+			$lookForSlideNum = 
+			$defaultState = false;
 			
-			$slide = ze\row::get('nested_plugins', ['id', 'states'], ['is_slide' => 1, 'slide_num' => $this->slideNum, 'instance_id' => $this->instanceId]);
-			$this->slideId = $slide['id'];
+			if ($conductorEnabled
+			 && !empty($_REQUEST['state'])
+			 && preg_match('/^[ab]?[a-z]$/i', $_REQUEST['state'])) {
+				$lookForState = strtolower($_REQUEST['state']);
 			
-			if ($slide['states'] !== '') {
-				$states = explode(',', $slide['states']);
-				if (isset($_REQUEST['state'])
-				 && in_array($_REQUEST['state'], $states)) {
-					$this->state = $_REQUEST['state'];
-				} else {
-					$this->state = $states[0];
-				}
+			} elseif ($lookForSlideId = ze::$slotContents[$this->slotName]->slideId() ?? 0) {
+			} elseif ($lookForSlideNum = ze::$slotContents[$this->slotName]->slideNum() ?? 0) {
 			}
 			
-			$this->loadTabs();
-		
-		} else {
-		
-			if ($this->loadTabs()) {
+			
+			$tabOrd = 0;
+			foreach ($this->slides as $slide) {
+				++$tabOrd;
+				$this->lastTab = $slide['id'];
 				
-				//Check to see if a slide or a state is requested in the URL
-				$lookForState =
-				$lookForSlideId =
-				$lookForSlideNum = 
-				$defaultState = false;
+				//By default, show the first slide that the visitor can see...
+				if ($tabOrd == 1) {
+					$this->firstSlide = $slide['id'];
+					$this->slideNum = $slide['slide_num'];
+					$this->slideId = $slide['id'];
+					$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
+					$this->state = $slide['states'][0];
+					$defaultState = $slide['states'][0];
+				}
+				
+				//...but change this to the one mentioned in the request, if we see it
+				if ($lookForState && in_array($lookForState, $slide['states'])) {
+					$this->slideNum = $slide['slide_num'];
+					$this->slideId = $slide['id'];
+					$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
+					$this->state = $lookForState;
+				
+				} elseif ($lookForSlideId == $slide['id']) {
+					$this->slideNum = $slide['slide_num'];
+					$this->slideId = $slide['id'];
+					$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
+					$this->state = $slide['states'][0];
+				
+				} elseif ($lookForSlideNum == $slide['slide_num']) {
+					$this->slideNum = $slide['slide_num'];
+					$this->slideId = $slide['id'];
+					$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
+					$this->state = $slide['states'][0];
+				}
+				
+				$tabIds[$slide['slide_num']] = $slide['id'];
+				
+				
+				if (!isset($this->sections['Tab'])) {
+					$this->sections['Tab'] = [];
+				}
+				
+				$tabMergeFields = [
+					'TAB_ORDINAL' => $tabOrd];
+				
+				$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
+				$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
+				$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['slide_label'], true);
 				
 				if ($conductorEnabled
-				 && !empty($_REQUEST['state'])
-				 && preg_match('/^[ab]?[a-z]$/i', $_REQUEST['state'])) {
-					$lookForState = strtolower($_REQUEST['state']);
-				
-				} elseif ($lookForSlideId = (int) ze::request('slideId')) {
-				} elseif ($lookForSlideNum = (int) ze::request('slideNum')) {
+				 && $this->slideNum == $slide['slide_num']) {
+					
+					if ($slide['show_back']) {
+						$tabMergeFields['Show_Back'] = true;
+						$hideBackButtonIfNeeded = (bool) $slide['no_choice_no_going_back'];
+					}
+					$tabMergeFields['Show_Refresh'] = (bool) $slide['show_refresh'];
+					$tabMergeFields['Show_Auto_Refresh'] = (bool) $slide['show_auto_refresh'];
+					$tabMergeFields['Auto_Refresh_Interval'] = (int) $slide['auto_refresh_interval'];
+					$tabMergeFields['Last_Updated'] = ze\date::formatTime(time(), '%H:%i:%S');
 				}
 				
-				
-				$tabOrd = 0;
-				foreach ($this->slides as $slide) {
-					++$tabOrd;
-					$this->lastTab = $slide['id'];
+				//Set up the embed link
+				if ($slide['show_embed']) {
 					
-					//By default, show the first slide that the visitor can see...
-					if ($tabOrd == 1) {
-						$this->firstSlide = $slide['id'];
-						$this->slideNum = $slide['slide_num'];
-						$this->slideId = $slide['id'];
-						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
-						$this->state = $slide['states'][0];
-						$defaultState = $slide['states'][0];
-					}
+					if (!ze::in(ze::setting('xframe_options'), 'all', 'specific')) {
+						$tabMergeFields['Show_Embed_Disabled'] = true;
 					
-					//...but change this to the one mentioned in the request, if we see it
-					if ($lookForState && in_array($lookForState, $slide['states'])) {
-						$this->slideNum = $slide['slide_num'];
-						$this->slideId = $slide['id'];
-						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
-						$this->state = $lookForState;
-					
-					} elseif ($lookForSlideId == $slide['id']) {
-						$this->slideNum = $slide['slide_num'];
-						$this->slideId = $slide['id'];
-						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
-						$this->state = $slide['states'][0];
-					
-					} elseif ($lookForSlideNum == $slide['slide_num']) {
-						$this->slideNum = $slide['slide_num'];
-						$this->slideId = $slide['id'];
-						$this->slideSetsTitle = $slide['set_page_title_with_conductor'];
-						$this->state = $slide['states'][0];
-					}
-					
-					$tabIds[$slide['slide_num']] = $slide['id'];
-					
-					
-					if (!isset($this->sections['Tab'])) {
-						$this->sections['Tab'] = [];
-					}
-					
-					$tabMergeFields = [
-						'TAB_ORDINAL' => $tabOrd];
-					
-					$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
-					$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
-					$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['slide_label'], true);
-					
-					if ($conductorEnabled
-					 && $this->slideNum == $slide['slide_num']) {
-					 	
-					 	if ($slide['show_back']) {
-							$tabMergeFields['Show_Back'] = true;
-							$hideBackButtonIfNeeded = (bool) $slide['no_choice_no_going_back'];
-					 	}
-						$tabMergeFields['Show_Refresh'] = (bool) $slide['show_refresh'];
-						$tabMergeFields['Show_Auto_Refresh'] = (bool) $slide['show_auto_refresh'];
-						$tabMergeFields['Auto_Refresh_Interval'] = (int) $slide['auto_refresh_interval'];
-						$tabMergeFields['Last_Updated'] = ze\date::formatTime(time(), '%H:%i:%S');
-					}
-					
-					//Set up the embed link
-					if ($slide['show_embed']) {
-						
-						if (!ze::in(ze::setting('xframe_options'), 'all', 'specific')) {
-							$tabMergeFields['Show_Embed_Disabled'] = true;
-						
-						} else {
-							$embedLink = ze\link::toItem(
-								ze::$cID, ze::$cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $this->slotName,
-								ze::$alias, $autoAddImportantRequests = true, $forceAliasInAdminMode = true);
-							
-							$mergefields = [
-								'title' => $this->phrase('Embed this plugin on a third-party website'),
-								'desc' => $this->phrase('You can display this plugin (part of this page) on another website.'),
-								'link' => $embedLink,
-								'copy' => $this->phrase('Copy'),
-								'copied' => $this->phrase('Copied to clipboard')
-							];
-							
-							if ('public' != $slide['privacy']
-							 || 'public' != ze\sql::fetchValue("
-												SELECT privacy
-												FROM ". DB_PREFIX. "translation_chains
-												WHERE equiv_id = ". (int) ze::$equivId. "
-												  AND type = '". ze\escape::asciiInSQL(ze::$cType). "'")
-							) {
-								$mergefields['auth_warning'] = $this->phrase('Warning: this page is password-protected, so users will need to be authenticated to this site before they can view the content.');
-							}
-							
-							
-							$tabMergeFields['Show_Embed'] = true;
-							$tabMergeFields['Embed'] = json_encode($mergefields);
-							
-							ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
-						}
-					}
-					
-					$tabMergeFields['Slide_Class'] = 'slide_'. $slide['slide_num']. ' '. $slide['css_class'];
-					
-					$this->sections['Tab'][$slide['slide_num']] = $tabMergeFields;
-				}
-				
-				if (isset($this->sections['Tab'][$this->slideNum]['Class'])) {
-					$this->sections['Tab'][$this->slideNum]['Class'] .= '_on';
-				}
-				
-				
-				$nextSlideId = false;
-				if ($this->lastTab == $this->slideId) {
-					if (!$this->setting('next_prev_buttons_loop')) {
-						$this->mergeFields['Next_Disabled'] = '_disabled';
 					} else {
-						$nextSlideId = $this->firstSlide;
-					}
-				} else {
-					foreach ($this->slides as $slideNum => $slide) {
-						if ($slideNum > $this->slideNum) {
-							$nextSlideId = $slide['id'];
-							break;
+						$embedLink = ze\link::toItem(
+							ze::$cID, ze::$cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $this->slotName,
+							ze::$alias, $autoAddImportantRequests = true, $forceAliasInAdminMode = true);
+						
+						$mergefields = [
+							'title' => $this->phrase('Embed this plugin on a third-party website'),
+							'desc' => $this->phrase('You can display this plugin (part of this page) on another website.'),
+							'link' => $embedLink,
+							'copy' => $this->phrase('Copy'),
+							'copied' => $this->phrase('Copied to clipboard')
+						];
+						
+						if ('public' != $slide['privacy']
+						 || 'public' != ze\sql::fetchValue("
+											SELECT privacy
+											FROM ". DB_PREFIX. "translation_chains
+											WHERE equiv_id = ". (int) ze::$equivId. "
+											  AND type = '". ze\escape::asciiInSQL(ze::$cType). "'")
+						) {
+							$mergefields['auth_warning'] = $this->phrase('Warning: this page is password-protected, so users will need to be authenticated to this site before they can view the content.');
 						}
+						
+						
+						$tabMergeFields['Show_Embed'] = true;
+						$tabMergeFields['Embed'] = json_encode($mergefields);
+						
+						$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 					}
 				}
 				
-				if ($nextSlideId) {
-					$this->mergeFields['Next_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $nextSlideId, false);
-				}
+				$tabMergeFields['Slide_Class'] = 'slide_'. $slide['slide_num']. ' '. $slide['css_class'];
 				
-				
-				$prevSlideId = false;
-				if ($this->firstSlide == $this->slideId) {
-					if (!$this->setting('next_prev_buttons_loop')) {
-						$this->mergeFields['Prev_Disabled'] = '_disabled';
-					} else {
-						$prevSlideId = $this->lastTab;
-					}
-				} else {
-					foreach ($this->slides as $slideNum => $slide) {
-						if ($slideNum >= $this->slideNum) {
-							break;
-						} else {
-							$prevSlideId = $slide['id'];
-						}
-					}
-				}
-				
-				if ($prevSlideId) {
-					$this->mergeFields['Prev_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $prevSlideId, false);
-				}
-				
-				$this->registerGetRequest('slideId', $this->firstSlide);
-				$this->registerGetRequest('state', $defaultState);
+				$this->sections['Tab'][$slide['slide_num']] = $tabMergeFields;
 			}
 			
-			if (!empty($this->slides[$this->slideNum]['request_vars'])) {
-				foreach ($this->slides[$this->slideNum]['request_vars'] as $var) {
-					$this->registerGetRequest($var);
+			if (isset($this->sections['Tab'][$this->slideNum]['Class'])) {
+				$this->sections['Tab'][$this->slideNum]['Class'] .= '_on';
+			}
+			
+			
+			$nextSlideId = false;
+			if ($this->lastTab == $this->slideId) {
+				if (!$this->setting('next_prev_buttons_loop')) {
+					$this->mergeFields['Next_Disabled'] = '_disabled';
+				} else {
+					$nextSlideId = $this->firstSlide;
+				}
+			} else {
+				foreach ($this->slides as $slideNum => $slide) {
+					if ($slideNum > $this->slideNum) {
+						$nextSlideId = $slide['id'];
+						break;
+					}
 				}
 			}
+			
+			if ($nextSlideId) {
+				$this->mergeFields['Next_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $nextSlideId, false);
+			}
+			
+			
+			$prevSlideId = false;
+			if ($this->firstSlide == $this->slideId) {
+				if (!$this->setting('next_prev_buttons_loop')) {
+					$this->mergeFields['Prev_Disabled'] = '_disabled';
+				} else {
+					$prevSlideId = $this->lastTab;
+				}
+			} else {
+				foreach ($this->slides as $slideNum => $slide) {
+					if ($slideNum >= $this->slideNum) {
+						break;
+					} else {
+						$prevSlideId = $slide['id'];
+					}
+				}
+			}
+			
+			if ($prevSlideId) {
+				$this->mergeFields['Prev_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $prevSlideId, false);
+			}
+			
+			$this->registerGetRequest('slideId', $this->firstSlide);
+			$this->registerGetRequest('state', $defaultState);
 		}
+		
+		if (!empty($this->slides[$this->slideNum]['request_vars'])) {
+			foreach ($this->slides[$this->slideNum]['request_vars'] as $var) {
+				$this->registerGetRequest($var);
+			}
+		}
+		
 		
 		//Load all of the paths from the current state
 		if ($conductorEnabled && $this->state) {
@@ -504,7 +479,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				$this->usesConductor = true;
 			}
 			
-			if ($this->usesConductor && !$specificEgg) {
+			if ($this->usesConductor) {
 				
 				$vars = array_filter(array_merge($_GET, ze::$vars));
 				
@@ -549,12 +524,12 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 		
 		//If the slide we're trying to display has at least one plugin on it, display it.
-		if ($this->slideNum !== false && $this->loadTab($this->slideNum)) {
+		if ($this->slideNum !== false && $this->loadSlide($this->slideNum)) {
 			$this->show = true;
 		
 		//Special edge-case for if no slides have been created. Return true in this case.
 		} elseif (!ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1])) {
-			$this->loadTab($this->slideNum = 1);
+			$this->loadSlide($this->slideNum = 1);
 			$this->show = true;
 		}
 		
@@ -699,31 +674,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 		$this->mergeFields['TAB_ORDINAL'] = $this->slideNum;
 		
-		//Show a single plugin in the nest
-		if ($this->checkShowInFloatingBoxVar()) {
-			if ($this->show) {
-				
-				$ord = 0;
-				foreach ($this->modules[$this->slideNum] as $eggId => $slotNameNestId) {
-					$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
-					
-					if (!empty(ze::$slotContents[$slotNameNestId]['class'])) {
-						if (ze::$slotContents[$slotNameNestId]['class']->checkShowInFloatingBoxVar()) {
-							$this->showPlugin($slotNameNestId);
-						}
-					}
-				}
-			}
+		//Show all of the plugins on this slide
+		$this->mergeFields['Tabs'] = $this->sections['Tab'] ?? null;
 		
-		//Show all of the plugins on this slideId
-		} else {
-			$this->mergeFields['Tabs'] = $this->sections['Tab'] ?? null;
-			
-			if ($this->show) {
-				$this->mergeFields['Tabs'][$this->slideNum]['Plugins'] = $this->modules[$this->slideNum];
-			}
-			$this->twigFramework($this->mergeFields);
+		if ($this->show) {
+			$this->mergeFields['Tabs'][$this->slideNum]['Plugins'] = ze::$slotContents[$this->slotName]->eggsOnSlideNum($this->slideNum);
 		}
+		$this->twigFramework($this->mergeFields);
 	}
 	
 	
@@ -756,6 +713,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 		if (!$sqlNumRows) {
 			return false;
+		
 		} else {
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$row['states'] = explode(',', $row['states']);
@@ -764,19 +722,68 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				$this->slides[$row['slide_num']] = $row;
 			}
 			
-			
-			$this->mergeFields['Nest'] = '';
-			
 			$this->removeHiddenTabs($this->slides, $this->cID, $this->cType, $this->cVersion, $this->instanceId);
-			
 			
 			return !empty($this->slides);
 		}
 	}
 	
-	protected function loadTab($slideNum) {
+	protected function loadSlide($slideNum) {
+	
+		$eggs = ze::$slotContents[$this->slotName]->eggsOnSlideNum($slideNum);
 		
-		$eggRunning = false;
+		//Return false if there were no plugins on this slide
+		if (empty($eggs)) {
+			return false;
+		}
+		
+		
+		//Start getting information on all of the plugins we need to load
+		$lastSlotNameNestId = false;
+		
+		foreach ($eggs as $eggid => $slotNameNestId) {
+			
+			//Read the minigrid information
+			$cols = ze::$slotContents[$slotNameNestId]->minigridCols() ?? 0;
+			$smallScreens = ze::$slotContents[$slotNameNestId]->minigridSmallScreens() ?? 'show';
+			
+		
+			//If this plugin should be grouped with the previous plugin (-1)...
+			if ($cols < 0) {
+				if ($lastSlotNameNestId && isset($this->minigrid[$lastSlotNameNestId])) {
+					//...flag it on the previous plugin so we know to open the grouping
+					$this->minigrid[$lastSlotNameNestId]['group_with_next'] = true;
+				} else {
+					//...catch the case where there was no previous plugin by converting this to a full-width plugin
+					$cols = 0;
+				}
+			}
+		
+			//If there are nothing but "full width" and "show on small screens" plugins,
+			//then we don't actually need to use a grid and can just leave the HTML alone.
+			//But as soon as we see a column that's not full width, or has responsive options,
+			//then enable the grid!
+			if (!$this->minigridInUse && ($cols > 0 || $smallScreens != 'show')) {
+				$this->minigridInUse = true;
+			
+				//Look up how many columns the current slot has, or just guess 12 if we can't find out
+				$this->maxColumns = 
+					(int) ze\row::get('layout_slot_link',
+						'cols',
+						[
+							'layout_id' => ze::$layoutId,
+							'slot_name' => $this->slotName]
+					) ?: 12;
+			}
+		
+			$this->minigrid[$slotNameNestId] = [
+				'cols' => min($cols, $this->maxColumns),
+				'small_screens' => $smallScreens,
+				'group_with_next' => false
+			];
+		
+			$lastSlotNameNestId = $slotNameNestId;
+		}
 		
 		
 		//This bit of code prevents a small bug/exploit, where a user could show the wrong data pool
@@ -792,325 +799,13 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 				}
 			}
 		}
+	
 		
-		
-		$slEggId = 0;
-		$eggs = [];
-		$bespokeSettings = [];
-		
-		//Automatically add a breadcrumb plugin to every slide, if requested in the overall-nest's plugin settings
-		if ($this->setting('bc_add') && ($moduleId = ze\row::get('modules', 'id', ['class_name' => 'zenario_breadcrumbs', 'status' => 'module_running']))) {
-			
-			--$slEggId;
-			
-			$egg = [
-				'id' => $slEggId,
-				'slide_num' => $slideNum,
-				'ord' => -1,
-				'module_id' => $moduleId,
-				'framework' => 'standard',
-				'css_class' => '',
-				'cols' => (int) $this->setting('bc_cols'),
-				'small_screens' => 'show'
-			];
-			
-			$bespokeSettings[$slEggId] = [
-				'menu_section' => $this->setting('bc_menu_section'),
-				'breadcrumb_trail' => $this->setting('bc_breadcrumb_trail'),
-				'breadcrumb_prefix_menu' => $this->setting('bc_breadcrumb_prefix_menu'),
-				'breadcrumb_trail_separator' => $this->setting('bc_breadcrumb_trail_separator'),
-				'add_conductor_slides' => $this->setting('nest_type') == 'conductor'
-			];
-			
-			$eggs[] = $egg;
-		}
-		
-		# I was playing around with adding a timezone plugin to each slide in a conductor,
-		# but we changed our minds.
-		//if ($this->setting('tz_add') && ($moduleId = ze\row::get('modules', 'id', ['class_name' => 'zenario_timezones', 'status' => 'module_running']))) {
-		//	
-		//	foreach ($eggs as &$prEgg) {
-		//		--$prEgg['ord'];
-		//	}
-		//	
-		//	--$slEggId;
-		//	
-		//	$egg = [
-		//		'id' => $slEggId,
-		//		'slide_num' => $slideNum,
-		//		'ord' => -1,
-		//		'module_id' => $moduleId,
-		//		'framework' => 'standard',
-		//		'css_class' => '',
-		//		'cols' => (int) $this->setting('tz_cols'),
-		//		'small_screens' => 'show'
-		//	];
-		//	
-		//	$bespokeSettings[$slEggId] = [];
-		//	
-		//	$eggs[] = $egg;
-		//}
-		
-		
-		$ord = 0;
-		$specificEgg = $this->specificEgg();
-		
-		//Don't look up details on the other plugins if this is an AJAX request for one of the slide-designer plugins
-		if (!$specificEgg || $specificEgg > 0) {
-			
-			//Look up every nested plugin in this slide
-			$sql = "
-				SELECT np.id, np.slide_num, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
-				FROM ". DB_PREFIX. "nested_plugins AS np
-				WHERE np.instance_id = ". (int) $this->instanceId. "
-				  AND np.is_slide = 0
-				  AND np.slide_num = ". (int) $slideNum;
-			
-			//If this is an AJAX request for a specific plugin, don't load any of the others
-			if ($specificEgg = $this->specificEgg()) {
-				$sql .= "
-				  AND np.id = ". (int) $specificEgg;
-			}
-		
-			//N.b. exclude plugins with the "Hidden, breadcrumbs only" option set
-			$sql .= "
-				  AND np.makes_breadcrumbs != 3
-				ORDER BY np.ord";
-		
-			$result = ze\sql::select($sql);
-			while ($egg = ze\sql::fetchAssoc($result)) {
-				$ord = $egg['ord'];
-				$eggs[] = $egg;
-			}
-		}
-		
-		
-		//Start getting information on all of the plugins we need to load
-		$lastSlotNameNestId = false;
-		$this->modules[$slideNum] = [];
-		
-		foreach ($eggs as $egg) {
-			$eggId = $egg['id'];
-			
-			//If this is an AJAX request for a specific plugin, don't load any of the others
-			if (!$specificEgg || $specificEgg == $eggId) {
-				
-				//Come up with a container id for this nested plugin.
-				if ($eggId < 0) {
-					//If it's from Slide Designer, use the slot name, slide id and plugin ordinal
-					$slotNameNestId = $this->slotName. '-'. $this->slides[$slideNum]['id']. $eggId;
-				} else {
-					//If it has an id, we can just use that with the slot name.
-					$slotNameNestId = $this->slotName. '-'. $eggId;
-				}
-				
-				if ($this->initEgg($slotNameNestId, $egg)) {
-				
-					//Read the minigrid information
-					$egg['cols'] = (int) $egg['cols'];
-				
-					//If this plugin should be grouped with the previous plugin (-1)...
-					if ($egg['cols'] < 0) {
-						if ($lastSlotNameNestId && isset($this->minigrid[$lastSlotNameNestId])) {
-							//...flag it on the previous plugin so we know to open the grouping
-							$this->minigrid[$lastSlotNameNestId]['group_with_next'] = true;
-						} else {
-							//...catch the case where there was no previous plugin by converting this to a full-width plugin
-							$egg['cols'] = 0;
-						}
-					}
-				
-					//If there are nothing but "full width" and "show on small screens" plugins,
-					//then we don't actually need to use a grid and can just leave the HTML alone.
-					//But as soon as we see a column that's not full width, or has responsive options,
-					//then enable the grid!
-					if (!$this->minigridInUse && ($egg['cols'] > 0 || $egg['small_screens'] != 'show')) {
-						$this->minigridInUse = true;
-					
-						//Look up how many columns the current slot has, or just guess 12 if we can't find out
-						$this->maxColumns = 
-							(int) ze\row::get('layout_slot_link',
-								'cols',
-								[
-									'layout_id' => ze::$layoutId,
-									'slot_name' => $this->slotName]
-							) ?: 12;
-					}
-				
-					$this->minigrid[$slotNameNestId] = [
-						'cols' => min($egg['cols'], $this->maxColumns),
-						'small_screens' => $egg['small_screens'],
-						'group_with_next' => false
-					];
-				
-					$lastSlotNameNestId = $slotNameNestId;
-				}
-			}
-		}
-		
-		$beingEdited =
-		$showInMenuMode =
-		$addedJavaScript = false;
-		foreach ($this->modules[$slideNum] as $eggId => $slotNameNestId) {
-			
-			$overrideSettings = false;
-			
-			//Add settings from any auto-generated plugin (e.g. the breadcrumbs at the top)
-			if ($eggId < 0 && isset($bespokeSettings[$eggId])) {
-				$overrideSettings = $bespokeSettings[$eggId];
-			}
-			
-			
-			if ($this->initEggInstance($slotNameNestId, $overrideSettings, $eggId, $this->slideId)) {
-				
-				//Check for the forcePageReload and headerRedirect options in modules
-				if ($reload = ze::$slotContents[$slotNameNestId]['class']->checkForcePageReloadVar()) {
-					$this->forcePageReload($reload);
-				}
-				if ($url = ze::$slotContents[$slotNameNestId]['class']->checkHeaderRedirectLocation()) {
-					$this->headerRedirect($url);
-				}
-				
-				//Ensure that the JavaScript libraries is there for modules on reloads
-				if ($this->needToAddCSSAndJS()) {
-					$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'addJavaScript', ze::$slotContents[$slotNameNestId]['class_name'], ze::$slotContents[$slotNameNestId]['module_id']);
-					$addedJavaScript = true;
-				}
-				
-				//Only return true from this function if at least one egg was running.
-				//(Even in admin mode where plugins that aren't running are usually visible.)
-				if (!empty(ze::$slotContents[$slotNameNestId]['init'])) {
-					$eggRunning = true;
-				}
-			}
-			
-			if (ze\priv::check() && !empty(ze::$slotContents[$slotNameNestId]['class'])) {
-				if (!$beingEdited) {
-					if ($beingEdited = ze::$slotContents[$slotNameNestId]['class']->beingEdited()) {
-						$this->editingTabNum = $slideNum;
-					}
-				}
-				if (!$showInMenuMode) {
-					$showInMenuMode = ze::$slotContents[$slotNameNestId]['class']->shownInMenuMode();
-				}
-			}
-		}
-		
-		//Add any Plugin JavaScript calls
-		foreach ($this->modules[$slideNum] as $eggId => $slotNameNestId) {
-			if (!empty(ze::$slotContents[$slotNameNestId]['class'])) {
-				//Check to see if any Eggs want to scroll to the top of the slot
-				$scrollToTop = ze::$slotContents[$slotNameNestId]['class']->checkScrollToTopVar();
-				if ($scrollToTop !== null) {
-					$this->scrollToTopOfSlot($scrollToTop);
-				}
-				
-				//Check to see if any Eggs want to show themselves in a Floating Box, or stop showing themselves in a Floating Box
-				if (ze::$slotContents[$slotNameNestId]['class']->checkShowInFloatingBoxVar()) {
-					$this->showInFloatingBox(true);
-				}
-			}
-		}
-		
-		//If an Egg wanted to show themselves in a Floating Box, hide the ones that didn't want this.
-		if ($this->checkShowInFloatingBoxVar()) {
-			$unsets = [];
-			foreach ($this->modules[$slideNum] as $eggId => $slotNameNestId) {
-				if (!empty(ze::$slotContents[$slotNameNestId]['class'])) {
-					if (!ze::$slotContents[$slotNameNestId]['class']->checkShowInFloatingBoxVar()) {
-						unset(ze::$slotContents[$slotNameNestId]);
-						$unsets[] = $eggId;
-					}
-				}
-			}
-			foreach ($unsets as $eggId) {
-				unset($this->modules[$slideNum][$eggId]);
-			}
-		}
-		
-		
-		if (ze\priv::check()) {
-			$this->markSlotAsBeingEdited($beingEdited);
-			$this->showInMenuMode($showInMenuMode);
-		}
-		
-		return $eggRunning;
+		return true;
 	}
 	
 	
 	
-	protected function initEgg($slotNameNestId, &$egg) {
-	
-		$missingPlugin = false;
-		if (($details = ze\module::details($egg['module_id']))
-		 && (ze\module::incWithDependencies($details['class_name'], $missingPlugin))
-		 && (method_exists($details['class_name'], 'showSlot'))) {
-			
-			$eggId = $egg['id'];
-			$slideNum = $egg['slide_num'];
-			$baseCSSName = $details['css_class_name'];
-			
-			$this->modules[$slideNum][$eggId] = $slotNameNestId;
-			
-			ze::$slotContents[$slotNameNestId] = $details;
-			ze::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
-			ze::$slotContents[$slotNameNestId]['egg_id'] = $eggId;
-			ze::$slotContents[$slotNameNestId]['egg_ord'] = $egg['ord'];
-			ze::$slotContents[$slotNameNestId]['slide_num'] = $slideNum;
-			ze::$slotContents[$slotNameNestId]['framework'] = ($egg['framework'] ?: $details['default_framework']);
-			ze::$slotContents[$slotNameNestId]['css_class'] = $details['css_class_name'];
-			
-			
-			if ($egg['css_class']) {
-				ze::$slotContents[$slotNameNestId]['css_class'] .= ' '. $egg['css_class'];
-			} else {
-				ze::$slotContents[$slotNameNestId]['css_class'] .= ' '. $baseCSSName. '__default_style';
-			}
-			
-			
-			//Add a CSS class for this version controller plugin, or this library plugin
-			if ($this->isVersionControlled) {
-				if (ze::$cID !== -1) {
-					ze::$slotContents[$slotNameNestId]['css_class'] .=
-						' '. ze::$cType. '_'. ze::$cID. '_'. $this->slotName.
-						'_'. $baseCSSName.
-						'_'. $slideNum. '_'. $egg['ord'];
-				}
-			} else {
-				ze::$slotContents[$slotNameNestId]['css_class'] .=
-					' '. $baseCSSName.
-					'_'. $this->instanceId.
-					'_'. $eggId;
-			}
-			
-			if ($this->isVersionControlled) {
-				ze::$slotContents[$slotNameNestId]['content_id'] = $this->cID;
-				ze::$slotContents[$slotNameNestId]['content_type'] = $this->cType;
-				ze::$slotContents[$slotNameNestId]['content_version'] = $this->cVersion;
-				ze::$slotContents[$slotNameNestId]['slot_name'] = $this->slotName;
-			} else {
-				ze::$slotContents[$slotNameNestId]['content_id'] = 0;
-				ze::$slotContents[$slotNameNestId]['content_type'] = '';
-				ze::$slotContents[$slotNameNestId]['content_version'] = 0;
-				ze::$slotContents[$slotNameNestId]['slot_name'] = '';
-			}
-			
-			ze::$slotContents[$slotNameNestId]['cache_if'] = [];
-			ze::$slotContents[$slotNameNestId]['clear_cache_by'] = [];
-			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	protected function initEggInstance($slotNameNestId, $overrideSettings, $eggId, $slideId, $beingDisplayed = true) {
-		
-		ze::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
-		ze\plugin::setInstance(ze::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, $overrideSettings, $eggId, $slideId, $beingDisplayed);
-		
-		return ze\plugin::initInstance(ze::$slotContents[$slotNameNestId]);
-	}
 	
 	
 	public function showPlugin($slotNameNestId, $includeAdminControlsIfInAdminMode = false) {
@@ -1221,24 +916,22 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		}
 		
 		
-		$p = ze\priv::check();
-		$status = false;
-		if (isset(ze::$slotContents[$slotNameNestId]['init'])) {
-			$status = ze::$slotContents[$slotNameNestId]['init'];
-		}
+		$slot = ze::$slotContents[$slotNameNestId];
+		$status = $slot->init();
 		
-		$noPermsMsg = !$status && (!empty(ze::$slotContents[$slotNameNestId]['error']) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && $p;
+		$p = ze\priv::check();
+		$noPermsMsg = !$status && (!empty($slot->error()) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) && $p;
 		
 		if ($p) {
 			if ($noPermsMsg) {
-				ze::$slotContents[$slotNameNestId]['class']->start('zenario_nestSlot zenario_slotWithNoPermission');
+				$slot->class()->start('zenario_nestSlot zenario_slotWithNoPermission');
 			} else {
-				ze::$slotContents[$slotNameNestId]['class']->start('zenario_nestSlot');
+				$slot->class()->start('zenario_nestSlot');
 			}
 		}
 		
 		if ($status || $p) {
-			ze::$slotContents[$slotNameNestId]['class']->show($includeAdminControlsIfInAdminMode, 'showSlot');
+			$slot->class()->show($includeAdminControlsIfInAdminMode, 'showSlot');
 		}
 		
 		if ($p) {
@@ -1268,10 +961,12 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		
 		
 		if ($this->needToAddCSSAndJS()
-		 && !empty(ze::$slotContents[$slotNameNestId]['class'])) {
+		 && !empty($slot->class())) {
 			//Add the script of a Nested Plugin to the Nest
 			$scriptTypes = [];
-			ze::$slotContents[$slotNameNestId]['class']->zAPICheckRequestedScripts($scriptTypes);
+			$slot->class()->zAPICheckRequestedScripts($scriptTypes);
+			
+			$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'addJavaScript', $slot->moduleClassName(), $slot->moduleId());
 			
 			foreach ($scriptTypes as $scriptType => &$scripts) {
 				foreach ($scripts as &$script) {
@@ -1285,31 +980,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			ze::$isTwig = true;
 			ze::ignoreErrors();
 		}
-	}
-	
-	
-	//Allow one specific Egg to be shown for the showFloatingBox/showRSS methods
-	protected function specificEgg() {
-		
-		if (isset($_REQUEST['method_call'])) {
-			switch ($_REQUEST['method_call']) {
-				case 'handlePluginAJAX':
-				case 'showFile':
-				case 'showImage':
-				case 'showStandalonePage':
-				case 'showSingleSlot':
-				case 'showFloatingBox':
-				case 'showRSS':
-				case 'fillVisitorTUIX':
-				case 'formatVisitorTUIX':
-				case 'validateVisitorTUIX':
-				case 'saveVisitorTUIX':
-				case 'typeaheadSearchAJAX':
-					return (int) ze::request('eggId');
-			}
-		}
-		
-		return false;
 	}
 	
 	//Version of refreshPluginSlotAnchor, that doesn't automatically set the slide id
@@ -1341,95 +1011,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	}
 	
-	public function showFile() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->showFile();
-		}
-	}
-	public function showImage() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->showImage();
-		}
-	}
-	public function showStandalonePage() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->showStandalonePage();
-		}
-	}
-	public function showFloatingBox() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->showFloatingBox();
-		}
-	}
-	public function showRSS() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->showRSS();
-		}
-	}
-	public function handlePluginAJAX() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->handlePluginAJAX();
-		}
-	}
-	
-	public function returnVisitorTUIXEnabled($path) {
-		if ($class = $this->getSpecificEgg(true, $path)) {
-			return $class->returnVisitorTUIXEnabled($path);
-		}
-	}
-	
-	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
-		if ($class = $this->getSpecificEgg(true, $path)) {
-			return $class->fillVisitorTUIX($path, $tags, $fields, $values);
-		}
-	}
-	
-	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg(true, $path)) {
-			return $class->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
-		}
-	}
-	
-	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
-		if ($class = $this->getSpecificEgg(true, $path)) {
-			return $class->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
-		}
-	}
-	
-	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
-		if ($class = $this->getSpecificEgg(true, $path)) {
-			return $class->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
-		}
-	}
-	
-	public function typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, &$searchResults) {
-		if ($class = $this->getSpecificEgg(true, $path)) {
-			return $class->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
-		}
-	}
-	
-	public function returnGlobalName() {
-		if ($class = $this->getSpecificEgg()) {
-			return $class->returnGlobalName();
-		}
-	}
-	
-	protected function getSpecificEgg($checkSubClass = false, $path = false) {
-		if ($this->show
-		 && ($specificEgg = $this->specificEgg())
-		 && ($slotNameNestId = ze\ray::value($this->modules[$this->slideNum], $specificEgg))
-		 && (!empty(ze::$slotContents[$slotNameNestId]['init']))) {
-			$class = ze::$slotContents[$slotNameNestId]['class'];
-			
-			if ($checkSubClass) {
-				$class = $class->runSubClass(get_class($class), false, $path) ?: $class;
-			}
-			
-			return $class;
-		}
-		return false;
-	}
-	
 	
 	protected function needToAddCSSAndJS() {
 		return $this->methodCallIs('refreshPlugin');
@@ -1437,7 +1018,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 	
 	protected $imgsUsed = [];
 	public function noteImage($imageId) {
-		$this->imgsUsed[$imageId] = $imageId;
+		if ($imageId) {
+			$this->imgsUsed[$imageId] = $imageId;
+		}
 		return $imageId;
 	}
 	

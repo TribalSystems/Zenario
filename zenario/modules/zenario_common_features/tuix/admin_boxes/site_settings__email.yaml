@@ -110,6 +110,7 @@ site_settings:
                         name: standard_email_template
                     label: 'Standard email template:'
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
                     editor_options:
                         convert_urls: false
@@ -124,8 +125,6 @@ site_settings:
                             min_path: 'zenario__library/panels/image_library'
                             max_path: 'zenario__library/panels/image_library'
                             disallow_refiners_looping_on_min_path: true
-                    insert_link_button:
-                        exists: true
                     value: |
                         <table style="table-layout: auto; width: 860px; height: 656px;" border="0" width="100%" cellspacing="0" cellpadding="0">
                             <tbody>
@@ -312,6 +311,7 @@ site_settings:
                 test_send_message:
                     label: "Message:"
                     type: editor
+                    editor_type: readonly
                     readonly: true
                     disabled: true
                 test_send_format:

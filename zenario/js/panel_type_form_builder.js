@@ -402,6 +402,9 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 		if (field.type == 'consent') {
 			field.type = 'checkbox';
 			field.is_consent = true;
+			
+			//Make new consent fields mandatory by default.
+			field.readonly_or_mandatory = 'mandatory';
 		}
 		
 		field.name = datasetField.label.replace(/:$/, "");

@@ -1,0 +1,71 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_promo_menu
+    tabs:
+        promo_images:
+            edit_mode:
+                format_on_edit: true
+                format_on_cancel_edit: true
+                format_on_revert: true
+            label: 'Image sizes'
+            fields:
+                canvas:
+                    plugin_setting:
+                        name: canvas
+                    label: 'Image canvas for promotional images:'
+                    type: select
+                    format_onchange: true
+                    values:
+                        crop_and_zoom:
+                            label: Crop and zoom
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                        unlimited:
+                            ord: 99
+                            label: Unlimited size
+                    value: fixed_width_and_height
+                retina:
+                    indent: 1
+                    plugin_setting:
+                        name: retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    value: ""
+                    side_note: |
+                        Display image at double density.
+                width:
+                    indent: 1
+                    plugin_setting:
+                        name: width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    value: 300
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                height:
+                    indent: 1
+                    plugin_setting:
+                        name: height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    value: 200
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'

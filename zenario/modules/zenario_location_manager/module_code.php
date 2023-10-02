@@ -348,6 +348,18 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						unset($panel['item_buttons']['remove_location']);
 					}
 				}
+				
+				if ($refinerName == 'zenario_organization_manager__simple_locations') {
+					$organizationSingular = ze::setting('organization_singular_en');
+					$organizationPlural = ze::setting('organization_plural_en');
+					
+					ze\lang::applyMergeFields($panel['item_buttons']['convert_to_organization']['label'], ['organization_singular_en' => $organizationSingular]);
+					ze\lang::applyMergeFields($panel['item_buttons']['convert_to_organization']['ajax']['confirm']['message'], ['organization_singular_en' => $organizationSingular]);
+					
+					ze\lang::applyMergeFields($panel['item_buttons']['convert_multiple_to_organization']['label'], ['organization_plural_en' => $organizationPlural]);
+					ze\lang::applyMergeFields($panel['item_buttons']['convert_multiple_to_organization']['ajax']['confirm']['message'], ['organization_plural_en' => $organizationPlural]);
+				}
+				
 				break;
 				
 			case 'zenario__locations/nav/sectors/panel':
@@ -816,6 +828,24 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			                'ord' => ++$i
 			            ];
 			        }
+			        
+			        //Information about max upload sizes
+					if (isset($fields['filesizes/global_upload_setting_info'])) {
+						$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+				
+						$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+						$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+						$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+	
+						$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+						$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+				
+						$globalUploadSettingString = ze\admin::phrase('File size will always be limited by global file upload size setting ([[maxFileSizeFormatted]]).', ['maxFileSizeFormatted' => $maxFileSizeFormatted]);
+						ze\lang::applyMergeFields(
+							$fields['filesizes/global_upload_setting_info']['snippet']['html'],
+							['global_upload_setting_string' => $globalUploadSettingString]
+						);
+					}
 			    }
 			    break;
 		}
@@ -950,6 +980,40 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					if ($values['details/name']) {
 						if (!self::checkScoreNameUnique($values['details/name'],$box['key']['id'])) {
 							$box['tabs']['details']['errors']['name_not_unique'] = "You must enter a unique Name";
+						}
+					}
+				}
+				break;
+			case "site_settings":
+				if (isset($values['filesizes/max_location_image_filesize_override'])) {
+					if ($values['filesizes/max_location_image_filesize_override']) {
+						if ($values['filesizes/max_location_image_filesize'] && $values['filesizes/max_location_image_filesize_unit']) {
+							$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+			
+							$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+							$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+							$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+			
+							$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+					
+							//Cap the max size at 1023 MB, so that the value never goes into GB or higher.
+							if ($maxFileSize >= 1072693248) {
+								$maxFileSize = 1072693248;
+							}
+							$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+			
+							$locationManagerMaxFilesizeValue = $values['filesizes/max_location_image_filesize'];
+							$locationManagerMaxFilesizeUnit = $values['filesizes/max_location_image_filesize_unit'];
+							$locationManageraxFilesize = ze\file::fileSizeBasedOnUnit($locationManagerMaxFilesizeValue, $locationManagerMaxFilesizeUnit);
+			
+							if ($locationManageraxFilesize > $maxFileSize) {
+								$fields['filesizes/max_location_image_filesize']['error'] =
+									ze\admin::phrase(
+										'The maximum location image file size may not exceed [[global_max_attachment_file_size]].',
+										['global_max_attachment_file_size' => $maxFileSizeFormatted]
+									);
+								$fields['filesizes/max_location_image_filesize_unit']['error'] = true;
+							}
 						}
 					}
 				}
@@ -2512,5 +2576,122 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		}
 		return $tz;
 	}
-}
+	
+	public static function signalAdvancedSearchPopulateValuesSearchInOtherModules() {
+		return 'zenario_location_manager';
+	}
+	
+	public static function searchFromModule($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
+		$resultsFromModule = [];
 
+		if ($searchString) {
+			//Calculate the search terms
+			$searchTerms = ze\content::searchtermParts($searchString);
+
+			//Get a list of MySQL stop-words to exclude.
+			$stopWordsSql = "
+				SELECT value FROM INFORMATION_SCHEMA.INNODB_FT_DEFAULT_STOPWORD";
+			$stopWords = ze\sql::fetchValues($stopWordsSql);
+
+			//Remove the stop words from search.
+			$searchTermsWithoutStopWords = $searchTerms;
+			foreach ($searchTerms as $searchTerm => $searchTermType) {
+				if (in_array($searchTerm, $stopWords)) {
+					unset($searchTermsWithoutStopWords[$searchTerm]);
+				}
+			}
+
+			$searchTermsAreAllStopWords = true;
+			if (!empty($searchTermsWithoutStopWords) && count($searchTermsWithoutStopWords) > 0) {
+				$searchTermsAreAllStopWords = false;
+			}
+			unset($searchTermsWithoutStopWords);
+
+			if ($searchTerms && !$searchTermsAreAllStopWords && count($searchTerms) > 0) {
+				$firstRow = true;
+
+				$sqlFields = "
+					SELECT l.id AS item_id, l.description AS title, li.image_id, f.filename";
+				
+				$sql = "
+					FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations l
+					LEFT JOIN " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images li
+						ON li.location_id = l.id
+					LEFT JOIN " . DB_PREFIX . "files f
+						ON f.id = li.image_id
+						AND li.sticky_flag = 1
+					WHERE l.status = 'active'
+					AND (";
+
+				$sqlFields .= ", (";
+
+				$scoreStatementFirstLine = true;
+				foreach ($searchTerms as $searchTerm => $searchTermType) {
+					$wildcard = "*";
+
+					//The location name column is called description.
+					//Treat it as a title.
+					foreach (['l.description'] as $column) {
+						if ($firstRow) {
+							$or = '';
+							$firstRow = false;
+						} else {
+							$or = " OR";
+						}
+
+						if (!$scoreStatementFirstLine) {
+							$sqlFields .= " + ";
+						}
+	
+						$scoreStatementFirstLine = false;
+
+						if ($column == 'l.description') {
+							$weighting = $weightings['title'];
+						}
+						
+						$sqlFields .= "(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+						
+						$sql .= $or . "
+							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
+					}
+				}
+
+				$sqlFields .= "
+					) AS score";
+				
+				$sql .= ")";
+
+				//Get the record count now...
+				$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sql);
+				$row = ze\sql::fetchRow($result);
+				$recordCount = $row[0];
+
+				//... and then the results.
+				$sql .= "
+					ORDER BY l.description ASC";
+
+				$sql .= ze\sql::limit($page, $pageSize);
+
+				$result = ze\sql::select($sqlFields . $sql);
+
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$item = [
+						'item_id' => $row['item_id'],
+						'title' => $row['title'],
+						'filename' => $row['filename'],
+						'score' => $row['score']
+					];
+
+					if ($row['image_id']) {
+						$item['thumbnail_Id'] = $row['image_id'];
+					} else {
+						$item['thumbnail_Id'] = '';
+					}
+					$resultsFromModule[$row['item_id']] = $item;
+				}
+			}
+		}
+
+		return ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => 'locationId'];
+	}
+}

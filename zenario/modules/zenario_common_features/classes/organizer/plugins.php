@@ -288,33 +288,6 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			$moduleMissing = !ze::moduleDir($module['class_name'], 'module_code.php', true);
 			
 			
-			if ($moduleNotRunning || $moduleMissing) {
-				
-				if ($moduleNotRunning) {
-					$panel['notice'] = [
-						'show' => true,
-						'message' => ze\admin::phrase('Warning: the module [[display_name]] ([[class_name]]) is not running.', $module),
-						'type' => 'warning'
-					];
-				
-				} else {
-					$panel['notice'] = [
-						'show' => true,
-						'message' => ze\admin::phrase('Warning: the module [[display_name]] ([[class_name]]) is missing from the file system, so it cannot run.', $module),
-						'type' => 'error'
-					];
-				}
-				
-				foreach (['collection_buttons', 'item_buttons', 'inline_buttons'] as $bType) {
-					if (!empty($panel[$bType])
-					 && is_array($panel[$bType])) {
-						foreach ($panel[$bType] as &$button) {
-							$button['disabled'] = true;
-						}
-					}
-				}
-			}
-			
 			$mrg = ['name' => $module['display_name']];
 			
 			switch ($panel['key']['moduleId']) {
@@ -357,6 +330,43 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 						ze\admin::phrase('"[[name]]" plugins in the library', $mrg);
 					$panel['no_items_message'] = ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
 			}
+			
+			
+			if ($moduleNotRunning || $moduleMissing || $module['nestable_only']) {
+				
+				if ($moduleNotRunning) {
+					$panel['notice'] = [
+						'show' => true,
+						'message' => ze\admin::phrase('Warning: the module [[display_name]] ([[class_name]]) is not running.', $module),
+						'type' => 'warning'
+					];
+				
+				} elseif ($moduleMissing) {
+					$panel['notice'] = [
+						'show' => true,
+						'message' => ze\admin::phrase('Warning: the module [[display_name]] ([[class_name]]) is missing from the file system, so it cannot run.', $module),
+						'type' => 'error'
+					];
+			
+				} elseif ($module['nestable_only']) {
+					$panel['notice'] = [
+						'show' => true,
+						'message' => ze\admin::phrase('The module [[display_name]] can only make plugins directly in a nest or slideshow.', $module),
+						'type' => 'error'
+					];
+				}
+				
+				foreach (['collection_buttons', 'item_buttons', 'inline_buttons'] as $bType) {
+					if (!empty($panel[$bType])
+					 && is_array($panel[$bType])) {
+						foreach ($panel[$bType] as &$button) {
+							$button['disabled'] = true;
+						}
+					}
+				}
+				
+				$panel['no_items_message'] = ' ';
+			}
 		
 		} elseif ($refinerName == 'view_nests_containing' && !empty($panel['key']['containingModuleId'])) {
 			//Table join required to work...
@@ -379,6 +389,14 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			$panel['select_mode_title'] =
 				ze\admin::phrase('Nests or slideshows containing plugins of module "[[name]]"', $mrg);
 			$panel['no_items_message'] = \ze\admin::phrase('There are no nests or slideshows containing plugins of module "[[name]]"', $mrg);
+			
+			if ($module['nestable_only']) {
+				$panel['notice'] = [
+					'show' => true,
+					'message' => ze\admin::phrase('The module [[display_name]] can only make plugins directly in a nest or slideshow.', $module),
+					'type' => 'information'
+				];
+			}
 		
 		} elseif (!$isNest) {
 			//By default, don't show nests and slideshows with other library plugins

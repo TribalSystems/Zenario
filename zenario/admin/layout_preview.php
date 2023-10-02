@@ -75,10 +75,11 @@ ze\content::setShowableContent($content, $chain, $version, false);
 
 
 
-ze\plugin::slotContents(
+ze\plugin::runSlotContents(
 	ze::$slotContents,
 	ze::$cID, ze::$cType, ze::$cVersion,
-	ze::$layoutId);
+	ze::$layoutId
+);
  
 
 

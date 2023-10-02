@@ -222,7 +222,6 @@ class contentAdm {
 		}
 	}
 
-	//Formerly "publishContent()"
 	public static function publishContent($cID, $cType, $adminId = false) {
 		if (!$adminId) {
 			$adminId = $_SESSION['admin_userid'] ?? false;
@@ -244,6 +243,7 @@ class contentAdm {
 	
 		$version['publisher_id'] = $adminId;
 		$version['published_datetime'] = \ze\date::now();
+		$version['access_code'] = null;
 	
 		$autoSetReleaseDate = \ze\row::get('content_types', 'auto_set_release_date', ['content_type_id' => $cType]);
 		if ($autoSetReleaseDate && !$version['release_date']) {
@@ -524,6 +524,14 @@ class contentAdm {
 	}
 
 
+	public static function stagingModeLink($cID, $cType, $accessCode) {
+		return
+			\ze\link::protocol(). \ze\link::primaryDomain(). SUBDIRECTORY.
+			'staging.php?id='. rawurlencode($cType. '_'. $cID).
+			'&code='. rawurlencode($accessCode);
+	}
+
+
 	//Formerly "adminFileLink()"
 	public static function adminFileLink($fileId) {
 		return \ze\link::absolute() . 'zenario/admin/file.php?id=' . $fileId;
@@ -663,12 +671,10 @@ class contentAdm {
 		\ze\row::update('menu_nodes', ['image_id' => 0], ['image_id' => $imageId]);
 		\ze\row::update('menu_nodes', ['rollover_image_id' => 0], ['rollover_image_id' => $imageId]);
 		
-		//Also check the promo menu's tables.
+		//Also check the promo menu tables.
 		//(N.b. this soft include could be converted to a signal if more modules start using images in linking tables...)
-		if (\ze\module::inc('zenario_promo_menu')) {
-			\ze\row::update(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', ['image_id' => 0], ['image_id' => $imageId]);
-			\ze\row::update(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', ['rollover_image_id' => 0], ['rollover_image_id' => $imageId]);
-		}
+			\ze\row::update('menu_node_feature_image', ['image_id' => 0], ['image_id' => $imageId]);
+			\ze\row::update('menu_node_feature_image', ['rollover_image_id' => 0], ['rollover_image_id' => $imageId]);
 		
 		//If a banner or other plugin was using this image, leave the broken link there
 		//\ze\row::delete('plugin_settings', ['foreign_key_to' => 'file', 'foreign_key_id' => $imageId]);
@@ -868,7 +874,7 @@ class contentAdm {
 
 		$cVersion = \ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
 		\ze\row::update('content_items', ['visitor_version' => 0, 'status' => 'trashed', 'alias' => ''], ['id' => $cID, 'type' => $cType]);
-		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now()], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now(), 'access_code' => null], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	
 		\ze\contentAdm::removeItemFromMenu($cID, $cType);
 		\ze\contentAdm::removeEquivalence($cID, $cType);
@@ -899,7 +905,7 @@ class contentAdm {
 	
 		//Update the Content Item's status to "hidden"
 		\ze\row::update('content_items', ['visitor_version' => 0, 'status' => 'hidden', 'lock_owner_id' => 0], ['id' => $cID, 'type' => $cType]);
-		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now()], ['id' => $cID, 'type' => $cType, 'version' => $content['admin_version']]);
+		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now(), 'access_code' => null], ['id' => $cID, 'type' => $cType, 'version' => $content['admin_version']]);
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'hidden');
@@ -1136,6 +1142,27 @@ class contentAdm {
 			 || $status == 'hidden_with_draft'
 			 || $status == 'published';
 		}	
+	}
+	
+	
+	public static function checkForAccessCodes(&$box, &$field, $tagIds, $contentItemsCount, $phraseA, $phraseB, $phraseC) {
+		$contentItemsWithAccessCodes = \ze\row::getValues('content_item_versions', ['id', 'type', 'access_code'], ['access_code' => ['!' => null], 'tag_id' => $tagIds]);
+		if (empty($contentItemsWithAccessCodes)) {
+			$field['hidden'] = true;
+		
+		} elseif ($contentItemsCount == 1) {
+			unset($box['max_height']);
+			$mrg = $contentItemsWithAccessCodes[0];
+			$field['notices_above']['access_codes_warning']['message'] =
+				\ze\admin::phrase($phraseA, $mrg);
+			
+		} else {
+			unset($box['max_height']);
+			$codes = count($contentItemsWithAccessCodes);
+			$mrg = $contentItemsWithAccessCodes[0];
+			$field['notices_above']['access_codes_warning']['message'] =
+				\ze\admin::nPhrase($phraseB, $phraseC, $codes, $mrg);
+		}
 	}
 
 
@@ -1442,7 +1469,14 @@ class contentAdm {
 			if (($result = \ze\sql::select($sql))
 			 && ($row = \ze\sql::fetchAssoc($result))) {
 				$tag = \ze\content::formatTag($row['id'], $row['type']);
-				$error[] = \ze\admin::phrase('You can\'t have a spare alias with the same name as a regular alias. "[[alias]]" is the alias for "[[tag]]".', ['alias' => $alias, 'tag' => $tag]);
+				
+				if ($isSpareAlias) {
+					$message = 'You can\'t have a spare alias with the same name as a regular alias. "[[alias]]" is the alias for "[[tag]]".';
+				} else {
+					$message = 'The alias needs to be unique. "[[alias]]" is the alias for "[[tag]]".';
+				}
+				
+				$error[] = \ze\admin::phrase($message, ['alias' => $alias, 'tag' => $tag]);
 				$aliasIsUniqueError = true;
 			}
 
@@ -1619,7 +1653,32 @@ class contentAdm {
 	//
 	// Translation functionality
 	//
-
+	
+	
+	//The tag IDs in translation chain pickers have a slightly different format.
+	//This is needed for a technical reason, as meta-info about the selected items are stored by ID.
+	//This function can be used to convert between them as needed.
+	public static function convertBetweenTagIdAndTranslationChainId($id, $useTranslation) {
+		
+		//Empty values don't need conversion
+		if ($id) {
+			if ($useTranslation) {
+				//Ensure any values are in translation chain ID format
+				$equivId = $cType = false;
+				if (\ze\content::getEquivIdAndCTypeFromTagId($equivId, $cType, $id)) {
+					$id = $cType. '_'. $equivId. '_t';
+				}
+			} else {
+				//Ensure any values are in normal tag ID format
+				$cID = $cType = false;
+				if (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
+					$id = $cType. '_'. $cID;
+				}
+			}
+		}
+		
+		return $id;
+	}
 
 
 	//Add two Content Items into an equivalence

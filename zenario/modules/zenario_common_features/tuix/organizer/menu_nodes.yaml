@@ -31,18 +31,18 @@ zenario__menu:
                 custom_where_statement_if_no_missing_items: WHERE mt.menu_id IS NOT NULL
                 client_side: true
                 max_limit: 1000
-            
+        
             panel_type: hierarchy_with_lazy_load
             reorder:
                 priv: _PRIV_REORDER_MENU_ITEM
                 column: ordinal
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
-            
+        
             hierarchy: {}
                 column: parent_id
                 #db_column: mi.parent_id
-            
+        
             disable_periodic_refresh: true
             refiners:
                 language:
@@ -244,7 +244,7 @@ zenario__menu:
                     hide_in_select_mode: true
                     hide_on_filter: true
                     parent: create_dropdown
-                    label: Menu node only
+                    label: Level 1 menu node only
                     ord: 99
                     admin_box:
                         path: zenario_menu
@@ -267,7 +267,7 @@ zenario__menu:
                     css_class: organizer_item_image [[linked_content_item_status]]
                     tooltip: "[[linked_content_item_status_label]]"
                     visible_if: item.redundancy != 'secondary' && item.linked_content_item
-                
+            
                 layout:
                     css_class: zenario_layout_inline_button
                     label: |
@@ -283,7 +283,7 @@ zenario__menu:
                     label: |
                         [[linked_content_item_layout]]
                     visible_if: item.redundancy != 'secondary' && item.linked_content_item && !zenarioA.checkSpecificPerms(id)
-                
+            
                 linked_content_item_privacy:
                     css_class: privacy_inline_button
                     tooltip: "[[linked_content_item_privacy]]"
@@ -292,7 +292,7 @@ zenario__menu:
                         key:
                             id_is_menu_node_id: true
                     visible_if: item.redundancy != 'secondary' && item.linked_content_item
-                
+            
                 linked_content_item_pinned:
                     css_class: pinned
                     tooltip: "This content item is pinned"
@@ -311,7 +311,7 @@ zenario__menu:
                             id_is_menu_node_id: 1
                             edit_linked_content_item: 1
                     visible_if: item.redundancy != 'secondary' && item.linked_content_item_allow_pinning && item.linked_content_item_pinned == 0
-                
+            
                 linked_content_item_no_categories:
                     css_class: no_categories
                     tooltip: "Content item is not in any categories"
@@ -328,7 +328,7 @@ zenario__menu:
                         key:
                             id_is_menu_node_id: 1
                     visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count > 0)
-                
+            
                 view_frontend:
                     css_class: view_frontend
                     tooltip: View in front-end
@@ -343,12 +343,12 @@ zenario__menu:
                         iframe: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
-            
+        
             item_buttons:
                 create_child_dropdown:
                     hide_when_children_are_not_visible: true
                     css_class: zenario_create_a_new
-                    label: Create a child
+                    label: New child node...
                 #All buttons for creating a menu node and content item
                 #are created in the PHP class.
                 create_menu_node:
@@ -382,6 +382,18 @@ zenario__menu:
                             mode: ""
                     without_columns_set:
                         ghost: true
+                    visible_if: item.redundancy != 'secondary'
+                edit_secondary:
+                    priv: _PRIV_EDIT_MENU_ITEM
+                    hide_in_select_mode: true
+                    label: Secondary menu node properties
+                    admin_box:
+                        path: zenario_menu
+                        key:
+                            mode: ""
+                    without_columns_set:
+                        ghost: true
+                    visible_if: item.redundancy == 'secondary'
                 define_menu_text:
                     priv: _PRIV_EDIT_MENU_TEXT
                     visible_if_for_all_selected_items: |
@@ -410,17 +422,6 @@ zenario__menu:
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                citems_translations:
-                    parent: view_dropdown
-                    php: true
-                    hide_in_select_mode: true
-                    label: "View content item's translations"
-                    link:
-                        path: zenario__content/panels/chained
-                        branch: true
-                        refiner: zenario_trans__chained_in_link__from_menu_node
-                    with_columns_set:
-                        content: true
                 view_content:
                     parent: view_dropdown
                     label: Content items under this menu node
@@ -442,18 +443,28 @@ zenario__menu:
                         target_path: zenario__menu/panels/menu_position
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Create secondary menu node
-                        visible_if_for_all_selected_items: >
-                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             mass_add_to_menu: 1
+                    visible_if_for_all_selected_items: item.linked_content_item && (item.redundancy != 'secondary')
                 duplicate_as_child:
                     priv: _PRIV_ADD_MENU_ITEM
                     label: Duplicate as child
                     parent: action_dropdown
                     tooltip: Duplicate this menu node as a child and make it the primary node
                     ajax:
+                        confirm:
+                            message: |
+                                This action will duplicate the currently selected menu node, and put the new node underneath (i.e. a child node of) the selected one.
+
+                                It will also make the new node be the primary node, changing the current node to a secondary.
+
+                                Proceed?
+                            button_message: Duplicate
+                            cancel_button_message: Cancel
+                            message_type: warning
                         request:
                             duplicate_as_child: 1
+                    visible_if_for_all_selected_items: item.linked_content_item
                 move:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_MENU_ITEM
@@ -471,7 +482,7 @@ zenario__menu:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             move: 1
-                            
+                        
                 make_primary:
                     priv: _PRIV_EDIT_MENU_ITEM
                     label: Make primary
@@ -483,7 +494,7 @@ zenario__menu:
                         confirm:
                             message: |
                                 Are you sure you wish to make this node the primary node for this content item?
-                                
+                            
                                 Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
                             button_message: Make primary
                             cancel_button_message: Cancel
@@ -491,8 +502,8 @@ zenario__menu:
                         request:
                             make_primary: 1
                     visible_if_for_all_selected_items: item.redundancy == 'secondary'
-                
-                
+            
+            
                 delete:
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete
@@ -526,11 +537,11 @@ zenario__menu:
                         confirm:
                             message: |
                                 Are you sure that you wish to delete the menu node "[[name]]"?
-                                
-                                This menu node has [[children]] child node(s), which will also be deleted.
-                                
-                                No content items will be deleted, but the content items to which the child nodes link will be detached from the menu (orphans).
                             
+                                This menu node has [[children]] child node(s), which will also be deleted.
+                            
+                                No content items will be deleted, but the content items to which the child nodes link will be detached from the menu.
+                        
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -556,18 +567,18 @@ zenario__menu:
                         removable: false
                         ghost: true
                     disabled_if: tuix.key.deleteGrandChildExist == false
-                
+            
                 go_to_menu_in_sk:
                     label: Go to menu node
-                    tooltip: Go to this menu node in hierarchical view
                     navigation_path: true
                 linked_content_item_dropdown:
-                    label: Linked content item
-                    multiple_select: true
+                    label: Content item [[linked_content_item_tag_id]]
                     hide_when_children_are_not_visible: true
-                citem:
+                    visible_if: item.linked_content_item && (item.redundancy != 'secondary')
+                linked_content_item__edit:
+                    ord: 1
                     priv: _PRIV_EDIT_DRAFT
-                    label: Content item properties
+                    label: Edit content item
                     parent: linked_content_item_dropdown
                     hide_when_children_are_not_visible: true
                     admin_box:
@@ -577,3 +588,177 @@ zenario__menu:
                             edit_linked_content_item: 1
                     with_columns_set:
                         content: true
+                linked_content_item__head__populated:
+                    ord: 3
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    label: HTML in head of page
+                    tooltip: 'Populated'
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            id_is_menu_node_id: true
+                            mode: head
+                            level: item
+                    visible_if: item.linked_content_item && item.head_html_populated && zenarioA.checkSpecificPerms(id)
+                linked_content_item__head__empty:
+                    ord: 3
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    label: HTML in head of page
+                    tooltip: 'Empty'
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            id_is_menu_node_id: true
+                            mode: head
+                            level: item
+                    visible_if: item.linked_content_item && !item.head_html_populated && zenarioA.checkSpecificPerms(id)
+                linked_content_item__foot__populated:
+                    ord: 4
+                    copy_of: linked_content_item__head__populated
+                    label: HTML at foot of page
+                    tooltip: 'Populated'
+                    admin_box:
+                        key:
+                            mode: foot
+                    visible_if: item.linked_content_item && item.foot_html_populated && zenarioA.checkSpecificPerms(id)
+                linked_content_item__foot__empty:
+                    ord: 4
+                    copy_of: linked_content_item__head__empty
+                    label: HTML at foot of page
+                    tooltip: 'Empty'
+                    admin_box:
+                        key:
+                            mode: foot
+                    visible_if: item.linked_content_item && !item.foot_html_populated && zenarioA.checkSpecificPerms(id)
+                linked_content_item__layout:
+                    ord: 5
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
+                    parent: linked_content_item_dropdown
+                    label: Change layout
+                    admin_box:
+                        path: zenario_content_layout
+                        key:
+                            id_is_menu_node_id: 1
+                linked_content_item__duplicate:
+                    ord: 6
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_EDIT_DRAFT
+                    # For limited admins: if the create button is not enabled, don't enable
+                    # the duplicate button either
+                    visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
+                    label: Duplicate
+                    admin_box:
+                        path: zenario_content
+                        key:
+                            duplicate_from_menu: 1
+                linked_content_item__create_draft_by_copying:
+                    ord: 7
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
+                    label: Copy from other...
+                    combine_items:
+                        path: zenario__content/panels/content/refiners/filter_exclude_documents////
+                        min_path: zenario__content/panels/languages
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        one_to_one_choose_phrase: Copy from selected
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to copy the contents of the selected content item?
+                            
+                                    This will create a draft of the current content item with the contents of the one you selected.
+                                button_message: Create draft and copy
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                create_draft_by_copying: 1
+                linked_content_item__hide:
+                    ord: 8
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if: item.linked_content_item && item.linked_content_item_can_be_hidden && zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Hide
+                    admin_box:
+                        path: zenario_hide
+                        key:
+                            id_is_menu_node_id: true
+                linked_content_item__trash:
+                    ord: 9
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if: item.linked_content_item && item.linked_content_item_can_be_trashed && zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Trash
+                    admin_box:
+                        path: zenario_trash
+                        key:
+                            id_is_menu_node_id: true
+                linked_content_item__categories:
+                    ord: 10
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    parent: linked_content_item_dropdown
+                    label: Change categories
+                    admin_box:
+                        path: zenario_content_categories
+                        key:
+                            id_is_menu_node_id: true
+                    disabled_if: |
+                        !item.linked_content_item_categories_enabled
+                    disabled_tooltip: Categories are not enabled for this content type
+                linked_content_item__view_frontend:
+                    ord: 11
+                    parent: linked_content_item_dropdown
+                    label: View in front end
+                    frontend_link: true
+                    visible_if: item.linked_content_item && zenario.engToBoolean(item.frontend_link)
+                linked_content_item__inspect:
+                    ord: 12
+                    parent: linked_content_item_dropdown
+                    label: Quick-view in floating box
+                    popout:
+                        iframe: true
+                    visible_if: item.linked_content_item && zenario.engToBoolean(item.frontend_link)
+                linked_content_item__view_images:
+                    ord: 13
+                    parent: linked_content_item_dropdown
+                    label: View attached images
+                    link:
+                        path: zenario__library/panels/image_library
+                        branch: true
+                        refiner: images_for_menu_node_linked_content_item
+                    visible_if: item.linked_content_item
+                linked_content_item__translations:
+                    ord: 14
+                    parent: linked_content_item_dropdown
+                    hide_in_select_mode: true
+                    label: "View content item's translations"
+                    link:
+                        path: zenario__content/panels/chained
+                        branch: true
+                        refiner: zenario_trans__chained_in_link__from_menu_node
+                    visible_if: item.linked_content_item
+                linked_content_item__view_slots:
+                    ord: 15
+                    priv: _PRIV_VIEW_SLOT
+                    parent: linked_content_item_dropdown
+                    label: Slots and plugins on this content item
+                    link:
+                        path: zenario__content/panels/slots
+                        branch: true
+                        refiner: content_item_from_menu_node
+                    visible_if: item.linked_content_item
+                linked_content_item__view_in_content_items_panel:
+                    ord: 16
+                    parent: linked_content_item_dropdown
+                    hide_in_select_mode: true
+                    label: "View in content items panel"
+                    navigation_path: item.navigation_path
+                    new_window: true

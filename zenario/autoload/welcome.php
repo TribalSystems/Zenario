@@ -529,20 +529,24 @@ class welcome {
 			$apacheRecommendationMet = false;
 		}
 	
-		$phpInvalid = true;
+		$phpInvalid = false;
+		$phpWarning = false;
 		$phpVersion = phpversion();
 		$fields['0/php_1']['post_field_html'] =
 			\ze\admin::phrase('&nbsp;(<em>you have version [[version]]</em>)', ['version' => htmlspecialchars($phpVersion)]);
 	
 		if (!\ze\welcome::compareVersionNumber($phpVersion, '7.2.0')) {
 			$fields['0/php_1']['row_class'] = $invalid;
+			$phpInvalid = true;
+	
+		} elseif (!\ze\welcome::compareVersionNumber($phpVersion, '8.0.0')) {
+			$fields['0/php_1']['row_class'] = $warning;
+			$phpWarning = true;
 	
 		} else {
 			$fields['0/php_1']['row_class'] = $valid;
-			$phpInvalid = false;
 		}
 	
-		$phpWarning = false;
 		if (!$fields['0/opcache_misconfigured']['hidden'] =
 			\ze\welcome::compareVersionNumber(phpversion(), '7.2.0')
 		 || !\ze\server::checkFunctionEnabled('ini_get')
@@ -1783,7 +1787,14 @@ class welcome {
 				
 				
 					$failures = [];
-					if (!\ze\dbAdm::restoreFromBackup($backupPath, $failures, false)) {
+					if (\ze\dbAdm::restoreFromBackup($backupPath, $failures, false)) {
+						//If the restore was successful:
+							//Clear any session that this admin may have had from a previous installation.
+						\ze\admin::unsetSession();
+					
+					} else {
+						//If the restore was unsuccessful:
+							//Show any error messages we got.
 						foreach ($failures as $text) {
 							$tags['tabs'][8]['errors'][] = $text;
 						}
@@ -1904,7 +1915,9 @@ class welcome {
 						$adminId = \ze\row::insert('admins', $details);
 						\ze\adminAdm::setPassword($adminId, $merge['PASSWORD']);
 						\ze\adminAdm::savePerms($adminId, 'all_permissions');
+						
 						\ze\admin::setSession($adminId);
+						$_SESSION['admin_ip_at_login'] = \ze\user::ip();
 					
 						//Prepare email to the installing person
 						$message = $source['email_templates']['installed_cms']['body'];
@@ -1914,20 +1927,13 @@ class welcome {
 						foreach ($merge as $pattern => $replacement) {
 							$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 						}
-					
-						$addressToOverriddenBy = false;
-						\ze\server::sendEmail(
-							$subject, $message,
-							$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'],
-							$addressToOverriddenBy,
-							$nameTo = false,
-							$addressFrom = false,
-							$nameFrom = $source['email_templates']['installed_cms']['from'],
-							false, false, false,
-							$isHTML = true,
-							false, false, false, false, '', '', 'To',
-							$ignoreDebugMode = true		//CMS welcome emails should always be sent to the intended recipient,
-														//even if debug mode is on.
+						
+						\ze\server::sendEmailSimple(
+							$subject, $message, $isHTML = true,
+							//CMS welcome emails should always be sent to the intended recipient even if debug mode is on.
+							$ignoreDebugMode = true,
+							$addressTo = $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'], $nameTo = false,
+							$addressFrom = false, $nameFrom = $source['email_templates']['installed_cms']['from']
 						);
 					
 					
@@ -1989,6 +1995,7 @@ class welcome {
 					//Did something go wrong? Remove any tables that were created.
 					\ze\welcome::runSQL('zenario/admin/db_install/', 'local-DROP.sql', $error, $merge);
 					\ze\welcome::runSQL('zenario/admin/db_install/', 'local-admin-DROP.sql', $error, $merge);
+					\ze\welcome::runSQL('zenario/admin/db_install/', 'local-old-DROP.sql', $error, $merge);
 				
 					foreach (\ze\dbAdm::lookupExistingCMSTables($dbUpdateSafeMode = true) as $table) {
 						if ($table['reset'] == 'drop') {
@@ -2269,20 +2276,14 @@ class welcome {
 					foreach ($merge as $pattern => $replacement) {
 						$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 					};
-			
-					$addressToOverriddenBy = false;
-					\ze\server::sendEmail(
-						$subject, $message,
-						$admin['email'],
-						$addressToOverriddenBy,
-						$nameTo = $merge['NAME'],
-						$addressFrom = false,
-						$nameFrom = $source['email_templates'][$emailTemplate]['from'],
-						false, false, false,
-						$isHTML = true,
-						false, false, false, false, '', '', 'To',
-						$ignoreDebugMode = true);	//Admin password reset emails should always be sent to the intended recipient,
-										  			//even if debug mode is on.
+					
+					\ze\server::sendEmailSimple(
+						$subject, $message, $isHTML = true,
+						//Admin password reset emails should always be sent to the intended recipient even if debug mode is on.
+						$ignoreDebugMode = true,
+						$addressTo = $admin['email'], $nameTo = $merge['NAME'],
+						$addressFrom = false, $nameFrom = $source['email_templates'][$emailTemplate]['from']
+					);
 			
 					$passwordReset = true;
 					$tags['tab'] = 'login';
@@ -2334,19 +2335,11 @@ class welcome {
 				    
 				    $subject = \ze\admin::phrase("Admin has no permission to apply db updates") ;
 		            $message = \ze\admin::phrase('Dear Admin,')."\n\n". \ze\admin::phrase('The admin "').$_SESSION['admin_username'].\ze\admin::phrase('" has no permission to apply db updates for the site ').\ze\link::absolute()."admin. \n\n".\ze\admin::phrase("Thanks.");
-		    
-		            $mailSent = \ze\server::sendEmail(
-						$subject, $message,
-						EMAIL_ADDRESS_GLOBAL_SUPPORT,
-						$addressToOverriddenBy,
-						$nameTo = false,
-						$addressFrom = false,
-						$nameFrom = $source['email_templates']['installed_cms']['from'],
-						false, false, false,
-						$isHTML = false,
-						false, false, false, false, '', '', 'To',
-						$ignoreDebugMode = true		//No permissions warnings should always be sent to the intended recipient,
-													//even if debug mode is on.
+					
+					\ze\server::sendEmailSimple(
+						$subject, $message, $isHTML = false,
+						//No permissions warnings should always be sent to the intended recipient even if debug mode is on.
+						$ignoreDebugMode = true
 					);
 
 					$_SESSION["mailSent"]= $mailSent ;  
@@ -2576,17 +2569,30 @@ class welcome {
 		} elseif ($firstTimeHere || $resend) {
 		
 			if ($firstTimeHere) {
-				$_SESSION['COOKIE_ADMIN_SECURITY_CODE'] = \ze\ring::randomFromSet(5, 'ABCDEFGHIJKLMNPPQRSTUVWXYZ');
+				//Make sure the generated code does not end up being a swear word.
+				$code = \ze\ring::randomFromSetNoProfanities();
+				$_SESSION['COOKIE_ADMIN_SECURITY_CODE'] = $code;
 			}
 		
 			$admin = \ze\row::get('admins', ['id', 'authtype', 'username', 'email', 'first_name', 'last_name'], $_SESSION['admin_userid'] ?? false);
 		
 			//Prepare email to the mail with the code
 			$merge = [];
+			
+			//The URL parameter will be displayed without the http or https protocol.
+			//The protocol is passed as a separate merge field for the "This is an auto-generated email" string.
+			$merge['PROTOCOL'] = \ze\link::protocol();
+			$merge['URL'] = $_SERVER['HTTP_HOST'];
+			$merge['SUBDIRECTORY'] = SUBDIRECTORY;
+			//Remove the trailing slash in the subdirectory.
+			$lastCharacter = strlen($merge['SUBDIRECTORY']) - 1;
+			if (substr($merge['SUBDIRECTORY'], $lastCharacter) == '/') {
+				$merge['SUBDIRECTORY'] = substr($merge['SUBDIRECTORY'], 0, $lastCharacter);
+			}
+			
 			$merge['NAME'] = \ze::ifNull(trim($admin['first_name']. ' '. $admin['last_name']), $admin['username']);
 			$merge['USERNAME'] = $admin['username'];
-			$merge['URL'] = \ze\link::protocol(). $_SERVER['HTTP_HOST'];
-			$merge['SUBDIRECTORY'] = SUBDIRECTORY;
+			
 			$merge['IP'] = preg_replace('[^W\.\:]', '', \ze\user::ip());
 			$merge['2FA_TIMEOUT'] = (int) \ze\site::description('two_factor_authentication_timeout');
 			
@@ -2601,7 +2607,7 @@ class welcome {
 			}
 			$merge['VERIFICATION_LINK'] = 
 				htmlspecialchars(
-					(\ze::setting('admin_use_ssl') ? 'https://' : \ze\link::protocol())
+					\ze\link::protocol()
 					. \ze\link::adminDomain() . SUBDIRECTORY
 					. 'admin.php?verification_code=' . $_SESSION['COOKIE_ADMIN_SECURITY_CODE']
 					. $getRequestsMerged
@@ -2618,24 +2624,18 @@ class welcome {
 			}
 			
 			$message = nl2br($message);
-			$addressToOverriddenBy = false;
 			
 			if (\ze\module::inc('zenario_email_template_manager')) {
 				\zenario_email_template_manager::putBodyInTemplate($message);
 			}
 			
-			$emailSent = \ze\server::sendEmail(
-				$subject, $message,
-				$admin['email'],
-				$addressToOverriddenBy,
-				$nameTo = $merge['NAME'],
-				$addressFrom = false,
-				$nameFrom = $source['email_templates'][$emailTemplate]['from'],
-				false, false, false,
-				$isHTML = true,
-				false, false, false, false, '', '', 'To',
-				$ignoreDebugMode = true);	//Security codes should always be sent to the intended recipient,
-											//even if debug mode is on.
+			$emailSent = \ze\server::sendEmailSimple(
+				$subject, $message, $isHTML = true,
+				//Security codes should always be sent to the intended recipient even if debug mode is on.
+				$ignoreDebugMode = true,
+				$addressTo = $admin['email'], $nameTo = $merge['NAME'],
+				$addressFrom = false, $nameFrom = $source['email_templates'][$emailTemplate]['from']
+			);
 		
 			if (!$emailSent) {
 				$tags['tabs']['security_code']['errors'][] =
@@ -2805,20 +2805,14 @@ class welcome {
 				foreach ($merge as $pattern => $replacement) {
 					$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 				};
-		
-				$addressToOverriddenBy = false;
-				\ze\server::sendEmail(
-					$subject, $message,
-					$admin['email'],
-					$addressToOverriddenBy,
-					$nameTo = $merge['NAME'],
-					$addressFrom = false,
-					$nameFrom = $source['email_templates'][$emailTemplate]['from'],
-					false, false, false,
-					$isHTML = true,
-					false, false, false, false, '', '', 'To',
-					$ignoreDebugMode = true);	//Admin password change emails should always be sent to the intended recipient,
-												//even if debug mode is on.
+				
+				\ze\server::sendEmailSimple(
+					$subject, $message, $isHTML = true,
+					//Admin password change emails should always be sent to the intended recipient even if debug mode is on.
+					$ignoreDebugMode = true,
+					$addressTo = $admin['email'], $nameTo = $merge['NAME'],
+					$addressFrom = false, $nameFrom = $source['email_templates'][$emailTemplate]['from']
+				);
 			
 				if ($task == 'change_password') {
 					$task = 'password_changed';
@@ -2873,7 +2867,7 @@ class welcome {
 	}
 
 	//Formerly "diagnosticsAJAX()"
-	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $freshInstall) {
+	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $freshInstall, &$continueTo) {
 		
 		$showContinueButton = true;
 		$showCheckAgainButton = false;
@@ -3397,6 +3391,59 @@ class welcome {
 				$fields['0/public_images']['hidden'] = true;
 				$fields['0/repair_public_images']['hidden'] = true;
 			}
+			
+			
+			if (!empty($fields['0/minify_skins']['pressed'])) {
+				\ze\skinAdm::minify();
+			}
+			
+			$fields['0/print_css']['snippet']['html'] = '';
+			$fields['0/print_css']['row_class'] = 'valid';
+			$fields['0/print_css']['hidden'] = true;
+			$fields['0/unminified_skins']['row_class'] = 'valid';
+			$fields['0/unminified_skins']['hidden'] = true;
+			$fields['0/minify_skins']['hidden'] = true;
+			
+			if ($sv = \ze::setting('css_skin_version')) {
+				foreach (\ze\row::getValues('skins', ['id', 'name', 'display_name'], ['missing' => 0]) as $skin) {
+					if (!file_exists(CMS_ROOT. ($skinPath = 'public/css/skin_'. $skin['id']. '/'. $sv. '.min.css'))) {
+						$show_warning = true;
+						$fields['0/unminified_skins']['row_class'] = 'warning';
+						$fields['0/unminified_skins']['hidden'] = false;
+						$fields['0/unminified_skins']['snippet']['html'] =
+							\ze\admin::phrase('Zenario compresses CSS files in the skin using a technique called minification. The files appear to have changed, or Zenario has been updated, since they were last minified. Please re-minify them to help pages load more quickly. (Last modified [[last_modified]].)',
+								['last_modified' => \ze\admin::formatDateTime(base_convert($sv, 36, 10))]
+							);
+
+				
+						$fields['0/minify_skins']['hidden'] = false;
+					}
+					
+					$printFile = \ze\content::skinPath($skin['name']). 'editable_css/print.css';
+					
+					if (file_exists(CMS_ROOT. $printFile)) {
+						if ($css = file_get_contents(CMS_ROOT. $printFile)) {
+							if (!preg_match('/@media\s+print\b/i', $css)) {
+								$fields['0/print_css']['row_class'] = 'warning';
+								$fields['0/print_css']['hidden'] = false;
+								$fields['0/print_css']['snippet']['html'] .=
+									' '.
+									\ze\admin::phrase('The print-stylesheet at <code>[[printFile]]</code> is missing its &quot;<code>@media print { ... }</code>&quot; rule.',
+										['printFile' => htmlspecialchars($printFile)]);
+							}
+						}
+					}
+				}
+			}
+			
+			if (!empty($fields['0/print_css']['snippet']['html'])) {
+				$fields['0/print_css']['snippet']['html'] .=
+					' '.
+					\ze\admin::phrase('This will likely render the front-end of your site unusable.');
+			}
+			
+			
+			
 		
 			$warnings = \ze\welcome::getBackupWarnings();
 			$fields['0/site_automated_backups']['row_class'] = $warnings['row_class'];
@@ -3481,15 +3528,6 @@ class welcome {
 				$fields['0/htaccess_unavailable']['snippet']['html'] = \ze\admin::phrase('The .htaccess file cannot be read or is missing.');
 				
 				$fields['0/friendly_urls_disabled']['hidden'] = true;
-			}
-		
-			//Check to see if there are spare domains without a primary domain
-			if (!\ze::setting('primary_domain') && \ze\row::exists('spare_domain_names', [])) {
-				$show_warning = true;
-				$fields['0/spare_domains_without_primary_domain']['row_class'] = 'warning';
-			} else {
-				//Note: only show this message if it's in the error state; hide it otherwise
-				$fields['0/spare_domains_without_primary_domain']['hidden'] = true;
 			}
 		
 			//Check IP forwarding is either off, or on and working correctly
@@ -4049,6 +4087,109 @@ class welcome {
 			}
 			
 			
+			//Check the tables that are in the database are all present and correct
+			$knownTables = [];
+			$missingTables = [];
+			$unknownTables = [];
+			$unknownModuleTables = [];
+			
+			foreach ([
+				CMS_ROOT. 'zenario/admin/db_install/local-DROP.sql',
+				CMS_ROOT. 'zenario/admin/db_install/local-admin-DROP.sql'
+			] as $sqlFileWithListOfTables) {
+				foreach (\ze\ray::explodeAndTrim(file_get_contents($sqlFileWithListOfTables), false, "\n") as $knownTable) {
+					$knownTable = explode('`', str_replace(']', '`', $knownTable));
+					if (isset($knownTable[3])) {
+						$knownTable = $knownTable[3];
+						$knownTables[$knownTable] = 
+						$missingTables[$knownTable] = $knownTable;
+					}
+				}
+			}
+			
+			foreach (\ze\sql::fetchValues("SHOW TABLES LIKE '". \ze\escape::like(DB_PREFIX). "%'") as $existingTable) {
+				$existingTable = \ze\ring::chopPrefix(DB_PREFIX, $existingTable);
+	
+				if ($existingTable[0] == 'm'
+				 && $existingTable[1] == 'o'
+				 && $existingTable[2] == 'd'
+				 && is_numeric($existingTable[3])) {
+					//Module tables, check they actually belong to a module that exists
+					$moduleId = explode('_', \ze\ring::chopPrefix('mod', $existingTable))[0];
+					if (!\ze\row::exists('modules', ['id' => $moduleId, 'status' => ['!' => 'module_not_initialized']])) {
+						$unknownModuleTables[] = $existingTable;
+					}
+				} else {
+					//Core tables, check they are in the list.
+					if (isset($knownTables[$existingTable])) {
+						unset($missingTables[$existingTable]);
+					} else {
+						$unknownTables[] = $existingTable;
+					}
+				}
+			}
+			
+			if (!empty($missingTables)) {
+				$fields['0/missing_tables']['row_class'] = 'invalid';
+				$fields['0/missing_tables']['hidden'] = false;
+				$show_error = true;
+				
+				foreach ($missingTables as &$table) {
+					$table = '<code>'. htmlspecialchars(DB_PREFIX. $table). '</code>';
+				}
+				unset($table);
+				
+				$mrg = ['tables' => implode(', ', $missingTables)];
+				if (count($missingTables) == 1) {
+					$fields['0/missing_tables']['snippet']['html'] = \ze\admin::phrase('The following core table is missing from the database: [[tables]]', $mrg);
+				} else {
+					$fields['0/missing_tables']['snippet']['html'] = \ze\admin::phrase('The following core tables are missing from the database: [[tables]]', $mrg);
+				}
+			} else {
+				$fields['0/missing_tables']['hidden'] = true;
+			}
+			
+			if (!empty($unknownTables)) {
+				$fields['0/unknown_tables']['row_class'] = 'warning';
+				$fields['0/unknown_tables']['hidden'] = false;
+				$show_warning = true;
+				
+				foreach ($unknownTables as &$table) {
+					$table = '<code>'. htmlspecialchars(DB_PREFIX. $table). '</code>';
+				}
+				unset($table);
+				
+				$mrg = ['tables' => implode(', ', $unknownTables)];
+				if (count($unknownTables) == 1) {
+					$fields['0/unknown_tables']['snippet']['html'] = \ze\admin::phrase('The following table in the database is unrecognised: [[tables]]', $mrg);
+				} else {
+					$fields['0/unknown_tables']['snippet']['html'] = \ze\admin::phrase('The following tables in the database are unrecognised: [[tables]]', $mrg);
+				}
+			} else {
+				$fields['0/unknown_tables']['hidden'] = true;
+			}
+			
+			if (!empty($unknownModuleTables)) {
+				$fields['0/unknown_module_tables']['row_class'] = 'warning';
+				$fields['0/unknown_module_tables']['hidden'] = false;
+				$show_warning = true;
+				
+				foreach ($unknownModuleTables as &$table) {
+					$table = '<code>'. htmlspecialchars(DB_PREFIX. $table). '</code>';
+				}
+				unset($table);
+				
+				$mrg = ['tables' => implode(', ', $unknownModuleTables)];
+				if (count($unknownTables) == 1) {
+					$fields['0/unknown_module_tables']['snippet']['html'] = \ze\admin::phrase('The following module table in the database is not for any module on the site: [[tables]]', $mrg);
+				} else {
+					$fields['0/unknown_module_tables']['snippet']['html'] = \ze\admin::phrase('The following module tables in the database are not for any module on the site: [[tables]]', $mrg);
+				}
+			} else {
+				$fields['0/unknown_module_tables']['hidden'] = true;
+			}
+			
+			
 			
 			if ($show_error) {
 				$fields['0/show_site']['pressed'] = true;
@@ -4395,9 +4536,18 @@ class welcome {
 		//Continue on from this step if the "Continue" button is pressed
 		if (!empty($fields['0/continue']['pressed'])) {
 			unset($_SESSION['zenario_installer_disallow_changes_to_dirs']);
+			
+			# For T12576 (not yet implmented)
+			//$continueTo = $values['0/continue_to'];
+			
 			return true;
 	
 		} else {
+			
+			# For T12576 (not yet implmented)
+			//To do - populate the values in the "continue to" list
+			//$fields['0/continue_to'] ... 
+			
 			//If the Admin has pressed the "Save and Continue" button...
 			if (!empty($fields['0/check_again']['pressed'])) {
 				//If the directory section is valid, also don't show this screen unless it was shown previously
@@ -4465,39 +4615,48 @@ class welcome {
 	}
 
 	//Formerly "redirectAdmin()"
-	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false) {
+	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false, $continueTo = 'default') {
 		
 		$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
 		if (!empty($getRequest)) {
 			\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $getRequest, $getRequest, []);
 		}
 		
-		$domain = ($forceAliasInAdminMode || !\ze\priv::check())? \ze\link::primaryDomain() : \ze\link::adminDomain();
+		$isAdmin = \ze\priv::check();
+		$hasOrgPath = !empty($getRequest['og']);
+		
+		$domain = ($forceAliasInAdminMode || !$isAdmin)? \ze\link::primaryDomain() : \ze\link::adminDomain();
 		
 		//A language needs to be enabled, when an admin logs in, the admin should always be taken to
 		//the languages panel in Organizer to enable it.
-		if (!\ze\row::exists('languages', []) && \ze\priv::check()) {
+		if (!\ze\row::exists('languages', []) && $isAdmin) {
 			return
 				'organizer.php'.
 				'#zenario__languages/panels/languages';
-
-		} elseif (!empty($getRequest['og']) && \ze\priv::check()) {
+		
+		
+		//Handle the case where we want to go to Organizer
+		} elseif ($isAdmin && ($continueTo == 'organizer' || ($continueTo == 'default' && $hasOrgPath))) {
 			return
 				'organizer.php'.
 				(isset($getRequest['fromCID']) && isset($getRequest['fromCType'])? '?fromCID='. $getRequest['fromCID']. '&fromCType='. $getRequest['fromCType'] : '').
-				'#'. $getRequest['og'];
+				($hasOrgPath? '#'. $getRequest['og'] : '');
 		
-		} elseif (!empty($getRequest['desturl']) && \ze\priv::check()) {
+		
+		//Handle the case where we have a custom desturl to go back to
+		} elseif ($continueTo == 'default' && !empty($getRequest['desturl']) && $isAdmin) {
 			return \ze\link::protocol(). $domain. $getRequest['desturl'];
 		
 		}
 		
+		
+		//Handle the case where we want to go to a content item in the front-end
 		if (!$cID && !empty($_SESSION['destCID'])) {
 			$cID = $_SESSION['destCID'];
 			$cType = $_SESSION['destCType'] ?? 'html';
 		}
 	
-		if ($cID && \ze\content::checkPerm($cID, $cType)) {
+		if ($cID && ($continueTo == 'citem' || $continueTo == 'default') && \ze\content::checkPerm($cID, $cType)) {
 		
 			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion'], $getRequest['verification_code'], $getRequest['change_email_code']);
 		

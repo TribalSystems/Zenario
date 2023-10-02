@@ -280,18 +280,14 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		return !$this->beingDisplayed || empty($tags);
 	}
 	
-	private static $_addedLibs = false;
-	public static function requireJSLibsForFEAs() {
-		if (!static::$_addedLibs) {
-			static::$_addedLibs = true;
-			ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
-			ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
-			ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
-		}
+	public function requireJSLibsForFEAs() {
+		$this->requireJsLib('zenario/js/tuix.wrapper.js.php');
+		$this->requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 	}
 
 	public function init() {
-		self::requireJSLibsForFEAs();
+		$this->requireJSLibsForFEAs();
 		return true;
 	}
 
@@ -666,9 +662,9 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	protected function includeEditor() {
 		if (!ze::isAdmin()) {
-			ze::requireJsLib('zenario/js/ace.wrapper.js.php');
-			ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
-			ze::requireJsLib('zenario/libs/yarn/spectrum-colorpicker/spectrum.min.js', 'zenario/libs/yarn/spectrum-colorpicker/spectrum.min.css');
+			$this->requireJsLib('zenario/js/ace.wrapper.js.php');
+			$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
+			$this->requireJsLib('zenario/libs/yarn/spectrum-colorpicker/spectrum.min.js', 'zenario/libs/yarn/spectrum-colorpicker/spectrum.min.css');
 		}
 	}
 	

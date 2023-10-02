@@ -4,13 +4,72 @@ plugin_settings:
     module_class_name: zenario_slideshow
     tabs:
         first_tab:
-            label: Display
+            #label: Settings
             fields:
+                show_heading:
+                    plugin_setting:
+                        name: show_heading
+                    label: 'Show a heading'
+                    type: checkbox
+                    redraw_onchange: true
+                heading_text:
+                    plugin_setting:
+                        name: heading_text
+                    indent: 1
+                    visible_if: zenarioAB.value('show_heading')
+                    label: 'Heading:'
+                    type: text
+                    placeholder: 'Type your heading here'
+                heading_tag: 
+                    plugin_setting: 
+                        name: heading_tag
+                    label: "Heading tag:"
+                    indent: 1
+                    visible_if: zenarioAB.value('show_heading')
+                    type: select
+                    same_row: true
+                    values: 
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h1
+                    side_note: Choose which HTML tag the heading will be displayed in.
+                
+                animation_library:
+                    plugin_setting:
+                        name: animation_library
+                    label:  'Animation library for slide transitions:'
+                    type: radios
+                    value: cycle2
+                    values:
+                        cycle2:
+                            label: 'jQuery Cycle (recommended)'
+                            side_note: |
+                                The jQuery Cycle library will be used for transitions.
+                                Unless the height of the slideshow is set in CSS, the height of the first image will be applied automatically to all.
+                        roundabout:
+                            label: 'Roundabout'
+                            side_note: |
+                                The jQuery Roundabout library will be used to power the transitions.
+                                This will create a turntable-like area with the slides circling around.
+                        swiper:
+                            visible_if: |
+                                tuix.key.moduleClassName == 'zenario_slideshow_simple'
+                            label: 'Swiper'
+                            side_note: |
+                                The Swiper mobile touch slider library will be used to power the transitions.
+                                This will create a series of slides that works on both desktop and mobile.
+                    redraw_onchange: true
                 
                 nest_type:
                     plugin_setting:
                         name: nest_type
                     type: radios
+                    label:  'Animation library controls:'
                     value: indicator_and_buttons
                     values:
                         buttons:
@@ -20,12 +79,18 @@ plugin_settings:
                         indicator_and_buttons:
                             label: Show sequence indicator, Next and Previous
                         tabs:
+                            visible_if: |
+                                zenarioAB.value('animation_library', 'first_tab') != 'swiper'
                             label: Show tabs with labels
                         tabs_and_buttons:
+                            visible_if: |
+                                zenarioAB.value('animation_library', 'first_tab') != 'swiper'
                             label: Show tabs with labels, Next and Previous
                         permission:
                             label: Don't show any controls
                     redraw_onchange: true
+                    validation:
+                        required: Please select an option.
                 
                 buttons_desc:
                     indent: 1
@@ -73,69 +138,18 @@ plugin_settings:
                             Every slide in the slideshow will have a tab with a label.
                             Clicking on a tab will switch to that slide.
                             Next and Previous buttons will also be shown, which can be used to navigate between slides.
+        
+        cycle2_and_roundabout_common_options:
+            visible_if: |
+                zenarioAB.value('animation_library', 'first_tab') == 'cycle2' || 
+                zenarioAB.value('animation_library', 'first_tab') == 'roundabout'
+            label: Display
+            fields:
                 
-                show_heading:
-                    plugin_setting:
-                        name: show_heading
-                    label: 'Show a heading'
-                    type: checkbox
-                    redraw_onchange: true
-                heading_text:
-                    plugin_setting:
-                        name: heading_text
-                    indent: 1
-                    visible_if: zenarioAB.value('show_heading')
-                    label: 'Heading:'
-                    type: text
-                    placeholder: 'Type your heading here'
-                heading_tag: 
-                    plugin_setting: 
-                        name: heading_tag
-                    label: "Heading tag:"
-                    indent: 1
-                    visible_if: zenarioAB.value('show_heading')
-                    type: select
-                    same_row: true
-                    values: 
-                        h1: Heading 1
-                        h2: Heading 2
-                        h3: Heading 3
-                        h4: Heading 4
-                        h5: Heading 5
-                        h6: Heading 6
-                        p: Paragraph
-                    value: h1
-                    side_note: Choose which HTML tag the heading will be displayed in.
-                
-                animation_library:
-                    plugin_setting:
-                        name: animation_library
-                    label:  'Animation library for slide transitions:'
-                    type: radios
-                    value: cycle2
-                    values:
-                        0:
-                            label: 'None (advanced)'
-                            side_note: |
-                                If you check this option, no animation library will be included.
-                                However the HTML code of the slideshow will still be placed on the page,
-                                and you may use your own CSS or JavaScript code to do what you wish with it.
-                        cycle2:
-                            label: 'jQuery Cycle (recommended)'
-                            side_note: |
-                                The jQuery Cycle library will be used for transitions. Unless the height of the slideshow is set in CSS, the height of the first image will be applied automatically to all.
-                        roundabout:
-                            label: 'Roundabout'
-                            side_note: |
-                                The jQuery Roundabout library will be used to power the transitions.
-                                This will create a turntable-like area with the slides circling around.
-                    format_onchange: true
                     
                 use_timeout:
                     plugin_setting:
                         name: use_timeout
-                    visible_if: zenarioAB.value('animation_library')
-                    indent: 1
                     label: 'Auto-advance slides'
                     type: checkbox
                     value: 1
@@ -143,8 +157,9 @@ plugin_settings:
                 timeout:
                     plugin_setting:
                         name: timeout
-                    visible_if: zenarioAB.value('animation_library') && zenarioAB.value('use_timeout')
-                    indent: 2
+                    visible_if:
+                        lib.value: use_timeout
+                    indent: 1
                     label: 'Display duration:'
                     type: text
                     slider:
@@ -163,8 +178,9 @@ plugin_settings:
                 pause:
                     plugin_setting:
                         name: pause
-                    visible_if: zenarioAB.value('animation_library') && zenarioAB.value('use_timeout')
-                    indent: 2
+                    visible_if:
+                        lib.value: use_timeout
+                    indent: 1
                     label: 'Hover to pause'
                     type: checkbox
                     value: ""
@@ -174,8 +190,8 @@ plugin_settings:
                 next_prev_buttons_loop:
                     plugin_setting:
                         name: next_prev_buttons_loop
-                    visible_if: zenarioAB.value('animation_library') == 'cycle2'
-                    indent: 1
+                    visible_if: |
+                        zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
                     label: 'Loop slides'
                     type: checkbox
                     value: 1
@@ -184,8 +200,6 @@ plugin_settings:
                 use_tab_hover:
                     plugin_setting:
                         name: use_tab_hover
-                    visible_if: zenarioAB.value('animation_library')
-                    indent: 1
                     label: 'Hover to change'
                     type: checkbox
                     value: 1
@@ -195,8 +209,6 @@ plugin_settings:
                 use_tab_clicks:
                     plugin_setting:
                         name: use_tab_clicks
-                    visible_if: zenarioAB.value('animation_library')
-                    indent: 1
                     label: 'Click to change'
                     type: checkbox
                     value: ""
@@ -204,6 +216,8 @@ plugin_settings:
                         Clicking on a tab changes to that tab's slide.
                         Only applies with Frameworks with Tabs.
         cycle2_effects:
+            visible_if: |
+                zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
             label: Effects
             fields:
                 fx:
@@ -247,6 +261,8 @@ plugin_settings:
                     post_field_html: ms
         
         roundabout_effects:
+            visible_if: |
+                zenarioAB.value('animation_library', 'first_tab') == 'roundabout'
             label: Shape and Speed
             fields:
                 shape:

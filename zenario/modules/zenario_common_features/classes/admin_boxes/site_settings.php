@@ -155,7 +155,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		foreach ([
 			'admin_domain' => 'Use [[domain]] as the admin domain; redirect all administrators to [[domain]]',
-			'primary_domain' => 'Use [[domain]] as the primary domain; redirect all visitors to [[domain]]'
+			'primary_domain' => 'Use [[domain]] as the primary domain (redirect all traffic to [[domain]])'
 		] as $domainSetting => $phrase) {
 			if (isset($box['tabs'][$domainSetting]['fields'][$domainSetting])) {
 				if (ze::setting($domainSetting)) {
@@ -330,12 +330,15 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
-		//Add editor options to standard email template editor
+		//Add editor options to Standard Email Template editor
 		$styleFormats = ze\site::description('email_style_formats');
 		if (!empty($styleFormats)) {
+			//If custom email styles exist, load them and add them to the toolbar.
+			//Please note: by default, the full featured editor DOES NOT have the styleselect dropdown.
+			
 			$fields['template/standard_email_template']['editor_options']['style_formats'] = $styleFormats;
 			$fields['template/standard_email_template']['editor_options']['toolbar'] =
-				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
+				'undo redo | formatselect | styleselect | fontsizeselect | bold italic underline | image link unlink | bullist numlist | forecolor backcolor | charmap emoticons';
 		}
 		
 		if ($settingGroup == 'data_protection') {
@@ -402,6 +405,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			if (ze::setting('captcha_status_and_version') == 'enabled_v2' && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
 				$fields['recaptcha_policy/recaptcha_info']['hidden'] = true;
 				$fields['recaptcha_policy/recaptcha_warning']['hidden'] = false;
+			}
+		}
+		
+		if ($settingGroup == 'cookies') {
+			if (!$values['cookies/popup_cookie_type_switches_initial_state']) {
+				$fields['cookies/popup_cookie_type_switches_initial_state']['value'] = 'off';
 			}
 		}
 
@@ -729,6 +738,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 		}
+		
+		if (isset($fields['template/standard_email_template'])) {
+			//Try and ensure that we use absolute URLs where possible
+			ze\contentAdm::addAbsURLsToAdminBoxField($fields['template/standard_email_template']);
+		}
 
 		if (isset($fields['test/test_send_button'])) {
 	
@@ -788,7 +802,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							zenario_email_template_manager::putBodyInTemplate($body);
 						}
 						
-						$result = ze\server::sendEmail(
+						$result = ze\server::sendEmailAdvanced(
 							$subject, $body,
 							$email,
 							$addressToOverriddenBy,
@@ -988,6 +1002,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			exit;
 		}
 
+		if (isset($fields['template/standard_email_template'])) {
+			//Try and ensure that we use absolute URLs where possible
+			ze\contentAdm::addAbsURLsToAdminBoxField($fields['template/standard_email_template']);
+		}
+
 		$changesToFiles = false;
 
 		//Loop through each field that would be in the Admin Box, and has the <site_setting> tag set
@@ -1029,6 +1048,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							//On multisite sites, don't allow local Admins to change the directory paths
 							if (ze::in($setting, 'backup_dir', 'docstore_dir') && ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false)) {
 								continue;
+							}
+							
+							//Run a HTML sanitiser on any HTML fields when we save them
+							if ('editor' == ($field['type'] ?? '')) {
+								$value = ze\ring::sanitiseWYSIWYGEditorHTML($value, true);
 							}
 					
 							//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
@@ -1112,7 +1136,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		if ($settingGroup == 'logos_and_branding') {
 			ze\site::setSetting('site_disabled_title', $values['admin_login/site_disabled_title']);
-			ze\site::setSetting('site_disabled_message', $values['admin_login/site_disabled_message']);
+			ze\site::setSetting('site_disabled_message', ze\ring::sanitiseWYSIWYGEditorHTML($values['admin_login/site_disabled_message'], true));
 		}
 		
 		//In Zenario 9.4, a new setting for User Forms max attachment size was introduced.
@@ -1120,26 +1144,35 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		//In case it's different, make sure that after changing the setting in this admin box,
 		//the Forms one is not suddenly larger. Set it to use the global file size.
 		//
-		//Also the setting for max user image file upload size was changed to work like the global setting
+		//Also the settings for max user image file upload size, and max location image size, were changed to work like the global setting
 		//(text field + unit selector). Replicate the same logic for it.
 		if ($settingGroup == 'files_and_images' && isset($values['filesizes/content_max_filesize']) && $values['filesizes/content_max_filesize']) {
 			$maxFileSize = ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'], $values['filesizes/content_max_filesize_unit']);
 			
-			if (ze::setting('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size') {
+			if (ze::setting('zenario_user_forms_max_attachment_file_size_override')) {
 				$maxUserFormsFileSize = ze\file::fileSizeBasedOnUnit(ze::setting('zenario_user_forms_content_max_filesize'), ze::setting('zenario_user_forms_content_max_filesize_unit'));
 				if ($maxUserFormsFileSize > $maxFileSize) {
 					ze\site::setSetting('zenario_user_forms_content_max_filesize', '');
 					ze\site::setSetting('zenario_user_forms_content_max_filesize_unit', '');
-					ze\site::setSetting('zenario_user_forms_max_attachment_file_size_override', 'use_global_max_attachment_file_size');
+					ze\site::setSetting('zenario_user_forms_max_attachment_file_size_override', false);
 				}
 			}
 			
-			if (ze::setting('max_user_image_filesize_override') == 'limit_max_attachment_file_size') {
+			if (ze::setting('max_user_image_filesize_override')) {
 				$maxUserImageileSize = ze\file::fileSizeBasedOnUnit(ze::setting('max_user_image_filesize'), ze::setting('max_user_image_filesize_unit'));
 				if ($maxUserImageileSize > $maxFileSize) {
 					ze\site::setSetting('max_user_image_filesize', '');
 					ze\site::setSetting('max_user_image_filesize_unit', '');
-					ze\site::setSetting('max_user_image_filesize_override', 'use_global_max_attachment_file_size');
+					ze\site::setSetting('max_user_image_filesize_override', false);
+				}
+			}
+			
+			if (ze::setting('max_location_image_filesize_override')) {
+				$maxLocationImageileSize = ze\file::fileSizeBasedOnUnit(ze::setting('max_location_image_filesize'), ze::setting('max_location_image_filesize_unit'));
+				if ($maxLocationImageileSize > $maxFileSize) {
+					ze\site::setSetting('max_location_image_filesize', '');
+					ze\site::setSetting('max_location_image_filesize_unit', '');
+					ze\site::setSetting('max_location_image_filesize_override', false);
 				}
 			}
 		}
@@ -1166,16 +1199,16 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			
 			switch ($values['cookies/cookie_require_consent']) {
 				case 'implied':
-					$this->savePhrase(true, '_COOKIE_BOX1_01_IMPLIED_MSG', $values['cookies/_COOKIE_BOX1_01_IMPLIED_MSG']);
+					$this->savePhrase(true, '_COOKIE_BOX1_01_IMPLIED_MSG', ze\ring::sanitiseWYSIWYGEditorHTML($values['cookies/_COOKIE_BOX1_01_IMPLIED_MSG'], true));
 					$this->savePhrase(false, '_COOKIE_BOX1_02_CONTINUE_BTN', $values['cookies/_COOKIE_BOX1_02_CONTINUE_BTN']);
 					break;
 			
 				case 'explicit':
-					$this->savePhrase(true, '_COOKIE_BOX1_03_COOKIE_CONSENT_MSG', $values['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG']);
+					$this->savePhrase(true, '_COOKIE_BOX1_03_COOKIE_CONSENT_MSG', ze\ring::sanitiseWYSIWYGEditorHTML($values['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG'], true));
 					$this->savePhrase(false, '_COOKIE_BOX1_04_MANAGE_BTN', $values['cookies/_COOKIE_BOX1_04_MANAGE_BTN']);
 					$this->savePhrase(false, '_COOKIE_BOX1_05_ACCEPT_BTN', $values['cookies/_COOKIE_BOX1_05_ACCEPT_BTN']);
 
-					$this->savePhrase(true, '_COOKIE_BOX2_01_INTRO_MSG', $values['cookies/_COOKIE_BOX2_01_INTRO_MSG']);
+					$this->savePhrase(true, '_COOKIE_BOX2_01_INTRO_MSG', ze\ring::sanitiseWYSIWYGEditorHTML($values['cookies/_COOKIE_BOX2_01_INTRO_MSG'], true));
 					$this->savePhrase(false, '_COOKIE_BOX2_02_ACCEPT_ALL_BTN', $values['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN']);
 					$this->savePhrase(false, '_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN', $values['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN']);
 					

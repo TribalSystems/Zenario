@@ -398,6 +398,7 @@ html.zenario_push_pull-wrapper_opened a.zenario_push_pull-hamburger:before {
 a.zenario_push_pull-hamburger {
 	position:absolute;
 	z-index:99;
+	top:0;
    	padding:14px 10px 8px;
 }
 
@@ -623,7 +624,7 @@ a.zenario_push_pull-hamburger {
 	visibility:hidden;
 	content:"";
 	position:absolute;
-	z-index:1;
+	z-index:20;
 	top:0;
 	bottom:0;
 	left:0;
@@ -675,11 +676,23 @@ html.zenario_push_pull-wrapper_opened a.zenario_push_pull-hamburger:after {
 	padding:15px 10px;
 }
 
+/* External links */
+
+.link_external a.zenario_push_pull-btn:after,
+.zenario_push_pull-panel .has_child.link_external > a:before {
+	content:"";
+	padding-left:0;
+}
+
 /* Admin hacks
 --------------------------------------------------------------------------------------------------*/
 
 .zenario_adminLoggedIn .zenario_push_pull-menu {
 	top:129px;
+}
+
+.zenario_adminLoggedIn.zenario_adminToolbarHidden .zenario_push_pull-menu {
+	top:0;
 }
 
 .zenario_adminLoggedIn.zenario_pageMode_edit .zenario_menu_responsive_push_pull,

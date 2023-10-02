@@ -12,6 +12,7 @@ plugin_settings:
                         translate: true
                     label: 'Display this HTML:'
                     type: editor
+                    editor_type: standard_with_images
                     dont_trim: true
                     style: 'width: 750px; height: 250px;'
                     insert_image_button:

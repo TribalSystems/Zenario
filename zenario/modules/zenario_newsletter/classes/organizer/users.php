@@ -50,9 +50,9 @@ class zenario_newsletter__organizer__users extends zenario_newsletter {
 				$panel['refiners']['zenario_newsletter__recipients']['table_join'] = $sql['table_join'];
 				$panel['refiners']['zenario_newsletter__recipients']['sql'] = $sql['where_statement'];
 				
-				$panel['no_items_message'] = ze\admin::phrase('No Recipients are included in this Newsletter.');
+				$panel['no_items_message'] = ze\admin::phrase('This newsletter doesn\'t have any recipients.');
 			} else {
-				$panel['no_items_message'] = ze\admin::phrase('No Recipients have been set.');
+				$panel['no_items_message'] = ze\admin::phrase('This newsletter doesn\'t have any recipients. You should edit the newsletter and select a smart group to define who to send it to.');
 			}
 		}
 	}

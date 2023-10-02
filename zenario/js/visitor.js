@@ -193,12 +193,12 @@ zenario.lib(function(
 	
 		var phrases = zenario.nonAsyncAJAX(url, false, true, true);
 		
-		zenario.registerPhrases(vlpClass, phrases);
+		zenario.readyPhrasesOnBrowser(vlpClass, phrases);
 	
 		return phrases;
 	};
 	
-	zenario.registerPhrases = function(vlpClass, phrases) {
+	zenario.readyPhrasesOnBrowser = function(vlpClass, phrases) {
 		if (!zenario.phrases[vlpClass]) {
 			zenario.phrases[vlpClass] = phrases;
 		} else {
@@ -239,7 +239,7 @@ zenario.lib(function(
 		}
 	};
 	
-//	zenario.linkToItem = function(cID, cType, request, adminlogin) {};
+//	zenario.linkToItem = function(cID, cType, request, linkViaAdminWelcomePage) {};
 
 	//Call a signal/event on all included Modules, if they have it defined
 	
@@ -1545,7 +1545,7 @@ zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, r
 
 
 //Link to a content item
-zenario.linkToItem = function(cID, cType, request, adminlogin) {
+zenario.linkToItem = function(cID, cType, request, linkViaAdminWelcomePage) {
 
 	//Accept an input in the form of a Plugin Setting, e.g. "html_123"
 	if (!cType && ('' + cID).indexOf('_') !== -1) {
@@ -1578,14 +1578,14 @@ zenario.linkToItem = function(cID, cType, request, adminlogin) {
 	var pos,
 		canonicalURL,
 		basePath = URLBasePath;
-	if (adminlogin) {
+	if (linkViaAdminWelcomePage) {
 		basePath += 'admin.php';
 	} else {
 		basePath += zenario.indexDotPHP;
 	}
 	
 	//If we're linking to the content item that we're currently on...
-	if (!adminlogin
+	if (!linkViaAdminWelcomePage
 	 && (!zenario.adminId || zenarioA.siteSettings.mod_rewrite_admin_mode)
 	 && cID === zenario.cID) {
 		//...check to see if it is using a friendly URL...

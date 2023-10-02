@@ -561,6 +561,7 @@ class file {
 
 	public static function deleteMediaContentItemFileIfUnused($cID, $cType, $fileId) {
 		if ($cID && $cType && $fileId) {
+			//Check if the file is used by other content items...
 			$tagId = $cType . '_' . $cID;
 			$sql = '
 				SELECT GROUP_CONCAT(ci.id) AS content_items
@@ -573,7 +574,20 @@ class file {
 			$result = \ze\sql::select($sql);
 			$usage = \ze\sql::fetchValue($result);
 			
-			if (!$usage) {
+			//... and check if any hierarchical document uses the same file (search by checksum).
+			$fileChecksum = \ze\row::get('files', 'checksum', $fileId);
+			
+			$otherFiles = \ze\row::getValues('files', 'id', ['checksum' => $fileChecksum]);
+			if (!empty($otherFiles)) {
+				$hierarchicalDocumentsSql = '
+					SELECT id
+					FROM ' . DB_PREFIX . 'documents
+					WHERE file_id IN(' . \ze\escape::in($otherFiles) . ')';
+				$result = \ze\sql::select($hierarchicalDocumentsSql);
+				$hierarchicalDocumentsUsage = \ze\sql::fetchValues($result);
+			}
+			
+			if (!$usage && !$hierarchicalDocumentsUsage) {
 				\ze\file::delete($fileId);
 				return true;
 			}
@@ -1056,14 +1070,8 @@ class file {
 
 
 	
-	//Try to set the feature image (aka sticky image) for a link to a content item in the framework
-	public static function featureImageHTML(
-		$cID, $cType, $cVersion,
-		$useFallbackImage, $fallbackImageId,
-		$maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
-		$altTag, $htmlID = '', $cssClass = '', $styles = '', $attributes = ''
-	) {
-
+	//Try to get the feature image (aka sticky image) for a link to a content item in the framework
+	public static function featureImageId($cID, $cType, $cVersion, $useFallbackImage, $fallbackImageId) {
 		if ($cType == 'picture') {
 			//Legacy code for Pictures
 			$imageId = \ze\row::get("content_item_versions", "file_id", ["id" => $cID, 'type' => $cType, "version" => $cVersion]);
@@ -1074,6 +1082,18 @@ class file {
 		if (!$imageId && $useFallbackImage) {
 			$imageId = $fallbackImageId;
 		}
+		
+		return $imageId;
+	}
+	
+	//Deprecated function for calling the featureImageId() and imageHTML() functions.
+	//Used mainly for migrating old plugins to the new image system.
+	public static function featureImageHTML(
+		$cID, $cType, $cVersion, $useFallbackImage, $fallbackImageId,
+		$maxWidth, $maxHeight, $canvas, $retina, $makeWebP,
+		$altTag, $htmlID = '', $cssClass = '', $styles = '', $attributes = ''
+	) {
+		$imageId = \ze\file::featureImageId($cID, $cType, $cVersion, $useFallbackImage, $fallbackImageId);
 		
 		if ($imageId) {
 			$cssRules = [];
@@ -1529,6 +1549,37 @@ class file {
 			$fileId, $maxWidth, $maxHeight, $canvas, $offset,
 			$fullPath, $privacy,
 			$useCacheDir, $internalFilePath, $returnImageStringIfCacheDirNotWorking
+		);
+	}
+	
+	public static function internalImagePath(
+		&$width, &$height, &$url, $fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$retina = false, $fullPath = false, $privacy = 'auto',
+		$useCacheDir = true
+	) {
+		$webPURL = $mimeType = $isRetina = null;
+
+		return self::imageAndWebPLink(
+			$width, $height, $url, false, $webPURL, $retina, $isRetina, $mimeType,
+			$fileId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, $privacy,
+			$useCacheDir, true
+		);
+	}
+	
+	public static function internalImageAndWebPPath(
+		&$width, &$height, &$url, $makeWebP, &$webPURL, $retina, &$isRetina, &$mimeType,
+		$fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$fullPath = false, $privacy = 'auto',
+		$useCacheDir = true
+	) {
+		$webPURL = $mimeType = $isRetina = null;
+
+		return self::imageAndWebPLink(
+			$width, $height, $url, $makeWebP, $webPURL, $retina, $isRetina, $mimeType,
+			$fileId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, $privacy,
+			$useCacheDir, true
 		);
 	}
 	
@@ -2182,10 +2233,10 @@ class file {
 								unlink($temp_file);
 								
 								// Get rid of hyphens where words break across a newline
-								$extract = preg_replace ('/\xC2\xAD\n/', '', $extract);
+								$extract = mb_ereg_replace ('/\xC2\xAD\n/', '', $extract);
 							
 								// Get rid of other characters which may show as Â or â
-								$extract = preg_replace ('/[\xC2\xE2]/', '', $extract);
+								$extract = mb_ereg_replace ('/[\xC2\xE2]/', '', $extract);
 							
 								$extract = trim(\ze\ring::encodeToUtf8($extract));
 
@@ -2770,7 +2821,7 @@ class file {
         } elseif ($bytes >= 1048576) {
             $bytes = number_format($bytes / 1048576, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_MB');
         } elseif ($bytes >= 1024) {
-            $bytes = number_format($bytes / 1024, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_KB');
+            $bytes = number_format($bytes / 1024, 0) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_KB');
         } elseif ($bytes > 1) {
             $bytes = $bytes . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
         } elseif ($bytes == 1) {

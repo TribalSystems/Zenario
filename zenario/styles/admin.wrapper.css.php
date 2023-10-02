@@ -39,6 +39,7 @@ if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php'
 
 
 //Include all of the standard CSS admin libraries for the CMS
+ze\cache::incCSS('zenario/styles/admin_login_link');
 ze\cache::incCSS('zenario/styles/admin_toolbar');
 ze\cache::incCSS('zenario/styles/admin_toolbar_buttons');
 ze\cache::incCSS('zenario/styles/admin_floating_box');

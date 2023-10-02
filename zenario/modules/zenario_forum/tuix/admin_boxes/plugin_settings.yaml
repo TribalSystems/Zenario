@@ -234,6 +234,7 @@ plugin_settings:
                     format_onchange: true
                     side_note: Note that moderators will always be able to add new threads.
                 restrict_new_thread_to_group:
+                    indent: 1
                     plugin_setting:
                         name: restrict_new_thread_to_group
                     label: 'Group:'
@@ -260,6 +261,7 @@ plugin_settings:
                     format_onchange: true
                     side_note: Note that moderators will always be able to post replies.
                 restrict_posting_to_group:
+                    indent: 1
                     plugin_setting:
                         name: restrict_posting_to_group
                     label: 'Group:'
@@ -295,6 +297,7 @@ plugin_settings:
                     format_onchange: true
                     side_note: 'Administrators with the &quot;Moderate user comments&quot; permission will always be able to moderate.'
                 moderators:
+                    indent: 1
                     plugin_setting:
                         name: moderators
                     label: 'Moderation group:'
@@ -328,6 +331,7 @@ plugin_settings:
                     value: ""
                     format_onchange: true
                 enable_anonymous_report_a_post:
+                    indent: 1
                     plugin_setting:
                         name: enable_anonymous_report_a_post
                     label: 'Allow anonymous reporting'
@@ -386,6 +390,7 @@ plugin_settings:
                     value: ""
                     format_onchange: true
                 notification_email_address:
+                    indent: 1
                     plugin_setting:
                         name: notification_email_address
                         is_email_address: true
@@ -400,6 +405,7 @@ plugin_settings:
                             valid.
                     side_note: Separate multiple addresses with commas.
                 new_thread_notification_email_template:
+                    indent: 1
                     plugin_setting:
                         name: new_thread_notification_email_template
                         foreign_key_to: email_template
@@ -453,6 +459,7 @@ plugin_settings:
                     value: ""
                     format_onchange: true
                 new_thread_subs_email_template:
+                    indent: 1
                     plugin_setting:
                         name: new_thread_subs_email_template
                         foreign_key_to: email_template
@@ -479,6 +486,7 @@ plugin_settings:
                     value: ""
                     format_onchange: true
                 post_subs_email_template:
+                    indent: 1
                     plugin_setting:
                         name: post_subs_email_template
                         foreign_key_to: email_template

@@ -82,6 +82,13 @@ zenario__user_forms:
                     align_right: true
                     width: small
                     show_by_default: true
+                response_count_internal:
+                    db_column: |
+                        (
+                            SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                            WHERE form_id = f.id
+                        )
+                    hidden: true
                 partial_response_count:
                     title: Partial responses
                     db_column: |
@@ -124,7 +131,6 @@ zenario__user_forms:
             default_sort_column: name
             
             item:
-                css_class: form
                 name: Form
                 names: Forms
                 css_class: zenario_user_forms
@@ -296,7 +302,7 @@ zenario__user_forms:
                     label: Archive
                     multiple_select_tooltip: Archive these forms?
                     multiple_select: true
-                    visible_if_for_all_selected_items: item.response_count > 0
+                    visible_if_for_all_selected_items: item.response_count_internal > 0
                     disabled_if_for_all_selected_items: |
                         item.plugin_is_used
                     disabled_tooltip: |

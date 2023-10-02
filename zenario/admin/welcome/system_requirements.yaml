@@ -62,7 +62,7 @@ system_requirements:
                     grouping: sub_table
                     full_width: true
                     snippet:
-                        html: PHP version 7.2 or later
+                        html: PHP version 7.2 or later, version 8.0 or later recommended
                     visible_if: zenarioAW.togglePressed(field)
                 opcache_misconfigured:
                     grouping: sub_table

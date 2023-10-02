@@ -91,7 +91,7 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 			foreach (ze\ray::explodeAndTrim($values['copy/copy_to'], true) as $adminIdTo) {
 				if ($adminIdTo != ze\admin::id()
 				 && ze\row::exists('admins',['status' => 'active', 'authtype' => 'local', 'id' => $adminIdTo])) {
-					ze\adminAdm::savePerms($adminIdTo, $adminFrom['permissions'], $perms, $adminFrom);
+					ze\adminAdm::removeExistingPermsAndSaveNewPerms($adminIdTo, $adminFrom['permissions'], $perms, $adminFrom);
 				}
 			}
 		}

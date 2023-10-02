@@ -33,8 +33,7 @@ namespace ze;
 class server {
 
 
-	//Formerly "sendEmail()"
-	public static function sendEmail(
+	public static function sendEmailAdvanced(
 		$subject, $body, $addressTo, &$addressToOverriddenBy,
 		$nameTo = false, $addressFrom = false, $nameFrom = false, 
 		$attachments = [], $attachmentFilenameMappings = [],
@@ -142,7 +141,7 @@ class server {
 		if ($ccs) {
 			foreach (array_unique(\ze\ray::explodeAndTrim(str_replace(';', ',', $ccs))) as $emailAddress) {
 				if ($debug) {
-					\ze\server::sendEmail(
+					\ze\server::sendEmailAdvanced(
 						$subject, $body, $emailAddress, $addressToOverriddenBy,
 						$nameTo, $addressFrom, $nameFrom, 
 						$attachments, $attachmentFilenameMappings,
@@ -157,7 +156,7 @@ class server {
 		if ($bccs) {
 			foreach (array_unique(\ze\ray::explodeAndTrim(str_replace(';', ',', $bccs))) as $emailAddress) {
 				if ($debug) {
-					\ze\server::sendEmail(
+					\ze\server::sendEmailAdvanced(
 						$subject, $body, $emailAddress, $addressToOverriddenBy,
 						$nameTo, $addressFrom, $nameFrom, 
 						$attachments, $attachmentFilenameMappings,
@@ -224,13 +223,33 @@ class server {
 			$addressTo = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 		
-		return \ze\server::sendEmail(
+		return \ze\server::sendEmailAdvanced(
 			$subject, $body, $addressTo, $addressToOverriddenBy,
 			$nameTo, $addressFrom, $nameFrom, 
 			[], [],
 			'bulk', $isHTML, false,
 			false, false, false,
 			'', '', 'To', $ignoreDebugMode
+		);
+	}
+	
+	//Former name for ze\server::sendEmailAdvanced(),
+	//left in for now as a deprecated alias.
+	public static function sendEmail(
+		$subject, $body, $addressTo, &$addressToOverriddenBy,
+		$nameTo = false, $addressFrom = false, $nameFrom = false, 
+		$attachments = [], $attachmentFilenameMappings = [],
+		$precedence = 'bulk', $isHTML = true, $exceptions = false,
+		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false
+	) {
+		return ze\server::sendEmailAdvanced(
+			$subject, $body, $addressTo, $addressToOverriddenBy,
+			$nameTo, $addressFrom, $nameFrom, 
+			$attachments, $attachmentFilenameMappings,
+			$precedence, $isHTML, $exceptions,
+			$addressReplyTo, $nameReplyTo, $warningEmailCode,
+			$ccs, $bccs, $action, $ignoreDebugMode
 		);
 	}
 	

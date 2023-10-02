@@ -42,6 +42,7 @@ site_settings:
                     site_setting:
                         name: zenario_sensitive_content_message__text
                     type: editor
+                    editor_type: standard
                     validation:
                         required_if_not_hidden: "Please enter a message."
                     visible_if: (zenarioAB.value("zenario_sensitive_content_message__setting") == "enabled_for_whole_site" || zenarioAB.value("zenario_sensitive_content_message__setting") == "enabled_by_layout_and_by_content_item")

@@ -39,7 +39,3 @@ is_pluggable: true
 nestable: true
 default_framework: standard
 default_instance_name: Promo menu
-signals:
-    signal1:
-        name: eventMenuNodeDeleted
-        static: true

@@ -42,7 +42,7 @@ class zenario_extranet_user_profile_view_2 extends ze\moduleBaseClass {
 				$userId = ze\user::id();
 				break;
 			case 'descriptive_page':
-				$userId = self::getUserIdFromDescriptivePage($this->cID,$this->cType);
+				$userId = self::getUserIdFromDescriptivePage($this->cID, $this->cType);
 				break;
 		}
 		if ($userId) {
@@ -88,5 +88,3 @@ class zenario_extranet_user_profile_view_2 extends ze\moduleBaseClass {
 		}
 	}
 }
-
-?>

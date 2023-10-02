@@ -85,7 +85,13 @@ class pluginAdm {
 
 
 	//Formerly "fillAdminSlotControlPluginInfo()"
-	public static function fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, &$info, &$actions, &$re_move_place) {
+	public static function fillSlotControlPluginInfo($slot, $cID, $cType, $level, &$info, &$actions, &$re_move_place) {
+		
+		$isNest = $slot->isNest();
+		$isSlideshow = $slot->isSlideshow();
+		$moduleId = $slot->moduleId();
+		$instanceId = $slot->instanceId();
+		$isVersionControlled = $slot->isVersionControlled();
 
 
 		$pluginType = $isVersionControlled? 99 : ($isSlideshow? 2 : ($isNest? 1 : 0));
@@ -323,44 +329,43 @@ class pluginAdm {
 	//Formerly "removeUnusedVersionControlledPluginSettings()"
 	public static function removeUnusedVCs($cID, $cType, $cVersion) {
 		$slotContents = [];
-		\ze\plugin::slotContents(
+		\ze\plugin::checkSlotContents(
 			$slotContents,
-			$cID, $cType, $cVersion,
-			$layoutId = false,
-			$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-			$runPlugins = false);
+			$cID, $cType, $cVersion
+		);
 	
 		$result = \ze\row::query('plugin_instances', ['id', 'slot_name'], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 		while ($instance = \ze\sql::fetchAssoc($result)) {
-			if ($instance['id'] != ($slotContents[$instance['slot_name']]['instance_id'] ?? false)) {
+			
+			$instanceIdOnSlot = 0;
+			if (isset($slotContents[$instance['slot_name']])) {
+				$instanceIdOnSlot = $slotContents[$instance['slot_name']]->instanceId();
+			}
+			
+			if ($instance['id'] != $instanceIdOnSlot) {
 				\ze\pluginAdm::delete($instance['id']);
 			}
 		}
 	}
 
-	//Copy Wireframe modules from one Content Item to another, as part of creating a new draft.
+	//Copy version controlled plugins from one Content Item to another, as part of creating a new draft.
 	//Logic similar to \ze\pluginAdm::removeUnusedVCs() above needs to be used to check that only Settings that are actually being used are copied
 	//Formerly "duplicateVersionControlledPluginSettings()"
-	public static function duplicateVC($cIDTo, $cIDFrom, $cType, $cVersionTo, $cVersionFrom, $cTypeFrom = false, $slotName = false) {
-		$cTypeTo = $cType;
-		if (!$cTypeFrom) {
-			$cTypeFrom = $cType;
-		}
+	public static function duplicateVC($cIDFrom, $cTypeFrom, $cVersionFrom, $cIDTo, $cTypeTo, $cVersionTo) {
+		
 		$slotContents = [];
-		\ze\plugin::slotContents(
+		\ze\plugin::checkSlotContents(
 			$slotContents,
-			$cIDFrom, $cTypeFrom, $cVersionFrom,
-			$layoutId = false,
-			$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-			$runPlugins = false);
-	
+			$cIDFrom, $cTypeFrom, $cVersionFrom
+		);
+		
 		$result = \ze\row::query('plugin_instances', ['id', 'slot_name'], ['content_id' => $cIDFrom, 'content_type' => $cTypeFrom, 'content_version' => $cVersionFrom]);
 		while ($instance = \ze\sql::fetchAssoc($result)) {
-			if (!$slotName || $slotName == $instance['slot_name']) {
-				if ($instance['id'] == ($slotContents[$instance['slot_name']]['instance_id'] ?? false)) {
-					$eggId = 0;
-					\ze\pluginAdm::rename($instance['id'], $eggId, false, true, $cIDTo, $cTypeTo, $cVersionTo, $instance['slot_name']);
-				}
+			
+			if (($slot = $slotContents[$instance['slot_name']] ?? null)
+			 && ($slot->instanceId() == $instance['id'])) {
+				$eggId = 0;
+				\ze\pluginAdm::rename($instance['id'], $eggId, false, true, $cIDTo, $cTypeTo, $cVersionTo, $instance['slot_name']);
 			}
 		}
 	}
@@ -1016,7 +1021,6 @@ class pluginAdm {
 		
 		
 		if ($moduleId || $instanceId !== '') {
-			
 			//If trying to add a new plugin, check this slot exists
 			$key = [
 				'layout_id' => ($layoutId = \ze\content::layoutId($cID, $cType, $cVersion)),
@@ -1550,10 +1554,10 @@ class pluginAdm {
 				echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
 			}
 	
-		} elseif (!empty($slot['error'])) {
-			echo '<em>'. htmlspecialchars($slot['error']). '</em>';
+		} elseif ($slot->error()) {
+			echo '<em>'. htmlspecialchars($slot->error()). '</em>';
 	
-		} elseif (empty($slot['module_id'])) {
+		} elseif (!$slot->moduleId()) {
 			echo \ze\admin::phrase('[Empty Slot]');
 		}
 	}

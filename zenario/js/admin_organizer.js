@@ -2947,7 +2947,7 @@ zenarioO.topLevelClick = function(id, j, first) {
 };
 
 zenarioO.viewTrash = function () {
-	if (!window.zenarioOSelectMode && zenarioO.tuix && zenarioO.tuix.trash && !engToBoolean(zenarioO.tuix.trash.empty)) {
+	if (!window.zenarioOSelectMode && zenarioO.tuix && zenarioO.tuix.trash) {
 		zenarioT.action(zenarioO, zenarioO.tuix.trash, false, true);
 	}
 	
@@ -3952,6 +3952,7 @@ zenarioO.setViewOptions = function() {
 						label: '<span class="zenario_date_filters_phrase">' + phrase.after + '</span>',
 						type: 'date',
 						allow_typing_in_date_field: true,
+						show_date_format_as_placeholder: true,
 						change_month_and_year: true,
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateAfter,
@@ -3964,6 +3965,7 @@ zenarioO.setViewOptions = function() {
 						label: '<span class="zenario_date_filters_phrase">' + phrase.before + "</span>",
 						type: 'date',
 						allow_typing_in_date_field: true,
+						show_date_format_as_placeholder: true,
 						change_month_and_year: true,
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateBefore,
@@ -5842,6 +5844,8 @@ zenarioO.setButtonAction = function(funName, button, disabled, buttonId, itemId,
 		} else {
 			merge.href = '#/' + button.navigation_path;
 		}
+		
+		merge.new_window = !!button.new_window;
 	
 	} else if (button.frontend_link) {
 		if (item && item.frontend_link) {

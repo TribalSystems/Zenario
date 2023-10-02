@@ -31,8 +31,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		ze\priv::exitIfNot('_PRIV_VIEW_TEMPLATE');
-
 		$file = false;
 		
 		switch ($box['key']['type']) {

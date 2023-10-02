@@ -269,7 +269,8 @@ class zenario_blog_news_list extends zenario_content_list {
 				'RSS_Link' => $this->setting('enable_rss')? $this->escapeIfRSS($this->showRSSLink(true)) : null,
 				'Title_With_Content' => $titleWithContent,
 				'Title_With_No_Content' => $titleWithNoContent,
-				'Title_Tags' => $this->setting('heading_tags') ? $this->setting('heading_tags') : 'h1'
+				'Title_Tags' => $this->setting('heading_tags') ?: 'h2',
+			'Title_Tags_If_No_Items' => $this->setting('heading_tags_if_no_items') ?: 'h2'
 			],
 			[
 				'Slot' => true,

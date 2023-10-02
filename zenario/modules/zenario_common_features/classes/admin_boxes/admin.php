@@ -531,7 +531,6 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				unset($tagsToParse);
 			}
 			
-			$addressToOverriddenBy = false;
 			$emailTemplateName = 'notification_to_new_admin_no_password';
 			$emailTemplate = $source['welcome']['email_templates'][$emailTemplateName];
 
@@ -559,19 +558,15 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			foreach ($email_details as $pattern => $replacement) {
 				$message = str_replace('[['. $pattern. ']]', $replacement, $message);
 			};
-
-			ze\server::sendEmail(
-				$subject, $message,
+			
+			ze\server::sendEmailSimple(
+				$subject, $message, $isHTML = true,
+				//New admin emails should always be sent to the intended recipient,
+				//even if debug mode is on.
+				$ignoreDebugMode = true,
 				$email_details['email'],
-				$addressToOverriddenBy,
-				$nameTo,
-				$addressFrom = false,
-				$nameFrom = $emailTemplate['from'],
-				false, false, false,
-				$isHTML = true,
-				false, false, false, false, '', '', 'To',
-				$ignoreDebugMode = true);	//New admin emails should always be sent to the intended recipient,
-											//even if debug mode is on.
+				$nameTo, $addressFrom = false, $nameFrom = $emailTemplate['from']
+			);
 		}
 		
 		//Set a password

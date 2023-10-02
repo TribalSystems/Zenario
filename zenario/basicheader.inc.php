@@ -105,9 +105,6 @@ class ze {
 	public static $dbG;	//Global database, for multisite admins
 	public static $dbL;	//Local database, for all site content
 	
-	//To do: Remove this line in version 8.2!
-	public static $mongoDB;
-	
 	public static $edition = '';
 	public static $editions = [];
 	
@@ -143,7 +140,6 @@ class ze {
 	public static $nonSearchablePages = [];
 	public static $slotContents = [];
 	public static $modulesLoaded = [];
-	public static $modulesOnPage = [];
 	public static $pluginsOnPage = 0;
 	
 	public static $homeCID = 0;
@@ -438,7 +434,7 @@ class ze {
 	
 		foreach (ze::$editions as $className) {
 	
-			if (!$continueFrom && $editionInclude = ze::moduleDir($className, 'edition_includes/'. $name. '.php', true)) {
+			if ($continueFrom === false && $editionInclude = ze::moduleDir($className, 'edition_includes/'. $name. '.php', true)) {
 				return CMS_ROOT. $editionInclude;
 			} elseif ($continueFrom == $className) {
 				$continueFrom = false;

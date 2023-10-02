@@ -32,116 +32,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-//This field should not be nullable and default to 'visitor' to work correctly...
-ze\dbAdm::revision( 45403
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]users`
-	SET `creation_method` = 'visitor'
-	WHERE `creation_method` IS NULL
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]users`
-	MODIFY COLUMN `creation_method` enum('visitor','admin') NOT NULL DEFAULT 'visitor'
-_sql
-
-//Add a property to dataset fields to record whether it should be filterable or not
-//"searchable" now means it should work with the quick-search ("text" type only property)
-//"filterable" means it should work with the right side filters
-); ze\dbAdm::revision( 45601
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
-	ADD COLUMN `filterable` tinyint(1) NOT NULL DEFAULT '0' AFTER `searchable`
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]custom_dataset_fields`
-	SET `filterable` = 1
-	WHERE `searchable` = 1 AND `is_system_field` = 0
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]custom_dataset_fields`
-	SET `searchable` = 0
-	WHERE `is_system_field` = 0 AND `type` != "text"
-_sql
-
-//Add a property to dataset fields for when their db column is being updated on the custom data table.
-//For long queries this can be used to avoid database errors for when the stored name and actual name 
-//is out of sync. 
-//(N.b. this was added in an after-branch patch in 8.3 revision 46305, so we need to check if it's not already there.)
-);	if (ze\dbAdm::needRevision(46801) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'custom_dataset_fields LIKE "db_update_running"'))	ze\dbAdm::revision( 46801
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
-	ADD COLUMN `db_update_running` tinyint(1) NOT NULL DEFAULT '0' AFTER `db_column`
-_sql
-
-//Improvements to tracking user management events: create/edit.
-//In addition to storing the created/edited date, Zenario will store the details of the user/admin
-//who created/last edited the user account.
-//Please note that similar changes were also implemented in the following modules:
-//	- Location Manager (admin box and Organizer panel),
-//	- Locations FEA (view/edit mode),
-//	- Company Locations Manager,
-//	- Companies FEA (view/edit mode).
-//Refer the relevant module db_updates folder.
-); ze\dbAdm::revision( 50191
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]users`
-	ADD COLUMN `created_admin_id` int(10) unsigned DEFAULT NULL AFTER `created_date`,
-	ADD COLUMN `created_user_id` int(10) unsigned DEFAULT NULL AFTER `created_admin_id`,
-	ADD COLUMN `created_username` varchar(255) DEFAULT NULL after `created_user_id`,
-	ADD COLUMN `last_edited_admin_id` int(10) unsigned DEFAULT NULL AFTER `modified_date`,
-	ADD COLUMN `last_edited_user_id` int(10) unsigned DEFAULT NULL AFTER `last_edited_admin_id`,
-	ADD COLUMN `last_edited_username` varchar(255) DEFAULT NULL after `last_edited_user_id`
-_sql
-
-
-
-
-
-
-
-//
-//	Zenario 8.8
-//
-
-); ze\dbAdm::revision(51700
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]smart_group_rules`
-	MODIFY COLUMN `type_of_check`
-		enum('user_field','role','activity_band','in_a_group','not_in_a_group')
-	NOT NULL default 'user_field'
-_sql
-
-
-//Create a linking table for assigning users into countries
-//(Note: it's a core table, but needs the country manager running before you see
-// the option in the FAB to set it.)
-); ze\dbAdm::revision( 51750
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]]user_country_link`
-_sql
-
-, <<<_sql
-	 CREATE TABLE `[[DB_PREFIX]]user_country_link` (
-		`user_id` int(10) unsigned NOT NULL,
-		`country_id` varchar(5) NOT NULL,
-		PRIMARY KEY (`user_id`, `country_id`),
-		UNIQUE KEY (`country_id`, `user_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
-_sql
-
-
-
-
 
 //
 //	Zenario 9.1
 //
 
-//Drop one of Robin's debug columns, it's not needed
-); ze\dbAdm::revision(53900
+//Drop a column that was just there for debugging, it's not needed
+	ze\dbAdm::revision(53900
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
 	DROP COLUMN `db_update_running`

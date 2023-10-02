@@ -44,7 +44,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = true);
 		
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		
 		$this->registerGetRequest('day');
 		$this->registerGetRequest('month');

@@ -270,7 +270,7 @@ zenario__user_forms:
                                 
                             field_validation:
                                 visible_if: |
-                                    item.type == 'text'
+                                    item.type == 'text' || item.type == 'url'
                                 label: 'Validation:'
                                 type: select
                                 format_onchange: true
@@ -279,16 +279,26 @@ zenario__user_forms:
                                         label: None
                                     email: 
                                         label: Email
+                                        visible_if: |
+                                            item.type == 'text' 
                                     URL:
                                         label: URL
                                     number:
                                         label: Number
+                                        visible_if: |
+                                            item.type == 'text' 
                                     phone_number:
                                         label: Phone number
+                                        visible_if: |
+                                            item.type == 'text' 
                                     integer:
                                         label: Integer
+                                        visible_if: |
+                                            item.type == 'text' 
                                     floating_point:
                                         label: Floating point
+                                        visible_if: |
+                                            item.type == 'text' 
                                 value: none
                             field_validation_error_message:
                                 indent: 1

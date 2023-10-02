@@ -304,7 +304,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 								'path' => 'zenario__modules/panels/plugins',
 								'refiner' => 'view_nests_containing'
 							];
-							$module['tooltip'] = ze\admin::phrase('View nests or slideshows which use this module.');
+							$module['tooltip_when_link_is_active'] = ze\admin::phrase('View nests or slideshows which use this module');
 						} else {
 							$module['link'] = false;
 							$module['disabled'] = true;

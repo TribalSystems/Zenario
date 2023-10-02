@@ -520,11 +520,11 @@ zenario__locations:
             convert_to_organization:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
-                label: Convert to organization
+                label: Convert to [[organization_singular_en]]
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to convert the selected location to an organization?
+                            Are you sure you wish to convert the selected location to an [[organization_singular_en]]?
                         button_message: Convert
                         cancel_button_message: Cancel
                         message_type: warning
@@ -536,13 +536,13 @@ zenario__locations:
             convert_multiple_to_organization:
                 priv: _PRIV_MANAGE_LOCATIONS
                 parent: action_dropdown
-                label: Convert selected to organizations
+                label: Convert selected to [[organization_plural_en]]
                 multiple_select: true
                 multiple_select_only: true
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to convert the selected locations to organizations?
+                            Are you sure you wish to convert the selected locations to [[organization_plural_en]]?
                         button_message: Convert
                         cancel_button_message: Cancel
                         message_type: warning

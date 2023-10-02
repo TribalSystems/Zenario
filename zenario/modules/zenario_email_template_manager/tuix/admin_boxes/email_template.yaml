@@ -188,6 +188,7 @@ zenario_email_template:
                 body:
                     label: 'Email body:'
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
                     editor_options:
                         convert_urls: false
@@ -203,8 +204,6 @@ zenario_email_template:
                             min_path: 'zenario__library/panels/image_library'
                             max_path: 'zenario__library/panels/image_library'
                             disallow_refiners_looping_on_min_path: true
-                    insert_link_button:
-                        exists: true
                 
                 
                 test_send_email_address:
@@ -237,9 +236,9 @@ zenario_email_template:
             fields:
                 body:
                     type: editor
+                    editor_type: readonly
                     dont_trim: true
                     rows: 30
-                    readonly: true
         data_deletion:
             label: Data deletion
             edit_mode:

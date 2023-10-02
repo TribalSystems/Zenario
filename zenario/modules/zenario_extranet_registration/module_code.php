@@ -33,8 +33,8 @@ class zenario_extranet_registration extends zenario_extranet {
 	protected $customFormExtraErrors = [];
 	
 	public function init() {
-		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
-		ze::requireJsLib('zenario/js/password_functions.min.js');
+		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		$this->requireJsLib('zenario/js/password_functions.min.js');
 		
 		$this->registerPluginPage();
 		
@@ -46,7 +46,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		$this->mode = 'modeRegistration';
 		
-		ze::requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId=' . ze::$visLang);
 		
 		$this->registerGetRequest('extranet_resend');
 		
@@ -81,7 +81,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->manageCookies();
 			
 			
-			if (ze::setting("user_use_screen_name") ) {
+			if (ze::setting("user_use_screen_name")) {
 				$this->subSections['Choose_Screen_Name'] = true;
 			}
 			
@@ -93,14 +93,14 @@ class zenario_extranet_registration extends zenario_extranet {
 		        $this->subSections['Salutation'] = true;
 		    }
 
-		    if($this->setting('user_custom_fields')){
+		    if ($this->setting('user_custom_fields')) {
 		        $chosenCustomFields = $allCustomFields = [];
 		        $chosenCustomFields = explode(',', $this->setting('user_custom_fields'));
 		        $allCustomFields = ze\datasetAdm::listCustomFields('users', $flat = false, false, $customOnly = true);
 		       
-		        if(isset($allCustomFields)){
-		            foreach($allCustomFields as $k =>$value){
-		                if(in_array($k,  $chosenCustomFields)){
+		        if (isset($allCustomFields)) {
+		            foreach ($allCustomFields as $k => $value) {
+		                if (in_array($k, $chosenCustomFields)) {
 				            $customDBColumns[$k]['label'] = $value['label'];
 				            $customDBColumns[$k]['name'] = $value['db_column'];
 				            $customDBColumns[$k]['type'] = $value['type'];
@@ -111,17 +111,16 @@ class zenario_extranet_registration extends zenario_extranet {
 				            	$customDBColumns[$k]['value'] = ze\escape::sql($_POST[$value['db_column']]);
 				            }
 				            
-				            if( $customDBColumns[$k]['type'] == 'select' || $customDBColumns[$k]['type'] == 'centralised_radios' || $customDBColumns[$k]['type'] == 'radios' || $customDBColumns[$k]['type'] == 'dataset_select' || $customDBColumns[$k]['type'] == 'centralised_select' ){
+				            if ( $customDBColumns[$k]['type'] == 'select' || $customDBColumns[$k]['type'] == 'centralised_radios' || $customDBColumns[$k]['type'] == 'radios' || $customDBColumns[$k]['type'] == 'dataset_select' || $customDBColumns[$k]['type'] == 'centralised_select') {
 				                $customDBColumns[$k]['values'] = ze\dataset::fieldLOV($k, false);
 				            }
-				          
 				        }
 				    }
 				}
 				
 				//To maintain the order as in the plugin settings
 				$sortedArray = [];
-				for ($i=0; $i<count($chosenCustomFields); $i++) {
+				for ($i = 0; $i < count($chosenCustomFields); $i++) {
 					//Catch the case where a custom field was removed from the dataset editor,
 					//but is still selected in the plugin settings.
 					if (!empty($customDBColumns[$chosenCustomFields[$i]])) {
@@ -133,16 +132,17 @@ class zenario_extranet_registration extends zenario_extranet {
 				$this->objects['Custom_Fields_Values'] = $customDBColumns;
 		        $this->subSections['Custom_Fields'] = true;
 		    }
+		    
 		    if ($this->setting('show_resend_verification_link')) {
 		        $this->subSections['Show_Resend_Form'] = true;
 			
 		    }
 			
-			if ($this->setting('requires_terms_and_conditions'))	{
+			if ($this->setting('requires_terms_and_conditions')) {
 			    $userContentItem = $this->setting('terms_and_conditions_page');
 				$useExternalLink = $this->setting('url');
 				if ($userContentItem || $useExternalLink) {
-					if ($userContentItem){
+					if ($userContentItem) {
 						$cID = $cType = false;
 						$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
 						ze\content::langEquivalentItem($cID, $cType);
@@ -182,14 +182,14 @@ class zenario_extranet_registration extends zenario_extranet {
 					$_POST['screen_name'] = trim($_POST['screen_name']);
 				}
 				
-				if ($userId = $this->addUserRecord()){
+				if ($userId = $this->addUserRecord()) {
 					$this->handleUserRegistration($userId);
 				} else {
 					$this->mode = 'modeRegistration';
 				}
 				
-			} elseif (ze::get('confirm_email') && ($this->setting('initial_email_address_status')=='not_verified')) { 
-				if ($userId = $this->getUserIdFromHashCode(ze::get('hash'))){
+			} elseif (ze::get('confirm_email') && ($this->setting('initial_email_address_status') == 'not_verified')) { 
+				if ($userId = $this->getUserIdFromHashCode(ze::get('hash'))) {
 					if (!$this->isEmailAddressVerified($userId)){
 						$this->setEmailVerified($userId);
 						$this->applyAccountActivationPolicy($userId);
@@ -213,7 +213,6 @@ class zenario_extranet_registration extends zenario_extranet {
 			
 			if ($this->mode == 'modeRegistration') {
 				if ($this->enableCaptcha()) {
-				    
 					$this->subSections['Captcha'] = true;
 					$this->objects['Captcha'] = $this->captcha2();
 				}
@@ -230,18 +229,18 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		switch($path) {
+		switch ($path) {
 			case 'plugin_settings':
 				$fields['set_timer_on_new_users']['hidden'] = !ze\module::inc('zenario_user_timers');
 				
 				$customFields = ze\datasetAdm::listCustomFields('users', $flat = false, ['checkbox', 'checkboxes'], $customOnly = true, $useOptGroups = true);
 
-				if($options = self::removeEmptyTabs($customFields)){
+				if ($options = self::removeEmptyTabs($customFields)) {
 					$box['tabs']['first_tab']['fields']['select_characteristics_for_new_users']['values'] = $options;
 				}
 
 				$customFields = ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true);
-				if($options = self::removeEmptyTabs($customFields)){
+				if ($options = self::removeEmptyTabs($customFields)) {
 					$box['tabs']['first_tab']['fields']['select_group_for_new_users']['values'] = $options;
 				}
 				
@@ -254,11 +253,12 @@ class zenario_extranet_registration extends zenario_extranet {
 					}
 				}
 
-				if(ze::setting('user_use_screen_name')){
+				if (ze::setting('user_use_screen_name')) {
 				    $fields['show_screen_name']["value"] = 1;
 				} else {
 				    $fields['show_screen_name']["value"] = 0;
 				}
+				
         		//Make sure that the dataset field picker points to the users dataset
         		$dataset = ze\dataset::details('users');
         		
@@ -330,7 +330,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				$fields['error_messages/screen_name_in_use']['hidden'] = !ze::setting('user_use_screen_name');
 			    
 			    //Show checkbox rensend verification link
-				$fields['first_tab/show_resend_verification_link']['hidden'] = $values['first_tab/initial_email_address_status']=='verified';
+				$fields['first_tab/show_resend_verification_link']['hidden'] = $values['first_tab/initial_email_address_status'] == 'verified';
 				
 				if ($values['first_tab/include_an_attachment'] == true && $values['first_tab/selected_attachment']) {
 					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['first_tab/selected_attachment']]);
@@ -373,29 +373,29 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 	
 	
-	public function removeEmptyTabs($customFields){
-		$tabs=[];
-		if(is_array($customFields) && $customFields){
-			foreach($customFields as $field){
-				if(isset($field['parent'])){
-					$tabs[$field['parent']]=$field['parent'];
+	public function removeEmptyTabs($customFields) {
+		$tabs = [];
+		if (is_array($customFields) && $customFields) {
+			foreach ($customFields as $field) {
+				if (isset($field['parent'])) {
+					$tabs[$field['parent']] = $field['parent'];
 				}
 			}
 		}
 		
-		if(is_array($tabs) && $tabs){
-			foreach($customFields as $key=>$field){
-				if(!isset($field['parent'])){
-					if(!isset($tabs[$key])){
+		if (is_array($tabs) && $tabs) {
+			foreach ($customFields as $key=>$field) {
+				if (!isset($field['parent'])) {
+					if (!isset($tabs[$key])) {
 						unset($customFields[$key]);
 					}
 				}
 			}
 		}
 		
-		if(!$tabs){
+		if (!$tabs) {
 			return false;
-		}else{
+		} else {
 			return $customFields;
 		}
 	}
@@ -459,16 +459,12 @@ class zenario_extranet_registration extends zenario_extranet {
 				$this->errors[] = ['Error' => $this->phrase('The email addresses you entered do not match.')];
 			}
 		}
-		
-		if ($this->setting('show_salutation')) {
-		    //$this->subSections['Salutation'] = true;
-		}
 
 		if ($this->errors) {
 			return false;
 		}
 		
-		if ($this->useScreenName) {
+		if (ze::setting('user_use_screen_name')) {
 			if (ze::post('screen_name')){
 				$fields['screen_name'] = $_POST['screen_name'] ?? false;
 				$fields['screen_name_confirmed'] = 1;
@@ -573,7 +569,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					 
 						if ($column['type'] && $column['type'] == "consent" && isset($_POST[$column['db_column']])) {
 					   
-							if($_POST[$column['db_column']] == 'on'){
+							if ($_POST[$column['db_column']] == 'on') {
 								$details[$column['db_column']] = 1;
 								//check if dataset feild is consent field
 								ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, $column['label']);
@@ -587,12 +583,6 @@ class zenario_extranet_registration extends zenario_extranet {
 			foreach (ze::$dbL->cols[$tableName] as $col => $colDef) {
 				if ($col != 'user_id' && (isset($fields[$col]) || isset($customFields[$col]))) {
 					$details[$col] = $fields[$col];
-				   
-					$colType = ze\row::get('custom_dataset_fields', 'type', ["db_column" => $col]);
-					if ($colType && $colType == "consent") {
-						//check if dataset feild is consent field
-						//ze\user::recordConsent('extranet_registration', $this->instanceId, $userId, $fields2['email'] ?? false, $fields2['first_name'] ?? false, $fields2['last_name'] ?? false, strip_tags($this->phrase("_".$col)));
-					}
 				}
 			}
 			
@@ -606,13 +596,13 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 	
 	protected function applyEmailVerificationPolicy($userId){
-		if ($this->setting('enable_notifications_on_user_signup') && ($this->setting('user_signup_notification_email_template')) && ($this->setting('user_signup_notification_email_address'))){
+		if ($this->setting('enable_notifications_on_user_signup') && ($this->setting('user_signup_notification_email_template')) && ($this->setting('user_signup_notification_email_address'))) {
 			$this->sendSignupNotification($userId);
 		}
 
-		if ($this->setting('initial_email_address_status')=='verified'){
+		if ($this->setting('initial_email_address_status') == 'verified') {
 			$this->setEmailVerified($userId);
-		} elseif ($this->setting('initial_email_address_status')=='not_verified'){
+		} elseif ($this->setting('initial_email_address_status') == 'not_verified') {
 			$this->sendVerificationEmail($userId);
 		}
 	}
@@ -620,17 +610,15 @@ class zenario_extranet_registration extends zenario_extranet {
 	protected function setEmailVerified($userId){
 		if ($userId) {
 			$sql = "
-					UPDATE "
-						. DB_PREFIX . "users 
-					SET email_verified = 1";
-			
-			$sql .= " WHERE id = " . (int) $userId;
+				UPDATE " . DB_PREFIX . "users 
+				SET email_verified = 1
+				WHERE id = " . (int) $userId;
 			ze\sql::update($sql);
 		}
 	}
 	
 	protected function getUserIdFromHashCode($hash){
-		if ($hash && ($userId = (int) ze\row::get("users","id",['hash'=>$hash]))){
+		if ($hash && ($userId = (int) ze\row::get("users", "id", ['hash' => $hash]))) {
 			return $userId;
 		} else {
 			return 0;
@@ -639,47 +627,53 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 	protected function sendVerificationEmail($userId) {
 		ze\userAdm::updateHash($userId);
-		$emailMergeFields = ze\user::details($userId);
+		$emailMergeFields = ze\user::userDetailsForEmails($userId);
+		
+		$hash = ze\row::get('users', 'hash', $userId);
+		
 		if (!empty($emailMergeFields['email']) && $this->setting('verification_email_template')) {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
-			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
+			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $hash);
 						
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			
 			if (ze\module::inc('zenario_users')) {
-				foreach (ze\user::details($userId) as $cn => $cv){
+				foreach (ze\user::userDetailsForEmails($userId) as $cn => $cv){
 					$emailMergeFields[$cn] = htmlspecialchars($cv ?: '');
 				}
 			}
 			
-			
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('verification_email_template'),$emailMergeFields,[]);
+			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('verification_email_template'), $emailMergeFields,[]);
 		}
 	}
 
-	protected function sendSignupNotification($userId){
+	protected function sendSignupNotification($userId) {
 		if ($this->setting('user_signup_notification_email_address') && $this->setting('user_signup_notification_email_template')) {
 			ze\userAdm::updateHash($userId);
-			$emailMergeFields = ze\user::details($userId);
+			
+			$hash = ze\row::get('users', 'hash', $userId);
+			
+			$emailMergeFields = ze\user::userDetailsForEmails($userId);
 			$emailMergeFields['cms_url'] = ze\link::absolute();
-			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
-			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
+			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash=' . $hash);
+			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain() . SUBDIRECTORY . 'organizer.php#zenario__users/panels/users//' . $userId;
 			
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			
 			if (ze\module::inc('zenario_users')) {
-				foreach (ze\user::details($userId) as $cn => $cv){
-					$emailMergeFields[$cn] = htmlspecialchars($cv);
+				foreach (ze\user::userDetailsForEmails($userId) as $cn => $cv) {
+					if (isset($emailMergeFields[$cn])) {
+						$emailMergeFields[$cn] = htmlspecialchars($cv);
+					}
 				}
 			}
-			
 	
-			zenario_email_template_manager::sendEmailsUsingTemplate($this->setting('user_signup_notification_email_address'),$this->setting('user_signup_notification_email_template'),$emailMergeFields,[]);
+			zenario_email_template_manager::sendEmailsUsingTemplate($this->setting('user_signup_notification_email_address'), $this->setting('user_signup_notification_email_template'), $emailMergeFields,[]);
 		}
 	}
 
-	protected function applyAccountActivationPolicy($userId){
-		if ($this->setting('user_activation_notification_email_enable') && ($this->setting('user_activation_notification_email_template')) && ($this->setting('user_activation_notification_email_address'))){
+	protected function applyAccountActivationPolicy($userId) {
+		if ($this->setting('user_activation_notification_email_enable') && ($this->setting('user_activation_notification_email_template')) && ($this->setting('user_activation_notification_email_address'))) {
 			$this->sendActivationNotification($userId);
 		}
 		
@@ -705,7 +699,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				$this->sendWelcomeEmail($userId);
 				break;
 			case 'check_trusted':
-				$userDetails = ze\user::details($userId);
+				$userDetails = ze\user::userDetailsForEmails($userId);
 				$userEmail = $userDetails['email'];
 				$domains = explode(',', $this->setting('trusted_email_domains'));
 				$domains = array_map('trim', $domains);
@@ -717,42 +711,38 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 	
-	protected function setAccountContact($userId){
+	protected function setAccountContact($userId) {
 		if ($userId) {
 			$sql = '
-				UPDATE '
-					 .DB_PREFIX . 'users
-				SET 
-					status = "contact"
-				WHERE 
-					id = '.(int)$userId;
+				UPDATE ' .DB_PREFIX . 'users
+				SET status = "contact"
+				WHERE id = '.(int)$userId;
 			ze\sql::update($sql);
 		}
 	}
 
 	protected function setAccountActive($userId){
 		if ($userId){
-			$sql ="
-					UPDATE " 
-						. DB_PREFIX . "users
-					SET 
-						status='active'
-					WHERE 
-						id = " . (int) $userId;
+			$sql =	"
+				UPDATE " . DB_PREFIX . "users
+				SET status='active'
+				WHERE id = " . (int) $userId;
 			ze\sql::update($sql);
 		}				
 	}
 	
-	protected function sendWelcomeEmail($userId){
-		$emailMergeFields = ze\user::details($userId);
+	protected function sendWelcomeEmail($userId) {
+		$emailMergeFields = ze\user::userDetailsForEmails($userId);
 		if (!empty($emailMergeFields['email']) && $this->setting('welcome_email_template')) {
 			
 			$emailMergeFields['cms_url'] = ze\link::absolute();
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			
 			if (ze\module::inc('zenario_users')) {
-				foreach (ze\user::details($userId) as $cn => $cv){
-					$emailMergeFields[$cn] = htmlspecialchars($cv);
+				foreach (ze\user::userDetailsForEmails($userId) as $cn => $cv) {
+					if (isset($emailMergeFields[$cn])) {
+						$emailMergeFields[$cn] = htmlspecialchars($cv);
+					}
 				}
 			}
 			
@@ -788,18 +778,18 @@ class zenario_extranet_registration extends zenario_extranet {
 
 	protected function sendActivationNotification($userId) {
 		if ($this->setting('user_activation_notification_email_address') && $this->setting('user_activation_notification_email_template')) {
-			$emailMergeFields = ze\user::details($userId);
+			$emailMergeFields = ze\user::userDetailsForEmails($userId);
+			
 			$emailMergeFields['cms_url'] = ze\link::absolute();
-			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
+			$emailMergeFields['organizer_link'] = ze\link::protocol(). ze\link::adminDomain(). SUBDIRECTORY. 'organizer.php#zenario__users/panels/users//'. $userId;
 			
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			
 			if (ze\module::inc('zenario_users')) {
-				foreach (ze\user::details($userId) as $cn => $cv){
-					$emailMergeFields[$cn] = htmlspecialchars($cv);
+				foreach (ze\user::userDetailsForEmails($userId) as $cn => $cv){
+					$emailMergeFields[$cn] = htmlspecialchars($cv ?: '');
 				}
 			}
-			
 			
 			zenario_email_template_manager::sendEmailsUsingTemplate($this->setting('user_activation_notification_email_address'),$this->setting('user_activation_notification_email_template'),$emailMergeFields,[]);
 		}
@@ -861,11 +851,11 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 	protected function isEmailAddressVerified($userId){
-		return (boolean) ((int) ze\row::get('users','email_verified',['id'=>$userId]));
+		return (bool) ze\row::get('users', 'email_verified', ['id' => $userId]);
 	}
 
 	protected function isActive($userId){
-		return (ze\row::get('users','status',['id'=>$userId])=='active');
+		return ze\row::get('users','status',['id'=>$userId]) == 'active';
 	}
 
 
@@ -874,7 +864,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->addLoginLinks();
 		
 		//Overwrite the Resend_Link from the addLoginLinks() function
-		if ($this->setting('initial_email_address_status')=='not_verified'){
+		if ($this->setting('initial_email_address_status')=='not_verified') {
 			$this->subSections['Resend_Link_Section'] = true;
 			$this->objects['Resend_Link'] = $this->refreshPluginSlotAnchor('&extranet_resend=1');
 		} else {
@@ -889,7 +879,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->subSections['User_passwords'] = true;
 		}
 		
-		echo $this->openForm('',' class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
+		echo $this->openForm('',' novalidate class="form-horizontal"', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Registration_Form'] = true;
 			$this->objects['Password_Requirements_Settings'] = [
 				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
@@ -915,22 +905,22 @@ class zenario_extranet_registration extends zenario_extranet {
 		echo $this->closeForm();
 	}
 
-	protected function modeVerificationFailed(){
+	protected function modeVerificationFailed() {
 		$this->subSections['Verification_Failed'] = true;
 		$this->framework('Outer', $this->objects, $this->subSections);
 	}
 	
-	protected function modeVerificationAlreadyDone(){
+	protected function modeVerificationAlreadyDone() {
 		$this->subSections['Verification_Already_Done'] = true;
 		$this->framework('Outer', $this->objects, $this->subSections);
 	}
 	
-	protected function modeRegisteredNotVerified(){
+	protected function modeRegisteredNotVerified() {
 		$this->subSections['Registered_Not_Verified'] = true;
 		$this->framework('Outer', $this->objects, $this->subSections);
 	}
 
-	protected function modeRegisteredVerifiedNotActivated(){
+	protected function modeRegisteredVerifiedNotActivated() {
 		$this->subSections['Registered_Verified_Not_Activated'] = true;
 		$this->framework('Outer', $this->objects, $this->subSections);
 	}
@@ -981,19 +971,19 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 	public function checkCodeValid ($code) {
-		return ze\row::exists(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "codes",["code" => $code]);
+		return ze\row::exists(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "codes", ["code" => $code]);
 	}
 	
 	public function getCodeIdFromCode ($code) {
-		return ze\row::get(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "codes","id",["code" => $code]);
+		return ze\row::get(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "codes", "id", ["code" => $code]);
 	}
 	
 	public function getCodeGroups ($codeId) {
-		$result = ze\row::query(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "code_groups","group_id",["code_id" => $codeId]);
+		$result = ze\row::query(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "code_groups", "group_id", ["code_id" => $codeId]);
 		
 		$groupIds = [];
 		
-		if (ze\sql::numRows($result)>0) {
+		if (ze\sql::numRows($result) > 0) {
 			while ($row = ze\sql::fetchAssoc($result)) { 
 				$groupIds[] = $row['group_id'];
 			}
@@ -1004,7 +994,7 @@ class zenario_extranet_registration extends zenario_extranet {
 	public static function jobSendDelayedRegistrationEmails() {
 		$return = false;
 		$date = new DateTime();
-		$hour = (int)$date->format('H');
+		$hour = (int) $date->format('H');
 		$hourToSend = ze::setting('delayed_registration_email_time_of_day');
 		if ($hour == $hourToSend) {
 			
@@ -1021,6 +1011,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			while ($user = ze\sql::fetchAssoc($result)) {
 				$mergeFields = $user;
 				$mergeFields['cms_url'] = ze\link::absolute();
+				
 				zenario_email_template_manager::sendEmailsUsingTemplate($user['email'], $template, $mergeFields);
 				ze\row::update('users', ['send_delayed_registration_email' => 0], $user['id']);
 				

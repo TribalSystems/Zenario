@@ -6,6 +6,8 @@ zenario_trash:
         id: ""
         cID: ""
         cType: ""
+        id_is_menu_node_id: ''
+        menu_node_id: ''
     tabs:
         trash:
             edit_mode:
@@ -22,6 +24,13 @@ zenario_trash:
                     message: |
                         When these content items are trashed, they will no longer be seen by visitors, will not appear in the menu navigation, and it will lose their aliases.
             fields:
+                access_codes_warning:
+                    snippet: {}
+                    notices_above:
+                        access_codes_warning:
+                            hidden: false
+                            type: information
+                            message: ''
                 links_warning:
                     snippet:
                         html:

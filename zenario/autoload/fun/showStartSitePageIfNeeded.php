@@ -48,9 +48,13 @@ if (ze::$dbL
 $errorTitle = ze::setting('site_disabled_title');
 
 
-//Display a different message and/or destination URL depending on the situation.
-if ($reportDBOutOfDate && \ze\priv::check()) {
+//A couple of specific messages
+if ($mode == 'reportDBOutOfDate' && \ze\priv::check()) {
 	$errorMessage = '<p>This site is currently unavailable because a major database update needs to be applied.</p><p>Please go to <a href="[[admin_link]]">/admin</a> to apply the update.</p>';
+	$adminLink = \ze\link::absolute(). 'admin.php';
+
+} elseif ($mode == 'noStagingModeInAdminMode') {
+	$errorMessage = '<p>You can\'t view this page in staging mode while logged in as an administrator. Either log out or open an "incognito" browser window.</p>';
 	$adminLink = \ze\link::absolute(). 'admin.php';
 
 //If there's a specifc page in the request, keep the admin on that page after they log in
@@ -135,7 +139,7 @@ echo '
 
 
 //If a visitor has discovered a site that's missing database updates, warn the site admin.
-if ($reportDBOutOfDate && !\ze\priv::check()) {
+if ($mode == 'reportDBOutOfDate' && !\ze\priv::check()) {
 	\ze\db::reportError('Database update needed at',
 'This site is currently unavailable because a major database update needs to be applied.
 Please go to '. \ze\link::absolute(). 'admin to apply the update.');

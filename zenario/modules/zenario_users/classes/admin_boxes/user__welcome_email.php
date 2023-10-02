@@ -66,7 +66,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		if ($userIds) {
 			if ($values['details/email_to_send'] && (ze\module::inc('zenario_email_template_manager'))) {
 				foreach ($userIds as $userId) {
-					$mergeFields = ze\user::details($userId);
+					$mergeFields = ze\user::userDetailsForEmails($userId);
 					if (isset($values['details/reset_password']) && $values['details/reset_password']) {
 						$mergeFields['password'] = ze\userAdm::createPassword();
 						$cols = [

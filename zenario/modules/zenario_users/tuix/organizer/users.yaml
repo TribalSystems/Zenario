@@ -295,6 +295,26 @@ zenario__users:
                     hide_when_children_are_not_visible: true
                     multiple_select: true
                 
+                send_welcome_email:
+                    hide_in_select_mode: true
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_USER
+                    label: Send activation email
+                    multiple_select: true
+                    with_columns_set:
+                        traits.active: true
+                    admin_box:
+                        path: zenario_user__welcome_email
+                change_password:
+                    hide_in_select_mode: true
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_USER
+                    label: Change password
+                    with_columns_set:
+                        traits.active: true
+                    admin_box:
+                        path: zenario_user__change_password
+                
                 add_users_to_groups:
                     priv: _PRIV_EDIT_USER
                     parent: action_dropdown
@@ -449,6 +469,7 @@ zenario__users:
                         traits.suspended: true
                     admin_box:
                         path: zenario_user__activate
+                
                 suspend:
                     hide_in_select_mode: true
                     parent: action_dropdown
@@ -466,16 +487,7 @@ zenario__users:
                             message_type: warning
                         request:
                             suspend_user: "1"
-                send_welcome_email:
-                    hide_in_select_mode: true
-                    parent: action_dropdown
-                    priv: _PRIV_EDIT_USER
-                    label: Send activation email
-                    multiple_select: true
-                    with_columns_set:
-                        traits.active: true
-                    admin_box:
-                        path: zenario_user__welcome_email
+                
                 delete:
                     label: Delete [[user_type]]
                     multiple_select_label: Delete user/contact

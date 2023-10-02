@@ -14959,7 +14959,7 @@ define(
 
     var registerMenuItems = function (editor, formatMenu) {
       editor.addMenuItem('formats', {
-        text: 'Formats',
+        text: 'Custom formats',
         menu: formatMenu
       });
     };
@@ -14967,7 +14967,7 @@ define(
     var registerButtons = function (editor, formatMenu) {
       editor.addButton('styleselect', {
         type: 'menubutton',
-        text: 'Formats',
+        text: 'Custom formats',
         menu: formatMenu,
         onShowMenu: function () {
           if (editor.settings.style_formats_autohide) {

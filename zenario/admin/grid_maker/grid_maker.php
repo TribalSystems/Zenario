@@ -99,16 +99,10 @@ echo '
 				//Pass the Skin Id if one was successfully loaded, and also pass the Filename
 				echo ", ". (int) $layoutId,  ", '". ze\layoutAdm::codeName($layoutId),  "'";
 			
-				$slotContents = [];
-				$content = $dummyContentItem = ['id' => -1, 'type' => 'x', 'admin_version' => -1, 'head_html' => null, 'head_overwrite' => 0, 'foot_html' => null, 'foot_overwrite' => 0];
-				ze\plugin::slotContents(
-					$slotContents,
-					$content['id'], $content['type'], $content['admin_version'],
-					$layout['layout_id'],
-					$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-					$runPlugins = false);
-			
-				echo ', ', json_encode($slotContents, JSON_FORCE_OBJECT);
+				
+				$slotContentsInfo = ze\gridAdm::getInfoOnSlotContents(-1, 'x', -1, $layout['layout_id']);
+				
+				echo ', ', json_encode($slotContentsInfo, JSON_FORCE_OBJECT);
 
 		
 			} else {
@@ -121,19 +115,12 @@ echo '
 			//Try to work out the slot contents for site-wide slots.
 			//This will be a little bit of a hack, we'll need to find a layout that uses the site-wide header and footer and then check
 			//its contents.
-			$slotContents = [];
+			$slotContentsInfo = [];
 			if ($layoutId = ze\row::get('layouts', 'layout_id', ['header_and_footer' => 1])) {
-				$layout = ze\content::layoutDetails($layoutId);
-				$content = $dummyContentItem = ['id' => -1, 'type' => 'x', 'admin_version' => -1, 'head_html' => null, 'head_overwrite' => 0, 'foot_html' => null, 'foot_overwrite' => 0];
-				ze\plugin::slotContents(
-					$slotContents,
-					$content['id'], $content['type'], $content['admin_version'],
-					$layout['layout_id'],
-					$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-					$runPlugins = false);
+				$slotContentsInfo = ze\gridAdm::getInfoOnSlotContents(-1, 'x', -1, $layoutId);
 			}
 			
-			echo 'undefined, undefined, undefined, ', json_encode($slotContents, JSON_FORCE_OBJECT). ', ';
+			echo 'undefined, undefined, undefined, ', json_encode($slotContentsInfo, JSON_FORCE_OBJECT). ', ';
 			
 			//When editing the head or foot slot, get a list of slots used across the site in the various layouts
 			$sql = "

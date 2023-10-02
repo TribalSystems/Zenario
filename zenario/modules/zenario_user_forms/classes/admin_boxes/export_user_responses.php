@@ -27,6 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+
 class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
@@ -70,10 +73,8 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$userId = $box['key']['user_id'];
 		//Export responses
 		
-		//Create PHPExcel object
-		require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
-		$objPHPExcel = new PHPExcel();
-		$sheet = $objPHPExcel->getActiveSheet();
+		$objPHPSpreadsheet = new Spreadsheet();
+		$activeWorksheet = $objPHPSpreadsheet->getActiveSheet();
 		
 		//Get headers
 		$typesNotToExport = ['section_description', 'restatement', 'repeat_start', 'repeat_end'];
@@ -85,17 +86,17 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 			}
 		}
 		
-		$lastColumn = PHPExcel_Cell::stringFromColumnIndex(count($exportHeaders) + 1);
+		$lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($exportHeaders) + 1);
 		
 		//Set columns to text type
-		$sheet->getStyle('A:' . $lastColumn)
+		$activeWorksheet->getStyle('A:' . $lastColumn)
 			->getNumberFormat()
-			->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_TEXT);
+			->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
 		
 		//Write headers
-		$sheet->setCellValue('A1', 'Response ID');
-		$sheet->setCellValue('B1', 'Date/Time Responded');
-		$sheet->fromArray($exportHeaders, NULL, 'C1');
+		$activeWorksheet->setCellValue('A1', 'Response ID');
+		$activeWorksheet->setCellValue('B1', 'Date/Time Responded');
+		$activeWorksheet->fromArray($exportHeaders, NULL, 'C1');
 		
 		//Get data
 		$responsesData = [];
@@ -178,9 +179,9 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 				if (!is_array($value)) {
 					$value = ['value' => $value];
 				}
-				$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value['value']);
+				$activeWorksheet->setCellValueExplicit([$columnPointer + 1, $rowPointer], $value['value'], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 				if (!empty($value['link'])) {
-					$sheet->getCellByColumnAndRow($columnPointer, $rowPointer)->getHyperlink()->setUrl($value['link']);
+					$activeWorksheet->getCell([$columnPointer + 1, $rowPointer])->getHyperlink()->setUrl($value['link']);
 				}
 				
 			}
@@ -188,10 +189,12 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		
 		
 		$formName = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', ['id' => $formId]);
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="' . $formName . ' user responses.xls"');
-		$objWriter->save('php://output');
+		
+		$writer = new Xls($objPHPSpreadsheet);
+		$writer->save('php://output');
 		
 		$box['key']['form_id'] = '';
 		exit;

@@ -14,7 +14,7 @@ zenario__administration:
             no_items_message: The error log is empty
             db_items:
                 table: |
-                    [[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log el
+                    [[DB_PREFIX]]error_404_log el
                     LEFT JOIN [[DB_PREFIX]]spare_aliases sa
                         ON el.page_alias = sa.alias
                 id_column: el.id

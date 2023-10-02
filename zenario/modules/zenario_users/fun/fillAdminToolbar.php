@@ -57,17 +57,20 @@ if (ze\module::isRunning('zenario_extranet')) {
 	if ($userId = ze\user::id()) {
 		$userLabel = ze\admin::phrase('Edit [[identifier]]', ['identifier' => ze\user::identifier($userId)]);
 		
-		$groups = ze\user::groups(ze\user::id());
-		foreach ($groups as $groupId => &$groupCodename) {
-			$groupCodename = ze\user::getGroupLabel($groupId);
-		}
+		$groups = ze\user::groups(ze\user::id(), true, true);
 		
 		$userLabelNotes = [];
 		
 		if (!empty($groups)) {
-			$userLabelNotes[] = ze\admin::phrase('Groups: [[groups]]', ['groups' => implode(', ', $groups)]);
+			$groupCount = count($groups);
+			
+			if ($groupCount == 1) {
+				$userLabelNotes[] = ze\admin::phrase('group: [[groups]]', ['groups' => implode(', ', $groups)]);
+			} elseif ($groupCount > 1) {
+				$userLabelNotes[] = ze\admin::phrase('[[count]] groups', ['count' => $groupCount]);
+			}
 		} else {
-			$userLabelNotes[] = ze\admin::phrase('Groups: None');
+			$userLabelNotes[] = ze\admin::phrase('groups: none');
 		}
 		
 		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager', true)) {
@@ -81,9 +84,15 @@ if (ze\module::isRunning('zenario_extranet')) {
 			$roles = ze\sql::fetchValues($sql);
 			
 			if (!empty($roles)) {
-				$userLabelNotes[] = ze\admin::phrase('Roles: [[roles]]', ['roles' => implode(', ', $roles)]);
+				$roleCount = count($roles);
+				
+				if ($roleCount == 1) {
+					$userLabelNotes[] = ze\admin::phrase('role: [[roles]]', ['roles' => implode(', ', $roles)]);
+				} elseif ($roleCount > 1) {
+					$userLabelNotes[] = ze\admin::phrase('[[count]] roles', ['count' => $roleCount]);
+				}
 			} else {
-				$userLabelNotes[] = ze\admin::phrase('Roles: None');
+				$userLabelNotes[] = ze\admin::phrase('roles: none');
 			}
 		}
 		

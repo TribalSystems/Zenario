@@ -1021,6 +1021,7 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		//Rerun some of the scripts from the installer to give us a blank site
 		$error = false;
 		(\ze\welcome::runSQL(false, 'local-DROP.sql', $error)) &&
+		(\ze\welcome::runSQL(false, 'local-old-DROP.sql', $error)) &&
 		(\ze\welcome::runSQL(false, 'local-CREATE.sql', $error)) &&
 		(\ze\welcome::runSQL(false, 'local-INSERT.sql', $error));
 		

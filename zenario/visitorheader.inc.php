@@ -76,33 +76,6 @@ foreach (ze::$editions as $className) {
 unset($className, $dirName);
 
 
-//Check for a url redirect, and link to that item if one is found
-//Note that this should only work if a primary domain is set!
-if (!empty($_SERVER['HTTP_HOST'])
- && ze::setting('primary_domain')
- && $_SERVER['HTTP_HOST'] != ze::setting('admin_domain')
- && $_SERVER['HTTP_HOST'] != ze::setting('primary_domain')
- && $redirect = ze\row::get('spare_domain_names', ['content_id', 'content_type'], ['requested_url' => [ze\link::host(), ze\link::hostWithoutPort()]])) {
-	
-	//Catch the case where a language specific domain was used as a redirect. Don't allow the redirect in this case.
-	foreach (ze::$langs as $langId => $lang) {
-		if ($lang['domain']
-		 && ($lang['domain'] == $host
-		  || $lang['domain'] == $hostWOPort)) {
-			$redirect = false;
-			break;
-		}
-	}
-	
-	if ($redirect) {
-		header(
-			'location:'. ze\link::toItem($redirect['content_id'], $redirect['content_type'], true),
-			true, 301);
-		exit;
-	}
-}
-
-
 //Attempt to automatically log a User in if the cookie is set on the User's Machine
 ze\user::logInAutomatically();
 

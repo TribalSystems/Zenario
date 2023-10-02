@@ -105,6 +105,32 @@ zenario__library:
                             {{'No dimensions; scalable'}}
                         <% } %>
                 
+                privacy:
+                    title: Privacy
+                    db_column: f.privacy
+                    always_show: true
+                    width: small
+                    format: enum
+                    values:
+                        auto: Will auto-detect
+                        public: Public
+                        private: Private
+                    tooltip: |
+                        <table>
+                            <tr>
+                                <th style="text-align: left;">Public (green border):</th>
+                                <td style="vertical-align: text-top;">Accessible by any visitor via a friendly URL; may be indexed by search engines.</td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;">Private (blue border):</th>
+                                <td style="vertical-align: text-top;">Contains an cryptic directory path to prevent unauthorised visitor access; may not be indexed by search engines.</td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;">Will auto-detect (orange border):</th>
+                                <td style="vertical-align: text-top;">When next displayed to a visitor, will be set to Public if on a public content item, or Private if on a private content item.</td>
+                            </tr>
+                        </table>
+                    
                 in_use_anywhere:
                     format: yes_or_no
                     hidden: true
@@ -161,16 +187,83 @@ zenario__library:
                             cancel_button_message: Cancel
                         request:
                             download_image: 1
-                view_public_link: 
+                
+                
+                mark_as_public:
                     parent: actions_dropdown
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Make image public
+                    multiple_select_label: Make images public
+                    multiple_select: true
                     hide_in_select_mode: true
-                    label: View public link
-                    multiple_select: false
-                    visible_if_for_all_selected_items: >
-                        item.privacy == 'public'
-                    ajax: 
-                        request: 
-                            view_public_link: 1
+                    visible_if_for_any_selected_items: >
+                        item.privacy != 'public'
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('mark_as_public');
+                    ajax:
+                        confirm:
+                            message: |
+                                Make the image "[[filename]]" public?
+                                
+                                Public images may be indexed by search engines.
+                                
+                            multiple_select_message: |
+                                Make the selected images public?
+                                
+                                Public images may be indexed by search engines.
+
+                            button_message: Make public
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_public: 1
+                
+                mark_as_private:
+                    parent: actions_dropdown
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Make image private
+                    multiple_select_label: Make images private
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_any_selected_items: >
+                        item.privacy != 'private'
+                    onclick: |
+                        if (window.zenarioOQuickMode) {
+                            zenario.reloadPageWhenOrganizerQuickCloses = true;
+                        }
+                        zenarioO.itemButtonClick('mark_as_private');
+                    ajax:
+                        confirm:
+                            message: >
+                                Make the image "[[filename]]" private?
+                                
+
+                                Private images have a URL that is unguessable and keeps changing;
+                                they will not be indexed by search engines.
+
+                                
+                                You should not link to an image you want to be private using a managed link (e.g. in a Banner or Multiple Image Container),
+                                unless it's on a private content item.
+                                
+                            multiple_select_message: >
+                                Are you sure you wish to make the selected images private?
+                                
+                                
+                                Private images have a URL that is unguessable and keeps changing;
+                                they will not be indexed by search engines.
+                                
+                                
+                                You should not link to an image you want to be private using a managed link (e.g. in a Banner or Multiple Image Container),
+                                unless it's on a private content item.
+                            
+                            button_message: Make private
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_private: 1
                         
                 copy_to_image_library:
                     priv: _PRIV_MANAGE_MEDIA

@@ -63,7 +63,7 @@ class zenario_common_features__admin_boxes__delete_writer_profile extends ze\mod
                     LIMIT 1";
                 $result = ze\sql::select($sql);
                 $lastPublished = ze\sql::fetchValue($result);
-                $lastPublished = ze\date::format($lastPublished);
+                $lastPublished = ze\date::format($lastPublished, '_LONG');
 
                 if ($values['details/post_count'] == 1) {
                     $box['tabs']['details']['notices']['delete_post_count_1']['show'] = true;

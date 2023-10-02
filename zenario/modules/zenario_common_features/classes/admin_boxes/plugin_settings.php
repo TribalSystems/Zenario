@@ -1090,6 +1090,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 												//Otherwise save the field in the plugin_settings table.
 												$value = [];
 												$value['value'] = ze\ray::value($values, $tabName. '/'. $fieldName);
+												
+												//Run a HTML sanitiser on any HTML fields when we save them
+												if ('editor' == ($field['type'] ?? '')) {
+													$value['value'] = ze\ring::sanitiseWYSIWYGEditorHTML($value['value'], true);
+												}
 								
 								
 												//Handle file/image uploaders by adding these files to the system
@@ -1263,6 +1268,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					$allCSSPath = $this->getPluginCSSFilepath($box, false);
 					$allCSSName = $this->getPluginCSSName($box, false);
 					
+					$skinChanges = false;
+					
 					if ($thisCSSPath) {
 						if (file_exists($filepath = CMS_ROOT. $thisCSSPath)) {
 							if (is_writable($filepath)) {
@@ -1271,12 +1278,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 								} else {
 									unlink($filepath);
 								}
+								$skinChanges = true;
 							}
 						} else {
 							if ($values['this_css_tab/use_css_file']
 							 && is_writable(CMS_ROOT. $this->skinWritableDir)) {
 								file_put_contents($filepath, $values['this_css_tab/css_source']);
 								\ze\cache::chmod($filepath, 0666);
+								$skinChanges = true;
 							}
 						}
 					}
@@ -1288,12 +1297,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							} else {
 								unlink($filepath);
 							}
+							$skinChanges = true;
 						}
 					} else {
 						if ($values['all_css_tab/use_css_file']
 						 && is_writable(CMS_ROOT. $this->skinWritableDir)) {
 							file_put_contents($filepath, $values['all_css_tab/css_source']);
 							\ze\cache::chmod($filepath, 0666);
+							$skinChanges = true;
 						}
 					}
 					
@@ -1312,7 +1323,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						}
 					}
 					
-					ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
+					if ($skinChanges) {
+						ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true, $minifySkinsNow = true);
+					}
 				}
 				
 		

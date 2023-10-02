@@ -107,10 +107,10 @@ zenario__administration:
                     desc: |
                         Add HTML to the <head> or <body> tag of all pages on your site.
                 libs:
-                    name: JavaScript libraries
+                    name: JavaScript and font libraries
                     desc: >
-                        Control which JavaScript libraries are included site-wide.
-                    keywords: library libraries js javascript
+                        Control which JavaScript libraries/font libraries are included site-wide on the front-end.
+                    keywords: library libraries js javascript font
                 urls_and_xml_sitemap:
                     name: URL format, aliases and XML sitemap
                     desc: Settings that affect how URLs for your site are generated, and to enable an XML sitemap.

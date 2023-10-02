@@ -47,9 +47,80 @@ sections:
                     path: zenario_content_categories
 
             
+            publishing_dropdown: &publishing_dropdown
+                label: Publishing
+                hide_when_children_are_not_visible: true
+                onmouseover: 'zenarioA.closeSlotControls();'
+            
+            lock:
+                parent: publishing_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Lock this draft
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                ajax:
+                    confirm:
+                        message: |
+                            Lock this draft?
+
+                            No other administrator will be able to edit it until it is unlocked, published or deleted.
+                        button_message: Lock
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        lock: 1
+            locked:
+                parent: publishing_dropdown
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                label: Locked
+                css_class: zenario_item_locked
+            unlock:
+                parent: publishing_dropdown
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                label: Unlock
+                tooltip: This content item is locked by you
+                ajax:
+                    confirm:
+                        button_message: Unlock
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        unlock: 1
+            force_open:
+                parent: publishing_dropdown
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                priv: _PRIV_CANCEL_CHECKOUT
+                label: Force unlock
+                tooltip: This content item is locked by another administrator
+                ajax:
+                    confirm:
+                        message: |
+                            This content item's latest draft is locked by another administrator, which prevents it being edited by anyone else.
+                            
+                            You have permission to force-unlock this content item's latest draft. Would you like to do this?
+                            
+                            Any administrator who has authoring permission will then be able to make changes to it.
+                        button_message: Unlock draft
+                        cancel_button_message: Leave it alone
+                        message_type: warning
+                    request:
+                        unlock: 1
+            
             action_dropdown: &action_dropdown
                 label: Actions
                 hide_when_children_are_not_visible: true
+                #PLEASE NOTE: Some of the buttons on the right-hand side (Publish, Hide, Delete, Trash)
+                #will also appear in this dropdown. Please check the fun/fillAdminToolbar.php file
+                #for the copying logic.
             view_items_images: &view_items_images
                 featured_image_container: true
                 featured_image_src: ''
@@ -59,12 +130,6 @@ sections:
                     target_path: zenario__library/panels/image_library
                     min_path: zenario__library/panels/image_library
                     disallow_refiners_looping_on_min_path: true
-            lock_dropdown: &lock_dropdown
-                label: Locking
-                hide_when_children_are_not_visible: true
-                onmouseover: 'zenarioA.closeSlotControls();'
-                # n.b. I've used "zenarioA.closeSlotControls()" above there to
-                # close the slot control drop-down if it is still open when someone mouses-over these dropdowns
 
         #action_dropdown
             #Placeholders for buttons copied from the right-area
@@ -200,69 +265,6 @@ sections:
                     Rollback this content item|You cannot rollback this item to
                     this version because a draft exists.
 
-            lock:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Lock this draft
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                ajax:
-                    confirm:
-                        message: |
-                            Lock this draft?
-
-                            No other administrator will be able to edit it until it is unlocked, published or deleted.
-                        button_message: Lock
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        lock: 1
-            locked:
-                parent: lock_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                label: Locked
-                css_class: zenario_item_locked
-            unlock:
-                parent: lock_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                label: Unlock
-                tooltip: This content item is locked by you
-                ajax:
-                    confirm:
-                        button_message: Unlock
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        unlock: 1
-            force_open:
-                parent: lock_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                priv: _PRIV_CANCEL_CHECKOUT
-                label: Force unlock
-                tooltip: This content item is locked by another administrator
-                ajax:
-                    confirm:
-                        message: |
-                            This content item's latest draft is locked by another administrator, which prevents it being edited by anyone else.
-                            
-                            You have permission to force-unlock this content item's latest draft. Would you like to do this?
-                            
-                            Any administrator who has authoring permission will then be able to make changes to it.
-                        button_message: Unlock draft
-                        cancel_button_message: Leave it alone
-                        message_type: warning
-                    request:
-                        unlock: 1
-
 
 
 
@@ -271,6 +273,6 @@ sections:
             property_dropdown: *property_dropdown
             action_dropdown: *action_dropdown
             #view_dropdown: *view_dropdown
-            lock_dropdown: *lock_dropdown
+            publishing_dropdown: *publishing_dropdown
 
             view_items_images: *view_items_images

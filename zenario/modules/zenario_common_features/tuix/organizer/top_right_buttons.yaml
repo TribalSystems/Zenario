@@ -43,10 +43,12 @@ top_right_buttons:
         disabled_tooltip: |
             Your details are stored in a global database outside of this site's database.
             You can only make changes via the control site.
+    
     enable_dev_tools:
         priv: _PRIV_EDIT_ADMIN
         visible_if: !zenarioT.showDevTools()
         parent: admin_name
+        css_class: dev_tools_option
         label: Enable developer tools
         onclick: |
             zenario.ajax(
@@ -55,9 +57,47 @@ top_right_buttons:
             ).after(function() {
                 document.location.reload(true);
             });
+    
+    dev_tools_title:
+        visible_if: zenarioT.showDevTools()
+        css_class: dev_tools_title
+        parent: admin_name
+        label: Dev Tools is enabled
+    styles_fab_black:
+        visible_if: zenarioT.showDevTools()
+        css_class: dev_tools_option
+        parent: admin_name
+        label: View black styles FAB
+        onclick: |
+            zenarioAB.open('styles_fab_black');
+    styles_fab_white:
+        visible_if: zenarioT.showDevTools()
+        css_class: dev_tools_option
+        parent: admin_name
+        label: View white styles FAB
+        onclick: |
+            zenarioAB.open('styles_fab_white');
+    
+    js_function_short_names:
+        visible_if: zenarioT.showDevTools()
+        css_class: dev_tools_option
+        parent: admin_name
+        label: Create JS short names
+        onclick: |
+            $.colorbox({
+                open: true,
+                width: '100%',
+                height: '100%',
+                iframe: true,
+                /*title: title,*/
+                href: URLBasePath + 'zenario/admin/dev_tools/show_short_names.php'
+                /*,
+                className: 'zenario_admin_cb zenario_page_preview_colorbox'*/
+            });
     disable_dev_tools:
         priv: _PRIV_EDIT_ADMIN
         visible_if: zenarioT.showDevTools()
+        css_class: dev_tools_option
         parent: admin_name
         label: Disable developer tools
         onclick: |
@@ -67,19 +107,7 @@ top_right_buttons:
             ).after(function() {
                 document.location.reload(true);
             });
-    
-    styles_fab_black:
-        visible_if: zenarioT.showDevTools()
-        parent: admin_name
-        label: View black styles FAB
-        onclick: |
-            zenarioAB.open('styles_fab_black');
-    styles_fab_white:
-        visible_if: zenarioT.showDevTools()
-        parent: admin_name
-        label: View white styles FAB
-        onclick: |
-            zenarioAB.open('styles_fab_white');
+
     
     #no_children:
     #    css_class: zenario_admin_name

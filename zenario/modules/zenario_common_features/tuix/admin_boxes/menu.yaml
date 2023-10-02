@@ -1,7 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_menu:
-    priv: _PRIV_VIEW_MENU_ITEM
     title: Creating a menu node
     key:
         sectionId: ""
@@ -13,6 +12,7 @@ zenario_menu:
         cType: ""
         mode: ""
         id_is_parent_menu_node_id: ""
+        feature_image_id: ''
     identifier: 
         css_class: menu_node
         label: Menu node ID
@@ -115,7 +115,8 @@ zenario_menu:
                 hide_private_item:
                     indent: 1
                     ord: 1008
-                    label: 'Privacy:'
+                    label: 'Link privacy:'
+                    format_onchange: true
                     type: select
                     values:
                         - 
@@ -164,9 +165,18 @@ zenario_menu:
                     indent: 1
                     same_row: true
                     visible_if: zenarioAB.value('target_loc') == 'doc'
-                ext_url:
+                menu_node_will_appear_to_unauthorised_visitors_or_users:
                     indent: 1
                     ord: 1012
+                    hidden: true
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                This menu node WILL appear to unauthorised visitors or users, because there are menu nodes below it in the menu tree which are public. Either change the permissions on the lower content items, or restructure the menu tree, in order to make it only appear to authorised users.
+                            </div>
+                ext_url:
+                    indent: 1
+                    ord: 1013
                     label: 'External URL:'
                     type: url
                     maxlength: 255
@@ -174,7 +184,7 @@ zenario_menu:
                         required_if_not_hidden: Please enter a URL
                 open_in_new_window:
                     indent: 1
-                    ord: 1013
+                    ord: 1014
                     label: 'Open in a new window'
                     type: checkbox
                 
@@ -197,6 +207,230 @@ zenario_menu:
                     side_note: >
                         If you have an anchor on the page, you can specify it here and you'll be
                         taken to its location on navigation.
+        feature_image:
+            label: 'Images'
+            edit_mode:
+                enabled: true
+            fields:
+                promo__feature_image_checkbox:
+                    label: 'Show promotional image'
+                    ord: 1.01
+                    type: checkbox
+                    format_onchange: true
+                    side_note: "A promotional image can appear in the drop-down area when a user hovers over this menu node. Only supported by Menu with Promo Images plugin (zenario_promo_menu)."
+                promo__feature_image:
+                    indent: 1
+                    ord: 1.02
+                    foreign_key_to: file
+                    label: 'Image:'
+                    pick_items:
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select image...
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
+                    value: ""
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select an image.
+                
+                promo__use_rollover:
+                    indent: 1
+                    ord: 1.08
+                    label: 'Use a rollover image'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                promo__rollover_image:
+                    indent: 2
+                    ord: 1.09
+                    foreign_key_to: file
+                    label: 'Change image on rollover:'
+                    pick_items:
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select image...
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
+                    value: ""
+                    note_below: "Please note if the menu node is selected, the rollover image will always show."
+                    format_onchange: true
+                
+                
+                promo__overwrite_alt_tag:
+                    indent: 1
+                    ord: 1.10
+                    multiple_edit:
+                        original_value: ""
+                    label: 'Overwrite image alt-tag:'
+                    type: text
+                    maxlength: "255"
+                    value: ""
+                
+                
+                promo__title:
+                    indent: 1
+                    ord: 1.11
+                    label: 'Title:'
+                    type: text
+                    width: "150"
+                    maxlength: "255"
+                    value: ""
+                promo__text:
+                    indent: 1
+                    ord: 1.12
+                    label: 'Description (HTML):'
+                    type: editor
+                    dont_trim: true
+                    editor_type: standard_with_links
+                    cols: "80"
+                    rows: "10"
+                    value: ""
+                
+                
+                
+                promo__link_type:
+                    indent: 1
+                    ord: 1.13
+                    label: 'Destination:'
+                    type: radios
+                    values:
+                        no_link:
+                            ord: "1"
+                            label: No link
+                        content_item:
+                            ord: "2"
+                            label: Link to a content item
+                        external_url:
+                            ord: "3"
+                            label: Link to an external URL
+                    value: no_link
+                    format_onchange: Yes
+                promo__hyperlink_target:
+                    indent: 2
+                    ord: 1.14
+                    label: 'Content item:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item to link to.
+                    format_onchange: Yes
+                promo__hide_private_item:
+                    indent: 2
+                    ord: 1.15
+                    label: 'Privacy:'
+                    type: select
+                    value: always_show
+                    values:
+                        always_show:
+                            ord: "1"
+                            label: Show to visitors and extranet users, even if the target content item is private
+                        private:
+                            ord: "2"
+                            label: Obey the privacy setting of the content item
+                        logged_out:
+                            ord: "3"
+                            label: Show to visitors, hide from extranet users
+                        logged_in:
+                            ord: "4"
+                            label: Only show to extranet users
+                promo__url:
+                    indent: 2
+                    ord: 1.16
+                    label: 'External URL:'
+                    type: url
+                    maxlength: "255"
+                    value: ""
+                promo__target_blank:
+                    indent: 2
+                    ord: 1.17
+                    label: 'Open in a new window'
+                    type: checkbox
+                    value: ""
+                
+                show_image:
+                    ord: 2.1
+                    label: 'Show thumbnail beside menu node text'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: "A small image can appear beside the text of a menu node. Check here to enable this feature and select an image."
+                image_id:
+                    visible_if: "zenarioAB.value('show_image')"
+                    ord: 2.2
+                    label: 'Image:'
+                    indent: 1
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select image...
+                    validation:
+                        required_if_not_hidden: Please select an image.
+                use_rollover_image:
+                    ord: 3.1
+                    indent: 1
+                    label: 'Show a rollover image effect'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: "An image will show up on mouse over and It will disappear on mouse out."
+                rollover_image_id:
+                    ord: 3.2
+                    indent: 2
+                    label: 'Rollover image:'
+                    visible_if: "zenarioAB.value('use_rollover_image')"
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__library/panels/image_library
+                        min_path: zenario__library/panels/image_library
+                        max_path: zenario__library/panels/image_library
+                        target_path: zenario__library/panels/image_library
+                        select_phrase: Select image...
         advanced:
             label: Advanced
             edit_mode:
@@ -246,7 +480,7 @@ zenario_menu:
                     label: |
                         Keep GET requests from plugins when linking to the current content item
                     type: checkbox
-                    value: 1
+                    value: ''
                     side_note: |
                         When linking to the current content item,
                         keep variables like <code>mode</code> or <code>page</code> in the URL.

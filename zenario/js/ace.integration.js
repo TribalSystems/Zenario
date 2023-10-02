@@ -1,6 +1,6 @@
 (function() {
 	
-	var acePath = URLBasePath + 'zenario/libs/manually_maintained/bsd/ace/src-min-noconflict/';
+	var acePath = URLBasePath + 'zenario/libs/yarn/ace-builds/src-min-noconflict/';
 
 	ace.config.set('basePath', acePath);
 	ace.config.set('modePath', acePath);

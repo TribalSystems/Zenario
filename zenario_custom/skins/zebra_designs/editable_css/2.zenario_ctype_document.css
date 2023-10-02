@@ -20,10 +20,6 @@
 	text-decoration:none;
 }
 
-.zenario_ctype_document .document_details_content_panel {
-	overflow:hidden;
-}
-
 .zenario_ctype_document .document_details_content_panel .document_details_content_sticky_image {
 	float:left;
 	margin-right:20px;

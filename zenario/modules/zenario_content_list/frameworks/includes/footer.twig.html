@@ -6,7 +6,7 @@
 {% endif %}
 {% if No_Rows %}
 	{% if Show_No_Title %}
-		<{{Title_Tags}}>{{Title_With_No_Content}}</{{Title_Tags}}>
+		<{{Title_Tags_If_No_Items|e}}>{{Title_With_No_Content}}</{{Title_Tags_If_No_Items|e}}>
 	{% endif %}
 {% endif %}
 {% if Years %}

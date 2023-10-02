@@ -66,7 +66,7 @@ full_sitewide_slot:
         switch_to_layout:
             page_modes:
                 edit: true
-            onclick: zenarioAT.clickTab('layout'); return false;
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
             label: Switch to Layout mode to edit plugin settings
         
         settings:

@@ -42,36 +42,17 @@ class userAdm {
 	public static function isInvalid($values, $id = false) {
 		return \ze\userAdm::save($values, $id, false);
 	}
-
-
-	//Formerly "generateUserIdentifier()"
-	public static function generateIdentifier($userId, $details = []) {
-		//Look up details on this user if not provided
-		if (empty($details)
-		 || !isset($details['email'])
-		 || !isset($details['last_name'])
-		 || !isset($details['first_name'])
-		 || !isset($details['screen_name'])) {
-			$details = \ze\row::get('users', ['screen_name', 'first_name', 'last_name', 'email'], $userId);
-		}
 	
+	public static function generateScreenName($details) {
+		// This function will only use the first and/or last name to generate a screen name.
+		// If neither is provided, it will return a blank string.
+		// Please note: it is possible that the suggestion may not be a unique screen name.
+		// It is up to the admin to make it unique.
 		$baseIdentifier = '';
-		$firstName = $details['first_name'];
-		$lastName = $details['last_name'];
-		$email = $details['email'];
-	
-		//Create a "Base identifier" for this user based on their details
-		if (!\ze::setting('user_use_screen_name')
-		 || !($baseIdentifier = $details['screen_name'])) {
-			$firstName = \ze\ring::trimNonWordCharactersUnicode($firstName);
-			$lastName = \ze\ring::trimNonWordCharactersUnicode($lastName);
-			
-			if (!$firstName && !$lastName && $email) {
-				$emailArray = explode('@', $email, 2);
-				$emailArray = explode('.', $emailArray[0], 2);
-				$firstName = ucfirst(\ze\ring::trimNonWordCharactersUnicode($emailArray[0]));
-				$lastName = ucfirst(\ze\ring::trimNonWordCharactersUnicode($emailArray[1] ?? ''));
-			}
+		
+		if (\ze::setting('user_use_screen_name') && !empty($details)) {
+			$firstName = (!empty($details['first_name']) ? \ze\ring::trimNonWordCharactersUnicode($details['first_name']) : '');
+			$lastName = (!empty($details['last_name']) ? \ze\ring::trimNonWordCharactersUnicode($details['last_name']) : '');
 			
 			if ($firstName) {
 				if ($lastName) {
@@ -82,73 +63,74 @@ class userAdm {
 					$baseIdentifier =
 						mb_substr($firstName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
 				}
-			} else {
-				if ($lastName) {
-					$baseIdentifier =
-						mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
-				} else {
-					$baseIdentifier = 'User';
-				}
-			}
-			if (strlen($baseIdentifier) > 50) {
-				$baseIdentifier = mb_strcut($baseIdentifier, 0, 50, 'UTF-8');
+			} elseif ($lastName) {
+				$baseIdentifier =
+					mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
 			}
 		}
+		
+		return $baseIdentifier;
+	}
+
+	//Formerly "generateUserIdentifier()"
+	public static function generateIdentifier($userId) {
+		//Look up details on this user if not provided
+		$details = \ze\row::get('users', ['screen_name', 'first_name', 'last_name', 'email', 'status'], $userId);
 	
-		//Then create a unqiue identifier by appending some numbers to the end of the "Base identifier"
+		$baseIdentifier = '';
+		$firstName = (!empty($details['first_name']) ? \ze\ring::trimNonWordCharactersUnicode($details['first_name']) : '');
+		$lastName = (!empty($details['last_name']) ? \ze\ring::trimNonWordCharactersUnicode($details['last_name']) : '');
+		$email = $details['email'];
 	
-		//Check if the identifier column is encrypted
-		if (!\ze::$dbL->columnIsEncrypted('users', 'identifier')) {
-			//Attempt to generate a unique indentifier
-	
-			// Get all current identifiers from this site
-			$identifiers = [];
-			$sql = '
-				SELECT id, identifier 
-				FROM '.DB_PREFIX.'users
-				WHERE identifier LIKE "'.\ze\escape::sql($baseIdentifier).'%"
-				AND id != '.(int)$userId;
-			$result = \ze\sql::select($sql);
-			while ($user = \ze\sql::fetchAssoc($result)) {
-				$identifiers[strtoupper($user['identifier'])] = $user['id'];
-			}
-	
-			// Find a unique indentifier
-			$uniqueIdentifier = $baseIdentifier;
-			if (!isset($identifiers[strtoupper($uniqueIdentifier)])) {
-				return $uniqueIdentifier;
+		//Create a "Base identifier" for this user based on their details
+		//If first name and/or last name provided, use these
+		//Else use screen name (if the feature is enabled and a screen name is entered)
+		//Otherwise, use "User", to which a number will be added
+		
+		if ($firstName) {
+			if ($lastName) {
+				$baseIdentifier =
+					mb_substr($firstName, 0, (int) \ze::setting('user_chars_from_first_name') ?: 99).
+					mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_last_name') ?: 99);
 			} else {
-				$userId = (string)$userId;
-				for ($i = 1; $i <= strlen($userId); $i++) {
-					$userNumber = substr($userId, -($i));
-					$baseIdentifier = mb_substr($baseIdentifier, 0, (50 - ($i + 1)));
-					$uniqueIdentifier = $baseIdentifier . '-' . $userNumber;
-					if (!isset($identifiers[strtoupper($uniqueIdentifier)])) {
-						return $uniqueIdentifier;
-					}
-				}
-				$uniqueIdentifier .= rand(0, 99);
-				return $uniqueIdentifier;
+				$baseIdentifier =
+					mb_substr($firstName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
 			}
-	
+		} elseif ($lastName) {
+			$baseIdentifier =
+				mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
+		} elseif (\ze::setting('user_use_screen_name') && $details['screen_name']) {
+			$baseIdentifier = $details['screen_name'];
 		} else {
-			//Attempt to generate a unique indentifier... without using a LIKE
-			$uniqueIdentifier = $baseIdentifier;
-			if (!\ze\row::exists('users', ['identifier' => $uniqueIdentifier, 'id' => ['!' => $userId]])) {
-				return $uniqueIdentifier;
+			// Check if this is a user or contact.
+			// Add their record ID to the base identifier.
+			if ($details['status'] == 'contact') {
+				$baseIdentifier = 'Contact' . (int) $userId;
 			} else {
-				$userId = (string)$userId;
-				for ($i = 1; $i <= strlen($userId); $i++) {
-					$userNumber = substr($userId, -($i));
-					$baseIdentifier = mb_substr($baseIdentifier, 0, (50 - ($i + 1)));
-					$uniqueIdentifier = $baseIdentifier . '-' . $userNumber;
-					if (!\ze\row::exists('users', ['identifier' => $uniqueIdentifier, 'id' => ['!' => $userId]])) {
-						return $uniqueIdentifier;
-					}
-				}
-				$uniqueIdentifier .= rand(0, 99);
-				return $uniqueIdentifier;
+				$baseIdentifier = 'User' . (int) $userId;
 			}
+		}
+		
+		if (strlen($baseIdentifier) > 50) {
+			$baseIdentifier = mb_strcut($baseIdentifier, 0, 50, 'UTF-8');
+		}
+	
+		//Attempt to generate a unique indentifier.
+		// In case of collissions, add a random number and check for uniqueness.
+		$uniqueIdentifier = $baseIdentifier;
+		if (!\ze\row::exists('users', ['identifier' => $uniqueIdentifier, 'id' => ['!' => $userId]])) {
+			return $uniqueIdentifier;
+		} else {
+			$identifierCollision = true;
+			do {
+				$number = rand(0, 999);
+				if (!\ze\row::exists('users', ['identifier' => $uniqueIdentifier . $number, 'id' => ['!' => $userId]])) {
+					$identifierCollision = false;
+					$uniqueIdentifier = $uniqueIdentifier . $number;
+				}
+			} while ($identifierCollision);
+			
+			return $uniqueIdentifier;
 		}
 	}
 
@@ -178,8 +160,8 @@ class userAdm {
 		if (!empty($values['screen_name'])) {
 			//...has no special characters...
 			if (!\ze\ring::validateScreenName($values['screen_name'])) {
-				$e->add('screen_name', 'The screen name can contain only alphanumeric characters.');
-			//...and is not already taken by a different row.
+				$e->add('screen_name', 'The screen name can contain only lower case letters a-z, capital letters A-Z, numbers 0-9, hyphens, underscores, and periods.');
+			//...and is not already taken by a different row...
 			} elseif (\ze\row::exists('users', ['screen_name' => $values['screen_name'], 'id' => ['!' => $id]])) {
 				$e->add('screen_name', 'This screen name is already in use.');
 			//...and is not too long.
@@ -189,7 +171,7 @@ class userAdm {
 		}
 	
 	
-		//Ensure salutation first_name, last_name are not too long
+		//Ensure salutation, first_name and last_name are not too long
 		if (!empty($values['salutation'])) {
 			if (strlen($values['salutation']) > 25) {
 				$e->add('salutation', 'Your salutation cannot be more than 25 characters long.');
@@ -207,7 +189,25 @@ class userAdm {
 		}
 	
 	
-		if (!$id) {
+		$firstNameLastNameOrScreenNameHasChanged = false;
+		if ($id) {
+			//Check whether the first name, last name and screen name have changed.
+			//If they have not, remember this for later and preserve the existing identifier.
+			if ($doSave) {
+				$existingUserDetails = \ze\row::get('users', ['first_name', 'last_name', 'screen_name'], $id);
+				if (
+					!empty($existingUserDetails)
+					&& isset($values['first_name']) && isset($values['last_name']) && isset($values['screen_name'])
+					&& (
+						$existingUserDetails['first_name'] != $values['first_name']
+						|| $existingUserDetails['last_name'] != $values['last_name']
+						|| (isset($values['screen_name']) && $existingUserDetails['screen_name'] != $values['screen_name'])
+					)
+				) {
+					$firstNameLastNameOrScreenNameHasChanged = true;
+				}
+			}
+		} else {
 			$values['created_date'] = \ze\date::now();
 			if (empty($values['creation_method_note'])) {
 				if (\ze\admin::id()) {
@@ -269,8 +269,13 @@ class userAdm {
 			//Save the details to the database
 			$newId = \ze\row::set('users', $values, $id, false, false, $markNewThingsInSession);
 		
-			$identifier = \ze\userAdm::generateIdentifier($newId);
-			\ze\row::update('users', ['identifier' => $identifier], $newId);
+			//Generate an identifier for new records and/or records where the first name, last name and screen name have changed.
+			//If editing a user/contact, and the first name, last name and screen name have not changed,
+			//there is no need to regenerate the identifier.
+			if (!$id || $firstNameLastNameOrScreenNameHasChanged) {
+				$identifier = \ze\userAdm::generateIdentifier($newId);
+				\ze\row::update('users', ['identifier' => $identifier], $newId);
+			}
 		
 			if ($password !== false) {
 				\ze\userAdm::setPassword($newId, $password);

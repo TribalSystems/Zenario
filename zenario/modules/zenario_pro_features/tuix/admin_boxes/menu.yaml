@@ -1,7 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_menu:
-    priv: _PRIV_VIEW_MENU_ITEM
     tabs:
         text:
             fields:

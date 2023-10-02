@@ -134,11 +134,13 @@ switch ($path) {
 		
 		$styleFormats = ze\site::description('email_style_formats');
 		if (!empty($styleFormats)) {
+			//If custom email styles exist, load them and add them to the toolbar.
+			//Please note: by default, the full featured editor DOES NOT have the styleselect dropdown.
+			
 			$fields['meta_data/body']['editor_options']['style_formats'] = 
 			$fields['preview/body']['editor_options']['style_formats'] = $styleFormats;
 			$fields['meta_data/body']['editor_options']['toolbar'] =
-			$fields['preview/body']['editor_options']['toolbar'] = 
-				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
+				'undo redo | formatselect | styleselect | fontsizeselect | bold italic underline | image link unlink | bullist numlist | forecolor backcolor | charmap emoticons';
 		}
 		
 		//Set current admin's email as test send address
@@ -246,11 +248,11 @@ switch ($path) {
 		if ($settingGroup == 'data_protection') {
 			
 			//Show the number of sent emails currently stored
-			$count = ze\row::count(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log');
+			$count = ze\row::count('email_template_sending_log');
 			$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
 			
 			if ($count) {
-				$min = ze\row::min(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX . 'email_template_sending_log', 'sent_datetime');
+				$min = ze\row::min('email_template_sending_log', 'sent_datetime');
 				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
 			

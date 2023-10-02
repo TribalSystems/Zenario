@@ -308,6 +308,12 @@ class zenario_comments extends zenario_anonymous_comments {
 	}
 	
 	public static function deleteUserDataGetInfo($userIds) {
+		if ($userIds) {
+			$recordCount = ' ([[count]] found)';
+		} else {
+			$recordCount = '';
+		}
+		
 		$sql = "
 			SELECT COUNT(id)
 			FROM " . DB_PREFIX . ZENARIO_ANONYMOUS_COMMENTS_PREFIX . "user_comments
@@ -315,7 +321,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
 		
-		$userCommentsResults = ze\admin::phrase('Comments posted by this user will have the creator ID removed ([[count]] found)', ['count' => $count]);
+		$userCommentsResults = ze\admin::phrase('Comments posted by this user will have the creator ID removed' . $recordCount, ['count' => $count]);
 		
 		return $userCommentsResults;
 	}

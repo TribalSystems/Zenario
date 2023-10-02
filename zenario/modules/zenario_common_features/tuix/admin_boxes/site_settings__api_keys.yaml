@@ -57,3 +57,28 @@ site_settings:
                                                         <a href="https://www.dropbox.com/developers/apps" target="_blank">
                                                             https://www.dropbox.com/developers/apps
                                                         </a>.
+#         indexnow:
+#             label: IndexNow
+#             edit_mode:
+#                 enabled: true
+#                 priv: _PRIV_EDIT_SITE_SETTING
+#             fields:
+#                 description:
+#                     full_width: Yes
+#                     snippet:
+#                         html: Zenario can instantly inform search engines (e.g. Bing) about the latest content changes. To enable this feature, you will need an API Key entered into the field below.
+#                 enable_indexnow:
+#                     site_setting:
+#                         name: enable_indexnow
+#                     type: checkbox
+#                     label: Enable IndexNow
+#                     redraw_onchange: true
+#                 indexnow_api_key:
+#                     indent: 1
+#                     site_setting:
+#                         name: indexnow_api_key
+#                     label: 'IndexNow API key:'
+#                     type: text
+#                     visible_if: lib.value('enable_indexnow')
+#                     validation:
+#                         required_if_not_hidden: 'Please enter the IndexNow API key.'

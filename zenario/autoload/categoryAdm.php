@@ -92,13 +92,20 @@ class categoryAdm {
 		$ord = 0;
 		//$result = \ze\row::query('categories', ['id', 'parent_id', 'name'], [], 'name');
 		$result = \ze\sql::select('
-			SELECT id, parent_id, name
+			SELECT id, parent_id, name, public
 			FROM '. DB_PREFIX. 'categories
 			ORDER BY name
 		');
 	
 		while ($row = \ze\sql::fetchAssoc($result)) {
-			$field['values'][$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
+			if ($row['public']) {
+				$categoryPublicName = \ze\category::publicName($row['id']);
+				$categoryLabelString = '[[category_name]] (public, "[[category_public_name]]"';
+				$categoryLabelReplaceArray = ['category_name' => $row['name'], 'category_public_name' => $categoryPublicName];
+			} else {
+				$categoryLabelString = '[[category_name]] (private';
+				$categoryLabelReplaceArray = ['category_name' => $row['name']];
+			}
 		
 			if ($showTotals) {
 				$sql = "
@@ -111,9 +118,21 @@ class categoryAdm {
 					WHERE cil.category_id = ". (int) $row['id'];
 				$result2 = \ze\sql::select($sql);
 				$row2 = \ze\sql::fetchRow($result2);
-			
-				$field['values'][$row['id']]['label'] .= ' ('. $row2[0]. ')';
+				
+				if (!$row2[0] || $row2[0] > 1) {
+					$categoryLabelString .= ', [[content_item_count]] content items';
+				} else {
+					$categoryLabelString .= ', [[content_item_count]] content item';
+				}
+				
+				$categoryLabelReplaceArray['content_item_count'] = $row2[0];
 			}
+			
+			$categoryLabelString .= ')';
+			
+			$categoryLabel = \ze\admin::phrase($categoryLabelString, $categoryLabelReplaceArray);
+			
+			$field['values'][$row['id']] = ['label' => $categoryLabel, 'parent' => $row['parent_id'], 'ord' => ++$ord];
 		}
 	
 		if ($cID && $cType && $cVersion) {

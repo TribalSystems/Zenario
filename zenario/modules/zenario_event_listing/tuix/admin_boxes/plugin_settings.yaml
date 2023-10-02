@@ -108,12 +108,6 @@ plugin_settings:
                             ord: "13"
                 
                 
-                ongoing:
-                    label: 'Show current events'
-                    plugin_setting:
-                        name: ongoing
-                    type: checkbox
-                    value: "1"
                 future:
                     label: 'Show future events'
                     plugin_setting:
@@ -121,12 +115,19 @@ plugin_settings:
                     type: checkbox
                     value: "1"
                     side_note: Show events whose start date is in the future.
+                ongoing:
+                    label: 'Show current events'
+                    plugin_setting:
+                        name: ongoing
+                    type: checkbox
+                    value: "1"
+                    side_note: Show today's events (or which have started already and whose end date is in the future).
                 past:
                     label: 'Show past events'
                     plugin_setting:
                         name: past
                     type: checkbox
-                    value: "0"
+                    value: "1"
                     side_note: Show events whose end date is in the past.
                 
                 category_list:
@@ -136,8 +137,7 @@ plugin_settings:
                         foreign_key_to: categories
                     type: checkboxes
                     side_note: >
-                        Content Items must be in all the Categories above to appear
-                        in the list.
+                        Only event content items in ALL of the selected categories will be shown.
                 location:
                     label: 'Show events in:'
                     plugin_setting:
@@ -146,9 +146,9 @@ plugin_settings:
                     type: select
                     values:
                         all_locations:
-                            label: Any Location
+                            label: Any location
                         location_associated_with_content_item:
-                            label: Location associated with the Content Item
+                            label: Location associated with the event content item
                 language_selection:
                     plugin_setting:
                         name: language_selection

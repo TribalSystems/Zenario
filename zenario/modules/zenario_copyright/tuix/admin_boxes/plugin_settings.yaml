@@ -132,36 +132,68 @@ plugin_settings:
                             ord: 3
                     value: no_link
                     format_onchange: true
-                    
-                hyperlink_target:
-                    visible_if: "zenarioAB.value('link_type') == 'internal'"
-                    plugin_setting:
-                        name: hyperlink_target
-                        foreign_key_to: content
-                        dangling_cross_references: delete_instance
-                    label: 'Content Item:'
-                    indent: 1
-                    pick_items:
+                        
+
+                
+                # Format the picker slightly differently when selecting a translation chain v.s selecting a content item.
+                # Note: these are cosmetic changes only, for backwards compatibility reasons the values in the database and logic in the
+                # PHP code is still exactly the same as it was in Zenario 9.4.
+                hyperlink_target__specific:
+                    hidden: true
+                    pick_items: &hyperlink_target__specific__pick_items
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: true
                         select_phrase: Select a content item...
                         hide_remove_button: true
+                    validation: &hyperlink_target__specific__validation
+                        required_if_not_hidden: Please select a content item
+                hyperlink_target__translation:
+                    hidden: true
+                    pick_items:
+                        path: zenario__content/panels/translation_chains
+                        min_path: zenario__content/panels/translation_chains
+                        max_path: zenario__content/panels/translation_chains
+                        target_path: zenario__content/panels/translation_chains
+                        select_phrase: Select a translation chain...
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a content item.
-                    format_onchange: true
+                        required_if_not_hidden: Please select a translation chain
+                
                 use_translation:
-                    visible_if: "zenarioAB.value('link_type') == 'internal'"
+                    indent: 1
                     plugin_setting:
                         name: use_translation
-                    label: "Link to content item in this page's language, if it exists"
-                    type: checkbox
+                    type: radios
+                    value: 0
+                    values:
+                        0:
+                            ord: 1
+                            label: 'Link to a content item in a specific language:'
+                        1:
+                            ord: 0
+                            label: "Link to a translation in the visitor's language (recommended):"
+                    format_onchange: true
+                hyperlink_target:
+                    visible_if: "zenarioAB.value('link_type') == 'internal'"
                     indent: 1
-                    value: ""
-                    side_note: |
-                        If the destination content item has a translation in the visitor's language, link to that.
+                    plugin_setting:
+                        name: hyperlink_target
+                        foreign_key_to: content
+                    pick_items: *hyperlink_target__specific__pick_items
+                    validation: *hyperlink_target__specific__validation
+                    format_onchange: true
+                    notices_below:
+                        in_language:
+                            hidden: true
+                            type: information
+                            message: ''
+                        featured_image_filename:
+                            hidden: true
+                            type: ''
+                            message: ''
+                
                 url:
                     visible_if: "zenarioAB.value('link_type') == 'external'"
                     plugin_setting:

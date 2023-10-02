@@ -161,4 +161,4 @@ if (isset($controls['actions']['settings']['onclick'])) {
 	//}
 }
 
-$this->listImagesOnSlotControls($controls, $this->imgsUsed);
+$this->listImagesOnSlotControls($controls, $this->imgsUsed, false);

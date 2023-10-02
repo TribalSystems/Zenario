@@ -351,7 +351,7 @@ body.ie label#search_term_placeholder {
 }
 
 .organizer_wrapOuter .logout_button a {
-	background: url('../admin/images/icon-logout.svg') no-repeat center / 16px 16px;
+	background: url('../admin/images/icon-exit-right.svg') no-repeat center / auto 24px;
 }
 
 .organizer_wrapOuter .logout_button a:hover {
@@ -450,7 +450,7 @@ body.ie label#search_term_placeholder {
 }
 
 .organizer_wrapOuter .top_right_button ul li a {
-	width:150px;
+	width:160px;
 	height:auto;
 	padding:0 10px;
 	display:block;
@@ -472,6 +472,31 @@ body.ie label#search_term_placeholder {
 	border-top:0;
 }
 
+.organizer_wrapOuter .top_right_button ul li.dev_tools_title a {
+	cursor:default;
+}
+
+.organizer_wrapOuter .top_right_button ul li.dev_tools_title a,
+.organizer_wrapOuter .top_right_button ul li.dev_tools_title a:hover {
+	color: #fff;
+	background:#333;
+}
+
+.organizer_wrapOuter .top_right_button ul li.dev_tools_title + li a {
+	border-top: none;
+}
+
+.organizer_wrapOuter .top_right_button ul li.dev_tools_title a:before,
+.organizer_wrapOuter .top_right_button ul li.dev_tools_option a:before {
+	font-family:"FontAwesome";
+	content:"\f52e";
+}
+
+.organizer_wrapOuter .top_right_button ul li.dev_tools_title a:after {
+	font-family:"FontAwesome";
+	content:"\f0d7";
+	float:right;
+}
 
 
 .organizer_wrapOuter .zenario_ywip #zenario_ywip_dropdown {
@@ -1584,12 +1609,7 @@ div.organizer_pageSize {
 }
 
 .zenario_debugInfo .organizer_info_box,
-#organizer_topRightIcons .organizer_enabled_disabled,
-#organizer_topRightIcons .organizer_info_box,
-#organizer_topRightIcons .organizer_help,
-#organizer_topRightIcons .organizer_help_box,
-#organizer_topRightIcons .organizer_diagnostics,
-#organizer_topRightIcons .zenario_debug,
+#organizer_topRightIcons .zenario_topRightIcon,
 .organizer_wrapOuter div#organizer_topRightIcons #organizer_debug_button div,
 #zenario_fbAdminInner .zfab_row .organizer_help_box {
 	width:18px;
@@ -1600,12 +1620,7 @@ div.organizer_pageSize {
 }
 
 .zenario_debugInfo .organizer_info_box,
-#organizer_topRightIcons .organizer_enabled_disabled,
-#organizer_topRightIcons .organizer_info_box,
-#organizer_topRightIcons .organizer_help,
-#organizer_topRightIcons .organizer_help_box,
-#organizer_topRightIcons .organizer_diagnostics,
-#organizer_topRightIcons .zenario_debug,
+#organizer_topRightIcons .zenario_topRightIcon,
 #organizer_topRightIcons #assetwolf_background_scripts.organizer_assetwolf_background_scripts {
 	margin:4px;
 }
@@ -1667,7 +1682,11 @@ div.organizer_pageSize {
 .zenario_at_dev_icon.site_enabled_development {
 	background: url('../admin/images/icon-site-enabled.png') no-repeat center / 18px 18px;
 }
-
+/*
+body div.admin_login_link.restore_admin_toolbar {
+	background: #212121 url('../admin/images/icon-bar-expand-02.svg') no-repeat center / 28px 28px;
+}
+*/
 #zenario_at_top_left_menu .organizer_item_image.all_languages {
 	background: 15% 30% no-repeat url('../admin/images/icon-languages.svg') / auto 18px;
 }
@@ -1682,22 +1701,47 @@ div.organizer_pageSize {
 	background:#d2d0d1 url('../admin/images/icon-TUIX-blue.png') no-repeat center / 16px 16px;
 }
 
-#organizer_topRightIcons .organizer_help,
-#organizer_topRightIcons .organizer_help_box,
-#organizer_topRightIcons .organizer_info_box,
-#organizer_topRightIcons .organizer_enabled_disabled,
-#organizer_topRightIcons .organizer_diagnostics {
+body.zenario_adminToolbarHidden {
+	margin-top:10px;
+}
+
+body div.admin_login_link.restore_admin_toolbar:before {
+	content:"";
+	display:block;
+	width:100%;
+	height:10px;
+	background:#333;
+	position:fixed;
+	top:0;
+	left:0;
+	right:0;
+}
+
+body div.admin_login_link.restore_admin_toolbar {
+	background: #333 url('../admin/images/icon-bar-expand-04.svg') no-repeat center 0 / auto 6px;
+	width: 40px;
+	height: 14px;
+	display: block;
+	top:10px !important;
+	right: 10px;
+	padding:0;
+	border-radius:0;
+	-webkit-border-radius:0;
+	-webkit-border-bottom-left-radius: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+}
+
+
+#organizer_topRightIcons .zenario_topRightIcon {
 	opacity: 1;
 	transition: opacity .25s ease-in-out;
 	-moz-transition: opacity .25s ease-in-out;
 	-webkit-transition: opacity .25s ease-in-out;
 }
 
-#organizer_topRightIcons .organizer_help:hover,
-#organizer_topRightIcons .organizer_help_box:hover,
-#organizer_topRightIcons .organizer_info_box:hover,
-#organizer_topRightIcons .organizer_enabled_disabled:hover,
-#organizer_topRightIcons .organizer_diagnostics:hover {
+#organizer_topRightIcons .zenario_topRightIcon:hover {
 	opacity:0.7;
 }
 
@@ -2033,7 +2077,7 @@ body.nav_doesnt_scroll #organizer_leftColumn #organizer_topLevelNav #organizer_t
 }
 
 #organizer_leftColumn .organizer_sectionTitleText {
-	padding:12px 5px 12px 15px;
+	padding:12px 5px 12px 13px;
 	margin-bottom:12px;
 	border-bottom:1px dashed #A1A1A1;
 	color: #333;
@@ -2052,12 +2096,6 @@ body.nav_doesnt_scroll #organizer_leftColumn #organizer_topLevelNav #organizer_t
 	float:none;
 }
 
-#organizer_leftColumn .legend_on span,
-#organizer_leftColumn .legend_on a span,
-#organizer_leftColumn .organizer_legend a:hover span{
-	/*color:#00657a;*/
-}
-
 #organizer_leftColumn .organizer_legend span,
 #organizer_leftColumn .organizer_legend a span{
 	font-weight:bold;
@@ -2072,11 +2110,6 @@ body.nav_doesnt_scroll #organizer_leftColumn #organizer_topLevelNav #organizer_t
 	font-weight:normal;
 }
 
-#organizer_leftColumn .second_level_item .legend_on span,
-#organizer_leftColumn .second_level_item .legend_on a span {
-	font-weight:bold;
-}
-
 #organizer_leftColumn .organizer_legend a {
 	display: block;
 	padding: 0;
@@ -2089,20 +2122,32 @@ body.nav_doesnt_scroll #organizer_leftColumn #organizer_topLevelNav #organizer_t
 
 #organizer_leftColumn .second_level_item .organizer_legend a {
 	display: block;
-	padding: 0 5px 0 15px;
+	padding: 0 5px 0 13px;
 	line-height: 22px;
 	height: 22px;
 	overflow: hidden;
 	font-size: 8pt;
+	position:relative;
 }
 
 #organizer_leftColumn .second_level_item .legend_on {
 	background:#BAEFBA;
 }
 
+#organizer_leftColumn .second_level_item .legend_on a:before {
+	font-family:"FontAwesome";
+	content:"\f105";
+	font-weight:bold;
+	position:absolute;
+	left:4px;
+	top:0;
+	color:#000;
+	font-size:10px;
+}
+
 #organizer_leftColumn .second_level_item .legend_on a span,
 #organizer_leftColumn .second_level_item .organizer_legend a:hover {
-	color: #333;
+	color: #000;
 }
 
 #organizer_leftColumn .second_level_item.zenario_separator_before_this:before,
@@ -4434,6 +4479,21 @@ body.ie8 .organizer_item_image.ghost {
 	background:url("../admin/images/icon-trashed-content.svg") no-repeat center center / 20px 23px;
 }
 
+#organizer_rightColumn div.organizer_row div.organizer_cell.translation_chain,
+.organizer_item_image.translation_chain {
+	background:url("../admin/images/icon-translation-chain.svg") no-repeat center center / auto 20px;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell.translation_chain_no_translations,
+.organizer_item_image.translation_chain_no_translations {
+	background:url("../admin/images/icon-no-translations-placeholder.svg") no-repeat center center / auto 20px;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell.translation_chain_not_in_default,
+.organizer_item_image.translation_chain_not_in_default {
+	background:url("../admin/images/icon-not-in-default-lang-placeholder.svg") no-repeat center center / auto 20px;
+}
+
 .organizer_item_image.content_type_settings {
 	background:url("../admin/images/icon-content-types-dark.svg") no-repeat center center / 22px 22px;
 }
@@ -4691,19 +4751,10 @@ body.ie8 .organizer_item_image.ghost {
 	/* to add */
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.urls_collection,
-#organizer_rightColumn #organizer_panelTitle div.url_item {
-	background: url('../admin/images/icon-spare-domain-names.svg') no-repeat center center / 22px auto;
-}
-
 #organizer_rightColumn div.organizer_row div.organizer_cell div.alias_urls_collection,
 #organizer_rightColumn #organizer_panelTitle div.alias_url,
 .organizer_item_image.alias_url {
 	background: url('../admin/images/icon-spare-alias-dark.svg') no-repeat center center / 22px auto;
-}
-
-.organizer_item_image.url_item {
-	background: url('../admin/images/icon-spare-domain-names.svg') no-repeat center center / 22px auto;
 }
 
 .organizer_item_image.url_admin_item {
@@ -7639,6 +7690,19 @@ span.video_title {
 	font-style:italic;
 }
 
+.organizer_admin_box_builder_view .dataset_warning {
+	background: url('../admin/images/icon-warning.svg') no-repeat left top / 18px 18px;
+  	padding-left: 24px;
+}
+
+.organizer_admin_box_builder_view .dataset_warning p {
+	margin-top:0;
+}
+
+.organizer_admin_box_builder_view .dataset_warning p a {
+	color:#007fa3;
+}
+
 .organizer_form_builder_view .form_fields_palette .field_details textarea {
 	width:100%;
 	height:150px;
@@ -7648,19 +7712,20 @@ span.video_title {
 .organizer_form_builder_view .field_type,
 .organizer_admin_box_builder_view .field_type,
 .organizer_form_builder_view .dataset_field {
-	width:45%;
 	width:calc( 50% - 25px);
 	padding:4px 5px 6px 10px;
 	line-height:16px;
 	margin:5px;
 	background:#FFF;
 	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
 	border-radius: 4px;
 	-webkit-box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.35);
-	-moz-box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.35);
 	box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.35);
 	cursor:move;
+}
+
+.organizer_form_builder_view #organizer_linked_field_type_list .dataset_field {
+	width:calc( 100% - 25px);
 }
 
 .organizer_form_builder_view .form_fields_palette .field_type_list .dataset_fields .column_1 .dataset_field,
@@ -7930,13 +7995,28 @@ span.video_title {
 
 .organizer_form_builder_view .form_outer .form_field .zenario_note_below,
 .organizer_admin_box_builder_view .form_outer .form_field .zenario_note_below {
-	width: 408px;
-	padding: 3px 5px 5px 7px;
-	margin-top: 8px;
-	background: #b1e6fd none repeat scroll 0 0;
+	float: none;
+	clear: both;
+	display:block;
+	width:480px;
+	padding:3px 5px 5px 24px;
+	position:relative;
+	z-index:1;
+	top:8px;
+	margin-bottom:8px;
+	background:#e6f7ff;
 	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
 	border-radius: 4px;
+}
+
+.organizer_form_builder_view .form_outer .form_field .zenario_note_below:before,
+.organizer_admin_box_builder_view .form_outer .form_field .zenario_note_below:before {
+  	font-family: "FontAwesome";
+  	content: "\f059";
+  	position: absolute;
+  	color: #25b7e0;
+  	left: 7px;
+  	font-size: 11px;
 }
 
 .organizer_form_builder_view .form_outer .form_field .zenario_side_note_wrap,

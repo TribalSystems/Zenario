@@ -360,8 +360,8 @@ if (empty($failures)) {
 		$failures[] = \ze\admin::phrase('This backup file contained table definitions but no data. It cannot be restored.');
 	
 	} else {
-		//From version 8 of Zenario, we'll only support updating from version 8.2 onwards.
-		//Check for versions of Tribiq CMS/Zenario before 8.2
+		//As of version 9.5 of Zenario, we'll only support updating from version 8.8 onwards.
+		//Check for versions of Tribiq CMS/Zenario before 8.8
 		$sql = "
 			SELECT 1
 			FROM `". \ze\escape::sql($replacePrefix). "local_revision_numbers`
@@ -371,8 +371,8 @@ if (empty($failures)) {
 			LIMIT 1";
 
 		if (\ze\sql::numRows($sql)) {
-			//If this looks like a very old version of Zenario, direct people to update to at least 8.2 first
-			$failures[] = \ze\admin::phrase('This backup file contains an installation of Zenario running from before version 8.2. Only backups created from version 8.2 or later can be restored here.');
+			//If this looks like a very old version of Zenario, direct people to update to at least 8.8 first
+			$failures[] = \ze\admin::phrase('This backup file contains an installation of Zenario running from before version 8.8. Only backups created from version 8.8 or later can be restored here.');
 		}
 	}
 }
@@ -398,10 +398,11 @@ if (!empty($failures)) {
 	
 	\ze\dbAdm::rememberLocationalSiteSettings();
 	
-	//Drop the modules/plugin table from the existing installation
+	//Drop the tables from the existing installation
 	$error = false;
 	\ze\welcome::runSQL(false, 'local-DROP.sql', $error);
 	\ze\welcome::runSQL(false, 'local-admin-DROP.sql', $error);
+	\ze\welcome::runSQL(false, 'local-old-DROP.sql', $error);
 	
 	foreach ($moduleTables as $moduleTable) {
 		\ze\sql::update("DROP TABLE IF EXISTS `". \ze\escape::sql($moduleTable). "`", false, false);

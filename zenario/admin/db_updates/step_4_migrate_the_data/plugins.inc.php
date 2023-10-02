@@ -249,57 +249,6 @@ function renamePluginSetting(
 
 
 
-//Rename the Slideshow 2 module to the Slideshow (simple) module
-if (ze\dbAdm::needRevision(47160)) {
-	renameModuleDirectory('zenario_slideshow_2', 'zenario_slideshow_simple', true);
-	
-	//Also, the Slideshow (simple) module now has a dependancy on the base slideshow (which in turn has a dependancy on the nest module)
-	runNewModuleDependency('zenario_slideshow_simple', 'zenario_plugin_nest');
-	runNewModuleDependency('zenario_slideshow_simple', 'zenario_slideshow');
-	ze\dbAdm::revision(47160);
-}
-
-//The location manager module now needs the timezones module to run
-if (ze\dbAdm::needRevision(47200)) {
-	runNewModuleDependency('zenario_location_manager', 'zenario_timezones');
-	ze\dbAdm::revision(47200);
-}
-
-//The Assetwolf module now needs the Advanced interface tools FEA module to run
-if (ze\dbAdm::needRevision(50500)) {
-	runNewModuleDependency('assetwolf_2', 'zenario_advanced_interface_tools_fea');
-	ze\dbAdm::revision(50500);
-}
-
-
-//Fix a bug where the "password reminder" page was not unflagged as a special page when then zenario_extranet_password_reminder module was replaced
-if (ze\dbAdm::needRevision(50535)) {
-	ze\row::delete('special_pages', ['module_class_name' => 'zenario_extranet_password_reminder']);
-	ze\dbAdm::revision(50535);
-}
-
-
-//Migrate most of the extranet's special pages to plugin pages
-if (ze\dbAdm::needRevision(50790)) {
-	convertSpecialPageToPluginPage('zenario_change_email', 'zenario_extranet_change_email');
-	convertSpecialPageToPluginPage('zenario_change_password', 'zenario_extranet_change_password');
-	convertSpecialPageToPluginPage('zenario_logout', 'zenario_extranet_logout');
-	convertSpecialPageToPluginPage('zenario_password_reset', 'zenario_extranet_password_reset');
-	convertSpecialPageToPluginPage('zenario_profile', 'zenario_extranet_profile_edit');
-	convertSpecialPageToPluginPage('zenario_registration', 'zenario_extranet_registration');
-	
-	ze\dbAdm::revision(50790);
-}
-
-
-//Migrate the search results special page to a plugin page
-if (ze\dbAdm::needRevision(50795)) {
-	convertSpecialPageToPluginPage('zenario_search', 'zenario_search_results');
-	
-	ze\dbAdm::revision(50795);
-}
-
-
 //Rename a plugin setting used by slideshows
 if (ze\dbAdm::needRevision(53600)) {
 	renamePluginSetting(['zenario_slideshow', 'zenario_slideshow_simple'], 'mode', 'animation_library', $checkNonNestedPlugins = true, $checkNestedPlugins = true);
@@ -471,3 +420,12 @@ if (ze\dbAdm::needRevision(57130)) {
 	ze\dbAdm::revision(57130);
 }
 
+//Rename Advanced Search settings to have more sensible code names.
+if (ze\dbAdm::needRevision(57981)) {
+	if (ze\module::inc('zenario_advanced_search')) {
+		renamePluginSetting(['zenario_advanced_search'], 'show_private_items', 'search_private_items', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'hide_private_items', 'show_private_content_item_link_control', true, true);
+	}
+	
+	ze\dbAdm::revision(57981);
+}

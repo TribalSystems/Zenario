@@ -30,8 +30,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		
+		$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['meta_data/body'], true);
+	
 		//Try and ensure that we use absolute URLs where possible
-		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
+		ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
 		
 		
 		$files = [];

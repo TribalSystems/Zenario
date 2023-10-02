@@ -39,6 +39,8 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = ((bool) ze::setting('enable_display_categories_on_content_lists') && (bool) $this->setting('show_categories')), $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
+		$this->showInMenuMode();
+		
 		return true;
 	}
 	
@@ -72,43 +74,46 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			if ($writerId = ze\row::get('content_item_versions', 'writer_id', ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion])){
 				$writerArray = ze\row::get('writer_profiles', ['first_name', 'last_name', 'email', 'profile'], ['id' => (int) $writerId]);
 
-				$writerName = $writerArray['first_name'];
-				if ($writerArray['last_name']) {
-					$writerName .= ' ' . $writerArray['last_name'];
-				}
-				$this->mergeFields['Writer_name'] = ['value' => htmlspecialchars($writerName), 'html_tag' => $this->setting('writer_name_html_tag'), 'label' => $this->phrase('Writer name'), 'class' => 'writer_name'];
-				$this->showSections['show_writer_name'] = true;
+				//Do not attempt to display anything if the writer profile has been deleted.
+				if (!empty($writerArray) && is_array($writerArray)) {
+					$writerName = $writerArray['first_name'];
+					if ($writerArray['last_name']) {
+						$writerName .= ' ' . $writerArray['last_name'];
+					}
+					$this->mergeFields['Writer_name'] = ['value' => htmlspecialchars($writerName), 'html_tag' => $this->setting('writer_name_html_tag'), 'label' => $this->phrase('Writer name'), 'class' => 'writer_name'];
+					$this->showSections['show_writer_name'] = true;
 
-				if ($this->setting('show_writer_email')) {
-					$emailFormatted = '<a href="mailto:' . htmlspecialchars($writerArray['email']) . '">' . htmlspecialchars($writerArray['email']) . '</a>';
-					$this->mergeFields['Writer_email'] = ['value' => $emailFormatted, 'html_tag' => $this->setting('writer_email_html_tag'), 'label' => $this->phrase('Writer\'s email'), 'class' => 'writer_email'];
-					$this->showSections['show_writer_email'] = true;
-				}
+					if ($this->setting('show_writer_email')) {
+						$emailFormatted = '<a href="mailto:' . htmlspecialchars($writerArray['email']) . '">' . htmlspecialchars($writerArray['email']) . '</a>';
+						$this->mergeFields['Writer_email'] = ['value' => $emailFormatted, 'html_tag' => $this->setting('writer_email_html_tag'), 'label' => $this->phrase('Writer\'s email'), 'class' => 'writer_email'];
+						$this->showSections['show_writer_email'] = true;
+					}
 
-				if ($this->setting('show_writer_profile')) {
-					$this->mergeFields['Writer_profile'] = ['value' => $writerArray['profile'], 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
-					$this->showSections['show_writer_profile'] = true;
-				}
+					if ($this->setting('show_writer_profile')) {
+						$this->mergeFields['Writer_profile'] = ['value' => $writerArray['profile'], 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
+						$this->showSections['show_writer_profile'] = true;
+					}
 				
-				if ($this->setting('show_writer_image')) {
-					$sql = '
-						SELECT f.id, f.width, f.height, f.alt_tag
-						FROM '.DB_PREFIX.'content_item_versions v
-						INNER JOIN '.DB_PREFIX.'writer_profiles wp
-							ON v.writer_id = wp.id
-						INNER JOIN '.DB_PREFIX.'files f
-							ON wp.photo = f.id
-						WHERE v.id = '.(int)$this->cID.'
-							AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
-							AND v.version = '.(int)$this->cVersion;
-					$result = ze\sql::select($sql);
-					$file = ze\sql::fetchAssoc($result);
-					if (!empty($file)) {
-						$width = $height = $url = false;
-						ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
-						if ($url) {
-							$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
-							$this->showSections['show_writer_image'] = true;
+					if ($this->setting('show_writer_image')) {
+						$sql = '
+							SELECT f.id, f.width, f.height, f.alt_tag
+							FROM '.DB_PREFIX.'content_item_versions v
+							INNER JOIN '.DB_PREFIX.'writer_profiles wp
+								ON v.writer_id = wp.id
+							INNER JOIN '.DB_PREFIX.'files f
+								ON wp.photo = f.id
+							WHERE v.id = '.(int)$this->cID.'
+								AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
+								AND v.version = '.(int)$this->cVersion;
+						$result = ze\sql::select($sql);
+						$file = ze\sql::fetchAssoc($result);
+						if (!empty($file)) {
+							$width = $height = $url = false;
+							ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
+							if ($url) {
+								$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
+								$this->showSections['show_writer_image'] = true;
+							}
 						}
 					}
 				}
@@ -116,16 +121,43 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		}
 		
 		if ($this->setting('show_featured_image')) {
-			$sql = '
-				SELECT f.id, f.alt_tag, f.image_credit
-				FROM '.DB_PREFIX.'content_item_versions v
-				INNER JOIN '.DB_PREFIX.'files f
-					ON v.feature_image_id = f.id
-				WHERE v.id = '.(int)$this->cID.'
-					AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
-					AND v.version = '.(int)$this->cVersion;
-			$result = ze\sql::select($sql);
-			$file = ze\sql::fetchAssoc($result);
+			$featuredImageSource = $this->setting('featured_image_source');
+			$file = [];
+			
+			if ($featuredImageSource == 'current_content_item_feature_image') {
+				$sql = '
+					SELECT f.id, f.alt_tag, f.image_credit
+					FROM '.DB_PREFIX.'content_item_versions v
+					INNER JOIN '.DB_PREFIX.'files f
+						ON v.feature_image_id = f.id
+					WHERE v.id = '.(int)$this->cID.'
+						AND v.type = "'.ze\escape::asciiInSQL($this->cType).'"
+						AND v.version = '.(int)$this->cVersion;
+				$result = ze\sql::select($sql);
+				$file = ze\sql::fetchAssoc($result);
+			} elseif ($featuredImageSource == 'menu_node_or_parent_feature_image') {
+				//Check if the content item is in the menu
+				$contentItemMenu = ze\menu::getFromContentItem($this->cID, $this->cType);
+				if (is_array($contentItemMenu) && !empty($contentItemMenu)) {
+					$menuFeatureImageId = ze\menu::getMenuNodeFeatureImageId($contentItemMenu['id']);
+					if ($menuFeatureImageId) {
+						//If the content item is in the menu, and said menu uses a promo image, use that...
+						$file = ze\row::get('files', ['id', 'alt_tag', 'image_credit'], $menuFeatureImageId);
+					} else {
+						//...otherwise go up the chain to find a parent that does use a promo image.
+						$currentMenuId = $contentItemMenu['id'];
+						
+						while ($parentId = ze\menu::parentId($currentMenuId)) {
+							$currentMenuId = $parentId;
+							$parent = ze\menu::details($parentId);
+							if ($parentMenuFeatureImageId = ze\menu::getMenuNodeFeatureImageId($parentId)) {
+								$file = ze\row::get('files', ['id', 'alt_tag', 'image_credit'], $parentMenuFeatureImageId);
+								break;
+							}
+						}
+					}
+				}
+			}
 
 			//If there is no featured image, try to use the fallback image.
 			if (empty($file) && $this->setting('fall_back_to_default_image')) {
@@ -139,14 +171,24 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					'class' => 'sticky_image'
 				];
 				
-				$this->mergeFields['Featured_image']['Featured_Image_HTML'] =
-					ze\file::featureImageHTML(
-						$this->cID, $this->cType, $this->cVersion,
-						$this->setting('fall_back_to_default_image'), $this->setting('default_image_id'),
-						$this->setting('image_2_width'), $this->setting('image_2_height'),
-						$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
-						$file['alt_tag']
-					);
+				if ($featuredImageSource == 'current_content_item_feature_image') {
+					$this->mergeFields['Featured_image']['Featured_Image_HTML'] =
+						ze\file::featureImageHTML(
+							$this->cID, $this->cType, $this->cVersion,
+							$this->setting('fall_back_to_default_image'), $this->setting('default_image_id'),
+							$this->setting('image_2_width'), $this->setting('image_2_height'),
+							$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
+							$file['alt_tag']
+						);
+				} elseif ($featuredImageSource == 'menu_node_or_parent_feature_image') {
+					$cssRules = [];
+					$this->mergeFields['Featured_image']['Featured_Image_HTML'] =
+						ze\file::imageHTML(
+							$cssRules, true, $file['id'], $this->setting('image_2_width'), $this->setting('image_2_height'),
+							$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
+							$file['alt_tag'], '', '', '', ''
+						);
+				}
 				
 				if ($this->setting('show_image_credit')) {
 					if (empty($file['image_credit'])) {

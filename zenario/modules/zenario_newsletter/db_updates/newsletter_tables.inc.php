@@ -1094,7 +1094,7 @@ if (ze\dbAdm::needRevision(182)) {
 	ze\dbAdm::revision(182);
 }
 
-ze\dbAdm::revision( 184
+ze\dbAdm::revision(184
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
 	MODIFY COLUMN `date_created` datetime NULL DEFAULT NULL
@@ -1104,6 +1104,14 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
 	MODIFY COLUMN `hyperlink` text
+_sql
+
+);
+
+ze\dbAdm::revision(186
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ADD COLUMN `send_copy_to_admin_options` enum('myself', 'all_admins', 'none') NOT NULL DEFAULT 'myself' AFTER `sent_by_id`
 _sql
 
 );

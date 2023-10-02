@@ -119,8 +119,9 @@ foreach($this->frameworkFields as $name => $field) {
 	
 	} elseif (($field['pattern'] == 'screen_name' || $field['pattern'] == 'new_screen_name') && ($_POST[$name] ?? false)) {
 		if (!ze\ring::validateScreenName($_POST[$name] ?? false)) {
-			$this->errors[] = ['Error' => $this->phrase('_ERROR_INVALID_'. strtoupper($name))];
-		
+			$this->errors[] = ['Error' => $this->phrase('The screen name can contain only lower case letters a-z, capital letters A-Z, numbers 0-9, hyphens, underscores, and periods.')];
+		} elseif (strlen($_POST[$name] ?? false) > 50) {
+			$this->errors[] = ['Error' => $this->phrase('The screen name cannot be more than 50 characters long.')];
 		} elseif ($field['pattern'] == 'new_screen_name') {
 			if (ze\row::exists('users', ['screen_name' => ($_POST[$name] ?? false)])) {
 				$errorMessage = $this->setting('screen_name_in_use');

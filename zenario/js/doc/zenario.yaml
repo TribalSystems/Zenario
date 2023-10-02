@@ -1380,6 +1380,20 @@ pluginVisitorTUIXLink:
         </p><p>
             You can also pass in some GET requests, which will be added to the URL.
         </p>
+#readyPhrasesOnBrowser:
+#    summary: |
+#        A summary.
+#    desc: |
+#        <h2>Description</h2>
+#        <p>
+#            A summary.
+#        </p><p>
+#            More words.
+#        </p>
+#        <h2>Return Value</h2>
+#        <p>
+#            Nothing.
+#        </p>
 #recordRequestsInURL:
 #    summary: |
 #        A summary.
@@ -1440,20 +1454,6 @@ refreshSlot:
         <p>
             Nothing.
         </p>
-#registerPhrases:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
 removeClassesToColorbox:
     summary: |
         This function removes CSS class names from the currently open colorbox.

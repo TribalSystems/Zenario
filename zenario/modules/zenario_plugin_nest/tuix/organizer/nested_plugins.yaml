@@ -477,7 +477,7 @@ zenario__modules:
                         is_slide: true
                     multiple_select: true
                     disabled_if_for_all_selected_items: item.ordinal == 1
-                    disabled_tooltip: You cannot delete the first slide
+                    disabled_tooltip: You cannot delete the first slide. Re-order the slides to delete this one.
                     ajax:
                         confirm:
                             html: true

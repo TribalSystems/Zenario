@@ -123,6 +123,133 @@ class zenario_plugin_nest__organizer__nested_plugins extends zenario_plugin_nest
 		
 		//Find out the largest number of columns used on a layout, or just guess at 12 if there are no layouts yet
 		$maxCols = (int) ze\row::max('layouts', 'cols') ?: 12;
+		
+		
+		
+		
+		//Check where this plugin is used, and if it's in a slot that's narrower than full width
+		$isVersionControlled = (bool) $instance['content_id'];
+		if (!$isVersionControlled) {
+			
+			if ($panel['key']['isSlideshow']) {
+				$thisPlugin = ze\admin::phrase('slideshow');
+			} else {
+				$thisPlugin = ze\admin::phrase('nest');
+			}
+		
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_item_link AS pil
+				INNER JOIN ". DB_PREFIX. "content_items AS c
+				   ON c.id = pil.content_id
+				  AND c.type = pil.content_type
+				  AND pil.content_version IN (c.visitor_version, c.admin_version)
+				INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+				   ON v.id = pil.content_id
+				  AND v.type = pil.content_type
+				  AND v.version = pil.content_version
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.layout_id = v.layout_id
+				  AND lsl.slot_name = pil.slot_name
+				WHERE pil.instance_id = ". (int) $instance['instance_id'];
+			$cItemWidths = ze\sql::fetchValues($sql);
+		
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_layout_link AS pll
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.layout_id = pll.layout_id
+				  AND lsl.slot_name = pll.slot_name
+				WHERE pll.instance_id = ". (int) $instance['instance_id'];
+			$layoutWidths = ze\sql::fetchValues($sql);
+		
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_sitewide_link AS psl
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.slot_name = psl.slot_name
+				  AND lsl.is_header = 1
+				WHERE psl.instance_id = ". (int) $instance['instance_id'];
+			$headerWidths = ze\sql::fetchValues($sql);
+			
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_sitewide_link AS psl
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.slot_name = psl.slot_name
+				  AND lsl.is_footer = 1
+				WHERE psl.instance_id = ". (int) $instance['instance_id'];
+			$footerWidths = ze\sql::fetchValues($sql);
+			
+			$allWidths = array_unique(array_merge($cItemWidths, $layoutWidths, $headerWidths, $footerWidths));
+		
+			
+			$usedOn = [];
+			if (!empty($cItemWidths)) {
+				$usedOn[] = ze\admin::phrase('a content item');
+			}
+			if (!empty($layoutWidths)) {
+				$usedOn[] = ze\admin::phrase('a layout');
+			}
+			if (!empty($headerWidths)) {
+				$usedOn[] = ze\admin::phrase('the site-wide header');
+			}
+			if (!empty($footerWidths)) {
+				$usedOn[] = ze\admin::phrase('the site-wide footer');
+			}
+			
+			if (empty($allWidths)) {
+				$panel['notice'] = [
+					'show' => true,
+					'type' => 'warning',
+					'message' =>
+						ze\admin::phrase("This [[thisPlugin]] is not yet in a slot. Width options are shown for the largest slot on your site ([[maxCols]] columns), but some slots may be smaller so check the output once it’s in the desired slot.",
+							['thisPlugin' => $thisPlugin, 'maxCols' => $maxCols]
+						)
+				];
+				
+			} else {
+				$minWidth = min($allWidths);
+				$maxWidth = max($allWidths);
+				$maxCols = $maxWidth;
+				
+				if ($minWidth != $maxWidth) {
+					$panel['notice'] = [
+						'show' => true,
+						'type' => 'warning',
+						'message' =>
+							ze\admin::phrase("This [[thisPlugin]] is used on more than one slot, and/or is used on content items with more than one layout, which have different widths (between [[minWidth]] and [[maxWidth]] columns). You may need to check how it appears.",
+								['thisPlugin' => $thisPlugin, 'minWidth' => $minWidth, 'maxWidth' => $maxWidth]
+							)
+					];
+				
+				} else {
+					
+					if (count($usedOn) > 1) {
+						$panel['notice'] = [
+							'show' => true,
+							'type' => 'information',
+							'message' =>
+								ze\admin::phrase("This [[thisPlugin]] is in multiple slots, all of which are [[maxWidth]] columns wide. Plugin width selectors are shown accordingly.",
+									['thisPlugin' => $thisPlugin, 'maxWidth' => $maxWidth]
+								)
+						];
+					} else {
+						$panel['notice'] = [
+							'show' => true,
+							'type' => 'information',
+							'message' =>
+								ze\admin::phrase("This [[thisPlugin]] is in a slot on [[usedOn]] that is [[maxWidth]] columns wide. Plugin width selectors are shown accordingly.",
+									['thisPlugin' => $thisPlugin, 'usedOn' => implode('/', $usedOn), 'maxWidth' => $maxWidth]
+								)
+						];
+					}
+				}
+				
+			}
+		}
+		
+		
 		for ($i = 2; $i < $maxCols; ++$i) {
 			$label = ze\admin::phrase('[[cols]] cols', ['cols' => $i]);
 			

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="122px" height="104px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;">
+    <g id="Canvas_1">
+        <g id="Canvas_1_Layer_1">
+            <g id="Graphic_2">
+                <circle cx="60.75" cy="50" r="43.5" style="fill:rgb(1,48,145);"/>
+                <circle cx="60.75" cy="50" r="43.5" style="fill:none;stroke:rgb(1,48,145);stroke-width:9px;"/>
+            </g>
+            <g id="Graphic_11" transform="translate(0 -15)">
+                <path d="M60.75,44.5L65.296,58.492L80.009,58.492L68.106,67.14L72.653,81.133L60.75,72.485L48.847,81.133L53.394,67.14L41.491,58.492L56.204,58.492L60.75,44.5Z" style="fill:rgb(253,201,0);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

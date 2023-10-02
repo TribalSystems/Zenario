@@ -1,9 +1,0 @@
-bbcode2html.inc.php
-	Removed a html-escaping bug/Cross-Site-Scripting vulnerability
-	Added/modified the rules for some BBCode Tags to get this script working with the output from the TinyMCE/PunyMCE BBCode Plugins
-	Added options to enable/disable tags for colours, images, links and emoticons
-
-		Changed:
-			'halfhappy' => array(':/', '=/'),
-		To:
-			'halfhappy' => array('=/', '=\\', ':\\'),

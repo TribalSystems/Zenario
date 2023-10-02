@@ -36,6 +36,22 @@ zenario__administration:
                                 post_field_html: </div>
                                 visible_if: |
                                     item.type == 'other_system_field' && item.tuix_type != "pick_items"
+                            screen_names_site_setting_disabled:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Warning: screen names are not enabled in site settings. Please go to the <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target="_blank">Users and contacts</a> site setting to enable screen names.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.dataset == 'users' && item.field_name == 'screen_name' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
+                            users_linked_countries_site_setting_disabled:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Warning: Country-based permissions are not enabled in site settings. Please go to the <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tcountries~k{"id"%3A"users"}' target="_blank">Users and contacts</a> site setting to enable country-based permissions.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.dataset == 'users' && item.field_name == 'linked_countries' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
                             label:
                                 label: 'Label:'
                                 type: text
@@ -97,6 +113,12 @@ zenario__administration:
                                 type: checkbox
                                 visible_if: |
                                     lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item._just_added)) || item.allow_admin_to_change_export)
+                            export_disabled:
+                                label: Exporting country-based permissions is not available
+                                type: checkbox
+                                readonly: true
+                                visible_if: |
+                                    item.dataset == 'users' && item.field_dependent_on_a_site_setting
                             autocomplete:
                                 label: Autocomplete
                                 type: checkbox

@@ -71,6 +71,22 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 			$imageIds = array_unique($imageIds);
 		}
 		
+		$addFullDetails = ze::in($mode, 'full', 'quick', 'select');
+		
+		if ($addFullDetails) {
+			foreach ($panel['items'] as $id => &$item) {
+				if (isset($item['privacy'])) {
+					if ($item['privacy'] == 'auto') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] will auto-detect whether it is public or private. (When first used on a published content item, it will become public if the content item is public, or become private if the content item is private.)', ['name' => htmlspecialchars($item['filename'])]);
+					} elseif ($item['privacy'] == 'private') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They will not be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
+					} elseif ($item['privacy'] == 'public') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (The URL for the image will stay the same, and may be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
+					}
+				}
+			}
+		}
+		
 		foreach ($panel['items'] as $id => &$item) {
 			$item['in_use_anywhere'] = in_array($id, $imageIds);
 
@@ -151,6 +167,21 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 					ze\file::addToDatabase('image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, false, false, false, false, $file['image_credit']);
 				}
 			}
+
+		//Mark images as public
+		} elseif (ze::post('mark_as_public') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
+				ze\row::update('files', ['privacy' => 'public'], $id);
+				ze\file::addPublicImage($id);
+			}
+
+		//Mark images as private
+		} elseif (ze::post('mark_as_private') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
+				ze\row::update('files', ['privacy' => 'private'], $id);
+				ze\file::deletePublicImage($id);
+			}
+			
 		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\contentAdm::deleteUnusedImage($id);

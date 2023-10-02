@@ -31,8 +31,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_password_reset extends zenario_extranet {
 	
 	public function init() {
-		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
-		ze::requireJsLib('zenario/js/password_functions.min.js');
+		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		$this->requireJsLib('zenario/js/password_functions.min.js');
 
 		$this->registerPluginPage();
 		
@@ -43,7 +43,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		
 		$this->mode = 'modeResetPasswordStage1';
 		
-		ze::requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
 		
 		if (ze::post('extranet_send_reset_email')) {
 			
@@ -136,11 +136,15 @@ class zenario_extranet_password_reset extends zenario_extranet {
 				if ($userDetails['status'] == 'active') {
 					ze\userAdm::updateHash($userDetails['id']);
 					ze\row::update('users', ['reset_password_time' => ze\date::now()], ['id' => $userDetails['id']]);
-					$userDetails = ze\user::details($userDetails['id']);
-					$userDetails['cms_url'] = ze\link::absolute();
-					$userDetails['reset_url'] = static::getExtranetPasswordResetLink($userDetails['id'], $this->cID, $this->cType);
 					
-					if (ze\module::inc('zenario_email_template_manager')){
+					$userId = $userDetails['id'];
+					
+					$userDetails = ze\user::userDetailsForEmails($userId);
+					$userDetails['cms_url'] = ze\link::absolute();
+					$userDetails['reset_url'] = static::getExtranetPasswordResetLink($userId, $this->cID, $this->cType);
+					
+					if (ze\module::inc('zenario_email_template_manager')) {
+						
 						if (zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,[])){
 							return true;
 						} else {

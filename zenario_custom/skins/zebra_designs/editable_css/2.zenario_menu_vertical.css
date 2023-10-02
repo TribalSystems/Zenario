@@ -87,6 +87,10 @@
 
 .zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title {
 	background:#2a98ce;
+}
+
+.zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title,
+.zenario_menu_vertical__default_style .wrap_menu_inner h2.side_menu_title a {
 	color:#fff;
 }
 

@@ -58,24 +58,24 @@ if (!empty($slotContents) && is_array($slotContents)) {
 	
 	//Loop through all of the slots
 	$activeModules = [];
-	foreach ($slotContents as $slotName => &$instance) {
+	foreach ($slotContents as $slotName => &$slot) {
 		
 		//Only output slot controls for non-nested Plugins.
-		if (!empty($instance['egg_id'])) {
+		if ($slot->eggId()) {
 			continue;
 		}
 		
 		$compatibilityClassNames = [];
-		$level = (int) ($instance['level'] ?? false);
-		$isVersionControlled = !empty($instance['content_id']);
+		$level = (int) $slot->level();
+		$isVersionControlled = $slot->isVersionControlled();
 		$containerId = 'plgslt_'. $slotName;
 		
 		//Check the meta-info for slots in the header and footer.
-		$isHeader = !empty($instance['is_header']);
-		$isFooter = !empty($instance['is_footer']);
+		$isHeader = $slot->isHeader();
+		$isFooter = $slot->isFooter();
 		$isSitewide = $isHeader || $isFooter;
 		
-		if ($empty = empty($instance['instance_id'])) {
+		if ($empty = !$slot->instanceId()) {
 			//If the slot is empty, use a copy of the array from above
 			if ($isSitewide) {
 				$tags = $swTagsEmpty;
@@ -89,10 +89,10 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		
 		} else {
 			//If the slot is not empty, call \ze\tuix::load() each time to get the tags for that Module
-			$moduleId = $instance['module_id'];
-			$instanceId = $instance['instance_id'];
+			$moduleId = $slot->moduleId();
+			$instanceId = $slot->instanceId();
 			
-			foreach (\ze\module::inheritances($instance['class_name'], 'inherit_settings') as $className) {
+			foreach (\ze\module::inheritances($slot->moduleClassName(), 'inherit_settings') as $className) {
 				$compatibilityClassNames[$className] = $className;
 			}
 			
@@ -144,8 +144,8 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		
 		//Call fillAdminSlotControls(), which is like fillAllAdminSlotControls() but lets a specific Plugin
 		//alter its own controls, in an environment where it has access to its own Plugin Settings
-		if (isset($slotContents[$slotName]['class']) && !empty($slotContents[$slotName]['class'])) {
-			$slotContents[$slotName]['class']->fillAdminSlotControls($tags);
+		if ($slotContents[$slotName]->class()) {
+			$slotContents[$slotName]->class()->fillAdminSlotControls($tags);
 		}
 		
 		foreach ($sections as $section) {
@@ -254,7 +254,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		}
 		
 		//Add a css class around slots that are being edited using the WYSIWYG Editor
-		if ($slotContents[$slotName]['class']->beingEdited()) {
+		if ($slotContents[$slotName]->beingEdited()) {
 			$slotWrapperClass .= ' zenario_slot_being_edited';
 			$showSlotInEditMode = true;
 		}

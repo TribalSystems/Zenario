@@ -14,6 +14,57 @@ zenario_setup_language:
                 priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                 enabled: Yes
             fields:
+                default_language_info_snippet:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                Default language for this site
+                            </div>
+                            
+                            <p>
+                                [[language_english_name]] [[is_or_will_be]] the default language for this site. All web pages will include its ISO code, [[iso_code]].
+                            </p>
+
+                            <p>
+                                If the site has more than one enabled language, you may make a translation of each content item into the secondary languages.
+                                The content items are related via a "translation chain", as they are likely to contain equivalent content.
+                            </p>
+
+                            <p>
+                                Zenario can create "phrases" for words or sentences that appear in certain plugins that appear on web pages (such as Banner plugins).
+                                It also does this for phrases included in modules' program code.
+                            </p>
+
+                            <p>
+                                To create phrases, look for the "Uses phrases" icon on the settings panel of the plugin. The plugin must be on a page for which a non-[[language_english_name]] translation exists.
+                                When that content item is viewed, a phrase is created in the database, and can be seen in the phrases panel.
+                                You can find all phrases there, and enter translations for them into the site's other languages.
+                            </p>
+                    visible_if: |
+                        zenarioAB.tuix.key.id && (!zenarioA.siteSettings.default_language || zenarioAB.tuix.key.id == zenarioA.siteSettings.default_language)
+                secondary_language_info_snippet:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                               Secondary language
+                            </div>
+                             
+                            <p>
+                                [[language_english_name]] [[is_or_will_be]] a language of this site. All web pages will include its ISO code, [[iso_code]].
+                            </p>
+
+                            <p>
+                                Zenario can create "phrases" for words or sentences that appear in certain plugins that appear on web pages (such as Banner plugins).
+                            </p>
+
+                            <p>
+                                To create phrases, edit a plugin on a content item in the default language ([[default_language_english_name]]), and look for the "Uses phrases" icon on the settings panel of the plugin.
+                                The plugin must be on a page for which a translation in [[language_english_name]] exists.
+                                When the content item on which the plugin is placed is viewed (by an administrator or a visitor) a phrase is created in the phrases panel.
+                                You can find all phrases there, and either enter translations for them, or export them as a spreadsheet to send to a translator, for subsequent import back into the panel.
+                            </p>
+                    visible_if: |
+                        zenarioAB.tuix.key.id && (zenarioA.siteSettings.default_language && zenarioAB.tuix.key.id != zenarioA.siteSettings.default_language)
                 english_name:
                     label: 'Language English Name:'
                     type: text
@@ -31,6 +82,28 @@ zenario_setup_language:
                     side_note: >
                         The name of the language, in its local tongue. This will be
                         displayed to visitors.
+                
+                translate_phrases:
+                    type: checkbox
+                    readonly: true
+                    label: 'Use phrases system'
+                    show_phrase_icon: true
+                uses_phrases:
+                    same_row: true
+                    note_below: |
+                        Phrases are chunks of text, defined in plugin settings, Twig frameworks, and PHP program files.
+                        They are originally in English as Zenario was developed in English, but you can create
+                        translations of phrases into other languages.
+                        When Zenario goes to display a phrase, it looks to see if a translation exists and displays
+                        that if it can. Phrases are managed in the <em>Phrases</em> panel in Organizer.
+                doesnt_use_phrases:
+                    same_row: true
+                    note_below: |
+                        Phrases are chunks of text, defined in plugin settings, Twig frameworks, and PHP program files.
+                        They are originally in English as Zenario was developed in English, but you can create
+                        translations of phrases into other languages.
+                        When Zenario goes to display a phrase, it looks to see if a translation exists and displays
+                        that if it can. Phrases are managed in the <em>Phrases</em> panel in Organizer.
                 flag_filename:
                     label: 'Flag CSS class name:'
                     type: text
@@ -42,7 +115,7 @@ zenario_setup_language:
                     side_note: |
                         Any language picker plugins will use this CSS class name when they try to show a flag.
                     validation:
-                        required: Please enter a class name
+                        required: Please enter a class name.
                 
                 language_picker_logic:
                     label: Visibility in language pickers
@@ -74,27 +147,6 @@ zenario_setup_language:
                         Enter one or more language codes, separate multiple codes with a comma.
                     visible_if: "zenarioAB.value('detect')"
                     indent: 1
-                translate_phrases:
-                    type: checkbox
-                    readonly: true
-                    label: 'Use phrases system'
-                uses_phrases:
-                    same_row: true
-                    note_below: |
-                        Phrases are pieces of English text that can be found in plugin settings,
-                        twig frameworks, and PHP files.
-                        When Zenario comes across these, it will look to see if you've created
-                        a translation in the <em>Phrases</em> panel in Organizer, and will display the
-                        translation instead of the original English text.
-                doesnt_use_phrases:
-                    same_row: true
-                    note_below: |
-                        Phrases are pieces of English text that can be found in plugin settings,
-                        twig frameworks, and PHP files.
-                        Were Zenario displaying a non-English language, it would look to see if you've
-                        created a translation in the <em>Phrases</em> panel in Organizer.
-                        For English languages, phrases will be displayed "as-is", with one exception:
-                        If a phrase starts with an underscore it will always be looked up.
                 
                 search_type:
                     label: 'Search algorithm:'
@@ -165,5 +217,3 @@ zenario_setup_language:
                 sync_assist:
                     type: checkbox
                     label: 'Show an orange background colour in Organizer where a translation is missing in this language.'
-                        
-                        

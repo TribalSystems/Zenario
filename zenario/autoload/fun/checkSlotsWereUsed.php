@@ -29,11 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 $first = true;
-foreach (\ze::$slotContents as $slot => &$details) {
-	if (!isset($details['used']) && !isset($details['error'])
-	 && isset($details['instance_id']) && $details['instance_id']
-	 && isset($details['class']) && $details['class']
-	 && empty($details['egg_id'])) {
+foreach (\ze::$slotContents as $slotName => &$slot) {
+	if (!$slot->used()
+	 && !$slot->error()
+	 && $slot->instanceId()
+	 && $slot->class()
+	 && !$slot->eggId()
+	) {
 		
 		if ($first) {
 			$first = false;
@@ -45,13 +47,13 @@ foreach (\ze::$slotContents as $slot => &$details) {
 					'</p>';
 		}
 		
-		$unusedSlot = \ze\plugin::slot($slot);
+		$unusedSlot = \ze\plugin::slot($slotName);
 			echo '<div class="slot zenario_missing_slot">';
 				$unusedSlot->show();
 			echo '</div>';
 		$unusedSlot->end();
 		
-		\ze::$slotContents[$slot]['missing'] = true;
+		$slot->flagAsMissing();
 	}
 }
 

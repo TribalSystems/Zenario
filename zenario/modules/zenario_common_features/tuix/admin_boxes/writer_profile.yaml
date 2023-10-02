@@ -86,6 +86,7 @@ zenario_writer_profile:
                 profile:
                     label: 'Profile:'
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
                     editor_options:
                         convert_urls: false
@@ -101,8 +102,6 @@ zenario_writer_profile:
                             min_path: 'zenario__library/panels/image_library'
                             max_path: 'zenario__library/panels/image_library'
                             disallow_refiners_looping_on_min_path: true
-                    insert_link_button:
-                        exists: true
                 post_count: 
                     label: "Post count:"
                     type: text

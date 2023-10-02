@@ -11,6 +11,7 @@
 	z-index:19;
 	display:inline-block;
 	margin:auto;
+	overflow:hidden;
 }
 
 .zenario_slideshow .nest_wrap,

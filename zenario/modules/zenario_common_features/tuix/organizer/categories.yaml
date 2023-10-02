@@ -7,7 +7,7 @@ zenario__library:
             panel_type: multi_line_list
             css_class: two_line_list_panel
             use_tall_rows: true
-            no_items_message: No categories found.
+            no_items_message: There are no content item categories.
             db_items:
                 table: '[[DB_PREFIX]]categories AS cat'
                 custom_where_statement_top_level: WHERE cat.parent_id = 0
@@ -21,7 +21,7 @@ zenario__library:
                 name: Category
                 names: Categories
                 css_class: zenario_category_icon
-                tooltip_when_link_is_active: 'View sub-categories of "[[name]]".'
+                tooltip_when_link_is_active: 'View sub-categories of "[[name]]"'
                 link:
                     path: zenario__library/panels/categories
                     refiner: parent_category

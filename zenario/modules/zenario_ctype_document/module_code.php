@@ -288,10 +288,10 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		}
 		
 		if ($this->setting('show_permalink')) {
-			ze::requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
+			$this->requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
 
 			if (!ze::isAdmin()) {
-				ze::requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
+				$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 			}
 		}
 		
@@ -351,7 +351,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			//Extra option available if the "Document content type: extra data"
 			//module is running.
 			if (!ze\module::isRunning('zenario_ctype_document_extra_data')) {
-				unset($fields['first_tab/show_document_extra_data']);
+				unset($box['tabs']['first_tab']['fields']['show_document_extra_data']);
 			}
 		} elseif ($path == 'zenario_content') {
 			if ($box['key']['cID'] && $box['key']['cType'] && ($box['key']['cType'] == 'document') && $box['key']['cVersion']) {

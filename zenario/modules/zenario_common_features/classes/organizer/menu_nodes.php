@@ -50,7 +50,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			unset($panel['columns']['sync_assist']);
 			unset($panel['columns']['translations']);
 			unset($panel['item_buttons']['zenario_trans__view']);
-			unset($panel['item_buttons']['citems_translations']);
+			unset($panel['item_buttons']['linked_content_item__translations']);
 		} else {
 			$syncAssistLangs = ze\row::getValues('languages', 'id', ['sync_assist' => 1, 'id' => ['!' => ze::$defaultLang]]);
 			if ($this->numSyncAssistLangs = count($syncAssistLangs)) {
@@ -58,6 +58,12 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			} else {
 				unset($panel['columns']['sync_assist']);
 			}
+		}
+		
+		if (ze::in($mode, 'full', 'quick', 'select')) {
+			//Note down which content types have categories
+			$panel['custom__content_types_with_categories'] =
+				ze\ray::valuesToKeys(ze\row::getValues('content_types', 'content_type_id', ['enable_categories' => 1]));
 		}
 	}
 	
@@ -232,7 +238,6 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				} else {
 					$item['tooltip'] = ze\admin::phrase("This is a secondary menu node. There's a primary menu node that also links to this content item.");
 				}
-	
 			} elseif ($item['target_loc'] == 'doc' && $item['document_id']) {
 				if ($item['redundancy'] == 'unique') {
 					$item['tooltip'] = ze\admin::phrase('This is a unique menu node. No other menu node links to this document.');
@@ -248,6 +253,14 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$item['tooltip'] = ze\admin::phrase('This menu node has no link. Unlinked menu nodes are hidden from visitors unless they have a child menu node that is visible.');
 			}
 			
+			if ($item['restrict_child_content_types']) {
+				$contentTypeDetails = ze\contentAdm::cTypeDetails($item['restrict_child_content_types']);
+				$item['tooltip'] .= '<br /><br />' . ze\admin::phrase(
+					'By default, [[suggested_content_type]] content items will be created under this node.',
+					['suggested_content_type' => $contentTypeDetails['content_type_name_en']]
+				);
+			}
+		
 			if ($item['children']) {
 				// T11769: Added grand child logic for delete menu node.
 				$Child = ze\row::get('menu_nodes', ['id'], array('parent_id' => $item['mid'])); ;
@@ -395,6 +408,11 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				
 				//content item status...
 				$menuContentItem['latest_version'] = ze\content::latestVersion($menuContentItem['content_id'], $menuContentItem['content_type']);
+				$linkedItemTagId = $menuContentItem['content_type'] . '_' . $menuContentItem['content_id'];
+				$item['linked_content_item_type'] = $menuContentItem['content_type'];
+				$item['linked_content_item_tag_id'] = $linkedItemTagId;
+				$item['navigation_path'] = 'zenario__content/panels/content/refiners/content_type//' . $menuContentItem['content_type'] . '//' . $linkedItemTagId;
+				
 				$menuContentItemStatus = ze\row::get('content_items', 'status', ['id' => $menuContentItem['content_id'], 'type' => $menuContentItem['content_type']]);
 				$item['linked_content_item_status'] = ze\contentAdm::getItemIconClass($menuContentItem['content_id'], $menuContentItem['content_type'], true, $menuContentItemStatus);
 				$item['linked_content_item_status_label'] = ze\contentAdm::statusPhrase($menuContentItemStatus);
@@ -427,10 +445,12 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 
 				$item['row_class'] .= ' privacy_' . $menuContentItemPrivacyAndLocation['privacy'];
 
+				$versionData = ze\row::get('content_item_versions', true, ['id' => $menuContentItem['content_id'], 'type' => $menuContentItem['content_type'], 'version' => $menuContentItem['latest_version']]);
+				
 				//content item pinned status...
 				if (in_array($menuContentItem['content_type'], $pinningEnabled)) {
 					$item['linked_content_item_allow_pinning'] = true;
-					$item['linked_content_item_pinned'] = ze\row::get('content_item_versions', 'pinned', ['id' => $menuContentItem['content_id'], 'type' => $menuContentItem['content_type'], 'version' => $menuContentItem['latest_version']]);
+					$item['linked_content_item_pinned'] = $versionData['pinned'];
 				} else {
 					$item['linked_content_item_allow_pinning'] = false;
 				}
@@ -441,6 +461,27 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					$item['linked_content_item_categories_count'] = ze\row::count('category_item_link', ['equiv_id' => $menuContentItem['equiv_id'], 'content_type' => $menuContentItem['content_type']]);
 				} else {
 					$item['linked_content_item_categories_enabled'] = false;
+				}
+				
+				//content item Head and Foot HTML.
+				if ($versionData['head_html']) {
+					$item['head_html_populated'] = true;
+				} else {
+					$item['head_html_populated'] = false;
+				}
+				
+				if ($versionData['foot_html']) {
+					$item['foot_html_populated'] = true;
+				} else {
+					$item['foot_html_populated'] = false;
+				}
+				
+				if (ze\contentAdm::allowHide($menuContentItem['content_id'], $menuContentItem['content_type'])) {
+					$item['linked_content_item_can_be_hidden'] = true;
+				}
+				
+				if (ze\contentAdm::allowTrash($menuContentItem['content_id'], $menuContentItem['content_type'])) {
+					$item['linked_content_item_can_be_trashed'] = true;
 				}
 			}
 		}
@@ -454,7 +495,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
         foreach($enabledContentTypes as $content){
 
             $j++;
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en'];
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Level 1 menu node with ".$content['content_type_name_en'];
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM';
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true;
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_dropdown';
@@ -463,7 +504,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			$panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['id_is_parent_menu_node_id'] = 1;
 			$panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['id'] = $panel['key']['sectionId'];
 
-			$panel['item_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node and ".$content['content_type_name_en'];
+			$panel['item_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node with ".$content['content_type_name_en'];
             $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM';
             $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true;
             $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_child_dropdown';
@@ -640,6 +681,32 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			ze\menuAdm::save($submission, $newId);
 			
 			return $newIds;
+		} elseif (ze::post('create_draft_by_copying') && ze\priv::check('_PRIV_EDIT_DRAFT')) {
+			$sourceCID = $sourceCType = false;
+			//Edit an existing Content Item based on its Menu Node
+			$sourceCID = $sourceCType = false;
+			
+			$menuContentItem = ze\menu::getContentItem($ids);
+			$menuContentItemTagId = $menuContentItem['content_type'] . '_' . $menuContentItem['equiv_id'];
+			if (ze\content::getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
+			 && ($content = ze\row::get('content_items', ['id', 'type', 'status'], ['tag_id' => $menuContentItemTagId]))
+			 && (ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']))) {
+				$hasDraft =
+					$content['status'] == 'first_draft'
+				 || $content['status'] == 'published_with_draft'
+				 || $content['status'] == 'hidden_with_draft'
+				 || $content['status'] == 'trashed_with_draft';
+		
+				if (!$hasDraft || ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
+					if ($hasDraft) {
+						ze\contentAdm::deleteDraft($content['id'], $content['type'], false);
+					}
+			
+					$cVersionTo = false;
+					ze\contentAdm::createDraft($content['id'], $sourceCID, $content['type'], $cVersionTo);
+				}
+			}
+
 		}
 	}
 	

@@ -50,5 +50,6 @@ ze::$editions = [
 	'zenario_common_features',
 	
 	//A list other modules that aren't "edition" modules, but use some of their hooks/features
-	'assetwolf_2'
+	'assetwolf_2',
+	'zenario_conference_manager'
 ];

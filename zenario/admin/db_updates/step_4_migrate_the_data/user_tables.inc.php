@@ -42,3 +42,45 @@ if (ze\dbAdm::needRevision(56501) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_P
 	ADD COLUMN `timer_template_id` int unsigned NOT NULL DEFAULT '0' AFTER `role_id`
 _sql
 );
+
+//Remove spaces from screen names
+if (ze\dbAdm::needRevision(57770)) {
+	$sql = "
+		SELECT id, screen_name
+		FROM " . DB_PREFIX . "users
+		WHERE status <> 'contact'
+		AND screen_name <> ''";
+	$result = ze\sql::select($sql);
+
+	while ($row = ze\sql::fetchAssoc($result)) {
+		if ($row['screen_name']) {
+			$screenNameWithoutSpaces = str_replace(' ', '', $row['screen_name']);
+		
+			//If the new screen name after removing the spaces happens to be identical to an already existing screen name used by another user,
+			//add a few numbers to differentiate. Check if the resulting screen name is unique.
+			if (ze\row::exists('users', ['screen_name' => $screenNameWithoutSpaces, 'id' => ['!' => $row['id']]])) {
+				$screenNameIsNotUnique = true;
+				do {
+					$number = rand(0, 999);
+					if (!ze\row::exists('users', ['screen_name' => $screenNameWithoutSpaces . $number])) {
+						$screenNameIsNotUnique = false;
+					}
+				} while ($screenNameIsNotUnique);
+				
+				$updateSql = "
+					UPDATE " . DB_PREFIX . "users
+					SET screen_name = '" . ze\escape::sql($screenNameWithoutSpaces . $number) . "'
+					WHERE id = " . (int) $row['id'];
+			} else {
+				$updateSql = "
+					UPDATE " . DB_PREFIX . "users
+					SET screen_name = REPLACE(screen_name, ' ', '')
+					WHERE id = " . (int) $row['id'];
+			}
+		
+			ze\sql::update($updateSql);
+		}
+	}
+	
+	ze\dbAdm::revision(57770);
+}

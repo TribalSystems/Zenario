@@ -641,7 +641,7 @@ plugin_settings:
                         name: screen_name_in_use
                     label: 'If the screen name is already used:'
                     type: text
-                    value: 'This Screen Name is already in use on this site. Please choose another one.'
+                    value: 'This screen name is already in use on this site. Please choose another one.'
                     show_phrase_icon: true
                 no_new_password_error_text:
                     label: 'If no new password is entered:'

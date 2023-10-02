@@ -41,27 +41,12 @@ $isAdmin = \ze::isAdmin();
 $css_wrappers = \ze::setting('css_wrappers');
 
 
-//Some IE specific fixes
-echo '
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">';
-
-//In admin mode, if this is IE, require 11 or later. Direct 10 and earlier to the compatibility mode page.
-if (strpos($httpUserAgent, 'MSIE') === false) {
-	$oldIE = $notSupportedInAdminMode = false;
-
-} else {
-	$oldIE = strpos($httpUserAgent, 'MSIE 6') !== false
-		|| strpos($httpUserAgent, 'MSIE 7') !== false
-		|| strpos($httpUserAgent, 'MSIE 8') !== false;
-
-	$notSupportedInAdminMode = $oldIE
-		|| strpos($httpUserAgent, 'MSIE 9') !== false
-		|| strpos($httpUserAgent, 'MSIE 10') !== false;
-	
-	if ($isWelcome || $isAdmin) {
-		echo '
+//In admin mode, completely reject anything that looks like Internet Explorer, and
+//direct them to the compatibility mode page.
+if ($isWelcome || $isAdmin) {
+	echo '
 <script type="text/javascript">
-	if (typeof JSON === "undefined" || ', \ze\ring::engToBoolean($notSupportedInAdminMode), ') {
+	if (typeof JSON === "undefined" || ', \ze\ring::engToBoolean(\ze\cache::browserIsIE()), ') {
 		document.location = "',
 			\ze\escape::js(
 				\ze\link::absolute().
@@ -71,10 +56,9 @@ if (strpos($httpUserAgent, 'MSIE') === false) {
 		'";
 	}
 </script>';
-	}
 }
 
-if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcome && !$oldIE)) {
+if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcome)) {
 	$prefix = $absURL. 'zenario/';
 }
 
@@ -89,12 +73,12 @@ if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	$JavaScriptOnPage = [];
 	$themesOnPage = [];
 	
-	foreach(\ze::$slotContents as &$instance) {
+	foreach(\ze::$slotContents as &$slot) {
 		
-		if (isset($instance['class_name']) && !empty($instance['class'])) {
-			if (empty($JavaScriptOnPage[$instance['class_name']])) {
-				$JavaScriptOnPage[$instance['class_name']] = true;
-				\ze::$pluginJS .= $comma. $instance['module_id'];
+		if ($slot->moduleClassName() && $slot->class()) {
+			if (empty($JavaScriptOnPage[$slot->moduleClassName()])) {
+				$JavaScriptOnPage[$slot->moduleClassName()] = true;
+				\ze::$pluginJS .= $comma. $slot->moduleId();
 				$comma = ',';
 			}
 		}
@@ -132,6 +116,19 @@ if ($isWelcome || ($isOrganizer && \ze::setting('organizer_favicon') == 'zenario
 }
 
 
+//Depending on the site settings, include Font Awesome.
+//(Though in admin mode, always include it.)
+$useFA = \ze::setting('lib.fontawesome');
+
+if ($useFA == 'bc') {
+	echo '
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/fontawesome.wrapper.css.php?', $w, '"/>';
+
+} elseif ($useFA || $isWelcome || $isAdmin) {
+	echo '
+<link rel="stylesheet" type="text/css" href="', $prefix, 'libs/yarn/@fortawesome/fontawesome-free/css/all.min.css?', $w, '"/>';
+}
+
 
 //Add CSS needed for the CMS in Admin mode
 if ($isWelcome || $isAdmin) {
@@ -142,7 +139,7 @@ if ($isWelcome || $isAdmin) {
 	
 	echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.css?', $v, '"/>
-<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/print.min.css"/>';
+<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/admin_print.min.css?', $v, '"/>';
 	
 	//Add the CSS for admin mode... unless this is a layout preview
 	if ($mode != 'layout_preview') {
@@ -174,29 +171,43 @@ if ($isWelcome || $isAdmin) {
 	}
 }
 
-//Add the CSS for a skin, if there is a skin, and add CSS needed for any Module Swatches on the page
-if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappers == 'visitors_only' && !$isAdmin))) {
+
+//Include the layout.
+//This is only a few K in size, so In Zenario 9.5 I'm going to try simply inlining this to avoid an extra request or combining it with the skin.
+if (\ze::$layoutId && ($minFile = \ze\content::layoutCssPath(\ze::$layoutId))) {
+	echo '
+<style type="text/css">', file_get_contents(CMS_ROOT. $minFile), '</style>';
+}
+
+//Add the CSS for a skin, if there is a skin
+if (\ze::$skinId) {
 	
-	//If wrappers are enabled, link to skin.cache_wrapper.css.php
+	//Check if wrappers are enabled for skins.
 	//(Note that wrappers are forced off when viewing a preview of layouts/CSS.)
-	if (\ze::$skinId || \ze::$layoutId) {
-		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/skin.cache_wrapper.css.php?', $v, '&amp;id=', (int) \ze::$skinId, '&amp;layoutId=', (int) \ze::$layoutId, '"/>
-<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/skin.cache_wrapper.css.php?', $v, '&amp;id=', (int) \ze::$skinId, '&amp;print=1', '"/>';
-	}
+	if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappers == 'visitors_only' && !$isAdmin))) {
 	
-} else {
+		//Check if we have a minified version of the skin and use that if possible.
+		//However we should only use a minified version if the skin files have not had any changes since the minified version was created.
+		//(The timestamp is part of the filename to make this easy to check.)
+		if (($sv = \ze::setting('css_skin_version'))
+		 && (file_exists(CMS_ROOT. ($skinPath = 'public/css/skin_'. (int) \ze::$skinId. '/'. $sv. '.min.css')))) {
+			echo '
+<link rel="stylesheet" type="text/css" href="', $absURL. $skinPath, '"/>';
 	
-	if (\ze::$skinId || \ze::$layoutId) {
+		//Otherwise link to skin.cache_wrapper.css.php to generate a non-minified version
+		} else {
+			echo '
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/skin.cache_wrapper.css.php?', $v, '&amp;id=', (int) \ze::$skinId, '"/>';
+		}
+	
+	} else {
 		
 		//Watch out for the variables from the CSS preview, and translate them to the format
 		//needed by \ze\wrapper::includeSkinFiles() if we see them there.
 		$overrideCSS = false;
-		$overridePrintCSS = false;
 		if ($overrideFrameworkAndCSS !== false) {
 			$files = [];
 			$overrideCSS = [];
-			$overridePrintCSS = [];
 			
 			$tabs = [
 				'this_css_tab',
@@ -241,32 +252,23 @@ if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappe
 					case 'tinymce.css':
 						break;
 					
-					case 'print.css':
-					case 'stylesheet_print.css':
-						$overridePrintCSS[] = [$file, $contents];
-						break;
-					
 					default:
 						$overrideCSS[] = [$file, $contents];
 				}
 			}
 		}
 		
-		$req = ['id' => (int) \ze::$skinId, 'print' => '', 'layoutId' => \ze::$layoutId];
-		\ze\wrapper::includeSkinFiles($req, $v, $overrideCSS);
-		
-		$req = ['id' => (int) \ze::$skinId, 'print' => '1'];
-		\ze\wrapper::includeSkinFiles($req, $v, $overridePrintCSS);
+		\ze\wrapper::includeSkinFiles(\ze::$skinId, $v, $overrideCSS);
 	}
 }
 
 //Are there modules on this page..?
 if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
 	//Include the Head for any plugin instances on the page, if they have one
-	foreach(\ze::$slotContents as $slotName => &$instance) {
-		if (!empty($instance['class'])) {
+	foreach(\ze::$slotContents as $slotName => &$slot) {
+		if ($slot->class()) {
 			\ze\plugin::preSlot($slotName, 'addToPageHead');
-				$instance['class']->addToPageHead();
+				$slot->class()->addToPageHead();
 			\ze\plugin::postSlot($slotName, 'addToPageHead');
 		}
 	}
@@ -316,6 +318,18 @@ if ($isAdmin) {
 if (\ze::$cID && \ze::$cID !== -1) {
 	$itemHTML = $templateHTML = $familyHTML =
 	$bgWidth = $bgHeight = $bgURL = false;
+	
+
+	//Include the site-wide head first
+	ze\content::sitewideHTML('sitewide_head');
+
+	if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'head') {
+		ze\content::sitewideHTML('sitewide_analytics_html');
+	}
+	if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'head') {
+		ze\content::sitewideHTML('sitewide_social_media_html');
+	}
+	
 	
 	//Look up the background image and any HTML to add to the HEAD from the content item
 	$sql = "
@@ -422,7 +436,3 @@ if (\ze::$cID && \ze::$cID !== -1) {
 
 //Used by service workers to cache wrapper files
 echo '<script type="text/javascript">window.zenarioCodeVersion = "', $codeVersion, '"</script>';
-
-//Bugfixes for IE 6, 7 and 8
-echo '
-<!--[if lte IE 8]><script type="text/javascript" src="', $prefix, 'libs/yarn/respond.js/dest/respond.min.js?', $v, '"></script><![endif]-->';

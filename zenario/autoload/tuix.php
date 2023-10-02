@@ -1672,10 +1672,27 @@ class tuix {
 				} elseif (($msg = $field['validation']['numeric'] ?? false) && !is_numeric($fieldValue)) {
 					$field['error'] = $msg;
 			
+				} elseif (($msg = $field['validation']['non_zero_number'] ?? false) && (!is_numeric($fieldValue) || $fieldValue == 0)) {
+					$field['error'] = $msg;
+			
+				} elseif (($msg = $field['validation']['positive_number'] ?? false) && (!is_numeric($fieldValue) || $fieldValue <= 0)) {
+					$field['error'] = $msg;
+			
+				} elseif ($msg = $field['validation']['integer_number'] ?? false) {
+					$count = 0;
+					preg_replace('/[^-0-9]/', '', $fieldValue, -1, $count);
+					
+					if (!is_numeric($fieldValue) || $count > 0) {
+						$field['error'] = $msg;
+					}
+			
 				} elseif (($msg = $field['validation']['screen_name'] ?? false) && !\ze\ring::validateScreenName($fieldValue)) {
 					$field['error'] = $msg;
 			
-				} elseif (($msg = $field['validation']['no_special_characters'] ?? false) && !\ze\ring::validateScreenName(str_replace(',', '', $fieldValue), true)) {
+				} elseif (($msg = $field['validation']['no_special_characters'] ?? false) && !\ze\ring::checkStringHasSpecialCharacters(str_replace(',', '', $fieldValue))) {
+					$field['error'] = $msg;
+				
+				} elseif (($msg = $field['validation']['anchor_tag'] ?? false) && !\ze\ring::validateAnchorTag($fieldValue)) {
 					$field['error'] = $msg;
 			
 				} elseif (($msg = $field['validation']['ascii_only'] ?? false) && ($fieldValue !== \ze\escape::ascii($fieldValue))) {

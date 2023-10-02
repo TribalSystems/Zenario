@@ -121,17 +121,17 @@ foreach([
 	'logout' => 'Logout',
 	
 	'link_status__content_not_found' => 'Link is broken',
-	'link_status__hidden' => 'Links to a content item that is not published',
+	'link_status__hidden' => 'Links to a content item that is hidden',
+	'link_status__unpublished' => 'Links to a content item that is not published',
 	'link_status__published_with_draft' => 'Links to a content item with a draft that is unpublished',
 	'link_status__published_with_draft_401' => 'Links to a private content item with an unpublished draft (but you can access it as an administrator)',
 	'link_status__published_with_draft_403' => 'Links to a private content item with an unpublished draft, with a higher level of access than your current extranet user account',
 	'link_status__published_401' => 'Links to a private content item (but you can access it as an administrator)',
 	'link_status__published_403' => 'Links to a private content item with a higher level of access than your current extranet user account (but you can access it as an administrator)',
 	'link_status__spare_alias' => 'This link points to a spare alias; you probably should change this to the real alias',
-	'link_status__spare_domain' => 'This link points to a spare domain; you probably should change this to remove the domain',
 	
-	'menuFeatureImage' => "Menu node's feature image",
-	'menuImage' => "Menu node's image",
+	'menuFeatureImage' => "Menu node's promotional image",
+	'menuImage' => "Menu node's thumbnail image",
 	'menuRolloverImage' => "Menu node's rollover image",
 	
 	'missingId' => 'Missing ID',
@@ -354,6 +354,8 @@ _help
 }
 
 echo 'zenario._mkd(zenarioA.phrase,', json_encode($output), ');';
+	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 
 

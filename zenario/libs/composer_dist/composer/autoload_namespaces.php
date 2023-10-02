@@ -11,4 +11,5 @@ return array(
     'NumbersPHP\\Tests' => array($vendorDir . '/powder96/numbers.php/test'),
     'NumbersPHP' => array($vendorDir . '/powder96/numbers.php/lib'),
     'ImageOptimizer' => array($vendorDir . '/ps/image-optimizer/src'),
+    'HTMLPurifier' => array($vendorDir . '/ezyang/htmlpurifier/library'),
 );

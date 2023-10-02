@@ -80,6 +80,8 @@ foreach([
 echo '
 window.anonymousCommentsPhrase = window.anonymousCommentsPhrase || {};
 zenario._mkd(window.anonymousCommentsPhrase,', json_encode($output), ');';
+	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 
 

@@ -4,6 +4,7 @@ Disallow: /admin.php*
 Disallow: /cache/
 Disallow: /organizer.php*
 Disallow: /private/
+Disallow: /staging.php*
 Disallow: /zenario/
 Disallow: /zenario_custom/
 Disallow: /zenario_extra_modules/

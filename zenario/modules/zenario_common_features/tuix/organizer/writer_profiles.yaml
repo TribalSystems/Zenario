@@ -4,7 +4,7 @@ zenario__library:
 	panels:
 		writer_profiles:
 			title: Writer profiles
-			no_items_message: There are no writer profiles available
+			no_items_message: There are no writer profiles.
 
 			notice:
 				show: true

@@ -17,6 +17,8 @@
 		maxUploadSize,
 		maxUploadSizeFormatted
 	) {
+		this.ajaxURL = ajaxURL;
+		
 		this.containerId = containerId;
 		var that = this;
 		
@@ -932,6 +934,105 @@
 			}
 		}
 		return equation;
+	};
+	
+	module.validateFormFieldJs = function(containerId, formId, fieldId, fieldContainerElementId, fieldElementId, fieldType, isRequired, mandatoryIfVisible, mandatoryConditionFieldId, mandatoryConditionFieldType, validationType) {
+		var containerEl = document.getElementById(fieldContainerElementId);
+		var el = document.getElementById(fieldElementId);
+		var errorMessageDiv = document.getElementById(fieldElementId + '__error_message');
+		
+		if (containerEl && el) {
+			var fieldValue;
+			
+			switch (fieldType) {
+				case 'group':
+				case 'checkbox':
+					if (el.checked) {
+						fieldValue = 1;
+					} else {
+						fieldValue = 0;
+					}
+					break;
+				case 'url':
+				case 'text':
+				case 'textarea':
+					fieldValue = el.value;
+					break;
+			}
+			
+			var conditionalFieldValue;
+			if (mandatoryConditionFieldId) {
+				var conditionalFieldElementId;
+				
+				if (mandatoryConditionFieldType == 'radios' || mandatoryConditionFieldType == 'centralised_radios') {
+					conditionalFieldElementId = containerId + '_field_' + mandatoryConditionFieldId;
+				} else {
+					conditionalFieldElementId = containerId + '__field_' + mandatoryConditionFieldId;
+				}
+				
+				var conditionalFieldEl = document.getElementById(conditionalFieldElementId);
+				
+				if (conditionalFieldEl) {
+					switch (mandatoryConditionFieldType) {
+						case 'group':
+						case 'checkbox':
+							if (conditionalFieldEl.checked) {
+								conditionalFieldValue = 1;
+							} else {
+								conditionalFieldValue = 0;
+							}
+							break;
+						case 'restatement':
+						case 'calculated':
+						case 'url':
+						case 'text':
+						case 'textarea':
+						case 'select':
+						case 'centralised_select':
+							conditionalFieldValue = conditionalFieldEl.value;
+							break;
+						case 'radios':
+						case 'centralised_radios':
+							try {
+								//A radio value has been selected
+								conditionalFieldValue = document.querySelector('input[name="field_' + mandatoryConditionFieldId + '"]:checked').value;
+							} catch (error) {
+								//No value has been selected
+								conditionalFieldValue = '';
+							}
+							break;
+						case 'date':
+							var hiddenInputConditionalField = document.getElementById(conditionalFieldElementId + '__0');
+							conditionalFieldValue = hiddenInputConditionalField.value;
+							break;
+					}
+				} else {
+					conditionalFieldValue = null;
+				}
+			} else {
+				conditionalFieldValue = '';
+			}
+			
+			var requests = {formId: formId, fieldId: fieldId, fieldValue: fieldValue};
+			
+			if (typeof(conditionalFieldValue) != null) {
+				requests.conditionalFieldValue = conditionalFieldValue;
+			}
+			
+			zenario.ajax(this.ajaxURL + '&validateFormFieldJs=1', requests).after(function(response) {
+				errorMessageDiv.innerHTML = response;
+				
+				if (response) {
+					containerEl.classList.remove("no_error");
+					containerEl.classList.add("has_error");
+					errorMessageDiv.style.display = "block";
+				} else {
+					containerEl.classList.add("no_error");
+					containerEl.classList.remove("has_error");
+					errorMessageDiv.style.display = "none";
+				}
+			});
+		}
 	};
 	
 	module.submitForm = function(containerId, values, scrollToTop) {

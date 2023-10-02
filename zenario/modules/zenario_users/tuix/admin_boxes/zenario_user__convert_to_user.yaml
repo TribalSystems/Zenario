@@ -37,7 +37,7 @@ zenario_user__convert_to_user:
                     type: text
                     maxlength: 50
                     validation:
-                        required: "Please enter a screen name"
+                        required: "Please enter a screen name."
                 suggest_screen_name:
                     same_row: true
                     dataset_label: '[Suggest screen name button]'

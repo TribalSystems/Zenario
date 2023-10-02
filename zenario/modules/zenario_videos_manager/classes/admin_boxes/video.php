@@ -31,12 +31,21 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$videoCategories = ze\row::getAssocs(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', 'name');
+		
+		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario_videos_manager/panels/categories';
+		$linkStart = '<a href="' . htmlspecialchars($categoriesPanelHref) . '" target="_blank">';
+		$linkEnd = "</a>";
+		
+		$fields['details/no_categories']['snippet']['html'] = ze\admin::phrase(
+			'No video item categories have been created. [[Link_start]]Create categories...[[Link_end]]',
+			['Link_start' => $linkStart, 'Link_end' => $linkEnd]
+		);
 
 		if (!empty($videoCategories)) {
 			$fields['details/categories']['values'] = $videoCategories;
 		} else {
 			$fields['details/categories']['hidden'] = true;
-			$fields['details/categories_not_found']['hidden'] = false;
+			$fields['details/no_categories']['hidden'] = false;
 		}
 		
 		//Load languages - only when zenario_document_envelopes_fea module is running
@@ -353,7 +362,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 			'image_id' => (int)$imageId,
 			'title' => mb_substr($values['details/title'], 0, 255, 'UTF-8'),
 			'short_description' => mb_substr($values['details/short_description'], 0, 65535, 'UTF-8'),
-			'description' => mb_substr($values['details/description'], 0, 65535, 'UTF-8'),
+			'description' => mb_substr(ze\ring::sanitiseWYSIWYGEditorHTML($values['details/description']), 0, 65535, 'UTF-8'),
 			'date' => $values['details/date']
 		];
 		

@@ -157,11 +157,3 @@ if ($this->eggId && isset($this->parentNest)) {
 echo '
 		</div>';
 
-
-/*echo "\n", 'zzz', $this->slotName, 'zzz';
-var_dump(
-	ze::$slotContents[$this->slotName]['level'] ?? null,
-	ze::$slotContents[$this->slotName]['is_header'] ?? null,
-	ze::$slotContents[$this->slotName]['is_footer'] ?? null
-);
-echo "\n";*/

@@ -31,14 +31,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_extranet_change_password extends zenario_extranet {
 	
 	public function init() {
-		ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
-		ze::requireJsLib('zenario/js/password_functions.min.js');
+		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		$this->requireJsLib('zenario/js/password_functions.min.js');
 
 		$this->registerPluginPage();
 		
 		$this->mode = 'modeChangePassword';
 		
-		ze::requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
 		
 		if (!ze\user::id()) {
 			return ze\priv::check();

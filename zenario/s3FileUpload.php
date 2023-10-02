@@ -33,7 +33,6 @@ require 'adminheader.inc.php';
 ze\cookie::startSession();
 
 //Run pre-load actions
-if (ze::$canCache) require CMS_ROOT. 'zenario/includes/ajax.pre_load.inc.php';
 echo '<link rel="stylesheet" type="text/css" media="screen" href="'. ze\link::protocol(). \ze\link::host(). SUBDIRECTORY .'zenario/styles/admin_s3_upload_field.css"/>';
 
 	$version = [];

@@ -29,10 +29,11 @@
 
 namespace ze;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
 class miscAdm {
-
-
-
 
 	//Formerly "convertMySQLToJqueryDateFormat()"
 	public static function convertMySQLToJqueryDateFormat($value) {
@@ -776,9 +777,10 @@ class miscAdm {
 			@unlink($filepath);
 		// Export as excel file
 		} elseif ($format == 'excel') {
-			require_once CMS_ROOT.'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
 			// Create excel object
-			$objPHPExcel = new \PHPExcel();
+			$objPHPSpreadsheet = new Spreadsheet();
+			$activeWorksheet = $objPHPSpreadsheet->getActiveSheet();
+			
 			// Write headers and data
 			if (!empty($excelWorksheetTitle) && is_string($excelWorksheetTitle)) {
 				//Remove illegal characters: \, /, *, [, ], :, ?
@@ -790,35 +792,35 @@ class miscAdm {
 					$excelWorksheetTitle = substr($excelWorksheetTitle, 0, 31);
 				}
 				
-				$objPHPExcel->getActiveSheet()->setTitle($excelWorksheetTitle);
+				$activeWorksheet->setTitle($excelWorksheetTitle);
 			}
 			
 			if ($heading) {
 				if (!is_array($heading)) {
 					$heading = [$heading];
 				}
-				$objPHPExcel->getActiveSheet()->fromArray($heading, NULL, 'A1');
-				$objPHPExcel->getActiveSheet()->getStyle('A1')->getFont()->setBold(true);
+				$activeWorksheet->fromArray($heading, NULL, 'A1');
+				$activeWorksheet->getStyle('A1')->getFont()->setBold(true);
 				$headersStartingCell = 'A2';
 				$rowsStartingCell = 'A3';
 			} else {
 				$headersStartingCell = 'A1';
 				$rowsStartingCell = 'A2';
 			}
-			$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, $headersStartingCell);
-			$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, $rowsStartingCell);
+			$activeWorksheet->fromArray($headers, NULL, $headersStartingCell);
+			$activeWorksheet->fromArray($rows, NULL, $rowsStartingCell);
 			
 			if ($excelFileExtension == 'xlsx') {
-				$excelFileFormat = 'Excel2007';
+				$objWriter = new Xlsx($objPHPSpreadsheet);
 			} else {
 				$excelFileExtension == 'xls';
-				$excelFileFormat = 'Excel5';
+				$objWriter = new Xls($objPHPSpreadsheet);
 			}
 			
 			// Output file
 			header('Content-Type: application/vnd.ms-excel');
 			header('Content-Disposition: attachment; filename="' . $filename . '.' . $excelFileExtension . '"');
-			$objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, $excelFileFormat);
+			
 			$objWriter->save('php://output');
 		}
 	}

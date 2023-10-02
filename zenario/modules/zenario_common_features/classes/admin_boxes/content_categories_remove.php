@@ -135,9 +135,15 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 		}
 		
 		if ($total > 1) {
+			$message = 'The selected content items will be removed from these categories.';
+			
+			if (ze\lang::count() > 1) {
+				$message .= ' (If the content items are translated, the translations will also be removed from these categories.)';
+			}
+			
 			$box['confirm']['message'] .=
 				"\n\n".
-				ze\admin::phrase('The selected content items will be removed from these categories. (If the content items are translated, the translations will also be removed these categories.)');
+				ze\admin::phrase($message);
 		}
 	}
 

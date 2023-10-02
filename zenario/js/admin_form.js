@@ -217,11 +217,15 @@ methods.addJQueryElementsToTab = function() {
 	thus.addJQueryElements('#zenario_abtab');
 };
 
-methods.useSimpleEditor = function() {
-	return false;
+
+//In admin mode, use the standard admin-mode version when copy-pasting
+methods.copyField = function(copyButtonEl, fieldId) {
+	var fieldValue = thus.readField(fieldId);
+	
+	if (defined(fieldValue)) {
+		zenarioA.copy(fieldValue);
+	}	
 };
-
-
 
 
 

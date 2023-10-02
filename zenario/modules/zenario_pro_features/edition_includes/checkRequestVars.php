@@ -34,15 +34,6 @@ ze::$vars['locationId'] = 0;
 
 ze::$vars['countryId'] = '';
 
-//For the Conference FEA
-ze::$vars['conferenceId'] = 
-ze::$vars['sessionId'] = 
-ze::$vars['seminarId'] = 
-ze::$vars['day'] = 
-ze::$vars['roomId'] =
-ze::$vars['streamId'] = 
-ze::$vars['abstractId'] = 0;
-
 //Add some vars that any non-hierarchical plugin can just use
 ze::$vars['id'] = (int) ($_REQUEST['id'] ?? 0);
 ze::$vars['date'] = $_REQUEST['date'] ?? '';
@@ -54,47 +45,9 @@ if (!$status) {
 
 $zclmPrefix = ze\module::prefix('zenario_company_locations_manager');
 $zlmPrefix = ze\module::prefix('zenario_location_manager');
-$zcmPrefix = ze\module::prefix('zenario_conference_manager');
 
 $companyWasFromLocation = false;
 $countryWasFromLocation = false;
-
-if ($zcmPrefix) {
-	//Can be multiple
-	if (!ze::$vars['abstractId'] && !empty($_REQUEST['abstractId'])) {
-		ze::$vars['abstractId'] = $_REQUEST['abstractId'];
-		if (is_numeric(ze::$vars['abstractId']) 
-			&& ($seminarId = ze\row::get($zcmPrefix . 'papers', 'seminar_id', ['abstract_id' => ze::$vars['abstractId']]))) {
-			$_REQUEST['seminarId'] = $seminarId;
-		}
-	}
-	
-	if (!ze::$vars['seminarId'] && !empty($_REQUEST['seminarId'])) {
-		ze::$vars['seminarId'] = (int) $_REQUEST['seminarId'];
-		if ($sessionId = ze\row::get($zcmPrefix . 'seminars', 'session_id', ze::$vars['seminarId'])) {
-			$_REQUEST['sessionId'] = $sessionId;
-		}
-	}
-	if (!ze::$vars['sessionId'] && !empty($_REQUEST['sessionId'])) {
-		ze::$vars['sessionId'] = (int) $_REQUEST['sessionId'];
-		if ($session = ze\row::get($zcmPrefix . 'sessions', ['conference_id', 'day'], ze::$vars['sessionId'])) {
-			$_REQUEST['conferenceId'] = $session['conference_id'];
-			$_REQUEST['day'] = $session['day'];
-		}
-	}
-	if (!ze::$vars['conferenceId'] && !empty($_REQUEST['conferenceId'])) {
-		ze::$vars['conferenceId'] = (int) $_REQUEST['conferenceId'];
-	}
-	if (!ze::$vars['day'] && !empty($_REQUEST['day'])) {
-		ze::$vars['day'] = (int) $_REQUEST['day'];
-	}
-	if (!ze::$vars['roomId'] && !empty($_REQUEST['roomId'])) {
-		ze::$vars['roomId'] = (int) $_REQUEST['roomId'];
-	}
-	if (!ze::$vars['streamId'] && !empty($_REQUEST['streamId'])) {
-		ze::$vars['streamId'] = (int) $_REQUEST['streamId'];
-	}
-}
 
 if ($zlmPrefix) {
 	//Look for the location ID in the URL, if it's not yet been set
@@ -134,9 +87,7 @@ if (!ze::$vars['userId']) {
 if ((ze::$vars['userId'] && !ze\user::can('view', 'user', ze::$vars['userId']))
  || (!$countryWasFromLocation && ze::$vars['countryId'] && !ze\user::can('view', 'country', ze::$vars['countryId']))
  || (!$companyWasFromLocation && ze::$vars['companyId'] && !ze\user::can('view', 'company', ze::$vars['companyId']))
- || (ze::$vars['locationId'] && !ze\user::can('view', 'location', ze::$vars['locationId']))
- || (ze::$vars['conferenceId'] && !ze\row::exists($zcmPrefix . 'conferences', ['id' => ze::$vars['conferenceId']]))
- || (ze::$vars['sessionId'] && !ze\row::exists($zcmPrefix . 'sessions', ['id' => ze::$vars['sessionId']]))) {
+ || (ze::$vars['locationId'] && !ze\user::can('view', 'location', ze::$vars['locationId']))) {
 	return ZENARIO_403_NO_PERMISSION;
 }
 

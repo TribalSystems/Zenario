@@ -183,14 +183,6 @@ foreach (\ze\lang::getLanguages(!ze::$cID) as $lang) {
 	}
 }
 
-$spareDomains = [];
-$sql = '
-	SELECT requested_url FROM ' . DB_PREFIX . 'spare_domain_names';
-$result = \ze\sql::select($sql);
-while ($row = \ze\sql::fetchAssoc($result)) {
-	$spareDomains[] = \ze\link::protocol() . $row['requested_url'];
-}
-
 $draftMessage = false;
 if (ze::$isDraft) {
 	$draftMessage = \ze\admin::phrase('This will only affect the draft version ([[version]]) of this content item.', ['version' => ze::$cVersion]);
@@ -201,21 +193,38 @@ echo '
 zenarioA.init(
 	', (int) ze::$cVersion, ',
 	', (int) ($_SESSION['admin_userid'] ?? false), ',
+	
+	', (int) $includeAdminToolbar, ',
 	"', \ze\escape::js((($_SESSION['page_toolbar'] ?? false) ?: 'preview')), '",
 	"', \ze\escape::js((($_SESSION['page_mode'] ?? false) ?: 'preview')), '",
+	
 	"', \ze\escape::js(\ze::setting('min_extranet_user_password_length')), '",
 	"', \ze\escape::js(\ze::setting('min_extranet_user_password_score')), '",
+	
 	', \ze\ring::engToBoolean($_SESSION['admin_show_grid'] ?? false), ',
 	', json_encode($settings), ',
 	', json_encode($adminSettings), ',
 	', json_encode($adminPrivs), ',
+	
 	', $importantGetRequests, ',
 	', (int) $adminHasSpecificPerms, ',
 	', (int) $adminHasSpecificPermsOnThisPage, ',
+	
 	', json_encode($langs), ',
-	', json_encode($spareDomains), ',
 	', json_encode($draftMessage), '
 );';
+
+
+//If a toast was displayed shortly before the page was reloaded for some reason, attempt to display it again.
+if (!empty($_SESSION['_remember_toast'])
+ && json_decode($_SESSION['_remember_toast'])) {
+ 	
+ 	echo '
+ 		zenarioA.toast(', $_SESSION['_remember_toast'], ');';
+ 	//N.b. this should already be json_encoded so I don't need to escape this, but I still need
+ 	//the call to json_decode() above to check it is actually valid JSON and not a XSS attack!
+}
+unset($_SESSION['_remember_toast']);
 
 
 if (!empty($_SESSION['zenario__deleted_so_home'])) {

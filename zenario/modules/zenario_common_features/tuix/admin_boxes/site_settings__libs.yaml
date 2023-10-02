@@ -2,10 +2,10 @@
 ---
 site_settings:
     setting_group: libs
-    title: Editing settings for JavaScript libraries
+    title: Editing settings for JavaScript and font libraries
     tabs:
         libs:
-            label: JavaScript libraries
+            label: JavaScript and font libraries
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -108,8 +108,40 @@ site_settings:
                 desc.optional:
                     snippet:
                         p: |
-                            The following are not included by default.
+                            The following are optional.
                             If you wish to use them in your HTML/CSS, set these options to include them.
+                
+                lib.fontawesome.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://github.com/FortAwesome/Font-Awesome" target="_blank">
+                                    Font Awesome</a>
+                                <span>(23.3 kB, or 27.5 kB with backwards compatibility included)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                Font Awesome is a useful icon library and toolkit, making it easy to put a range of icons on a website design without using graphics.
+                            </p>
+                lib.fontawesome:
+                    site_setting:
+                        name: lib.fontawesome
+                    same_row: true
+                    type: radios
+                    #cols: 2
+                    value: 1
+                    values:
+                        1:
+                            label: "On (version 6)"
+                        bc:
+                            label: "On with backwards compatibility for Font Awesome version 4"
+                            note_below: |
+                                The backwards compatibility option will include Font Awesome's <code>v4-shims.min.css</code> file.
+                                Use this if you made a skin using Font Awesome version 4.
+                        '':
+                            label: "Off"
+                            note_below: |
+                                Font Awesome is always available in the Zenario admin interface.
                 
                 lib.modernizr.desc:
                     indent: 1

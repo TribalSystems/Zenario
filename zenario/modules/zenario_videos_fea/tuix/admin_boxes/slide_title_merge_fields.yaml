@@ -1,0 +1,15 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    lovs:
+        title_merge_fields:
+            video:
+                label: 'Can be used when "videoId" is in the URL'
+            '[[videoId]]':
+                parent: video
+                data-class: video_icon
+                label: 'Video ID: [[videoId]]'
+            '[[zenario_videos_fea:title]]':
+                parent: video
+                data-class: video_icon
+                label: 'Video name: [[zenario_videos_fea:title]]'

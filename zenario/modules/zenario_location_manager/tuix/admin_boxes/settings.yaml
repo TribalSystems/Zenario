@@ -12,12 +12,12 @@ site_settings:
             label: Details
             fields:
                 zenario_location_manager__enable_external_id:
-                    label: 'Enable external number'
+                    label: 'Enable external number for locations'
                     site_setting:
                         name: zenario_location_manager__enable_external_id
                     type: checkbox
                 zenario_location_manager__enable_pending_status:
-                    label: 'Enable pending status'
+                    label: 'Enable pending status for locations'
                     site_setting:
                         name: zenario_location_manager__enable_pending_status
                     type: checkbox
@@ -66,7 +66,7 @@ site_settings:
                     validation:
                         numeric: Number of levels in the Location hierarchy must be a number.
                 zenario_location_manager__sector_management:
-                    label: 'Sector Management:'
+                    label: 'Sector management for locations:'
                     type: radios
                     site_setting:
                         name: zenario_location_manager__sector_management
@@ -80,7 +80,7 @@ site_settings:
                                                     <p>Sector Score Management adds a button to a Location's selected toolbar that enables access to a panel where you can add/remove Sectors from the Location and administer the Sector Score.</p>
                 
                 zenario_location_manager__default_pin_placement_method:
-                    label: 'Default pin placement method:'
+                    label: 'Default pin placement method for locations:'
                     type: radios
                     site_setting:
                         name: zenario_location_manager__default_pin_placement_method
@@ -97,15 +97,71 @@ site_settings:
                     full_width: Yes
                     snippet:
                         html: This tab contains settings for file uploads.
+                location_image_options:
+                    type: grouping
+                    snippet:
+                        label: "Maximum file size for location-related images:"
+                        label_class: subheading
+                max_location_image_filesize_override:
+                    grouping: location_image_options
+                    site_setting:
+                        name: max_location_image_filesize_override
+                    label: "Restrict images to..."
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
                 max_location_image_filesize:
+                    grouping: location_image_options
+                    indent: 1
                     site_setting:
                         name: max_location_image_filesize
-                    label: 'Maximum location image file size:'
+                    label: 'New maximum location image file size:'
                     type: text
-                    value: 50000
-                    side_note: >
-                        Maximum allowed file size for location images uploaded by
-                        Extranet Users, in bytes.
+                    value: 50
                     validation:
-                        required: Please enter a maximum location image file size.
+                        required_if_not_hidden: Please enter a maximum location image file size.
                         numeric: The maximum user image file size must be numeric.
+                    decimal_places: ""
+                    maxlength: 10
+                    style: "width: 7em;"
+                    visible_if: lib.value('max_location_image_filesize_override')
+                max_location_image_filesize_unit:
+                    grouping: location_image_options
+                    indent: 1
+                    site_setting:
+                        name: max_location_image_filesize_unit
+                    label: 'Unit:'
+                    same_row: true
+                    type: select
+                    values:
+                        KB:
+                            label: KB
+                        MB:
+                            label: MB
+                    value: KB
+                    validation:
+                        required_if_not_hidden: Please select the unit.
+                    redraw_onchange: true
+                    visible_if: lib.value('max_location_image_filesize_override')
+                apply_file_size_limit_to:
+                    grouping: location_image_options
+                    indent: 1
+                    site_setting:
+                        name: apply_file_size_limit_to
+                    type: select
+                    values:
+                        uploads_by_users:
+                            ord: 1
+                            label: 'Apply only to uploads by users'
+                        always_apply:
+                            ord: 2
+                            label: 'Apply always'
+                    value: uploads_by_users
+                    visible_if: lib.value('max_location_image_filesize_override')
+                global_upload_setting_info:
+                    grouping: location_image_options
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                [[global_upload_setting_string]]
+                            </div>

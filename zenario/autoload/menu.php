@@ -267,6 +267,10 @@ class menu {
 	
 		return $row;
 	}
+	
+	public static function getMenuNodeFeatureImageId($nodeId) {
+		return \ze\row::get('menu_node_feature_image', 'image_id', ['node_id' => $nodeId, 'use_feature_image' => 1]);
+	}
 
 	//Formerly "isMenuNodeUnique()"
 	public static function isUnique($redundancy, $equiv_id, $content_type) {
@@ -829,6 +833,5 @@ class menu {
 		if ($row['open_in_new_window']) {
 			$row['target'] = '_blank';
 		}
-
 	}
 }

@@ -125,13 +125,13 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			return $this->show = false;
 		}
 		
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		
 		$this->registerGetRequest('comm_page', 1);
 		$this->page = (int) ($_REQUEST['comm_page'] ?? 1) ?: 1;
 
 		//Require the phrases
-		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
 		
 		$this->runCheckPrivs();
 		

@@ -184,19 +184,18 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			}
 		}
 
-		if ($this->styles !== [] && $this->methodCallIs('refreshPlugin')) {
-			$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, implode("\n", $this->styles));
-		}
-
 		$this->mergeFields['Default_Tab'] = $defaultTab;
+		
+		
+		//If we're reloading via AJAX, our addToPageHead() method won't be called, and the addStylesOnAJAXReload() function will add the styles.
+		//Otherwise the styles will be added using addToPageHead() and addStylesOnAJAXReload() as as normal.
+		$this->addStylesOnAJAXReload($this->styles);
 		
 		return true;
 	}
 
 	public function addToPageHead() {
-		if ($this->styles !== []) {
-			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", implode("\n", $this->styles), "\n", '</style>';
-		}
+		$this->addStylesToPageHead($this->styles);
 	}
 	
 	public function getCategoryOptionsWithParentId($parentId = 0){
@@ -656,7 +655,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				/* Spec for searching other modules:
 					1) There are 5 function parameters that the function definition needs to use: ($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999)
 					2) The target module will need its own logic for returning results, including a DB key if appropriate
-					3) Expecting the module's function to return an array: ['Record_Count' => $recordCount, 'Results' => $resultsFromModule]
+					3) Expecting the module's function to return an array: ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => '(the module's variable id, e.g. id, locationId, etc)']
 					4) Expecting the following properties for each result: item_id, title, thumbnail_Id, filename, score
 					5) To view results from another module, Advanced Search uses a content item picker and a conductor state to generate "View" links
 				*/
@@ -699,7 +698,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						if ($contentItem && $conductorState) {
 							$cID = $cType = false;
 							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $contentItem);
-							$resultFromModule['url'] = ze\link::toItem($cID, $cType, true, 'id=' . $resultFromModule['item_id'] . '&state=' . htmlspecialchars($conductorState));
+							$resultFromModule['url'] = ze\link::toItem($cID, $cType, true, ($resultsFromModule['Variable_name'] . '=' . $resultFromModule['item_id'] . '&state=' . htmlspecialchars($conductorState)));
 						}
 					}
 
@@ -757,7 +756,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 			$this->mergeFields['Open_Form'] = '<form type="post" action="' . ze\link::toItem($cID, $cType) . '">';
 		} else {
-			$this->mergeFields['Open_Form'] = $this->openForm('', '', false, false, true, $usePost = true). $this->remember('ctab');
+			$this->mergeFields['Open_Form'] = $this->openForm('return false;', '', false, false, true, $usePost = true). $this->remember('ctab');
 		}
 
 		if ($this->setting('mode') == 'search_entry_box' && $this->setting('show_further_search_page_link')) {
@@ -768,7 +767,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		}
 
 		$this->mergeFields['Close_Form'] = $this->closeForm();
-		$this->mergeFields['Search_Field_ID'] = $this->containerId . '_search_input_box';
+		$this->mergeFields['Search_Field_ID'] = $this->containerId . '-search_input_box';
 		$this->mergeFields['Search_String'] = htmlspecialchars($this->searchString);
 	}
 	
@@ -816,8 +815,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$sessionId = session_id();
 		$randomNumber = rand(1, 9999);
 		
-		$searchPrivateItems = $this->setting('show_private_items');
-		if ($this->setting('hide_private_items') == 1) {
+		$searchPrivateItems = $this->setting('search_private_items');
+		if ($this->setting('show_private_content_item_link_control') == 1) {
 			//Only show links to private content items to authorised visitors
 			$hidePrivateItems = true;
 		} else {

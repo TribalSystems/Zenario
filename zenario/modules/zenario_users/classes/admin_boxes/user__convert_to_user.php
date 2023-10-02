@@ -81,8 +81,14 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 		
 		if ($e = ze\userAdm::isInvalid($cols, $box['key']['id'])) {
 			//If there are errors, add them to the first tab
-			foreach ($e->errors as $error) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase($error);
+			foreach ($e->errors as $key => $error) {
+				if ($key != 'screen_name') {
+					$box['tabs']['details']['errors'][] = ze\admin::phrase($error);
+				}
+				
+				if ($key == 'screen_name') {
+					$fields['details/screen_name']['error'] = ze\admin::phrase($error);
+				}
 			}
 		}
 
@@ -108,7 +114,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 			];
 	
 			if (ze::setting('user_use_screen_name')) {
-				$cols['screen_name'] = $values['details/screen_name'];
+				$cols['screen_name'] = str_replace(' ', '', $values['details/screen_name']);
 			}
 			
 			$cols['password'] = $values['details/password'];
@@ -128,7 +134,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
 			if (isset($values['details/send_activation_email_to_user']) &&  $values['details/send_activation_email_to_user']
 				&& ze\ray::issetArrayKey($values,'details/email_to_send') && (ze\module::inc('zenario_email_template_manager'))) {
-				$mergeFields=ze\user::details($box['key']['id']);
+				$mergeFields=ze\user::userDetailsForEmails($box['key']['id']);
 				$mergeFields['username'] = $mergeFields['screen_name'];
 				$mergeFields['password'] = $values['password'];
 				$mergeFields['cms_url'] = ze\link::absolute();

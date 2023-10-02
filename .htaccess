@@ -56,6 +56,10 @@ Options -Indexes -MultiViews
 	# Correct any bad relative-URLs
 	RewriteRule ^[\/,A-Za-z0-9~_-]*\/(public|private|zenario|zenario_custom|zenario_extra_modules)/(.*)$ zenario/redirect.php?redirectdir=$1&redirect=$2 [L,QSA]
 	
+	# Redirect anyone trying to access the admin login using "admin/" to just "admin", without the slash.
+	# This should not be done silently, we want the visitor to see their URL changing in their browser,
+	# so we need to use a PHP script for this.
+	RewriteRule ^admin/$ zenario/redirect.php?redirect=admin [L,QSA]
 	
 	# Favicons
 	RewriteRule ^favicon.ico$ zenario/file.php?usage=favicon [L]
@@ -63,6 +67,9 @@ Options -Indexes -MultiViews
 	# Admin URL:
 	RewriteRule ^admin(|\.\w+)$ zenario/admin/welcome.php [L,QSA]
 	RewriteRule ^organizer.php$ zenario/admin/organizer.php [L,QSA]
+	
+	# Staging mode URLs:
+	RewriteRule ^staging.php$ zenario/staging.php [L,QSA]
 	
 	# Friendly URLs:
 	RewriteCond %{REQUEST_URI} !/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)/
@@ -76,6 +83,7 @@ Options -Indexes -MultiViews
 	
 	# A friendly URL for the XML sitemap:
 	RewriteRule ^sitemap.xml$ index.php?method_call=showSitemap [L]
+	
 	
 	
 	# Remove cached pages and stats from public view:

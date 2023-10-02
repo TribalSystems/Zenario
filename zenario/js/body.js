@@ -33,8 +33,7 @@
 	window.URLBasePath = URLBasePath;
 	
 	//This function sets/modifies a CSS class on the document.body.
-	var script,
-		windowDotaddEventListener = window.addEventListener,
+	var windowDotaddEventListener = window.addEventListener,
 	
 		//Create a function that runs code as soon as the DOM is ready.
 		//This uses jQuery's $(function() { ... }) function if possible, however if jQuery is not yet loaded
@@ -93,13 +92,6 @@
 	zenarioL.cType = cType;
 	zenarioL.layoutId = layoutId;
 	zenarioL.skinId = skinId;
-	
-	//Add polyfills for IE
-	if (!document.currentScript) {
-		script = document.createElement('script');
-		script.src = URLBasePath + 'zenario/js/ie.wrapper.js.php';
-		document.head.appendChild(script);
-	}
 	
 	//Start off with empty settings for the grid
 	lInit({});

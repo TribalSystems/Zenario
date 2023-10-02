@@ -320,11 +320,11 @@ site_settings:
                 content_max_filesize:
                     site_setting:
                         name: content_max_filesize
-                    label: 'Zenario maximum file size:'
+                    label: 'Zenario maximum uploadable file size:'
                     type: text
                     value: 8
                     note_below: >
-                        Zenario's limit for the maximum uploadable file size. This should not be more than the server's maximum file size.
+                        Zenario will not accept files greater than this size. Set this to less than or equal to the server's maximum uploadable file size (see below).
                     validation:
                         required: Please enter a maximum uploadable file size.
                         numeric: Must be numeric.

@@ -10,25 +10,8 @@ zenario_enable_site:
             edit_mode: 
                 enabled: true
                 on: true
-            show_errors_after_field: desc
-            notices: 
-                checked: 
-                    type: success
-                    message: Cache cleared; checked for changes.
-                    show: false
-                head_warning:
-                    type: warning
-                    show: true
-                    visible_if: |
-                        lib.tuix.key.isHead
-                    html: true
-                    message: |
-                            This site is running on the &ldquo;HEAD&rdquo; development codebase of Zenario.
-                            (In <code>zenario/admin/db_updates/latest_revision_no.inc.php</code>
-                            the constant <code>ZENARIO_IS_HEAD</code> is set to true.)
-                            Because of this, we recommend that you run the site in developer mode, with the Auto option.
             fields: 
-                desc:
+                site_enabled_desc:
                     snippet:
                         html: |
                             Use this to set the running status of the site.
@@ -44,8 +27,6 @@ zenario_enable_site:
                     indent: 1
                     visible_if:
                         lib.value: site_enabled
-                    note_below: |
-                        Click to disable this site.
                 site_disabled_note:
                     indent: 1
                     visible_if:
@@ -54,10 +35,54 @@ zenario_enable_site:
                         Site disabled, and the front-end only visible when logged in as an administrator.
                         You can define text for a holding page that visitors can see in the [[link_start]]Logos and branding[[link_end]] site setting.
                 
-                desc2:
+                
+                
+                clear_cache_desc:
                     snippet:
-                        html: |
-                            Use this to switch to enable developer mode.
+                        html: >
+                            <p>
+                                Click the following button to clear cache and check for changes.
+                                You do not need to do this if developer mode is enabled, as performing
+                                a browser reload in admin mode will achieve the same result.
+                            </p>
+                
+                clear_cache:
+                    indent: 1
+                    type: submit
+                    value: 'Clear cache and check for changes'
+                    class: submit_selected
+                    format_onchange: true
+                    notices_below:
+                        checked: 
+                            hidden: true
+                            type: success
+                            message: Cache cleared; checked for changes.
+                
+                clear_cache_note:
+                    note_below: |
+                        <p>This button will:</p>
+                        <ul>
+                            <li>Clear the <code>cache/</code> directory of all cached web pages, plugins, <code>.css</code>, <code>.js</code> and <code>.yaml</code> files (they will be freshly re-created on visitor demand)</li>
+                            <li>Re-create the minified copies of skins in the <code>public/css/</code> directory</li>
+                            <li>Cause visitors' browser caches to be cleared on next load.</li>
+                        </ul>
+                        <p>This button will also, where applicable, restart any running background scripts managed by the Scheduled Task Manager, and cause any reverse proxy cache's data to be cleared.</p>
+                
+                
+                
+                dev_mode_desc:
+                    notices_below:
+                        head_warning:
+                            type: warning
+                            visible_if: |
+                                lib.tuix.key.isHead
+                            html: true
+                            message: |
+                                    This site is running on the &ldquo;HEAD&rdquo; development codebase of Zenario.
+                                    (In <code>zenario/admin/db_updates/latest_revision_no.inc.php</code>
+                                    the constant <code>ZENARIO_IS_HEAD</code> is set to true.)
+                                    Because of this, we recommend that you run the site in developer mode, with the Auto option.
+                
                 enable_dev_mode:
                     indent: 1
                     type: checkbox
@@ -110,30 +135,6 @@ zenario_enable_site:
                     note_below: |
                         The site will run more quickly for administrators when developer mode is disabled,
                         but if a developer changes a file,
-                        they will need to manually press the button below.
-                
-                
-                desc3:
-                    snippet:
-                        html: >
-                            <p>
-                                Click the following button to clear cache and check for changes.
-                                You do not need to do this if developer mode is enabled, as performing
-                                a browser reload in admin mode will achieve the same result.
-                            </p>
-                
-                clear_cache:
-                    indent: 1
-                    type: submit
-                    value: 'Clear cache and check for changes'
-                    class: submit_selected
-                    format_onchange: true
-                    note_below: |
-                        <p>This button will:</p>
-                        <ul>
-                            <li>Remove cached web pages, cached plugins, skin <code>.css</code> files, plugin <code>.js</code> and <code>.yaml</code> files from the server's <code>cache/</code> directory.</li>
-                            <li>Restart any running background scripts managed by the Scheduled Task Manager.</li>
-                            <li>Clear visitors' browsers' caches, on next load.</li>
-                            <li>Clear a reverse proxy cache, if used, on next load.</li>
-                            <li>Clear Organizer's cached data.</li>
-                        </ul>
+                        they will need to manually press the button above.
+
+

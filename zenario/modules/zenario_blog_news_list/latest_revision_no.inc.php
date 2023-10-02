@@ -3,7 +3,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //The number in this file is the minor revision number of your module:
-define(ze::moduleName(__FILE__). '_LATEST_REVISION_NO', 6);
+define(ze::moduleName(__FILE__). '_LATEST_REVISION_NO', 7);
 
 
 //Most of the information in the description.yaml file is only read once, on the

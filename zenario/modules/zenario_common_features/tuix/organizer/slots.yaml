@@ -12,6 +12,8 @@ zenario__content:
             refiners:
                 content_item:
                     exists: true
+                content_item_from_menu_node:
+                    exists: true
                 layout:
                     exists: true
             refiner_required: true
@@ -116,7 +118,7 @@ zenario__content:
                     with_columns_set:
                         empty: true
                     visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'
+                        zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
                         
                 remove_dropdown:
                     label: Remove slot contents...
@@ -157,7 +159,7 @@ zenario__content:
                         full: true
                         content_item: true
                     visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'
+                        zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
                 
                 hide_plugin:
                     label: Show nothing on this content item
@@ -175,7 +177,7 @@ zenario__content:
                         reusable: true
                         layout: true
                     visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'
+                        zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
                 
                 show_plugin:
                     label: Show
@@ -193,4 +195,4 @@ zenario__content:
                         opaque: true
                         layout: true
                     visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'
+                        zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')

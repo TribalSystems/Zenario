@@ -17,7 +17,7 @@ zenario__email_template_manager:
                     sql: 't.code=[[REFINER_ID]]'
                     table_join: '[[DB_PREFIX]]email_templates AS t ON l.email_template_id = t.id'
             db_items:
-                table: '[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log AS l'
+                table: '[[DB_PREFIX]]email_template_sending_log AS l'
                 id_column: l.id
             item:
                 css_class: log email_log

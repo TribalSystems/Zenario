@@ -43,7 +43,6 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			$values['settings/dec_point'] = $lang['dec_point'];
 			$values['settings/show_untranslated_content_items'] = $lang['show_untranslated_content_items'];
 			$values['settings/sync_assist'] = $lang['sync_assist'];
-			$fields['settings/sync_assist']['hidden'] = $box['key']['id'] == ze::$defaultLang;
 			
 			//N.b. we're not longer allowing admins to change which languages get translated,
 			//so don't bother loading the saved value.
@@ -54,10 +53,12 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 				$values['settings/domain'] = $lang['domain'];
 			}
 	
-			$box['title'] = ze\admin::phrase('Editing settings for "[[language]]"', ['language' => ze\lang::name($box['key']['id'])]);
+			$languageName = ze\lang::name($box['key']['id']);
+			$box['title'] = ze\admin::phrase('Editing settings for "[[language]]"', ['language' => $languageName]);
 
 		} else {
-			$box['title'] = ze\admin::phrase('Enabling the language "[[language]]"', ['language' => ze\lang::name($box['key']['id'])]);
+			$languageName = ze\lang::name($box['key']['id']);
+			$box['title'] = ze\admin::phrase('Enabling the language "[[language]]"', ['language' => $languageName]);
 			ze\priv::exitIfNot('_PRIV_MANAGE_LANGUAGE_CONFIG');
 			$box['save_button_message'] = ze\admin::phrase('Enable language');
 	
@@ -110,6 +111,27 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					$values['settings/thousands_sep'] = ',';
 					$values['settings/dec_point'] = '.';
 			}
+		}
+		
+		if ($box['key']['id']) {
+			$defaultLanguage = ze::$defaultLang;
+			$mergeFields = ['language_english_name' => $languageName, 'iso_code' => $box['key']['id']];
+			
+			$languageCount = ze\lang::count();
+			
+			if (!empty($lang)) {
+				$mergeFields['is_or_will_be'] = ze\admin::phrase('is');
+			} else {
+				$mergeFields['is_or_will_be'] = ze\admin::phrase('will be');
+			}
+			
+			if ($box['key']['id'] == $defaultLanguage || $languageCount == 0) {
+				ze\lang::applyMergeFields($fields['settings/default_language_info_snippet']['snippet']['html'], $mergeFields);
+			} else {
+				ze\lang::applyMergeFields($fields['settings/secondary_language_info_snippet']['snippet']['html'], $mergeFields);
+			}
+			
+			$fields['settings/sync_assist']['hidden'] = ($languageCount == 0 || $box['key']['id'] == ze::$defaultLang);
 		}
 	
 		//N.b. we're not longer allowing admins to change which languages get translated.
@@ -199,9 +221,6 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 	
 			} elseif (ze\row::exists('languages', ['id' => ['!' => $box['key']['id']], 'domain' => $values['settings/domain']])) {
 				$box['tabs']['settings']['errors'][] = ze\admin::phrase('The domain "[[settings/domain]]" is already used by another language.', $values);
-	
-			} elseif (ze\row::exists('spare_domain_names', $values['settings/domain'])) {
-				$box['tabs']['settings']['errors'][] = ze\admin::phrase('The domain "[[settings/domain]]" is already used as a spare domain name.', $values);
 	
 			//Don't run any validation if the language's domain is set to the admin or primary domain.
 			} elseif ($values['settings/domain'] == ze\link::adminDomain()) {

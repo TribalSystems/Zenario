@@ -102,6 +102,8 @@ if ($admin = \ze\row::get('admins', $adminCols, $adminIdL, [], $ignoreMissingCol
 	//Mark the site that they've logged into
 	$_SESSION['admin_logged_into_site'] = COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id');
 	
+	unset($_SESSION['hide_admin_toolbar']);
+	
 	
 	return true;
 } else {

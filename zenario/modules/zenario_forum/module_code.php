@@ -114,7 +114,7 @@ class zenario_forum extends zenario_comments {
 		}
 
 		//Require the phrases
-		ze::requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
 		
 		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;
@@ -1251,6 +1251,12 @@ class zenario_forum extends zenario_comments {
 	
 	
 	public static function deleteUserDataGetInfo($userIds) {
+		if ($userIds) {
+			$recordCount = ' ([[count]] found)';
+		} else {
+			$recordCount = '';
+		}
+		
 		$sql = "
 			SELECT COUNT(id)
 			FROM " . DB_PREFIX . ZENARIO_FORUM_PREFIX . "forums
@@ -1258,7 +1264,7 @@ class zenario_forum extends zenario_comments {
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
 		
-		$forumsResults = ze\admin::phrase('Forums started by this user will have the updater ID removed ([[count]] found)', ['count' => $count]);
+		$forumsResults = ze\admin::phrase('Forums started by this user will have the updater ID removed' . $recordCount, ['count' => $count]);
 
 		$sql = "
 			SELECT COUNT(id)
@@ -1267,7 +1273,7 @@ class zenario_forum extends zenario_comments {
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
 		
-		$threadsResults = ze\admin::phrase('Threads posted by this user will have the creator ID removed ([[count]] found)', ['count' => $count]);
+		$threadsResults = ze\admin::phrase('Threads posted by this user will have the creator ID removed' . $recordCount, ['count' => $count]);
 
 		$sql = "
 			SELECT COUNT(id)
@@ -1276,7 +1282,7 @@ class zenario_forum extends zenario_comments {
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
 		
-		$userPostsResults = ze\admin::phrase('This user\'s posts will have the creator ID removed ([[count]] found)', ['count' => $count]);
+		$userPostsResults = ze\admin::phrase('This user\'s posts will have the creator ID removed' . $recordCount, ['count' => $count]);
 		
 		return implode('<br />', [$forumsResults, $threadsResults, $userPostsResults]);
 	}

@@ -26,7 +26,8 @@ INSERT INTO `[[DB_PREFIX]]modules` VALUES
  (16,'zenario_document_container','zenario_document_container','Document Container','Community','pluggable','standard','zenario_document_container',1,'',0,0,0,1,'module_running',0),
  (17,'zenario_user_forms','zenario_user_forms','Form Container','Pro','management','standard','zenario_user_forms',1,'',0,0,0,1,'module_running',0),
  (18,'zenario_slideshow','zenario_plugin_nest','Slideshow (advanced)','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
- (19,'zenario_ctype_news','zenario_ctype_news','Content Type News','Community','content_type','','zenario_ctype_news',0,'',0,0,0,0,'module_running',0);
+ (19,'zenario_ctype_news','zenario_ctype_news','Content Type News','Community','content_type','','zenario_ctype_news',0,'',0,0,0,0,'module_running',0),
+ (20,'zenario_advanced_search','zenario_advanced_search','Advanced Search','Community','content_type','standard','zenario_advanced_search',1,'',0,0,0,1,'module_running',0);
 ALTER TABLE `[[DB_PREFIX]]modules` ENABLE KEYS;
 
 
@@ -49,7 +50,8 @@ INSERT INTO `[[DB_PREFIX]]plugin_instances` VALUES
  (20,'Contact popup',17,0,'',0,'','standard','form_popup',0,0),
  (21,'Breadcrumbs',3,0,'',0,'','standard','',0,0),
  (22,'Masthead, second page',2,0,'',0,'','image_then_title_then_text','banner_masthead',0,0),
- (29,'News list for home page',7,0,'',0,'','standard','',0,0);
+ (29,'News list for home page',7,0,'',0,'','standard','',0,0),
+ (30,'Advanced Search',20,0,'',0,'','standard','',0,0);
 ALTER TABLE `[[DB_PREFIX]]plugin_instances` ENABLE KEYS;
 
 
@@ -230,7 +232,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_settings` VALUES
  (14,'user_form',0,'1','synchronized_setting','text','user_form',1,'','remove',NULL),
  (16,'text',0,'<p>Put your company address here.</p>','synchronized_setting','translatable_html',NULL,0,'','remove',NULL),
  (16,'title',0,'Your company name','synchronized_setting','translatable_text',NULL,0,'','remove',NULL),
- (17,'html',0,'<div class=\"social_links\">\n 	<a><i class=\"fa fa-youtube\"></i></a>\n 	<a href=\"https://twitter.com/ZenarioCMS\" target=\"_blank\"><i class=\"fa fa-twitter\"></i></a>\n </div>','synchronized_setting','html',NULL,0,'','remove',NULL),
+ (17,'html',0,'<div class=\"social_links\">\n 	<a><i class=\"fa-brands fa-youtube\"></i></a>\n 	<a href=\"https://twitter.com/ZenarioCMS\" target=\"_blank\"><i class=\"fa-brands fa-twitter\"></i></a>\n </div>','synchronized_setting','html',NULL,0,'','remove',NULL),
  (19,'company_name',0,'Your Company','synchronized_setting','text',NULL,0,'','remove',NULL),
  (19,'display_single_year',0,'current_year','synchronized_setting','text',NULL,0,'','remove',NULL),
  (19,'year_display',0,'display_single_year','synchronized_setting','text',NULL,0,'','remove',NULL),
@@ -321,69 +323,73 @@ ALTER TABLE `[[DB_PREFIX]]skins` ENABLE KEYS;
 
 ALTER TABLE `[[DB_PREFIX]]layout_head_and_foot` DISABLE KEYS;
 INSERT INTO `[[DB_PREFIX]]layout_head_and_foot` VALUES
- ('sitewide',12,769,1240,1,1,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 9}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"gutterLeftEdgeFlu\": 1, \"gutterRightEdgeFlu\": 1}','{\"cells\": [{\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6}], \"width\": 6, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12}]}');
+ ('sitewide',12,769,1240,1,1,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 8}, {\"name\": \"Slot_Header_Search\", \"slot\": true, \"small\": \"hide\", \"width\": 1}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"gutterLeftEdgeFlu\": 1.5, \"gutterRightEdgeFlu\": 1.5}','{\"cells\": [{\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6}], \"width\": 6, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12}]}');
 ALTER TABLE `[[DB_PREFIX]]layout_head_and_foot` ENABLE KEYS;
 
 
 ALTER TABLE `[[DB_PREFIX]]layouts` DISABLE KEYS;
 INSERT INTO `[[DB_PREFIX]]layouts` VALUES
- (1,'HTML Standard layout','html','active',12,769,1240,1,1,1,1,'ltr',0,'',NULL,NULL,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12, \"isHeader\": true}, {\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3, \"isHeader\": true}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 9, \"isHeader\": true}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12, \"isHeader\": true}, {\"name\": \"Slot_Masthead\", \"slot\": true, \"width\": 12, \"grid_break\": true}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Body\"}, {\"cells\": [{\"name\": \"Slot_Breadcrumbs\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"name\": \"Slot_Main_1\", \"slot\": true, \"width\": 12}, {\"name\": \"Slot_Main_2\", \"slot\": true, \"width\": 12}, {\"name\": \"Slot_Main_3\", \"slot\": true, \"width\": 12}], \"width\": 12, \"css_class\": \"Main_Area\"}, {\"width\": 12, \"isFooter\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6, \"isFooter\": true}], \"width\": 6, \"isFooter\": true, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12, \"isFooter\": true}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"headerAndFooter\": true, \"gutterLeftEdgeFlu\": 1, \"gutterRightEdgeFlu\": 1}','0L739A-i',NULL,'not_needed',NULL,0,NULL,'not_needed',NULL,0,0),
- (2,'Home Page Layout','html','active',12,769,1240,1,1,1,1,'ltr',0,'',NULL,NULL,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12, \"isHeader\": true}, {\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3, \"isHeader\": true}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 9, \"isHeader\": true}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12, \"isHeader\": true}, {\"name\": \"Slot_Slideshow\", \"slot\": true, \"width\": 12, \"grid_break\": true}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Body space_at_top\"}, {\"cells\": [{\"name\": \"Slot_Content_1\", \"slot\": true, \"width\": 6, \"height\": \"small\"}, {\"name\": \"Slot_Content_Image_1\", \"slot\": true, \"width\": 6, \"height\": \"small\"}], \"width\": 12, \"css_class\": \"Grouping_Content\"}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Full_Boxes space_at_top\"}, {\"name\": \"Slot_Full_Boxes\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Content space_at_top\"}, {\"name\": \"Slot_Portfolio\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"name\": \"Slot_Full_Banner\", \"slot\": true, \"width\": 12, \"height\": \"small\", \"css_class\": \"space_at_top\"}, {\"cells\": [{\"name\": \"Slot_News\", \"slot\": true, \"width\": 6, \"height\": \"small\"}, {\"name\": \"Slot_Contact_Form\", \"slot\": true, \"width\": 6, \"height\": \"small\"}], \"width\": 12, \"css_class\": \"Grouping_Contact space_at_top\"}, {\"name\": \"Slot_Map\", \"slot\": true, \"width\": 12, \"css_class\": \"space_at_top\", \"grid_break\": true}, {\"width\": 12, \"isFooter\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6, \"isFooter\": true}], \"width\": 6, \"isFooter\": true, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12, \"isFooter\": true}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"headerAndFooter\": true, \"gutterLeftEdgeFlu\": 1, \"gutterRightEdgeFlu\": 1}','W-Qq8jNG','<link rel=\"stylesheet\" href=\"zenario/libs/yarn/animate.css/animate.min.css\"/>','not_needed',NULL,0,'<script type=\"text/javascript\" src=\"zenario/libs/yarn/wow.js/dist/wow.min.js\"></script>\n<script type=\"text/javascript\" src=\"zenario_custom/skins/zebra_designs/js/animation_load.js\"></script>','not_needed',NULL,0,0),
- (3,'News Layout','news','active',12,769,1240,1,1,1,1,'ltr',0,'',NULL,NULL,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12, \"isHeader\": true}, {\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3, \"isHeader\": true}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 9, \"isHeader\": true}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12, \"isHeader\": true}, {\"name\": \"Slot_Masthead\", \"slot\": true, \"width\": 12, \"grid_break\": true}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Body\"}, {\"cells\": [{\"name\": \"Slot_Breadcrumbs\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"name\": \"Slot_Main_1\", \"slot\": true, \"width\": 12}], \"width\": 12, \"css_class\": \"Main_Area\"}, {\"width\": 12, \"isFooter\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6, \"isFooter\": true}], \"width\": 6, \"isFooter\": true, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12, \"isFooter\": true}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"headerAndFooter\": true, \"gutterLeftEdgeFlu\": 1, \"gutterRightEdgeFlu\": 1}','NCUwX1cK',NULL,'not_needed',NULL,0,NULL,'not_needed',NULL,0,0);
+ (1,'HTML Standard layout','html','active',12,769,1240,1,1,1,1,'ltr',0,'',NULL,NULL,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12, \"isHeader\": true}, {\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3, \"isHeader\": true}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 8, \"isHeader\": true}, {\"name\": \"Slot_Header_Search\", \"slot\": true, \"small\": \"hide\", \"width\": 1, \"isHeader\": true}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12, \"isHeader\": true}, {\"name\": \"Slot_Masthead\", \"slot\": true, \"width\": 12, \"grid_break\": true}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Body\"}, {\"cells\": [{\"name\": \"Slot_Breadcrumbs\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"name\": \"Slot_Main_1\", \"slot\": true, \"width\": 12}, {\"name\": \"Slot_Main_2\", \"slot\": true, \"width\": 12}, {\"name\": \"Slot_Main_3\", \"slot\": true, \"width\": 12}], \"width\": 12, \"css_class\": \"Main_Area\"}, {\"width\": 12, \"isFooter\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6, \"isFooter\": true}], \"width\": 6, \"isFooter\": true, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12, \"isFooter\": true}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"headerAndFooter\": true, \"gutterLeftEdgeFlu\": 1.5, \"gutterRightEdgeFlu\": 1.5}','nufDhvob',NULL,'not_needed',NULL,0,NULL,'not_needed',NULL,0,0),
+ (2,'Home Page Layout','html','active',12,769,1240,1,1,1,1,'ltr',0,'',NULL,NULL,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12, \"isHeader\": true}, {\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3, \"isHeader\": true}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 8, \"isHeader\": true}, {\"name\": \"Slot_Header_Search\", \"slot\": true, \"small\": \"hide\", \"width\": 1, \"isHeader\": true}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12, \"isHeader\": true}, {\"name\": \"Slot_Slideshow\", \"slot\": true, \"width\": 12, \"grid_break\": true}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Body space_at_top\"}, {\"cells\": [{\"name\": \"Slot_Content_1\", \"slot\": true, \"width\": 6, \"height\": \"small\"}, {\"name\": \"Slot_Content_Image_1\", \"slot\": true, \"width\": 6, \"height\": \"small\"}], \"width\": 12, \"css_class\": \"Grouping_Content\"}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Full_Boxes space_at_top\"}, {\"name\": \"Slot_Full_Boxes\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Content space_at_top\"}, {\"name\": \"Slot_Portfolio\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"name\": \"Slot_Full_Banner\", \"slot\": true, \"width\": 12, \"height\": \"small\", \"css_class\": \"space_at_top\"}, {\"cells\": [{\"name\": \"Slot_News\", \"slot\": true, \"width\": 6, \"height\": \"small\"}, {\"name\": \"Slot_Contact_Form\", \"slot\": true, \"width\": 6, \"height\": \"small\"}], \"width\": 12, \"css_class\": \"Grouping_Contact space_at_top\"}, {\"name\": \"Slot_Map\", \"slot\": true, \"width\": 12, \"css_class\": \"space_at_top\", \"grid_break\": true}, {\"width\": 12, \"isFooter\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6, \"isFooter\": true}], \"width\": 6, \"isFooter\": true, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12, \"isFooter\": true}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"headerAndFooter\": true, \"gutterLeftEdgeFlu\": 1.5, \"gutterRightEdgeFlu\": 1.5}','dcpkbsP0','<link rel=\"stylesheet\" href=\"zenario/libs/yarn/animate.css/animate.min.css\"/>','not_needed',NULL,0,'<script type=\"text/javascript\" src=\"zenario/libs/yarn/wow.js/dist/wow.min.js\"></script>\n<script type=\"text/javascript\" src=\"zenario_custom/skins/zebra_designs/js/animation_load.js\"></script>','not_needed',NULL,0,0),
+ (3,'News Layout','news','active',12,769,1240,1,1,1,1,'ltr',0,'',NULL,NULL,'{\"cols\": 12, \"cells\": [{\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Top\"}, {\"name\": \"Slot_Header_Top\", \"slot\": true, \"width\": 12, \"isHeader\": true}, {\"width\": 12, \"isHeader\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Header Fixed\"}, {\"name\": \"Slot_Header_Logo\", \"slot\": true, \"width\": 3, \"isHeader\": true}, {\"name\": \"Slot_Header_Menu\", \"slot\": true, \"small\": \"hide\", \"width\": 8, \"isHeader\": true}, {\"name\": \"Slot_Header_Search\", \"slot\": true, \"small\": \"hide\", \"width\": 1, \"isHeader\": true}, {\"name\": \"Slot_Header_Mobile_Menu\", \"slot\": true, \"small\": \"only\", \"width\": 12, \"isHeader\": true}, {\"name\": \"Slot_Masthead\", \"slot\": true, \"width\": 12, \"grid_break\": true}, {\"width\": 12, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Body\"}, {\"cells\": [{\"name\": \"Slot_Breadcrumbs\", \"slot\": true, \"width\": 12, \"height\": \"small\"}, {\"name\": \"Slot_Main_1\", \"slot\": true, \"width\": 12}], \"width\": 12, \"css_class\": \"Main_Area\"}, {\"width\": 12, \"isFooter\": true, \"grid_break\": true, \"grid_css_class\": \"Gridbreak_Footer\"}, {\"name\": \"Slot_Footer_Address\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"cells\": [{\"name\": \"Slot_Footer_Social\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Menu\", \"slot\": true, \"width\": 6, \"isFooter\": true}, {\"name\": \"Slot_Footer_Copyright\", \"slot\": true, \"width\": 6, \"isFooter\": true}], \"width\": 6, \"isFooter\": true, \"css_class\": \"Grouping_Footer\"}, {\"name\": \"Slot_Footer_Contact\", \"slot\": true, \"width\": 12, \"isFooter\": true}], \"fluid\": true, \"mirror\": false, \"maxWidth\": 1240, \"minWidth\": 769, \"gutterFlu\": 1, \"responsive\": true, \"headerAndFooter\": true, \"gutterLeftEdgeFlu\": 1.5, \"gutterRightEdgeFlu\": 1.5}','6xUNsHzd',NULL,'not_needed',NULL,0,NULL,'not_needed',NULL,0,0);
 ALTER TABLE `[[DB_PREFIX]]layouts` ENABLE KEYS;
 
 
 ALTER TABLE `[[DB_PREFIX]]layout_slot_link` DISABLE KEYS;
 INSERT INTO `[[DB_PREFIX]]layout_slot_link` VALUES
- (1,'Slot_Breadcrumbs',6,12,'show',0,0),
- (1,'Slot_Footer_Address',10,6,'show',0,1),
- (1,'Slot_Footer_Contact',14,12,'show',0,1),
- (1,'Slot_Footer_Copyright',13,6,'show',0,1),
- (1,'Slot_Footer_Menu',12,6,'show',0,1),
- (1,'Slot_Footer_Social',11,6,'show',0,1),
+ (1,'Slot_Breadcrumbs',7,12,'show',0,0),
+ (1,'Slot_Footer_Address',11,6,'show',0,1),
+ (1,'Slot_Footer_Contact',15,12,'show',0,1),
+ (1,'Slot_Footer_Copyright',14,6,'show',0,1),
+ (1,'Slot_Footer_Menu',13,6,'show',0,1),
+ (1,'Slot_Footer_Social',12,6,'show',0,1),
  (1,'Slot_Header_Logo',2,3,'show',1,0),
- (1,'Slot_Header_Menu',3,9,'hide',1,0),
- (1,'Slot_Header_Mobile_Menu',4,12,'only',1,0),
+ (1,'Slot_Header_Menu',3,8,'hide',1,0),
+ (1,'Slot_Header_Search',4,1,'hide',1,0),
+ (1,'Slot_Header_Mobile_Menu',5,12,'only',1,0),
  (1,'Slot_Header_Top',1,12,'show',1,0),
- (1,'Slot_Main_1',7,12,'show',0,0),
- (1,'Slot_Main_2',8,12,'show',0,0),
- (1,'Slot_Main_3',9,12,'show',0,0),
- (1,'Slot_Masthead',5,12,'show',0,0),
- (2,'Slot_Contact_Form',12,6,'show',0,0),
- (2,'Slot_Content_1',6,6,'show',0,0),
- (2,'Slot_Content_Image_1',7,6,'show',0,0),
- (2,'Slot_Footer_Address',14,6,'show',0,1),
- (2,'Slot_Footer_Contact',18,12,'show',0,1),
- (2,'Slot_Footer_Copyright',17,6,'show',0,1),
- (2,'Slot_Footer_Menu',16,6,'show',0,1),
- (2,'Slot_Footer_Social',15,6,'show',0,1),
- (2,'Slot_Full_Banner',10,12,'show',0,0),
- (2,'Slot_Full_Boxes',8,12,'show',0,0),
+ (1,'Slot_Main_1',8,12,'show',0,0),
+ (1,'Slot_Main_2',9,12,'show',0,0),
+ (1,'Slot_Main_3',10,12,'show',0,0),
+ (1,'Slot_Masthead',6,12,'show',0,0),
+ (2,'Slot_Contact_Form',13,6,'show',0,0),
+ (2,'Slot_Content_1',7,6,'show',0,0),
+ (2,'Slot_Content_Image_1',8,6,'show',0,0),
+ (2,'Slot_Footer_Address',15,6,'show',0,1),
+ (2,'Slot_Footer_Contact',19,12,'show',0,1),
+ (2,'Slot_Footer_Copyright',18,6,'show',0,1),
+ (2,'Slot_Footer_Menu',17,6,'show',0,1),
+ (2,'Slot_Footer_Social',16,6,'show',0,1),
+ (2,'Slot_Full_Banner',11,12,'show',0,0),
+ (2,'Slot_Full_Boxes',9,12,'show',0,0),
  (2,'Slot_Header_Logo',2,3,'show',1,0),
- (2,'Slot_Header_Menu',3,9,'hide',1,0),
- (2,'Slot_Header_Mobile_Menu',4,12,'only',1,0),
+ (2,'Slot_Header_Menu',3,8,'hide',1,0),
+ (2,'Slot_Header_Search',4,1,'hide',1,0),
+ (2,'Slot_Header_Mobile_Menu',5,12,'only',1,0),
  (2,'Slot_Header_Top',1,12,'show',1,0),
- (2,'Slot_Map',13,12,'show',0,0),
- (2,'Slot_News',11,6,'show',0,0),
- (2,'Slot_Portfolio',9,12,'show',0,0),
- (2,'Slot_Slideshow',5,12,'show',0,0),
- (3,'Slot_Breadcrumbs',6,12,'show',0,0),
- (3,'Slot_Footer_Address',8,6,'show',0,1),
- (3,'Slot_Footer_Contact',12,12,'show',0,1),
- (3,'Slot_Footer_Copyright',11,6,'show',0,1),
- (3,'Slot_Footer_Menu',10,6,'show',0,1),
- (3,'Slot_Footer_Social',9,6,'show',0,1),
+ (2,'Slot_Map',14,12,'show',0,0),
+ (2,'Slot_News',12,6,'show',0,0),
+ (2,'Slot_Portfolio',10,12,'show',0,0),
+ (2,'Slot_Slideshow',6,12,'show',0,0),
+ (3,'Slot_Breadcrumbs',7,12,'show',0,0),
+ (3,'Slot_Footer_Address',9,6,'show',0,1),
+ (3,'Slot_Footer_Contact',13,12,'show',0,1),
+ (3,'Slot_Footer_Copyright',12,6,'show',0,1),
+ (3,'Slot_Footer_Menu',11,6,'show',0,1),
+ (3,'Slot_Footer_Social',10,6,'show',0,1),
  (3,'Slot_Header_Logo',2,3,'show',1,0),
- (3,'Slot_Header_Menu',3,9,'hide',1,0),
- (3,'Slot_Header_Mobile_Menu',4,12,'only',1,0),
+ (3,'Slot_Header_Menu',3,8,'hide',1,0),
+ (3,'Slot_Header_Search',4,1,'hide',1,0),
+ (3,'Slot_Header_Mobile_Menu',5,12,'only',1,0),
  (3,'Slot_Header_Top',1,12,'show',1,0),
- (3,'Slot_Main_1',7,12,'show',0,0),
- (3,'Slot_Masthead',5,12,'show',0,0);
+ (3,'Slot_Main_1',8,12,'show',0,0),
+ (3,'Slot_Masthead',6,12,'show',0,0);
 ALTER TABLE `[[DB_PREFIX]]layout_slot_link` ENABLE KEYS;
 
 
 ALTER TABLE `[[DB_PREFIX]]plugin_sitewide_link` DISABLE KEYS;
-INSERT INTO `[[DB_PREFIX]]plugin_sitewide_link` VALUES (2,16,'Slot_Footer_Address'),
+INSERT INTO `[[DB_PREFIX]]plugin_sitewide_link` VALUES
+ (2,16,'Slot_Footer_Address'),
  (17,20,'Slot_Footer_Contact'),
  (15,19,'Slot_Footer_Copyright'),
  (4,18,'Slot_Footer_Menu'),
@@ -391,6 +397,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_sitewide_link` VALUES (2,16,'Slot_Footer_Addres
  (2,1,'Slot_Header_Logo'),
  (6,2,'Slot_Header_Menu'),
  (12,3,'Slot_Header_Mobile_Menu'),
+ (20,30,'Slot_Header_Search'),
  (14,4,'Slot_Header_Top');
 ALTER TABLE `[[DB_PREFIX]]plugin_sitewide_link` ENABLE KEYS;
 

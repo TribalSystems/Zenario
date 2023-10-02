@@ -111,17 +111,17 @@ full_slot:
         switch_to_edit:
             page_modes:
                 layout: true
-            onclick: zenarioAT.clickTab('edit'); return false;
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
             label: Switch to Edit mode to edit content
         switch_to_edit_settings:
             page_modes:
                 layout: true
-            onclick: zenarioAT.clickTab('edit'); return false;
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
             label: Switch to Edit mode to edit plugin settings
         switch_to_layout:
             page_modes:
                 edit: true
-            onclick: zenarioAT.clickTab('layout'); return false;
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
             label: Switch to Layout mode to edit plugin settings
         
         settings:

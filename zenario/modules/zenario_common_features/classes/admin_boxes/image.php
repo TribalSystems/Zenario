@@ -39,6 +39,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			exit;
 		}
 		
+		$box['key']['filename_on_load'] = $details['filename'];
+		
 		if ($details['usage'] == 'mic') {
 			$box['key']['mic_image'] = true;
 		}
@@ -453,6 +455,47 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				
 				break;
 		}
+		
+		if ($details['privacy'] == 'public') {
+			//If this is a public image, generate all the required links.
+			$fields['link/image_is_public_snippet']['hidden'] = false;
+			$fields['link/image_is_not_public_snippet']['hidden'] = true;
+			
+			$rememberWhatThisWas = ze::$mustUseFullPath;
+			ze::$mustUseFullPath = false;
+			
+			$width = $height = $url = $internalPath = false;
+			$webPURL = $mimeType = $isRetina = $internalWebPPath = null;
+			ze\file::imageAndWebPLink($width, $height, $url, true, $webPURL, false, $isRetina, $mimeType, $box['key']['id']);
+			ze\file::internalImageAndWebPPath($width, $height, $internalPath, true, $internalWebPPath, false, $isRetina, $mimeType, $box['key']['id']);
+			
+			$originalImageSize = ze\file::formatSizeUnits(filesize($internalPath));
+			$webPSize = ze\file::formatSizeUnits(filesize(addslashes($internalWebPPath)));
+			
+			$values['link/internal_original_image_link'] = htmlspecialchars($url);
+			$values['link/external_original_image_link'] = htmlspecialchars(ze\link::absolute(). $url);
+			$values['link/internal_webp_link'] = htmlspecialchars($webPURL);
+			$values['link/external_webp_link'] = htmlspecialchars(ze\link::absolute(). $webPURL);
+			
+			ze\lang::applyMergeFields($fields['link/internal_original_image_link']['label'], ['size' => $originalImageSize]);
+			ze\lang::applyMergeFields($fields['link/external_original_image_link']['label'], ['size' => $originalImageSize]);
+			
+			ze\lang::applyMergeFields($fields['link/internal_webp_link']['label'], ['size' => $webPSize]);
+			ze\lang::applyMergeFields($fields['link/external_webp_link']['label'], ['size' => $webPSize]);
+			
+			ze::$mustUseFullPath = $rememberWhatThisWas;
+			
+			//Code for embedding
+			$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($webPURL) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '">';
+		} else {
+			if ($details['usage'] == 'mic') {
+				$box['tabs']['link']['hidden'] = true;
+			} else {
+				$fields['link/image_is_public_snippet']['hidden'] = true;
+				$fields['link/image_is_not_public_snippet']['hidden'] = false;
+				$fields['link/links_grouping']['hidden'] = true;
+			}
+		}
 
 		$usageLinks = self::imageUsageLinks((int) $box['key']['id']);
 		$usage = ze\fileAdm::getImageUsage((int) $box['key']['id']);
@@ -559,7 +602,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 
 		if (ze::setting('show_default_floating_box_caption') && !$box['key']['mic_image']) {
 			if ($values['details/add_a_gallery_caption']) {
-				$details['floating_box_title'] = $values['details/floating_box_title'];
+				$details['floating_box_title'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['details/floating_box_title']);
 			} else {
 				$details['floating_box_title'] = '';
 			}
@@ -645,6 +688,12 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					ze\row::set('cropped_images', $row, $id);
 				}
 			}
+		}
+		
+		//If the filename has been changed, run the public link checker
+		//to generate the new public file (if needed).
+		if ($box['key']['filename_on_load'] != $values['details/filename']) {
+			ze\fileAdm::checkAllImagePublicLinks($check = false);
 		}
 	}
 

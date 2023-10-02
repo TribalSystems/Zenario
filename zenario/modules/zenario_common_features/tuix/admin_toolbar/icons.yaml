@@ -18,6 +18,9 @@ sections:
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
+            staging_mode:
+                css_class: zenario_at_icon_staging_mode_enabled
+                tooltip: ''
             alias_dropdown:
                 css_class: zenario_at_icon_alias
             copy_url:

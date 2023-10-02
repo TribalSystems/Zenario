@@ -152,7 +152,7 @@ zenario__modules:
                     path: zenario__modules/panels/plugins
                     branch: true
                     refiner: plugin
-                tooltip: |
+                tooltip_when_link_is_active: |
                         View this module's plugins
             hidden_nav:
                 view_frameworks:

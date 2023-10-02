@@ -88,7 +88,7 @@ class layoutAdm {
 			$box['confirm']['show'] = true;
 			$box['confirm']['message'] .= $box['confirm']['message']? '<br/><br/>' : '';
 			$box['confirm']['message'] .=
-				\ze\admin::phrase('You are about to change the layout of this content item. The content and settings will moved as follows:').
+				\ze\admin::phrase('You are about to change the layout of this content item. Version controlled plugins will be moved as follows:').
 				'<br/><br/>'.
 				$warnings;
 			$box['confirm']['button_message'] = \ze\admin::phrase('Change Layout');
@@ -238,15 +238,14 @@ class layoutAdm {
 		foreach (['old', 'new'] as $oon) {
 			//Loop through the slots on the templates, seeing what Modules are placed where
 			$layout[$oon] = \ze\content::layoutDetails($layoutId[$oon]);
-			\ze\plugin::slotContents(
+			\ze\plugin::checkSlotContents(
 				$slotContents[$oon],
 				$cID, $cType, $cVersion,
-				$layoutId[$oon],
-				$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-				$runPlugins = false);
+				$layoutId[$oon]
+			);
 		
 			foreach ($slotContents[$oon] as $slotName => $slot) {
-				if (!empty($slot['content_id']) && !empty($slot['module_id'])) {
+				if ($slot->cID() && $slot->moduleId()) {
 				
 					//For the old Template, only count a slot if there is Content in there
 					if ($oon == 'new'
@@ -255,13 +254,13 @@ class layoutAdm {
 							SELECT 1
 							FROM ". DB_PREFIX. "plugin_settings AS ps
 							INNER JOIN ". DB_PREFIX. "plugin_setting_defs AS psd
-							   ON psd.module_id = ". (int) $slot['module_id']. "
+							   ON psd.module_id = ". (int) $slot->moduleId(). "
 							  AND psd.name = ps.name
 							  AND psd.default_value != ps.value
 							WHERE ps.egg_id = 0
 							  AND ps.value IS NOT NULL
 							  AND ps.is_content IN('version_controlled_setting', 'version_controlled_content')
-							  AND ps.instance_id = ". (int) $slot['instance_id']. "
+							  AND ps.instance_id = ". (int) $slot->instanceId(). "
 							LIMIT 1")
 					  && ($result = \ze\sql::select($sql))
 					  && (\ze\sql::fetchRow($result)))
@@ -280,12 +279,12 @@ class layoutAdm {
 							WHERE ps.egg_id != 0
 							  AND ps.value IS NOT NULL
 							  AND ps.is_content IN('version_controlled_setting', 'version_controlled_content')
-							  AND ps.instance_id = ". (int) $slot['instance_id']. "
+							  AND ps.instance_id = ". (int) $slot->instanceId(). "
 							LIMIT 1")
 					  && ($result = \ze\sql::select($sql))
 					  && (\ze\sql::fetchRow($result)))) {
 						$pluginsOnLayout[$oon][$slotName] =
-						$nonMatches[$oon][$slotName] = $slot['class_name'];
+						$nonMatches[$oon][$slotName] = $slot->moduleClassName();
 					}
 				}
 			}
@@ -333,19 +332,31 @@ class layoutAdm {
 			if ($slotsLost || ($slotChanges && $warnOnChanges)) {
 				$html =
 					'<table class="zenario_changeLayoutDestinations"><tr>
-						<th>'. \ze\admin::phrase('Old layout'). '</th>
+						<th>'. htmlspecialchars(\ze\layoutAdm::codeName($oldLayoutId)). '</th>
 						<th>'. \ze\admin::phrase('Contents'). '</th>
-						<th>'. \ze\admin::phrase('New layout'). '</th>
+						<th>'. htmlspecialchars(\ze\layoutAdm::codeName($newLayoutId)). '</th>
 					</tr>';
 			
 				foreach ($pluginsOnLayout['old'] as $oSlotName => $className) {
+					
+					$moduleName = \ze\module::getModuleDisplayNameByClassName($className);
+					
 					$html .=
 						'<tr>
 							<td>'. htmlspecialchars($oSlotName). '</td>
-							<td>'. htmlspecialchars(\ze\module::getModuleDisplayNameByClassName($className)). '</td>';
+							<td>'. htmlspecialchars($moduleName). '</td>';
 				
 					if (empty($matches['old'][$oSlotName])) {
-						$html .= '<td class="zenario_changeLayoutDestinationMissing">'. \ze\admin::phrase('data will NOT be copied'). '</td>';
+						$html .=
+							'<td class="zenario_changeLayoutDestinationMissing">'.
+								\ze\admin::phrase('Data will NOT be copied.').
+								'<br/>'.
+								\ze\admin::phrase("To remedy this, edit layout [[layout]] with Gridmaker, make a slot called [[slot_name]], save, and then add the appropriate plugin ([[module_name]]) to that slot on the layout.", [
+									'layout' => htmlspecialchars(\ze\layoutAdm::codeName($newLayoutId)),
+									'slot_name' => htmlspecialchars($oSlotName),
+									'module_name' => htmlspecialchars($moduleName)
+								]).
+							 '</td>';
 					} else {
 						$html .= '<td>'. htmlspecialchars($matches['old'][$oSlotName]). '</td>';
 					}
@@ -372,7 +383,7 @@ class layoutAdm {
 				if ($oSlotName != $nSlotName) {
 					$oldSlot =
 						[
-						'module_id' => $slotContents['old'][$oSlotName]['module_id'],
+						'module_id' => $slotContents['old'][$oSlotName]->moduleId(),
 						'content_id' => $cID,
 						'content_type' => $cType,
 						'content_version' => $cVersion,

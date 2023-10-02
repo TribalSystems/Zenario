@@ -6,7 +6,7 @@ zenario_publish:
         id: ""
         cID: ""
         cType: ""
-    max_height: 350
+    max_height: 370
     hide_tab_bar: true
     save_button_message: Publish
     cancel_button_message: Cancel
@@ -27,6 +27,13 @@ zenario_publish:
                     type: warning
                     message: ''
             fields:
+                access_codes_warning:
+                    snippet: {}
+                    notices_above:
+                        access_codes_warning:
+                            hidden: false
+                            type: information
+                            message: ''
                 publish_options:
                     type: radios
                     values:
@@ -43,6 +50,7 @@ zenario_publish:
                     label: 'Date & Time'
                     type: date
                     indent: 1
+                    no_past_dates: true
                 publish_hours:
                     type: select
                     values:
@@ -126,3 +134,18 @@ zenario_publish:
                         
                     value: 00
                     same_row: true
+                publishing_before_release_date_warning:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                [[publishing_before_release_date_warning_note]]
+                            </div>
+#                 notify_indexnow:
+#                     type: checkbox
+#                     label: 'Notify IndexNow of new or updated content'
+#                 publish_multiple_indexnow_snippet:
+#                     snippet:
+#                         html: |
+#                             <div class="zenario_fbInfo">
+#                                 Publish items individually to notify IndexNow.
+#                             </div>

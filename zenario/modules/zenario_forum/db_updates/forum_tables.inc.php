@@ -242,38 +242,10 @@ _sql
 		KEY(`file_id`)
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
-);
-
-
-
-
-//Convert all code from bbcode to sanitised HTML
-if (ze\dbAdm::needRevision(160)) {
-	
-	require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/markitup/bbcode2html.inc.php';
-
-	$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol><a><img>';
-	$allowedStyles = ['padding-left' => true, 'text-decoration' => true];
-	
-	$result = ze\row::query(ZENARIO_FORUM_PREFIX. 'user_posts', ['id', 'message_text'], []);
-	while ($row = ze\sql::fetchAssoc($result)) {
-		
-		BBCode2Html($row['message_text'], false, true, true, false);
-		
-		ze\row::update(
-			ZENARIO_FORUM_PREFIX. 'user_posts',
-			['message_text' => ze\ring::sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)],
-			$row['id']);
-	}
-	unset($row);
-	unset($result);
-	
-	ze\dbAdm::revision(160);
-}
 
 
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
-ze\dbAdm::revision( 170
+);	ze\dbAdm::revision( 170
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_FORUM_PREFIX]]forums` MODIFY COLUMN `new_thread_content_type` varchar(20) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default ''
 _sql

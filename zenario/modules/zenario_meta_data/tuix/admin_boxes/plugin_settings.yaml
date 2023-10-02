@@ -316,7 +316,7 @@ plugin_settings:
                     grouping: filters
                     label: 'Image canvas:'
                     type: select
-                    value: unlimited
+                    value: fixed_width_and_height
                     values:
                         unlimited:
                             label: Unlimited size
@@ -433,9 +433,24 @@ plugin_settings:
                     plugin_setting:
                         name: show_featured_image
                     grouping: filters
-                    label: "Show content item's featured image"
+                    label: "Show an image..."
                     type: checkbox
                     format_onchange: true
+                featured_image_source:
+                    indent: 1
+                    plugin_setting:
+                        name: featured_image_source
+                    grouping: filters
+                    type: radios
+                    values:
+                        current_content_item_feature_image:
+                            ord: 1
+                            label: "Show content item's featured image"
+                        menu_node_or_parent_feature_image:
+                            ord: 2
+                            label: "Show image of menu node or parent"
+                    value: current_content_item_feature_image
+                    visible_if: lib.value('show_featured_image')
                 sticky_image_label_html_tag:
                     indent: 1
                     plugin_setting:
@@ -511,7 +526,7 @@ plugin_settings:
                     plugin_setting:
                         name: fall_back_to_default_image
                     grouping: filters
-                    label: "Show a fallback image, if content item doesn't have a featured image"
+                    label: "Show a fallback image, if content item/menu node doesn't have a featured image"
                     type: checkbox
                     format_onchange: true
                     visible_if: lib.value('show_featured_image')

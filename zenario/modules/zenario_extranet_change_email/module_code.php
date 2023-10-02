@@ -73,18 +73,14 @@ class zenario_extranet_change_email extends zenario_extranet {
 
 	public function changeEmailAndLogUserIn(){
 		if (!empty($_GET['hash'])){
-			$sql = "SELECT 
-						user_id,
-						new_email,
-						hash
-					FROM " 
-						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
-					WHERE
-						hash ='" . ze\escape::asciiInSQL(ze::get('hash')) . "'";
+			$sql = "
+				SELECT user_id, new_email, hash
+				FROM " . DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
+				WHERE hash ='" . ze\escape::asciiInSQL(ze::get('hash')) . "'";
 			
 			$result = ze\sql::select($sql);
 			if ($row = ze\sql::fetchAssoc($result)){
-				$userDetails = ze\user::details($row['user_id']);
+				$userDetails = ze\user::userDetailsForEmails($row['user_id']);
 			
 				ze\row::update(
 					"users",
@@ -117,10 +113,9 @@ class zenario_extranet_change_email extends zenario_extranet {
 					zenario_email_template_manager::sendEmailsUsingTemplate($row['new_email'], $emailTemplate, $mergeFields);
 				}
 				
-				$sql = "DELETE FROM " 
-						. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
-					WHERE
-						hash ='" . ze\escape::asciiInSQL(ze::get('hash')) . "'";
+				$sql = "
+					DELETE FROM " . DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
+					WHERE hash ='" . ze\escape::asciiInSQL(ze::get('hash')) . "'";
 				ze\sql::update($sql);
 				
 				ze\user::logIn($row['user_id']);
@@ -144,7 +139,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 			$this->objects['Captcha'] = $this->captcha2();
 		}
 		
-		$loggedInUserData = ze\user::details(ze\user::id());
+		$loggedInUserData = ze\user::userDetailsForEmails(ze\user::id());
 		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Change_Email_Form'] = true;
@@ -155,21 +150,21 @@ class zenario_extranet_change_email extends zenario_extranet {
 
 	private function prepareEmailChange(){
 
-		$loggedInUserData = ze\user::details(ze\user::id());
+		$loggedInUserData = ze\user::userDetailsForEmails(ze\user::id());
 		
 		$this->validateFormFields('Change_Email_Form');
-		if (!$this->errors){
+		if (!$this->errors) {
 			
 			if (!ze\user::checkPassword(ze\user::id(), ze::post('extranet_password'))) {
-				$this->errors[] = ['Error'=>$this->phrase('Error. The password you entered was incorrect.')];
+				$this->errors[] = ['Error' => $this->phrase('Error. The password you entered was incorrect.')];
 			}
 
 
 			if (ze\row::exists('users', ['email' => ze::post('extranet_email')])) {
 				if ($loggedInUserData['email'] == $_POST['extranet_email']) {
-					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address is the same as the current one.')];
+					$this->errors[] = ['Error' => $this->phrase('Error. The new email address is the same as the current one.')];
 				} else {
-					$this->errors[] = ['Error'=>$this->phrase('Error. The new email address you entered is already in use.')];
+					$this->errors[] = ['Error' => $this->phrase('Error. The new email address you entered is already in use.')];
 				}
 			}
 
@@ -183,25 +178,25 @@ class zenario_extranet_change_email extends zenario_extranet {
 				}
 			}
 
-			if(!$this->errors){
+			if (!$this->errors) {
 				if ($this->setting('confirmation_email_template') && ze\module::inc('zenario_email_template_manager')){
 					$hash = md5(ze::post('extranet_email') . ze\link::host() . time()) . time();
-					$sql = "REPLACE INTO " 
-								. DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
-							SET 
-								user_id = " . (int) ze\user::id() . ",
-								new_email = '" . ze\escape::sql(ze::post('extranet_email')) . "',
-								hash = '" . $hash . "'";
+					$sql = "
+						REPLACE INTO " . DB_PREFIX . ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX . "new_user_emails 
+						SET
+							user_id = " . (int) ze\user::id() . ",
+							new_email = '" . ze\escape::sql(ze::post('extranet_email')) . "',
+							hash = '" . $hash . "'";
 					ze\sql::update($sql);
 
-					$userDetails = ze\user::details(ze\user::id());
+					$userDetails = ze\user::userDetailsForEmails(ze\user::id());
 					$userDetails['new_email'] =  $_POST['extranet_email'] ?? false;
 					$userDetails['hash'] =  $hash;
 					$userDetails['cms_url'] = ze\link::absolute();
 					$userDetails['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&action=confirm_email&hash='. $hash);
 					
 					if (!zenario_email_template_manager::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,[])){
-						$this->errors[] = ['Error'=>$this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
+						$this->errors[] = ['Error' => $this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
 						return false;
 					}
 
@@ -209,7 +204,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 					$this->mode = 'modeLoggedIn';
 					return true;
 				} else {
-					$this->errors[] = ['Error'=>$this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
+					$this->errors[] = ['Error' => $this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
 					return false;
 				}
 			} else {

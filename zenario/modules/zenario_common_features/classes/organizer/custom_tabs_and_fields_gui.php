@@ -167,7 +167,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				}
 			}
 			
-			//First tab automatically loads it's fields record counts
+			//First tab automatically loads its fields record counts
 			if ($tabCount == 1) {
 				$tabProperties['record_counts_fetched'] = true;
 			}
@@ -234,6 +234,22 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'max_rows' => (int)$field['max_rows'],
 					'repeat_start_id' => (int)$field['repeat_start_id']
 				];
+				
+				// Screen names and country-based permissions are tied to site settings.
+				// Display a warning if the relevant site setting is turned off.
+				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'screen_name') {
+					$fieldProperties['field_name'] = 'screen_name';
+					$fieldProperties['dataset'] = $dataset['system_table'];
+					$fieldProperties['field_dependent_on_a_site_setting'] = true;
+					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('user_use_screen_name');
+				}
+				
+				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'linked_countries') {
+					$fieldProperties['field_name'] = 'linked_countries';
+					$fieldProperties['dataset'] = $dataset['system_table'];
+					$fieldProperties['field_dependent_on_a_site_setting'] = true;
+					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('users_use_linked_countries');
+				}
 				
 				//Get record count for fields on first tab. Other tab fields are loaded as their tab is clicked
 				if (($tabCount == 1) && $field['db_column']) {

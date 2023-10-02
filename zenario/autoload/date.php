@@ -78,11 +78,11 @@ class date {
 			$format_type = '%a, %d %b %Y';
 			$time_format = ' %H:%i:%s ';
 	
-		} elseif (!$format_type || $format_type == 'vis_date_format_long' || $format_type == '_LONG') {
-			$format_type = \ze::setting('vis_date_format_long');
-	
-		} elseif ($format_type == 'vis_date_format_med' || $format_type == '_MEDIUM') {
+		} elseif (!$format_type || $format_type == 'vis_date_format_med' || $format_type == '_MEDIUM') {
 			$format_type = \ze::setting('vis_date_format_med');
+	
+		} elseif ($format_type == 'vis_date_format_long' || $format_type == '_LONG') {
+			$format_type = \ze::setting('vis_date_format_long');
 	
 		} elseif ($format_type == 'vis_date_format_short' || $format_type == '_SHORT') {
 			$format_type = \ze::setting('vis_date_format_short');
@@ -383,7 +383,7 @@ class date {
 			
 		} else if ($dateDifference > 28){
 			
-			$relativeDate = \ze\date::format($originalTime, '_MEDIUM', $languageId, '', false, false, $adminPhrase);
+			$relativeDate = \ze\date::format($originalTime, false, $languageId, '', false, false, $adminPhrase);
 			
 		} else if($dateDifference > 0){
 			 
@@ -395,11 +395,11 @@ class date {
 			
 		} else if($dateDifference < -1){
 			
-			$relativeDate = \ze\date::format($originalTime, '_MEDIUM', $languageId, '', false, false, $adminPhrase);
+			$relativeDate = \ze\date::format($originalTime, false, $languageId, '', false, false, $adminPhrase);
 			
 		} else {
 			
-			$relativeDate = \ze\date::format($originalTime, '_MEDIUM', $languageId, '', false, false, $adminPhrase);
+			$relativeDate = \ze\date::format($originalTime, false, $languageId, '', false, false, $adminPhrase);
 		}  
 	
 		return $relativeDate;

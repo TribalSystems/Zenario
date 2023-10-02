@@ -76,6 +76,15 @@
 	padding-left:5px;
 }
 
+.zenario_menu__default_style .wrap_menu_inner > ul > li.has_child.link_external > a:after {
+	padding-left: 30px;
+}
+
+.zenario_menu__default_style .wrap_menu_inner > ul > li.has_child.link_external > a:before {
+  	position:absolute;
+  	right:30px;
+}
+
 .zenario_menu__default_style .wrap_menu_inner > ul > li > ul > li.has_child > a:after,
 .zenario_menu__default_style .wrap_menu_inner > ul > li > ul > li.has_child > ul > li.has_child > a:after,
 .zenario_menu__default_style .wrap_menu_inner > ul > li > ul > li.has_child > ul > li.has_child > ul > li.has_child > a:after {

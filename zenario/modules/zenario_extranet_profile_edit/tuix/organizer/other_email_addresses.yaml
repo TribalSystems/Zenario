@@ -1,0 +1,9 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+    panels:
+        other_email_addresses:
+            collection_buttons:
+                    extranet_profile_edit_dummy_button:
+                        label: Extranet Profile Edit dummy button
+                        hidden: true

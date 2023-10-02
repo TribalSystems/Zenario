@@ -4,9 +4,13 @@ zenario_videos_manager:
     panels:
         categories:
             title: Categories
-            no_items_message: No categories found
+            no_items_message: There are no video categories.
             item: 
                 css_class: zenario_category_icon
+                tooltip_when_link_is_active: 'View videos in category "[[name]]"'
+                link:
+                    path: zenario_videos_manager/panels/videos
+                    refiner: category
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]categories AS c'
                 id_column: c.id

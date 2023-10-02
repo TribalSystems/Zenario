@@ -4,7 +4,7 @@ zenario_live_send:
     priv: _PRIV_SEND_NEWSLETTER
     key:
         id: ""
-    max_height: 400
+    max_height: 420
     hide_tab_bar: true
     save_button_message: Send
     cancel_button_message: Cancel

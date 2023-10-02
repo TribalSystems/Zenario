@@ -1,0 +1,65 @@
+
+{% set nest_type = this.setting('nest_type') %}
+
+{% if nest_type == 'buttons' %}
+	{% set showNextPrevButtons = true %}
+	{% set showPagination = false %}
+
+{% elseif nest_type == 'indicator' %}
+	{% set showNextPrevButtons = false %}
+	{% set showPagination = true %}
+
+{% elseif nest_type == 'indicator_and_buttons' %}
+	{% set showNextPrevButtons = true %}
+	{% set showPagination = true %}
+
+{% else %}
+	{% set showNextPrevButtons = false %}
+	{% set showPagination = false %}
+{% endif %}
+
+{% if this.setting('show_heading') %}
+	<div class="nest_title">
+		{% if this.setting('heading_tag') %}
+			<{{this.setting('heading_tag')}}>{{this.setting('heading_text')|trans|e}}</{{this.setting('heading_tag')}}>
+		{% else %}
+			<h1>{{this.setting('heading_text')|trans|e}}</h1>
+		{% endif %}
+	</div>
+{% endif %}
+
+
+{% if Tabs %}
+	{% set elId = containerId ~ '_swiper' %}
+	
+	<!-- Slider main container -->
+	<div class="swiper" id="{{elId}}" style="width: 600px; height: 300px;">
+		<!-- Additional required wrapper -->
+		<div class="swiper-wrapper">
+			<!-- Slides -->
+			{% for Tab in Tabs %}
+				{% if Tab.Plugins %}
+					<div class="swiper-slide">
+						{% set first = true %}
+						{% for Plugin in Tab.Plugins %}
+							{% do this.showPlugin(Plugin, true, first) %}
+							{% set first = false %}
+						{% endfor %}
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+		
+		<!-- If we need pagination -->
+		{% if showPagination %}
+			<div class="swiper-pagination"></div>
+		{% endif %}
+
+		<!-- If we need navigation buttons -->
+		{% if showNextPrevButtons %}
+			<div class="swiper-button-prev"></div>
+			<div class="swiper-button-next"></div>
+		{% endif %}
+
+	</div>
+{% endif %}

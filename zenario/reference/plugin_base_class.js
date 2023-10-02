@@ -184,8 +184,8 @@ zenario.lib(function(
 			return zenario.phrase(this.moduleClassNameForPhrases, text, mrg);
 		};
 	
-		this.registerPhrases = function(phrases) {
-			zenario.registerPhrases(this.moduleClassNameForPhrases, phrases);
+		this.readyPhrasesOnBrowser = function(phrases) {
+			zenario.readyPhrasesOnBrowser(this.moduleClassNameForPhrases, phrases);
 		};
 	
 		this.nphrase = function(text, pluralText, n, mrg) {

@@ -1,3 +1,0 @@
-Deleted the mode-xquery.js and worker-xquery.js files for a smaller download
-
-Added mode-phi.js as a syntax-highlighter for Phi

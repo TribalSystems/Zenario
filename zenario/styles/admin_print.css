@@ -1,0 +1,24 @@
+#zenario_at,
+.zenario_fbAdmin,
+.zenario_admin_toolbar,
+.zenario_toolbar_header,
+.zenario_missing_slots,
+.zenario_slotWithNoContents,
+.zenario_slotAdminControlBox,
+.zenario_slot_layout_preview,
+.zenario_editor_placeholder_text {
+	display: none !important;
+}
+
+.zenario_slotWithContents .zenario_slot,
+.zenario_slotWithContentsBeingEdited .zenario_slot {
+	border: none;
+}
+
+body {
+	margin-top: 0 !important;
+}
+
+body.zenario_adminLoggedIn {
+	height: initial !important;
+}

@@ -27,7 +27,8 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-class zenario_users__admin_boxes__content_privacy extends zenario_users {
+require_once CMS_ROOT. ze::moduleDir('zenario_users', 'classes/admin_boxes/_privacy_options_base.php');
+class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy_options_base {
 	
 	
 	
@@ -39,16 +40,6 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 			$box['key']['id'] = $menuContentItem['content_type'] . '_' . $menuContentItem['content_id'];
 		}
 
-		if (!ze\module::isRunning('zenario_extranet')) {
-			foreach ($fields['privacy/privacy']['values'] as $name => $setting) {
-				if ($name != 'public') {
-					$fields['privacy/privacy']['values'][$name]['hidden'] = true;
-				}
-			}
-
-			$fields['privacy/privacy_settings_disabled_note']['hidden'] = false;
-		}
-		
 		//Set up the primary key from the requests given
 		if ($box['key']['id'] && empty($box['key']['cID'])) {
 			ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
@@ -69,30 +60,12 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 			$box['identifier']['css_class'] = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $content['status']);
 		}
 		
-		$fields['privacy/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
-		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
-
-		if (count($fields['privacy/smart_group_id']['values']) > 0) {
-			unset($box['tabs']['privacy']['fields']['no_smart_groups_defined']);
-		} else {
-			unset($fields['privacy/smart_group_id']['visible_if']);
-			$fields['privacy/smart_group_id']['hidden'] = true;
-		}
 		
-		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['privacy/role_ids']['values'] = self::getRoleTypesIndexedByIdOrderedByName();
-		} else {
-			$fields['privacy/role_ids']['hidden'] =
-			$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
-		}
+		$this->fillPrivacySettings($path, $settingGroup, $box, $fields, $values);
 		
 		
 		$box['key']['originalId'] = $box['key']['id'];
 		
-		$total = 0;
-		$tagSQL = "";
-		$tagIds = [];
-		$equivId = $cType = false;
 		
 		if (ze::request('equivId') && ze::request('cType')) {
 			$box['key']['id'] = ze::request('cType'). '_'. ze::request('equivId');
@@ -101,87 +74,14 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 			$box['key']['id'] = ze::request('cType'). '_'. ze::request('cID');
 		}
 		
-		$theseValues =
-		$lastValues = false;
-		$combinedValues = true;
 		
-		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
-		foreach (explode(',', $box['key']['id']) as $tagId) {
-			if (ze\content::getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
-				$tagId = $cType. '_'. $equivId;
-				if (!isset($tagIds[$tagId])) {
-					$tagIds[$tagId] = $tagId;
-					++$total;
-					
-					//Attempt to see if all of the chosen items have the same values
-					
-					//If we've already failed trying to match values, stop trying
-					if ($combinedValues !== false) {
-						
-						//Look up the values for this content item
-						$sql = "
-							SELECT
-								tc.privacy, tc.at_location, tc.smart_group_id,
-								tcp.module_class_name, tcp.method_name, tcp.param_1, tcp.param_2
-							FROM ". DB_PREFIX. "translation_chains AS tc
-							LEFT JOIN ". DB_PREFIX. "translation_chain_privacy AS tcp
-							   ON tc.equiv_id = tcp.equiv_id
-							  AND tc.type = tcp.content_type
-							WHERE tc.equiv_id = ". (int) $equivId. "
-							  AND tc.type = '". ze\escape::asciiInSQL($cType). "'";
-						
-						if ($chain = ze\sql::fetchAssoc($sql)) {
-							
-							if ($chain['privacy'] == 'group_members') {
-								$chain['group_ids'] =
-									ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'group', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
-							} else {
-								$chain['group_ids'] = '';
-							}
-							
-							if ($chain['privacy'] == 'with_role') {
-								$chain['role_ids'] =
-									ze\escape::in(ze\row::getValues('group_link', 'link_to_id', ['link_to' => 'role', 'link_from' => 'chain', 'link_from_id' => $equivId, 'link_from_char' => $cType]), true);
-							} else {
-								$chain['role_ids'] = '';
-							}
-							
-							$theseValues = json_encode($chain);
-							
-							//If the values were the same as last time, combine them
-							if ($lastValues === false
-							 || $lastValues == $theseValues) {
-								$lastValues = $theseValues;
-								$combinedValues = $chain;
-							
-							//If they're not, we can't combine them, and will need to show the settings as empty
-							} else {
-								$combinedValues = false;
-							}
-						}
-					}
-				}
-			}
-		}
+		$tagIds = $this->loadPrivacySettings($box['key']['id'], $path, $settingGroup, $box, $fields, $values);
 		
 		if (empty($tagIds)) {
 			exit;
-		} else {
-			$box['key']['id'] = implode(',', $tagIds);
 		}
-		
-		//If all the values match, display them!
-		if (!empty($combinedValues) && is_array($combinedValues)) {
-			$values['privacy/privacy'] = $combinedValues['privacy'];
-			$values['privacy/at_location'] = $combinedValues['at_location'];
-			$values['privacy/group_ids'] = $combinedValues['group_ids'];
-			$values['privacy/role_ids'] = $combinedValues['role_ids'];
-			$values['privacy/smart_group_id'] = $combinedValues['smart_group_id'];
-			$values['privacy/module_class_name'] = $combinedValues['module_class_name'];
-			$values['privacy/method_name'] = $combinedValues['method_name'];
-			$values['privacy/param_1'] = $combinedValues['param_1'];
-			$values['privacy/param_2'] = $combinedValues['param_2'];
-		}
+		$box['key']['id'] = implode(',', $tagIds);
+		$total = count($tagIds);
 		
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {
@@ -197,7 +97,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for the content item "[[tag]]" and its translations',
-						['tag' => ze\content::formatTag($equivId, $cType)]);
+						['tag' => ze\content::formatTagFromTagId($box['key']['id'])]);
 			}
 			
 		} else {
@@ -213,7 +113,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for the content item "[[tag]]"',
-						['tag' => ze\content::formatTag($equivId, $cType)]);
+						['tag' => ze\content::formatTagFromTagId($box['key']['id'])]);
 			}
 		}
 		
@@ -252,27 +152,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 				}
 			}
 			
-			switch ($values['privacy/privacy']) {
-				case 'call_static_method':
-					if (!$values['privacy/module_class_name']) {
-						$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the class name of a module.');
-		
-					} elseif (!ze\module::inc($values['privacy/module_class_name'])) {
-						$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the class name of a module that you have running on this site.');
-		
-					} elseif ($values['privacy/method_name']
-						&& !method_exists(
-								$values['privacy/module_class_name'],
-								$values['privacy/method_name'])
-					) {
-						$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the name of an existing public static method.');
-					}
-		
-					if (!$values['privacy/method_name']) {
-						$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the name of a public static method.');
-					}
-					break;
-			}
+			$this->validatePrivacySettings($path, $settingGroup, $box, $fields, $values, $changes, $saving);
 		}
 	}
 	

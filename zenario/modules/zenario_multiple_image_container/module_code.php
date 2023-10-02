@@ -83,7 +83,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				}
 				
 				if ($this->setting('show_image_uploaded_date')) {
-					$imageMF['Uploaded_Date'] = ze\date::format($image['created_datetime'], '_MEDIUM');
+					$imageMF['Uploaded_Date'] = ze\date::format($image['created_datetime']);
 				}
 				
 				
@@ -92,7 +92,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 					$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
 					if (ze\file::imageAndWebPLink($width, $height, $url, $this->setting('enlarge_webp'), $webPURL, false, $isRetina, $mimeType, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas'))) {
 						
-						ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+						$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 						
 						$imageMF['Enlarge_Image'] = true;
 						$imageMF['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box" ';
@@ -471,10 +471,10 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			}
 
 			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
-			    $link .= '#' . $anchor;
+			    $link .= '#' . rawurlencode($anchor);
 			}
 			if ($this->setting('link_to_anchor_'. $imageId) && ($anchor = $this->setting('hyperlink_anchor_'. $imageId))) {
-			    $link .= '#' . $anchor;
+			    $link .= '#' . rawurlencode($anchor);
 			}
 			//Use the Theme Section for a Masthead with a link and set the link
 			$mergeFields['Image_Link_Href'] =
@@ -617,7 +617,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			$mergeFields['Target_Blank'] .= ' target="_blank"';
 			
 			if (!$downloadFile && $openIn == 2) {
-				ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+				$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 				
 				$mergeFields['Target_Blank'] .= ' onclick="if (window.$) { $.colorbox({href: \''. ze\escape::js($link). '\', iframe: true, width: \'95%\', height: \'95%\'}); return false; }"';
 			}

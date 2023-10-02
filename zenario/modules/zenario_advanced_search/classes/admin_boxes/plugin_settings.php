@@ -113,7 +113,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['first_tab/hide_private_items']['hidden'] = !$values['first_tab/show_private_items'];
+				$fields['first_tab/show_private_content_item_link_control']['hidden'] = !$values['first_tab/search_private_items'];
 				
 				foreach (['html', 'document', 'news', 'blog'] as $contentType) {
 					$hidden = !$values['content_types/search_' . $contentType] || !$values['content_types/' . $contentType . '_show_feature_image'];
@@ -186,6 +186,27 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 
 				if (!$values['first_tab/keyboard_delay_before_submit']) {
 					$values['first_tab/keyboard_delay_before_submit'] = 500;
+				}
+				
+				//If searching in other modules, let the user know what module
+				//is expected to be on the results page.
+				if ($values['content_types/search_in_other_modules']) {
+					if ($values['content_types/module_to_search']) {
+						switch ($values['content_types/module_to_search']) {
+							case 'zenario_ecommerce_document':
+							case 'zenario_ecommerce_physical_products':
+								$suggestedModule = 'zenario_storefront_products_fea';
+								break;
+							case 'zenario_location_manager':
+								$suggestedModule = 'zenario_locations_fea';
+								break;
+						}
+						$fields['content_types/other_module_view_item_content_item']['notices_below']['expected_module_on_results_page']['hidden'] = false;
+						$fields['content_types/other_module_view_item_content_item']['notices_below']['expected_module_on_results_page']['message'] =
+							ze\admin::phrase('For best results, use a plugin nest containing the [[suggested_plugin]] plugin on the results page.', ['suggested_plugin' => ze\module::getModuleDisplayNameByClassName($suggestedModule)]);
+					} else {
+						$fields['content_types/other_module_view_item_content_item']['notices_below']['expected_module_on_results_page']['hidden'] = true;
+					}
 				}
 
 				/**********************

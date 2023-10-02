@@ -129,36 +129,11 @@ _sql
 	ADD COLUMN enable_subs tinyint(1), 
 	ADD COLUMN comment_subs_email_template varchar(255)
 _sql
-);
 
-
-//Convert all code from bbcode to sanitised HTML
-if (ze\dbAdm::needRevision(160)) {
-	
-	require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/markitup/bbcode2html.inc.php';
-	
-	$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol><a><img>';
-	$allowedStyles = ['padding-left' => true, 'text-decoration' => true];
-	
-	$result = ze\row::query(ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments', ['id', 'message_text'], []);
-	while ($row = ze\sql::fetchAssoc($result)) {
-		
-		BBCode2Html($row['message_text'], false, true, true, false);
-		
-		ze\row::update(
-			ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments',
-			['message_text' => ze\ring::sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)],
-			$row['id']);
-	}
-	unset($row);
-	unset($result);
-	
-	ze\dbAdm::revision(160);
-}
 
 
 //Attempt to convert some columns with a utf8-3-byte character set to a 4-byte character set
-ze\dbAdm::revision( 170
+);	ze\dbAdm::revision( 170
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items` SET `comment_subs_email_template` = SUBSTR(`comment_subs_email_template`, 1, 250) WHERE CHAR_LENGTH(`comment_subs_email_template`) > 250
 _sql

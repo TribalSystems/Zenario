@@ -37,7 +37,7 @@ vlp_class_name: zenario_location_map_and_listing_2
 css_class_name: zenario_location_map_and_listing_2
 default_framework: standard
 is_pluggable: true
-default_instance_name: Untitled Location Map and Listing 2
+default_instance_name: Location Map and Listing
 nestable: false
 
 # Warning: adding a new dependency to an existing module will break any existing sites

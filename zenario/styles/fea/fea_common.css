@@ -140,6 +140,20 @@
 	margin-left:8px;
 }
 
+.zenario_skin .zenario_copy {
+  	display: inline-block;
+  	background: url('../../admin/images/icon-copy.svg') no-repeat;
+  	width: 14px;
+  	height: 16px;
+  	cursor: pointer;
+}
+
+.zenario_skin span.zenario_copy {
+	display: inline-block;
+	padding-left: 3px;
+	background-position: right center;
+}
+
 /* Field date
 --------------------------------------------------------------------------------------------------*/
 
@@ -1863,6 +1877,12 @@ body.mobile .zfea_search_buttons {
 	background-position:center;
 }
 
+.icon_button.edit_password_icon {
+	background-image:url('images/icon-white-edit-password.svg');
+	background-repeat:no-repeat;
+	background-position:center;
+}
+
 .zenario_skin .delete_icon,
 .zenario_skin input[type="button"].delete_icon,
 .zenario_skin .zfea_form_grouping .zfea_form_row_delete input.small_button[type="button"].delete,
@@ -2182,7 +2202,8 @@ a.nest_show_embed,
 .zenario_skin input[type="button"].icon_button,
 .zenario_skin .icon_button,
 .zenario_skin .refresh_button,
-.zenario_skin a.edit_icon {
+.zenario_skin a.edit_icon,
+.zenario_skin a.edit_password_icon {
 	font-size:0;
 	line-height:0;
 	text-indent:-999;
@@ -2263,6 +2284,12 @@ a.nest_show_embed,
 .zenario_skin a.edit_icon,
 .zenario_skin input.edit_icon {
 	background-image:url('images/icon-white-edit-asset.svg');
+	background-size: 20px 20px;
+}
+
+.zenario_skin a.edit_password_icon,
+.zenario_skin input.edit_password_icon {
+	background-image:url('images/icon-white-edit-password.svg');
 	background-size: 20px 20px;
 }
 
@@ -3085,8 +3112,8 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 /* Messages
 --------------------------------------------------------------------------------------------------*/
 
-.error,
-.success,
+.zfea .error,
+.zfea .success,
 .zfea .warning,
 .ok,
 .alarm,
@@ -3132,14 +3159,14 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 
 /* - Error ---------------------------------------------------------------------------------------*/
 	
-	.error {
+	.zfea .error {
 		color:#CE0011;
 		background-image:url('images/icon-msg-stop.svg');
 		min-height:32px;
 		padding-bottom:0;
 	}
 	
-	.error p { margin:0; }
+	.zfea .error p { margin:0; }
 
 	.zfea .zenario_row_with_error .Tokenize,
 	.zfea input[type="text"].zenario_field_with_error,
@@ -3180,9 +3207,8 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	
 /* - Sucess --------------------------------------------------------------------------------------*/
 	
-	.success {
+	.zfea .success {
 		color:#44A02A;
-		background-image:url('images/icon-msg-sucess.svg');
 	}
 
 /* - Warning -------------------------------------------------------------------------------------*/

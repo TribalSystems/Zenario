@@ -79,21 +79,22 @@ class cache {
 	
 		} elseif (strpos($a, 'Opera/')) {
 			$c = 'opera';
-	
-		} elseif (strpos($a, 'MSIE ')) {
-			$c = 'ie no_webp';
-			for ($i = 10; $i > 5; --$i) {
-				if (strpos($a, 'MSIE '. $i) !== false) {
-					$c .= ' ie'. $i;
-					break;
-				}
-			}
-	
-		} elseif (strpos($a, 'Trident/')) {
-			$c = 'ie no_webp ie11';
 		}
 	
 		return $c;
+	}
+
+
+	//Check for the dreaded Internet Explorer.
+	public static function browserIsIE() {
+		//I'm running a call to browserBodyClass() first, and if this is a known browser
+		//then I'll wave it through. I'm writing the code this was to try and avoid any
+		//false positives.
+		$c = \ze\cache::browserBodyClass();
+		$a = ($_SERVER['HTTP_USER_AGENT'] ?? '');
+		
+		//If this browser looks like Internet Explorer, reject it.
+		return $c === '' && (strpos($a, 'MSIE ') || strpos($a, 'Trident/'));
 	}
 
 

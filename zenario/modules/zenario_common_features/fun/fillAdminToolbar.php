@@ -58,8 +58,10 @@ if (!$content || !$version) {
 		$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['hidden'] = true;
 
 		//If this is a document, apply the "Rescan" confirmation merge fields...
-		$tagFormattedNicely = ze\content::formatTag($cID, $cType);
-		ze\lang::applyMergeFields($adminToolbar['sections']['edit']['buttons']['rescan_extract']['ajax']['confirm']['message'], ['tag' => $tagFormattedNicely]);
+		if (ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType) && isset($adminToolbar['sections']['edit']['buttons']['rescan_extract']['ajax']['confirm']['message'])) {
+			$tagFormattedNicely = ze\content::formatTag($cID, $cType);
+			ze\lang::applyMergeFields($adminToolbar['sections']['edit']['buttons']['rescan_extract']['ajax']['confirm']['message'], ['tag' => $tagFormattedNicely]);
+		}
 	} else {
 		//... or hide the "Rescan" button otherwise.
 		$adminToolbar['sections']['edit']['buttons']['rescan_extract']['hidden'] = true;
@@ -104,6 +106,22 @@ if (!$content || !$version) {
 	} else {
 		unset($adminToolbar['sections']['icons']['buttons']['not_pinned']);
 		unset($adminToolbar['sections']['icons']['buttons']['pinned']);
+	}
+	
+	//Show an icon for staging mode if enabled.
+	if ($stagingVersion = ze\row::get('content_item_versions',
+		['access_code', 'version'],
+		['id' => $cID, 'type' => $cType, 'access_code' => ['!' => null]]
+	)) {
+		
+		$link = ze\contentAdm::stagingModeLink($cID, $cType, $stagingVersion['access_code']);
+		
+		$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
+			ze\admin::phrase('Staging enabled for version [[version]] with code [[access_code]]. Click to copy URL.', $stagingVersion);
+		$adminToolbar['sections']['icons']['buttons']['staging_mode']['onclick'] =
+			'zenarioA.copy("'. ze\escape::js($link). '");';
+	} else {
+		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']);
 	}
 
 	//Featured image
@@ -436,18 +454,17 @@ if (!ze::$isDraft) {
 	
 	//The current Admin has a lock on the content item
 	if ($content['lock_owner_id'] && $content['lock_owner_id'] == ($_SESSION['admin_userid'] ?? false)) {
-		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = ze\admin::phrase('LOCKED by you');
+		$adminToolbar['sections']['edit']['buttons']['locked']['label'] = ze\admin::phrase('LOCKED by you');
 		
 		$adminToolbar['sections']['edit']['buttons']['unlock']['tooltip'] =
 			ze\admin::phrase('Locked by you [[time]] ago|Click here to unlock', $mrg);
 		
 		unset($adminToolbar['sections']['edit']['buttons']['lock']);
-		unset($adminToolbar['sections']['edit']['buttons']['locked']);
 		unset($adminToolbar['sections']['edit']['buttons']['force_open']);
 	
 	//The current Admin can remove other's locks
 	} elseif (ze\priv::check('_PRIV_CANCEL_CHECKOUT')) {
-		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = ze\admin::phrase('LOCKED');
+		$adminToolbar['sections']['edit']['buttons']['locked']['label'] = ze\admin::phrase('LOCKED');
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_pink';
 		
 		$adminToolbar['sections']['edit']['buttons']['force_open']['tooltip'] =
@@ -461,14 +478,13 @@ if (!ze::$isDraft) {
 		}
 		
 		unset($adminToolbar['sections']['edit']['buttons']['lock']);
-		unset($adminToolbar['sections']['edit']['buttons']['locked']);
 		unset($adminToolbar['sections']['edit']['buttons']['unlock']);
 		
 		$adminToolbar['lock_warning'] =
 			ze\admin::phrase('This content item is locked, you will need to unlock it via the Edit tab before you can make changes.');
 	
 	} else {
-		$adminToolbar['sections']['edit']['buttons']['lock_dropdown']['label'] = ze\admin::phrase('LOCKED');
+		$adminToolbar['sections']['edit']['buttons']['locked']['label'] = ze\admin::phrase('LOCKED');
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_pink';
 		
 		$adminToolbar['sections']['edit']['buttons']['locked']['tooltip'] =
@@ -986,10 +1002,8 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				'image' => $menuItem['image_id'],
 				'rollover_image' => $menuItem['rollover_image_id']
 			];
-			if (ze\module::inc('zenario_promo_menu')) {
-				$adminToolbar['sections']['menu'. $i]['images']['feature_image'] =
-					zenario_promo_menu::getFeatureImageId($menuItem['id']);
-			}
+			
+			$adminToolbar['sections']['menu'. $i]['images']['feature_image'] = ze\menu::getMenuNodeFeatureImageId($menuItem['id']);
 			
 			foreach ($adminToolbar['sections']['menu'. $i]['images'] as &$image) {
 				if ($image) {
@@ -1526,8 +1540,9 @@ if ($linkStatus) {
 
 
 //Handle the case where there's not enough width on the screen to show the delete draft and publish buttons
-//Also add a copy of them to the "Actions" dropdown on the edit tab
+//Also add a copy of them to various dropdowns on the edit tab:
 if (isset($adminToolbar['sections']['edit']['buttons'])) {
+	//Add to the "Actioins" dropdown...
 	if ($button = $adminToolbar['sections']['status_button']['buttons']['start_editing'] ?? false) {
 		unset($button['tooltip'], $button['appears_in_toolbars']);
 		$button['parent'] = 'action_dropdown';
@@ -1576,11 +1591,28 @@ if (isset($adminToolbar['sections']['edit']['buttons'])) {
 		$button['parent'] = 'action_dropdown';
 		$adminToolbar['sections']['edit']['buttons']['delete_draft'] = $button;
 	}
+	
+	//... and to the "Publishing" dropdown.
 	if ($button = $adminToolbar['sections']['status_button']['buttons']['publish'] ?? false) {
 		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['ord'] = 999;
-		$button['parent'] = 'action_dropdown';
+		$button['ord'] = 1;
+		$button['parent'] = 'publishing_dropdown';
 		$adminToolbar['sections']['edit']['buttons']['publish'] = $button;
+		
+		//If the item is scheduled for publishing, update the label.
+		$sql = "
+			SELECT c.id, c.type, v.scheduled_publish_datetime, c.lock_owner_id
+			FROM ". DB_PREFIX. "content_items AS c
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version = c.admin_version
+			WHERE c.tag_id = '". ze\escape::sql($tagId). "'
+			  AND v.scheduled_publish_datetime IS NOT NULL";
+		$result = ze\sql::select($sql);
+		if ($row = ze\sql::fetchAssoc($result)) {
+			$adminToolbar['sections']['edit']['buttons']['publish']['label'] = ze\admin::phrase('Change or cancel scheduled publishing...');
+		}
 	}
 }
 unset($adminToolbar['sections']['edit']['buttons']['start_editing_pos']);

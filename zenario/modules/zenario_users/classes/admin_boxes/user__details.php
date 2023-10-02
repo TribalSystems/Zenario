@@ -36,7 +36,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$fields['details/status']['values']['active']['hidden'] = true;
 			$fields['details/status']['side_note'] = ze\admin::phrase("Creation of extranet users is disabled. Start the Extranet Base Module to create users.");
 		} else {
-			ze::requireJsLib('zenario/js/password_functions.js');
+			$this->requireJsLib('zenario/js/password_functions.js');
 		}
 
 		if (!ze\module::isRunning('zenario_organization_manager')) {
@@ -67,7 +67,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$values['details/screen_name_confirmed'] = $user['screen_name_confirmed'];
 			$values['details/terms_and_conditions_accepted'] = $user['terms_and_conditions_accepted'];
 			
-			//Look up the list of linked countries for this user
+			//Look up the list of country-based permissions for this user
 			$values['details/linked_countries'] =
 				implode(',', ze\row::getValues('user_country_link', 'country_id', ['user_id' => $box['key']['id']]));
 			
@@ -103,11 +103,9 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 					$fields['details/status']['values']['suspended']['label'] .= ' (' . ze\admin::phrase('suspended on [[date]]', ['date' => $suspendedDate]) . ')';
 					break;
 			}
+			
 			if (ze\priv::check('_PRIV_EDIT_USER')) {
 				$fields['details/password']['label'] = ze\admin::phrase('New password:');
-				$fields['details/password']['side_note'] =
-					ze\admin::phrase('Password encryption is enabled. You can set a user password for this user but not view the existing one.');
-				
 				$values['details/password_needs_changing'] = $user['password_needs_changing'];
 			}
 			
@@ -166,6 +164,14 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				$fields['dates/consents_log']['snippet']['html'] = $html;
 			}
 			
+			//
+			$changePasswordLinkStart =
+				"<a href='organizer.php#zenario__users/panels/users//" . $box['key']['id'] . "~.zenario_user__change_password~tdetails~k{\"id\"%3A\"" . $box['key']['id'] . "\"}' target='_blank'>";
+			$changePasswordLinkEnd = "</a>";
+			$fields['details/password_when_editing']['snippet']['html'] = ze\admin::phrase(
+				'[[change_password_link_start]]Change user\'s password[[change_password_link_end]]',
+				['change_password_link_start' => $changePasswordLinkStart, 'change_password_link_end' => $changePasswordLinkEnd]
+			);
 		} else {
 			ze\priv::exitIfNot('_PRIV_EDIT_USER');
 			
@@ -350,10 +356,10 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			}
 		
 			if ($values['details/status'] != 'contact') {
-				if (!$box['key']['id']
-				 || (!empty($fields['details/change_password']['pressed']) && ze\priv::check('_PRIV_EDIT_USER'))) {
+				if (!$box['key']['id']) {
 					$cols['password'] = $values['details/password'];
 				}
+				
 				if (ze\priv::check('_PRIV_EDIT_USER')) {
 					$cols['password_needs_changing'] = $values['details/password_needs_changing'];
 				}
@@ -362,18 +368,23 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			if ($e = ze\userAdm::isInvalid($cols, $box['key']['id'])) {
 				//If there are errors, add them to the first tab
 				foreach ($e->errors as $key => $error) {
-					$box['tabs']['details']['errors'][] = ze\admin::phrase($error);
+					if ($key != 'screen_name') {
+						$box['tabs']['details']['errors'][] = ze\admin::phrase($error);
+					}
 					
 					if ($key == 'email') {
 						$fields['details/email']['error'] = ze\admin::phrase($error);
+					}
+					
+					if ($key == 'screen_name') {
+						$fields['details/screen_name']['error'] = ze\admin::phrase($error);
 					}
 				}
 			}
 			
 			if ($values['details/status']
 			 && $values['details/status'] != 'contact') {
-				if (!$box['key']['id']
-				 || (!empty($fields['details/change_password']['pressed']) && ze\priv::check('_PRIV_EDIT_USER'))) {
+				if (!$box['key']['id']) {
 					if (!$values['details/password']) {
 						$box['tabs']['details']['errors'][] = ze\admin::phrase('Please enter a password.');
 						$fields['details/password']['error'] = true;
@@ -444,7 +455,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			];
 	
 			if (ze::setting('user_use_screen_name')) {
-				$cols['screen_name'] = $values['details/screen_name'];
+				$cols['screen_name'] = str_replace(' ', '', $values['details/screen_name']);
 			}
 			
 			ze\admin::setUserLastUpdated($cols, !$box['key']['id']);
@@ -454,11 +465,11 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			}
 		
 			if ($values['details/status'] != 'contact') {
-				if (!$box['key']['id']
-				 || (!empty($fields['details/change_password']['pressed']) && ze\priv::check('_PRIV_EDIT_USER'))) {
+				if (!$box['key']['id']) {
 					$cols['password'] = $values['details/password'];
 					$cols['reset_password_time'] = ze\date::now();
 				}
+				
 				if (ze\priv::check('_PRIV_EDIT_USER')) {
 					$cols['password_needs_changing'] = $values['details/password_needs_changing'];
 				}
@@ -470,7 +481,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			
 			$box['key']['id'] = ze\userAdm::save($cols, $box['key']['id']);
 			
-			//Save the list on linked countries for this user
+			//Save the list on country-based permissions for this user
 			//Get a list of country ids selected
 			$countryIds = ze\ray::explodeAndTrim($values['details/linked_countries']);
 			
@@ -488,7 +499,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		
 		if (isset($values['details/send_activation_email_to_user']) &&  $values['details/send_activation_email_to_user']
 			&& ze\ray::issetArrayKey($values,'details/email_to_send') && (ze\module::inc('zenario_email_template_manager'))) {
-			$mergeFields=ze\user::details($box['key']['id']);
+			$mergeFields=ze\user::userDetailsForEmails($box['key']['id']);
 			$mergeFields['password'] = $values['password'];
 			
 			$mergeFields['cms_url'] = ze\link::absolute();
@@ -517,8 +528,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		}
 		
 		if ($values['details/status'] != 'contact') {
-			if (!$box['key']['id']
-			 || (!empty($fields['details/change_password']['pressed']) && ze\priv::check('_PRIV_EDIT_USER'))) {
+			if (!$box['key']['id']) {
 				$cols['password'] = $values['details/password'];
 			}
 			if (ze\priv::check('_PRIV_EDIT_USER')) {

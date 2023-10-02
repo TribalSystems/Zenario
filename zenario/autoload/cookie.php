@@ -162,7 +162,7 @@ class cookie {
 
 
 	//Formerly "showCookieConsentBox()"
-	public static function showConsentBox() {
+	public static function showConsentBox($isAdmin, $includeAdminLinks, $includeAdminToolbar) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	

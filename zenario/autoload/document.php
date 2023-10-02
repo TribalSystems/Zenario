@@ -143,24 +143,25 @@ class document {
 	//Formerly "zenario_common_features::deleteHierarchicalDocumentPubliclink()"
 	public static function deletePubliclink($documentId, $documentDeleted = false, $privacy = false) {
 		$document = \ze\row::get('documents', ['id', 'file_id', 'filename'], $documentId);
-		$file = \ze\row::get('files',  ['short_checksum'], $document['file_id']);
-		
+		$file = \ze\row::get('files', ['short_checksum'], $document['file_id']);
 		
 		//Check if there are any other doucments using this file
-		$duplicatesExist = \ze\row::exists('documents', ['file_id' => $document['file_id'], 'id' => ['!' => $documentId]]);
+		if (!empty($file)) {
+			$duplicatesExist = \ze\row::exists('documents', ['file_id' => $document['file_id'], 'id' => ['!' => $documentId]]);
 		
-		$filePublicDir = CMS_ROOT . 'public/downloads/' . $file['short_checksum'];
-		$docPublicLink = $filePublicDir. '/' . $document['filename'];
+			$filePublicDir = CMS_ROOT . 'public/downloads/' . $file['short_checksum'];
+			$docPublicLink = $filePublicDir. '/' . $document['filename'];
 		
-		//If other documents use this file, just delete this documents from the file's directory
-		if ($duplicatesExist) {
-			if (is_file($docPublicLink)) {
-				unlink($docPublicLink);
+			//If other documents use this file, just delete this documents from the file's directory
+			if ($duplicatesExist) {
+				if (is_file($docPublicLink)) {
+					unlink($docPublicLink);
+				}
+		
+			//If no other documents use this file, we can delete the whole directory
+			} else {
+				\ze\cache::deleteDir($filePublicDir);
 			}
-		
-		//If no other documents use this file, we can delete the whole directory
-		} else {
-			\ze\cache::deleteDir($filePublicDir);
 		}
 		
 		//Update current item's privacy
@@ -205,7 +206,7 @@ class document {
 
 			\ze\document::deletePubliclink($documentId, true);
 			
-			if($file['filename']) {
+			if ($file['filename']) {
 				//Check to see if the file is used by another document, or a document content item,  before deleting.
 				//Please note: it is possible that the same file is in the files table more than once
 				//with different 'usage' column values. Check these too!

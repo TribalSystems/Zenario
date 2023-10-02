@@ -383,7 +383,12 @@ class admin {
 		'onclick="'. 
 			\ze\admin::floatingBoxJS(
 				$logoutMsg,
-				'<input type="button" class="submit_selected" value="'. \ze\admin::phrase('Logout'). '" onclick="document.location.href = URLBasePath + \''. htmlspecialchars($url). '\';"/>',
+				'<input
+					type="button"
+					class="submit_selected"
+					value="'. \ze\admin::phrase('Logout'). '"
+					onclick="zenarioA.reloadPage(false, true, \'logout\');"
+				/>',
 				true, true).
 		' return false;" href="'. htmlspecialchars(\ze\link::absolute(). $url). '"';
 	}
@@ -439,7 +444,8 @@ class admin {
 			$_SESSION['admin_specific_content_items'],
 			$_SESSION['admin_specific_content_types'],
 			$_SESSION['privs'],
-			$_SESSION['admin_last_login']
+			$_SESSION['admin_last_login'],
+			$_SESSION['hide_admin_toolbar']
 		);
 		
 		\ze\cookie::antiSessionFixationScript();
@@ -465,7 +471,6 @@ class admin {
 			'perm_editmenu' => true,
 			'perm_publish' => true,
 			'_PRIV_VIEW_SITE_SETTING' => true,
-			'_PRIV_VIEW_MENU_ITEM' => true,
 			'_PRIV_EDIT_MENU_TEXT' => true,
 			'_PRIV_EDIT_DRAFT' => true,
 			'_PRIV_PUBLISH_CONTENT_ITEM' => true,

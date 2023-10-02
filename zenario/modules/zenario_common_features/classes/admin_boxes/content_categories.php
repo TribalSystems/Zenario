@@ -72,6 +72,15 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 		
 		ze\categoryAdm::setupFABCheckboxes($fields['categories/categories'], true);
 		
+		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__library/panels/categories';
+		$linkStart = '<a href="' . htmlspecialchars($categoriesPanelHref) . '" target="_blank">';
+		$linkEnd = "</a>";
+		
+		$fields['categories/no_categories']['snippet']['html'] = ze\admin::phrase(
+			'No content item categories have been created. [[Link_start]]Create categories...[[Link_end]]',
+			['Link_start' => $linkStart, 'Link_end' => $linkEnd]
+		);
+		
 		if (empty($fields['categories/categories']['values'])) {
 			unset($box['tabs']['categories']['edit_mode']);
 			$fields['categories/categories']['hidden'] = true;

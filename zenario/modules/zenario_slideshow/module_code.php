@@ -29,192 +29,77 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_slideshow extends zenario_plugin_nest {
 	
-	var $lastTabNum = 0;
+	protected $aLib;
 	
 	public function init() {
+		if (ze::$isTwig) return;
+		
+		
 		//Flag that this plugin is actually a slideshow
-		ze::$slotContents[$this->slotName]['is_nest'] = true;
-		ze::$slotContents[$this->slotName]['is_slideshow'] = true;
+		ze::$slotContents[$this->slotName]->flagAsNest();
+		ze::$slotContents[$this->slotName]->flagAsSlideshow();
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		//Revert to normal nest behaviour when showing one specific Egg for the showFloatingBox/showRSS methods
-		if ($this->specificEgg()) {
-			return zenario_plugin_nest::init();
+		
+		//Check if an animation library has been selected in the plugin settings (and it's actually a valid value).
+		$this->aLib = $this->setting('animation_library');
+		switch ($this->aLib) {
+			case 'cycle2':
+			case 'roundabout':
+			case 'swiper':
+				//Create a subclass for the library, so we can use different logic depending on which one was selected
+				if ($this->subClass = $this->runSubClass('zenario_slideshow', 'animation_libraries', $this->aLib)) {
+					//Pass control to the subclass
+					return $this->subClass->initAnimationLibrarySubClass();
+				}
+		}
+		
+		return false;
+	}
+	
+	public function initAnimationLibrarySubClass() {
 		
 		//When a Nest is first inserted, it will be empty.
 		//If the Nest is empty, call the resyncNest function just in case being empty is not a valid state.
-		} elseif (ze\priv::check() && !ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId])) {
+		if (ze\priv::check() && !ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId])) {
 			self::resyncNest($this->instanceId);
 		}
 		
-		
 		$this->loadTabs();
 		
+		//Don't show anything if not slides have been created
 		if (empty($this->slides)) {
-			//Don't show anything if not slides have been created
 			return false;
 		}
 		
 		foreach ($this->slides as &$slide) {
-			if ($this->loadTab($slide['slide_num'])) {
+			if ($this->loadSlide($slide['slide_num'])) {
 				$this->show = true;
-				$this->slideNum =
-				$this->lastTabNum = $slide['slide_num'];
+				$this->slideNum = $slide['slide_num'];
 			}
 		}
 		
-		
-		$firstTabNum = $this->editingTabNum? $this->editingTabNum : false;
-		
-		$tabOrd = 0;
-		foreach ($this->slides as &$slide) {
-			++$tabOrd;
-			
-			$link = $this->tabLink($tabOrd);
-			
-			if (!isset($this->sections['Tab'])) {
-				$this->sections['Tab'] = [];
-			}
-			
-			$this->sections['Tab'][$slide['slide_num']] = [
-				'TAB_ORDINAL' => $tabOrd,
-				'Class' => 'tab_'. $tabOrd. ' tab',
-				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
-				'Tab_Link' => $link,
-				'Tab_Name' => $this->formatTitleText($slide['slide_label'], true)
-			];
-			
-			if (!$firstTabNum) {
-				$firstTabNum = $slide['slide_num'];
-			}
-		}
-		
-		if (isset($this->sections['Tab'][$firstTabNum]['Class'])) {
-			$this->sections['Tab'][$firstTabNum]['Class'] .= '_on';
-		}
-		
-		//Catch the unusual case where someone wants a slideshow, but has only defined one slide,
-		//so there are no transistions to animate
-		if ($tabOrd < 2) {
-			$this->mergeFields['Next_Link'] = '';
-			$this->mergeFields['Next_Disabled'] = '_disabled';
-			$this->mergeFields['Prev_Link'] = '';
-			$this->mergeFields['Prev_Disabled'] = '_disabled';
-		} else {
-			$this->mergeFields['Next_Link'] = 'href="#" onclick="return zenario_slideshow.next(this);"';
-			$this->mergeFields['Next_Disabled'] = '';
-			$this->mergeFields['Prev_Link'] = 'href="#" onclick="return zenario_slideshow.prev(this);"';
-			$this->mergeFields['Prev_Disabled'] = '';
-			$this->startSlideshow();
+		if (!$this->show) {
+			return false;
 		}
 		
 		$this->showInFloatingBox(false);
 		
-		return $this->show;
+		return $this->initAnimationLibrary();
 	}
-	
-	protected function tabLink($tabOrd) {
-		$link = 'href="#"';
-		
-		if ($this->setting('use_tab_clicks')) {
-			$link .= ' onclick="return zenario_slideshow.page(this, '. ($tabOrd-1). ');"';
-		} else {
-			$link .= ' onclick="return false;"';
-		}
-		
-		if ($this->setting('use_tab_hover')) {
-			$link .= ' onmouseover="zenario_slideshow.page(this, '. ($tabOrd-1). ', true);"';
-			
-			if ($this->setting('use_timeout')) {
-				$link .= ' onmouseout="zenario_slideshow.resume(this);"';
-			}
-		}
-		
-		return $link;
-	}
-	
-	protected function startSlideshow() {
-		
-		if ($animationLibrary = $this->setting('animation_library')) {
-			
-			if ($animationLibrary == 'cycle2') {
-				ze::requireJsLib('zenario/libs/yarn/jquery-cycle2/build/jquery.cycle2.min.js');
-			}
-			
-			$opt = [
-				'timeout' => $this->setting('use_timeout')? (int) $this->setting('timeout') : 0,
-				'pause' => $this->setting('use_timeout')? (int) $this->setting('pause') : 0,
-				'next_prev_buttons_loop' => (bool) $this->setting('next_prev_buttons_loop'),
-				$this->editingTabNum !== false? $this->editingTabNum - 1 : 0
-			];
-			
-			switch ($animationLibrary) {
-				case 'cycle2':
-					$opt['fx'] = $this->setting('cycle2_fx');
-					$opt['sync'] = (bool) $this->setting('cycle2_sync');
-					$opt['speed'] = (int) $this->setting('cycle2_speed');
-					break;
-				
-				case 'roundabout':
-					$opt['shape'] = $this->setting('shape');
-					$opt['tilt'] = (float) $this->setting('tilt');
-					$opt['speed'] = (int) $this->setting('roundabout_speed');
-					break;
-			}
-			
-				
-			$this->callScript('zenario_slideshow', 'show',
-				'zenario_'. $animationLibrary. '_interface',
-				$this->containerId,
-				$opt,
-				$this->editingTabNum !== false? $this->editingTabNum - 1 : 0
-			);
-		}
-	}
-
 	
 	public function showSlot() {
-		
-		//Show a single plugin in the nest
-		if ($this->checkShowInFloatingBoxVar()) {
-			if ($this->show) {
-				
-				$ord = 0;
-				foreach ($this->modules[$this->slideNum] as $id => $slotNameNestId) {
-					$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
-					
-					if (!empty(ze::$slotContents[$slotNameNestId]['class'])) {
-						if (ze::$slotContents[$slotNameNestId]['class']->checkShowInFloatingBoxVar()) {
-							$this->showPlugin($slotNameNestId);
-						}
-					}
-				}
-			}
-		
-		//Show all of the plugins on this slide
-		} else {
+		if (ze::$isTwig) return;
 			
-			$this->mergeFields['Tabs'] = $this->sections['Tab'] ?? null;
-			
-			if ($this->show) {
-				$hide = false;
-				foreach ($this->slides as &$slide) {
-					$slideNum = $slide['slide_num'];
-					$this->mergeFields['Tabs'][$slideNum]['Plugins'] = $this->modules[$slideNum];
-					$this->mergeFields['Tabs'][$slideNum]['Hidden'] = $hide;
-					
-					if ($this->setting('animation_library')) {
-						//Hide the slides after slide one, until the jQuery slideshow Plugin kicks in and overrides this.
-						$hide = true;
-					}
-				}
-			}
-			$this->twigFramework($this->mergeFields);
+		
+		if ($this->subClass) {
+			return $this->subClass->showSlot();
 		}
+		return false;
 	}
 	
 	

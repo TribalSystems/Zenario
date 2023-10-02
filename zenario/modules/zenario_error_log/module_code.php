@@ -41,13 +41,13 @@ class zenario_error_log extends ze\moduleBaseClass {
 		if (strlen($httpReferer) > 65535) {
 			$httpReferer = mb_substr($httpReferer, 0, 65532, 'UTF-8').'...';
 		}
-		ze\row::insert(ZENARIO_ERROR_LOG_PREFIX.'error_log', ['logged' => $logged, 'page_alias' => $pageAlias, 'referrer_url' => $httpReferer]);
+		ze\row::insert('error_404_log', ['logged' => $logged, 'page_alias' => $pageAlias, 'referrer_url' => $httpReferer]);
 		
 		//Delete old log entries according to site setting
 		if ($days = ze::setting('period_to_delete_error_log')) {
 			$date = date('Y-m-d', strtotime('-' . $days . ' day', strtotime($logged)));
 			$sql = '
-				DELETE FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+				DELETE FROM '. DB_PREFIX. 'error_404_log
 				WHERE logged <= "' . ze\escape::sql($date) . '"';
 			ze\sql::update($sql);
 		}
@@ -62,7 +62,7 @@ class zenario_error_log extends ze\moduleBaseClass {
 		//Get all errors from yesterday
 		$sql = '
 			SELECT logged, page_alias, referrer_url
-			FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+			FROM '. DB_PREFIX. 'error_404_log
 			WHERE logged BETWEEN "' . ze\escape::sql($yesterday->format('Y-m-d 00:00:00')) . '" AND "' . ze\escape::sql($yesterday->format('Y-m-d 23:59:59')) . '"
 			ORDER BY logged DESC';
 		$errors = ze\sql::select($sql);

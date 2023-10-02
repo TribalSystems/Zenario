@@ -150,6 +150,7 @@ styles_fab_white: &styles_fab
             fields:
                 editor:
                     type: editor
+                    editor_type: standard
         
         code_editor:
             parent: editors

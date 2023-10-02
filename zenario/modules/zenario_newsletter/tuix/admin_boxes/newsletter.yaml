@@ -109,6 +109,7 @@ zenario_newsletter:
                     style: |
                         height: 20em;
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
                     editor_options:
                         toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | alignleft aligncenter alignright alignjustify | numlist bullist | outdent indent | code fullscreen'
@@ -121,8 +122,6 @@ zenario_newsletter:
                             min_path: ""
                             max_path: ""
                             disallow_refiners_looping_on_min_path: true
-                    insert_link_button:
-                        exists: true
                 test_send_email_address:
                     type: text
                     maxlength: "100"
@@ -215,6 +214,7 @@ zenario_newsletter:
                         required_if_not_hidden: Please choose whether to show an unsubscribe link or not.
                 
                 unsubscribe_text:
+                    indent: 1
                     label: 'Unsubscribe text:'
                     type: text
                     validation:
@@ -227,6 +227,7 @@ zenario_newsletter:
                     style: display:none;
                 
                 delete_account_text:
+                    indent: 1
                     label: 'Unsubscribe text:'
                     type: text
                     validation:
@@ -241,13 +242,14 @@ zenario_newsletter:
                 
                 
                 exclude_previous_newsletters_recipients_enable:
-                    label: 'Exclude recipients of earlier newsletters:'
+                    label: 'Exclude recipients of earlier newsletters'
                     type: checkbox
                     side_note: >
                         You may exclude recipients to whom you sent earlier
                         newsletters.
                     format_onchange: true
                 exclude_previous_newsletters_recipients:
+                    indent: 1
                     label: 'Select newsletter(s):'
                     pick_items:
                         path: zenario__email_template_manager/panels/newsletters/refiners/archive////

@@ -3,7 +3,6 @@
 zenario__layouts:
     panels:
         skin_files:
-            priv: _PRIV_VIEW_TEMPLATE
             title: Skin Files
             no_items_message: There are no files in this skin
             columns:

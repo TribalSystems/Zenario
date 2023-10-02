@@ -35,7 +35,7 @@
             {% endif %}
 
             <input
-                id="{{Container_Id}}_search_input_box"
+                id="{{Container_Id}}-search_input_box"
                 type="text"
                 class="search_input_box"
                 name="searchString"
@@ -45,7 +45,7 @@
                 {% endif %}
 
                 value="{{Search_String}}" 
-                onkeyup="zenario_advanced_search.onKeyUp('{{Container_Id}}', this, '{{Default_Tab}}', '{{Mode}}', {{Delay}});"
+                onkeyup="zenario_advanced_search.onKeyUp('{{Container_Id}}', this, '{{Default_Tab}}', '{{Mode}}', {{Delay}}, '{{Uses_Separate_Results_Page}}');"
                 autocomplete="off"
             />
 

@@ -47,7 +47,7 @@ class zenario_error_log__admin_boxes__clear_error_log extends ze\moduleBaseClass
 				break;
 		}
 		$sql = '
-			DELETE FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+			DELETE FROM '. DB_PREFIX. 'error_404_log
 			WHERE logged <= "' . ze\escape::sql($date->format('Y-m-d H:i:s')) . '"';
 		ze\sql::update($sql);
 	}

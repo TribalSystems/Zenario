@@ -10,14 +10,14 @@
 .zenario_slot:not(.zenario_comments) input[type='button'],
 .zenario_slot:not(.zenario_comments) button,
 .banner_more_button .banner_more a,
-.extranet_wrap .extranet_view_profile .extranet_links a,
+.extranet_wrap input[type='submit'],
 a.nice_button,
 .zenario_user_forms .repeat_block_buttons .add,
 .zenario_ctype_event .event_more_info a,
 .zenario_ctype_document_search .search_results .result .result_info a,
 .zenario_user_forms .user_form_click_here h3 {
 	display:inline-block;
-	min-width:120px;
+	min-width:80px;
 	height:45px;
 	line-height:42px;
 	padding: 0 20px;
@@ -31,6 +31,13 @@ a.nice_button,
   	cursor:pointer;
 }
 
+.zenario_slot:not(.zenario_comments) input[type='submit'],
+.zenario_slot:not(.zenario_comments) input[type='button'],
+.zenario_slot:not(.zenario_comments) button,
+.extranet_wrap input[type='submit'] {
+	min-width:120px;
+}
+
 .zenario_slot:not(.zenario_comments) input[type='submit']:hover,
 .zenario_slot:not(.zenario_comments) input[type='button']:hover,
 .zenario_slot:not(.zenario_comments) button:hover,
@@ -38,14 +45,25 @@ a.nice_button,
 .banner_title_button .banner_title a:hover,
 .banner_more_button .banner_more a:hover,
 .extranet_wrap .extranet_view_profile .extranet_links a:hover,
+.extranet_wrap .extranet_close_account_button:hover,
 a.nice_button:hover,
 .zenario_user_forms .repeat_block_buttons .add:hover,
 .zenario_ctype_event .event_more_info a:hover,
 .zenario_ctype_document_search .search_results .result .result_info a:hover,
 .zenario_user_forms .user_form_click_here h3:hover {
-	background:#b8babc;
-	color:#282e35;
+	background:rgb(0,101,155);
 	text-decoration:none;
+	opacity:1;
+}
+
+input.cancel,
+a.nice_button.cancel {
+	background:#717b88;
+}
+
+input.cancel:hover,
+a.nice_button.cancel:hover {
+	background:#8491a2;
 }
 
 .light.banner_more_button .banner_more a {
@@ -131,6 +149,29 @@ p.phone:before {
 	padding-right:5px;
 }
 
+/* Node external links
+--------------------------------------------------------------------------------------------------*/
+
+.link_external a:after,
+a.link_external:after,
+.has_child.link_external > a:before,
+a.has_child.link_external:before {
+  font-family: "FontAwesome";
+  content: "\f08e";
+}
+
+.link_external a:after,
+a.link_external:after {
+  padding-left: 8px;
+  font-size: 14px;
+  display: inline-block;
+}
+
+.link_external a:after:hover,
+a.link_external:after:hover {
+	text-decoration:none !important;
+}
+
 /* Enlarge icon
 --------------------------------------------------------------------------------------------------*/
 
@@ -202,20 +243,35 @@ p.phone:before {
 .extranet_wrap .extranet_field,
 .extranet_wrap .extranet_links,
 .extranet_wrap .extranet_remember_me,
+.extranet_wrap .extranet_log_me_in,
 .extranet_wrap .form_field {
 	text-align:left;
 	margin-top:15px;
 }
 
+.extranet_wrap .extranet_btn,
+.zenario_extranet_profile .extranet_wrap .form_buttons {
+	overflow:hidden;
+	margin-top:25px;
+}
+
+.extranet_wrap .extranet_field .extranet_field,
+.zenario_extranet_profile .extranet_wrap .form_buttons .extranet_links {
+	margin-top:0;
+}
+
+.extranet_wrap .extranet_remember_me + .extranet_log_me_in {
+	margin-top:5px;
+}
+
 .extranet_wrap .extranet_field .label,
 .extranet_wrap .form_field .field_title {
 	padding-bottom:5px;
-	font-family:'robotolight',Arial, Helvetica, sans-serif;
-	text-transform:uppercase;
 }
 
 .extranet_wrap .extranet_links,
-.extranet_wrap .extranet_remember_me {
+.extranet_wrap .extranet_remember_me,
+.extranet_wrap .extranet_log_me_in {
 	font-size:0.875em;
 }
 
@@ -229,20 +285,17 @@ p.phone:before {
 
 .extranet_wrap .extranet_view_profile .extranet_links {
 	font-size:1em;
+	display:flex;
+	gap:10px;
+	justify-content:center;
 }
 
 .extranet_wrap .extranet_view_profile .extranet_links a {
 	text-decoration:none;
 }
 
-.extranet_wrap .extranet_btn,
-.extranet_wrap .extranet_edit_profile .form_buttons {
-	overflow:hidden;
-	margin-top:25px;
-}
-
-.extranet_wrap .extranet_edit_profile .form_buttons input,
-.extranet_wrap .extranet_edit_profile .form_buttons a {
+.zenario_extranet_profile .extranet_wrap .form_buttons input,
+.zenario_extranet_profile .extranet_wrap .form_buttons a {
 	display:inline-block;
 	margin:0 8px;
 }
@@ -254,6 +307,39 @@ p.phone:before {
 
 .extranet_wrap .screen_name_confirmed_info {
 	margin-bottom:30px;
+}
+
+.extranet_profile_edit_note {
+	padding-top:0.2em;
+	font-size:0.857em;
+	font-style:italic;
+}
+
+.extranet_profile_edit_note a {
+	text-decoration:underline;
+}
+
+.extranet_wrap .bottom_options {
+	text-align:left;
+	padding-top: 1em;
+	margin-top: 25px;
+	border-top: 1px solid #e6e3e3;
+}
+
+.extranet_wrap .extranet_close_account_button {
+  	display: inline-block;
+  	padding: 0 10px 2px;
+  	background: #e3eaee;
+  	line-height: 30px;
+  	color: #666;
+  	font-size: 85%;
+	-webkit-transition: all 0.2s ease-in-out;
+  	-moz-transition: all 0.2s ease-in-out;
+  	transition: all 0.2s ease-in-out;
+}
+
+.extranet_wrap .extranet_close_account_button:hover {
+	color:#FFF;
 }
 
 /* Image Credits, banner, MIC plugin, meta data

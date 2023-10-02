@@ -49,6 +49,32 @@ zenario__library:
                           AND ii.foreign_key_id = c.id
                           AND ii.foreign_key_char = c.type
                           AND ii.foreign_key_version = c.admin_version
+                
+                images_for_newsletter:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                         ON ii.image_id = f.id
+                        AND ii.foreign_key_to = 'newsletter'
+                        AND ii.foreign_key_id = [[REFINER_ID]]
+                
+                images_for_menu_node_linked_content_item:
+                    table_join: |
+                        INNER JOIN [[DB_PREFIX]]menu_nodes AS m
+                           ON m.id = [[REFINER_ID]]
+                        INNER JOIN [[DB_PREFIX]]content_items AS c
+                           ON c.equiv_id = m.equiv_id
+                          AND c.type = m.content_type
+                          AND c.language_id = [[REFINER__LANGUAGE]]
+                        INNER JOIN [[DB_PREFIX]]content_item_versions AS v
+                           ON v.id = c.id
+                          AND v.type = c.type
+                          AND v.version = c.admin_version
+                        INNER JOIN [[DB_PREFIX]]inline_images AS ii
+                           ON ii.image_id = f.id
+                          AND ii.foreign_key_to = 'content'
+                          AND ii.foreign_key_id = c.id
+                          AND ii.foreign_key_char = c.type
+                          AND ii.foreign_key_version = c.admin_version
             
             
             columns:
@@ -443,7 +469,6 @@ zenario__library:
                         path: zenario__content/panels/image_tags
                 
                 add_to_content_item:
-                    only_show_on_refiner: images_for_content_item
                     label: Add image from image library
                     onclick: |
                         if (window.zenarioOQuickMode) {
@@ -495,16 +520,6 @@ zenario__library:
                             cancel_button_message: Cancel
                         request:
                             download_image: 1
-                view_public_link: 
-                    parent: actions_dropdown
-                    hide_in_select_mode: true
-                    label: View public link
-                    multiple_select: false
-                    visible_if_for_all_selected_items: >
-                        item.privacy == 'public'
-                    ajax: 
-                        request: 
-                            view_public_link: 1
                 
                 
                 mark_as_public:
@@ -630,7 +645,6 @@ zenario__library:
                 
                 flag_as_feature:
                     priv: _PRIV_EDIT_DRAFT
-                    only_show_on_refiner: images_for_content_item
                     label: Flag as featured image
                     hide_in_select_mode: false
                     visible_if: |
@@ -653,7 +667,6 @@ zenario__library:
                             flag_as_feature: true
                 unflag_as_feature:
                     priv: _PRIV_EDIT_DRAFT
-                    only_show_on_refiner: images_for_content_item
                     label: Unflag as featured image
                     hide_in_select_mode: false
                     visible_if_for_all_selected_items: |
@@ -674,7 +687,6 @@ zenario__library:
                 
                 remove_from_content:
                     priv: _PRIV_MANAGE_MEDIA
-                    only_show_on_refiner: images_for_content_item
                     label: Detach from content item
                     multiple_select: true
                     hide_in_select_mode: false

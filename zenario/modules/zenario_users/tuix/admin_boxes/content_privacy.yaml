@@ -18,7 +18,7 @@ zenario_content_privacy:
             label: Permissions
             edit_mode:
                 enabled: true
-            fields:
+            fields: &contentPrivacyFields
                 desc:
                     full_width: Yes
                     snippet: 
@@ -28,7 +28,7 @@ zenario_content_privacy:
                 privacy_settings_disabled_note:
                     pre_field_html: '<div class="zenario_fbInfo">'
                     snippet:
-                        html: 'Zenario can show options for making content items private, i.e. needing a password to access them. To do this, the module "Extranet Base Module and login" (zenario_extranet) must be running.'
+                        html: 'Zenario can show options for making content items private, i.e. needing a password to access them. To do this, the module "Extranet Base Module and Login" (zenario_extranet) must be running.'
                     post_field_html: '</div>'
                     hidden: true
                 
@@ -77,8 +77,8 @@ zenario_content_privacy:
                 
                 group_ids:
                     indent: 1
-                    visible_if: >
-                        zenarioAB.value('privacy') == 'group_members'
+                    visible_if:
+                        zenarioAB.valueIs: privacy, group_members
                     type: checkboxes
                     no_values_message: No groups defined
                     validation:
@@ -87,8 +87,8 @@ zenario_content_privacy:
                     #If no smart groups are defined, this field will not be displayed.
                     #It will be hidden in the PHP class, and its visible_if logic will be removed.
                     indent: 1
-                    visible_if: >
-                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
+                    visible_if:
+                        zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
                     type: select
                     empty_value: ' -- Select -- '
                     validation:
@@ -99,12 +99,12 @@ zenario_content_privacy:
                     indent: 1
                     snippet:
                         html: 'No smart groups defined'
-                    visible_if: >
-                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group')
+                    visible_if:
+                        zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
                 role_ids:
                     indent: 1
-                    visible_if: >
-                        zenarioAB.value('privacy') == 'with_role'
+                    visible_if:
+                        zenarioAB.valueIs: privacy, with_role
                     type: checkboxes
                     no_values_message: No roles defined
                     validation:
@@ -123,8 +123,8 @@ zenario_content_privacy:
                             label: at the location in the URL, or at ANY location when there is no location in the URL
                 module_class_name:
                     indent: 1
-                    visible_if: >
-                        zenarioAB.value('privacy') == 'call_static_method'
+                    visible_if:
+                        zenarioAB.valueIs: privacy, call_static_method
                     label: 'Module class name:'
                     type: text
                     maxlength: 200
@@ -148,8 +148,8 @@ zenario_content_privacy:
                     maxlength: 255
                 signal_blurb:
                     indent: 1
-                    visible_if: >
-                        zenarioAB.value('privacy') == 'send_signal'
+                    visible_if:
+                        zenarioAB.valueIs: privacy, send_signal
                     snippet:
                         html: |
                             This option can be used in conjunction with a module,
@@ -164,8 +164,8 @@ zenario_content_privacy:
                 
                 clist_warning:
                     indent: 1
-                    visible_if: >
-                        zenario.IN(zenarioAB.value('privacy'), 'in_smart_group', 'logged_in_not_in_smart_group', 'call_static_method', 'send_signal')
+                    visible_if:
+                        zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
                     snippet:
                         html: |
                             Content items with this permission
@@ -182,3 +182,18 @@ zenario_content_privacy:
         message_type: warning
         button_message: Save
         cancel_button_message: Cancel
+
+
+
+
+
+zenario_content:
+    tabs:
+        privacy:
+            hidden: false
+            ord: 35
+            label: Permissions
+            edit_mode:
+                enabled: ""
+                priv: _PRIV_EDIT_DRAFT
+            fields: *contentPrivacyFields

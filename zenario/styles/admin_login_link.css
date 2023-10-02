@@ -34,7 +34,6 @@ body div.admin_login_link a.admin_login_link {
     display: inline-block;
 	color:#000;
 	font-family:Verdana, Arial, Helvetica, sans-serif;
-	text-transform: uppercase;
 	text-decoration:none;
 }
 
@@ -63,4 +62,15 @@ body div.admin_login_link a.clear_admin_cookie {
 }
 body div.admin_login_link a.clear_admin_cookie:before {
 	content: "×";
+}
+
+body div.admin_login_link.restore_admin_toolbar {
+	/*
+		Some placeholder styles for the button to show the admin toolbar.
+		To do: Style this properly and add an icon!
+	*/
+	background: pink;
+	width: 25px;
+	height: 25px;
+	cursor: pointer;
 }

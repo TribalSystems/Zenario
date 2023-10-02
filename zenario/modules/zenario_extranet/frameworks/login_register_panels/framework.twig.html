@@ -1,5 +1,5 @@
 {% if Redirect_Message %}
-	<p>{{Redirect_Message|e}}</p>
+	<p class="extranet_redirect_message">{{Redirect_Message|e}}</p>
 {% endif %}
 
 <div class="extranet_wrap">
@@ -21,16 +21,15 @@
 						<div class="extranet_error">{{item.Error}}</div>
 					{% endfor %}
 				
-					{% if Login_with_screen_name %}
-						<div class="extranet_field">
-							<div class="label"><label for="extranet_screen_name">{{screen_name_field_label}}</label></div>
-							{{this.frameworkField({'type': "text", 'name': "extranet_screen_name", 'id': "extranet_screen_name", 'required': "true", 'class': "extranet_text"})}}
-						</div>
-					{% endif %}
-					{% if Login_with_email %}
+					{% if this.signInUsingEmailAddress() %}
 						<div class="extranet_field">
 							<div class="label"><label for="extranet_email">{{email_field_label}}</label></div>
 							{{this.frameworkField({'type': "email", 'name': "extranet_email", 'id': "extranet_email", 'required': "true", 'pattern': "email", 'class': "extranet_text"})}}
+						</div>
+					{% else %}
+						<div class="extranet_field">
+							<div class="label"><label for="extranet_screen_name">{{screen_name_field_label}}</label></div>
+							{{this.frameworkField({'type': "text", 'name': "extranet_screen_name", 'id': "extranet_screen_name", 'required': "true", 'class': "extranet_text"})}}
 						</div>
 					{% endif %}
 					<div class="extranet_field">
@@ -138,11 +137,16 @@
 		
 		{% if Terms_And_Conditions_Form %}
 			
-			{% for item in Error_Display %}
-				<div class="extranet_error">{{item.Error}}</div>
-			{% endfor %}
-			
 			<div>
+				<h2>{{Welcome_Message}}</h2>
+				<div class="terms_not_accepted_message">
+					{{"You are now logged in, but this site requires you to accept our terms and conditions before proceeding. Please check the statement below."|trans}}
+				</div>
+				
+				{% for item in Error_Display %}
+					<div class="extranet_error">{{item.Error}}</div>
+				{% endfor %}
+				
 				<div class="extranet_terms_and_conditions">
 					{{this.frameworkField({'type': "checkbox", 'name': "extranet_terms_and_conditions", 'id': "extranet_terms_and_conditions"})}}
 					<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>

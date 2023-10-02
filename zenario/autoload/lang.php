@@ -271,7 +271,7 @@ class lang {
 	}
 
 	//Formerly "applyMergeFields()"
-	public static function applyMergeFields(&$string, $replace, $open = '[[', $close = ']]', $autoHTMLEscape = false) {
+	public static function applyMergeFields(&$string, $replace, $open = '[[', $close = ']]', $autoHTMLEscape = false, $showTheWordEmptyInsteadOfBlanks = false) {
 		
 		//If dataset fields are processed, an array with the label and an ordinal might be passed instead of a label string.
 		//The code below will account for that.
@@ -293,7 +293,17 @@ class lang {
 				$str = substr($str, $sbe + 2);
 				
 				if ($autoHTMLEscape) {
-					$newString .= htmlspecialchars($replace[$mf] ?? '');
+					if (isset($replace[$mf])) {
+						$replaceWith = $replace[$mf];
+					} else {
+						if ($showTheWordEmptyInsteadOfBlanks) {
+							$replaceWith = \ze\lang::phrase('(empty)');
+						} else {
+							$replaceWith = '';
+						}
+					}
+					
+					$newString .= htmlspecialchars($replaceWith);
 				
 				} else {
 					do {
@@ -311,7 +321,17 @@ class lang {
 							}
 						}
 					
-						$newString .= $replace[$mf] ?? '';
+						if (isset($replace[$mf])) {
+							$replaceWith = $replace[$mf];
+						} else {
+							if ($showTheWordEmptyInsteadOfBlanks) {
+								$replaceWith = \ze\lang::phrase('(empty)');
+							} else {
+								$replaceWith = '';
+							}
+						}
+						
+						$newString .= $replaceWith;
 					} while (false);
 				}
 			}

@@ -257,9 +257,9 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		
 		} else {
 			buttonsHTML = 
-				_$input('type', 'button', 'value', phrase.login, 'class', 'submit_selected', 'onclick', 'zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));');
+				_$input('type', 'button', 'value', phrase.login, 'class', 'submit_selected', 'onclick', 'zenarioA.reloadPage(false, true);');
 			
-			addCancel = "zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));";
+			addCancel = "zenarioA.reloadPage();";
 		}
 		
 		modal = true;
@@ -898,16 +898,14 @@ zenarioA.suspendStopWrapperClicks = function() {
 //Show the drop-down menu for the slot
 zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFromClickingOnSlot) {
 	
-	var closeAsIsAlreadyOpen = !isFromAdminToolbar && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible'),
-		left,
-		top,
+	var left, top, width,
 		thisSlotControlsBox = 'AdminSlotControls-' + slotName,
-		sectionSel, infoSel, $parents;
+		autoClose = !isFromAdminToolbar,
+		closeAsIsAlreadyOpen = autoClose && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible');
 	
 	el.blur();
 	
-	if (!isFromAdminToolbar
-	  || openSlotControlsBox != thisSlotControlsBox) {
+	if (autoClose || openSlotControlsBox != thisSlotControlsBox) {
 		zenarioA.closeSlotControls();
 	}
 	
@@ -918,17 +916,6 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFrom
 			$('#zenario_at_toolbars .zenario_at_slot_controls ul li#zenario_at_button__slot_control_dropdown ul').css('display', 'block');
 			slotParentMouseOverLastId = false;
 		}
-		
-		
-		var width,
-			section,
-			sections = {
-				info: false, notes: false, actions: false,
-				re_move_place: false, overridden_info: false, overridden_actions: false,
-				no_perms: false
-			},
-			instanceId = zenario.slots[slotName].instanceId,
-			grid = zenarioA.getGridSlotDetails(slotName);
 		
 		if (get('zenario_fbAdminSlotControls-' + slotName).innerHTML.indexOf('zenario_long_option') == -1) {
 			width = 300;
@@ -980,60 +967,75 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFrom
 			openSlotControlsBox = thisSlotControlsBox,
 			e, width, left, top, false, false, false, false);
 		
-		//Check that each section has at least one label or button in it. If not, hide that section
-		foreach (sections as section) {
-			sectionSel = '#zenario_fbAdminSlotControls-' + slotName + ' .zenario_slotControlsWrap_' + section;
-			
-			$(sectionSel).show();
-			
-			$(sectionSel + ' .zenario_sc:visible').each(function(i, el) {
-				sections[section] = true;
-			});
-		
-			if (!sections[section]) {
-				$(sectionSel).hide();
-			}
-		}
-		
-		infoSel = '#zenario_slot_control__' + slotName + '__info__';
-		
-		//We've hidden the plugin and slot's CSS classes for now to reduce clutter.
-		//if (grid.cssClass) {
-		//	//Strip out some technical class-names that make the grid work but designers don't need to see
-		//	grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
-		//	
-		//	//$(infoSel + 'grid_css_class').show();
-		//	$(infoSel + 'grid_css_class > span').text(grid.cssClass);
-		//} else {
-		//	$(infoSel + 'grid_css_class').hide();
-		//}
-		//
-		//if (grid.widthInfo) {
-		//	//$(infoSel + 'grid_width').show();
-		//	$(infoSel + 'grid_width > span').text(grid.widthInfo);
-		//} else {
-		//	$(infoSel + 'grid_width').hide();
-		//}
-		
-		//Don't show the "copy embed link" option if this browser doesn't support copy and paste
-		if (!zenario.canCopy()) {
-			$(infoSel + 'embed').hide();
-		}
-		
-		//Hide the "only on desktop"/"only on mobile" warnings if this slot doesn't work like that
-		$parents = $('#' + plgslt_ + slotName).parents();
-		if (!$parents.filter('.responsive').length) {
-			$(infoSel + 'desktop').hide();
-		}
-		if (!$parents.filter('.responsive_only').length) {
-			$(infoSel + 'mobile').hide();
-		}
-		
-		
-		$('#' + plgslt_ + slotName + '-control_box').addClass('zenario_adminSlotControlsOpen');
+		zenarioA.updateSlotControlsHTML(slotName);
 	}
 	
 	return false;
+};
+
+zenarioA.updateSlotControlsHTML = function(slotName) {
+		
+	var width,
+		section, sectionSel, infoSel,
+		sections = {
+			info: false, notes: false, actions: false,
+			re_move_place: false, overridden_info: false, overridden_actions: false,
+			no_perms: false
+		},
+		instanceId = zenario.slots[slotName].instanceId,
+		grid = zenarioA.getGridSlotDetails(slotName);
+	
+	//Check that each section has at least one label or button in it. If not, hide that section
+	foreach (sections as section) {
+		sectionSel = '#zenario_fbAdminSlotControls-' + slotName + ' .zenario_slotControlsWrap_' + section;
+		
+		$(sectionSel).show();
+		
+		$(sectionSel + ' .zenario_sc:visible').each(function(i, el) {
+			sections[section] = true;
+		});
+	
+		if (!sections[section]) {
+			$(sectionSel).hide();
+		}
+	}
+	
+	infoSel = '#zenario_slot_control__' + slotName + '__info__';
+	
+	//We've hidden the plugin and slot's CSS classes for now to reduce clutter.
+	//if (grid.cssClass) {
+	//	//Strip out some technical class-names that make the grid work but designers don't need to see
+	//	grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
+	//	
+	//	//$(infoSel + 'grid_css_class').show();
+	//	$(infoSel + 'grid_css_class > span').text(grid.cssClass);
+	//} else {
+	//	$(infoSel + 'grid_css_class').hide();
+	//}
+	//
+	//if (grid.widthInfo) {
+	//	//$(infoSel + 'grid_width').show();
+	//	$(infoSel + 'grid_width > span').text(grid.widthInfo);
+	//} else {
+	//	$(infoSel + 'grid_width').hide();
+	//}
+	
+	//Don't show the "copy embed link" option if this browser doesn't support copy and paste
+	if (!zenario.canCopy()) {
+		$(infoSel + 'embed').hide();
+	}
+	
+	//Hide the "only on desktop"/"only on mobile" warnings if this slot doesn't work like that
+	$parents = $('#' + plgslt_ + slotName).parents();
+	if (!$parents.filter('.responsive').length) {
+		$(infoSel + 'desktop').hide();
+	}
+	if (!$parents.filter('.responsive_only').length) {
+		$(infoSel + 'mobile').hide();
+	}
+	
+	
+	$('#' + plgslt_ + slotName + '-control_box').addClass('zenario_adminSlotControlsOpen');
 };
 
 zenarioA.copyEmbedLink = function(link) {
@@ -1073,10 +1075,9 @@ zenarioA.closeSlotControlsAfterDelay = function() {
 };
 
 
-//These functions were written for a new feature in 9.5.
-//However they're also used as part of a bug-fix, and that bugfix needs to be patched
-//back to 9.4. So I've patched them back as well, even though they're not being used for
-//their original intended purpose.
+//This functionality here allows the zenarioA.switchToolbarWithSlotControlsOpen() to keep
+//the slot controls open exactly as they were, without me having to go through adding flags/options
+//into two or three other function calls that are trying to close it.
 var keepSlotControlsOpen;
 
 zenarioA.keepSlotControlsOpen = function() {
@@ -1103,6 +1104,40 @@ zenarioA.closeSlotControls = function() {
 		//Allow the slot controls on the admin toolbar to be closed once again
 		$('#zenario_at_toolbars .zenario_at_slot_controls ul li#zenario_at_button__slot_control_dropdown ul').css('display', '');
 	}
+};
+
+
+//This is used in the "Switch to Edit mode" and "Switch to Layout mode" buttons
+//to switch the page mode without actually closing the open slot control dropdown.
+zenarioA.switchToolbarWithSlotControlsOpen = function(el, e, slotName, toolbar) {
+	
+	zenario.stop(e);
+	zenarioA.keepSlotControlsOpen();
+	
+	zenarioAT.clickTab(toolbar, true, function() {
+		zenarioA.updateSlotControlsHTML(slotName);
+		setTimeout(zenarioA.allowSlotControlsToBeClosedOnceMore, 0);
+	});
+	
+    return false;
+};
+
+
+zenarioA.refreshChangedPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
+	
+	var slot;
+	
+	if (slot = zenario.slots[slotName]) {
+		delete slot.instanceId;
+		delete slot.level;
+		delete slot.moduleClassName;
+		delete slot.moduleClassNameForPhrases;
+		delete slot.moduleId;
+		delete slot.slideId;
+	}
+	
+	return zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post);
+
 };
 
 
@@ -1180,7 +1215,7 @@ zenarioA.addNewReusablePlugin = function(path, key, row) {
 		if (error) {
 			zenarioA.showMessage(error);
 		} else {
-			zenario.refreshPluginSlot(slotName, '');
+			zenarioA.refreshChangedPluginSlot(slotName, '');
 		}
 	});
 };
@@ -1209,7 +1244,7 @@ zenarioA.addNewWireframePlugin = function(el, slotName, moduleId) {
 				if (error) {
 					zenarioA.showMessage(error);
 				} else {
-					zenario.refreshPluginSlot(slotName, '');
+					zenarioA.refreshChangedPluginSlot(slotName, '');
 				}
 			});
 		});
@@ -1252,6 +1287,8 @@ zenarioA.movePlugin = function(el, slotName, siteWide) {
 	el.blur();
 	
 	zenarioA.floatingBox(phrase.movePluginDesc, true, 'question', true, true, undefined, undefined, function() {
+		
+		zenarioA.toggleShowEmptySlots(true);
 		
 		zenarioA.moveSource = slotName;
 		zenarioA.moveSitewide = siteWide;
@@ -1300,9 +1337,18 @@ zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
 	
 		if (error) {
 			zenarioA.showMessage(error);
+		
 		} else {
-			zenario.refreshPluginSlot(moveSource, '', zenarioA.importantGetRequests);
-			zenario.refreshPluginSlot(moveDestination, '', zenarioA.importantGetRequests);
+			var cb = new zenario.callback;
+			
+			cb.add(zenarioA.refreshChangedPluginSlot(moveSource, '', zenarioA.importantGetRequests));
+			cb.add(zenarioA.refreshChangedPluginSlot(moveDestination, '', zenarioA.importantGetRequests));
+			
+			cb.after(function(data1, data2, data3) {
+				//I'm not 100% sure why but refreshing the two slots above can break the onmouseover-events on them.
+				//Call the setSlotParents() function again to restore them if needed, as a work-around to fix this!
+				zenarioA.setSlotParents();
+			});
 		}
 	});
 };
@@ -1339,7 +1385,7 @@ zenarioA.removePlugin = function(el, slotName, level) {
 				if (error) {
 					zenarioA.showMessage(error);
 				} else {
-					zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+					zenarioA.refreshChangedPluginSlot(slotName, '', undefined, false, false, false, false);
 				}
 			});
 		};
@@ -1369,7 +1415,7 @@ zenarioA.hidePlugin = function(el, slotName) {
 		if (error) {
 			zenarioA.showMessage(error);
 		} else {
-			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+			zenarioA.refreshChangedPluginSlot(slotName, '', undefined, false, false, false, false);
 		}
 	});
 };
@@ -1383,7 +1429,7 @@ zenarioA.showPlugin = function(el, slotName) {
 		if (error) {
 			zenarioA.showMessage(error);
 		} else {
-			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+			zenarioA.refreshChangedPluginSlot(slotName, '', undefined, false, false, false, false);
 		}
 	});
 };
@@ -3068,6 +3114,38 @@ zenarioA.draftDoCallback = function(aId, scrollPos) {
 	delete zenarioA.draftDoingCallback;
 };
 
+zenarioA.toggleAdminToolbar = function(hide) {
+	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php', {
+		_toggleAdminToolbar: 1,
+		_hide: hide? 1 : ''
+	}).after(function() {
+		zenarioA.reloadPage();
+	});
+};
+
+zenarioA.reloadPage = function(sameVersion, linkViaAdminWelcomePage, task) {
+	
+	var requests,
+		conductorSlot = zenario_conductor.getSlot();
+	
+	if (conductorSlot && conductorSlot.exists) {
+		requests = zenario_conductor.request(conductorSlot, 'refresh');
+	} else {
+		requests = zenarioA.importantGetRequests;
+	}
+	
+	if (sameVersion) {
+		requests = _.clone(requests);
+		requests.cVersion = zenario.cVersion;
+	}
+	
+	if (linkViaAdminWelcomePage && task) {
+		requests = _.clone(requests);
+		requests.task = task;
+	}
+	
+	return zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests, linkViaAdminWelcomePage));
+};
 
 
 
@@ -3291,13 +3369,6 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
                 relativePath = url;
             } else if (url.indexOf(URLBasePath) === 0) {
                 relativePath = url.substr(URLBasePath.length - 1);
-            //Links to spare domains are always highlighted
-            } else if (zenarioA.spareDomains) {
-                for (i = 0; i < zenarioA.spareDomains.length; ++i) {
-                    if (url.indexOf(zenarioA.spareDomains[i]) === 0) {
-                    	zenarioA.addLinkStatus($el, 'spare_domain');
-                    }
-                }
             }
             
             if (relativePath) {
@@ -3371,6 +3442,7 @@ zenarioA.init = function(
 	cVersion,
 	adminId,
 	
+	includeAdminToolbar,
 	toolbar,
 	pageMode,
 	
@@ -3381,43 +3453,49 @@ zenarioA.init = function(
 	siteSettings,
 	adminSettings,
 	adminPrivs,
+	
 	importantGetRequests,
 	adminHasSpecificPerms,
 	adminHasSpecificPermsOnThisPage,
+	
 	lang,
-	spareDomains,
-	draftMessage,
-	showEmptySlotsOn
+	draftMessage
 ) {
 	zenario.cVersion = cVersion;
 	zenario.adminId = adminId;
 	
+	zenarioA.adminToolbarOnPage = includeAdminToolbar;
 	zenarioA.toolbar = toolbar;
 	zenarioA.pageMode = pageMode;
-	zenarioA.showGridOn = showGridOn;
-	zenarioA.showEmptySlotsOn = showEmptySlotsOn;
-	zenarioA.siteSettings = siteSettings;
-	zenarioA.adminSettings = adminSettings;
-	zenarioA.adminPrivs = adminPrivs;
-	zenarioA.importantGetRequests = importantGetRequests;
-	zenarioA.adminHasSpecificPerms = adminHasSpecificPerms;
-	zenarioA.adminHasSpecificPermsOnThisPage = adminHasSpecificPermsOnThisPage;
-	zenarioA.lang = lang;
-	zenarioA.spareDomains = spareDomains;
-	zenarioA.draftMessage = draftMessage;
 	
 	zenarioA.passVars = {
 		min_extranet_user_password_length: minPasswordLength,
 		min_extranet_user_password_score: minPasswordScore
 	};
 	
+	zenarioA.showGridOn = showGridOn;
+	zenarioA.siteSettings = siteSettings;
+	zenarioA.adminSettings = adminSettings;
+	zenarioA.adminPrivs = adminPrivs;
+	
+	//N.b. we used to save the value of zenarioA.showEmptySlotsOn in the session
+	//so that it would stay as it was if you reloaded the same page.
+	//However this ability has since been removed and we now always start a page load
+	//with it in the "off" position.
+	//zenarioA.showEmptySlotsOn = showEmptySlotsOn;
+	
+	zenarioA.importantGetRequests = importantGetRequests;
+	zenarioA.adminHasSpecificPerms = adminHasSpecificPerms;
+	zenarioA.adminHasSpecificPermsOnThisPage = adminHasSpecificPermsOnThisPage;
+	
+	zenarioA.lang = lang;
+	zenarioA.draftMessage = draftMessage;
+	
 	//Add CSS classes for every priv needed in JavaScript
 	var priv, hasPriv;
 	foreach (adminPrivs as priv => hasPriv) {
 		zenarioL.set(hasPriv, priv, '_NO' + priv);
 	}
-	
-	
 	
 	//If this is admin mode, or the admin login screen, prepare some of the admin mode widgets.
 	//(Note that some plugins include this library file on front-end pages even when not in admin mode;
@@ -3439,63 +3517,6 @@ zenarioA.init = function(
 		$('body').append(zenarioT.microTemplate('zenario_floating_boxes', {}));
 	}
 };
-
-
-//A developer tool, checks a library to see if it will work with the short-names system
-zenarioA.reviewShortNames = function(lib, globalName) {
-	var longName, shortName, fun, mapping = {}, error = false, output = '';
-	
-	globalName = globalName || lib.globalName;
-	
-	//Given a library, loop through all of its properties.
-	//We're looking for functions with names that are 6 or more characters long.
-	foreach (lib as longName => fun) {
-		if (longName.length > 5
-		 && longName[0] != '_'
-		 && typeof fun == 'function') {
-			
-			shortName = zenario.shrtn(longName);
-			
-			if (mapping[shortName]) {
-				console.warn(
-					globalName + '.' + mapping[shortName], 'and',
-					globalName + '.' + longName, 'clash on',
-					globalName + '.' + shortName
-				);
-				error = true;
-			}
-			
-			mapping[shortName] = longName;
-			
-			output += "\n\t\t'" + globalName + "." + longName + "(',";
-		}
-	}
-	
-	if (error) {
-		return false;
-	} else {
-		console.log('All okay');
-		return output;
-	}
-};
-
-//To get a list of functions compatible with the short-name system from a library,
-//you need to be on a page in admin mode, with that library on the page, then call
-//the zenarioA.reviewShortNames() function.
-//E.g.:
-//	zenarioA.reviewShortNames(_, '_');
-//	zenarioA.reviewShortNames(zenario, 'zenario');
-//	zenarioA.reviewShortNames(zenarioT);
-//	zenarioA.reviewShortNames(zenarioA);
-//	zenarioA.reviewShortNames(zenarioAB);
-//	zenarioA.reviewShortNames(zenarioAT);
-//	zenarioA.reviewShortNames(zenarioO);
-//	zenarioA.reviewShortNames(zenarioGM);
-//	zenarioA.reviewShortNames(zenario_conductor);
-//The names you generate should be placed in the whitelist in zenario/includes/js_minify.inc.php
-
-
-
 
 
 //Calculate function short names, we need to do this before calling any functions!

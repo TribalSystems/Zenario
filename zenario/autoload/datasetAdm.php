@@ -56,12 +56,7 @@ class datasetAdm {
 	}
 
 	//Formerly "registerDatasetSystemField()"
-	public static function registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false, $includeInExport = false) {
-	
-		if ($dbColumn === false) {
-			$dbColumn = $fieldName;
-		}
-	
+	public static function registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = '', $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false, $includeInExport = false) {
 		//Try to catch the case where a system field was automatically registered
 		if ($fieldId = \ze\row::get(
 			'custom_dataset_fields',
@@ -94,12 +89,12 @@ class datasetAdm {
 					[
 						'type' => $type,
 						'tab_name' => $tabName,
-						'field_name' => $fieldName,
+						'db_column' => $dbColumn,
 						'validation' => $validation,
 						'values_source' => $valuesSource,
 						'fundamental' => $fundamental,
 						'include_in_export' => $includeInExport],
-					['dataset_id' => $datasetId, 'db_column' => $dbColumn, 'is_system_field' => 1]);
+					['dataset_id' => $datasetId, 'field_name' => $fieldName, 'is_system_field' => 1]);
 		}
 	
 		if ($isRecordName) {

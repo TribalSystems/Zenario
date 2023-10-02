@@ -65,1132 +65,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-
-//Add columns to help us more easily tell the difference between plugins/nests/slideshows when
-//counting/tracking things in Organizer.
-ze\dbAdm::revision( 45400
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_instances`
-	ADD COLUMN `is_nest` tinyint(1) NOT NULL default 0
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_instances`
-	ADD COLUMN `is_slideshow` tinyint(1) NOT NULL default 0
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]inline_images`
-	ADD COLUMN `is_nest` tinyint(1) NOT NULL default 0
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]inline_images`
-	ADD COLUMN `is_slideshow` tinyint(1) NOT NULL default 0
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]modules` AS m
-	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
-	   ON m.id = pi.module_id
-	SET is_nest = 1
-	WHERE m.class_name = 'zenario_plugin_nest'
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]modules` AS m
-	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
-	   ON m.id = pi.module_id
-	SET pi.is_nest = 1,
-		pi.is_slideshow = 1
-	WHERE m.class_name = 'zenario_slideshow'
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi
-	INNER JOIN `[[DB_PREFIX]]inline_images` AS ii
-	   ON ii.foreign_key_to = 'library_plugin'
-	  AND ii.foreign_key_id = pi.id
-	SET ii.is_nest = 1
-	WHERE pi.is_nest = 1
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi
-	INNER JOIN `[[DB_PREFIX]]inline_images` AS ii
-	   ON ii.foreign_key_to = 'library_plugin'
-	  AND ii.foreign_key_id = pi.id
-	SET ii.is_slideshow = 1
-	WHERE pi.is_slideshow = 1
-_sql
-
-);	ze\dbAdm::revision( 45401
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_instances`
-	ADD KEY (`is_nest`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_instances`
-	ADD KEY (`is_slideshow`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]inline_images`
-	ADD KEY (`is_nest`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]inline_images`
-	ADD KEY (`is_slideshow`)
-_sql
-
-//Drop some of the thumbnail sizes from the files table
-);	ze\dbAdm::revision( 46050
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	DROP COLUMN `thumbnail_64x64_width`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	DROP COLUMN `thumbnail_64x64_height`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	DROP COLUMN `thumbnail_64x64_data`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	DROP COLUMN `thumbnail_24x23_width`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	DROP COLUMN `thumbnail_24x23_height`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	DROP COLUMN `thumbnail_24x23_data`
-_sql
-
-//Add some columns to the consents table to record the source of the consent (e.g. form or extranet registration plugin)
-);	ze\dbAdm::revision( 46051
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]consents`
-	ADD COLUMN `source_name` varchar(255) NOT NULL DEFAULT '' AFTER `id`,
-	ADD COLUMN `source_id` varchar(255) NOT NULL DEFAULT '' AFTER `source_name`
-_sql
-
-
-//Fix a mistake where a couple of tables had the wrong character-set chosen by mistake.
-);	ze\dbAdm::revision( 46200
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]lov_salutations`
-	CONVERT TO CHARACTER SET utf8
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]user_perm_settings`
-	CONVERT TO CHARACTER SET utf8
-_sql
-
-//Add the hierarchical_var column to the nested_plugins table,
-//as an efficiency improvement to save more queries to look this up.
-);	ze\dbAdm::revision(46250
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
-	ADD COLUMN `hierarchical_var` varchar(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
-	AFTER `request_vars`
-_sql
-
-//Rename and merge another case where there were two different plugin settings for the same thing
-);  ze\dbAdm::revision(46300
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-	SET name = 'enable.metadata'
-	WHERE name = 'assetwolf__view_data_pool_details__show_meta_data'
-_sql
-
-
-//Add a new option for special pages, that allows them to be hidden
-);  ze\dbAdm::revision(46501
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]special_pages`
-	ADD COLUMN `allow_hide` tinyint(1) NOT NULL default 0
-	AFTER `logic`
-_sql
-
-
-//Rename "scheduled calculations" to "metrics" in the scheduled tasks table
-);  ze\dbAdm::revision(46615
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]jobs`
-	SET job_name = 'jobCalculateMetrics'
-	WHERE job_name = 'jobRunScheduledCalculator'
-_sql
-
-//Enable "Show a heading" (show_a_heading) setting in Zenario Document Container if "Show selected folder name as title" (show_folder_name_as_title) was enabled
-);	ze\dbAdm::revision( 46616
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'show_a_heading',
-	  `value`,
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = "show_folder_name_as_title"
-	ORDER BY instance_id, egg_id
-_sql
-
-//Some Banner module settings were changed. Adjust these:
-);	ze\dbAdm::revision( 46618
-//Set the Advanced Behaviour select list to "Show as a background image" if it was selected before (used to be a checkbox).
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'advanced_behaviour',
-	  'background_image',
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = 'background_image'
-		AND value = 1
-	ORDER BY instance_id, egg_id
-_sql
-
-//Set the Advanced Behaviour select list to "Use a rollover image" if it was selected before (used to be a checkbox).
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'advanced_behaviour',
-	  'use_rollover',
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = 'use_rollover'
-		AND value = 1
-	ORDER BY instance_id, egg_id
-_sql
-
-//Set the Advanced Behaviour select list to "Hide image" if it was selected before (used to be a checkbox on a separate tab, "Mobile image").
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'advanced_behaviour',
-	  'mobile_hide_image',
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = 'mobile_behavior'
-		AND value = "hide_image"
-	ORDER BY instance_id, egg_id
-_sql
-
-//Set the Advanced Behaviour select list to "Change image" if it was selected before (used to be a checkbox on a separate tab, "Mobile image").
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'advanced_behaviour',
-	  'mobile_change_image',
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = "mobile_behavior"
-		AND value = "change_image"
-	ORDER BY instance_id, egg_id
-_sql
-
-
-//Add a table for slide layouts
-);  ze\dbAdm::revision(46700
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]]slide_layouts`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_PREFIX]]slide_layouts` (
-		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`layout_for` enum('schema') NOT NULL,
-		`layout_for_id` int(10) unsigned NOT NULL,
-		`ord` smallint(4) unsigned NOT NULL default 1,
-		`name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-		`privacy` enum('public', 'logged_out', 'logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group', 'with_role') NOT NULL default 'public',
-		`smart_group_id` int(10) unsigned NOT NULL default 0,
-		`data` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
-		`created` datetime NOT NULL,
-		`last_edited` datetime default NULL,
-		`last_edited_admin_id` int(10) unsigned NOT NULL default 0,
-		`last_edited_user_id` int(10) unsigned NOT NULL default 0,
-		PRIMARY KEY (`id`),
-		UNIQUE KEY (`layout_for`, `layout_for_id`, `ord`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]group_link`
-	MODIFY COLUMN `link_from` enum('chain', 'slide', 'slide_layout') NOT NULL
-_sql
-
-
-//Remove the smart group options from slide layouts
-);  ze\dbAdm::revision(46740
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]slide_layouts`
-	DROP COLUMN `smart_group_id`
-_sql
-
-//Add a column to the nested plugins table for selecting a slide layout for a slide.
-//Currently there are only two options: asset schema and datapool schema
-);	ze\dbAdm::revision(46800
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
-	ADD COLUMN `use_slide_layout` enum('', 'asset_schema', 'datapool_schema') NOT NULL default ''
-	AFTER `is_slide`
-_sql
-
-//Add a "hidden" privacy option for slides
-); ze\dbAdm::revision(46802
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
-	MODIFY COLUMN `privacy` enum('public','logged_out','logged_in','group_members','in_smart_group','logged_in_not_in_smart_group','call_static_method','with_role','hidden') NOT NULL DEFAULT 'public'
-_sql
-
-
-//(N.b. this was added in an after-branch patch in 8.3 revision 46306, so we need to check if it's not already there.)
-);	if (ze\dbAdm::needRevision(46803) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'menu_nodes LIKE "custom_get_requests"')) ze\dbAdm::revision(46803
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
-	ADD COLUMN `custom_get_requests` varchar(255) DEFAULT NULL
-_sql
-
-//(N.b. this was added in an after-branch patch in 8.3 revision 46307, so we need to check if it's not already there.)
-);	if (ze\dbAdm::needRevision(47035) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'categories LIKE "code_name"')) ze\dbAdm::revision(47035
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]categories`
-	ADD COLUMN `code_name` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL AFTER `name`,
-	ADD UNIQUE KEY(`code_name`)
-_sql
-
-//Enable categories for Event content types
-); ze\dbAdm::revision(47251
-,<<<_sql
-	UPDATE `[[DB_PREFIX]]content_types`
-	SET enable_categories = 1
-	WHERE content_type_name_en = "Event"
-_sql
-
-//Rename a plugin setting
-);  ze\dbAdm::revision(46300
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-	SET name = 'show_keys'
-	WHERE name = 'data_pool_custom_column_keys'
-_sql
-
-//Add a "must be public/must be private" option for plugins
-);	ze\dbAdm::revision(47800
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]modules`
-	ADD COLUMN `must_be_on` enum('', 'public_page', 'private_page') NOT NULL default ''
-	AFTER `is_pluggable`
-_sql
-
-
-
-//
-//	Zenario 8.5
-//
-
-
-//Move 5 field labels of Extranet module from "Login" tab to "Phrases" tab
-);	ze\dbAdm::revision(48002
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-		SET name = "phrase.framework.Sign in"
-	WHERE name = "main_login_heading"
-_sql
-
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-		SET name = "phrase.framework.Your Email:"
-	WHERE name = "email_field_label"
-_sql
-
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-		SET name = "phrase.framework.Your Screen Name:"
-	WHERE name = "screen_name_field_label"
-_sql
-
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-		SET name = "phrase.framework.Your password:"
-	WHERE name = "password_field_label"
-_sql
-
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-		SET name = "phrase.framework.Login"
-	WHERE name = "login_button_text"
-_sql
-
-);	ze\dbAdm::revision(48003
-//Reverting some of the Banner module changes. Mobile settings are once again separate settings.
-//These settings are moved from Advanced Behaviour to Mobile Behaviour.
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'mobile_behaviour',
-	  `value`,
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = 'advanced_behavior'
-		AND value IN ("mobile_same_image", "mobile_same_image_different_size", "mobile_change_image", "mobile_hide_image")
-	ORDER BY instance_id, egg_id
-_sql
-
-//Set the Advanced Behaviour select list to "None" if one of the old mobile settings was selected before (they are now a separate "Mobile behaviour" select list).
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'advanced_behaviour',
-	  'none',
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = "advanced_behaviour"
-		AND value IN ("mobile_same_image", "mobile_same_image_different_size", "mobile_change_image", "mobile_hide_image")
-	ORDER BY instance_id, egg_id
-_sql
-
-
-);	ze\dbAdm::revision(48004
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]plugin_settings` (
-	  `instance_id`,
-	  `egg_id`,
-	  `name`,
-	  `value`,
-	  `is_content`
-	)
-	SELECT
-	  `instance_id`,
-	  `egg_id`,
-	  'show_text_preview',
-	  0,
-	  `is_content`
-	FROM `[[DB_PREFIX]]plugin_settings` AS ps
-	WHERE ps.name = 'data_field'
-		AND value = 'none'
-	ORDER BY instance_id, egg_id
-_sql
-
-
-
-//Rework the site settings for image thumbnails to make it clearer how it works.
-//Also try to cope with the fact that they may be in reverse order
-);	ze\dbAdm::revision(48300
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]site_settings`
-	SET `name` = 'thumbnail_threshold'
-	WHERE `name` = 'working_copy_image_threshold'
-_sql
-
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
-	  `name`,
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	)
-	SELECT
-	  'custom_thumbnail_1_width',
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	FROM `[[DB_PREFIX]]site_settings`
-	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
-	  AND `value` != ''
-	  AND `value` IS NOT NULL
-	ORDER BY CAST(`value` AS UNSIGNED)
-	LIMIT 1
-_sql
-
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
-	  `name`,
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	)
-	SELECT
-	  'custom_thumbnail_1_height',
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	FROM `[[DB_PREFIX]]site_settings`
-	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
-	  AND `value` != ''
-	  AND `value` IS NOT NULL
-	ORDER BY CAST(`value` AS UNSIGNED)
-	LIMIT 1
-_sql
-
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
-	  `name`,
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	)
-	SELECT
-	  'custom_thumbnail_2_width',
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	FROM `[[DB_PREFIX]]site_settings`
-	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
-	  AND `value` != ''
-	  AND `value` IS NOT NULL
-	ORDER BY CAST(`value` AS UNSIGNED)
-	LIMIT 1, 1
-_sql
-
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_PREFIX]]site_settings` (
-	  `name`,
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	)
-	SELECT
-	  'custom_thumbnail_2_height',
-	  `value`,
-	  `default_value`,
-	  `encrypted`
-	FROM `[[DB_PREFIX]]site_settings`
-	WHERE `name` IN ('thumbnail_wc_image_size', 'working_copy_image_size')
-	  AND `value` != ''
-	  AND `value` IS NOT NULL
-	ORDER BY CAST(`value` AS UNSIGNED)
-	LIMIT 1, 1
-_sql
-
-, <<<_sql
-	DELETE FROM `[[DB_PREFIX]]site_settings`
-	WHERE name IN ('thumbnail_wc_image_size', 'working_copy_image_size')
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	CHANGE COLUMN `working_copy_width` `custom_thumbnail_1_width` smallint(5) unsigned DEFAULT NULL
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	CHANGE COLUMN `working_copy_height` `custom_thumbnail_1_height` smallint(5) unsigned DEFAULT NULL
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	CHANGE COLUMN `working_copy_data` `custom_thumbnail_1_data` mediumblob
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	CHANGE COLUMN `working_copy_2_width` `custom_thumbnail_2_width` smallint(5) unsigned DEFAULT NULL
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	CHANGE COLUMN `working_copy_2_height` `custom_thumbnail_2_height` smallint(5) unsigned DEFAULT NULL
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	CHANGE COLUMN `working_copy_2_data` `custom_thumbnail_2_data` mediumblob
-_sql
-
-//Fix the case where the thumbnails were defined the wrong way around.
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]files` AS f
-	INNER JOIN `[[DB_PREFIX]]files` AS g
-	   ON f.id = g.id
-	SET f.custom_thumbnail_1_width = g.custom_thumbnail_2_width,
-		f.custom_thumbnail_1_height = g.custom_thumbnail_2_height,
-		f.custom_thumbnail_1_data = g.custom_thumbnail_2_data,
-		f.custom_thumbnail_2_width = g.custom_thumbnail_1_width,
-		f.custom_thumbnail_2_height = g.custom_thumbnail_1_height,
-		f.custom_thumbnail_2_data = g.custom_thumbnail_1_data
-	WHERE f.custom_thumbnail_2_width != 0
-	  AND f.custom_thumbnail_2_width IS NOT NULL
-	  AND (
-			f.custom_thumbnail_1_width = 0
-		 OR f.custom_thumbnail_1_width IS NULL
-		 OR (
-				f.custom_thumbnail_1_width > f.custom_thumbnail_2_width
-			AND f.custom_thumbnail_1_height > f.custom_thumbnail_2_height
-		)
-	)
-_sql
-
-
-//Add a column to restrict what content type can be created under a menu node
-);	ze\dbAdm::revision(48630
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
-	ADD COLUMN `restrict_child_content_types` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL
-	AFTER `hide_private_item`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
-	ADD KEY (`restrict_child_content_types`)
-_sql
-
-
-//Remove the columns from the content type settings that used to let you pick just one menu node
-);	ze\dbAdm::revision(48640
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_types`
-	DROP COLUMN `default_parent_menu_node`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_types`
-	DROP COLUMN `menu_node_position`
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]content_types`
-	SET menu_node_position_edit = 'suggest'
-	WHERE menu_node_position_edit IS NULL
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_types`
-	MODIFY COLUMN `menu_node_position_edit` enum('force','suggest') NOT NULL
-_sql
-
-
-
-//
-//	Zenario 8.6
-//
-
-//Add some features to the scheduled task manager for background tasks
-//(This will replace the old background task manager module, the checkBackground scripts, and a few other things.)
-);	ze\dbAdm::revision(49800
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]jobs`
-	ADD COLUMN `job_type` enum('scheduled', 'background') NOT NULL default 'scheduled'
-	AFTER `id`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]jobs`
-	ADD COLUMN `script_path` varchar(255) NOT NULL default ''
-	AFTER `static_method`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]jobs`
-	ADD COLUMN `script_restart_time` bigint(14) unsigned NOT NULL default 0
-	AFTER `script_path`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]jobs`
-	ADD KEY (`job_type`)
-_sql
-
-
-//Add a "secret" column to the site settings table. This makes settings unavailable from Twig.
-);	ze\dbAdm::revision(49860
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]site_settings`
-	ADD COLUMN `secret` tinyint(1) NOT NULL default 0
-	AFTER `encrypted`
-_sql
-
-//Most secret settings should be set using the YAML definitions, but there are a few Assetwolf ones
-//that are manually inserted into the DB and have no YAML definitions. As a quick hack to update those,
-//just do them manually in a query here
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET `secret` = 1
-	WHERE name LIKE 'assetwolf_%_password'
-_sql
-
-
-//Fix a bug where it was possible to put invalid characters in a filename when renaming it.
-//Adding a DB query to sanitise anywhere it's previously happened.
-);	ze\dbAdm::revision(49910
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]files`
-	SET filename =
-		REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
-		REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
-			filename
-		, '\\\\', ''), '/', ''), ':', ''), ';', ''), '*', ''),
-		'?', ''), '"', ''), '<', ''), '>', ''), '|', '')
-_sql
-
-
-//Add an "is allowed" column to the document_types table to control what type of files can be uploaded
-);	ze\dbAdm::revision(49980
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]document_types`
-	ADD COLUMN `is_allowed` tinyint(1) NOT NULL default 1
-	AFTER `custom`
-_sql
-
-
-//Add a "paused" column to the jobs table. This allows us to temporarily pause/resume background tasks,
-//without needing to change any of the status columns. (E.g. if we paused a task by setting it's "enabled"
-//column to 0, when we came to resume it if it was running before, we'd not know be sure the value was before.)
-);	ze\dbAdm::revision(50000
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]jobs`
-	ADD COLUMN `paused` tinyint(1) unsigned NOT NULL default 0
-	AFTER `enabled`
-_sql
-
-
-//A few years ago we had a bug where backups taken corrupted multi-lingual characters.
-//Most sites don't use multi-lingual definitions, except in the language definitions,
-//so now we've got the issue where several sites were affected by the bug and have a few bad
-//language definitions, but we've never noticed.
-//This update checks if it looks like we've got some corrupted data in the language definitions, and deletes it if so.
-//Note there's a script in step 3 that auto-repopulates these values if they are deleted, so to fix
-//the issue we only need to delete them here and then wait for them to be auto-repopulated.
-);	ze\dbAdm::revision(50100
-, <<<_sql
-	DELETE c.*, t.*
-	FROM `[[DB_PREFIX]]visitor_phrases` AS c
-	INNER JOIN `[[DB_PREFIX]]visitor_phrases` AS t
-	   ON t.code IN ('__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_FLAG_FILENAME__', '__LANGUAGE_LOCAL_NAME__')
-	WHERE c.code = '__LANGUAGE_LOCAL_NAME__'
-	  AND c.local_text LIKE 'à%'
-_sql
-
-
-//Add columns to the language table for decimal points/thousands separator.
-);	ze\dbAdm::revision(50150
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]languages`
-	ADD COLUMN `thousands_sep` varchar(1) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT ','
-	AFTER `search_type`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]languages`
-	ADD COLUMN `dec_point` varchar(1) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '.'
-	AFTER `thousands_sep`
-_sql
-
-//Albanian, Bulgarian, Czech, French, Estonian, Finnish, Hungarian, Latvian,
-//Lithuanian, Polish, Russian, Slovak, Swedish, Ukrainian and Vietnamese
-//all use spaces and commas instead of commas and periods
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]languages`
-	SET thousands_sep = ' ',
-		dec_point = ','
-	WHERE id LIKE 'sq%'
-	   OR id LIKE 'bg%'
-	   OR id LIKE 'cs%'
-	   OR id LIKE 'fr%'
-	   OR id LIKE 'et%'
-	   OR id LIKE 'fi%'
-	   OR id LIKE 'hu%'
-	   OR id LIKE 'lv%'
-	   OR id LIKE 'lt%'
-	   OR id LIKE 'pl%'
-	   OR id LIKE 'ru%'
-	   OR id LIKE 'sk%'
-	   OR id LIKE 'sv%'
-	   OR id LIKE 'uk%'
-	   OR id LIKE 'vi%'
-_sql
-
-//...and Italian, Norwegian and Spanish use periods and commas
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]languages`
-	SET thousands_sep = '.',
-		dec_point = ','
-	WHERE id LIKE 'it%'
-	   OR id LIKE 'no%'
-	   OR id LIKE 'es%'
-_sql
-
-
-//Some code tidying - I'm mass-renaming a plugin setting.
-//The "scope_for_creation_and_lists" should just be called "scope" as that's more generic and therefore more useful.
-//(I'm doing this as I want to start making core functions that interact with this, and a more standard name is desirable.)
-);	ze\dbAdm::revision(50190
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_settings`
-	SET name = 'scope'
-	WHERE name = 'scope_for_creation_and_lists'
-_sql
-
-);	ze\dbAdm::revision(50192
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]job_logs` MODIFY COLUMN `note` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
-_sql
-
-
-//Add a locking table for the cleanDirs function. This is to try and prevent the race conditions we sometimes get, where
-//I think two scripts are running at the same time
-);	ze\dbAdm::revision(50300
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]]lock__clean_dirs`
-_sql
-, <<<_sql
-	CREATE TABLE `[[DB_PREFIX]]lock__clean_dirs` (
-		`dummy` tinyint(1) unsigned NOT NULL
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] DEFAULT CHARSET=ascii
-_sql
-
-
-
-
-//Define a new table to store custom tuix
-); ze\dbAdm::revision( 50330
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_customisations`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_PREFIX]]tuix_customisations` (
-		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
-		`custom_yaml` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
-		`custom_json` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
-		`created` datetime DEFAULT NULL,
-		`created_admin_id` int(10) unsigned DEFAULT NULL,
-		`created_user_id` int(10) unsigned DEFAULT NULL,
-		`created_username` varchar(255) DEFAULT NULL,
-		`last_edited` datetime DEFAULT NULL,
-		`last_edited_admin_id` int(10) unsigned DEFAULT NULL,
-		`last_edited_user_id` int(10) unsigned DEFAULT NULL,
-		`last_edited_username` varchar(255) DEFAULT NULL,
-		PRIMARY KEY (`id`),
-		UNIQUE KEY (`name`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
-_sql
-
-
-//Changed the name of this table to a better name
-);	ze\dbAdm::revision(50440
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]tuix_customisations`
-	RENAME TO `[[DB_PREFIX]]tuix_snippets`
-_sql
-
-//Also update the name in the plugin settings, if anyone already had it saved
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_settings`
-	SET name = '~tuix_snippet~'
-	WHERE name = '~customisation~'
-_sql
-
-
-//For anyone using the Black Dog skin, attempt to update the logic for the CSS animations to use the new library (as the previous one is now broken).
-);	ze\dbAdm::revision(50530
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/zebra_designs/js/animation_load.js'></script>", '')
-	WHERE name = 'sitewide_foot'
-	  AND value IS NOT NULL
-	  AND value != ''
-_sql
-	
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = REPLACE(value, "<script type='text/javascript' src='zenario_custom/templates/grid_templates/skins/zebra_designs/js/css3-animate-it.js'></script>", '')
-	WHERE name = 'sitewide_foot'
-	  AND value IS NOT NULL
-	  AND value != ''
-_sql
-	
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]layouts`
-	SET head_html = CONCAT(IFNULL(head_html, ''), '\n<link rel="stylesheet" href="zenario/libs/yarn/animate.css/animate.min.css"/>')
-	WHERE family_name = 'grid_templates'
-	  AND file_base_name = 'L02'
-	  AND (head_html IS NULL OR head_html NOT LIKE '%animate.min.css%')
-_sql
-	
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]layouts`
-	SET foot_html = CONCAT(IFNULL(foot_html, ''), '\n<script type="text/javascript" src="zenario/libs/yarn/wowjs/dist/wow.min.js"></script>\n<script type="text/javascript" src="zenario_custom/templates/grid_templates/skins/zebra_designs/js/animation_load.js"></script>')
-	WHERE family_name = 'grid_templates'
-	  AND file_base_name = 'L02'
-	  AND (foot_html IS NULL OR foot_html NOT LIKE '%wow.min.js%')
-_sql
-
-
-
-//Create a new table to remember which plugin/mode is on which content item.
-//This will work a bit like the special pages system, but with less bureaucracy. 
-); ze\dbAdm::revision(50600
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]]plugin_pages_by_mode`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_PREFIX]]plugin_pages_by_mode` (
-		`equiv_id` int(10) unsigned NOT NULL,
-		`content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-		`module_class_name` varchar(200) NOT NULL,
-		`mode` varchar(200) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '',
-		PRIMARY KEY (`module_class_name`, `mode`),
-		UNIQUE KEY `content_type` (`content_type`,`equiv_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
-_sql
-
-//Add a "state" column to cover plugins in conductors
-); ze\dbAdm::revision(50605
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
-	ADD COLUMN `state` char(2) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default ''
-_sql
-
-
-
-
-//
-//	Zenario 8.7
-//
-
-
-//Add a "protect_from_database_restore" column to the site settings table
-); ze\dbAdm::revision(50700
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]site_settings`
-	ADD COLUMN `protect_from_database_restore` tinyint(1) NOT NULL default 0
-_sql
-
-
-//Add a column to control creating menu nodes to the content type settings
-//(N.b. this was added in an after-branch patch in 8.3 revision 50606, so we need to check if it's not already there.)
-);	if (ze\dbAdm::needRevision(50760) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_types LIKE "prompt_to_create_a_menu_node"')) ze\dbAdm::revision(50760
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_types`
-	ADD COLUMN `prompt_to_create_a_menu_node` tinyint(1) NOT NULL default 1
-	AFTER `module_id`
-_sql
-
-
-//Remove the create_and_maintain_in_all_languages option for special pages
-//(N.b. this was added in an after-branch patch in 8.3 revision 50607, but is safe to repeat.)
-); ze\dbAdm::revision(50780
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]special_pages`
-	SET `logic` = 'create_and_maintain_in_default_language'
-	WHERE `logic` = 'create_and_maintain_in_all_languages'
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]special_pages`
-	MODIFY COLUMN `logic` enum('create_and_maintain_in_default_language','create_in_default_language_on_install') NOT NULL DEFAULT 'create_and_maintain_in_default_language'
-_sql
-
-
-//Add a column to the languages table to control how each language behaves in the language picker
-//(N.b. this was added in an after-branch patch in 8.3 revision 50608, so we need to check if it's not already there.)
-);	if (ze\dbAdm::needRevision(50785) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'languages LIKE "language_picker_logic"')) ze\dbAdm::revision(50785
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]languages`
-	ADD COLUMN `language_picker_logic` enum('visible_or_disabled', 'visible_or_hidden', 'always_hidden') NOT NULL DEFAULT 'visible_or_disabled'
-	AFTER `search_type`
-_sql
-
-
-//Add a new index to the tuix_file_contents table to help speed up a new query I need from that table
-); ze\dbAdm::revision(50800
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]tuix_file_contents`
-	ADD KEY `module_panel_types` (`type`, `module_class_name`, `panel_type`, `path`)
-_sql
-
-
-//Add a new privacy sub-option that controls where a user needs to have a role set
-); ze\dbAdm::revision(51000
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
-	ADD COLUMN `at_location` enum('any', 'in_url', 'detect') NOT NULL DEFAULT 'any'
-	AFTER `privacy`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]slide_layouts`
-	ADD COLUMN `at_location` enum('any', 'in_url', 'detect') NOT NULL DEFAULT 'in_url'
-	AFTER `privacy`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]translation_chains`
-	ADD COLUMN `at_location` enum('any', 'in_url', 'detect') NOT NULL DEFAULT 'any'
-	AFTER `privacy`
-_sql
-
-
-//Fix a bug where the key is longer than 1000 bytes - the column was previously a varchar(255).
-//Note that this was added in a post-branch patch in 8.6 revision 50610, and also retroactively 
-//changed in the CREATE TABLE statement, however it's safe to re-apply so we're also changing
-//it here so any existing sites are consistent.
-);	ze\dbAdm::revision(51300
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]tuix_snippets`
-	MODIFY COLUMN `name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
-_sql
-
-
-
-
-
-
-
-
-//
-//	Zenario 8.8
-//
-
-//Custom dataset labels no longer need to be unique
-//The content item index on plugin_pages_by_mode also shouldn't be unique
-//Note that these fixes are being added in a post-branch patch in 8.6 revision 50611,
-//and in a post-branch patch in 8.7 revision 51301, and in 8.8 in revision 51700.
-//However they're safe to re-apply more than once so we don't need the check to see if
-//they've already been applied.
-);	ze\dbAdm::revision(51700
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]custom_datasets`
-	DROP KEY `label`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]custom_datasets`
-	ADD KEY `label` (`label`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
-	DROP KEY `content_type`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]plugin_pages_by_mode`
-	ADD KEY `content_type` (`content_type`,`equiv_id`)
-_sql
-
-
-//Add a new column to the content_types table
-//(Note - this is written carefully, as the original version of this update caused a SVN clash,
-// so I've given it a new number and am very carefully checking if it's been applied first before running it.)
-);	if (ze\dbAdm::needRevision(51710) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'content_types LIKE "tooltip_text"'))	ze\dbAdm::revision(51710
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_types`
-	ADD COLUMN `tooltip_text` varchar(255) NOT NULL default ''
-	AFTER `description_field`
-_sql
-
-
-); ze\dbAdm::revision( 51711
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]content_types`
-	SET `tooltip_text` = 'Flat view of all HTML page content items'
-	WHERE `content_type_id` = 'html'
-_sql
-
-
-); 	ze\dbAdm::revision( 51904
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
-	ADD COLUMN `s3_file_id` int(10) unsigned NOT NULL default 0 AFTER `file_id`
-_sql
-
-); ze\dbAdm::revision( 51905
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]files`
-	MODIFY COLUMN `location` enum('db','docstore','s3') NOT NULL 
-_sql
-); ze\dbAdm::revision( 51906
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
-	ADD COLUMN `s3_filename` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default '' AFTER `filename`
-_sql
-);	ze\dbAdm::revision(51907
-, <<<_sql
-	UPDATE IGNORE `[[DB_PREFIX]]plugin_settings`
-	SET name = 'show_title'
-	WHERE name = 'show_envelope_name'
-_sql
-
-
 //
 //	Zenario 8.9
 //
 
 
 //Add a "Only show the Back button when the previous slide has more than one item to choose from" flag for slides
-);	ze\dbAdm::revision( 52150
+	ze\dbAdm::revision( 52150
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
 	ADD COLUMN `no_choice_no_going_back` tinyint(1) NOT NULL default 0
@@ -2240,33 +1121,385 @@ _sql
 
 
 
+
+//
+//	Zenario 9.5
+//
+
+
+
+//Add a new option to the privacy settings for staging mode.
+);	ze\dbAdm::revision(57900
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	MODIFY COLUMN `privacy`
+	enum('public', 'logged_out', 'logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group', 'call_static_method', 'send_signal', 'with_role', 'with_access_code')
+	CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default 'public'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	ADD COLUMN `access_code` char(20) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL
+	AFTER `smart_group_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	ADD KEY (`access_code`)
+_sql
+
+
+//Staging mocde was redesigned part-way through development as we realised the initial implementation
+//would not actually be very useful.
+//Remove the columns added before and add them to a different table.
+);	ze\dbAdm::revision(57980
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]translation_chains`
+	SET `privacy` = 'send_signal'
+	WHERE `privacy` = 'with_access_code'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	MODIFY COLUMN `privacy`
+	enum('public', 'logged_out', 'logged_in', 'group_members', 'in_smart_group', 'logged_in_not_in_smart_group', 'call_static_method', 'send_signal', 'with_role')
+	CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL default 'public'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	DROP COLUMN `access_code`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `access_code` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL
+	AFTER `unpin_date`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD KEY (`access_code`)
+_sql
+
+);
+
+
+
+
+//Very carefully handle adding the menu_node_feature_image to the core.
+if (ze\dbAdm::needRevision(57982)) {
+	
+	//If someone was using the zenario_promo_menu at some point between Zenario 8.8 and 9.4 (inclusive),
+	//it will have created a module-version of this table. We can simple rename the table.
+	if (ze\module::prefix('zenario_menu', true, true)
+	 && ze\module::prefix('zenario_menu_multicolumn', true, true)
+	 && ze\module::prefix('zenario_promo_menu', true, true)
+	 && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', 'feature_image_is_retina', false))) {
+		
+		ze\dbAdm::revision(57982
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_node_feature_image`
+			_sql
+			
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image`
+				RENAME TO `[[DB_PREFIX]]menu_node_feature_image`
+			_sql
+		);
+	
+	//Otherwise create the table from scratch.
+	} else {
+		ze\dbAdm::revision(57982
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]menu_node_feature_image`
+			_sql
+			
+			, <<<_sql
+				CREATE TABLE `[[DB_PREFIX]]menu_node_feature_image` (
+					`node_id` int(10) unsigned NOT NULL,
+					`use_feature_image` tinyint(1) NOT NULL default 0,
+					`image_id` int(10) unsigned NOT NULL,
+					`feature_image_is_retina` tinyint(1) NOT NULL default 0,
+					`canvas` enum('unlimited', 'fixed_width','fixed_height', 'fixed_width_and_height', 'resize_and_crop') NOT NULL default 'unlimited',
+					`width` int(10) unsigned NOT NULL,
+					`height` int(10) unsigned NOT NULL,
+					`offset` int(10) NOT NULL,
+					`use_rollover_image` tinyint(1) NOT NULL default 0,
+					`rollover_image_id` int(10) unsigned NOT NULL,
+					`title` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL default '',
+					`text` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+					`link_type` enum('no_link','content_item','external_url') NOT NULL default 'no_link',
+					`link_visibility` enum('always_show','private','logged_out','logged_in') NOT NULL default 'always_show',
+					`dest_url` varchar(255) NOT NULL default '',
+					`open_in_new_window` tinyint(1) NOT NULL default '0',
+					`overwrite_alt_tag` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					PRIMARY KEY (`node_id`),
+					KEY `image_id` (`image_id`)
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
+			_sql
+		);
+	}
+}
+
+
+
+//The "Keep GET requests from plugins when linking to the current content item" for menu nodes sholud now default to "off", not "on"
+//(No changes to existing settings.)
+	ze\dbAdm::revision(58200
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_nodes`
+	MODIFY COLUMN `add_registered_get_requests` tinyint(1) unsigned NOT NULL default 0
+_sql
+
+
+
+//Rename some site settings that had confusing names!
+);	ze\dbAdm::revision(58300
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]site_settings`
+	SET `name` = 'assetwolf_mqtt_down_topic'
+	WHERE `name` = 'assetwolf_mqtt_publish_topic'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]site_settings`
+	SET `name` = 'assetwolf_mqtt_up_topic'
+	WHERE `name` = 'assetwolf_mqtt_subscribe_topic'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]site_settings`
+	SET `name` = 'assetwolf_mqtt_alt_lora_topic'
+	WHERE `name` = 'assetwolf_mqtt_subscribe_topic_2'
+_sql
+
+
+
 //This update is just to fix a typo in a CSS class name for auto-created layouts for content types
-);	ze\dbAdm::revision(57712
+//Please note: this update was also backpatched to 9.4. However, this code should be safe to use more than once.
+);	ze\dbAdm::revision(58400
 , <<<_sql
 	UPDATE IGNORE `[[DB_PREFIX]]layouts`
 	SET json_data = REPLACE(json_data, 'Gribreak_Body', 'Gridbreak_Body')
 	WHERE json_data like '%Gribreak_Body%'
 _sql
 
+);
+
+
+
+
+
+
+
+
+
+
+//Very carefully handle adding/moving the email_template_sending_log table to the core.
+if (ze\dbAdm::needRevision(58499)) {
+	
+	//If someone was using the zenario_promo_menu at some point between Zenario 8.8 and 9.4 (inclusive),
+	//it will have created a module-version of this table. We can simple rename the table.
+	if (ze\module::prefix('zenario_email_template_manager', true, true)
+	 && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', 'debug_mode', false))) {
+		
+		ze\dbAdm::revision(58499
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]email_template_sending_log`
+			_sql
+			
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log`
+				RENAME TO `[[DB_PREFIX]]email_template_sending_log`
+			_sql
+			
+			//In 9.3, went through and fixed the character-set on several columns that should
+			//have been using "ascii".
+			//This is safe to re-apply, so re-apply here just in case this site is coming from pre-9.3
+			//and skipped this update earlier.
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]]email_template_sending_log`
+				MODIFY COLUMN `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci default NULL
+			_sql
+
+		);
+	
+	//Otherwise create the table from scratch.
+	} else {
+		ze\dbAdm::revision(58499
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]email_template_sending_log`
+			_sql
+			
+			, <<<_sql
+				CREATE TABLE `[[DB_PREFIX]]email_template_sending_log` (
+					`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+					`module_id` int(10) unsigned default NULL,
+					`instance_id` int(10) unsigned default NULL,
+					`content_id` int(10) default NULL,
+					`content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci default NULL,
+					`content_version` int(10) default NULL,
+					`email_template_id` int(10) default NULL,
+					`email_template_name` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					`email_subject` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					`email_address_to` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+					`email_address_to_overridden_by` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					`email_address_from` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+					`email_address_replyto` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					`email_name_from` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					`email_body` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+					`attachment_present` tinyint(4) default NULL,
+					`sent_datetime` datetime NOT NULL,
+					`status` enum('success','failure') CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default 'success',
+					`debug_mode` tinyint(4) default '0',
+					`email_name_replyto` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					`email_ccs` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL,
+					PRIMARY KEY (`id`)
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
+			_sql
+		);
+	}
+}
+
+//Very carefully handle adding/moving the error_404_log table to the core.
+if (ze\dbAdm::needRevision(58500)) {
+	
+	//If someone was using the zenario_error_log at some point between Zenario 8.8 and 9.4 (inclusive),
+	//it will have created a module-version of this table. We can simple rename the table.
+	if (ze\module::prefix('zenario_error_log', true, true)
+	 && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_ERROR_LOG_PREFIX. 'error_log', true, false))) {
+		
+		ze\dbAdm::revision(58500
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]error_404_log`
+			_sql
+			
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log`
+				RENAME TO `[[DB_PREFIX]]error_404_log`
+			_sql
+		);
+	
+	//Otherwise create the table from scratch.
+	} else {
+		ze\dbAdm::revision(58500
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]error_404_log`
+			_sql
+			
+			, <<<_sql
+				CREATE TABLE [[DB_PREFIX]]error_404_log (
+					id int(10) unsigned NOT NULL AUTO_INCREMENT,
+					logged datetime NOT NULL,
+					referrer_url text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
+					page_alias varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+					PRIMARY KEY (id)
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+			_sql
+		);
+	}
+}
+
+
 
 //Update the home page layout for everyone who has the wrong path to the wow.js library.
 //Please note: this patch was made in 9.5 and backpatched to 9.3 and 9.4.
 //However this code is safe to run more than once without a specific check needed.
-);	ze\dbAdm::revision( 57715
+ze\dbAdm::revision( 58550
 , <<<_sql
 	UPDATE IGNORE `[[DB_PREFIX]]layouts`
 	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
 	WHERE foot_html like '%zenario/libs/yarn/wowjs%'
+_sql
+);
+
+//In 9.5, we removed the domain redirects (or spare domains, as previously called).
+//This logic will remove an obsolete site setting and drop the spare domain names table.
+ze\dbAdm::revision( 58551
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name = "admin_use_ssl"
+_sql
+);
+
+ze\dbAdm::revision( 58552
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_domain_names`;
+_sql
+);
+
+//In 9.5, we removed two scheduled tasks which were not in use for a long time:
+//importCustomerData, importCustomerLocationData. Clean up the site settings table.
+ze\dbAdm::revision( 58559
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name IN (
+		"zenario_company_locations_manager__file_path",
+		"zenario_company_locations_manager__in_filename",
+		"zenario_company_locations_manager__in_locations_filename"
+		"zenario_company_locations_manager__warning_email",
+		"zenario_company_locations_manager__error_email"
+	)
+_sql
+);
+
+//Also in 9.5, the per-image settings for canvas/width/height/retina were removed from promo menu images.
+//Instead, the Menu with Promo Images plugin has its own settings. Drop the obsolete columns.
+ze\dbAdm::revision( 58560
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_node_feature_image`
+	DROP COLUMN `canvas`,
+	DROP COLUMN `feature_image_is_retina`,
+	DROP COLUMN `width`,
+	DROP COLUMN `height`,
+	DROP COLUMN `offset`
+_sql
+
+
+//Fix a bug where a column could be created with the wrong collation.
+//Note that this is being added in 9.5 as a post-branch patch, but will be safe to reapply again in 9.6.
+);	ze\dbAdm::revision( 58561
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_node_feature_image`
+	MODIFY COLUMN `overwrite_alt_tag` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL
 _sql
 
 
 //Another update to fix the wrong path to the wow.js library, this time in the versions table.
 //Please note: this patch was made in 9.6 and backpatched to 9.5 and 9.4.
 //However this code is safe to run more than once without a specific check needed.
-);	ze\dbAdm::revision( 57716
+);	ze\dbAdm::revision( 58562
 , <<<_sql
 	UPDATE IGNORE `[[DB_PREFIX]]content_item_versions`
 	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
 	WHERE foot_html like '%zenario/libs/yarn/wowjs%'
+_sql
+
+
+//Fix for some bad data that could stop you from editing the plugin settings of a slideshow
+//if it was migrated from an earlier version of Zenario.
+//Please note: this patch was made in 9.6 and backpatched to 9.5.
+//However this code is safe to run more than once without a specific check needed.
+);	ze\dbAdm::revision( 58563
+, <<<_sql
+	 DELETE FROM `[[DB_PREFIX]]plugin_settings`
+	 WHERE egg_id = 0
+	   AND `name` = 'roundabout_speed'
+	   AND `value` = ''
+_sql
+
+, <<<_sql
+	 DELETE FROM `[[DB_PREFIX]]plugin_settings`
+	 WHERE egg_id = 0
+	   AND `name` = 'roundabout_speed'
+	   AND `value` = '0'
+_sql
+
+, <<<_sql
+	 DELETE FROM `[[DB_PREFIX]]plugin_settings`
+	 WHERE egg_id = 0
+	   AND `name` = 'roundabout_speed'
+	   AND `value` IS NULL
 _sql
 );

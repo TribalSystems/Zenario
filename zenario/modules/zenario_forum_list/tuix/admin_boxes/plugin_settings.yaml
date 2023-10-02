@@ -18,21 +18,6 @@ plugin_settings:
                         0:
                             label: >
                                 Show links to private forums (forums on private content items) to all visitors
-                category:
-                    plugin_setting:
-                        name: category
-                    label: 'Category:'
-                    pick_items:
-                        path: zenario__library/panels/categories
-                        target_path: zenario__library/panels/categories
-                        min_path: zenario__library/panels/categories
-                        max_path: zenario__library/panels/categories
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose category
-                        select_phrase: Select a category...
-                        nothing_selected_phrase: Show all forums of all categories
-                        hide_remove_button: No
-                    value: ""
         overall_list:
             label: Overall list
             fields:

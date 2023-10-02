@@ -27,6 +27,8 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBaseClass {
 	
@@ -287,14 +289,16 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 			// Remove file from temp directory
 			@unlink($filename);
 		} else {
-			require_once CMS_ROOT.'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
-			$objPHPExcel = new PHPExcel();
-			$objPHPExcel->getActiveSheet()->fromArray($datasetColumns, NULL, 'A1');
-			$objPHPExcel->getActiveSheet()->fromArray($data, NULL, 'A2');
+			$objPHPSpreadsheet = new Spreadsheet();
+			$activeWorksheet = $objPHPSpreadsheet->getActiveSheet();
+			$activeWorksheet->fromArray($datasetColumns, NULL, 'A1');
+			$activeWorksheet->fromArray($data, NULL, 'A2');
+			
 			header('Content-Type: application/vnd.ms-excel');
-			header('Content-Disposition: attachment; filename="'.$downloadFileName.'.xls"');
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-			$objWriter->save('php://output');
+			header('Content-Disposition: attachment; filename="' . $downloadFileName . '.xls"');
+			
+			$writer = new Xls($objPHPSpreadsheet);
+			$writer->save('php://output');
 		}
 	}
 	

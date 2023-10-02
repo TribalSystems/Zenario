@@ -783,7 +783,7 @@ class db {
 				LIMIT 1";
 		
 			if (!($result = \ze\sql::select($sql)) || !(\ze\sql::fetchRow($result))) {
-				\ze\content::showStartSitePageIfNeeded(true);
+				\ze\content::showStartSitePageIfNeeded('reportDBOutOfDate');
 				exit;
 			}
 			unset($result);
@@ -1033,23 +1033,10 @@ class db {
 			$lastDB = \ze::$dbL;
 			\ze::$dbL = null;
 		}
-		
-		$addressToOverriddenBy = false;
-		
-		\ze\server::sendEmail(
-			$subject, $body,
-			EMAIL_ADDRESS_GLOBAL_SUPPORT,
-			$addressToOverriddenBy,
-			$nameTo = false,
-			$addressFrom = \ze::setting('email_address_from') ?: EMAIL_ADDRESS_GLOBAL_SUPPORT,
-			$nameFrom = false,
-			false, false, false,
-			$isHTML = false,
-			false, false, false, false,
-			'', '', 'To',
-			$ignoreDebugMode = true		//Error messages should always be sent to the intended recipient,
-										//even if debug mode is on.
-		);
+	
+		\ze\server::sendEmailSimple($subject, $body, $isHTML = false, $ignoreDebugMode = true);
+			//Error messages should always be sent to the intended recipient,
+			//even if debug mode is on.
 	
 		if ($dbError) {
 			\ze::$dbL = $lastDB;

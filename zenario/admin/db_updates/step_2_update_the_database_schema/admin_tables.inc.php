@@ -33,63 +33,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-//Rework to the restricted admin permissions
-ze\dbAdm::revision(48600
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]admins`
-	CHANGE COLUMN `permissions` `old_permissions`
-		enum('all_permissions','specific_actions','specific_languages','specific_menu_areas')
-		NOT NULL DEFAULT 'specific_actions'
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]admins`
-	ADD COLUMN `permissions`
-		enum('all_permissions', 'specific_actions', 'specific_areas')
-		NOT NULL DEFAULT 'specific_actions'
-	AFTER `status`
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]admins`
-	SET `permissions` = 'all_permissions'
-	WHERE old_permissions = 'all_permissions'
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]admins`
-	SET `permissions` = 'specific_areas'
-	WHERE old_permissions IN ('specific_languages', 'specific_menu_areas')
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]admins`
-	DROP COLUMN `old_permissions`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]admins`
-	DROP COLUMN `specific_menu_areas`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]admins`
-	MODIFY COLUMN `specific_languages` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]admins`
-	ADD COLUMN `specific_content_types` varchar(255) CHARACTER SET ascii COLLATE ascii_general_ci
-	AFTER `specific_content_items`
-_sql
-
 
 //
 //	Zenario 9.2
 //
 
 //Drop the "All content items in these languages" admin permission option
-);	ze\dbAdm::revision(54250
+	ze\dbAdm::revision(54250
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]admins`
 	DROP COLUMN `specific_languages`

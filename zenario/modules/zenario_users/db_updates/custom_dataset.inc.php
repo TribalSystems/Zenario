@@ -53,25 +53,24 @@ if (ze\dbAdm::needRevision(50)) {
 	// by the migration script, but they're also safe to call again.)
 	ze\datasetAdm::registerSystemField($datasetId, 'text', '', 'identifier', 'identifier', 'none', '', false, true);
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'email', 'email', 'email', '', false, false, $includeInExport = true);
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'email_verified');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'salutation');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'first_name', false, 'none', '', false, false, $includeInExport = true);
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'last_name', false, 'none', '', false, false, $includeInExport = true);
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'email_verified', 'email_verified');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'salutation', 'salutation');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'first_name', 'first_name', 'none', '', false, false, $includeInExport = true);
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'last_name', 'last_name', 'none', '', false, false, $includeInExport = true);
 	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'screen_name', 'screen_name', 'screen_name');
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true, false, $includeInExport = true);
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'password');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'password_needs_changing');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'terms_and_conditions_accepted');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'screen_name_confirmed');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'send_activation_email_to_user', '');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'details', 'password', 'password');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'password_needs_changing', 'password_needs_changing');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'terms_and_conditions_accepted', 'terms_and_conditions_accepted');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'screen_name_confirmed', 'screen_name_confirmed');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'details', 'send_activation_email_to_user');
 	
-	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'created_date');
-	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'modified_date');
-	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'last_login');
-	ze\datasetAdm::registerSystemField($datasetId, 'text', 'dates', 'last_login_ip');
-	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'last_profile_update_in_frontend');
-	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'suspended_date');
-	//ze\datasetAdm::registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'created_date', 'created_date');
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'modified_date', 'modified_date');
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'last_login', 'last_login');
+	ze\datasetAdm::registerSystemField($datasetId, 'text', 'dates', 'last_login_ip', 'last_login_ip');
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'last_profile_update_in_frontend', 'last_profile_update_in_frontend');
+	ze\datasetAdm::registerSystemField($datasetId, 'date', 'dates', 'suspended_date', 'suspended_date');
 	
 	ze\dbAdm::revision(50);
 }
@@ -117,7 +116,7 @@ if (ze\dbAdm::needRevision(73)) {
 		'_PRIV_EDIT_USER');
 	
 	//Change terms_and_conditions_accepted to a consent type field 
-	ze\datasetAdm::registerSystemField($datasetId, 'consent', 'details', 'terms_and_conditions_accepted');
+	ze\datasetAdm::registerSystemField($datasetId, 'consent', 'details', 'terms_and_conditions_accepted', 'terms_and_conditions_accepted');
 	
 	ze\dbAdm::revision(73);
 }
@@ -133,10 +132,10 @@ if (ze\dbAdm::needRevision(74)) {
 		'_PRIV_VIEW_USER',
 		'_PRIV_EDIT_USER');
 	
-	ze\datasetAdm::registerSystemField($datasetId, 'radios', 'profile_page', 'profile_page_link_type');
-	ze\datasetAdm::registerSystemField($datasetId, 'other_system_field', 'profile_page', 'profile_page_internal_page');
-	ze\datasetAdm::registerSystemField($datasetId, 'url', 'profile_page', 'profile_page_external_url');
-	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'profile_page', 'profile_page_target_blank');
+	ze\datasetAdm::registerSystemField($datasetId, 'radios', 'profile_page', 'profile_page_link_type', 'profile_page_link_type');
+	ze\datasetAdm::registerSystemField($datasetId, 'other_system_field', 'profile_page', 'profile_page_internal_page', 'profile_page_internal_page');
+	ze\datasetAdm::registerSystemField($datasetId, 'url', 'profile_page', 'profile_page_external_url', 'profile_page_external_url');
+	ze\datasetAdm::registerSystemField($datasetId, 'checkbox', 'profile_page', 'profile_page_target_blank', 'profile_page_target_blank');
 	
 	ze\dbAdm::revision(74);
 }
@@ -194,4 +193,20 @@ if (ze\dbAdm::needRevision(93)) {
 	ze\datasetAdm::registerSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true, false, $includeInExport = true);
 	
 	ze\dbAdm::revision(93);
+}
+
+if (ze\dbAdm::needRevision(98)) {
+	$datasetId = ze\datasetAdm::register(
+		'Users',
+		'users_custom_data',
+		'users',
+		'zenario_user__details',
+		'zenario__users/panels/users',
+		'_PRIV_VIEW_USER',
+		'_PRIV_EDIT_USER');
+	
+	//This custom field does not use a column in the Users table. It is left blank intentionally.
+	ze\datasetAdm::registerSystemField($datasetId, 'dataset_picker', 'details', 'linked_countries');
+	
+	ze\dbAdm::revision(98);
 }

@@ -27,12 +27,18 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+//This function does one of three mutually exclusive things.
 
-$mergeFields = [];
-//Add the login link for admins if this looks like a logged out admin
-if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link::adminDomainIsPrivate()) {
+
+//1. Add the login link for admins if this looks like a logged out admin
+if ($includeAdminLinks
+  && !$isAdmin
+  && isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
+  && !\ze\priv::check()
+  && !\ze\link::adminDomainIsPrivate()) {
+	
 	$url =
-		(ze::setting('admin_use_ssl')? 'https://' : \ze\link::protocol()).
+		\ze\link::protocol().
 		\ze\link::adminDomain(). SUBDIRECTORY.
 		'admin.php?';
 	$importantGetRequests = \ze\link::importantGetRequests(true);
@@ -81,7 +87,20 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link
 					return confirm(\'', (\ze\admin::phrase('Remove your admin login link?\n\nThis will delete your admin cookie.\n\nGo to /admin to sign in next time!')), '\');
 				"
 			></a>
-			<a class="admin_login_link" href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '">
+			<a
+				class="admin_login_link"
+				href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '"
+				onclick="
+					var requests,
+						conductorSlot = zenario_conductor.getSlot();
+					if (conductorSlot && conductorSlot.exists) {
+						requests = zenario_conductor.request(conductorSlot, \'refresh\');
+						zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests, true));
+						return false;
+					}
+					return true;
+				"
+			>
 				<img src="', htmlspecialchars($logoURL), '" width="', (int) $logoWidth, '" height="', (int) $logoHeight, '" alt="', \ze\admin::phrase('Admin login logo'), '"/><br/>
 				', \ze\admin::phrase('Login'), '
 			</a>
@@ -90,41 +109,63 @@ if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\priv::check() && !\ze\link
 	//Never allow a page with an "Admin" link to be cached...
 	ze::$canCache = false;
 
-	//Note that this should override showing the cookie consent box, no matter the settings
-	return;
-}
+//2. If the admin has hidden the admin toolbar, add a button to get it back.
+} elseif ($includeAdminLinks && $isAdmin && !$includeAdminToolbar) {
+	
+	$offset = (int) ze::setting('admin_link_logo_offset', $useCache = true, $default = 30);
+	$pos = ze::setting('admin_link_logo_pos', $useCache = true, $default = 'allt allr');
+	
+	if (substr($pos, 0, 4) == 'allb') {
+		$style = 'bottom:'. $offset. 'px;';
+	} else {
+		$style = 'top:'. $offset. 'px;';
+	}
 
-switch (ze::setting('cookie_require_consent')) {
-	case 'implied':
-		//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
-		if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {
-			return;
-		} else {
-			echo '
+	echo '
+		<div
+			class="admin_login_link restore_admin_toolbar ', htmlspecialchars($pos), '"
+			style="', htmlspecialchars($style), '"
+			onclick="zenarioA.toggleAdminToolbar(false);"
+			title="', \ze\admin::phrase('Show admin toolbar'), '"
+		></div>';
+
+
+//3. Show the cookie consent box
+//(Note that this should never been shown to admins, logged in or logged out, no matter the settings.)
+} else {
+
+	switch (ze::setting('cookie_require_consent')) {
+		case 'implied':
+			//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
+			if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {
+				return;
+			} else {
+				echo '
 <!--googleoff: all-->
 <div id="zenario_cookie_consent" class="zenario_cookie_consent cookies_implied"></div>
 <script type="text/javascript" src="zenario/cookie_message.php?type=implied"></script>
 <!--googleon: all-->';
 	
-			$_SESSION['cookies_accepted'] = true;
-		}
-		break;
+				$_SESSION['cookies_accepted'] = true;
+			}
+			break;
 	
-	case 'explicit':
-		//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
-		//If cookies are rejected but something on the page needs then, also reopen the box.
-		if (
-			(\ze\cookie::isDecided() || ze::$cookieConsent == 'hide')
-		 && ze::$cookieConsent != 'require'
-		) {
-			return;
-		} else {
-			echo '
+		case 'explicit':
+			//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
+			//If cookies are rejected but something on the page needs then, also reopen the box.
+			if (
+				(\ze\cookie::isDecided() || ze::$cookieConsent == 'hide')
+			 && ze::$cookieConsent != 'require'
+			) {
+				return;
+			} else {
+				echo '
 <!--googleoff: all-->
 <div id="zenario_cookie_consent" class="zenario_cookie_consent cookies_explicit"></div>
 <div id="zenario_cookie_consent_manage_popup" class="zenario_cookie_consent_manage_popup" style="opacity:0; visibility:hidden;"></div>
 <script type="text/javascript" src="zenario/cookie_message.php?type=accept"></script>
 <!--googleon: all-->';
-		}
-		break;
+			}
+			break;
+	}
 }

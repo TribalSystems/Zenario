@@ -199,7 +199,7 @@ plugin_settings:
                             Hide menu when content item in view isn't attached to the menu
                     type: checkbox
                     side_note: >
-                        Hide the menu when the current content item is orphaned, i.e. not in the menu hierarchy.
+                        Hide the menu when the current content item is not in the menu hierarchy.
                 reverse_order:
                     plugin_setting:
                         name: reverse_order

@@ -94,6 +94,60 @@ class adminAdm {
 		//Update the admins table
 		\ze\row::update('admins', $details, $adminId);
 	}
+	
+	public static function removeExistingPermsAndSaveNewPerms($adminId, $permissions, $actions = [], $details = []) {
+		//Catch some alternate parameters where we are trying to add permissions to an exist admin by 
+		if (is_array($permissions)) {
+			$actions = $permissions;
+			$permissions = false;
+		}
+	
+		//Look up the permission type of the admin if we've not been passed it
+		if (!$permissions) {
+			$permissions = \ze\row::get('admins', 'permissions', $adminId);
+		
+			//Catch the case where there is nothing to actually update
+			//I.e. there are no actions or other details that we would need to save.
+			if ($permissions != 'specific_actions' && empty($details)) {
+				return;
+			}
+		}
+	
+		switch ($permissions) {
+			case 'all_permissions':
+				//For backwards compatability with a few old bits of the system,
+				//add an action called "_ALL" if someone's permission option is set to "all_permissions"
+				$actions = ['_ALL' => true];
+				break;
+			case 'specific_actions':
+				$actions['_ALL'] = false;
+				break;
+			case 'specific_areas':
+				//Admins who use specific content types or items have certain set permissions.
+				//These are checked using PHP logic, but for backwards compatability with anything else
+				//we'll also insert them into the database.
+				$actions = \ze\admin::privsForTranslators();
+				break;
+		}
+	
+	
+		//Delete any old, existing permissions
+		\ze\row::delete('action_admin_link', ['admin_id' => $adminId]);
+	
+		//Add/remove each permission from the database for this Admin.
+		foreach ($actions as $perm => $set) {
+			if ($set) {
+				\ze\row::set('action_admin_link', [], ['action_name' => $perm, 'admin_id' => $adminId]);
+		
+			}
+		}
+	
+		$details['modified_date'] = \ze\date::now();
+		$details['permissions'] = $permissions;
+	
+		//Update the admins table
+		\ze\row::update('admins', $details, $adminId);
+	}
 
 	//Formerly "deleteAdmin()"
 	public static function delete($admin_id, $undo = false) {

@@ -1,8 +1,8 @@
-zenario_advanced_search.onKeyUp = function(Container_Id, field, default_tab, mode, delay) {
+zenario_advanced_search.onKeyUp = function(Container_Id, field, default_tab, mode, delay, usesSpecificResultsPage) {
 	if (event) {
 		//Close the form if it's the Escape key
 		var keyPressed = event.keyCode;
-		if (keyPressed && keyPressed == 27) {
+		if (usesSpecificResultsPage && keyPressed && keyPressed == 27) {
 			zenario_advanced_search.closeButtonOnClick(Container_Id);
 		} else {
 			zenario.actAfterDelayIfNotSuperseded('zenario_advanced_search', function() {
@@ -39,17 +39,17 @@ zenario_advanced_search.onKeyUp = function(Container_Id, field, default_tab, mod
 };
 
 zenario_advanced_search.searchButtonOnClick = function(containerId) {
-	el = $('#' + containerId + '_search_entry_box_panel');
+	el = $('#' + containerId + '-search_entry_box_panel');
 	el.stop().slideToggle(175);
 
 	el = $('#' + containerId + '_search_button_panel');
 	el.toggleClass('active');
 
-	$('#' + containerId + '_search_input_box').focus();
+	$('#' + containerId + '-search_input_box').focus();
 };
 
 zenario_advanced_search.closeButtonOnClick = function(containerId) {
-	el = $('#' + containerId + '_search_entry_box_panel');
+	el = $('#' + containerId + '-search_entry_box_panel');
 	if (el.is(":visible")) {
 		el.stop().slideToggle(175);
 	}

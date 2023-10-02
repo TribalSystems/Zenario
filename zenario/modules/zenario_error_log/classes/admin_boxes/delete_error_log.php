@@ -32,9 +32,9 @@ class zenario_error_log__admin_boxes__delete_error_log extends ze\moduleBaseClas
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		if ($box['key']['id']) { 
-			$deleteAlias = ze\row::get(ZENARIO_ERROR_LOG_PREFIX . 'error_log', 'page_alias', ['id' => $box['key']['id']]);
+			$deleteAlias = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
 			if ($deleteAlias) {
-				$aliasCount = ze\row::count(ZENARIO_ERROR_LOG_PREFIX.'error_log', ['page_alias' => $deleteAlias]);
+				$aliasCount = ze\row::count('error_404_log', ['page_alias' => $deleteAlias]);
 				
 				$box['tabs']['delete']['notices']['are_you_sure']['message'] = ze\admin::phrase('Are you sure you wish to delete [[number]] entries of the requested alias "[[alias]]"?', ['alias' => $deleteAlias, 'number' => $aliasCount]);
 			}
@@ -43,9 +43,9 @@ class zenario_error_log__admin_boxes__delete_error_log extends ze\moduleBaseClas
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$deleteAliasLog = ze\row::get(ZENARIO_ERROR_LOG_PREFIX . 'error_log', 'page_alias', ['id' => $box['key']['id']]);
+		$deleteAliasLog = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
 		$sql = '
-			DELETE FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+			DELETE FROM '. DB_PREFIX . 'error_404_log
 			WHERE page_alias = "' . ze\escape::sql($deleteAliasLog) . '"';
 		ze\sql::update($sql);
 	}

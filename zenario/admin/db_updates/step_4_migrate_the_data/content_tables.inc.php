@@ -116,9 +116,6 @@ if (ze\dbAdm::needRevision(36380)) {
 	
 	ze\dbAdm::revision(36380);
 }
-*/
-
-
 
 //Delete any cached frameworks, as the format has changed slightly in this version
 if (ze\dbAdm::needRevision(45600)) {
@@ -126,194 +123,6 @@ if (ze\dbAdm::needRevision(45600)) {
 	\ze\skinAdm::clearCacheDir();
 	
 	ze\dbAdm::revision(45600);
-}
-
-//(N.b. this was added in an after-branch patch in 8.3 revision 46308, but is safe to re-run.)
-ze\dbAdm::revision(47037
-,  <<<_sql
-	UPDATE `[[DB_PREFIX]]email_templates`
-	SET period_to_delete_log_headers = 0
-	WHERE period_to_delete_log_headers = 'never_save'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_PREFIX]]email_templates`
-	SET period_to_delete_log_content = 0
-	WHERE period_to_delete_log_content = 'never_save'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = 0
-	WHERE name = 'period_to_delete_the_email_template_sending_log_headers'
-	AND value = 'never_save'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = 0
-	WHERE name = 'period_to_delete_the_email_template_sending_log_content'
-	AND value = 'never_save'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = 0
-	WHERE name = 'period_to_delete_sign_in_log'
-	AND value = 'never_save'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_PREFIX]]site_settings`
-	SET value = 0
-	WHERE name = 'period_to_delete_the_user_content_access_log'
-	AND value = 'never_save'
-_sql
-
-);
-
-//A bug caused uploaded documents to be added to the database instead of the docstore.
-//Now the bug is fixed we need to sort out the bugged documents by re-uploading them into
-//the docstore.
-//(N.b. this was added in an after-branch patch in 8.3 revision 46310, but is safe to re-run.)
-if (ze\dbAdm::needRevision(47601)) {
-	$sql = "
-		SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum, f.usage
-		FROM " . DB_PREFIX . "documents d
-		INNER JOIN " . DB_PREFIX . "files f
-			ON d.file_id = f.id
-		WHERE d.type = 'file' 
-		AND d.privacy = 'public'";
-	$result = ze\sql::select($sql);
-	while ($doc = ze\sql::fetchAssoc($result)) {
-	
-		if (!file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. ze\file::safeName($doc['filename']))) {
-			$publicLink = ze\document::generatePublicLink($doc['id']);
-		
-			if (ze::isError($publicLink)) {
-				$location = ze\file::link($doc['file_id']);
-				$newFileId = ze\file::addToDocstoreDir($doc['usage'], rawurldecode(CMS_ROOT . $location), $doc['filename']);
-			
-				if ($newFileId) {
-					ze\row::update('documents', ['file_id' => $newFileId], $doc['id']);
-				}
-			} 
-		}
-	}
-	
-	ze\dbAdm::revision(47601);
-}
-
-//This code would migrate email templates to using curly brackets, if we choose to go and do that
-
-////Update email templates to use {{ and }} for merge fields rather than [[ and ]].
-//if (ze\dbAdm::needRevision(48400)) {
-//	$sql = "
-//		SELECT id, subject, email_address_from, email_name_from, body
-//		FROM " . DB_PREFIX . "email_templates";
-//	$result = ze\sql::select($sql);
-//	while ($et = ze\sql::fetchAssoc($result)) {
-//		$etId = $et['id'];
-//		unset($et['id']);
-//		
-//		foreach ($et as &$val) {
-//			$val = preg_replace('@\{\{(\s*\w+?\s*)\}\}@', '[[$1]]', $val);
-//		}
-//		unset($val);
-//		
-//		ze\row::update('email_templates', $et, $etId);
-//	}
-//	
-//	ze\dbAdm::revision(48400);
-//}
-
-
-
-
-//Content Summary List (and Blog News List), and search modules had an update of settings.
-//The max number of elements is now a text field rather than a dropdown of values.
-if (ze\dbAdm::needRevision(48641)) {
-	$sql = '
-		SELECT ps.instance_id, ps.egg_id, ps.name, ps.value, ps.is_content, m.class_name
-		FROM ' . DB_PREFIX . 'plugin_settings ps
-		LEFT JOIN ' . DB_PREFIX . 'plugin_instances pi
-			ON ps.instance_id = pi.id
-		LEFT JOIN ' . DB_PREFIX . 'modules m
-			ON pi.module_id = m.id
-		WHERE ps.name = "page_size";';
-			
-	$result = ze\sql::select($sql);
-	
-	$modules = [
-		'zenario_search_entry_box',
-		'zenario_search_entry_box_predictive_probusiness',
-		'zenario_search_results',
-		'zenario_search_results_pro',
-		'zenario_advanced_search',
-		'zenario_content_list',
-		'zenario_blog_news_list'
-	];
-	
-	$values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 50];
-	
-	while ($row = ze\sql::fetchAssoc($result)) {
-		if (in_array($row['class_name'], $modules) && in_array($row['value'], $values)) {
-			ze\row::insert('plugin_settings', ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'maximum_results_number', 'value' => $row['value'], 'is_content' => $row['is_content']], $ignore = true);
-			ze\row::update('plugin_settings', ['value' => 'maximum_of'], ['instance_id' => $row['instance_id'], 'egg_id' => $row['egg_id'], 'name' => 'page_size']);
-		}
-	}
-	
-	ze\dbAdm::revision(48641);
-}
-
-
-//Migrate any custom TUIX to the new system
-ze\dbAdm::revision( 50330
-
-//Look for any existing custom TUIX defined in the plugin settings, and attempt to copy it into the new table
-, <<<_sql
-	INSERT INTO `[[DB_PREFIX]]tuix_snippets` (name, custom_yaml, custom_json)
-	SELECT CONCAT('Migrated TUIX Snippet ', SUBSTR(SHA1(cj.value), 1, 10)), MIN(cy.value), cj.value
-	FROM [[DB_PREFIX]]plugin_settings AS cj
-	INNER JOIN [[DB_PREFIX]]plugin_settings AS cy
-	   ON cy.instance_id = cj.instance_id
-	  AND cy.egg_id = cj.egg_id
-	  AND cy.name = '~custom_yaml~'
-	WHERE cj.name = '~custom_json~'
-	  AND cj.value IS NOT NULL
-	  AND cj.value != ''
-	  AND TRIM(cj.value) != ''
-	GROUP BY cj.value
-_sql
-
-//Update the plugin settings to point back to the table
-, <<<_sql
-	UPDATE [[DB_PREFIX]]plugin_settings AS cj
-	INNER JOIN [[DB_PREFIX]]tuix_snippets AS tc
-	   ON tc.custom_json =  cj.value
-	SET cj.name = '~tuix_snippet~',
-		cj.value = tc.id
-	WHERE cj.name = '~custom_json~'
-_sql
-
-, <<<_sql
-	DELETE FROM [[DB_PREFIX]]plugin_settings
-	WHERE name IN ('~custom_yaml~', '~custom_json~')
-_sql
-);
-
-
-//Try to give any new TUIX snippets a more helpful name
-if (ze\dbAdm::needRevision(50340)) {
-	foreach (ze\row::getAssocs('tuix_snippets', ['name', 'custom_json']) as $tuixSnippetId => $tuix) {
-		if (($custom = json_decode($tuix['custom_json'], true))
-		 && (is_array($custom))
-		 && (!empty($custom))) {
-			
-			foreach (['columns', 'item_buttons'] as $tag) {
-				if (!empty($custom[$tag]) && is_array($custom[$tag])) {
-					$tuix['name'] .= ' ('. $tag. ': '. implode(', ', array_keys($custom[$tag])). ')';
-				}
-			}
-			ze\row::set('tuix_snippets', $tuix, $tuixSnippetId);
-		}
-	}
-	ze\dbAdm::revision(50340);
 }
 
 //In 8.6 we've added the cache/scans/ and cache/stop_flags/ directories,
@@ -329,140 +138,7 @@ if (ze\dbAdm::needRevision(50420)) {
 	
 	ze\dbAdm::revision(50420);
 }
-
-//Plugin settings cleanup for Content Summary List and Blog/News List
-if (ze\dbAdm::needRevision(51052)) {
-	foreach (['zenario_content_list', 'zenario_blog_news_list'] as $module) {
-		if (ze\module::isRunning($module)) {
-			$instances = ze\module::getModuleInstancesAndPluginSettings($module);
-			foreach ($instances as $instance) {
-				//Plugin settings cleanup #1: there are 2 identical settings for showing content items in any/all selected categories.
-				//Remove one and set its value to the remaining setting.
-				
-				//Check if the old setting is in use.
-				if (isset($instance['settings']['refine_type_content_with_matching_categories'])) {
-			
-					//Setting is in use, and the filtering option is "Show content with categories matching the current content item"
-					if (isset($instance['settings']['category_filters_dropdown']) && ($instance['settings']['category_filters_dropdown'] == 'show_content_with_matching_categories')) {
-						//Check if the target value already exists in the DB: set the value if so...
-						if (isset($instance['settings']['refine_type'])) {
-							ze\row::update(
-								'plugin_settings',
-								['value' => ze\escape::sql($instance['settings']['refine_type_content_with_matching_categories'])],
-								['name' => 'refine_type', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-							);
-						} else {
-							//... otherwise create it.
-							ze\row::insert(
-								'plugin_settings',
-								['name' => 'refine_type', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id'], 'value' => ze\escape::sql($instance['settings']['refine_type_content_with_matching_categories'])]
-							);
-						}
-					}
-			
-					//Delete the old setting entry.
-					ze\row::delete(
-						'plugin_settings',
-						['name' => 'refine_type_content_with_matching_categories', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-					);
-				}
-		
-				//Plugin settings cleanup #2: fix a bug where there are categories selected, but the Categories filter dropdown has no value.
-				if (!empty($instance['settings']['category'])) {
-					if (empty($instance['settings']['category_filters_dropdown'])) {
-						ze\row::set(
-							'plugin_settings',
-							['value' => 'choose_categories_to_display_or_omit'],
-							['name' => 'category_filters_dropdown', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-						);
-					}
-				}
-			}
-		}
-	}
-	ze\dbAdm::revision(51052);
-}
-
-//Plugin settings update for User Redirector:
-//replaced the old redirection rules with the ones from Extranet Login
-if (ze\dbAdm::needRevision(51053)) {
-	if (ze\module::isRunning('zenario_user_redirector')) {
-		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_user_redirector');
-		foreach ($instances as $instance) {
-			//Previously the plugin supported up to 4 redirection rules. Migrate these rules.
-			$counter = 0;
-			foreach (range(1, 4) as $i) {
-				$condition = false;
-				if ($i == 1) {
-					$condition = (!empty($instance['settings']['group_' . $i]) && !empty($instance['settings']['redirect_' . $i]));
-				} elseif ($i >= 2 && $i <= 4) {
-					$condition = (!empty($instance['settings']['show_' . $i]) && !empty($instance['settings']['group_' . $i]) && !empty($instance['settings']['redirect_' . $i]));
-				}
-
-				if ($condition) {
-					//The old logic only allowed redirection rules based on group membership.
-					//The new logic requires to specify the rule type.
-					ze\row::insert(
-						'plugin_settings',
-						['name' => 'redirect_rule_type__' . (int)$i, 'value' => 'group', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-					);
-					
-					//Rename the old settings
-					ze\row::update(
-						'plugin_settings',
-						['name' => 'redirect_rule_group__' . (int)$i],
-						['name' => 'group_' . (int)$i, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-					);
-
-					ze\row::update(
-						'plugin_settings',
-						['name' => 'redirect_rule_content_item__' . (int)$i],
-						['name' => 'redirect_' . (int)$i, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-					);
-			
-					//Delete the old settings entries if necessary
-					if ($i >= 2 && $i <= 4) {
-						ze\row::delete(
-							'plugin_settings',
-							['name' => 'show_' . (int)$i, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-						);
-					}
-
-					$counter++;
-				}
-			}
-
-			//Insert new value for the new radios
-			ze\row::insert(
-				'plugin_settings',
-				['name' => 'show_welcome_page', 'value' => '_ALWAYS', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-			);
-
-			//Save the total count of redirection rules
-			ze\row::insert(
-				'plugin_settings',
-				['name' => 'number_of_redirect_rules', 'value' => (int)$counter, 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-			);
-			
-			//Handle the default redirect
-			if (!empty($instance['settings']['show_default']) && !empty($instance['settings']['redirect_default'])) {
-				//Rename the old setting
-				ze\row::update(
-					'plugin_settings',
-					['name' => 'welcome_page'],
-					['name' => 'redirect_default', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-				);
-
-				//Delete the old setting entry
-				ze\row::delete(
-					'plugin_settings',
-					['name' => 'show_default', 'instance_id' => $instance['instance_id'], 'egg_id' => $instance['egg_id']]
-				);
-			}
-		}
-	}
-	ze\dbAdm::revision(51053);
-}
+*/
 
 
 //There was a conductor bug where if you re-ordered the slides, the slide numbers got updated on the
@@ -685,7 +361,6 @@ if (ze\dbAdm::needRevision(52205)) {
 
 			if ($imageCount > 0) {
 				$subject = ze\admin::phrase('Zenario [[zenario_version]] update: images moved to docstore', ['zenario_version' => ZENARIO_VERSION]);
-				$addressToOverriddenBy = \ze::setting('debug_override_email_address');
 
 				$message = ze\admin::phrase('Number of images moved to docstore: [[count]]', ['count' => (int)$imageCount]);
 				$message .= "\n";
@@ -720,7 +395,7 @@ if (ze\dbAdm::needRevision(52205)) {
 					}
 				}
 
-				ze\server::sendEmail($subject, $message, EMAIL_ADDRESS_GLOBAL_SUPPORT, $addressToOverriddenBy);
+				ze\server::sendEmailSimple($subject, $message, $isHTML = false);
 			}
 		}
 	}
@@ -1352,7 +1027,7 @@ if (ze\dbAdm::needRevision(57200)) {
 if (ze\dbAdm::needRevision(57211)) {
 	if (ze\module::inc('zenario_users')) {
 		$filesizevalue = ze::setting('max_user_image_filesize', false);
-		$filesizeUnit = ze::setting('max_user_image_filesize_unit', false, );
+		$filesizeUnit = ze::setting('max_user_image_filesize_unit', false);
 	
 		if ($filesizevalue && !$filesizeUnit) {
 		
@@ -1481,9 +1156,98 @@ if (ze\dbAdm::needRevision(57710)) {
 	ze\dbAdm::revision(57710);
 }
 
+
+
+//The format of cached plugins has changed in 9.5.
+//Attempt to clear out the cache/pages directory to avoid accidentally loading the previous format
+if (ze\dbAdm::needRevision(57775)) {
+	if (is_dir(CMS_ROOT. 'cache/pages')
+	 && !ze\server::isWindows()
+	 && ze\server::execEnabled()) {
+		exec('rm -r '. escapeshellarg(CMS_ROOT. 'cache/pages'));
+	}
+	ze\cache::cleanDirs(true);
+	
+	ze\dbAdm::revision(57775);
+}
+
+//In 9.5, the Maximum location image file size setting was updated
+//from a field that only accepts bytes to a shorter field with a unit selector.
+//Update the value to work correctly.
+if (ze\dbAdm::needRevision(57776)) {
+	if (ze\module::inc('zenario_location_manager')) {
+		$filesizevalue = ze::setting('max_location_image_filesize', false);
+		$filesizeUnit = ze::setting('max_location_image_filesize_unit', false);
+	
+		if ($filesizevalue && !$filesizeUnit) {
+			//The default value was 50 KB, so keep that, but if the old value would have reached 1 GB or more, cap it at 1023 MB.
+			if ($filesizevalue < 1000000) {
+				$newFileValue = 50;
+				$newFileUnit = 'KB';
+			} elseif ($filesizevalue >= 1072693248) {
+				$newFileValue = 1023;
+				$newFileUnit = 'MB';
+			} else {
+				$fileSizeConvertValue = ze\file::fileSizeConvert($filesizevalue);
+				$convertArray = explode(' ', $fileSizeConvertValue);
+				$newFileValue = $convertArray[0];
+				$newFileUnit = $convertArray[1];
+			}
+		
+			ze\site::setSetting('max_location_image_filesize', $newFileValue);
+			ze\site::setSetting('max_location_image_filesize_unit', $newFileUnit);
+	
+		} elseif (!$filesizevalue) {
+			ze\site::setSetting('max_location_image_filesize', 50);
+			ze\site::setSetting('max_location_image_filesize_unit', 'KB');
+		}
+	}
+	
+	ze\site::setSetting('max_location_image_filesize_override', 'limit_max_image_file_size');
+	
+	ze\dbAdm::revision(57776);
+}
+
+//In 9.5, the maximum image/attachment file size settings were further redesigned.
+//Now, the "Override" setting is a checkbox, not a radio anymore.
+//Tidy up the settings.
+if (ze\dbAdm::needRevision(57777)) {
+	if (ze\module::inc('zenario_users')) {
+		$userImageOverrideValue = ze::setting('max_user_image_filesize_override', false);
+	
+		if ($userImageOverrideValue == 'use_global_max_attachment_file_size') {
+			ze\site::setSetting('max_user_image_filesize_override', false);
+		} else {
+			ze\site::setSetting('max_user_image_filesize_override', true);
+		}
+	}
+	
+	if (ze\module::inc('zenario_location_manager')) {
+		$locationImageOverrideValue = ze::setting('max_location_image_filesize_override', false);
+	
+		if ($locationImageOverrideValue == 'use_global_max_image_file_size') {
+			ze\site::setSetting('max_location_image_filesize_override', false);
+		} else {
+			ze\site::setSetting('max_location_image_filesize_override', true);
+		}
+	}
+	
+	if (ze\module::inc('zenario_user_forms')) {
+		$formAttachmentOverrideValue = ze::setting('zenario_user_forms_max_attachment_file_size_override', false);
+	
+		if ($formAttachmentOverrideValue == 'use_global_max_attachment_file_size') {
+			ze\site::setSetting('zenario_user_forms_max_attachment_file_size_override', false);
+		} else {
+			ze\site::setSetting('zenario_user_forms_max_attachment_file_size_override', true);
+		}
+	}
+	
+	ze\dbAdm::revision(57777);
+}
+
 //Update the Captcha radios to correctly migrate if a site was using Captcha.
 //Please note: this was backpatched from 9.5 to 9.4, and is safe to run multiple times.
-if (ze\dbAdm::needRevision(57711)) {
+if (ze\dbAdm::needRevision(57983)) {
 	$captchaRadiosValue = ze::setting('captcha_status_and_version');
 	if ($captchaRadiosValue == 'not_enabled') {
 		$siteKey = ze::setting('google_recaptcha_site_key');
@@ -1494,5 +1258,5 @@ if (ze\dbAdm::needRevision(57711)) {
 		}
 	}
 	
-	ze\dbAdm::revision(57711);
+	ze\dbAdm::revision(57983);
 }

@@ -48,23 +48,23 @@
 				<div class="zenario_at_topRightIcons" style="<% if (false) { %>display: none;<% } %>">
 					<% if (zenarioT.showDevTools()) { %>
 						<div
-							class="zenario_at_dev_icon zenario_debug"
+							class="zenario_at_dev_icon zenario_topRightIcon zenario_debug"
 							onclick="zenarioA.debug('zenarioAT');"
 						><div></div></div>
 					<% } %>
 					
 					<% if (zenarioA.hasPriv('_PRIV_VIEW_DIAGNOSTICS')) { %>
 						<div
-							class="zenario_at_dev_icon organizer_diagnostics"
+							class="zenario_at_dev_icon zenario_topRightIcon organizer_diagnostics"
 							<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
-								onclick="zenario.goToURL(URLBasePath + '{{zenario.jsEscape(zenarioATLinks.diagnostics)}}');"
+								onclick="zenarioA.reloadPage(false, true, 'diagnostics');"
 								title="View site diagnostics"
 							<% } %>
 						></div>
 					<% } %>
 					
 					<div
-						class="zenario_at_dev_icon organizer_info_box"
+						class="zenario_at_dev_icon zenario_topRightIcon organizer_info_box"
 						<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 							onclick="zenarioA.infoBox();"
 							title="About Zenario"
@@ -72,7 +72,7 @@
 					></div>
 					<% if (zenarioA.hasPriv('_PRIV_EDIT_SITE_SETTING')) { %>
 						<div
-							class="zenario_at_dev_icon organizer_help_box"
+							class="zenario_at_dev_icon zenario_topRightIcon organizer_help_box"
 							data-step="16" data-position="bottom-right-aligned"
 							data-intro="{{'<p><strong>Help</strong></p><p>Click here for Help.</p>'|escape}}"
 							<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
@@ -93,21 +93,21 @@
 						
 							<% if (zenarioA.siteSettings.site_enabled) { %>
 								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-									class="zenario_at_dev_icon site_enabled_development"
+									class="zenario_at_dev_icon zenario_topRightIcon site_enabled_development"
 									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 										title="Site enabled; developer mode"
 									<% } %>
 								<% } else { %>
-									class="zenario_at_dev_icon site_enabled"
+									class="zenario_at_dev_icon zenario_topRightIcon site_enabled"
 								<% } %>
 							<% } else { %>
 								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-									class="zenario_at_dev_icon site_disabled"
+									class="zenario_at_dev_icon zenario_topRightIcon site_disabled"
 									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 										title="Site disabled; developer mode"
 									<% } %>
 								<% } else { %>
-									class="zenario_at_dev_icon site_disabled"
+									class="zenario_at_dev_icon zenario_topRightIcon site_disabled"
 									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 										title="Site disabled"
 									<% } %>

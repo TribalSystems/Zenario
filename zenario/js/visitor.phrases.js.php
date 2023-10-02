@@ -61,6 +61,8 @@ foreach([
 }
 
 echo 'zenario._mkd(zenario.vphrase,', json_encode($output), ');';
+	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 
 

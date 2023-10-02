@@ -117,6 +117,10 @@ class zenario_menu_multicolumn extends zenario_menu {
 			$class .= ' '. $row['css_class'];
 		}
 		
+		if (!empty($row['ext_url'])) {
+			$class .= ' link_external';
+		}
+		
 		if($class) {
 			$menuItem .= ' class="'. $class .'"';
 		}

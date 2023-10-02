@@ -435,6 +435,19 @@ div.zenario_show_on_open {
 	/*margin-top: 10px;*/
 }
 
+.zenario_copy {
+	display: inline-block;
+  	background: url('../admin/images/icon-copy.svg') no-repeat;
+  	width: 14px;
+  	height: 16px;
+  	cursor:pointer;
+}
+
+input + .zenario_copy {
+	position: relative;
+	top: 2px;
+	margin-left:5px;
+}
 
 
 /*  Admin Mode Tooltips  */
@@ -674,7 +687,7 @@ span.zenario_conditionally_hidden {
 	float: right;
 	display:inline-block;
 	height: 18px;
-	padding: 5px 5px 0 0;
+	padding: 5px 15px 0 0;
 	overflow: hidden;
 }
 
@@ -929,7 +942,13 @@ body .mce-menu-item-preview.mce-active {
 	font-family: verdana, arial, helvetica;
     font-size: 13px;
     opacity: 0.95;
-    background-position: 15px 15px
+    background-position: 15px 12px;
+    top:120px;
+}
+
+.zenario_adminToolbarHidden #toast-container.toast-top-right>div {
+	top:30px;
+    background-position: 15px 15px;
 }
 
 
@@ -974,6 +993,10 @@ del.zenario_link_status__content_not_found > del {
 }
 
 del.zenario_link_status__hidden > del {
+	background:url('../admin/images/link_status/icon-triangle-grey.svg') no-repeat center / 16px 16px;
+}
+
+del.zenario_link_status__unpublished > del {
 	background:url('../admin/images/link_status/draft-v3.svg') no-repeat center / 16px 16px;
 }
 
@@ -997,7 +1020,6 @@ del.zenario_link_status__published_403 > del {
 	background:url('../admin/images/link_status/published-403-v3.svg') no-repeat center;
 }
 
-del.zenario_link_status__spare_domain > del,
 del.zenario_link_status__spare_alias > del,
 del.zenario_link_status__published_301 > del {
 	background:url('../admin/images/link_status/spare-domain-v3.svg') no-repeat center / 16px 16px;
@@ -1073,6 +1095,27 @@ x-zenario-admin-slot-wrapper:hover .zenario_image_properties_button.zenario_ipb_
 
 body.zenario_showing_plugin_preview .zenario_image_properties_button {
 	display: none;
+}
+
+/*
+	Table in the change layout warning message
+*/
+
+#zenario_fbAdminMessage table.zenario_changeLayoutDestinations {
+	width:calc(100% - 34px);
+	margin: 0 10px;
+    background-color: #e0e0e0;
+}
+
+#zenario_fbAdminMessage table.zenario_changeLayoutDestinations th {
+    background-color: #f8f8f8;
+}
+
+#zenario_fbAdminMessage table.zenario_changeLayoutDestinations th,
+#zenario_fbAdminMessage table.zenario_changeLayoutDestinations td {
+    border: 1px #222 solid;
+    padding: 5px;
+    vertical-align:top;
 }
 
 /* JQuery-ui */

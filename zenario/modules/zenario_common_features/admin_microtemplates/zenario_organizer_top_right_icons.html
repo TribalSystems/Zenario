@@ -9,18 +9,18 @@
 	
 		<% if (zenarioA.siteSettings.site_enabled) { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-				class="organizer_enabled_disabled site_enabled_development"
+				class="zenario_topRightIcon organizer_enabled_disabled site_enabled_development"
 				title="Site enabled, but in developer mode"
 			<% } else { %>
-				class="organizer_enabled_disabled site_enabled"
+				class="zenario_topRightIcon organizer_enabled_disabled site_enabled"
 				title="Site enabled"
 			<% } %>
 		<% } else { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-				class="organizer_enabled_disabled site_disabled"
+				class="zenario_topRightIcon organizer_enabled_disabled site_disabled"
 				title="Site disabled and in developer mode"
 			<% } else { %>
-				class="organizer_enabled_disabled site_disabled"
+				class="zenario_topRightIcon organizer_enabled_disabled site_disabled"
 				title="Site disabled"
 			<% } %>
 		<% } %>
@@ -28,7 +28,7 @@
 <% } %>
 <% if (zenarioA.hasPriv('_PRIV_EDIT_SITE_SETTING')) { %>
 	<div
-	class="organizer_help_box"
+	class="zenario_topRightIcon organizer_help_box"
 	data-step="16" data-position="bottom-right-aligned"
 	data-intro="{{'<p><strong>Help</strong></p><p>Click here for help.</p>'|escape}}"
 	onclick="zenarioAB.open('zenario_help_line', {currentUrl: document.location.href});"
@@ -39,7 +39,7 @@
 ></div>
 <% } %>
 <div
-	class="organizer_info_box"
+	class="zenario_topRightIcon organizer_info_box"
 	data-step="16" data-position="bottom-right-aligned"
 	data-intro="{{'<p><strong>Information</strong></p><p>Zenario software version and installation details.</p>'|escape}}"
 	onclick="zenarioA.infoBox();"
@@ -50,7 +50,7 @@
 ></div>
 <% if (zenarioA.hasPriv('_PRIV_VIEW_DIAGNOSTICS')) { %>
 	<div
-		class="organizer_diagnostics"
+		class="zenario_topRightIcon organizer_diagnostics"
 		onclick="zenario.goToURL(URLBasePath + 'zenario/admin/welcome.php?task=diagnostics&amp;og=' + encodeURIComponent(zenarioO.getHash()));"
 		title="View site diagnostics"
 		data-tooltip-options="
@@ -59,7 +59,7 @@
 	></div>
 <% } %>
 <div
-	class="organizer_help"
+	class="zenario_topRightIcon organizer_help"
 	data-step="17" data-position="bottom-right-aligned"
 	data-intro="{{'<p><strong>Organizer quick tour</strong></p><p>Take a quick tour on how to use the Zenario Organizer interface.</p>'|escape}}"
 	onclick="zenarioA.showHelp('#zenario_fbog [data-intro]:visible');"

@@ -55,7 +55,8 @@ $directories = [
 	], 
 	'public' => [
 		'downloads' => -1,
-		'images' => -1
+		'images' => -1,
+		'css' => -1
 	]
 ];
 

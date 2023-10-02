@@ -1342,10 +1342,6 @@ additionalProperties:
                             
                                     This can contain [[merge_field]]s which match up to the column names, if you want
                                     to have the column values placed in them.
-                            tooltip_when_link_is_active:
-                                type: string
-                                description: >
-                                    A different tooltip to display if a link is active on an item.
                             link:
                                 type: object
                                 static: true
@@ -1365,6 +1361,10 @@ additionalProperties:
 
                                     This property must be written in your .yaml file.
                                     It can't be changed in PHP.
+                            tooltip_when_link_is_active:
+                                type: string
+                                description: >
+                                    A tooltip to display on the link.
                             selection_display_type:
                                 enum:
                                     - checkbox
@@ -1704,7 +1704,7 @@ additionalProperties:
                                 new_window: &new_window
                                     type: boolean
                                     description: >
-                                        Where a button has a frontend_link,
+                                        Where a button has a link using the frontend_link or navigation_path properties,
                                         this property will cause it to open in a new window.
                                         
                                         This works from version 8.0 onwards.

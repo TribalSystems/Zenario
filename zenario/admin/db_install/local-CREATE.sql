@@ -1201,16 +1201,6 @@ CREATE TABLE `[[DB_PREFIX]]spare_aliases` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
-DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_domain_names`;
-CREATE TABLE `[[DB_PREFIX]]spare_domain_names` (
-  `requested_url` varchar(255) NOT NULL,
-  `content_id` int(10) unsigned NOT NULL,
-  `content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
-  PRIMARY KEY (`requested_url`),
-  KEY `content_type` (`content_type`,`content_id`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
 DROP TABLE IF EXISTS `[[DB_PREFIX]]special_pages`;
 CREATE TABLE `[[DB_PREFIX]]special_pages` (
   `equiv_id` int(10) unsigned DEFAULT NULL,

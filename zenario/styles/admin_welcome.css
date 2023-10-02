@@ -1256,7 +1256,7 @@ input:-webkit-autofill.password:active {
 	position:absolute;
 	top:33px;
 	left:-35px;
-	background:#333333 url('../admin/images/welcome/admin-btn-for-tooltip.svg') no-repeat right 10px / 65px 47px;
+	background:#333333 url('../admin/images/welcome/admin-btn-for-tooltip-v2.svg') no-repeat right 10px / 65px 47px;
 	color:#FFF;
 	width:265px;
 	padding:10px 80px 10px 10px;
@@ -1281,6 +1281,10 @@ input:-webkit-autofill.password:active {
 	border-bottom-color: #333333; 
 	border-width: 6px; 
 	margin-left: -6px; 
+}
+
+#zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below:before {
+	content:none;
 }
 
 #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zenario_note_below {

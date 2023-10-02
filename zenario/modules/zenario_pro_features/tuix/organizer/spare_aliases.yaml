@@ -14,7 +14,7 @@ zenario__library:
     panels:
         zenario_settings_pro_features__spare_aliases:
             title: Spare aliases (permanent/301 redirects)
-            no_items_message: No spare aliases (permanent redirects) have been created.
+            no_items_message: There are no spare aliases (permanent/301 redirects).
             db_items:
                 table: '[[DB_PREFIX]]spare_aliases AS sa'
                 id_column: sa.alias
@@ -22,21 +22,21 @@ zenario__library:
                 alias:
                     title: Spare alias
                     db_column: sa.alias
-                    searchable: Yes
-                    show_by_default: Yes
+                    searchable: true
+                    always_show: true
                 content_item:
                     title: Redirect to content item
-                    show_by_default: Yes
+                    always_show: true
                     db_column: "CONCAT(sa.content_type, '_', sa.content_id)"
                     item_link: content_item
                 ext_url:
                     title: Redirect to external URL
-                    show_by_default: Yes
+                    always_show: true
                     db_column: sa.ext_url
                     item_link: content_item_or_url
                 created_datetime:
                     title: When created
-                    show_by_default: Yes
+                    always_show: true
                     db_column: sa.created_datetime
                     format: datetime
             default_sort_column: alias
@@ -51,6 +51,11 @@ zenario__library:
                     admin_box:
                         path: zenario_pro_features_spare_alias
                         create_another: true
+                export:
+                    label: Export
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_export_spare_aliases
             item_buttons:
                 edit:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -60,8 +65,8 @@ zenario__library:
                 delete:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
                     label: Delete
-                    multiple_select: Yes
-                    hide_in_select_mode: Yes
+                    multiple_select: true
+                    hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: |

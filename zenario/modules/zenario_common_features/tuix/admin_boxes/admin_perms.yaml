@@ -78,11 +78,7 @@ zenario_admin:
                     full_width: true
                     checking_child_checks_parents: true
                     values:
-                        _PRIV_VIEW_MENU_ITEM:
-                            label: View a menu node's details
-                            label_class: zfab_core_perm
                         _PRIV_EDIT_MENU_TEXT:
-                            parent: _PRIV_VIEW_MENU_ITEM
                             label: Edit a menu node's text
                             label_class: zfab_core_perm
                         _PRIV_EDIT_MENU_ITEM:
@@ -94,22 +90,18 @@ zenario_admin:
                             label: Create a menu node
                             label_class: zfab_core_perm
                         _PRIV_DELETE_MENU_ITEM:
-                            parent: _PRIV_VIEW_MENU_ITEM
                             label: Delete a menu node
                             label_class: zfab_core_perm
                         _PRIV_REORDER_MENU_ITEM:
-                            parent: _PRIV_VIEW_MENU_ITEM
                             label: Reorder menu nodes
                             label_class: zfab_core_perm
                         _PRIV_ADD_MENU_SECTION:
-                            parent: _PRIV_VIEW_MENU_ITEM
                             label: Create a menu section
                             label_class: zfab_core_perm zfab_scary_option
                         _PRIV_DELETE_MENU_SECTION:
-                            parent: _PRIV_VIEW_MENU_ITEM
                             label: Delete a menu section
                             label_class: zfab_core_perm zfab_scary_option
-                    value: "_PRIV_VIEW_MENU_ITEM,_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_ADD_MENU_ITEM,_PRIV_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
+                    value: "_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_ADD_MENU_ITEM,_PRIV_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
                 
                 perm_publish_disabled:
                     is_admin_permission: false
@@ -210,11 +202,7 @@ zenario_admin:
                     full_width: true
                     checking_child_checks_parents: true
                     values:
-                        _PRIV_VIEW_TEMPLATE:
-                            label: View a layout's properties
-                            label_class: zfab_core_perm
                         _PRIV_EDIT_TEMPLATE:
-                            parent: _PRIV_VIEW_TEMPLATE
                             label: Edit layouts using Gridmaker
                             label_class: zfab_core_perm
                         _PRIV_EDIT_SITEWIDE:
@@ -244,7 +232,7 @@ zenario_admin:
                         _PRIV_RESET_MODULE:
                             label: Uninitialise a module
                             label_class: zfab_core_perm zfab_scary_option
-                    value: "_PRIV_VIEW_TEMPLATE,_PRIV_EDIT_TEMPLATE,_PRIV_EDIT_SITEWIDE,_PRIV_VIEW_SLOT,_PRIV_MANAGE_ITEM_SLOT,_PRIV_MANAGE_TEMPLATE_SLOT"
+                    value: "_PRIV_EDIT_TEMPLATE,_PRIV_EDIT_SITEWIDE,_PRIV_VIEW_SLOT,_PRIV_MANAGE_ITEM_SLOT,_PRIV_MANAGE_TEMPLATE_SLOT"
                 perm_manage:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -350,9 +338,6 @@ zenario_admin:
                             label_class: zfab_core_perm zfab_scary_option
                         _PRIV_EDIT_CONTENT_TYPE:
                             label: Change content type settings
-                            label_class: zfab_core_perm zfab_scary_option
-                        _PRIV_MANAGE_SPARE_DOMAIN_NAME:
-                            label: Manage spare domain names
                             label_class: zfab_core_perm zfab_scary_option
                         _PRIV_MANAGE_DATASET:
                             label: Manage datasets

@@ -14,6 +14,10 @@ body.zenario_adminLoggedIn {
 	height:calc(100% - 129px);
 }
 
+body.zenario_adminLoggedIn.zenario_adminToolbarHidden {
+	height:calc(100% - 10px);
+}
+
 html,
 body .zenario_skin {
 	height:100%;
@@ -75,6 +79,10 @@ body .zenario_skin {
 .Fixed_Header {
 	position:fixed;
 	top:0;
+}
+
+body.zenario_adminLoggedIn.zenario_adminToolbarHidden .Fixed_Header {
+	top:10px;
 }
 
 .Gridbreak_Top + .Fixed:not(.Fixed_Header) {

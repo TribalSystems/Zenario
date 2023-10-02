@@ -577,6 +577,13 @@ zenario__content:
                     db_column: v.pinned
                     hidden: true
                 
+                head_html:
+                    db_column: v.head_html
+                    hidden: true
+                foot_html:
+                    db_column: v.foot_html
+                    hidden: true
+                
                     
             default_sort_column: tag
             default_sort_desc: true
@@ -726,7 +733,7 @@ zenario__content:
             inline_buttons:
                 no_menu_linked:
                     css_class: zenario_not_at_menu
-                    tooltip: "This content item is not in the menu (an orphan)"
+                    tooltip: "This content item is not in the menu"
                     visible_if: >
                         (item.menunodecounter == 0)
                 menu_text_missing:
@@ -838,21 +845,44 @@ zenario__content:
                     without_columns_set:
                         ghost: true
                         
-                head:
+                head__populated:
                     parent: property_dropdown
                     priv: _PRIV_MANAGE_ITEM_SLOT
                     label: HTML in head of page
+                    tooltip: 'Populated'
                     admin_box:
                         path: zenario_head_foot_slot
                         key:
                             mode: head
                             level: item
-                foot:
-                    copy_of: head
+                    visible_if: item.head_html
+                head__empty:
+                    parent: property_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    label: HTML in head of page
+                    tooltip: 'Empty'
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            mode: head
+                            level: item
+                    visible_if: !item.head_html
+                foot__populated:
+                    copy_of: head__populated
                     label: HTML at foot of page
+                    tooltip: 'Populated'
                     admin_box:
                         key:
                             mode: foot
+                    visible_if: item.foot_html
+                foot__empty:
+                    copy_of: head__empty
+                    label: HTML at foot of page
+                    tooltip: 'Empty'
+                    admin_box:
+                        key:
+                            mode: foot
+                    visible_if: !item.foot_html
                                     
                 layout:
                     priv: _PRIV_EDIT_DRAFT
@@ -873,7 +903,15 @@ zenario__content:
                     without_columns_set:
                         ghost: true
                     
+                ###############################################
+                ### Dropdown for publishing and (un)locking ###
+                ###############################################
+                publishing_dropdown:
+                    label: Publishing
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 publish:
+                    parent: publishing_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
                     hide_in_select_mode: true
                     label: Publish...
@@ -881,11 +919,108 @@ zenario__content:
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id) &&
                         item.not_locked &&
+                        !item.publication_time &&
                         (item.draft || item.status == 'hidden')
                     without_columns_set:
                         ghost: true
                     admin_box:
                         path: zenario_publish
+                change_scheduled_publishing:
+                    parent: publishing_dropdown
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    hide_in_select_mode: true
+                    label: Change or cancel scheduled publishing...
+                    multiple_select: true
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id) &&
+                        item.publication_time
+                    without_columns_set:
+                        ghost: true
+                    admin_box:
+                        path: zenario_publish
+                lock:
+                    priv: _PRIV_EDIT_DRAFT
+                    parent: publishing_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id == 0
+                        && zenarioA.checkSpecificPerms(id)
+                    label: Lock this draft
+                    ajax:
+                        confirm:
+                            message: |
+                                Lock this draft?
+                                
+                                No other administrator will be able to edit it until it is unlocked, published or deleted.
+                            button_message: Lock
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            lock: 1
+                locked:
+                    parent: publishing_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id != zenario.adminId
+                    label: Locked
+                    css_class: zenario_item_locked
+                locked_by_you:
+                    parent: publishing_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id == zenario.adminId
+                    label: LOCKED by you
+                    css_class: zenario_item_locked
+                unlock:
+                    priv: _PRIV_EDIT_DRAFT
+                    parent: publishing_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id == zenario.adminId
+                        && zenarioA.checkSpecificPerms(id)
+                    label: Unlock
+                    tooltip: This content item is locked by you
+                    ajax:
+                        confirm:
+                            #message: |
+                                #Are you sure that you wish to unlock this content item?
+                                #
+                                #Any administrator who has authoring permission will be able to make changes to it.
+                            button_message: Unlock
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            unlock: 1
+                force_open:
+                    priv: _PRIV_CANCEL_CHECKOUT
+                    parent: publishing_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id != zenario.adminId
+                    label: Force unlock
+                    tooltip: This content item is locked by another administrator
+                    ajax:
+                        confirm:
+                            # This message is set dynamically
+                            #message: |
+                                #Are you sure that you wish to force-unlock on this content item?
+                                #
+                                #Any administrator who has authoring permission will be able to make changes to it.
+                            button_message: Cancel lock
+                            cancel_button_message: Leave it alone
+                            message_type: warning
+                        request:
+                            unlock: 1
+                
+                ######################################################
+                ### End of dropdown for publishing and (un)locking ###
+                ######################################################
+                    
+                
                 action_dropdown:
                     label: Actions
                     multiple_select: true
@@ -973,119 +1108,19 @@ zenario__content:
                 zenario_trans__view:
                     parent: view_dropdown
                     hide_in_select_mode: true
-                    label: Translations of this content item
+                    label: Translations
                     link:
                         path: zenario__content/panels/chained
                         branch: true
                         refiner: zenario_trans__chained_in_link
                 view_slots:
+                    priv: _PRIV_VIEW_SLOT
                     parent: view_dropdown
                     label: Slots and plugins on this content item
                     link:
                         path: zenario__content/panels/slots
                         branch: true
                         refiner: content_item
-                
-                
-                lock_dropdown:
-                    label: Locking
-                    hide_when_children_are_not_visible: true
-
-                lock:
-                    priv: _PRIV_EDIT_DRAFT
-                    parent: action_dropdown
-                    visible_if_for_all_selected_items: >
-                        ('' + item.status).match(/draft/)
-                        && item.lock_owner_id == 0
-                        && zenarioA.checkSpecificPerms(id)
-                    label: Lock this draft
-                    ajax:
-                        confirm:
-                            message: |
-                                Lock this draft?
-                                
-                                No other administrator will be able to edit it until it is unlocked, published or deleted.
-                            button_message: Lock
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            lock: 1
-                locked:
-                    parent: lock_dropdown
-                    visible_if_for_all_selected_items: >
-                        ('' + item.status).match(/draft/)
-                        && item.lock_owner_id != 0
-                        && item.lock_owner_id != zenario.adminId
-                    label: Locked
-                    css_class: zenario_item_locked
-                unlock:
-                    priv: _PRIV_EDIT_DRAFT
-                    parent: lock_dropdown
-                    visible_if_for_all_selected_items: >
-                        ('' + item.status).match(/draft/)
-                        && item.lock_owner_id != 0
-                        && item.lock_owner_id == zenario.adminId
-                        && zenarioA.checkSpecificPerms(id)
-                    label: Unlock
-                    tooltip: This content item is locked by you
-                    ajax:
-                        confirm:
-                            #message: |
-                                #Are you sure that you wish to unlock this content item?
-                                #
-                                #Any administrator who has authoring permission will be able to make changes to it.
-                            button_message: Unlock
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            unlock: 1
-                force_open:
-                    priv: _PRIV_CANCEL_CHECKOUT
-                    parent: lock_dropdown
-                    visible_if_for_all_selected_items: >
-                        ('' + item.status).match(/draft/)
-                        && item.lock_owner_id != 0
-                        && item.lock_owner_id != zenario.adminId
-                    label: Force unlock
-                    tooltip: This content item is locked by another administrator
-                    ajax:
-                        confirm:
-                            # This message is set dynamically
-                            #message: |
-                                #Are you sure that you wish to force-unlock on this content item?
-                                #
-                                #Any administrator who has authoring permission will be able to make changes to it.
-                            button_message: Cancel lock
-                            cancel_button_message: Leave it alone
-                            message_type: warning
-                        request:
-                            unlock: 1
-
-                # End lock dropdown
-                
-                cancel_scheduled_publish:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    visible_if_for_all_selected_items: |
-                        item.scheduled_publish_datetime
-                        && zenarioA.checkSpecificPerms(id)
-                    hide_in_select_mode: true
-                    label: Cancel scheduled publish
-                    multiple_select: true
-                    ajax:
-                        confirm:
-                            message: |
-                                This item is scheduled to be published on [[scheduled_publish_datetime]]. This has been scheduled by [[lock_owner_name]].
-                                
-                                Are you sure you still wish to cancel?
-                            multiple_select_message: |
-                                These items are scheduled to be published
-                                
-                                Are you sure you still wish to cancel?
-                            button_message: Cancel scheduled publication
-                            cancel_button_message: Leave it alone
-                            message_type: warning
-                        request:
-                            unlock: 1
                 
                 categories_add:
                     priv: _PRIV_EDIT_DRAFT
@@ -1108,7 +1143,6 @@ zenario__content:
                         zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
                     label: Change categories
-                    
                     admin_box:
                         path: zenario_content_categories
                     without_columns_set:
@@ -1318,6 +1352,7 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Hide
                     multiple_select: true
+                    multiple_select_label: Hide selected content items
                     with_columns_set:
                         hideable: true
                     without_columns_set:
@@ -1330,8 +1365,8 @@ zenario__content:
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
-                    label: Trash this content item
-                    multiple_select_label: Trash these content items
+                    label: Trash
+                    multiple_select_label: Trash selected content items
                     multiple_select: true
                     with_columns_set:
                         trashable: true

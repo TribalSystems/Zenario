@@ -47,17 +47,18 @@ if (ze::$cVersion == ze::$adminVersion) {
 }
 
 $pageMode = [];
-$isNest = !empty(ze::$slotContents[$slotName]['is_nest']);
-$isSlideshow = !empty(ze::$slotContents[$slotName]['is_slideshow']);
+$slot = ze::$slotContents[$slotName];
+$isNest = $slot->isNest();
+$isSlideshow = $slot->isSlideshow();
 
 
 //Check to see if an entry on the item layer is overwriting an entry on a layer above
-$overriddenPlugin = false;
+$overriddenSlot = false;
 if ($level == 1) {
-	$overriddenPlugin = ze::$slotContents[$slotName]['overridden'] ?? false;
+	$overriddenSlot = $slot->overriddenSlot();
 
 	//Treat the case of hidden (item layer) and empty (layout layer) as just empty
-	if (!$overriddenPlugin && !$moduleId) {
+	if (!$overriddenSlot && !$moduleId) {
 		$level = 0;
 	}
 }
@@ -184,40 +185,7 @@ if (!$moduleId) {
 	
 
 } else {
-	
-	#We've hidden the embed link for now to reduce clutter.
-	#If we ever add some sort of "more options" toggle, we might add it back.
-	#if (ze::in(ze::setting('xframe_options'), 'all', 'specific')) {
-	#	//Set up the embed buttons
-	#	$embedLink = ze\link::toItem(
-	#		$cID, $cType, $fullPath = true, $request = '&zembedded=1&method_call=showSingleSlot&slotName='. $slotName,
-	#		ze::$alias, $autoAddImportantRequests = false, $forceAliasInAdminMode = true);
-	#
-	#	$controls['info']['embed']['label'] .= '
-	#		<a onclick="zenarioA.copyEmbedHTML(\''. ze\escape::js($embedLink). '\', \''. ze\escape::js($slotName). '\');">'.
-	#			ze\admin::phrase('Copy iframe HTML').
-	#		'</a>';
-	#
-	#} else {
-	#	unset($controls['info']['embed']);
-	#}
-	
-	
-	#We've hidden the plugin and slot's CSS classes for now to reduce clutter.
-	#if (isset(ze::$slotContents[$slotName]['class']) && !empty(ze::$slotContents[$slotName]['class'])) {
-	#	$a = [];
-	#	ze::$slotContents[$slotName]['class']->zAPIGetCachableVars($a);
-	#	$framework = $a[0];
-	#	$cssClass = $a[4];
-	#	
-	#	$controls['info']['slot_css_class']['label'] = ze\admin::phrase('CSS classes: <input class="zenario_class_name_preview" readonly="readonly" value="[[cssClass]]">', ['cssClass' => htmlspecialchars($cssClass)]);
-	#} else {
-	#	unset($controls['info']['slot_css_class']);
-	#}
-	
-	ze\pluginAdm::fillSlotControlPluginInfo($moduleId, $instanceId, $isVersionControlled, $cID, $cType, $level, $isNest, $isSlideshow, $controls['info'], $controls['actions'], $controls['re_move_place']);
-
-	
+	ze\pluginAdm::fillSlotControlPluginInfo($slot, $cID, $cType, $level, $controls['info'], $controls['actions'], $controls['re_move_place']);
 	
 	$controls['actions']['settings']['page_modes'] = $settingsPageMode;
 	
@@ -305,7 +273,7 @@ if (!$moduleId) {
 		unset($controls['re_move_place']['replace_nest_on_item_layer']);
 		unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
 	}
-	if (!$couldChange || ($level == 1 && !$overriddenPlugin) || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
+	if (!$couldChange || ($level == 1 && !$overriddenSlot) || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
 		unset($controls['re_move_place']['hide_plugin']);
 	}
 
@@ -314,7 +282,7 @@ if (!$moduleId) {
 	$controls['css_class'] .= ' zenario_level'. $level;
 	
 	//Flag where a plugin is overriding another plugin on the layout level
-	if ($overriddenPlugin) {
+	if ($overriddenSlot) {
 		$controls['css_class'] .= ' zenario_overriddenPlugin';
 	}
 	if ($isVersionControlled) {
@@ -323,15 +291,12 @@ if (!$moduleId) {
 		$controls['css_class'] .= ' zenario_libraryPlugin';
 	}
 	
-	if (isset(ze::$slotContents[$slotName]['class']) && !empty(ze::$slotContents[$slotName]['class'])) {
+	if ($slot->class()) {
 		
-		$status = false;
-		if (isset(ze::$slotContents[$slotName]['init'])) {
-			$status = ze::$slotContents[$slotName]['init'];
-		}
+		$status = $slot->init();
 		
 		if (!$status) {
-			if (!empty(ze::$slotContents[$slotName]['error']) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
+			if (!empty($slot->error()) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
 				$controls['css_class'] .= ' zenario_slotWithNoPermission';
 		
 			} else {
@@ -339,7 +304,7 @@ if (!$moduleId) {
 			}
 		}
 		
-		if (ze::$slotContents[$slotName]['class']->shownInMenuMode()) {
+		if ($slot->shownInMenuMode()) {
 			$controls['css_class'] .= ' zenario_showSlotInMenuMode';
 		} else {
 			$controls['css_class'] .= ' zenario_hideSlotInMenuMode';
@@ -376,26 +341,9 @@ if (!$couldEdit) {
 
 
 //If there is a hidden plugin at the layout layer, display info and some actions for that too
-if ($overriddenPlugin) {
-	$overriddenPluginIsNest = false;
-	$overriddenPluginIsSlideshow = false;
-	
-	if ($overriddenPlugin['instance_id']) {
-		switch (ze\module::className(ze\row::get('plugin_instances', 'module_id', $overriddenPlugin['instance_id']))) {
-			case 'zenario_plugin_nest':
-				$overriddenPluginIsNest = true;
-				$overriddenPluginIsSlideshow = false;
-				break;
-			case 'zenario_slideshow':
-				$overriddenPluginIsNest = true;
-				$overriddenPluginIsSlideshow = true;
-				break;
-		}
-	}
-	
+if ($overriddenSlot) {
 	$dummy = [];
-	$overriddenIsVersionControlled = !$overriddenPlugin['instance_id'];
-	ze\pluginAdm::fillSlotControlPluginInfo($overriddenPlugin['module_id'], $overriddenPlugin['instance_id'], $overriddenIsVersionControlled, $cID, $cType, 2, $overriddenPluginIsNest, $overriddenPluginIsSlideshow, $controls['overridden_info'], $controls['overridden_actions'], $dummy);
+	ze\pluginAdm::fillSlotControlPluginInfo($overriddenSlot, $cID, $cType, 2, $controls['overridden_info'], $controls['overridden_actions'], $dummy);
 	
 	if (!$couldChange) {
 		unset($controls['overridden_actions']['show_plugin']);
@@ -407,7 +355,7 @@ if ($overriddenPlugin) {
 	
 	
 	//Don't allow wireframe plugins to be replaced
-	if ($overriddenIsVersionControlled) {
+	if ($overriddenSlot->isVersionControlled()) {
 		unset($controls['actions']['insert_reusable_on_layout_layer'], $controls['re_move_place']['replace_reusable_on_layout_layer']);
 		unset($controls['actions']['insert_nest_on_layout_layer'], $controls['re_move_place']['replace_nest_on_layout_layer']);
 		unset($controls['actions']['insert_slideshow_on_layout_layer'], $controls['re_move_place']['replace_slideshow_on_layout_layer']);

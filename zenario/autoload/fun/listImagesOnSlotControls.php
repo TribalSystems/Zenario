@@ -27,6 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+$numImages = count($images);
+$cutImages = !$fullList && $numImages > 1;
+
 
 		
 //For each image used, add its name to the slot controls, a link to the image properties FAB,
@@ -49,6 +52,10 @@ foreach ($images as $imageId) {
 					"
 					class="zenario_imgProps"
 				></a>';
+			
+			if ($cutImages) {
+				break;
+			}
 		}
 	}
 }
@@ -57,4 +64,8 @@ if ($imgs !== []) {
 	ksort($imgs);
 	$controls['info']['plugin_images']['hidden'] = false;
 	$controls['info']['plugin_images']['label'] = implode(', ', $imgs);
+	
+	if ($cutImages) {
+		$controls['info']['plugin_images']['label'] .= ' '. ze\admin::phrase('and [[count]] more', ['count' => $numImages - 1]);
+	}
 }

@@ -343,21 +343,19 @@ if (!$xml) {
 	
 	//Loop through the slots on the template, seeing what Modules are placed where
 	$slotContents = [];
-	ze\plugin::slotContents(
+	ze\plugin::checkSlotContents(
 		$slotContents,
-		$cID, $cType, $cVersion,
-		$layoutId = false,
-		$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-		$runPlugins = false);
+		$cID, $cType, $cVersion
+	);
 	
 	
 	$slotsOnTemplate = zenario_pro_features::getSlotsOnTemplate($template['layout_id']);
 	
 	$pluginsToRemoveInTemplate = [];
 	foreach ($slotsOnTemplate as $slotName) {
-		if (!empty($slotContents[$slotName]['content_id'])
-		 && !empty($slotContents[$slotName]['instance_id'])
-		 && ($instance = ze\plugin::details($slotContents[$slotName]['instance_id']))) {
+		if (!empty($slotContents[$slotName]->cID())
+		 && !empty($slotContents[$slotName]->instanceId())
+		 && ($instance = ze\plugin::details($slotContents[$slotName]->instanceId()))) {
 			$className = $instance['class_name'];
 			
 			$pluginsToRemoveInTemplate[$slotName] = $className;
@@ -436,7 +434,7 @@ if (!$xml) {
 						//(Note that a slot with a Wireframe Plugin currently in it, but that was not mentioned in the import,
 						// is considered empty for this purpose.)
 						if (!isset($matchesTemplateToImport[$tSlotName])
-						 && (isset($pluginsToRemoveInTemplate[$tSlotName]) || empty($slotContents[$tSlotName]['instance_id']))
+						 && (isset($pluginsToRemoveInTemplate[$tSlotName]) || empty($slotContents[$tSlotName]->instanceId()))
 						) {
 							$matchesImportToTemplate[$iSlotName] = $tSlotName;
 							$matchesTemplateToImport[$tSlotName] = $iSlotName;
@@ -478,7 +476,7 @@ if (!$xml) {
 					$images = [];
 					$nestedPlugins = [];
 					
-					if ($instanceId = $slotContents[$slotName]['instance_id'] ?? false) {
+					if ($instanceId = $slotContents[$slotName]->instanceId() ?? false) {
 						//Look for any Nested Tabs that match up with the Nested Tabs we are importing
 						if ($plugin->slide) {
 							foreach ($plugin->slide as $slide) {

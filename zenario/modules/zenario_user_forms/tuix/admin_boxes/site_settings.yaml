@@ -13,7 +13,7 @@ site_settings:
                 file_size:
                     type: grouping
                     snippet:
-                        label: File size
+                        label: "Maximum file size for form attachments:"
                         label_class: subheading
                 data_protection_link:
                     grouping: site_settings
@@ -39,23 +39,10 @@ site_settings:
                     grouping: file_size
                     site_setting:
                         name: zenario_user_forms_max_attachment_file_size_override
-                    label: "Maximum attachment file size:"
-                    type: radios
-                    values:
-                        use_global_max_attachment_file_size:
-                            label: "Use global file upload size setting ([[global_max_attachment_file_size]])"
-                            ord: 1
-                        limit_max_attachment_file_size:
-                            label: "Limit attachment file size to (cannot be higher than global setting)..."
-                            ord: 2
-                    value: use_global_max_attachment_file_size
+                    label: "Restrict uploads to..."
+                    type: checkbox
+                    value: false
                     redraw_onchange: true
-                    notices_below:
-                        max_upload_size_site_setting_link:
-                            type: information
-                            size: small
-                            message: ""
-                            html: true
                 zenario_user_forms_content_max_filesize:
                     grouping: file_size
                     indent: 1
@@ -63,12 +50,12 @@ site_settings:
                         name: zenario_user_forms_content_max_filesize
                     label: 'User Forms maximum file size:'
                     type: text
-                    value: 20
+                    value: 8
                     validation:
                         required_if_not_hidden: Please enter a maximum content file size.
                         numeric: Must be numeric.
                     decimal_places: ""
-                    visible_if: lib.value('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size'
+                    visible_if: lib.value('zenario_user_forms_max_attachment_file_size_override')
                     maxlength: 10
                     style: "width: 7em;"
                 zenario_user_forms_content_max_filesize_unit:
@@ -88,7 +75,14 @@ site_settings:
                             label: GB
                     value: MB
                     redraw_onchange: true
-                    visible_if: lib.value('zenario_user_forms_max_attachment_file_size_override') == 'limit_max_attachment_file_size'
+                    visible_if: lib.value('zenario_user_forms_max_attachment_file_size_override')
+                global_upload_setting_info:
+                    grouping: file_size
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                [[global_upload_setting_string]]
+                            </div>
         zenario_user_forms_profanity_filter:
             label:  Profanity filter
             edit_mode:

@@ -656,7 +656,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			case "zenario_project_locations__project":
 					$saveValues = [];
 					$saveValues['name'] = $values['name'];
-					$saveValues['summary'] = $values['summary'];
+					$saveValues['summary'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['summary']);
 					$saveValues['client_name'] = $values['client_name'];
 					$saveValues['architect_name'] = $values['architect_name'];
 					$saveValues['contractor_name'] = $values['contractor_name'];

@@ -62,7 +62,6 @@ class priv {
 			//Permissions to view languages, menu nodes and plugins are exceptions and
 			//should be granted even if the admin could not edit a content item
 			 && $action != '_PRIV_VIEW_LANGUAGE'
-			 && $action != '_PRIV_VIEW_MENU_ITEM'
 			 && $action != '_PRIV_VIEW_REUSABLE_PLUGIN') {
 			
 				//If this is a check on the current content item, there's no need to query the
@@ -140,7 +139,6 @@ class priv {
 							case 'perm_editmenu':
 							case 'perm_publish':
 							case '_PRIV_VIEW_SITE_SETTING':
-							case '_PRIV_VIEW_MENU_ITEM':
 							case '_PRIV_EDIT_MENU_TEXT':
 							case '_PRIV_PUBLISH_CONTENT_ITEM':
 							case '_PRIV_VIEW_LANGUAGE':

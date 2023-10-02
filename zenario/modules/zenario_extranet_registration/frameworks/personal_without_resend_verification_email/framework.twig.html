@@ -73,12 +73,19 @@
 					{% if User_passwords %}
 						<div class="extranet_field zenario_visitor_tooltip_wrap">
 							<div class="label"><label for="extranet_new_password">{{"Choose a password:"|trans}}</label></div>
-							{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
-								'class': "extranet_password", oninput: "zenarioP.updatePasswordNotifier('#extranet_new_password', " ~ json_encode(Password_Requirements_Settings) ~ ")"})}}
-						</div>
+							{{this.frameworkField({
+								'type': "password",
+								'name': "extranet_new_password",
+								'id': "extranet_new_password",
+								'pattern': "new_password",
+								'required': "true",
+								'class': "extranet_password",
+								'oninput': "zOnLoad(function() {zenarioP.updatePasswordNotifier('#extranet_new_password', " ~ json_encode(Password_Requirements_Settings) ~ ", '#password_message', false, false)})"
+							})}}
 						
-						<div>
-							<span id="password_message" class="title_orange">{{'Please enter a password.'|trans}}</span>
+							<div>
+								<span id="password_message" class="title_orange">{{'Please enter a password.'|trans}}</span>
+							</div>
 						</div>
 						
 						<div class="extranet_field">

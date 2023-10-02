@@ -96,15 +96,11 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		$box['tabs']['site']['notices']['checked']['show'] = false;
+		$fields['site/clear_cache']['notices_below']['checked']['hidden'] = true;
 		if (!empty($fields['site/clear_cache']['pressed'])) {
-			$box['tabs']['site']['notices']['checked']['show'] = true;
+			$fields['site/clear_cache']['notices_below']['checked']['hidden'] = false;
 			
 			ze\skinAdm::clearCache();
-			
-			$box['tabs']['site']['show_errors_after_field'] = 'desc3';
-		} else {
-			unset($box['tabs']['site']['show_errors_after_field']);
 		}
 	}
 

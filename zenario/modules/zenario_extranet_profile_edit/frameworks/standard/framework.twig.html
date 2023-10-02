@@ -3,15 +3,42 @@
 		<p>{{'You must be logged in as an extranet user to see this plugin.'|trans}}</p>
 	{% else %}
 		<div class="{{extranet_profile_mode_class|e}}">
-			{{form_HTML}}
-			
-			{% if extranet_screen_name_unconfirmed %}
+			{% if allow_user_to_delete_their_account and extranet_delete_user_account_confirmation_prompt %}
 				{{extranet_openForm}}
-					<div class="screen_name_confirmed_info">{{extranet_screen_name_confirmed_info}}</div>
-					<input type="submit" value="{{'Confirm screen name'|trans}}" name="extranet_confirm_screen_name"/>
+					<h1>{{'Close your account'|trans}}</h1>
+					<p class="form_error">{{'Warning: this action will delete your account from this site and remove your data.'|trans}}</p>
+					
+					{% if confirm_close_account_error and not show_errors_below_fields %}
+						<div class="form_error">{{confirm_close_account_error}}</div>
+					{% endif %}
+					
+					<input type="checkbox" id="confirmCloseAccount" name="confirmCloseAccount" value="confirmCloseAccount">
+					<label for="confirmCloseAccount">{{'I confirm that I wish to close my account'|trans}}</label><br>
+					
+					{% if confirm_close_account_error and show_errors_below_fields %}
+						<div class="form_error">{{confirm_close_account_error}}</div>
+					{% endif %}
+				
+					<div class="extranet_links">
+						<input type="submit" name="closeAccount" class="next submit" value="{{'Close account now'|trans}}">
+						<a {{cancel_delete_account_button_href_and_onclick}} class="nice_button cancel">{{'Cancel'|trans}}</a>
+					</div>
 				{{extranet_closeForm}}
-			{% elseif extranet_screen_name_confirmed_message %}
-				{{extranet_screen_name_confirmed_message}}
+			{% else %}
+				{{form_HTML}}
+			
+				{% if extranet_screen_name_unconfirmed %}
+					{{extranet_openForm}}
+						<div class="screen_name_confirmed_info">{{extranet_screen_name_confirmed_info}}</div>
+						<input type="submit" value="{{'Confirm screen name'|trans}}" name="extranet_confirm_screen_name"/>
+					{{extranet_closeForm}}
+				{% elseif extranet_screen_name_confirmed_message %}
+					{{extranet_screen_name_confirmed_message}}
+				{% endif %}
+			
+				{% if allow_user_to_delete_their_account %}
+					<div class="bottom_options"><a {{delete_account_button_href_and_onclick}} class="extranet_close_account_button">{{'Close your account'|trans}}</a></div>
+				{% endif %}
 			{% endif %}
 		</div>
 	{% endif %}

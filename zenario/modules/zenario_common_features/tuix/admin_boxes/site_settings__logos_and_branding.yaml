@@ -27,8 +27,7 @@ site_settings:
                             - .png
                         drag_and_drop: false
                     note_below: |
-                        You may upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.)
-                        We recommend that the image should be at least 32×32 pixels in size.
+                        You may upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.) Should be square with 32×32 pixels or larger.
                     validation:
                         must_be_gif_ico_or_png: |
                             The favicon must be a file with format <code>.gif</code>, <code>.ico</code> or a <code>.png</code>.
@@ -143,6 +142,7 @@ site_settings:
                 site_disabled_message:
                     label: "Message for all visitors when site disabled:"
                     type: editor
+                    editor_type: standard
                     dont_trim: true
                     editor_options:
                         convert_urls: true

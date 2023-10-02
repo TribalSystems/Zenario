@@ -36,9 +36,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $toolbars['preview'] = ['ord' => 10, 'label' => \ze\admin::phrase('Navigate')];
 
 if (ze::$status != 'trashed' && (ze::$cVersion == ze::$adminVersion || (ze::$visitorVersion && ze::$cVersion == ze::$visitorVersion))) {
-	if (\ze\priv::check('_PRIV_VIEW_MENU_ITEM')) {
-		$toolbars['menu1'] = ['ord' => 20, 'label' => \ze\admin::phrase('Menu')];
-	}
+	$toolbars['menu1'] = ['ord' => 20, 'label' => \ze\admin::phrase('Menu')];
 }
 
 //Only show one of rollback/edit, depending on the version in view and its status

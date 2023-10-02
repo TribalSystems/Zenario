@@ -30,7 +30,7 @@ zenario_export_vlp:
                     values:
                         xlsx:
                             ord: "1"
-                            label: xlsx (Excel 2007) (Recommended)
+                            label: xlsx (Excel 2007 and later) (Recommended)
                         xls:
                             ord: "2"
                             label: xls (Excel 5)

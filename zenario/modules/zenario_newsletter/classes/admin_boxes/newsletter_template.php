@@ -49,7 +49,7 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Try and ensure that we use absolute URLs where possible
-		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['details']['fields']['body']);
+		ze\contentAdm::addAbsURLsToAdminBoxField($fields['details/body']);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -57,8 +57,11 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['details/body'], true);
+		
 		//Try and ensure that we use absolute URLs where possible
-		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['details']['fields']['body']);
+		ze\contentAdm::addAbsURLsToAdminBoxField($fields['details/body']);
 		
 		$record = [
 			'name' => $values['details/name'],

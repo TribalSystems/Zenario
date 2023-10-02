@@ -4,6 +4,21 @@
 
 
 /*  
+	Rollover images using the "CSS" implementation
+*/
+
+.banner_wrap .zenario_rollover,
+.banner_wrap:hover .zenario_rollout {
+	display: none;
+}
+
+.banner_wrap:hover .zenario_rollover {
+	display: initial;
+}
+
+
+
+/*  
 	Cookie Consent form - default styles  
 */
 
@@ -644,14 +659,6 @@ input[type="password"].border_green {
 
 .lang_flag.lang_disabled {
 	opacity: 0.3;
-}
-
-/*
-	Copy-text button on forms
-*/
-
-span.zenario_copy {
-	cursor: pointer;
 }
 
 /*

@@ -674,6 +674,9 @@ class menuAdm {
 		\ze\row::delete('menu_positions', ['menu_id' => $id]);
 		\ze\row::delete('menu_hierarchy', ['child_id' => $id]);
 		\ze\row::delete('menu_hierarchy', ['ancestor_id' => $id]);
+		\ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id]);
+		\ze\row::delete('menu_node_feature_image', ['node_id' => $id]);
+		
 		\ze\module::sendSignal('eventMenuNodeDeleted', ['menuId' => $id]);
 	
 		//If this Content Item had any other Menu Nodes, make sure that one of the remaining is a primary

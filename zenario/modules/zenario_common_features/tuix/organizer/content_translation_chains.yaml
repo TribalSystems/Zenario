@@ -1,0 +1,106 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        translation_chains:
+            key:
+                cType: ''
+            title: Content items and their translations
+            no_items_message: No content items have been created.
+            db_items:
+                table: >
+                    [[DB_PREFIX]]content_items AS c
+                    INNER JOIN [[DB_PREFIX]]translation_chains AS tc
+                       ON c.id = tc.equiv_id
+                      AND c.type = tc.type
+                id_column: |
+                    CONCAT(c.tag_id, '_t')
+                group_by: c.tag_id
+                where_statement: |
+                    WHERE c.status NOT IN ('trashed','deleted')
+                
+            quick_filter_buttons:
+                content_type:
+                    label: 'All content types'
+                all_content_types:
+                    parent: content_type
+                    ord: 1
+                    label: 'All content types'
+                    column: type
+                    value: ''
+                    remove_filter: true
+                
+            refiners:
+                content_type:
+                    sql: 'tc.type = [[REFINER__CONTENT_TYPE]]'
+            item:
+                name: Content item and its translations
+                names: Content items and their translations
+                css_class: translation_chain
+            columns:
+                chain_desc:
+                    title: Translation chain
+                    width: xxlarge
+                    searchable: true
+                    ascii_only: true
+                    db_column: c.tag_id
+                    sort_column: c.type, c.id
+                    sort_column_desc: c.type DESC, c.id DESC
+                    always_show: true
+                    disallow_filtering: true
+                equiv_id:
+                    db_column: c.equiv_id
+                id:
+                    db_column: c.id
+                    align_right: true
+                    width: xsmall
+                type:
+                    title: Content Type
+                    db_column: c.type
+                    format: enum
+                    width: large
+                    always_show: true
+                language_id:
+                    db_column: c.language_id
+                    format: language_english_name_with_id
+                alias:
+                    title: Alias
+                    searchable: true
+                    db_column: c.alias
+                    width: small
+                    hidden: true
+                privacy:
+                    db_column: tc.privacy
+                    format: enum
+                    values:
+                        public:
+                            label: 'Permissions: Public, visible to everyone'
+                        logged_out:
+                            label: 'Permissions: Public, only show to visitors who are NOT logged in'
+                        logged_in:
+                            label: 'Permissions: Private, only show to extranet users'
+                        group_members:
+                            label: 'Permissions: Private, only show to extranet users in group...'
+                        in_smart_group:
+                            label: 'Permissions: Private, only show to extranet users in smart group...'
+                        logged_in_not_in_smart_group:
+                            label: 'Permissions: Private, only show to extranet users NOT in smart group...'
+                        with_role:
+                            label: 'Permissions: Private, only show to extranet users with role...'
+                        call_static_method:
+                            label: "Permissions: Call a module's static method to decide"
+                        send_signal:
+                            label: 'Permissions: Send a signal to decide'
+                
+                    
+            default_sort_column: chain_desc
+            label_format_for_grid_view: '[[chain_desc]]'
+            label_format_for_picked_items: '[[chain_desc]]'
+            label_format_for_popouts: '[[chain_desc]]'
+            
+            inline_buttons:
+                privacy:
+                    css_class: privacy_inline_button
+                    tooltip: "[[privacy]]"
+                    admin_box:
+                        path: zenario_content_privacy

@@ -897,6 +897,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 				cssClasses.push('zenario_admin_cb');
 			}
 			
+			popout.className = cssClasses.join(' ');
 			popout.onOpen = function() { zenario.addClassesToColorbox(cssClasses); };
 			popout.onClosed = function() { zenario.removeClassesToColorbox(cssClasses); };
 		}

@@ -9,13 +9,6 @@ class zenario_slideshow__admin_boxes__plugin_settings extends ze\moduleBaseClass
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		//Hide all of the animation library-dependant tabs when not selected
-		foreach ($fields['first_tab/animation_library']['values'] as $key => $label) {
-			if ($key && isset($box['tabs'][$key. '_effects'])) {
-				$box['tabs'][$key. '_effects']['hidden'] = $values['first_tab/animation_library'] != $key;
-			}
-		}
-		
 		//Make sure the "animation duration" always has a value
 		if ($values['first_tab/animation_library'] == 'cycle2') {
 			$values['cycle2_effects/speed'] = (bool) $values['cycle2_effects/speed'] ? $values['cycle2_effects/speed'] : 1000;
@@ -38,7 +31,13 @@ class zenario_slideshow__admin_boxes__plugin_settings extends ze\moduleBaseClass
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		//...your PHP code...//
+		if (!$values['first_tab/animation_library']) {
+			$fields['first_tab/animation_library']['error'] = ze\admin::phrase('Please select an animation library');
+		
+		} elseif ($values['first_tab/animation_library'] == 'swiper' && $box['key']['moduleClassName'] != 'zenario_slideshow_simple') {
+			$fields['first_tab/animation_library']['error'] = ze\admin::phrase('You may not use the "Swiper" animation library with the Advanced Slideshow plugin.');
+		
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

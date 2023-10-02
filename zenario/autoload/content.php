@@ -47,7 +47,7 @@ class content {
 
 
 	//Special case for if the installer needs to be run
-	public static function showStartSitePageIfNeeded($reportDBOutOfDate = false) {
+	public static function showStartSitePageIfNeeded($mode = 'default') {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
@@ -100,7 +100,7 @@ class content {
 
 	public static function getCIDAndCTypeFromTagId(&$cID, &$cType, $tagId) {
 		if ($tagId
-		 && ($tagId = explode('_', trim($tagId), 2))
+		 && ($tagId = explode('_', trim($tagId), 3))	//N.b. this is set to 3 so that you can pass in translation chain ids to be read as normal tag ids
 		 && (!empty($tagId[1]))
 		 && (!preg_match('/[^a-zA-Z]/', $tagId[0]))
 		 && (!preg_match('/[^0-9]/', $tagId[1]))
@@ -1573,6 +1573,7 @@ class content {
 				$data = null;
 				$tplFile = $layoutDir. $codeName. '.tpl.php';
 				$cssFile = $layoutDir. $codeName. '.css';
+				$minFile = $layoutDir. $codeName. '.min.css';
 				
 				if ($generateHTML && !file_exists(CMS_ROOT. $tplFile)) {
 					if (is_writable(CMS_ROOT. $layoutDir)) {
@@ -1597,7 +1598,7 @@ class content {
 					}
 				}
 				
-				if ($generateCSS && !file_exists(CMS_ROOT. $cssFile)) {
+				if ($generateCSS && !file_exists(CMS_ROOT. $minFile)) {
 					if (is_writable(CMS_ROOT. $layoutDir)) {
 						$html = '';
 						if ($data === null) {
@@ -1609,6 +1610,11 @@ class content {
 					
 						if (file_put_contents(CMS_ROOT. $cssFile, $css)) {
 							\ze\cache::chmod(CMS_ROOT. $cssFile);
+							
+							$minifier = new \MatthiasMullie\Minify\CSS($css);
+							$minifier->minify(CMS_ROOT. $minFile);
+							\ze\cache::chmod(CMS_ROOT. $minFile);
+							
 						} elseif ($reportErrors) {
 							\ze\contentAdm::debugAndReportLayoutError($cssFile);
 						} else {
@@ -1629,7 +1635,7 @@ class content {
 					}
 				} else {
 					if ($generateCSS) {
-						return $cssFile;
+						return $minFile;
 					}
 				}
 			

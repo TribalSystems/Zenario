@@ -6,6 +6,8 @@ zenario_hide:
         id: ""
         cID: ""
         cType: ""
+        id_is_menu_node_id: ''
+        menu_node_id: ''
     tabs:
         hide:
             edit_mode:
@@ -22,6 +24,13 @@ zenario_hide:
                     message: |
                         When these content items are hidden, they will no longer be seen by visitors, nor appear in the menu navigation.
             fields:
+                access_codes_warning:
+                    snippet: {}
+                    notices_above:
+                        access_codes_warning:
+                            hidden: false
+                            type: information
+                            message: ''
                 links_warning:
                     snippet:
                         html: ''

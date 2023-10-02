@@ -1031,6 +1031,15 @@ additionalProperties:
 
                                         This works from version 9.2 onwards.
                                 
+                                no_past_dates:
+                                    type: boolean
+                                    description: >
+                                        This can be used for <code>type: date</code> fields.
+
+                                        If set, the date picker will not allow past dates to be selected.
+
+
+                                        This works from version 9.5 onwards.
                                 allow_typing_in_date_field:
                                     type: boolean
                                     description: >
@@ -1044,6 +1053,16 @@ additionalProperties:
 
 
                                         This works from version 9.2 onwards.
+                                show_date_format_as_placeholder:
+                                    type: boolean
+                                    description: >
+                                        This can be used for <code>type: date</code> fields.
+
+                                        If enabled, some placeholder text will be added to the field to give the
+                                        user a clue as to what the required date format is.
+
+
+                                        This works from version 9.5 onwards.
 
                                 name:
                                     type: string
@@ -1778,6 +1797,24 @@ additionalProperties:
                                                 An error message to display if a numeric value is not entered for this field.
                                                 
                                                 From version 8 onwards, you can enter a value of true to highlight the field in red without a message.
+                                        non_zero_number:
+                                            type: *booly
+                                            description: >
+                                                An error message to display if the number entered is zero.
+                                                
+                                                This works from version 9.5 onwards.
+                                        positive_number:
+                                            type: *booly
+                                            description: >
+                                                An error message to display if the number entered is not positive.
+                                                
+                                                This works from version 9.5 onwards.
+                                        integer_number:
+                                            type: *booly
+                                            description: >
+                                                An error message to display if the number entered is not an integer.
+                                                
+                                                This works from version 9.5 onwards.
                                         screen_name:
                                             type: *booly
                                             description: >

@@ -103,16 +103,16 @@ plugin_settings:
                         numeric: The number of miliseconds to wait must be a number.
                     side_note: |
                         When the user type words to search wait the above amount of miliseconds before send the request. Default 500 ms.
-                show_private_items:
+                search_private_items:
                     plugin_setting:
-                        name: show_private_items
+                        name: search_private_items
                     label: 'Search private items'
                     type: checkbox
                     value: "1"
                     format_onchange: Yes
-                hide_private_items:
+                show_private_content_item_link_control:
                     plugin_setting:
-                        name: hide_private_items
+                        name: show_private_content_item_link_control
                     label: 'Private items:'
                     type: select
                     value: "1"
@@ -978,7 +978,7 @@ plugin_settings:
                 search_in_other_modules:
                     plugin_setting:
                         name: search_in_other_modules
-                    label: 'Search in other modules'
+                    label: 'Search in other modules...'
                     type: checkbox
                     format_onchange: true
                 module_to_search:
@@ -993,6 +993,7 @@ plugin_settings:
                     visible_if: lib.value('search_in_other_modules')
                     validation:
                         required_if_not_hidden: 'Please select a module.'
+                    format_onchange: true
                 other_module_column_heading_text:
                     plugin_setting:
                         name: other_module_column_heading_text
@@ -1082,6 +1083,11 @@ plugin_settings:
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a content item.
+                    notices_below:
+                        expected_module_on_results_page:
+                            hidden: true
+                            type: information
+                            message: ''
                 other_module_view_item_conductor_state:
                     indent: 1
                     visible_if: lib.value('search_in_other_modules')

@@ -90,6 +90,7 @@ if ($arg1 == 'p') {
 
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', $specific);
+//define('RECOMPRESS_EVERYTHING', true);
 
 
 if ($specific) {
@@ -241,7 +242,6 @@ minify('zenario/libs/manually_maintained/bsd/jquery_roundabout/', 'jquery.rounda
 minify('zenario/libs/manually_maintained/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
 minify('zenario/libs/manually_maintained/mit/jquery.fix.clone/', 'jquery.fix.clone', $level, '.js');
 minify('zenario/libs/yarn/jquery-lazy/', 'jquery.lazy', $level, '.js');
-minify('zenario/libs/yarn/jquery-lazy/', 'jquery.lazy.plugins', $level, '.js');
 minify('zenario/libs/yarn/jquery-multiselect/', 'jquery-MultiSelect', $level, '.js');
 minify('zenario/libs/yarn/jquery-multiselect/', 'jquery-MultiSelect', $level, '.css');
 
@@ -251,9 +251,6 @@ minify('zenario/libs/manually_maintained/mit/colorbox/', 'jquery.colorbox', $lev
 //Minify Tokenizer
 minify('zenario/libs/manually_maintained/bsd/tokenize/', 'jquery.tokenize', $level, '.css');
 minify('zenario/libs/manually_maintained/bsd/tokenize/', 'jquery.tokenize', $level, '.js');
-
-//Minify enquire.js
-minify('zenario/libs/manually_maintained/mit/enquire/', 'enquire', $level, '.js');
 
 //Minify intro.js
 minify('zenario/libs/manually_maintained/mit/intro/', 'introjs', $level, '.css');
@@ -265,9 +262,6 @@ minify('zenario/libs/manually_maintained/mit/jpaginator/', 'jPaginator', $level,
 
 //Minify Modernizr
 minify('zenario/libs/manually_maintained/mit/modernizr/', 'modernizr', $level, '.js');
-
-//Minifythe Responsive Multilevel Menu plugin
-minify('zenario/libs/manually_maintained/mit/ResponsiveMultiLevelMenu/js/', 'jquery.dlmenu', $level, '.js');
 
 //Minify slimmenu
 minify('zenario/libs/manually_maintained/mit/slimmenu/', 'slimmenu', $level, '.css');

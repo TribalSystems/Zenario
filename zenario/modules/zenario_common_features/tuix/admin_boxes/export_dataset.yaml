@@ -36,4 +36,3 @@ zenario_export_dataset:
                         required: Please select a download format.
     confirm:
         download: true
-            

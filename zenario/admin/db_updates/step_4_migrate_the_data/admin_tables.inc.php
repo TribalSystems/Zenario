@@ -53,3 +53,125 @@ ze\dbAdm::revision(57141
 	WHERE action_name IN ('_PRIV_HIDE_CONTENT_ITEM', '_PRIV_MANAGE_SPARE_ALIAS')
 _sql
 );
+
+
+//
+//	Zenario 9.5
+//
+
+//In 9.5, we removed the domain redirects (or spare domains, as previously called).
+//Clean up an obsolete permission...
+ze\dbAdm::revision( 58553
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name = "_PRIV_MANAGE_SPARE_DOMAIN_NAME"
+_sql
+);
+
+//... and also remove the perm_system permission if _PRIV_MANAGE_SPARE_DOMAIN_NAME
+//was the only admin perm an admin had.
+if (ze\dbAdm::needRevision(58554)) {
+	$adminIds = [];
+	$sql = "
+		SELECT admin_id
+		FROM " . DB_PREFIX . "action_admin_link
+		WHERE action_name = 'perm_system'";
+	$result = ze\sql::select($sql);
+	
+	while ($adminId = ze\sql::fetchValue($result)) {
+		$adminIds[] = $adminId;
+	}
+	
+	if (!empty($adminIds)) {
+		foreach ($adminIds as $adminId) {
+			$sql = "
+				SELECT COUNT(*)
+				FROM " . DB_PREFIX . "action_admin_link
+				WHERE admin_id = " . (int) $adminId . "
+				AND action_name IN (
+					'_PRIV_VIEW_DIAGNOSTICS', '_PRIV_APPLY_DATABASE_UPDATES', '_PRIV_VIEW_SITE_SETTING', '_PRIV_EDIT_SITE_SETTING',
+					'_PRIV_EDIT_CONTENT_TYPE', '_PRIV_MANAGE_DATASET', '_PRIV_PROTECT_UNPROTECT_DATASET_FIELD', '_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS'
+				)";
+			$result = ze\sql::select($sql);
+			$count = ze\sql::fetchValue($result);
+			
+			if (!$count) {
+				ze\row::delete('action_admin_link', ['admin_id' => $adminId, 'action_name' => 'perm_system']);
+			}
+		}
+	}
+
+	ze\dbAdm::revision(58554);
+}
+
+//Likewise, remove the _PRIV_VIEW_MENU_ITEM, _PRIV_VIEW_TEMPLATE and do similar cleanups.
+ze\dbAdm::revision( 58557
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN ("_PRIV_VIEW_MENU_ITEM", "_PRIV_VIEW_TEMPLATE")
+_sql
+);
+
+if (ze\dbAdm::needRevision(58558)) {
+	$adminIds = [];
+	$sql = "
+		SELECT admin_id
+		FROM " . DB_PREFIX . "action_admin_link
+		WHERE action_name = 'perm_editmenu'";
+	$result = ze\sql::select($sql);
+	
+	while ($adminId = ze\sql::fetchValue($result)) {
+		$adminIds[] = $adminId;
+	}
+	
+	if (!empty($adminIds)) {
+		foreach ($adminIds as $adminId) {
+			$sql = "
+				SELECT COUNT(*)
+				FROM " . DB_PREFIX . "action_admin_link
+				WHERE admin_id = " . (int) $adminId . "
+				AND action_name IN (
+					'_PRIV_EDIT_MENU_TEXT', '_PRIV_EDIT_MENU_ITEM', '_PRIV_ADD_MENU_ITEM', '_PRIV_DELETE_MENU_ITEM',
+					'_PRIV_REORDER_MENU_ITEM', '_PRIV_ADD_MENU_SECTION', '_PRIV_DELETE_MENU_SECTION'
+				)";
+			$result = ze\sql::select($sql);
+			$count = ze\sql::fetchValue($result);
+			
+			if (!$count) {
+				ze\row::delete('action_admin_link', ['admin_id' => $adminId, 'action_name' => 'perm_editmenu']);
+			}
+		}
+	}
+	
+	$adminIds = [];
+	$sql = "
+		SELECT admin_id
+		FROM " . DB_PREFIX . "action_admin_link
+		WHERE action_name = 'perm_designer'";
+	$result = ze\sql::select($sql);
+	
+	while ($adminId = ze\sql::fetchValue($result)) {
+		$adminIds[] = $adminId;
+	}
+	
+	if (!empty($adminIds)) {
+		foreach ($adminIds as $adminId) {
+			$sql = "
+				SELECT COUNT(*)
+				FROM " . DB_PREFIX . "action_admin_link
+				WHERE admin_id = " . (int) $adminId . "
+				AND action_name IN (
+					'_PRIV_EDIT_TEMPLATE', '_PRIV_EDIT_SITEWIDE', '_PRIV_EDIT_CSS', '_PRIV_VIEW_SLOT',
+					'_PRIV_MANAGE_ITEM_SLOT', '_PRIV_MANAGE_TEMPLATE_SLOT', '_PRIV_RUN_MODULE', '_PRIV_RESET_MODULE'
+				)";
+			$result = ze\sql::select($sql);
+			$count = ze\sql::fetchValue($result);
+			
+			if (!$count) {
+				ze\row::delete('action_admin_link', ['admin_id' => $adminId, 'action_name' => 'perm_designer']);
+			}
+		}
+	}
+
+	ze\dbAdm::revision(58558);
+}

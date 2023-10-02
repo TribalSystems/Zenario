@@ -177,7 +177,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Try and ensure that we use absolute URLs where possible
-		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
+		ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
 		
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] =
 		$box['tabs']['meta_data']['notices']['test_send_sucesses']['show'] =
@@ -364,8 +364,11 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			
+			
+			$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['meta_data/body'], true);
+			
 			//Try and ensure that we use absolute URLs where possible
-			ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
+			ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
 			
 			
 			$id = $box['key']['id'];

@@ -14,7 +14,10 @@
 		"smottt/wideimage": "*",
 		"twig/twig": "^2.0",
 		"geoip2/geoip2": "~2.0",
-		"bjeavons/zxcvbn-php": "^1.0"
+		"bjeavons/zxcvbn-php": "^1.0",
+		"ezyang/htmlpurifier": "^4.16",
+		"matthiasmullie/minify": "^1.3",
+		"phpoffice/phpspreadsheet": "*"
 	},
 	"autoload": {
 		"psr-4": { "ze\\": "zenario/autoload" }
@@ -24,7 +27,8 @@
 		"optimize-autoloader": true,
 		"classmap-authoritative": true,
         "platform": {
-            "php": "7.2"
+            "php": "7.4"
 		}
-	}
+	},
+	"to-update": "mv composer_dist.json composer.json; composer update; mv composer.json composer_dist.json; rm composer.lock"
 }

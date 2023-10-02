@@ -154,8 +154,8 @@ if ($installed) {
 	ze\db::connectLocal();
 	
 	
-	//From version 8 of Zenario, we'll only support updating from version 7.5 onwards.
-	//Check for versions of Tribiq CMS/Zenario before 7.5
+	//As of version 9.5 of Zenario, we'll only support updating from version 8.8 onwards.
+	//Check for versions of Tribiq CMS/Zenario before 8.8
 	$sql = "
 		SELECT 1
 		FROM ". DB_PREFIX. "local_revision_numbers
@@ -165,14 +165,14 @@ if ($installed) {
 		LIMIT 1";
 
 	if (ze\sql::fetchRow(ze\sql::select($sql))) {
-		//If this looks like a very old version of Zenario, direct people to update to at least 8.2 first
+		//If this looks like a very old version of Zenario, direct people to update to at least 8.8 first
 		echo '
 			<p>
 				You are seeing this message because your database contains an installation
-				of Zenario running from before version 8.2.
+				of Zenario running from before version 8.8.
 			</p><p>
 				To update to version 9 of Zenario, you must first update your database
-				to at least version 8.2.
+				to at least version 8.8.
 			</p><p>
 				Please download the latest package for the 8.x branch from our website at
 				<a href="https://zenar.io">https://zenar.io</a>, and update to that version first.

@@ -27,8 +27,8 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-ze\dbAdm::revision(6, "
-	INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
+ze\dbAdm::revision(6,
+	"INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
 		`subject`,
@@ -104,4 +104,40 @@ ze\dbAdm::revision(6, "
 ); ze\dbAdm::revision(119, 
 	'DELETE FROM [[DB_PREFIX]]email_templates
 	WHERE code IN ("zenario_users__inactive_user_long_time", "zenario_users__inactive_user_short_time")'
+);
+
+ze\dbAdm::revision(125,
+	"INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`,
+		`use_standard_email_template`,
+		`module_class_name`
+	) VALUES 
+		(
+		 'zenario_users__to_user_password_reset',
+		 'To User: Password reset by admin',
+		 'Your account password on [[cms_url]] has been reset',
+		 '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>[[password_reset_message]]</p>
+		<p>Click here to go to the site now: [[cms_url]]</p>',
+		 NOW(),
+		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
+		 0,
+		 1,
+		 'zenario_extranet'
+		)
+"
+);
+
+ze\dbAdm::revision(126,
+	"UPDATE [[DB_PREFIX]]email_templates
+	SET `template_name` = 'To User: Account activated by admin'
+	WHERE `code` = 'zenario_users__to_user_account_activated'
+	AND `template_name` = 'To User: Account activated'
+"
 );

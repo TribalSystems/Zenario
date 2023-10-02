@@ -42,7 +42,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
 		
-		ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		
 		$this->pageSize = (int) $this->setting('page_size') ?: 10;
 		$this->page = (int) ($_GET['page'] ?? 1) ?: 1;

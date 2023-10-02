@@ -6,8 +6,6 @@
 .zenario_skin button {
 	-webkit-appearance: none; /*Safari/Chrome*/
     -moz-appearance: none; /*Firefox*/
-    -ms-appearance: none; /*IE*/
-    -o-appearance: none; /*Opera*/
     appearance: none;
 
     -webkit-border-radius: 0;
@@ -61,7 +59,7 @@ body.ie .zenario_skin input[type='password'] {
 	padding:0 10px;
 	color:#525151;
 	background:#FFF;
-	border:1px solid #b8babc;
+	border:1px solid #c3c3c3;
 }
 
 .zenario_skin select {
@@ -101,11 +99,99 @@ body.ie .zenario_skin input[type='password'] {
 }
 
 .zenario_skin input[type='text']:focus,
+.zenario_skin input[type='password']:focus,
+.zenario_skin input[type='email']:focus,
+.zenario_skin textarea:focus,
 .zenario_skin select:focus {
 	outline:none;
 	outline:0;
-	border-color:#2a98ce;
-	box-shadow:inset 0 0 0 1px #2a98ce;
+	box-shadow: inset 0px 0px 0 1px #80dd78;
+}
+
+.zenario_skin input[readonly]:focus,
+.zenario_skin textarea[readonly]:focus,
+.zenario_skin select[readonly]:focus {
+	box-shadow:none;
+}
+
+.form_field.mandatory .field_title {
+	font-weight:600;
+}
+
+.form_field.mandatory .field_title:after {
+	content:" *";
+	color:red;
+}
+
+.form_field.mandatory input[type='text'], 
+.form_field.mandatory input[type='password'], 
+.form_field.mandatory input[type='email'], 
+.form_field.mandatory textarea, 
+.form_field.mandatory select,
+.field_checkbox.mandatory input[type=checkbox] + label:before,
+.field_radios.mandatory input[type=radio] + label:before {
+	border-color:#171717;
+}
+
+.form_field.has_error input[type='text'], 
+.form_field.has_error input[type='password'], 
+.form_field.has_error input[type='email'], 
+.form_field.has_error input[type='search'], 
+.form_field.has_error textarea, 
+.form_field.has_error select {
+	border-color:#C10516;
+}
+
+.form_field.mandatory.has_error input[type='text'], 
+.form_field.mandatory.has_error input[type='password'], 
+.form_field.mandatory.has_error input[type='email'], 
+.form_field.mandatory.has_error textarea, 
+.form_field.mandatory.has_error select,
+.field_checkbox.mandatory.has_error input[type=checkbox] + label:before,
+.field_radios.mandatory.has_error input[type=radio] + label:before {
+    box-shadow: inset 0px 0px 0 1px #C10516;
+}
+
+.field_checkbox.mandatory.has_error input[type=checkbox] + label:before,
+.field_radios.mandatory.has_error input[type=radio] + label:before {
+	border-color:#C10516;
+}
+
+.form_field .note_to_user {
+	font-size:0.857em;
+	font-style:italic;
+}
+
+.form_field .note_to_user a {
+	text-decoration:underline;
+}
+
+.form_field.field_checkbox input {
+	float:left;
+	margin-top:4px;
+}
+
+.form_field.field_checkbox .field_title {
+	display:inline-block;
+	float:left;
+	width:calc(100% - 30px);
+}
+
+.form_field.field_checkbox .note_to_user {
+	clear:both;
+	float:none;
+}
+
+.form_field.field_checkbox > .note_to_user {
+	padding-left:30px;
+}
+
+.extranet_wrap .form_field.field_checkbox .field_title {
+	padding-left:8px;
+}
+
+.extranet_wrap .form_field.field_checkbox > .note_to_user {
+	padding-left:20px;
 }
 
 /* Fix for captcha
@@ -159,6 +245,7 @@ body.ie .zenario_skin input[type='password'] {
 	.success,
 	.contact_form_message,
 	.extranet_message {
+		color:#54a44d;
 	}
 	
 	.confirm_email_text {

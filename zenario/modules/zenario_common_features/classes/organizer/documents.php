@@ -116,7 +116,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		
 		if (count($panel['items']) <= 0) {
 			unset($panel['collection_buttons']['reorder_root']);
-			unset($panel['collection_buttons']['regenerate_public_links']);
 		}
 	}
 	
@@ -434,10 +433,6 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					}
 				}
 			}
-		} elseif (ze::post('regenerate_public_links')) {
-			ze\priv::exitIfNot('_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS');
-			$errors = $exampleFile = false;
-			ze\document::checkAllPublicLinks($forceRemake = true, $errors, $exampleFile);
 		}
 		
 		if ($externalProgramError) {

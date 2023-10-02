@@ -825,6 +825,24 @@ public static function updateMetaInfoInDB(&$data, $layoutId) {
 }
 
 
+public static function getInfoOnSlotContents($cID, $cType, $cVersion, $layoutId) {
+	$slotContents = [];
+	\ze\plugin::checkSlotContents($slotContents, $cID, $cType, $cVersion, $layoutId);
+	
+	$info = [];
+	foreach ($slotContents as $slotName => $slot) {
+		$info[$slotName] = [
+			'moduleDisplayName' => \ze\module::displayName($slot->moduleId()),
+			'moduleCSSClassName' => $slot->moduleCSSClassName(),
+			'isVersionControlled' => $slot->isVersionControlled(),
+			'instanceId' => $slot->instanceId()
+		];
+	}
+	
+	return $info;
+}
+
+
 
 
 public static function getLayoutData($layoutId) {

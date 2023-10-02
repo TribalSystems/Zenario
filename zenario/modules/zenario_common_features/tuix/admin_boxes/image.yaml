@@ -3,6 +3,7 @@
 zenario_image:
     key:
         id: ''
+        filename_on_load: ''
         mic_image: ''
         slotName: ''
         instanceId: ''
@@ -96,6 +97,7 @@ zenario_image:
                     indent: 1
                     label: 'Caption:'
                     type: editor
+                    editor_type: standard
                     dont_trim: true
                     style: |
                         height: 5em;
@@ -105,6 +107,62 @@ zenario_image:
                         lib.value: add_a_gallery_caption
 
             show_errors_after_field: image
+        
+        link:
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_MEDIA
+            label: Link
+            fields:
+                descriptions_grouping:
+                    type: grouping
+                links_grouping:
+                    type: grouping
+                    snippet:
+                        label: "How to link to this image"
+                        label_class: subheading
+                
+                image_is_public_snippet:
+                    grouping: descriptions_grouping
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">This image is public: its URL will not change, and it may be indexed by search engines.</div>
+                image_is_not_public_snippet:
+                    grouping: descriptions_grouping
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">This image is private: its URL will change on every page load and so is not indexible by search engines.</div>
+                
+                internal_webp_link:
+                    grouping: links_grouping
+                    label: "Internal link to optimised WebP ([[size]]), recommended when linking to it within this site:"
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true
+                internal_original_image_link:
+                    grouping: links_grouping
+                    label: "Internal link to original image ([[size]]):"
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true
+                html_embed_link:
+                    grouping: links_grouping
+                    label: "HTML for embedding in a Raw HTML Snippet plugin:"
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true
+                external_webp_link:
+                    grouping: links_grouping
+                    label: "External link to optimised WebP ([[size]]):"
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true
+                external_original_image_link:
+                    grouping: links_grouping
+                    label: "External link to original image ([[size]]):"
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true
         
         crops:
             hide_when_children_are_not_visible: true

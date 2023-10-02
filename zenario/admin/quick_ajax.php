@@ -39,6 +39,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	$_SESSION['_remember_toast'] = $_POST['_remember_toast'];
 
+
 } elseif (isset($_POST['_draft_set_callback'])) {
 	
 	$_SESSION['zenario_draft_callback'] = $_POST['_draft_set_callback'];
@@ -51,6 +52,23 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
 	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
+
+
+} elseif (isset($_POST['_toggleAdminToolbar'])) {
+	
+	$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
+	
+	if (empty($_POST['_hide'])) {
+		unset($_SESSION['hide_admin_toolbar']);
+	} else {
+		$_SESSION['hide_admin_toolbar'] = true;
+		
+		$_SESSION['_remember_toast'] = json_encode([
+			'message_type' => 'info',
+			'message' => ze\admin::phrase('The admin toolbar is being hidden, click <span class="zenario_icon_to_show_the_admin_toolbar"></span> to restore it.')
+		]);
+	}
+
 
 } elseif (isset($_REQUEST['_get_link_statuses'])) {
     $statuses = [];
@@ -127,7 +145,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 								$key['instance_id'] = $get['instanceId'];
 							
 							} else {
-								//Very hard case: don't know the instance id, need to call ze\plugin::slotContents()
+								//Very hard case: don't know the instance id, need to call ze\plugin::checkSlotContents()
 								//Again we'll try to cache this
 								$slotName = $get['slotName'] ?? false;
 								$slotCode = 'instanceId`'. $slotName;
@@ -135,19 +153,18 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 								if (!isset($data[$tagId][$slotCode])) {
 									$data[$tagId][$slotCode] = false;
 									$slotContents = [];
-									ze\plugin::slotContents(
+									ze\plugin::checkSlotContents(
 										$slotContents,
 										$cID, $cType, $data[$tagId]['version']['version'],
 										$data[$tagId]['version']['layout_id'],
-										$specificInstanceId = false, $slotName, $ajaxReload = false,
-										$runPlugins = false);
+										$singleSlot = true, $slotName
+									);
 									
 									foreach ($slotContents as $slot) {
-										if (!empty($slot['instance_id'])
-										 && !empty($slot['class_name'])
-										 && ($slot['class_name'] == 'zenario_plugin_nest'
-										  || $slot['class_name'] == 'zenario_slideshow')) {
-											$data[$tagId][$slotCode] = $slot['instance_id'];
+										if ($slot->instanceId()
+										 && ($slot->moduleClassName() == 'zenario_plugin_nest'
+										  || $slot->moduleClassName() == 'zenario_slideshow')) {
+											$data[$tagId][$slotCode] = $slot->instanceId();
 											break;
 										}
 									}
@@ -191,6 +208,8 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 							break;
 					
 						case 'first_draft':
+							$linkStatus = 'unpublished';
+							break;
 						case 'hidden_with_draft':
 						case 'hidden':
 							$linkStatus = 'hidden';
@@ -283,12 +302,18 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 } elseif (isset($_POST['screen_name_suggestion'])) {
 	
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
-	echo ze\userAdm::generateIdentifier(false, [
+	
+	$details = [
 		'first_name' => ze::post('first_name'),
-		'last_name' => ze::post('last_name'),
-		'email' => ze::post('email'),
-		'screen_name' => ''
-	]);
+		'last_name' => ze::post('last_name')
+	];
+	
+	$suggestedScreenName = ze\userAdm::generateScreenName($details);
+	
+	//Remove accents (replace them with ASCII equivalents)
+	$suggestedScreenName = ze\ring::convertAccentsInStringToAscii($suggestedScreenName);
+	
+	echo $suggestedScreenName;
 
 
 } elseif (isset($_POST['_validate_alias'])) {

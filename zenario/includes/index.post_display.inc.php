@@ -41,22 +41,25 @@ if (ze::$canCache
 		$canCache = false;
 	}
 	
-	foreach (ze::$slotContents as $slotName => &$instance) {
+	foreach (ze::$slotContents as $slotName => &$slot) {
 		
-		if (!empty($instance['instance_id']) && !empty($instance['class'])) {
+		if ($slot->instanceId() && $slot->class()) {
 			$canCacheThis = true;
 			
-			if (!empty($instance['disallow_caching'])) {
+			if ($slot->disallowCaching()) {
 				$allowPageCaching = false;
 				$canCacheThis = $canCache = false;
 			
-			} elseif (isset($instance['cache_if'])) {
-				if (empty($instance['cache_if']['a'])) {
+			} else {
+				$cacheIf = $slot->cacheIf();
+				
+				if (empty($cacheIf['a'])) {
 					$allowPageCaching = false;
 					$canCacheThis = $canCache = false;
+				
 				} else {
 					foreach (ze::$saveEnv as $if => $set) {
-						if (empty($instance['cache_if'][$if])) {
+						if (empty($cacheIf[$if])) {
 							if (!empty(ze::$cacheEnv[$if])) {
 								$canCacheThis = $canCache = false;
 						
@@ -68,7 +71,7 @@ if (ze::$canCache
 				}
 			}
 			
-			if (!empty($instance['served_from_cache'])) {
+			if ($slot->servedFromCache()) {
 				++$pluginsFromCache;
 			} elseif ($canCacheThis) {
 				++$pluginsCached;
@@ -89,14 +92,14 @@ if (ze::$canCache
 	
 	if ($caching_debug_info) {
 		$chSlots = [];
-		foreach (ze::$slotContents as $slotName => &$instance) {
-			if (!empty($instance['instance_id']) && !empty($instance['class'])) {
+		foreach (ze::$slotContents as $slotName => &$slot) {
+			if ($slot->instanceId() && $slot->class()) {
 				$chSlots[$slotName] = [];
-				foreach (['cache_if', 'clear_cache_by', 'disallow_caching', 'served_from_cache'] as $detail) {
-					if (isset($instance[$detail])) {
-						$chSlots[$slotName][$detail] = $instance[$detail];
-					}
-				}
+				
+				$chSlots[$slotName]['cache_if'] = $slot->cacheIf();
+				$chSlots[$slotName]['clear_cache_by'] = $slot->cacheClearBy();
+				$chSlots[$slotName]['disallow_caching'] = $slot->disallowCaching();
+				$chSlots[$slotName]['served_from_cache'] = $slot->servedFromCache();
 			}
 		}
 		
@@ -135,9 +138,10 @@ if (ze::$canCache
 	
 	if ($canCache) {
 		$clearCacheBy = [];
-		foreach (ze::$slotContents as $slotName => &$instance) {
-			if (!empty($instance['clear_cache_by'])) {
-				foreach ($instance['clear_cache_by'] as $if => $set) {
+		foreach (ze::$slotContents as $slotName => &$slot) {
+			$slotCacheClearBy = $slot->cacheClearBy();
+			if (!empty($slotCacheClearBy)) {
+				foreach ($slotCacheClearBy as $if => $set) {
 					if ($set) {
 						$clearCacheBy[$if] = true;
 					}

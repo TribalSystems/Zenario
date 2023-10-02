@@ -24,7 +24,7 @@
 	</rss>
 {% else %}
 	{% if UserCanFilterByCategory %}
-		<{{Title_Tags}}>{{Title_With_Content}}</{{Title_Tags}}>
+		<{{Title_Tags|e}}>{{Title_With_Content}}</{{Title_Tags|e}}>
 		<div class="categories">
 			<div class="branch_wrap">
 				<div class="category level_1">
@@ -78,10 +78,10 @@
 							{% if item.Pinned or item.Pinned_Text %}
 								<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
 							{% endif %}
-							<{{Item_Title_Tags}} class="content_list_title {{item.Content_Type|e}}">
+							<{{Item_Title_Tags|e}} class="content_list_title {{item.Content_Type|e}}">
 								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
 								{% if item.Language %}<span>({{item.Language|e}})</span>{% endif %}
-							</{{Item_Title_Tags}}>
+							</{{Item_Title_Tags|e}}>
 						{% endif %}
 						{% if Show_Author_Image %}
 							<div class="content_list_author_image">
@@ -126,7 +126,7 @@
 		</div>
 	{% endif %}
 	{% if No_Rows %}
-		<h2>{{Title_With_No_Content}}</h2>
+		<{{Title_Tags_If_No_Items|e}}>{{Title_With_No_Content}}</{{Title_Tags_If_No_Items|e}}>
 	{% endif %}
 	{% if Years %}
 		<form class="content_list_date_select">

@@ -33,6 +33,16 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 	protected $totalRowNum = 0;
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if ($box['key']['id_is_menu_node_id'] && ($menuContentItem = ze\menu::getContentItem($box['key']['id']))) {
+			//Hide an existing Content Item based on its Menu Node:
+			//Work out what the content item should be, then proceed with the rest of the logic
+			$box['key']['cID'] = $menuContentItem['equiv_id'];
+			$box['key']['cType'] = $menuContentItem['content_type'];
+			
+			$box['key']['menu_node_id'] = $box['key']['id'];
+			$box['key']['id'] = $box['key']['cType'] . '_' . $box['key']['cID'];
+		}
+		
         $ids = ze\ray::explodeAndTrim($box['key']['id']);
 		$contentItemsCount = count($ids);
 
@@ -41,6 +51,13 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 		} else {
 			$box['tabs']['hide']['notices']['hide_item']['show'] = true;
 		}
+		
+		//Look for any access codes in use
+		ze\contentAdm::checkForAccessCodes($box, $fields['hide/access_codes_warning'], $ids, $contentItemsCount,
+			'This content item has a staging code ([[access_code]]). This will be removed when it is hidden.',
+			'One content item has a staging code ([[access_code]]). This will be removed when it is hidden.',
+			'[[count]] content items have a staging code. These will be removed when it is hidden.'
+		);
 		
 		ze\module::incSubclass('zenario_common_features');
         zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'hide', $this->totalRowNum, $getPlugins = true, $getTranslations = false);
@@ -93,6 +110,10 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
                 }
             }
         }
+        
+        if ($box['key']['id_is_menu_node_id']) {
+			$box['key']['id'] = $box['key']['menu_node_id'];
+		}
 
 		//If it looks like this was opened from the front-end
 		//(i.e. there's no sign of any of Organizer's variables)

@@ -235,7 +235,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 
 		//Attempt to send the email
 		$emailOverriddenBy = false;
-		return ze\server::sendEmail(
+		return ze\server::sendEmailAdvanced(
 			$newsletterSubject,
 			$newsletterBody,
 			$email,
@@ -260,12 +260,13 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		$action = false;
 		
 		$sql = "
-			SELECT id, newsletter_name
+			SELECT id, newsletter_name, send_copy_to_admin_options
 			FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE status = '_IN_PROGRESS' AND (scheduled_send_datetime IS NULL OR scheduled_send_datetime <= STR_TO_DATE('". ze\escape::sql($serverTime). "', '%Y-%m-%d %H:%i:%s'))";
 		$result = ze\sql::select($sql);
 		
 		while ($newsletter = ze\sql::fetchAssoc($result)) {
+			zenario_newsletter::sendNewsletterToAdmins($newsletter['id'], $newsletter['send_copy_to_admin_options']);
 			zenario_newsletter::sendNewsletter($newsletter['id']);
 			echo ze\admin::phrase('Newsletter "[[newsletter_name]]" was sent.', $newsletter), "\n";
 			$action = true;
@@ -316,7 +317,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			$newsletterSubject .= ' - ADMIN COPY';
 			
 			$emailOverriddenBy = false;
-			ze\server::sendEmail(
+			ze\server::sendEmailAdvanced(
 				$newsletterSubject,
 				$newsletterBody,
 				$admin['email'],
@@ -439,7 +440,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		$emailOverriddenBy = false;
 		
 		
-		if (ze\server::sendEmail(
+		if (ze\server::sendEmailAdvanced(
 			$newsletterSubject,
 			$newsletterBody,
 			$user['email'],
@@ -565,6 +566,25 @@ class zenario_newsletter extends ze\moduleBaseClass {
 
 	public static function eventSmartGroupDeleted($smartGroupId) {
 		return true;			
+	}
+	
+	public static function cancelScheduledNewsletterSending($id) {
+		$sql = "
+			UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters set
+				status = '_DRAFT',
+				sent_by_id = NULL,
+				scheduled_send_datetime = NULL,
+				date_sent = NULL,
+				smart_group_descriptions_when_sent_out = NULL,
+				url = ''
+				WHERE id = ". (int) $id . '
+				AND status = "_IN_PROGRESS"';
+		ze\sql::update($sql);
+		
+		$sql = "
+			DELETE FROM " . DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
+			WHERE newsletter_id = ". (int) $id;
+		ze\sql::update($sql);
 	}
 
 	public static function deleteNewsletter($id) {

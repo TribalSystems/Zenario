@@ -259,7 +259,51 @@ To correct this, please ask your system administrator to perform a
 		} else {
 			$moduleClass = 'zenario_common_features';
 		}
-
+		
+		//There are site settings to limit max user image upload sizes, or location image max upload sizes.
+		//They may be applied to front-end interfaces only, or admin interfaces as well.
+		//Check if there is an admin interface limit.
+		$pathRequest = '';
+		$method_call = \ze::request('method_call');
+		if ($method_call == 'handleAdminBoxAJAX') {
+			$pathRequest = \ze::request('path');
+		} elseif ($method_call == 'handleOrganizerPanelAJAX') {
+			$pathRequest = \ze::request('__path__');
+		}
+		
+		if ($pathRequest) {
+			//Location image max upload size
+			if ($pathRequest == 'zenario_location_manager__location') {
+				if (\ze::setting('max_location_image_filesize_override') && (\ze::setting('apply_file_size_limit_to') == 'always_apply')) {
+					$locationManagerMaxFilesizeValue = \ze::setting('max_location_image_filesize');
+					$locationManagerMaxFilesizeUnit = \ze::setting('max_location_image_filesize_unit');
+					$locationManagerMaxFilesize = \ze\file::fileSizeBasedOnUnit($locationManagerMaxFilesizeValue, $locationManagerMaxFilesizeUnit);
+					
+					if ($_FILES[$fileVar]['size'] > $locationManagerMaxFilesize) {
+						echo \ze\admin::phrase(
+							'This file is too large, and exceeds the file size limit of [[maxUploadSizeFormatted]]. (This limit is determined in site settings for Locations.)',
+							['maxUploadSizeFormatted' => $locationManagerMaxFilesizeValue . " " . $locationManagerMaxFilesizeUnit]
+						);
+						exit;
+					}
+				}
+			//User image max upload size
+			} elseif ($pathRequest == 'zenario__users/panels/users' || $pathRequest == 'zenario__users/panels/hierarchy') {
+				if (\ze::setting('max_user_image_filesize_override') && (\ze::setting('apply_file_size_limit_to') == 'always_apply')) {
+					$userImageMaxFilesizeValue = \ze::setting('max_user_image_filesize');
+					$userImageMaxFilesizeUnit = \ze::setting('max_user_image_filesize_unit');
+					$userImageMaxFilesize = \ze\file::fileSizeBasedOnUnit($userImageMaxFilesizeValue, $userImageMaxFilesizeUnit);
+					
+					if ($_FILES[$fileVar]['size'] > $userImageMaxFilesize) {
+						echo \ze\admin::phrase(
+							'This file is too large, and exceeds the file size limit of [[maxUploadSizeFormatted]]. (This limit is determined in site settings for User and Contact data.)',
+							['maxUploadSizeFormatted' => $userImageMaxFilesizeValue . " " . $userImageMaxFilesizeUnit]
+						);
+						exit;
+					}
+				}
+			}
+		}
 		
 		switch ($_FILES[$fileVar]['error'] ?? false) {
 			case UPLOAD_ERR_INI_SIZE:

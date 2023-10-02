@@ -123,6 +123,7 @@ zenario_content:
                     type: date
                     change_month_and_year: true
                     allow_typing_in_date_field: true
+                    show_date_format_as_placeholder: true
                     side_note: |
                         The official, or publicly-displayed date, of this content item. It may be different from the date you publish the page.
                 menu:
@@ -237,7 +238,6 @@ zenario_content:
                 menu_text_when_editing:
                     #This field is the same as the "Menu node text" one, but only visible when editing an item.
                     grouping: menu
-                    hide_if_empty: true
                     label: 'Menu node text:'
                     type: text
                     maxlength: 255
@@ -284,7 +284,6 @@ zenario_content:
                             <div id="redraft_menu_warning" class="zenario_fbWarning"></div>
                 path_of__menu_text_when_editing:
                     grouping: menu
-                    hide_if_empty: true
                     ord: 1003
                     label: 'Menu path preview:'
                     type: textarea
@@ -563,9 +562,10 @@ zenario_content:
                     label: 'Short summary:'
                     ord: 130
                     type: editor
+                    editor_type: summary
+                    editor_options:
+                        invalid_elements: img, picture, iframe
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
                     style: |
                         height: 12em;
                     side_note: >
@@ -614,9 +614,8 @@ zenario_content:
                 content:
                     full_width: true
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
                     style: 'height: 250px;'
         content2:
             ord: 25.02
@@ -628,9 +627,8 @@ zenario_content:
                 content:
                     full_width: true
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
                     style: 'height: 250px;'
         content3:
             ord: 25.03
@@ -642,9 +640,8 @@ zenario_content:
                 content:
                     full_width: true
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
                     style: 'height: 250px;'
         content4:
             ord: 25.04
@@ -656,9 +653,8 @@ zenario_content:
                 content:
                     full_width: true
                     type: editor
+                    editor_type: full_featured
                     dont_trim: true
-                    insert_link_button:
-                        exists: true
                     style: 'height: 250px;'
                         html: ''
         rawhtml1:
@@ -981,12 +977,6 @@ zenario_content:
                     visible_if: |
                         zenarioAB.tuix.key.cType == 'document'
         
-        # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
-        privacy:
-            ord: 35
-            hidden: true
-            fields: {}
-        
         categories:
             ord: 33
             label: Categories
@@ -1007,6 +997,114 @@ zenario_content:
                     label: 'Categories:'
                     snippet:
                         html: No categories have been created.
+        
+        # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
+        privacy:
+            ord: 35
+            hidden: true
+            fields: {}
+        
+        staging_mode:
+            ord: 36
+            label: Staging mode
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_DRAFT
+            notices:
+                not_public:
+                    show: false
+                    type: information
+                    message: |
+                        Staging mode will be disabled for this content item as the 
+                        permissions are not set to
+                        <em style="font-style: italic;">
+                            &ldquo;Public: visible to everyone&rdquo;
+                        </em>
+                    html: true
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            You can use staging mode to share a draft of a public content
+                            item with a colleague who is not an administrator. 
+                            <br/>
+                            This will only work for content items with permissions set to
+                            <em style="font-style: italic;">
+                                &ldquo;Public: visible to everyone&rdquo;
+                            </em>
+                use_access_code:
+                    type: checkbox
+                    label: Enable staging mode for this version of this content item
+                    redraw_onchange: true
+                access_code:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Access code:'
+                    type: text
+                    format_onchange: true
+                    style: |
+                        width: 4em;
+                        font-family: monospace;
+                    maxlength: 5
+                    validation:
+                        required_if_not_hidden: Please enter an access code.
+                        no_spaces: The access code may not contain spaces.
+                        no_special_characters: The access code may not contain special characters or multilingual characters.
+                        ascii_only: The access code may not contain special characters or multilingual characters.
+                existing_codes:
+                    same_row: true
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: select
+                    css_class: iconselectmenu
+                    format_onchange: true
+                    empty_value: ' -- Use existing code -- '
+                    values: {}
+                suggest_code:
+                    same_row: true
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: button
+                    format_onchange: true
+                    value: Suggest
+                    notices_below:
+                        code_reuse:
+                            hidden: true
+                            type: information
+                            message: ''
+                            html: true
+                copy_code_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if:
+                        lib.valueIsNotEmpty: copy_code
+                    snippet:
+                        p: |
+                            To let a colleague see the draft of this page in staging mode,
+                            copy this URL and send it to them:
+                copy_code:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    hide_if_empty: true
+                    type: text
+                    readonly: true
+                    style: |
+                        width: 600px
+                    show_copy_text_button: true
+                not_saved_warning:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if: |
+                        lib.value('access_code') &&
+                        lib.value('access_code') != lib.field('access_code').value
+                    snippet: {}
+                    notices_below:
+                        not_saved_warning:
+                            hidden: false
+                            type: information
+                            message: >
+                                This code will start working as soon as you press the
+                                "Save" button.
         
         plugins:
             ord: 90

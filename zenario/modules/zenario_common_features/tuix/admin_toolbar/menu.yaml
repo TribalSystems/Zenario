@@ -2,21 +2,20 @@
 ---
 sections:
     no_menu_nodes:
-        priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
                 hidden: true
                 css_class: zenario_at_infobar_menu_orphaned
-                label: '[Orphaned page]'
+                label: '[Not in menu]'
             menu_section:
                 hidden: true
-                label: '[Orphaned page]'
+                label: '[Not in menu]'
             quick_add_to_menu:
                 priv: _PRIV_ADD_MENU_ITEM
                 label: Attach content item to menu
                 css_class: zenario_create_a_new
                 tooltip: >
-                    This content item is orphaned (not in the menu). Click to
+                    This content item is not in the menu. Click to
                     add it to the menu (use its browser title as the menu text).
                 pick_items:
                     path: zenario__menu/panels/menu_position/refiners/create////
@@ -29,7 +28,6 @@ sections:
                     request:
                         mass_add_to_menu: 1
     primary_menu_node:
-        priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
                 hidden: true
@@ -97,7 +95,7 @@ sections:
                         message__orphaned: |
                             Are you sure you wish to detach this content item from the menu?
                             
-                            The content item will become "orphaned", and site visitors may have difficulty navigating to it. Its menu node will not be deleted but will become an unlinked menu node.
+                            The content item will be removed from the menu, and site visitors may have difficulty navigating to it. Its menu node will not be deleted but will become an unlinked menu node.
                         button_message: Detach
                         cancel_button_message: Cancel
                         message_type: warning
@@ -107,7 +105,6 @@ sections:
                         menu_item: 1
                         detach: 1
     secondary_menu_node:
-        priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
                 hidden: true
@@ -183,7 +180,7 @@ sections:
                         message__orphaned: |
                             Are you sure you wish to detach this content item from the menu?
                             
-                            The content item will become orphaned, and its menu node will become unlinked.
+                            The content item's menu node will become unlinked.
                         button_message: Detach
                         cancel_button_message: Cancel
                         message_type: warning

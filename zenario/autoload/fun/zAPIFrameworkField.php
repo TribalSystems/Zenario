@@ -90,7 +90,7 @@ if ($type != 'submit' && $postValue !== null) {
 	$value = call_user_func([$attributes['source_module'], $attributes['source_method']], $this->currentTwigVars, $attributes);
 
 	//Disallow caching for programatically generated values
-	ze::$slotContents[$this->slotName]['disallow_caching'] = true;
+	ze::$slotContents[$this->slotName]->disallowCaching();
 
 //Check for a value set as an attribute
 } elseif (isset($attributes['value']) && ($type == 'button' || $type == 'submit' || $postValue === null)) {
@@ -218,7 +218,8 @@ if (!$readonly && (!$lov || $i || $type == 'select' || $type == 'text' || $type 
 		//'pattern' => true,
 		'placeholder' => true,
 		//'required' => true,
-		'step' => true];
+		'step' => true
+	];
 	
 		//We need to remove the 'required' and 'pattern' HTML 5 attributes from our flexible forms for now,
 		//as they are causing conflicts with our own tech.
@@ -397,7 +398,7 @@ if ($showLabel) {
 	} elseif ($type == 'textarea') {
 		$html .= nl2br(htmlspecialchars($value));
 	} elseif ($type == 'date' && $value && !preg_replace('/\d\d\d\d-\d\d-\d\d/', '', $value)) {
-		$html .= htmlspecialchars(\ze\date::format($value, '_MEDIUM'));
+		$html .= htmlspecialchars(\ze\date::format($value));
 	} else {
 		$html .= htmlspecialchars(($dispVal ?: ($saveVal ?: $value)));
 	}

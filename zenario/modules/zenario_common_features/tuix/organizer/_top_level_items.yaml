@@ -69,20 +69,24 @@ zenario__content:
         trash:
             ord: 24
             css_class: content_trashed
-            label: Trashed content
-            tooltip: Trashed content items
+            label: Trashed content items
             link:
                 path: zenario__content/panels/content/refiners/trash////
+        # This hidden nav is here so that, if you're on the content item translations panel,
+        # then you see your position in a sensible place in the nav on the left
+        translation_chains:
+            hidden: true
+            link:
+                path: zenario__content/panels/translation_chains
     data-step: 11
     data-position: right
     data-intro: >
         <p><strong>Content items</strong></p>
-        <p>Create content items, including HTML pages, news, documents, vacancies etc.</p>
+        <p>Create content items, including HTML pages, news, documents and events.</p>
 zenario__menu:
     youtube_video_id: r6otMwh7EVw
     youtube_thumbnail_title: 'Zenario CMS: Menu navigation quick-start guide'
     ord: -980
-    priv: _PRIV_VIEW_MENU_ITEM
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_menu
@@ -148,7 +152,6 @@ zenario__library:
 
 zenario__layouts:
     ord: 9100
-    priv: _PRIV_VIEW_TEMPLATE
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_templates
@@ -173,7 +176,6 @@ zenario__layouts:
             empty: false
             css_class: archived_layout
         skins:
-            priv: _PRIV_VIEW_TEMPLATE
             css_class: skin
             label: Skins
             tooltip: Skins, the styling and appearance of your site
@@ -320,16 +322,6 @@ zenario__administration:
             keywords: "Database, record, lookup, data, file, spreadsheet, field, column"
             link:
                 path: zenario__administration/panels/custom_datasets
-        spare_domains:
-            priv: _PRIV_VIEW_SITE_SETTING
-            visible_if: >
-                zenarioA.siteSettings.default_language
-            #css_class: alias_urls_collection
-            label: Domain redirects
-            tooltip: >
-                Configure domain name redirects (301 redirects), so that the site can be found under various domain names
-            link:
-                path: zenario__administration/panels/spare_domains
         file_types:
             ord: 10001
             priv: _PRIV_VIEW_SITE_SETTING

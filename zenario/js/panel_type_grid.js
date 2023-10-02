@@ -473,7 +473,8 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		var canClickThrough,
 			firstRow = 'firstrow ',
 			col,
-			item, itemNo, i;
+			item, itemNo, i,
+			itemDefaults = thus.tuix.item || {};
 		
 		foreach (zenarioO.searchedItems as itemNo => i) {
 			itemsExist = true;
@@ -522,12 +523,15 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 				row.image = zenario.addBasePath(item.image);
 			}
 			
-			row.tooltip = item.tooltip;
-			if (!row.tooltip && thus.tuix.item) {
-				if (thus.tuix.item.tooltip_when_link_is_active && zenarioO.itemClickThroughLink(i)) {
-					row.tooltip = zenarioO.applyMergeFields(thus.tuix.item.tooltip_when_link_is_active, true, i);
-				} else if (thus.tuix.item.tooltip) {
-					row.tooltip = zenarioO.applyMergeFields(thus.tuix.item.tooltip, true, i);
+			if (row.tooltip = item.tooltip) {
+			} else if (itemDefaults.tooltip) {
+				row.tooltip = zenarioO.applyMergeFields(itemDefaults.tooltip, true, i);
+			}
+			
+			if (zenarioO.itemClickThroughLink(i)) {
+				if (row.tooltip_when_link_is_active = item.tooltip_when_link_is_active) {
+				} else if (itemDefaults.tooltip_when_link_is_active) {
+					row.tooltip_when_link_is_active = zenarioO.applyMergeFields(itemDefaults.tooltip_when_link_is_active, true, i);
 				}
 			}
 			

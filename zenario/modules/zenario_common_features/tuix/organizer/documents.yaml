@@ -6,7 +6,7 @@ zenario__library:
             priv: _PRIV_VIEW_DOCUMENTS
             item:
                 css_class: zenario_file_item
-            title: Documents
+            title: Hierarchical documents
             db_items:
                 table: |
                     [[DB_PREFIX]]documents AS d
@@ -153,23 +153,6 @@ zenario__library:
                     hide_on_filter: true
                     admin_box:
                         path: zenario_document_folder
-                
-                regenerate_public_links:
-                    priv: _PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS
-                    hide_on_filter: true
-                    hide_in_select_mode: true
-                    label: Repair public links
-                    ajax:
-                        confirm:
-                            message: |
-                                If you have any problems linking to public documents, this option will check every single public document and repair broken links.
-                                
-                                Are you sure you wish to check and repair links for public documents?
-                            button_message: Repair
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            regenerate_public_links: true
                 
             item_buttons:
                 upload:

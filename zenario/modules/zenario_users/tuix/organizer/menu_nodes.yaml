@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__menu:
+    panels:
+        menu_nodes:
+            item_buttons:
+                linked_content_item__privacy:
+                    ord: 2
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_EDIT_DRAFT
+                    label: Change permissions
+                    admin_box:
+                        path: zenario_content_privacy
+                        key:
+                            id_is_menu_node_id: true
+                    with_columns_set:
+                        content: true
+                    visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)

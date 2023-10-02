@@ -57,6 +57,13 @@ if (\ze\priv::check()) {
 	} else {
 		$bodyTag .= ' zenario_adminGoogleMapsNotAvailable';
 	}
+	
+	if ($includeAdminToolbar) {
+		$bodyTag .= ' zenario_adminToolbarShown';
+	} else {
+		$bodyTag .= ' zenario_adminToolbarHidden';
+	}
+	
 } else {
 	$includeAdminToolbar = false;
 }

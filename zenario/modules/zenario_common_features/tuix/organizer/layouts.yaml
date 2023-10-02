@@ -3,7 +3,6 @@
 zenario__layouts:
     panels:
         layouts: &panel
-            priv: _PRIV_VIEW_TEMPLATE
             title: Available layouts
             panel_type: multi_line_list
             css_class: two_line_list_panel
@@ -257,7 +256,7 @@ zenario__layouts:
                         transition: none
                         css_class: zenario_grid_maker
                 settings:
-                    priv: _PRIV_VIEW_TEMPLATE
+                    priv: _PRIV_VIEW_SITE_SETTING
                     hide_in_select_mode: true
                     label: Edit layout settings
                     admin_box:
@@ -278,7 +277,6 @@ zenario__layouts:
                         #open: true
                         
                 code:
-                    priv: _PRIV_VIEW_TEMPLATE
                     parent: view_dropdown
                     hide_in_select_mode: true
                     label: HTML source

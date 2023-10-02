@@ -51,6 +51,3 @@ default_instance_name: Untitled Slideshow
 dependencies:
     zenario_plugin_nest: true
     zenario_banner: true
-inheritance:
-    inherit_frameworks_from_module: zenario_plugin_nest
-    include_javascript_from_module: zenario_plugin_nest

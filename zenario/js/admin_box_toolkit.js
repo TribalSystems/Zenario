@@ -194,8 +194,7 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 		return;
 	}
 	
-	var slotName,
-		requests = {};
+	var slotName;
 	
 	if (!saveAndContinue) {
 		thus.isOpen = false;
@@ -236,7 +235,7 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 		//Otherwise do a normal slot refresh.
 		zenario.refreshSlot(slotName, zenarioA.importantGetRequests);
 		
-		if (zenarioAT.init) {
+		if (zenarioA.adminToolbarOnPage) {
 			zenarioAT.init();
 		}
 		
@@ -244,7 +243,7 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 		//If thus is the front-end, and this was a menu FAB, just reload the menu plugins
 		zenarioA.reloadMenuPlugins();
 		
-		if (zenarioAT.init) {
+		if (zenarioA.adminToolbarOnPage) {
 			zenarioAT.init();
 		}
 	
@@ -258,19 +257,14 @@ methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue, cr
 		//If this is the current content item, add any important get requests from plugins
 		if (thus.tuix.key.cID == zenario.cID
 		 && thus.tuix.key.cType == zenario.cType) {
-			requests = zenarioA.importantGetRequests;
+			zenarioA.reloadPage();
+		} else {
+			zenario.goToURL(zenario.linkToItem(thus.tuix.key.cID, thus.tuix.key.cType));
 		}
-		
-		zenario.goToURL(zenario.linkToItem(thus.tuix.key.cID, thus.tuix.key.cType, requests));
 	
 	//For any other Admin Toolbar changes, reload the page
-	} else if (zenarioAT.init) {
-		
-		//Try to keep to the same version if possible.
-		requests = _.clone(zenarioA.importantGetRequests);
-		requests.cVersion = zenario.cVersion;
-		
-		zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests));
+	} else if (zenarioA.adminToolbarOnPage) {
+		zenarioA.reloadPage(true);
 	}
 	
 	var popout_message = thus.tuix.popout_message;

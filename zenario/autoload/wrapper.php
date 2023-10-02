@@ -34,7 +34,7 @@ class wrapper {
 
 	//Define a function to include a CSS file
 	//Formerly "includeCSSFile()"
-	public static function includeCSSFile(&$linkV, &$overrideCSS, $path, $file, $pathURL = false, $media = 'screen') {
+	public static function includeCSSFile($linkV, $path, $file, $pathURL = false) {
 		if (!$pathURL) {
 			$pathURL = $path;
 		}
@@ -44,7 +44,7 @@ class wrapper {
 		
 			if ($linkV !== false) {
 				echo '
-<link rel="stylesheet" type="text/css" media="', $media, '" href="', htmlspecialchars($pathURL. $file), '?'. $linkV. '"/>';
+<link rel="stylesheet" type="text/css" href="', htmlspecialchars($pathURL. $file), '?'. $linkV. '"/>';
 		
 			} else { 
 				//Include the contents of the file, being careful to correct for the fact that the relative path for images will be wrong
@@ -65,36 +65,27 @@ class wrapper {
 	}
 
 
-	//Formerly "includeSkinFiles()"
-	public static function includeSkinFiles(&$req, $linkV = false, $overrideCSS = false) {
-	
-		$media = empty($req['print'])? 'screen' : 'print';
-	
-		//If a layout has been specified, and it has a grid CSS, output that grid CSS
-		if (empty($req['print'])
-		 && !empty($req['layoutId'])
-		 && ($cssFile = \ze\content::layoutCssPath($req['layoutId']))) {
-		 	
-		 	if ($linkV !== false) {
-		 		//The cache/layouts/ directory is blocked using the .htaccess file. This usually
-				//isn't a problem as normally all of the CSS is displayed using a wrapping script anyway.
-				//However if a designer turns off the wrappers for debugging reasons, we need to use an
-				//intermediary to show the file.
-				echo '
-<link rel="stylesheet" type="text/css" media="screen" href="zenario/styles/layout.css.php?id='. (int) $req['layoutId']. '&amp;'. $linkV. '"/>';
-		 		
-		 	} else {
-				\ze\wrapper::includeCSSFile($linkV, $overrideCSS, dirname($cssFile). '/', basename($cssFile));
-			}
-		}
-	
+	//This function can be used to output all of the files in a skin.
+	//It can run in one of three different modes:
+		//1. Directly outputting the CSS needed, i.e. for a wrapper.
+		//2. Outputting links to each individual CSS file needed, i.e. for a HTML page.
+		//3. Combining and minifying all of the CSS files, i.e. to create a .min.css file.
+	public static function includeSkinFiles($skinId, $linkV = false, $overrideCSS = false, $minify = false, $minifyPath = null) {
 	
 		//Look up the skin from the database
-		if (empty($req['id'])
-		 || (!$skin = \ze\content::skinDetails($req['id']))) {
+		if (!$skinId
+		 || (!$skin = \ze\content::skinDetails($skinId))) {
 			return;
 		}
-	
+		
+		//If we're going to be minifying, get a new instance of the minifier
+		$minifier = null;
+		if ($minify) {
+			$minifier = new \MatthiasMullie\Minify\CSS();
+		}
+		
+		
+		//Cope with skins that extend other skins by including the extended skins as well in the download
 		$skins = [$skin['name']];
 	
 		$limit = 10;
@@ -126,15 +117,11 @@ class wrapper {
 			}
 		
 		
-			$files = [[], [], [], []];
-			$browsers = explode(' ', \ze\cache::browserBodyClass());
-			foreach ($browsers as &$browser) {
-				$browser = 'style_'. $browser. '.css';
-			}
-			$browsers = array_flip($browsers);
+			$files = [[], [], [], [], []];
 			
 			//Add the default styles
 			$files[1][] = ['zenario/styles/', 'visitor.min.css', 'zenario/styles/', false];
+			$files[4][] = ['zenario/styles/', 'visitor_print.min.css', 'zenario/styles/', false];
 		
 			if ($skin['import']) {
 				foreach (explode("\n", $skin['import']) as $import) {
@@ -146,7 +133,7 @@ class wrapper {
 				}
 			}
 		
-			\ze\wrapper::includeSkinFilesR($req, $browsers, $files, $skinPath, $skinPathURL);
+			\ze\wrapper::includeSkinFilesR($files, $skinPath, $skinPathURL);
 		
 			foreach ($files as $fi => &$fa) {
 				$max = count($fa) - 1;
@@ -196,7 +183,7 @@ class wrapper {
 						//Catch the case where an overwritten file already exists in the filesystem.
 						//Output the overwritten version of the file, and don't output the file from the filesystem.
 						if (isset($overrideCSS[0]) && $overrideCSS[0][0] == $file) {
-							\ze\wrapper::overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/', $media);
+							\ze\wrapper::overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/');
 							array_shift($overrideCSS);
 							continue;
 					
@@ -204,14 +191,17 @@ class wrapper {
 						//As soon as we see we've gone past it, output it and keep going.
 						} else {
 							while (isset($overrideCSS[0]) && $overrideCSS[0][0] < $file) {
-								\ze\wrapper::overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/', $media);
+								\ze\wrapper::overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/');
 								array_shift($overrideCSS);
 							}
 						}
 					}
 				
-				
-					\ze\wrapper::includeCSSFile($linkV, $overrideCSS, $fb[0], $fb[1], $fb[2], $media);
+					if ($minify) {
+			 			$minifier->add(CMS_ROOT. $fb[0]. '/'. $fb[1]);
+					} else {
+						\ze\wrapper::includeCSSFile($linkV, $fb[0], $fb[1], $fb[2]);
+					}
 				
 				
 					//Catch the case where there are files that didn't exist,
@@ -226,19 +216,24 @@ class wrapper {
 							//all of the other editable css files will be in the third pass (2)
 							//This xor ensures that 
 						while (isset($overrideCSS[0]) && ($fi !== 0 xor $overrideCSS[0][0] === '0.reset.css')) {
-							\ze\wrapper::overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/', $media);
+							\ze\wrapper::overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/');
 							array_shift($overrideCSS);
 						}
 					}
 				}
 			}
 		}
+		
+
+		if ($minify) {
+			return $minifier->minify($minifyPath);
+		}
 	}
 
 	//Formerly "overwriteCSSFile()"
-	public static function overwriteCSSFile(&$override, $path, $pathURL, $media) {
+	public static function overwriteCSSFile(&$override, $path, $pathURL) {
 		echo
-			"\n", '<style type="text/css" media="', $media, '">',
+			"\n", '<style type="text/css">',
 			"\n",
 				preg_replace('/url\(([\'\"]?)([^:]+?)\)/i', 'url($1'. $pathURL. '$2)',
 					str_ireplace('</style', '<', $override[1])
@@ -252,9 +247,10 @@ class wrapper {
 		//1 = non-editable CSS files, included alphabetically by filepath
 		//2 = editable CSS files, included alphabetically by filename
 		//3 = browser-specific CSS files
+		//4 = print-specific CSS files
 
 	//Formerly "includeSkinFilesR()"
-	public static function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, $topLevel = true, $inEditableDir = false, $limit = 10) {
+	public static function includeSkinFilesR(&$files, $skinPath, $skinPathURL, $topLevel = true, $inEditableDir = false, $limit = 10) {
 		if (!--$limit) {
 			return;
 		}
@@ -266,7 +262,7 @@ class wrapper {
 				if (is_dir($skinPath. $file)) {
 					if ($file != 'adminstyles') {
 						\ze\wrapper::includeSkinFilesR(
-							$req, $specialFiles, $files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/',
+							$files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/',
 							false, $topLevel && $file === 'editable_css', $limit);
 					}
 			
@@ -281,59 +277,45 @@ class wrapper {
 					}
 				
 					//Check for files for specific uses
-					if (!empty($req['editor'])) {
-						switch ($name) {
-							case 'tinymce.css':
-								$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
-						}
-				
-					} elseif (!empty($req['print'])) {
-						switch ($name) {
-							case 'print.css':
-							case 'stylesheet_print.css':
-								$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
-						}
-				
-					} else {
-						switch ($name) {
-							case 'tinymce.css':
-							case 'print.css':
-							case 'stylesheet_print.css':
-								break;
+					switch ($name) {
+						//reset.css should always be first (0)
+						case 'reset.css':
+							$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
+							break;
 						
-							//reset.css should always be first (0)
-							case 'reset.css':
-								$files[0][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
-								break;
-						
-							//browser-specific stylesheets are alwats last (3),
-							//and should only be included if they match the browser requesting them
-							case 'style_chrome.css':
-							case 'style_edge.css':
-							case 'style_ff.css':
-							case 'style_ie.css':
-							case 'style_ie6.css':
-							case 'style_ie7.css':
-							case 'style_ie8.css':
-							case 'style_ie9.css':
-							case 'style_ie10.css':
-							case 'style_ie11.css':
-							case 'style_ios.css':
-							case 'style_ipad.css':
-							case 'style_iphone.css':
-							case 'style_opera.css':
-							case 'style_safari.css':
-							case 'style_webkit.css':
-								if (isset($browsers[$name])) {
-									$files[3][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
-								}
-								break;
-						
-							//Non-editable CSS files should be second (1),
-							//then editable CSS files should be third (2)
-							default:
-								$files[$inEditableDir? 2 : 1][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
-						}
+						//Include print-specific rules last (4)
+						case 'print.css':
+						case 'stylesheet_print.css':
+							$files[4][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
+							break;
+					
+						//Browser-specific stylesheets should be next-to last (3)
+						//As of 9.5 they are always included regardless of browser, and we
+						//expect you to manually prefix all of the rules in them with a
+						//browser-specific prefix (e.g. body.ff, body.webkit, etc...)
+						case 'style_chrome.css':
+						case 'style_edge.css':
+						case 'style_ff.css':
+						case 'style_ie.css':
+						case 'style_ie6.css':
+						case 'style_ie7.css':
+						case 'style_ie8.css':
+						case 'style_ie9.css':
+						case 'style_ie10.css':
+						case 'style_ie11.css':
+						case 'style_ios.css':
+						case 'style_ipad.css':
+						case 'style_iphone.css':
+						case 'style_opera.css':
+						case 'style_safari.css':
+						case 'style_webkit.css':
+							$files[3][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
+							break;
+					
+						//Non-editable CSS files should be second (1),
+						//then editable CSS files should be third (2)
+						default:
+							$files[$inEditableDir? 2 : 1][] = [$skinPath, $file, $skinPathURL, $inEditableDir];
 					}
 				}
 			}

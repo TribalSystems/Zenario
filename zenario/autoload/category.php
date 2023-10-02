@@ -52,7 +52,7 @@ class category {
 		$equivId = \ze\content::equivId($cID, $cType);
 		
 		$sql = "
-			SELECT 
+			SELECT
 				c.id,
 				c.parent_id,
 				c.name,

@@ -81,7 +81,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'implied'
                     label: Message
                     type: editor
-                    insert_link_button: true
+                    editor_type: standard_with_links
                     validation:
                         required_if_not_hidden: Please enter a message
                     note_below: 'The CSS class will be "cookies_implied".'
@@ -102,7 +102,7 @@ site_settings:
                     label: |
                         Initial message:
                     type: editor
-                    insert_link_button: true
+                    editor_type: standard_with_links
                     validation:
                         required_if_not_hidden: Please enter a message
                     note_below: 'The CSS class will be "cookies_explicit".'
@@ -137,7 +137,7 @@ site_settings:
                     label: |
                         Message in the large "Manage cookies" popup box:
                     type: editor
-                    insert_link_button: true
+                    editor_type: standard_with_links
                     validation:
                         required_if_not_hidden: Please enter a message
                 _COOKIE_BOX2_02_ACCEPT_ALL_BTN:
@@ -176,7 +176,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit'
                     label: 'In popup message, cookie-type switches should appear to new visitors in an initial state of:'
                     type: radios
-                    value: "off"
+                    value: off
                     values:
                         off:
                             ord: 1
@@ -184,6 +184,8 @@ site_settings:
                         on:
                             ord: 2
                             label: "On"
+                    validation:
+                        required_if_not_hidden: "Please select a value."
                 extranet_info:
                     snippet:
                         html: |

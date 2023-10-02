@@ -157,7 +157,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 				}
 			}
 			
-			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
+			ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true, $minifySkinsNow = true);
 		}
 	}
 

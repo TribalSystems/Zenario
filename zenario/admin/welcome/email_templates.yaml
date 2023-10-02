@@ -188,7 +188,7 @@ email_templates:
             If this was not you, then your website's security may have been compromised and you should immediately change your password.
 
             
-            This is an auto-generated email from [[URL]][[SUBDIRECTORY]].
+            This is an auto-generated email from [[PROTOCOL]][[URL]][[SUBDIRECTORY]].
     notification_to_new_admin_no_password:
         subject: 'Your Zenario administrator account'
         from: false

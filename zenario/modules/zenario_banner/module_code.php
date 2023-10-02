@@ -107,10 +107,10 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 
 			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
-			    $link .= '#' . $anchor;
+			    $link .= '#' . rawurlencode($anchor);
 			}
 			if ($this->setting('link_to_anchor_'. $imageId) && ($anchor = $this->setting('hyperlink_anchor_'. $imageId))) {
-			    $link .= '#' . $anchor;
+			    $link .= '#'. rawurlencode($anchor);
 			}
 			//Use the Theme Section for a Masthead with a link and set the link
 			$mergeFields['Image_Link_Href'] =
@@ -234,6 +234,8 @@ class zenario_banner extends ze\moduleBaseClass {
 					$mergeFields['Image_Link_Href'] =
 						'href="'. htmlspecialchars($link). '"';
 				}
+				
+				$mergeFields['External_Url_Class'] = 'link_external';
 			
 			} elseif ($linkTo == '_EMAIL') {
 				$url = 'email_address';
@@ -249,9 +251,20 @@ class zenario_banner extends ze\moduleBaseClass {
 			$mergeFields['Target_Blank'] .= ' target="_blank"';
 			
 			if (!$downloadFile && $openIn == 2) {
-				ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+				$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 				
-				$mergeFields['Target_Blank'] .= ' onclick="if (window.$) { $.colorbox({href: \''. ze\escape::js($link). '\', iframe: true, width: \'95%\', height: \'95%\'}); return false; }"';
+				$mergeFields['Target_Blank'] .= ' onclick="
+					if (window.$) {
+						$.colorbox({
+							href: \''. ze\escape::jsOnClick($link). '\',
+							className: \'zenario_banner_cb\',
+							iframe: true,
+							width: \'95%\',
+							height: \'95%\'
+						});
+						return false;
+					}
+				"';
 			}
 		}
 		
@@ -265,7 +278,7 @@ class zenario_banner extends ze\moduleBaseClass {
 		
 			if (ze::$isDraft && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 				if (!empty($_POST['_zenario_save_content_'])) {
-					$this->setSetting('text', ze\ring::decodeIdForOrganizer($_POST['content__content'] ?? ''), true, true, 'translatable_html');
+					$this->setSetting('text', ze\ring::sanitiseWYSIWYGEditorHTML(ze\ring::decodeIdForOrganizer($_POST['content__content'] ?? '')), true, true, 'translatable_html');
 					$this->setSetting('title', ze\ring::decodeIdForOrganizer($_POST['content__title'] ?? ''), true, true, 'translatable_text');
 					exit;
 				}
@@ -428,15 +441,19 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			
 			//Start prepping some parameters for a call to the ze\file::imageHTML() function
-			$useRollover =
+			$useRollover = $cssRollover = $jsRollover =
 			$showAsBackgroundImage = $lazyLoad = $hideOnMob = $changeOnMob =
 			$mobImageId = $mobMaxWidth = $mobMaxHeight = $mobCanvas = $mobRetina = false;
-			$cssClass = $styles = $attributes = $sourceIDPrefix = '';
+			$cssClass = $rolloverClass = $styles = $attributes = $sourceIDPrefix = '';
 			$preferInlineStypes = true;
 			$makeWebP = $this->setting('webp');
 			$mobWebP = $this->setting('mobile_webp');
 			
 			$htmlID = $this->containerId. '_img';
+			
+			if ($this->setting('link_type') == '_EXTERNAL_URL') {
+				$cssClass = 'link_external';
+			}
 			
 			$altTag = '';
 			if ($this->setting('alt_tag')) {
@@ -463,8 +480,21 @@ class zenario_banner extends ze\moduleBaseClass {
 					if ($rolloImageId = $this->setting('rollover_image')) {
 						$useRollover = true;
 						
-						//We'll need to give IDs to our <source> tags for the rollover code below to work.
-						$sourceIDPrefix = $this->containerId. '_source_';
+						if ($this->setting('rollover_tech') == 'css') {
+							$cssRollover = true;
+							
+							if ($cssClass !== '') {
+								$cssClass .= ' ';
+							}
+							$rolloverClass = $cssClass. 'zenario_rollover';
+							$cssClass .= 'zenario_rollout';
+						
+						} else {
+							$jsRollover = true;
+							
+							//We'll need to give IDs to our <source> tags for the rollover code below to work.
+							$sourceIDPrefix = $this->containerId. '_source_';
+						}
 					}
 					break;
 			}
@@ -548,8 +578,32 @@ class zenario_banner extends ze\moduleBaseClass {
 				$this->mergeFields['Background_Image_Attributes'] = $html;
 			
 			} else {
-				if ($useRollover) {
-					//If we're using a rollover, we need to prepare two more <picture> elements.
+				if ($cssRollover) {
+					//If we're using a CSS rollover, we need to prepare one more <picture> element for the rollover image.
+					$htmlID = $this->containerId. '_rollover';
+					$showImageLinkInAdminMode = true;
+					$alsoShowMobileLink = false;
+					
+					if ($changeOnMob && $mobImageId != $imageId) {
+						$imageLinkNum = 3;
+					} else {
+						$imageLinkNum = 2;
+					}
+					
+					$html .= ze\file::imageHTML(
+						$this->styles, $preferInlineStypes,
+						$this->noteImage($rolloImageId), $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+						$altTag, $htmlID, $rolloverClass, $styles, $attributes,
+						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$sourceIDPrefix,
+						$showImageLinkInAdminMode, $imageLinkNum, $alsoShowMobileLink
+					);
+					
+					
+					
+				} elseif ($jsRollover) {
+					//If we're using a JS rollover, we need to prepare two more <picture> elements.
 					//The first is to pre-load and store the rollover image.
 					//The second is to store the original image, which will be used later to revert the rollover.
 					$ignoreStyles = [];
@@ -614,7 +668,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
 				if (ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, false, $isRetina, $mimeType, $imageId, $setLargeWidth, $setLargeHeight, $setLargeCanvas)) {
 					
-					ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+					$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 					
 					$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box" ';
 					
@@ -731,20 +785,16 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 			}
 			
-			//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
-			//Otherwise we can use addToPageHead() below.
-			if ($this->styles !== [] && $this->methodCallIs('refreshPlugin')) {
-				$this->callScriptBeforeAJAXReload('zenario', 'addStyles', $this->containerId, implode("\n", $this->styles));
-			}
+			//If we're reloading via AJAX, our addToPageHead() method won't be called, and the addStylesOnAJAXReload() function will add the styles.
+			//Otherwise the styles will be added using addToPageHead() and addStylesOnAJAXReload() as as normal.
+			$this->addStylesOnAJAXReload($this->styles);
 			
 			return true;
 		}
 	}
 	
 	public function addToPageHead() {
-		if ($this->styles !== []) {
-			echo "\n", '<style type="text/css" id="', $this->containerId, '-styles">', "\n", implode("\n", $this->styles), "\n", '</style>';
-		}
+		$this->addStylesToPageHead($this->styles);
 	}
 	
 	public function privacyWarning($field, $contentItemPrivacy) {
@@ -807,10 +857,12 @@ class zenario_banner extends ze\moduleBaseClass {
 	
 	protected $imgsUsed = [];
 	public function noteImage($imageId) {
-		if (isset($this->parentNest)) {
-			$this->parentNest->noteImage($imageId);
-		} else {
-			$this->imgsUsed[$imageId] = $imageId;
+		if ($imageId) {
+			if (isset($this->parentNest)) {
+				$this->parentNest->noteImage($imageId);
+			} else {
+				$this->imgsUsed[$imageId] = $imageId;
+			}
 		}
 		return $imageId;
 	}
@@ -834,7 +886,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 		}
 		
-		$this->listImagesOnSlotControls($controls, $this->imgsUsed);
+		$this->listImagesOnSlotControls($controls, $this->imgsUsed, true);
 	}
 
 }

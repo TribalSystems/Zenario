@@ -2,7 +2,6 @@
 ---
 zenario__email_template_manager:
     ord: -690
-    priv: _PRIV_MANAGE_EMAIL_TEMPLATE
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_email_template_top_level

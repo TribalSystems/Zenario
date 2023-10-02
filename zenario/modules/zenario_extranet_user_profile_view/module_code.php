@@ -71,14 +71,14 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 			}
 			
 			$this->subSections['Bus_Address'] = (
-													ze\ray::issetArrayKey($userDetails,"bus_address1") ||
-													ze\ray::issetArrayKey($userDetails,"bus_address2") ||
-													ze\ray::issetArrayKey($userDetails,"bus_address3") ||
-													ze\ray::issetArrayKey($userDetails,"bus_town") ||
-													ze\ray::issetArrayKey($userDetails,"bus_state") ||
-													ze\ray::issetArrayKey($userDetails,"bus_postcode") ||
-													ze\ray::issetArrayKey($userDetails,"bus_country_id")
-												);
+				ze\ray::issetArrayKey($userDetails,"bus_address1") ||
+				ze\ray::issetArrayKey($userDetails,"bus_address2") ||
+				ze\ray::issetArrayKey($userDetails,"bus_address3") ||
+				ze\ray::issetArrayKey($userDetails,"bus_town") ||
+				ze\ray::issetArrayKey($userDetails,"bus_state") ||
+				ze\ray::issetArrayKey($userDetails,"bus_postcode") ||
+				ze\ray::issetArrayKey($userDetails,"bus_country_id")
+			);
 												
 			$this->subSections['Bus_Address1'] = ze\ray::issetArrayKey($userDetails,"bus_address1");			
 			if ($this->subSections['Bus_Address1']) {
@@ -112,7 +112,7 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 
 			$this->subSections['Bus_Country'] = ze\ray::issetArrayKey($userDetails,"bus_country_id");			
 			if ($this->subSections['Bus_Country']) {
-				$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(ze::$visLang,"_COUNTRY_NAME_" . $userDetails['bus_country_id']);
+				$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(ze::$visLang, "_COUNTRY_NAME_" . $userDetails['bus_country_id']);
 			}
 			
 			// Make custom dataset fields available for custom frameworks
@@ -134,12 +134,12 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 				if ($noOfMessages && $lastPostDaysAgo) { 
 					$this->subSections['Forum_posts'] = true;		
 					$this->mergeFields['Number_of_posts_last_post_number_days_ago'] = 
-								$this->phrase('_NUMBER_OF_POST' . ($noOfMessages>1?'S':'') . '_LAST_POST_NUMBER_DAY' . ($lastPostDaysAgo>1?'S':'') . '_AGO', 
-												[
-													'number_of_posts' => $noOfMessages,
-													'last_post_days_ago' => $lastPostDaysAgo,
-													]
-											);
+						$this->phrase('_NUMBER_OF_POST' . ($noOfMessages>1?'S':'') . '_LAST_POST_NUMBER_DAY' . ($lastPostDaysAgo>1?'S':'') . '_AGO', 
+							[
+								'number_of_posts' => $noOfMessages,
+								'last_post_days_ago' => $lastPostDaysAgo,
+							]
+						);
 				}
 			}
 
@@ -158,13 +158,13 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 	}
 	
 	public function showSlot() {
-		$this->framework("Outer",$this->mergeFields,$this->subSections);
+		$this->framework("Outer", $this->mergeFields,$this->subSections);
 	}
 	
 	public static function getUserIdFromDescriptivePage($cID, $cType) {
 		if ($cID && $cType) {
 			if ($equivId = ze\content::equivId($cID,$cType)) {
-				return ze\row::get("users","id",["equiv_id" => $equivId, "content_type" => $cType]);
+				return ze\row::get("users", "id", ["equiv_id" => $equivId, "content_type" => $cType]);
 			} else {
 				return false;
 			}
@@ -181,5 +181,3 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 		}
 	}
 }
-
-?>

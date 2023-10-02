@@ -144,6 +144,9 @@ if (ze::get('method_call') == 'showSitemap') {
 }
 ze::$tuixPath = $requestedPath;
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+
 class zenario_organizer {
 	
 	public static $filters = [];
@@ -1504,8 +1507,8 @@ if ($doExport) {
 	
 	//Create a new Excel document or CSV file
 	if ($isExcel) {
-		require_once CMS_ROOT.'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
-		$objPHPExcel = new PHPExcel();
+		$objPHPSpreadsheet = new Spreadsheet();
+		$activeWorksheet = $objPHPSpreadsheet->getActiveSheet();
 	} else {
 		$filename = tempnam(sys_get_temp_dir(), 'csvfile');
 		$f = fopen($filename, 'wb');
@@ -1520,7 +1523,7 @@ if ($doExport) {
 	//Write the column headers
 	if ($isExcel) {
 		$rowNum = 1;
-		$objPHPExcel->getActiveSheet()->fromArray($row, NULL, 'A1');
+		$activeWorksheet->fromArray($row, NULL, 'A1');
 	} else {
 		fputcsv($f, $row);
 	}
@@ -1545,7 +1548,7 @@ if ($doExport) {
 			
 			//Output the row
 			if ($isExcel) {
-				$objPHPExcel->getActiveSheet()->fromArray($row, NULL, 'A'. ++$rowNum);
+				$activeWorksheet->fromArray($row, NULL, 'A'. ++$rowNum);
 			} else {
 				fputcsv($f, $row);
 			}
@@ -1555,15 +1558,15 @@ if ($doExport) {
 	//Offer the file as download
 	if ($isExcel) {
 		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment; filename="'. $title. '.xls"');
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
-	
+		header('Content-Disposition: attachment; filename="' . $title . '.xls"');
+		
+		$writer = new Xls($objPHPSpreadsheet);
+		$writer->save('php://output');
 	} else {
 		fclose($f);
 		header('Content-Type: text/x-csv');
-		header('Content-Disposition: attachment; filename="'. $title. '.csv"');
-		header('Content-Length: '. filesize($filename));
+		header('Content-Disposition: attachment; filename="' . $title . '.csv"');
+		header('Content-Length: ' . filesize($filename));
 		readfile($filename);
 		@unlink($filename);
 	}

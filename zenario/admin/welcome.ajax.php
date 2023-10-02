@@ -39,7 +39,7 @@ require '../basicheader.inc.php';
 ze\cookie::startSession();
 
 //Check to see if the CMS is installed
-$freshInstall = $adminId = false;
+$adminId = $freshInstall = $skipDiagnosticsOnfreshInstall = false;
 $installStatus = 0;
 $installed =
 	ze\welcome::checkConfigFileExists()
@@ -154,9 +154,29 @@ $task = $_GET['task'] ?? false;
 
 //Check system requirements
 if (!$systemRequirementsMet = !empty($_SESSION['zenario_system_requirements_met'])) {
+	
+	//Check if we should show the system requirements screen...
+	$oldSource = $source;
+	$oldTags = $tags;
+	$oldFields = $fields;
+	$oldValues = $values;
+	$oldChanges = $changes;
+	
 	ze\welcome::prepareAdminWelcomeScreen('system_requirements', $source, $tags, $fields, $values, $changes);
-	$_SESSION['zenario_system_requirements_met'] = $systemRequirementsMet =
-		ze\welcome::systemRequirementsAJAX($source, $tags, $fields, $values, $changes);
+	$systemRequirementsMet = ze\welcome::systemRequirementsAJAX($source, $tags, $fields, $values, $changes);
+	
+	//...however if we're not actually showing it, we don't want it to count as the last screen displayed,
+	//so revert any variables that were chanegd above.
+	if ($systemRequirementsMet) {
+		$_SESSION['zenario_system_requirements_met'] = true;
+		
+		$source = $oldSource;
+		$tags = $oldTags;
+		$fields = $oldFields;
+		$values = $oldValues;
+		$changes = $oldChanges;
+	}
+	unset($oldSource, $oldTags, $oldFields, $oldValues, $oldChanges);
 }
 
 //Run the installer if the CMS is not installed
@@ -183,11 +203,11 @@ if ($systemRequirementsMet && $installed) {
 	}
 	
 	
-	//Log the Admin in automatically if they've just done a fresh install
-	if ($freshInstall) {
-		//ze\admin::setSession($adminId);
+	//The fresh install (if not using the install from backup option) should log the admin
+	//in automatically and skip the diagnostics screen for this once only.
+	if ($freshInstall && ze::isAdmin()) {
 		$loggedIn = true;
-		$_SESSION['admin_ip_at_login'] = \ze\user::ip();
+		$skipDiagnosticsOnfreshInstall = true;
 	
 	//Check that the local and global databases are not set to the same database and table prefix
 	} else
@@ -209,10 +229,8 @@ if ($systemRequirementsMet && $installed) {
 		$loggedIn = false;
 		
 	//If a specific admin domain is set, check that they are logging into the admin domain
-	//Also, if the admin_use_ssl option is set, check that they are trying to log in correctly using ssl if it is requested.
 	} else
-	if ((ze::setting('admin_domain') && ze::setting('admin_domain') != $_SERVER['HTTP_HOST'])
-	 || (ze::setting('admin_use_ssl') && ze\link::protocol() != 'https://')) {
+	if ((ze::setting('admin_domain') && ze::setting('admin_domain') != $_SERVER['HTTP_HOST'])) {
 		
 		//Deny access and don't show the admin domain to people not on the admin domain,
 		//if the admin_domain_is_public setting is set
@@ -222,7 +240,7 @@ if ($systemRequirementsMet && $installed) {
 		} else {
 			//Direct them to the correct domain if not
 			$tags['go_to_url'] =
-				(ze::setting('admin_use_ssl')? 'https://' : ze\link::protocol()).
+				ze\link::protocol().
 				ze\link::adminDomain(). SUBDIRECTORY.
 				'admin.php?'. http_build_query($getRequest);
 		}
@@ -358,13 +376,15 @@ if ($systemRequirementsMet && $installed) {
 			
 				if (!$needToChangePassword) {
 					//Allow the Admin to pass the welcome page at this point
+					$continueTo = 'default';
 					$_SESSION['admin_logged_in'] = true;
 					unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
 				
 					//Don't show the diagnostics page if someone is performing the site reset,
 					//reload_sk or change password tasks.
 					//Also don't show it to people who don't have the permissions to see it
-					if ($task == 'reload_sk'
+					if ($skipDiagnosticsOnfreshInstall
+					 || $task == 'reload_sk'
 					 || $task == 'password_changed'
 					 || $task == 'site_reset'
 					 || !ze\priv::check('_PRIV_VIEW_DIAGNOSTICS', false, false, false, $welcomePage = true)) {
@@ -374,7 +394,7 @@ if ($systemRequirementsMet && $installed) {
 					} else {
 						//Otherwise show the diagnostics page if there are errors to display
 						ze\welcome::prepareAdminWelcomeScreen('diagnostics', $source, $tags, $fields, $values, $changes);				
-						$doneWithDiagnostics = ze\welcome::diagnosticsAJAX($source, $tags, $fields, $values, $changes, $task, $freshInstall);
+						$doneWithDiagnostics = ze\welcome::diagnosticsAJAX($source, $tags, $fields, $values, $changes, $task, $freshInstall, $continueTo);
 					}
 				
 					if ($doneWithDiagnostics) {
@@ -387,7 +407,7 @@ if ($systemRequirementsMet && $installed) {
 					
 						} else {
 							//Otherwise redirect the Admin away from this page
-							$tags['go_to_url'] = ze\welcome::redirectAdmin($getRequest);
+							$tags['go_to_url'] = ze\welcome::redirectAdmin($getRequest, false, $continueTo);
 						}
 					}
 				}

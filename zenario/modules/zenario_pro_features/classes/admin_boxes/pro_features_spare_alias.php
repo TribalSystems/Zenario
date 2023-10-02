@@ -34,7 +34,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		if ($box['key']['id']
 		 && $box['key']['id_is_error_log_id']
 		 && ze\module::inc('zenario_error_log')) {
-			$brokenAlias = ze\row::get(ZENARIO_ERROR_LOG_PREFIX.'error_log', 'page_alias', ['id' => $box['key']['id']]);
+			$brokenAlias = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
 			$brokenAlias = substr($brokenAlias, 0, 255);
 			
 			if (ze\row::exists('spare_aliases', ['alias' => $brokenAlias])) {
@@ -48,7 +48,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 			
 			$values['spare_alias/delete_alias'] = $brokenAlias;
 
-			$logCount = ze\row::count(ZENARIO_ERROR_LOG_PREFIX . 'error_log', ['page_alias' => ze\escape::sql($values['spare_alias/delete_alias'])]);
+			$logCount = ze\row::count('error_404_log', ['page_alias' => ze\escape::sql($values['spare_alias/delete_alias'])]);
 			
 			$fields['spare_alias/delete_error_log']['label'] =
 				ze\admin::phrase(
@@ -130,7 +130,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		if ($values['spare_alias/delete_error_log'] == true) {
 			if (ze\module::inc('zenario_error_log')) {
 				
-				$aliasCount = ze\row::count(ZENARIO_ERROR_LOG_PREFIX.'error_log', ['page_alias' => $values['spare_alias/alias']]);
+				$aliasCount = ze\row::count('error_404_log', ['page_alias' => $values['spare_alias/alias']]);
 			
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] = \ze\admin::phrase('[[number]] instances of "[[name]]" will be deleted from the error log.',['number' => $aliasCount, 'name' => $values['spare_alias/alias']]);
@@ -186,7 +186,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 				
 				if ($deleteAliasLog) {
 					$sql = '
-					DELETE FROM ' . DB_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+					DELETE FROM '. DB_PREFIX. 'error_404_log
 					WHERE page_alias = "' . ze\escape::sql($deleteAliasLog) . '"';
 					ze\sql::update($sql);
 				}

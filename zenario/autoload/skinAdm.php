@@ -201,13 +201,13 @@ class skinAdm {
 	
 		//Check for changes in TUIX, Layout and Skin files
 		\ze\miscAdm::checkForChangesInYamlFiles($forceScan = true);
-		\ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true);
+		\ze\skinAdm::checkForChangesInFiles($runInProductionMode = true, $forceScan = true, $minifySkinsNow = true);
 	}
 
 	//Include a checksum calculated from the modificaiton dates of any css/js/html files
 	//Note that this is only calculated for admins, and cached for visitors
 	//Formerly "checkForChangesInCssJsAndHtmlFiles()"
-	public static function checkForChangesInFiles($runInProductionMode = false, $forceScan = false) {
+	public static function checkForChangesInFiles($runInProductionMode = false, $forceScan = false, $minifySkinsNow = false) {
 		
 		//Do not try to do anything if there is no database connection!
 		if (!\ze::$dbL) {
@@ -257,7 +257,11 @@ class skinAdm {
 				'zenario/styles',
 				'zenario/modules',
 				'zenario_custom/modules',
-				'zenario_extra_modules'
+				'zenario_extra_modules',
+				
+				//Any yarn-managed library that we see causing issues with not being cleared
+				//from the cache should also be added to this list.
+				'zenario/libs/yarn/@fortawesome/fontawesome-free/css'
 			] as $dir) {
 				if (is_dir(CMS_ROOT. $dir)) {
 					$dirs[] = $dir;
@@ -351,6 +355,9 @@ class skinAdm {
 	
 	
 		if ($changed) {
+			
+			$time36 = base_convert($time, 10, 36);
+			
 			if ($skinChanges) {
 				//Clear the page cache completely if a Skin or a Template Family has changed
 				\ze\pageCache::clear('--layout-or-skin-files-changed--');
@@ -396,13 +403,55 @@ class skinAdm {
 					}
 				}
 				
+				\ze\site::setSetting('css_skin_version', $time36);
+				
+				if ($minifySkinsNow) {
+					\ze\skinAdm::minify($time36);
+				}
+				
+			} elseif ($minifySkinsNow) {
+				\ze\skinAdm::minify();
 			}
 		
 			\ze\site::setSetting('css_js_html_files_last_changed', $time);
-			\ze\site::setSetting('css_js_version', base_convert($time, 10, 36));
+			\ze\site::setSetting('css_js_version', $time36);
 			\ze\site::setSetting('zenario_version', $zenario_version);
 		}
 	
 		return $changed;
 	}
+	
+	
+	//This function creates a ".min.css" file for all of the skins on the site (except missing ones).
+	public static function minify($time36 = null) {
+		
+		//Use the known last modification time of the zenario_custom/skins/ directory/files as
+		//part of the filename to act as a cache killer.
+		if (is_null($time36)) {
+			$time36 = \ze::setting('css_skin_version') ?: '1';
+		}
+		
+		foreach (\ze\row::getValues('skins', 'id', ['missing' => 0]) as $skinId) {
+			
+			//We'll create them as files in a directory in the public/css/ directory.
+			$dir = 'skin_'. $skinId;
+			$path = \ze\cache::createDir($dir, 'public/css', false);
+			
+			//Do some tidying up and delete any previous minified versions.
+			//The CMS has a filetime check when these are linked to, so any out of date copies
+			//will not cause any outdated CSS to be shown on the site. However they do take up space
+			//so should be deleted when not needed.
+			foreach (scandir(CMS_ROOT. $path) as $file) {
+				if ($file != '.' && $file != '..' && $file != 'accessed' && is_file(CMS_ROOT. $path. $file)) {
+					@unlink(CMS_ROOT. $path. $file);
+				}
+			}
+
+			$minifyPath = $path. $time36. '.min.css';
+
+			$output = \ze\wrapper::includeSkinFiles($skinId, false, false, $minify = true, CMS_ROOT. $minifyPath);
+			\ze\cache::chmod(CMS_ROOT. $minifyPath);
+		}
+	}
 }
+

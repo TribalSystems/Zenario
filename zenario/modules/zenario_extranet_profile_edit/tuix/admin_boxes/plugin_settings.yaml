@@ -6,31 +6,16 @@ plugin_settings:
         first_tab:
             label: Editing
             fields:
-                enable_edit_profile:
-                    plugin_setting:
-                        name: enable_edit_profile
-                    label: 'Allow user to edit their profile'
-                    side_note: If not checked, just viewing is allowed.
-                    type: checkbox
-                    value: "1"
-                show_title_message:
-                    plugin_setting:
-                        name: show_title_message
-                    label: 'Display a title'
-                    type: checkbox
-                    value: "1"
-                repeat_edit_button_at_top_of_form:
-                    plugin_setting:
-                        name: repeat_edit_button_at_top_of_form
-                    label: 'Repeat Profile edit button at top of form'
-                    type: checkbox
                 user_form:
                     plugin_setting:
                         name: user_form
                         foreign_key_to: user_form
                     label: 'Form:'
                     note_below: |
-                        You will need to make a Form via the Organizer area. It must contain linked fields, such as first name and last name, selected from the Users/Contacts Dataset. Note that Email cannot be edited via this plugin, so the Email linked field should be made read-only on the form.
+                        You will need to make a Form via Organizer.
+                        It must contain linked fields from the Users/Contacts Dataset, such as first name and last name.
+                        <br /><br />These fields must have the "Pre-populate with logged-in user's data" option selected. It is available in the form field settings on the Advanced tab.
+                        <br /><br />Note that Email cannot be edited via this plugin, so the Email linked field should be made read-only on the form.
                     pick_items:
                         path: zenario__user_forms/panels/user_forms
                         target_path: zenario__user_forms/panels/user_forms
@@ -41,6 +26,80 @@ plugin_settings:
                         select_phrase: Select a form...
                         hide_remove_button: Yes
                     format_onchange: true
+                fields_which_dont_prepopulate_user_data:
+                    snippet:
+                        html: ''
+                show_title_message:
+                    plugin_setting:
+                        name: show_title_message
+                    label: 'Display a title'
+                    type: checkbox
+                    value: "1"
+                enable_edit_profile:
+                    plugin_setting:
+                        name: enable_edit_profile
+                    label: 'Allow user to edit their profile'
+                    side_note: If not checked, just viewing is allowed.
+                    type: checkbox
+                    value: "1"
+                allow_user_to_delete_their_account:
+                    plugin_setting:
+                        name: allow_user_to_delete_their_account
+                    label: 'Allow user to delete their account'
+                    type: checkbox
+                    format_onchange: true
+                    notices_below:
+                        signal_name:
+                            hidden: false
+                            type: information
+                            message: 'If a user account is deleted, the signal "eventUserDeleted" will be sent.'
+                        redirect_target_page_alias:
+                            hidden: false
+                            type: information
+                            message: "[[alias_string]]"
+                delete_account_options:
+                    indent: 1
+                    plugin_setting:
+                        name: delete_account_options
+                    type: radios
+                    value: delete_account_only
+                    values:
+                        delete_account_only:
+                            ord: 1
+                            label: 'Delete user account only'
+                        delete_all_data:
+                            ord: 2
+                            label: 'Delete user account and all other data'
+                    visible_if: lib.value('allow_user_to_delete_their_account')
+                    validation:
+                        required_if_not_hidden: 'Please select one of the options.'
+                    redraw_onchange: true
+                all_data_explained:
+                    indent: 2
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                [[all_data_explained]]
+                            </div>
+                    visible_if: lib.value('allow_user_to_delete_their_account') && (lib.value('delete_account_options') == 'delete_all_data')
+                notify_admin_when_user_account_deleted:
+                    indent: 1
+                    plugin_setting:
+                        name: notify_admin_when_user_account_deleted
+                    label: 'Notify administrator by email'
+                    type: checkbox
+                    visible_if: lib.value('allow_user_to_delete_their_account')
+                    redraw_onchange: true
+                user_account_deleted_admin_notification_addresses:
+                    indent: 2
+                    plugin_setting:
+                        name: user_account_deleted_admin_notification_addresses
+                        is_email_address: true
+                    label: 'Administrator email address(s):'
+                    type: text
+                    visible_if: lib.value('allow_user_to_delete_their_account') && lib.value('notify_admin_when_user_account_deleted')
+                    validation:
+                        required_if_not_hidden: 'Please enter one or more valid email addresses.'
         phrases:
             label: Phrases
             fields:
@@ -65,6 +124,8 @@ plugin_settings:
                     type: text
                     value: 'Your profile has been updated.'
                     show_phrase_icon: true
+                    note_below: |
+                        If the value is not set, then the selected form's success message will be shown.
                 edit_profile_button_text:
                     plugin_setting:
                         name: edit_profile_button_text

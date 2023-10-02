@@ -79,6 +79,16 @@ zenarioAT.init2 = function(tuix) {
 	//This $(document).ready() is to ensure that this function runs after everything in visitor.ready.js
 	$(document).ready(function() {
 		
+		//If the admin has just closed grid maker, try to start this next page load showing
+		//empty slots.
+		//(I am forced to implement this using purely client-side code though, as the
+		//"show empty slots" button has no server-side component.)
+		if (zenario.sGetItem(true, 'show_empty_slots_next_page_load')) {
+			zenario.sSetItem(true, 'show_empty_slots_next_page_load', '');
+			zenarioA.toggleShowEmptySlots(true);
+		}
+		
+		
 		zenarioAT.setURL();
 		zenarioAT.tuix = tuix;
 	
@@ -115,7 +125,7 @@ zenarioAT.init2 = function(tuix) {
 //});
 
 
-zenarioAT.clickTab = function(toolbar) {
+zenarioAT.clickTab = function(toolbar, flashNewTabToHighlightChange, runAfter) {
 	if (zenarioA.checkForEdits()) {
 		
 		var oldToolbar = zenarioAT.tuix.toolbars[zenarioA.toolbar],
@@ -171,7 +181,11 @@ zenarioAT.clickTab = function(toolbar) {
 			
 			//zenarioAT.drawToolbarTabs();
 			//zenarioAT.drawToolbar();
-			zenarioAT.draw();
+			zenarioAT.draw(flashNewTabToHighlightChange);
+			
+			if (runAfter) {
+				runAfter();
+			}
 		}
 	}
 };
@@ -381,7 +395,7 @@ zenarioAT.action2 = function() {
 				zenarioA.showMessage(message);
 			} else {
 				//...or refresh the page
-				zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));
+				zenarioA.reloadPage();
 			}
 		});
 	}
@@ -408,7 +422,7 @@ zenarioAT.slotDisabled = function(slotName) {
 
 
 
-zenarioAT.draw = function() {
+zenarioAT.draw = function(flashNewTabToHighlightChange) {
 	var html = '',
 		toolbar = {
 			tabs: [],
@@ -427,7 +441,8 @@ zenarioAT.draw = function() {
 	//Loop through the toolbars, adding a tab for each
 	foreach (zenarioAT.sortedToolbars as var i) {
 		var id = zenarioAT.sortedToolbars[i],
-			tab = tuix.toolbars[id];
+			tab = tuix.toolbars[id],
+			selected = id == zenarioA.toolbar;
 		
 		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 		if (!zenarioT.hidden(undefined, zenarioAT, undefined, id, undefined, undefined, undefined, undefined, tab)) {
@@ -440,7 +455,8 @@ zenarioAT.draw = function() {
 				warning_icon: tab.warning_icon,
 				tooltip: tab.tooltip,
 				toolbar_microtemplate: tab.toolbar_microtemplate,
-				selected: id == zenarioA.toolbar,
+				selected: selected,
+				highlight: selected && flashNewTabToHighlightChange,
 				groupingActive: (tab.toolbar_tab_grouping || 'edit') == currentToolbarTabGrouping
 			};
 			

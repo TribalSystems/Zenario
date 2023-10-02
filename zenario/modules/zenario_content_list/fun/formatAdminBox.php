@@ -57,7 +57,9 @@ switch ($path) {
 		$fields['overall_list/heading_tags']['hidden'] = 
 			($values['show_headings'] != 1);
 		
-		$fields['heading_if_no_items']['hidden'] = ($values['show_headings_if_no_items'] != 1);
+		$fields['heading_if_no_items']['hidden'] =
+		$fields['heading_tags_if_no_items']['hidden'] =
+			($values['show_headings_if_no_items'] != 1);
 		
 		$fields['overall_list/more_link_text']['hidden'] =
 		$fields['overall_list/more_hyperlink_target']['hidden'] =
@@ -67,16 +69,24 @@ switch ($path) {
 		$fields['each_item/fall_back_to_default_image']['hidden'] = 
 			!$values['each_item/show_featured_image'];
 		
+		
 		$fields['each_item/default_image_id']['hidden'] = 
 			!($values['each_item/show_featured_image'] && $values['each_item/fall_back_to_default_image']);
 		
 		$hidden = !$values['each_item/show_featured_image'];
 		$this->showHideImageOptions($fields, $values, 'each_item', $hidden);
+		$fields['each_item/mobile_behaviour']['hidden'] = $hidden;
+		
+		//Only show mobile options if "Mobile behaviour" is set to either "Different image", or "Same image, different size".
+		$hideMobileOptions = !empty($fields['each_item/mobile_behaviour']['hidden']) || !ze::in($values['each_item/mobile_behaviour'], 'mobile_change_image', 'mobile_same_image_different_size');
+		$this->showHideImageOptions($fields, $values, 'each_item', $hideMobileOptions, 'mobile_');
+		
 		if ($values['each_item/canvas'] != "unlimited") {
 			$fields['each_item/canvas']['side_note'] = $retinaSideNote;
 		} else {
 			$fields['each_item/canvas']['side_note'] = "";
 		}
+		
 		
 		$fields['each_item/date_format']['hidden'] = 
 		$fields['each_item/show_times']['hidden'] = 

@@ -92,27 +92,33 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 				$fields['names/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to keep user sign-in and content-access logs.', ['link' => htmlspecialchars($link)]);
 				
-				//Max file upload size settings
-				$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
-			
-				$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
-				$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
-				$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
-			
-				$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
-				$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
-			
-				ze\lang::applyMergeFields(
-					$fields['groups/max_user_image_filesize_override']['values']['use_global_max_attachment_file_size']['label'],
-					['global_max_attachment_file_size' => $maxFileSizeFormatted]
-				);
-			
-				$linkStart = "<a target='_blank' href='" . ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//files_and_images~.site_settings~tfilesizes~k{"id"%3A"files_and_images"}' . "'>";
-				$linkEnd = '</a>';
-				$fields['groups/max_user_image_filesize_override']['notices_below']['max_upload_size_site_setting_link']['message'] = ze\admin::phrase(
-					'See the [[link_start]]Documents, images and file handling[[link_end]] panel to change the global setting.',
-					['link_start' => $linkStart, 'link_end' => $linkEnd]
-				);
+				//Information about max upload sizes
+				if (isset($fields['groups/global_upload_setting_info'])) {
+					$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
+				
+					$zenarioMaxFilesizeValue = ze::setting('content_max_filesize');
+					$zenarioMaxFilesizeUnit = ze::setting('content_max_filesize_unit');
+					$zenarioMaxFilesize = ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+	
+					$maxFileSize = min($apacheMaxFilesize, $zenarioMaxFilesize);
+					$maxFileSizeFormatted = ze\file::fileSizeConvert($maxFileSize);
+				
+					$globalUploadSettingString = ze\admin::phrase('File size will always be limited by global file upload size setting ([[maxFileSizeFormatted]]).', ['maxFileSizeFormatted' => $maxFileSizeFormatted]);
+					ze\lang::applyMergeFields(
+						$fields['groups/global_upload_setting_info']['snippet']['html'],
+						['global_upload_setting_string' => $globalUploadSettingString]
+					);
+				}
+				
+				if (ze\module::isRunning('zenario_extranet')) {
+					$fields['activation_email_template/extranet_not_running']['hidden'] = true;
+					
+					$fields['activation_email_template/default_activation_email_template']['hidden'] = false;
+				} else {
+					$fields['activation_email_template/extranet_not_running']['hidden'] = false;
+					
+					$fields['activation_email_template/default_activation_email_template']['hidden'] = true;
+				}
 				
 				break;
 			
@@ -272,19 +278,6 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 		
 				$fields['unconfirmed_users/max_days_user_inactive']['hidden'] = !$values['unconfirmed_users/remove_inactive_users'];
 		
-				if (isset($fields['names/user_use_screen_name'])) {
-					$screenNamesOn = !empty($values['names/user_use_screen_name']);
-					$screenNamesWereOn = !empty($fields['names/user_use_screen_name']['value']);
-			
-					$box['tabs']['names']['notices']['turning_off_screen_names']['show'] =
-						$screenNamesWereOn && !$screenNamesOn;
-			
-					$box['tabs']['names']['notices']['turning_on_screen_names']['show'] =
-						$screenNamesOn && !$screenNamesWereOn
-						&& ze\row::exists('users', ['screen_name' => ['!' => '']]);
-				}
-		
-		
 				if ($values['inactive_user_email/time_user_inactive_1']){
 					$fields['inactive_user_email/inactive_user_email_template_1']['hidden'] = false;
 				} else{
@@ -343,7 +336,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				}
 				
 				//Max file upload size settings
-				if ($values['groups/max_user_image_filesize_override'] == 'limit_max_attachment_file_size') {
+				if ($values['groups/max_user_image_filesize_override']) {
 					if ($values['groups/max_user_image_filesize'] && $values['groups/max_user_image_filesize_unit']) {
 						$apacheMaxFilesize = ze\dbAdm::apacheMaxFilesize();
 			
@@ -376,34 +369,11 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($settingGroup) {
 			case 'users':
-				//Changes to extranet user passwords..?
 				if (ze\priv::check('_PRIV_EDIT_SITE_SETTING') && ze\ring::engToBoolean($box['tabs']['passwords']['edit_mode']['on'] ?? false)) {
-			
-					if (isset($fields['names/user_use_screen_name'])) {
-						//If the "use screen names" option is changed, regenerate the user identifiers
-						$screenNamesOn = !empty($values['names/user_use_screen_name']);
-						$screenNamesWereOn = !empty($fields['names/user_use_screen_name']['value']);
-						if ($screenNamesOn != $screenNamesWereOn) {
-				
-							if ($screenNamesWereOn) {
-								//If we're turning screen names off, all users will be affected!
-								$affectedUsers = [];
-							} else {
-								//If we're turning screen names on, only users with a screen name will be affected
-								$affectedUsers = ['screen_name' => ['!' => '']];
-							}
-				
-							//Clear the previous identifiers
-							ze\row::update('users', ['identifier' => null], $affectedUsers);
-				
-							//Loop through all users and set identifiers
-							$result = ze\row::query('users', ['id', 'screen_name', 'first_name', 'last_name', 'email'], $affectedUsers);
-							while ($user = ze\sql::fetchAssoc($result)) {
-								ze\row::update('users', ['identifier' => ze\userAdm::generateIdentifier($user['id'], $user)], $user['id']);
-							}
-						}
-					}
+					
 				}
+				
+				break;
 		}
 	}
 }

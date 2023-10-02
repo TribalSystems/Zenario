@@ -125,21 +125,28 @@ if ($this->usesConductor && $this->state) {
 			$slotNameNestId = $this->slotName. '-'. $egg['id'];
 			
 			//If the plugin isn't already running, run it now
-			if (!isset($this->modules[$slideNum])) {
-				$this->modules[$slideNum] = [];
-			}
 			if (!isset(ze::$slotContents[$slotNameNestId])) {
-				if ($this->initEgg($slotNameNestId, $egg)) {
-					$this->initEggInstance($slotNameNestId, false, $egg['id'], $slideId, false);
+				
+				$moreSlotContents = [];
+				ze\plugin::runSlotContents(
+					$moreSlotContents,
+					$this->cID, $this->cType, $this->cVersion,
+					ze::$layoutId, $singleSlot = true, $this->slotName,
+					$this->instanceId, $slideId, $slideNum, $specificState = false, $egg['id']
+				);
+				
+				if (isset($moreSlotContents[$slotNameNestId])) {
+					ze::$slotContents[$slotNameNestId] = $moreSlotContents[$slotNameNestId];
 				}
 			}
 			
 			//Check to see whether it's running and the init returned true
-			if (!empty(ze::$slotContents[$slotNameNestId]['init'])
-			 && !empty(ze::$slotContents[$slotNameNestId]['class'])) {
+			if (isset(ze::$slotContents[$slotNameNestId])
+			 && ze::$slotContents[$slotNameNestId]->init()
+			 && ze::$slotContents[$slotNameNestId]->class()) {
 				
 				//Call the placeholder method and see if it outputs any breadcrumbs
-				$back['smart'] = ze::$slotContents[$slotNameNestId]['class']->generateSmartBreadcrumbs();
+				$back['smart'] = ze::$slotContents[$slotNameNestId]->class()->generateSmartBreadcrumbs();
 				
 				if (!is_array($back['smart'])
 				 || empty($back['smart'])) {

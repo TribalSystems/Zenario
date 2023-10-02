@@ -172,6 +172,12 @@ jobs:
         log_on_no_action: false
         email_on_action: false
         email_on_no_action: false
+
+signals:
+    - 
+        name: deleteUserDataGetInfo
+        static: true
+
 centralised_lists:
     -
         method_name: getSalutations

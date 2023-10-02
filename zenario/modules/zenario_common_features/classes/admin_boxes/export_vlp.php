@@ -27,6 +27,10 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClass {
 
@@ -106,19 +110,8 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		
 		$languageId = $box['key']['id'];
 		
-		require_once CMS_ROOT. 'zenario/libs/manually_maintained/lgpl/PHPExcel/Classes/PHPExcel.php';
-		$objPHPExcel = new PHPExcel();
-		$sheet = $objPHPExcel->setActiveSheetIndex(0);
-		
-		//Add the language id in
-		$i = 0;
-		//$sheet
-		//	->setCellValueByColumnAndRow(0, ++$i, 'Zenario Language PACK WORKSHEET')
-		//	->setCellValueByColumnAndRow(2, $i, 'Target Language ID')
-		//	->setCellValueByColumnAndRow(0, ++$i, '(Do not edit this column)')
-		//	->setCellValueByColumnAndRow(1, $i, 'To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->')
-		//	->setCellValueByColumnAndRow(2, $i, $languageId);
-		//++$i;
+		$objPHPSpreadsheet = new Spreadsheet();
+		$activeWorksheet = $objPHPSpreadsheet->getActiveSheet();
 	
 		//Look up all of the codes in the database
 		//Order such that we have all of the core VLPs first, then VLPs grouped by modules
@@ -167,6 +160,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		$result = ze\sql::select($sql);
 		
 		//For each code, write it to the csv file
+		$i = 0;
 		while ($row = ze\sql::fetchAssoc($result)) {
 			
 			//Check if this is the start of a group of VLPs for a Plugin, and checi if this Plugin is running if so
@@ -184,7 +178,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 				++$i;
 				$j = -1;
 				foreach ($row as $key => &$value) {
-					$sheet->setCellValueByColumnAndRow(++$j, $i, $key);
+					$activeWorksheet->setCellValueByColumnAndRow(++$j, $i, $key);
 				}
 				
 				$columnNamesPrinted = true;
@@ -200,49 +194,36 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			++$i;
 			$j = -1;
 			foreach ($row as $key => &$value) {
-				$sheet->setCellValueByColumnAndRow(++$j, $i, $value);
+				$activeWorksheet->setCellValueByColumnAndRow(++$j, $i, $value);
 			}
 		}
 		
 		$extension = $values['export/format'];
-		if (!ze::in($extension, 'bom_csv', 'csv')) {
+		if ($extension != 'csv') {
 			
-			$sheet->getProtection()->setSheet(true); 
-			$editableBit = $sheet->getStyle('E2:E'. $i);
-			$editableBit->getProtection()->setLocked(PHPExcel_Style_Protection::PROTECTION_UNPROTECTED);
+			$activeWorksheet->getProtection()->setSheet(true); 
+			$editableBit = $activeWorksheet->getStyle('E2:E'. $i);
+			$editableBit->getProtection()->setLocked(\PhpOffice\PhpSpreadsheet\Style\Protection::PROTECTION_UNPROTECTED);
 			$editableBit->applyFromArray([
 				'fill' => [
-					'type' => PHPExcel_Style_Fill::FILL_SOLID,
+					'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
 					'color' => ['rgb' => 'e0ffe0']
 			]]);
 		}
 		
 		switch ($extension) {
 			case 'xls':
-				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+				$objWriter = new Xls($objPHPSpreadsheet);
 				break;
 			
 			case 'xlsx':
-				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+				$objWriter = new Xlsx($objPHPSpreadsheet);
 				break;
 			
 			case 'csv':
-			case 'bom_csv':
-				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV')
-					->setDelimiter(',')
-					->setEnclosure('"')
-					->setLineEnding("\r\n")
-					->setSheetIndex(0);
-				
-				if ($extension == 'bom_csv') {
-					$extension = 'csv';
-					$objWriter->setUseBOM(true);
-				}
+				$objWriter = new Csv($objPHPSpreadsheet);
+				$objWriter->setDelimiter(',')->setEnclosure('"')->setLineEnding("\r\n")->setSheetIndex(0);
 			
-				break;
-			
-			case 'html':
-				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'HTML');
 				break;
 			
 			default:
@@ -252,7 +233,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		$mimeType = ze\file::mimeType($extension);
 		
 		header('Content-Type: '. $mimeType. '; charset=UTF-8');
-		header('Content-Disposition: attachment;filename="'. $languageId. '.'. $extension. '"');
+		header('Content-Disposition: attachment;filename="' . $languageId . '.'. $extension . '"');
 		$objWriter->save('php://output');
 		exit;
 	}

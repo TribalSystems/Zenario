@@ -146,9 +146,15 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 		}
 		
 		if ($total > 1) {
+			$message = 'The selected content items will be added to these categories.';
+			
+			if (ze\lang::count() > 1) {
+				$message .= ' (If the content items are translated, the translations will also be added to these categories.)';
+			}
+			
 			$box['confirm']['message'] .=
 				"\n\n".
-				ze\admin::phrase('The selected content items will be added to these categories. (If the content items are translated, the translations will also be added these categories.)');
+				ze\admin::phrase($message);
 		}
 	}
 

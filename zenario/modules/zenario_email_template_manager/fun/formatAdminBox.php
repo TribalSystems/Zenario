@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		//Try and ensure that we use absolute URLs where possible
-		ze\contentAdm::addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
+		ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
 		
 		if ($values['meta_data/include_a_fixed_attachment'] == true && $values['meta_data/selected_attachment']) {
 			$privacy = ze\row::get('documents', 'privacy', ['id' => $values['meta_data/selected_attachment']]);

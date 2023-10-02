@@ -39,8 +39,6 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 		$this->videoId = ze::request($this->idVarName);
 		$this->video = ze\row::get(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos', true, $this->videoId);
 		if ($this->video) {
-			$this->setPageTitle($this->video['title']);
-			
 			$this->userCanManageVideo = ze\user::can('manage', 'video', $this->videoId);
 		}
 		
@@ -52,7 +50,7 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 		$this->data['module_loc'] = ze::moduleDir('zenario_videos_fea');
 		if ($this->video) {
 			$this->data['video'] = $this->video;
-			$this->data['video']['date'] = ze\date::format($this->video['date'], '_MEDIUM');
+			$this->data['video']['date'] = ze\date::format($this->video['date']);
 			
 			$this->data['video']['last_updated'] = ze\user::formatLastUpdated($this->video);
 			

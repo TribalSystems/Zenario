@@ -64,7 +64,19 @@ class zenario_common_features__organizer__site_settings extends ze\moduleBaseCla
 		
 		if (ze\module::isRunning('zenario_location_manager')) {
 			if (ze\module::isRunning('zenario_organization_manager')) {
-				$panel['items']['zenario_location_manager__site_settings_group']['name'] = 'Locations, Organzations and Roles';
+				if (ze\module::isRunning('zenario_company_locations_manager')) {
+					$panel['items']['zenario_location_manager__site_settings_group']['name'] = ze\admin::phrase('Organizations, locations and user roles');
+					$panel['items']['zenario_location_manager__site_settings_group']['desc'] = ze\admin::phrase('Settings for organizations/companies, locations, and user roles.');
+				} else {
+					$panel['items']['zenario_location_manager__site_settings_group']['name'] = ze\admin::phrase('Locations and user roles');
+					$panel['items']['zenario_location_manager__site_settings_group']['desc'] = ze\admin::phrase('Settings for locations and user roles.');
+				}
+			} elseif (ze\module::isRunning('zenario_company_locations_manager')) {
+				$panel['items']['zenario_location_manager__site_settings_group']['name'] = ze\admin::phrase('Organizations and locations');
+				$panel['items']['zenario_location_manager__site_settings_group']['desc'] = ze\admin::phrase('Settings for organizations/companies and locations.');
+			} else {
+				$panel['items']['zenario_location_manager__site_settings_group']['name'] = ze\admin::phrase('Locations');
+				$panel['items']['zenario_location_manager__site_settings_group']['desc'] = ze\admin::phrase('Settings for locations (places in the real world).');
 			}
 		}
 

@@ -161,6 +161,9 @@ zenario__email_template_manager:
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                scheduled_send_datetime:
+                    db_column: n.scheduled_send_datetime
+                    hidden: true
             item:
                 name: Newsletter
                 names: Newsletters
@@ -236,6 +239,16 @@ zenario__email_template_manager:
                         branch: true
                         refiner: newsletter
                     hide_in_select_mode: true
+                images:
+                    css_class: view_items_images
+                    parent: view_dropdown
+                    label: Images
+                    link:
+                        path: zenario__library/panels/image_library
+                        branch: true
+                        refiner: images_for_newsletter
+                    hide_in_select_mode: true
+                    hide_on_refiner: archive
                 click_throughs:
                     parent: view_dropdown
                     visible_if: |
@@ -268,15 +281,33 @@ zenario__email_template_manager:
                     ajax:
                         confirm:
                             message: |
-                                If you do not have the Scheduled Task Module and you attempt to send a Newsletter to a very large number of recipients, the script to send the Newsletter may time out (especially if it takes more than 10 minutes to run).
+                                If you do not have the Scheduled Task module and you attempt to send a newsletter to a very large number of recipients, the script to send the newsletter may time out (especially if it takes more than 10 minutes to run).
                                 If this happens, you can resume sending it by pressing this button.
-                                Please do not attempt to send a Newsletter more than once every ten minutes, or if the statuses on the "Recipients of the Newsletter" are still changing.
-                                Do you wish to resume sending the Newsletter "[[newsletter_name]]"?
+                                Please do not attempt to send a newsletter more than once every ten minutes, or if the statuses on the "Recipients of the newsletter" are still changing.
+                                Do you wish to resume sending the newsletter "[[newsletter_name]]"?
                             button_message: Resume sending
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             resume: 1
+                    only_show_on_refiner: outbox
+                    hide_in_select_mode: true
+                cancel_scheduled_sending:
+                    priv: _PRIV_SEND_NEWSLETTER
+                    css_class: zenario_newsletter_send
+                    parent: actions_dropdown
+                    label: Cancel scheduled sending
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to cancel sending the newsletter "[[newsletter_name]]"?
+                                
+                                Its status will be changed to draft again.
+                            button_message: Proceed
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            cancel_scheduled_sending: 1
                     only_show_on_refiner: outbox
                     hide_in_select_mode: true
                 duplicate:
