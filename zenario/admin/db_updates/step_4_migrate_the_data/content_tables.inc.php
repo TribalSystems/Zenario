@@ -1260,3 +1260,48 @@ if (ze\dbAdm::needRevision(57983)) {
 	
 	ze\dbAdm::revision(57983);
 }
+
+
+
+//Check for missing @media print { ... } rules in skin stylesheets.
+//Please note: this was backpatched from 9.6 to 9.5, however is safe to run multiple times.
+if (ze\dbAdm::needRevision(58564)) {
+	
+	
+	$printFiles = [];
+	
+	foreach (\ze\row::getValues('skins', ['id', 'name', 'display_name'], ['missing' => 0]) as $skin) {
+		$printFile = \ze\content::skinPath($skin['name']). 'editable_css/print.css';
+		
+		if (file_exists(CMS_ROOT. $printFile)) {
+			if ($css = file_get_contents(CMS_ROOT. $printFile)) {
+				if (!preg_match('/@media\s+print\b/i', $css)) {
+					if (is_writable(CMS_ROOT. $printFile)) {
+						file_put_contents(CMS_ROOT. $printFile, "\n". '@media print {'. "\n\n". $css. "\n\n". '}'. "\n");
+					} else {
+						$printFiles[] = $printFile;
+					}
+				}
+			}
+		}
+	}
+	
+	
+	if (!empty($printFiles)) {
+		$mrg = [
+			'example' => $printFiles[0]
+		];
+		
+		echo ze\admin::nPhrase(
+			'The print-stylesheet at [[example]] and 1 other are missing their "@media print { ... }" rule. Please either add this, or make the files writable so this script can automatically add the rule.',
+			'The print-stylesheet at [[example]] and [[count]] others are missing their "@media print { ... }" rule. Please either add this, or make the files writable so this script can automatically add the rule.',
+			count($printFiles) - 1,
+			$mrg,
+			'The print-stylesheet at [[example]] is missing its "@media print { ... }" rule. Please either add this, or make the file writable so this script can automatically add the rule.'
+		);
+		exit;
+	}
+	
+	ze\dbAdm::revision(58564);
+}
+
