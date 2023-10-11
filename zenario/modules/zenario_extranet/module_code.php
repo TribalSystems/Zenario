@@ -825,7 +825,14 @@ class zenario_extranet extends ze\moduleBaseClass {
 	}
 	
 	protected function getWelcomeUserString() {
-		$user = ze\row::get('users', ['first_name', 'last_name'], $this->idOfUserTryingToLogIn);
+		if ($this->idOfUserTryingToLogIn) {
+			$userId = $this->idOfUserTryingToLogIn;
+		} else {
+			$userId = ze\user::id();
+		}
+		
+		$user = ze\row::get('users', ['first_name', 'last_name'], $userId);
+		
 		$userNameString = '';
 		
 		if (!empty($user['first_name'])) {

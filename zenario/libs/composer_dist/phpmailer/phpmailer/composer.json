@@ -36,7 +36,7 @@
         "ext-filter": "*",
         "ext-hash": "*"
     },
-    "require-dev": {
+    "unused-dev-libs": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.2",
         "doctrine/annotations": "^1.2.6 || ^1.13.3",
         "php-parallel-lint/php-console-highlighter": "^1.0.0",

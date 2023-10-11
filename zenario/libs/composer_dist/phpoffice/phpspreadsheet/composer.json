@@ -83,7 +83,7 @@
         "psr/http-factory": "^1.0",
         "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
     },
-    "require-dev": {
+    "unused-dev-libs": {
         "dealerdirect/phpcodesniffer-composer-installer": "dev-main",
         "dompdf/dompdf": "^1.0 || ^2.0",
         "friendsofphp/php-cs-fixer": "^3.2",

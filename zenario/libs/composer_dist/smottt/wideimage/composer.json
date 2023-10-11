@@ -13,7 +13,7 @@
     "require": {
     	"php": ">=5.3"
     },
-    "require-dev": {
+    "unused-dev-libs": {
     	"phpunit/phpunit": "~4.8"
     }
 }
