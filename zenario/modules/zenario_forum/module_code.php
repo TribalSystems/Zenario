@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -114,7 +114,7 @@ class zenario_forum extends zenario_comments {
 		}
 
 		//Require the phrases
-		$this->requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsPhrases('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php');
 		
 		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;

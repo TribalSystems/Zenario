@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -167,5 +167,15 @@ class phraseAdm {
 		}
 	
 		return $importFiles;
+	}
+	
+	//If an admin has just manually updated a phrase, note down the time that the phrases were
+	//last updated to use as a cache-killer.
+	//You only need to call this function if an admin adds/changes the text of a phrase. There should
+	//be no harm in keeping a few slightly-old cached copies of things that were deleted.
+	public static function flagAsUpdated() {
+		$time = time();
+		$time36 = base_convert($time, 10, 36);
+		\ze\site::setSetting('phrases_version', $time36);
 	}
 }

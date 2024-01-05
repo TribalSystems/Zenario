@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -510,6 +510,13 @@ class pageCache {
 				self::$clearOnShutdownRegistered = true;
 			}
 		}
+	}
+	
+	//This function is not yet implemented. It will be implemented in a 9.6 post-branch fix.
+	//However we need to patch back some code fixes from 9.6 into 9.5, so I'll add a definition for this function,
+	//but just make it clear everything.
+	public static function clearWebPages() {
+		register_shutdown_function(['ze\\pageCache', 'clearOnShutdown'], $clearAll = true);
 	}
 	
 	public static function clearOnShutdown($clearAll = false) {

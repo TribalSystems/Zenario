@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -421,7 +421,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$pageId = $currentPageId;
 					}
 
-					$this->callScript('zenario', 'scrollToSlotTop', $this->slotName, $neverScrollDown = false);
+					if (!$showInFloatingBox) {
+						$this->callScript('zenario', 'scrollToSlotTop', $this->slotName, $neverScrollDown = false);
+					}
 				} elseif ($saveToCompleteLaterButtonPressed || $saveToCompleteLaterPageNav) {
 					$responseCreated = $this->createFormPartialResponse();
 					if ($saveToCompleteLaterButtonPressed && $responseCreated) {

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2869,6 +2869,12 @@ class welcome {
 	//Formerly "diagnosticsAJAX()"
 	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $freshInstall, &$continueTo) {
 		
+		//Run a check on the last modified times of the skin CSS files, even in production mode, so that we can
+		//be sure that the css_skin_version variable is up to date. This is used when calculating whether the
+		//skins need minifying.
+		\ze\skinAdm::checkForChangesInFiles($runInProductionMode = true);
+		
+		
 		$showContinueButton = true;
 		$showCheckAgainButton = false;
 		$showCheckAgainButtonIfDirsAreEditable = false;
@@ -3393,30 +3399,22 @@ class welcome {
 			}
 			
 			
-			if (!empty($fields['0/minify_skins']['pressed'])) {
-				\ze\skinAdm::minify();
-			}
-			
 			$fields['0/print_css']['snippet']['html'] = '';
 			$fields['0/print_css']['row_class'] = 'valid';
 			$fields['0/print_css']['hidden'] = true;
 			$fields['0/unminified_skins']['row_class'] = 'valid';
 			$fields['0/unminified_skins']['hidden'] = true;
-			$fields['0/minify_skins']['hidden'] = true;
 			
 			if ($sv = \ze::setting('css_skin_version')) {
 				foreach (\ze\row::getValues('skins', ['id', 'name', 'display_name'], ['missing' => 0]) as $skin) {
 					if (!file_exists(CMS_ROOT. ($skinPath = 'public/css/skin_'. $skin['id']. '/'. $sv. '.min.css'))) {
 						$show_warning = true;
-						$fields['0/unminified_skins']['row_class'] = 'warning';
+						$fields['0/unminified_skins']['row_class'] = 'information';
 						$fields['0/unminified_skins']['hidden'] = false;
 						$fields['0/unminified_skins']['snippet']['html'] =
-							\ze\admin::phrase('Zenario compresses CSS files in the skin using a technique called minification. The files appear to have changed, or Zenario has been updated, since they were last minified. Please re-minify them to help pages load more quickly. (Last modified [[last_modified]].)',
+							\ze\admin::phrase("Zenario serves CSS files to visitors in &ldquo;minified&rdquo; form, which are smaller and download faster. Since these files were last minified, files in either the skin CSS, or in Zenario's software, have been modified ([[last_modified]]). Zenario will safely re-minify the skin CSS files when you click Continue.",
 								['last_modified' => \ze\admin::formatDateTime(base_convert($sv, 36, 10))]
 							);
-
-				
-						$fields['0/minify_skins']['hidden'] = false;
 					}
 					
 					$printFile = \ze\content::skinPath($skin['name']). 'editable_css/print.css';

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ class zenario_extranet_change_password extends zenario_extranet {
 		
 		$this->mode = 'modeChangePassword';
 		
-		$this->requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
 		
 		if (!ze\user::id()) {
 			return ze\priv::check();

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -823,6 +823,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			//Show links to private content items to all visitors
 			$hidePrivateItems = false;
 		}
+		
+		
+		//Note: The logic below may cause a "DOUBLE value is out of range" database error
+		//if your fulltext indexes are corrupted. If this happens, a work-around for fixing it
+		//can be to run an "ANALYZE" on the tables used, e.g.:
+		#ze\sql::cacheFriendlyUpdate("ANALYZE TABLE `". DB_PREFIX. "content_cache`");
+		#ze\sql::cacheFriendlyUpdate("ANALYZE TABLE `". DB_PREFIX. "content_item_versions`");
+		
 		
 		$tempTableName1 = 'search_flat_table_' . $sessionId . "_" . $randomNumber;
 		$tempTableName1WithPrefix = DB_PREFIX . $tempTableName1;

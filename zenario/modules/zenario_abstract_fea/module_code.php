@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -282,7 +282,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	public function requireJSLibsForFEAs() {
 		$this->requireJsLib('zenario/js/tuix.wrapper.js.php');
-		$this->requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsPhrases('zenario/js/visitor.phrases.js.php');
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 	}
 

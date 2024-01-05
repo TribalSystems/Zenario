@@ -1054,7 +1054,7 @@ x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
 	display:none;
 }
 
-body.zenario_show_empty_slots_and_mobile_only_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
+body.zenario_adminToolbarShown.zenario_pageModeIsnt_preview.zenario_show_empty_slots_and_mobile_only_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
 	display:block;
 }
 

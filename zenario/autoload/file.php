@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -578,6 +578,7 @@ class file {
 			$fileChecksum = \ze\row::get('files', 'checksum', $fileId);
 			
 			$otherFiles = \ze\row::getValues('files', 'id', ['checksum' => $fileChecksum]);
+			$hierarchicalDocumentsUsage = [];
 			if (!empty($otherFiles)) {
 				$hierarchicalDocumentsSql = '
 					SELECT id
@@ -2848,6 +2849,11 @@ class file {
 	public static function convertToWebP($pathIn, $pathOut, $mimeType) {
 		
 		if (!is_callable('imagewebp')) {
+			return false;
+		}
+		
+		if (!is_readable($pathIn)
+		 || !filesize($pathIn)) {
 			return false;
 		}
 		

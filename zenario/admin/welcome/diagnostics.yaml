@@ -600,16 +600,6 @@ diagnostics:
                     hide_on_install: true
                 
                 print_css: *blank_child
-                unminified_skins: *blank_child
-                minify_skins:
-                    grouping: sub_table
-                    full_width: true
-                    type: submit
-                    value: Minify skin files
-                    style: |
-                        margin: auto;
-                        display: inherit;
-                    hide_on_install: true
                     
                 site_automated_backups: *blank_child
                 restore_policy_not_set: *blank_child
@@ -775,11 +765,6 @@ diagnostics:
                     full_width: true
                     row_class: sub_level
                     visible_if: zenarioAW.togglePressed(field)
-                svn_uncommitted:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_level
-                    visible_if: zenarioAW.togglePressed(field)
                 
                 plugin_must_be_on_private_page_error:
                     grouping: sub_table
@@ -791,6 +776,12 @@ diagnostics:
                     full_width: true
                     row_class: sub_level
                     visible_if: zenarioAW.togglePressed(field)    
+                
+                
+                # "Information" section
+                unminified_skins: *blank_child
+                
+                
                 content:
                     grouping: sub_table
                     full_width: true

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		
 		$this->mode = 'modeResetPasswordStage1';
 		
-		$this->requireJsLib('zenario/modules/zenario_users/js/password_visitor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
 		
 		if (ze::post('extranet_send_reset_email')) {
 			

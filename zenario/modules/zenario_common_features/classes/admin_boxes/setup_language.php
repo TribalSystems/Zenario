@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -312,6 +312,8 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					'domain'=> ($values['settings/use_domain'] && ze\lang::count() > 1? $values['domain'] : '')
 				],
 				$box['key']['id']);
+			
+			ze\phraseAdm::flagAsUpdated();
 		}
 
 		//Check if a default language has been set, and set it now if not

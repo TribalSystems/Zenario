@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -131,7 +131,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$this->page = (int) ($_REQUEST['comm_page'] ?? 1) ?: 1;
 
 		//Require the phrases
-		$this->requireJsLib('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php?langId='. ze::$visLang);
+		$this->requireJsPhrases('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php');
 		
 		$this->runCheckPrivs();
 		

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -529,12 +529,19 @@ methods.saveTUIXField = function(tuixField, tuixFieldId, item) {
 			var languageId = $(this).data('language_id');
 			var column = $(this).data('field_column');
 
-			//If this is a newly added field, make sure the appropriate array is defined.
+			//If this is a newly added field, make sure the appropriate array and sub-arrays are defined.
 			if (!item.translations) {
 				item.translations = {};
+			}
+			
+			if (!item.translations[column]) {
 				item.translations[column] = {};
+			}
+			
+			if (!item.translations[column][languageId]) {
 				item.translations[column][languageId] = '';
 			}
+			
 			item.translations[column][languageId] = input.value;
 		});
 		item._changed = true;

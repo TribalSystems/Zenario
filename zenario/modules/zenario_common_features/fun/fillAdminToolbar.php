@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1017,7 +1017,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 
 			//If a menu node is used as a suggestion for a particular content type,
 			//add an extra class.
-			if (!empty($menuItem) && $menuItem['restrict_child_content_types']) {
+			if (!empty($menuItem) && $menuItem['restrict_child_content_types'] && ze\priv::onMenuText('_PRIV_EDIT_MENU_TEXT', $menuItem['id'], $menuItem['language_id'], $menuItem['section_id'])) {
 				$adminToolbar['toolbars']['menu'. $i]['css_class'] .= ' node_suggest_on';
 			}
 		}

@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -431,11 +431,19 @@ class skinAdm {
 			$time36 = \ze::setting('css_skin_version') ?: '1';
 		}
 		
+		$doneSomething = false;
 		foreach (\ze\row::getValues('skins', 'id', ['missing' => 0]) as $skinId) {
 			
 			//We'll create them as files in a directory in the public/css/ directory.
 			$dir = 'skin_'. $skinId;
 			$path = \ze\cache::createDir($dir, 'public/css', false);
+			$minifyPath = $path. $time36. '.min.css';
+			
+			//Check if the correct minified file already exists.
+			//There's no need to re-minify it in this case.
+			if (file_exists(CMS_ROOT. $minifyPath)) {
+				continue;
+			}
 			
 			//Do some tidying up and delete any previous minified versions.
 			//The CMS has a filetime check when these are linked to, so any out of date copies
@@ -451,6 +459,13 @@ class skinAdm {
 
 			$output = \ze\wrapper::includeSkinFiles($skinId, false, false, $minify = true, CMS_ROOT. $minifyPath);
 			\ze\cache::chmod(CMS_ROOT. $minifyPath);
+			
+			$doneSomething = true;
+		}
+		
+		//Clear any pages from the page cache that might have the URL to the old skin, or the uncached skin.
+		if ($doneSomething) {
+			\ze\pageCache::clearWebPages();
 		}
 	}
 }

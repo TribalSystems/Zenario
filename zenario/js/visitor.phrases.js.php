@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,10 @@ require '../basicheader.inc.php';
 if (empty($_GET['langId'])) {
 	exit;
 }
+$v = preg_replace('@[^\w\.-]@', '', $_GET['v'] ?? '1');
 $langId = preg_replace('@[^\w\.-]@', '', $_GET['langId']);
 
-$ETag = 'zenario-visitor-phrases-'. $langId. '-';
+$ETag = 'zenario-visitor-phrases-'. $langId. '-'. $v. '-';
 ze\cache::useBrowserCache($ETag);
 
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
@@ -42,6 +43,8 @@ if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php'
 ze\cache::start();
 ze\db::loadSiteConfig();
 
+//Enable the phrases translation system for this script
+\ze::$trackPhrases = true;
 
 
 

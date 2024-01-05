@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -196,6 +196,12 @@ if (ze::$canCache
 			\ze\cache::chmod(CMS_ROOT. $path. 'tag_id', 0666);
 			\ze\cache::chmod(CMS_ROOT. $path. 'cached_files', 0666);
 			\ze\cache::chmod(CMS_ROOT. $path. 'page.html', 0666);
+			
+			//When using implied consent, write a flag if the $_SESSION['cookies_accepted'] variable would have just been set.
+			if (ze::setting('cookie_require_consent') == 'implied' && empty($_COOKIE['cookies_accepted'])) {
+				file_put_contents(CMS_ROOT. $path. 'consent_implied', $images);
+				\ze\cache::chmod(CMS_ROOT. $path. 'consent_implied', 0666);
+			}
 			
 			zenarioPageCacheLogStats(['writes', 'total']);
 			return;

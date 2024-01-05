@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -91,6 +91,8 @@ class zenario_common_features__admin_boxes__create_vlp extends ze\moduleBaseClas
 				'module_class_name' => 'zenario_common_features']);
 		
 		$box['key']['id'] = $values['details/language_id'];
+		
+		ze\phraseAdm::flagAsUpdated();
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {

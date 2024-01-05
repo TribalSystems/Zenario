@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -288,7 +288,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		}
 		
 		if ($this->setting('show_permalink')) {
-			$this->requireJsLib('zenario/js/visitor.phrases.js.php?langId='. ze::$visLang);
+			$this->requireJsPhrases('zenario/js/visitor.phrases.js.php');
 
 			if (!ze::isAdmin()) {
 				$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');

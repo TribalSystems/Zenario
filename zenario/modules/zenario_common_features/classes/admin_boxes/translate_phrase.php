@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -93,6 +93,8 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 			ze\row::set('visitor_phrases', 
 				['local_text' => $values['phrase/local_text'], 'protect_flag' => $values['phrase/protect_flag']], 
 				['code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $box['key']['language_id']]);
+			
+			ze\phraseAdm::flagAsUpdated();
 		}
 	}
 }

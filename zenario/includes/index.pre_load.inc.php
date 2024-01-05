@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -139,6 +139,12 @@ if ($simpleCookieOptions
 	ksort($_GET);
 	ze::$allReq = ze::$knownReq;
 	foreach ($_GET as $request => &$value) {
+		
+		//PHP has a feature where request keys can be numeric.
+		//We never use this, but if people try to hack the URL they can trigger it. This line is
+		//here to prevent a PHP error if that has happened.
+		$request = (string) $request;
+		
 		if (!isset(ze::$cacheCoreVars[$request])) {
 			//Use "z" as an escape character.
 			//Anything that's one character long, or already begins with a z, should have a z put in front of it.
@@ -218,8 +224,12 @@ if ($simpleCookieOptions
 															}
 														}
 													}
-												
-												
+													
+													//When using implied consent, watch out for the flag to set the $_SESSION['cookies_accepted'] variable
+													if (empty($_COOKIE['cookies_accepted']) && file_exists($chPath. 'consent_implied')) {
+														$_SESSION['cookies_accepted'] = true;
+													}
+													
 													ze\cache::start();
 													$page = file_get_contents($chPath. 'page.html');
 													if (false !== $pos = strpos($page, '<body class="desktop no_js [[%browser%]]')) {

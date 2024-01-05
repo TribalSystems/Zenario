@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -229,8 +229,6 @@ class miscAdm {
 		if (!empty($usage['plugins'])) {
 			$instanceId = $usage['plugin'];
 			$name = \ze\plugin::name($instanceId);
-			
-			if ($instanceId == 5) var_dump($usage);
 			
 			if ($includeLinks) {
 				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 

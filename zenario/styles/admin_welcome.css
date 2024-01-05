@@ -234,6 +234,7 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .information,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning
@@ -244,6 +245,7 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .information > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
@@ -272,6 +274,11 @@ body.webkit input {
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning
 {
 	background:url('../admin/images/icon-warning.svg') no-repeat 15px 5px / 16px 16px;
+}
+
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .information > div
+{
+	background:url('../admin/images/icon-information.svg') no-repeat 15px 5px / 16px 16px;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning {

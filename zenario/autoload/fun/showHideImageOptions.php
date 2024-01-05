@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,22 +35,26 @@ $retina = $tab . '/' . $fieldPrefix . 'retina';
 if ($hasCanvas) {
 	$canvas = $tab . '/' . $fieldPrefix . 'canvas';
 	$fields[$canvas]['hidden'] = $hidden;
-}
-
-if (!$hidden && empty($values[$canvas])) {
-	//Watch our for an issue where the canvas value is set to a blank value when it was previous hidden and has just been revealed.
-	//The browser would normally deal with this by simply selecting the first option in the list, however we need to apply this
-	//logic earlier to not mess up the formatting logic below!
-	if (!empty($fields[$canvas]['values'])) {
-		$values[$canvas] = array_keys($fields[$canvas]['values'])[0];
+	
+	if (!$hidden && empty($values[$canvas])) {
+		//Watch our for an issue where the canvas value is set to a blank value when it was previous hidden and has just been revealed.
+		//The browser would normally deal with this by simply selecting the first option in the list, however we need to apply this
+		//logic earlier to not mess up the formatting logic below!
+		if (!empty($fields[$canvas]['values'])) {
+			$values[$canvas] = array_keys($fields[$canvas]['values'])[0];
+		}
 	}
+	
+	$canvasVal = $values[$canvas];
+} else {
+	$canvasVal = 'fixed_width_and_height';
 }
 
 
 $fields[$width]['hidden'] = $hidden
-	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
+	|| ($hasCanvas && !\ze::in($canvasVal, 'fixed_width', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
 $fields[$height]['hidden'] = $hidden
-	|| ($hasCanvas && !\ze::in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
+	|| ($hasCanvas && !\ze::in($canvasVal, 'fixed_height', 'fixed_width_and_height', 'crop_and_zoom', 'resize_and_crop'));
 
 if (isset($fields[$retina])) {
 	$fields[$retina]['hidden'] = $hidden || !$fields[$width]['hidden'] || !$fields[$height]['hidden'];
@@ -59,7 +63,7 @@ if (isset($fields[$retina])) {
 $offset = $tab . '/' . $fieldPrefix . 'offset';
 if (isset($fields[$offset])) {
 	$fields[$offset]['hidden'] = $hidden
-		|| ($hasCanvas && ($values[$canvas] != 'resize_and_crop'));
+		|| ($hasCanvas && ($canvasVal != 'resize_and_crop'));
 }
 
 if (!$fields[$width]['hidden'] && !$fields[$height]['hidden']) {

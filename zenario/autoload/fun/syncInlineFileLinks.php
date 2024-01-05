@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ $checksumCol = 'short_checksum';
 if ($usage == 'image'
  && strpos($html, 'public/images/') !== false) {
 	
-	$links = preg_split('@([^<]+)public/images/([\\w-]+)/(\w+/|)([^"]+)([^>]+)@s', $html, -1,  PREG_SPLIT_DELIM_CAPTURE);
+	$links = preg_split('@([^<]+)public/images/([\\w-]+)/(\w+/|)([^"\\&]+)([^>]+)@s', $html, -1,  PREG_SPLIT_DELIM_CAPTURE);
 	$c = count($links) - 1;
 	$html = '';
 	

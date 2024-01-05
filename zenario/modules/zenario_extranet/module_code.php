@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -590,6 +590,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 			if ($tagId = $this->setting('registration_page')) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+				ze\content::langEquivalentItem($cID, $cType);
 				$this->objects['Registration_Link'] = $this->linkToItemAnchor($cID, $cType);
 				$this->objects['Resend_Link'] = $this->linkToItemAnchor($cID, $cType, false, '&extranet_resend=1');
 			}
@@ -603,6 +604,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 			if ($tagId = $this->setting('login_page')) {
 				$cID = $cType = false;
 				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+				ze\content::langEquivalentItem($cID, $cType);
 				$this->objects['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
 			}
 		} else {

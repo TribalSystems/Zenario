@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@ ze\cache::incJS('zenario/js/ace.integration');
 
 //Ensure that mode-JavaScript is already loaded at the start, so the Phi library can extent it
 ze\cache::incJS('zenario/libs/yarn/ace-builds/src-min-noconflict/mode-javascript');
+ze\cache::incJS('zenario/libs/yarn/ace-builds/src-min-noconflict/mode-java');
 
 //Run post-display actions
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';

@@ -256,36 +256,42 @@
 		exports.PhiHighlightRules = PhiHighlightRules;
 	});
 
-
-	//Definitions for Phi, works by extending some of the logic from the JavaScript definition
-	ace.define("ace/mode/phi", [ "require", "exports", "module", "ace/lib/oop", "ace/mode/javascript", "ace/mode/phi_highlight_rules" ], function(require, exports, module) {
-		"use strict";
+	ace.define(
+		"ace/mode/phi",
+		["require","exports","module","ace/lib/oop","ace/mode/javascript","ace/mode/java_highlight_rules"],
+		function(require, exports, module) {
+			"use strict";
 	
-		var oop = require("../lib/oop"),
-			JavaScriptMode = require("./javascript").Mode,
-			PhiHighlightRules = require("./phi_highlight_rules").PhiHighlightRules,
-			Mode = function() {
-				JavaScriptMode.call(this);
-				this.HighlightRules = PhiHighlightRules;
-			};
+			var oop = require("../lib/oop"),
+				JavaScriptMode = require("./javascript").Mode,
+				PhiHighlightRules = require("./phi_highlight_rules").PhiHighlightRules,
+				Mode = function() {
+					JavaScriptMode.call(this);
+					this.HighlightRules = PhiHighlightRules;
+				};
 	
-		oop.inherits(Mode, JavaScriptMode);
+			oop.inherits(Mode, JavaScriptMode);
 	
-		(function() {
+			(function() {
 		
-			this.lineCommentStart = ["//", "#"];
-			this.blockComment = {start: "/*", end: "*/"};
+				this.lineCommentStart = ["//", "#"];
+				this.blockComment = {start: "/*", end: "*/"};
 		
-			this.createWorker = function(e) {
-				return null;
-			};
-			this.$id = "ace/mode/phi";
+				this.createWorker = function(e) {
+					return null;
+				};
+				this.$id = "ace/mode/phi";
 		
 		
-		}).call(Mode.prototype);
+			}).call(Mode.prototype);
 	
-		exports.Mode = Mode;
+			exports.Mode = Mode;
+		}
+	);
+	
+	ace.require(["ace/mode/phi"], function(m) {
+		if (typeof module == "object" && typeof exports == "object" && module) {
+			module.exports = m;
+		}
 	});
-
-
 })();

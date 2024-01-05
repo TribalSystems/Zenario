@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -408,6 +408,10 @@ if ($systemRequirementsMet && $installed) {
 						} else {
 							//Otherwise redirect the Admin away from this page
 							$tags['go_to_url'] = ze\welcome::redirectAdmin($getRequest, false, $continueTo);
+							
+							//As mentioned on one of the "info" points, we do a check to see if the minified skin files exist every time
+							//an admin passes the diagnostics step.
+							ze\skinAdm::minify();
 						}
 					}
 				}

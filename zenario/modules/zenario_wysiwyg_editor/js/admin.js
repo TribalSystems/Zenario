@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -51,12 +51,12 @@ zenario_wysiwyg_editor.hideImagesInEditors = function() {
 	zenario_wysiwyg_editor.imagesHiddenInEditors = true;
 };
 
-zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, summaryEmpty, summaryMatches, delayed) {
+zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocked, summaryEmpty, summaryMatches, delayed) {
 	
 	//If the Admin Toolbar has not loaded yet, save this code until it has loaded
 	if (!zenarioAT.loaded && !delayed) {
 		zenarioAT.runOnInit.push(function() {
-			zenario_wysiwyg_editor.open(containerId, editorId, summaryLocked, summaryEmpty, summaryMatches, true);
+			zenario_wysiwyg_editor.open(containerId, editorId, html, summaryLocked, summaryEmpty, summaryMatches, true);
 		});
 		return;
 	}
@@ -151,7 +151,10 @@ directionality	ltr rtl
 		file_browser_callback: zenarioA.fileBrowser,
 		
 		init_instance_callback: function(instance) {
-			zenario.removeLinkStatus($editor);
+			//zenario.removeLinkStatus($editor);
+			
+			instance.setContent(html);
+			
 			zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
 			
 			//Attempt to restore the scroll position, if something in this process overwrote it.

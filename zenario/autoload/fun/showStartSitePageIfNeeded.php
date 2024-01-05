@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;
 } else {
 	$logoURL = 'zenario/admin/images/zenario-logo-black.svg';

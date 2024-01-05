@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -183,5 +183,7 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 					['code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $language['id']]);
 			}
 		}
+		
+		ze\phraseAdm::flagAsUpdated();
 	}
 }

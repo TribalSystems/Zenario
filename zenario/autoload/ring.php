@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -351,6 +351,12 @@ class ring {
 		$config = \HTMLPurifier_Config::createDefault();
 		$config->set('Attr.EnableID', true);
 		$config->set('Attr.AllowedFrameTargets', ['_blank' => true]);
+		$config->set('Attr.AllowedRel', [
+			'alternate', 'author', 'bookmark', 'external', 'help', 'license', 'next', 'nofollow',
+			'noopener', 'noreferrer', 'prev', 'search', 'tag',
+			'colorbox'
+		]);
+		
 		$config->set('Cache.DefinitionImpl', null);
 		$purifier = new \HTMLPurifier($config);
 		$html = $purifier->purify($html);

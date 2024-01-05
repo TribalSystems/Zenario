@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -67,10 +67,10 @@ switch ($path) {
 				$j = rtrim($frequency, 'm');
 				$i = 1;
 			}
-			for ($hour = $startAtHour; $hour < 24; $hour += $i) {
+			for ($hour = (int) $startAtHour; $hour < 24; $hour += $i) {
 				$hours .= $hour.'h,';
 			}
-			for ($minute = $startAtMinutes; $minute < 60; $minute += $j) {
+			for ($minute = (int) $startAtMinutes; $minute < 60; $minute += $j) {
 				$minutes .= $minute.'m,';
 			}
 			

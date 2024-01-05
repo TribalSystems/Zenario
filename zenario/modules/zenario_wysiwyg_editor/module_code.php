@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -48,8 +48,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	}
 	
 	protected function openEditor() {
-		//$text = str_replace([" ", "\n", "\r", "\t", ""], '', strip_tags($this->setting('html')));
-		$text = $this->setting('html');
+		$html = $this->setting('html');
 		$contentItemSummary = ze\row::get('content_item_versions', 'content_summary', ['id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion]);
 		if ($contentItemSummary) {
 			$summary = trim(strip_tags($contentItemSummary));
@@ -58,11 +57,12 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		}
 
 		$summaryMatches =
-			$summary == trim(strip_tags($text))
-		 || $summary == trim(strip_tags(zenario_wysiwyg_editor::generateSummary($text)));
+			$summary == trim(strip_tags($html))
+		 || $summary == trim(strip_tags(zenario_wysiwyg_editor::generateSummary($html)));
 		
 		$this->callScript(
 			'zenario_wysiwyg_editor', 'open', $this->containerId, $this->editorId,
+			$html,
 			$this->summaryLocked($this->cID, $this->cType, $this->cVersion),
 			!$summary,
 			$summaryMatches);

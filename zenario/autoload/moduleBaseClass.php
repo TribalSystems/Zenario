@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -141,6 +141,13 @@ class moduleAPI {
 			\ze::$slotContents[$this->slotName]->requireJsLib($lib, $stylesheet);
 		}
 		\ze::requireJsLib($lib, $stylesheet);
+	}
+	
+	//A shortcut function to calling requireJsLib() for a phrases library, which automatically
+	//ands the two parameters needed for phrases libraries.
+	public final function requireJsPhrases($lib) {
+		$lib .= '?langId='. \ze::$visLang. '&v='. (\ze::setting('phrases_version') ?: '1');
+		\ze::requireJsLib($lib);
 	}
 	
 	//Deprecated, please use one of the above

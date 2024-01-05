@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,15 +32,19 @@ require '../../../basicheader.inc.php';
 if (empty($_GET['langId'])) {
 	exit;
 }
+$v = preg_replace('@[^\w\.-]@', '', $_GET['v'] ?? '1');
 $langId = preg_replace('@[^\w\.-]@', '', $_GET['langId']);
 
-$ETag = 'zenario_users-visitor-password-phrases-'. $langId. '-';
+$ETag = 'zenario_users-visitor-password-phrases-'. $langId. '-'. $v. '-';
 ze\cache::useBrowserCache($ETag);
 
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
 
 ze\cache::start();
 ze\db::loadSiteConfig();
+
+//Enable the phrases translation system for this script
+\ze::$trackPhrases = true;
 
 
 
@@ -61,7 +65,7 @@ foreach([
 	'enter_password' => 'Please enter a password.'
 ] as $code => $phrase) {
 	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick(
-		ze\lang::phrase($phrase, false, 'zenario_ausers', $langId, $backtraceOffset = 1)
+		ze\lang::phrase($phrase, false, 'zenario_users', $langId, $backtraceOffset = 1)
 	). '~';
 }
 
