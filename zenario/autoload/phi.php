@@ -42,7 +42,6 @@ require CMS_ROOT. 'zenario/libs/manually_maintained/mit/twig-breakandcontinue/mn
 class phi {
 
 	private static $initRun = false;
-	private static $twig;
 	private static $vars = [
 		'e' => M_E,
 		'pi' => M_PI,
@@ -50,6 +49,19 @@ class phi {
 		'Inf' => INF,
 		'Infinity' => INF
 	];
+	
+	
+	private static $twig;
+	
+	//A dummy filter, just used as a work-around to block other filters from working
+	public static function dummyFilter() {
+		return '';
+	}
+	
+	protected static function blockFilter($name) {
+		$dummyFilter = new \Twig\TwigFilter($name, ['\\ze\\phi', 'dummyFilter']);
+		self::$twig->addFilter($dummyFilter);
+	}
 	
 	
 	private static $testing = false;
@@ -133,6 +145,16 @@ class phi {
 		
 		//Include a Twig extension that enables support for breaks and continues
 		self::$twig->addExtension(new \MNBreakAndContinueTwigExtension());
+		
+		//Remove the "filter", "map" and "reduce" filters, as these have a very bad security vulnerability
+		//involving executing arbitrary functions/making arbitrary CLI calls, and I don't think we
+		//use them anywhere anyway.
+		//I'm also removing the "sort" filter. I can't actually reproduce the vulnerability with this one
+		//but it also accepts functions as an input so I'm blocking it out of paranoia.
+		self::blockFilter('filter');
+		self::blockFilter('map');
+		self::blockFilter('reduce');
+		self::blockFilter('sort');
 		
 		
 		//Set up the whitelist of allowed functions

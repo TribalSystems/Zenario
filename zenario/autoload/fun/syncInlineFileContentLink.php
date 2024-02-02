@@ -129,7 +129,7 @@ if (!$featureImageId) {
 }
 
 //Update the Content in the cache table
-$text = trim(strip_tags($content));
+$text = trim(html_entity_decode(strip_tags($content)));
 \ze\row::set('content_cache', ['text' => $text, 'text_wordcount' => str_word_count($text)], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 
 

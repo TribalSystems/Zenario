@@ -1286,10 +1286,9 @@ zenario__content:
                 
                 delete_archives:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    visible_if_for_all_selected_items: |
-                        zenarioA.checkSpecificPerms(id)
                     visible_if_for_any_selected_items: |
-                        item.archives_exist
+                        item.archives_exist &&
+                        zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
                     hide_in_select_mode: true
                     label: Delete archived versions

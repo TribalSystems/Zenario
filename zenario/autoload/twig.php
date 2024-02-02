@@ -45,6 +45,16 @@ require CMS_ROOT. 'zenario/libs/manually_maintained/mit/twig-extensions/lib/Twig
 class twig {
 	private static $twig;
 	
+	//A dummy filter, just used as a work-around to block other filters from working
+	public static function dummyFilter() {
+		return '';
+	}
+	
+	protected static function blockFilter($name) {
+		$dummyFilter = new \Twig\TwigFilter($name, ['\\ze\\twig', 'dummyFilter']);
+		self::$twig->addFilter($dummyFilter);
+	}
+	
 	public static function init() {
 		//Initialise Twig
 		self::$twig = new \Twig\Environment(new \Zenario_Twig_Loader(), [
@@ -55,6 +65,16 @@ class twig {
 
 		//Add the I18n extension to add support for translating text
 		self::$twig->addExtension(new \Twig_Extensions_Extension_I18n());
+		
+		//Remove the "filter", "map" and "reduce" filters, as these have a very bad security vulnerability
+		//involving executing arbitrary functions/making arbitrary CLI calls, and I don't think we
+		//use them anywhere anyway.
+		//I'm also removing the "sort" filter. I can't actually reproduce the vulnerability with this one
+		//but it also accepts functions as an input so I'm blocking it out of paranoia.
+		self::blockFilter('filter');
+		self::blockFilter('map');
+		self::blockFilter('reduce');
+		self::blockFilter('sort');
 
 
 		//Create instances of any modules that say they are usable in Twig Frameworks

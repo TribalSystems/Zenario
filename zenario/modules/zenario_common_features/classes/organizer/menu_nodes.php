@@ -65,6 +65,57 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			$panel['custom__content_types_with_categories'] =
 				ze\ray::valuesToKeys(ze\row::getValues('content_types', 'content_type_id', ['enable_categories' => 1]));
 		}
+		
+		
+		//Some specific code to handle sorting items whilst searching in flat view.
+		//When not searching, items will be displayed in hierarchy view, and the JavaScript in the panel instance
+		//will need things sorted by the ordinal in each level.
+		//However when we are doing a search, hierarchy view will be switched off and items will be shown in flat view.
+		//We need to write some SQL to make sure they are sorted in the correct hierarchical order.
+		if (isset($_GET['_search'])) {
+			
+			//Work out what the largest possible depth is in the menu.
+			//(N.b. this field has an index so this query should be fast.)
+			$largestMenuDepth = (int) ze\sql::fetchValue("SELECT MAX(separation) FROM ". DB_PREFIX. "menu_hierarchy");
+			
+			//Special case:
+			//If there are no menu nodes that are children of other menu nodes, we can just leave the sort column
+			//as the ordinal and skip this step.
+			if ($largestMenuDepth > 0) {
+				
+				//Start writing the SQL needed to sort the matched menu nodes into order hierarchically.
+				$join = '';
+				$sortCol = 'mi.ordinal';
+				
+				//For every possible parent-child relationship, add a new table join,
+				//and then add that table join to the ordinal column.
+				//The logic I've written below will show all of the top level nodes first,
+				//then second level, and so on. After that they'll be sorted in hierarchical menu node order.
+				//You could use different logic than that, but only if you could work out a way to write the joins/SQL.
+				for ($i = 1; $i <= $largestMenuDepth; ++$i) {
+					$l = $i - 1;
+					
+					$join .= '
+						LEFT JOIN '. DB_PREFIX. 'menu_nodes AS p'. $i;
+					
+					if ($i == 1) {
+						$join .= '
+						   ON mi.parent_id != 0
+						  AND p'. $i. '.id = mi.parent_id';
+					} else {
+						$join .= '
+						   ON p'. $l. '.parent_id != 0
+						  AND p'. $i. '.id = p'. $l. '.parent_id';
+					}
+					
+					$sortCol = 'p'. $i. '.ordinal, '. $sortCol;
+				}
+				
+				
+				$panel['db_items']['table'] .= $join;
+				$panel['columns']['ordinal']['sort_column'] = $sortCol;
+			}
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

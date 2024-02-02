@@ -25,12 +25,11 @@ zenario__content:
                 zenario_ctype_document__rescan_extract:
                     priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
+                        item.type == 'document' &&
                         zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
                     label: Rescan text/image extract
                     multiple_select: true
-                    visible_if_for_all_selected_items: |
-                        item.type == 'document'
                     ajax:
                         confirm:
                             message: |

@@ -983,7 +983,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	
 	if (!zenarioO.followPathOnMap(path)) {
 		//add some debug information here
-		zenarioA.showMessage('The requested path "' + requestedPath + '" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', undefined, 'error', false, true);
+		zenarioA.showMessage('A script attempted to access the path "' + requestedPath + '" in Organizer, but this was not found. This may be because the current administrator does not have access to that panel, because the module for that panel is not running, or because the path does not exist. It may help to reload the page.', undefined, 'error', false, true);
 		return false;
 	}
 	

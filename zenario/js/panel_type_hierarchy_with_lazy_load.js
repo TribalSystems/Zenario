@@ -103,6 +103,9 @@ methods.returnSearchingEnabled = function() {
 };
 
 methods.returnDoSortingAndSearchingOnServer = function() {
+	
+	//If we're not actually showing the hierarchy view, and are showing a flat list instead,
+	//we should use the server-side ordering.
 	if (!thus.showFlatView()) {
 		return false;
 	} else {
