@@ -1,7 +1,7 @@
 <?php
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); 
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without

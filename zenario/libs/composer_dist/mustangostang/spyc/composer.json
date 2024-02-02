@@ -19,7 +19,7 @@
     "autoload": {
         "files": [ "Spyc.php" ]
     },
-    "require-dev": {
+    "unused-dev-libs": {
         "phpunit/phpunit": "4.3.*@dev"
     },
     "extra": {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Tribal Limited
+ * Copyright (c) 2024, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -215,38 +215,6 @@ zenarioO.openInspectionView = function(id) {
 zenarioO.closeInspectionView = function(id) {
 	if (zenarioO.inspectionViewEnabled()) {
 		zenarioO.pi.closeInspectionView(id);
-	}
-};
-
-
-zenarioO.print = function() {
-	try {
-		
-		var title = $("#organizer_panelTitle div:eq(1)").text();
-		var table = $('.organizer_list_view').removeAttr('style').html();
-		
-		//table.$('.organizer_column').removeAttr('style');
-		
-		var mywindow = window.open('', title, 'height=50,width=50');
-        mywindow.document.write('<html><head><title></title>');
-        mywindow.document.write('<link rel="stylesheet" href="http://dev-jc.tribiq.com/HEAD/zenario/styles/admin_organizer_print.css" type="text/css" />');
-        //mywindow.document.write('<link rel="stylesheet" media="screen" href="http://dev-jc.tribiq.com/HEAD/zenario/styles/admin_organizer_print.css" type="text/css" />');
-        mywindow.document.write('<script>myFunction = function() { window.print(); window.close();};</script>');
-
-        mywindow.document.write('</head><body onload="myFunction()"><div class="table_wrapper"><h1 class="print_title">' + title + '</h1>');
-        mywindow.document.write(table);
-        
-        mywindow.document.write('</div></body></html>');
-
-        mywindow.document.close(); // necessary for IE >= 10
-        mywindow.focus(); // necessary for IE >= 10
-		
-		//mywindow.print();
-		//mywindow.close(); 
-        	
-		//window.print();
-		
-	} catch(e) {
 	}
 };
 
