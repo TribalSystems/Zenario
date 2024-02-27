@@ -2,14 +2,14 @@
 		if (zenarioSE.canUpdatePreview) {
 			zenarioSE.updatePreview(1);
 		}
-	" class="submit_disabled" id="zenario_fabUpdatePreview"/>
+	" class="zenario_disabled_button" id="zenario_fabUpdatePreview"/>
 
-<input id="zenario_fabSaveAndContinue"  type="button" value="{{zenarioSE.tuix.save_and_continue_button_message|e}}"
+<input id="zenario_fabSaveAndContinue" type="button" value="{{zenarioSE.tuix.save_and_continue_button_message|e}}"
 
 <% if (m.isReadOnly) { %>
-	 class="submit_disabled"/>
+	 class="zenario_disabled_button"/>
 <% } else { %>
-	 class="{{_.isEmpty(zenarioSE.changed)? 'submit_disabled' : 'submit_selected'}}"
+	 class="{{_.isEmpty(zenarioSE.changed)? 'zenario_disabled_button' : 'zenario_submit_button'}}"
 	 onclick="
 		if (zenarioSE.canUpdatePreview) {
 			zenarioSE.updatePreview(1);
@@ -19,11 +19,11 @@
 	 	}
 	 "/>
 <% } %>
-<input id="zenario_fabSave"  type="button" value="{{zenarioSE.tuix.save_button_message || zenarioA.phrase.save|e}}"
+<input id="zenario_fabSave" type="button" value="{{zenarioSE.tuix.save_button_message || zenarioA.phrase.save|e}}"
 
 <% if (m.isReadOnly) { %>
-	 class="submit_disabled"/>
+	 class="zenario_disabled_button"/>
 <% } else { %>
-	 class="{{_.isEmpty(zenarioSE.changed)? 'submit_disabled' : 'submit_selected'}}"
+	 class="{{_.isEmpty(zenarioSE.changed)? 'zenario_disabled_button' : 'zenario_submit_button'}}"
 	 onclick="zenarioSE.save();"/>
 <% } %>

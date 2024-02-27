@@ -31,7 +31,6 @@ namespace ze;
 class contentAdm {
 
 
-	//Formerly "getStatusPhrase()"
 	public static function statusPhrase($status) {
 		switch ($status) {
 			case 'first_draft':
@@ -44,6 +43,10 @@ class contentAdm {
 				return \ze\admin::phrase('Published');
 			case 'published_with_draft':
 				return \ze\admin::phrase('Published with Draft');
+			case 'unlisted':
+				return \ze\admin::phrase('Published unlisted');
+			case 'unlisted_with_draft':
+				return \ze\admin::phrase('Published unlisted with Draft');
 			case 'trashed':
 				return \ze\admin::phrase('Trashed');
 			case 'trashed_with_draft':
@@ -53,7 +56,6 @@ class contentAdm {
 		return '';
 	}
 
-	//Formerly "getContentTypeDetails()"
 	public static function cTypeDetails($cType) {
 	
 		if (is_array($cType)) {
@@ -81,7 +83,6 @@ class contentAdm {
 	}
 
 
-	//Formerly "checkContentTypeRunning()"
 	public static function isCTypeRunning($cType) {
 		return
 			$cType == 'html' || (
@@ -103,6 +104,11 @@ class contentAdm {
 		
 			return 'published';
 
+		} elseif (($cVersion == $adminVersion && $status == 'unlisted')
+			   || ($cVersion == $visitorVersion && $status == 'unlisted_with_draft')) {
+		
+			return 'unlisted';
+
 		} elseif (($cVersion == $adminVersion && $status == 'hidden')
 			   || ($cVersion == $adminVersion - 1 && $status == 'hidden_with_draft')) {
 	
@@ -119,7 +125,6 @@ class contentAdm {
 	}
 
 	//Reverse of the above
-	//Formerly "getSettingsFromDefaultMenuPosition()"
 	public static function getSettingsFromDefaultMenuPosition($position, &$parentId, &$startOrEnd) {
 	
 		$parentTagParts = explode('_', $position);
@@ -136,14 +141,50 @@ class contentAdm {
 		return (bool) $parentId;
 	}
 
+	//Some common functionality for formatting content item rows in Organizer panels
+	public static function formatItemRow(&$item) {
+		
+		$sql = "
+			SELECT t.menu_id AS isTranslated
+			FROM ". DB_PREFIX. "menu_nodes AS m
+			LEFT JOIN ". DB_PREFIX. "menu_text AS t
+			   ON t.menu_id = m.id
+			  AND t.language_id = '". \ze\escape::sql($item['language_id']). "'
+			WHERE m.equiv_id = ". (int) $item['equiv_id']. "
+			  AND m.content_type = '". \ze\escape::sql($item['type']). "'
+			  AND m.target_loc = 'int'";
+		
+		$menuNodes = 0;
+		$translatedMenuNodes = 0;
+		foreach (\ze\sql::select($sql) as $row) {
+			++$menuNodes;
+			
+			if ($row['isTranslated']) {
+				++$translatedMenuNodes;
+			}
+		}
+		
+		if ($translatedMenuNodes == 0 && $menuNodes > 0) {
+			$item['menunodecounter'] = 'menu_node_text_missing';
+		} else {
+			$item['menunodecounter'] = $translatedMenuNodes;
+		}
+		
+		$item['number_of_categories'] =
+			\ze\sql::fetchValue("
+				SELECT COUNT(cil.category_id)
+				FROM ". DB_PREFIX. "category_item_link AS cil
+				WHERE cil.equiv_id = ". (int) $item['equiv_id']. "
+				  AND cil.content_type = '". \ze\escape::sql($item['type']). "'
+			");
+	}
 
 
-	//Formerly "createDraft()"
+
 	public static function createDraft(&$cIDTo, $cIDFrom, $cType, &$cVersionTo, $cVersionFrom = false, $languageId = false, $adminId = false, $useCIDIfItDoesntExist = false, $cTypeFrom = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "updateVersion()"
 	public static function updateVersion($cID, $cType, $cVersion, $version = []) {
 		
 		//If the result of the ze\contentAdm::checkIfVersionChanged() has been cached,
@@ -157,7 +198,6 @@ class contentAdm {
 		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
 
-	//Formerly "checkIfVersionChanged()"
 	public static function checkIfVersionChanged($version) {
 		
 		//If we have access to the pro features module, and a version previous exists,
@@ -299,7 +339,6 @@ class contentAdm {
 
 	//Set the "archived" flag in the inline_images table,
 	//and remove links from the inline_images table where the version has been deleted
-	//Formerly "flagImagesInArchivedVersions()"
 	public static function flagImagesInArchivedVersions($cID = false, $cType = false) {
 	
 		$deletedImages = [];
@@ -371,7 +410,6 @@ class contentAdm {
 
 
 	//Get/set the content of a WYSIWYG Editor
-	//Formerly "getContent()"
 	public static function getContent($cID, $cType, $cVersion, $slotName = false, $moduleName = 'zenario_wysiwyg_editor', $settingName = 'html') {
 
 		$moduleId = \ze\module::id($moduleName);
@@ -401,7 +439,6 @@ class contentAdm {
 	}
 
 
-	//Formerly "saveContent()"
 	public static function saveContent($content, $cID, $cType, $cVersion, $slotName = false, $moduleName = 'zenario_wysiwyg_editor', $settingName = 'html') {
 	
 		$moduleId = \ze\module::id($moduleName);
@@ -435,7 +472,6 @@ class contentAdm {
 
 
 	//Get/set the content of any version-controlled plugin (except nests)
-	//Formerly "getPluginContent()"
 	public static function getPluginContent($key) {
 	
 		$instance = \ze\row::get('plugin_instances', ['id', 'module_id', 'framework', 'css_class'], $key);
@@ -452,7 +488,6 @@ class contentAdm {
 		return $instance;
 	}
 
-	//Formerly "setPluginContent()"
 	public static function setPluginContent($key, $instance = false) {
 	
 		if ($instanceId = \ze\row::get('plugin_instances', 'id', $key)) {
@@ -476,23 +511,24 @@ class contentAdm {
 	//This fucntion can be used where you have a WYSIWYG editor, and you want to try and
 	//ensure that the URLs used are absolute URLs.
 	//For example, this should be used for URLs that will appear in emails.
-	//Formerly "addAbsURLsToAdminBoxField()"
 	public static function addAbsURLsToAdminBoxField(&$field) {
 		foreach (['value', 'current_value'] as $value) {
 			if (isset($field[$value])) {
 				foreach (['"', "'"] as $quote) {
-					$field[$value] = 
-						str_replace(
-							$quote. 'zenario/file.php',
-							$quote. htmlspecialchars(\ze\link::absolute()). 'zenario/file.php',
-							$field[$value]);
+					foreach (['zenario/file.php', 'public/images/'] as $frag) {
+						$field[$value] = 
+							str_replace(
+								$quote. $frag,
+								$quote. htmlspecialchars(\ze\link::absolute()). $frag,
+								$field[$value]);
 				
-					//Attempt to work around a bug in the editor where the subdirectory gets added in before the URL
-					$field[$value] = 
-						str_replace(
-							$quote. htmlspecialchars(SUBDIRECTORY). 'zenario/file.php',
-							$quote. htmlspecialchars(\ze\link::absolute()). 'zenario/file.php',
-							$field[$value]);
+						//Attempt to work around a bug in the editor where the subdirectory gets added in before the URL
+						$field[$value] = 
+							str_replace(
+								$quote. htmlspecialchars(SUBDIRECTORY). $frag,
+								$quote. htmlspecialchars(\ze\link::absolute()). $frag,
+								$field[$value]);
+					}
 				}
 			}
 		}
@@ -501,7 +537,6 @@ class contentAdm {
 	//This fucntion can be used where you have a WYSIWYG editor, and you want to try and
 	//ensure that the URLs used are relative URLs.
 	//For example, this should be used for URLs that will appear on content items.
-	//Formerly "stripAbsURLsFromAdminBoxField()"
 	public static function stripAbsURLsFromAdminBoxField(&$field) {
 		foreach (['value', 'current_value'] as $value) {
 			if (isset($field[$value])) {
@@ -511,13 +546,15 @@ class contentAdm {
 							$quote. htmlspecialchars(\ze\link::absolute()),
 							$quote,
 							$field[$value]);
-				
-					//Attempt to work around a bug in the editor where the subdirectory gets added in before the URL
-					$field[$value] = 
-						str_replace(
-							$quote. htmlspecialchars(SUBDIRECTORY). 'zenario/file.php',
-							$quote. 'zenario/file.php',
-							$field[$value]);
+					
+					foreach (['zenario/file.php', 'public/images/'] as $frag) {
+						//Attempt to work around a bug in the editor where the subdirectory gets added in before the URL
+						$field[$value] = 
+							str_replace(
+								$quote. htmlspecialchars(SUBDIRECTORY). $frag,
+								$quote. $frag,
+								$field[$value]);
+					}
 				}
 			}
 		}
@@ -532,19 +569,16 @@ class contentAdm {
 	}
 
 
-	//Formerly "adminFileLink()"
 	public static function adminFileLink($fileId) {
 		return \ze\link::absolute() . 'zenario/admin/file.php?id=' . $fileId;
 	}
 
 	//Scan a Content Item's HTML and other information, and come up with a list of inline files that relate to it
 	//Note there is simmilar logic in zenario/admin/db_updates/step_4_migrate_the_data/local.inc.php for migration
-	//Formerly "syncInlineFileContentLink()"
 	public static function syncInlineFileContentLink($cID, $cType, $cVersion, $publishing = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "syncInlineFileLinks()"
 	public static function syncInlineFileLinks(
 		&$files, &$html, &$htmlChanged,
 		$usage = 'image',
@@ -554,7 +588,6 @@ class contentAdm {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "syncInlineFiles()"
 	public static function syncInlineFiles(&$files, $key, $keepOldImagesThatAreNotInUse = true, $isNest = 0, $isSlideshow = 0) {
 	
 		//Mark all existing images as not in use
@@ -576,7 +609,6 @@ class contentAdm {
 	}
 
 	//This function will correct the entries in the inline_images table for any files used in a library plugin
-	//Formerly "resyncLibraryPluginFiles()"
 	public static function resyncLibraryPluginFiles($instanceId, $instance = null) {
 	
 		if (is_null($instance)) {
@@ -627,7 +659,6 @@ class contentAdm {
 
 	//Check to see if an image is not used, and delete it
 	//This is only designed to work for files with their usage set to 'image'
-	//Formerly "deleteUnusedImage()"
 	public static function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {
 	
 		$key = [
@@ -688,7 +719,6 @@ class contentAdm {
 	}
 
 	//Look for User/Group/Admin files that are not in use, and remove them
-	//Formerly "deleteUnusedImagesByUsage()"
 	public static function deleteUnusedImagesByUsage($usage) {
 	
 		if ($usage != 'group' && $usage != 'user' && $usage != 'admin') {
@@ -720,7 +750,6 @@ class contentAdm {
 
 
 
-	//Formerly "deleteUnusedBackgroundImages()"
 	public static function deleteUnusedBackgroundImages() {
 		$sql = "
 			DELETE f.*
@@ -737,7 +766,6 @@ class contentAdm {
 
 
 
-	//Formerly "deleteDraft()"
 	public static function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = false) {
 		if (!$adminId) {
 			$adminId = $_SESSION['admin_userid'] ?? false;
@@ -762,6 +790,10 @@ class contentAdm {
 	
 		} elseif ($content['status'] == 'published_with_draft') {
 			$content['status'] = 'published';
+			$content['admin_version'] = $content['visitor_version'];
+	
+		} elseif ($content['status'] == 'unlisted_with_draft') {
+			$content['status'] = 'unlisted';
 			$content['admin_version'] = $content['visitor_version'];
 	
 		} elseif ($content['status'] == 'hidden_with_draft') {
@@ -795,7 +827,6 @@ class contentAdm {
 		return;
 	}
 
-	//Formerly "deleteVersion()"
 	public static function deleteVersion($cID, $cType, $cVersion) {
 		\ze\row::delete('content_item_versions', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		\ze\row::delete('plugin_item_link', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
@@ -806,7 +837,6 @@ class contentAdm {
 
 	//Delete all of the archived versions of a content item before a specificied version,
 	//or if no version is specified, delete all archived versions
-	//Formerly "deleteArchive()"
 	public static function deleteArchive($cID, $cType, $cVersion = false) {
 	
 		//If no version is specified, look for the most recent archived version
@@ -842,7 +872,6 @@ class contentAdm {
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 	}
 
-	//Formerly "deleteContentItem()"
 	public static function deleteContentItem($cID, $cType) {
 		$content = ['id' => $cID, 'type' => $cType];
 	
@@ -865,7 +894,6 @@ class contentAdm {
 		\ze\row::set('content_items', ['status' => 'deleted', 'admin_version' => 0, 'visitor_version' => 0, 'alias' => ''], $content);
 	}
 
-	//Formerly "trashContent()"
 	public static function trashContent($cID, $cType, $adminId = false, $mode = false) {
 	
 		if (!$adminId) {
@@ -885,8 +913,6 @@ class contentAdm {
 		\ze\module::sendSignal("eventContentTrashed",["cID" => $cID,"cType" => $cType]);
 	}
 
-	//$status == 'first_draft' || $status == 'published_with_draft' || $status == 'published'
-	//Formerly "hideContent()"
 	public static function hideContent($cID, $cType, $adminId = false) {
 	
 		if (!$adminId) {
@@ -897,7 +923,7 @@ class contentAdm {
 		$content = \ze\row::get('content_items', ['status', 'admin_version'], ['id' => $cID, 'type' => $cType]);
 		$oldStatus = $content['status'];
 	
-		if (($oldStatus == 'published_with_draft' || $oldStatus == 'hidden_with_draft' || $oldStatus == 'trashed_with_draft')
+		if (($oldStatus == 'published_with_draft' || $oldStatus == 'hidden_with_draft' || $oldStatus == 'trashed_with_draft' || $oldStatus == 'unlisted_with_draft')
 		 && !\ze\contentAdm::contentLastModifiedBy($cID, $cType)) {
 			\ze\contentAdm::deleteDraft($cID, $cType, $allowCompleteDeletion = false);
 			$content = \ze\row::get('content_items', ['status', 'admin_version'], ['id' => $cID, 'type' => $cType]);
@@ -913,9 +939,52 @@ class contentAdm {
 		\ze\module::sendSignal("eventContentHidden",["cID" => $cID,"cType" => $cType]);
 	}
 
+	public static function delistContent($cID, $cType) {
+	
+		$content = \ze\row::get('content_items', ['status'], ['id' => $cID, 'type' => $cType]);
+		
+		switch ($content['status']) {
+			case 'published':
+				$newStatus = 'unlisted';
+				break;
+			
+			case 'published_with_draft':
+				$newStatus = 'unlisted_with_draft';
+				break;
+			
+			default:
+				return;
+		}
+		
+		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
+	
+		\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
+	}
+
+	public static function relistContent($cID, $cType) {
+	
+		$content = \ze\row::get('content_items', ['status'], ['id' => $cID, 'type' => $cType]);
+		
+		switch ($content['status']) {
+			case 'unlisted':
+				$newStatus = 'published';
+				break;
+			
+			case 'unlisted_with_draft':
+				$newStatus = 'published_with_draft';
+				break;
+			
+			default:
+				return;
+		}
+		
+		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
+	
+		\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
+	}
+
 	//If a Content Item is published/hidden, its Menu Node may be shown/hidden as well
 	//Check for this case, and clear the cache if needed
-	//Formerly "hideOrShowContentItemsMenuNode()"
 	public static function hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, $newStatus = false) {
 		if (\ze\menu::getFromContentItem($cID, $cType)) {
 			if (!$newStatus) {
@@ -930,7 +999,6 @@ class contentAdm {
 	}
 
 	//Delete the Menu Node for a Content Item
-	//Formerly "removeItemFromMenu()"
 	public static function removeItemFromMenu($cID, $cType) {
 		$languageId = \ze\content::langId($cID, $cType);
 		$equivId = $cID;
@@ -966,7 +1034,6 @@ class contentAdm {
 		}
 	}
 
-	//Formerly "removeItemFromPluginSettings()"
 	public static function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode = false) {
 	
 		if ($mode == 'remove') {
@@ -1060,7 +1127,6 @@ class contentAdm {
 	const CANT_BECAUSE_SPECIAL_PAGE = 0;
 
 	//Check if a Content Item is in a state where it could be deleted/trashed/hidden. Note that these functions don't check for locks.
-	//Formerly "allowDelete()"
 	public static function allowDelete($cID, $cType, $status = false, $contentItemLanguageId = false) {
 		if (!$status) {
 			$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
@@ -1084,12 +1150,11 @@ class contentAdm {
 			}
 	
 		} else {
-			return $status == 'published_with_draft' || $status == 'hidden_with_draft' || $status == 'trashed_with_draft';
+			return $status == 'published_with_draft' || $status == 'hidden_with_draft' || $status == 'trashed_with_draft' || $status == 'unlisted_with_draft';
 		}
 	}
 
 	//\ze\priv::check("_PRIV_PUBLISH_CONTENT_ITEM")
-	//Formerly "allowTrash()"
 	public static function allowTrash($cID, $cType, $status = false, $lastModified = false, $contentItemLanguageId = false) {
 		if (\ze\content::isSpecialPage($cID, $cType) && !\ze\contentAdm::allowRemoveEquivalence($cID, $cType)) {
 			//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
@@ -1110,6 +1175,8 @@ class contentAdm {
 		
 			if ($status == 'published'
 			 || $status == 'published_with_draft'
+			 || $status == 'unlisted'
+			 || $status == 'unlisted_with_draft'
 			 || $status == 'hidden'
 			 || $status == 'hidden_with_draft') {
 				return true;
@@ -1120,7 +1187,6 @@ class contentAdm {
 	}
 
 	//\ze\priv::check("_PRIV_PUBLISH_CONTENT_ITEM")
-	//Formerly "allowHide()"
 	public static function allowHide($cID, $cType, $status = false) {
 		
 		//Check for special pages without the allow_hide option set.
@@ -1138,10 +1204,100 @@ class contentAdm {
 			return
 				$status == 'first_draft'
 			 || $status == 'published_with_draft'
+			 || $status == 'unlisted_with_draft'
 			 || $status == 'trashed_with_draft'
 			 || $status == 'hidden_with_draft'
-			 || $status == 'published';
+			 || $status == 'published'
+			 || $status == 'unlisted';
 		}	
+	}
+
+	public static function allowPublishUnlisted($cID, $cType, $status = false) {
+		
+		//Some special pages are not allowed to be unlisted
+		if ($sp = \ze\content::isSpecialPage($cID, $cType)) {
+			
+			if (\ze\row::exists('special_pages', ['page_type' => $sp, 'listing_policy' => 'must_be_listed'])) {
+				//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+				return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
+			}
+		}
+		
+		if ($status === false) {
+			$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+		}
+	
+		return
+			$status == 'first_draft'
+		 || $status == 'published_with_draft'
+		 || $status == 'unlisted_with_draft'
+		 || $status == 'trashed_with_draft'
+		 || $status == 'hidden_with_draft'
+		 || $status == 'hidden';
+	}
+
+	public static function allowPublishListed($cID, $cType, $status = false) {
+		
+		//Some special pages are not allowed to be listed
+		if ($sp = \ze\content::isSpecialPage($cID, $cType)) {
+			
+			if (\ze\row::exists('special_pages', ['page_type' => $sp, 'listing_policy' => 'must_be_unlisted'])) {
+				//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+				return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
+			}
+		}
+		
+		if ($status === false) {
+			$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+		}
+	
+		return
+			$status == 'first_draft'
+		 || $status == 'published_with_draft'
+		 || $status == 'unlisted_with_draft'
+		 || $status == 'trashed_with_draft'
+		 || $status == 'hidden_with_draft'
+		 || $status == 'hidden';
+	}
+
+	public static function allowDelist($cID, $cType, $status = false) {
+		
+		//Some special pages are not allowed to be unlisted
+		if ($sp = \ze\content::isSpecialPage($cID, $cType)) {
+			
+			if (\ze\row::exists('special_pages', ['page_type' => $sp, 'listing_policy' => 'must_be_listed'])) {
+				//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+				return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
+			}
+		}
+		
+		if ($status === false) {
+			$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+		}
+	
+		return
+			$status == 'published_with_draft'
+		 || $status == 'published';
+	}
+
+	public static function allowRelist($cID, $cType, $status = false) {
+		
+		//Some special pages are not allowed to be listed
+		if ($sp = \ze\content::isSpecialPage($cID, $cType)) {
+			
+			if (\ze\row::exists('special_pages', ['page_type' => $sp, 'listing_policy' => 'must_be_unlisted'])) {
+				//Small hack here, return 0 not false so any caller that cares can tell why, but it still evaluates to false for anyone who doesn't.
+				return \ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE;
+			}
+		}
+		
+		if ($status === false) {
+			$status = \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+		}
+	
+		return
+			$status == 'unlisted_with_draft'
+		 || $status == 'unlisted';
 	}
 	
 	
@@ -1168,12 +1324,10 @@ class contentAdm {
 
 
 
-	//Formerly "rerenderWorkingCopyImages()"
 	public static function rerenderWorkingCopyImages($recreateCustomThumbnailOnes = true, $recreateCustomThumbnailTwos = true, $removeOldCopies = false, $jpegOnly = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "getImageTagColours()"
 	public static function getImageTagColours($byId = true, $byName = true) {
 	
 		$tagColours = [];
@@ -1197,12 +1351,10 @@ class contentAdm {
 
 
 
-	//Formerly "allowDeleteLanguage()"
 	public static function allowDeleteLanguage($langId) {
 		return $langId != \ze::$defaultLang;
 	}
 
-	//Formerly "deleteLanguage()"
 	public static function deleteLanguage($langId) {
 		//Remove all of the Content Items in a Language
 		$result = \ze\row::query('content_items', ['id', 'type'], ['language_id' => $langId]);
@@ -1231,7 +1383,6 @@ class contentAdm {
 		\ze\row::delete('languages', $langId);
 	}
 
-	//Formerly "contentLastModifiedBy()"
 	public static function contentLastModifiedBy($cID, $cType) {
 		$sql = "
 			SELECT last_author_id
@@ -1249,7 +1400,6 @@ class contentAdm {
 	}
 
 
-	//Formerly "importPhrasesForModule()"
 	public static function importPhrasesForModule($moduleClassName, $langId = false) {
 
 		//Check if this Module uses the old Visitor phrases system, with phrases in CSV files
@@ -1291,21 +1441,18 @@ class contentAdm {
 		}
 	}
 
-	//Formerly "importPhrasesForModules()"
 	public static function importPhrasesForModules($langId = false) {
 		foreach (\ze\module::modules($onlyGetRunningPlugins = true, $ignoreUninstalledPlugins = true, $dbUpdateSafemode = true) as $module) {
 			\ze\contentAdm::importPhrasesForModule($module['class_name'], $langId);
 		}
 	}
 
-	//Formerly "addNeededSpecialPages()"
 	public static function addNeededSpecialPages() {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 
 
-	//Formerly "getItemIconClass()"
 	public static function getItemIconClass($cID, $cType, $checkForSpecialPage = true, $status = false) {
 	
 		if ($status === false) {
@@ -1345,6 +1492,12 @@ class contentAdm {
 			case 'trashed_with_draft':
 				return $specialPage? 'special_content_draft_trashed' : 'content_draft_trashed';
 			
+			case 'unlisted':
+				return $specialPage? 'special_content_unlisted' : 'content_unlisted';
+		
+			case 'unlisted_with_draft':
+				return $specialPage? 'special_content_draft_unlisted' : 'content_draft_unlisted';
+			
 			case 'archived':
 				return 'content_archived';
 		}
@@ -1354,18 +1507,20 @@ class contentAdm {
 
 
 
-	//Formerly "getContentItemVersionToolbarIcon()"
 	public static function getContentItemVersionToolbarIcon(&$content, $cVersion, $prefix = '') {
 		return $prefix. \ze\contentAdm::getContentItemVersionStatus($content, $cVersion);
 	}
 
-	//Formerly "getContentItemVersionStatus()"
 	public static function getContentItemVersionStatus($content, $cVersion) {
 	
 		if ($cVersion == $content['visitor_version']) {
 			switch ($content['status']) {
 				case 'published_with_draft':
 				case 'published':
+					return 'published';
+				
+				case 'unlisted_with_draft':
+				case 'unlisted':
 					return 'published';
 			}
 	
@@ -1391,12 +1546,45 @@ class contentAdm {
 		return 'archived';
 	}
 
+	public static function getContentItemVersionStatusLabel($content, $cVersion) {
+	
+		if ($cVersion == $content['visitor_version']) {
+			switch ($content['status']) {
+				case 'published_with_draft':
+				case 'published':
+					return 'Published';
+				
+				case 'unlisted_with_draft':
+				case 'unlisted':
+					return 'Published (unlisted)';
+			}
+	
+		} elseif ($cVersion == $content['admin_version']) {
+			switch ($content['status']) {
+				case 'hidden':
+					return 'Hidden';
+				case 'trashed':
+					return 'Trashed';
+				default:
+					return 'Draft';
+			}
+	
+		} elseif ($cVersion == $content['admin_version'] - 1) {
+			switch ($content['status']) {
+				case 'hidden_with_draft':
+					return 'Hidden';
+				case 'trashed_with_draft':
+					return 'Trashed';
+			}
+		}
+
+		return 'Archived';
+	}
 
 
 
 
 	//Validation function for checking aliases
-	//Formerly "validateAlias()"
 	public static function validateAlias($alias, $cID = false, $cType = false, $equivId = false, $isSpareAlias = false) {
 		$error = [];
 		$cIDToCheck = $cTypeToCheck = false;
@@ -1428,7 +1616,7 @@ class contentAdm {
 					
 					//Otherwise, block. Do not allow situations where, for example, an admin attempts to create a spare alias
 					//html_11, when the highest number created is html_10.
-					if (\ze\content::getContentTypes($cTypeToCheck)) {
+					if (\ze\row::exists('content_types', ['content_type_id' => $cTypeToCheck])) {
 						$contentItemStatus = \ze\row::get('content_items', 'status', ['id' => $cIDToCheck, 'type' => $cTypeToCheck]);
 					
 						if ($contentItemStatus && $contentItemStatus == 'deleted') {
@@ -1503,7 +1691,6 @@ class contentAdm {
 		}
 	}
 
-	//Formerly "tidyAlias()"
 	public static function tidyAlias($alias) {
 	
 		$alias = str_replace(" ","-",$alias);
@@ -1517,7 +1704,6 @@ class contentAdm {
 
 
 
-	//Formerly "contentItemPrivacyDesc()"
 	public static function privacyDesc($chain) {
 		
 		if (is_string($chain)) {
@@ -1625,7 +1811,6 @@ class contentAdm {
 		}
 	}
 
-	//Formerly "getListOfSmartGroupsWithCounts()"
 	public static function getListOfSmartGroupsWithCounts($intendedUsage = 'smart_permissions_group') {
 		$smartGroups = \ze\row::getValues('smart_groups', 'name', ['intended_usage' => $intendedUsage], 'name');
 		foreach ($smartGroups as $smartGroupId => &$name) {
@@ -1639,7 +1824,6 @@ class contentAdm {
 	}
 
 	//Smart group description function
-	//Formerly "getSmartGroupDescription()"
 	public static function getSmartGroupDescription($smartGroupId) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -1682,7 +1866,6 @@ class contentAdm {
 
 
 	//Add two Content Items into an equivalence
-	//Formerly "recordEquivalence()"
 	public static function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 		//Get the two equivalence keys of the Content Items
 		$equiv1 = \ze\content::equivId($cID1, $cType);
@@ -1812,7 +1995,6 @@ class contentAdm {
 		return true;
 	}
 
-	//Formerly "tidyTranslationsTable()"
 	public static function tidyTranslationsTable($equivId, $cType) {
 		if (!\ze\row::exists('content_items', ['equiv_id' => $equivId, 'type' => $cType])) {
 			\ze\row::delete('category_item_link', ['equiv_id' => $equivId, 'content_type' => $cType]);
@@ -1822,7 +2004,6 @@ class contentAdm {
 		}
 	}
 
-	//Formerly "copyTranslationsTable()"
 	public static function copyTranslationsTable($oldEquivId, $newEquivId, $cType) {
 		$chain = \ze\row::get('translation_chains', true, ['equiv_id' => $oldEquivId, 'type' => $cType]);
 		$chain['equiv_id'] = $newEquivId;
@@ -1861,12 +2042,10 @@ class contentAdm {
 		\ze\sql::update($sql);
 	}
 
-	//Formerly "resyncEquivalence()"
 	public static function resyncEquivalence($cID, $cType) {
 		\ze\contentAdm::recordEquivalence($cID, false, $cType);
 	}
 
-	//Formerly "allowRemoveEquivalence()"
 	public static function allowRemoveEquivalence($cID, $cType) {
 		//Check if this is a special page
 		if (($specialPage = \ze\content::isSpecialPage($cID, $cType))
@@ -1880,7 +2059,6 @@ class contentAdm {
 
 
 	//Remove a content equivalence link from the database
-	//Formerly "removeEquivalence()"
 	public static function removeEquivalence($cID, $cType) {
 	
 	
@@ -1929,7 +2107,6 @@ class contentAdm {
 	
 	
 
-	//Formerly "saveLanguage()"
 	public static function saveLanguage($submission, $lang) {
 	
 		if (($valid = validateLanguage($submission)) && ($valid['valid'])) {
@@ -1952,7 +2129,6 @@ class contentAdm {
 
 	//Check a VLP to see if the three bare-minimum required phrases are there
 	//If they are, then the VLP can be added as a language
-	//Formerly "checkIfLanguageCanBeAdded()"
 	public static function checkIfLanguageCanBeAdded($languageId) {
 		return 3 == \ze\row::count('visitor_phrases', [
 			'language_id' => $languageId,
@@ -1960,12 +2136,10 @@ class contentAdm {
 			'module_class_name' => 'zenario_common_features']);
 	}
 
-	//Formerly "aliasURLIsValid()"
 	public static function aliasURLIsValid($url) {
 		return preg_match("/^[0-9A-Za-z\.\-]*\.[0-9A-Za-z\.\-\/]*$/",$url);
 	}
 
-	//Formerly "getLanguageSelectListOptions()"
 	public static function getLanguageSelectListOptions(&$field) {
 		$ord = 0;
 	
@@ -1983,7 +2157,6 @@ class contentAdm {
 	
 
 	//Given a content item, and a module id, work out which slots have wireframes from that plugin on them
-	//Formerly "pluginMainSlot()"
 	public static function mainSlot($cID, $cType, $cVersion, $moduleId = false, $limitToOne = true, $forceLayoutId = false) {
 	
 		if (!$moduleId) {

@@ -79,7 +79,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 										['language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features']);
 				}
 			}
-
+			
 			if ($item['landing_page_equiv_id'] && $item['landing_page_content_type']) {
 				$item['landing_page'] = ze\content::formatTag($item['landing_page_equiv_id'], $item['landing_page_content_type']);
 			}

@@ -45,7 +45,7 @@ zenario_admin_change_email:
                     format_onchange: true
                     can_be_pressed_in_view_mode: true
                     value: Send code
-                    class: 'submit_selected'
+                    class: 'zenario_submit_button'
                 code:
                     label: 'Enter the code:'
                     type: text

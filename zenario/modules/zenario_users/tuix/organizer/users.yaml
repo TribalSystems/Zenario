@@ -76,10 +76,13 @@ zenario__users:
                     db_column: u.salutation
                 first_name:
                     hidden: true
+                    shown_in_view_options: true
+                    title_in_view_options: First name
                     db_column: u.first_name
                     searchable: true
                 name:
                     title: Name
+                    title_in_view_options: Last name
                     db_column: u.last_name
                     sort_column: u.last_name, u.first_name
                     sort_column_desc: u.last_name DESC, u.first_name DESC
@@ -100,9 +103,11 @@ zenario__users:
                     db_column: u.email_verified
                     always_show: true
                     searchable: 1
-                    format: yes_or_no
-                    yes_phrase: Verified
-                    no_phrase: Not verified
+                    format: enum
+                    values:
+                        verified: Email address verified
+                        not_verified: Email not verified
+                        email_not_set: ''
                     width: xsmall
                     parent: email
                 terms_and_conditions_accepted:
@@ -452,7 +457,7 @@ zenario__users:
                     with_columns_set:
                         traits.has_image: true
                 convert_to_user:
-                    label: Convert to extranet user
+                    label: Convert to extranet user...
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
@@ -499,7 +504,7 @@ zenario__users:
             inline_buttons:
                 active:
                     css_class: zenario_users_active_status
-                    tooltip: "Active"
+                    tooltip: "Extranet user"
                     visible_if: >
                         (item.status == "active")
                 contact:
@@ -509,12 +514,12 @@ zenario__users:
                         (item.status == "contact")
                 pending:
                     css_class: zenario_users_pending_status
-                    tooltip: "Pending"
+                    tooltip: "Extranet user (pending)"
                     visible_if: >
                         (item.status == "pending")
                 suspended:
                     css_class: zenario_users_suspended_status
-                    tooltip: "Suspended"
+                    tooltip: "Extranet user (suspended)"
                     visible_if: >
                         (item.status == "suspended")
 

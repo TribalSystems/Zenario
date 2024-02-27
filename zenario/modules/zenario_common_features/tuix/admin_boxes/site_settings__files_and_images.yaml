@@ -368,14 +368,14 @@ site_settings:
                 description:
                     full_width: true
                     snippet:
-                        html: This tab contains settings for file downloads.
+                        html: This tab contains settings for downloads of files that are Document content items, and of files that are hierarchical documents.
                 restrict_downloads_by_ip:
                     site_setting:
                         name: restrict_downloads_by_ip
-                    label: 'Restrict by IP:'
+                    label: 'Restrict downloads of private files by IP:'
                     type: checkbox
                     value: 1
-                    note_below: "Places a <code>.htaccess</code> file in the temporary document directory to allow access only from the client's IP address."
+                    note_below: "Downloads of private files are from within the <code>private/</code> directory, in a sub-directory whose name is that of the file's long checksum (i.e. very hard to guess). It is also temporary and will be deleted after a short time. If this setting is enabled, it adds a further restriction by writing a <code>.htaccess</code> file in the sub-directory, so as to restrict access to the client's IP address."
                  
                     
         document_tags:
@@ -388,7 +388,7 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            Document tags may be used when listing multiple hierarchal documents in a folder to determine which documents should be displayed to visitors.
+                            Document tags may be used when listing multiple hierarchical documents in a folder to determine which documents should be displayed to visitors.
                             They are for internal administration only and are not visible to regular visitors.
                 enable_document_tags:
                     site_setting:

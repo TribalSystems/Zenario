@@ -89,7 +89,7 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 							$item['defaults'] .= ze\admin::phrase('. New items restricted but no menu item nominated');
 					
 						} else {
-							$mrg = ['menu_path' => ze\menuAdm::pathWithSection($menuNodes[0])];
+							$mrg = ['menu_path' => ze\menuAdm::path($menuNodes[0])];
 							$item['defaults'] .= ze\admin::phrase('. New items restricted to under [[menu_path]]', $mrg);
 						
 							--$count;
@@ -97,7 +97,7 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 						}
 					} else {
 						if ($count > 0) {
-							$mrg = ['menu_path' => ze\menuAdm::pathWithSection($menuNodes[0])];
+							$mrg = ['menu_path' => ze\menuAdm::path($menuNodes[0])];
 							$item['defaults'] .= ze\admin::phrase('. New items attached to menu under [[menu_path]]', $mrg);
 						
 							--$count;

@@ -1115,3 +1115,18 @@ ze\dbAdm::revision(186
 _sql
 
 );
+
+ze\dbAdm::revision(187
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ADD COLUMN `apply_css_rules` tinyint(1) NOT NULL default 0,
+	DROP COLUMN `head`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates`
+	ADD COLUMN `apply_css_rules` tinyint(1) NOT NULL default 0,
+	DROP COLUMN `head`
+_sql
+
+);

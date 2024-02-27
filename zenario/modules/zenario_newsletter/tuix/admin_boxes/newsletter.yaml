@@ -91,11 +91,11 @@ zenario_newsletter:
                 load_content_cancel:
                     pre_field_html: 'Warning: You have already started entering content. All content you have entered into the body will be erased. Continue?<br/><div style="float:right">'
                     type: submit
-                    class: submit
+                    class: zenario_gp_button
                     value: Cancel
                 load_content_continue:
                     type: submit
-                    class: submit
+                    class: zenario_gp_button
                     value: Continue
                     same_row: true
                     post_field_html: '</div style="float:right">'
@@ -106,13 +106,11 @@ zenario_newsletter:
                     format_onchange: true
                 body:
                     full_width: true
-                    style: |
-                        height: 20em;
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
                     editor_options:
-                        toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | alignleft aligncenter alignright alignjustify | numlist bullist | outdent indent | code fullscreen'
                         convert_urls: false
                         relative_urls: false
                     insert_image_button:
@@ -122,6 +120,12 @@ zenario_newsletter:
                             min_path: ""
                             max_path: ""
                             disallow_refiners_looping_on_min_path: true
+                apply_css_rules:
+                    label: Apply
+                    type: checkbox
+                    note_below: 'These CSS rules will not be visible on the Preview tab. Use the "Test send" feature to view them.'
+                    post_field_html: |
+                        &nbsp;[[link_start]]CSS rules[[link_end]]
                 test_send_email_address:
                     type: text
                     maxlength: "100"
@@ -133,7 +137,7 @@ zenario_newsletter:
                     type: submit
                     value: Send sample
                     visible_if: '!zenarioAB.tuix.key.id'
-                    class: 'submit_disabled'
+                    class: 'zenario_disabled_button'
                     onclick: 'return false;'
                 test_send_button:
                     same_row: true
@@ -142,7 +146,7 @@ zenario_newsletter:
                     can_be_pressed_in_view_mode: true
                     value: Test Send
                     visible_if: 'zenarioAB.tuix.key.id'
-                    class: 'submit_selected'
+                    class: 'zenario_submit_button'
             notices:
                 test_send_sucesses:
                     show: ""
@@ -179,15 +183,15 @@ zenario_newsletter:
                         nothing_selected_phrase: "No recipients' smart newsletter groups selected"
                         disallow_refiners_looping_on_min_path: true
                 exclude_recipients_with_opt_out:
-                    label: Exclude recipients with newsletter opt-out field checked
+                    label: Exclude users/contacts with Newsletter opt-out field checked
                     type: checkbox
-                    side_note: >
-                        Recipients who have previously clicked the Unsubscribe link will not receive this newsletter. There is no need to add a rule to exclude these recipients from your smart group.
+                    note_below: >
+                        Users or contacts who have clicked the Unsubscribe link on a previous email will have the all_newsletters_opt_out field checked and will not be sent this newsletter.
                     value: 1
                     readonly: true
                 
                 exclude_recipients_with_no_consent:
-                    label: Exclude recipients without consent to receive newsletters
+                    label: Only send to users/contacts with the "Has accepted terms and conditions" field checked
                     type: checkbox
                     readonly: true
                 
@@ -200,15 +204,16 @@ zenario_newsletter:
                             label: Don't include an Unsubscribe link
                         unsub:
                             ord: 2
-                            label: Add an Unsubscribe link (but don't delete the user's account)
+                            label: Add a link to Unsubscribe without deleting the account
                             side_note: |
                                 Recipients who click the unsubscribe link will have
                                 the newsletter opt-out field checked.
                         delete:
                             ord: 3
-                            label:  Add an Unsubscribe link (delete the user's account)
+                            label:  Add a link to Unsubscribe that also deletes the account
                             side_note: |
                                 Recipients who click this will have all of their details deleted, i.e. the recipient's user record.
+                    value: unsub
                     format_onchange: true
                     validation:
                         required_if_not_hidden: Please choose whether to show an unsubscribe link or not.
@@ -218,7 +223,7 @@ zenario_newsletter:
                     label: 'Unsubscribe text:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter an unsubscribe text.
+                        required_if_not_hidden: Please enter text that will appear on the email informing the recipient that they can unsubscribe from emails.
                     post_field_html: '<div id="unsubscribe_info"></div>'
                     onkeyup: "$('#unsubscribe_info').html('Preview: ' + $('#unsubscribe_text').val() + ' ' + $('#example_unsubscribe_url_underlined_and_hidden').val());"
                 example_unsubscribe_url_underlined_and_hidden:
@@ -228,10 +233,10 @@ zenario_newsletter:
                 
                 delete_account_text:
                     indent: 1
-                    label: 'Unsubscribe text:'
+                    label: 'Delete-account text:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter delete account text.
+                        required_if_not_hidden: Please enter text that will appear on the email informing the recipient that they can have their account deleted.
                     post_field_html: '<div id="delete_account_info"></div>'
                     onkeyup: "$('#delete_account_info').html('Preview: ' + $('#delete_account_text').val() + ' ' + $('#example_delete_account_url_underlined_and_hidden').val());"
                 example_delete_account_url_underlined_and_hidden:
@@ -242,46 +247,21 @@ zenario_newsletter:
                 
                 
                 exclude_previous_newsletters_recipients_enable:
-                    label: 'Exclude recipients of earlier newsletters'
+                    label: 'Exclude recipients of earlier newsletters...'
                     type: checkbox
-                    side_note: >
-                        You may exclude recipients to whom you sent earlier
-                        newsletters.
                     format_onchange: true
                 exclude_previous_newsletters_recipients:
                     indent: 1
-                    label: 'Select newsletter(s):'
+                    label: 'Select newsletters:'
                     pick_items:
                         path: zenario__email_template_manager/panels/newsletters/refiners/archive////
                         target_path: zenario__email_template_manager/panels/newsletters/refiners/archive////
                         min_path: zenario__email_template_manager/panels/newsletters
                         disallow_refiners_looping_on_min_path: true
                         multiple_select: true
-                        select_phrase: Select newsletter(s)...
+                        select_phrase: Select newsletters...
                         nothing_selected_phrase: No newsletters selected
                     validation:
                         required_if_not_hidden: >
                             Please select an archived newsletter whose recipients you
                             wish to exclude in the new newsletter.
-        
-        advanced:
-            label: Advanced
-            edit_mode:
-                priv: _PRIV_EDIT_NEWSLETTER
-                enabled: true
-            fields:
-                desc:
-                    snippet:
-                        html: >
-                            Use this tab to add CSS styles and media queries, for email-clients
-                            that support these features.
-                head:
-                    label: 'HTML in head of email:'
-                    type: code_editor
-                    tall_as_possible: true
-                    dont_trim: true
-                    language: html
-                    style: >
-                        width: 98%;
-                        height: 30em;
-                    rows: 30

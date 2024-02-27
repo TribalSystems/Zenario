@@ -31,3 +31,17 @@ zenario_admin:
                     type: checkbox
                     value: ''
                     label: Allow this administrator to view the developer tools
+                    redraw_onchange: true
+                cli_sftp_connection:
+                    admin_setting:
+                        name: cli_sftp_connection
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: text
+                    value: ''
+                    label: SFTP connection string for editor
+                    validation:
+                        ascii_only: Please don't enter special characters
+                    note_below: |
+                        E.g. <code>sftp://username@server.com/</code>. Or leave this field blank to use localhost.
+                        <br/>This is used when displaying help text, and is for reference only.

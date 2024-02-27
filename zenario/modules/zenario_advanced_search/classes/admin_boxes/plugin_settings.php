@@ -191,6 +191,8 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				//If searching in other modules, let the user know what module
 				//is expected to be on the results page.
 				if ($values['content_types/search_in_other_modules']) {
+					$suggestedModule = null;
+					
 					if ($values['content_types/module_to_search']) {
 						switch ($values['content_types/module_to_search']) {
 							case 'zenario_ecommerce_document':
@@ -201,6 +203,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 								$suggestedModule = 'zenario_locations_fea';
 								break;
 						}
+					}
+					
+					if ($suggestedModule !==  null) {
 						$fields['content_types/other_module_view_item_content_item']['notices_below']['expected_module_on_results_page']['hidden'] = false;
 						$fields['content_types/other_module_view_item_content_item']['notices_below']['expected_module_on_results_page']['message'] =
 							ze\admin::phrase('For best results, use a plugin nest containing the [[suggested_plugin]] plugin on the results page.', ['suggested_plugin' => ze\module::getModuleDisplayNameByClassName($suggestedModule)]);

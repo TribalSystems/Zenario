@@ -1,19 +1,79 @@
 <div id="zenario_fabPreview">
-	<div id="zenario_fabPreviewInfo"></div>
+	<div class="zenario_fabPreviewHeader">
+		<div id="zenario_fabPreviewInfo"></div>
+		<div id="zenario_fabDockPosition">
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconUpdatePreview"
+				onclick="zenarioAB.updatePreview(1);"
+				title="{{zenarioA.phrase.updatePreview|e}}"
+			></span>
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconInPlacePreview"
+				onclick="zenarioAB.showPreviewInPopoutBox(true);"
+				title="{{zenarioA.phrase.previewOnPage|e}}"
+			></span>
+	
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconFullPreview"
+				onclick="zenarioAB.showPreviewInPopoutBox(false);"
+				title="{{zenarioA.phrase.previewFullPage|e}}"
+			></span>
+
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconFull"
+				onclick="zenarioAB.setDockPosition('full');"
+				title="{{zenarioA.phrase.dockFull|e}}"
+			></span>
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconTop"
+				onclick="zenarioAB.setDockPosition('top');"
+				title="{{zenarioA.phrase.dockTop|e}}"
+			></span>
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconRight"
+				onclick="zenarioAB.setDockPosition('right');"
+				title="{{zenarioA.phrase.dockRight|e}}"
+			></span>
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconMobile"
+				onclick="zenarioAB.setDockPosition('mobile');"
+				title="{{zenarioA.phrase.dockMobile|e}}"
+			></span>
+			<span
+				class="zenario_fabDockIcon"
+				id="zenario_fabDockIconClose"
+				onclick="zenarioAB.setDockPosition('closed');"
+				title="{{zenarioA.phrase.dockClose|e}}"
+			></span>
+		</div>
+	</div>
 </div>
 
 <div id="zenario_fabBox">
 	<div id="zenario_fabBox_readonlyMarker"><div>{{zenarioA.phrase.readonly}}</div></div>
-	<div id="zenario_fabOpenPreview">
-		<a onclick="zenarioAB.showPreviewInPopoutBox(false, true);">{{zenarioA.phrase.preview}}</a>
+	<div id="zenario_fabOpenPreview" class="zenario_fabOpenPreview">
+		<a onclick="zenarioAB.showPreviewInPopoutBox(false);">{{zenarioA.phrase.preview}}</a>
+	</div>
+	<div id="zenario_fabReopenPreview" class="zenario_fabOpenPreview">
+		<a onclick="zenarioAB.setDockPosition('auto');">{{zenarioA.phrase.preview}}</a>
 	</div>
 	<div id="zenario_fabBox_Header">
 		<div class="zenario_fabHead">
 			<div>
 				<div>
 					<div id="zenario_fabId" class="zenario_fabId zenario_no_drag"></div>
-					<a class="zenario_fabClose" onclick="return zenarioAB.closeButton();" href="#">
-						<div><p>{{zenarioA.phrase.close}}</p></div>
+					<a class="zenario_fabClose" onclick="return zenarioAB.closeButton();">
+					</a>
+					<a class="zenario_fabPeek" onclick="zenarioAB.togglePeeking();">
+						<span class="zenario_fabStartPeeking"></span>
+						<span class="zenario_fabStopPeeking"></span>
 					</a>
 					<div id="zenario_fabTitleWrap" class="zenario_fabTitleWrap">
 						<div>
@@ -35,7 +95,7 @@
 						<div id="zenario_fabLastUpdated" style="display: none;"></div>
 						
 						<% if (zenarioT.showDevTools()) { %>
-							<div class="zenario_debug" onclick="zenarioA.debug('zenarioAB');"><div></div></div>
+							<div class="zenario_debug" onclick="zenarioA.debug(this, event, 'zenarioAB');"><div></div></div>
 						<% } %>
 		
 						<div class="zenario_fabWinBor"><div class="zenario_fabWinBor" id="zenario_fbAdminInner" {{zenarioAB.dragListeners()}}>

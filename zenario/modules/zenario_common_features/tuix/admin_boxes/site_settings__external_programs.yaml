@@ -94,7 +94,7 @@ site_settings:
                         zenarioAB.value: pdftotext_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
             show_errors_after_field: desc
@@ -172,7 +172,7 @@ site_settings:
                         zenarioAB.value: ghostscript_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
             show_errors_after_field: desc
@@ -230,7 +230,7 @@ site_settings:
                         zenarioAB.value: wkhtmltopdf_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                     visible_if:
@@ -305,7 +305,7 @@ site_settings:
                         zenarioAB.value: antiword_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
             show_errors_after_field: desc
@@ -378,7 +378,7 @@ site_settings:
                         zenarioAB.value: jpegtran_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 jpegoptim_path:
@@ -403,7 +403,7 @@ site_settings:
                         zenarioAB.value: jpegoptim_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
             notices:
@@ -477,7 +477,7 @@ site_settings:
                         zenarioAB.value: optipng_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 advpng_path:
@@ -502,7 +502,7 @@ site_settings:
                         zenarioAB.value: advpng_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
             notices:
@@ -565,7 +565,7 @@ site_settings:
                         zenarioAB.value: mysqldump_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 mysql_path:
@@ -592,7 +592,7 @@ site_settings:
                         zenarioAB.value: mysql_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 mysql_timezone:
@@ -616,7 +616,7 @@ site_settings:
                         zenarioAB.value: mysql_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
             show_errors_after_field: desc
@@ -725,7 +725,7 @@ site_settings:
                         zenarioAB.value: clamscan_tool_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 require_av_scan:

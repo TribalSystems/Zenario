@@ -33,7 +33,6 @@ class fileAdm {
 
 
 	//Generic handler for misc. AJAX requests from admin boxes
-	//Formerly "handleAdminBoxAJAX()"
 	public static function handleAdminBoxAJAX() {
 	
 		if (\ze::request('fileUpload')) {
@@ -51,12 +50,10 @@ class fileAdm {
 
 	//See also: function \ze\file::getPathOfUploadInCacheDir()
 
-	//Formerly "putDropboxFileIntoCacheDir()"
 	public static function putDropboxFileIntoCacheDir($filename, $dropboxLink) {
 		\ze\fileAdm::putUploadFileIntoCacheDir($filename, false, false, $dropboxLink);
 	}
 
-	//Formerly "putUploadFileIntoCacheDir()"
 	public static function putUploadFileIntoCacheDir(
 		$filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false,
 		$cacheFor = false, $isAllowed = null, $baseLink = 'zenario/file.php'
@@ -88,7 +85,7 @@ class fileAdm {
 		}
 	
 		if (!\ze\cache::cleanDirs()
-		 || !($dir = \ze\cache::createDir($sha, 'uploads', false))) {
+		 || !($dir = \ze\cache::createDir($sha, 'private/uploads', false))) {
 			echo
 				\ze\admin::phrase('Zenario cannot currently receive uploaded files, because one of the
 cache/, public/ or private/ directories is not writeable.
@@ -193,7 +190,6 @@ To correct this, please ask your system administrator to perform a
 
 
 
-	//Formerly "updateShortChecksums()"
 	public static function updateShortChecksums() {
 	
 		//Attempt to fill in any missing short checksums
@@ -217,7 +213,6 @@ To correct this, please ask your system administrator to perform a
 
 
 
-	//Formerly "exitIfUploadError()"
 	//Handle some common errors when uploading a file.
 		//$adminFacing should be set to true to use admin phrases or false to use visitor phrases.
 		//If $checkIsAllowed is set then only files in the document_types table with the is_allowed flag set will be allowed
@@ -506,7 +501,7 @@ To correct this, please ask your system administrator to perform a
 			WHERE image_id = ". (int) $imageId. "
               AND in_use = 1
 			  AND archived = 0
-			  AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+			  AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template', 'standard_email_template') 
 			  AND foreign_key_id != 0
 			GROUP BY foreign_key_to, is_nest, is_slideshow
 		") as $ucat) {

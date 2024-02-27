@@ -37,7 +37,6 @@ class priv {
 
 
 	//Check to see if an Admin has a certain privilege
-	//Formerly "checkPriv()"
 	public static function check($action = false, $editCID = false, $editCType = false, $editCVersion = 'latest', $welcomePage = false) {
 	
 		//If the Admin is not logged in to this site, then they shouldn't have Admin rights here
@@ -97,6 +96,7 @@ class priv {
 				} elseif ($editCVersion !== 'latest') {
 					if (($editCVersion !== true && $editCVersion != $adminVersion)
 					 || $status == 'published'
+					 || $status == 'unlisted'
 					 || $status == 'hidden'
 					 || $status == 'trashed') {
 						return false;
@@ -162,7 +162,6 @@ class priv {
 	
 	
 	//A more agressive version of check priv that stops all execution if an admin does not have the requested privilege
-	//Formerly "exitIfNotCheckPriv()"
 	public static function exitIfNot($action = false, $editCID = false, $editCType = false, $editCVersion = 'latest', $welcomePage = false) {
 		if (!\ze\priv::check($action, $editCID, $editCType, $editCVersion, $welcomePage)) {
 			exit;
@@ -176,7 +175,6 @@ class priv {
 
 
 	//Check to see if an admin can edit a specific menu node
-	//Formerly "checkPrivForMenuText()"
 	public static function onMenuText($action, $menuNodeId, $langId, $sectionId = false) {
 	
 		//Run the usual \ze\priv::check() function first
@@ -221,7 +219,6 @@ class priv {
 	//Now the only thing this function does is stop limited admins from making new translations,
 	//or editing anything to do with languages.
 	
-	//Formerly "checkPrivForLanguage()"
 	public static function onLanguage($action, $langId) {
 	
 		switch ($_SESSION['admin_permissions']) {

@@ -91,15 +91,6 @@ zenario__administration:
                     title: Email address (on action)
                     db_column: j.email_address_on_action
                     disallow_sorting: true
-                email_on_no_action:
-                    title: Email on no action
-                    db_column: j.email_on_no_action
-                    format: yes_or_no
-                    disallow_sorting: true
-                email_address_on_no_action:
-                    title: Email address (on no action)
-                    db_column: j.email_address_on_no_action
-                    disallow_sorting: true
                 last_run_started:
                     title: Last run started
                     db_column: j.last_run_started

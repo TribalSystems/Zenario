@@ -5,7 +5,7 @@
 		
 		<% if (m.href) { %>
 			href="{{m.href|escape}}"
-			<% if (m.new_window) { %>
+			<% if (m.new_window || window.zenarioONotFull) { %>
 				target="_blank"
 			<% } %>
 		<% } %>

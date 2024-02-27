@@ -13,6 +13,14 @@
 	background: url('images/icon-forms.svg') no-repeat center / 16px 16px;
 }
 
+ul li span.organizer_item_image.zenario_user_forms {
+	background: url('images/icon-forms-on.svg') no-repeat center / 16px 16px;
+}
+
 .organizer_item_image.zenario_user_forms_archive {
 	background: url('images/icon-archive.svg') no-repeat center / 16px 16px;
+}
+
+ul li span.organizer_item_image.zenario_user_forms_archive {
+	background: url('images/icon-archive-white.svg') no-repeat center / 16px 16px;
 }

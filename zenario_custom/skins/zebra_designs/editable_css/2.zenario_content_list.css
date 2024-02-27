@@ -173,7 +173,12 @@
 	background:rgba(0,0,0,0.9);
 }
 
+.zenario_content_list__default_style .content_list_listing {
+	text-align:center;
+}
+
 .zenario_content_list__default_style .content_list_listing .content_list_data_row {
+	text-align:left;
 	padding:20px 0;
 	border-bottom:1px dotted #777;
 }
@@ -193,6 +198,10 @@
 
 .zenario_content_list__default_style .content_list_data_row .content_list_text {
 	overflow:hidden;
+}
+
+.zenario_content_list__default_style a.content_list_more_link {
+	margin-top:20px;
 }
 
 /* Categories */
@@ -229,7 +238,7 @@ body.desktop .zenario_content_list__default_style .categories {
 }
 
 body.mobile .zenario_content_list__default_style .categories {
-	margin-bottom:20px;s
+	margin-bottom:20px;
 }
 
 .zenario_content_list__default_style .categories .branch_wrap > .category {

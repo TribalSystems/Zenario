@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and visitor.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and visitor.bundle.js.php for step (3).
 */
 
 

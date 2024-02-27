@@ -24,13 +24,13 @@ zenario_newsletter_template:
                     full_width: true
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
                     editor_options:
                         convert_urls: false
                         relative_urls: false
                     style: >
                         width: 98%;
-                    rows: 30
                     insert_image_button:
                         pick_items:
                             path: zenario__library/panels/image_library
@@ -38,25 +38,8 @@ zenario_newsletter_template:
                             min_path: zenario__library/panels/image_library
                             max_path: zenario__library/panels/image_library
                             disallow_refiners_looping_on_min_path: true
-        
-        advanced:
-            label: Advanced
-            edit_mode:
-                priv: _PRIV_EDIT_NEWSLETTER
-                enabled: true
-            fields:
-                desc:
-                    snippet:
-                        html: >
-                            Use this tab to add CSS styles and media queries, for email-clients
-                            that support these features.
-                head:
-                    label: 'HTML in head of email:'
-                    type: code_editor
-                    tall_as_possible: true
-                    dont_trim: true
-                    language: html
-                    style: >
-                        width: 98%;
-                    rows: 30
-                
+                apply_css_rules:
+                    label: Apply
+                    type: checkbox
+                    post_field_html: |
+                        &nbsp;[[link_start]]CSS rules[[link_end]]

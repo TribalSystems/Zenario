@@ -38,7 +38,6 @@ class userAdm {
 	//An API function to check if a user is valid.
 	//To avoid code duplication it's implemented by calling the \ze\userAdm::save() function
 	//with $doSave set to false.
-	//Formerly "isInvalidUser()"
 	public static function isInvalid($values, $id = false) {
 		return \ze\userAdm::save($values, $id, false);
 	}
@@ -72,7 +71,6 @@ class userAdm {
 		return $baseIdentifier;
 	}
 
-	//Formerly "generateUserIdentifier()"
 	public static function generateIdentifier($userId) {
 		//Look up details on this user if not provided
 		$details = \ze\row::get('users', ['screen_name', 'first_name', 'last_name', 'email', 'status'], $userId);
@@ -134,7 +132,6 @@ class userAdm {
 		}
 	}
 
-	//Formerly "getNextScreenName()"
 	public static function nextScreenName() {
 		$sql = "
 			SELECT IFNULL(MAX(id), 0) + 1
@@ -150,7 +147,6 @@ class userAdm {
 	//An API function to save a user to the database.
 	//It will only save it if it passes a validation check; if it is not valid then this
 	//function will return an error object.
-	//Formerly "saveUser()"
 	public static function save($values, $id = false, $doSave = true, $convertContactToExtranetUser = false, $markNewThingsInSession = false) {
 		//First, validate the submission.
 		$e = new \ze\error();
@@ -300,7 +296,6 @@ class userAdm {
 
 
 
-	//Formerly "createPassword()"
 	public static function createPassword() {
 		$numbers = "0,1,2,3,4,5,6,7,8,9";
 		$letters = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z";
@@ -319,8 +314,8 @@ class userAdm {
 		//If the min score is 3 or 4, then make the password suggestions longer to be able to match.
 		if ($passwordMinScore == 4 && $passwordMinLength < 12) {
 			$passwordMinLength = 12;
-		} elseif ($passwordMinScore == 3 && $passwordMinLength < 9) {
-			$passwordMinLength = 9;
+		} elseif ($passwordMinScore == 3 && $passwordMinLength < 10) {
+			$passwordMinLength = 10;
 		}
 		
 		$passwordLength = $passwordMinLength;
@@ -377,7 +372,6 @@ class userAdm {
 		return $charactersArray[$randomNumber];
 	}
 
-	//Formerly "setUsersPassword()"
 	public static function setPassword($userId, $password, $needsChanging = -1) {
 	
 		//Generate a random salt for this password. If someone gets hold of the encrypted value of
@@ -398,7 +392,6 @@ class userAdm {
 		\ze\userAdm::updateHash($userId);
 	}
 
-	//Formerly "deleteUser()"
 	public static function delete($userId, $deleteAllData = false) {
 		\ze\module::sendSignal('eventUserDeleted', [$userId, $deleteAllData]);
 	
@@ -440,7 +433,6 @@ class userAdm {
 		}
 	}
 
-	//Formerly "updateUserHash()"
 	public static function updateHash($userId) {
 		$emailAddress = \ze\row::get('users', 'email', $userId);
 		$sql = "

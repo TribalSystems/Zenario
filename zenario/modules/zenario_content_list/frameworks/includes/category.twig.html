@@ -10,7 +10,7 @@
 
 {% if Show_Category and item.Category %}
 	{% if item.Category_Landing_Page_Link %}
-		<a href="{{item.Category_Landing_Page_Link|e}}">
+		<a href="{{item.Category_Landing_Page_Link|e}}" target="_blank">
 	{% endif %}
 	<div class="content_list_category category_{{item.Category_Id|e}}">{{item.Category|e}}</div>
 	{% if item.Category_Landing_Page_Link %}

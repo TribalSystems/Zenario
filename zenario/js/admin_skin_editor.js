@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -158,14 +158,14 @@ zenarioSE.markAsChanged = function(tab) {
 	//Liven "update preview" and "save" buttons
 	zenarioSE.canUpdatePreview = true;
 	$('#zenario_fabUpdatePreview')
-		.removeClass('submit_disabled')
+		.removeClass('zenario_disabled_button')
 		.addClass('zenario_preview_enabled');
 	$('#zenario_fabSaveAndContinue')
-		.removeClass('submit_disabled')
-		.addClass('submit_selected');
+		.removeClass('zenario_disabled_button')
+		.addClass('zenario_submit_button');
 	$('#zenario_fabSave')
-		.removeClass('submit_disabled')
-		.addClass('submit_selected');
+		.removeClass('zenario_disabled_button')
+		.addClass('zenario_submit_button');
 };
 
 
@@ -173,7 +173,7 @@ zenarioSE.markAsChanged = function(tab) {
 
 //Automatically set the box to the correct height for the users screen, or the maximum height requested, whichever is smaller
 zenarioSE.lastSize = false;
-zenarioSE.previewHidden = true;
+zenarioSE.showPreview = false;
 zenarioSE.size = function(refresh, resizing) {
 	if (zenarioSE.sizing) {
 		clearTimeout(zenarioSE.sizing);
@@ -222,8 +222,8 @@ zenarioSE.size = function(refresh, resizing) {
 	
 	zenarioSE.sizing = setTimeout(zenarioSE.size, 250);
 	
-	if (zenarioSE.previewHidden) {
-		zenarioSE.previewHidden = false;
+	if (!zenarioSE.showPreview) {
+		zenarioSE.showPreview = true;
 		zenarioSE.updatePreview();
 	}
 };
@@ -239,7 +239,7 @@ zenarioSE.submitPreview = function(preview, $parent, cssClassName) {
 	zenarioSE.canUpdatePreview = false;
 	$('#zenario_fabUpdatePreview')
 		.removeClass('zenario_preview_enabled')
-		.addClass('submit_disabled');
+		.addClass('zenario_disabled_button');
 };
 
 

@@ -1957,20 +1957,7 @@ zenarioGM.getSlotDescription = function(slot) {
 			pluginDesc += ' (' + phrase.versionControlled + ')';
 		
 		} else {
-			pluginDesc += ', ';
-			
-			switch (slot.moduleCSSClassName) {
-				case 'zenario_plugin_nest':
-					pluginDesc += 'N';
-					break;
-				case 'zenario_slideshow':
-				case 'zenario_slideshow_simple':
-					pluginDesc += 'S';
-					break;
-				default:
-					pluginDesc += 'P';
-			}
-			pluginDesc += ('' + slot.instanceId).padStart(2, '0');
+			pluginDesc += ', ' + zenarioA.pluginCodeName(slot);
 		}
 		
 	} else {
@@ -2637,7 +2624,7 @@ zenarioGM.save = function(saveAs) {
 			} else {
 				zenarioA.floatingBox(data.message, phrase.gridSave, 'warning', true, true);
 				
-				$('#zenario_fbMessageButtons .submit_selected').click(function() {
+				$('#zenario_fbMessageButtons .zenario_submit_button').click(function() {
 					request.confirm = 1;
 					zenario.ajax(ajaxURL, request, true).after(function(data) {
 						zenarioGM.markAsSaved(data);

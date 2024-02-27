@@ -73,104 +73,138 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 		images = 'image,|,';
 	}
 	
-	zenarioA.getSkinDesc();
-	
-	var $editor = $('div#' + editorId);
-	
-	$editor.tinymce({
-		script_url: zenario.addBasePath(zenario.tinyMCEPath),
+	var $editor = $('div#' + editorId),
+		skinEditorOptions = zenarioA.skinEditorOptions,
+		options = {
+			promotion: false,
 
-		plugins: ["advlist autolink lists link image charmap hr anchor emoticons",
-        "searchreplace code",
-        "nonbreaking zenario_save table contextmenu directionality",
-        "paste autoresize",
-        "colorpicker textcolor visualblocks"],
-        
-        image_advtab: true,
-        visual_table_class: ' ',
-        browser_spellcheck: true,
-        
-        //contextmenu:
-        
-        
-        /*
-Toolbar controls
-Plugin	Controls
-core	bold italic underline strikethrough subscript superscript outdent indent cut copy paste
-		selectall removeformat visualaid newdocument blockquote numlist bullist
-		alignleft aligncenter alignright alignjustify undo redo
-hr	hr
-link	link unlink
-image	image
-charmap	charmap
-anchor	anchor
-searchreplace	searchreplace
-code	code
-nonbreaking	nonbreaking
-directionality	ltr rtl
-*/
-		menu: {
-			edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace'},
-			format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' align'},
-			insert: {title: 'Insert', items: 'image link | anchor hr charmap'},
-			table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
-			view: {title: 'View', items: 'code | visualblocks'}
-		},
+			plugins: [
+				"advlist", "autolink", "lists", "link", "image", "charmap", "anchor", "emoticons",
+				"searchreplace", "code",
+				"nonbreaking", "table", "directionality",
+				"autoresize",
+				"visualblocks",
+				"zenario_save"
+			],
 		
-		toolbar: 'undo redo | formatselect' + (zenarioA.skinDesc.style_formats? ' | styleselect' : '') + ' | fontsizeselect | bold italic underline | image link unlink | bullist numlist | blockquote | forecolor backcolor | charmap emoticons | save save_and_close cancel',
-		statusbar: false,
+			image_advtab: true,
+			visual_table_class: ' ',
+			browser_spellcheck: true,
+		
+			menu: {
+				edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace'},
+				format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (skinEditorOptions && skinEditorOptions.style_formats? ' | forecolor backcolor | styles' : '') + ' ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : '') + 'align'},
+				insert: {title: 'Insert', items: 'image link | anchor hr charmap'},
+				table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
+				view: {title: 'View', items: 'code | visualblocks'}
+			},
+			removed_menuitems: 'file newdocument restoredraft print',
+		
+			toolbar: 'undo redo | image link unlink | blocks' + (skinEditorOptions && skinEditorOptions.style_formats? ' | styles' : '') + ' | ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : '') + 'fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | blockquote | charmap emoticons | code | zenario_save_and_continue zenario_save_and_close zenario_abandon',
+			statusbar: false,
+		
+			//This would change how the toolbar overflows if space is tight
+			//toolbar_mode: 'wrap',
 		
 		
-		//autoresize_max_height: Math.max(Math.floor(($(window).height() - 130 - 100) * 0.9), 400),
-		autoresize_min_height: 100,
-		paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+			//autoresize_max_height: Math.max(Math.floor(($(window).height() - 130 - 100) * 0.9), 400),
+			autoresize_min_height: 100,
+			paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+			paste_data_images: false,
 		
-		inline: true,
-		zenario_inline_ui: true,
+			inline: true,
+			//zenario_inline_ui: true,
+			fixed_toolbar_container: '#zenario_at_wrap',
+			toolbar_persist: true,
 		
-		inline_styles: false,
-		allow_events: true,
-		allow_script_urls: true,
-		document_base_url: URLBasePath,
-		convert_urls: true,
-		relative_urls: !zenario.slashesInURL,
+			inline_styles: false,
+			allow_events: true,
+			allow_script_urls: true,
+			document_base_url: URLBasePath,
+			convert_urls: true,
+			relative_urls: !zenario.slashesInURL,
 		
 		
-		style_formats: zenarioA.skinDesc.style_formats,
-		fontsize_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt',
-		/*: [
-			{title: 'Bold text', inline: 'b'},
-			{title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
-			{title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
-			{title: 'Example 1', inline: 'span', classes: 'example1'},
-			{title: 'Example 2', inline: 'span', classes: 'example2'},
-			{title: 'Table styles'},
-			{title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
-		],*/
+			font_size_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt',
+			/*: [
+				{title: 'Bold text', inline: 'b'},
+				{title: 'Red text', inline: 'span', styles: {color: '#ff0000'}},
+				{title: 'Red header', block: 'h1', styles: {color: '#ff0000'}},
+				{title: 'Example 1', inline: 'span', classes: 'example1'},
+				{title: 'Example 2', inline: 'span', classes: 'example2'},
+				{title: 'Table styles'},
+				{title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
+			],*/
 		
-		file_browser_callback: zenarioA.fileBrowser,
+			file_picker_callback: zenarioA.fileBrowser,
 		
-		init_instance_callback: function(instance) {
-			//zenario.removeLinkStatus($editor);
-			
-			instance.setContent(html);
-			
-			zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
-			
-			//Attempt to restore the scroll position, if something in this process overwrote it.
-			if (defined(currentScrollPosition)) {
-				zenario.scrollTop(currentScrollPosition);
+			init_instance_callback: function(instance) {
+				//zenario.removeLinkStatus($editor);
 				
-				window.setTimeout(function() {
+				instance.setContent(html);
+				
+				zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
+			
+				//Attempt to restore the scroll position, if something in this process overwrote it.
+				if (defined(currentScrollPosition)) {
 					zenario.scrollTop(currentScrollPosition);
-				}, 0);
 				
-			}
+					window.setTimeout(function() {
+						zenario.scrollTop(currentScrollPosition);
+					}, 0);
+				
+				}
 			
-			//Attempt to put the cursor immediately in the field when it loads with the editor
-			instance.focus();
-		}
-	});
+				//Attempt to put the cursor immediately in the field when it loads with the editor
+				instance.focus();
+				
+				
+				//TinyMCE will automatically remove any <iframe> or <script> tags.
+				//This is desirable, but we want some way to warn an admin about this,
+				//to help them understand why it happened.
+				//There's no way to do this nicely but we'll use a work-around...
+				var warnAboutTagRemoval = false;
+				
+				//Listen out for the admin opening the source-code editor.
+				instance.on('ExecCommand', (e) => {
+					if (e.command == 'mceCodeEditor') {
+						
+						warnAboutTagRemoval = false;
+						
+						//Add a change event to the textarea that lets them enter the source code.
+						$('.tox-dialog .tox-textarea').on('change', function() {
+							
+							//Check to see if they've added an <iframe> or <script> tag,
+							//and remember that it was there.
+							var val = $(this).val();
+							warnAboutTagRemoval = val.match(/\<(iframe|script)\b/);
+						});
+					}
+				});
+				
+				//There's no "on save" event for the source code editor, but we can use the
+				//NodeChange event as a work-around for that.
+				instance.on('NodeChange', function(e) {
+					
+					//If the admin had an <iframe> or <script> tag in their source code,
+					//and then they've closed the source code editor and are now back in the
+					//regular WYSIWYG editor, assume it was removed and warn them about it.
+					if (warnAboutTagRemoval) {
+						warnAboutTagRemoval = false;
+						
+						zenarioA.notification(phrase.editorStripsTagsWarning, 'warning', {timeOut: 15000, extendedTimeOut: 60000});
+					}
+				});
+			}
+		};
+	
+	
+	if (skinEditorOptions) {
+		options = _.extend(options, skinEditorOptions);
+	}
+	
+	$editor.tinymce(options);
+	
 	
 	zenario_wysiwyg_editor.summaries[containerId] = {locked: summaryLocked, empty: summaryEmpty, matches: summaryMatches};
 	
@@ -210,18 +244,18 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 		if (zenario_wysiwyg_editor.summaries[containerId].empty) {
 			zenario_wysiwyg_editor.floatingMessage(
 				phrase.saveSyncSummaryPrompt,
-				'<input type="button" class="submit_selected" value="' + phrase.saveSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
-				'<input type="button" class="submit_selected" value="' + phrase.saveDontSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
-				'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
+				'<input type="button" class="zenario_submit_button" value="' + phrase.saveSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
+				'<input type="button" class="zenario_submit_button" value="' + phrase.saveDontSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
+				'<input type="button" class="zenario_gp_button" value="' + phrase.cancel + '"/>',
 				true);
 			return;
 		
 		} else if (zenario_wysiwyg_editor.summaries[containerId].matches) {
 			zenario_wysiwyg_editor.floatingMessage(
 				phrase.saveUpdateSummaryPrompt,
-				'<input type="button" class="submit_selected" value="' + phrase.saveUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
-				'<input type="button" class="submit_selected" value="' + phrase.saveDontUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
-				'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
+				'<input type="button" class="zenario_submit_button" value="' + phrase.saveUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
+				'<input type="button" class="zenario_submit_button" value="' + phrase.saveDontUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
+				'<input type="button" class="zenario_gp_button" value="' + phrase.cancel + '"/>',
 				true);
 			return;
 		}
@@ -251,12 +285,6 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 		zenario_wysiwyg_editor.doClose(slotName);
 	} else {
 		zenarioA.notification(phrase.contentSaved);
-		//zenario_wysiwyg_editor.notification(editorId, {
-		//	text: phrase.contentSaved,
-		//	type: 'success',
-		//	timeout: 5000,
-		//	closeButton: false
-		//});
 	}
 };
 
@@ -278,8 +306,8 @@ zenario_wysiwyg_editor.close = function(el) {
 	
 	zenario_wysiwyg_editor.floatingMessage(
 		phrase.closeEditorWarning,
-		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
-		'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
+		'<input type="button" class="zenario_submit_button" value="' + phrase.abandonChanges + '" onclick="zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
+		'<input type="button" class="zenario_gp_button" value="' + phrase.cancel + '"/>',
 		true);
 };
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="13px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-job-vacancies-content-types-dark">
+        <g>
+            <path d="M12.41,9.872C12.032,9.284 10.759,8.914 9.498,8.393C8.239,7.863 7.939,7.68 7.939,7.68L7.928,6.475C7.928,6.475 8.401,6.107 8.547,4.973C8.841,5.058 9.152,4.531 9.168,4.253C9.185,3.986 9.127,3.251 8.768,3.323C8.84,2.762 8.895,2.267 8.867,1.996C8.776,1.022 7.819,0 6.349,0C4.877,0 3.921,1.022 3.829,1.995C3.801,2.267 3.853,2.761 3.928,3.323C3.568,3.251 3.511,3.986 3.527,4.253C3.544,4.531 3.853,5.059 4.15,4.973C4.296,6.108 4.769,6.475 4.769,6.475L4.757,7.68C4.757,7.68 4.459,7.863 3.198,8.392C1.938,8.913 0.664,9.284 0.286,9.871C-0.055,10.403 0.048,11.657 0.048,11.657L12.647,11.657C12.648,11.657 12.752,10.404 12.41,9.872Z" style="fill:white;fill-rule:nonzero;"/>
+            <rect x="0" y="15.063" width="12.5" height="0.987" style="fill:white;"/>
+            <rect x="0" y="13.021" width="6.589" height="0.987" style="fill:white;"/>
+            <rect x="0" y="17.038" width="12.449" height="0.987" style="fill:white;"/>
+            <rect x="0" y="19.013" width="12.32" height="0.987" style="fill:white;"/>
+        </g>
+    </g>
+</svg>

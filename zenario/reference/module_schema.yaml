@@ -365,11 +365,6 @@ properties:
                     description: >
                         Whether to send an email if this job does something.
                 
-                email_on_no_action:
-                    type: boolean
-                    description: >
-                        Whether to send an email if this job does nothing.
-                
                 enabled_by_default:
                     type: boolean
                     description: >
@@ -578,6 +573,20 @@ properties:
                     description: >
                         If you set this property to true, search modules will not exclude this special page
                         from search results. The Privacy Policy special page is searchable by default.
+                
+                must_be_listed:
+                    type: boolean
+                    description: >
+                        Set this property to true to stop admins from making this special page unlisted.
+                        
+                        This works from version 9.6 onwards.
+                
+                must_be_unlisted:
+                    type: boolean
+                    description: >
+                        Set this property to true to stop admins from making this special page listed.
+                        
+                        This works from version 9.6 onwards.
                 
                 publish:
                     type: boolean

@@ -36,7 +36,7 @@ switch ($path) {
 				manager_class_name,
 				job_name, module_id, 0+months AS months, 0+days AS days, hours, minutes, first_n_days_of_month,
 				log_on_action, log_on_no_action, email_on_action,
-				email_on_no_action, email_address_on_no_action, email_address_on_action, email_address_on_error, run_every_minute,
+				email_address_on_action, email_address_on_error, run_every_minute,
 				last_run_started, last_run_finished, last_successful_run, last_action
 			FROM ". DB_PREFIX. "jobs
 			WHERE id = ". (int) $box['key']['id'];

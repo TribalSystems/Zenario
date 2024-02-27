@@ -32,9 +32,9 @@ class zenario_timezones extends ze\moduleBaseClass {
 	//N.b. this plugin works via an AJAX request to not interfere with page caching
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		return true;
 	}
 	

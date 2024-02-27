@@ -134,7 +134,7 @@ if (!empty($_GET['openedInIframe'])) {
 					title="'. ze\admin::phrase('Back to&lt;br/&gt;[[citem]]', ['citem' => htmlspecialchars(ze\content::formatTag($fromCID, $fromCType))]). '"></a>
 			</div>';
 	}
-	$wipCount = ze\row::count('content_items', ['status' => ['first_draft','published_with_draft','hidden_with_draft','trashed_with_draft']]);
+	$wipCount = ze\row::count('content_items', ['status' => ['first_draft','published_with_draft','hidden_with_draft','trashed_with_draft','unlisted_with_draft']]);
 	$topLeftHTML .= '
 		<div
 			class="zenario_ywip top_left_button zenario_item_record_count_parent" data-step="2" data-position="right" data-intro="<p><strong>Work in progress</strong></p><p>Content items (web pages etc.) which are in draft form.</p>"

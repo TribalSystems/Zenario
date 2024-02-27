@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="17px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-blog-content-types-dark">
+        <g>
+            <g>
+                <g>
+                    <path d="M12.777,9.642L11.064,9.642C11.042,8.421 10.558,7.277 9.695,6.414C8.834,5.549 7.695,5.064 6.479,5.042L6.479,3.336C9.931,3.382 12.73,6.186 12.777,9.642Z" style="fill:white;fill-rule:nonzero;"/>
+                </g>
+                <g>
+                    <path d="M16.11,9.642L14.4,9.642C14.353,5.288 10.827,1.753 6.483,1.706L6.483,0C11.77,0.047 16.062,4.347 16.11,9.642Z" style="fill:white;fill-rule:nonzero;"/>
+                </g>
+            </g>
+            <g>
+                <path d="M3.258,7.935L3.258,15.051C3.258,16.208 3.674,16.785 4.503,16.785C4.858,16.785 5.158,16.665 5.404,16.424C5.65,16.182 5.774,15.889 5.774,15.547C5.774,15.194 5.66,14.895 5.425,14.655C5.194,14.415 4.908,14.294 4.572,14.294C4.335,14.294 4.061,14.398 3.755,14.606L3.755,11.019C4.137,10.983 4.428,10.966 4.626,10.966C5.85,10.966 6.9,11.406 7.775,12.29C8.648,13.173 9.085,14.235 9.085,15.478C9.085,16.749 8.64,17.822 7.752,18.693C6.865,19.564 5.772,20 4.477,20C3.828,20 3.194,19.856 2.575,19.573C1.956,19.288 1.447,18.904 1.046,18.422C0.349,17.587 0,16.503 0,15.175L0,7.935L3.258,7.935Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

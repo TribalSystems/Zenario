@@ -32,7 +32,6 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 	protected $mergeFields = [];
 	
 	protected $empty = false;
-	protected $request = '';
 	protected $zipArchiveName;
 	
 	public function init() {
@@ -40,9 +39,9 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 		$fancyboxLink = false;
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 		
 		$allIds = [];
 		
@@ -75,7 +74,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				}
 				
 				if ($this->setting('show_link_to_download_original')) {
-					$imageMF['File_Link'] = ze\file::link($image['id']);
+					$imageMF['File_Link'] = ze\file::linkForCurrentVisitor($image['id']);
 				}
 				
 				if ($this->setting('show_file_size')) {
@@ -382,7 +381,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 					
 					if ($this->getArchiveNameNoExtension($zipArchive)) {
 						ze\cache::cleanDirs();
-						$randomDir = ze\cache::createRandomDir(15, 'downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
+						$randomDir = ze\cache::createRandomDir(15, 'private/downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
 						$contentSubdirectory = $this->getArchiveNameNoExtension($zipArchive);
 						if (mkdir($randomDir . '/' . $contentSubdirectory)){
 							foreach ($imageIDs as $ID) {
@@ -458,16 +457,18 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 		if ($linkTo == '_CONTENT_ITEM'
 		 && ($linkExists = $this->getCIDAndCTypeFromSetting($cID, $cType, $hyperlink_target, $useTranslation))) {
 			
+			$request = '';
+			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
 			if ($downloadFile) {
-				$this->request = 'download=1';
+				$request = 'download=1';
 			}
 			
 			if (!$this->isVersionControlled && $useTranslation) {
-				$link = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = false, $this->request);
+				$link = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = false, $request);
 			} else {
-				$link = ze\link::toItem($cID, $cType, $fullPath = false, $this->request);
+				$link = ze\link::toItem($cID, $cType, $fullPath = false, $request);
 			}
 
 			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
@@ -486,9 +487,9 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			
 			
 			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+				$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+				$clearByContent = true, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 			
 			//Check the Privacy settings on this banner
 			if (!ze\priv::check()) {
@@ -513,7 +514,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 					
 					default:
 						$this->allowCaching(
-							$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+							$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 				}
 			}
 		
@@ -539,9 +540,9 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				//Only allow caching for public documents.
 				if ($document['privacy'] == 'public') {
 					$this->allowCaching(
-						$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+						$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 					$this->clearCacheBy(
-						$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+						$clearByContent = false, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 				}
 			} else {
 				if (ze\admin::id()) {
@@ -553,9 +554,9 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			
 		} else {
 			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+				$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+				$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 			
 			// If the content item this banner was linking to has been removed, update setting to no-link
 			if ($linkTo == '_CONTENT_ITEM' && !$linkExists) {

@@ -220,7 +220,11 @@
 								<li>
 									<div class="day_view_event">
 										{{event.StickyImage}}
-										<p class="day_view_event_time"> {{event.Time_of_event}}</p>
+										
+										<p class="day_view_event_time">
+											{{event.Time_of_event}}{% if event.Event_timezone %}, <span class="day_view_event_timezone">{{event.Event_timezone}}</span>{% endif %}
+										</p>
+										
 										{% if event.Event_title %}
 											<h3>
 												<a href="{{event.Event_link}}" target="_parent">{{event.Event_title}}</a>

@@ -698,7 +698,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_titles
                     label: |
-                        Show meta data title of each content item listed
+                        Show a title for each content item
                     type: checkbox
                     value: 1
                     redraw_onchange: true
@@ -710,8 +710,6 @@ plugin_settings:
                     values: *tags
                     value: h2
                     same_row: true
-                    side_note: |
-                        Choose the HTML tag style to use for each title
                     visible_if: zenarioAB.value('show_titles')
                 title_source:
                     indent: 1
@@ -721,17 +719,17 @@ plugin_settings:
                     values:
                         content_item_title:
                             ord: 1
-                            label: 'Use meta data title of content item'
+                            label: 'Use meta data Title of each content item'
                         content_item_menu_node:
                             ord: 2
-                            label: 'Use menu node text (fall back to meta data title if item not in menu)'
+                            label: 'Use text of its menu node (but use meta data Title if content item isn\'t in the menu)'
                     value: content_item_title
                     visible_if: lib.value('show_titles')
                 show_language:
                     plugin_setting:
                         name: show_language
                     label: |
-                        Show each content item's language
+                        Show language
                     side_note: |
                         Every content item has a language code. On a multi-lingual site you may wish to display that code.
                     type: checkbox
@@ -740,9 +738,9 @@ plugin_settings:
                     plugin_setting:
                         name: show_text_preview
                     label: |
-                        Show content item's preview
+                        Show a preview
                     side_note: |
-                        Content items can have a Preview field (provided their content type settings enable this), which can be a descriptive field but with simple HTML formatting.
+                        Content items can have a Summary if their settings allow it, and/or a Description.
                     type: checkbox
                     redraw_onchange: true
                     value: true
@@ -998,7 +996,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_dates
                     label: |
-                        Show each content item's release date
+                        Show release date
                     type: checkbox
                     value: 0
                     format_onchange: true
@@ -1031,7 +1029,7 @@ plugin_settings:
                     plugin_setting:
                         name: show_author
                     label: |
-                        Show each content item's writer's name
+                        Show writer's name
                     type: checkbox
                     value: 0
                     side_note: |
@@ -1040,19 +1038,21 @@ plugin_settings:
                 hide_private_items:
                     plugin_setting:
                         name: hide_private_items
-                    label: 'Links to private items:'
+                    label: 'When linking to content items that are private:'
                     type: select
                     format_onchange: true
                     value: 1
                     empty_value: |
-                        Show to everyone
+                        List the item and show the link to everyone (someone following the link may be asked to log in or register)
                     values:
                         1:
-                            label: Only show to authorized extranet users
+                            label: List the item only when the user is authorized to access the item, otherwise hide it
                         2:
-                            label: List the item, but omit the link, if user is not authorized to access it
+                            label: List the item always, but only show the link if user is authorized to access the item
                         3:
                             label: Call a module's static method to decide (advanced)
+                    note_below: |
+                        Content items that are public are always shown, with a link.
                 hide_private_items_class_name:
                     plugin_setting:
                         name: hide_private_items_class_name
@@ -1076,7 +1076,7 @@ plugin_settings:
                 show_content_items_lowest_category:
                     plugin_setting:
                         name: show_content_items_lowest_category
-                    label: Show category name if unique
+                    label: Show category name
                     type: checkbox
                     value: ""
                     side_note: |

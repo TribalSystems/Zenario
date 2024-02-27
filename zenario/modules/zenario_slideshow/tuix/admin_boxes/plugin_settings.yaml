@@ -48,22 +48,37 @@ plugin_settings:
                     values:
                         cycle2:
                             label: 'jQuery Cycle (recommended)'
-                            side_note: |
-                                The jQuery Cycle library will be used for transitions.
-                                Unless the height of the slideshow is set in CSS, the height of the first image will be applied automatically to all.
-                        roundabout:
-                            label: 'Roundabout'
-                            side_note: |
-                                The jQuery Roundabout library will be used to power the transitions.
-                                This will create a turntable-like area with the slides circling around.
                         swiper:
                             visible_if: |
                                 tuix.key.moduleClassName == 'zenario_slideshow_simple'
                             label: 'Swiper'
-                            side_note: |
-                                The Swiper mobile touch slider library will be used to power the transitions.
-                                This will create a series of slides that works on both desktop and mobile.
                     redraw_onchange: true
+                
+                cycle2_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        cycle2: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        html: |
+                            The
+                            <a href="https://jquery.malsup.com/cycle2/" target="_blank">
+                                jQuery Cycle library</a>
+                            will be used for transitions.
+                            Unless the height of the slideshow is set in CSS, the height
+                            of the first image will be applied automatically to all.
+                swiper_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        swiper: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        html: |
+                            The
+                            <a href="https://swiperjs.com/" target="_blank">
+                                Swiper mobile touch slider library</a>
+                            will be used to power the transitions.
+                            This will create a series of slides that works on both desktop and mobile.
                 
                 nest_type:
                     plugin_setting:
@@ -80,11 +95,11 @@ plugin_settings:
                             label: Show sequence indicator, Next and Previous
                         tabs:
                             visible_if: |
-                                zenarioAB.value('animation_library', 'first_tab') != 'swiper'
+                                zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
                             label: Show tabs with labels
                         tabs_and_buttons:
                             visible_if: |
-                                zenarioAB.value('animation_library', 'first_tab') != 'swiper'
+                                zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
                             label: Show tabs with labels, Next and Previous
                         permission:
                             label: Don't show any controls
@@ -139,196 +154,6 @@ plugin_settings:
                             Clicking on a tab will switch to that slide.
                             Next and Previous buttons will also be shown, which can be used to navigate between slides.
         
-        cycle2_and_roundabout_common_options:
-            visible_if: |
-                zenarioAB.value('animation_library', 'first_tab') == 'cycle2' || 
-                zenarioAB.value('animation_library', 'first_tab') == 'roundabout'
-            label: Display
-            fields:
-                
-                    
-                use_timeout:
-                    plugin_setting:
-                        name: use_timeout
-                    label: 'Auto-advance slides'
-                    type: checkbox
-                    value: 1
-                    redraw_onchange: true
-                timeout:
-                    plugin_setting:
-                        name: timeout
-                    visible_if:
-                        lib.value: use_timeout
-                    indent: 1
-                    label: 'Display duration:'
-                    type: text
-                    slider:
-                        min: 0
-                        max: 20000
-                        step: 500
-                        range: min
-                        before_field: true
-                    validation:
-                        required_if_not_hidden: Please enter a display duration.
-                        numeric: The display duration must be a number.
-                    value: 4000
-                    style: |
-                        width: 4em;
-                    post_field_html: ms
-                pause:
-                    plugin_setting:
-                        name: pause
-                    visible_if:
-                        lib.value: use_timeout
-                    indent: 1
-                    label: 'Hover to pause'
-                    type: checkbox
-                    value: ""
-                    side_note: Hovering over a slide pauses the slideshow.
-                
-                # N.b. this is not for roundabouts
-                next_prev_buttons_loop:
-                    plugin_setting:
-                        name: next_prev_buttons_loop
-                    visible_if: |
-                        zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
-                    label: 'Loop slides'
-                    type: checkbox
-                    value: 1
-                    side_note: After the last slide, show the first one.
-                
-                use_tab_hover:
-                    plugin_setting:
-                        name: use_tab_hover
-                    label: 'Hover to change'
-                    type: checkbox
-                    value: 1
-                    side_note: |
-                        Hovering over a tab changes to that tab's slide.
-                        Only applies with Frameworks with Tabs.
-                use_tab_clicks:
-                    plugin_setting:
-                        name: use_tab_clicks
-                    label: 'Click to change'
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        Clicking on a tab changes to that tab's slide.
-                        Only applies with Frameworks with Tabs.
-        cycle2_effects:
-            visible_if: |
-                zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
-            label: Effects
-            fields:
-                fx:
-                    plugin_setting:
-                        name: cycle2_fx
-                    label: 'Effect for Transitions:'
-                    type: select
-                    values:
-                        none:
-                            label: None
-                        fade:
-                            label: Fade
-                        fadeout:
-                            label: Fadeout
-                        scrollHorz:
-                            label: Scroll (Horizontal)
-                    value: fade
-                sync:
-                    plugin_setting:
-                        name: cycle2_sync
-                    label: 'Hide/show effects happen simultaneously'
-                    type: checkbox
-                    value: 1
-                speed:
-                    plugin_setting:
-                        name: cycle2_speed
-                    label: 'Animation duration:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter an animation duration.
-                        numeric: The animation duration must be a number.
-                    value: 1000
-                    slider:
-                        min: 0
-                        max: 5000
-                        step: 50
-                        range: min
-                        before_field: true
-                    style: |
-                        width: 4em;
-                    post_field_html: ms
-        
-        roundabout_effects:
-            visible_if: |
-                zenarioAB.value('animation_library', 'first_tab') == 'roundabout'
-            label: Shape and Speed
-            fields:
-                shape:
-                    plugin_setting:
-                        name: shape
-                    label: 'Shape:'
-                    type: select
-                    values:
-                        lazySusan:
-                            label: Default
-                        waterWheel:
-                            label: Water Wheel
-                        figure8:
-                            label: Figure 8
-                        square:
-                            label: Square
-                        conveyorBeltLeft:
-                            label: Conveyor Belt (Left)
-                        conveyorBeltRight:
-                            label: Conveyor Belt (Right)
-                        diagonalRingLeft:
-                            label: Diagonal Ring (Left)
-                        diagonalRingRight:
-                            label: Diagonal Ring (Right)
-                        rollerCoaster:
-                            label: Roller Coaster
-                        tearDrop:
-                            label: Tear Drop
-                    value: lazySusan
-                tilt:
-                    plugin_setting:
-                        name: tilt
-                    label: 'Tilt:'
-                    type: text
-                    value: 0
-                    style: 'width: 50px;'
-                    slider:
-                        range: min
-                        min: -5.0
-                        max: 15.0
-                        step: 0.1
-                        before_field: true
-                    note_below: |
-                        This setting affects the shape in some way.
-                        For the default shape it will adjust the apparent tilt.
-                        It will have different effects on other shapes.
-                speed:
-                    plugin_setting:
-                        name: roundabout_speed
-                    label: 'Animation duration:'
-                    type: text
-                    validation:
-                        required_if_not_hidden: Please enter an animation duration.
-                        numeric: The animation duration must be a number.
-                    value: 1000
-                    slider:
-                        min: 0
-                        max: 5000
-                        step: 50
-                        range: min
-                        before_field: true
-                    style: |
-                        width: 4em;
-                    post_field_html: ms
-
-        
         size:
             label: Images
             fields:
@@ -346,7 +171,7 @@ plugin_settings:
                     value: crop_and_zoom
                     values:
                         unlimited:
-                            label: Don't set
+                            label: Unlimited size
                         crop_and_zoom:
                             label: Crop and zoom
                         fixed_width:
@@ -356,6 +181,8 @@ plugin_settings:
                         fixed_width_and_height:
                             label: Constrain by width and height
                     format_onchange: true
+                    note_below: |
+                        Use the <em style="font-style: italic;">Unlimited size</em> option if you will set the size on each image separately.
                 banner_width:
                     plugin_setting:
                         name: banner_width
@@ -388,14 +215,17 @@ plugin_settings:
                         name: advanced_behaviour
                     label: 'Additional behaviour:'
                     type: select
+                    format_onchange: true
                     value: none
                     values:
                         none:
-                            label: Don't set
+                            label: None
                         background_image:
                             label: 'Show as a background image'
                         lazy_load:
                             label: 'Lazy load image'
+                    note_below: |
+                        Use the <em style="font-style: italic;">None</em> option if you will set the behaviour on each image separately.
 
                 mobile_behaviour:
                     plugin_setting:
@@ -405,12 +235,14 @@ plugin_settings:
                     format_onchange: true
                     values:
                         mobile_same_image:
-                            label: Don't set
+                            label: Same image
                         mobile_same_image_different_size:
                             label: 'Same image, different size'
                         mobile_hide_image:
                             label: 'Hide image on mobile browsers'
                     value: mobile_same_image              
+                    note_below: |
+                        Use the <em style="font-style: italic;">Same image</em> option if you will set the setting on each image separately.
                 mobile_canvas:
                     indent: 1
                     plugin_setting:
@@ -465,10 +297,12 @@ plugin_settings:
                     value: _NO_LINK
                     values:
                         _NO_LINK:
-                            label: Don't set
+                            label: Don't link
                         _ENLARGE_IMAGE:
                             label: Enlarge image in floating box
                     format_onchange: true
+                    note_below: |
+                        Use the <em style="font-style: italic;">Don't link</em> option if you will set the destination on each image separately.
                 enlarge_canvas:
                     plugin_setting:
                         name: enlarge_canvas
@@ -479,7 +313,7 @@ plugin_settings:
                     values:
                         unlimited:
                             ord: 1
-                            label: Don't set
+                            label: Unlimited size
                         fixed_width:
                             ord: 2
                             label: Constrain by width
@@ -490,6 +324,8 @@ plugin_settings:
                             ord: 4
                             label: Constrain by width and height
                     format_onchange: true
+                    note_below: |
+                        Use the <em style="font-style: italic;">Unlimited size</em> option if you will set the size on each image separately.
                 enlarge_width:
                     plugin_setting:
                         name: enlarge_width

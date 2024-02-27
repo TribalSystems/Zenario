@@ -50,7 +50,7 @@ zenario_enable_site:
                     indent: 1
                     type: submit
                     value: 'Clear cache and check for changes'
-                    class: submit_selected
+                    class: zenario_submit_button
                     format_onchange: true
                     notices_below:
                         checked: 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 17 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-work-in-progress">
+        <g>
+            <g>
+                <g>
+                    <rect x="0.164" y="0.137" width="16.001" height="19.726" style="fill:rgb(235,120,51);"/>
+                </g>
+                <g>
+                    <path d="M11.301,20.028L0,20.028L0,-0.028L16.329,-0.028L16.329,20L11.301,20.028ZM0.329,19.699L16,19.699L16,0.301L0.329,0.301L0.329,19.699Z" style="fill:rgb(193,60,12);fill-rule:nonzero;"/>
+                </g>
+            </g>
+            <g transform="matrix(1,0,0,1,-0.0176864,-0.254)">
+                <path d="M15.836,19.754L0.274,19.754L0.274,0.463L15.855,0.482L15.836,19.535L15.617,19.534L15.635,0.701L0.493,0.682L0.493,19.535L15.836,19.535L15.836,19.754Z" style="fill:rgb(242,140,90);fill-rule:nonzero;"/>
+            </g>
+        </g>
+        <g transform="matrix(0.680009,0,0,0.623349,2.71548,4.58868)">
+            <g>
+                <g>
+                    <g>
+                        <path d="M16,4.831L16.05,4.992L16,5.174C14.696,6.948 13.08,8.365 11.058,9.295C9.059,10.214 7.03,10.243 5.018,9.335C2.961,8.405 1.319,6.974 0,5.173L-0.101,4.988L0,4.83C1.315,3.024 2.962,1.595 5.02,0.67C6.98,-0.211 8.973,-0.23 10.943,0.651C13.017,1.58 14.672,3.017 16,4.831ZM8,1.429C5.99,1.427 4.384,3.003 4.373,4.988C4.362,6.966 5.954,8.551 7.975,8.573C9.991,8.595 11.634,6.983 11.625,4.992C11.615,3.006 10.013,1.43 8,1.429Z" style="fill:rgb(51,51,51);fill-rule:nonzero;"/>
+                        <path d="M6.184,4.981C6.197,3.996 7.047,3.187 8.041,3.214C9.024,3.24 9.828,4.06 9.815,5.022C9.801,5.987 8.979,6.789 8,6.79C7.003,6.79 6.171,5.961 6.184,4.981Z" style="fill:rgb(51,51,51);fill-rule:nonzero;"/>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

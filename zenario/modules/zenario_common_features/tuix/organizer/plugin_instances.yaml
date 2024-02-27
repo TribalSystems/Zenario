@@ -117,6 +117,12 @@ zenario__modules:
             #        column: module_id
             #        value: ''
             #        remove_filter: true
+
+            #quick_filter_buttons: 
+            #    test: 
+            #        label: Show most recent
+            #        column: id
+            #        value: 37
             
             columns:
                 id:

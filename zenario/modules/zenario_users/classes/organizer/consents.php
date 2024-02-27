@@ -32,6 +32,11 @@ class zenario_users__organizer__consents extends zenario_users {
 
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
+		
+		
 		foreach ($panel['items'] as $consentId => &$item) {
 			//Show user details from consent in a single column
 			$item['user'] = static::formatConsentUser($consentId);

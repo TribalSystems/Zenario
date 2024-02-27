@@ -429,3 +429,56 @@ if (ze\dbAdm::needRevision(57981)) {
 	
 	ze\dbAdm::revision(57981);
 }
+
+//Tidy up some Meta Data plugin settings:
+//The setting to show the language ISO code needs to be renamed.
+//Once it's renamed, a new checkbox needs to be checked, depending on
+//whether the plugin is set to display the language name and/or ISO code.
+if (ze\dbAdm::needRevision(58751)) {
+	if (ze\module::inc('zenario_meta_data')) {
+		renamePluginSetting(['zenario_meta_data'], 'show_language', 'show_language_iso_code', true, true);
+		
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_meta_data');
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['show_language_name']) || $instance['settings']['show_language_iso_code']) {
+				ze\row::set('plugin_settings', ['value' => 1], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'show_language']);
+				
+				//Also make sure the field order setting references the new name
+				if (!empty($instance['settings']['reorder_fields'])) {
+					$fieldsInOrderBeforeRenaming = explode(',', $instance['settings']['reorder_fields']);
+					
+					$fieldsInOrder = [];
+					foreach ($fieldsInOrderBeforeRenaming as $field) {
+						if ($field == 'show_language') {
+							$fieldsInOrder[] = 'show_language_iso_code';
+						} else {
+							$fieldsInOrder[] = $field;
+						}
+					}
+					
+					$fieldsInOrder = implode(',', $fieldsInOrder);
+					
+					ze\row::set('plugin_settings', ['value' => ze\escape::sql($fieldsInOrder)], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'reorder_fields']);
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(58751);
+}
+
+//Rename the scope for Users FEA
+if (ze\dbAdm::needRevision(59040)) {
+	if (ze\module::inc('zenario_users_fea')) {
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_users_fea');
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['scope']) && $instance['settings']['scope'] == 'user_supervisory_smart_groups') {
+				ze\row::set('plugin_settings', ['value' => 'user_supervised_smart_groups'], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'scope']);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(59040);
+}

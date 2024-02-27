@@ -42,24 +42,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 
 			$phrase = '';
 			
-			//Check if the form responses follow the site setting.
-			if (!$form['period_to_delete_response_headers'] && !is_numeric($form['period_to_delete_response_headers'])) {
-				//"Use site-wide setting" is selected.
-				$setting = $siteSetting;
-			} else {
-				//Individual form setting overrides the site setting.
-				$setting = $form['period_to_delete_response_headers'];
-			}
-
-			self::formatDataProtectionValueNicely($setting, $phrase);
-
-			//If this form's individual setting for responses is different to the site setting, inform the admin.
-			//Please note: this will happen even in a silly situation
-			//where the selected form individual setting is identical to the site setting.
-			if ($form['period_to_delete_response_headers'] || is_numeric($form['period_to_delete_response_headers'])) {
-				$phrase .= "; this overrides the global settings";
-			}
-			$phrase .= ".";
+			self::formatDataProtectionValueNicely($siteSetting, $form['period_to_delete_response_headers'], $phrase);
 
 			$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$linkStart = "<a target='_blank' href='" . $href . "'>";
@@ -109,8 +92,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			$setting = ze::setting('period_to_delete_the_form_response_log_headers');
 
 			$phrase = '';
-			self::formatDataProtectionValueNicely($setting, $phrase);
-			$phrase .= ".";
+			self::formatDataProtectionValueNicely($setting, $formSetting = null, $phrase);
 
 			$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$linkStart = "<a target='_blank' href='" . $href . "'>";
@@ -221,32 +203,48 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		}
 	}
 
-	private function formatDataProtectionValueNicely($setting, &$phrase) {
-		switch ($setting) {
+	private function formatDataProtectionValueNicely($siteSetting, $formSetting, &$phrase) {
+		if (!is_null($formSetting) && $formSetting !== "") {
+			$phrase = "Responses for this form ";
+			$settingToCheck = $formSetting;
+		} else {
+			$phrase = "Form responses ";
+			$settingToCheck = $siteSetting;
+		}
+		
+		switch ($settingToCheck) {
 			case 'never_delete':
-				$phrase .= 'Form responses are stored forever';
+				$phrase .= 'are stored forever';
 				break;
 			case 0:
-				$phrase .= 'Form responses are not stored';
+				$phrase .= 'are not stored';
 				break;
 			case 1:
-				$phrase .= 'Form responses are deleted after 1 day';
+				$phrase .= 'are deleted after 1 day';
 				break;
 			case 7:
-				$phrase .= 'Form responses are deleted after 1 week';
+				$phrase .= 'are deleted after 1 week';
 				break;
 			case 30:
-				$phrase .= 'Form responses are deleted after 1 month';
+				$phrase .= 'are deleted after 1 month';
 				break;
 			case 90:
-				$phrase .= 'Form responses are deleted after 3 months';
+				$phrase .= 'are deleted after 3 months';
 				break;
 			case 365:
-				$phrase .= 'Form responses are deleted after 1 year';
+				$phrase .= 'are deleted after 1 year';
 				break;
 			case 730:
-				$phrase .= 'Form responses are deleted after 2 years';
+				$phrase .= 'are deleted after 2 years';
 				break;
 		}
+		
+		if (!is_null($formSetting) && $formSetting !== "") {
+			//Please note: this phrase will appear even in silly situations where the individual form setting
+			//is not "Use site-wide setting" and its value is exactly the same as the site setting.
+			$phrase .= "; this overrides the global settings";
+		}
+		
+		$phrase .= ".";
 	}
 }

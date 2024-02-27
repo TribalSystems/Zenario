@@ -35,6 +35,10 @@ ze::$canCache = false;
 
 
 
+if (!ze::setting('enable_staging_mode')) {
+	ze\content::showStartSitePageIfNeeded('stagingModeNotEnabled');
+	exit;
+}
 if ($isAdmin = ze::isAdmin()) {
 	ze\content::showStartSitePageIfNeeded('noStagingModeInAdminMode');
 	exit;

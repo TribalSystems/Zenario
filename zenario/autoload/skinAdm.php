@@ -31,7 +31,6 @@ namespace ze;
 
 class skinAdm {
 	
-	//Formerly "skinDescriptionFilePath()"
 	public static function descriptionFilePath($familyName, $name) {
 		foreach ([
 			'description.yaml',
@@ -50,7 +49,6 @@ class skinAdm {
 
 	//Load a Skin's description, looking at any Skins it extends if needed
 	//Note: works more or less the same was as the \ze\moduleAdm::loadDescription() function
-	//Formerly "loadSkinDescription()"
 	public static function loadDescription($skin, &$tags) {
 	
 		$tags = [];
@@ -99,12 +97,23 @@ class skinAdm {
 				}
 			}
 			unset($tags['editor_styles']);
-		
+			
 			//Don't show an empty format list!
 			if (empty($tags['style_formats'])) {
 				unset($tags['style_formats']);
 			}
-		
+			
+			
+			//Convert the old style_formats format from before 9.6 to the new editor_options format in 9.6.
+			if (!empty($tags['style_formats'])) {
+				if (empty($tags['editor_options'])) {
+					$tags['editor_options'] = [];
+				}
+				$tags['editor_options']['style_formats'] = $tags['style_formats'];
+				unset($tags['style_formats']);
+			}
+			
+			
 			//Convert the old pickable_css_class_names format to the new format
 			if (!empty($tags['pickable_css_class_names']) && is_array($tags['pickable_css_class_names'])) {
 				foreach ($tags['pickable_css_class_names'] as $tagName => $details) {
@@ -128,7 +137,6 @@ class skinAdm {
 
 
 	//Attempt to load a list of CSS Class Names from the description.yaml in the current Skin to add choices for plugins
-	//Formerly "getSkinCSSClassNames()"
 	public static function cssClassNames($skin, $type, $moduleClassName = '') {
 		$values = [];
 	
@@ -159,7 +167,6 @@ class skinAdm {
 		return $values;
 	}
 
-	//Formerly "deleteSkinAndClearForeignKeys()"
 	public static function delete($skinId) {
 		\ze\row::update('layouts', ['skin_id' => 0], ['skin_id' => $skinId]);
 		\ze\row::delete('skins', $skinId);
@@ -169,9 +176,11 @@ class skinAdm {
 	public static function clearCacheDir() {
 	
 		foreach ([
+			CMS_ROOT. 'cache/bundles/',
 			CMS_ROOT. 'cache/frameworks/',
-			CMS_ROOT. 'cache/pages/',
 			CMS_ROOT. 'cache/layouts/',
+			CMS_ROOT. 'cache/pages/',
+			CMS_ROOT. 'cache/plugins/',
 			CMS_ROOT. 'cache/tuix/'
 		] as $cacheDir) {
 			if (is_dir($cacheDir)) {
@@ -190,7 +199,6 @@ class skinAdm {
 	}
 
 	//This function clears as many cached/stored things as possible!
-	//Formerly "zenarioClearCache()"
 	public static function clearCache() {
 	
 		//Update the data-revision number in the database to clear anything stored in Organizer's local storage
@@ -206,7 +214,6 @@ class skinAdm {
 
 	//Include a checksum calculated from the modificaiton dates of any css/js/html files
 	//Note that this is only calculated for admins, and cached for visitors
-	//Formerly "checkForChangesInCssJsAndHtmlFiles()"
 	public static function checkForChangesInFiles($runInProductionMode = false, $forceScan = false, $minifySkinsNow = false) {
 		
 		//Do not try to do anything if there is no database connection!
@@ -449,15 +456,9 @@ class skinAdm {
 			//The CMS has a filetime check when these are linked to, so any out of date copies
 			//will not cause any outdated CSS to be shown on the site. However they do take up space
 			//so should be deleted when not needed.
-			foreach (scandir(CMS_ROOT. $path) as $file) {
-				if ($file != '.' && $file != '..' && $file != 'accessed' && is_file(CMS_ROOT. $path. $file)) {
-					@unlink(CMS_ROOT. $path. $file);
-				}
-			}
+			\ze\cache::tidyDir($dir, 'public/css');
 
-			$minifyPath = $path. $time36. '.min.css';
-
-			$output = \ze\wrapper::includeSkinFiles($skinId, false, false, $minify = true, CMS_ROOT. $minifyPath);
+			$output = \ze\bundle::includeSkinFiles($skinId, false, false, $minify = true, CMS_ROOT. $minifyPath);
 			\ze\cache::chmod(CMS_ROOT. $minifyPath);
 			
 			$doneSomething = true;

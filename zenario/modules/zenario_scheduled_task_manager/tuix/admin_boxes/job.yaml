@@ -166,16 +166,6 @@ zenario_job:
                 log_on_no_action:
                     label: 'On successful run with no action, write log entry'
                     type: checkbox
-                email_on_no_action:
-                    label: 'On successful run with no action, send email'
-                    type: checkbox
-                    redraw_onchange: true
-                email_address_on_no_action:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    label: 'Email address:'
-                    type: text
-                    maxlength: "200"
             show_errors_after_field: desc
         last_run:
             ord: "40"

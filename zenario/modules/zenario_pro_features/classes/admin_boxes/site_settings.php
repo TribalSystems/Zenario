@@ -106,9 +106,9 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 			}
 				
 			if (file_exists($dir. 'from')) {
-				$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_selected';
+				$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'zenario_submit_button';
 			} else {
-				$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_disabled';
+				$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'zenario_disabled_button';
 			}
 		}
 	}
@@ -119,7 +119,7 @@ class zenario_pro_features__admin_boxes__site_settings extends ze\moduleBaseClas
 			
 			if ($values['caching/caching_enabled']) {
 				if (!$values['caching/cache_web_pages']
-				 && !$values['caching/cache_css_js_wrappers']) {
+				 && !$values['caching/cache_bundles']) {
 					$box['tabs']['caching']['errors'][] =
 						ze\admin::phrase('Please select which things you wish to cache.');
 				}

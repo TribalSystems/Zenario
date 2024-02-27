@@ -29,8 +29,9 @@
 header('Content-Type: text/javascript; charset=UTF-8');
 require '../basicheader.inc.php';
 
-ze\cache::useBrowserCache('zenario-inc-admin-js-'. LATEST_REVISION_NO);
-ze\cache::start();
+ze\cache::useBrowserCache('zenario-inc-admin-microtemplates-phrases-'. LATEST_REVISION_NO);
+
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/bundle.pre_load.inc.php';
 
 
 $output = '';
@@ -56,6 +57,7 @@ foreach([
 	'branchNum' => 'Branch #',
 	'cancel' => 'Cancel',
 	'changed' => 'Changed',
+	'changesSaved' => 'Your changes have been saved!',
 	'choose' => 'Choose',
 	'clear' => 'Clear',
 	'clkToViewLinkedCItem' => 'Click to see the linked content item',
@@ -73,6 +75,8 @@ foreach([
 	'continueAnyway' => 'Continue',
 	'copy' => 'Copy',
 	'copied' => 'Copied to clipboard',
+	'copiedCommand' => 'Commands and file paths copied to the clipboard. You should now paste this into your terminal window on your local machine.',
+	'copiedCommandCD' => 'Commands and file paths copied to the clipboard. In your terminal window, <code>cd</code> to your Zenario directory and then paste the copied code.',
 	'core' => 'Core Features',
 	'couldNotOpenBox' => 'This admin box could not be displayed because the "tabs" property is missing.',
 	'createAnother' => 'Save & create another',
@@ -82,11 +86,18 @@ foreach([
 	'deleteSearch' => 'Delete',
 	'deleteSearchConfirm' => 'Are you sure you wish to delete the &quot;[[name]]&quot; advanced search?',
 	'dimensions' => 'Dimensions (w × h):',
+	'dockClose' => 'Close preview',
+	'dockFull' => 'Show preview at the top, full page width',
+	'dockTop' => 'Show preview at the top, slot width',
+	'dockMobile' => 'Show mobile preview',
+	'dockNoJS' => 'JavaScript disabled; image may not be visible.',
+	'dockRight' => 'Show preview to the right, slot width',
 	'dropboxDotDotDot' => 'Choose from Dropbox...',
 	'dropToUpload' => 'Drop files here to upload',
 	'edit' => 'Edit',
 	'editorOpen' => 'You have a WYSIWYG editor open, please close this before continuing.',
 	'empty' => 'Empty',
+	'editorStripsTagsWarning' => "You can't use <code>&lt;iframe&gt;</code> or <code>&lt;script&gt;</code> tags in a WYSIWYG Editor; please use a Raw HTML Snippet plugin to embed HTML like this.",
 	'error404' => 'Could not access a file on the server. Please check that you have uploaded all of the Zenario files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 	'error404Dev' => 'Could not access a file on the server. Please check that you have uploaded all of the Zenario files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 	'error500' => "Something on the server is incorrectly set up or misconfigured.",
@@ -128,6 +139,11 @@ foreach([
 	'link_status__published_with_draft_403' => 'Links to a private content item with an unpublished draft, with a higher level of access than your current extranet user account',
 	'link_status__published_401' => 'Links to a private content item (but you can access it as an administrator)',
 	'link_status__published_403' => 'Links to a private content item with a higher level of access than your current extranet user account (but you can access it as an administrator)',
+	'link_status__unlisted_with_draft' => 'Links to an unlisted content item with a draft that is unpublished',
+	'link_status__unlisted_with_draft_401' => 'Links to an unlisted private content item with an unpublished draft (but you can access it as an administrator)',
+	'link_status__unlisted_with_draft_403' => 'Links to an unlisted private content item with an unpublished draft, with a higher level of access than your current extranet user account',
+	'link_status__unlisted_401' => 'Links to an unlisted private content item (but you can access it as an administrator)',
+	'link_status__unlisted_403' => 'Links to an unlisted private content item with a higher level of access than your current extranet user account (but you can access it as an administrator)',
 	'link_status__spare_alias' => 'This link points to a spare alias; you probably should change this to the real alias',
 	
 	'menuFeatureImage' => "Menu node's promotional image",
@@ -135,6 +151,7 @@ foreach([
 	'menuRolloverImage' => "Menu node's rollover image",
 	
 	'missingId' => 'Missing ID',
+	'missingSlots' => 'This content item has plugins in slots that aren\'t supported by layout [[layout]]. Click the Edit tab, check the plugins in the "Missing Slots" section the bottom of the page, and either remove them or move them to slots that exist.',
 	'mode' => 'Mode',
 	'module' => 'Module',
 	'moreActions' => 'More actions',
@@ -147,18 +164,23 @@ foreach([
 	'no' => 'No',
 	'noItems' => 'There is nothing to display in this view.',
 	'noItemsInSearch' => 'There is nothing that matches your search.',
+	'noSlots' => 'This layout has no slots, please add slots using Gridmaker.',
 	'nothing_selected' => 'Nothing selected',
 	'notChanged' => 'Not changed',
 	'notCompressed' => 'Not compressed',
 	'notLike' => 'Not like:',
+	'notOnAdminDomain' => 'The admin domain for this site ([[admin_domain]]) does not match the domain you are currently on ([[current_domain]]).',
+	'notOnPrimaryDomain' => 'The primary domain for this site ([[primary_domain]]) does not match the domain you are currently on ([[current_domain]]).',
 	'OK' => 'OK',
+	'outOfGrid' => 'Outside of the grid layout',
 	'overwriteContentsConfirm' => 'Are you sure you wish to paste? This will overwrite the contents here.',
 	'pluginNeedsReload' => 'This plugin wants to <a href="[[href]]">reload the page</a> and may not display correctly until you do so.',
 	'pm' => 'PM',
 	'prev' => 'Prev',
 	'preview' => 'Preview',
-	'previewFullPage' => 'Preview full page',
-	'previewFullWidth' => 'Preview full width',
+	'previewFullPage' => 'Show preview at full page width',
+	'previewFullWidth' => 'Show preview at full width',
+	'previewOnPage' => 'Show preview on page',
 	'publish' => 'Publish immediately',
 	'refined' => ' (filtered)',
 	'readonly' => 'Read-only',
@@ -359,4 +381,7 @@ echo 'zenario._mkd(zenarioA.phrase,', json_encode($output), ');';
 
 
 
-ze\cache::outputMicrotemplates(ze::moduleDirs('admin_microtemplates/'), 'zenarioT.microTemplates={}');
+echo ze\bundle::outputMicrotemplates(ze::moduleDirs('admin_microtemplates/'), 'zenarioT.microTemplates={}');
+
+
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/bundle.post_display.inc.php';

@@ -6,6 +6,11 @@ Disallow: /organizer.php*
 Disallow: /private/
 Disallow: /staging.php*
 Disallow: /zenario/
+Disallow: /zenario/cookie_message.php
+Disallow: /zenario/admin/
+Disallow: /zenario/api/
+Disallow: /zenario/frameworks/
+Disallow: /zenario/includes/
 Disallow: /zenario_custom/
 Disallow: /zenario_extra_modules/
 Disallow: /*?slotName*

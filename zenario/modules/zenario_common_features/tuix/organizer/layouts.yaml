@@ -290,6 +290,7 @@ zenario__layouts:
                     parent: view_dropdown
                     hide_in_select_mode: true
                     label: Content items using this layout
+                    record_count: usage_content_items
                     link:
                         path: zenario__content/panels/content
                         branch: true

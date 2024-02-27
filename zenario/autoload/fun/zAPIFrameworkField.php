@@ -63,13 +63,9 @@ if (!$i) {
 
 //Attempt to get the value of this field
 $value = '';
-
-$getValue = null;
 $postValue = null;
 
 if ($name) {
-	$getValue = $_GET[$name] ?? null;
-	
 	if (isset($_POST[$name])
 	 && $this->checkPostIsMine()) {
 		$postValue = $_POST[$name];
@@ -79,10 +75,6 @@ if ($name) {
 //Check the POST
 if ($type != 'submit' && $postValue !== null) {
 	$value = $postValue;
-
-//Check the GET
-} elseif ($type != 'submit' && $getValue !== null) {
-	$value = $getValue;
 
 //Get the value from a source module
 } elseif (!empty($attributes['source_module']) && !empty($attributes['source_method']) && \ze\module::inc($attributes['source_module'])

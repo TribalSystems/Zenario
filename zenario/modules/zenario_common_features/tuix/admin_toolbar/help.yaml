@@ -22,6 +22,8 @@ sections:
                         <p>
                             If your site has an extranet area, and a content item's permissions define it as private, this mode bypasses the permissions system and shows you how it will appear to an authorized user. Look out for coloured warning triangles over hyperlinks that indicate where something an administrator can see can't be seen by an anonymous visitor, or an extranet user.
                         </p>
+            
+            
             edit:
                 appears_in_toolbars:
                     edit: true

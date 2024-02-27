@@ -24,6 +24,7 @@ plugin_settings:
                     type: checkbox
                     value: 0
                     format_onchange: true
+                    side_note: 'If this is enabled, check the "Phrases" tab to customise the label phrases.'
                 show_title:
                     plugin_setting:
                         name: show_title
@@ -231,42 +232,51 @@ plugin_settings:
                         lib.value: show_keywords
                     type: select
                     values: *tags
+                show_language:
+                    plugin_setting:
+                        name: show_language
+                    grouping: filters
+                    label: "Show content item's language"
+                    type: checkbox
+                    format_onchange: true
                 show_language_name:
+                    indent: 1
                     plugin_setting:
                         name: show_language_name
                     grouping: filters
-                    label: "Show content item's language (name)"
+                    label: "Show language name"
                     type: checkbox
                     value: 0
                     format_onchange: true
+                    visible_if: lib.value('show_language')
                 language_name_html_tag:
-                    indent: 1
+                    indent: 2
                     plugin_setting:
                         name: language_name_html_tag
                     grouping: filters
                     label: "Language name tags:"
                     value: h2
-                    visible_if:
-                        lib.value: show_language_name
+                    visible_if: lib.value('show_language') && lib.value('show_language_name')
                     type: select
                     values: *tags
-                show_language:
+                show_language_iso_code:
+                    indent: 1
                     plugin_setting:
-                        name: show_language
+                        name: show_language_iso_code
                     grouping: filters
-                    label: "Show content item's language (ISO code)"
+                    label: "Show language ISO code"
                     type: checkbox
                     value: 0
                     format_onchange: true
+                    visible_if: lib.value('show_language')
                 language_html_tag:
-                    indent: 1
+                    indent: 2
                     plugin_setting:
                         name: language_html_tag
                     grouping: filters
                     label: "Language ISO code tags:"
                     value: h2
-                    visible_if:
-                        lib.value: show_language
+                    visible_if: lib.value('show_language') && lib.value('show_language_iso_code')
                     type: select
                     values: *tags
                 show_writer_name:
@@ -316,18 +326,19 @@ plugin_settings:
                     grouping: filters
                     label: 'Image canvas:'
                     type: select
-                    value: fixed_width_and_height
+                    value: crop_and_zoom
                     values:
-                        unlimited:
-                            label: Unlimited size
+                        crop_and_zoom:
+                            label: Crop and zoom
                         fixed_width:
                             label: Constrain by width
                         fixed_height:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
-                        resize_and_crop:
-                            label: Resize and crop
+                        unlimited:
+                            label: Unlimited size
+                            ord: 99
                     format_onchange: true
                     indent: 2
                 width:
@@ -339,7 +350,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: ""
+                    value: 75
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
@@ -353,7 +364,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: ""
+                    value: 75
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
@@ -480,6 +491,7 @@ plugin_settings:
                             label: Constrain by width and height
                         unlimited:
                             label: Unlimited size
+                            ord: 99
                     format_onchange: true
                     indent: 1
                 image_2_retina:

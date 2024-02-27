@@ -32,7 +32,6 @@ class cookie {
 
 
 
-	//Formerly "setCookieOnCookieDomain()"
 	public static function set($name, $value, $expire = COOKIE_TIMEOUT) {
 	
 		if ($expire > 1) {
@@ -43,7 +42,6 @@ class cookie {
 		$_COOKIE[$name] = $value;
 	}
 
-	//Formerly "clearCookie()"
 	public static function clear($name) {
 		\ze\cookie::set($name, '', 1);
 	
@@ -58,13 +56,11 @@ class cookie {
 		unset($_COOKIE[$name]);
 	}
 
-	//Formerly "setCookieConsent()"
 	public static function setConsent($types = false) {
 		\ze\cookie::set('cookies_accepted', $types ? $types : 1);
 		unset($_SESSION['unnecessary_cookies_rejected']);
 	}
 
-	//Formerly "setCookieNoConsent()"
 	public static function setNoConsent() {
 		if (isset($_COOKIE['cookies_accepted'])) {
 			\ze\cookie::clear('cookies_accepted');
@@ -74,7 +70,6 @@ class cookie {
 	
 	
 
-	//Formerly "requireCookieConsent()"
 	public static function requireConsent() {
 		\ze::$cookieConsent = 'require';
 	}
@@ -109,7 +104,6 @@ class cookie {
 
 
 	const canSetFromTwig = true;
-	//Formerly "canSetCookie()"
 	public static function canSet($type = false) {
 		
 		//Always accept cookies on sites that only notify about cookies,
@@ -147,12 +141,11 @@ class cookie {
 		}
 	}
 	
-	//This returns true if the visitor hasn't yet responded to the cookie prompt
+	//This returns true if the visitor responded to the cookie prompt
 	public static function isDecided() {
 		return !empty($_COOKIE['cookies_accepted']) || !empty($_SESSION['unnecessary_cookies_rejected']);
 	}
 
-	//Formerly "hideCookieConsent()"
 	public static function hideConsent() {
 		if (\ze::$cookieConsent != 'require') {
 			\ze::$cookieConsent = 'hide';
@@ -161,21 +154,18 @@ class cookie {
 
 
 
-	//Formerly "showCookieConsentBox()"
 	public static function showConsentBox($isAdmin, $includeAdminLinks, $includeAdminToolbar) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
 
-	//Formerly "zenarioSessionName()"
 	public static function sessionName() {
 		return 'PHPSESSID'.
 			(COOKIE_DOMAIN? ('-'. preg_replace('@\W@', '_', COOKIE_DOMAIN)) : '').
 			(SUBDIRECTORY && SUBDIRECTORY != '/'? ('-'. preg_replace('@\W@', '_', str_replace('/', '', SUBDIRECTORY))) : '');
 	}
 
-	//Formerly "startSession()"
 	public static function startSession() {
 		if (!isset($_SESSION)) {
 			$sessionName = \ze\cookie::sessionName();

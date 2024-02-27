@@ -242,7 +242,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		//Get all enabled content types. This data will be used to:
 		//1) Check if a content type can be pinned,
 		//2) Generate "Create menu node and _content type_ item" buttons.
-		$enabledContentTypes = ze\content::getContentTypes();
+		$enabledContentTypes = ze\content::getContentTypes(true, true);
 		$enabledContentTypesIds = array_column($enabledContentTypes, 'content_type_id');
 		
 		//As HTML pages are always enabled, include them in here for pinning check...
@@ -298,10 +298,13 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			
 			if ($item['restrict_child_content_types']) {
 				$contentTypeDetails = ze\contentAdm::cTypeDetails($item['restrict_child_content_types']);
-				$item['tooltip'] .= '<br /><br />' . ze\admin::phrase(
-					'By default, [[suggested_content_type]] content items will be created under this node.',
-					['suggested_content_type' => $contentTypeDetails['content_type_name_en']]
-				);
+				
+				if (!empty($contentTypeDetails) && is_array($contentTypeDetails)) {
+					$item['tooltip'] .= '<br /><br />' . ze\admin::phrase(
+						'By default, [[suggested_content_type]] content items will be created under this node.',
+						['suggested_content_type' => $contentTypeDetails['content_type_name_en']]
+					);
+				}
 			}
 		
 			if ($item['children']) {
@@ -362,7 +365,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					if ($path) {
 						$item['path'] = $path. $separator. $item['name'];
 					} else {
-						$item['path'] = ze\menuAdm::path($id, $panel['key']['languageId'], $separator);
+						$item['path'] = ze\menuAdm::pathWithLevel($id, $panel['key']['languageId'], $separator);
 					}
 					$item['path'] = ze\admin::phrase('MISSING [[name]]', ['name' => $item['path']]);
 				}
@@ -373,7 +376,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 						$item['path'] = $path. $separator. $item['name'];
 		
 					} else {
-						$item['path'] = ze\menuAdm::path($id, $panel['key']['languageId'], $separator);
+						$item['path'] = ze\menuAdm::pathWithLevel($id, $panel['key']['languageId'], $separator);
 					}
 				}
 		
@@ -427,7 +430,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			unset($item['target_content_type']);
 	
 			if ($isFlatView) {
-				$item['ordinal'] = ze\menuAdm::path($id, $panel['key']['languageId'], $separator, true);
+				$item['ordinal'] = ze\menuAdm::sortableOrdinalPath($id);
 			}
 			
 			if ($checkSpecificPerms) {
@@ -734,11 +737,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			if (ze\content::getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
 			 && ($content = ze\row::get('content_items', ['id', 'type', 'status'], ['tag_id' => $menuContentItemTagId]))
 			 && (ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']))) {
-				$hasDraft =
-					$content['status'] == 'first_draft'
-				 || $content['status'] == 'published_with_draft'
-				 || $content['status'] == 'hidden_with_draft'
-				 || $content['status'] == 'trashed_with_draft';
+				$hasDraft = ze\content::isDraft($content['status']);
 		
 				if (!$hasDraft || ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					if ($hasDraft) {

@@ -103,12 +103,6 @@ class zenario_blog_news_list extends zenario_content_list {
 					$fields['first_tab/content_type']['disabled'] = true;
 				}
 				
-				$categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
-				if (!$categoriesEnabled) {
-					$fields['each_item/show_content_items_lowest_category']['disabled'] = true;
-					$fields['each_item/show_content_items_lowest_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
-					$values['each_item/show_content_items_lowest_category'] = false;
-				}
 				break;
 		}
 	}
@@ -280,11 +274,6 @@ class zenario_blog_news_list extends zenario_content_list {
 				'Row' => $this->items,
 				'Show_Date' => $this->setting('show_dates'),
 				'Show_Author' => $this->setting('show_author'),
-				
-				//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
-				//Commenting out the code on 08 Nov 2022 in Blog And News List module to match CSL.
-				//'Show_Author_Image' => $this->setting('show_author_image'),
-				
 				'Show_Excerpt' => (bool) $this->dataField,
 				'Show_Item_Title' => (bool)$this->setting('show_titles'),
 				'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
@@ -292,7 +281,7 @@ class zenario_blog_news_list extends zenario_content_list {
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),
 				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
-				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists'),
+				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category'),
 				'UserCanFilterByCategory' => (bool)$this->setting('enable_user_category_filter'),
 				'ShowCountOnFilter' => (bool)$this->setting('show_count_on_user_category_filter'),
 				'OnlyShowCategoryWithItems' => (bool)$this->setting('only_show_category_with_items'),
@@ -304,7 +293,5 @@ class zenario_blog_news_list extends zenario_content_list {
 				'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height')
 			]
 		);
-		
 	}
-	
 }

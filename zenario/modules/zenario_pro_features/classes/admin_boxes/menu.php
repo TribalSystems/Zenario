@@ -64,6 +64,18 @@ class zenario_pro_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$box['tabs']['advanced']['fields']['descriptive_text__'. $lang['id']]['disabled'] =
 				empty($values['text/menu_title__'. $lang['id']]);
 		}
+		
+		$equivs = $cID = $cType = false;
+		if ($values['text/target_loc'] == 'int'
+		 && ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['text/hyperlink_target'])
+		 && (ze\content::isUnlisted($cID, $cType))) {
+			$fields['text/zenario_pro_features__invisible']['disabled'] = true;
+			$fields['text/zenario_pro_features__invisible']['note_below'] =
+				ze\admin::phrase('[[tag]] is unlisted, so this menu node will always behave as if it is invisible.', ['tag' => ze\content::formatTag($cID, $cType)]);
+		} else {
+			$fields['text/zenario_pro_features__invisible']['disabled'] = false;
+			unset($fields['text/zenario_pro_features__invisible']['note_below']);
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

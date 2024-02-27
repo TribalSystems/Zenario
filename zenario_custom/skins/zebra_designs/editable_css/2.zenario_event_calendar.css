@@ -28,7 +28,7 @@
 
 .zenario_event_calendar .calendar_content .calendar_title > *:before {
 	font-family:"FontAwesome";
-	content: "\f073";
+	content: "\f133";
 	color:#FFF;
 	padding-right:10px;
 }

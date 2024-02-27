@@ -103,9 +103,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		}
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->mergeFields = [];
 		
@@ -144,7 +144,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		$this->searchString = '';
 		$this->page = 0;
-		if ($this->setting('mode') == 'search_page' || ($this->setting('mode') == 'search_entry_box' && $this->isAJAXReload())) {
+		if ($this->setting('mode') == 'search_page' || (ze::in($this->setting('mode'), 'search_entry_box', 'search_entry_box_show_always') && $this->isAJAXReload())) {
 			//Do not pre-populate the search term in "Search entry box" mode on page refresh.
 			//However, once the user actually searches for something, carry on as normal.
 			$this->searchString = substr($_REQUEST['searchString'] ?? '', 0, 100);
@@ -168,7 +168,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			);
 		}
 
-		if ($this->setting('mode') == 'search_entry_box') {
+		if (ze::in($this->setting('mode'), 'search_entry_box', 'search_entry_box_show_always')) {
 			$this->styles[] = 'body.mobile #' . $this->containerId . '_search_results { display: block; }';
 			
 			foreach (['html', 'document', 'news', 'blog'] as $contentType) {
@@ -185,6 +185,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		}
 
 		$this->mergeFields['Default_Tab'] = $defaultTab;
+		$this->mergeFields['Uses_Separate_Results_Page'] = (int) ($this->setting('mode') == 'search_entry_box' && $this->setting('use_specific_search_results_page'));
 		
 		
 		//If we're reloading via AJAX, our addToPageHead() method won't be called, and the addStylesOnAJAXReload() function will add the styles.
@@ -299,7 +300,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$this->mergeFields['Search_Results_For'] = $this->phrase('Search results for [[term]]:', ['term' => htmlspecialchars('"'. $this->searchString. '"')]);
 		}
 
-		if ($this->mergeFields['Mode'] == 'search_entry_box') {
+		if (ze::in($this->mergeFields['Mode'], 'search_entry_box', 'search_entry_box_show_always')) {
 			if ($this->setting('search_html')) {
 				$this->mergeFields['Html_Column_Width'] = $this->setting('html_column_width');
 			}
@@ -343,7 +344,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			//If this is the "Search entry box" mode, display nothing when there are no results.
 			//But in "Search page" mode, still display the results div with tabs showing 0 results.
 			
-			if ($this->mergeFields['Mode'] == 'search_entry_box') {
+			if (ze::in($this->mergeFields['Mode'], 'search_entry_box', 'search_entry_box_show_always')) {
 				$this->mergeFields['Search_Result_Rows'] = false;
 			} else {
 				$this->mergeFields['Search_Result_Rows'] = true;
@@ -356,6 +357,8 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				if ($this->mergeFields['Mode'] == 'search_page' && $type != $this->cTypeToSearch) {
 					continue;
 				}
+				
+				$maximumResultsNumber = $this->setting('maximum_results_number');
 
 				switch ($type) {
 					case 'html':
@@ -364,6 +367,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						if ($result['Record_Count']) {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Html_Page_Search_Results'] = $result['search_results'];
+							$this->mergeFields['Html_Page_Search_Results_Count'] = $result['Record_Count'];
+							
+							if ($result['Record_Count'] > $maximumResultsNumber) {
+								$moreResultsCount = $result['Record_Count'] - $maximumResultsNumber;
+								$this->mergeFields['Html_Page_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $moreResultsCount, ['count' => $moreResultsCount]);
+							}
 						} else {
 							$this->mergeFields['Html_Page_Search_No_Results'] = true;
 
@@ -379,6 +388,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						if ($result['Record_Count']) {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Document_Search_Results'] = $result['search_results'];
+							$this->mergeFields['Document_Search_Results_Count'] = $result['Record_Count'];
+							
+							if ($result['Record_Count'] > $maximumResultsNumber) {
+								$moreResultsCount = $result['Record_Count'] - $maximumResultsNumber;
+								$this->mergeFields['Document_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $moreResultsCount, ['count' => $moreResultsCount]);
+							}
 						} else {
 							$this->mergeFields['Document_Search_No_Results'] = true;
 
@@ -394,6 +409,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						if ($result['Record_Count']) {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['News_Search_Results'] = $result['search_results'];
+							$this->mergeFields['News_Search_Results_Count'] = $result['Record_Count'];
+							
+							if ($result['Record_Count'] > $maximumResultsNumber) {
+								$moreResultsCount = $result['Record_Count'] - $maximumResultsNumber;
+								$this->mergeFields['News_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $moreResultsCount, ['count' => $moreResultsCount]);
+							}
 						} else {
 							$this->mergeFields['News_Search_No_Results'] = true;
 
@@ -409,6 +430,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						if ($result['Record_Count']) {
 							$this->mergeFields['Search_Result_Rows'] = true;
 							$this->mergeFields['Blog_Search_Results'] = $result['search_results'];
+							$this->mergeFields['Blog_Search_Results_Count'] = $result['Record_Count'];
+							
+							if ($result['Record_Count'] > $maximumResultsNumber) {
+								$moreResultsCount = $result['Record_Count'] - $maximumResultsNumber;
+								$this->mergeFields['Blog_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $moreResultsCount, ['count' => $moreResultsCount]);
+							}
 						} else {
 							$this->mergeFields['Blog_Search_No_Results'] = true;
 
@@ -445,7 +472,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			}
 		}
 
-		if ($this->mergeFields['Mode'] == 'search_entry_box') {
+		if (ze::in($this->mergeFields['Mode'], 'search_entry_box', 'search_entry_box_show_always')) {
 			$columnsCount = 0;
 			foreach (['html', 'document', 'news', 'blog'] as $contentType) {
 				if ($this->setting('search_' . $contentType)) {
@@ -456,7 +483,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$this->mergeFields['Column_Count'] = (int) $columnsCount;
 		}
 		
-		if ($this->mergeFields['Mode'] == 'search_entry_box' && $this->setting('search_label')) {
+		if (ze::in($this->mergeFields['Mode'], 'search_entry_box', 'search_entry_box_show_always') && $this->setting('search_label')) {
 			$this->mergeFields['Search_Label'] = true;
 		}
 		
@@ -480,10 +507,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 	private function getSearchRequestParameters(){
 		$request = '';
-		if($this->category00_id ) $request .= '&category00_id=' . $this->category00_id;
-		if($this->category01_id ) $request .= '&category01_id=' . $this->category01_id;
-		if($this->category02_id ) $request .= '&category02_id=' . $this->category02_id;
-		if($this->language_id ) $request .= '&language_id=' . $this->language_id;
+		if ($this->category00_id ) $request .= '&category00_id=' . $this->category00_id;
+		if ($this->category01_id ) $request .= '&category01_id=' . $this->category01_id;
+		if ($this->category02_id ) $request .= '&category02_id=' . $this->category02_id;
+		if ($this->language_id ) $request .= '&language_id=' . $this->language_id;
 		return $request;
 	}
 
@@ -515,7 +542,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		if ($mode == 'search_page') {
 			$contentTypes = [$this->cTypeToSearch];
 		//In "Search entry box" mode though, it might be more than one content type at a time.
-		} elseif ($mode == 'search_entry_box') {
+		} elseif (ze::in($mode, 'search_entry_box', 'search_entry_box_show_always')) {
 			$contentTypes = [];
 			if ($this->setting('search_html')) {
 				$contentTypes[] = 'html';
@@ -723,7 +750,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						}
 					}
 					
-					if ('results_from_module' == $this->cTypeToSearch || $mode == 'search_entry_box') {
+					if ('results_from_module' == $this->cTypeToSearch || ze::in($mode, 'search_entry_box', 'search_entry_box_show_always')) {
 						$this->mergeFields['Results_From_Module'] = $resultsFromModule['Results'];
 					}
 				}
@@ -737,6 +764,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						"Tab_On" => 'results_from_module' == $this->cTypeToSearch ? '_on' : null,
 						"Tab_Onclick" => $this->refreshPluginSlotAnchor('&ctab='. rawurlencode('results_from_module'). $this->getSearchRequestParameters() . '&searchString='. rawurlencode($this->searchString))
 					];
+					
+					$maximumResultsNumber = $this->setting('maximum_results_number');
+					$this->mergeFields['Module_Search_Results_Count'] = $countResultsFromModule;
+					
+					if ($countResultsFromModule > $maximumResultsNumber) {
+						$moreResultsCount = $countResultsFromModule - $maximumResultsNumber;
+						$this->mergeFields['Module_And_X_More_Results_Phrase'] = $this->nPhrase('and 1 more result', 'and [[count]] more results', $moreResultsCount, ['count' => $moreResultsCount]);
+					}
 
 					$this->mergeFields['Results_From_Module_Heading_Text'] = $resultsFromModulePhrase;
 				}
@@ -750,7 +785,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 
 		$this->mergeFields['Use_specific_search_results_page'] = $this->setting('use_specific_search_results_page');
 
-		if ($this->setting('mode') == 'search_entry_box' && $this->mergeFields['Use_specific_search_results_page']) {
+		if (ze::in($this->setting('mode'), 'search_entry_box', 'search_entry_box_show_always') && $this->mergeFields['Use_specific_search_results_page']) {
 			$cID = $cType = $state = false;
 			$this->getCIDAndCTypeFromSetting($cID, $cType, 'specific_search_results_page');
 
@@ -759,7 +794,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$this->mergeFields['Open_Form'] = $this->openForm('return false;', '', false, false, true, $usePost = true). $this->remember('ctab');
 		}
 
-		if ($this->setting('mode') == 'search_entry_box' && $this->setting('show_further_search_page_link')) {
+		if (ze::in($this->setting('mode'), 'search_entry_box', 'search_entry_box_show_always') && $this->setting('show_further_search_page_link')) {
 			$cID = $cType = $state = false;
 			$this->getCIDAndCTypeFromSetting($cID, $cType, 'further_search_page_target');
 			$this->mergeFields['Further_Search_Link'] = ze\link::toItem($cID, $cType);
@@ -769,6 +804,28 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$this->mergeFields['Close_Form'] = $this->closeForm();
 		$this->mergeFields['Search_Field_ID'] = $this->containerId . '-search_input_box';
 		$this->mergeFields['Search_String'] = htmlspecialchars($this->searchString);
+		
+		if ($this->mergeFields['Mode'] == 'search_page') {
+			if ($this->setting('let_user_select_language')) {
+				if ($this->language_id) {
+					$this->mergeFields['Language_Value'] = htmlspecialchars($this->language_id);
+				}
+			}
+			
+			if ($this->setting('enable_categories')) {
+				if (!empty($this->mergeFields['HasCategory00'])) {
+					$this->mergeFields['Category_00_value'] = $this->category00_id;
+				}
+				
+				if (!empty($this->mergeFields['HasCategory01'])) {
+					$this->mergeFields['Category_01_value'] = $this->category01_id;
+				}
+				
+				if (!empty($this->mergeFields['HasCategory02'])) {
+					$this->mergeFields['Category_02_value'] = $this->category02_id;
+				}
+			}
+		}
 	}
 	
 	
@@ -845,7 +902,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				`score` DECIMAL(8,2)
 			)";
 		
-		ze\sql::update($tempTableS1ql);
+		ze\sql::cacheFriendlyUpdate($tempTableS1ql);
 
 		//Create a second temporary table for the search results. It will be dropped at the end of the search.
 		$tempTableName2 = 'search_aggr_table_' . $sessionId . "_" . $randomNumber;
@@ -861,7 +918,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				`score` DECIMAL(8,2)
 			)";
 		
-		ze\sql::update($tempTable2Sql);
+		ze\sql::cacheFriendlyUpdate($tempTable2Sql);
 		
 		//Add fields to the query
 		$sqlFields = "
@@ -1099,7 +1156,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			INSERT INTO " . ze\escape::sql($tempTableName1WithPrefix) . "
 			(id, type, published_datetime, release_date, pinned, score)
 			" . $sqlFields. $sqlScore. $sql;
-		ze\sql::update($tempTableInsertSql);
+		ze\sql::cacheFriendlyUpdate($tempTableInsertSql);
 
 		$tempResult1 = "
 			SELECT id, type, published_datetime, release_date, pinned, score
@@ -1200,7 +1257,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					(id, type, published_datetime, release_date, pinned, score)
 					" . $sqlFields . $sqlScore . $sqlFrom . $sqlWhere;
 				
-				ze\sql::update($exactPhraseMatchSql);
+				ze\sql::cacheFriendlyUpdate($exactPhraseMatchSql);
 
 				//Debug code for testing
 				// $tempResult2 = "
@@ -1237,7 +1294,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					FROM " . ze\escape::sql($tempTableName1WithPrefix) . "
 					GROUP BY id, type";
 
-				ze\sql::update($tempResult2);
+				ze\sql::cacheFriendlyUpdate($tempResult2);
 			} else {
 				//If that's a single-word search, just copy the results into the aggregated table.
 				$tempResult2 = "
@@ -1246,7 +1303,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					SELECT id, type, published_datetime, release_date, pinned, score
 					FROM " . ze\escape::sql($tempTableName1WithPrefix);
 
-				ze\sql::update($tempResult2);
+				ze\sql::cacheFriendlyUpdate($tempResult2);
 			}
 		}
 
@@ -1261,7 +1318,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						WHEN (release_date IS NOT NULL AND DATEDIFF(NOW(), release_date) < 365) THEN score * 3
 						ELSE score
 					END";
-			ze\sql::update($releaseDateSql);
+			ze\sql::cacheFriendlyUpdate($releaseDateSql);
 		} else {
 			$releaseDateSql = "
 				UPDATE " . ze\escape::sql($tempTableName2WithPrefix) . "
@@ -1272,7 +1329,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						WHEN DATEDIFF(NOW(), published_datetime) < 365 THEN score * 3
 						ELSE score
 					END";
-			ze\sql::update($releaseDateSql);
+			ze\sql::cacheFriendlyUpdate($releaseDateSql);
 		}
 
 		$tempResult3 = "
@@ -1311,7 +1368,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					WHEN (pinned = 1) THEN score * 10
 					ELSE score
 				END";
-		ze\sql::update($pinnedSql);
+		ze\sql::cacheFriendlyUpdate($pinnedSql);
 
 		$tempResult4 = "
 			SELECT id, type, published_datetime, release_date, pinned, score
@@ -1425,10 +1482,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		//Drop the temporary tables after use.
 		$dropTempTable1Sql = "DROP TEMPORARY TABLE " . ze\escape::sql($tempTableName1WithPrefix);
-		ze\sql::update($dropTempTable1Sql);
+		ze\sql::cacheFriendlyUpdate($dropTempTable1Sql);
 
 		$dropTempTable2Sql = "DROP TEMPORARY TABLE " . ze\escape::sql($tempTableName2WithPrefix);
-		ze\sql::update($dropTempTable2Sql);
+		ze\sql::cacheFriendlyUpdate($dropTempTable2Sql);
 		
 		return [
 			"All_results_without_limit" => $resultsCountWithoutLimit,
@@ -1445,7 +1502,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		switch (ze\plugin::setting('mode', $instanceId, $eggId)) {
 			case 'search_entry_box':
-				return ze\admin::phrase('Advanced search: Inline search entry box');
+				return ze\admin::phrase('Inline search (hover to show)');
+			case 'search_entry_box_show_always':
+				return ze\admin::phrase('Inline search (show always)');
 			case 'search_page':
 				return ze\admin::phrase('Advanced search: Full page search and results');
 		}

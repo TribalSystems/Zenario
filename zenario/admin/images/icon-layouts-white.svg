@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="20px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-layouts">
+        <g>
+            <path d="M20,0L0,0L0,20L20,20L20,0ZM18.75,18.75L1.25,18.75L1.25,1.25L18.75,1.25L18.75,18.75Z" style="fill:white;fill-rule:nonzero;"/>
+            <g>
+                <rect x="2.715" y="3.541" width="14.452" height="1.137" style="fill:white;"/>
+                <rect x="2.715" y="14.447" width="14.452" height="1.137" style="fill:white;"/>
+                <rect x="2.715" y="4.524" width="1.091" height="10.166" style="fill:white;"/>
+                <rect x="16.07" y="4.524" width="1.091" height="10.166" style="fill:white;"/>
+                <rect x="6.26" y="7.131" width="1.227" height="7.559" style="fill:white;"/>
+                <rect x="3.806" y="7.131" width="12.465" height="1.227" style="fill:white;"/>
+            </g>
+        </g>
+    </g>
+</svg>

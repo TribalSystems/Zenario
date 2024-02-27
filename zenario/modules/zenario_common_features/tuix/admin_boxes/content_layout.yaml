@@ -66,14 +66,10 @@ zenario_content_layout:
                         select_phrase: Select a layout...
                         hide_remove_button: Yes
                     format_onchange: Yes
-                skin_id:
+                skin_name:
                     label: 'Skin:'
-                    readonly: Yes
-                    pick_items:
-                        path: zenario__layouts/panels/skins
-                        target_path: zenario__layouts/panels/skins
-                        min_path: zenario__layouts/panels/skins
-                        max_path: zenario__layouts/panels/skins
+                    type: text
+                    show_as_a_span: true
     confirm:
         show: true
         message: ''

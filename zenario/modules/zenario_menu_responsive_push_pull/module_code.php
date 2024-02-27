@@ -31,6 +31,17 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 	
 	public function init(){
 		if (parent::init()) {
+			
+			$numLevels = $this->setting('menu_number_of_levels');
+			if (!$numLevels || $numLevels == 'all') {
+				$this->numLevels = 0;
+			} else {
+				$this->numLevels = (int) $numLevels;
+			}
+
+			//In push-pull menu plugin, always show distant branches
+			//instead of trying to load the value of a hidden checkbox menu_show_all_branches.
+			$this->onlyFollowOnLinks = !(!$numLevels || $numLevels == 'all' || $numLevels > 1);
 
 			$this->callScript(
 				'zenario_menu_responsive_push_pull', 
@@ -45,7 +56,9 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 	}
 	
 	public function showSlot() {
-		$this->mergeFields = [];
+		if (!$this->loadMenuMergeFields()) {
+			return;
+		}
 
 		//The menu title will be translated in the framework.
 		$this->mergeFields['Show_menu_title'] = $this->setting('menu_title');
@@ -111,7 +124,6 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 			}
 		}
 		
-		parent::showSlot();
 		$this->twigFramework($this->mergeFields);
 	}
 

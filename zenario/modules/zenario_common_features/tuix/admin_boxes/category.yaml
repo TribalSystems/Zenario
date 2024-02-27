@@ -10,7 +10,6 @@ zenario_categories:
         label: Category ID
     title: 'Creating a category'
     title_for_existing_records: 'Editing the category "[[details/name]]"'
-    max_height: 500
     hide_tab_bar: true
     tabs:
         details:
@@ -22,30 +21,40 @@ zenario_categories:
                     label: 'Name:'
                     type: text
                     maxlength: 50
-                    side_note: >
-                        Only administrators will see this name.
                     validation:
                         required: "Please enter a name."
                 public:
                     label: 'Public'
                     type: checkbox
-                    copy_code_name: true
                     format_onchange: true
-                    side_note: >
-                        When a category is public, its name may be visible to visitors.
-                        You can create a phrase with this name in all enabled languages.
+                    note_below: |
+                        When a category is public, its name will be visible to visitors. Alternatively, if a category is private, it can be used to organise content but its existence will only be known to administrators.
                 code_name:
                     label: "Code name"
                     indent: 1
                     type: text
-                    visible_if: |
-                        zenarioAB.value('public')
+                    visible_if: zenarioAB.value('public')
                     side_note: The code name may appear in URLs to make them more friendly/meaningful.
                     validation:
                         required_if_not_hidden: "Please enter a code name: this may appear in a URL, for example when viewing a page that has a Content Summary List (CSL) which filters on this category."
+                suggest_code_name_and_visitor_names_from_title:
+                    indent: 1
+                    type: button
+                    css_class: zenario_gp_button
+                    #The button value is set in the PHP class.
+                    format_onchange: true
+                    visible_if: zenarioAB.value('public')
+                set_landing_page:
+                    indent: 1
+                    type: checkbox
+                    label: 'Set a landing page for this category'
+                    note_below: |
+                        A category landing page is a content item to which content items in that category can have a link (use a Meta Data plugin for this). The category landing page will normally have a Content Summary List plugin on it listing items in that category.
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('public')
                 landing_page:
                     label: 'Landing page:'
-                    indent: 1
+                    indent: 2
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -53,7 +62,7 @@ zenario_categories:
                         disallow_refiners_looping_on_min_path: true
                         select_phrase: Select a content item...
                     side_note: |
-                        Choose a landing page for this category. This will usually be a content item with a content list on it which lists items in this category. If a content list displays the content's category, that will become a link to this page.
-                    hidden: true
-                    visible_if: |
-                        zenarioAB.value('public')
+                        The category landing page will usually be a content item with a content summary list plugin on it, set to list items in that category.
+                    visible_if: zenarioAB.value('public') && zenarioAB.value('set_landing_page')
+                    validation:
+                        required_if_not_hidden: 'Please select a content item.'

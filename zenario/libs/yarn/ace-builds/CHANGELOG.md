@@ -2,6 +2,111 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.23.4](https://github.com/ajaxorg/ace/compare/v1.23.3...v1.23.4) (2023-07-12)
+
+
+### Bug Fixes
+
+* filterText triggered selection range removal when completions range was present ([#5249](https://github.com/ajaxorg/ace/issues/5249)) ([b586e4d](https://github.com/ajaxorg/ace/commit/b586e4d574bf780fc38f1ac0d034276272b36ad3))
+
+### [1.23.3](https://github.com/ajaxorg/ace/compare/v1.23.2...v1.23.3) (2023-07-10)
+
+
+### Bug Fixes
+
+* android bug when deleting multiple lines ([#5248](https://github.com/ajaxorg/ace/issues/5248)) ([bd066ff](https://github.com/ajaxorg/ace/commit/bd066ffef88ca74f5ac32349d3e868cfa875a47b)), closes [#5087](https://github.com/ajaxorg/ace/issues/5087)
+* update jshint version to 2.13.6; change esversion to target ECMAScript 11 ([#5243](https://github.com/ajaxorg/ace/issues/5243)) ([301aee9](https://github.com/ajaxorg/ace/commit/301aee91b5974d9fb31d646466ed301c5c3b8249))
+
+### [1.23.2](https://github.com/ajaxorg/ace/compare/v1.23.1...v1.23.2) (2023-07-07)
+
+
+### Bug Fixes
+
+* **autocomplete:** fix a11y violations ([#5241](https://github.com/ajaxorg/ace/issues/5241)) ([decb615](https://github.com/ajaxorg/ace/commit/decb6154198105289170303b7434c524eaf9fda8))
+* bug in guttertooltip when `tooltipsFollowsMouse` set to false ([#5217](https://github.com/ajaxorg/ace/issues/5217)) ([67d318e](https://github.com/ajaxorg/ace/commit/67d318ed25d5b45789462850e6b96aac2931591f))
+* typo in function name ([#5229](https://github.com/ajaxorg/ace/issues/5229)) ([6e99055](https://github.com/ajaxorg/ace/commit/6e99055c46f443271161e40fe15372d1d8ae9f42))
+
+### [1.23.1](https://github.com/ajaxorg/ace/compare/v1.23.0...v1.23.1) (2023-06-27)
+
+## [1.23.0](https://github.com/ajaxorg/ace/compare/v1.22.1...v1.23.0) (2023-06-21)
+
+
+### Features
+
+* **autocomplete:** ellipsis is shown when suggestions is longer than popover width ([#5204](https://github.com/ajaxorg/ace/issues/5204)) ([de4234b](https://github.com/ajaxorg/ace/commit/de4234be62be264b78bd4dd19b09cf20fb4d0f28))
+* signal gutterkeydown in keyboard accessibility mode ([#5202](https://github.com/ajaxorg/ace/issues/5202)) ([538b18c](https://github.com/ajaxorg/ace/commit/538b18cf86e21c810910d286c820bac399927cd7))
+
+
+### Bug Fixes
+
+* Fix vite build and webpack warning ([#5192](https://github.com/ajaxorg/ace/issues/5192)) ([e14902e](https://github.com/ajaxorg/ace/commit/e14902e0c2b281346d062d6a5c84d05bd3590fe3))
+* gutter tooltip class fix ([#5211](https://github.com/ajaxorg/ace/issues/5211)) ([5bdb944](https://github.com/ajaxorg/ace/commit/5bdb944714e7787632914aeef521e3e5024a1d1f))
+* Improve ARIA labelling fold controls ([#5205](https://github.com/ajaxorg/ace/issues/5205)) ([dad5e6f](https://github.com/ajaxorg/ace/commit/dad5e6f6e445b805f7b470ef7892442a83d342e5))
+* regression in setting breakpoints on folded lines ([51326eb](https://github.com/ajaxorg/ace/commit/51326ebfe9b3e97925ab1be05246e0f2646c8687))
+
+### [1.22.1](https://github.com/ajaxorg/ace/compare/v1.22.0...v1.22.1) (2023-06-11)
+
+
+### Bug Fixes
+
+* don't throw unhandled errors in TabstopManager when EditSession becomes `undefined` ([#5193](https://github.com/ajaxorg/ace/issues/5193)) ([cd55932](https://github.com/ajaxorg/ace/commit/cd55932ac7161fcd45e2ee4f1ea8e22b5ff8c3c4))
+* include ace-modes to the npm package ([a074fa4](https://github.com/ajaxorg/ace/commit/a074fa41334314169075b66cd77dd2d9a191c73f))
+* jsdoc comment foldings ([#5197](https://github.com/ajaxorg/ace/issues/5197)) ([065af41](https://github.com/ajaxorg/ace/commit/065af4175f7c7426c9e8f798a0ec64c390a03259))
+
+## [1.22.0](https://github.com/ajaxorg/ace/compare/v1.21.1...v1.22.0) (2023-05-22)
+
+
+### Features
+
+* add odin mode ([#5169](https://github.com/ajaxorg/ace/issues/5169)) ([d455e9b](https://github.com/ajaxorg/ace/commit/d455e9b16efb6030a8b0b6c1189b72516b205b40))
+
+### [1.21.1](https://github.com/ajaxorg/ace/compare/v1.21.0...v1.21.1) (2023-05-16)
+
+
+### Bug Fixes
+
+* console error when hovering over empty gutter cell with tooltipFollowsMouse set to false ([#5173](https://github.com/ajaxorg/ace/issues/5173)) ([5ff8d4c](https://github.com/ajaxorg/ace/commit/5ff8d4cc064ac647a2f40bf977f88b2972ae17ef))
+
+## [1.21.0](https://github.com/ajaxorg/ace/compare/v1.20.0...v1.21.0) (2023-05-15)
+
+
+### Features
+
+* Custom empty message when no completion found ([#5158](https://github.com/ajaxorg/ace/issues/5158)) ([204aafa](https://github.com/ajaxorg/ace/commit/204aafa04c268e98655fb83b4877302a0f82fa4d))
+* Special trigger characters to start autocomplete ([#5147](https://github.com/ajaxorg/ace/issues/5147)) ([c2cfc5a](https://github.com/ajaxorg/ace/commit/c2cfc5a9f1448f64e62f7652c995a48c4ea31ab3))
+
+
+### Bug Fixes
+
+* command bar command type ([#5168](https://github.com/ajaxorg/ace/issues/5168)) ([64c8253](https://github.com/ajaxorg/ace/commit/64c8253e3cd4348b7ecd3684dae057c8fd5f79b9))
+
+## [1.20.0](https://github.com/ajaxorg/ace/compare/v1.19.0...v1.20.0) (2023-05-10)
+
+
+### Features
+
+* Add gutter controls to keyboard accessibility mode ([#5146](https://github.com/ajaxorg/ace/issues/5146)) ([5f2face](https://github.com/ajaxorg/ace/commit/5f2face8febe7c260a42bc30c67195f6a5a46085))
+* Inline autocomplete tooltip UX redesign ([#5149](https://github.com/ajaxorg/ace/issues/5149)) ([8d56c84](https://github.com/ajaxorg/ace/commit/8d56c841ef980527a1ebe4cf73442766f5f97208))
+
+## [1.19.0](https://github.com/ajaxorg/ace/compare/v1.18.1...v1.19.0) (2023-05-03)
+
+
+### Features
+
+* publishing generated styling files to ace-code package ([1fa223e](https://github.com/ajaxorg/ace/commit/1fa223e4ca0df16c9a0e0a6df2996fa010189666))
+
+### [1.18.1](https://github.com/ajaxorg/ace/compare/v1.18.0...v1.18.1) (2023-05-03)
+
+
+### Bug Fixes
+
+* add mode types, improve type definitions ([e22bd5c](https://github.com/ajaxorg/ace/commit/e22bd5c860451c000187941991c0047db4e701a2))
+* hide `$getindent` from the SyntaxMode ([2b1c65b](https://github.com/ajaxorg/ace/commit/2b1c65bceb290db74f26a5c59158f93830bc6111))
+* remove '$' fields for types that don't require exposing them ([2db9d4e](https://github.com/ajaxorg/ace/commit/2db9d4e88441f2932ce6c6f91e7f5ed36c590d2f))
+* remove or update badly formatted declarations ([1e7b022](https://github.com/ajaxorg/ace/commit/1e7b022908cdf6fef0a28419c464874ce6433e6e))
+* replaceRange could now be implemented as an instance of the Range interface, rather than being an instance of the Range class ([e1bdccc](https://github.com/ajaxorg/ace/commit/e1bdcccb4ed3179734aa534b37a9dade2e207f07))
+* wrong next state in regex state ([c5ed709](https://github.com/ajaxorg/ace/commit/c5ed7092f0151d4aa00c7060ecf0111fc37bfebb))
+
 ## [1.18.0](https://github.com/ajaxorg/ace/compare/v1.17.0...v1.18.0) (2023-04-21)
 
 

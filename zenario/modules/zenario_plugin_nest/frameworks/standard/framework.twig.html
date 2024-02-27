@@ -35,7 +35,15 @@
 	{% if this.setting('show_heading') %}
 		<div class="nest_title">
 			{% if this.setting('heading_tag') %}
-				<{{this.setting('heading_tag')}}>{{this.setting('heading_text')|trans|e}}</{{this.setting('heading_tag')}}>
+				<{{this.setting('heading_tag')}}>
+					{% if Nest_Heading_Href %}
+						<a href="{{Nest_Heading_Href|e}}" {% if Nest_Heading_Target_Blank %} target="_blank" {% endif %}</a>
+					{% endif %}
+						{{this.setting('heading_text')|trans|e}}
+					{% if Nest_Heading_Href %}
+						</a>
+					{% endif %}
+				</{{this.setting('heading_tag')}}>
 			{% else %}
 				<h1>{{this.setting('heading_text')|trans|e}}</h1>
 			{% endif %}

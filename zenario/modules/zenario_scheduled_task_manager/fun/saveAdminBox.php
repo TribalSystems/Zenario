@@ -108,8 +108,6 @@ switch ($path) {
 					'log_on_action' => (int) $values['reporting/log_on_action'],
 					'log_on_no_action' => (int) $values['reporting/log_on_no_action'],
 					'email_on_action' => (int) $values['reporting/email_on_action'],
-					'email_on_no_action' => (int) $values['reporting/email_on_no_action'],
-					'email_address_on_no_action' => $values['reporting/email_address_on_no_action'],
 					'email_address_on_action' => $values['reporting/email_address_on_action'],
 					'email_address_on_error' => $values['reporting/email_address_on_error']],
 				$box['key']['id']);

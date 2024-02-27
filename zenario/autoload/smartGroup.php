@@ -35,7 +35,6 @@ class smartGroup {
 	const NOT_IN_SMART_GROUP = 'AND FALSE';
 	
 
-	//Formerly "getSmartGroupDetails()"
 	public static function details($smartGroupId) {
 		return \ze\row::get('smart_groups',
 			[
@@ -51,12 +50,10 @@ class smartGroup {
 	}
 
 
-	//Formerly "smartGroupSQL()"
 	public static function sql(&$and, &$tableJoins, $smartGroupId, $list = true, $usersTableAlias = 'u', $customTableAlias = 'ucd') {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "countSmartGroupMembers()"
 	public static function countMembers($smartGroupId) {
 	
 		$and = $tableJoins = '';
@@ -97,7 +94,6 @@ class smartGroup {
 		return false;
 	}
 
-	//Formerly "checkUserIsInSmartGroup()"
 	public static function isUserIn($smartGroupId, $userId = -1) {
 	
 		$and = $tableJoins = '';

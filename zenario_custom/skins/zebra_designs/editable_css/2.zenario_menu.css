@@ -128,23 +128,12 @@
 	visibility:hidden;
 	-webkit-transition: all 0.3s ease-in-out;
   	-moz-transition: all 0.3s ease-in-out;
-  	-o-transition: all 0.3s ease-in-out;
   	transition: all 0.3s ease-in-out;
 }
 
 .zenario_menu__default_style .wrap_menu_inner > ul > li:hover > ul {
 	opacity:1;
 	visibility:visible;
-}
-
-body.ie8 .zenario_menu__default_style .wrap_menu_inner > ul > li > ul,
-body.ie9 .zenario_menu__default_style .wrap_menu_inner > ul > li > ul {
-	display: none;
-}
-
-body.ie8 .zenario_menu__default_style .wrap_menu_inner > ul > li:hover > ul,
-body.ie9 .zenario_menu__default_style .wrap_menu_inner > ul > li:hover > ul {
-	display: block;
 }
 
 .zenario_menu__default_style ul li.node_mobile,

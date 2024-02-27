@@ -44,9 +44,9 @@ class zenario_common_features__admin_boxes__delete_draft extends ze\moduleBaseCl
 		
 		//Look for any access codes in use
 		ze\contentAdm::checkForAccessCodes($box, $fields['delete_draft/access_codes_warning'], $ids, $contentItemsCount,
-			'This content item has a staging code ([[access_code]]). This will be removed when the draft is deleted.',
-			'One content item has a staging code ([[access_code]]). This will be removed when the draft is deleted.',
-			'[[count]] content items have a staging code. These will be removed when the draft is deleted.'
+			'This content item has an access code ([[access_code]]). This will be removed when the draft is deleted.',
+			'One content item has an access code ([[access_code]]). This will be removed when the draft is deleted.',
+			'[[count]] content items have an access code. These will be removed when the draft is deleted.'
 		);
 		
 		ze\module::incSubclass('zenario_common_features');

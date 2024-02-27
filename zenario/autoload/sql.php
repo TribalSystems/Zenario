@@ -43,25 +43,21 @@ class sql {
 
 
 	//Replacement for mysql_affected_rows()
-	//Formerly "sqlAffectedRows()"
 	public static function affectedRows() {
 		return static::$db->con->affected_rows;
 	}
 
 	//Replacement for mysql_error()
-	//Formerly "sqlError()"
 	public static function error() {
 		return static::$db->con->error;
 	}
 
 	//Replacement for mysql_errno()
-	//Formerly "sqlErrno()"
 	public static function errno() {
 		return static::$db->con->errno;
 	}
 
 	//Replacement for mysql_fetch_assoc()
-	//Formerly "sqlFetchAssoc()"
 	public static function fetchAssoc($result) {
 		if (is_string($result)) {
 			$result = static::select($result);
@@ -70,7 +66,6 @@ class sql {
 	}
 
 	//Replacement for mysql_fetch_row()
-	//Formerly "sqlFetchRow()"
 	public static function fetchRow($result) {
 		if (is_string($result)) {
 			$result = static::select($result);
@@ -79,13 +74,11 @@ class sql {
 	}
 
 	//Replacement for mysql_insert_id()
-	//Formerly "sqlInsertId()"
 	public static function insertId() {
 		return static::$db->con->insert_id;
 	}
 
 	//Replacement for mysql_num_rows()
-	//Formerly "sqlNumRows()"
 	public static function numRows($result) {
 		if (is_string($result)) {
 			$result = static::select($result);
@@ -94,7 +87,6 @@ class sql {
 	}
 
 	//Fetch just one value from a SQL query
-	//Formerly "sqlFetchValue()"
 	public static function fetchValue($result) {
 		if ($row = static::fetchRow($result)) {
 			return $row[0];
@@ -104,7 +96,6 @@ class sql {
 	}
 
 	//Fetch multiple values from a SQL query (one column, multiple rows)
-	//Formerly "sqlFetchValues()"
 	public static function fetchValues($result, $indexBySecondColumn = false) {
 		if (is_string($result)) {
 			$result = static::select($result);
@@ -121,7 +112,6 @@ class sql {
 	}
 
 	//Fetch multiple values from a SQL query (multiple columns, multiple rows)
-	//Formerly "sqlFetchAssocs()"
 	public static function fetchAssocs($result, $indexBy = false) {
 		if (is_string($result)) {
 			$result = static::select($result);
@@ -136,7 +126,6 @@ class sql {
 		}
 		return $out;
 	}
-	//Formerly "sqlFetchRows()"
 	public static function fetchRows($result) {
 		if (is_string($result)) {
 			$result = static::select($result);
@@ -152,7 +141,6 @@ class sql {
 
 
 	//Runs a SQL query without updating the revision number or clearing the cache
-	//Formerly "sqlSelect()"
 	public static function select($sql, $storeResult = true) {
 	
 		//if (!static::$db->con) {
@@ -168,7 +156,6 @@ class sql {
 	}
 
 	//Runs a SQL query and always updates the revision number and clears the cache if needed
-	//Formerly "sqlUpdate()"
 	public static function update($sql, $checkCache = true, $checkRevNo = true) {
 	
 		//if (!static::$db->con) {
@@ -198,7 +185,6 @@ class sql {
 	}
 
 
-	//Formerly "getNextAutoIncrementId()"
 	public static function getNextAutoIncrementId($table) {
 		if ($row = static::fetchAssoc("SHOW TABLE STATUS LIKE '". \ze\escape::sql(static::$db->prefix. $table). "'")) {
 			return $row['Auto_increment'];
@@ -210,7 +196,6 @@ class sql {
 	
 	
 	
-	//Formerly "paginationLimit()"
 	public static function limit($page, $pageSize, $offset = 0) {
 		return "
 			LIMIT ". static::pageStart($page, $pageSize, $offset). ", ". (int) $pageSize;

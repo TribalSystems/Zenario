@@ -40,11 +40,11 @@ foreach (\ze::$slotContents as $slotName => &$slot) {
 		if ($first) {
 			$first = false;
 			echo '
-				<div class="zenario_missing_slots">
-					<h1 class="zenario_missing_slots_title">', \ze\admin::phrase('Missing Slots'), '</h1>
-					<p class="zenario_missing_slots_message">',
+				<x-zenario-missing-slots>
+					<x-zenario-missing-slots-title>', \ze\admin::phrase('Missing Slots'), '</x-zenario-missing-slots-title>
+					<x-zenario-missing-slots-message>',
 						\ze\admin::phrase('The following plugin(s) were added to slots that are now missing from your layout. You should either move each plugin to another slot, or remove each plugin from the slot.'),
-					'</p>';
+					'</x-zenario-missing-slots-message>';
 		}
 		
 		$unusedSlot = \ze\plugin::slot($slotName);
@@ -58,5 +58,5 @@ foreach (\ze::$slotContents as $slotName => &$slot) {
 }
 
 if (!$first) {
-	echo '</div>';
+	echo '</x-zenario-missing-slots>';
 }

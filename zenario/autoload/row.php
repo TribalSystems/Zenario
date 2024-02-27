@@ -49,7 +49,6 @@ class row {
 
 
 	//Helper function for selectInternal
-	//Formerly "checkRowExistsCol()"
 	public static function writeCol(&$sql, $tableName, $alias, $col, $val, &$first, $isWhere, $ignoreMissingColumns = false, $path = false, $sign = '=', $in = 0, $wasNot = false) {
 		
 		if (!isset(static::$db->cols[$tableName][$col])) {
@@ -98,7 +97,7 @@ class row {
 					\ze\db::reportDatabaseErrorFromHelperFunction(\ze\admin::phrase('The column `[[col]]` in the table `[[table]]` is encrypted and cannot be used in a WHERE-statement.', ['col' => $col, 'table' => $tableName]));
 				}
 			} else {
-				$sql .= ($first? '' : ','). $alias. '`%'. \ze\escape::sql($col). '` = \''. \ze\escape::sql((string) \ze\zewl::encrypt($val, true)). '\'';
+				$sql .= ($first? '' : ','). $alias. '`%'. \ze\escape::sql($col). '` = \''. \ze\escape::sql((string) \ze\pde::encrypt($val, true)). '\'';
 			
 				if ($d->hashed) {
 					$sql .= ', '. $alias. '`#'. \ze\escape::sql($col). '` = \''. \ze\escape::sql(\ze\db::hashDBColumn($val)). '\'';
@@ -255,7 +254,6 @@ class row {
 
 
 	//Declare a function to check if something exists in the database
-	//Formerly "checkRowExists()"
 	public static function exists($table, $ids, $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns);
 	}
@@ -562,7 +560,6 @@ class row {
 	
 	
 
-	//Formerly "setRow()"
 	public static function set($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
 		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, $markNewThingsInSession);
 	}
@@ -735,7 +732,6 @@ class row {
 
 
 
-	//Formerly "insertRow()"
 	public static function insert($table, $values, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
 		return static::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
 	}
@@ -745,34 +741,28 @@ class row {
 	}
 
 
-	//Formerly "updateRow()"
 	public static function update($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
 		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, false, false);
 	}
 
 
 
-	//Formerly "deleteRow()"
 	public static function delete($table, $ids, $multiple = true) {
 		return static::selectInternal($table, $ids, false, false, $multiple, 'delete');
 	}
 
-	//Formerly "getRow()"
 	public static function get($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, false, $orderBy);
 	}
 
-	//Formerly "getRows()"
 	public static function query($table, $cols, $ids, $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false, $storeResult = true) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy, false, $storeResult);
 	}
 
-	//Formerly "getDistinctRows()"
 	public static function distinctQuery($table, $cols, $ids, $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false, $storeResult = true) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, true, $indexBy, false, $storeResult);
 	}
 
-	//Formerly "getRowsArray()"
 	public static function getAssocs($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false, $limit = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
@@ -791,22 +781,18 @@ class row {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, $limit ?: true, false, $orderBy, false, $indexBy? $indexBy : true);
 	}
 
-	//Formerly "getDistinctRowsArray()"
 	public static function getDistinctAssocs($table, $cols, $ids = [], $orderBy = [], $indexBy = false, $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true, $indexBy? $indexBy : true);
 	}
 
-	//Formerly "selectCount()"
 	public static function count($table, $ids = []) {
 		return (int) static::selectInternal($table, $ids, false, false, false, 'count');
 	}
 
-	//Formerly "selectMax()"
 	public static function max($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'max');
 	}
 
-	//Formerly "selectMin()"
 	public static function min($table, $cols, $ids = [], $ignoreMissingColumns = false) {
 		return static::selectInternal($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
 	}
@@ -821,7 +807,6 @@ class row {
 
 
 	//Look up the name of the primary/foreign key column
-	//Formerly "getIdColumnOfTable()"
 	public static function idColumnOfTable($table, $guess = false) {
 		static::$db->checkTableDef(DB_PREFIX. $table);		
 		if (static::$db->pks[DB_PREFIX. $table]) {

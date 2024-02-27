@@ -294,9 +294,11 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		$statusEnglishNames = [
 			'first_draft' => 'First draft',
 			'published_with_draft' => 'Published with draft',
+			'unlisted_with_draft' => 'Published unlisted with draft',
 			'hidden_with_draft' => 'Hidden with draft',
 			'trashed_with_draft' => 'Trashed with draft',
 			'published' => 'Published',
+			'unlisted' => 'Published unlisted',
 			'hidden' => 'Hidden',
 			'trashed' => 'Trashed'
 		];
@@ -377,7 +379,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			
 			$menuArray = ze\menu::getFromContentItem($row['id'], $row['type']);
 			if (!empty($menuArray)) {
-				$contentItem['menu'] = ze\menuAdm::pathWithSection($menuArray['mID']);
+				$contentItem['menu'] = ze\menuAdm::path($menuArray['mID']);
 			} else {
 				$contentItem['menu'] = ze\lang::phrase('not in menu');
 			}

@@ -33,7 +33,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class phraseAdm {
 
-	//Formerly "secondsToAdminPhrase()"
 	public static function seconds($seconds) {
 		if (!class_exists('DateTime')) {
 			$a = [
@@ -66,7 +65,6 @@ class phraseAdm {
 	}
 
 	//check if a Visitor Phrase is protected
-	//Formerly "checkIfPhraseIsProtected()"
 	public static function isProtected($languageId, $moduleClass, $phraseCode, $adding) {
 
 		$sql = "
@@ -100,7 +98,6 @@ class phraseAdm {
 	}
 
 	//Update a Visitor Phrase from the importer
-	//Formerly "importVisitorPhrase()"
 	public static function importVisitorPhrase($languageId, $moduleClass, $phraseCode, $localText, $adding, &$numberOf) {
 	
 		//Don't attempt to add empty phrases
@@ -135,12 +132,10 @@ class phraseAdm {
 	}
 
 	//Given an uploaded XML file, pharse that file looking for visitor language phrases
-	//Formerly "importVisitorLanguagePack()"
 	public static function importVisitorLanguagePack($file, &$languageIdFound, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false, $checkPerms = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "scanModulePhraseDir()"
 	public static function scanModulePhraseDir($moduleName, $scanMode) {
 		$importFiles = [];
 		if ($path = \ze::moduleDir($moduleName, 'phrases/', true)) {

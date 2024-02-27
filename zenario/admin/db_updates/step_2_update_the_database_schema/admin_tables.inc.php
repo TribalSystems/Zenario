@@ -70,4 +70,16 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]admins`
 	ADD COLUMN `failed_login_count_since_last_successful_login` int unsigned NOT NULL DEFAULT 0 AFTER `last_login_ip`
 _sql
+
+
+//
+//	Zenario 9.6
+//
+
+//Tidy up a now unused admin setting from the database
+);	ze\dbAdm::revision(59300
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]admin_settings`
+	WHERE `name` = 'drop_downs_open_at'
+_sql
 );

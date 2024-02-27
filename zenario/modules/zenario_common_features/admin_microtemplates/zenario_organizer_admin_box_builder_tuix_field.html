@@ -56,9 +56,12 @@
 				</div>
 				<% } %>
 			<% } else if (m.type == 'calculation_code') { %>
+				<div class="title">
+					{{m.label|e}}
+					<input type="button" id="edit_field_calculation" value="Edit calculation">
+				</div>
 				<div class="value">
 					<textarea readonly>{{m.value|e}}</textarea>
-					<input type="button" id="edit_field_calculation" value="Edit calculation">
 				</div>
 			<% } else if (m.type == 'translations') { %>
 				<div id="organizer_field_translations">{{zenarioT.microTemplate('zenario_organizer_form_builder_translatable_field', m.translation_fields)}}</div>

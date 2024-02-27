@@ -139,6 +139,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		$box['key']['slotName'] = ze::ifNull($instance['slot_name'] ?? false, ze::get('slotName'));
 		$box['key']['languageId'] = ze::ifNull(ze\content::langId($box['key']['cID'], $box['key']['cType']), ze::$defaultLang);
 		
+		$isAdvancedPlugin = false;
 		
 		switch ($box['key']['moduleClassName']) {
 			case 'zenario_plugin_nest':
@@ -154,6 +155,13 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$module['pPluginAdminName'] =
 				$module['pluginsOfThisType'] = \ze\admin::phrase('slideshows');
 				break;
+			
+			//Experimental feature.
+			//I'm requiring an advanced level of permission for editing Twig Snippets.
+			//For now this is only the Twig Snippet plugin, we'll see how this is received.
+			case 'zenario_twig_snippet':
+				$isAdvancedPlugin = true;
+			
 			default:
 				$module['pluginAdminName'] = $pluginAdminName = \ze\admin::phrase('plugin');
 				$module['ucPluginAdminName'] = $ucPluginAdminName = \ze\admin::phrase('Plugin');
@@ -248,11 +256,21 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$canEdit = ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
 			} else {
 				$canEdit =
-					$status == 'published'
+					ze\content::isPublished($status)
 				 && ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])
 				 && $box['key']['cVersion'] == ze\content::latestVersion($box['key']['cID'], $box['key']['cType']);
 			}
-
+		
+		//Experimental feature.
+		//I'm requiring an advanced level of permission for editing Twig Snippets.
+		//For now this is only the Twig Snippet plugin, we'll see how this is received.
+		} elseif ($isAdvancedPlugin) {
+			$canEdit = ze\priv::check('_PRIV_EDIT_SITE_SETTING');
+			
+			if (!$canEdit) {
+				$box['tabs']['first_tab']['notices']['advanced_plugin_in_readonly_mode']['show'] = true;
+			}
+		
 		} else {
 			if ($box['key']['eggId']) {
 				$canEdit = ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN');
@@ -326,14 +344,33 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						
 							if (!empty($tab['fields']) && is_array($tab['fields'])) {
 								foreach ($tab['fields'] as $fieldName => &$field) {
-									if (is_array($field)) {
-										if ($name = $field['plugin_setting']['name'] ?? false) {
-											if (!isset($field['plugin_setting']['value'])) {
-												$field['plugin_setting']['value'] = $field['value'] ?? '';
-											}
-											if (isset($valuesInDB[$name])) {
-												$field['value'] = $valuesInDB[$name];
-											}
+									
+									if (!empty($field['plugin_setting']['name'])) {
+										$settingOpts = $field['plugin_setting'];
+										$name = $settingOpts['name'];
+										$type = $field['type'] ?? '';
+										
+										switch ($type) {
+											case 'button':
+											case 'toggle':
+												if (!isset($field['plugin_setting']['value'])) {
+													$field['plugin_setting']['value'] = $field['pressed'] ?? false;
+												}
+												if (isset($valuesInDB[$name])) {
+													$field['pressed'] = $valuesInDB[$name];
+												}
+												
+												break;
+											
+											default:
+												if (!isset($field['plugin_setting']['value'])) {
+													$field['plugin_setting']['value'] = $field['value'] ?? '';
+												}
+												if (isset($valuesInDB[$name])) {
+													$field['value'] = $valuesInDB[$name];
+												}
+												
+												break;
 										}
 									}
 								}
@@ -373,20 +410,20 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							$fields['first_tab/instance_name']['redraw_onchange'] =
 							$fields['first_tab/instance_name']['redraw_immediately_onchange'] = false;
 							
-							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this plugin.');
+							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this [[pluginAdminName]].', $module);
 						
 						} else {
-							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this plugin or save as a new plugin.');
+							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this [[pluginAdminName]] or save as a new [[pluginAdminName]].', $module);
 							
 							$fields['first_tab/duplicate_or_rename']['pre_field_html'] =
 								'<div class="zfab_plugin_rename_warning warning_icon">'.
-									ze\admin::phrase("You've changed this plugin's name; please select whether you want to:").
+									ze\admin::phrase("You've changed this [[pluginAdminName]]'s name; please select whether you want to:", $module).
 								'</div>';
 							
 							//The above could be rewritten using TUIX properties if desired
 							#$fields['first_tab/duplicate_or_rename']['notices_above']['rename_warning'] = [
 							#	'type' => 'warning',
-							#	'message' => ze\admin::phrase("You've changed this plugin's name; please select whether you want to:")
+							#	'message' => ze\admin::phrase("You've changed this [[pluginAdminName]]'s name; please select whether you want to:", $module)
 							#];
 						}
 					}
@@ -871,7 +908,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 	
 			if ($instance['content_id']) {
 				if (!ze\content::isDraft($status = ze\content::status($instance['content_id'], $instance['content_type']))) {
-					if ($status != 'published') {
+					if (!ze\content::isPublished($status)) {
 						$box['tabs']['first_tab']['errors'][] = ze\admin::phrase('This content item is not a draft and cannot be edited.');
 					} else {
 						$box['confirm']['show'] = true;
@@ -937,7 +974,16 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					//Add a warning when just renaming...
 					$box['confirm']['show'] = true;
 					$box['confirm']['button_message'] = ze\admin::phrase('Save');
-					$box['confirm']['message'] = ze\admin::phrase("Rename this plugin?");
+					
+					if ($box['key']['isSlideshow']) {
+						$box['confirm']['message'] = ze\admin::phrase("Rename this slideshow?");
+					
+					} elseif ($box['key']['isNest']) {
+						$box['confirm']['message'] = ze\admin::phrase("Rename this nest?");
+					
+					} else {
+						$box['confirm']['message'] = ze\admin::phrase("Rename this plugin?");
+					}
 				}
 			}
 		}
@@ -1050,173 +1096,195 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 						if (is_array($tab) && ze\ring::engToBoolean($box['tabs'][$tabName]['edit_mode']['on'] ?? false)) {
 							if (!empty($tab['fields']) && is_array($tab['fields'])) {
 								foreach ($tab['fields'] as $fieldName => &$field) {
-									if (is_array($field)) {
-										if (!empty($field['plugin_setting']['name'])) {
+									
+									if (!empty($field['plugin_setting']['name'])) {
+										$settingOpts = $field['plugin_setting'];
+										$name = $settingOpts['name'];
+										$type = $field['type'] ?? '';
+										
+										$pk['name'] = $settingOpts['name'];
+										
+										$defaultValue = '';
+
+										switch ($type) {
+											case 'button':
+											case 'toggle':
+												$defaultValue = $settingOpts['value'] ?? false;
+												$value = [];
+												$value['value'] = $field['pressed'] ?? false;
+												
+												break;
 											
-											$ps = $field['plugin_setting'];
+											default:
+												if (isset($settingOpts['value'])) {
+													$defaultValue = $settingOpts['value'];
+												} elseif (isset($field['value'])) {
+													$defaultValue = $field['value'];
+												}
+												$value = [];
+												$value['value'] = $values[$tabName. '/'. $fieldName] ?? false;
+												
+												break;
+										}
+										
+										//Don't save a value for a field if it was hidden...
+										if (!empty($tab['hidden'])
+										 || !empty($tab['_was_hidden_before'])
+										 || (!empty($field['hidden']) && empty($settingOpts['save_when_field_is_hidden']))
+										 || (!empty($field['_was_hidden_before']) && empty($settingOpts['save_when_field_is_hidden']))) {
+											ze\row::delete('plugin_settings', $pk);
+				
+										//...or a multiple edit field that is not marked as changed
+										} else
+										if (isset($field['multiple_edit'])
+										 && !$changes[$tabName. '/'. $fieldName]) {
+											ze\row::delete('plugin_settings', $pk);
+				
+										//...or fields that have not changed, and have the "dont_save_default_value"
+										//option set.
+										} else
+										if (!empty($settingOpts['dont_save_default_value'])
+										 && $defaultValue
+										 && (!isset($field['current_value'])
+										  || $field['current_value'] == $defaultValue)) {
+											ze\row::delete('plugin_settings', $pk);
+				
+										} else {
+											//Otherwise save the field in the plugin_settings table.
 											
-											$pk['name'] = $ps['name'];
-											
-											$defaultValue = '';
-											if (isset($ps['value'])) {
-												$defaultValue = $ps['value'];
-											} elseif (isset($field['value'])) {
-												$defaultValue = $field['value'];
+											//Run a HTML sanitiser on any HTML fields when we save them
+											if ('editor' == ($field['type'] ?? '')) {
+												$value['value'] = ze\ring::sanitiseWYSIWYGEditorHTML($value['value'], true, $settingOpts['advanced_inline_styles'] ?? false);
 											}
-											
-											//Don't save a value for a field if it was hidden...
-											if (!empty($tab['hidden'])
-											 || !empty($tab['_was_hidden_before'])
-											 || !empty($field['hidden'])
-											 || !empty($field['_was_hidden_before'])) {
-												ze\row::delete('plugin_settings', $pk);
+							
+							
+											//Handle file/image uploaders by adding these files to the system
+											if (!empty($field['upload'])) {
+												$fileIds = [];
+												foreach (ze\ray::explodeAndTrim($value['value']) as $file) {
+													if ($location = ze\file::getPathOfUploadInCacheDir($file)) {
+														$usage = $field['upload']['usage'] ?? 'image';
+
+														if (!empty($field['upload']['location']) && $field['upload']['location'] == 'docstore') {
+															$fileId = ze\file::addToDocstoreDir($usage, $location);
+														} else {
+															$fileId = ze\file::addToDatabase($usage, $location);
+														}
+								
+														if (!isset($field['upload']['uploaded_ids'])) {
+															$field['upload']['uploaded_ids'] = [];
+														}
+														$field['upload']['uploaded_ids'][$file] = $fileId;
+														
+														$fileIds[] = $fileId;
+													} else {
+														$fileIds[] = $file;
+													}
+												}
+												$field['current_value'] = 
+												$value['value'] = implode(',', $fileIds);
+											}
+						
 					
-											//...or a multiple edit field that is not marked as changed
-											} else
-											if (isset($field['multiple_edit'])
-											 && !$changes[$tabName. '/'. $fieldName]) {
-												ze\row::delete('plugin_settings', $pk);
-					
-											//...or fields that have not changed, and have the "dont_save_default_value"
-											//option set.
-											} else
-											if (!empty($ps['dont_save_default_value'])
-											 && $defaultValue
-											 && (!isset($field['current_value'])
-											  || $field['current_value'] == $defaultValue)) {
-												ze\row::delete('plugin_settings', $pk);
+											//The various different types of foreign key should be registered
+											if (!$value['value'] || empty($settingOpts['foreign_key_to'])) {
+												$value['dangling_cross_references'] = 'remove';
+												$value['foreign_key_to'] = NULL;
+												$value['foreign_key_id'] = 0;
+												$value['foreign_key_char'] = '';
 					
 											} else {
-												//Otherwise save the field in the plugin_settings table.
-												$value = [];
-												$value['value'] = ze\ray::value($values, $tabName. '/'. $fieldName);
+												$value['dangling_cross_references'] = (($settingOpts['dangling_cross_references'] ?? false) ?: 'remove');
 												
-												//Run a HTML sanitiser on any HTML fields when we save them
-												if ('editor' == ($field['type'] ?? '')) {
-													$value['value'] = ze\ring::sanitiseWYSIWYGEditorHTML($value['value'], true);
-												}
-								
-								
-												//Handle file/image uploaders by adding these files to the system
-												if (!empty($field['upload'])) {
-													$fileIds = [];
-													foreach (ze\ray::explodeAndTrim($value['value']) as $file) {
-														if ($location = ze\file::getPathOfUploadInCacheDir($file)) {
-															$usage = $field['upload']['usage'] ?? 'image';
-
-															if (!empty($field['upload']['location']) && $field['upload']['location'] == 'docstore') {
-																$fileIds[] = ze\file::addToDocstoreDir($usage, $location);
-															} else {
-																$fileIds[] = ze\file::addToDatabase($usage, $location);
-															}
-														} else {
-															$fileIds[] = $file;
-														}
-													}
-													$value['value'] = implode(',', $fileIds);
-												}
+												switch ($value['foreign_key_to'] = $settingOpts['foreign_key_to']) {
+													case 'categories':
+														$value['foreign_key_id'] = 0;
+														$value['foreign_key_char'] = '';
+														break;
+													
+													case 'content':
+														$cID = $cType = false;
+														ze\content::getCIDAndCTypeFromTagId($cID, $cType, $value['value']);
 							
-						
-												//The various different types of foreign key should be registered
-												if (!$value['value'] || empty($ps['foreign_key_to'])) {
-													$value['dangling_cross_references'] = 'remove';
-													$value['foreign_key_to'] = NULL;
-													$value['foreign_key_id'] = 0;
-													$value['foreign_key_char'] = '';
-						
-												} else {
-													$value['dangling_cross_references'] = (($ps['dangling_cross_references'] ?? false) ?: 'remove');
+														$value['foreign_key_id'] = $cID;
+														$value['foreign_key_char'] = $cType;
+														break;
+												
+													case 'email_template':
+														$value['foreign_key_id'] = 0;
+														$value['foreign_key_char'] = $value['value'];
+														break;
+												
+													case 'category':
+													case 'document':
+													case 'file':
+													case 'menu_section':
+													case 'user_form':
+														$value['foreign_key_id'] = $value['value'];
+														$value['foreign_key_char'] = '';
+														break;
 													
-													switch ($value['foreign_key_to'] = $ps['foreign_key_to']) {
-														case 'categories':
-															$value['foreign_key_id'] = 0;
-															$value['foreign_key_char'] = '';
-															break;
-														
-														case 'content':
-															$cID = $cType = false;
-															ze\content::getCIDAndCTypeFromTagId($cID, $cType, $value['value']);
-								
-															$value['foreign_key_id'] = $cID;
-															$value['foreign_key_char'] = $cType;
-															break;
-													
-														case 'email_template':
+													//Don't try to record multiple files in the index
+													case 'multiple_files':
+														$value['foreign_key_id'] = 0;
+														$value['foreign_key_char'] = '';
+														break;
+												
+													default:
+														if (is_numeric($value['value'])) {
+															$value['foreign_key_id'] = $value['value'];
+															$value['foreign_key_char'] = $value['value'];
+						
+														} else {
 															$value['foreign_key_id'] = 0;
 															$value['foreign_key_char'] = $value['value'];
-															break;
-													
-														case 'category':
-														case 'document':
-														case 'file':
-														case 'menu_section':
-														case 'user_form':
-															$value['foreign_key_id'] = $value['value'];
-															$value['foreign_key_char'] = '';
-															break;
-														
-														//Don't try to record multiple files in the index
-														case 'multiple_files':
-															$value['foreign_key_id'] = 0;
-															$value['foreign_key_char'] = '';
-															break;
-													
-														default:
-															if (is_numeric($value['value'])) {
-																$value['foreign_key_id'] = $value['value'];
-																$value['foreign_key_char'] = $value['value'];
-							
-															} else {
-																$value['foreign_key_id'] = 0;
-																$value['foreign_key_char'] = $value['value'];
-															}
-															break;
-													}
+														}
+														break;
 												}
-								
-												//Work out whether this is a version controlled or synchronized Instance
-												if (!$instance['content_id']) {
-													$value['is_content'] = 'synchronized_setting';
-											
-						
-												} elseif (ze\ring::engToBoolean($ps['is_searchable_content'] ?? false)) {
-													$value['is_content'] = 'version_controlled_content';
-													$syncContent = true;
-						
-												} else {
-													$value['is_content'] = 'version_controlled_setting';
-							
-													if (ze::in($ps['foreign_key_to'] ?? false, 'file', 'multiple_files')) {
-														$syncContent = true;
-													}
-												}
-						
-												if (!$trimedValue = trim($value['value'])) {
-													$value['format'] = 'empty';
-						
-												} elseif (html_entity_decode($trimedValue) != $trimedValue || strip_tags($trimedValue) != $trimedValue) {
-													if (ze\ring::engToBoolean($ps['translate'] ?? false)) {
-														$value['format'] = 'translatable_html';
-													} else {
-														$value['format'] = 'html';
-													}
-						
-												} else {
-													if (ze\ring::engToBoolean($ps['translate'] ?? false)) {
-														$value['format'] = 'translatable_text';
-													} else {
-														$value['format'] = 'text';
-													}
-												}
-								
-												if (isset($ps['is_email_address'])) {
-													$value['is_email_address'] = $ps['is_email_address'];
-												} else {
-													$value['is_email_address'] = NULL;
-												}
-								
-												ze\row::set('plugin_settings', $value, $pk);
 											}
+							
+											//Work out whether this is a version controlled or synchronized Instance
+											if (!$instance['content_id']) {
+												$value['is_content'] = 'synchronized_setting';
+										
+					
+											} elseif (ze\ring::engToBoolean($settingOpts['is_searchable_content'] ?? false)) {
+												$value['is_content'] = 'version_controlled_content';
+												$syncContent = true;
+					
+											} else {
+												$value['is_content'] = 'version_controlled_setting';
+						
+												if (ze::in($settingOpts['foreign_key_to'] ?? false, 'file', 'multiple_files')) {
+													$syncContent = true;
+												}
+											}
+					
+											if (!$trimedValue = trim($value['value'])) {
+												$value['format'] = 'empty';
+					
+											} elseif (html_entity_decode($trimedValue) != $trimedValue || strip_tags($trimedValue) != $trimedValue) {
+												if (ze\ring::engToBoolean($settingOpts['translate'] ?? false)) {
+													$value['format'] = 'translatable_html';
+												} else {
+													$value['format'] = 'html';
+												}
+					
+											} else {
+												if (ze\ring::engToBoolean($settingOpts['translate'] ?? false)) {
+													$value['format'] = 'translatable_text';
+												} else {
+													$value['format'] = 'text';
+												}
+											}
+							
+											if (isset($settingOpts['is_email_address'])) {
+												$value['is_email_address'] = $settingOpts['is_email_address'];
+											} else {
+												$value['is_email_address'] = NULL;
+											}
+							
+											ze\row::set('plugin_settings', $value, $pk);
 										}
 									}
 								}

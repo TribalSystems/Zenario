@@ -31,7 +31,6 @@ namespace ze;
 class category {
 
 
-	//Formerly "getCategoryName()"
 	public static function name($id) {
 		return \ze\row::get('categories', 'name', ['id' => $id]);
 	}
@@ -41,7 +40,6 @@ class category {
 	}
 
 	const publicNameFromTwig = true;
-	//Formerly "categoryPublicName()"
 	public static function publicName($catId, $languageId = false) {
 		return \ze\lang::phrase('_CATEGORY_'. $catId, false, 'zenario_common_features', $languageId);
 	}

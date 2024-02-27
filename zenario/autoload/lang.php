@@ -33,7 +33,6 @@ class lang {
 	
 	private static $numLangs = null;
 
-	//Formerly "getNumLanguages()"
 	public static function count() {
 	
 		if (self::$numLangs === null) {
@@ -68,7 +67,6 @@ class lang {
 
 	const phraseFromTwig = true;
 	//Replacement function for gettext()/ngettext() in our Twig frameworks
-	//Formerly "phrase()"
 	public static function phrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
 	
 		if (false === $code
@@ -270,7 +268,6 @@ class lang {
 		return $phrase;
 	}
 
-	//Formerly "applyMergeFields()"
 	public static function applyMergeFields(&$string, $replace, $open = '[[', $close = ']]', $autoHTMLEscape = false, $showTheWordEmptyInsteadOfBlanks = false) {
 		
 		//If dataset fields are processed, an array with the label and an ordinal might be passed instead of a label string.
@@ -347,7 +344,6 @@ class lang {
 	}
 
 	const nphraseFromTwig = true;
-	//Formerly "nphrase()"
 	public static function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false, $zeroText = null) {
 	
 		//Allow the caller to enter the name of a merge field that contains $n
@@ -377,7 +373,6 @@ class lang {
 	}
 
 
-	//Formerly "formatFilesizeNicely()"
 	public static function formatFilesizeNicely($size, $precision = 0, $adminMode = false, $vlpClass = '') {
 	
 		if (is_array($size)) {
@@ -412,7 +407,6 @@ class lang {
 		}
 	}
 
-	//Formerly "formatFileTypeNicely()"
 	public static function formatFileTypeNicely($type, $vlpClass = '') {
 		switch($type) {
 			case 'image/jpeg': 
@@ -442,7 +436,6 @@ class lang {
 
 
 
-	//Formerly "getLanguages()"
 	public static function getLanguages($includeAllLanguages = false, $orderByEnglishName = false, $defaultLangFirst = false) {
 		
 		$sql = "
@@ -505,7 +498,6 @@ class lang {
 		return $langs;
 	}
 
-	//Formerly "getLanguageName()"
 	public static function name($languageId = false, $addIdInBracketsToEnd = true, $returnIdOnFailure = true, $localName = false) {
 	
 		if ($languageId === false) {
@@ -528,7 +520,6 @@ class lang {
 
 	}
 
-	//Formerly "getLanguageLocalName()"
 	public static function localName($languageId = false) {
 		return \ze\lang::name($languageId, false, false, true);
 	}

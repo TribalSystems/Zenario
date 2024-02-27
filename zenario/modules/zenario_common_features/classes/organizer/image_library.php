@@ -289,6 +289,10 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			$panel['columns']['tags']['tag_colors'] =
 			$panel['columns']['filename']['tag_colors'] = ze\contentAdm::getImageTagColours($byId = false, $byName = true);
 			
+			if (isset($panel['collection_buttons']['tags'])) {
+				$panel['collection_buttons']['tags']['record_count'] = ze\row::count('image_tags');
+			}
+			
 			foreach ($panel['items'] as $id => &$item) {
 				
 				
@@ -586,6 +590,12 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				}
 			}
 			
+		} elseif (ze::post('copy_to_special_images_library')) {
+			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
+				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
+					ze\file::copyInDatabase('site_setting', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+				}
+			}
 		} elseif (ze::post('copy_to_mic_images')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = \ze\row::get('files', ['filename', 'location', 'data', 'privacy'], $id)) {

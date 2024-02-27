@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.bundle.js.php for step (3).
 */
 
 
@@ -101,11 +101,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	//Show Growl message if saved changes
 	if (thus.changesSaved) {
 		thus.changesSaved = false;
-		var toast = {
-			message_type: 'success',
-			message: 'Your changes have been saved!'
-		};
-		zenarioA.toast(toast);
+		zenarioA.notification(phrase.changesSaved);
 	}
 };
 
@@ -149,6 +145,10 @@ methods.openEdit = function(itemType, itemId, tuixTabId, stopAnimation) {
 		mergeFields.type = thus.getFieldReadableType(item.type);
 		if (item.is_system_field) {
 			mergeFields.type += ', system field';
+		}
+		
+		if ((item.type == 'checkboxes' || item.type == 'group') && !item.required_message) {
+			item.required_message = 'At least 1 option must be selected.';
 		}
 	}
 	
@@ -650,6 +650,30 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 			} else if (item.type == 'centralised_radios' || item.type == 'centralised_select') {
 				tags.tabs[tab].fields.message.snippet.html = 'You cannot change the values of a centralised list.';
 			}
+		} else if (tab == 'validation') {
+			//Readonly / mandatory selector
+			if (item.readonly_or_mandatory && item.readonly_or_mandatory == 'conditional_mandatory' && item.mandatory_condition_field_id) {
+				var conditionField = thus.getItem('field', item.mandatory_condition_field_id);
+				if (conditionField) {
+					if (conditionField.type == 'checkboxes') {
+						tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
+						tags.tabs[tab].fields.mandatory_condition_field_value.hidden = true;
+						tags.tabs[tab].fields.mandatory_condition_checkboxes_operator.hidden = false;
+					} else {
+						tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.hidden = true;
+						if (conditionField.type != 'checkbox' && conditionField.type != 'group') {
+							tags.tabs[tab].fields.mandatory_condition_field_type.values.mandatory_if_one_of = {label: 'Mandatory if at least one of...'};
+							tags.tabs[tab].fields.mandatory_condition_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
+							tags.tabs[tab].fields.mandatory_condition_field_value.empty_value = '-- Any value --';
+							if (item.mandatory_condition_field_type == 'mandatory_if_one_of') {
+								tags.tabs[tab].fields.mandatory_condition_field_value.hidden = true;
+								tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
+								tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.hidden = false;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 };
@@ -722,9 +746,47 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 			}
 		} else if (tab == 'validation') {
 			if (!item.is_system_field) {
-				if (item.required && !item.required_message) {
+				if (
+					item.readonly_or_mandatory
+					&& (item.readonly_or_mandatory == 'mandatory' || item.readonly_or_mandatory == 'conditional_mandatory' || item.readonly_or_mandatory == 'mandatory_if_visible')
+					&& !item.required_message
+				) {
 					tags.tabs[tab].fields.required_message.error = 'Please enter a message if not complete.';
 				}
+				
+				if (item.readonly_or_mandatory && item.readonly_or_mandatory == 'conditional_mandatory') {
+					if (!item.mandatory_condition_field_id) {
+						tags.tabs[tab].fields.mandatory_condition_field_id.error = 'Please select a mandatory on condition form field.';
+					} else if (thus.tuix.items[item.mandatory_condition_field_id].page_id != item.page_id) {
+						tags.tabs[tab].fields.mandatory_condition_field_id.error = 'The mandatory on condition field needs to be on the same dataset tab.';
+					} else {
+						//Get info on the conditional field
+						var conditionalField = thus.getItem(itemType, item.mandatory_condition_field_id);
+						if (conditionalField.type == 'checkbox' && item.mandatory_condition_field_id && !item.mandatory_condition_field_value) {
+							tags.tabs[tab].fields.mandatory_condition_field_value.error = 'Please select the condition field value.';
+						} else if (
+							(
+								(conditionalField.type == 'checkboxes' || conditionalField.type == 'group')
+								&& item.mandatory_condition_field_id
+								&& (!item.mandatory_condition_checkboxes_field_value || item.mandatory_condition_checkboxes_field_value.length == 0)
+							)
+							|| (
+								(
+									conditionalField.type == 'radios'
+									|| conditionalField.type == 'centralised_radios'
+									|| conditionalField.type == 'select'
+									|| conditionalField.type == 'centralised_select'
+								)
+								&& item.mandatory_condition_field_id
+								&& item.mandatory_condition_field_type == 'mandatory_if_one_of'
+								&& (!item.mandatory_condition_checkboxes_field_value || item.mandatory_condition_checkboxes_field_value.length == 0)
+							)
+						) {
+							tags.tabs[tab].fields.mandatory_condition_field_value.error = 'Please select at least one of the conditional options.';
+						}
+					}
+				}
+				
 				if (item.validation && item.validation != 'none' && !item.validation_message) {
 					tags.tabs[tab].fields.validation_message.error = 'Please enter a message if not valid.';
 				}
@@ -759,8 +821,51 @@ methods.getTUIXFieldCustomValues = function(type) {
 					continue;
 				}
 				
+				var label;
+				if (field.type == 'checkbox') {
+					label = '"' + field.label + '" is checked';
+				} else {
+					label = field.label;
+				}
+				
 				values[field.id] = {
-					label: field.label,
+					label: label,
+					ord: ++ord
+				};
+				if (useOptGroups) {
+					var parentId = 'page_' + page.id;
+					values[field.id].parent = parentId;
+					if (!values[parentId]) {
+						values[parentId] = {
+							label: page.label,
+							ord: ++ord
+						};
+					}
+				}
+			}
+		}
+	} else if (type == 'conditional_fields') {
+		var pages = thus.getOrderedPages();
+		var useOptGroups = pages.length > 1;
+		var ord = 0;
+		for (var i = 0; i < pages.length; i++) {
+			var page = pages[i];
+			var fields = thus.getOrderedFields(pages[i].id);
+			for (var j = 0; j < fields.length; j++) {
+				var field = fields[j];
+				if (!thus.canAddFieldToList(type, field.id)) {
+					continue;
+				}
+				
+				var label;
+				if (field.type == 'checkboxes' || field.type == 'group') {
+					label = field.label + ' (at least 1 must be selected)';
+				} else {
+					label = field.label;
+				}
+				
+				values[field.id] = {
+					label: label,
 					ord: ++ord
 				};
 				if (useOptGroups) {
@@ -778,6 +883,14 @@ methods.getTUIXFieldCustomValues = function(type) {
 	}
 	
 	return values;
+};
+
+methods.canAddFieldToList = function(type, fieldId) {
+	var field = thus.tuix.items[fieldId];
+	if (type == 'conditional_fields') {
+		return (thus.editingThing != 'field' || field.id != thus.editingThingId) && (['checkbox', 'group', 'radios', 'select', 'centralised_radios', 'centralised_select', 'checkboxes'].indexOf(field.type) != -1);
+	}
+	return false;
 };
 
 methods.loadPagesList = function() {
@@ -877,7 +990,7 @@ methods.createPage = function() {
 	page.ord = ord;
 	page._just_added = true;
 	page.fields = {};
-	page.label = 'Untitled page';
+	page.label = 'Untitled tab';
 	
 	//Load default values for fields
 	foreach (thus.tuix.dataset_page_details.tabs as var tuixTabName => var tuixTab) {
@@ -1252,6 +1365,10 @@ methods.createField = function(type, ord) {
 	field.ord = ord;
 	field.label = 'Untitled';
 	field._just_added = true;
+	
+	if (field.type == 'checkboxes' || field.type == 'group') {
+		field.required_message = 'At least 1 option must be selected.';
+	}
 	
 	if (type == 'checkboxes' || type == 'radios' || type == 'select') {
 		field.lov = {};

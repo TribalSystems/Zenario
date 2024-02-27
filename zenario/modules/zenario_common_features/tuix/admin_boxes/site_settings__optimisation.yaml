@@ -5,7 +5,7 @@ site_settings:
     title: Editing Zenario cache settings
     tabs:
         caching:
-            label: Caching and combining files
+            label: Caching and bundling files
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -29,50 +29,50 @@ site_settings:
                     readonly: true
                     note_below: ''
                 
-                css_wrappers:
+                bundle_skins:
                     ord: 997
                     site_setting:
-                        name: css_wrappers
+                        name: bundle_skins
                         value: visitors_only
                     label: |
-                            Combine skin CSS files:
+                            Bundle skin CSS files:
                     type: select
                     values:
                         on:
-                            label: Always combine files
+                            label: Always bundle files
                         visitors_only:
-                            label: Combine files for visitors only, not admins (recommended)
+                            label: Bundle files for visitors only, not admins (recommended)
                         off:
                             label: Always serve files separately
                     value: on
                     note_below: |
-                        Zenario can combine the multiple CSS files of a skin together into a single download.
+                        Zenario can bundle the multiple CSS files of a skin together into a single download.
                         Having less individual files to download means less network connections in the browser
                         and should make the website load faster,
                         but we recommend turning this off while working on CSS for easier debugging.
                         <br/>
                         <em style="font-style: italic;">
-                            Core files for Zenario will always be combined, and this cannot be disabled.
+                            Core files for Zenario will always be bundled, and this cannot be disabled.
                         </em>
                 
-                js_wrappers:
+                bundle_js:
                     ord: 998
                     label: |
-                        Combine plugin JavaScript files:
+                        Bundle plugin JavaScript files:
                     type: select
                     values:
                         on:
-                            label: Always combine files
+                            label: Always bundle files
                     value: on
                     readonly: true
                     note_below: |
-                        Zenario combines the multiple JavaScript files of plugins on a page into a single download.
+                        Zenario bundles multiple JavaScript files of plugins on a page into a single download.
                         Having less individual files to download means less network connections in the browser
                         and should make the website load faster.
                         This cannot be disabled.
                         <br/>
                         <em style="font-style: italic;">
-                            Core files for Zenario will always be combined, and this also cannot be disabled.
+                            Core files for Zenario will always be bundled, and this also cannot be disabled.
                         </em>
                 
                 defer_js:
@@ -131,7 +131,7 @@ site_settings:
                     full_width: false
                     type: submit
                     value: 'Clear cache and check for changes'
-                    class: submit_selected
+                    class: zenario_submit_button
                     format_onchange: true
                     note_below: |
                         <p>This button will:</p>

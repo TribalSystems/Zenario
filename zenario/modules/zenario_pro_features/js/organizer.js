@@ -32,9 +32,14 @@ zenario.lib(function(
 	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
 	encodeURIComponent, defined, engToBoolean, get, htmlspecialchars, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenario_pro_features, zenario_server_time
+	zenario_pro_features
 ) {
 	"use strict";
+
+
+var zenario_scheduled_tasks_status = 'zenario_scheduled_tasks_status',
+	zenario_server_time = 'zenario_server_time',
+	scheduledTasksStatusMessage;
 
 
 zenario_pro_features.serverTime = function() {
@@ -60,55 +65,73 @@ zenario_pro_features.serverTime = function() {
 
 
 zenario.on('', '', 'eventSetOrganizerIcons', function() {
-	var times = zenario.moduleNonAsyncAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).split('~'),
-		now = new Date(),
-		htmlST = '',
-		htmlSC = '',
-		_$div = zenarioT.div,
+	var cb = new zenario.callback;
+	
+	zenario.moduleAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).after(function(times) {
+		times = times.split('-');
 		
-		zenario_scheduled_tasks_status = 'zenario_scheduled_tasks_status';
+		var ti,
+			now = new Date(),
+			htmlST = '',
+			htmlSC = '',
+			_$div = zenarioT.div;
 	
-	
-	zenario_pro_features.serverTimeHoursOffset = 1*times[2] - now.getHours();
-	zenario_pro_features.serverTimeMinsOffset = 1*times[3] - now.getMinutes();
-	zenario_pro_features.serverTimeSecsOffset = 1*times[4] - now.getSeconds();
-	
-	htmlST = _$div(
-		'id', zenario_scheduled_tasks_status,
-		'class', times[5],
-		'onclick', times[7] && ("zenarioO.go('" + jsEscape(times[7]) + "', -1);")
-	);
-	
-	htmlSC = _$div(
-		'id', zenario_server_time
-	);
-	
-	
-	setTimeout(function() {
-		
-		var tooltipOptions = {
-			position: {my: 'center bottom', at: 'center top', collision: 'flipfit'},
-			items: '*'
-		};
-		
-		tooltipOptions.content = phrase.serverTime;
-		zenarioA.tooltips('#' + zenario_server_time, tooltipOptions);
-	
-		if (tooltipOptions.content = times[6]) {
-			zenarioA.tooltips('#' + zenario_scheduled_tasks_status, tooltipOptions);
+		foreach (times as ti) {
+			times[ti] = zenario.uneschyp(times[ti]);
 		}
-	}, 200);
 	
-	if (zenario_pro_features.serverTimeInterval) {
-		clearInterval(zenario_pro_features.serverTimeInterval);
+	
+		zenario_pro_features.serverTimeHoursOffset = 1*times[0] - now.getHours();
+		zenario_pro_features.serverTimeMinsOffset = 1*times[1] - now.getMinutes();
+		zenario_pro_features.serverTimeSecsOffset = 1*times[2] - now.getSeconds();
+		
+		scheduledTasksStatusMessage = times[4];
+	
+		htmlST = _$div(
+			'id', zenario_scheduled_tasks_status,
+			'class', times[3],
+			'onclick', times[5] && ("zenarioO.go('" + jsEscape(times[5]) + "', -1);")
+		);
+	
+		htmlSC = _$div(
+			'id', zenario_server_time
+		);
+	
+	
+		/*
+		setTimeout(function() {
+		
+		}, 200);
+		*/
+	
+		if (zenario_pro_features.serverTimeInterval) {
+			clearInterval(zenario_pro_features.serverTimeInterval);
+		}
+		zenario_pro_features.serverTimeInterval = setInterval(zenario_pro_features.serverTime, 250);
+		
+		
+		cb.return({'↙': [[htmlST, 1], [htmlSC, 1.1]]});
+	});
+	
+	return cb;
+});
+
+zenario.on('', '', 'eventOrganizerIconsRendered', function() {
+	var tooltipOptions = {
+		position: {my: 'center bottom', at: 'center top', collision: 'flipfit'},
+		items: '*'
+	};
+
+	tooltipOptions.content = phrase.serverTime;
+	zenarioA.tooltips('#' + zenario_server_time, tooltipOptions);
+
+	if (tooltipOptions.content = scheduledTasksStatusMessage) {
+		zenarioA.tooltips('#' + zenario_scheduled_tasks_status, tooltipOptions);
 	}
-	zenario_pro_features.serverTimeInterval = setInterval(zenario_pro_features.serverTime, 250);
-	
-	
-	return {'↙': [[htmlST, 1], [htmlSC, 1.1]]};
 });
 
 
 
 
-}, zenario_pro_features, 'zenario_server_time');
+
+}, zenario_pro_features);

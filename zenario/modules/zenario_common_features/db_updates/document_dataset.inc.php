@@ -71,7 +71,7 @@ if (ze\dbAdm::needRevision(225)) {
 }
 
 if (ze\dbAdm::needRevision(264)) {
-	//In 9.4, a "Library" section was added, and the hierarchal documents were moved there. Update the dataset to use the new path to the documents panel.
+	//In 9.4, a "Library" section was added, and the hierarchical documents were moved there. Update the dataset to use the new path to the documents panel.
 	$datasetId = ze\datasetAdm::register(
 		'Documents',
 		'documents_custom_data',

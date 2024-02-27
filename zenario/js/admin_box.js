@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -55,6 +55,8 @@ var FAB_NAME = 'AdminFloatingBox',
 	FAB_WIDTH = 960,
 	PLUGIN_SETTINGS_WIDTH = 800,
 	PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW = 1100,
+	PLUGIN_SETTINGS_MIN_HEIGHT_FOR_PREVIEW = 700,
+	PLUGIN_SETTINGS_MOBILE_PREVIEW_TARGET_WIDTH = 390,
 	PLUGIN_SETTINGS_BORDER_WIDTH = 4;
 
 
@@ -144,9 +146,10 @@ zenarioAB.setTitle = function(isReadOnly) {
 
 
 
-//Automatically set the box to the correct height for the users screen, or the maximum height requested, whichever is smaller
+//Automatically set the box to the correct height for the users screen, or the maximum height requested, whichever is smaller.
+//We also need to handle the size of the preview box, and which side that's docked to
 zenarioAB.lastSize = false;
-zenarioAB.previewHidden = true;
+zenarioAB.showPreview = true;
 zenarioAB.size = function(refresh) {
 	
 	if (zenarioAB.sizing) {
@@ -155,8 +158,7 @@ zenarioAB.size = function(refresh) {
 	
 	var width = Math.floor($(window).width()),
 		height = Math.floor($(window).height()),
-		previewHidden = false,
-		newWidth,
+		boxAndPreviewCombinedWidth,
 		windowSizedChanged,
 		global_area,
 		tuix = zenarioAB.tuix || {};
@@ -168,10 +170,12 @@ zenarioAB.size = function(refresh) {
 		if (windowSizedChanged || refresh) {
 			zenarioAB.lastSize = width + 'x' + height;
 			
-			var $box = $('#zenario_fabBox'),
-				$tabContainer = $('#zenario_fbAdminInner'),
+			var $zenario_fabBox = $('#zenario_fabBox'),
+				$zenario_fabPreview = $('#zenario_fabPreview'),
+				$zenario_fabForm = $('#zenario_fbAdminInner'),
 				hideTabBar = engToBoolean(tuix.hide_tab_bar), 
-				maxTabContainerHeight = 1 * tuix.max_height;
+				maxTabContainerHeight = 1 * tuix.max_height,
+				showingMobilePreview = false;
 			
 			if (get('zenario_fbMain')) {
 				if (hideTabBar) {
@@ -186,17 +190,211 @@ zenarioAB.size = function(refresh) {
 			
 			
 			//Reset the size of elements before calculating any sizes
-			$box.height('auto');
-			$tabContainer.height(100);
+			$zenario_fabBox.height('auto');
+			$zenario_fabForm.height(100);
+			$zenario_fabPreview.height(0);
+			
+			$zenario_fabBox.css({left: 'initial'});
+			$zenario_fabPreview.css({left: 'initial'});
 			
 			//Get the height of the box before we set the tab container's height properly,
 			//and compare it against the size of the window that we have to work in.
 			//Use these numbers to work out how large the tab container can be.
-			var initialHeight = $box.height(),
+			var outOfGrid = !zenarioAB.previewSlotWidthInfo,
+				initialHeight = $zenario_fabBox.height(),
 				heightAvailable = Math.floor(height * 0.96),
 				widthAvailable = Math.floor(width * 0.96),
-				tabContainerHeight = heightAvailable - initialHeight + 100;
+				tabContainerHeight,
+				wideEnoughForDockAtSide,
+				tallEnoughForDockAtTopOrBottom,
+				hasPreview = false,
+				couldShowPreviewInDock = false,
+				showPreview = false,
+				narrowPreviewWindow = false,
+				previewWidth,
+				previewHeight,
+				dockPosition,
+				isPluginSettings = tuix.css_class && tuix.css_class.match(/zenario_fab_plugin\b/);
 			
+			
+			//Check if we can show a plugin preview.
+			//This must be a plugin settings FAB, and the function to generate a preview must be callable.
+			//Also if we want to show the preview at the same time as the settings, then we must have enough
+			//room either above/below/to the side to show the preview.
+			if (hasPreview = isPluginSettings && zenarioAB.hasPreviewWindow) {
+				wideEnoughForDockAtSide = widthAvailable >= PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW;
+				tallEnoughForDockAtTopOrBottom = heightAvailable >= PLUGIN_SETTINGS_MIN_HEIGHT_FOR_PREVIEW;
+				
+				if (wideEnoughForDockAtSide || tallEnoughForDockAtTopOrBottom) {
+					showPreview = couldShowPreviewInDock = true;
+					
+					//Check the sessions to see what the last position of the dock was.
+					dockPosition = zenarioAB.getDockPosition();
+					
+					//A bit of validation to check the dock position is actually valid
+					switch (dockPosition) {
+						case 'closed':
+							showPreview = false;
+							break;
+					
+						case 'top':
+							if (outOfGrid) {
+								//Don't allow the "top" option for slots outside of the grid
+								dockPosition = 'full';
+							}
+						case 'full':
+							if (!tallEnoughForDockAtTopOrBottom) {
+								dockPosition = 'right';
+							}
+							break;
+					
+						case 'mobile':
+							if (!wideEnoughForDockAtSide) {
+								dockPosition = 'top';
+							}
+							break;
+					
+						default:
+							if (wideEnoughForDockAtSide) {
+								dockPosition = 'right';
+							} else {
+								dockPosition = 'top';
+							}
+					}
+					
+					//Only show the buttons for each position if there is enough room to dock the preview in that position
+					var $zenario_fabDockIconTop = $('#zenario_fabDockIconTop'),
+						$zenario_fabDockIconFull = $('#zenario_fabDockIconFull'),
+						$zenario_fabDockIconRight = $('#zenario_fabDockIconRight'),
+						$zenario_fabDockIconMobile = $('#zenario_fabDockIconMobile');
+					
+					if (wideEnoughForDockAtSide) {
+						$zenario_fabDockIconRight.show();
+						$zenario_fabDockIconMobile.show();
+					} else {
+						$zenario_fabDockIconRight.hide();
+						$zenario_fabDockIconMobile.hide();
+					}
+					
+					if (tallEnoughForDockAtTopOrBottom) {
+						$zenario_fabDockIconFull.show();
+					} else {
+						$zenario_fabDockIconFull.hide();
+					}
+					
+					//Only show the "full width" option for an out-of grid slot.
+					if (tallEnoughForDockAtTopOrBottom && !outOfGrid) {
+						$zenario_fabDockIconTop.show();
+					} else {
+						$zenario_fabDockIconTop.hide();
+					}
+				}
+			}
+			
+			
+			//Plugin setting FABs have a slightly different width than regular FABs.
+			if (!isPluginSettings) {
+				boxAndPreviewCombinedWidth = FAB_WIDTH;
+				$zenario_fabBox.width(boxAndPreviewCombinedWidth);
+				
+				zenarioAB.previewChecksum =
+				previewWidth =
+				zenarioAB.previewPost = false;
+			
+			} else if (!showPreview) {
+				boxAndPreviewCombinedWidth = PLUGIN_SETTINGS_WIDTH;
+				$zenario_fabBox.width(boxAndPreviewCombinedWidth);
+				
+				zenarioAB.previewChecksum =
+				previewWidth =
+				zenarioAB.previewPost = false;
+			
+			//Logic for setting the width and height of the FAB and the preview box, when display a
+			//preview box docked to the FAB.
+			} else {
+				
+				//Logic for setting the widths
+				boxAndPreviewCombinedWidth = PLUGIN_SETTINGS_WIDTH;
+				$zenario_fabBox.width(boxAndPreviewCombinedWidth);
+				
+				//Show the dock on the top and make the preview as wide as possible
+				if (dockPosition == 'full') {
+					previewWidth =
+					boxAndPreviewCombinedWidth = widthAvailable;
+					
+				//Show the dock on the top, but try to set the same width as the grid-slot it's showing.
+				} else if (dockPosition == 'top') {
+					previewWidth = zenarioAB.previewSlotWidth || PLUGIN_SETTINGS_WIDTH;
+					
+					narrowPreviewWindow = previewWidth < PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW - PLUGIN_SETTINGS_WIDTH;
+					
+					boxAndPreviewCombinedWidth = Math.max(previewWidth, PLUGIN_SETTINGS_WIDTH);
+				
+				//Show the dock on the right. Try to set the same width as the grid-slot it's showing but make it a bit thinner
+				//if there is not enough room.
+				} else {
+					//If we found the width of the slot earlier, don't allow the preview window to be larger than that.
+					//Also don't let the combined width of the preview window and the admin box be larger than the window!
+					if (dockPosition == 'mobile') {
+						boxAndPreviewCombinedWidth = Math.min(widthAvailable, PLUGIN_SETTINGS_WIDTH + PLUGIN_SETTINGS_BORDER_WIDTH + PLUGIN_SETTINGS_MOBILE_PREVIEW_TARGET_WIDTH);
+					} else if (zenarioAB.previewSlotWidth) {
+						boxAndPreviewCombinedWidth = Math.min(widthAvailable, PLUGIN_SETTINGS_WIDTH + PLUGIN_SETTINGS_BORDER_WIDTH + zenarioAB.previewSlotWidth);
+						
+						narrowPreviewWindow = boxAndPreviewCombinedWidth < widthAvailable;
+						
+					} else {
+						boxAndPreviewCombinedWidth = widthAvailable;
+					}
+			
+					//Note down the size that the preview window will be after all of thise
+					previewWidth = boxAndPreviewCombinedWidth - PLUGIN_SETTINGS_WIDTH - PLUGIN_SETTINGS_BORDER_WIDTH;
+				}
+				$zenario_fabPreview.width(previewWidth);
+				
+				//Tony doesn't want the width of the preview to match the width of the FAB when the preview is
+				//docked at the top.
+				//We'll still want to try and nicely center them though. This is a bit tricky to do and needs some patching.
+				//Work out what the difference in width is, then set that to forcibly move one of the boxes to the correct
+				//position.
+				var widthDiff = Math.floor((PLUGIN_SETTINGS_WIDTH - previewWidth) / 2);
+				
+				if (widthDiff > 0) {
+					$zenario_fabPreview.css({left: widthDiff + 'px'});
+				} else if (widthDiff < 0) {
+					$zenario_fabBox.css({left: -widthDiff + 'px'});
+				}
+				
+				
+				
+				//Logic for setting the heights
+				if (dockPosition == 'right' || dockPosition == 'mobile') {
+					//If the preview is docked to the right of the FAB, the FAB should be it's usual height,
+					//and the preview should also be that height.
+					$zenario_fabPreview.height(heightAvailable);
+			
+				} else {
+					//If the preview is docked to the top of the FAB, they will need to divide up the height between them.
+					var dockHeight = Math.floor(heightAvailable * 0.375);
+					heightAvailable = heightAvailable - dockHeight;
+				
+					$zenario_fabPreview.height(dockHeight);
+				}
+			}
+			
+			if (showPreview) {
+				var $zenario_fabPreviewInfo = $('#zenario_fabPreviewInfo');
+				
+				//Set the width info to the number of columns, or else mention that this
+				//is a slot outside of the grid.
+				if (outOfGrid) {
+					$zenario_fabPreviewInfo.text(phrase.outOfGrid);
+				} else {
+					$zenario_fabPreviewInfo.text(zenarioAB.previewSlotWidthInfo);
+				}
+			}
+			
+			
+			tabContainerHeight = heightAvailable - initialHeight + 100;
 			
 			if (maxTabContainerHeight
 			 && tabContainerHeight > maxTabContainerHeight) {
@@ -205,113 +403,110 @@ zenarioAB.size = function(refresh) {
 			}
 	
 			if (tabContainerHeight && tabContainerHeight > 0) {
-				$tabContainer.height(tabContainerHeight);
+				$zenario_fabForm.height(tabContainerHeight);
 			}
 			zenarioAB.tabContainerHeight = tabContainerHeight;
-	
-			if (heightAvailable && heightAvailable > 0) {
-				$box.height(heightAvailable);
-				$('#zenario_fabPreview').height(heightAvailable);
+			
+			$zenario_fabBox.height(heightAvailable);
+			
+			
+			
+			var $fab = $('#zenario_fb' + FAB_NAME);
+			
+			$fab.removeClass('zenario_fab_with_no_preview')
+				.removeClass('zenario_fab_with_preview')
+				.removeClass('zenario_fab_with_preview_cant_dock')
+				.removeClass('zenario_fab_with_preview_hidden')
+				.removeClass('zenario_fab_with_preview_shown')
+				.removeClass('zenario_fab_with_preview_docked_top')
+				.removeClass('zenario_fab_with_preview_docked_full')
+				.removeClass('zenario_fab_with_preview_docked_right')
+				.removeClass('zenario_fab_with_mobile_preview')
+				.removeClass('zenario_fab_with_narrow_preview_window')
+				.removeClass('zenario_fab_cant_show_in_place_preview');
+			
+			//N.b. the in-place preview doesn't work with FEAs...
+			if (zenarioAB.tuix.key.isFEA) {
+				$fab.addClass('zenario_fab_cant_show_in_place_preview');
 			}
 			
-			if (!tuix.css_class
-			 || !tuix.css_class.match(/zenario_fab_plugin\b/)) {
-				
-				$box.width(FAB_WIDTH);
-				newWidth = FAB_WIDTH;
-				
-				zenarioAB.previewChecksum =
-				zenarioAB.previewWidth =
-				zenarioAB.previewPost = false;
-				
-				previewHidden = true;
+			if (!hasPreview) {
+				$fab.addClass('zenario_fab_with_no_preview');
+			
+			} else if (!couldShowPreviewInDock) {
+				$fab.addClass('zenario_fab_with_preview')
+					.addClass('zenario_fab_with_preview_cant_dock');
+			
+			} else if (!showPreview) {
+				$fab.addClass('zenario_fab_with_preview')
+					.addClass('zenario_fab_with_preview_hidden');
 			
 			} else {
-				$box.width(PLUGIN_SETTINGS_WIDTH);
-				
-				previewHidden = !zenarioAB.hasPreviewWindow || widthAvailable < PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW;
-			
-				if (previewHidden) {
-					newWidth = PLUGIN_SETTINGS_WIDTH;
-				
-					zenarioAB.previewChecksum =
-					zenarioAB.previewWidth =
-					zenarioAB.previewPost = false;
-			
-			
-				} else {
-					//If we found the width of the slot earlier, don't allow the preview window to be larger than that.
-					//Also don't let the combined width of the preview window and the admin box be larger than the window!
-					if (zenarioAB.previewSlotWidth) {
-						newWidth = Math.min(widthAvailable, PLUGIN_SETTINGS_WIDTH + PLUGIN_SETTINGS_BORDER_WIDTH + zenarioAB.previewSlotWidth);
-					} else {
-						newWidth = widthAvailable;
-					}
-				
-					//Note down the size that the preview window will be after all of thise
-					zenarioAB.previewWidth = newWidth - PLUGIN_SETTINGS_WIDTH - PLUGIN_SETTINGS_BORDER_WIDTH;
-				
-					$('#zenario_fabPreview').width(zenarioAB.previewWidth);
-				
-					//Show or hide the description of the width
-					if (zenarioAB.previewSlotWidthInfo) {
-						$('#zenario_fabPreviewInfo').show().text(zenarioAB.previewSlotWidthInfo);
-					} else {
-						$('#zenario_fabPreviewInfo').hide();
-					}
-				}
-			}
-			
-			if (!zenarioAB.hasPreviewWindow) {
-				$('#zenario_fb' + FAB_NAME)
-					.addClass('zenario_fab_with_no_preview')
-					.removeClass('zenario_fab_with_preview')
-					.removeClass('zenario_fab_with_preview_hidden')
-					.removeClass('zenario_fab_with_preview_shown');
-			
-			} else if (previewHidden) {
-				$('#zenario_fb' + FAB_NAME)
-					.removeClass('zenario_fab_with_no_preview')
-					.addClass('zenario_fab_with_preview')
-					.addClass('zenario_fab_with_preview_hidden')
-					.removeClass('zenario_fab_with_preview_shown');
-			
-			} else {
-				$('#zenario_fb' + FAB_NAME)
-					.removeClass('zenario_fab_with_no_preview')
-					.addClass('zenario_fab_with_preview')
-					.removeClass('zenario_fab_with_preview_hidden')
+				$fab.addClass('zenario_fab_with_preview')
 					.addClass('zenario_fab_with_preview_shown');
+				
+				if (narrowPreviewWindow) {
+					$fab.addClass('zenario_fab_with_narrow_preview_window');
+				}
+				
+				switch (dockPosition) {
+					case 'top':
+						$fab.addClass('zenario_fab_with_preview_docked_top');
+						break;
+					
+					case 'full':
+						$fab.addClass('zenario_fab_with_preview_docked_full');
+						break;
+					
+					case 'mobile':
+						$fab.addClass('zenario_fab_with_mobile_preview');
+						showingMobilePreview = true;
+						break;
+					
+					default:
+						$fab.addClass('zenario_fab_with_preview_docked_right');
+				}
 			}
 			
 			if ((global_area = tuix.tabs.global_area)
 			 && (!_.isEmpty(global_area.fields))) {
-				$('#zenario_fb' + FAB_NAME)
+				$fab
 					.removeClass('zenario_fab_with_no_global_area')
 					.addClass('zenario_fab_with_global_area');
 			} else {
-				$('#zenario_fb' + FAB_NAME)
+				$fab
 					.removeClass('zenario_fab_with_global_area')
 					.addClass('zenario_fab_with_no_global_area');
 			}
 					
 			
-			if (zenarioAB.previewHidden != previewHidden) {
-				zenarioAB.previewHidden = previewHidden;
+			if (zenarioAB.showPreview != showPreview) {
+				zenarioAB.showPreview = showPreview;
 				
 				//Refresh the preview frame if it was previously hidden and is now shown
-				if (!previewHidden) {
+				if (showPreview) {
 					zenarioAB.updatePreview();
 				}
 			}
 			
 			
-			zenarioA.adjustBox(FAB_NAME, false, newWidth, FAB_LEFT, FAB_TOP);
+			zenarioAB.showingMobilePreview = showingMobilePreview;
+			
+			zenarioA.adjustBox(FAB_NAME, false, boxAndPreviewCombinedWidth, FAB_LEFT, FAB_TOP);
 			zenarioAB.makeFieldAsTallAsPossible();
 		}
 	}
 	
 	zenarioAB.sizing = setTimeout(zenarioAB.size, 250);
+};
+
+zenarioAB.getDockPosition = function() {
+	return zenario.sGetItem(true, 'zfab_dock_position') || 'right';
+};
+
+zenarioAB.setDockPosition = function(side) {
+	zenario.sSetItem(true, 'zfab_dock_position', side);
+	zenarioAB.size(true);
 };
 
 
@@ -322,34 +517,46 @@ zenarioAB.makeFieldAsTallAsPossible = function() {
 		type = zenarioAB.tallAsPossibleFieldType,
 		tabContainerHeight,
 		tabHeight,
-		domField,
-		$field,
 		height,
+		isCodeEditor = type == 'code_editor',
+		isWYSIWYG = type == 'editor',
 		editor,
+		$resizeMe,
 		MARGIN = 20;
 	
 	if (defined(id)) {
 		
-		//Don't allow this to run for WYSIWYG editors, these auto-size based on the content you type in
-		if (type != 'editor') {
+		if (isWYSIWYG
+		 && ($resizeMe = tinyMCE.get(id))
+		 && ($resizeMe = $resizeMe.getContainer())
+		) {
+		} else {
+			$resizeMe = zenarioAB.get(id);
+		}
+		$resizeMe = $($resizeMe);
+	
+		//Check the height of the current tab vs its container
+		if (tabContainerHeight = zenarioAB.tabContainerHeight) {
+			tabContainerHeight -= MARGIN;
 		
-			//Check the height of the current tab vs its container
-			if (tabContainerHeight = zenarioAB.tabContainerHeight) {
-				tabContainerHeight -= MARGIN;
-			
-				if (domField = zenarioAB.get(id)) {
-					$field = $(domField);
-					$field.height('');
+			if (domField = zenarioAB.get(id)) {
 				
-					tabHeight = $('#zenario_abtab').outerHeight();
+				if (isWYSIWYG) {
+					$resizeMe.height(200);
+				} else {
+					$resizeMe.height('');
+				}
 			
-					if (tabContainerHeight > tabHeight) {
-						$field.height(height = $field.height() + tabContainerHeight - tabHeight);
-						
-						if (type == 'code_editor') {
-							if (editor = ace.edit(id)) {
-								editor.resize();
-							}
+				tabHeight = $('#zenario_abtab').outerHeight();
+		
+				if (tabContainerHeight > tabHeight) {
+					height = $resizeMe.height() + tabContainerHeight - tabHeight;
+					
+					$resizeMe.height(Math.floor(height));
+					
+					if (type == 'code_editor') {
+						if (editor = ace.edit(id)) {
+							editor.resize();
 						}
 					}
 				}
@@ -357,60 +564,6 @@ zenarioAB.makeFieldAsTallAsPossible = function() {
 		}
 	}
 };
-
-
-
-//Old slide up/slide down tech for the FABs, that let you peep at the page they were covering up.
-//Currently not used anywhere.
-
-//zenarioAB.slideToggle = function() {
-//	if (zenarioAB.isSlidUp) {
-//		zenarioAB.slideDown();
-//	} else {
-//		zenarioAB.slideUp();
-//	}
-//};
-//	
-//zenarioAB.slideUp = function() {
-//	
-//	if (zenarioAB.isSlidUp) {
-//		return;
-//	}
-//	
-//	var height = $('#zenario_fabBox_Header').height(),
-//		//height = FAB_PADDING_HEIGHT + FAB_TAB_BAR_HEIGHT,
-//		$zenario_fabBox = $('#zenario_fabBox');
-//	
-//	zenarioAB.heightBeforeSlideUp = $zenario_fabBox.height();
-//	
-//	$('#zenario_fabBox_Body').stop(true).slideUp();
-//	
-//	$zenario_fabBox.stop(true).animate({height: height});
-//	
-//	$('#zenario_fabSlideToggle')
-//		.addClass('zenario_fabSlideToggleUp')
-//		.removeClass('zenario_fabSlideToggleDown');
-//	
-//	zenarioAB.isSlidUp = true;
-//};
-//
-//zenarioAB.slideDown = function() {
-//	
-//	if (!zenarioAB.isSlidUp) {
-//		return;
-//	}
-//	
-//	$('#zenario_fabBox_Body').stop(true).slideDown();
-//	$('#zenario_fabBox').stop(true).animate({height: zenarioAB.heightBeforeSlideUp}, function() {
-//		zenarioAB.size(true);
-//	});
-//	
-//	$('#zenario_fabSlideToggle')
-//		.addClass('zenario_fabSlideToggleDown')
-//		.removeClass('zenario_fabSlideToggleUp');
-//	
-//	zenarioAB.isSlidUp = false;
-//};
 
 
 
@@ -538,12 +691,12 @@ zenarioAB.generateAlias = function(text) {
 
 zenarioAB.contentTitleChange = function() {
 	
-	var menuTextDOM = get('menu_text'),
-		aliasDOM = get('alias');
+	var menuTextDOM = zenarioAB.get('menu_text'),
+		aliasDOM = zenarioAB.get('alias');
 	
 	if (menuTextDOM && !zenarioAB.tuix.___menu_text_changed) {
 		menuTextDOM.value = get('title').value.replace(/\s+/g, ' ');
-		//menuTextDOM.onkeyup();
+		$(menuTextDOM).trigger('input');
 	}
 	
 	if (aliasDOM && !aliasDOM.disabled && !aliasDOM.readOnly && !zenarioAB.tuix.___alias_changed) {

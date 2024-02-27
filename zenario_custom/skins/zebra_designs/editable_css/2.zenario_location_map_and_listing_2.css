@@ -71,7 +71,7 @@ body.zenario_showing_plugin_without_layout .zenario_location_map_and_listing_2 >
 .zenario_location_map_and_listing_2 .gm-style-iw-d {
 	width:300px;
 	overflow:hidden;
-	font-size:'robotolight',Arial, Helvetica, sans-serif;
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
 	line-height:1.5em;
 }
 
@@ -269,7 +269,6 @@ body.mobile .zenario_location_map_and_listing_2__default_style .interface_header
 	padding: 4px 7px;
 	margin-right:4px;
 	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
 	border-radius: 4px;
 }
 
@@ -282,7 +281,7 @@ body.mobile .zenario_location_map_and_listing_2__default_style .interface_header
 	padding: 2px 3px 3px;
 	margin-left:3px;
 	border-radius: 50%;
-	font-weight: bold;
+	font-weight: 700;
 	border: 1px solid #AAA;
 	background:#dfdfdf;
 	color: #AAA;
@@ -296,7 +295,6 @@ body.mobile .zenario_location_map_and_listing_2__default_style .interface_header
 .zenario_location_map_and_listing_2__default_style .interface_header .interface_filters .selected_filters > span {
 	-webkit-animation: change-background-color 2s; /* Safari 4+ */
   	-moz-animation:    change-background-color 2s; /* Fx 5+ */
-  	-o-animation:      change-background-color 2s; /* Opera 12+ */
   	animation:         change-background-color 2s; /* IE 10+ */
 }
 
@@ -305,10 +303,6 @@ body.mobile .zenario_location_map_and_listing_2__default_style .interface_header
     100% { background: rgba(60, 131, 187, 0.1); }
 }
 @-moz-keyframes change-background-color {
-    0% { background:#FFBFBF; }
-    100% { background: rgba(60, 131, 187, 0.1); }
-}
-@-o-keyframes change-background-color {
     0% { background:#FFBFBF; }
     100% { background: rgba(60, 131, 187, 0.1); }
 }

@@ -160,7 +160,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 				echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG or SVG image.');
 				return false;
 			}
-		} elseif (ze::post('copy_to_image_library')) {
+		} elseif (ze::post('copy_to_image_library') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
 					$location = ze\file::docstorePath($file['path']);

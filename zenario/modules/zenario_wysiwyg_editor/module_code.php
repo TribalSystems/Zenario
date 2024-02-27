@@ -254,7 +254,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	 	//Add an "Edit Inline" option for Wireframe HTML areas
 		if ($this->isVersionControlled
 		 && ze::$cVersion == ze::$adminVersion
-		 && (ze::$isDraft || ze::$status == 'published')
+		 && (ze::$isDraft || ze::$status == 'published' || ze::$status == 'unlisted')
 		 && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 			if (!$this->editing) {
 				$controls['actions']['zenario_wysiwyg_editor__edit_inline'] = [

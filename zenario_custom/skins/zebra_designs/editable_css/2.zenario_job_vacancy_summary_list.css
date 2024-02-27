@@ -1,0 +1,131 @@
+/* This class will be applied to all plugins of this type,
+	unless overridden or removed for a specific plugin. */
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing {
+	text-align:center;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_data_row {
+	display:flex;
+	gap:30px;
+  	padding: 20px 0;
+  	border-top: 1px dotted #777;
+  	text-align:left;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row:first-child {
+  	padding-top:0;
+  	border-top:0;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row .content_list_title {
+  	font-family: 'robotolight',Arial, Helvetica, sans-serif;
+  	margin-bottom: 3px;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row h1.content_list_title {
+	font-size:1.5em;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row h2.content_list_title {
+	font-size:1.25em;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row h3.content_list_title {
+	font-size:1.125em;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row h4.content_list_title {
+	font-size:1em;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row h5.content_list_title {
+	font-size:0.938em;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row h6.content_list_title {
+	font-size:0.875em;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row .content_list_date {
+  	font-size: 0.857em;
+  	font-family: 'cardoregular','Times New Roman','Georgia',serif;
+  	margin-bottom:3px;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image img,
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row .content_list_title a {
+	-webkit-transition:0.2s all ease;
+  	transition:0.2s ease all;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row .content_list_title a:hover {
+	color:#2a98ce;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image img:hover {
+	opacity:0.85;
+	border-color:#2a98ce;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image {
+	padding-top:10px;
+}
+
+.zenario_job_vacancy_summary_list__default_style .job_vacancy_online_text,
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_location,
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_reference,
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_deadline {
+	color:#00659b;
+	position:relative;
+	padding-left:25px;
+	padding-bottom:5px;
+}
+
+.zenario_job_vacancy_summary_list__default_style .job_vacancy_online_text:before,
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_location:before,
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_reference:before,
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_deadline:before {
+	font-family:"FontAwesome";
+	position:absolute;
+	left:0;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_reference:before {
+	content:"\f0b1";
+}
+
+.zenario_job_vacancy_summary_list__default_style .job_vacancy_online_text:before {
+	content:"\f108";
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_location:before {
+	content:"\f3c5";
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_vacancy_deadline:before {
+	content:"\f017";
+}
+
+.zenario_job_vacancy_summary_list__default_style a.content_list_more_link {
+	margin-top:20px;
+}
+
+/* CSL Info icon
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_job_vacancy_summary_list__default_style .content_list_data_row {
+	position:relative;
+	min-height:30px;
+}
+
+.zenario_adminLoggedIn .zenario_job_vacancy_summary_list__default_style .content_list_data_row .content_list_infoIcon {
+	position:absolute;
+	z-index:9;
+	top:5px;
+	right:5px;
+}
+
+.zenario_adminLoggedIn .zenario_job_vacancy_summary_list__default_style .content_list_data_row .content_list_infoIcon a {
+	float:right;
+}

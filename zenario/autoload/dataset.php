@@ -42,7 +42,6 @@ class dataset {
 	//Formerly "ZENARIO_CENTRALISED_LIST_MODE_VALUE"
 	const LIST_MODE_VALUE = 4;
 
-	//Formerly "getDatasetDetails()"
 	public static function details($dataset, $cols = true) {
 		if (is_array($dataset)) {
 			return $dataset;
@@ -59,12 +58,10 @@ class dataset {
 		return \ze\row::get('custom_datasets', $cols, ['label' => $dataset]);
 	}
 
-	//Formerly "getDatasetTabDetails()"
 	public static function tabDetails($datasetId, $tabName) {
 		return \ze\row::get('custom_dataset_tabs', true, ['dataset_id' => $datasetId, 'name' => $tabName]);
 	}
 
-	//Formerly "getDatasetFieldBasicDetails()"
 	public static function fieldBasicDetails($fieldId) {
 		$sql = "
 			SELECT type, is_system_field, db_column, label, default_label
@@ -73,7 +70,6 @@ class dataset {
 		return \ze\sql::fetchAssoc($sql);
 	}
 
-	//Formerly "getDatasetFieldDetails()"
 	public static function fieldDetails($field, $dataset = false, $cols = true) {
 		if (is_numeric($field)) {
 			return \ze\row::get('custom_dataset_fields', $cols, $field);
@@ -86,7 +82,6 @@ class dataset {
 		}
 	}
 
-	//Formerly "getDatasetFieldsDetails()"
 	public static function fieldsDetails($dataset, $indexById = false) {
 		if (!is_numeric($dataset)) {
 			$dataset = \ze\dataset::details($dataset, ['id']);
@@ -104,17 +99,14 @@ class dataset {
 		return $out;
 	}
 
-	//Formerly "getDatasetFieldRepeatRowColumnName()"
 	public static function repeatRowColumnName($dbColumn, $row) {
 		return ($row > 1) ? $dbColumn . '___' . $row : $dbColumn;
 	}
 
-	//Formerly "getDatasetRepeatStartRowColumnName()"
 	public static function repeatStartRowColumnName($fieldId) {
 		return $fieldId . '___rows';
 	}
 
-	//Formerly "datasetFieldValue()"
 	public static function fieldValue($dataset, $cfield, $recordId, $returnCSV = true, $forDisplay = false, $row = false) {
 		if ($dataset && !is_array($dataset)) {
 			$dataset = \ze\dataset::details($dataset, ['id', 'system_table', 'table']);
@@ -232,7 +224,6 @@ class dataset {
 	
 	}
 	
-	//Formerly "datasetFieldDisplayValue()"
 	public static function fieldDisplayValue($dataset, $cfield, $recordId, $returnCSV = true) {
 		return \ze\dataset::fieldValue($dataset, $cfield, $recordId, $returnCSV, true);
 	}
@@ -240,7 +231,6 @@ class dataset {
 	//Checkboxes are stored in the custom_dataset_values_link table as there could be more than one of them.
 	//Given an array or comma-seperated list of the checked values, this function will set the value in the
 	//database.
-	//Formerly "updateDatasetCheckboxField()"
 	public static function updateCheckboxField($datasetId, $fieldId, $linkingId, $values) {
 		if (!is_array($values)) {
 			$values = \ze\ray::explodeAndTrim($values);
@@ -276,7 +266,6 @@ class dataset {
 	}
 
 	//As above, but for picked files
-	//Formerly "updateDatasetFilePickerField()"
 	public static function updateFilePickerField($datasetId, $cField, $linkingId, $values) {
 		if (!is_array($values)) {
 			$values = \ze\ray::explodeAndTrim($values);
@@ -334,7 +323,6 @@ class dataset {
 	}
 
 	//Delete any dataset files from the system that are now not used anywhere
-	//Formerly "removeUnusedDatasetFiles()"
 	public static function removeUnusedFiles() {
 
 		$sql = "
@@ -353,27 +341,22 @@ class dataset {
 	}
 
 
-	//Formerly "datasetFieldDBColumn()"
 	public static function fieldDBColumn($fieldId) {
 		return \ze\row::get('custom_dataset_fields', 'db_column', $fieldId);
 	}
 
-	//Formerly "datasetFieldId()"
 	public static function fieldId($fieldDbColumn) {
 		return \ze\row::get('custom_dataset_fields', 'id', ['db_column' => $fieldDbColumn]);
 	}
 
-	//Formerly "getDatasetSystemFieldDetails()"
 	public static function systemFieldDetails($datasetId, $tabName, $fieldName) {
 		return \ze\row::get('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'tab_name' => $tabName, 'field_name' => $fieldName, 'is_system_field' => 1]);
 	}
 
-	//Formerly "getDatasetFieldValueLabel()"
 	public static function fieldValueLabel($valueId) {
 		return \ze\row::get('custom_dataset_field_values', 'label', $valueId);
 	}
 
-	//Formerly "getDatasetFieldLOVFlatArrayToLabeled()"
 	public static function fieldLOVFlatArrayToLabeled(&$value, $key) {
 		if (!is_array($value)) {
 			$value = ['label' => $value];
@@ -388,7 +371,6 @@ class dataset {
 	
 	private static $ord;
 
-	//Formerly "getDatasetFieldLOV()"
 	public static function fieldLOV($field, $flat = true, $filter = false) {
 		if (!is_array($field)) {
 			$field = \ze\dataset::fieldDetails($field);
@@ -446,7 +428,6 @@ class dataset {
 		return $lov;
 	}
 
-	//Formerly "countDatasetFieldRecords()"
 	public static function countDatasetFieldRecords($field, $dataset = false) {
 		if (!is_array($field)) {
 			$field = \ze\dataset::fieldDetails($field);
@@ -500,7 +481,6 @@ class dataset {
 		}
 	}
 
-	//Formerly "getDatasetLabelFieldDetails()"
 	public static function labelFieldDetails($otherDatasetId) {
 	
 		$details = [];
@@ -530,7 +510,6 @@ class dataset {
 
 
 
-	//Formerly "getCentralisedListValues()"
 	public static function centralisedListValues($valuesSource, $filter = false) {
 		if ($valuesSource
 			&& ($source = explode('::', $valuesSource, 3))
@@ -549,7 +528,6 @@ class dataset {
 	}
 
 
-	//Formerly "getCentralisedListValue()"
 	public static function centralisedListValue($valuesSource, $id) {
 		if ($valuesSource
 			&& ($source = explode('::', $valuesSource, 3))

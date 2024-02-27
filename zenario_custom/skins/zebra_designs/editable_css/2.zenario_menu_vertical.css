@@ -35,7 +35,8 @@
 	content:'\f105';
 	position:absolute;
 	left:0;
-	top:4px;
+	top: 8px;
+  	font-size: 13px;
 }
 
 .zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_on > a:before {
@@ -79,7 +80,6 @@
 .zenario_menu_vertical__default_style a {
 	-webkit-transition: all 0.3s ease-in-out;
   	-moz-transition: all 0.3s ease-in-out;
-  	-o-transition: all 0.3s ease-in-out;
   	transition: all 0.3s ease-in-out;
 }
 
@@ -237,4 +237,15 @@
 .zenario_menu_vertical__default_style .extranet_user_greeting span.group:before {
 	content:"|";
 	padding-right:5px;
+}
+
+/* Private page */
+
+.zenario_menu_vertical ul li.private a:after {
+	font-family: "FontAwesome";
+  	content: "\f023";
+  	padding-left:5px;
+  	font-size:12px;  
+  	position: absolute;
+  	top: 7px;
 }

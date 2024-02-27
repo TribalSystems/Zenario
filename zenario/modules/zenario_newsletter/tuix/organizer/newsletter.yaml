@@ -30,6 +30,12 @@ zenario__email_template_manager:
                           AND ii.foreign_key_id = n.id
                           AND ii.image_id = [[REFINER_ID]]
             label_format_for_picked_items: '[[newsletter_name]] (ID[[id]])'
+            
+            notice:
+                show: false
+                type: warning
+                message: The Outbox is not empty, please go to the Outbox and check for problems.
+            
             columns:
                 id:
                     title: ID
@@ -123,10 +129,12 @@ zenario__email_template_manager:
                     title: Date/time created
                     db_column: n.date_created
                     format: datetime
+                    show_by_default: true
                 date_modified:
                     title: Date/time modified
                     db_column: n.date_modified
                     format: datetime
+                    show_by_default: true
                 date_sent:
                     title: Date/time sent
                     db_column: n.date_sent
@@ -178,6 +186,18 @@ zenario__email_template_manager:
                     label: Create a Newsletter
                     admin_box:
                         path: zenario_newsletter
+                newletter_templates:
+                    label: Newsletter templates
+                    link:
+                        path: zenario__email_template_manager/panels/newsletter_templates
+                    hide_on_refiner: true
+                archive:
+                    css_class: archive
+                    label: Sent newsletters
+                    link:
+                        path: zenario__email_template_manager/panels/newsletters
+                        refiner: archive
+                        branch: false
                 process:
                     css_class: process
                     label: Outbox
@@ -185,18 +205,6 @@ zenario__email_template_manager:
                         path: zenario__email_template_manager/panels/newsletters
                         refiner: outbox
                         branch: false
-                archive:
-                    css_class: archive
-                    label: Archive
-                    link:
-                        path: zenario__email_template_manager/panels/newsletters
-                        refiner: archive
-                        branch: false
-                newletter_templates:
-                    label: Templates
-                    link:
-                        path: zenario__email_template_manager/panels/newsletter_templates
-                    hide_on_refiner: true
                     
             item_buttons:
                 edit:

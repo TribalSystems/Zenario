@@ -128,6 +128,7 @@ zenario__library:
                 duplicate_filename:
                     title: Name not unique 
                     always_show: true
+                    hidden_in_view_options: true
                     parent: filename
                     db_column: |
                         (
@@ -189,6 +190,7 @@ zenario__library:
                 dimensions:
                     parent: size
                     always_show: true
+                    hidden_in_view_options: true
                     title: Dimensions
                     microtemplate: |
                         <% if (m.item.width && m.item.height) { %>
@@ -235,7 +237,7 @@ zenario__library:
                             WHERE image_id = f.id
                               AND in_use = 1
                               AND archived = 0
-                              AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template') 
+                              AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template', 'standard_email_template') 
                               AND foreign_key_id != 0
                             LIMIT 1
                         )
@@ -606,6 +608,26 @@ zenario__library:
                     admin_box:
                         path: zenario_change_tags
                         
+                copy_to_special_images_library:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Copy to special images library
+                    parent: actions_dropdown
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    disabled_if_for_any_selected_items: item.privacy != 'public'
+                    disabled_tooltip: 'Only public images may be copied to the special images library.'
+                    ajax:
+                        confirm:
+                            message: >
+                                Are you sure you wish to copy the selected image "[[filename]]" to the special images library?
+                            multiple_select_message: >
+                                Are you sure you wish to copy the selected images to the special images library?
+                            button_message: Copy to special images library
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            copy_to_special_images_library: 1
+                
                 send_to_documents:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Copy to document library

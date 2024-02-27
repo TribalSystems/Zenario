@@ -82,7 +82,7 @@ zenario_document_properties:
                     dataset_label: '[Delete thumbnail image button]'
                     value: Delete
                     type: submit
-                    class: submit
+                    class: zenario_gp_button
             
                 zenario_common_feature__upload:
                     grouping: thumbnail_grouping

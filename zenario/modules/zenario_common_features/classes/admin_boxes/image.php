@@ -43,6 +43,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		if ($details['usage'] == 'mic') {
 			$box['key']['mic_image'] = true;
+		} elseif ($details['usage'] == 'site_setting') {
+			$box['key']['site_setting_image'] = true;
 		}
 		
 		$box['title'] = ze\admin::phrase('Editing properties of image "[[filename]]"', $details);
@@ -88,7 +90,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		//SVGs shouldn't see the crop and zoom options
 		if ($isSVG) {
 			unset($box['tabs']['crop']);
-			unset($box['tabs']['crops']);
+			unset($box['tabs']['crops_here']);
+			unset($box['tabs']['crops_elsewhere']);
 		
 		} else {
 			//We'll want a slightly bigger version of the image for use when defining crops and zooms
@@ -103,13 +106,14 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 			//Show options for crop and zoom.
 			//There are three different modes of operation here:
-				//We've opened the FAB from the backend. Show all of the existing options that have been saved.
-				//We've opened the FAB from a plugin. Show all of the options used in that plugin.
+				//Only when we've opened the FAB from a plugin, show all of the ratios used in that plugin.
+				//Show all of the existing ratios that have been previously saved.
 				//This image is an SVG, which shouldn't display options for crop and zoom.
 		
 		
 			//Get a list of every aspect image ratio that we're going to display
 			$aspectRatios = [];
+			$ratioCounts = ['crops_here' => 0, 'crops_elsewhere' => 0];
 		
 			//If opened from a plugin, look through the plugin settings, looking for settings named width/height/canvas.
 			//Load all of the values of these settings.
@@ -168,7 +172,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			
 					//Note down any new aspect ratios we find
 					if (!isset($aspectRatios[$key])) {
-						$aspectRatios[$key] = ['width' => $width, 'height' => $height];
+						$aspectRatios[$key] = ['width' => $width, 'height' => $height, 'usedHere' => true];
+						++$ratioCounts['crops_here'];
 					}
 				}
 			}
@@ -190,17 +195,9 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					str_pad($widthStr, $maxLen, '0', STR_PAD_LEFT).
 					str_pad($heightStr, $maxLen, '0', STR_PAD_LEFT);
 			
-				//Slightly different logic, depending on whether we've opened the FAB from a specific plugin.
 				if (!isset($aspectRatios[$key])) {
-				
-					//For specific plugins, only load the values used on this plugin
-					if ($box['key']['instanceId']) {
-						continue;
-				
-					//In the backend, show every saved value
-					} else {
-						$aspectRatios[$key] = ['width' => $crop['aspect_ratio_width'], 'height' => $crop['aspect_ratio_height']];
-					}
+					$aspectRatios[$key] = ['width' => $crop['aspect_ratio_width'], 'height' => $crop['aspect_ratio_height'], 'usedHere' => false];
+					++$ratioCounts['crops_elsewhere'];
 				}
 		
 				$aspectRatios[$key]['value'] = implode(',', [$crop['ui_crop_x'], $crop['ui_crop_y'], $crop['ui_crop_width'], $crop['ui_crop_height'], $crop['ui_image_width'], $crop['ui_image_height']]);
@@ -208,6 +205,19 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 			//Try to show the options in some sort of logical order
 			ksort($aspectRatios);
+			
+			//However make sure that the "here"s come before the "elsewhere"s.
+			$a = []; $b = [];
+			foreach ($aspectRatios as $key => $ratio) {
+				if ($ratio['usedHere']) {
+					$a[$key] = $ratio;
+				} else {
+					$b[$key] = $ratio;
+				}
+			}
+			$aspectRatios = array_merge($a, $b);
+			unset($a, $b);
+			
 		
 			//Get rid of the defined "crop" tab, but turn it into a template we can use to make duplicates
 			$templateCropTab = json_encode($box['tabs']['crop']);
@@ -303,13 +313,22 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			
 				//Loop through each aspect ratio, setting up the fields on that tab
 				$ord = 0;
-				$car = count($aspectRatios);
 				foreach ($aspectRatios as $key => $ratio) {
+					++$ord;
 				
 					$tab = json_decode($templateCropTab, true);
-					$tab['ord'] = 1000 + ++$ord;
 					$tab['fields']['aspect_ratio_width']['value'] = $ratio['width'];
 					$tab['fields']['aspect_ratio_height']['value'] = $ratio['height'];
+					
+					if ($ratio['usedHere']) {
+						$parent = 'crops_here';
+					} else {
+						$parent = 'crops_elsewhere';
+						
+						$tab['fields']['description']['snippet']['p'] .= ' '. ze\admin::phrase('Only crop and zooms that are saved will be shown here.');
+						
+						
+					}
 			
 					//Create a resize tool.
 					//This should use the image we generated *way* above as the background,
@@ -344,25 +363,45 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				
 					//Have slightly different logic, depending on how many crop options we had to show.
 					//If there's just one, we can get away with having just one crop and zoom tab
-					if ($car > 1) {
+					if ($ratioCounts[$parent] > 1) {
 						//More than one, we need to turn the existing single tab into a drop-down list of
 						//multiple tabs
-						$tab['parent'] = 'crops';
+						$tab['ord'] = 1000 + $ord;
+						$tab['parent'] = $parent;
+						$tab['in_use'] = true;
 						$tab['label'] = ze\admin::phrase('[[width]]:[[height]]', $ratio);
 				
-						if ($box['key']['instanceId']) {
-							//$box['tabs']['crops']['label'] = ze\admin::phrase('Crops and zooms used in [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
-							$box['tabs']['crops']['label'] = ze\admin::phrase('Crops and zooms');
-						} else {
-							$box['tabs']['crops']['label'] = ze\admin::phrase('Created crops and zooms');
+						if (!$ratio['usedHere'] && !$box['key']['instanceId']) {
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Created crop and zooms');
+						
+						} elseif (!$ratio['usedHere']) {
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Other saved crop and zooms');
+						
+						} elseif ($box['key']['eggId']) {
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zooms for nested plugin');
+						
+						} elseif ($box['key']['instanceId']) {
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zooms for [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
 						}
 				
 					} else {
-						if ($box['key']['instanceId']) {
-							//$tab['label'] = ze\admin::phrase('Crop and zoom used in [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
-							$tab['label'] = ze\admin::phrase('Crop and zoom');
+						if ($ratio['usedHere']) {
+							$tab['ord'] = 3;
 						} else {
-							$box['tabs']['crops']['label'] = ze\admin::phrase('Created crop and zoom');
+							$tab['ord'] = 4;
+						}
+						
+						if (!$ratio['usedHere'] && !$box['key']['instanceId']) {
+							$tab['label'] = ze\admin::phrase('Created crop and zoom');
+						
+						} elseif (!$ratio['usedHere']) {
+							$tab['label'] = ze\admin::phrase('Other saved crop and zoom');
+						
+						} elseif ($box['key']['eggId']) {
+							$tab['label'] = ze\admin::phrase('Crop and zoom for nested plugin');
+						
+						} elseif ($box['key']['instanceId']) {
+							$tab['label'] = ze\admin::phrase('Crop and zoom for [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
 						}
 					}
 				
@@ -394,6 +433,12 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				'Stored in the docstore, folder name [[folder_name]]. Actual filename in the docstore may differ.',
 				['folder_name' => $details['path']]
 			);
+		} elseif ($box['key']['site_setting_image']) {
+			unset($box['tabs']['details']['fields']['tags']);
+			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
+			unset($box['tabs']['details']['fields']['floating_box_title']);
+			unset($box['tabs']['details']['fields']['image_credit']);
+			unset($box['tabs']['details']['fields']['where_used']);
 		} else {
 			//Load details on the image tags in use in the system, and which have been chosen here
 			$sql = "
@@ -497,9 +542,11 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			}
 		}
 
-		$usageLinks = self::imageUsageLinks((int) $box['key']['id']);
-		$usage = ze\fileAdm::getImageUsage((int) $box['key']['id']);
-		$box['tabs']['details']['fields']['where_used']['snippet']['html'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+		if (!$box['key']['site_setting_image']) {
+			$usageLinks = self::imageUsageLinks((int) $box['key']['id']);
+			$usage = ze\fileAdm::getImageUsage((int) $box['key']['id']);
+			$box['tabs']['details']['fields']['where_used']['snippet']['html'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -541,7 +588,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: \\ / : ; * ? " < > |');
 		}
 		
-		if (!$box['key']['mic_image']) {
+		if (!$box['key']['mic_image'] && !$box['key']['site_setting_image']) {
 			//Ensure image tags are all lower-case
 			$values['details/tags'] = mb_strtolower($values['details/tags']);
 			
@@ -562,7 +609,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		if (empty($box['tabs']['details']['errors'])) {
 			
-			if (!$box['key']['mic_image'] && !empty($tags)) {
+			if (!$box['key']['mic_image'] && !$box['key']['site_setting_image'] && !empty($tags)) {
 				$existingTags = ze\sql::fetchValues("
 					SELECT name
 					FROM ". DB_PREFIX. "image_tags
@@ -600,7 +647,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			'image_credit' => $values['details/image_credit']
 		];
 
-		if (ze::setting('show_default_floating_box_caption') && !$box['key']['mic_image']) {
+		if (ze::setting('show_default_floating_box_caption') && !$box['key']['mic_image'] && !$box['key']['site_setting_image']) {
 			if ($values['details/add_a_gallery_caption']) {
 				$details['floating_box_title'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['details/floating_box_title']);
 			} else {
@@ -612,7 +659,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		
 		//Check whether any tags were picked
-		if (!$box['key']['mic_image'] && $values['details/tags']
+		if (!$box['key']['mic_image'] && !$box['key']['site_setting_image'] && $values['details/tags']
 		 && ($tagNames = ze\escape::in($values['details/tags'], 'sql'))) {
 			//If so, remove any tags that weren't picked
 			$sql = "

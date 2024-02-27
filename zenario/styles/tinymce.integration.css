@@ -1,0 +1,99 @@
+
+ /*
+ * Copyright (c) 2024, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+/*	Try to mediate z-index fighting between TinyMCE and our FABs  */
+body.zenario_fbAdminFloatingBox__isOpen:not(.zenario_fbAdminOrganizer__isOpen) .tox-tinymce-aux {
+	z-index: 999999 !important;
+}
+
+/*	Give the styled menu items a bit more space  */
+.tox-tiered-menu .tox-collection__item {
+	margin: 3px 0;
+}
+
+/*	Try to use the cursor mouse icon for buttons (like TinyMCE 4 used to)  */
+.tox button.tox-tbtn,
+.tox button.tox-tbtn span,
+.tox div.tox-split-button,
+.tox div.tox-collection__item,
+.tox div.tox-swatch {
+	cursor: pointer;
+}
+
+
+
+/*	Style the save/cancel buttons in the style of Zenario buttons  */
+.tox .tox-tbtn.z_mce_integration_save {
+	color:#fff !important;
+	background: #e50707 !important;
+	border-radius: 4px;
+	border: solid 1px #ba0505;
+}
+
+.tox .tox-tbtn.z_mce_integration_save.z_mce_integration_save_and_continue:focus {
+	border: solid 1px #ba0505;
+}
+
+.tox .tox-tbtn.z_mce_integration_save:hover {
+	color:#fff !important;
+	background: #ba0505 !important;
+	border-radius: 3px/2px 2px 3px 3px;
+	box-shadow: 0 0 4px rgba(0,0,0,.45);
+	border: solid 1px #8d0303;
+}
+
+.tox .tox-tbtn.z_mce_integration_abandon {
+	color:#fff;
+	background-color: #0298c3;
+	border-radius: 2px 3px 3px 2px/3px;
+	border: solid 1px #007fa3;
+}
+
+.tox .tox-tbtn.z_mce_integration_abandon:hover {
+	color:#fff;
+	background-color: #007fa3;
+	box-shadow: 0 0 4px rgba(0,0,0,.45);
+	border: solid 1px #015d77;
+}
+
+.tox .tox-tbtn.z_mce_integration_save .tox-tbtn__select-label {
+	color:#fff;
+}
+
+.tox .tox-tbtn.z_mce_integration_save svg path,
+.tox .tox-tbtn.z_mce_integration_abandon svg path {
+	fill: white;
+}
+
+
+/*	Fix a bug where the content editable area is sometimes invisible on a TinyMCE Editor in a FAB  */
+
+.tox .tox-editor-container .tox-sidebar-wrap {
+	min-height: 95px;
+}

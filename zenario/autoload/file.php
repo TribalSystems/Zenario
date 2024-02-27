@@ -30,17 +30,14 @@ namespace ze;
 
 class file {
 
-	//Formerly "trackFileDownload()"
 	public static function trackDownload($url) {
 		return "if (window.gtag) gtag('event', 'pageview', {'page_path' : '".\ze\escape::js($url)."'});";
 	}
 
-	//Formerly "addFileToDocstoreDir()"
 	public static function addToDocstoreDir($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = true) {
 		return self::addToDatabase($usage, $location, $filename, $mustBeAnImage, $deleteWhenDone, true);
 	}
 
-	//Formerly "addFileFromString()"
 	public static function addFromString($usage, &$contents, $filename, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false, $imageCredit = '') {
 	
 		if ($temp_file = tempnam(sys_get_temp_dir(), 'cpy')) {
@@ -81,7 +78,7 @@ class file {
 		if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
 			
 			//Attempt to call the file program to check what mime-type it thinks this file should be.
-			//Note that our check using ze\file::mimeType() just checks the file extension and nothing else.
+			//Note that our check using \ze\file::mimeType() just checks the file extension and nothing else.
 			//The file program is a little more sophisticated and does some basic checks on the file's contents as well.
 			if (!$scannedMimeType = exec('file --mime-type --brief '. escapeshellarg($filepath))) {
 				return self::genericCheckError($filepath);
@@ -114,21 +111,25 @@ class file {
 			 && $scannedBasicType == 'image'
 			 && $mimeType !== $scannedMimeType) {
 				
-				switch ($scannedMimeType) {
-					case 'image/gif':
-						return new \ze\error('MISSNAMED_GIF', \ze\admin::phrase('The file "[[filename]]" is a GIF, so its extension must be .gif (upper or lower case).', ['filename' => basename($filepath)]));
-						break;
-					case 'image/jpeg':
-						return new \ze\error('MISSNAMED_JPG', \ze\admin::phrase('The file "[[filename]]" is a JPG, so its extension must be .jpg or .jpeg (upper or lower case).', ['filename' => basename($filepath)]));
-						break;
-					case 'image/png':
-						return new \ze\error('MISSNAMED_PNG', \ze\admin::phrase('The file "[[filename]]" is a PNG, so its extension must be .png (upper or lower case).', ['filename' => basename($filepath)]));
-						break;
-					case 'image/svg+xml':
-						return new \ze\error('MISSNAMED_SVG', \ze\admin::phrase('The file "[[filename]]" is a SVG, so its extension must be .svg (upper or lower case).', ['filename' => basename($filepath)]));
-						break;
-					default:
-						return new \ze\error('INVALID', \ze\admin::phrase('The file "[[filename]]" has been saved with the wrong extension and cannot be accepted.', ['filename' => basename($filepath)]));
+				if (\ze::in($mimeType, "image/x-icon", "image/icon") && \ze::in($scannedMimeType, 'image/x-icon', 'image/icon', 'image/ico', 'image/vnd.microsoft.icon')) {
+					//Special case for ICO files: allow certain mime types
+				} else {
+					switch ($scannedMimeType) {
+						case 'image/gif':
+							return new \ze\error('MISSNAMED_GIF', \ze\admin::phrase('The file "[[filename]]" is a GIF, so its extension must be .gif (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/jpeg':
+							return new \ze\error('MISSNAMED_JPG', \ze\admin::phrase('The file "[[filename]]" is a JPG, so its extension must be .jpg or .jpeg (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/png':
+							return new \ze\error('MISSNAMED_PNG', \ze\admin::phrase('The file "[[filename]]" is a PNG, so its extension must be .png (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/svg+xml':
+							return new \ze\error('MISSNAMED_SVG', \ze\admin::phrase('The file "[[filename]]" is a SVG, so its extension must be .svg (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						default:
+							return new \ze\error('INVALID', \ze\admin::phrase('The file "[[filename]]" has been saved with the wrong extension and cannot be accepted.', ['filename' => basename($filepath)]));
+					}
 				}
 			}
 			
@@ -211,7 +212,6 @@ class file {
 		}
 	}
 
-	//Formerly "addFileToDatabase()"
 	public static function addToDatabase($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, $imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '') {
 		//$overrideMimeType should only be specified when running the installer, because we don't yet have the proper handling for mime types
 		
@@ -291,6 +291,10 @@ class file {
 		//Otherwise we must insert the new file
 		} else {
 			$file['privacy'] = \ze::oneOf(\ze::setting('default_image_privacy'), 'auto', 'public', 'private');
+		}
+		
+		if ($usage == 'site_setting') {
+			$file['privacy'] = 'public';
 		}
 
 
@@ -396,9 +400,8 @@ class file {
 		
 		if ($svg) {
 			//There are lots of possible formats for this to watch out for.
-			//I've tried to be very flexible and code support for as many as I
-			//know. This code has suppose for setting the width and height in the
-			//following formats:
+			//I've tried to be very flexible and code support for as many as I know.
+			//This code has support for setting the width and height in the following formats:
 				// width="123" height="456"
 				// width="123px" height="456px"
 				// width="100%" height="100%" viewbox="0 0 123 456"
@@ -504,11 +507,9 @@ class file {
 		return false;
 	}
 
-	//Formerly "optimizeImage()"
 	public static function optimizeImage($path) {
 		return self::optimiseImage($path);
 	}
-	//Formerly "optimiseImage()"
 	public static function optimiseImage($path) {
 	
 		$mimeType = self::mimeType($path);
@@ -536,7 +537,6 @@ class file {
 
 
 	//Delete a file from the database, and anywhere it was stored on the disk
-	//Formerly "deleteFile()"
 	public static function delete($fileId) {
 	
 		if ($file = \ze\row::get('files', ['path', 'mime_type', 'short_checksum'], $fileId)) {
@@ -598,7 +598,6 @@ class file {
 	}
 
 	//Remove an image from the public/images/ directory
-	//Formerly "deletePublicImage()"
 	public static function deletePublicImage($image) {
 	
 		if (!is_array($image)) {
@@ -621,7 +620,6 @@ class file {
 		return \ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, $retina, $isRetina, $mimeType, $imageId);
 	}
 
-	//Formerly "addImageDataURIsToDatabase()"
 	public static function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'image') {
 	
 		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
@@ -670,7 +668,6 @@ class file {
 		}
 	}
 
-	//Formerly "checkDocumentTypeIsAllowed()"
 	public static function isAllowed($file, $alwaysAllowImages = true) {
 		$type = explode('.', $file);
 		$type = $type[count($type) - 1];
@@ -691,7 +688,6 @@ class file {
 		return (bool) ($dt[1] || ($alwaysAllowImages && \ze\file::isImageOrSVG($dt[0])));
 	}
 
-	//Formerly "checkDocumentTypeIsExecutable()"
 	public static function isExecutable($extension) {
 		switch (strtolower($extension)) {
 			case 'asp':
@@ -740,7 +736,6 @@ class file {
 		}
 	}
 
-	//Formerly "contentFileLink()"
 	public static function contentLink(&$url, $cID, $cType, $cVersion) {
 		$url = false;
 	
@@ -770,7 +765,7 @@ class file {
 			return false;
 	
 		//Attempt to add/symlink the file in the cache directory
-		} elseif ($path && (\ze\cache::cleanDirs()) && ($dir = \ze\cache::createDir($hash, 'downloads', $onlyForCurrentVisitor))) {
+		} elseif ($path && (\ze\cache::cleanDirs()) && ($dir = \ze\cache::createDir($hash, 'private/downloads', $onlyForCurrentVisitor))) {
 			$url = $dir. ($version['filename'] ?: $file['filename']);
 			
 			if (!file_exists(CMS_ROOT. $url)) {
@@ -797,7 +792,6 @@ class file {
 		return true;
 	}
 
-	//Formerly "copyFileInDatabase()"
 	public static function copyInDatabase($usage, $existingFileId, $filename = false, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false) {
 	
 		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
@@ -823,7 +817,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "docstoreFilePath()"
 	public static function docstorePath($fileIdOrPath, $useTmpDir = true, $customDocstorePath = false) {
 		if (is_numeric($fileIdOrPath)) {
 			if (!$fileIdOrPath = \ze\row::get('files', ['location', 'data', 'path'], ['id'=> $fileIdOrPath])) {
@@ -876,7 +869,6 @@ class file {
 		}
 	}
 
-	//Formerly "documentMimeType()"
 	public static function mimeType($file) {
 		$parts = explode('.', $file);
 		$type = $parts[count($parts) - 1];
@@ -895,14 +887,12 @@ class file {
 		}
 	}
 
-	//Formerly "isImage()"
 	public static function isImage($mimeType) {
 		return $mimeType == 'image/gif'
 			|| $mimeType == 'image/jpeg'
 			|| $mimeType == 'image/png';
 	}
 
-	//Formerly "isImageOrSVG()"
 	public static function isImageOrSVG($mimeType) {
 		return $mimeType == 'image/gif'
 			|| $mimeType == 'image/jpeg'
@@ -910,7 +900,6 @@ class file {
 			|| $mimeType == 'image/svg+xml';
 	}
 
-	//Formerly "getDocumentFrontEndLink()"
 	public static function getDocumentFrontEndLink($documentId, $privateLink = false) {
 		$link = false;
 		$document = \ze\row::get('documents', ['file_id', 'filename', 'privacy'], $documentId);
@@ -927,7 +916,6 @@ class file {
 		return $link;
 	}
 
-	//Formerly "createFilePublicLink()"
 	public static function createPublicLink($fileId, $filename = false) {
 		$path = self::docstorePath($fileId, false);
 		$file = \ze\row::get('files', ['short_checksum', 'filename'], $fileId);
@@ -950,9 +938,8 @@ class file {
 		return $relPath;
 	}
 
-	//Formerly "createPrivateLink()"
 	public static function createPrivateLink($fileId, $filename = false) {
-		return self::link($fileId, \ze::hash64($fileId. '_'. \ze\ring::random(10)), 'downloads', false, $filename);
+		return \ze\file::linkForCurrentVisitor($fileId, \ze::hash64($fileId. '_'. \ze\ring::random(10)), 'private/downloads', false, $filename);
 	}
 	
 	//Produce a label for a file in the standard format
@@ -1004,8 +991,11 @@ class file {
 		return $file;
 	}
 
-	//Formerly "fileLink()"
-	public static function link($fileId, $hash = false, $type = 'files', $customDocstorePath = false, $filename = false) {
+	public static function linkForCurrentVisitor($fileId, $hash = false, $type = 'private/files', $customDocstorePath = false, $filename = false) {
+		return \ze\file::link($fileId, $hash, $type, $customDocstorePath, $filename, true);
+	}
+	
+	public static function link($fileId, $hash = false, $type = 'private/files', $customDocstorePath = false, $filename = false, $forCurrentVisitor = false) {
 		//Check that this file exists
 		if (!$fileId
 		 || !($file = \ze\row::get('files', ['usage', 'short_checksum', 'checksum', 'filename', 'location', 'path'], $fileId))) {
@@ -1016,19 +1006,24 @@ class file {
 			$filename = $file['filename'];
 		}
 	
-		//Workout a hash for the file
-		if (!$hash) {
-			if (\ze\ring::chopPrefix('public/', $type)) {
+		if (\ze\ring::chopPrefix('public/', $type)) {
+			if (!$hash) {
+				//Workout a hash for the file
 				$hash = $file['short_checksum'];
-			} else {
+			}
+			$onlyForCurrentVisitor = false;
+		} else {
+			if (!$hash) {
+				//Workout a hash for the file
 				$hash = $file['checksum'];
 			}
+			$onlyForCurrentVisitor = $forCurrentVisitor && \ze::setting('restrict_downloads_by_ip');
 		}
 	
 		//Try to get a directory in the cache dir
 		$path = false;
 		if (\ze\cache::cleanDirs()) {
-			$path = \ze\cache::createDir($hash, $type, false);
+			$path = \ze\cache::createDir($hash, $type, $onlyForCurrentVisitor);
 		}
 	
 		if ($path) {
@@ -1060,7 +1055,6 @@ class file {
 		return 'zenario/file.php?usage='. $file['usage']. '&c='. $file['checksum']. '&filename='. urlencode($filename);
 	}
 
-	//Formerly "guessAltTagFromFilename()"
 	public static function guessAltTagFromname($filename) {
 		$filename = explode('.', $filename);
 		unset($filename[count($filename) - 1]);
@@ -1537,7 +1531,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "imageLink()"
 	public static function imageLink(
 		&$width, &$height, &$url, $fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto',
@@ -1784,7 +1777,7 @@ class file {
 				}			
 				
 				//Try to get a directory in the cache dir
-				$path = \ze\cache::createDir($hash, 'images', false);
+				$path = \ze\cache::createDir($hash, 'private/images', false);
 			}
 		}
 		
@@ -2044,7 +2037,6 @@ class file {
 
 
 
-	//Formerly "imageLinkArray()"
 	public static function imageLinkArray(
 		$imageId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
@@ -2066,7 +2058,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "itemStickyImageId()"
 	public static function itemStickyImageId($cID, $cType, $cVersion = false) {
 		if (!$cVersion) {
 			if (\ze\priv::check()) {
@@ -2087,7 +2078,6 @@ class file {
 		return self::imageLink($width, $height, $url, $imageId, $maxWidth, $maxHeight, $canvas, $offset, true, $fullPath, $privacy, $useCacheDir);
 	}
 
-	//Formerly "itemStickyImageLink()"
 	public static function itemStickyImageLink(
 		&$width, &$height, &$url, $cID, $cType, $cVersion = false,
 		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
@@ -2099,7 +2089,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "itemStickyImageLinkArray()"
 	public static function itemStickyImageLinkArray(
 		$cID, $cType, $cVersion = false,
 		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
@@ -2111,7 +2100,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "createPpdfFirstPageScreenshotPng()"
 	public static function createPpdfFirstPageScreenshotPng($file) {
 		if (file_exists($file) && is_readable($file)) {
 			if (self::mimeType($file) == 'application/pdf') {
@@ -2132,7 +2120,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "addContentItemPdfScreenshotImage()"
 	public static function addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file_name, $setAsStickImage=false){
 		if($img_file = self::createPpdfFirstPageScreenshotPng($file_name)) {
 			$img_base_name = basename($file_name) . '.png';
@@ -2153,7 +2140,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "plainTextExtract()"
 	public static function plainTextExtract($file, &$extract) {
 		$extract = '';
 	
@@ -2254,7 +2240,6 @@ class file {
 		return false;
 	}
 
-	//Formerly "updatePlainTextExtract()"
 	public static function updatePlainTextExtract($cID, $cType, $cVersion, $fileId = false) {
 		if ($fileId === false) {
 			$fileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
@@ -2274,7 +2259,6 @@ class file {
 		return $success;
 	}
 
-	//Formerly "updateDocumentPlainTextExtract()"
 	public static function updateDocumentPlainTextExtract($fileId, &$extract, &$imgFileId) {
 		$errors = [];
 		$extract = ['extract' => '', 'extract_wordcount' => 0];
@@ -2308,7 +2292,6 @@ class file {
 		}
 	}
 
-	//Formerly "safeFileName()"
 	public static function safeName($filename, $strict = false, $replaceSpaces = false) {
 		
 		if ($strict || $replaceSpaces) {
@@ -2330,7 +2313,6 @@ class file {
 		return $filename;
 	}
 
-	//Formerly "getPathOfUploadedFileInCacheDir()"
 	public static function getPathOfUploadInCacheDir($string) {
 		$details = explode('/', \ze\ring::decodeIdForOrganizer($string), 3);
 	
@@ -2342,7 +2324,6 @@ class file {
 		}
 	}
 
-	//Formerly "fileSizeConvert()"
 	public static function fileSizeConvert($bytes) {
 		$bytes = floatval($bytes);
 			$arBytes = [
@@ -2421,7 +2402,6 @@ class file {
 	}
 	
 	//Given an image size and a target size, resize the image (maintaining aspect ratio).
-	//Formerly "resizeImage()"
 	public static function resizeImage($imageWidth, $imageHeight, $constraint_width, $constraint_height, &$width_out, &$height_out, $allowUpscale = false) {
 		$width_out = $imageWidth;
 		$height_out = $imageHeight;
@@ -2659,7 +2639,6 @@ class file {
 		}
 	}
 
-	//Formerly "resizeImageString()"
 	public static function resizeImageString(
 		&$image, $mimeType, &$imageWidth, &$imageHeight,
 		$maxWidth, $maxHeight, $canvas = 'resize', $offset = 0

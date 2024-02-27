@@ -11,9 +11,27 @@ class zenario_slideshow__admin_boxes__plugin_settings extends ze\moduleBaseClass
 		
 		//Make sure the "animation duration" always has a value
 		if ($values['first_tab/animation_library'] == 'cycle2') {
-			$values['cycle2_effects/speed'] = (bool) $values['cycle2_effects/speed'] ? $values['cycle2_effects/speed'] : 1000;
-		} elseif ($values['first_tab/animation_library'] == 'roundabout') {
-			$values['roundabout_effects/speed'] = (bool) $values['roundabout_effects/speed'] ? $values['roundabout_effects/speed'] : 1000;
+			$values['cycle2/speed'] = (bool) $values['cycle2/speed'] ? $values['cycle2/speed'] : 1000;
+		}
+		
+		//Lazy load and rollover only work if Mobile Behaviour is set to "Same image".
+		if ($values['size/mobile_behaviour'] != 'mobile_same_image') {
+			$fields['size/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
+			$fields['size/advanced_behaviour']['side_note'] = ze\admin::phrase('The lazy load option is only available when using the "Same image" option for mobile browsers.');
+		} else {
+			$fields['size/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
+			unset($fields['size/advanced_behaviour']['side_note']);
+		}
+		
+		if ($values['size/advanced_behaviour'] == 'lazy_load') {
+			$fields['size/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['size/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
+			$fields['size/mobile_behaviour']['side_note'] = ze\admin::phrase('When lazy loading images, only the "Same image" option for mobile browsers is supported.');
+		
+		} else {
+			$fields['size/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['size/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
+			unset($fields['size/mobile_behaviour']['side_note']);
 		}
 		
 		if (isset($box['tabs']['size']['fields']['banner_canvas'])) {
@@ -27,6 +45,11 @@ class zenario_slideshow__admin_boxes__plugin_settings extends ze\moduleBaseClass
 				$this->showHideImageOptions($fields, $values, 'size', $hidden = $values['size/mobile_behaviour'] != 'mobile_same_image_different_size', $fieldPrefix = 'mobile_', $hasCanvas = true);
 			}
 		}
+		
+		#//If the admin presses the "remove" button on the custom breakpoint row, un-press the the toggle that's showing the row.
+		#if (!empty($fields['swiper/swiper.custom_1.remove']['pressed'])) {
+		#	$fields['swiper/swiper.custom_1']['pressed'] = false;
+		#}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

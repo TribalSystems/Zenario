@@ -1,4 +1,12 @@
-<ul class="organizer_button__{{m.id|escape}}">
+<% var tuix = m.tuix || {}; %>
+<% var hasCount = zenario.defined(tuix.record_count); %>
+
+<ul class="
+	organizer_button__{{m.id|escape}}
+	<% if (hasCount) { %>
+		organizer_button_with_record_count
+	<% } %>
+">
 	<li class="
 		{{m.css_class|escape}}
 		{{m.disabled? 'organizer_button_disabled' : ''}}
@@ -20,13 +28,16 @@
 			onclick="{{m.onclick|escape}}"
 			<% if (m.href) { %>
 				href="{{m.href|escape}}"
-				<% if (m.new_window) { %>
+				<% if (m.new_window || window.zenarioONotFull) { %>
 					target="_blank"
 				<% } %>
 			<% } %>
 		>
 			<span>{{m.label|escape}}</span>
 		</a>
+		<% if (hasCount) { %>
+			<span class="organizer_button_record_count zenario_item_record_count">{{zenarioO.getRecordCount(tuix.record_count)|e}}</span>
+		<% } %>
 		{{m.children? '<ul>' + zenarioT.microTemplate('zenario_organizer_button_children', m.children) + '</ul>'  : ''}}
 	</li>
 </ul>

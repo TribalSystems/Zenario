@@ -30,12 +30,10 @@ namespace ze;
 
 class curl {
 
-	//Formerly "checkCURLEnabled()"
 	public static function checkEnabled() {
 		return function_exists('curl_version');
 	}
 
-	//Formerly "curl()"
 	public static function fetch($URL, $post = false, $options = [], $saveToFile = false) {
 		if (!function_exists('curl_version')
 		 || !($curl = @curl_init())) {

@@ -50,9 +50,9 @@ class zenario_menu extends ze\moduleBaseClass {
 	function init() {
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = true, $clearByFile = false, $clearByModuleData = false);
 		
 		//Get the section id from the Plugin Settings, but allow for other Modules to overwrite this logic by setting $this->sectionId
 		//to something other than "false".
@@ -60,26 +60,10 @@ class zenario_menu extends ze\moduleBaseClass {
 			$this->sectionId = $this->setting('menu_section');
 		}
 		
-		$this->sectionId = ze\menu::sectionId($this->sectionId);
-		
+		$this->sectionId				= ze\menu::sectionId($this->sectionId);
 		$this->startFrom				= $this->setting('menu_start_from');
-
-		if ($this->moduleClassName == 'zenario_menu_responsive_push_pull') {
-			$numLevels = $this->setting('menu_number_of_levels');
-			if (!$numLevels || $numLevels == 'all') {
-				$this->numLevels = 0;
-			} else {
-				$this->numLevels = (int) $numLevels;
-			}
-
-			//In push-pull menu plugin, always show distant branches
-			//instead of trying to load the value of a hidden checkbox menu_show_all_branches.
-			$this->onlyFollowOnLinks = !(!$numLevels || $numLevels == 'all' || $numLevels > 1);
-		} else {
-			$this->numLevels = (int) $this->setting('menu_number_of_levels');
-			$this->onlyFollowOnLinks = !($this->setting('menu_show_all_branches') && ($this->setting('menu_number_of_levels') > 1));
-		}
-		
+		$this->numLevels				= (int) $this->setting('menu_number_of_levels');
+		$this->onlyFollowOnLinks		= !($this->setting('menu_show_all_branches') && ($this->setting('menu_number_of_levels') > 1));
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
 		$this->onlyIncludeOnLinks		= false;
@@ -159,11 +143,18 @@ class zenario_menu extends ze\moduleBaseClass {
 		return $mrg;
 	}
 	
-	//Main Display function for the slot
-	function showSlot() {
+	//Load the merge fields needed for displaying the menu.
+	private $menuLoaded = null;
+	function loadMenuMergeFields() {
+		
+		//Cache this function and don't run it twice.
+		//(Needed for the breadcrumbs that call call this from one of two places on the same page load.)
+		if (!is_null($this->menuLoaded)) {
+			return $this->menuLoaded;
+		}
 		
 		if (!$this->currentMenuId && $this->setting('hide_if_current_item_not_in_menu')) {
-			return;
+			return $this->menuLoaded = false;
 		}
 		
 		//Load Settings
@@ -202,7 +193,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		switch ($cachingRestrictions) {
 			case ze\menu::privateItemsExist:
 				$this->allowCaching(
-					$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+					$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 				break;
 			case ze\menu::staticFunctionCalled:
 				$this->allowCaching(false);
@@ -252,9 +243,16 @@ class zenario_menu extends ze\moduleBaseClass {
 			$this->mergeFields['text_for_more_button'] = $this->setting('text_for_more_button');
 		}
 		
-		if ($this->moduleClassName != 'zenario_menu_responsive_push_pull') {
-			$this->twigFramework($this->mergeFields);
+		return $this->menuLoaded = true;
+	}
+	
+	//Main Display function for the slot
+	function showSlot() {
+		if (!$this->loadMenuMergeFields()) {
+			return;
 		}
+		
+		$this->twigFramework($this->mergeFields);
 	}
 	
 	function getStartNode() {
@@ -349,6 +347,8 @@ class zenario_menu extends ze\moduleBaseClass {
 		$objects['depth'] = (int) $depth;
 		$objects['mID'] = $row['mID'] ?? 0;
 		$objects['Hyperlink'] = $this->drawMenuItem($row);
+		$objects['URL'] = $row['url'] ?? null;
+		$objects['Text'] = $row['name'] ?? null;
 		
 		$objects['Class'] = 'level'. $depth. ' level'. $depth. '_'. $i;
 		

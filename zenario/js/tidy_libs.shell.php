@@ -61,10 +61,16 @@ function removeUnwantedCode($path, $packageManager = 'yarn') {
 //Given a repo downloaded using yarn, go through and remove everything but the things we
 //actually want.
 function filterWantedCode($path, ...$keeps) {
+	filterWantedCodeInternal($path, 'yarn', $keeps);
+}
+
+function filterWantedComposerCode($path, ...$keeps) {
+	filterWantedCodeInternal($path, 'composer_dist', $keeps);
+	filterWantedCodeInternal($path, 'composer_no_dist', $keeps);
+}
+
+function filterWantedCodeInternal($path, $packageManager, $keeps) {
 	
-	//Hard-coded to only work for yarn repos for now; generally composer repos are much
-	//tidier and don't need this!
-	$packageManager = 'yarn';
 	$dir = CMS_ROOT. 'zenario/libs/'. $packageManager. '/'. $path;
 	
 	foreach (scandir($dir) as $actualName) {
@@ -125,11 +131,14 @@ function copyMod($path, $packageManager = 'yarn') {
 copyMod('ace-builds/src-min-noconflict/mode-phi.js');
 
 
-//Remove some clutter from composer libraries that we don't want
+//Remove some clutter from yarn libraries that we don't want
 filterWantedCode('ace-builds', 'src-min-noconflict');
 removeUnwantedCode('ace-builds/src-min-noconflict/mode-xquery.js');		//Remove the xquery language as those files are quite large
 removeUnwantedCode('ace-builds/src-min-noconflict/worker-xquery.js');
 filterWantedCode('animate.css', 'animate');
+filterWantedCode('blueimp-file-upload', 'js');
+removeUnwantedCode('blueimp-file-upload/js/cors');
+removeUnwantedCode('blueimp-file-upload/js/vendor');
 filterWantedCode('cytoscape', 'dist');
 filterWantedCode('@fortawesome/fontawesome-free', 'attribution.js', 'css', 'webfonts');
 filterWantedCode('@fortawesome/fontawesome-free/css', 'all', 'v4-shims');
@@ -156,6 +165,10 @@ filterWantedCode('zxcvbn', 'dist');
 
 //Remove some optional dependancies that the yarn packages we've asked for installed,
 //but I don't actually think we need
+removeUnwantedCode('.bin');
+removeUnwantedCode('blueimp-canvas-to-blob');
+removeUnwantedCode('blueimp-load-image');
+removeUnwantedCode('blueimp-tmpl');
 removeUnwantedCode('classlist-polyfill');
 removeUnwantedCode('lodash');		//Unwanted (dev?) dependancy from cytoscape and a few others?
 removeUnwantedCode('lodash.get');
@@ -190,6 +203,7 @@ removeUnwantedComposerCode('smottt/wideimage/demo');
 removeUnwantedComposerCode('smottt/wideimage/test');
 removeUnwantedComposerCode('twig/twig/doc');
 removeUnwantedComposerCode('twig/twig/.github');
+
 
 
 

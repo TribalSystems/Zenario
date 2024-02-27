@@ -42,9 +42,13 @@
 				<span>{{meta_data.label}}</span>
 			{% endif %}
 				{% for item in categories %}
-					<a {% if item.Category_landing_page %} href="{{item.Category_landing_page|e}}" target="_blank" {% endif %}>
-						{{item.Category}}
-					</a>
+					{% if item.Category_landing_page %}
+						<a href="{{item.Category_landing_page|e}}" target="_blank">
+					{% endif %}
+					{{item.Category}}
+					{% if item.Category_landing_page %}
+						</a>
+					{% endif %}
 				{% endfor %}
 			</{{meta_data.html_tag}}>
 		</div>

@@ -19,16 +19,6 @@ site_settings:
                 data_protection_link:
                     snippet:
                         html: ''
-                email_address_admin:
-                    site_setting:
-                        name: email_address_admin
-                    label: 'Notifications email address:'
-                    type: text
-                    note_below: |
-                        Email address to which general administrative emails should be sent.
-                    validation:
-                        required: Please enter an email eddress.
-                        email: Please ensure the email address is in a valid format.
                 email_address_system:
                     label: 'Support email address:'
                     type: text
@@ -93,31 +83,28 @@ site_settings:
                             label: 1 day
                     value: 'no_limit'
         template:
-            label: Standard Email Template
+            label: Standard email template
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
             fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: |
-                            Define a standard, site-wide, email template. 
-                            When an email template has the "Use standard email template" option selected, the email body will be merged into the template below in the merge field [[email_body_content]].
                 standard_email_template:
                     site_setting:
                         name: standard_email_template
+                        advanced_inline_styles: true
                     label: 'Standard email template:'
+                    note_below: |
+                            Should contain the merge field [[email_body_content]].
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
                     editor_options:
                         convert_urls: false
                         relative_urls: false
                     style: |
-                        width: 98%;
-                    rows: 30
+                        width: 100%;
                     insert_image_button:
                         pick_items:
                             path: 'zenario__library/panels/image_library'
@@ -281,7 +268,6 @@ site_settings:
                 smtp_password:
                     site_setting:
                         name: smtp_password
-                        encrypt: true
                         secret: true
                     label: 'SMTP password:'
                     type: password
@@ -314,6 +300,8 @@ site_settings:
                     editor_type: readonly
                     readonly: true
                     disabled: true
+                    style: |
+                        height: 200px;
                 test_send_format:
                     label: "Test email format:"
                     type: radios
@@ -332,7 +320,7 @@ site_settings:
                     type: submit
                     format_onchange: true
                     value: Test Send
-                    class: submit_selected
+                    class: zenario_submit_button
             notices:
                 test_send_sucesses:
                     show: ""
@@ -421,3 +409,26 @@ site_settings:
                                 <a href="http://www.tinymce.com/wiki.php/Configuration:style_formats" target="_blank">
                                     http://www.tinymce.com/wiki.php/Configuration:style_formats</a>
                             for more information.
+        css_rules:
+            label: CSS rules
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>These CSS rules will be available when composing a newsletter or an email template.</p>
+                            <p>The contents are automatically wrapped in <code>&lt;style&gt;&lt;/style&gt;</code> tags.</p>
+                email_css_rules:
+                    site_setting:
+                        name: email_css_rules
+                    label: 'CSS rules:'
+                    type: code_editor
+                    tall_as_possible: true
+                    dont_trim: true
+                    language: css
+                    style: >
+                        width: 98%;

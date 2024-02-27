@@ -255,7 +255,6 @@ class server {
 	
 
 	//Check whether we are allowed to call exec()
-	//Formerly "execEnabled()"
 	public static function execEnabled() {
 	
 		if (is_null(\ze::$execEnabled)) {
@@ -265,7 +264,6 @@ class server {
 		return \ze::$execEnabled;
 	}
 
-	//Formerly "checkFunctionEnabled()"
 	public static function checkFunctionEnabled($name) {
 		try {
 			return @is_callable($name)
@@ -279,7 +277,6 @@ class server {
 
 
 
-	//Formerly "windowsServer()"
 	public static function isWindows() {
 		return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
 	}
@@ -310,7 +307,6 @@ class server {
 
 
 
-	//Formerly "programPathForExec()"
 	public static function programPathForExec($path, $program, $checkExecutable = false) {
 	
 		if ($checkExecutable) {

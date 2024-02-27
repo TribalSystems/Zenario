@@ -146,8 +146,9 @@ plugin_settings:
                         min_path: zenario__menu/panels/sections
                         max_path: zenario__menu/panels/sections
                         target_path: zenario__menu/panels/sections
-                        select_phrase: Select Menu Section...
+                        select_phrase: Select menu section...
                         hide_remove_button: true
+                        hide_info_button: true
                     value: 1
                     validation:
                         required_if_not_hidden: Please select a menu section
@@ -243,10 +244,12 @@ plugin_settings:
                         Heading:
                     type: text
                     placeholder: 'Type your heading here'
+                    side_note: 'Note that this will only appear if the nest contains visible plugins.'
                 heading_tag: 
                     plugin_setting: 
                         name: heading_tag
                     label: "Heading tag:"
+                    same_row: true
                     indent: 1
                     visible_if: zenarioAB.value('show_heading')
                     type: select
@@ -259,7 +262,67 @@ plugin_settings:
                         h6: <h6>
                         p: <p>
                     value: h2
-                    side_note: You can choose the HTML tag to use for the heading
+                nest_heading_is_a_link:
+                    indent: 1
+                    plugin_setting:
+                        name: nest_heading_is_a_link
+                    label: "Link"
+                    type: checkbox
+                    visible_if: zenarioAB.value('show_heading')
+                    redraw_onchange: true
+                nest_heading_link_type:
+                    indent: 2
+                    plugin_setting:
+                        name: nest_heading_link_type
+                    label: 'Link destination:'
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link')
+                    type: select
+                    value: content_item
+                    values:
+                        content_item:
+                            label: Link to a content item
+                        external_url:
+                            label: Link to an external URL
+                    redraw_onchange: true
+                nest_heading_link_content_item:
+                    indent: 3
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link') && (zenarioAB.value('nest_heading_link_type') == 'content_item')
+                    plugin_setting:
+                        name: nest_heading_link_content_item
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Target:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item.
+                nest_heading_link_url:
+                    indent: 3
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link') && (zenarioAB.value('nest_heading_link_type') == 'external_url')
+                    plugin_setting:
+                        name: nest_heading_link_url
+                    label: 'External URL:'
+                    type: url
+                    maxlength: 255
+                    value: ""
+                    validation:
+                        required_if_not_hidden: "Please enter a URL."
+                nest_heading_target_blank:
+                    indent: 2
+                    plugin_setting:
+                        name: nest_heading_target_blank
+                    type: select
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link')
+                    empty_value: 'Open in the same window'
+                    values:
+                        1:
+                            label: Open in a new window
         
         
         size:
@@ -279,7 +342,7 @@ plugin_settings:
                     value: crop_and_zoom
                     values:
                         unlimited:
-                            label: Don't set
+                            label: Unlimited size
                         crop_and_zoom:
                             label: Crop and zoom
                         fixed_width:
@@ -289,6 +352,8 @@ plugin_settings:
                         fixed_width_and_height:
                             label: Constrain by width and height
                     format_onchange: true
+                    note_below: |
+                        Use the <em style="font-style: italic;">Unlimited size</em> option if you will set the size on each image separately.
                 banner_width:
                     plugin_setting:
                         name: banner_width
@@ -321,14 +386,17 @@ plugin_settings:
                         name: advanced_behaviour
                     label: 'Additional behaviour:'
                     type: select
+                    format_onchange: true
                     value: none
                     values:
                         none:
-                            label: Don't set
+                            label: None
                         background_image:
                             label: 'Show as a background image'
                         lazy_load:
                             label: 'Lazy load image'
+                    note_below: |
+                        Use the <em style="font-style: italic;">None</em> option if you will set the behaviour on each image separately.
 
                 mobile_behaviour:
                     plugin_setting:
@@ -338,12 +406,14 @@ plugin_settings:
                     format_onchange: true
                     values:
                         mobile_same_image:
-                            label: Don't set
+                            label: Same image
                         mobile_same_image_different_size:
                             label: 'Same image, different size'
                         mobile_hide_image:
                             label: 'Hide image on mobile browsers'
                     value: mobile_same_image              
+                    note_below: |
+                        Use the <em style="font-style: italic;">Same image</em> option if you will set the setting on each image separately.
                 mobile_canvas:
                     indent: 1
                     plugin_setting:
@@ -398,10 +468,12 @@ plugin_settings:
                     value: _NO_LINK
                     values:
                         _NO_LINK:
-                            label: Don't set
+                            label: Don't link
                         _ENLARGE_IMAGE:
                             label: Enlarge image in floating box
                     format_onchange: true
+                    note_below: |
+                        Use the <em style="font-style: italic;">Don't link</em> option if you will set the destination on each image separately.
                 enlarge_canvas:
                     plugin_setting:
                         name: enlarge_canvas
@@ -412,7 +484,7 @@ plugin_settings:
                     values:
                         unlimited:
                             ord: 1
-                            label: Don't set
+                            label: Unlimited size
                         fixed_width:
                             ord: 2
                             label: Constrain by width
@@ -423,6 +495,8 @@ plugin_settings:
                             ord: 4
                             label: Constrain by width and height
                     format_onchange: true
+                    note_below: |
+                        Use the <em style="font-style: italic;">Unlimited size</em> option if you will set the size on each image separately.
                 enlarge_width:
                     plugin_setting:
                         name: enlarge_width

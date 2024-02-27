@@ -1,14 +1,20 @@
-{% if Mode == 'search_entry_box' and (Html_Page_Search_Results or Html_Page_Search_No_Results) %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Html_Page_Search_Results or Html_Page_Search_No_Results) %}
     {% set Column = Column + 1 %}
     <div id="{{Container_Id}}_html_results" class="column_{{Column}} column column_html">
 {% endif %}
 
-{% if Mode == 'search_entry_box' and Html_Page_Column_Heading_Text and not Html_Page_Search_No_Results %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and Html_Page_Column_Heading_Text and not Html_Page_Search_No_Results %}
     <span class="column_title">{{Html_Page_Column_Heading_Text|e}}</span>
 {% endif %}
 
 {% if Html_Page_Search_Results %}
     {% include advancedSearchCoreFrameworksPath ~ 'includes/populate_results_loop.twig.html' with {'Type': Html_Page_Search_Results} %}
+    
+    {% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Html_Page_Search_Results_Count > Maximum_Results_Number) %}
+    	{% if Html_Page_And_X_More_Results_Phrase %}
+    		<p class="more_results">{{Html_Page_And_X_More_Results_Phrase}}</p>
+    	{% endif %}
+    {% endif %}
 {% endif %}
 
 {% if Html_Page_Search_No_Results %}
@@ -17,6 +23,6 @@
     </div>
 {% endif %}
 
-{% if Mode == 'search_entry_box' and (Html_Page_Search_Results or Html_Page_Search_No_Results) %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Html_Page_Search_Results or Html_Page_Search_No_Results) %}
     </div>
 {% endif %}

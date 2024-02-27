@@ -38,14 +38,39 @@ zenario_publish:
                     type: radios
                     values:
                         immediately:
-                            label: 'Publish immediately'
+                            label: 'Publish'
                         cancel:
                             label: 'Cancel scheduled publishing'
                         schedule:
                             label: 'Schedule publishing at...'
+                        unlisted:
+                            label: 'Publish as an unlisted content item'
                     value: immediately
                     hidden: false
                     format_onchange: true
+                
+                unlisted_note:
+                    indent: 1
+                    visible_if:
+                        lib.valueIs: publish_options,unlisted
+                    notices_below:
+                        unlisted_note:
+                            type: information
+                            html: true
+                            message: |
+                                <p>Unlisted content items:</p>
+                                <ul><li>
+                                    Are not shown in menus
+                                </li><li>
+                                    Are not shown in content summary lists
+                                </li><li>
+                                    Are not displayed in search plugins
+                                </li><li>
+                                    Are not displayed in site-maps
+                                </li><li>
+                                    Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                                </li></ul>
+                    
                 publish_date:
                     label: 'Date & Time'
                     type: date

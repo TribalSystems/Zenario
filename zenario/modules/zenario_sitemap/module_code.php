@@ -40,9 +40,9 @@ class zenario_sitemap extends zenario_menu {
 	//In visitor mode, the Plugin is only displayed if this method returns true.
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = true, $clearByFile = false, $clearByModuleData = false);
 		
 		//The only setting used is which Menu Section to display
 		//(This will usually be set to "main")

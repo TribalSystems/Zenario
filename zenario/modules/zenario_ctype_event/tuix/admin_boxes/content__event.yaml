@@ -136,14 +136,44 @@ zenario_content:
                     label: '+1 day'
                     type: checkbox
                     side_note: Check this if your event runs past midnight and the end time is next day.
+                    same_row: true
+                event_timezone:
+                    indent: 1
+                    type: radios
+                    label: 'Event timezone:'
+                    value: default_timezone
+                    values:
+                        default_timezone:
+                            ord: 1
+                            label: Default timezone ([[default_timezone]])
+                        other_timezone:
+                            ord: 2
+                            label: Other timezone...
+                    visible_if: lib.value('specify_time')
+                    redraw_onchange: Yes
+                    notices_below:
+                        enable_timezone_support:
+                            hidden: true
+                            type: information
+                            message: ''
+                            html: true
+                event_other_timezone:
+                    indent: 2
+                    type: select
+                    values: []
+                    empty_value:  — Select event timezone — 
+                    visible_if: lib.value('specify_time') && (lib.value('event_timezone') == 'other_timezone')
+                    validation:
+                        required_if_not_hidden: 'Please select a timezone.'
+                
                 locations_snippet:
                     snippet:
-                        html: '<span class="title">Where it's on:</span>'
+                        html: |
+                            <span class="title">Where it's on:</span>
                 online:
                     ord: 100
                     label: 'Online'
                     type: checkbox
-                    value: true
                 at_location_checkbox:
                     ord: 101
                     label: 'At a physical location'
@@ -152,7 +182,7 @@ zenario_content:
                 at_physical_location:
                     ord: 102
                     indent: 1
-                    type: radios
+                    type: select
                     redraw_onchange: true
                     values:
                         location_picker:
@@ -163,6 +193,12 @@ zenario_content:
                     validation:
                         required_if_not_hidden: 'Please select one of the options.'
                     value: address_text
+                    notices_below:
+                        enable_address_text:
+                            hidden: true
+                            type: information
+                            message: ''
+                            html: true
                 location_id:
                     ord: 103
                     indent: 2

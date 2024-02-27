@@ -35,10 +35,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				if (!empty($tab['fields'])
 				 && is_array($tab['fields'])) {
 					foreach ($tab['fields'] as $fieldId => &$field) {
-						$isSecret = !empty($field['site_setting']['secret']);
+						if (!empty($field['site_setting']['name'])) {
 						
-						if ($setting = $field['site_setting']['name'] ?? false) {
-							
+							$settingOpts = $field['site_setting'];
+							$setting = $settingOpts['name'];
+							$isSecret = !empty($settingOpts['secret']);
 							
 							if ($perm = ze\ring::chopPrefix('perm.', $setting)) {
 								$field['value'] = ze\user::permSetting($perm);
@@ -50,7 +51,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 								$field['value'] = ze::setting($setting);
 							}
 							
-							if (!empty($field['site_setting']['encrypt']) && \ze\zewl::init()) {
+							if (!empty($settingOpts['encrypt']) && \ze\pde::init()) {
 								$field['encrypted'] = true;
 							}
 							
@@ -61,19 +62,25 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							} elseif ($setting == 'admin_domain' || $setting == 'primary_domain') {
 								$field['value'] = ($field['value'] ?: 'none');
 							}
-						}
-						
-						if ($isSecret && ($field['type'] ?? '') == 'password') {
-							$field['onmouseover'] = ($field['onmouseover'] ?? ''). ' this.type = "text";';
-							$field['onmouseout'] = ($field['onmouseout'] ?? ''). ' this.type = "password";';
-							$field['css_class'] = ($field['css_class'] ?? ''). ' zenario_secret_password';
-							$field['pre_field_html'] = ($field['pre_field_html'] ?? ''). '<span
-								class="zenario_secret_password_wrap'. (!empty($field['readonly']) || !empty($field['disabled'])? ' zenario_secret_password_wrap_readonly' : ''). '"
-								onclick="zenarioAB.get(\''. ze\escape::js($fieldId). '\').focus();"
-							>';
-							$field['post_field_html'] = '</span>'. ($field['post_field_html'] ?? '');
+							
+							if ($isSecret && ($field['type'] ?? '') == 'password') {
+								$field['onmouseover'] = ($field['onmouseover'] ?? ''). ' this.type = "text";';
+								$field['onmouseout'] = ($field['onmouseout'] ?? ''). ' this.type = "password";';
+								$field['css_class'] = ($field['css_class'] ?? ''). ' zenario_secret_password';
+								$field['pre_field_html'] = ($field['pre_field_html'] ?? ''). '<span
+									class="zenario_secret_password_wrap'. (!empty($field['readonly']) || !empty($field['disabled'])? ' zenario_secret_password_wrap_readonly' : ''). '"
+									onclick="zenarioAB.get(\''. ze\escape::js($fieldId). '\').focus();"
+								>';
+								$field['post_field_html'] = '</span>'. ($field['post_field_html'] ?? '');
+							}
 						}
 					}
+				}
+				
+				if ($tabName == 'google_maps') {
+					ze\lang::applyMergeFields($fields['google_maps/google_maps_api_key']['note_below'], ['cms_url' => ze\link::host()]);
+					$serverPublicIP = gethostbyname(ze\link::host());
+					ze\lang::applyMergeFields($fields['google_maps/alternative_google_maps_api_key']['note_below'], ['server_IP_address' => $serverPublicIP]);
 				}
 			}
 		}
@@ -300,45 +307,13 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
-		//Load phrases for cookie messages
-		if (isset($fields['cookies/cookie_require_consent'])) {
-			$values['cookies/_COOKIE_BOX1_01_IMPLIED_MSG'] = $this->loadPhrase(true, '_COOKIE_BOX1_01_IMPLIED_MSG');
-			$values['cookies/_COOKIE_BOX1_02_CONTINUE_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX1_02_CONTINUE_BTN');
-			$values['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG'] = $this->loadPhrase(true, '_COOKIE_BOX1_03_COOKIE_CONSENT_MSG');
-
-			$values['cookies/_COOKIE_BOX2_01_INTRO_MSG'] = $this->loadPhrase(true, '_COOKIE_BOX2_01_INTRO_MSG');
-			$values['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX2_02_ACCEPT_ALL_BTN');
-			$values['cookies/_COOKIE_BOX1_04_MANAGE_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX1_04_MANAGE_BTN');
-			$values['cookies/_COOKIE_BOX1_05_ACCEPT_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX1_05_ACCEPT_BTN');
-			$values['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN'] = $this->loadPhrase(false, '_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN');
-			
-			//If multiple languages are enabled, make it clear you're just editing the phrases in the default language
-			$numLanguages = ze\lang::count();
-			if ($numLanguages > 1) {
-				
-				$mrg = ['lang' => ze\lang::name(ze::$defaultLang)];
-				
-				$fields['cookies/_COOKIE_BOX1_01_IMPLIED_MSG']['label'] = ze\admin::phrase('Initial message in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_BOX1_02_CONTINUE_BTN']['label'] = ze\admin::phrase('"Continue" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG']['label'] =
-
-				$fields['cookies/_COOKIE_BOX2_01_INTRO_MSG']['label'] = ze\admin::phrase('"Manage cookies" popup message in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN']['label'] = ze\admin::phrase('"Allow all cookies" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_BOX1_04_MANAGE_BTN']['label'] = ze\admin::phrase('"Manage cookies" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_BOX1_05_ACCEPT_BTN']['label'] = ze\admin::phrase('"Accept cookies" button text in [[lang]]', $mrg);
-				$fields['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN']['label'] = ze\admin::phrase('"Save preferences" button text in [[lang]]', $mrg);
-			}
-		}
-		
 		//Add editor options to Standard Email Template editor
 		$styleFormats = ze\site::description('email_style_formats');
 		if (!empty($styleFormats)) {
 			//If custom email styles exist, load them and add them to the toolbar.
-			//Please note: by default, the full featured editor DOES NOT have the styleselect dropdown.
+			//Please note: by default, the full featured editor DOES NOT have the styles dropdown.
 			
 			$fields['template/standard_email_template']['editor_options']['style_formats'] = $styleFormats;
-			$fields['template/standard_email_template']['editor_options']['toolbar'] =
-				'undo redo | formatselect | styleselect | fontsizeselect | bold italic underline | image link unlink | bullist numlist | forecolor backcolor | charmap emoticons';
 		}
 		
 		if ($settingGroup == 'data_protection') {
@@ -406,9 +381,19 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$fields['recaptcha_policy/recaptcha_info']['hidden'] = true;
 				$fields['recaptcha_policy/recaptcha_warning']['hidden'] = false;
 			}
-		}
-		
-		if ($settingGroup == 'cookies') {
+			
+			if (!$values['cookies/cookie_image_canvas']) {
+				$fields['cookies/cookie_image_canvas']['value'] = 'fixed_width_and_height';
+			}
+			
+			if (!$values['cookies/cookie_image_width']) {
+				$fields['cookies/cookie_image_width']['value'] = 275;
+			}
+			
+			if (!$values['cookies/cookie_image_height']) {
+				$fields['cookies/cookie_image_height']['value'] = 60;
+			}
+			
 			if (!$values['cookies/popup_cookie_type_switches_initial_state']) {
 				$fields['cookies/popup_cookie_type_switches_initial_state']['value'] = 'off';
 			}
@@ -447,6 +432,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if (isset($fields['cookie_timeouts/cookie_timeout'])) {
 			$fields['cookie_timeouts/cookie_timeout']['value'] =
 			$fields['cookie_timeouts/cookie_timeout']['current_value'] = ze\phraseAdm::seconds(COOKIE_TIMEOUT);
+		}
+		
+		if ($settingGroup == 'cookies') {
+			$hidden = $values['cookies/cookie_require_consent'] != 'explicit' || !$values['cookies/cookie_show_image'] || !$values['cookies/cookie_image'];
+			$this->showHideImageOptions($fields, $values, 'cookies', $hidden, 'cookie_image_');
 		}
 
 		if (isset($fields['mysql/debug_use_strict_mode']) && defined('DEBUG_USE_STRICT_MODE')) {
@@ -844,6 +834,19 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 		}
 		
+		//Set the default template values for the two buttons below the textarea for editing the robots.txt file.
+		//Note: This is done in formatAdminBox() and not fillAdminBox() as one of the default values changes depending
+		//on the settings chosen in the sitemap tab!
+		if ($settingGroup == 'search_engine_optimisation') {
+			$fields['robots_txt/block_all']['custom__val'] = self::setRobotsTxtToBlockAll();
+			$fields['robots_txt/default_config']['custom__val'] = self::setRobotsTxtToDefaultConfig($values['sitemap/sitemap_enabled'], $values['sitemap/sitemap_url']);
+			
+			$robotxTxtReferencesSitemap = false;
+			if (strpos($values['robots_txt/robots_txt_file_contents'], 'Sitemap:') !== false) {
+				$robotxTxtReferencesSitemap = true;
+			}
+			$box['tabs']['robots_txt']['notices']['robots_txt_refers_to_disabled_sitemap']['show'] = $robotxTxtReferencesSitemap && !$values['sitemap/sitemap_enabled'];
+    	}
 	}
 
 
@@ -853,6 +856,27 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			 && $values['admin_domain/admin_domain'] != $_SERVER['HTTP_HOST']
 			 && $values['admin_domain/admin_domain'] != ze::setting('admin_domain')) {
 				$box['tabs']['admin_domain']['errors'][] = ze\admin::phrase('Please select a domain name.');
+			}
+		}
+		
+		if (isset($fields['favicon/favicon']) && $values['favicon/favicon']) {
+			$mimeType = $mimeType = $mimeType = '';
+			
+			if (is_numeric($values['favicon/favicon']) && ($file = ze\row::get('files', true, $values['favicon/favicon']))) {
+				$imageWidth = $file['width'];
+				$imageHeight = $file['height'];
+				$mimeType = $file['mime_type'];
+			//Add new uploads into the pool.
+			} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($values['favicon/favicon'])) {
+				$imageSize = getimagesize($filepath);
+				
+				$imageWidth = $imageSize[0];
+				$imageHeight = $imageSize[1];
+				$mimeType = $imageSize['mime'];
+			}
+			
+			if (ze\file::isImageOrSVG($mimeType) && ($imageWidth > 512 || $imageHeight > 512)) {
+				$fields['favicon/favicon']['error'] = ze\admin::phrase('The favicon dimensions may not exceed 512 x 512 px.');
 			}
 		}
 
@@ -921,18 +945,18 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		}
 		if (!empty($values['smtp/smtp_specify_server'])) {
 			if (empty($values['smtp/smtp_host'])) {
-				$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter a Server Name.');
+				$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter the SMTP server name.');
 			}
 			if (empty($values['smtp/smtp_port'])) {
-				$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter a Port number.');
+				$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter the SMTP port number.');
 			}
 	
 			if (!empty($values['smtp/smtp_use_auth'])) {
 				if (empty($values['smtp/smtp_username'])) {
-					$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter a Username.');
+					$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter the SMTP account username.');
 				}
 				if (empty($values['smtp/smtp_password'])) {
-					$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter a Password.');
+					$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter the SMTP account password.');
 				}
 			}
 		}
@@ -990,6 +1014,101 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					ze\admin::phrase('Please enter a message.');
 			}
 		}
+		
+		if ($settingGroup == 'cookies') {
+			if ($values['cookies/cookie_show_image'] && $values['cookies/cookie_image']) {
+				if (ze::in($values['cookies/cookie_image_canvas'], 'fixed_width', 'fixed_width_and_height') && is_numeric($values['cookies/cookie_image_width']) && $values['cookies/cookie_image_width'] > 275) {
+					$fields['cookies/cookie_image_width']['error'] = ze\admin::phrase('The width cannot be greater than 275 px.');
+				}
+				
+				if (ze::in($values['cookies/cookie_image_canvas'], 'fixed_height', 'fixed_width_and_height') && is_numeric($values['cookies/cookie_image_height']) && $values['cookies/cookie_image_height'] > 60) {
+					$fields['cookies/cookie_image_height']['error'] = ze\admin::phrase('The height cannot be greater than 60 px.');
+				}
+			}
+		}
+		
+		if ($settingGroup == 'search_engine_optimisation') {
+			$fields['robots_txt/robots_txt_file_contents_required_lines_description']['hidden'] = true;
+			
+			if ($values['robots_txt/robots_txt_file_contents']) {
+				$rules = [];
+				foreach (explode("\n", $values['robots_txt/robots_txt_file_contents']) as $line) {
+					$parts = explode(':', $line, 2);
+					if (!empty($parts[1])) {
+						$command = trim(strtolower($parts[0]));
+						$param = trim($parts[1]);
+						
+						if (!isset($rules[$command])) {
+							$rules[$command] = [];
+						}
+						
+						$rules[$command][$param] = true;
+					}
+				}
+				
+				//Make sure that the line:
+				
+				//User-agent: *
+				
+				//and EITHER the line:
+
+				//Disallow: /
+				
+				//OR all of the following lines (in any order):
+				
+				//Disallow: /cache/
+				//Disallow: /private/
+				//Disallow: /zenario/admin/
+				//Disallow: /zenario/api/
+				//Disallow: /zenario/frameworks/
+				//Disallow: /zenario/includes/
+				//Disallow: /zenario_custom/
+				//Disallow: /zenario/cookie_message.php
+				
+				//... are present in the textarea.
+				
+				$robotstxtContentsAreValid = false;
+				if (isset($rules['user-agent']['*'])) {
+					//This is valid so far
+					$robotstxtContentsAreValid = true;
+				}
+				
+				if ($robotstxtContentsAreValid) {
+					//If this is valid so far, continue with the rest of the validation.
+					//Otherwise display an error.
+					if (isset($rules['disallow']['/'])) {
+						//Valid file
+						$robotstxtContentsAreValid = true;
+					} else {
+						$linesToLookFor = [
+							'/cache/',
+							'/private/',
+							'/zenario/admin/',
+							'/zenario/api/',
+							'/zenario/frameworks/',
+							'/zenario/includes/',
+							'/zenario_custom/',
+							'/zenario/cookie_message.php'
+						];
+					
+						$allLinesArePresent = true;
+						foreach ($linesToLookFor as $lineToLookFor) {
+							if (!isset($rules['disallow'][$lineToLookFor])) {
+								$allLinesArePresent = false;
+								break;
+							}
+						}
+					
+						$robotstxtContentsAreValid = $allLinesArePresent;
+					}
+				}
+				
+				if (!$robotstxtContentsAreValid) {
+					$fields['robots_txt/robots_txt_file_contents']['error'] = ze\admin::phrase('Please check the note below and make sure the required lines are present in the robots.txt file contents.');
+					$fields['robots_txt/robots_txt_file_contents_required_lines_description']['hidden'] = false;
+				}
+			}
+		}
 	}
 	
 	
@@ -1021,107 +1140,122 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			 && ze\ring::engToBoolean($tab['edit_mode']['on'] ?? false)) {
 				
 				foreach ($tab['fields'] as $fieldName => &$field) {
-					if (is_array($field)) {
-						if (empty($field['readonly'])
-						 && empty($field['read_only'])
-						 && ($setting = $field['site_setting']['name'] ?? false)) {
-							
-							$isSecret = !empty($field['site_setting']['secret']);
-							
-							//Get the value of the setting. Hidden fields should count as being empty
-							if (ze\ring::engToBoolean($field['hidden'] ?? false)
-							 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
-								$value = '';
-							} else {
-								$value = ze\ray::value($values, $tabName. '/'. $fieldName);
-							}
-					
-							//Setting the primary or admin domain to "none" should count as being empty
-							if ($setting == 'admin_domain' || $setting == 'primary_domain') {
-								if ($value == 'none') {
-									$value = '';
-								} elseif ($value == 'new') {
-									$value = $values['primary_domain/new'];
-								}
-							}
-					
-							//On multisite sites, don't allow local Admins to change the directory paths
-							if (ze::in($setting, 'backup_dir', 'docstore_dir') && ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false)) {
-								continue;
-							}
-							
-							//Run a HTML sanitiser on any HTML fields when we save them
-							if ('editor' == ($field['type'] ?? '')) {
-								$value = ze\ring::sanitiseWYSIWYGEditorHTML($value, true);
-							}
-					
-							//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
-							//Convert the format back when saving
-							if (($setting == 'custom_thumbnail_1_width' && empty($values['image_sizes/custom_thumbnail_1']))
-							 || ($setting == 'custom_thumbnail_1_height' && empty($values['image_sizes/custom_thumbnail_1']))
-							 || ($setting == 'custom_thumbnail_2_width' && empty($values['image_sizes/custom_thumbnail_1']) && empty($values['image_sizes/custom_thumbnail_2']))
-							 || ($setting == 'custom_thumbnail_2_height' && empty($values['image_sizes/custom_thumbnail_1']) && empty($values['image_sizes/custom_thumbnail_2']))) {
-								$value = '';
-							}
-					
-							//Handle file pickers
-							if (!empty($field['upload'])) {
-								//If a file ID from the database has been selected, check if it's a file
-								//from the site settings pool, and copy it into the pool if it's not.
-								if (is_numeric($value)) {
-									$value = ze\file::copyInDatabase('site_setting', $value);
-								
-								//Add new uploads into the pool.
-								} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($value)) {
-									$value = ze\file::addToDatabase('site_setting', $filepath);
-								}
-								$changesToFiles = true;
-							}
-					
-							if ($perm = ze\ring::chopPrefix('perm.', $setting)) {
-								$settingChanged = $value != ze\user::permSetting($perm);
-								
-								if ($settingChanged) {
-									ze\row::set('user_perm_settings', ['value' => $value], $perm);
-								}
-							
-							} else {
-								if ($isSecret) {
-									$settingChanged = $value != ze::secretSetting($setting);
-								} else {
-									$settingChanged = $value != ze::setting($setting);
-								}
-					
-								if ($settingChanged) {
-									ze\site::setSetting($setting, $value,
-										true, ze\ring::engToBoolean($field['site_setting']['encrypt'] ?? false),
-										true, ze\ring::engToBoolean($field['site_setting']['secret'] ?? false));
-								
-									//Handle changing the default language of the site
-									if ($setting == 'default_language') {
-										ze::$defaultLang = $value;
-									
-										//Update the special pages, creating new ones if needed
-										ze\contentAdm::addNeededSpecialPages();
-							
-										//Resync every content equivalence, trying to make sure that the pages for the new default language are used as the base
-										$sql = "
-											SELECT DISTINCT equiv_id, type
-											FROM ". DB_PREFIX. "content_items
-											WHERE status NOT IN ('trashed','deleted')";
-										$equivResult = ze\sql::select($sql);
-										while ($equiv = ze\sql::fetchAssoc($equivResult)) {
-											ze\contentAdm::resyncEquivalence($equiv['equiv_id'], $equiv['type']);
-										}
+					if (!empty($field['site_setting']['name'])
+					 && empty($field['readonly'])
+					 && empty($field['read_only'])) {
 						
-									} elseif ($setting == 'custom_thumbnail_1_width' || $setting == 'custom_thumbnail_1_height') {
-										$recreateCustomThumbnailOnes = true;
-										$jpegOnly = false;
+						$settingOpts = $field['site_setting'];
+						$setting = $settingOpts['name'];
+						$isSecret = !empty($settingOpts['secret']);
 						
-									} elseif ($setting == 'custom_thumbnail_2_width' || $setting == 'custom_thumbnail_2_height') {
-										$recreateCustomThumbnailTwos = true;
-										$jpegOnly = false;
+						//Get the value of the setting. Hidden fields should count as being empty
+						if (ze\ring::engToBoolean($field['hidden'] ?? false)
+						 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
+							$value = '';
+						} else {
+							$value = ze\ray::value($values, $tabName. '/'. $fieldName);
+						}
+				
+						//Setting the primary or admin domain to "none" should count as being empty
+						if ($setting == 'admin_domain' || $setting == 'primary_domain') {
+							if ($value == 'none') {
+								$value = '';
+							} elseif ($value == 'new') {
+								$value = $values['primary_domain/new'];
+							}
+						}
+				
+						//On multisite sites, don't allow local Admins to change the directory paths
+						if (ze::in($setting, 'backup_dir', 'docstore_dir') && ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false)) {
+							continue;
+						}
+						
+						//Run a HTML sanitiser on any HTML fields when we save them
+						if ('editor' == ($field['type'] ?? '')) {
+							$value = ze\ring::sanitiseWYSIWYGEditorHTML($value, true, $settingOpts['advanced_inline_styles'] ?? false);
+						}
+				
+						//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
+						//Convert the format back when saving
+						if (($setting == 'custom_thumbnail_1_width' && empty($values['image_sizes/custom_thumbnail_1']))
+						 || ($setting == 'custom_thumbnail_1_height' && empty($values['image_sizes/custom_thumbnail_1']))
+						 || ($setting == 'custom_thumbnail_2_width' && empty($values['image_sizes/custom_thumbnail_1']) && empty($values['image_sizes/custom_thumbnail_2']))
+						 || ($setting == 'custom_thumbnail_2_height' && empty($values['image_sizes/custom_thumbnail_1']) && empty($values['image_sizes/custom_thumbnail_2']))) {
+							$value = '';
+						}
+				
+						//Handle file pickers
+						if (!empty($field['upload'])) {
+							//If a file ID from the database has been selected, check if it's a file
+							//from the site settings pool, and copy it into the pool if it's not.
+							if (is_numeric($value)) {
+								$value = ze\file::copyInDatabase('site_setting', $value);
+							
+							//Add new uploads into the pool.
+							} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($value)) {
+								$oldPathCodename = $value;
+								$value = ze\file::addToDatabase('site_setting', $filepath);
+								
+								$field['current_value'] = 
+								$values[$tabName. '/'. $fieldName] = $value;
+								
+								if (!isset($field['upload']['uploaded_ids'])) {
+									$field['upload']['uploaded_ids'] = [];
+								}
+								$field['upload']['uploaded_ids'][$oldPathCodename] = $value;
+							}
+							$changesToFiles = true;
+						}
+				
+						if ($perm = ze\ring::chopPrefix('perm.', $setting)) {
+							$settingChanged = $value != ze\user::permSetting($perm);
+							
+							if ($settingChanged) {
+								ze\row::set('user_perm_settings', ['value' => $value], $perm);
+							}
+						
+						} else {
+							if ($isSecret) {
+								$settingChanged = $value != ze::secretSetting($setting);
+							} else {
+								$settingChanged = $value != ze::setting($setting);
+							}
+				
+							if ($settingChanged) {
+								ze\site::setSetting($setting, $value,
+									true, ze\ring::engToBoolean($settingOpts['encrypt'] ?? false),
+									true, ze\ring::engToBoolean($settingOpts['secret'] ?? false));
+							
+								//Handle changing the default language of the site
+								if ($setting == 'default_language') {
+									ze::$defaultLang = $value;
+								
+									//Update the special pages, creating new ones if needed
+									ze\contentAdm::addNeededSpecialPages();
+						
+									//Resync every content equivalence, trying to make sure that the pages for the new default language are used as the base
+									$sql = "
+										SELECT DISTINCT equiv_id, type
+										FROM ". DB_PREFIX. "content_items
+										WHERE status NOT IN ('trashed','deleted')";
+									$equivResult = ze\sql::select($sql);
+									while ($equiv = ze\sql::fetchAssoc($equivResult)) {
+										ze\contentAdm::resyncEquivalence($equiv['equiv_id'], $equiv['type']);
 									}
+					
+								} elseif ($setting == 'custom_thumbnail_1_width' || $setting == 'custom_thumbnail_1_height') {
+									$recreateCustomThumbnailOnes = true;
+									$jpegOnly = false;
+					
+								} elseif ($setting == 'custom_thumbnail_2_width' || $setting == 'custom_thumbnail_2_height') {
+									$recreateCustomThumbnailTwos = true;
+									$jpegOnly = false;
+								} elseif ($setting == 'standard_email_template') {
+									$files = [];
+									$htmlChanged = false;
+									ze\contentAdm::syncInlineFileLinks($files, $value, $htmlChanged);
+									$key = ['foreign_key_to' => 'standard_email_template', 'foreign_key_id' => 1, 'foreign_key_char' => ''];
+									ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 								}
 							}
 						}
@@ -1176,46 +1310,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 		}
-
-		//Tidy up any files in the database 
-		if ($changesToFiles) {
-			$sql = "
-				SELECT f.id
-				FROM ". DB_PREFIX. "files AS f
-				LEFT JOIN ". DB_PREFIX. "site_settings AS s
-				   ON s.value = f.id
-				  AND s.value = CONCAT('', f.id)
-				WHERE f.`usage` = 'site_setting'
-				  AND s.name IS NULL";
-	
-			$result = ze\sql::select($sql);
-			while ($file = ze\sql::fetchAssoc($result)) {
-				ze\file::delete($file['id']);
-			}
-		}
-		
-		//Save phrases for cookie messages
-		if (isset($fields['cookies/cookie_require_consent'])) {
-			
-			switch ($values['cookies/cookie_require_consent']) {
-				case 'implied':
-					$this->savePhrase(true, '_COOKIE_BOX1_01_IMPLIED_MSG', ze\ring::sanitiseWYSIWYGEditorHTML($values['cookies/_COOKIE_BOX1_01_IMPLIED_MSG'], true));
-					$this->savePhrase(false, '_COOKIE_BOX1_02_CONTINUE_BTN', $values['cookies/_COOKIE_BOX1_02_CONTINUE_BTN']);
-					break;
-			
-				case 'explicit':
-					$this->savePhrase(true, '_COOKIE_BOX1_03_COOKIE_CONSENT_MSG', ze\ring::sanitiseWYSIWYGEditorHTML($values['cookies/_COOKIE_BOX1_03_COOKIE_CONSENT_MSG'], true));
-					$this->savePhrase(false, '_COOKIE_BOX1_04_MANAGE_BTN', $values['cookies/_COOKIE_BOX1_04_MANAGE_BTN']);
-					$this->savePhrase(false, '_COOKIE_BOX1_05_ACCEPT_BTN', $values['cookies/_COOKIE_BOX1_05_ACCEPT_BTN']);
-
-					$this->savePhrase(true, '_COOKIE_BOX2_01_INTRO_MSG', ze\ring::sanitiseWYSIWYGEditorHTML($values['cookies/_COOKIE_BOX2_01_INTRO_MSG'], true));
-					$this->savePhrase(false, '_COOKIE_BOX2_02_ACCEPT_ALL_BTN', $values['cookies/_COOKIE_BOX2_02_ACCEPT_ALL_BTN']);
-					$this->savePhrase(false, '_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN', $values['cookies/_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN']);
-					
-					
-					break;
-			}
-		}
 	}
 	
 	
@@ -1233,6 +1327,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		
 		return $text;
 	}
+	
 	protected function savePhrase($isHTML, $code, $text) {
 		
 		if (!$isHTML) {
@@ -1243,5 +1338,32 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			['local_text' => $text],
 			['module_class_name' => 'zenario_common_features', 'language_id' => ze::$defaultLang, 'code' => $code]
 		);
+	}
+	
+	protected function setRobotsTxtToBlockAll() {
+		return
+'User-agent: *
+Disallow: /';
+	}
+	
+	protected function setRobotsTxtToDefaultConfig($siteMapEnabled, $siteMapUrl) {
+		$defaultValue = '';
+		
+		$defaultConfigFilePath = CMS_ROOT . 'zenario/includes/test_files/default_robots.txt';
+		$file = fopen($defaultConfigFilePath, 'r');
+		if ($file) {
+			while ($line = fgets($file)) {
+				$defaultValue .= $line;
+			}
+		}
+		
+		fclose($file);
+		
+		//Also include the sitemap if in use
+		if ($siteMapEnabled) {
+			$defaultValue .= 'Sitemap: ' . $siteMapUrl;
+		}
+		
+		return $defaultValue;
 	}
 }

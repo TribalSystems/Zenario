@@ -149,6 +149,7 @@ class Zenario_Twig_Cache implements Twig\Cache\CacheInterface {
 //A version of Zenario_Twig_Cache that uses preg_replace() on the generated code as a hack to implement the following two features:
 	//Replace calls to twig_get_attribute() with the ?? operator for better efficiency
 	//Implement the ability to set the value of array elements
+	//Implement a fix for PHP and division by zero error propagation.
 //Note that if you use this class, you can no longer pass objects as inputs as the preg_replace()s break support for this
 class Zenario_Phi_Twig_Cache extends Zenario_Twig_Cache {
 	
@@ -168,6 +169,26 @@ class Zenario_Phi_Twig_Cache extends Zenario_Twig_Cache {
     		$count = 0;
 	    	$content = preg_replace('@\bze\\\\phi\:\:_zPhiSAK_\(\(?\$context([\[\]\'"\w-]+)( \?\? null)\)?@', 'ze\\\\phi::_zPhiSAK_(\$context$1', $content, -1, $count);
 	    } while ($count > 0);
+	    
+	    
+		//A fix for PHP and division by zero error propagation.
+		//If you divide by zero in PHP, and you don't catch the error very close to the source, there is a bug where
+		//some random class instances have their variables all set to null.
+		//We'll solve this by putting a try/catch around the doDisplay() function to catch them in the function they occur.
+	    $startFrag = 'protected function doDisplay(array $context, array $blocks = [])';
+	    $endFrag = 'public function getTemplateName()';
+	    
+	    $content = str_replace($startFrag, $startFrag. ' {'. "\n      ". 'try ', $content);
+	    $content = str_replace($endFrag, '
+      catch (\\DivisionByZeroError $e) {
+      	if (\\ze\\phi::suppressErrors()) {
+      		return null;
+      	} else {
+      		throw $e;
+      	}
+      }
+    }'. "\n\n    ". $endFrag, $content);
+	    
 	    
     	parent::write($key, $content);
     }

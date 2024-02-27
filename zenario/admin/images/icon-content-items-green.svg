@@ -3,7 +3,7 @@
 <svg width="100%" height="100%" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
     <g id="Content_Items_on_state">
         <g>
-            <path d="M11.061,0L2,0L2,18L16,18L16,5.159L11.061,0ZM13.846,15.75L4.154,15.75L4.154,2.25L10.17,2.25L10.616,2.716L10.616,5.625L13.4,5.625L13.846,6.091L13.846,15.75Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
+            <path d="M16,0L2,0L2,18L16,18L16,0ZM13.846,15.75L4.154,15.75L4.154,2.25L13.846,2.25L13.846,15.75Z" style="fill:rgb(4,188,8);fill-rule:nonzero;"/>
         </g>
     </g>
 </svg>

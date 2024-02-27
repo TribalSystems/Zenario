@@ -215,11 +215,6 @@ plugin_settings:
                     plugin_setting:
                         name: show_view_link
                     type: checkbox
-                show_document_download_page_link:
-                    label: "Show link to document download page"
-                    plugin_setting:
-                        name: show_document_download_page_link
-                    type: checkbox
                 download_source:
                     label: 'Sources for download:'
                     hidden: true
@@ -230,6 +225,20 @@ plugin_settings:
                     type: checkbox
                     value: 1
                     redraw_onchange: true
+                links_should:
+                    indent: 1
+                    plugin_setting:
+                        name: links_should
+                    type: select
+                    value: download_the_file
+                    values:
+                        download_the_file:
+                            ord: 1
+                            label: Download the file
+                        open_file_in_browser_window:
+                            ord: 2
+                            label: Open the file in a new browser window
+                    visible_if: zenarioAB.value('local_file')
                 show_local_file_type_and_size:
                     indent: 1
                     label: 'Show file type and size'
@@ -264,6 +273,11 @@ plugin_settings:
                     type: checkbox
                     value: 1
                     visible_if: zenarioAB.value('s3_file')
+                show_document_download_page_link:
+                    label: "Show link to document download page"
+                    plugin_setting:
+                        name: show_document_download_page_link
+                    type: checkbox
                 dummy_comment_field:
                     #This dummy field is here so that the "Update" button does not cover up the phrase icon of the field above.
                     snippet:

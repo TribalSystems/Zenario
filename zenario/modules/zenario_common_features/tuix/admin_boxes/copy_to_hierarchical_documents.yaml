@@ -1,0 +1,164 @@
+zenario_copy_to_hierarchical_documents:
+    title: 'Copy to hierarchical documents'
+    hide_tab_bar: true
+    key: 
+        id: ''
+    tabs:
+        details:
+            label: Document metadata
+            edit_mode:
+                on: true
+                enabled: true
+            fields:
+                info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                <p>
+                                    The hierarchical documents system allows you to store documents in a familiar folder hierarchy (not available in document content items), and to have documents available without the need to publish.
+                                    Hierarchical documents are dataset-based, which means it is easy to add custom meta data fields.
+                                </p><p>
+                                    Use this panel to copy a document content item — its file and its meta data — to the hierarchical documents system.
+                                    In the controls below, you can choose which existing meta data field maps to each meta data field on the hierarchical document.
+                                </p><p>
+                                    Note that when copying, the document content item will automatically be hidden.
+                                </p>
+                            </div>
+                html:
+                    snippet:
+                        html: ''
+                
+                grouping_title:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__title
+                title_label:
+                    grouping: grouping_title
+                    snippet:
+                        html: |
+                            <div class="title"><label>Browser title:</label></div>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="z_arrow" style="font-size:30px;position:absolute;">⟶</span>
+                title:
+                    grouping: grouping_title
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Text field
+                title_warning:
+                    grouping: grouping_title
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'No "Text" type fields found in the document dataset, go here to create one.'
+                    post_field_html: "</div>"
+                    hidden: true
+                
+                grouping_language:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__language
+                language_label:
+                    grouping: grouping_language
+                    snippet:
+                        html: |
+                            <div class="title"><label>Language:</label></div>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="z_arrow" style="font-size:30px;position:absolute;">⟶</span>
+                language_id:
+                    grouping: grouping_language
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Text field
+                language_id_warning:
+                    grouping: grouping_language
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'There are no dataset fields of type "Text" to migrate this data to.'
+                    post_field_html: "</div>"
+                    hidden: true
+                
+                grouping_description:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__description
+                description_label:
+                    grouping: grouping_description
+                    snippet:
+                        html: |
+                            <div class="title"><label>Description meta tag:</label></div>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="z_arrow" style="font-size:30px;position:absolute;">⟶</span>
+                description:
+                    grouping: grouping_description
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Text area field
+                description_warning:
+                    grouping: grouping_description
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'There are no dataset fields of type "Textarea" to migrate this data to.'
+                    post_field_html: "</div>"
+                    hidden: true
+                
+                grouping_keywords:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__keywords
+                keywords_label:
+                    grouping: grouping_keywords
+                    snippet:
+                        html: |
+                            <div class="title"><label>Keywords meta tag:</label></div>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="z_arrow" style="font-size:30px;position:absolute;">⟶</span>
+                keywords:
+                    grouping: grouping_keywords
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Text area field
+                keywords_warning:
+                    grouping: grouping_keywords
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'There are no dataset fields of type "Textarea" to migrate this data to.'
+                    post_field_html: "</div>"
+                    hidden: true
+                
+                grouping_summary:
+                    type: grouping
+                    grouping_css_class: zenario_grouping__summary
+                content_summary_label:
+                    grouping: grouping_summary
+                    snippet:
+                        html: |
+                            <div class="title"><label>Summary:</label></div>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="z_arrow" style="font-size:30px;position:absolute;">⟶</span>
+                content_summary:
+                    grouping: grouping_summary
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Editor field
+                content_summary_warning:
+                    grouping: grouping_summary
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'There are no dataset fields of type "Editor" to migrate this data to.'
+                    post_field_html: "</div>"
+                    hidden: true
+                
+                folder_choice:
+                    type: radios
+                    values:
+                        copy_to_top_level:
+                            ord: 1
+                            label: 'Copy to top level'
+                        copy_to_specific_folder:
+                            ord: 2
+                            label: 'Copy to a specific folder...'
+                    value: copy_to_top_level
+                    redraw_onchange: true
+                    
+                folder:
+                    label: 'Folder:'
+                    pick_items:
+                        path: zenario__library/panels/documents/refiners/folders_only////
+                        target_path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                    visible_if: zenarioAB.value('folder_choice') == 'copy_to_specific_folder'
+                    validation:
+                        required_if_not_hidden: You must select a folder for the documents.
+                    indent: 1
+                        
+                

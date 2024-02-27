@@ -91,9 +91,9 @@ zenario_writer_profile:
                     editor_options:
                         convert_urls: false
                         relative_urls: false
+                        height: 300px
                     style: |
                         width: 98%;
-                    rows: 30
                     language: twig
                     insert_image_button:
                         pick_items:

@@ -5,6 +5,7 @@ zenario_image:
         id: ''
         filename_on_load: ''
         mic_image: ''
+        site_setting_image: ''
         slotName: ''
         instanceId: ''
         eggId: ''
@@ -164,7 +165,10 @@ zenario_image:
                     readonly: true
                     show_copy_text_button: true
         
-        crops:
+        crops_here:
+            hide_when_children_are_not_visible: true
+        
+        crops_elsewhere:
             hide_when_children_are_not_visible: true
         
         crop:
@@ -176,10 +180,8 @@ zenario_image:
             fields:
                 description:
                     snippet:
-                        html: |
-                            <p>
-                                Crop and zoom is available for this image size (defined in plugin settings). Adjust the visible area using the handles, for this aspect ratio.
-                            </p>
+                        p: |
+                            Crop and zoom is available for this image size (defined in plugin settings). Adjust the visible area using the handles, for this aspect ratio.
                 #This usage column is used for the cropping logic.
                 #It is separate to the "Where used" column.
                 usage:

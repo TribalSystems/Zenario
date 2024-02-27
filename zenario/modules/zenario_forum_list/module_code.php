@@ -37,10 +37,7 @@ class zenario_forum_list extends zenario_content_list {
 	
 	public function init() {
 		if (zenario_content_list::init()) {
-			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
-			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
+			$this->allowCaching(false);
 			
 			return true;
 		} else {

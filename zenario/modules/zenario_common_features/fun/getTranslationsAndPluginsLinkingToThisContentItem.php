@@ -207,7 +207,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			
 			//Disable "Trash/Delete translation" option for content items which can't be trashed/deleted
 			$startAt = 1;
-			for ($n = $startAt; (($suffix = '__'. $n) && (!empty($fields[$panelName . '/translation'. $suffix]))); ++$n) {
+			foreach (ze\tuix::loopThroughMultipleRows($fields, $startAt, $panelName, 'translation') as $suffix => $deletePressed) {
 				$tagId = $values[$panelName . '/translation'. $suffix];
 				
 				ze\content::removeFormattingFromTag($tagId);

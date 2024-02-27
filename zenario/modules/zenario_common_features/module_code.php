@@ -511,7 +511,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 	
 	public static function deleteOrTrashTranslations(&$fields, &$values, $tabName) {
 		$startAt = 1;
-		for ($n = $startAt; (($suffix = '__'. $n) && (!empty($fields[$tabName . '/translation'. $suffix]))); ++$n) {
+		foreach (ze\tuix::loopThroughMultipleRows($fields, $startAt, $tabName, 'translation') as $suffix => $deletePressed) {
 			
 			$tagId = $values[$tabName . '/translation'. $suffix];
 			

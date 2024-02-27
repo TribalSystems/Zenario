@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_ctype_event
     tabs:
         first_tab:
             label: Event
@@ -97,4 +98,3 @@ plugin_settings:
                         name: at_location_text
                     value: 'At location'
                     visible_if: lib.value('show_address') && lib.value('show_at_location_text')
-    module_class_name: zenario_ctype_event

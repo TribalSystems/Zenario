@@ -37,7 +37,6 @@ class site {
 	public static function setSecretSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true) {
 		self::setSetting($settingName, $value, $updateDB, $encrypt, $clearCache, true);
 	}
-	//Formerly "setSetting()"
 	public static function setSetting($settingName, $value, $updateDB = true, $encrypt = false, $clearCache = true, $secret = false) {
 		
 		\ze::$siteConfig[(int) $secret][$settingName] = $value;
@@ -48,9 +47,9 @@ class site {
 			$encryptedColExists = \ze::$dbL->checkTableDef(DB_PREFIX. 'site_settings', 'encrypted', $useCache = true);
 			
 			$encrypted = 0;
-			if ($encryptedColExists && $encrypt && \ze\zewl::init()) {
+			if ($encryptedColExists && $encrypt && \ze\pde::init()) {
 				$encrypted = 1;
-				$value = \ze\zewl::encrypt($value, false);
+				$value = \ze\pde::encrypt($value, false);
 			}
 			
 			$sql = "
@@ -88,7 +87,6 @@ class site {
 
 	//Get the CMS version number from latest_revision_no.inc.php
 	//Also attempt to guess whether this is a build or an on-demand site
-	//Formerly "getCMSVersionNumber()"
 	public static function versionNumber($revision = false, $addNoteAboutSVN = true) {
 	
 		$versionNumber = ZENARIO_VERSION;
@@ -109,7 +107,6 @@ class site {
 
 
 
-	//Formerly "siteDescription()"
 	public static function description($settingName = false) {
 		//Load the site description if it's not already loaded
 		if (empty(\ze::$siteDesc)) {
@@ -184,6 +181,51 @@ class site {
 		
 		\ze\site::setSetting('site_in_dev_mode', '');
 		return false;
+	}
+	
+	
+	
+
+	//Check whether the config file exists.
+	//Note: if it doesn't exist, return false
+	//Note: if exists but is empty, return 0
+	public static function checkConfigFileExists() {
+		if (!@file_exists(CMS_ROOT. 'zenario_siteconfig.php')) {
+			return false;
+		}
+		$filesize = @filesize(CMS_ROOT. 'zenario_siteconfig.php');
+		if ($filesize && $filesize >= 20) {
+			return true;
+		} else {
+			return 0;
+		}
+	}
+	
+	//Check how far along a site is in the install process.
+	//Some of our PHP scripts are designed to work either in the installer (without a database)
+	//or on an installed site (with a database available), but they need to know which mode
+	//they are in before running.
+	public static function isInstalled(&$installStatus) {
+		$installStatus = 0;
+		$installed =
+			\ze\site::checkConfigFileExists()
+		 && ($installStatus = 1)
+		 && (defined('DBHOST'))
+		 && (defined('DBNAME'))
+		 && (defined('DBUSER'))
+		 && (defined('DBPASS'))
+		 && (\ze::$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
+		 && (\ze::$dbL->con)
+		 && ($result = @\ze::$dbL->con->query("SHOW TABLES LIKE '". DB_PREFIX. "site_settings'"))
+		 && ($installStatus = 2)
+		 && ($result->num_rows)
+		 && ($installStatus = 3);
+
+		if (!$installed) {
+			\ze::$dbL = null;
+		}
+		
+		return $installed;
 	}
 	
 	

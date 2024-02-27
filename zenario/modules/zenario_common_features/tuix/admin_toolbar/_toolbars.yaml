@@ -11,6 +11,7 @@ toolbars:
     edit_disabled:
         ord: 30
         priv: _PRIV_EDIT_DRAFT
+        label_when_grouping_inactive: Tools
         label: Edit
         tooltip: ''
         page_mode: edit_disabled
@@ -19,6 +20,7 @@ toolbars:
     edit:
         ord: 31
         priv: _PRIV_EDIT_DRAFT
+        label_when_grouping_inactive: Tools
         label: Edit
         tooltip: ''
         page_mode: edit
@@ -27,6 +29,7 @@ toolbars:
     rollback:
         ord: 32
         priv: _PRIV_EDIT_DRAFT
+        label_when_grouping_inactive: Tools
         label: Edit
         tooltip: You are viewing a previous version of this content item
         page_mode: rollback
@@ -188,7 +191,7 @@ sections:
     slot_controls:
         buttons:
             head_foot_dropdown:
-                label: <head> and <body> HTML/JS
+                label: HTML/JS
                 hide_when_children_are_not_visible: false
             item_head:
                 parent: head_foot_dropdown
@@ -197,7 +200,7 @@ sections:
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
-                label: <head> HTML/JS
+                label: HTML/JS in <head>
                 admin_box:
                     path: zenario_head_foot_slot
                     key:
@@ -279,7 +282,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Start editing
-                css_class: zenario_at_big_action_button zenario_at_start_editing
+                css_class: zenario_at_big_action_button zenario_at_action
                 ajax:
                     confirm:
                         message: |
@@ -311,7 +314,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Re-publish
-                css_class: zenario_at_big_action_button zenario_unhide_content
+                css_class: zenario_at_big_action_button zenario_at_action
                 admin_box:
                     path: zenario_publish
             redraft:
@@ -320,7 +323,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Re-draft
-                css_class: zenario_at_big_action_button zenario_redraft_content 
+                css_class: zenario_at_big_action_button zenario_at_action 
                 tooltip: >
                     Re-draft this content item|This will create a new draft of
                     this content item, which will be available to visitors if
@@ -336,13 +339,60 @@ sections:
                         message_type: question
                     request:
                         create_draft: 1
+            delist:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make unlisted
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_unlisted_action
+                ajax:
+                    confirm:
+                        html: true
+                        message: |
+                            <p>Are you sure you want to make this content item unlisted?</p>
+                            <p>Unlisted content items:</p>
+                            <ul><li>
+                                Are not shown in menus
+                            </li><li>
+                                Are not shown in content summary lists
+                            </li><li>
+                                Are not displayed in search plugins
+                            </li><li>
+                                Are not displayed in site-maps
+                            </li><li>
+                                Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                            </li></ul>
+                        button_message: Make unlisted
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delist: 1
+            relist:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make listed
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_listed_action
+                ajax:
+                    confirm:
+                        html: true
+                        message: |
+                            <p>Are you sure you want to make this content item listed?</p>
+                            <p>When listed, the content item will appear in any menu/content summary list/search plugins as normal.</p>
+                        button_message: Make listed
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        relist: 1
             hide_content:
                 appears_in_toolbars: *publish_appears_in_toolbars
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Hide
-                css_class: zenario_at_big_action_button zenario_hide_content 
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_hide_action
                 admin_box:
                     path: zenario_hide
             delete_draft:
@@ -351,7 +401,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Delete draft
-                css_class: zenario_at_big_action_button zenario_delete 
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_delete_action 
                 ajax:
                     confirm:
                         message: |
@@ -371,7 +421,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Delete content item
-                css_class: zenario_at_big_action_button zenario_delete 
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_delete_action 
                 admin_box:
                     path: zenario_delete_media_content_item
             trash_content:
@@ -380,7 +430,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Trash
-                css_class: zenario_at_big_action_button zenario_delete 
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_delete_action 
                 
                 admin_box:
                     path: zenario_trash

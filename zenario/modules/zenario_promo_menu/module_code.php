@@ -38,9 +38,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 	public function init() {
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = true, $clearByFile = false, $clearByModuleData = false);
 		$this->showInMenuMode();
 		if ($this->sectionId === false) {
 			$this->sectionId = $this->setting('menu_section');
@@ -74,7 +74,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		switch ($cachingRestrictions) {
 			case ze\menu::privateItemsExist:
 				$this->allowCaching(
-					$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+					$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 				break;
 			case ze\menu::staticFunctionCalled:
 				$this->allowCaching(false);
@@ -146,21 +146,28 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			}
 			
 			//Node image...
-			$url = $width = $height = false;
-			ze\file::imageLink($width, $height, $url, $row['image_id']);
-			$row['node_image_width'] = $width;
-			$row['node_image_height'] = $height;
-			$row['image_link'] = $url;
-			
-			if ($row['overwrite_alt_tag']) {
-				$row['alt_tag'] = $row['overwrite_alt_tag'];
-			}
-			
-			//and Node image rollover.
-			if ($row['rollover_image_id']) {
+			if ($this->setting('show_thumbnail_menu_node_icons')) {
 				$url = $width = $height = false;
-				ze\file::imageLink($width, $height, $url, $row['rollover_image_id']);
-				$row['rollover_image_link'] = $url;
+				$thumbnailCanvasSetting = $this->setting('thumbnail_menu_node_icon_canvas');
+				$thumbnailRetinaSetting = $this->setting('thumbnail_menu_node_icon_retina');
+				$thumbnailWidthSetting = $this->setting('thumbnail_menu_node_icon_width');
+				$thumbnailHeightSetting = $this->setting('thumbnail_menu_node_icon_height');
+				
+				ze\file::imageLink($width, $height, $url, $row['image_id'], $thumbnailWidthSetting, $thumbnailHeightSetting, $thumbnailCanvasSetting, $offset = 0, $thumbnailRetinaSetting);
+				$row['node_image_width'] = $width;
+				$row['node_image_height'] = $height;
+				$row['image_link'] = $url;
+			
+				if ($row['overwrite_alt_tag']) {
+					$row['alt_tag'] = $row['overwrite_alt_tag'];
+				}
+				
+				//and Node image rollover.
+				if ($row['rollover_image_id']) {
+					$url = $width = $height = false;
+					ze\file::imageLink($width, $height, $url, $row['rollover_image_id']);
+					$row['rollover_image_link'] = $url;
+				}
 			}
 			
 			// Set link if to content item
@@ -227,6 +234,11 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				} else {
 					$fields['promo_images/canvas']['side_note'] = "";
 				}
+				
+				$hidden = !$values['promo_images/show_thumbnail_menu_node_icons'];
+				$this->showHideImageOptions($fields, $values, 'promo_images', $hidden, 'thumbnail_menu_node_icon_');
+				$fields['promo_images/thumbnail_menu_node_icon_canvas']['side_note'] = $retinaSideNote;
+				
 				break;
 		}
 	}

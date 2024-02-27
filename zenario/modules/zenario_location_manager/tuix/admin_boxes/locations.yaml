@@ -203,6 +203,7 @@ zenario_location_manager__location:
                         target_path: zenario__library/panels/image_library
                         select_phrase: Select from image library...
                         multiple_select: true
+                        hide_info_button: true
                     upload:
                         multi: true
                         accept: 'image/*'

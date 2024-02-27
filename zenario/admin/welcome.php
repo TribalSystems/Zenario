@@ -58,25 +58,8 @@ if (false !== ze\ring::chopSuffix($uri, 'zenario/admin/welcome.php')) {
 
 
 //Check to see if Zenario is installed, and connect to the database if so
-$freshInstall = false;
 $installStatus = 0;
-$installed =
-	ze\welcome::checkConfigFileExists()
- && ($installStatus = 1)
- && (defined('DBHOST'))
- && (defined('DBNAME'))
- && (defined('DBUSER'))
- && (defined('DBPASS'))
- && (ze::$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
- && (ze::$dbL->con)
- && ($result = @ze::$dbL->con->query("SHOW TABLES LIKE '". DB_PREFIX. "site_settings'"))
- && ($installStatus = 2)
- && ($result->num_rows)
- && ($installStatus = 3);
-
-if (!$installed) {
-	ze::$dbL = null;
-}
+$installed = ze\site::isInstalled($installStatus);
 
 
 //If it is defined, check that the SUBDIRECTORY is correct and warn the admin if not
@@ -144,12 +127,28 @@ if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 
 
 
-if ($installed) {
+if (!$installed) {
+	$task = 'install';
+
+} else {
+	switch ($_REQUEST['task'] ?? null) {
+		case 'change_password':
+		case 'new_admin':
+		case 'diagnostics':
+		case 'reload_sk':
+		case 'end':
+		case 'logout':
+		case 'restore':
+		case 'site_reset':
+			$task = $_REQUEST['task'];
+			break;
+		default:
+			$task = 'login';
+	}
+	
 	//If Zenario is installed, move on to the login check and then database updates
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
-	   
 		define('SHOW_SQL_ERRORS_TO_VISITORS', true);
-		
 	}
 	ze\db::connectLocal();
 	
@@ -277,15 +276,7 @@ if (ze::$dbL
 }
 
 
-$allowedTasks = [
-	'change_password' => 'change_password',
-	'new_admin' => 'new_admin',
-	'diagnostics' => 'diagnostics',
-	'reload_sk' => 'reload_sk',
-	'end' => 'logout',
-	'logout' => 'logout',
-	'restore' => 'restore',
-	'site_reset' => 'site_reset'];
+
 
 
 
@@ -327,7 +318,7 @@ if (ze::setting('google_recaptcha_site_key')
 echo '
 <script type="text/javascript" src="zenario/js/admin_welcome.min.js?v=', $v, '"></script>
 <script type="text/javascript">
-	zenarioAW.task = "', $allowedTasks[$_REQUEST['task'] ?? false] ?? false, '";
+	zenarioAW.task = ', json_encode($task), ';
 	zenarioAW.getRequest = ', json_encode($_GET), ';
 	
 	var step2 = cb.add(),
@@ -390,9 +381,22 @@ echo '
 </div>
 <div id="welcome_outer">
 	<div id="welcome" class="welcome">
-		<div class="zenario_version"><p class="version">
-			', ze\admin::phrase('Zenario [[version]]', ['version' => ze\site::versionNumber($revision)]), '
-		</p></div>
+		<div class="zenario_version">
+			<p class="version">
+				<span class="major_minor_version">
+					', ze\admin::phrase('Zenario [[version]]', ['version' => htmlspecialchars(ZENARIO_VERSION)]), '
+				</span>
+				<br/>
+				<span class="full_version">
+					<a
+						href="https://zenar.io/zenario-', htmlspecialchars(ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION), '"
+						target="_blank"
+					>
+						', htmlspecialchars(ze\site::versionNumber($revision)), '
+					</a>
+				</span>
+			</p>
+		</div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">
 		

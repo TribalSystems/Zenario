@@ -151,6 +151,7 @@ styles_fab_white: &styles_fab
                 editor:
                     type: editor
                     editor_type: standard
+                    tall_as_possible: true
         
         code_editor:
             parent: editors
@@ -172,12 +173,14 @@ styles_fab_white: &styles_fab
             fields:
                 button:
                     type: button
-                    label: Normal button
+                    label: Normal button blue
                     value: Press me
+                    css_class: zenario_gp_button
                 submit:
                     type: submit
                     label: Submit button
                     value: Press me
+                    css_class: zenario_submit_button
                 toggle:
                     type: toggle
                     label: Toggle button

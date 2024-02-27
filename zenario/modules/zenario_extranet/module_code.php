@@ -41,9 +41,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 	public function init() {
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		
 		//Check if a user is currently logged in.
@@ -210,8 +210,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 								$errorMessage = $this->setting('account_suspended_message');
 								$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 							} elseif ($user['status'] == 'pending') {
+								$emailVerifiedStatus = ze\row::get('users', 'email_verified', ['email' => ze::post('extranet_email')]);
+								
 								//user is pending, show error
-								if(ze\row::get('users', 'email_verified', ['email' => ze::post('extranet_email')])) {
+								if ($emailVerifiedStatus == 'verified') {
 									//user has verified email, wanting on admin to activate there account.
 									$errorMessage = $this->setting('account_pending_message');
 									$this->errors[] = ['Error' => $this->phrase($errorMessage)];
@@ -435,22 +437,25 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	protected function acceptTsAndCs($user) {
 		//Record consent
-		$userContentItem = $this->setting('terms_and_conditions_page');
-		$useExternalLink = $this->setting('url');
-		if($userContentItem || $useExternalLink) {
-			if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
-				$cID = $cType = false;
-				$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
-				ze\content::langEquivalentItem($cID, $cType);
-				$TCLink = $this->linkToItem($cID, $cType, true);
-			} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
-				$TCLink = $this->setting('url');
+		//Please note: if an admin is impersonating a user, there will be no consents entry.
+		if (!ze\admin::id()) {
+			$userContentItem = $this->setting('terms_and_conditions_page');
+			$useExternalLink = $this->setting('url');
+			if ($userContentItem || $useExternalLink) {
+				if ($userContentItem && $this->setting('link_type') == '_CONTENT_ITEM' ){
+					$cID = $cType = false;
+					$this->getCIDAndCTypeFromSetting($cID, $cType, 'terms_and_conditions_page');
+					ze\content::langEquivalentItem($cID, $cType);
+					$TCLink = $this->linkToItem($cID, $cType, true);
+				} elseif ($useExternalLink && $this->setting('link_type') == '_EXTERNAL_URL' ) {
+					$TCLink = $this->setting('url');
+				}
+				$this->subSections['Ts_And_Cs_Section'] = true;
+				$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
+				$linkEnd = '</a>';
 			}
-			$this->subSections['Ts_And_Cs_Section'] = true;
-			$linkStart = '<a href ="'.$TCLink.'" target="_blank">';
-			$linkEnd = '</a>';
+			ze\user::recordConsent('extranet_login', $this->instanceId, $this->idOfUserTryingToLogIn, $user['email'], $user['first_name'], $user['last_name'], $this->phrase("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]));
 		}
-		ze\user::recordConsent('extranet_login', $this->instanceId, $this->idOfUserTryingToLogIn, $user['email'], $user['first_name'], $user['last_name'], $this->phrase("I have read and accept the [[link_start]]Terms and Conditions[[link_end]].", ['link_start' => $linkStart, 'link_end' => $linkEnd]));
 		
 		ze\row::set('users', ['terms_and_conditions_accepted' => 1], $this->idOfUserTryingToLogIn);
 	}
@@ -483,6 +488,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$this->getTitleAndLabelMergeFields();
 		$this->objects['login_button_text'] = $this->phrase('Continue');
 		$this->objects['Welcome_Message'] = $this->getWelcomeUserString();
+		$this->objects['Is_Admin'] = ze\admin::id();
 		
 		echo $this->getLoginOpenForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			echo $this->remember('accept_terms_and_conditions', 1);
@@ -629,8 +635,17 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		if (($_SESSION['destURL'] ?? false) && ($this->cID != ($_SESSION['destCID'] ?? false) || $this->cType != $_SESSION['destCType'] ?? false)) {
 			$this->subSections['Destination_url_section'] = true;
-			$this->objects['destURL_Title'] = htmlspecialchars($_SESSION['destTitle']);
 			$this->objects['destURL_Link'] = htmlspecialchars($_SESSION['destURL']);
+			
+			if (isset($_SESSION['destTitle'])) {
+				$this->objects['destURL_Title'] = htmlspecialchars($_SESSION['destTitle']);
+
+			} elseif (isset($_SESSION['destCID'])) {
+				$this->objects['destURL_Title'] = htmlspecialchars(ze\content::title($_SESSION['destCID'], $_SESSION['destCType']));
+
+			} else {
+				$this->objects['destURL_Title'] = htmlspecialchars($this->phrase('Click here to be redirected back to where you just came from.'));
+			}
 		}
 	}
 	
@@ -840,6 +855,15 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if (!empty($user['first_name'])) {
 			$userNameString .= $user['first_name'];
 		}
+		
+		//This code is currently commented out but will be in use in the future.
+		// if (!empty($user['first_name'])) {
+// 			if ($userNameString) {
+// 				$userNameString .= ' ';
+// 			}
+// 			
+// 			$userNameString .= $user['last_name'];
+// 		}
 		
 		return $this->phrase('Welcome, [[user]]!', ['user' => htmlspecialchars($userNameString)]);
 	}
@@ -1108,6 +1132,11 @@ class zenario_extranet extends ze\moduleBaseClass {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
 			case 'zenario__users/nav/sign_in_log/panel':
+				
+				//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+				//show an error message.
+				ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
+				
 				if (ze::$dbL->columnIsEncrypted('users', 'first_name') || ze::$dbL->columnIsEncrypted('users', 'last_name')) {
 					$panel['columns']['User_Name']['encrypted'] = [];
 					

@@ -100,7 +100,6 @@ body > x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_from
 	background-position:center;
 	padding:2px;
 	-webkit-border-radius:50%;
-	-moz-border-radius:50%;
 	border-radius:50%;
 	border:1px solid #ccc;
 }

@@ -30,25 +30,54 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnFABIfConfIsBad($box);
+		
+		
+		$infoNote = '';
+		
 		$userIds = explode(',', $box['key']['id']);
-		if (count($userIds) == 1) {
+		$userIdsCount = count($userIds);
+		if ($userIdsCount == 1) {
 			$userDetails = ze\user::details($userIds[0]);
 			$box['title'] = "Sending activation email to the user \"" . $userDetails["identifier"] . "\"";
+			$fields['details/do_not_include_personal_info_snippet']['hidden'] = true;
+			$infoNote .= 'As this site is configured to store only encrypted passwords for users (not plain text), the user\'s password will not be shown.';
+			
+			$fields['details/email_to_send_body']['label'] = ze\admin::phrase('Email body (modify as required):');
 		} else {
 			$box['title'] = "Sending activation emails to " . count($userIds) . " users";
+			$infoNote .= 'You are about to send activation emails to [[count]] selected users.<br> <br>';
+			$infoNote .= 'As this site is configured to store only encrypted passwords for users (not plain text), the users\' passwords will not be shown.';
+			
+			$fields['details/email_to_send_body']['label'] = ze\admin::phrase('Email body:');
 		}
 		
+		$fields['details/non_plain_text_info']['snippet']['html'] = ze\admin::phrase($infoNote, ['count' => $userIdsCount]);
+		
 		$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
-
-		$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
-		$fields['details/email_to_send']['note_below'] = ze\admin::phrase(
-			'The default activation email template can be changed in the [[site_settings_link]].',
-			['site_settings_link' => $siteSettingsLink]
-		);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//...
+		if ($values['details/email_to_send'] && ze\module::inc('zenario_email_template_manager')) {
+			$userIds = explode(',', $box['key']['id']);
+			
+			$template = zenario_email_template_manager::getTemplateByCode($values['details/email_to_send']);
+			
+			if (!empty($template) && is_array($template)) {
+				if (count($userIds) == 1) {
+					$userId = $userIds[0];
+					$mergeFields = ze\user::userDetailsForEmails($userId);
+					$mergeFields['cms_url'] = ze\link::absolute();
+			
+					ze\lang::applyMergeFields($template['body'], $mergeFields);
+				}
+			
+				$values['details/email_to_send_body'] = $template['body'];
+			}
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -67,24 +96,12 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 			if ($values['details/email_to_send'] && (ze\module::inc('zenario_email_template_manager'))) {
 				foreach ($userIds as $userId) {
 					$mergeFields = ze\user::userDetailsForEmails($userId);
-					if (isset($values['details/reset_password']) && $values['details/reset_password']) {
-						$mergeFields['password'] = ze\userAdm::createPassword();
-						$cols = [
-							'last_edited_admin_id' => ze\admin::id(),
-							'last_edited_user_id' => null,
-							'last_edited_username' => null,
-							'password' => $mergeFields['password']
-						];
-						ze\userAdm::save($cols, $userId);
-					} elseif (isset($values['details/include_password']) && $values['details/include_password']) {
-						//show plain text password
-					} else {
-						$mergeFields['password'] = "********* (not shown)";
-					}
-					
 					$mergeFields['cms_url'] = ze\link::absolute();
 					
-					zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/email_to_send'], $mergeFields);
+					zenario_email_template_manager::sendEmailsUsingTemplate(
+						$mergeFields['email'], $values['details/email_to_send'], $mergeFields,
+						[], [], false, false, false, false, false, $customBody = $values['details/email_to_send_body']
+					);
 				}
 			}
 		}

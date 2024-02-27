@@ -126,6 +126,10 @@ if (!ze\priv::check()) {
 	exit;
 }
 
+if (!$debugMode && ze\admin::setting('show_dev_tools')) {
+	ze::$recordFiles = true;
+}
+
 
 define('FOCUSED_LANGUAGE_ID__NO_QUOTES', preg_replace('@[^\w-]@', '', $_REQUEST['languageId'] ?? $_GET['refiner__language'] ?? ze::$defaultLang ?? 'en'));
 define('FOCUSED_LANGUAGE_ID', "'". ze\escape::sql(FOCUSED_LANGUAGE_ID__NO_QUOTES). "'");
@@ -226,6 +230,14 @@ $moduleFilesLoaded = [];
 $tags = [];
 $originalTags = [];
 ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
+
+if (ze::$recordFiles) {
+	foreach ($moduleFilesLoaded as $moduleFiles) {
+		foreach ($moduleFiles['paths'] as $path) {
+			ze::$tuixFiles[$path] = true;
+		}
+	}
+}
 
 
 //If we had a requested path, drill straight down to that level
@@ -1321,7 +1333,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 									if (empty($col['encrypted'])) {
 										$tags['items'][$id][$colName] = $row[++$i];
 									} else {
-										$tags['items'][$id][$colName] = ze\zewl::decrypt($row[++$i]);
+										$tags['items'][$id][$colName] = ze\pde::decrypt($row[++$i]);
 									}
 								}
 							}
@@ -1457,16 +1469,17 @@ if ($mode == 'get_item_data') {
 	if (!empty($output['items'])) {
 		foreach ($output['items'] as $id => &$item) {
 			if (is_array($item)) {
+			
+				if ($needToSetMenuName) {
+					$item['name'] = $item['path'];
+				}
+				
 				foreach ($item as $colName => $column) {
 					if (empty($usedcolumns[$colName])) {
 						unset($item[$colName]);
 					}
 				}
 				unset($item['cell_css_classes']);
-			
-				if ($needToSetMenuName) {
-					$item['name'] = ze\menuAdm::path($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' › ');
-				}
 			}
 		}
 	}
@@ -1578,7 +1591,19 @@ if ($doExport) {
 	header('Content-Type: text/javascript; charset=UTF-8');
 
 	if (ze::request('_script')) {
-		echo 'zenarioO.lookForBranches(zenarioO.map = ';
+		echo 'zenarioO.setMap(';
+	}
+	
+	if (ze::$recordFiles) {
+		$tags['__source_files'] = [
+			'root' => CMS_ROOT,
+			'paths' => ze::$tuixFiles
+		];
+	}
+	
+	if (!empty(ze::$dumps)) {
+		$tags['__dumps'] = ze::$dumps;
+		ze::$dumps = [];
 	}
 
 	ze\ray::jsonDump($tags);

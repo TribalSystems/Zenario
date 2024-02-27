@@ -32,7 +32,6 @@ class menuAdm {
 
 
 
-	//Formerly "getMenuItemStorekeeperDeepLink()"
 	public static function organizerLink($menuId, $langId = false, $sectionId = false) {
 		if ($langId === false) {
 			$langId = \ze\content::currentLangId();
@@ -80,15 +79,17 @@ class menuAdm {
 		return $cssClass;
 	}
 
-	//Formerly "getMenuPathWithMenuSection()"
-	public static function pathWithSection($menuId, $langId = false, $separator = ' › ', $useOrdinal = false) {
-		return \ze\menu::sectionName(\ze\row::get('menu_nodes', 'section_id', $menuId)). $separator. \ze\menuAdm::path($menuId, $langId, $separator, $useOrdinal);
+	//Cache some things so we don't need to keep repeatedly looking them up
+	private static $maxOrdinal = null;
+	private static $homePageCID = null;
+	private static $homePageCType = null;
+	private static $homePageMenuText = null;
+	
+	public static function pathArray($menuId, $langId = false, $addHome = true) {
+		return \ze\menuAdm::path($menuId, $langId, '', $addHome, true);
 	}
 	
-	private static $maxOrdinal = null;
-
-	//Formerly "getMenuPath()"
-	public static function path($menuId, $langId = false, $separator = ' › ', $useOrdinal = false) {
+	public static function path($menuId, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false) {
 		if ($langId === false) {
 			$langId = \ze\content::visitorLangId();
 	
@@ -97,47 +98,244 @@ class menuAdm {
 		}
 	
 		$sql = "
-			SELECT
-				GROUP_CONCAT(";
-			
-		if ($useOrdinal) {
-			if (self::$maxOrdinal === null) {
-				self::$maxOrdinal = ceil(log(1 + (int) \ze\row::max('menu_nodes', 'ordinal'), 10));
-			}
-		
-			$sql .= "
-					LPAD(mi.ordinal, ". (int) self::$maxOrdinal. ", '0')";
-	
-		} else {
-			$sql .= "
-					(
-						SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))
-						FROM ". DB_PREFIX. "menu_text AS mt
-						WHERE mt.menu_id = mi.id
-						ORDER BY
-							mt.language_id = '". \ze\escape::asciiInSQL($langId). "' DESC,
-							mt.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC
-						LIMIT 1
-					)";
-		}
-	
-		$sql .= "
-					ORDER BY mh.separation DESC SEPARATOR '". \ze\escape::sql($separator). "'
-				)
+			SELECT m.id, m.section_id, m.redundancy, m.target_loc, m.equiv_id, m.content_type, m.ordinal, (
+				SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))
+				FROM ". DB_PREFIX. "menu_text AS mt
+				WHERE mt.menu_id = m.id
+				ORDER BY
+					mt.language_id = '". \ze\escape::asciiInSQL($langId). "' DESC,
+					mt.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC
+				LIMIT 1
+			) AS text
 			FROM ". DB_PREFIX. "menu_hierarchy AS mh
-			INNER JOIN ". DB_PREFIX. "menu_nodes AS mi
-			   ON mi.id = mh.ancestor_id
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+			   ON m.id = mh.ancestor_id
+			WHERE mh.child_id = ". (int) $menuId. "
+			ORDER BY mh.separation DESC";
+		
+		$rows = \ze\sql::fetchAssocs($sql);
+		
+		
+		$first = true;
+		$output = [];
+		
+		foreach ($rows as $row) {
+			
+			if ($first) {
+				$first = false;
+				
+				\ze\menuAdm::addPrefixToMenuPath($output, $row['section_id'], $addHome, $returnArray, $row['equiv_id'], $row['content_type']);
+			}
+			
+			if ($returnArray) {
+				$output[] = $row;
+			} else {
+				$output[] = $row['text'];
+			}
+		}
+		
+		if ($returnArray) {
+			return $output;
+		} else {
+			return implode($separator, $output);
+		}
+	}
+	
+	private static function addPrefixToMenuPath(&$output, $sectionId, $addHome = true, $returnArray = true, $currentEquivId = 0, $currentContentType = '') {
+
+		//If in the "Main" section, have an option to add the home page on to the breadcrumb trail.
+		if ($sectionId == 1 && $addHome) {
+			
+			if (self::$homePageCID === null) {
+				if (\ze\content::langSpecialPage('zenario_home',
+					self::$homePageCID, self::$homePageCType,
+					\ze::$defaultLang, $languageMustMatch = true, $skipPermsCheck = true
+				)) {
+					if ($menu = \ze\menu::getFromContentItem(self::$homePageCID, self::$homePageCType, $fetchSecondaries = false, $sectionId = 1)) {
+						self::$homePageMenuText = $menu['name'];
+					}
+				}
+			}
+			
+			if (self::$homePageCID
+			 && (self::$homePageCID != $currentEquivId
+			  || self::$homePageCType != $currentContentType)) {
+		
+				if ($returnArray) {
+					$output[] = ['text' => self::$homePageMenuText, 'section_id' => $sectionId];
+				} else {
+					$output[] = self::$homePageMenuText;
+				}
+			}
+			
+		} else {
+			//If not in the "Main" section, add the section name.
+			$text = \ze\menu::sectionName($sectionId);
+			
+			if ($returnArray) {
+				$output[] = ['text' => $text, 'section_id' => $sectionId];
+			} else {
+				$output[] = $text;
+			}
+		}
+	}
+	
+	
+	//Given a menu node in the tree, get a multi-level ordinal that's sortable, and will
+	//show a view of the tree when sorted
+	public static function sortableOrdinalPath($menuId) {
+		if (self::$maxOrdinal === null) {
+			self::$maxOrdinal = ceil(log(1 + (int) \ze\row::max('menu_nodes', 'ordinal'), 10));
+		}
+		
+		$separator = ' > ';
+		
+		$sql = "
+			SELECT GROUP_CONCAT(
+				LPAD(m.ordinal, ". (int) self::$maxOrdinal. ", '0')
+				ORDER BY mh.separation DESC SEPARATOR '". \ze\escape::sql($separator). "'
+			)
+			FROM ". DB_PREFIX. "menu_hierarchy AS mh
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+			   ON m.id = mh.ancestor_id
 			WHERE mh.child_id = ". (int) $menuId;
 	
-		if (($result = \ze\sql::select($sql)) && ($row = \ze\sql::fetchRow($result))) {
+		if ($row = \ze\sql::fetchRow($sql)) {
 			return $row[0];
 		} else {
 			return '';
 		}
 	}
+	
+	//A version of the pathArray() function that works if you pass it a menu position instead
+	//of a menu ID.
+	public static function posToPathArray(&$output, &$firstItem, &$lastItem, $menuPos, $langId = false) {
+		
+		$output = [];
+		$firstItem = false;
+		$lastItem = false;
+		
+		//Menu positions are in the format CONCAT(section_id, '_', menu_id, '_', child_options)
+		//Possible options for "child_options" are:
+		$beforeNode = 0;
+		$underNode = 1;
+		$underNodeAtStart = 2;	//N.b. this option is not supported by position pickers using Organizer Select, but supported by ze\menuAdm::addContentItems() when saving
+		$isExistingNode = 3;	//N.b. this option is not supported by position pickers nor the ze\menuAdm::addContentItems() function. It's used only by posToPathArray() when displaying the position of an existing node.
+	
+		$menuPos = explode('_', $menuPos);
+		if (count($menuPos) == 3) {
+			$newSectionId = (int) $menuPos[0];
+			$newParentId = (int) $menuPos[1];
+			$childOption = (int) $menuPos[2];
+			
+			//The "before node" option is in a format we can't use.
+			//Convert the "before node" option to being specified by a parent ID instead.
+			//Also work out/note down whether this node is being created at the start, in the middle, or or at the end.
+			switch ($childOption) {
+				case $isExistingNode:
+				case $beforeNode:
+					$details = \ze\row::get('menu_nodes', ['ordinal', 'parent_id'], ['id' => $newParentId, 'section_id' => $newSectionId]);
+					$newParentId = $details['parent_id'];
+					$minOrdinal = \ze\row::min('menu_nodes', 'ordinal', ['parent_id' => $newParentId, 'section_id' => $newSectionId]);
+					
+					if ($details['ordinal'] == $minOrdinal) {
+						$firstItem = true;
+					}
+					
+					if (!$firstItem && $childOption == $isExistingNode) {
+						$maxOrdinal = \ze\row::max('menu_nodes', 'ordinal', ['parent_id' => $newParentId, 'section_id' => $newSectionId]);
+					
+						if ($details['ordinal'] == $maxOrdinal) {
+							$lastItem = true;
+						}
+					}
+					break;
+				case $underNode:
+					if (\ze\row::exists('menu_nodes', ['parent_id' => $newParentId, 'section_id' => $newSectionId])) {
+						$lastItem = true;
+					} else {
+						$firstItem = true;
+					}
+					break;
+				case $underNodeAtStart:
+					$firstItem = true;
+					break;
+			}
+			
+			//Except when creating a new top-level node, they'll be a parent id.
+			//Use this to call the pathArray() function as normal.
+			if ($newParentId) {
+				$output = \ze\menuAdm::pathArray($newParentId, $langId, $addHome = true);
+			
+			//When creating a top-level node there'll be no parent ID set.
+			//Create a menu path using just the prefix.
+			} else {
+				\ze\menuAdm::addPrefixToMenuPath($output, $newSectionId, $addHome = false);
+					//N.b. we're handling an edge case here.
+					//When creating a menu node in the main section at the top level, we don't want to show
+					//it as being created under the Homepage like we would normally, as that would cause some confusion.
+			}
+		}
+	}
+	
+	public static function countMenuPath($menuPath) {
+		//Check how long the menu path is
+		$level = count($menuPath);
+		
+		//...but don't count the prefix
+		if (empty($menuPath[0]['id'])) {
+			--$level;
+		}
+		
+		return $level;
+	}
+	
+	//Setup the HTML around the menu path preview field in a FAB
+	public static function setupPathPreview($menuPos, &$field, $langId = true) {
+		$menuPath = [];
+		$firstItem = false;
+		$lastItem = false;
+		\ze\menuAdm::posToPathArray($menuPath, $firstItem, $lastItem, $menuPos, $langId);
+		
+		$level = \ze\menuAdm::countMenuPath($menuPath) + 1;
+		
+		
+		$preHTML = '<div class="zfab_menuPathPreview">';
+		
+		foreach ($menuPath as $node) {
+			$preHTML .= '<span class="zfab_menuPathPreviewNode">'. htmlspecialchars($node['text']). '</span> ';
+		}
+		
+		$postHTML = ' <span class="zfab_menuPathPreviewMeta">';
+		if ($firstItem) {
+			$postHTML .= \ze\admin::phrase('[level [[level]], first item]', ['level' => $level]);
+		} elseif ($lastItem) {
+			$postHTML .= \ze\admin::phrase('[level [[level]], last item]', ['level' => $level]);
+		} else {
+			$postHTML .= \ze\admin::phrase('[level [[level]]]', ['level' => $level]);
+		}
+		
+		$postHTML .= '</div>';
+		
+		
+		$field['pre_field_html'] = $preHTML;
+		$field['post_field_html'] = $postHTML;
+	}
+	
+	//Return the menu path with a ntoe about what level it is at the end
+	public static function pathWithLevel($menuId, $langId = false, $separator = ' › ', $addHome = true) {
+		$menuPath = \ze\menuAdm::pathArray($menuId, $langId, $addHome);
+		$level = \ze\menuAdm::countMenuPath($menuPath);
+		
+		$menuText = [];
+		foreach ($menuPath as $node) {
+			$menuText[] = $node['text'];
+		}
+		
+		return implode($separator, $menuText). ' '. \ze\admin::phrase('[level [[level]]]', ['level' => $level]);
+	}
 
 
-	//Formerly "getMenuItemLevel()"
 	public static function level($mID) {
 		$sql = "
 			SELECT IFNULL(MAX(separation), 0) + 1
@@ -151,7 +349,6 @@ class menuAdm {
 		}
 	}
 
-	//Formerly "saveMenuDetails()"
 	public static function save($submission, $menuId = false, $resyncIfNeeded = true, $skipSectionChecks = false) {
 		$newMenu = false;
 		$recalc = false;
@@ -296,7 +493,6 @@ class menuAdm {
 		return $menuId;
 	}
 
-	//Formerly "saveMenuText()"
 	public static function saveText($menuId, $languageId, $submission, $neverCreate = false) {
 
 		$textExists = \ze\row::get('menu_text', ['name'], ['menu_id' => $menuId, 'language_id' => $languageId]);
@@ -354,12 +550,10 @@ class menuAdm {
 		}
 	}
 
-	//Formerly "removeMenuText()"
 	public static function removeText($menuId, $languageId) {
 		\ze\row::delete('menu_text', ['language_id' => $languageId, 'menu_id' => $menuId]);
 	}
 
-	//Formerly "addContentItemsToMenu()"
 	public static function addContentItems($tagIds, $menuTarget, $afterNeighbour = 0) {
 		
 		//First step, work out where we're putting these menu nodes.
@@ -497,7 +691,6 @@ class menuAdm {
 		return $menuIds;
 	}
 
-	//Formerly "moveMenuNode()"
 	public static function moveMenuNode($ids, $newSectionId, $newParentId, $newNeighbourId, $afterNeighbour = 0, $languageId = false) {
 		$numMoves = 0;
 		$idsList = '';
@@ -656,7 +849,6 @@ class menuAdm {
 
 
 	//Delete a Menu Item and all of its children
-	//Formerly "deleteMenuNode()"
 	public static function delete($id, $firstCall = true) {
 		if (!$id) {
 			return;
@@ -685,7 +877,6 @@ class menuAdm {
 		}
 	}
 
-	//Formerly "ensureContentItemHasPrimaryMenuItem()"
 	public static function ensureContentItemHasPrimaryNode($equivId, $cType) {
 		$sql = "
 			UPDATE ". DB_PREFIX. "menu_nodes SET
@@ -697,7 +888,6 @@ class menuAdm {
 		\ze\sql::update($sql);
 	}
 
-	//Formerly "addNewMenuItemToMenuHierarchy()"
 	public static function addNewNodeToHierarchy($sectionId, $menuId, $parentId = false) {
 
 		$sql = "
@@ -745,7 +935,6 @@ class menuAdm {
 		}
 	}
 
-	//Formerly "recalcAllMenuHierarchy()"
 	public static function recalcAllHierarchy() {
 		$sql = "
 			TRUNCATE TABLE ". DB_PREFIX. "menu_hierarchy";
@@ -763,7 +952,6 @@ class menuAdm {
 	}
 
 
-	//Formerly "recalcMenuHierarchy()"
 	public static function recalcHierarchy($sectionId) {
 		\ze\row::delete('menu_hierarchy', ['section_id' => $sectionId]);
 		\ze\row::delete('menu_positions', ['section_id' => $sectionId, 'menu_id' => ['!' => 0]]);
@@ -852,7 +1040,6 @@ class menuAdm {
 	}
 
 
-	//Formerly "recalcMenuPositionsTopLevel()"
 	public static function recalcTopLevelPositions() {
 	
 		//First, do some tidying up.

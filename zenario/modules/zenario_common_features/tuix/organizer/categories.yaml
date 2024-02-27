@@ -162,13 +162,13 @@ zenario__library:
                         confirm:
                             message: |
                                 Are you sure you wish to delete the category "[[name]]"?
-                                
+                            
                                 Any sub-categories of this category will be deleted and all associations with content item will be removed, but no content items will be deleted.
                             multiple_select_message: |
                                 Are you sure you wish to delete these categories?
-                                
+                            
                                 Any sub-categories will also be deleted and all associations with content will be removed.
-                                
+                            
                                 No content items will be deleted.
                             button_message: Delete
                             cancel_button_message: Cancel

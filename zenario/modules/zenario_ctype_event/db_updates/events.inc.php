@@ -80,4 +80,15 @@ _sql
 	ADD COLUMN `online` tinyint(1) NOT NULL default 0
 _sql
 
+); ze\dbAdm::revision(53
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ADD COLUMN `event_timezone` enum('default_timezone', 'other_timezone') NOT NULL default 'default_timezone'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event`
+	ADD COLUMN `event_other_timezone` varchar(50) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
+_sql
+
 );

@@ -35,9 +35,9 @@ class zenario_meta_data extends ze\moduleBaseClass {
 	
 	public function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = ((bool) ze::setting('enable_display_categories_on_content_lists') && (bool) $this->setting('show_categories')), $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = ((bool) $this->setting('show_categories')), $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->showInMenuMode();
 		
@@ -65,10 +65,15 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		}
 		if ($this->setting('show_published_date') && $this->setting('published_date_format')){
 			$pDates = ze\row::get('content_item_versions', ['published_datetime'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
-			if ($publishedDate = ze\date::format($pDates['published_datetime'], $this->setting('published_date_format'))) {
-				$this->mergeFields['Published_date'] = ['value' => $publishedDate, 'html_tag' => $this->setting('published_date_html_tag'), 'label' => $this->phrase('Published date'), 'class' => 'published_date'];
-				$this->showSections['show_published_date'] = true;
+			
+			if ($pDates['published_datetime']) {
+				$publishedDate = ze\date::format($pDates['published_datetime'], $this->setting('published_date_format'));
+			} else {
+				$publishedDate = $this->phrase('[ Will display date when published ]');
 			}
+			
+			$this->mergeFields['Published_date'] = ['value' => $publishedDate, 'html_tag' => $this->setting('published_date_html_tag'), 'label' => $this->phrase('Published date'), 'class' => 'published_date'];
+			$this->showSections['show_published_date'] = true;
 		}
 		if ($this->setting('show_writer_name')) {
 			if ($writerId = ze\row::get('content_item_versions', 'writer_id', ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion])){
@@ -90,7 +95,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					}
 
 					if ($this->setting('show_writer_profile')) {
-						$this->mergeFields['Writer_profile'] = ['value' => $writerArray['profile'], 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
+						$this->mergeFields['Writer_profile'] = ['value' => htmlspecialchars($writerArray['profile']), 'html_tag' => $this->setting('writer_profile_label_html_tag'), 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
 						$this->showSections['show_writer_profile'] = true;
 					}
 				
@@ -112,6 +117,13 @@ class zenario_meta_data extends ze\moduleBaseClass {
 							ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
 							if ($url) {
 								$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
+								
+								//If in admin mode, add a specific CSS class to images
+								//to let the admin access the "Crop and zoom" feature.
+								if (ze::isAdmin()) {
+									$this->mergeFields['Writer_image']['class'] .= ' zenario_image_properties zenario_image_id__'. $file['id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
+								}
+								
 								$this->showSections['show_writer_image'] = true;
 							}
 						}
@@ -207,12 +219,14 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$this->showSections['show_title'] = true;
 			}
 		}
+		
 		if ($this->setting('show_description')){
 			if (!empty($description = htmlspecialchars(ze::$pageDesc))) {
 				$this->mergeFields['Description'] = ['value' => $description, 'html_tag' => $this->setting('description_html_tag'), 'label' => $this->phrase('Page description'), 'class' => 'page_description'];
 				$this->showSections['show_description'] = true;
 			}
 		}
+		
 		if ($this->setting('show_summary')){
 			$row = ze\row::get('content_item_versions', ['content_summary'], ['id'=>$this->cID, 'version' => $this->cVersion, 'type' => $this->cType]);
 			if (!empty($row['content_summary'])) {
@@ -220,37 +234,39 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$this->showSections['show_summary'] = true;
 			}
 		}	
+		
 		if ($this->setting('show_keywords')){
 			if (!empty($keywords = htmlspecialchars(ze::$pageKeywords))) {
 				$this->mergeFields['Keywords'] = ['value' => $keywords, 'html_tag' => $this->setting('keywords_html_tag'), 'label' => $this->phrase('Keywords'), 'class' => 'keywords'];
 				$this->showSections['show_keywords'] = true;
 			}
 		}	
-		if ($this->setting('show_language')){
-			if ($this->mergeFields['Language'] = ['value' => htmlspecialchars(ze::$langId), 'html_tag' => $this->setting('language_html_tag'), 'label' => $this->phrase('Language code'), 'class' => 'language_code']){
-				$this->showSections['show_language'] = true;
-			}
-		}	
 		
-		if ($this->setting('show_language_name')) {
-			$this->mergeFields['Language_name'] = ['value' => ze\lang::localName(), 'html_tag' => $this->setting('language_name_html_tag'), 'label' => $this->phrase('Language'), 'class' => 'language'];
-			$this->showSections['show_language_name'] = true;
+		if ($this->setting('show_language')) {
+			if ($this->setting('show_language_iso_code')){
+				if ($this->mergeFields['Language_iso_code'] = ['value' => htmlspecialchars(ze::$langId), 'html_tag' => $this->setting('language_html_tag'), 'label' => $this->phrase('Language code'), 'class' => 'language_code']){
+					$this->showSections['show_language_iso_code'] = true;
+				}
+			}	
+		
+			if ($this->setting('show_language_name')) {
+				$this->mergeFields['Language_name'] = ['value' => ze\lang::localName(), 'html_tag' => $this->setting('language_name_html_tag'), 'label' => $this->phrase('Language'), 'class' => 'language'];
+				$this->showSections['show_language_name'] = true;
+			}
 		}
 		
-		if (ze::setting('enable_display_categories_on_content_lists')
-		 && $this->setting('show_categories')
+		if ($this->setting('show_categories')
 		 && ($itemCats = ze\category::contentItemCategories($this->cID, $this->cType, true))
 		 && (!empty($itemCats))) {
 			$this->showSections['show_categories'] = true;
 			$this->showSections['categories'] = [];
 			
 			$c = -1;
-			$categoryLandingPagesEnabled = ze::setting('enable_category_landing_pages');
 			foreach ($itemCats as $cat) {
 				++$c;
 				$section = ['Category' => htmlspecialchars($cat['public_name'])];
-
-				if ($categoryLandingPagesEnabled && $cat['landing_page_equiv_id'] && $cat['landing_page_content_type']) {
+				
+				if ($cat['landing_page_equiv_id'] && $cat['landing_page_content_type']) {
 					$section['Category_landing_page'] = ze\link::toItem($cat['landing_page_equiv_id'], $cat['landing_page_content_type']);
 				}
 				
@@ -291,18 +307,18 @@ class zenario_meta_data extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
-				if (!$categoriesEnabled) {
-					$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//categories~.site_settings~tcategories~k{\"id\"%3A\"categories\"}' target='_blank'>site settings</a>";
-					
-					$fields['first_tab/show_categories']['side_note'] = ze\admin::phrase(
-						'You must enable this option in your [[site_settings_link]] under "Categories".',
-						['site_settings_link' => $siteSettingsLink]
-					);
-					
-					$fields['first_tab/show_categories']['disabled'] = true;
-					$values['first_tab/show_categories'] = false;
-				}
+				$shortDateFormat = ze::setting('vis_date_format_short');
+				$mediumDateFormat = ze::setting('vis_date_format_med');
+				$longDateFormat = ze::setting('vis_date_format_long');
+				
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/date_format']['values']['_SHORT']['label'], $shortDateFormat);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/date_format']['values']['_MEDIUM']['label'], $mediumDateFormat);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/date_format']['values']['_LONG']['label'], $longDateFormat, false);
+				
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/published_date_format']['values']['_SHORT']['label'], $shortDateFormat);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/published_date_format']['values']['_MEDIUM']['label'], $mediumDateFormat);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/published_date_format']['values']['_LONG']['label'], $longDateFormat, false);
+				
 
 				break;
 		}
@@ -356,7 +372,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					'show_categories',
 					'show_keywords',
 					'show_language_name',
-					'show_language',
+					'show_language_iso_code',
 					'show_writer_name',
 					'show_writer_image',
 					'show_writer_email',
@@ -372,8 +388,10 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					if ($values['first_tab/' . $field] == "1") {
 						$niceName = ucwords(str_replace('_', ' ', str_replace('show_', '', $field)));
 						
-						if($niceName == 'Categories') {
+						if ($niceName == 'Categories') {
 							$niceName = 'Public Categories';
+						} elseif ($niceName == 'Date') {
+							$niceName = 'Release date';
 						}
 						
 						$fieldsWithNiceNames[$field] = $niceName;
@@ -418,5 +436,16 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					= $fields['order_tab/reorder_fields']['value'] = implode(",", array_keys($fields['order_tab/reorder_fields']['values']));
 				break;
 		}
-	}	
+	}
+	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		switch ($path) {
+			case 'plugin_settings':
+				if ($values['first_tab/show_language'] && !$values['first_tab/show_language_name'] && !$values['first_tab/show_language_iso_code']) {
+					$fields['first_tab/show_language_name']['error'] = $fields['first_tab/show_language_iso_code']['error'] = 
+						ze\admin::phrase('Please select at least one language option to display.');
+				}
+			break;
+		}
+	}
 }

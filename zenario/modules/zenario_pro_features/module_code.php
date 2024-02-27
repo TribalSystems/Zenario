@@ -330,35 +330,31 @@ class zenario_pro_features extends zenario_common_features {
 		
 		if (ze::post('getBottomLeftInfo')) {
 			
-			//Note: this AJAX request used to return info about optimisation settings in positions 0 and 1.
-			//We're since removed this info, but I don't want to re-adjust the other indices,
-			//so I'm leaving positions 0 and 1 empty for now.
-			echo '~~';
-			
 			//Get the current server time
 			if (ze\server::isWindows() || !ze\server::execEnabled()) {
-				echo date('H~i~s');
+				echo date('H-i-s');
 		
 			} else {
-				echo trim(exec('date +"%H~%M~%S"'));
+				echo trim(exec('date +"%H-%M-%S"'));
 		
 				//Check if the scheduled task manager is running
 				if (!ze\module::inc('zenario_scheduled_task_manager')) {
-					echo '~~', ze\admin::phrase('The Scheduled Tasks Manager module is not running.');
+					echo '--', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager module is not running.'));
+					echo '-', ze\escape::hyp('zenario__modules/panels/modules~-zenario_scheduled_task_manager');
 					return;
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
-					echo '~jobs_not_running~', ze\admin::phrase('The Scheduled Tasks Manager module is running, but the master switch is Off and so tasks are not being run.');
+					echo '-jobs_not_running-', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager module is running, but the master switch is Off and so tasks are not being run.'));
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
-					echo '~jobs_not_running~', ze\admin::phrase('The Scheduled Tasks Manager module is running, but not correctly configured in the crontab.');
+					echo '-jobs_not_running-', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager module is running, but not correctly configured in the crontab.'));
 		
 				} else {
-					echo '~jobs_running~', ze\admin::phrase('The Scheduled Tasks Manager is running');
+					echo '-jobs_running-', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager is running'));
 				}
 		
 				if (ze\priv::check('_PRIV_VIEW_SCHEDULED_TASK')) {
-					echo '~zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
+					echo '-', ze\escape::hyp('zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks');
 				}
 			}
 		

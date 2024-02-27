@@ -34,9 +34,9 @@ class zenario_google_map extends ze\moduleBaseClass {
 	
 	public function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		$apiKey = ze::setting('google_maps_api_key');
 		if ($apiKey) {

@@ -125,7 +125,7 @@ site_settings:
                     style: 'width: 50px;'
                     slider:
                         range: min
-                        min: 2
+                        min: 0
                         max: 4
                         before_field: true
                     validation:
@@ -148,19 +148,24 @@ site_settings:
                     site_setting:
                         name: min_extranet_user_password_length
                     type: text
-                    note_below: |
-                        Length must be between 8 and 32 characters. We recommend 10 or longer.
                     style: "width:50px;"
                     slider:
                         range: min
-                        min: 8
+                        min: 0
                         max: 32
                         before_field: true
                     validation:
                         numeric: true
-                    note_below: Length must be between 8 and 32 characters.
                     # The <br /> tags above are required, as Extranet Base module adds its own field
                     # with pre- and post-field HTML, which blends with the snippet above.
+                user_password_creation_info:
+                    grouping: password_requirements
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                When setting a user password, Zenario will only accept a password if it is greater or equal to the minimum length and passes the selected score.
+                                <br />The password generator will create a password of this length and which passes the selected score.
+                            </div>
         activation_email_template:
             label: "Emails"
             edit_mode:

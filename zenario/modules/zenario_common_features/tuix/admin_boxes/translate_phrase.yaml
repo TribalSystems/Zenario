@@ -25,8 +25,8 @@ zenario_translate_phrase:
                 code:
                     hidden: true
                     label: 'Code:'
-                    type: textarea
-                    readonly: true
+                    type: text
+                    show_as_a_span: true
                     rows: 2
                 
                 left_column:

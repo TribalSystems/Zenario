@@ -32,7 +32,7 @@ switch ($path) {
 	case 'zenario_email_template':
 		
 		$href = 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
-		$mrg = ['standard_email_template_link' => '<a href="' . htmlspecialchars($href) . '" target="_blank">View the standard header and footer</a>'];
+		$mrg = ['standard_email_template_link' => 'View the <a href="' . htmlspecialchars($href) . '" target="_blank">standard email template</a>.'];
 		ze\lang::applyMergeFields(
 			$fields['meta_data/use_standard_email_template']['note_below'],
 			$mrg);
@@ -90,7 +90,7 @@ switch ($path) {
 			}
 			
 			$values['meta_data/body'] = $details['body'];
-			$values['advanced/head'] = $details['head'];
+			$values['meta_data/apply_css_rules'] = $details['apply_css_rules'];
 			
 			$values['data_deletion/period_to_delete_log_headers'] = $details['period_to_delete_log_headers'];
 			if ($details['period_to_delete_log_content']) {
@@ -135,12 +135,10 @@ switch ($path) {
 		$styleFormats = ze\site::description('email_style_formats');
 		if (!empty($styleFormats)) {
 			//If custom email styles exist, load them and add them to the toolbar.
-			//Please note: by default, the full featured editor DOES NOT have the styleselect dropdown.
+			//Please note: by default, the full featured editor DOES NOT have the styles dropdown.
 			
 			$fields['meta_data/body']['editor_options']['style_formats'] = 
 			$fields['preview/body']['editor_options']['style_formats'] = $styleFormats;
-			$fields['meta_data/body']['editor_options']['toolbar'] =
-				'undo redo | formatselect | styleselect | fontsizeselect | bold italic underline | image link unlink | bullist numlist | forecolor backcolor | charmap emoticons';
 		}
 		
 		//Set current admin's email as test send address
@@ -177,6 +175,10 @@ switch ($path) {
 		if (isset($fields['meta_data/test_send_button']) && !ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 			$fields['meta_data/test_send_button']['disabled'] = true;
 		}
+		
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
+		$linkEnd = "</a>";
+		ze\lang::applyMergeFields($fields['meta_data/apply_css_rules']['post_field_html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 		
 		break;
 		

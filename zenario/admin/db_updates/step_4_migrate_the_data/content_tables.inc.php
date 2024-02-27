@@ -33,6 +33,25 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
+//A couple of functions for use with the instances returned from ze\module::getModuleInstancesAndPluginSettings()
+function setPluginSetting($instance, $name, $value) {
+	ze\row::set('plugin_settings', ['value' => $value], [
+		'instance_id' => $instance['instance_id'],
+		'egg_id' => $instance['egg_id'],
+		'name' => $name]
+	);
+}
+
+function deletePluginSetting($instance, $name) {
+	ze\row::delete('plugin_settings', [
+		'instance_id' => $instance['instance_id'],
+		'egg_id' => $instance['egg_id'],
+		'name' => $name]
+	);
+}
+
+
+
 
 //Some old updates. Not currently needed but I'm just keeping the code
 //here so I can easily find it if I ever need to re-issue them again.
@@ -104,40 +123,6 @@ if (ze\dbAdm::needRevision(31200)) {
 	
 	ze\dbAdm::revision(31200);
 }
-
-//Attempt to clear the cache/frameworks directory
-if (ze\dbAdm::needRevision(36380)) {
-	if (is_dir(CMS_ROOT. 'cache/frameworks')
-	 && !ze\server::isWindows()
-	 && ze\server::execEnabled()) {
-		exec('rm -r '. escapeshellarg(CMS_ROOT. 'cache/frameworks'));
-		ze\cache::cleanDirs();
-	}
-	
-	ze\dbAdm::revision(36380);
-}
-
-//Delete any cached frameworks, as the format has changed slightly in this version
-if (ze\dbAdm::needRevision(45600)) {
-	
-	\ze\skinAdm::clearCacheDir();
-	
-	ze\dbAdm::revision(45600);
-}
-
-//In 8.6 we've added the cache/scans/ and cache/stop_flags/ directories,
-//call the cleanDirs() function to try and ensure that they're created properly
-if (ze\dbAdm::needRevision(50420)) {
-	
-	if (\ze::$dbL
-	 && \ze::$dbL->con
-	 && is_dir(CMS_ROOT. 'cache/tuix')
-	 && !is_dir(CMS_ROOT. 'cache/stop_flags')) {
-		ze\cache::cleanDirs(true);
-	}
-	
-	ze\dbAdm::revision(50420);
-}
 */
 
 
@@ -165,7 +150,6 @@ if (ze\dbAdm::needRevision(52205)) {
 	
 	$module = 'zenario_multiple_image_container';
 	if (ze\module::isRunning($module)) {
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 
 		$imageIds = [];
 		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
@@ -406,7 +390,6 @@ if (ze\dbAdm::needRevision(52205)) {
 if (ze\dbAdm::needRevision(52219)) {
 	$module = 'assetwolf_2';
 	if (ze\module::isRunning($module)) {
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
 		
 		foreach ($instances as $instance) {
@@ -874,7 +857,6 @@ if (ze\dbAdm::needRevision(55152)) {
 if (ze\dbAdm::needRevision(55153)) {
 	$module = 'assetwolf_2_schematics_2';
 	if (ze\module::isRunning($module)) {
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
 		
 		foreach ($instances as $instance) {
@@ -895,7 +877,6 @@ if (ze\dbAdm::needRevision(55601)) {
 	$modules = ['zenario_html_snippet', 'zenario_twig_snippet'];
 	foreach ($modules as $module) {
 		if (ze\module::isRunning($module)) {
-			$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 			$instances = ze\module::getModuleInstancesAndPluginSettings($module);
 			
 			foreach ($instances as $instance) {
@@ -912,7 +893,6 @@ if (ze\dbAdm::needRevision(55601)) {
 if (ze\dbAdm::needRevision(56251)) {
 	$module = 'zenario_location_map_and_listing_2';
 	if (ze\module::isRunning($module)) {
-		$moduleId = ze\row::get('modules', 'id', ['class_name' => $module]);
 		$instances = ze\module::getModuleInstancesAndPluginSettings($module);
 		
 		foreach ($instances as $instance) {
@@ -1156,21 +1136,6 @@ if (ze\dbAdm::needRevision(57710)) {
 	ze\dbAdm::revision(57710);
 }
 
-
-
-//The format of cached plugins has changed in 9.5.
-//Attempt to clear out the cache/pages directory to avoid accidentally loading the previous format
-if (ze\dbAdm::needRevision(57775)) {
-	if (is_dir(CMS_ROOT. 'cache/pages')
-	 && !ze\server::isWindows()
-	 && ze\server::execEnabled()) {
-		exec('rm -r '. escapeshellarg(CMS_ROOT. 'cache/pages'));
-	}
-	ze\cache::cleanDirs(true);
-	
-	ze\dbAdm::revision(57775);
-}
-
 //In 9.5, the Maximum location image file size setting was updated
 //from a field that only accepts bytes to a shorter field with a unit selector.
 //Update the value to work correctly.
@@ -1261,11 +1226,199 @@ if (ze\dbAdm::needRevision(57983)) {
 	ze\dbAdm::revision(57983);
 }
 
+//Rename a couple of site settings in 9.6
+if (ze\dbAdm::needRevision(58710)) {
+	foreach ([
+		'css_wrappers' => 'bundle_skins',
+		'cache_css_js_wrappers' => 'cache_bundles'
+	] as $oldSettingName => $newSettingName) {
+		
+		$value = ze::setting($oldSettingName);
+		
+		if (!empty($value)) {
+			ze\site::setSetting($newSettingName, $value);
+		}
+		
+		ze\row::delete('site_settings', ['name' => $oldSettingName]);
+	}
+
+	ze\dbAdm::revision(58710);
+}
+
+//Update the plugin settings Twig Snippet with reset to the changes to the caching system
+if (ze\dbAdm::needRevision(58730)) {
+	
+	foreach (ze\module::getModuleInstancesAndPluginSettings('zenario_twig_snippet') as $instance) {
+		
+		if (!empty($instance['settings']['if_get_set'])
+		 && !empty($instance['settings']['if_post_set'])) {
+			setPluginSetting($instance, 'if_get_or_post_var_set', 1);
+		}
+		if (!empty($instance['settings']['if_session_set'])
+		 && !empty($instance['settings']['if_cookie_set'])) {
+			setPluginSetting($instance, 'if_session_var_or_cookie_set', 1);
+		}
+		
+		deletePluginSetting($instance, 'if_get_set');
+		deletePluginSetting($instance, 'if_post_set');
+		deletePluginSetting($instance, 'if_session_set');
+		deletePluginSetting($instance, 'if_cookie_set');
+		deletePluginSetting($instance, 'clear_by_file');
+	}
+
+	ze\dbAdm::revision(58730);
+}
+
+//We no longer want to encrypt the SMTP password in 9.6.
+//We've changed the flag on it so it would be automatically decrypted the next time it was
+//saved, but we don't want to wait for someone to manually open and save the FAB, so we'll
+//specifically do it now.
+if (ze\dbAdm::needRevision(58900)) {
+	
+	if ($value = ze::secretSetting('smtp_password')) {
+		ze\site::setSecretSetting('smtp_password', $value);
+	}
+
+	ze\dbAdm::revision(58900);
+}
+
+
+//In 9.6 we've split the cache/pages/ directory out into three different directories. The
+//existing directory for the page cache system, one for plugins, and the bundles directory for cached bundles.
+if (ze\dbAdm::needRevision(58920)) {
+	
+	//Clear out any files in the existing directories.
+	//Try to use rm to clear the directory first if possible, as that will be much quicker.
+	if (is_dir(CMS_ROOT. 'cache/pages')
+	 && !ze\server::isWindows()
+	 && ze\server::execEnabled()) {
+		exec('rm -r '. escapeshellarg(CMS_ROOT. 'cache/pages'));
+	}
+	ze\skinAdm::clearCacheDir();
+	
+	//Call the cleanDirs() function to make sure the new directories are created.
+	ze\cache::cleanDirs(true);
+	
+	
+	ze\dbAdm::revision(58920);
+}
+
+//In 9.6, we're removing an obsolete setting.
+if (ze\dbAdm::needRevision(58921)) {
+	
+	ze\row::delete('site_settings', ['name' => 'email_address_admin']);
+	
+	ze\dbAdm::revision(58921);
+}
+
+//In 9.6, we introduced a new panel: special images library.
+//All image-related settings in the "Logos and branding" admin box will now be displayed in the new panel.
+//Migrate previously selected settings.
+//Please note: the "Logos and branding" admin box already had logic to automatically save uploaded images to the correct pool,
+//but this logic should clean up images which were selected for a long time if needed.
+if (ze\dbAdm::needRevision(58922)) {
+	
+	$settingsToMigrate = ['favicon', 'mobile_icon', 'default_icon', 'zenario_logo', 'admin_link_custom_logo', 'custom_organizer_favicon'];
+	
+	foreach ($settingsToMigrate as $settingToMigrate) {
+		if (ze::in($settingToMigrate, 'zenario_logo', 'admin_link_custom_logo', 'custom_organizer_favicon')) {
+			if (
+				($settingToMigrate == 'custom_logo' && (ze::setting('brand_logo') != 'custom'))
+				|| ($settingToMigrate == 'admin_link_custom_logo' && (ze::setting('admin_link_logo') != 'custom'))
+				|| ($settingToMigrate == 'custom_organizer_favicon' && (ze::setting('organizer_favicon') != 'custom'))
+			) {
+				continue;
+			}
+		}
+		
+		$selectedImage = ze::setting($settingToMigrate);
+		
+		if ($selectedImage) {
+			$file = ze\row::get('files', ['filename', 'usage'], $selectedImage);
+		
+			if (!empty($file) && $file['usage'] != 'site_setting') {
+				$newFileId = ze\file::copyInDatabase('site_setting', $selectedImage, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+				
+				ze\site::setSetting($settingToMigrate, $newFileId);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(58922);
+}
+
+//In 9.6, we removed 2 site settings for categories.
+if (ze\dbAdm::needRevision(59050)) {
+	ze\row::delete('site_settings', ['name' => 'enable_display_categories_on_content_lists']);
+	ze\row::delete('site_settings', ['name' => 'enable_category_landing_pages']);
+	
+	ze\dbAdm::revision(59050);
+}
+
+//Replace the cookie phrase codes with site settings where necessary.
+//In cases where these were hardcoded messages, remove the visitor phrases.
+if (ze\dbAdm::needRevision(59060)) {
+	$defaultLang = ze::$defaultLang;
+	
+	//These phrases were editable. Migrate if needed.
+	$phrasesToOverride = [
+		'_COOKIE_BOX1_01_IMPLIED_MSG' => 'cookie_box1_01_implied_msg',
+		'_COOKIE_BOX1_02_CONTINUE_BTN' => 'cookie_box1_02_continue_btn',
+		'_COOKIE_BOX1_03_COOKIE_CONSENT_MSG' => 'cookie_box1_03_cookie_consent_msg',
+		'_COOKIE_BOX1_04_MANAGE_BTN' => 'cookie_box1_04_manage_btn',
+		'_COOKIE_BOX1_05_ACCEPT_BTN' => 'cookie_box1_05_accept_btn',
+		'_COOKIE_BOX2_01_INTRO_MSG' => 'cookie_box2_01_intro_msg',
+		'_COOKIE_BOX2_02_ACCEPT_ALL_BTN' => 'cookie_box2_02_accept_all_btn',
+		'_COOKIE_BOX2_11_SAVE_PREFERENCES_BTN' => 'cookie_box2_11_save_preferences_btn'
+	];
+	
+	foreach ($phrasesToOverride as $phraseCode => $siteSettingName) {
+		if ($value = ze\row::get('visitor_phrases', 'local_text', ['module_class_name' => 'zenario_common_features', 'language_id' => $defaultLang, 'code' => $phraseCode])) {
+			ze\site::setSetting($siteSettingName, $value);
+		}
+	}
+	
+	//These phrases were hardcoded. Remove them...
+	$phrasesToDelete = [
+		'_COOKIE_BOX2_03_NECESSARY_HEADER_1',
+		'_COOKIE_BOX2_04_NECESSARY_MSG_1',
+		'_COOKIE_BOX2_05_FUNCT_HEADER_2',
+		'_COOKIE_BOX2_06_FUNCT_MSG_2',
+		'_COOKIE_BOX2_07_ANALYTICS_HEADER_3',
+		'_COOKIE_BOX2_08_ANALYTICS_MSG_3',
+		'_COOKIE_BOX2_09_SOC_MEDIA_HEADER_4',
+		'_COOKIE_BOX2_10_SOC_MEDIA_MSG_4'
+	];
+	
+	//... and also remove the editable phrases from before.
+	$allPhrasesToDelete = array_merge($phrasesToDelete, array_keys($phrasesToOverride));
+	
+	$sql = "
+		DELETE FROM " . DB_PREFIX . "visitor_phrases
+		WHERE module_class_name = 'zenario_common_features'
+		AND code IN (" . ze\escape::in($allPhrasesToDelete) . ")";
+	ze\sql::update($sql);
+	
+	ze\dbAdm::revision(59060);
+}
+
+//Update the metadata stored in the layout_slot_link table, as we have added another column to track more info
+if (ze\dbAdm::needRevision(59330)) {
+	
+	foreach (ze\row::getAssocs('layouts', ['layout_id', 'json_data']) as $layout) {
+		if (!empty($layout['json_data'])) {
+			ze\gridAdm::updateMetaInfoInDB($layout['json_data'], $layout['layout_id']);
+		}
+	}
+	
+	ze\dbAdm::revision(59330);
+}
+
 
 
 //Check for missing @media print { ... } rules in skin stylesheets.
 //Please note: this was backpatched from 9.6 to 9.5, however is safe to run multiple times.
-if (ze\dbAdm::needRevision(58564)) {
+if (ze\dbAdm::needRevision(59600)) {
 	
 	
 	$printFiles = [];
@@ -1302,6 +1455,18 @@ if (ze\dbAdm::needRevision(58564)) {
 		exit;
 	}
 	
-	ze\dbAdm::revision(58564);
+	ze\dbAdm::revision(59600);
 }
 
+//In 9.6, we modified the Image library "Where used" column to also include the Standard email template.
+//Scan the existing value for images.
+if (ze\dbAdm::needRevision(59601)) {
+	$files = [];
+	$htmlChanged = false;
+	$value = ze::setting('standard_email_template');
+	ze\contentAdm::syncInlineFileLinks($files, $value, $htmlChanged);
+	$key = ['foreign_key_to' => 'standard_email_template', 'foreign_key_id' => 1, 'foreign_key_char' => ''];
+	ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
+	
+	ze\dbAdm::revision(59601);
+}

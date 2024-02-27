@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="19px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-news-articles">
+        <g>
+            <g>
+                <path d="M9.279,7.225L13.918,5.019C13.918,5.019 13.539,-0.001 9.279,-0.001C5.019,-0.001 4.717,5.02 4.717,5.02L9.279,7.225Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+            <g>
+                <path d="M9.201,20L2.161,16.053L2.154,15.986L0.909,4.415L9.204,8.601L18.274,4.182L16.167,16.286L9.201,20ZM2.405,15.891L9.204,19.703L15.931,16.116L17.929,4.64L9.201,8.892L1.219,4.864L2.405,15.891Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+            <g>
+                <ellipse cx="1.864" cy="10.952" rx="1.864" ry="1.902" style="fill:white;"/>
+            </g>
+            <g>
+                <ellipse cx="16.923" cy="10.952" rx="1.863" ry="1.902" style="fill:white;"/>
+            </g>
+            <g transform="matrix(1,-0.0051,0.0051,1,-0.0721,0.0459)">
+                <rect x="8.713" y="8.563" width="0.411" height="11.066" style="fill:white;"/>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,117 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_slideshow
+    tabs:
+        cycle2:
+            visible_if: |
+                zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
+            label: jQuery Cycle
+            fields:
+                use_timeout:
+                    plugin_setting:
+                        name: use_timeout
+                    label: 'Auto-advance slides'
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                timeout:
+                    plugin_setting:
+                        name: timeout
+                    visible_if:
+                        lib.value: use_timeout
+                    indent: 1
+                    label: 'Display duration:'
+                    type: text
+                    slider:
+                        min: 0
+                        max: 20000
+                        step: 500
+                        range: min
+                        before_field: true
+                    validation:
+                        required_if_not_hidden: Please enter a display duration.
+                        numeric: The display duration must be a number.
+                    value: 4000
+                    style: |
+                        width: 4em;
+                    post_field_html: ms
+                pause:
+                    plugin_setting:
+                        name: pause
+                    visible_if:
+                        lib.value: use_timeout
+                    indent: 1
+                    label: 'Hover to pause'
+                    type: checkbox
+                    value: ""
+                    side_note: Hovering over a slide pauses the slideshow.
+                
+                next_prev_buttons_loop:
+                    plugin_setting:
+                        name: next_prev_buttons_loop
+                    label: 'Loop slides'
+                    type: checkbox
+                    value: 1
+                    side_note: After the last slide, show the first one.
+                
+                use_tab_hover:
+                    plugin_setting:
+                        name: use_tab_hover
+                    label: 'Hover to change'
+                    type: checkbox
+                    value: 1
+                    side_note: |
+                        Hovering over a tab changes to that tab's slide.
+                        Only applies with Frameworks with Tabs.
+                use_tab_clicks:
+                    plugin_setting:
+                        name: use_tab_clicks
+                    label: 'Click to change'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Clicking on a tab changes to that tab's slide.
+                        Only applies with Frameworks with Tabs.
+                
+                
+                
+                fx:
+                    plugin_setting:
+                        name: cycle2_fx
+                    label: 'Effect for Transitions:'
+                    type: select
+                    values:
+                        none:
+                            label: None
+                        fade:
+                            label: Fade
+                        fadeout:
+                            label: Fadeout
+                        scrollHorz:
+                            label: Scroll (Horizontal)
+                    value: fade
+                sync:
+                    plugin_setting:
+                        name: cycle2_sync
+                    label: 'Hide/show effects happen simultaneously'
+                    type: checkbox
+                    value: 1
+                speed:
+                    plugin_setting:
+                        name: cycle2_speed
+                    label: 'Animation duration:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an animation duration.
+                        numeric: The animation duration must be a number.
+                    value: 1000
+                    slider:
+                        min: 0
+                        max: 5000
+                        step: 50
+                        range: min
+                        before_field: true
+                    style: |
+                        width: 4em;
+                    post_field_html: ms

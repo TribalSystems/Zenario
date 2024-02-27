@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (thus is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -109,7 +109,7 @@ methods.open = function(path, key, tab, values, callBack, createAnotherObject, r
 	thus.previewPost =
 	thus.previewSlotWidth = false;
 	thus.previewSlotWidthInfo = '';
-	thus.previewHidden = true;
+	thus.showPreview = false;
 	
 	thus.baseCSSClass = 'zenario_fbAdmin zenario_admin_box zenario_fab_' + path;
 	
@@ -142,6 +142,27 @@ methods.updateHash = function() {
 methods.initFields = function() {
 	thus.hasPreviewWindow = !!thus.pluginPreviewDetails();
 	methodsOf(zenarioAF).initFields.call(thus);
+};
+
+
+methods.togglePeeking = function() {
+	if ($('body').hasClass('zenario_fabIsPeeking')) {
+		thus.stopPeeking();
+	} else {
+		thus.startPeeking();
+	}
+};
+
+methods.startPeeking = function() {
+	$('body').addClass('zenario_fabIsPeeking');
+	zenario.enableScrolling(thus.globalName);
+	zenario.enableScrolling('AdminFloatingBox')
+};
+
+methods.stopPeeking = function() {
+	$('body').removeClass('zenario_fabIsPeeking');
+	zenario.disableScrolling(thus.globalName);
+	zenario.disableScrolling('AdminFloatingBox')
 };
 
 
@@ -328,6 +349,10 @@ methods.close = function(keepMessageWindowOpen) {
 	
 	thus.isOpen = false;
 	thus.closeBox();
+	
+	//Remove the "zenario_fabIsPeeking" class from the browser body if someone closes the FAB
+	//directly from "peek" mode
+	$('body').removeClass('zenario_fabIsPeeking');
 	
 	//Allow the page behind to scroll again
 	zenario.enableScrolling(thus.globalName);
@@ -779,19 +804,21 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 
 
 //Attempt to get the URL of a preview
-methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotName, instanceId) {
+methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotName, instanceId, eggId) {
 	
-	//Disallow for plugins in nests
-	if (thus.tuix && thus.tuix.key && (thus.tuix.key.nest || thus.tuix.key.eggId)) {
-		return false;
-	}
+	//This previously wasn't implemented for nested plugins
+	//if (thus.tuix && thus.tuix.key && (thus.tuix.key.nest || thus.tuix.key.eggId)) {
+	//	return false;
+	//}
 	
 	
 	var details = {
 			post: {}
 		},
 		requests = _.clone(zenarioA.importantGetRequests),
-		includeSlotInfo = !fullPage;
+		includeSlotInfo = !fullPage,
+		tuix = thus.tuix || {},
+		key = tuix.key || {};
 	
 	switch (thus.path) {
 		case 'zenario_skin_editor':
@@ -818,9 +845,10 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 			return false;
 	}
 	
-	slotName = slotName || (thus.tuix && thus.tuix.key && thus.tuix.key.slotName);
-	instanceId = instanceId || (thus.tuix && thus.tuix.key && thus.tuix.key.instanceId)
+	slotName = slotName || key.slotName;
+	instanceId = instanceId || key.instanceId
 							|| (zenario.slots && zenario.slots[slotName] && zenario.slots[slotName].instanceId);
+	eggId = eggId || key.eggId;
 	
 	if (slotName && zenario_conductor.enabled(slotName)) {
 		requests = zenario_conductor.request(slotName, 'refresh', requests);
@@ -833,7 +861,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 			return false;
 		}
 	
-		var grid = zenarioA.getGridSlotDetails(slotName),
+		var grid = zenarioA.getGridSlotDetails(slotName, eggId),
 			c, clas,
 			cssClasses = (grid && grid.cssClass && grid.cssClass.split(' ')) || [];
 	
@@ -843,7 +871,7 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 		requests.grid_container = grid.container;
 	
 		//Remember the width of the slot. Don't resize the preview window to be any bigger than this.
-		thus.previewSlotWidth = grid.pxWidth;
+		thus.previewSlotWidth = Math.ceil(grid.pxWidth);
 		//Also remember the full description of the width
 		thus.previewSlotWidthInfo = grid.widthInfo;
 	
@@ -877,6 +905,9 @@ methods.pluginPreviewDetails = function(loadValues, fullPage, fullWidth, slotNam
 	if (instanceId) {
 		requests.instanceId = instanceId;
 	}
+	if (eggId) {
+		requests.eggId = eggId;
+	}
 	
 	details.url = zenario.linkToItem(zenario.cID, zenario.cType, requests);
 	
@@ -901,7 +932,7 @@ methods.fieldChange = function(id, lov) {
 
 //This function updates the preview, after a short delay to stop lots of spam updates happening all at once
 methods.updatePreview = function(delay) {
-	if (thus.hasPreviewWindow && !thus.previewHidden) {
+	if (thus.hasPreviewWindow && thus.showPreview) {
 		zenario.actAfterDelayIfNotSuperseded('fabUpdatePreview', function() {
 	
 			//Get the values of the plugin settings on this FAB
@@ -966,10 +997,12 @@ methods.showPreviewViaPost = function(preview, iframeName) {
 	).appendTo('body').hide().submit().remove();
 };
 
-methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
+methods.showPreviewInPopoutBox = function(fullPage) {
 	
 	var href,
 		onComplete,
+		options,
+		fullWidth = true,
 		preview = thus.pluginPreviewDetails(true, fullPage, fullWidth);
 	
 	if (!preview) {
@@ -991,17 +1024,24 @@ methods.showPreviewInPopoutBox = function(fullPage, fullWidth) {
 		};
 	}
 	
-	$.colorbox({
-		width: '95%',
-		height: '90%',
+	options = {
+		width: '99%',
+		height: '98%',
 		iframe: true,
 		preloading: false,
 		open: true,
-		title: thus.previewSlotWidthInfo || phrase.preview,
 		className: 'zenario_admin_cb zenario_plugin_preview_popout_box',
 		href: href,
 		onComplete: onComplete
-	});
+	};
+	
+	if (fullPage
+	 && thus.tuix
+	 && thus.tuix.key.isSlideshow) {
+		options.title = phrase.dockNoJS;
+	}
+	
+	$.colorbox(options);
 	$('#colorbox,#cboxOverlay,#cboxWrapper').css('z-index', '333000');
 };
 
@@ -1144,7 +1184,7 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 	
 	} else if (flags.reload_organizer && isOrganizer) {
 		thus.close();
-		zenarioA.toastOrNoToast(flags);
+		zenarioA.manageToastOnReload(flags, true);
 	
 		zenarioT.uploading = false;
 		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
@@ -1159,7 +1199,7 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 	//Go somewhere
 	} else if (flags.go_to_url) {
 		thus.close();
-		zenarioA.toastOrNoToast(flags);
+		zenarioA.manageToastOnReload(flags);
 		zenario.goToURL(zenario.addBasePath(flags.go_to_url), true);
 	
 	} else if (flags.valid) {
@@ -1214,8 +1254,8 @@ methods.showConfirm = function(saveAndContinue, createAnother, saveAndNext) {
 		}
 		
 		var buttons =
-			'<input type="button" class="submit_selected" value="' + thus.tuix.confirm.button_message + '" onclick="' + thus.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ', ' + engToBoolean(saveAndNext) + ');"/>' +
-			'<input type="button" class="submit" value="' + (thus.tuix.confirm.cancel_button_message || zenarioA.phrase.cancel) + '"/>';
+			'<input type="button" class="zenario_submit_button selected" value="' + thus.tuix.confirm.button_message + '" onclick="' + thus.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ', ' + engToBoolean(saveAndNext) + ');"/>' +
+			'<input type="button" class="zenario_gp_button" value="' + (thus.tuix.confirm.cancel_button_message || zenarioA.phrase.cancel) + '"/>';
 		
 		zenarioA.floatingBox(message, buttons, thus.tuix.confirm.message_type || 'none');
 	}

@@ -56,18 +56,15 @@ class content {
 
 
 	//Write the URLBasePath, and other related JavaScript variables, to the page
-	//Formerly "CMSWritePageHead()"
 	public static function pageHead($prefix, $mode = false, $includeOrganizer = false, $overrideFrameworkAndCSS = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "CMSWritePageBody()"
 	public static function pageBody($extraClassNames = '', $attributes = '', $showSitewideBodySlot = false, $includeAdminToolbar = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 	//Write the URLBasePath, and other related JavaScript variables, to the page
-	//Formerly "CMSWritePageFoot()"
 	public static function pageFoot($prefix, $mode = false, $includeOrganizer = true, $includeAdminToolbar = true, $defer = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -76,16 +73,33 @@ class content {
 
 
 
-	public static function getContentTypes($contentType = false, $onlyCreatable = false) {
-	
-		$key = [];
-		if ($contentType) {
-			$key['content_type_id'] = $contentType;
+	public static function getContentTypes($onlyRunning, $onlyCreatable) {
+		
+		$sql = "
+			SELECT content_type_id, content_type_name_en, content_type_plural_en, tooltip_text, default_layout_id
+			FROM ". DB_PREFIX. "content_types AS ct";
+		
+		if ($onlyRunning) {
+			$sql .= "
+			INNER JOIN ". DB_PREFIX. "modules AS m
+			   ON m.id = ct.module_id
+			  AND m.status IN ('module_running', 'module_is_abstract')";
 		}
+		
 		if ($onlyCreatable) {
-			$key['is_creatable'] = true;
+			$sql .= "
+			WHERE ct.is_creatable = 1";
 		}
-		return \ze\row::getAssocs('content_types', ['content_type_id', 'content_type_name_en', 'default_layout_id'], $key, 'content_type_id');
+		
+		$sql .= "
+			ORDER BY
+				ct.content_type_id != 'html',
+				ct.content_type_id != 'news',
+				ct.content_type_id != 'blog',
+				ct.content_type_id != 'document',
+				ct.content_type_name_en";
+		
+		return \ze\sql::fetchAssocs($sql, 'content_type_id');
 	}
 
 	public static function getContentTypeName($cType, $plural = false) {
@@ -121,7 +135,6 @@ class content {
 		}
 	}
 
-	//Formerly "contentVersion()"
 	public static function version($cID, $cType) {
 		return \ze\row::get('content_items', \ze\priv::check()? 'admin_version' : 'visitor_version', ['id' => $cID, 'type' => $cType]);
 	}
@@ -139,6 +152,7 @@ class content {
 	
 		return $statusOrCID == 'first_draft'
 			|| $statusOrCID == 'published_with_draft'
+			|| $statusOrCID == 'unlisted_with_draft'
 			|| $statusOrCID == 'hidden_with_draft'
 			|| $statusOrCID == 'trashed_with_draft';
 	}
@@ -155,14 +169,31 @@ class content {
 		}
 	
 		return $statusOrCID == 'published'
-			|| $statusOrCID == 'published_with_draft';
+			|| $statusOrCID == 'unlisted'
+			|| $statusOrCID == 'published_with_draft'
+			|| $statusOrCID == 'unlisted_with_draft';
+	}
+
+	public static function isUnlisted($statusOrCID, $cType = false, $cVersion = false) {
+	
+		if (is_numeric($statusOrCID) && $cType) {
+			if (!($content = \ze\row::get('content_items', ['visitor_version', 'status'], ['id' => $statusOrCID, 'type' => $cType]))
+			 || ($cVersion && $cVersion != $content['visitor_version'])) {
+				return false;
+			}
+		
+			$statusOrCID = $content['status'];
+		}
+	
+		return $statusOrCID == 'unlisted'
+			|| $statusOrCID == 'unlisted_with_draft';
 	}
 
 	//Automatically generate SQL to search through Content, for example for a content list
 	//A bit of a techy function so we've included the full code here, so you can see exactly what it does
 	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false) {
-
-
+		$adminMode = \ze::isAdmin();
+		
 		$sql = "
 			FROM ". DB_PREFIX. "content_item_versions AS v
 			INNER JOIN ". DB_PREFIX. "content_items AS c
@@ -171,14 +202,15 @@ class content {
 			INNER JOIN ". DB_PREFIX. "translation_chains AS tc
 			   ON c.equiv_id = tc.equiv_id
 			  AND c.type = tc.type";
-	
-		if (\ze\priv::check()) {
+		
+		if ($adminMode) {
 			$sql .= "
 			  AND v.version = c.admin_version
 			  AND c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft','published')";
 		} else {
 			$sql .= "
-			  AND v.version = c.visitor_version";
+			  AND v.version = c.visitor_version
+			  AND c.status IN ('published_with_draft','published')";
 		}
 	
 		$sql .= "
@@ -188,7 +220,7 @@ class content {
 		$userId = \ze\user::id();
 	
 		//Filter by whether the current viewer can see each item
-		if (\ze\priv::check()) {
+		if ($adminMode) {
 			//Show Admins everything, even including private drafts
 			$sql .= "
 			WHERE TRUE";
@@ -344,7 +376,7 @@ class content {
 							  AND status NOT IN ('trashed', 'deleted')";
 						} else {
 							$sql .= "
-							  AND status IN ('published_with_draft', 'published')";
+							  AND status IN ('published_with_draft', 'unlisted_with_draft', 'published', 'unlisted')";
 						}
 					}
 			
@@ -372,7 +404,7 @@ class content {
 	
 		$result = \ze\row::query(
 			'content_items',
-			['id', 'type', 'language_id', 'equiv_id', 'status'],
+			['id', 'type', 'equiv_id', 'language_id', 'alias', 'status'],
 			['equiv_id' => $equivId, 'type' => $cType],
 			'language_id');
 	
@@ -464,14 +496,12 @@ class content {
 	}
 	
 	const langIdFromTwig = true;
-	//Formerly "getContentLang()"
 	public static function langId($cID, $cType = false) {
 		return \ze\row::get('content_items', 'language_id', ['id' => $cID, 'type' => ($cType ?: 'html')]);
 	}
 
 	//Try to work out what content item is being accessed
 	//n.b. \ze\link::toItem() and \ze\content::resolveFromRequest() are essentially opposites of each other...
-	//Formerly "resolveContentItemFromRequest()"
 	public static function resolveFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL, &$reqLangId, $get, $request, $post) {
 		$aliasInURL = '';
 		$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $hierarchicalAliasInURL = false;
@@ -671,7 +701,7 @@ class content {
 						  AND status NOT IN ('trashed', 'deleted')";
 					} else {
 						$sql .= "
-						  AND status IN ('published_with_draft', 'published')";
+						  AND status IN ('published_with_draft', 'unlisted_with_draft', 'published', 'unlisted')";
 					}
 			
 					$sql .= "
@@ -768,7 +798,7 @@ class content {
 					  AND c.status NOT IN ('trashed', 'deleted')";
 				} else {
 					$sql .= "
-					  AND c.status IN ('published_with_draft', 'published')";
+					  AND c.status IN ('published_with_draft', 'unlisted_with_draft', 'published', 'unlisted')";
 				}
 			
 				$sql .= "
@@ -853,7 +883,6 @@ class content {
 
 	//Gets the correct version of a Content Item to show someone, or false if the do not have any access.
 	//(Works exactly like \ze\content::checkPerm() above, except it will return a version number.)
-	//Formerly "getShowableVersion()"
 	public static function showableVersion($cID, $cType = 'html', $adminMode = null, $adminsSee400Errors = false, $adminsSeeHiddenPages = true) {
 		$content = $chain = false;
 		return \ze\content::checkPermAndGetShowableContent($content, $chain, $cID, $cType, $requestVersion = false, $adminMode, $adminsSee400Errors, $adminsSeeHiddenPages);
@@ -1168,6 +1197,7 @@ class content {
 			$version['version'] == $content['admin_version'] && (
 				$content['status'] == 'first_draft'
 			 || $content['status'] == 'published_with_draft'
+			 || $content['status'] == 'unlisted_with_draft'
 			 || $content['status'] == 'hidden_with_draft'
 			 || $content['status'] == 'trashed_with_draft');
 	
@@ -1251,7 +1281,6 @@ class content {
 	}
 	
 	
-	//Formerly "templateSkinId()"
 	public static function layoutSkinId($template, $fallback = false) {
 	
 		if (!is_array($template)) {
@@ -1268,62 +1297,106 @@ class content {
 		}
 		return false;
 	}
-	
-
-	//Formerly "contentItemAlias()"
-	public static function alias($cID, $cType) {
-		return \ze\row::get('content_items', 'alias', ['id' => $cID, 'type' => $cType]);
-	}
-
-	//Formerly "contentItemTemplateId()"
-	public static function layoutId($cID, $cType, $cVersion = false) {
-	
-		if ($cVersion === false) {
-			$cVersion = \ze\content::latestVersion($cID, $cType);
-		}
-	
-		return \ze\row::get('content_item_versions', 'layout_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-	}
 
 
-	//Formerly "getLatestContentID()"
 	public static function latestId($cType) {
 		return (int) \ze\row::max('content_items', 'id', ['type' => $cType]);
 	}
 
-	//Formerly "getPublishedVersion()"
 	public static function publishedVersion($cID, $cType) {
 		return \ze\row::get('content_items', 'visitor_version', ['id' => $cID, 'type' => $cType]);
 	}
 
-	//Formerly "getLatestVersion()"
 	public static function latestVersion($cID, $cType) {
 		return \ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
 	}
 
-	//Formerly "getAppropriateVersion()"
 	public static function appropriateVersion($cID, $cType) {
 		return \ze\row::get('content_items', \ze\priv::check()? 'admin_version' : 'visitor_version', ['id' => $cID, 'type' => $cType]);
 	}
-
-
-	//Formerly "getItemTitle()"
-	public static function title($cID, $cType, $cVersion = false) {
 	
-		if (!$cVersion) {
+	private static function varsAreCurrentItem(&$cID, &$cType) {
+		if (!$cID && !$cType) {
+			$cID = \ze::$cID;
+			$cType = \ze::$cType;
+		}
+		
+		return \ze::$cID && $cID == \ze::$cID && $cType == \ze::$cType;
+	}
+	private static function varsAreCurrentVersion(&$cID, &$cType, &$cVersion) {
+		if (!$cID && !$cType) {
+			$cID = \ze::$cID;
+			$cType = \ze::$cType;
+			
+			if (!$cVersion) {
+				$cVersion = \ze::$cVersion;
+			}
+		
+		} elseif (!$cVersion) {
 			$cVersion = \ze\content::latestVersion($cID, $cType);
 		}
+		
+		return \ze::$cID && $cID == \ze::$cID && $cType == \ze::$cType && $cVersion == \ze::$cVersion;
+	}
 	
-		if ($cID == \ze::$cID && $cType == \ze::$cType && $cVersion == \ze::$cVersion) {
+	
+	
+	
+
+	const aliasFromTwig = true;
+	public static function alias($cID = false, $cType = false) {
+		if (\ze\content::varsAreCurrentItem($cID, $cType)) {
+			return \ze::$alias;
+		} else {
+			return \ze\row::get('content_items', 'alias', ['id' => $cID, 'type' => $cType]);
+		}
+	}
+
+	const statusFromTwig = true;
+	public static function status($cID = false, $cType = false) {
+		if (\ze\content::varsAreCurrentItem($cID, $cType)) {
+			return \ze::$status;
+		} else {
+			return \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
+		}
+	}
+
+	const menuNodeIdFromTwig = true;
+	public static function menuNodeId($cID = false, $cType = false) {
+		\ze\content::varsAreCurrentItem($cID, $cType);
+		$equivId = \ze\content::equivId($cID, $cType);
+		return \ze\menu::getIdFromContentItem($cID, $cType);
+	}
+
+	public static function layoutId($cID = false, $cType = false, $cVersion = false) {
+		if (\ze\content::varsAreCurrentVersion($cID, $cType, $cVersion)) {
+			return \ze::$layoutId;
+		} else {
+			return \ze\row::get('content_item_versions', 'layout_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		}
+	}
+
+	const titleFromTwig = true;
+	public static function title($cID = false, $cType = false, $cVersion = false) {
+		if (\ze\content::varsAreCurrentVersion($cID, $cType, $cVersion)) {
 			return \ze::$pageTitle;
 		} else {
 			return \ze\row::get('content_item_versions', 'title', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		}
 	}
 
-	//Formerly "getItemDescription()"
-	public static function description($cID, $cType, $cVersion) {
-		return \ze\row::get('content_item_versions', 'description', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+	const descriptionFromTwig = true;
+	public static function description($cID = false, $cType = false, $cVersion = false) {
+		if (\ze\content::varsAreCurrentVersion($cID, $cType, $cVersion)) {
+			return \ze::$pageDesc;
+		} else {
+			return \ze\row::get('content_item_versions', 'description', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		}
+	}
+
+	const menuTextFromTwig = true;
+	public static function menuText() {
+		return \ze::$menuTitle;
 	}
 
 	public static function formatTagFromTagId($tagId, $neverAddLanguage = false) {
@@ -1394,14 +1467,8 @@ class content {
 
 
 
-	//Formerly "getContentStatus()"
-	public static function status($cID, $cType) {
-		return \ze\row::get('content_items', 'status', ['id' => $cID, 'type' => $cType]);
-	}
 
 
-
-	//Formerly "getSearchtermParts()"
 	public static function searchtermParts($searchString, $allowMultilingualChars = true) {
 		//Remove everything from the search terms except for word characters, single quotes (which can be part of words) and double quotes
 		//Attempt to validate allowing UTF-8 characters through
@@ -1491,7 +1558,6 @@ class content {
 
 	//	Layouts  //
 
-	//Formerly "getTemplateDetails()"
 	public static function layoutDetails($layoutId, $showUsage = true, $checkIfDefault = false) {
 		$sql = "
 			SELECT
@@ -1681,22 +1747,18 @@ class content {
 	
 	//	Skins  //
 
-	//Formerly "getSkinFromId()"
 	public static function skinDetails($skinId) {
 		return \ze\row::get('skins', ['id', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['id' => $skinId]);
 	}
 
-	//Formerly "getSkinFromName()"
 	public static function skinName($familyName, $skinName) {
 		return \ze\row::get('skins', ['id', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['name' => $skinName]);
 	}
 
-	//Formerly "getSkinPath()"
 	public static function skinPath($skinName = false) {
 		return 'zenario_custom/skins/'. ($skinName ?: \ze::$skinName). '/';
 	}
 
-	//Formerly "getSkinPathURL()"
 	public static function skinURL($skinName = false) {
 		return 'zenario_custom/skins/'. rawurlencode(($skinName ?: \ze::$skinName)). '/';
 	}

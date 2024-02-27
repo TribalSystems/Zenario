@@ -188,7 +188,7 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap,
 	left: 50%;
 	bottom:auto;
 	transform: translate(-50%, -50%);
-	width: 100%;
+	width: 96%;
 	max-width:860px;
 	margin:auto;
 	padding:30px;
@@ -236,8 +236,13 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons .zenario_cc_mana
 	padding:0;
 }
 
+body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap {
+	display:flex;
+}
+
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form {
 	padding:30px;
+	background:#efefef;
 }
 
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap h1 {
@@ -258,9 +263,24 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cc_buttons .zenario_cc_mana
 	padding-bottom:5px;
 }
 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_consent_image {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text {
-	padding:20px 30px 15px;
+	padding:30px 30px 15px;
 	border-bottom:1px solid #ccc;
+}
+
+body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text {
+	width:52%;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text p {
+	padding-top:1em;
 }
 
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie {
@@ -529,6 +549,100 @@ body.no_js input.jquery_datepicker {
 
 .title_green {
 	color:#24ae2d;
+}
+
+/*  Set a sensible size for tooltip text by default  */
+/* Some rules have !important added to them to try and prevent these styles from being overwritten by anything targeting Admin Tooltips  */
+
+.zenario_visitor_tooltip {
+	font-size: 11px !important;
+	line-height:14px;
+	padding:6px 8px !important;
+	background:#323232 !important;
+	color:#fff !important;
+	border:0 !important;
+	 -webkit-box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+	box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.2);
+	-webkit-border-radius: 5px !important;
+	border-radius: 5px !important;
+	text-align:center;
+	font-family:Arial, Helvetica, sans-serif !important;
+	opacity:1;
+	max-width:130px !important;
+}
+
+.zenario_visitor_tooltip.ui-widget-shadow {
+	opacity:1 !important;
+}
+
+.zenario_visitor_tooltip.tooltip_top_center {
+	margin-top:5px;
+}
+
+.zenario_visitor_tooltip.tooltip_bottom_center {
+	margin-bottom:5px;
+}
+
+.zenario_visitor_tooltip.tooltip_center_left {
+	margin-left:5px;
+}
+
+.zenario_visitor_tooltip.tooltip_center_right {
+	margin-right:5px;
+}
+
+.zenario_visitor_tooltip.tooltip_top_center:after,
+.zenario_visitor_tooltip.tooltip_bottom_center:after,
+.zenario_visitor_tooltip.tooltip_center_left:after,
+.zenario_visitor_tooltip.tooltip_center_right:after { 
+	border: solid transparent; 
+	content: " "; 
+	height: 0; 
+	width: 0; 
+	position: absolute; 
+	pointer-events: none; 
+} 
+
+.zenario_visitor_tooltip.tooltip_top_center:after { 
+	bottom: 100%; 
+}
+
+.zenario_visitor_tooltip.tooltip_bottom_center:after {
+	top: 100%;
+}
+
+.zenario_visitor_tooltip.tooltip_center_left:after {
+	right: 100%;
+}
+
+.zenario_visitor_tooltip.tooltip_center_right:after {
+	left: 100%;
+}
+
+.zenario_visitor_tooltip.tooltip_top_center:after,
+.zenario_visitor_tooltip.tooltip_bottom_center:after,
+.zenario_visitor_tooltip.tooltip_center_left:after,
+.zenario_visitor_tooltip.tooltip_center_right:after { 
+	border-color: rgba(51, 51, 51, 0); 
+	border-width: 5px; 
+	left: 50%; 
+	margin-left: -5px; 
+}
+
+.zenario_visitor_tooltip.tooltip_top_center:after { 
+	border-bottom-color: #323232;
+}
+
+.zenario_visitor_tooltip.tooltip_bottom_center:after {
+	border-top-color: #323232;
+}
+
+.zenario_visitor_tooltip.tooltip_center_left:after {
+	border-right-color: #323232;
+}
+
+.zenario_visitor_tooltip.tooltip_center_right:after {
+	border-left-color: #323232;
 }
 
 /*

@@ -65,7 +65,6 @@ body.ff .zenario_user_forms .field_radios input[type=radio] + label:before {
 }
 
 .zenario_user_forms .field_radios input[type=radio] + label:before {
-	-moz-border-radius:50%;
 	-webkit-border-radius:50%;
 	border-radius:50%;
 }
@@ -623,6 +622,7 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 
 .zenario_user_forms.form_popup .user_form {
 	height:580px;
+	overflow-y:auto;
 	padding:10px 20px 20px;
 	-webkit-box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
 	box-shadow:0 12px 25px 8px rgba(0,0,0,0.17);
@@ -674,8 +674,6 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 	border-top-right-radius: 4px;
 	border-bottom-right-radius: 4px;
 	cursor:pointer;
-	
-	text-indent:-999;
 	font-size:0;
 	line-height:0;
 }
@@ -710,41 +708,13 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 	height:100px;
 }
 
-.zenario_user_forms.form_popup .form_field.mandatory input[type="text"], 
-.zenario_user_forms.form_popup .form_field.mandatory input[type="password"], 
-.zenario_user_forms.form_popup .form_field.mandatory input[type="email"], 
-.zenario_user_forms.form_popup .form_field.mandatory textarea, 
-.zenario_user_forms.form_popup .form_field.mandatory select {
-	box-shadow: none;
-}
-
-.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"],
-.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"],
-.zenario_user_forms.form_popup .user_form .form_field.has_error textarea {
-  	box-shadow:inset 0px 0px 0 1px #C10516;
-}
-
-.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"],
-.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"],
-.zenario_user_forms.form_popup .user_form .form_field.has_error textarea,
-.zenario_user_forms.form_popup .user_form .form_field.has_error.field_checkbox label {
-	background:#fff url('../images/icon-error-space.png') no-repeat right 8px;
-}
-
-.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="text"]:focus,
-.zenario_user_forms.form_popup .user_form .form_field.has_error input[type="email"]:focus,
-.zenario_user_forms.form_popup .user_form .form_field.has_error textarea:focus {
-	border-color:#B4B4B4;
-	background:#fff;
-  	box-shadow:         none;
-}
-
 .zenario_user_forms.form_popup .user_form .form_field.has_error .form_error {
-	display:none;
+	font-size:0.8em;
 }
 
 .zenario_user_forms.form_popup .user_form .form_buttons {
 	text-align:center;
+	padding-bottom:20px;
 }
 
 .zenario_user_forms.form_popup .user_form .form_buttons input[type="button"] {
@@ -758,7 +728,6 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 .zenario_user_forms.form_popup.hide .form_wrapper {
     -webkit-transition: all 0.8s ease-in;
     -moz-transition: all 0.8s ease-in;
-    -o-transition: all 0.8s ease-in;
     transition: all 0.8s ease-in;
 }
 
@@ -766,7 +735,6 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 	bottom:580px;
     -webkit-transition: all 0.8s ease-in;
     -moz-transition: all 0.8s ease-in;
-    -o-transition: all 0.8s ease-in;
     transition: all 0.8s ease-in;
 }
 
@@ -872,6 +840,149 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 	text-decoration:underline;
 }
 
+/* Document upload
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_user_forms .field_document_upload {
+	padding:0.5em 1em 1em;
+	background:#e7f6ff;
+}
+
+.zenario_user_forms .field_document_upload .files_preview {
+	padding-bottom:5px;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1:before {
+	content:"";
+	position:fixed;
+	z-index:99;
+	background:rgba(0,0,0,0.8);
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 {
+	position: fixed;
+	z-index:100;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    
+    width:calc(95% - 4em);
+    max-width:calc(740px - 4em);
+    padding:2em;
+    background:#FFF;
+    border:5px solid #00659b;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .files {
+	min-width:auto !important;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .files .file_row {
+	overflow:hidden;
+  	padding: 5px 8px;
+  	margin:2px;
+	background: #e7f6ff;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .files .file_row p {
+	float:left;
+	width:calc(100% - 30px);
+	margin-bottom:2px;
+	font-size: 0.9em;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .files .file_row span.delete {
+	float:right;
+	width:30px;
+	height:24px;
+	font-size:0;
+	text-align:right;
+	cursor:pointer;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .files .file_row span.delete:before {
+	font-family:"FontAwesome";
+	content:"\f1f8";
+	font-size:16px;
+  	transition:all 0.2s ease-in-out;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .files .file_row span.delete:hover:before {
+	color:#c83636;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .error {
+	padding-top:8px;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .content .error p,
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .footer .section_wrap .button {
+	font-size:0.875em;
+	margin-bottom: 5px;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .footer .section_wrap {
+	padding-top:1em;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .footer .section_wrap.save {
+	text-align:center;
+}
+
+.zenario_user_forms .field_document_upload input[type="button"].open_popup_1,
+.zenario_user_forms .field_document_upload input[type="button"].open_popup_1:hover,
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 .footer .section_wrap.save input.save {
+	background:#00659b;
+	color:#FFF;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close {
+	font-size:0;
+	line-height:0;
+	width:30px;
+	height:30px;
+	cursor:pointer;
+	position:absolute;
+	right:10px;
+	top:10px;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close:before, 
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close:after {
+  	position: absolute;
+  	left: 15px;
+  	content: ' ';
+  	height: 22px;
+  	width: 3px;
+  	background-color: #333;
+  	transition:all 0.2s ease-in-out;
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close:before {
+  	transform: rotate(45deg);
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close:after {
+  	transform: rotate(-45deg);
+}
+
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close:hover:before, 
+.zenario_user_forms .field_document_upload .overlay_1 .popup_1 span.close:hover:after {
+	background-color:#00659b;
+}
+
+/* Inline form  */
+
+.zenario_user_forms .user_form_click_here h3 {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1em;
+}
+
 /* Captcha */
 
 .form_field.captcha p > a {
@@ -885,16 +996,8 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 	width: auto;
     padding: 0;
     -webkit-border-radius: 0;
-    -moz-border-radius: 0;
     border-radius: 0;
     font-size: 1em;
     line-height: 1.3em;
     background:none;
-}
-
-/* modal window button  */
-
-.zenario_user_forms .user_form_click_here h3 {
-	font-family:'robotolight',Arial, Helvetica, sans-serif;
-	font-size:1em;
 }

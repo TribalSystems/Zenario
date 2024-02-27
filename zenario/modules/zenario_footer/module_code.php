@@ -34,9 +34,9 @@ class zenario_footer extends zenario_menu {
 	
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = true, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->sectionId				= $this->setting('menu_section');
 		$this->startFrom				= '_MENU_LEVEL_1';
@@ -55,8 +55,12 @@ class zenario_footer extends zenario_menu {
 		
 		return true;
 	}
-
+	
 	function showSlot() {
+		if (!$this->loadMenuMergeFields()) {
+			return;
+		}
+		
 		if ($this->setting('show_visitor_cookie_management_link') && ze::setting('cookie_require_consent') == 'explicit') {
 			$this->mergeFields['Visitor_cookie_management'] = true;
 			$this->mergeFields['Manage_cookies_phrase'] = ze\lang::phrase($this->setting('manage_cookies_phrase'));
@@ -64,8 +68,8 @@ class zenario_footer extends zenario_menu {
 		
 		$this->mergeFields['Separator_character_setting'] = $this->setting('separate_menu_nodes_with');
 		$this->mergeFields['Separator_character'] = $this->setting('separator_character');
-
-		parent::showSlot();
+		
+		$this->twigFramework($this->mergeFields);
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {

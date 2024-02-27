@@ -39,9 +39,9 @@ class zenario_language_picker extends ze\moduleBaseClass {
 	
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = $this->setting('destination') != 'home', $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = $this->setting('destination') != 'home', $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = true, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		
 		$useEquivs = $this->setting('destination') != 'home';

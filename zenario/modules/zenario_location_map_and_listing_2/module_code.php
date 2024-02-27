@@ -31,7 +31,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 	
 	protected $dataset;
 	protected $datasetFields;
+	protected $datasetCustomFields;
 	protected $fields;
+	protected $locationFilters;
 	protected $pageLoadNum;
 	
 	protected $data = [
@@ -79,7 +81,9 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			$allDatasetCustomFields = ze\datasetAdm::listCustomFields($dataset, false, false, true);
 			$frontEndDbColumns = [];
 			foreach (explode(',', $displayCustomDatasetFieldsOnTheFrontend) as $frontEndFieldId) {
-				$frontEndDbColumns[] = $allDatasetCustomFields[$frontEndFieldId]['db_column'];
+				if (isset($allDatasetCustomFields[$frontEndFieldId])) {
+					$frontEndDbColumns[] = $allDatasetCustomFields[$frontEndFieldId]['db_column'];
+				}
 			}
 			$this->data['display_custom_dataset_fields_on_the_frontend'] = $frontEndDbColumns;
 		}

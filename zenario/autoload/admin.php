@@ -31,7 +31,6 @@ namespace ze;
 class admin {
 
 
-	//Formerly "adminId()"
 	public static function id() {
 		if (\ze::isAdmin()) {
 			return $_SESSION['admin_userid'] ?? false;
@@ -40,10 +39,9 @@ class admin {
 		}
 	}
 
-	//Formerly "getAdminDetails()"
-	public static function details($admin_id) {
+	public static function details($adminId) {
 	
-		if ($details = \ze\row::get('admins', true, $admin_id)) {
+		if ($details = \ze\row::get('admins', true, $adminId)) {
 			//Old key/value format for backwards compatability with old code
 			foreach ($details as $key => $value) {
 				$details['admin_'. $key] = $value;
@@ -55,14 +53,12 @@ class admin {
 	}
 	
 
-	//Formerly "adminHasSpecificPerms()"
 	public static function hasSpecificPerms() {
 		return !empty($_SESSION['admin_permissions']) && ($_SESSION['admin_permissions'] == 'specific_areas');
 	}
 	
 
 	//Get the value of an admin's setting
-	//Formerly "adminSetting()"
 	public static function setting($settingName) {
 		if (!isset(\ze::$adminSettings[$settingName])) {
 			\ze::$adminSettings[$settingName] =
@@ -77,7 +73,6 @@ class admin {
 	}
 
 	//Change an admin's setting
-	//Formerly "setAdminSetting()"
 	public static function setSetting($settingName, $value) {
 	
 		if (!isset($_SESSION['admin_userid'])) {
@@ -129,7 +124,6 @@ class admin {
 	}
 	
 	const phraseFromTwig = true;
-	//Formerly "adminPhrase()", "getPhrase()"
 	public static function phrase($code, $replace = false, $moduleClass = false, $open = '[[', $close = ']]', $autoHTMLEscape = false) {
 	
 		if ($moduleClass) {
@@ -159,7 +153,6 @@ class admin {
 	}
 
 	const nPhraseFromTwig = true;
-	//Formerly "nAdminPhrase()"
 	public static function nPhrase($text, $pluralText = false, $n = 1, $replace = [], $zeroText = false) {
 	
 		if (!is_array($replace)) {
@@ -191,12 +184,10 @@ class admin {
 
 
 
-	//Formerly "CMSWritePageBodyAdminClass()"
 	public static function pageBodyAdminClass(&$class, &$toolbars) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "CMSWritePageBodyAdminToolbar()"
 	public static function pageBodyAdminToolbar(&$toolbars, $toolbarAttr = '') {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -207,7 +198,6 @@ class admin {
 
 
 
-	//Formerly "timeDiff()"
 	public static function timeDiff($a, $b, $lowerLimit = false) {
 		$sql = "
 			SELECT
@@ -248,7 +238,6 @@ class admin {
 
 
 	//Takes a row from an admin table, and returns the admin's name in the standard format
-	//Formerly "formatAdminName()"
 	public static function formatName($adminDetails = false) {
 	
 		if (!$adminDetails) {
@@ -259,10 +248,14 @@ class admin {
 			$adminDetails = \ze\row::get('admins', ['first_name', 'last_name', 'username', 'authtype'], $adminDetails);
 		}
 	
-		if ($adminDetails['authtype'] == 'super') {
-			return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ', multi-site)';
+		if (!empty($adminDetails)) {
+			if ($adminDetails['authtype'] == 'super') {
+				return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ', multi-site)';
+			} else {
+				return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ')';
+			}
 		} else {
-			return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ')';
+			return '';
 		}
 	}
 	
@@ -326,26 +319,10 @@ class admin {
 	//If the admin exists, then the details are returned even if the password was wrong.
 	//Also, if you're only after their details and not the password check, then you can
 	//set the password to false to avoid checking passwords.
-	//Formerly "checkPasswordAdmin()"
 	public static function checkPassword($adminUsernameOrEmail, &$details, $password, $checkViaEmail = false, $checkBoth = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	//Show a note explaining the password requirements
-	public static function displayPasswordRequirementsNoteAdmin($password) {
-		$passwordRequirements = \ze\user::getPasswordRequirements();
-		$passwordValidation = \ze\user::checkPasswordStrength($password);
-		
-		$html = '<p>' . \ze\admin::phrase('Minimum requirements:') . '</p><ul>';
-		$class = $passwordValidation['min_length'] ? 'pass' : 'fail';
-		$html .= '<li class="' . $class . '" id="min_length">' . \ze\admin::phrase('[[n]] characters long', ['n' => $passwordRequirements['min_length']]) . '</li>';
-
-		$html .= '</ul>';
-		
-		return $html;
-	}
-
-	//Formerly "cancelPasswordChange()"
 	public static function cancelPasswordChange($adminId) {
 	
 		$sql = "
@@ -357,7 +334,6 @@ class admin {
 
 	//Reset someone's password, returning the reset password
 	//A randomly generated string is used
-	//Formerly "resetPasswordAdmin()"
 	public static function resetPassword($adminId) {
 		$newPassword = \ze\ring::random();
 		\ze\adminAdm::setPassword($adminId, $newPassword, 1, true);
@@ -365,7 +341,6 @@ class admin {
 	}
 
 
-	//Formerly "adminLogoutOnclick()"
 	public static function logoutOnclick() {
 
 		if (!\ze::setting('site_enabled') && \ze\row::exists('languages', [])) {
@@ -385,7 +360,7 @@ class admin {
 				$logoutMsg,
 				'<input
 					type="button"
-					class="submit_selected"
+					class="zenario_submit_button"
 					value="'. \ze\admin::phrase('Logout'). '"
 					onclick="zenarioA.reloadPage(false, true, \'logout\');"
 				/>',
@@ -394,15 +369,14 @@ class admin {
 	}
 
 	//Write the JavaScript command needed to use the floating box above
-	//Formerly "floatingBoxJS()"
 	public static function floatingBoxJS($message, $buttons = false, $showWarning = false, $addCancelButton = false) {
 	
 		if (!$buttons) {
-			$buttons = '<input type="button" value="'. \ze\admin::phrase('_OK'). '" />';
+			$buttons = '<input type="button" class="zenario_submit_button" value="'. \ze\admin::phrase('_OK'). '" />';
 		}
 	
 		if ($addCancelButton) {
-			$buttons .= '<input type="button" value="'. \ze\admin::phrase('_CANCEL'). '" />';
+			$buttons .= '<input type="button" class="zenario_gp_button" value="'. \ze\admin::phrase('_CANCEL'). '" />';
 		}
 	
 		return 'zenarioA.floatingBox(\''. \ze\escape::jsOnClick($message). '\', \''. \ze\escape::jsOnClick($buttons). '\', '. ($showWarning ===  2 || $showWarning === 'error'? '2' : ($showWarning? '1' : '0')). ');';
@@ -413,20 +387,17 @@ class admin {
 
 
 
-	//Formerly "loadAdminPerms()"
 	public static function loadPerms($adminId) {
 		return \ze\ray::valuesToKeys(\ze\row::getValues('action_admin_link', 'action_name', ['admin_id' => $adminId]));
 	}
 
 	//Set an admin's session
-	//Formerly "setAdminSession()"
 	public static function setSession($adminIdL, $adminIdG = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 
 	//Log an Admin Out
-	//Formerly "unsetAdminSession()"
 	public static function unsetSession($destorySession = true) {
 	
 		unset(
@@ -464,7 +435,6 @@ class admin {
 
 
 
-	//Formerly "adminPermissionsForTranslators()"
 	public static function privsForTranslators() {
 		return [
 			'perm_author' => true,

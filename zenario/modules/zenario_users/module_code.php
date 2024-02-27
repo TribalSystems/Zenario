@@ -288,7 +288,7 @@ class zenario_users extends ze\moduleBaseClass {
 				SELECT u.id, u.screen_name, u.first_name, u.last_name, u.email, u.created_date
 				FROM '. DB_PREFIX. 'users AS u
 				WHERE status = "pending"
-				AND email_verified = 0
+				AND email_verified = "not_verified"
 				AND created_date < DATE_SUB(NOW(), INTERVAL '. (int) $interval. ' DAY)';
 			$result = ze\sql::select($sql);
 			$count = 0;

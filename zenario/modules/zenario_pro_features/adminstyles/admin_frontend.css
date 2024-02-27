@@ -191,12 +191,3 @@
 #zenario_fbAdminLangSwitcher div.ghost {
 	opacity: 0.3;
 }
-
-body.ie6 #zenario_fbAdminLangSwitcher div.ghost,
-body.ie7 #zenario_fbAdminLangSwitcher div.ghost {
-	filter: alpha(opacity=30);
-}
-
-body.ie8 #zenario_fbAdminLangSwitcher div.ghost {
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-}

@@ -224,29 +224,35 @@ if ((is_dir($dir = 'zenario/libs/manually_maintained/mit/jqueryui/')) && ($scan 
 		}
 	}
 }
-
-//Minify TinyMCE files
-minify(TINYMCE_DIR, 'tinymce', $level, '.js');
-minify(TINYMCE_DIR. 'themes/modern/', 'theme', $level, '.js');
-if ($scan = scandir(TINYMCE_DIR. 'plugins')) {
-	foreach ($scan as $module) {
-		if (substr($module, 0, 1) != '.' && is_dir($dir = TINYMCE_DIR. 'plugins/'. $module. '/')) {
-			minify($dir, 'plugin', $level, '.js');
+if ((is_dir($dir = 'zenario/libs/yarn/blueimp-file-upload/js/')) && ($scan = scandir($dir))) {
+	foreach ($scan as $file) {
+		if (substr($file, -3) == '.js'
+		 && substr($file, -7) != '.min.js') {
+			$file = substr($file, 0, -3);
+			minify($dir, $file, $level);
 		}
 	}
 }
+
+//Minify TinyMCE files
+//(This is needed as we also automatically apply a bugfix to a mistake in theor code during the minification!)
+minify('zenario/libs/yarn/tinymce/', 'tinymce', $level, '.js');
 
 
 //Minify some other jQuery extensions
 minify('zenario/libs/manually_maintained/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
 minify('zenario/libs/manually_maintained/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
 minify('zenario/libs/manually_maintained/mit/jquery.fix.clone/', 'jquery.fix.clone', $level, '.js');
+minify('zenario/libs/manually_maintained/mit/jsExpressionEval/', 'parser', $level, '.js');
 minify('zenario/libs/yarn/jquery-lazy/', 'jquery.lazy', $level, '.js');
 minify('zenario/libs/yarn/jquery-multiselect/', 'jquery-MultiSelect', $level, '.js');
 minify('zenario/libs/yarn/jquery-multiselect/', 'jquery-MultiSelect', $level, '.css');
+minify('zenario/libs/manually_maintained/mit/jqueryui/', 'jquery-ui', $level, '.css');
+
 
 //Minify colorbox
 minify('zenario/libs/manually_maintained/mit/colorbox/', 'jquery.colorbox', $level, '.js');
+minify('zenario/libs/manually_maintained/mit/colorbox/', 'colorbox', $level, '.css');
 
 //Minify Tokenizer
 minify('zenario/libs/manually_maintained/bsd/tokenize/', 'jquery.tokenize', $level, '.css');

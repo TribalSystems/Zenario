@@ -77,6 +77,18 @@ class plugin {
 		);
 	}
 	
+	public static function allowPluginPreview() {
+		
+		if (!\ze\priv::check('_PRIV_EDIT_DRAFT')) {
+			return false;
+		}
+		
+		$methodCall = $_REQUEST['method_call'] ?? '';
+		$fullPagePreview = $_REQUEST['_show_page_preview'] ?? false;
+		
+		return $fullPagePreview || $methodCall == 'showSingleSlot' || $methodCall == 'showIframe';
+	}
+	
 	public static function getSlotVarsFromRequest() {
 		
 		if (isset($_REQUEST['slotName'])) {
@@ -101,10 +113,10 @@ class plugin {
 			}
 		}
 		
-		if (($instanceId || $slotName) && !empty($_REQUEST['overrideSettings']) && \ze\priv::check('_PRIV_EDIT_DRAFT')) {
+		if (($instanceId || $slotName) && !empty($_REQUEST['overrideSettings']) && \ze\plugin::allowPluginPreview()) {
 			$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
 		}
-		if (!empty($_REQUEST['overrideFrameworkAndCSS']) && \ze\priv::check('_PRIV_EDIT_DRAFT')) {
+		if (!empty($_REQUEST['overrideFrameworkAndCSS']) && \ze\plugin::allowPluginPreview()) {
 			$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
 		}
 		
@@ -118,7 +130,7 @@ class plugin {
 		$layoutId, $singleSlot = false, $specificSlotName = false,
 		$specificInstanceId = false, $specificSlideId = false, $specificSlideNum = false, $specificState = false, $specificEggId = false,
 		$overrideSettings = false, $overrideFrameworkAndCSS = false, $isAjaxReload = false,
-		$runPlugins = true
+		$runPlugins = true, $runNestWhenRunningSpecificEgg = false
 	) {
 	
 		if ($layoutId === false) {
@@ -155,6 +167,7 @@ class plugin {
 				tsl.slot_name IS NOT NULL as `exists`,
 				tsl.is_header,
 				tsl.is_footer,
+				tsl.in_grid_break,
 				pi.level
 			FROM (
 				SELECT slot_name, module_id, instance_id, 2 AS level
@@ -262,7 +275,7 @@ class plugin {
 					if ($module = $modules[$moduleId] ?? $suspendedModules[$moduleId] ?? false) {
 						
 						$slot = new \ze\normalSlot(
-							$row['level'], $row['is_header'], $row['is_footer'],
+							$row['level'], $row['is_header'], $row['is_footer'], $row['in_grid_break'],
 							$isVersionControlled, $cID, $cType, $cVersion, $slotName,
 							$instanceId, $moduleId, $module
 						);
@@ -313,7 +326,7 @@ class plugin {
 			if ($moduleId == 0) {
 				//The "Opaque" option is used to hide plugins on the layout layer on specific pages.
 				$slots[$slotName] = true;
-				$slotContents[$slotName] = new \ze\opaqueSlot($row['level'], $row['is_header'], $row['is_footer'], $slotName);
+				$slotContents[$slotName] = new \ze\opaqueSlot($row['level'], $row['is_header'], $row['is_footer'], $row['in_grid_break'], $slotName);
 		
 			//Otherwise, if the instance is running, allow it to be added to the page
 			} elseif (!empty($modules[$moduleId])) {
@@ -336,8 +349,8 @@ class plugin {
 				if ($runPlugins) {
 					switch ($module['class_name']) {
 						case 'zenario_plugin_nest':
-							if ($specificInstanceId && $specificEggId) {
-								$loadPlugin = false;
+							if ($singleSlot && $specificInstanceId && $specificEggId) {
+								$loadPlugin = $runNestWhenRunningSpecificEgg;
 								$loadOneEgg =
 								$loadNestedThings = true;
 							} else {
@@ -358,7 +371,7 @@ class plugin {
 				if ($loadPlugin) {
 					$slots[$slotName] = true;
 					$slotContents[$slotName] = new \ze\normalSlot(
-						$row['level'], $row['is_header'], $row['is_footer'],
+						$row['level'], $row['is_header'], $row['is_footer'], $row['in_grid_break'],
 						$isVersionControlled, $cID, $cType, $cVersion, $slotName,
 						$instanceId, $moduleId, $module
 					);
@@ -523,10 +536,31 @@ class plugin {
 									'is_slide' => 1
 								]);
 							
+							
+							//In plugin previews for nested plugins, watch for the admin overriding the framework
+							//and CSS class names.
+							//(This step is done later for non-nested plugins, but we need to catch it here
+							// for nested ones.)
+							if ($overrideFrameworkAndCSS !== false
+							 && !empty($overrideFrameworkAndCSS['framework_tab/framework'])
+							 && $slotName == \ze::request('slotName') && $eggId == \ze::request('eggId')) {
+								$framework = $overrideFrameworkAndCSS['framework_tab/framework'];
+							} else {
+								$framework = $egg['framework'] ?: $eggModule['default_framework'];
+							}
+							
+							if ($overrideFrameworkAndCSS !== false
+							 && !empty($overrideFrameworkAndCSS['this_css_tab/css_class'])) {
+								$cssClass = $overrideFrameworkAndCSS['this_css_tab/css_class'];
+							} else {
+								$cssClass = $egg['css_class'];
+							}
+							
+							
 							$slots[$slotNameNestId] = true;
 							$slotContents[$slotNameNestId] = new nestedSlot(
 								$slotName, $slideId, $egg['slide_num'], $egg['ord'],
-								$egg['framework'] ?: $eggModule['default_framework'], $egg['css_class'], $egg['cols'], $egg['small_screens'],
+								$framework, $cssClass, $egg['cols'], $egg['small_screens'],
 								$eggId, $instanceId, $eggModuleId, $eggModule
 							);
 						}
@@ -541,7 +575,7 @@ class plugin {
 				
 				$slots[$slotName] = true;
 				$slotContents[$slotName] = new \ze\normalSlot(
-					$row['level'], $row['is_header'], $row['is_footer'],
+					$row['level'], $row['is_header'], $row['is_footer'], $row['in_grid_break'],
 					$isVersionControlled, $cID, $cType, $cVersion, $slotName,
 					$instanceId, $moduleId, $module
 				);
@@ -577,6 +611,10 @@ class plugin {
 						];
 					}
 					
+					if ($overrideSettings !== false && $slotName == \ze::request('slotName') && $eggId == \ze::request('eggId')) {
+						$thisSettings = $overrideSettings;
+					}
+					
 					$slotContents[$slotNameNestId]->setInstance(
 						$cID, $cType, $cVersion,
 						$slotName,
@@ -609,10 +647,10 @@ class plugin {
 						
 						} else {
 							$thisSettings = $thisFrameworkAndCSS = false;
-							if ($overrideSettings !== false && $slotName == \ze::request('slotName')) {
+							if ($overrideSettings !== false && $slotName == \ze::request('slotName') && empty($_REQUEST['eggId'])) {
 								$thisSettings = $overrideSettings;
 							}
-							if ($overrideFrameworkAndCSS !== false && $slotName == \ze::request('slotName')) {
+							if ($overrideFrameworkAndCSS !== false && $slotName == \ze::request('slotName') && empty($_REQUEST['eggId'])) {
 								$thisFrameworkAndCSS = $overrideFrameworkAndCSS;
 							}
 					
@@ -638,7 +676,6 @@ class plugin {
 
 
 
-	//Formerly "getVersionControlledPluginInstanceId()"
 	public static function vcId($cID, $cType, $cVersion, $slotName, $moduleId) {
 	
 	
@@ -691,80 +728,74 @@ class plugin {
 			$knownReq['I'] = \ze::$slotContents[$slotName]->instanceId();
 
 
-			$chDirAllRequests = zenarioPageCacheDir($allReq, 'plugin');
-			$chDirKnownRequests = zenarioPageCacheDir($knownReq, 'plugin');
+			$chDirAllRequests = zenarioPageCacheDir($allReq);
+			$chDirKnownRequests = zenarioPageCacheDir($knownReq);
 
 			//Loop through every possible combination of cache-flag
 			//(I've tried to order this by the most common settings first,
 			//to minimise the number of loops when we have a hit.)
 			for ($chS = 's';; $chS = \ze::$cacheEnv['s']) {
-				for ($chC = 'c';; $chC = \ze::$cacheEnv['c']) {
-					for ($chP = 'p';; $chP = \ze::$cacheEnv['p']) {
-						for ($chG = 'g';; $chG = \ze::$cacheEnv['g']) {
-							for ($chU = 'u';; $chU = \ze::$cacheEnv['u']) {
-					
-								//Plugins can opt out of caching if there are any unrecognised or
-								//unregistered $_GET requests.
-								//If this is the case, then we must insist that the $_GET requests
-								//of the cached page match the current $_GET request - i.e. we
-								//must use $chDirAllRequests.
-								//If this is not the case then we must check both $chDirAllRequests
-								//and $chDirKnownRequests as we weren't exactly sure of the value of "g"
-								//in index.pre_load.inc.php.
-								if ((file_exists(($chPath = 'cache/pages/'. $chDirAllRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'plugin.html'))
-								 || ($chG && (file_exists(($chPath = 'cache/pages/'. $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'plugin.html')))) {
-									
-									if ((file_exists($chPath. 'vars'))
-									&& ($slots = unserialize(file_get_contents($chPath. 'vars'), ['allowed_classes' => ['ze\\opaqueSlot', 'ze\\normalSlot', 'ze\\nestedSlot']/*, 'max_depth' => 3*/]))
-									&& (!empty($slots[$slotName]['s']))) {
-										touch($chPath. 'accessed');
-
-										//If there are cached images on this page, mark that they've been accessed
-										if (file_exists($chPath. 'cached_files')) {
-											foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
-												if (is_dir($cachedImage)) {
-													touch($cachedImage. 'accessed');
-												} else {
-													//Delete the cached copy as its images are missing
-													\ze\cache::deleteDir($chPath);
-								
-													//Continue the loop looking for any more cached copies of this plugin.
-													//Most likely if any exist they will need deleting because their images will be missing too,
-													//and it's a good idea to clean up.
-													continue 2;
-												}
-											}
-										}
-
-										//Create an entry in the slotContents array, and a simple object, for this Slot.
-										//Also do the same for any Nested Plugins.
-										foreach ($slots as $slotNameNestId => &$vars) {
-											if (!empty($vars['s'])) {
-								
-												$slotContents[$slotNameNestId] = $vars['s'];
-												
-												$slotContents[$slotNameNestId]->restoreFromCache(
-													$cID, $cType, $cVersion, $slotName,
-													$chPath,
-													$vars['h'] ?? null,
-													$vars['c']
-												);
-											}
+				for ($chG = 'g';; $chG = \ze::$cacheEnv['g']) {
+					for ($chU = 'u';; $chU = \ze::$cacheEnv['u']) {
+			
+						//Plugins can opt out of caching if there are any unrecognised or
+						//unregistered $_GET requests.
+						//If this is the case, then we must insist that the $_GET requests
+						//of the cached page match the current $_GET request - i.e. we
+						//must use $chDirAllRequests.
+						//If this is not the case then we must check both $chDirAllRequests
+						//and $chDirKnownRequests as we weren't exactly sure of the value of "g"
+						//in index.pre_load.inc.php.
+						if ((file_exists(($chPath = 'cache/plugins/'. $chDirAllRequests. $chU. $chG. $chS. '/'). 'plugin.html'))
+						 || ($chG && (file_exists(($chPath = 'cache/plugins/'. $chDirKnownRequests. $chU. $chG. $chS. '/'). 'plugin.html')))) {
 							
-											unset($vars);
-										}
+							if ((file_exists($chPath. 'vars'))
+							&& ($slots = unserialize(file_get_contents($chPath. 'vars'), ['allowed_classes' => ['ze\\opaqueSlot', 'ze\\normalSlot', 'ze\\nestedSlot']/*, 'max_depth' => 3*/]))
+							&& (!empty($slots[$slotName]['s']))) {
+								touch($chPath. 'accessed');
 
-										return true;
+								//If there are cached images on this page, mark that they've been accessed
+								if (file_exists($chPath. 'cached_files')) {
+									foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
+										if (is_dir($cachedImage)) {
+											touch($cachedImage. 'accessed');
+										} else {
+											//Delete the cached copy as its images are missing
+											\ze\cache::deleteDir($chPath);
+						
+											//Continue the loop looking for any more cached copies of this plugin.
+											//Most likely if any exist they will need deleting because their images will be missing too,
+											//and it's a good idea to clean up.
+											continue 2;
+										}
 									}
 								}
+
+								//Create an entry in the slotContents array, and a simple object, for this Slot.
+								//Also do the same for any Nested Plugins.
+								foreach ($slots as $slotNameNestId => &$vars) {
+									if (!empty($vars['s'])) {
+						
+										$slotContents[$slotNameNestId] = $vars['s'];
+										
+										$slotContents[$slotNameNestId]->restoreFromCache(
+											$cID, $cType, $cVersion, $slotName,
+											$chPath,
+											$vars['h'] ?? null,
+											$vars['c']
+										);
+									}
 					
-								if ($chU == \ze::$cacheEnv['u']) break;
+									unset($vars);
+								}
+
+								return true;
 							}
-							if ($chG == \ze::$cacheEnv['g']) break;
 						}
-						if ($chP == \ze::$cacheEnv['p']) break;
+			
+						if ($chU == \ze::$cacheEnv['u']) break;
 					}
-					if ($chC == \ze::$cacheEnv['c']) break;
+					if ($chG == \ze::$cacheEnv['g']) break;
 				}
 				if ($chS == \ze::$cacheEnv['s']) break;
 			}
@@ -802,7 +833,6 @@ class plugin {
 	
 
 	//Display a Plugin in a slot
-	//Formerly "slot()"
 	public static function slot($slotName, $mode = false, $eggId = false) {
 		//Replacing anything non-alphanumeric with an underscore
 		$slotName = \ze\ring::HTMLId($slotName);
@@ -943,7 +973,7 @@ class plugin {
 				if ($canCache) {
 					$cacheStatusText = implode('', $saveEnv);
 						
-					if (\ze\cache::cleanDirs() && ($path = \ze\cache::createDir(zenarioPageCacheDir($knownReq, 'plugin'). $cacheStatusText, 'pages', false))) {						
+					if (\ze\cache::cleanDirs() && ($path = \ze\cache::createDir(zenarioPageCacheDir($knownReq). $cacheStatusText, 'cache/plugins', false))) {						
 						
 						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
 						$temps = [];
@@ -1037,7 +1067,6 @@ class plugin {
 	
 
 	//Did we use all of our slots..?
-	//Formerly "checkSlotsWereUsed()"
 	public static function checkSlotsWereUsed() {
 		//Only run this in admin mode
 		if (\ze\priv::check()) {
@@ -1049,7 +1078,6 @@ class plugin {
 	
 	
 
-	//Formerly "getPluginInstanceDetails()"
 	public static function details($instanceIdOrName, $useFullName = false) {
 	
 		$sql = "
@@ -1095,7 +1123,6 @@ class plugin {
 		return $instance;
 	}
 
-	//Formerly "getPluginInstanceName()"
 	public static function name($instanceId) {
 		$instanceDetails = \ze\plugin::details($instanceId, true);
 		return $instanceDetails['instance_name'];
@@ -1107,7 +1134,6 @@ class plugin {
 		]);
 	}
 
-	//Formerly "getPluginInstanceInItemSlot()"
 	public static function idInItemSlot($slotName, $cID, $cType = 'html', $cVersion = false, $getModuleId = false) {
 	
 		if (!$cVersion) {
@@ -1130,7 +1156,6 @@ class plugin {
 		}
 	}
 
-	//Formerly "checkInstanceIsWireframeOnItemLayer()"
 	public static function isVCOnItem($instanceId) {
 		return
 			($plugin = \ze\row::get('plugin_instances', ['content_id', 'content_type', 'content_version', 'slot_name', 'module_id'], $instanceId))
@@ -1138,7 +1163,6 @@ class plugin {
 		 && (\ze\row::exists('plugin_item_link', $plugin));
 	}
 
-	//Formerly "getPluginInstanceInTemplateSlot()"
 	public static function idInLayoutSlot($slotName, $layoutId, $getModuleId = false) {
 	
 		$sql = "
@@ -1165,14 +1189,16 @@ class plugin {
 			
 			$level =
 			$isHeader =
-			$isFooter = false;
+			$isFooter =
+			$inGridBreak = false;
 
-			if ($slotInfo = \ze\row::get('layout_slot_link', ['is_header', 'is_footer'], ['layout_id' => \ze::$layoutId, 'slot_name' => $slotName])) {
+			if ($slotInfo = \ze\row::get('layout_slot_link', ['is_header', 'is_footer', 'in_grid_break'], ['layout_id' => \ze::$layoutId, 'slot_name' => $slotName])) {
 				$isHeader = $slotInfo['is_header'];
 				$isFooter = $slotInfo['is_footer'];
+				$inGridBreak = $slotInfo['in_grid_break'];
 			}
 			
-			\ze::$slotContents[$slotName] = new \ze\opaqueSlot($level, $isHeader, $isFooter, $slotName);
+			\ze::$slotContents[$slotName] = new \ze\opaqueSlot($level, $isHeader, $isFooter, $inGridBreak, $slotName);
 		}
 		
 		\ze::$slotContents[$slotName]->setupNewBaseClass($slotName);
@@ -1180,7 +1206,6 @@ class plugin {
 
 
 	//Attempt to find the path to a Framework
-	//Formerly "frameworkPath()"
 	public static function frameworkPath($framework, $className, $limit = 10) {
 		if (!--$limit) {
 			return false;

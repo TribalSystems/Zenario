@@ -38,9 +38,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 
 	public function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
+			$clearByContent = true, $clearByMenu = false, $clearByFile = true, $clearByModuleData = true);
 		
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		

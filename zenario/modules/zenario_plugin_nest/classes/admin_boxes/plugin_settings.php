@@ -30,6 +30,26 @@ class zenario_plugin_nest__admin_boxes__plugin_settings extends ze\moduleBaseCla
 				!$values['size/set_max_height'];
 		}
 		
+		//Lazy load and rollover only work if Mobile Behaviour is set to "Same image".
+		if ($values['size/mobile_behaviour'] != 'mobile_same_image') {
+			$fields['size/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
+			$fields['size/advanced_behaviour']['side_note'] = ze\admin::phrase('The lazy load option is only available when using the "Same image" option for mobile browsers.');
+		} else {
+			$fields['size/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
+			unset($fields['size/advanced_behaviour']['side_note']);
+		}
+		
+		if ($values['size/advanced_behaviour'] == 'lazy_load') {
+			$fields['size/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['size/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
+			$fields['size/mobile_behaviour']['side_note'] = ze\admin::phrase('When lazy loading images, only the "Same image" option for mobile browsers is supported.');
+		
+		} else {
+			$fields['size/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['size/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
+			unset($fields['size/mobile_behaviour']['side_note']);
+		}
+		
 		if (isset($box['tabs']['size']['fields']['banner_canvas'])) {
 			$this->showHideImageOptions($fields, $values, 'size', $hidden = false, $fieldPrefix = 'banner_', $hasCanvas = true);
 			

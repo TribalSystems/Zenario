@@ -355,9 +355,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 				log_on_action,
 				log_on_no_action,
 				email_on_action,
-				email_on_no_action,
 				email_address_on_action,
-				email_address_on_no_action,
 				email_address_on_error,
 				status,
 				last_run_started,
@@ -435,11 +433,7 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 					' '.
 						escapeshellarg((int) $job['email_on_action']).
 					' '.
-						escapeshellarg((int) $job['email_on_no_action']).
-					' '.
 						escapeshellarg($job['email_address_on_action']).
-					' '.
-						escapeshellarg($job['email_address_on_no_action']).
 					' '.
 						escapeshellarg($job['email_address_on_error']).
 					' '.
@@ -456,8 +450,8 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	public static function step2(
 		$managerClassName,
 		$serverTime, $jobId, $jobName, $moduleClassName, $staticMethod,
-		$logActions, $logInaction, $emailActions, $emailInaction,
-		$emailAddressAction, $emailAddressInaction, $emailAddressError
+		$logActions, $logInaction, $emailActions,
+		$emailAddressAction, $emailAddressError
 	) {
 		
 		//Lock the job, set some fields
@@ -487,16 +481,16 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 			$result, $output, true,
 			$managerClassName,
 			$serverTime, $jobId, $jobName,
-			$logActions, $logInaction, $emailActions, $emailInaction,
-			$emailAddressAction, $emailAddressInaction, $emailAddressError);
+			$logActions, $logInaction, $emailActions,
+			$emailAddressAction, $emailAddressError);
 	}
 		
 	public static function logResult(
 		$result, &$output, $unlockWhenDone,
 		$managerClassName,
 		$serverTime, $jobId, $jobName,
-		$logActions, $logInaction, $emailActions, $emailInaction,
-		$emailAddressAction, $emailAddressInaction, $emailAddressError,
+		$logActions, $logInaction, $emailActions,
+		$emailAddressAction, $emailAddressError,
 		$dontSendLogEmail = false
 	) {
 		$logId = false;
@@ -553,10 +547,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		if (!$dontSendLogEmail
 			&& ($log['status'] == 'error'
 		 		|| ($log['status'] == 'action_taken' && $emailActions)
-				|| ($log['status'] == 'no_action_taken' && $emailInaction)
 			)
 		) {
-			$emailList =  self::getLogEmailList($result, $emailAddressAction, $emailAddressInaction, $emailAddressError);
+			$emailList =  self::getLogEmailList($result, $emailAddressAction, $emailAddressError);
 		 	
 		 	self::sendLogEmails(
 		 		$managerClassName, $serverTime,
@@ -610,11 +603,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function getLogEmailList($result, $emailAddressAction, $emailAddressInaction, $emailAddressError) {
+	public static function getLogEmailList($result, $emailAddressAction, $emailAddressError) {
 		if ($result == '<!--action_taken-->') {
 			return $emailAddressAction;
-		} elseif ($result == '<!--no_action_taken-->') {
-			return $emailAddressInaction;
 		} else {
 			return $emailAddressError;
 		}

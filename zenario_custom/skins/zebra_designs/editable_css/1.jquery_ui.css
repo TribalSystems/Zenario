@@ -18,7 +18,6 @@ body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-corner-bottom,
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-corner-right, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-corner-br {
 	-webkit-border-radius: 0;
-	-moz-border-radius: 0;
 	border-radius: 0;
 }
 
@@ -28,8 +27,8 @@ body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-header .ui-state-hover,
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-state-focus, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-content .ui-state-focus, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-header .ui-state-focus { 
-	border-color:#EAE7E8; 
-	background:#EAE7E8; 
+	border-color:#fbbbbb; 
+	background:#fbbbbb; 
 	color: #333; 
 }
 
@@ -48,8 +47,8 @@ body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-button.ui-state-active:hover {
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-state-highlight, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-content .ui-state-highlight, 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-header .ui-state-highlight {
-	border-color: #69aecf;
-  	background: #69aecf;
+	border-color: #189fdf;
+  	background: #189fdf;
   	color: #fff;
 }
 
@@ -63,4 +62,37 @@ body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-header .ui-icon.ui-icon
 
 body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-widget-header .ui-icon.ui-icon-circle-triangle-e {
 	background:url('../images/icon-circle-next-blue.svg') no-repeat center center / 14px 14px;
+}
+
+body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-datepicker-prev,
+body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-datepicker-next {
+	cursor:pointer;
+}
+
+body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-datepicker-prev.ui-state-hover,
+body:not(.zenario_fbAdminFloatingBox__isOpen) .ui-datepicker-next.ui-state-hover {
+	border-color:#e9e9e9;
+	background-color:#e9e9e9;
+}
+
+/* Tooltips */
+
+.zenario_visitor_tooltip {
+	background:#00659b !important;
+}
+
+.zenario_visitor_tooltip.tooltip_top_center:after { 
+	border-bottom-color: #00659b;
+}
+
+.zenario_visitor_tooltip.tooltip_bottom_center:after {
+	border-top-color: #00659b;
+}
+
+.zenario_visitor_tooltip.tooltip_center_left:after {
+	border-right-color: #00659b;
+}
+
+.zenario_visitor_tooltip.tooltip_center_right:after {
+	border-left-color: #00659b;
 }

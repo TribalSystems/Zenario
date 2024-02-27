@@ -1,3 +1,3 @@
-{% if Mode == 'search_entry_box' and All_results_without_limit > this.setting('maximum_results_number') %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and All_results_without_limit > Maximum_Results_Number %}
     <p class="search_column_more">{{Press_enter_to_see_all_results_phrase|e}}</p>
 {% endif %}

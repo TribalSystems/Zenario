@@ -84,3 +84,39 @@ if (ze\dbAdm::needRevision(57770)) {
 	
 	ze\dbAdm::revision(57770);
 }
+
+//In 9.6, we're changing the required/read only checkboxes of the dataset editor
+//to be in line with User Forms: there will now be a selector with the values
+//mandatory/read only/mandatory on condition/mandatory if visible.
+//This was already done in step 2, and step 4 addresses cases where a field was mandatory and read only
+//at the same time. They will now be marked as read only.
+ze\dbAdm::revision(58750
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]custom_dataset_fields`
+	SET
+		`required` = 0,
+		`required_message` = NULL
+	WHERE `required` = 1 AND `readonly` = 1
+_sql
+);
+
+
+//Loop through the users table, looking for rows without an email, and set the email_verified column to 
+//the email_not_set option.
+//This can't be done in pure SQL, it needs to be done in PHP using our database libraries as the email column may be encrypted.
+if (ze\dbAdm::needRevision(59602)) {
+	
+	$sql = "
+		SELECT id, email, email_verified
+		FROM ". DB_PREFIX. "users";
+	
+	$result = ze\sql::select($sql);
+
+	foreach ($result as $row) {
+		if (empty($row['email'])) {
+			ze\row::update('users', ['email_verified' => 'email_not_set'], $row['id']);
+		}
+	}
+	
+	ze\dbAdm::revision(59602);
+}

@@ -437,7 +437,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 		} elseif ($numberOf['added'] || $numberOf['updated']) {
 			echo '<!--Message_Type:Success-->';
 			if ($changeButtonHTML) {
-				echo '<!--Button_HTML:<input type="button" class="submit" value="', ze\admin::phrase('OK'), '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>-->';
+				echo '<!--Button_HTML:<input type="button" class="submit zenario_gp_button" value="', ze\admin::phrase('OK'), '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>-->';
 			}
 			echo ze\admin::phrase("Language pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	

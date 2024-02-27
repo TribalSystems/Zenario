@@ -31,9 +31,9 @@ class zenario_breadcrumbs extends zenario_menu {
 	
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = true, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->sectionId				= $this->setting('menu_section');
 		$this->startFrom				= '_MENU_LEVEL_1';
@@ -52,10 +52,62 @@ class zenario_breadcrumbs extends zenario_menu {
 		return (bool) $this->currentMenuId;
 	}
 	
-	function showSlot() {
-		if ((bool) $this->currentMenuId) {
-			zenario_menu::showSlot();
+	
+	//Check whether we should include the breadcrumbs in JSON-LD format and include them
+	//in the page head if so.
+	public function addToPageHead() {
+		if (!$this->currentMenuId
+		 || !$this->setting('add_json_ld')
+		 || !$this->loadMenuMergeFields()) {
+			return;
 		}
+			
+		$position = 0;
+		$BreadcrumbList = [
+			'@context' => 'https://schema.org',
+			'@type' => 'BreadcrumbList',
+			'itemListElement' => []
+		];
+		
+		foreach ($this->mergeFields['nodes'] as $breadcrumb) {
+			if ($breadcrumb['URL']) {
+				$url = $breadcrumb['URL'];
+				$name = htmlspecialchars(htmlspecialchars($breadcrumb['Text']));
+					//N.b. it appears the name needs to be escaped twice.
+					//I have no idea why. But I've tried it using Google's test tool and this
+					//does appear to be needed to get any HTML special characters to display properly...
+				
+				if (is_string($url)
+				 && isset($url[4])) {
+					
+					//If the URL was a relative URL, turn it into an absolute link
+					if ($url[4] != ':'
+					 && $url[5] != ':') {
+						$url = ze\link::absolute(). $url;
+					}
+					
+					$BreadcrumbList['itemListElement'][] = [
+						'@type' => 'ListItem',
+						'position' => ++$position,
+						'name' => $name,
+						'item' => $url
+					];
+				}
+			}
+		}
+		
+		echo "\n", '<script type="application/ld+json">', json_encode($BreadcrumbList), '</script>';
+	}
+	
+	
+	//Main Display function for the slot
+	function showSlot() {
+		if (!$this->currentMenuId
+		 || !$this->loadMenuMergeFields()) {
+			return;
+		}
+		
+		$this->twigFramework($this->mergeFields);
 	}
 	
 	public function shouldShowLayoutPreview() {

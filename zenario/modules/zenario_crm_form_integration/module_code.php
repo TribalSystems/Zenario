@@ -250,6 +250,10 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		
 		$token = static::getSalesforceAccessToken($linkId);
 		
+		if (empty($token) || !is_array($token) || empty($token['token'])) {
+			return false;
+		}
+		
 		//Log result
 		$logId = ze\row::insert(
 			ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', 
@@ -268,21 +272,18 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 				WHERE datetime < DATE_SUB(NOW(), INTERVAL ' . (int)$logDays . ' DAY)';
 			ze\sql::update($sql);
 		}
-		if (!$token['token']) {
-			return false;
-		}
 		
 		//Check if there is anything to do before we create the main object:
 		$extraDataFields = ze\module::sendSignal(
-				'eventPreSendDataToSalesForce', 
-				[
-					'token' => $token,
-					'data' => $data,
-					'crmData' => $crmData,
-					'crmFormLinkId' => $linkId,
-					'responseId' => $responseId
-				]
-			);
+			'eventPreSendDataToSalesForce', 
+			[
+				'token' => $token,
+				'data' => $data,
+				'crmData' => $crmData,
+				'crmFormLinkId' => $linkId,
+				'responseId' => $responseId
+			]
+		);
 		
 		if (is_array($extraDataFields)) {
 			foreach ($extraDataFields as $moduleResponse) {
@@ -362,7 +363,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 	//Validate a field and optionally a list of values on a Salesforce Object
 	public static function validateSalesforceObjectField($sObject, $name, $values = []) {
 		$token = static::getSalesforceAccessToken();
-		if (!$token['token']) {
+		if (empty($token) || !is_array($token) || empty($token['token'])) {
 			return false;
 		}
 		

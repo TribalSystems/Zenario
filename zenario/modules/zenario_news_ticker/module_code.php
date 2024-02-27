@@ -41,9 +41,9 @@ class zenario_news_ticker extends ze\moduleBaseClass {
 		
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = true, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 
 		$sql = "
 			SELECT 

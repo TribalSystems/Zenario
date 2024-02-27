@@ -39,10 +39,10 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', $id) || 
 			!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', ['newsletter_id' => $id]) ) {
 			return false;
-		} 
+		}
 		
 		$parts = [];
-		foreach ( ze\row::getValues(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $id]) as $smartGroupId )  {
+		foreach (ze\row::getValues(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', ['newsletter_id' => $id]) as $smartGroupId )  {
 			if ($rv = self::newsletterRecipientsPart($id, $mode, $smartGroupId)) {
 				$parts[] = $rv;
 			}
@@ -182,10 +182,14 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				status,
 				email_address_from,
 				email_name_from,
-				head,
+				apply_css_rules,
 				body,
 				unsubscribe_text,
-				delete_account_text
+				delete_account_text,
+				date_created,
+				created_by_id,
+				date_modified,
+				modified_by_id
 			FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE id = ". (int) $id;
 		$result = ze\sql::select($sql);
@@ -313,7 +317,12 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			$newsletterSubject = zenario_newsletter::applyNewsletterMergeFields($newsletter['subject'], $admin, $newsletter['url']);
 			$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($newsletter['body'], $admin, $newsletter['url']);
 			
-			self::putHeadOnBody($newsletter['head'], $newsletterBody);
+			if ($newsletter['apply_css_rules']) {
+				$cssRules = ze::setting('email_css_rules');
+			} else {
+				$cssRules = '';
+			}
+			self::putHeadOnBody($cssRules, $newsletterBody);
 			$newsletterSubject .= ' - ADMIN COPY';
 			
 			$emailOverriddenBy = false;
@@ -339,7 +348,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				email_address_from,
 				email_name_from,
 				url,
-				head,
+				apply_css_rules,
 				body,
 				unsubscribe_text,
 				delete_account_text
@@ -360,7 +369,9 @@ class zenario_newsletter extends ze\moduleBaseClass {
 '<!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<style>
 '. $head. '
+</style>
 </head>
 <body>
 '. $body. '
@@ -435,7 +446,14 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		if (ze::setting('zenario_newsletter__enable_opened_emails')) {
 			$newsletterBody .= ' <img alt="&nbsp;" height="1" width="1" src="'. htmlspecialchars($newsletter['url']). 'tracker.php?t='. htmlspecialchars($hashes['tracker_hash']). '"/>';
 		}
-		self::putHeadOnBody($newsletter['head'], $newsletterBody);
+		
+		if ($newsletter['apply_css_rules']) {
+			$cssRules = ze::setting('email_css_rules');
+		} else {
+			$cssRules = '';
+		}
+		
+		self::putHeadOnBody($cssRules, $newsletterBody);
 		
 		$emailOverriddenBy = false;
 		

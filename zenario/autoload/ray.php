@@ -34,7 +34,6 @@ class ray {
 
 
 
-	//Formerly "sortByOrd()"
 	public static function sortByOrd($a, $b) {
 		if ($a['ord'] == $b['ord']) {
 			return 0;
@@ -42,7 +41,6 @@ class ray {
 		return ($a['ord'] < $b['ord']) ? -1 : 1;
 	}
 
-	//Formerly "arrayValuesToKeys()"
 	public static function valuesToKeys($a) {
 		$o = [];
 		if (is_array($a)) {
@@ -66,7 +64,6 @@ class ray {
 		return $o;
 	}
 
-	//Formerly "engToBooleanArray()"
 	public static function engToBooleanArray(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {
 	
 		if (is_array($array) && isset($array[$key])) {
@@ -82,7 +79,6 @@ class ray {
 
 	const explodeAndTrimFromTwig = true;
 	//Explode a string, and return any values that aren't empty and/or whitespace
-	//Formerly "explodeAndTrim()"
 	public static function explodeAndTrim($string, $mustBeNumeric = false, $separator = ',') {
 		$a = [];
 		foreach (explode($separator, $string) as $id) {
@@ -94,7 +90,6 @@ class ray {
 		return $a;
 	}
 
-	//Formerly "explodeDecodeAndTrim()"
 	public static function explodeDecodeAndTrim($string, $separator = ',') {
 		$a = [];
 		foreach (explode($separator, $string) as $id) {
@@ -106,7 +101,6 @@ class ray {
 	}
 
 
-	//Formerly "issetArrayKey()"
 	public static function issetArrayKey($array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {
 	
 		if (is_array($array) && isset($array[$key])) {
@@ -120,7 +114,6 @@ class ray {
 		}
 	}
 
-	//Formerly "jsonEncodeForceObject()"
 	//Dump an array as JSON to send to the client.
 	//Also force any empty arrays to be objects, not arrays, but without using the JSON_FORCE_OBJECT logic
 	//which corrupts actual arrays.
@@ -129,7 +122,6 @@ class ray {
 	}
 
 	//Convert a value to a 1D array, or merge a 2D array into a 1D array.
-	//Formerly "oneDimensionalArray()"
 	public static function oneD(&$a) {
 		if (!is_array($a)) {
 			$a = [$a];
@@ -148,7 +140,6 @@ class ray {
 	}
 
 	//Get a value from an array of merge fields, where you're not sure of the index name but have a few ideas about what it might be called
-	//Formerly "pullFromArray()"
 	public static function grabValue(&$array/*, $key1, $key2 [, $key3 [, $key4 [, ... ]]]*/) {
 	
 		if (!is_array($array)) {
@@ -173,7 +164,6 @@ class ray {
 	}
 
 
-	//Formerly "sqlArraySort()"
 	public static function sqlSort(&$phpArray) {
 	
 		if (is_array($phpArray) && !empty($phpArray)) {
@@ -225,7 +215,6 @@ class ray {
 	}
 
 	//This function is deprecated since php 7.0; please use the null coalescing operator (??) instead!
-	//Formerly "arrayKey()"
 	public static function value(&$a, $k) {
 		if (is_array($a) && isset($a[$k])) {
 			$result = &$a[$k];

@@ -32,6 +32,11 @@ class zenario_users__organizer__access_log extends zenario_users {
 	
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
+		
 		
 		ze\tuix::flagEncryptedColumns($panel, 'u', 'users');
 	

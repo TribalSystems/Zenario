@@ -157,27 +157,23 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			//I don't want to be linked!
 			unset($box['tabs']['text']['fields']['menu_title']['value']);
 			unset($box['tabs']['text']['fields']['path_of__menu_title']['value']);
-			unset($box['tabs']['text']['fields']['parent_path_of__menu_title']['value']);
 			$tmpValue = (string) $box['tabs']['text']['fields']['ext_url']['value'];
 			unset($box['tabs']['text']['fields']['ext_url']['value']);
 			$box['tabs']['text']['fields']['ext_url']['value'] = $tmpValue;
 	
 			$title = 'menu_title__'. $lang['id'];
-			$path = 'path_of__menu_title__'. $lang['id'];
-			$parentPath = 'parent_path_of__menu_title__'. $lang['id'];
+			$pathCodename = 'path_of__menu_title__'. $lang['id'];
 			$url = 'ext_url__'. $lang['id'];
 	
 			$box['tabs']['text']['fields'][$title] = $fields['text/menu_title'];
-			$box['tabs']['text']['fields'][$path] = $fields['text/path_of__menu_title'];
-			$box['tabs']['text']['fields'][$parentPath] = $fields['text/parent_path_of__menu_title'];
+			$box['tabs']['text']['fields'][$pathCodename] = $fields['text/path_of__menu_title'];
 			$box['tabs']['text']['fields'][$url] = $fields['text/ext_url'];
 	
 			// Remove unnecessary validation.
 			unset($box['tabs']['text']['fields'][$url]['validation']);
 	
 			$box['tabs']['text']['fields'][$title]['ord'] = $ord;
-			$box['tabs']['text']['fields'][$path]['ord'] = $ord + 1;
-			$box['tabs']['text']['fields'][$parentPath]['ord'] = $ord + 2;
+			$box['tabs']['text']['fields'][$pathCodename]['ord'] = $ord + 1;
 			$box['tabs']['text']['fields'][$url]['ord'] .= '.'. str_pad($ord, 5, '0', STR_PAD_LEFT);
 	
 			if ($box['key']['id']
@@ -210,11 +206,20 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 					$box['title'] = ze\admin::phrase('Editing the menu node "[[name]]" ("[[section_name]]" section)', $text);
 				}
 			}
-	
-			if ($box['key']['parentMenuID']) {
-				$box['tabs']['text']['fields'][$parentPath]['value'] = ze\menuAdm::path($box['key']['parentMenuID'], $lang['id']);
-				
+			
+			//Set the menu path preview
+			if ($box['key']['id']) {
+				//Set the menu position to the exsting node.
+				//I'm using the "$isExistingNode" option here which is only supported by the ze\menuAdm::posToPathArray() function.
+				//This option is not supported by position pickers nor the ze\menuAdm::addContentItems() function.
+				$menuPos = $box['key']['sectionId']. '_'. $box['key']['id']. '_3';
+			
+			} else {
+				//When creating a new node, use the "$underNode" option to display the path.
+				$menuPos = $box['key']['sectionId']. '_'. ($box['key']['parentMenuID'] ?? 0). '_1';
 			}
+
+			ze\menuAdm::setupPathPreview($menuPos, $box['tabs']['text']['fields'][$pathCodename], $lang['id']);
 	
 			if ($numLangs > 1) {
 				$box['tabs']['text']['fields'][$title]['label'] = ze\admin::phrase('Text ([[english_name]]):', $lang);
@@ -228,7 +233,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 
 		$fields['text/menu_title']['hidden'] = true;
 		$fields['text/path_of__menu_title']['hidden'] = true;
-		$fields['text/parent_path_of__menu_title']['hidden'] = true;
 
 		if ($numLangs <= 1) {
 			$fields['text/hyperlink_target']['note_below'] = '';
@@ -250,12 +254,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		  && ($menuParent['content_type'])
 		  && ($layoutId = ze\content::layoutId($menuParent['equiv_id'], $menuParent['content_type'])))) {
 			$skinId = ze\content::layoutSkinId($layoutId);
-		}
-		
-		//For top-level menu modes, add a note to the "path" field to make it clear that it's
-		//at the top level
-		if (!$values['text/parent_path_of__menu_title']) {
-			$fields['text/path_of__menu_title']['label'] = ze\admin::phrase('Menu path preview (top level):');
 		}
 		
 		//If there are any custom GET requests, load them from the DB
@@ -424,22 +422,12 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		}
 
 
-		//Set the current Menu Path from the current title and the parent path
-		
+		//When displaying the tab, update the menu preview path such that the current node
+		//starts off set to what was last typed.
 		foreach ($langs as $lang) {
-			$path = $box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value'];
-			if($path){
-				$nodes = explode('›',$path);
-				if(is_array($nodes) && $nodes){
-					$box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['value']= $path." [level".count($nodes)."]";	
-				}
-			}
-			
-			if (!empty($equivs) && empty($equivs[$lang['id']])) {
-				$box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['note_below'] = ze\admin::phrase('Translated content item missing.');
-			} else {
-				unset($box['tabs']['text']['fields']['path_of__menu_title__'. $lang['id']]['note_below']);
-			}
+			$title = 'menu_title__'. $lang['id'];
+			$pathCodename = 'path_of__menu_title__'. $lang['id'];
+			$values['text/'. $pathCodename] = $values['text/'. $title];
 	
 			$box['tabs']['text']['fields']['ext_url__'. $lang['id']]['disabled'] =
 				empty($values['text/menu_title__'. $lang['id']]);

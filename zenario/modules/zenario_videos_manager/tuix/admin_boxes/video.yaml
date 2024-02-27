@@ -30,15 +30,18 @@ zenario_videos_manager__video:
                 url_test:
                     same_row: Yes
                     type: button
+                    css_class: zenario_gp_button
                     value: Test
                     onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"
                 fetch_youtube_details:
                     type: button
+                    css_class: zenario_gp_button
                     value: Fetch YouTube details
                     format_onchange: true
                     hidden: true
                 fetch_vimeo_details:
                     type: button
+                    css_class: zenario_gp_button
                     value: Fetch Vimeo details
                     format_onchange: true
                     hidden: true
@@ -91,3 +94,4 @@ zenario_videos_manager__video:
                     label: 'Categories:'
                     snippet:
                         html: ''
+                    hidden: true

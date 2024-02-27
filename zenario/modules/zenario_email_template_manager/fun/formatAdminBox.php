@@ -48,7 +48,7 @@ switch ($path) {
 		//Show site-setting value next to field and a link to the settings panel
 		if ($values['meta_data/from_details'] == 'site_settings') {
 			$fields['meta_data/from_details']['post_field_html'] = '&nbsp' . ze::setting('email_address_from') . '/' . ze::setting('email_name_from');
-			$fields['meta_data/from_details']['note_below'] = ze\admin::phrase('Go to')." <a href='".ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//email' target='_blank'>".ze\admin::phrase('Email site settings')."</a>";
+			$fields['meta_data/from_details']['note_below'] = ze\admin::phrase('Go to')." <a href='".ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//email' target='_blank'>".ze\admin::phrase('site settings for email')."</a>.";
 		} else {
 			$fields['meta_data/from_details']['post_field_html'] = '';
 			$fields['meta_data/from_details']['note_below'] = '';
@@ -117,13 +117,20 @@ switch ($path) {
 			} else {
 				$adminDetails = ze\admin::details($_SESSION['admin_userid'] ?? false);
 				
+				//Try and ensure that we use absolute URLs where possible
+				ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
+				
 				$body = $values['meta_data/body'];
 				
 				if ($values['meta_data/use_standard_email_template'] == 'twig') {
 					$body = ze\twig::render("\n". $body, []);
 				}
 				
-				static::putHeadOnBody($values['advanced/head'], $body);
+				if ($values['meta_data/apply_css_rules']) {
+					$cssRules = ze::setting('email_css_rules');
+					static::putHeadOnBody($cssRules, $body);
+				}
+				
 				if ($values['meta_data/use_standard_email_template'] != 'no') {
 					static::putBodyInTemplate($body);
 				}

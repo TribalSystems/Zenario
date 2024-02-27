@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -62,7 +62,10 @@ var ADMIN_MESSAGE_BOX_WIDTH = 700;
 
 
 
-var plgslt_ = 'plgslt_';
+var plgslt_ = 'plgslt_',
+	$pluginContainer = function(suffix) {
+		return $('#' + plgslt_ + suffix);
+	};
 
 phrase = phrase || {};
 zenarioA.adminSettings = zenarioA.adminSettings || {};
@@ -143,7 +146,8 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 	var end = false,
 		hadCommand = false,
 		message,
-		flags;
+		flags,
+		flagVal;
 
 	if (resp) {
 		resp = zenario.splitFlagsFromMessage(resp);
@@ -164,11 +168,12 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		messageType = 'none';
 	}
 	
-	if (flags.Message_Type) {
-		if (flags.Message_Type == 'None') {
+	flagVal = flags.Message_Type || flags.MESSAGE_TYPE;	//N.b. this is written this way due a bug/inconsistency we currently have with flag names and cases. Will sort this out after the next branch!
+	if (flagVal) {
+		if (flagVal == 'None') {
 			messageType = false;
 		} else {
-			messageType = flags.Message_Type.toLowerCase();
+			messageType = flagVal.toLowerCase();
 		}
 	}
 	
@@ -193,7 +198,7 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		if (message) {
 			alert(message);
 		}
-		zenarioA.toastOrNoToast(flags);
+		zenarioA.manageToastOnReload(flags, true);
 		
 		zenarioT.uploading = false;
 		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
@@ -221,7 +226,7 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 
 	//Go somewhere
 	} else if (defined(flags.Go_To_URL)) {
-		zenarioA.toastOrNoToast(flags);
+		zenarioA.manageToastOnReload(flags);
 		zenario.goToURL(zenario.addBasePath(flags.Go_To_URL), true);
 		hadCommand = true;
 	}
@@ -235,11 +240,12 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 	}
 
 	//Set some custom buttons
-	if (flags.Button_HTML) {
-		buttonsHTML = flags.Button_HTML;
+	flagVal = flags.Button_HTML || flags.BUTTON_HTML;	//N.b. this is written this way due a bug/inconsistency we currently have with flag names and cases. Will sort this out after the next branch!
+	if (defined(flagVal)) {
+		buttonsHTML = flagVal;
 
 	} else if (flags.Reload_Button) {
-		buttonsHTML = _$input('class', 'submit_selected', 'type', 'button', 'onclick', 'document.location.href = document.location.href; return false;', 'value', flags.Reload_Button);
+		buttonsHTML = _$input('class', 'zenario_submit_button', 'type', 'button', 'onclick', 'document.location.href = document.location.href; return false;', 'value', flags.Reload_Button);
 
 	} else if (defined(flags.Logged_Out)) {
 		
@@ -251,13 +257,13 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 		if (zenarioO.init
 		 && zenarioO.path
 		 && zenarioA.isFullOrganizerWindow) {
-			buttonsHTML = _$input('type', 'button', 'value', phrase.login, 'class', 'submit_selected', 'onclick', 'zenarioO.reloadPage(undefined, true, undefined, true);');
+			buttonsHTML = _$input('type', 'button', 'value', phrase.login, 'class', 'zenario_submit_button', 'onclick', 'zenarioO.reloadPage(undefined, true, undefined, true);');
 			
 			addCancel = "zenario.goToURL(URLBasePath);";
 		
 		} else {
 			buttonsHTML = 
-				_$input('type', 'button', 'value', phrase.login, 'class', 'submit_selected', 'onclick', 'zenarioA.reloadPage(false, true);');
+				_$input('type', 'button', 'value', phrase.login, 'class', 'zenario_submit_button', 'onclick', 'zenarioA.reloadPage(false, true);');
 			
 			addCancel = "zenarioA.reloadPage();";
 		}
@@ -278,20 +284,6 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 
 
 
-
-zenarioA.notification = function(message) {
-
-	get('zenario_notification').style.display = '';
-	get('zenario_notification').innerHTML = _$div(_$h1(htmlspecialchars(message)));
-
-	$('#zenario_notification div')
-		.clearQueue()
-		.show({effect: 'drop', duration: 500, direction: 'up'})
-		.delay(2500)
-		.hide({effect: 'drop', duration: 500, direction: 'up', complete: function() {
-			get('zenario_notification').style.display = 'none';
-		}});
-};
 
 //Given a URL and (optionally) some post variables, that point to a download file, do the download.
 //This is done in a hidden iframe, so the user does not see an empty blank tab appear in their browser that they then must close.
@@ -569,6 +561,36 @@ zenarioA.lookupFileDetails = function(id) {
 };
 
 
+zenarioA.pluginCodeName = function(instanceId, moduleClassName) {
+	
+	if (_.isObject(instanceId)) {
+		moduleClassName = instanceId.moduleClassName;
+		instanceId = instanceId.instanceId;
+	}
+	
+	var text;
+
+	switch (moduleClassName) {
+		case 'zenario_plugin_nest':
+			text = 'N';
+			break;
+		case 'zenario_slideshow':
+		case 'zenario_slideshow_simple':
+			text = 'S';
+			break;
+		default:
+			text = 'P';
+	}
+
+	return text + ('' + instanceId).padStart(2, '0');
+};
+
+
+zenarioA.layoutCodeName = function(layoutId) {
+	return 'L' + ('' + layoutId).padStart(2, '0');
+};
+
+
 zenarioA.toggleShowGrid = function() {
 	if (zenarioA.checkForEdits()) {
 		zenarioA.showGridOn = !zenarioA.showGridOn;
@@ -688,9 +710,9 @@ zenarioA.setSlotParents = function() {
 };
 
 
-zenarioA.getGridSlotDetails = function(slotName) {
+zenarioA.getGridSlotDetails = function(slotName, eggId) {
 	//Get the grid span from the slot name
-	var $gridspan = $('.' + slotName + '.span.slot'),
+	var $gridspan,
 		grid = {
 			container: false,
 			cssClass: false,
@@ -700,6 +722,15 @@ zenarioA.getGridSlotDetails = function(slotName) {
 		},
 		maxCols = zenarioGrid.cols,
 		maxWidth = zenarioGrid.maxWidth;
+	
+	//Get the grid span from the slot name.
+	//However if this is a nested plugin in a minigrid, try to get the minigrid span instead.
+	if (eggId) {
+		$gridspan = $pluginContainer(slotName + '-' + eggId).parents('.minigrid');
+	}
+	if (!$gridspan || !$gridspan.length) {
+		$gridspan = $('.' + slotName + '.span.slot');
+	}
 	
 	if ($gridspan.length) {
 		//Attempt to get the CSS class names of the wrapper of the slot
@@ -1026,7 +1057,7 @@ zenarioA.updateSlotControlsHTML = function(slotName) {
 	}
 	
 	//Hide the "only on desktop"/"only on mobile" warnings if this slot doesn't work like that
-	$parents = $('#' + plgslt_ + slotName).parents();
+	$parents = $pluginContainer(slotName).parents();
 	if (!$parents.filter('.responsive').length) {
 		$(infoSel + 'desktop').hide();
 	}
@@ -1035,7 +1066,7 @@ zenarioA.updateSlotControlsHTML = function(slotName) {
 	}
 	
 	
-	$('#' + plgslt_ + slotName + '-control_box').addClass('zenario_adminSlotControlsOpen');
+	$pluginContainer(slotName + '-control_box').addClass('zenario_adminSlotControlsOpen');
 };
 
 zenarioA.copyEmbedLink = function(link) {
@@ -1043,17 +1074,14 @@ zenarioA.copyEmbedLink = function(link) {
 	zenarioA.closeSlotControls();
 };
 
-zenarioA.copy = function(text) {
+zenarioA.copy = function(text, confirmMessage) {
 	if (zenario.copy(text)) {
-		zenarioA.toast({
-			message_type: 'success',
-			message: phrase.copied
-		});
+		zenarioA.notification(confirmMessage || phrase.copied);
 	}
 };
 
 zenarioA.copyEmbedHTML = function(link, slotName) {
-	var $slot = $('#' + plgslt_ + slotName);
+	var $slot = $pluginContainer(slotName);
 	
 	zenarioA.copy(_$html('iframe', 'width', $slot.outerWidth(true), 'height', $slot.outerHeight(true), 'src', link, 'frameborder', 0));
 	zenarioA.closeSlotControls();
@@ -1296,7 +1324,7 @@ zenarioA.movePlugin = function(el, slotName, siteWide) {
 		//Only suggest that slots in the body be moved to other slots in the body.
 		//And vice versa, only suggest that slots in the site-wide header/footer be moved to other site-wide slots.
 		$(siteWide? '.zenario_slot_in_header,.zenario_slot_in_footer' : '.zenario_slot_in_body').siblings('.zenario_slotPluginControlBox').addClass('zenario_moveDestination');
-		$('#' + plgslt_ + slotName + '-control_box').removeClass('zenario_moveDestination').addClass('zenario_moveSource');
+		$pluginContainer(slotName + '-control_box').removeClass('zenario_moveDestination').addClass('zenario_moveSource');
 	});
 	
 	return false;
@@ -1349,6 +1377,8 @@ zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
 				//Call the setSlotParents() function again to restore them if needed, as a work-around to fix this!
 				zenarioA.setSlotParents();
 			});
+			
+			zenarioA.clearMissingSlotsMessage();
 		}
 	});
 };
@@ -1385,6 +1415,7 @@ zenarioA.removePlugin = function(el, slotName, level) {
 				if (error) {
 					zenarioA.showMessage(error);
 				} else {
+					zenarioA.clearMissingSlotsMessage();
 					zenarioA.refreshChangedPluginSlot(slotName, '', undefined, false, false, false, false);
 				}
 			});
@@ -1461,10 +1492,6 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		slotControls = flags.SLOT_CONTROLS,
 		slotControlsCSSClass = flags.SLOT_CONTROLS_CSS_CLASS,
 		domLayoutPreview = get(containerId + '-layout_preview');
-	
-	if (moduleId && (!window[className] || _.isEmpty(window[className].slots))) {
-		zenario.addPluginJavaScript(moduleId);
-	}
 	
 	if (!moduleId) {
 		instanceId = 0;
@@ -1906,11 +1933,11 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	}
 	
 	if (buttonsHTML === true) {
-		buttonsHTML = _$input('type', 'button', 'class', 'submit', 'value', phrase.OK);
+		buttonsHTML = _$input('type', 'button', 'class', 'zenario_gp_button', 'value', phrase.OK);
 	
 	} else if (buttonsHTML && buttonsHTML.indexOf('<input ') === -1) {
 		buttonsHTML =
-			_$input('class', 'submit_selected', 'type', 'button', 'value', buttonsHTML);
+			_$input('class', 'zenario_submit_button', 'type', 'button', 'value', buttonsHTML);
 		
 		if (!defined(addCancel)) {
 			addCancel = true;
@@ -1922,7 +1949,7 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 			addCancel = '';
 		}
 		buttonsHTML += 
-			_$input('type', 'button', 'class', 'submit', 'value', cancelPhrase || phrase.cancel, 'onclick', addCancel);
+			_$input('type', 'button', 'class', 'zenario_gp_button', 'value', cancelPhrase || phrase.cancel, 'onclick', addCancel);
 	}
 	
 	if (messageType == 'success' || messageType == 4) {
@@ -1985,10 +2012,10 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 	
 	
 	if (onOkay) {
-		var $button = $('#zenario_fbMessageButtons .submit_selected');
+		var $button = $('#zenario_fbMessageButtons .zenario_submit_button');
 		
 		if (!$button.length) {
-			$button = $('#zenario_fbMessageButtons .submit');
+			$button = $('#zenario_fbMessageButtons .zenario_gp_button');
 		}
 		
 		$button.click(
@@ -2003,7 +2030,7 @@ zenarioA.closeFloatingBox = function($button) {
 	if (zenarioA.checkIfBoxIsOpen('AdminMessage')) {
 		zenarioA.closeBox('AdminMessage');
 		
-		if (zenarioA.onCancelFloatingBox && $button && !$button.hasClass('submit_selected')) {
+		if (zenarioA.onCancelFloatingBox && $button && !$button.hasClass('zenario_submit_button')) {
 			zenarioA.onCancelFloatingBox();
 			delete zenarioA.onCancelFloatingBox;
 		}
@@ -2217,10 +2244,14 @@ zenarioA.addMediaToTinyMCE = function(prefix) {
 
 
 //This function will open Organizer if the user clicks on one of the "file browser" buttons in tinyMCE
-zenarioA.fileBrowser = function(field_name, url, type, win) {
+zenarioA.fileBrowser = function(tinyCallback, value, meta) {
+	
+	
+	//value, meta.filetype
 	
 	//If this is a field in a FAB, try to load the definition of the field
-	var editorId =
+	var type = meta.filetype,
+		editorId =
 			window.tinyMCE
 		 && tinyMCE.activeEditor
 		 && tinyMCE.activeEditor.id,
@@ -2232,14 +2263,9 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
 		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[editorId],
-		pick_items;
+		pick_items,
+		orgSelectCallback;
 
-	
-	//Remember the open window, the name of the file browser's URL field (this will be something like "mceu_48-inp),
-	//and whether we found the FAB field above or not.
-	zenarioA.tinyMCE_win = win;
-	zenarioA.tinyMCE_field = field_name;
-	zenarioA.tinyMCE_fromFAB = !!fabField;
 	
 	//Links to content items. Open the zenario__content/panels/content panel by default,
 	//but if this is a field in a FAB then allow this to be overridden
@@ -2257,8 +2283,23 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 				max_path: 'zenario__content/panels/content',
 				disallow_refiners_looping_on_min_path: false};
 		}
+		
+		//This handles the return results of the file browser for a link to a content item
+		orgSelectCallback = function(path, key, row) {
+	
+			//Get the URL via an AJAX program
+			key.getItemURL = 1;
+			zenario.moduleAJAX('zenario_common_features', key, true).after(function(URL) {
+	
+				if (zenarioA.loggedOut(URL)) {
+					return;
+				}
+				
+				tinyCallback(URL, {text: row.title});
+			});
+		};
 
-		zenarioA.organizerSelect('zenarioA', 'setLinkURL', false,
+		zenarioA.organizerSelect(orgSelectCallback, undefined, false,
 						pick_items.path,
 						pick_items.target_path,
 						pick_items.min_path,
@@ -2301,8 +2342,36 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 				max_path: false,
 				disallow_refiners_looping_on_min_path: false};
 		}
+		
+		//This handles the return results of the file browser for an image
+		orgSelectCallback = function(path, key, row) {
+			
+			var imageURL = 'zenario/file.php?c=' + (row.short_checksum || row.checksum),
+				extraFields = {};
+	
+			if (key.usage && key.usage != 'image') {
+				imageURL += '&usage=' + encodeURIComponent(key.usage);
+			}
+	
+			imageURL += '&filename=' + encodeURIComponent(row.filename);
+	
+			if (fabField) {
+				imageURL = zenario.addBasePath(imageURL);
+			}
+			
+			//There's a bug in TinyMCE where the width and height in the box is misread in certain situations
+			//and it puts garbage into the width and/or height boxes.
+			//If we know what the width and height should be, try to change them back to what we
+			//think they should be to prevent this issue.
+			if (row.width && row.height) {
+				extraFields.dimensions = row.width + ',' + row.height;
+			}
+			extraFields.alt = row.alt_tag;
+			
+			tinyCallback(imageURL, extraFields);
+		};
 
-		zenarioA.organizerSelect('zenarioA', 'setImageURL', false,
+		zenarioA.organizerSelect(orgSelectCallback, undefined, false,
 						pick_items.path,
 						pick_items.target_path,
 						pick_items.min_path,
@@ -2313,159 +2382,90 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 						undefined,
 						true);
 	
-	//Link to a document (currently the link must be to a public document).
-	} else if (type == 'zenario_document') {
-		zenarioA.organizerSelect('zenarioA', 'setDocumentURL', false,
-						'zenario__library/panels/documents',
-						'zenario__library/panels/documents',
-						'zenario__library/panels/documents',
-						'zenario__library/panels/documents',
-						false, undefined, undefined, undefined, true,
-						undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-						{disabled_if: 'item && item.privacy != "public" && item.privacy != "Public"'});
+	//	//Link to a document (currently the link must be to a public document).
+	//	} else if (type == 'zenario_document') {
+	//		zenarioA.organizerSelect('zenarioA', 'setDocumentURL', false,
+	//						'zenario__library/panels/documents',
+	//						'zenario__library/panels/documents',
+	//						'zenario__library/panels/documents',
+	//						'zenario__library/panels/documents',
+	//						false, undefined, undefined, undefined, true,
+	//						undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+	//						{disabled_if: 'item && item.privacy != "public" && item.privacy != "Public"'});
 	}
 };
 
 
-//By default there is only one file browser button. But for links, we want two;
-//the first should be to content items and the second should be to documents.
-//This function hacks about and replaces the single button with two buttons.
-zenarioA.setLinkPickerOnTinyMCE = function() {
-	var $urlField = $('.mce-zenario_link_picker input.mce-textbox'),
-		$picker = $('.mce-zenario_link_picker .mce-open'),
-		$newPicker = $(zenarioT.microTemplate('zenario_tinymce_link_picker', {urlFieldId: $urlField.attr('id')})),
-		urlFieldWidth = $urlField.width(),
-		pickerWidth = $picker.width(),
-		newPickerWidth;
-	
-	$picker.replaceWith($newPicker);
-	
-	newPickerWidth = $newPicker.width();
-	
-	$urlField.width(urlFieldWidth + pickerWidth - newPickerWidth);
-	
-	zenarioA.tooltips(
-		$newPicker.find('button'),
-		{tooltipClass: 'zenario_admin_tooltip zenario_admin_tooltip_over_tinymce'}
-	);
-};
+//Old functions for TinyMCE 4
 
-
-//This function sets the value of one of the fields in the TinyMCE forms.
-//It's used after picking something from the file browser
-zenarioA.lastFieldValue = '';
-zenarioA.setEditorField = function(value, el, onlyIfEmpty) {
-	if (!defined(el)) {
-		el = (zenarioA.tinyMCE_win || window).document.getElementById(zenarioA.tinyMCE_field);
-	}
-	
-	if (onlyIfEmpty) {
-		if (el.value !== '' && el.value != zenarioA.lastFieldValue) {
-			return;
-		}
-		zenarioA.lastFieldValue = value;
-	}
-	
-	el.value = value;
-	zenario.fireChangeEvent(el);
-};
-
-//We've made a few custom modifications to TinyMCE to be able to mark some fields that we
-//wish to interact with using a custom CSS class.
-//This function will access those.
-zenarioA.getEditorField = function(className) {
-	return $('.mce-panel input.mce-' + className)[0];
-};
-
-//This handles the return results of the file browser for a link to a content item
-zenarioA.setLinkURL = function(path, key, row) {
-	
-	//Get the URL via an AJAX program
-	key.getItemURL = 1;
-	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
-	
-	if (zenarioA.loggedOut(URL)) {
-		return;
-	}
-	
-	zenarioA.setEditorField(row.title, zenarioA.getEditorField('link_text_to_display'), true);
-	zenarioA.setEditorField(URL);
-};
-
-//This handles the return results of the file browser for a link to a public document
-zenarioA.setDocumentURL = function(path, key, row) {
-	var documentURL = row.frontend_link;
-	
-	if (zenarioA.tinyMCE_fromFAB) {
-		documentURL = zenario.addBasePath(documentURL);
-	}
-	
-	zenarioA.setEditorField(row.name, zenarioA.getEditorField('link_text_to_display'), true);
-	zenarioA.setEditorField(documentURL);
-}
-
-//This handles the return results of the file browser for an image
-zenarioA.setImageURL = function(path, key, row) {
-	
-	var $constrainProportionsCheckbox = $('.mce-panel .mce-image_proportions'),
-		imageURL = 'zenario/file.php?c=' + (row.short_checksum || row.checksum);
-	
-	if (key.usage && key.usage != 'image') {
-		imageURL += '&usage=' + encodeURIComponent(key.usage);
-	}
-	
-	imageURL += '&filename=' + encodeURIComponent(row.filename);
-	
-	if (zenarioA.tinyMCE_fromFAB) {
-		imageURL = zenario.addBasePath(imageURL);
-	}
-	
-	zenarioA.setEditorField(imageURL);
-	zenarioA.setEditorField(row.alt_tag, zenarioA.getEditorField('image_alt'));
-	
-	//There's a bug in TinyMCE where the width and height in the box is misread in certain situations
-	//and it puts garbage into the width and/or height boxes.
-	//Temporarily disable the "Constrain proportions" option as a work-around to fix this.
-	if ($constrainProportionsCheckbox.hasClass('mce-checked')) {
-		$constrainProportionsCheckbox.click();
-	}
-	
-	//If we know what the width and height should be, try to change them back to what we
-	//think they should be to prevent this issue.
-	if (row.width) {
-		zenarioA.setEditorField(row.width, zenarioA.getEditorField('image_width'));
-	}
-	if (row.height) {
-		zenarioA.setEditorField(row.height, zenarioA.getEditorField('image_height'));
-	}
-	
-	//Re-enable the "Constrain proportions" option
-	$constrainProportionsCheckbox.click();
-};
+//	//By default there is only one file browser button. But for links, we want two;
+//	//the first should be to content items and the second should be to documents.
+//	//This function hacks about and replaces the single button with two buttons.
+//	zenarioA.setLinkPickerOnTinyMCE = function() {
+//		var $urlField = $('.mce-zenario_link_picker input.mce-textbox'),
+//			$picker = $('.mce-zenario_link_picker .mce-open'),
+//			$newPicker = $(zenarioT.microTemplate('zenario_tinymce_link_picker', {urlFieldId: $urlField.attr('id')})),
+//			urlFieldWidth = $urlField.width(),
+//			pickerWidth = $picker.width(),
+//			newPickerWidth;
+//	
+//		$picker.replaceWith($newPicker);
+//	
+//		newPickerWidth = $newPicker.width();
+//	
+//		$urlField.width(urlFieldWidth + pickerWidth - newPickerWidth);
+//	
+//		zenarioA.tooltips(
+//			$newPicker.find('button'),
+//			{tooltipClass: 'zenario_admin_tooltip zenario_admin_tooltip_over_tinymce'}
+//		);
+//	};
+//
+//
+//	//This function sets the value of one of the fields in the TinyMCE forms.
+//	//It's used after picking something from the file browser
+//	zenarioA.lastFieldValue = '';
+//	zenarioA.setEditorField = function(value, el, onlyIfEmpty) {
+//		if (!defined(el)) {
+//			el = (zenarioA.tinyMCE_win || window).document.getElementById(zenarioA.tinyMCE_field);
+//		}
+//	
+//		if (onlyIfEmpty) {
+//			if (el.value !== '' && el.value != zenarioA.lastFieldValue) {
+//				return;
+//			}
+//			zenarioA.lastFieldValue = value;
+//		}
+//	
+//		el.value = value;
+//		zenario.fireChangeEvent(el);
+//	};
+//
+//	//We've made a few custom modifications to TinyMCE to be able to mark some fields that we
+//	//wish to interact with using a custom CSS class.
+//	//This function will access those.
+//	zenarioA.getEditorField = function(className) {
+//		return $('.mce-panel input.mce-' + className)[0];
+//	};
+//	
+//	
+//	//This handles the return results of the file browser for a link to a public document
+//	zenarioA.setDocumentURL = function(path, key, row) {
+//		var documentURL = row.frontend_link;
+//		
+//		if (zenarioA.tinyMCE_fromFAB) {
+//			documentURL = zenario.addBasePath(documentURL);
+//		}
+//		
+//		zenarioA.setEditorField(row.name, zenarioA.getEditorField('link_text_to_display'), true);
+//		zenarioA.setEditorField(documentURL);
+//	}
 
 
 
 
 
 
-
-
-
-zenarioA.skinDesc = undefined;
-zenarioA.getSkinDesc = function() {
-	if (!defined(zenarioA.skinDesc)) {
-		zenarioA.skinDesc = {};
-		
-		var desc;
-		if (zenarioL.skinId
-		 && (desc = zenario.moduleNonAsyncAJAX('zenario_common_features', {skinId: zenarioL.skinId}, false, true))
-		 && (typeof desc == 'object')) {
-			zenarioA.skinDesc = desc;
-		}
-	}
-	
-	return zenarioA.skinDesc;
-};
 
 
 zenarioA.formatFilesizeNicely = function(size, precision) {
@@ -2511,6 +2511,9 @@ zenarioA.showPagePreview = function(width, height, description, id) {
 				break;
 			case 'published':
 				adminVersionStatus = 'Published';
+				break;
+			case 'unlisted':
+				adminVersionStatus = 'Published unlisted';
 				break;
 			case 'hidden':
 				adminVersionStatus = 'Hidden';
@@ -2905,9 +2908,179 @@ zenarioA.getDefaultLanguageName = function() {
 }
 
 
+//Show debug/developer options when an admin with the "show_dev_tools" option set clicks on a debug button
+zenarioA.debug = function(el, e, globalName, orgMap) {
+	
+	var boxId = '_debug_menu',
+		boxClassName = 'zenario_debug_menu_dropdown',
+		width = 365,
+		left,
+		top,
+		canShowSource = zenarioA.showSourceFiles(globalName, orgMap)
+		m = {
+			canShowSource: canShowSource
+		}
+		html = zenarioT.microTemplate('zenario_debug_menu', m);
+	
+	if (el) {
+		left = 0;
+		top = 18;
+	} else {
+		left = 0;
+		top = 0;
+	}
+		
+	//zenarioA.openBox = function(html, className, n, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
+	zenarioA.openBox(
+		html,
+		boxClassName,
+		boxId,
+		el || e, width, left, top, false, false, false, false
+	);
+	
+	var $debugMenu = $('#zenario_debug_menu'),
+		$openDevToolsOption = $('#zenario_dm_open_dev_tools'),
+		$bbeditOption = $('#zenario_dm_copy_bbedit'),
+		$grepOption = $('#zenario_dm_copy_grep'),
+		$lsOption = $('#zenario_dm_copy_ls');
+	
+	//Use the jQuery menu widget for this.
+	$debugMenu.menu();
+	
+	//Wire up each option
+	$openDevToolsOption.click(function() {
+		window.open(URLBasePath + 'zenario/admin/dev_tools/dev_tools.php?mode=' + encodeURIComponent(globalName) + (orgMap? '&orgMap=1' : ''));
+	});
+	
+	if (canShowSource) {
+		$bbeditOption.click(function() {
+			zenarioA.showSourceFiles(globalName, orgMap, true, 'bbedit');
+		});
+	
+		$grepOption.click(function() {
+			zenarioA.showSourceFiles(globalName, orgMap, true, 'grep');
+		});
+	
+		$lsOption.click(function() {
+			zenarioA.showSourceFiles(globalName, orgMap, true, 'ls');
+		});
+	}
+	
+	
+	zenario.stop(e);
+	$(document.body).off('click', zenarioA.closeDebugMenu);
+	
+	
+	
+	//If the admin clicks anywhere on the page, including on one of the menu options, we should close the menu
+	setTimeout(function() {
+		$(document.body).on('click', zenarioA.closeDebugMenu);
+	}, 1);
+	
+	
+	return false;
+};
 
-zenarioA.debug = function(mode, orgMap) {
-	window.open(URLBasePath + 'zenario/admin/dev_tools/dev_tools.php?mode=' + encodeURIComponent(mode) + (orgMap? '&orgMap=1' : '')); return false;
+zenarioA.closeDebugMenu = function() {
+	var boxId = '_debug_menu';
+	zenarioA.closeBox(boxId, false);
+	$(document.body).off('click', zenarioA.closeDebugMenu);
+};
+
+
+
+zenarioA.showSourceFiles = function(globalName, orgMap, doIt, editor) {
+	
+	var lib = window[globalName],
+		adminSettings = zenarioA.adminSettings || {},
+		sftp = zenarioA.adminSettings.cli_sftp_connection,
+		tuix, source, command, path, absolute;
+	
+	if (doIt && !editor) {
+		return false;
+	}
+		
+	if (lib) {
+		
+		if (orgMap) {
+			tuix = lib.map;
+		} else {
+			tuix = lib.tuix;
+		}
+		
+		if (source = tuix && tuix.__source_files) {
+		
+			if (!_.isEmpty(source.paths)) {
+			
+				if (doIt) {
+					
+					var rootPath = source.root,
+						addLineBreaks = editor != 'grep',
+						runningRemotely = editor == 'bbedit' && !_.isEmpty(sftp),
+						runningLocally = !runningRemotely,
+						first = true,
+						message;
+					
+					command = '';
+					
+					command += editor;
+					
+					switch (editor) {
+						case 'grep':
+							command += ' -n "Enter your search term here"';
+							break;
+							
+						case 'ls':
+							command += ' -l';
+							break;
+							
+					}
+			
+					foreach (source.paths as path) {
+						
+						absolute = path[0] == '/';
+						
+						if (runningLocally
+						 && rootPath
+						 && absolute
+						 && path.substr(0, rootPath.length) == rootPath) {
+							path = path.substr(rootPath.length);
+						}
+						
+						command += ' ';
+						if (first) {
+							first = false;
+						
+						} else if (addLineBreaks) {
+							command += '\\\n';
+						}
+						
+						if (runningRemotely) {
+							command += ' ' + sftp;
+						}
+				
+						if (runningRemotely && !absolute) {
+							command += rootPath;
+						}
+				
+						command += path;
+					}
+					
+					if (runningLocally) {
+						message = phrase.copiedCommandCD;
+					} else {
+						message = phrase.copiedCommand;
+					}
+			
+					zenarioA.copy(command, message);
+				}
+			
+				return true;
+			}
+		}
+	}
+	
+	return false;
 };
 
 //Functionality for clicking on Menu Nodes. They should:
@@ -3016,17 +3189,17 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 			
 			//1. Create the draft, then when the draft has been created press this option again
 			buttonsHTML =
-				_$input('type', 'button', 'class', 'submit_selected', 'value', confirmButtonText, 'onclick', 'zenarioA.draftSetCallback("' + jsEscape(aId) + '"); zenarioAT.action2();');
+				_$input('type', 'button', 'class', 'zenario_submit_button', 'value', confirmButtonText, 'onclick', 'zenarioA.draftSetCallback("' + jsEscape(aId) + '"); zenarioAT.action2();');
 			
 			//2. Don't create a draft, press this option again and just view in read-only mode
 			if (justView) {
 				buttonsHTML +=
-					_$input('type', 'button', 'class', 'submit', 'value', object.ajax.confirm.button_message__just_view, 'onclick', 'zenarioA.draftDoCallback("' + jsEscape(aId) + '");');
+					_$input('type', 'button', 'class', 'zenario_gp_button', 'value', object.ajax.confirm.button_message__just_view, 'onclick', 'zenarioA.draftDoCallback("' + jsEscape(aId) + '");');
 			}
 			
 			//3. Cancel
 			buttonsHTML +=
-				_$input('type', 'button', 'class', 'submit', 'value', object.ajax.confirm.cancel_button_message);
+				_$input('type', 'button', 'class', 'zenario_gp_button', 'value', object.ajax.confirm.cancel_button_message);
 			
 			object.ajax.confirm.message = '<!--Button_HTML:' + zenario.hypEscape(buttonsHTML) + '-->' + confirmMessage;
 		
@@ -3064,7 +3237,7 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	//Handle the case where we're already on a draft, but there was still a confirm message to show
 	} else if (confirmMessage) {
 		buttonsHTML =
-			_$input('type', 'button', 'class', 'submit_selected', 'value', confirmButtonText, 'onclick', 'zenarioA.draftDoCallback("' + jsEscape(aId) + '");');
+			_$input('type', 'button', 'class', 'zenario_submit_button', 'value', confirmButtonText, 'onclick', 'zenarioA.draftDoCallback("' + jsEscape(aId) + '");');
 		
 		if (zenarioA.draftMessage) {
 			confirmMessage += '<br/><br/>' + zenarioA.draftMessage;
@@ -3150,8 +3323,7 @@ zenarioA.reloadPage = function(sameVersion, linkViaAdminWelcomePage, task) {
 
 
 //A shortcut to the toastr library
-zenarioA.lastToast = false;
-zenarioA.clearLastToast = false;
+zenarioA.currentToast = false;
 zenarioA.toast = function(object) {
 	if (defined(object)
 	 && _.isObject(object)) {
@@ -3159,14 +3331,16 @@ zenarioA.toast = function(object) {
 		//Remember this toast that we had for the next 60 seconds,
 		//or until another toast comes in
 		zenarioA.clearToast();
-		zenarioA.lastToast = JSON.stringify(object);
+		zenarioA.currentToast = object;
 		setTimeout(function () {
-			zenarioA.lastToast = false;
+			zenarioA.currentToast = false;
 		}, 60000);
 		
 		//Work out what type of toast this is
 		var mt = object.message_type,
-			toast = toastr.info;
+			toast = toastr.info,
+			options = object.options || {};
+		
 		switch (object.message_type) {
 			case 'error':
 			case 'warning':
@@ -3174,42 +3348,85 @@ zenarioA.toast = function(object) {
 				toast = toastr[mt];
 		}
 		
+		if (!defined(options.closeButton)) {
+			options.closeButton = true;
+		}
+		
+		if (!defined(options.hideDuration)) {
+			options.hideDuration = 200;
+		}
+		
 		//display the toast
-		toast(object.message, object.title, object.options);
+		return toast(object.message, object.title, options);
 		
 		//Reminder to self: the toast function returns a $jQuery element with the toaster,
 		//just in case we ever wanted to do something like add a click event...
 	}
 };
 
+zenarioA.notification = function(message, type, options) {
+	
+	return zenarioA.toast({
+		message: message,
+		message_type: type || 'success',
+		options: options
+	});
+};
 
 
-zenarioA.toastOrNoToast = function(flags) {
-	if (flags.Clear_Toast) {
+
+zenarioA.manageToastOnReload = function(flags, isOrganizerReload) {
+	
+	//N.b. this is written this way due a bug/inconsistency we currently have with flag names and cases. Will sort this out after the next branch!
+	var msg;
+	if (msg = flags.TOAST_NEXT_PAGELOAD || flags.toast_next_pageload || flags.Toast_Next_Pageload) {
+		//Use this flag if you're reloading a page and want to display a toast message after the page had reloaded
+		zenarioA.showToastOnNextPageLoad(msg);
 		zenarioA.clearToast();
-	} else {
+	
+	} else if (flags.CLEAR_TOAST) {
+		//Use this flag if you're reloading a page and want to clearly specify that you DON'T want a toast message after the page had reloaded
+		zenarioA.clearToast();
+	
+	} else if (isOrganizerReload) {
+		//By default, if the is page reloading, pages in the front-end don't keep any open toasts after the reload, but Organizer does keep its toasts open after the reload
 		zenarioA.rememberToast();
 	}
 };
 
 zenarioA.clearToast = function() {
-	if (zenarioA.clearLastToast) {
-		clearTimeout(zenarioA.clearLastToast);
-	}
+	zenario.sSetItem(true, 'current_toast', '');
 };
 
 zenarioA.rememberToast = function() {
 	//Check if we just displayed a toast. If so, remember it for next time.
-	if (zenarioA.lastToast) {
-		zenario.nonAsyncAJAX(URLBasePath + 'zenario/admin/quick_ajax.php', {_remember_toast: zenarioA.lastToast});
+	if (zenarioA.currentToast) {
+		zenario.sSetItem(true, 'current_toast', zenarioA.currentToast, true);
 	}
 };
 
-zenarioA.longToast = function(msg, cssClass) {
-	if (!$('#toast-container .' + cssClass).length) {
-		toastr.warning(msg, undefined, {timeOut: 5000, extendedTimeOut: 5000, toastClass: 'toast ' + cssClass});
+zenarioA.longToast = function(msg, type) {
+	zenarioA.notification(msg, type, {timeOut: 15000, extendedTimeOut: 15000});
+};
+
+
+zenarioA.showToastOnNextPageLoad = function(msg) {
+	zenario.sSetItem(true, 'toast_next_pageload', msg);
+};
+
+zenarioA.checkToastThisPageLoad = function() {
+	var msg = zenario.sGetItem(true, 'toast_next_pageload');
+	
+	if (msg) {
+		zenarioA.longToast(msg);
+		zenario.sSetItem(true, 'toast_next_pageload', '');
+	
+	} else if (msg = zenario.sGetItem(true, 'current_toast', true)) {
+		zenarioA.toast(msg);
+		zenario.sSetItem(true, 'current_toast', '');
 	}
 };
+
 
 
 
@@ -3265,10 +3482,10 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 			if (hasReply || hasContinueAnyway) {
 				
 				if (hasContinueAnyway) {
-					buttonsHTML += _$input('id', 'zenario_continueAnyway', 'class', 'submit_selected', 'type', 'button', 'value', phrase.continueAnyway);
+					buttonsHTML += _$input('id', 'zenario_continueAnyway', 'class', 'zenario_submit_button', 'type', 'button', 'value', phrase.continueAnyway);
 				}
 				if (hasReply) {
-					buttonsHTML += _$input('id', 'zenario_retry', 'class', 'submit_selected', 'type', 'button', 'value', phrase.retry);
+					buttonsHTML += _$input('id', 'zenario_retry', 'class', 'zenario_submit_button', 'type', 'button', 'value', phrase.retry);
 				}
 				
 				zenarioA.nowDoingSomething();
@@ -3438,6 +3655,8 @@ zenarioA.hasNoPriv = function(priv) {
 };
 
 
+var missingSlotsToast;
+
 zenarioA.init = function(
 	cVersion,
 	adminId,
@@ -3515,6 +3734,105 @@ zenarioA.init = function(
 
 		//Append the HTML for the floating boxes in admin mode
 		$('body').append(zenarioT.microTemplate('zenario_floating_boxes', {}));
+	}
+	
+	//Some checks/warning messages for logged in admins
+	if (zenario.adminId && siteSettings) {
+		var adminDomain = siteSettings.admin_domain,
+			currentDomain = document.location.host,
+			primaryDomain = siteSettings.primary_domain,
+			adminDomainIsSet = !_.isEmpty(adminDomain),
+			primaryDomainIsSet = !_.isEmpty(primaryDomain),
+			onAdminDomain = adminDomainIsSet && adminDomain == currentDomain,
+			onPrimaryDomain = primaryDomainIsSet && primaryDomain == currentDomain;
+		
+		if (adminDomainIsSet && !onAdminDomain) {
+			zenarioA.toast({
+				message_type: 'error',
+				message: zenario.applyMergeFields(phrase.notOnAdminDomain, {admin_domain: adminDomain, current_domain: currentDomain}),
+				options: {
+					timeOut: 0,
+					disableTimeOut: true,
+					closeButton: true
+				}
+			});
+		}
+		
+		if (primaryDomainIsSet && !onAdminDomain && !onPrimaryDomain) {
+			zenarioA.toast({
+				message_type: 'error',
+				message: zenario.applyMergeFields(phrase.notOnPrimaryDomain, {primary_domain: primaryDomain, current_domain: currentDomain}),
+				options: {
+					timeOut: 0,
+					disableTimeOut: true,
+					closeButton: true
+				}
+			});
+		}
+	}
+	
+	//Run some checks on slots (admin mode in the front-end only).
+	if (zenario.adminId && zenario.cID && zenario.slots) {
+		
+		//zenarioA.init() is called before zenario.slots(), so we can't run this code now
+		//and need to wait until zenario.slots() has been called and the slot metadata has been set.
+		zOnLoad(function() {
+			var numSlots = 0,
+				numMissingSlots = 0,
+				si, slot;
+			
+			//Loop through each slot on the page
+			foreach (zenario.slots as si => slot) {
+				//Ignore any page-wide events that have been registred in the zenario.slots object.
+				//(I.e. we should ignore the %PAGE_WIDE% slot.)
+				if (si[0] != '%') {
+					//Count both the slots we find, and the number of missing slots
+					++numSlots;
+					if (slot.isMissing) {
+						++numMissingSlots;
+					}
+				}
+			}
+			
+			//Warn if there are no slots on the layout
+			if (!numSlots) {
+				zenarioA.toast({
+					message_type: 'error',
+					message: phrase.noSlots,
+					options: {
+						timeOut: 0,
+						disableTimeOut: true,
+						closeButton: true
+					}
+				});
+			}
+			
+			//Warn if there are missing slots.
+			//(These are slots defined on the content item but missing on the layout.)
+			if (numMissingSlots) {
+				//Save a reference to this toast in a variable, as we may need to close
+				//it programatically later.
+				missingSlotsToast =
+					zenarioA.toast({
+						message_type: 'warning',
+						message: zenario.applyMergeFields(phrase.missingSlots, {layout: zenarioA.layoutCodeName(zenarioL.layoutId)}),
+						options: {
+							timeOut: 0,
+							disableTimeOut: true,
+							closeButton: true
+						}
+					});
+			}
+		});
+	}
+	
+	zenarioA.checkToastThisPageLoad();
+};
+
+//Clear the "you have missing slots" toast if it is visible
+zenarioA.clearMissingSlotsMessage = function() {
+	if (missingSlotsToast) {
+		toastr.clear(missingSlotsToast);
 	}
 };
 

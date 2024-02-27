@@ -51,7 +51,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 		
 		$errors = false;
 		// Validate calculation code
-		$error = static::validateCalculationCode($calculationCode);
+		$error = zenario_user_forms::validateCalculationCode($calculationCode);
 		
 		if (ze::isError($error)) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase((string)$error);
@@ -60,98 +60,18 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 		}
 	}
 	
-	private static function validateCalculationCode($calculationCode) {
-		$calculationCode = $calculationCode ? $calculationCode : [];
-		// No double operations
-		// No double values
-		// No operations at the start
-		// No operations at the end
-		// Parenthesis come in paris
-		
-		$steps = count($calculationCode);
-		
-		$i = 0;
-		$previousOperation = $previousValue = $previousOpenParentheses = $previousCloseParentheses = false;
-		$parenthesesOffset = 0;
-		foreach ($calculationCode as $step) {
-			++$i;
-			if ($i == 1 && !in_array($step['type'], ['parentheses_open', 'static_value', 'field'])) {
-				return new ze\error('Invalid symbol at start of equation.');
-			}
-			
-			$isOperation = $isValue = $isOpenParentheses = $isCloseParentheses = false;
-			if (in_array($step['type'], ['operation_addition', 'operation_subtraction', 'operation_multiplication', 'operation_division'])) {
-				$isOperation = true;
-			} elseif (in_array($step['type'], ['static_value'])) {
-				if ($step['value'] > 999999999999999) {
-					return new ze\error('Static values cannot be greater than 999999999999999.');
-				} elseif ($step['value'] < -999999999999999) {
-					return new ze\error('Static values cannot be less than -999999999999999.');
-				} elseif (!zenario_user_forms::validateNumericInput($step['value'])) {
-					return new ze\error('Static values must be numeric.');
-				}
-				$isValue = true;
-			} elseif ($step['type'] == 'parentheses_open') {
-				$isOpenParentheses = true;
-				++$parenthesesOffset;
-			} elseif ($step['type'] == 'parentheses_close') {
-				$isCloseParentheses = true;
-				--$parenthesesOffset;
-			}
-			
-			if ($previousOperation) {
-				if ($isOperation) {
-					return new ze\error('Cannot have two operations in a row.');
-				} elseif ($isCloseParentheses) {
-					return new ze\error('Cannot close parentheses after an operation.');
-				}
-			} elseif ($previousValue) {
-				if ($isValue) {
-					return new ze\error('Cannot have two values in a row.');
-				} elseif ($isOpenParentheses) {
-					return new ze\error('Cannot open parentheses after a value.');
-				}
-			} elseif ($previousOpenParentheses) {
-				if ($isOperation) {
-					return new ze\error('Cannot have an operation after open parentheses.');
-				} else if ($isCloseParentheses) {
-					return new ze\error('Cannot have empty parentheses.');
-				}
-			} elseif ($previousCloseParentheses) {
-				if ($isValue) {
-					return new ze\error('Cannot have a value after close parentheses.');
-				} else if ($isOpenParentheses) {
-					return new ze\error('Cannot open parentheses immediately after close parentheses.');
-				}
-			}
-			
-			if ($i == $steps && ($isOperation || $isOpenParentheses)) {
-				return new ze\error('Invalid symbol at end of equation');
-			}
-			
-			$previousOperation = $isOperation;
-			$previousValue = $isValue;
-			$previousOpenParentheses = $isOpenParentheses;
-			$previousCloseParentheses = $isCloseParentheses;
-		}
-		
-		if ($parenthesesOffset != 0) {
-			return new ze\error('Missing parentheses.');
-		}
-		
-		return true;
-	}
-	
 	private static function calculationAdminBoxUpdateDisplay($calculationCode, &$fields) {
 		$calculationDisplay = '';
 		if ($calculationCode) {
 			$lastIsParenthesisOpen = false;
 			for ($i = 0; $i < count($calculationCode); $i++) {
-				if (!$lastIsParenthesisOpen && $calculationCode[$i]['type'] != 'parentheses_close') {
-					$calculationDisplay .= ' ';
-				} else if ($lastIsParenthesisOpen) {
+				if ($lastIsParenthesisOpen) {
 					$lastIsParenthesisOpen = false;
 				}
+				
+				$calculationDisplay .= '<br />';
+				
+				$calculationDisplay .= '<span>';
 				
 				switch ($calculationCode[$i]['type']) {
 					case 'operation_addition':
@@ -186,6 +106,9 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 						$calculationDisplay .= '"' . $name . '"';
 						break;
 				}
+				
+				$calculationDisplay .= '</span>';
+				
 				$calculationDisplay = trim($calculationDisplay);
 			}
 		}

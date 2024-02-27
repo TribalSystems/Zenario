@@ -114,9 +114,11 @@ zenario__content:
                     values:
                         first_draft: First Draft
                         published_with_draft: Published with Draft
+                        unlisted_with_draft: Published unlisted with Draft
                         hidden_with_draft: Hidden with Draft
                         trashed_with_draft: Trashed with Draft
                         published: Published
+                        unlisted: Published unlisted
                         hidden: Hidden
                         trashed: Trashed
                 admin_version_status:
@@ -125,9 +127,11 @@ zenario__content:
                     values:
                         first_draft: Draft
                         published_with_draft: Draft
+                        unlisted_with_draft: Draft
                         hidden_with_draft: Draft
                         trashed_with_draft: Draft
                         published: Published
+                        unlisted: Published
                         hidden: Hidden
                         trashed: Trashed
                 visitor_version_status:
@@ -136,9 +140,11 @@ zenario__content:
                     values:
                         first_draft: '[Not published]'
                         published_with_draft: ""
+                        unlisted_with_draft: '[Unlisted]'
                         hidden_with_draft: '[Hidden]'
                         trashed_with_draft: '[Trashed]'
                         published: ""
+                        unlisted: '[Unlisted]'
                         hidden: '[Hidden]'
                         trashed: '[Trashed]'
                 privacy:

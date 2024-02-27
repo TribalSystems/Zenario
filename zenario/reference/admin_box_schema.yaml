@@ -457,6 +457,18 @@ additionalProperties:
                             
                             This works from version 7.3 onwards.
                     
+                    in_use:
+                        type: boolean
+                        description: >
+                            The "in use" flagging feature.
+                            
+                            This is used in combination with the parent propety.
+                            If you set it to true, the UI will flag to the admin that there is something set on this tab.
+                            If you set it to false, the UI will flag to the admin that there is nothingthing set on this tab.
+                            Leave it null/undefined to disable the feature.
+                            
+                            This works from 9.6 onwards.
+                    
                     hidden: *hidden
                     visible_if: *visible_if
                     hide_when_children_are_not_visible:
@@ -1148,6 +1160,19 @@ additionalProperties:
                                                 If not specified, the file will be stored in the database.
 
                                                 This works from version 9.2 onwards.
+                                        
+                                        uploaded_ids:
+                                            type: object
+                                            additionalProperties:
+                                                type: number
+                                                description: >
+                                                    The ID of the uploaded file
+                                            description: >
+                                                If you create a file upload as a site setting or a plugin setting, the common features
+                                                module will automatically call the ze\file::getPathOfUploadInCacheDir() and ze\file::addToDatabase()
+                                                functions to put the uploaded file(s) into the database and convert the filepath into a file ID.
+                                                The filepaths and their corresponding file IDs will be stored in this lookup array, just in case
+                                                you need to know what the old/new values are.
                                 
                                 pick_items: &pick_items
                                     type: object
@@ -1602,7 +1627,7 @@ additionalProperties:
                                             description: >
                                                 This can be used to draw the second part of a "type: radios" field
                                                 that was split up by using the  "split_values_if_selected"
-                                                property on one or more of it's fields.
+                                                property on one or more of its fields.
                                                 
                                                 If no values were split, then this field will be auto-hidden.
                                                 
@@ -1704,7 +1729,7 @@ additionalProperties:
                                         This happens immediately; the system won't wait for the un-focus event.
                                         
                                         However to prevent framerate/performance issues, this will only trigger when the field is first
-                                        changed from (or back to) it's original value. Further modifications to the value of the field
+                                        changed from (or back to) its original value. Further modifications to the value of the field
                                         won't retrigger the change.
                                         
                                         This works from version 8.0 onwards.
@@ -2102,11 +2127,21 @@ additionalProperties:
                                         dont_save_default_value:
                                             type: boolean
                                             description: >
-                                                If the value of this field is equal to the value you entered above,
-                                                don't save it into the database.
+                                                If the value of this field is equal to its default value, don't save it into the database.
                                         
                                         
                                                 This works from version 7.3 onwards.
+                                        
+                                        save_when_field_is_hidden:
+                                            type: boolean
+                                            description: >
+                                                Most plugin settings are not saved into the database if their fields were hidden in the FAB.
+                                                Set this option if you do want to save the value of a hidden field.
+                                                
+                                                Note: if the tab is hidden, the plugin setting will never be saved, regardless of this option.
+                                                
+                                        
+                                                This works from version 9.6 onwards.
                                         
                                         is_searchable_content:
                                             type: boolean
@@ -2201,6 +2236,15 @@ additionalProperties:
                                                 
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
+                                        advanced_inline_styles:
+                                            type: boolean
+                                            description: >
+                                                Set this to true if you have a WYSIWYG Editor and want to allow advanced inline styles.
+                                                
+                                                This isn't needed if you have an editor with restricted options that just lets the admin
+                                                enter text, however if you allow images or other content we recommend you enable this.
+                                                
+                                                This works from version 9.6 onwards.
                                 
                                 site_setting:
                                     type: object
@@ -2277,6 +2321,15 @@ additionalProperties:
                                                 Note: this feature only works when using the CMS tool to restore a backup.
                                                 
                                                 This works from version 8.7 onwards.
+                                        advanced_inline_styles:
+                                            type: boolean
+                                            description: >
+                                                Set this to true if you have a WYSIWYG Editor and want to allow advanced inline styles.
+                                                
+                                                This isn't needed if you have an editor with restricted options that just lets the admin
+                                                enter text, however if you allow images or other content we recommend you enable this.
+                                                
+                                                This works from version 9.6 onwards.
                                 
                                 admin_setting:
                                     type: object
@@ -2350,7 +2403,7 @@ additionalProperties:
                                             parent:
                                                 type: *stringy
                                                 description: >
-                                                    This is used for hierarchal checkboxes, radiogroups and select lists.
+                                                    This is used for hierarchical checkboxes, radiogroups and select lists.
                                                     You can enter the key/saved value of another value here to create a parent/child relationship.
                                                     
                                                     From version 7.0.6 onwards you can also use this for values in select lists.
@@ -2358,7 +2411,7 @@ additionalProperties:
                                             hide_when_children_are_not_visible:
                                                 type: boolean
                                                 description: >
-                                                    This is used for hierarchal select lists.
+                                                    This is used for hierarchical select lists.
                                                     
                                                     Use this to hide the parent if it has no child values
                                                     
@@ -2752,6 +2805,8 @@ additionalProperties:
                                         You may only use this on one field per tab.
                                         
                                         This works from version 8.0 onwards.
+                                        
+                                        From version 9.6 onwards this will now work for WYSIWYG Editor type fields as well.
                                 
                                 color_picker_options:
                                     type: object

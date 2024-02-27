@@ -32,7 +32,6 @@ class adminAdm {
 	
 
 	//or use \ze\adminAdm::savePerms($adminId, $actions = []) to add specific permissions
-	//Formerly "saveAdminPerms()"
 	public static function savePerms($adminId, $permissions, $actions = [], $details = []) {
 		$clearAllOthers = true;
 	
@@ -149,8 +148,7 @@ class adminAdm {
 		\ze\row::update('admins', $details, $adminId);
 	}
 
-	//Formerly "deleteAdmin()"
-	public static function delete($admin_id, $undo = false) {
+	public static function delete($adminId, $undo = false) {
 		$sql = "
 			UPDATE ". DB_PREFIX. "admins SET
 				status = '". ($undo? "active" : "deleted"). "',
@@ -160,7 +158,7 @@ class adminAdm {
 				reset_password_salt = '',
 				password_needs_changing = 1
 			WHERE authtype = 'local'
-			  AND id = ". (int) $admin_id;
+			  AND id = ". (int) $adminId;
 		\ze\sql::update($sql);
 	}
 	
@@ -199,7 +197,6 @@ class adminAdm {
 	//Sets an admin's password, overwriting the current value
 	//By default changing someone's password removes the password_needs_changing flag, but
 	//you can override this and set it instead by passing a value of 1 to $requireChange
-	//Formerly "setPasswordAdmin()"
 	public static function setPassword($adminId, $password, $requireChange = null, $isPasswordReset = false) {
 	
 		//Generate a random salt for this password. If someone gets hold of the encrypted value of
@@ -245,7 +242,6 @@ class adminAdm {
 
 
 	//Look for and update the copy of the Global Admins in the local table
-	//Formerly "syncSuperAdmin()"
 	public static function syncMultisiteAdmins($adminIdG) {
 		
 		//Get a list of which admins to sync.

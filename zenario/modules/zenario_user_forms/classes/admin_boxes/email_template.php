@@ -55,7 +55,8 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 					uff.custom_code_name,
 					p.name AS page_name,
 					p.ord AS page_ord,
-					cdf.field_name
+					cdf.field_name,
+					uff.split_first_name_last_name
 				FROM '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'pages p
 					ON uff.page_id = p.id
@@ -88,9 +89,22 @@ class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass
 						$mergeFieldName = 'unlinked_' . $row['field_type'] . '_' . $row['id'];
 					}
 					
+					$rowName = $row['name'];
+					
+					if (mb_strlen($rowName) > 50) {
+						$rowName = mb_substr($rowName, 0, 50). '...';
+					}
+					
+					$rowName = trim($rowName, " \t\n\r\0\x0B:");
+					
+					$label = $rowName . ': [[' . $mergeFieldName . ']]';
+					if ($row['split_first_name_last_name']) {
+						$label .= ' (contains both first and last name)';	
+					}
+					
 					$formFields[$row['id']] = [
 						'ord' => $row['ord'] + 10,
-						'label' => trim($row['name'], " \t\n\r\0\x0B:") . ': [[' . $mergeFieldName . ']]',
+						'label' => $label,
 						'parent' => 'page_' . $row['page_id']
 					];
 				}

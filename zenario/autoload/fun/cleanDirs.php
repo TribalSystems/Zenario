@@ -35,28 +35,31 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $directories = [
 	'cache' => [
-		'layouts' => 14 * 24 * 60 * 60,
 		'downloads' => -2,
 		'images' => -2,
-		'fabs' => 4 * 60 * 60,
 		'files' => -2,
-		'frameworks' => 7 * 60 * 60,
-		'pages' => 2 * 60 * 60,
-		'scans' => 5 * 60,
-		'stop_flags' => 4 * 60 * 60,
 		'stats' => -1,
-		'tuix' => -1
+		'tuix' => -1,
+		'bundles' => 7 * 24 * 60 * 60,
+		'fabs' => 4 * 60 * 60,
+		'frameworks' => 14 * 24 * 60 * 60,
+		'layouts' => 14 * 24 * 60 * 60,
+		'pages' => 7 * 24 * 60 * 60,
+		'plugins' => 7 * 24 * 60 * 60,
+		'scans' => 5 * 60,
+		'stop_flags' => 4 * 60 * 60
 	], 
 	'private' => [
 		'downloads' => 5 * 60 * 60,
-		'images' => 2 * 60 * 60,
 		'files' => 2 * 60 * 60,
+		'images' => 2 * 60 * 60,
 		'uploads' => 1 * 60 * 60
 	], 
 	'public' => [
 		'downloads' => -1,
 		'images' => -1,
-		'css' => -1
+		'css' => -1,
+		'js' => -1
 	]
 ];
 

@@ -121,7 +121,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 				ze\user::logIn($row['user_id']);
 				$this->message = $this->phrase('Thank you, your email address has been changed.');
 				//Set email verified flag
-				ze\row::update('users', ['email_verified' => 1], ['id' => $row['user_id']]);
+				ze\row::update('users', ['email_verified' => 'verified'], ['id' => $row['user_id']]);
 				return true;
 			} else {
 				$this->message = $this->phrase('The verification link that you provided is either invalid or has already been used.');

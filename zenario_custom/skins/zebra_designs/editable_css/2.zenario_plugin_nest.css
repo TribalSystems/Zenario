@@ -171,6 +171,10 @@
 	display:inline-block;
 }
 
+.zenario_plugin_nest.nest_top_bar .zenario_language_picker .lang_pick_box .lang_choices {
+	display:inline-block;
+}
+
 /* Nest top bar (banner plugins for buttons and menu vertical plugin)
 --------------------------------------------------------------------------------------------------*/
 
@@ -297,7 +301,7 @@
 
 .zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical .wrap_menu {
 	opacity:0;
-	visibility:none;
+	visibility:hidden;
 }
 
 .zenario_plugin_nest.nest_top_bar_extranet .zenario_menu_vertical:hover .wrap_menu {
@@ -370,7 +374,6 @@
   	text-align:center;
 	-webkit-transition: all 0.2s ease-in-out;
   	-moz-transition: all 0.2s ease-in-out;
-  	-o-transition: all 0.2s ease-in-out;
   	transition: all 0.2s ease-in-out;
 }
 
@@ -455,7 +458,6 @@ body.mobile .Gridbreak_Body .nest_accordion.zenario_plugin_nest .zenario_banner 
 .nest_accordion.zenario_plugin_nest .zenario_banner .banner_title > *:after {
 	-webkit-transition: all 0.2s ease-in-out;
   	-moz-transition: all 0.2s ease-in-out;
-  	-o-transition: all 0.2s ease-in-out;
   	transition: all 0.2s ease-in-out;
 }
 

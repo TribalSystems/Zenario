@@ -2,6 +2,10 @@
 	background:url("images/icon-countries.svg") no-repeat center center / auto 16px;
 }
 
+ul li span.organizer_item_image.zenario_country_manager_country {
+	background:url("images/icon-countries-white.svg") no-repeat center center / auto 16px;
+}
+
 .organizer_item_image.zenario_country_manager_region {
 	background:url("images/icon-regions.svg") no-repeat center 1px / auto 20px;
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="105px" height="105px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g>
+        <path d="M51.563,1.563L101.563,51.563L51.563,101.563L1.562,51.563L51.563,1.562L51.563,1.563Z" style="fill:white;stroke:rgb(51,51,51);stroke-width:3.13px;"/>
+        <g>
+            <g transform="matrix(1,0,0,1,24.318,60.848)">
+                <text x="0px" y="0px" style="font-family:'Roboto-Bold', 'Roboto';font-weight:700;font-size:25px;fill:rgb(51,51,51);">TUI</text>
+            </g>
+            <g transform="matrix(1,0,0,1,63.735,60.848)">
+                <text x="0px" y="0px" style="font-family:'Roboto-Bold', 'Roboto';font-weight:700;font-size:25px;fill:rgb(51,51,51);">X</text>
+            </g>
+        </g>
+    </g>
+</svg>

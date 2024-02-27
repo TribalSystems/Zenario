@@ -6,7 +6,7 @@ zenario_user__convert_to_user:
         id: ""
     tabs:
         details:
-            label: Convert to user
+            label: Details for user account
             edit_mode:
                 enabled: Yes
             fields:
@@ -94,8 +94,9 @@ zenario_user__convert_to_user:
                     label: "Ask user to change their password on next login"
                     type: checkbox
                 terms_and_conditions_accepted:
-                    label: "User has accepted terms and conditions"
-                    side_note: "When checked, this indicates the user has accepted the site's terms and conditions."
+                    label: "Has accepted terms and conditions"
+                    note_below: "This indicates if the user or contact has accepted the site's terms and conditions (recorded in the consent log when a user/contact signs up themself). If using Newsletters in Zenario, they will only be sent to recipients where this is checked."
+
                     type: checkbox
                 send_activation_email_to_user:
                     label: 'Send activation email to User'

@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (thus is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and tuix.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and tuix.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -745,7 +745,7 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 			data.revert =
 				_$div('class', 'zenario_editCancelButton',
 					zenarioT.input(
-						'class', 'submit',
+						'class', 'zenario_gp_button',
 						'type', 'button',
 						'onclick', thus.globalName + '.changeMode(); return false;',
 						'value', thus.editModeOn()? phrase.cancel : phrase.edit
@@ -2236,39 +2236,57 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					field.editor_type = 'readonly';
 				}
 				
-				if (field.editor_type != 'readonly' && field.editor_type != 'basic') {
-					zenarioA.getSkinDesc();
+				var skinEditorOptions,
+					isAdvancedEditor = field.editor_type != 'readonly' && field.editor_type != 'basic';
+				
+				if (isAdvancedEditor) {
+					skinEditorOptions = zenarioA.skinEditorOptions;
 					extraAtt.style = 'visibility: hidden;';
 				}
 				
-				var dummyTextArea = '<textarea ' + thus.outputAtts(id, field) + '></textarea>',
-					minHeight = $(dummyTextArea).height(),
-					maxHeight = Math.max(Math.floor(($(window).height()) * 0.5), 300),
-					content_css = undefined,
+				var content_css = undefined,
 					onchange_callback = function(inst) {
 							thus.fieldChange(inst.id);
 					},
-					options;
+					options,
+					skinEditorOptions,
+					fontSizes = "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+					initInstanceCallback = function(instance) {
+						zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
+						
+						var el;
+						if ((el = instance.editorContainer)
+						 && (el = $(instance.editorContainer).find('iframe'))
+						 && (el = el[0])
+						 && (el = el.contentWindow)) {
+							zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
+						}
+						
+						if (field.tall_as_possible) {
+							zenarioAB.makeFieldAsTallAsPossible();
+						}
+					};
 				
 				switch (field.editor_type) {
 					case 'readonly':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
 							inline: false,
 							menubar: false,
 							statusbar: false,
 							plugins: [
-								"advlist autolink lists link image charmap hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-								"colorpicker textcolor fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "anchor",
+								"searchreplace", "code", "fullscreen",
+								"nonbreaking", "table", "directionality",
+								"fullscreen"
 							],
 							
 							image_advtab: true,
 							visual_table_class: ' ',
 							
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
 							
 							convert_urls: true,
 							readonly: true,
@@ -2276,18 +2294,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-							min_height: minHeight,
-							max_height: maxHeight,
-							autoresize_min_height: minHeight,
-							autoresize_max_height: maxHeight,
-							autoresize_bottom_margin: 10,
 							
 							browser_spellcheck: true,
 							relative_urls: !zenario.slashesInURL,
 							
 							content_css: content_css,
 							toolbar: false,
-							fontsize_formats: "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+							font_size_formats: fontSizes,
 							oninit: undefined
 						};
 						
@@ -2295,35 +2308,38 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						break;
 					case 'basic':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
 							plugins: [
-								"autolink link charmap emoticons",
-								"paste autoresize"
+								"autolink", "link", "charmap", "emoticons"
 							],
 							browser_spellcheck: true,
 							height: 250,
 							menubar: false,
-							toolbar: 'undo redo | formatselect | styleselect | fontsizeselect | bold italic removeformat | link unlink | charmap emoticons'
+							toolbar: 'undo redo | styles | fontsize | blocks | bold italic removeformat | link unlink | charmap emoticons'
 						};
 						break;
 					case 'standard':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
 							inline: false,
 							menubar: false,
 							statusbar: false,
 							plugins: [
-								"advlist autolink lists link image charmap emoticons hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-								"colorpicker textcolor fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "fullscreen",
+								"nonbreaking", "table", "directionality",
+								"fullscreen"
 							],
 							
 							image_advtab: true,
 							visual_table_class: ' ',
 							
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
 							
 							convert_urls: true,
 							readonly: false,
@@ -2331,19 +2347,13 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-							min_height: minHeight,
-							max_height: maxHeight,
-							autoresize_min_height: minHeight,
-							autoresize_max_height: maxHeight,
-							autoresize_bottom_margin: 10,
 							
 							browser_spellcheck: true,
 							relative_urls: !zenario.slashesInURL,
 							
 							content_css: content_css,
-							toolbar: "undo redo | formatselect | styleselect | fontsizeselect | bold italic underline strikethrough forecolor backcolor removeformat | numlist bullist | blockquote outdent indent | charmap emoticons | code fullscreen",
-							style_formats: zenarioA.skinDesc.style_formats,
-							fontsize_formats: "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+							toolbar: "undo redo | styles | fontsize | blocks | bold italic underline strikethrough forecolor backcolor removeformat | numlist bullist | blockquote outdent indent | charmap emoticons | code fullscreen",
+							font_size_formats: fontSizes,
 							oninit: undefined
 						};
 						
@@ -2351,208 +2361,169 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						break;
 					case 'summary':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
 							inline: false,
 							menubar: false,
 							statusbar: false,
 							plugins: [
-								"advlist autolink lists link image charmap emoticons hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-								"colorpicker textcolor fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "fullscreen",
+								"nonbreaking", "table", "directionality",
+								"fullscreen"
 							],
 							convert_urls: true,
 							readonly: false,
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-							min_height: minHeight,
-							max_height: maxHeight,
-							autoresize_min_height: minHeight,
-							autoresize_max_height: maxHeight,
-							autoresize_bottom_margin: 10,
+							
 							image_advtab: true,
 							visual_table_class: ' ',
 							browser_spellcheck: true,
 							relative_urls: false,
-							toolbar: "undo redo | formatselect | styleselect | fontsizeselect | bold italic underline strikethrough forecolor backcolor removeformat | link unlink | charmap emoticons | code fullscreen",
-							style_formats: zenarioA.skinDesc.style_formats,
-							fontsize_formats: "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
-							file_browser_callback: zenarioA.fileBrowser,
-							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
-								var el;
-								if ((el = instance.editorContainer)
-								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-								 && (el = el[0])
-								 && (el = el.contentWindow)) {
-									zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
-								}
-							}
+							toolbar: "undo redo | styles | fontsize | blocks | bold italic underline strikethrough forecolor backcolor removeformat | link unlink | charmap emoticons | code fullscreen",
+							font_size_formats: fontSizes,
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
 						};
 						
 						extraAtt['class'] = ' tinymce_with_links';
 						break;
 					case 'standard_with_images':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
 							inline: false,
 							menubar: true,
 							statusbar: false,
 							plugins: [
-								"advlist autolink lists link image charmap emoticons hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-								"colorpicker textcolor fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "fullscreen",
+								"nonbreaking", "table", "directionality",
+								"fullscreen"
 							],
 							convert_urls: true,
 							readonly: false,
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-							min_height: minHeight,
-							max_height: maxHeight,
-							autoresize_min_height: minHeight,
-							autoresize_max_height: maxHeight,
-							autoresize_bottom_margin: 10,
+							
 							image_advtab: true,
 							visual_table_class: ' ',
 							browser_spellcheck: true,
 							relative_urls: false,
-							toolbar: "undo redo | formatselect | styleselect | fontsizeselect | bold italic underline strikethrough forecolor backcolor removeformat | image | numlist bullist | blockquote outdent indent | charmap emoticons | code fullscreen",
-							style_formats: zenarioA.skinDesc.style_formats,
-							fontsize_formats: "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+							toolbar: "undo redo | blocks | styles | fontsize | bold italic underline strikethrough forecolor backcolor removeformat | image | numlist bullist | blockquote outdent indent | charmap emoticons | code fullscreen",
+							font_size_formats: fontSizes,
 							menu: {
 								insert: {title: "Insert", items: "link | anchor hr charmap"},
 								table: {title: "Table", items: "inserttable tableprops deletetable | cell row column"},
 								tools: {title: "Tools", items: "searchreplace | code"}
 							},
-							file_browser_callback: zenarioA.fileBrowser,
-							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
-								var el;
-								if ((el = instance.editorContainer)
-								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-								 && (el = el[0])
-								 && (el = el.contentWindow)) {
-									zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
-								}
-							}
+							removed_menuitems: 'file newdocument restoredraft print',
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
 						};
 						
 						extraAtt['class'] = ' tinymce_with_images';
 						break;
 					case 'standard_with_links':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
 							inline: false,
 							menubar: true,
 							statusbar: false,
 							plugins: [
-								"advlist autolink lists link image charmap emoticons hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-								"colorpicker textcolor fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "fullscreen",
+								"nonbreaking", "table", "directionality",
+								"fullscreen"
 							],
 							convert_urls: true,
 							readonly: false,
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-							min_height: minHeight,
-							max_height: maxHeight,
-							autoresize_min_height: minHeight,
-							autoresize_max_height: maxHeight,
-							autoresize_bottom_margin: 10,
+							
 							image_advtab: true,
 							visual_table_class: ' ',
 							browser_spellcheck: true,
 							relative_urls: false,
-							toolbar: "undo redo | formatselect | styleselect | fontsizeselect | bold italic underline strikethrough superscript subscript forecolor backcolor removeformat | link unlink | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | charmap emoticons | code fullscreen",
-							style_formats: zenarioA.skinDesc.style_formats,
-							fontsize_formats: "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+							toolbar: "undo redo | styles | fontsize | blocks | bold italic underline strikethrough superscript subscript forecolor backcolor removeformat | link unlink | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | charmap emoticons | code fullscreen",
+							font_size_formats: fontSizes,
 							menu: {
 								insert: {title: "Insert", items: "link | anchor hr charmap"},
 								table: {title: "Table", items: "inserttable tableprops deletetable | cell row column"},
 								tools: {title: "Tools", items: "searchreplace | code"}
 							},
-							file_browser_callback: zenarioA.fileBrowser,
-							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
-								var el;
-								if ((el = instance.editorContainer)
-								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-								 && (el = el[0])
-								 && (el = el.contentWindow)) {
-									zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
-								}
-							}
+							removed_menuitems: 'file newdocument restoredraft print',
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
 						};
 						
 						extraAtt['class'] = ' tinymce_with_links';
 						break;
 					case 'full_featured':
 						options = {
-							script_url: zenario.addBasePath(zenario.tinyMCEPath),
+							promotion: false,
+							document_base_url: URLBasePath,
+							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+							paste_data_images: false,
+							height: 'auto',
 							inline: false,
 							menubar: true,
 							statusbar: false,
 							plugins: [
-								"advlist autolink lists link image charmap emoticons hr anchor",
-								"searchreplace code fullscreen",
-								"nonbreaking table contextmenu directionality",
-								"paste autoresize",
-								"colorpicker textcolor visualblocks fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "fullscreen",
+								"nonbreaking", "table", "directionality",
+								"visualblocks", "fullscreen"
 							],
 							convert_urls: true,
 							readonly: false,
 							inline_styles: false,
 							allow_events: true,
 							allow_script_urls: true,
-							min_height: minHeight,
-							max_height: maxHeight,
-							autoresize_min_height: minHeight,
-							autoresize_max_height: maxHeight,
-							autoresize_bottom_margin: 10,
 							image_advtab: true,
 							visual_table_class: ' ',
 							browser_spellcheck: true,
 							relative_urls: false,
-							//Email template editors, and the Standard Email Template editor, use this editor type, but they also have
-							//the styleselect dropdown right after formatselect on the icons toolbar.
-							//This is overridden in their PHP class file.
-							toolbar: "undo redo | formatselect | fontsizeselect | bold italic underline | image link unlink | bullist numlist | forecolor backcolor | charmap emoticons",
-							style_formats: zenarioA.skinDesc.style_formats,
-							fontsize_formats: "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+							toolbar: "undo redo | image link unlink | styles | fontsize | blocks | bold italic underline | removeformat | alignleft aligncenter alignright alignjustify | outdent indent | bullist numlist | forecolor backcolor | charmap emoticons",
+							font_size_formats: fontSizes,
 							menu: {
 								edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace'},
-								format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (zenarioA.skinDesc.style_formats? ' | formats' : '') + ' align'},
+								format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (skinEditorOptions && skinEditorOptions.style_formats? ' | styles' : '') + ' ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : '') + 'align'},
 								insert: {title: 'Insert', items: 'image link | anchor hr charmap'},
 								table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
 								view: {title: 'View', items: 'code | visualblocks | fullscreen'}
 							},
-							file_browser_callback: zenarioA.fileBrowser,
-							init_instance_callback: function(instance) {
-								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
-								var el;
-								if ((el = instance.editorContainer)
-								 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-								 && (el = el[0])
-								 && (el = el.contentWindow)) {
-									zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
-								}
-							}
+							removed_menuitems: 'file newdocument restoredraft print',
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
 						};
 						
 						extraAtt['class'] = ' tinymce_with_images_and_links';
 						break;
 				}
 				
+				//Only display the "Styles" dropdown if styles formats were passed (e.g. from a module), otherwise hide it.
 				if (_.isObject(field.editor_options) ) {
 					options = _.extend(options, field.editor_options);
+				}
+				
+				if (options.toolbar && _.isEmpty(options.style_formats)) {
+					options.toolbar = options.toolbar.replace('styles |', '');
+				}
+				
+				if (isAdvancedEditor && skinEditorOptions) {
+					options = _.extend(options, skinEditorOptions);
 				}
 			
 				options.setup = function (editor) {
@@ -4833,8 +4804,8 @@ methods.meChange = function(changed, id, confirm) {
 		 && thus.readField(id) != field.multiple_edit.original_value) {
 		 	
 			var buttonsHTML =
-				_$input('type', 'button', 'class', 'submit_selected', 'value', phrase.abandonChanges, 'onclick', thus.globalName + '.meChange(false, "' + jsEscape(id) + '", true);') + 
-				_$input('type', 'button', 'class', 'submit', 'value', phrase.cancel);
+				_$input('type', 'button', 'class', 'zenario_submit_button', 'value', phrase.abandonChanges, 'onclick', thus.globalName + '.meChange(false, "' + jsEscape(id) + '", true);') + 
+				_$input('type', 'button', 'class', 'zenario_gp_button', 'value', phrase.cancel);
 			
 			zenarioA.floatingBox(phrase.abandonChangesConfirm, buttonsHTML, 'warning');
 			thus.meSetCheckbox(id, true);
@@ -4962,6 +4933,14 @@ methods.keyIs = function(k, v) {
 
 methods.key = function(k) {
 	return thus.tuix.key[k];
+};
+
+methods.keySet = function(k) {
+	return !!thus.tuix.key[k];
+};
+
+methods.keyNotSet = function(k) {
+	return !thus.tuix.key[k];
 };
 
 methods.getMode = function() {

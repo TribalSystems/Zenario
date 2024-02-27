@@ -200,7 +200,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//Only allow the language to be changed when duplicating or translating.
 		//Also only allow if there is more than 1 language enabled on the site.
 		$lockLanguageId = false;
-		if ($box['key']['target_language_id'] || $box['key']['duplicate'] || $box['key']['translate']) {
+		if ($box['key']['target_language_id'] || $box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
 			$lockLanguageId = true;
 		}
 
@@ -352,7 +352,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 			$values['meta_data/alias'] = $content['alias'];
 
-			if ($creatingNewContentItem = $box['key']['duplicate'] || $box['key']['translate']) {
+			if ($creatingNewContentItem = $box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
 				//Don't allow the layout to be changed when duplicating
 				$fields['meta_data/layout_id']['readonly'] = true;
 				
@@ -519,7 +519,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$values['file/s3_file_id'] = $version['s3_file_id'];
 				$values['file/s3_file_name'] = $version['s3_filename'];
 				
-				if ($box['key']['duplicate'] || $box['key']['translate']) {
+				if ($box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
 					$values['meta_data/menu_text'] = $values['meta_data/title'];
 				}
 				
@@ -613,7 +613,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 				$status = ze\admin::phrase('archived');
 				if ($box['key']['source_cVersion'] == $content['visitor_version']) {
-					$status = ze\admin::phrase('published');
+					if ($content['status'] == 'unlisted' || $content['status'] == 'unlisted_with_draft') {
+						$status = ze\admin::phrase('published unlisted');
+					} else {
+						$status = ze\admin::phrase('published');
+					}
 		
 				} elseif ($box['key']['source_cVersion'] == $content['admin_version']) {
 					if ($content['admin_version'] > $content['visitor_version'] && $content['status'] != 'hidden') {
@@ -622,18 +626,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$status = ze\admin::phrase('hidden');
 					} elseif ($content['status'] == 'trashed' || $content['status'] == 'trashed_with_draft') {
 						$status = ze\admin::phrase('trashed');
-					}
-				}
-				
-				if (!$creatingNewContentItem) {
-					if ($version['version'] != $content['admin_version']) {
-						//Hide the staging mode options when not looking at the most recent version of a content item
-						$box['tabs']['staging_mode']['hidden'] = true;
-					
-					} elseif (!is_null($version['access_code'])) {
-						//For editing existing content items only, load the previous value of the access code
-						$values['staging_mode/use_access_code'] = 1;
-						$values['staging_mode/access_code'] = $version['access_code'];
 					}
 				}
 			}
@@ -706,7 +698,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		//Set default values
 		if ($content) {
-			if ($box['key']['duplicate'] || $box['key']['translate']) {
+			if ($box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
 				$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::ifNull($_GET['languageId'] ?? false, ze::get('language'), $content['language_id']));
 			}
 		} else {
@@ -784,9 +776,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$tab['edit_mode']['on'] = true;
 				}
 			}
-			
-			//Also hide the menu path preview field
-			$fields['meta_data/path_of__menu_text_when_editing']['hidden'] = true;
 
 		//And turn it off if we are looking at an archived version of an existing Content Item, or a locked Content Item
 		} elseif ($box['key']['cID']
@@ -924,7 +913,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		} else {
 			$box['key']['id'] = null;
 		}
-		
 		
 		$this->fillMenu($box, $fields, $values, $contentType, $content, $version);
 		
@@ -1081,47 +1069,16 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			);
 			$fields['meta_data/alias']['post_field_html'] = $viewTranslationChainPhrase;
 		}
-		
-		
-		//If showing the staging mode option, get a list for the auto-complete drop-down
-		if (empty($box['tabs']['staging_mode']['hidden'])) {
-			$codes = ze\row::getDistinctValues('content_item_versions', 'access_code', ['access_code' => ['!' => null]], 'access_code');
-			if (empty($codes)) {
-				$fields['staging_mode/existing_codes']['hidden'] = true;
-			} else {
-				$ord = 0;
-				$fields['staging_mode/existing_codes']['values'] = [];
-				
-				foreach ($codes as $code) {
-					$fields['staging_mode/existing_codes']['values'][$code] = [
-						'ord' => ++$ord,
-						'label' => $code
-					];
-				}
-				
-				$fields['staging_mode/suggest_code']['value'] =
-					ze\admin::phrase('Suggest a different code');
-			}
-			
-			//When editing or translating content item, look up what the permissions are,
-			//and show and hide the permissions warning as appropriate.
-			if (!empty($box['tabs']['privacy']['hidden'])
-			 || empty($box['tabs']['privacy']['edit_mode']['enabled'])) {
-				
-				if ($box['key']['source_cID'] && $box['key']['cType']) {
-					
-					$equivId = ze\content::equivId($box['key']['source_cID'], $box['key']['cType']);
-					$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId, 'type' => $box['key']['cType']]);
-					
-					$box['tabs']['staging_mode']['notices']['not_public']['show'] =
-						$contentItemPrivacy != 'public';
-				}
-			}
-		}
 	}
 	
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		$existingMenuId = false;
+		$menuSectionId = false;
+		$parentMenuId = false;
+		
+		
 		$box['tabs']['file']['hidden'] = true;
 		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
 			$src = ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php';
@@ -1182,15 +1139,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			if ($details['description_field'] == 'hidden') {
 				$fields['meta_data/description']['hidden'] = true;
 			}
+			
 			if ($details['keywords_field'] == 'hidden') {
 				$fields['meta_data/keywords']['hidden'] = true;
 			}
+			
 			if ($details['release_date_field'] == 'hidden') {
 				$fields['meta_data/release_date']['hidden'] = true;
 			}
+			
 			if ($details['writer_field'] == 'hidden') {
 				$fields['meta_data/writer_id']['hidden'] = true;
 			}
+			
 			if ($details['summary_field'] == 'hidden') {
 				$fields['meta_data/content_summary']['hidden'] = true;
 			}
@@ -1262,6 +1223,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					
 					//Try and ensure that we use relative URLs where possible
 					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['content'. $i]['fields']['content']);
+					
+					//The "in use" flagging feature.
+					$box['tabs']['content'. $i]['in_use'] = !empty(trim(strip_tags($values['content'. $i. '/content'])));
 				}
 			}
 			
@@ -1305,6 +1269,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					
 					//Try and ensure that we use relative URLs where possible
 					ze\contentAdm::stripAbsURLsFromAdminBoxField($box['tabs']['rawhtml'. $i]['fields']['content']);
+					
+					//The "in use" flagging feature.
+					$box['tabs']['rawhtml'. $i]['in_use'] = !empty(trim(strip_tags($values['rawhtml'. $i. '/content'])));
 				}
 			}
 			
@@ -1321,6 +1288,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				if ($bothCount == 1 ) {
 					unset($box['tabs']['rawhtml1']['parent']);
 					unset($box['tabs']['content1']['parent']);
+					unset($box['tabs']['rawhtml1']['in_use']);
+					unset($box['tabs']['content1']['in_use']);
 				}
 				
 			}
@@ -1458,6 +1427,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$sourceContentItemMenu = ze\menu::getFromContentItem($box['key']['source_cID'], $box['key']['cType']);
 			
 			if ($sourceContentItemMenu) {
+				$existingMenuId = $sourceContentItemMenu['id'];
+				$menuSectionId = $sourceContentItemMenu['section_id'];
+				$parentMenuId = $sourceContentItemMenu['parent_id'];
+				
 				$fields['meta_data/redraft_menu_warning']['row_class'] = 'zfab_inline_warning_hidden';
 				if ($values['meta_data/menu_text_when_editing'] != $values['meta_data/menu_text_when_editing_on_load']) {
 					$fields['meta_data/redraft_menu_warning']['row_class'] = '';
@@ -1481,7 +1454,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			} else {
 				$fields['meta_data/menu_text_when_editing']['hidden'] = true;
-				$fields['meta_data/path_of__menu_text_when_editing']['hidden'] = true;
 			}
 		}
 		if (!$values['meta_data/alias_changed']) {
@@ -1547,64 +1519,62 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 		
 		
-		//Some logic for staging mode
-		if (empty($box['tabs']['staging_mode']['hidden'])) {
-			
-			//Watch out for the admin selecting something from the existing values select list
-			if (!empty($values['staging_mode/existing_codes'])) {
-				
-				$values['staging_mode/access_code'] = $values['staging_mode/existing_codes'];
-				$values['staging_mode/existing_codes'] = '';
-			
-			//Watch out for the suggest button being pressed
-			} elseif (!empty($fields['staging_mode/suggest_code']['pressed'])) {
-				$values['staging_mode/access_code'] = ze\ring::randomFromSetNoProfanities();
+		
+		//Set the menu path preview
+		$menuPos = false;
+		$fields['meta_data/menu_path_preview']['hidden'] = true;
+		
+		//Case when editing an existing content item
+		if ($box['key']['cID']) {
+			if ($existingMenuId) {
+				//Set the menu position to the exsting node.
+				//I'm using the "$isExistingNode" option here which is only supported by the ze\menuAdm::posToPathArray() function.
+				//This option is not supported by position pickers nor the ze\menuAdm::addContentItems() function.
+				$menuPos = $menuSectionId. '_'. $existingMenuId. '_3';
 			}
-			unset($fields['staging_mode/suggest_code']['pressed']);
+		
+		//Case when translating
+		} elseif ($box['key']['translate']) {
 			
-			//Update the URL field with the resulting URL
-			if ($box['key']['cID']
-			 && $box['key']['cType']
-			 && $values['staging_mode/access_code'] != '') {
-				$values['staging_mode/copy_code'] =
-					ze\contentAdm::stagingModeLink($box['key']['cID'], $box['key']['cType'], $values['staging_mode/access_code']);
-				
-				
-				$otherContentItems = ze\row::getValues('content_item_versions', ['id', 'type'], ['access_code' => $values['staging_mode/access_code'], 'tag_id' => ['!' => $box['key']['cType']. '_'. $box['key']['cID']]]);
-				
-				if (empty($otherContentItems)) {
-					$fields['staging_mode/suggest_code']['notices_below']['code_reuse']['hidden'] = true;
-				} else {
-					$others = count($otherContentItems) - 1;
-					$mrg = $otherContentItems[0];
-					
-					$mrg['tag'] =
-						'<a href="'. ze\link::toItem($mrg['id'], $mrg['type']). '" target="_blank">'.
-							htmlspecialchars(ze\content::formatTag($mrg['id'], $mrg['type'])).
-						'</a>';
-					
-					$fields['staging_mode/suggest_code']['notices_below']['code_reuse']['hidden'] = false;
-					$fields['staging_mode/suggest_code']['notices_below']['code_reuse']['message'] =
-						ze\admin::nPhrase(
-							"The staging code you've chosen is the same as that for [[tag]] and [[count]] other content item in staging mode.",
-							"The staging code you've chosen is the same as that for [[tag]] and [[count]] other content items in staging mode.",
-							$others, $mrg,
-							"The staging code you've chosen is the same as that for [[tag]], also in staging mode.",
-						);
+			if ($box['key']['from_cID'] && ($menu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']))) {
+				$menuPos = $menu['section_id']. '_'. $menu['id']. '_3';
+			}
+		
+		} else {
+			
+			//Work around a quirk where no options in the select lists will not be selected yet on the first load.
+			//Just mark the first one in the array as selected.
+			foreach (['menu_pos', 'menu_pos_suggested'] as $fieldCodeName) {
+				if (!$values['meta_data/'. $fieldCodeName]) {
+					if (!empty($fields['meta_data/'. $fieldCodeName]['values'])) {
+						foreach ($fields['meta_data/'. $fieldCodeName]['values'] as $val => $lov) {
+							if (empty($lov['hidden'])) {
+								$values['meta_data/'. $fieldCodeName] = $val;
+								break;
+							}
+						}
+					}
 				}
-				
-			} else {
-				$values['staging_mode/copy_code'] = '';
 			}
 			
-			//When creating a new content item, with the ability to set the permissions,
-			//we need to show and hide the permissions warning when the admin updates it
-			if (empty($box['tabs']['privacy']['hidden'])
-			 && !empty($box['tabs']['privacy']['edit_mode']['enabled'])) {
-				$box['tabs']['staging_mode']['notices']['not_public']['show'] =
-					$values['privacy/privacy'] != 'public';
-			}
+			$menuPos = $this->getSelectedMenuPosition($values);
 		}
+		
+		if ($menuPos) {
+			ze\menuAdm::setupPathPreview($menuPos, $fields['meta_data/menu_path_preview'], $values['meta_data/language_id']);
+			
+			if ($box['key']['cID']) {
+				$fields['meta_data/menu_path_preview']['value'] =
+				$fields['meta_data/menu_path_preview']['current_value'] = $values['meta_data/menu_text_when_editing'];
+			} else {
+				$fields['meta_data/menu_path_preview']['value'] =
+				$fields['meta_data/menu_path_preview']['current_value'] = $values['meta_data/menu_text'];
+			}
+			$fields['meta_data/menu_path_preview']['hidden'] = false;
+		}
+		
+
+		
 	}
 	
 	public function autoSetTitle(&$box, &$fields, &$values) {
@@ -1685,7 +1655,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 
-		if (!empty($values['meta_data/alias'] && !$fields['meta_data/alias']['read_only'])) {
+		if (!empty($values['meta_data/alias']) && !$fields['meta_data/alias']['read_only']) {
 			$errors = false;
 			if ($box['key']['translate']) {
 				if (ze::setting('translations_different_aliases')) {
@@ -1704,15 +1674,19 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			if ($details['description_field'] == 'mandatory' && !$values['meta_data/description']) {
 				$fields['meta_data/description']['error'] = ze\admin::phrase('Please enter a description.');
 			}
+			
 			if ($details['keywords_field'] == 'mandatory' && !$values['meta_data/keywords']) {
 				$fields['meta_data/keywords']['error'] = ze\admin::phrase('Please enter keywords.');
 			}
+			
 			if ($details['release_date_field'] == 'mandatory' && !$values['meta_data/release_date']) {
 				$fields['meta_data/release_date']['error'] = ze\admin::phrase('Please enter a release date.');
 			}
+			
 			if ($details['writer_field'] == 'mandatory' && !$values['meta_data/writer_id']) {
 				$fields['meta_data/writer_id']['error'] = ze\admin::phrase('Please select a writer.');
 			}
+			
 			if ($details['summary_field'] == 'mandatory' && !$values['meta_data/content_summary']) {
 				$fields['meta_data/content_summary']['error'] = ze\admin::phrase('Please enter a summary.');
 			}
@@ -1762,13 +1736,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 	}
 	
+	protected $isNewContentItem = false;
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($box['key']['cID'] && !ze\priv::check('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 			exit;
 		}
 		
-		$isNewContentItem = !$box['key']['cID'];
+		$this->isNewContentItem = !$box['key']['cID'];
 		
 		//Create a new Content Item, or a new Draft of a Content Item, as needed.
 		$newDraftCreated = ze\contentAdm::createDraft($box['key']['cID'], $box['key']['source_cID'], $box['key']['cType'], $box['key']['cVersion'], $box['key']['source_cVersion'], $values['meta_data/language_id']);
@@ -1781,19 +1756,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		$version = [];
 		$newLayoutId = false;
-		
-		//If we're creating a new content item in the front-end, try to start off in Edit mode
-		if (($isNewContentItem && !$box['key']['create_from_content_panel']) || $box['key']['duplicate']) {
-			$_SESSION['page_toolbar'] = 'edit';
-			$_SESSION['page_mode'] = 'edit';
-			$_SESSION['last_item'] = $box['key']['cType'].  '_'. $box['key']['cID']. '.'. $box['key']['cVersion'];
-
-			if ($box['key']['duplicate']) {
-				$_SESSION['zenario__content_item_duplicated'] = true;
-			} else {
-				$_SESSION['zenario__content_item_created'] = true;
-			}
-		}
 
 
 		//Save the values of each field in the Meta Data tab
@@ -1880,9 +1842,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		//If the admin selected the duplicate option for any plugins, duplicate those plugins and put the copies in the slots
 		//where the old ones were.
-		if ($box['key']['duplicate'] || $box['key']['translate']) {
+		if ($box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
 			$startAt = 1;
-			for ($n = $startAt; (($suffix = '__'. $n) && (!empty($fields['plugins/instance_id'. $suffix]))); ++$n) {
+			foreach (ze\tuix::loopThroughMultipleRows($fields, $startAt, 'plugins', 'instance_id') as $suffix => $deletePressed) {
 				
 				if ($values['plugins/action'. $suffix] == 'duplicate') {
 					$newName = $values['plugins/new_name'. $suffix];
@@ -1997,7 +1959,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 			
 					if (!empty($box['tabs']['content'. $i]['edit_mode']['on'])) {
-						$values['content'. $i. '/content'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['content'. $i. '/content']);
+						$values['content'. $i. '/content'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['content'. $i. '/content'], false, $allowAdvancedInlineStyles = true);
 						
 						//Try and ensure that we use relative URLs where possible
 						ze\contentAdm::stripAbsURLsFromAdminBoxField($fields['content'. $i. '/content']);
@@ -2037,15 +1999,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if ($changes) {
 			ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version);
 		}
-		
-		//Update the access code, if set
-		ze\row::update('content_item_versions',[
-			'access_code' => $values['staging_mode/use_access_code']? $values['staging_mode/access_code'] : null
-		], [
-			'id' => $box['key']['cID'],
-			'type' => $box['key']['cType'],
-			'version' => $box['key']['cVersion']
-		]);
 
 
 		//Update item Categories
@@ -2096,12 +2049,36 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
+		//If we're creating a new content item in the front-end, try to start off in Edit mode
+		$showCreatedToast =
+		$showDuplicatedToast = false;
+		if (($this->isNewContentItem && !$box['key']['create_from_content_panel']) || $box['key']['duplicate']) {
+			$_SESSION['page_toolbar'] = 'edit';
+			$_SESSION['page_mode'] = 'edit';
+			$_SESSION['last_item'] = $box['key']['cType'].  '_'. $box['key']['cID']. '.'. $box['key']['cVersion'];
+
+			if ($box['key']['duplicate']) {
+				$showDuplicatedToast = true;
+			} else {
+				$showCreatedToast = true;
+			}
+		}
+		
 		//If we're creating a new content item from the admin toolbar, navigate to that content item
 		//after the FAB closes.
 		if (!empty($box['key']['create_from_toolbar'])) {
 			$contentItemLink = ze\link::toItem($box['key']['cID'], $box['key']['cType']);
 			if ($contentItemLink) {
-				ze\tuix::closeWithFlags(['go_to_url' => $contentItemLink]);
+				$flags = [];
+				$flags['go_to_url'] = $contentItemLink;
+				
+				if ($showCreatedToast) {
+					$flags['toast_next_pageload'] = ze\admin::phrase("New content item created! Now in Edit mode.");
+				} elseif ($showDuplicatedToast) {
+					$flags['toast_next_pageload'] = ze\admin::phrase("Content item duplicated! Now in Edit mode.");
+				}
+				
+				ze\tuix::closeWithFlags($flags);
 				exit;
 			}
 		}
@@ -2199,7 +2176,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$suggestedPositions = [];
 		if ($box['key']['cType'] != 'html') {
 			foreach (ze\row::getAssocs('menu_nodes', ['id', 'section_id'], ['restrict_child_content_types' => $box['key']['cType']]) as $menuNode) {
-				$mPath = ze\menuAdm::pathWithSection($menuNode['id'], true). ' › '. ze\admin::phrase('[ Create at the start ]');
+				$mPath = ze\menuAdm::path($menuNode['id'], true). ' › '. ze\admin::phrase('[ Create at the start ]');
 				$mVal = $menuNode['section_id']. '_'. $menuNode['id']. '_'. $underNodeAtStart;
 				
 				$suggestedPositions[$mVal] = $mPath;
@@ -2231,27 +2208,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			if ($menu) {
 				$values['meta_data/menu_content_status'] = $content['status'];
-				//For top-level menu nodes, add a note to the "path" field to make it clear that it's
-				//at the top level
-				if ($menu['parent_id'] == 0) {
-					$fields['meta_data/path_of__menu_text_when_editing']['label'] = ze\admin::phrase('Menu path preview (top level):');
-					
-				}
                 //To show multilevel menu nodes "path"				
 				$values['meta_data/menu_id_when_editing'] = $menu['mID'];
 				$values['meta_data/menu_text_when_editing'] = $values['meta_data/menu_text_when_editing_on_load'] = $menu['name'];
-				if ($menu['parent_id'] > 0) {
-					$mPath = ze\menuAdm::pathWithSection($menu['id'], true);
-					$mPath = str_replace("Main ›","",$mPath);
-					$mpathArr = explode(' › ',$mPath);
-					$parentPath = explode( '› '.$menu['name'] ,$mPath);
-					if(is_array($mpathArr) && $mpathArr){
-						$values['meta_data/parent_path_of__menu_text_when_editing'] = $parentPath[0];
-						$values['meta_data/path_of__menu_text_when_editing'] = $mPath." [level ".count($mpathArr)."]";
-					}
-				} else {
-					$values['meta_data/path_of__menu_text_when_editing'] = $menu['name']." [level 1]";
-				}
+				
 				$fields['meta_data/no_menu_warning']['hidden'] = true;
 			} elseif (empty($contentType['prompt_to_create_a_menu_node'])) {
 				$fields['meta_data/no_menu_warning']['hidden'] = true;
@@ -2350,6 +2310,28 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 	
 	
+	private function getSelectedMenuPosition(&$values) {
+		switch ($values['meta_data/menu_pos']) {
+			case 'suggested':
+				return $values['meta_data/menu_pos_suggested'];
+				break;
+			case 'before':
+				return $values['meta_data/menu_pos_before'];
+				break;
+			case 'after':
+				return $values['meta_data/menu_pos_after'];
+				break;
+			case 'under':
+				return $values['meta_data/menu_pos_under'];
+				break;
+			case 'specific':
+				return $values['meta_data/menu_pos_specific'];
+				break;
+		}
+		
+		return false;
+	}
+	
 	public function saveMenu(&$box, &$fields, &$values, $changes, $equivId) {
 
 		if ($box['key']['cVersion'] == 1) {
@@ -2379,35 +2361,20 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			} else {
 				if ($values['meta_data/create_menu_node']
 				 && ($values['meta_data/menu_pos'] == 'suggested' || ze\priv::check('_PRIV_ADD_MENU_ITEM'))) {
-				
-					$menuIds = [];
-					switch ($values['meta_data/menu_pos']) {
-						case 'suggested':
-							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_suggested']);
-							break;
-						case 'before':
-							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_before']);
-							break;
-						case 'after':
-							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_after']);
-							break;
-						case 'under':
-							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_under']);
-							break;
-						case 'specific':
-							$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $values['meta_data/menu_pos_specific']);
-							break;
-					}
-				
-					if ($menuId = array_shift($menuIds)) {
-						ze\menuAdm::saveText($menuId, $values['meta_data/language_id'], ['name' => $values['meta_data/menu_text']]);
+					
+					if ($menuPos = $this->getSelectedMenuPosition($values)) {
+						$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $menuPos);
+						
+						if ($menuId = array_shift($menuIds)) {
+							ze\menuAdm::saveText($menuId, $values['meta_data/language_id'], ['name' => $values['meta_data/menu_text']]);
 
-						if ($box['key']['duplicate']) {
-							//If duplicating a content item which is attached to a menu node,
-							//check its privacy setting, and copy to the new menu node.
-							$currentMenu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']);
-							if (!empty($currentMenu)) {
-								ze\row::set('menu_nodes', ['hide_private_item' => $currentMenu['hide_private_item']], ['id' => $menuId]);
+							if ($box['key']['duplicate'] || $box['key']['duplicate_from_menu']) {
+								//If duplicating a content item which is attached to a menu node,
+								//check its privacy setting, and copy to the new menu node.
+								$currentMenu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']);
+								if (!empty($currentMenu)) {
+									ze\row::set('menu_nodes', ['hide_private_item' => $currentMenu['hide_private_item']], ['id' => $menuId]);
+								}
 							}
 						}
 					}

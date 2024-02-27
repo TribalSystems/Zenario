@@ -198,7 +198,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'is_system_field' => (int)$field['is_system_field'],
 					'is_protected' => (int)$field['protected'],
 					'was_protected' => (int)$field['protected'],
-					'is_readonly' => (int)$field['readonly'],
 					'ord' => $fieldCount,
 					'label' => $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : ''),
 					'type' => $field['type'],
@@ -235,6 +234,86 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'repeat_start_id' => (int)$field['repeat_start_id']
 				];
 				
+				//Get readonly status
+				$fieldProperties['readonly_or_mandatory'] = 'none';
+				if ($field['mandatory_if_visible']) {
+					$fieldProperties['readonly_or_mandatory'] = 'mandatory_if_visible';
+				} elseif ($field['required']) {
+					//The logic below is commented out, and might be finished in the future.
+					//Currently there is only "Mandatory" logic rather than the split between "Mandatory at least 1" and "Mandatory all".
+				
+					// if ($field['all_values_are_required']) {
+// 						$fieldProperties['readonly_or_mandatory'] = 'mandatory_all_values_required';
+// 					} else {
+// 						$fieldProperties['readonly_or_mandatory'] = 'mandatory';
+// 					}
+				
+					$fieldProperties['readonly_or_mandatory'] = 'mandatory';
+				} elseif ($field['readonly']) {
+					$fieldProperties['readonly_or_mandatory'] = 'readonly';
+				} elseif ($field['mandatory_condition_field_id']) {
+					$fieldProperties['readonly_or_mandatory'] = 'conditional_mandatory';
+					$fieldProperties['mandatory_condition_field_id'] = $field['mandatory_condition_field_id'];
+					$fieldProperties['mandatory_condition_field_value'] = $field['mandatory_condition_field_value'];
+					$fieldProperties['mandatory_condition_checkboxes_operator'] = $field['mandatory_condition_checkboxes_operator'];
+				}
+				
+				//Get visibility values
+				if ($field['visible_condition_invert'] == 0) {
+					$field['visible_condition_field_type'] = 'visible_if';
+				} elseif ($field['visible_condition_invert'] == 1) {
+					$fieldProperties['visible_condition_field_type'] = 'visible_if_not';
+				} else {
+					 $fieldProperties['visible_condition_field_type'] = 'visible_if_one_of';
+				}
+				
+				if ($field['admin_box_visibility'] == 'show_on_condition' && $field['visible_condition_field_id'] && isset($panel['items'][$field['visible_condition_field_id']])) {
+					$conditionFieldType = $panel['items'][$field['visible_condition_field_id']]['type'];
+				
+					$values = explode(',', $field['visible_condition_field_value']);
+					if (
+						count($values) > 1
+						|| (
+							$conditionFieldType == 'checkboxes'
+							|| $conditionFieldType == 'select'
+							|| $conditionFieldType == 'centralised_select'
+							|| $conditionFieldType == 'radios'
+							|| $conditionFieldType == 'centralised_radios'
+						)
+					) {
+						$field['visible_condition_checkboxes_field_value'] = $values;
+						if (count($values)>1 && $conditionFieldType != 'checkboxes') {
+							$fieldProperties['visible_condition_field_type'] = 'visible_if_one_of';
+						}
+					} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+						$fieldProperties['visible_condition_field_value'] = $field['visible_condition_field_value'] ? 'checked' : 'unchecked';
+					}
+				}
+			
+				//Get readonly / mandatory values
+				if($field['mandatory_condition_invert'] == 0){
+					$fieldProperties['mandatory_condition_field_type'] = 'mandatory_if';
+				
+				}else if($field['mandatory_condition_invert'] == 1){
+					$fieldProperties['mandatory_condition_field_type'] = 'mandatory_if_not';
+				} else {
+					 $fieldProperties['mandatory_condition_field_type'] = 'mandatory_if_one_of';
+				}
+				if ($fieldProperties['readonly_or_mandatory'] == 'conditional_mandatory' && $field['mandatory_condition_field_id'] && isset($panel['items'][$field['mandatory_condition_field_id']])) {
+					$conditionFieldType = $panel['items'][$field['mandatory_condition_field_id']]['type'];
+				
+					$values = explode(',', $field['mandatory_condition_field_value']);
+					if (count($values) > 1  || ze::in($conditionFieldType, 'checkboxes', 'select', 'centralised_select', 'radios', 'centralised_radios')) {
+						$fieldProperties['mandatory_condition_checkboxes_field_value'] = $values;
+						if (count($values) > 1 && $conditionFieldType != 'checkboxes') {
+							$fieldProperties['mandatory_condition_field_type'] = 'mandatory_if_one_of';
+							$fieldProperties['mandatory_condition_invert'] = 2;
+						}
+					} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
+						$fieldProperties['mandatory_condition_field_value'] = $field['mandatory_condition_field_value'] ? 'checked' : 'unchecked';
+					}
+				}
+				
 				// Screen names and country-based permissions are tied to site settings.
 				// Display a warning if the relevant site setting is turned off.
 				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'screen_name') {
@@ -249,6 +328,13 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					$fieldProperties['dataset'] = $dataset['system_table'];
 					$fieldProperties['field_dependent_on_a_site_setting'] = true;
 					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('users_use_linked_countries');
+				}
+				
+				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'user_supervised_smart_groups') {
+					$fieldProperties['field_name'] = 'user_supervised_smart_groups';
+					$fieldProperties['dataset'] = $dataset['system_table'];
+					$fieldProperties['field_dependent_on_a_site_setting'] = true;
+					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('enable_supervised_smart_groups');
 				}
 				
 				//Get record count for fields on first tab. Other tab fields are loaded as their tab is clicked
@@ -469,7 +555,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 						if ($repeatStartField || !empty($existingField['repeat_start_id'])) {
 							$values['repeat_start_id'] = $repeatStartField ? $repeatStartField['id'] : 0;
 						}
-						$values = array_merge($values, $this->getDatasetFieldOptions($field, $existingField, $tempFieldIdLink));
+						$values = array_merge($values, $this->getDatasetFieldOptions($field, $fields, $existingField, $tempFieldIdLink));
 						if ($values) {
 							ze\row::update('custom_dataset_fields', $values, $field['id']);
 						}
@@ -669,7 +755,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 			}
 		}
 		
-		//Make we don't try and delete anything we shouldn't
+		//Make sure we don't try and delete anything we shouldn't
 		foreach ($deletedPages as $pageId) {
 			if (!empty($existingPages[$pageId]['is_system_field'])) {
 				$errors[] = ze\admin::phrase("Unable to delete tab \"[[tabId]]\" because it's a system tab.", ['tabId' => $pageId]);
@@ -704,7 +790,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		return $values;
 	}
 	
-	private function getDatasetFieldOptions($field, $existingField, $tempFieldIdLink) {
+	private function getDatasetFieldOptions($field, $fields, $existingField, $tempFieldIdLink) {
 		$values = [];
 		if ($field['type'] == 'repeat_start') {
 			$minRows = !empty($field['min_rows']) ? (int)$field['min_rows'] : 1;
@@ -733,17 +819,100 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				if (ze\priv::check('_PRIV_PROTECT_UNPROTECT_DATASET_FIELD')) {
 					$values['protected'] = !empty($field['is_protected']);
 				}
-				$values['readonly'] = !empty($field['is_readonly']);
 				if ($field['type'] != 'repeat_start') {
 					$values['db_column'] = empty($field['db_column']) ? '' : mb_substr(trim($field['db_column']), 0, 64);
 				}
 				$values['height'] = empty($field['height']) ? 0 : (int)$field['height'];
 				$values['width'] = empty($field['width']) ? 0 : $field['width'];
-				$values['required'] = !empty($field['required']);
+				
+				
+				
+				
+				
+				
+				$readonlyOrMandatory = !empty($field['readonly_or_mandatory']) ? $field['readonly_or_mandatory'] : false;
+				$values['readonly'] = ($readonlyOrMandatory == 'readonly');
+				$values['required'] = (ze::in($readonlyOrMandatory, 'mandatory', 'mandatory_all_values_required'));
+// 				$values['all_values_are_required'] = false;
+// 				$values['all_values_are_required'] = ($readonlyOrMandatory == 'mandatory_all_values_required');
+				$values['mandatory_if_visible'] = ($readonlyOrMandatory == 'mandatory_if_visible');
+		
 				$values['required_message'] = null;
-				if ($values['required']) {
+				if ($readonlyOrMandatory == 'mandatory' || $readonlyOrMandatory == 'conditional_mandatory' || $readonlyOrMandatory == 'mandatory_if_visible') {
 					$values['required_message'] = mb_substr(trim($field['required_message']), 0, 255);
 				}
+		
+				$values['mandatory_condition_field_id'] = 0;
+				$values['mandatory_condition_invert'] = 0;
+				$values['mandatory_condition_checkboxes_operator'] = 'AND';
+				$values['mandatory_condition_field_value'] = null;
+				if ($readonlyOrMandatory == 'conditional_mandatory') {
+					$values['mandatory_condition_field_id'] = (int)$tempFieldIdLink[$field['mandatory_condition_field_id']];
+					if($field['mandatory_condition_field_type'] == 'mandatory_if_not'){
+						$values['mandatory_condition_invert'] = 1;
+					} else if($field['mandatory_condition_field_type'] == 'mandatory_if_one_of'){
+						$values['mandatory_condition_invert'] = 2;
+					}
+					$conditionFieldType = $fields[$field['mandatory_condition_field_id']]['type'];
+					if ($field['mandatory_condition_field_type'] == 'mandatory_if_one_of' || $conditionFieldType == 'checkboxes') {
+						$tValues = array();
+						$tValue="";
+						foreach ($field['mandatory_condition_checkboxes_field_value'] as $tValue) {
+							if (empty($fields[$field['mandatory_condition_field_id']]['id']) && in_array($conditionFieldType, ['select', 'radios', 'checkboxes'])) {
+								$tValue = $tempValueIdLink[$tValue] ?? '';
+							}
+							$tValues[] = $tValue;
+						}
+						
+						$values['mandatory_condition_field_value'] = (count($tValues)>1) ? implode(',', $tValues): $tValue;
+
+						if ($conditionFieldType == 'checkboxes') {
+							$values['mandatory_condition_checkboxes_operator'] = $field['mandatory_condition_checkboxes_operator'];
+						}
+					} else {
+						switch ($conditionFieldType) {
+							case 'select':
+							case 'radios':
+								$value = $field['mandatory_condition_field_value'];
+								if (empty($fields[$field['mandatory_condition_field_id']]['id'])) {
+									$value = $tempValueIdLink[$value] ?? '';
+								}
+								$values['mandatory_condition_field_value'] = $value;
+								break;
+							case 'checkboxes':
+								$values['mandatory_condition_checkboxes_operator'] = $field['mandatory_condition_checkboxes_operator'];
+								if ($field['mandatory_condition_checkboxes_field_value']) {
+									$tValues = [];
+									$tValue = "";
+									foreach ($field['mandatory_condition_checkboxes_field_value'] as $tValue) {
+										if (empty($fields[$field['mandatory_condition_field_id']]['id'])) {
+											$tValue = $tempValueIdLink[$tValue] ?? '';
+										}
+										$tValues[] = $tValue;
+									}
+									$values['mandatory_condition_field_value'] = (count($tValues)>1) ? implode(',', $tValues): $tValue;
+								}
+								break;
+							case 'checkbox':
+							case 'group':
+								$values['mandatory_condition_field_value'] = (!empty($field['mandatory_condition_field_value']) && $field['mandatory_condition_field_value'] == 'checked') ? 1 : 0;
+								break;
+							default:
+								$values['mandatory_condition_field_value'] = $this->sanitizeTextForSQL($field['mandatory_condition_field_value']);
+								break;
+						}
+					}
+				}
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
 				$values['validation'] = 'none';
 				$values['validation_message'] = null;
 				if (!empty($field['validation'])) {

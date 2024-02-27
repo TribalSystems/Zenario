@@ -69,3 +69,64 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                show_thumbnail_menu_node_icons:
+                    plugin_setting:
+                        name: show_thumbnail_menu_node_icons
+                    label: 'Show thumbnail menu node icons'
+                    type: checkbox
+                    format_onchange: true
+                thumbnail_menu_node_icon_canvas:
+                    indent: 1
+                    plugin_setting:
+                        name: thumbnail_menu_node_icon_canvas
+                    label: 'Image canvas for thumbnail menu node icons:'
+                    type: select
+                    format_onchange: true
+                    values:
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                    value: fixed_width
+                thumbnail_menu_node_icon_retina:
+                    indent: 2
+                    plugin_setting:
+                        name: thumbnail_menu_node_icon_retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    value: ""
+                    side_note: |
+                        Display image at double density.
+                thumbnail_menu_node_icon_width:
+                    indent: 2
+                    plugin_setting:
+                        name: thumbnail_menu_node_icon_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    value: 100
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                thumbnail_menu_node_icon_height:
+                    indent: 2
+                    plugin_setting:
+                        name: thumbnail_menu_node_icon_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    value: 100
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'

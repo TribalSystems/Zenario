@@ -250,6 +250,8 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 
 						break;
 				}
+		
+		
 			}
 		}
 	}
@@ -259,6 +261,26 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		//When we copy the template fields for each image, we prefer to use the image's file ID for the fields,
+		//but for freshly uploaded image we need to use the upload path code name.
+		//The CMS will replace this with a file ID when saving. We need to watch out for this situation and
+		//also fix the plugin setting names saved into the database!
+		if (!empty($fields['first_tab/image']['upload']['uploaded_ids'])) {
+			foreach ($fields['first_tab/image']['upload']['uploaded_ids'] as $oldPathCodename => $fileId) {
+				$sql = "
+					UPDATE ". DB_PREFIX. "plugin_settings
+					  SET name = REPLACE(name, '_". ze\escape::sql($oldPathCodename). "', '_". ze\escape::sql($fileId). "')
+					WHERE instance_id = ". (int) $box['key']['instanceId']. "
+					  AND egg_id = ". (int) $box['key']['eggId']. "
+					  AND name LIKE '%_". ze\escape::like($oldPathCodename). "'";
+				
+				ze\sql::update($sql);
+			}
+		}
+		
+		
+		
 		if ($path == 'plugin_settings') {
 			
 			//Make sure all images selected are stored in the docstore, and have the "usage" column value 'mic'.

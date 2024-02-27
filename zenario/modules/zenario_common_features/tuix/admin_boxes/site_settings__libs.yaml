@@ -185,7 +185,7 @@ site_settings:
                             <p class="zfab_libTitle">
                                 <a href="http://www.jacklmoore.com/colorbox/" target="_blank">
                                     Colorbox</a>
-                                <span>(6.0 kB)<span>
+                                <span>(9.7 kB)<span>
                             </p>
                             <p class="zfab_libDesc">
                                 A lightweight customizable lightbox plugin for jQuery.
@@ -225,6 +225,34 @@ site_settings:
                     type: radios
                     cols: 2
                     value: 0
+                    values:
+                        0:
+                            ord: 2
+                            label: Auto
+                        1:
+                            ord: 1
+                            label: "On"
+                            # N.b. in YAML, the "0" option in an array always needs to be defined first, even if I actually want to show it second.
+                
+                lib.jqueryui.theme.desc:
+                    indent: 1
+                    snippet:
+                        html: |
+                            <p class="zfab_libTitle">
+                                <a href="https://jqueryui.com/themeroller/#!scope=&folderName=base" target="_blank">
+                                    jQuery UI: Base Theme</a>
+                                <span>(13.4 kB)<span>
+                            </p>
+                            <p class="zfab_libDesc">
+                                Styles for jQuery UI widgets such as the date-picker.
+                            </p>
+                lib.jqueryui.theme:
+                    site_setting:
+                        name: lib.jqueryui.theme
+                    same_row: true
+                    type: radios
+                    cols: 2
+                    value: 1
                     values:
                         0:
                             ord: 2

@@ -74,7 +74,7 @@ zenario__menu:
                     visible_if: |
                         zenarioO.searchTerm === undefined
                     title: Invisible menu node
-                    db_column: IF (mi.invisible = '1','show','') 
+                    db_column: IF (mi.invisible = '1' OR c.status IN ('unlisted', 'unlisted_with_draft'), 'show','') 
                     show_by_default: true
                     format: enum
                     values: 
@@ -307,14 +307,22 @@ zenario__menu:
                         key:
                             id_is_menu_node_id: 1
                     visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count == 0)
-                linked_content_item_one_or_more_categories:
+                linked_content_item_one_category:
                     css_class: one_or_more_categories
-                    tooltip: "Content item is in one or more categories"
+                    tooltip: "Content item is in one category"
                     admin_box:
                         path: zenario_content_categories
                         key:
                             id_is_menu_node_id: 1
-                    visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count > 0)
+                    visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count == 1)
+                linked_content_item_multiple_categories:
+                    css_class: one_or_more_categories
+                    tooltip: "Content item is in [[linked_content_item_categories_count]] categories"
+                    admin_box:
+                        path: zenario_content_categories
+                        key:
+                            id_is_menu_node_id: 1
+                    visible_if: item.redundancy != 'secondary' && (item.linked_content_item_categories_enabled && item.linked_content_item_categories_count > 1)
             
                 view_frontend:
                     css_class: view_frontend
@@ -493,8 +501,8 @@ zenario__menu:
             
                 delete:
                     priv: _PRIV_DELETE_MENU_ITEM
-                    label: Delete
-                    multiple_select_label: Delete multiple
+                    label: Delete menu node
+                    multiple_select_label: Delete multiple nodes
                     parent: action_dropdown
                     multiple_select: true
                     hide_in_select_mode: true

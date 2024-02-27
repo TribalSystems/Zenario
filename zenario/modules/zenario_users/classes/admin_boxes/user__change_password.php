@@ -32,6 +32,12 @@ use ZxcvbnPhp\Zxcvbn;
 class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnFABIfConfIsBad($box);
+		
+		
 		if ($box['key']['id']) {
 			ze\priv::exitIfNot('_PRIV_VIEW_USER');
 			
@@ -46,7 +52,6 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 			$values['details/screen_name'] = $user['screen_name'];
 			
 			$fields['details/password_reset_email']['value'] = ze::setting('default_password_reset_email_template');
-			$fields['details/activation_email']['value'] = ze::setting('default_activation_email_template');
 		}
 	}
 	
@@ -54,7 +59,6 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 		$fields['details/password']['type'] = empty($fields['details/reveal_password']['pressed'])? 'password' : 'text';
 		$fields['details/reveal_password']['value'] = empty($fields['details/reveal_password']['pressed'])? 'Reveal' : 'Hide';
 		
-		$fields['details/password']['side_note'] = ze\admin::displayPasswordRequirementsNoteAdmin($values['details/password']);
 		if (empty($fields['details/password']['hidden'])) {
 			//Validate password: show whether it matches the requirements or not,
 			//but don't show an admin box error if it doesn't.
@@ -226,11 +230,7 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_EDIT_USER');
 		
-		if (
-			$values['details/send_email_upon_save']
-			&&  ze::in($values['details/send_email_type'], 'send_password_reset_email', 'send_activation_email')
-			&& ze\module::inc('zenario_email_template_manager')
-		) {
+		if (!empty($fields['details/send_password_reset_email_upon_save']['pressed']) && $values['details/password_reset_email'] && ze\module::inc('zenario_email_template_manager')) {
 			$mergeFields = ze\user::userDetailsForEmails($box['key']['id']);
 			$mergeFields['cms_url'] = ze\link::absolute();
 			
@@ -240,32 +240,27 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 				$mergeFields['password'] = '(' . ze\admin::phrase('password not changed') . ')';
 			}
 			
-			if ($values['details/send_email_type'] == 'send_activation_email' && $values['details/activation_email']) {
-				zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/activation_email'], $mergeFields);
-			} elseif ($values['details/send_email_type'] == 'send_password_reset_email' && $values['details/password_reset_email']) {
-				//It's possible that an admin changes the password and sends an email,
-				//but it's also possible to just send an email without changing the password.
-				$mergeFields['password_reset_message'] = '';
+			//It's possible that an admin changes the password and sends an email,
+			//but it's also possible to just send an email without changing the password.
+			$mergeFields['password_reset_message'] = '';
+			
+			if (!empty($fields['details/change_password']['pressed']) && $values['details/password']) {
+				$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account password has been reset.') . '</p>';
+				$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your new password is: [[password]]', ['password' => $mergeFields['password']]) . '</p>';
 				
-				if (!empty($fields['details/change_password']['pressed']) && $values['details/password']) {
-					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account password has been reset.') . '</p>';
-					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your new password is: [[password]]', ['password' => $mergeFields['password']]) . '</p>';
-					
-					if ($values['details/password_needs_changing']) {
-						$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change this new password to one you can remember upon logging in.') . '</p>';
-					}
-				} else {
-					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account has been updated.') . '</p>';
-					
-					if ($values['details/password_needs_changing']) {
-						$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change your password upon logging in.') . '</p>';
-					}
+				if ($values['details/password_needs_changing']) {
+					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change this new password to one you can remember upon logging in.') . '</p>';
 				}
+			} else {
+				$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account has been updated.') . '</p>';
 				
-				
-				
-				zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/password_reset_email'], $mergeFields, [], [], $disableHTMLEscaping = true);
+				if ($values['details/password_needs_changing']) {
+					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change your password upon logging in.') . '</p>';
+				}
 			}
+			
+			
+			zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/password_reset_email'], $mergeFields, [], [], $disableHTMLEscaping = true);
 		}
 	}
 }

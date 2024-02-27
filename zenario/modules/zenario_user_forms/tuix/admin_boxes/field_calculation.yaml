@@ -6,74 +6,107 @@ zenario_field_calculation:
         title: ''
         numeric_fields: ''
         calculation_code: ''
-    max_height: 300
     tabs:
         details:
             edit_mode:
                 enabled: true
             fields:
+                left_column:
+                    type: grouping
+                
                 dummy_field:
+                    grouping: left_column
                     type: textarea
                     hidden: true
-                calculation_display:
-                    snippet:
-                        html: |
-                            <div id="zenario_calculation_display"></div>
-                operation_addition:
-                    type: button
-                    value: "+"
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_addition');
-                operation_subtraction:
-                    type: button
-                    value: "-"
-                    same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_subtraction');
-                operation_multiplication:
-                    type: button
-                    value: "×"
-                    same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_multiplication');
-                operation_division:
-                    type: button
-                    value: "÷"
-                    same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_division');
-                parentheses_open:
-                    type: button
-                    value: (
-                    same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('parentheses_open');
-                parentheses_close:
-                    type: button
-                    value: )
-                    same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('parentheses_close');
                     
                 numeric_field:
-                    label: Add a field
+                    grouping: left_column
+                    label: Add field...
                     type: select
                     values: {}
                     empty_value: -- Select --
                 add_numeric_field:
+                    grouping: left_column
                     type: button
+                    css_class: zenario_gp_button
                     value: ">"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('field', get('numeric_field').value);
                 
                 static_value:
-                    label: Static value
+                    grouping: left_column
+                    label: Add constant...
                     type: text
                     style: 'width:6em;'
                 add_static_value:
+                    grouping: left_column
                     type: button
+                    css_class: zenario_gp_button
                     value: ">"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('static_value', get('static_value').value);
+                
+                operation_addition:
+                    grouping: left_column
+                    type: button
+                    css_class: zenario_gp_button
+                    value: "+"
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_addition');
+                    pre_field_html: |
+                        <div class="title"><label>Add operator...</label></div><br />
+                operation_subtraction:
+                    grouping: left_column
+                    type: button
+                    css_class: zenario_gp_button
+                    value: "-"
+                    same_row: true
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_subtraction');
+                operation_multiplication:
+                    grouping: left_column
+                    type: button
+                    css_class: zenario_gp_button
+                    value: "×"
+                    same_row: true
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_multiplication');
+                operation_division:
+                    grouping: left_column
+                    type: button
+                    css_class: zenario_gp_button
+                    value: "÷"
+                    same_row: true
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_division');
+                parentheses_open:
+                    grouping: left_column
+                    type: button
+                    css_class: zenario_gp_button
+                    value: (
+                    same_row: true
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('parentheses_open');
+                parentheses_close:
+                    grouping: left_column
+                    type: button
+                    css_class: zenario_gp_button
+                    value: )
+                    same_row: true
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('parentheses_close');
+                
+                right_column:
+                    type: grouping
+                
+                calculation_display:
+                    grouping: right_column
+                    snippet:
+                        html: |
+                            <div id="zenario_calculation_display"></div>
                 delete:
+                    grouping: right_column
                     type: button
                     value: Delete
+                    same_row: true
+                    css_class: zenario_gp_button zenario_button_trash
                     onclick: zenarioO.pi.calculationAdminBoxDelete();
                 calculation_code:
+                    grouping: right_column
                     type: textarea
                     style: display:none;
                     

@@ -38,7 +38,7 @@ switch ($path) {
 		}
 		
 		if (isset($box['tabs']['moderation']['fields']['email_address_for_reports']) && !$box['key']['instanceId']) {
-			$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = ze::setting('email_address_admin');
+			$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 		
 		

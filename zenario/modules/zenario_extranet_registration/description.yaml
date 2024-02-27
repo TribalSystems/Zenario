@@ -74,4 +74,3 @@ jobs:
         log_on_action: true
         log_on_no_action: false
         email_on_action: true
-        email_on_no_action: false

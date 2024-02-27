@@ -33,9 +33,9 @@ class zenario_copyright extends ze\moduleBaseClass {
 	
 	public function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = true);
+			$clearByContent = true, $clearByMenu = false, $clearByFile = false, $clearByModuleData = true);
 		
 		$companyName = $this->setting('company_name');
 		if($yearDisplay = $this->setting('year_display')){

@@ -30,7 +30,6 @@ namespace ze;
 
 class cache {
 
-	//Formerly "useGZIP()"
 	public static function start() {
 	
 		//As of Zenario 7.2, we now rely on people enabling compression in their php.ini or .htaccess files
@@ -51,7 +50,6 @@ class cache {
 		}
 	}
 
-	//Formerly "browserBodyClass()"
 	public static function browserBodyClass() {
 		$c = '';
 		$a = ($_SERVER['HTTP_USER_AGENT'] ?? '');
@@ -98,7 +96,6 @@ class cache {
 	}
 
 
-	//Formerly "createCacheDir()"
 	public static function createDir($dir, $type = 'private/downloads', $onlyForCurrentVisitor = true, $ip = -1) {
 	
 		switch ($type) {
@@ -162,6 +159,19 @@ class cache {
 			return $path;
 		}
 	}
+	
+	//Clear any files out of a directory made by the createDir() function above, but keep
+	//the actual directory.
+	public static function tidyDir($dir, $type) {
+		
+		$fullPath = CMS_ROOT. $type. '/'. $dir. '/';
+		
+		foreach (scandir($fullPath) as $file) {
+			if ($file != '.' && $file != '..' && $file != 'accessed' && is_file($fullPath. $file)) {
+				@unlink($fullPath. $file);
+			}
+		}
+	}
 
 
 	public static function chmod($filename, $mode = 0666) {
@@ -176,13 +186,11 @@ class cache {
 
 
 
-	//Formerly "createRandomDir()"
 	public static function createRandomDir($length, $type = 'private/downloads', $onlyForCurrentVisitor = true, $ip = -1, $prefix = '') {
 		return \ze\cache::createDir($prefix. \ze\ring::random($length), $type, $onlyForCurrentVisitor, $ip);
 	}
 	
 
-	//Formerly "htaccessFileForCurrentVisitor()"
 	public static function htaccessFileForCurrentVisitor($path, $ip = -1) {
 		if ($ip === -1) {
 			$ip = \ze\user::ip();
@@ -211,7 +219,6 @@ class cache {
 		}
 	}
 
-	//Formerly "deleteCacheDir()"
 	public static function deleteDir($dir, $subDirLimit = 0) { 
 	
 		$allGone = true;
@@ -250,7 +257,6 @@ class cache {
 	
 	private static $cleanedCacheDir = null;
 	
-	//Formerly "cleanCacheDir()", "cleanDownloads()"
 	public static function cleanDirs($forceRun = false) {
 		
 		//Only allow this function to run at most once per page-load
@@ -282,48 +288,13 @@ class cache {
 		
 		//Call call the \ze\cache::createDir() function to create/touch the cache/stats/clean_downloads/accessed file,
 		//so we know that we last ran \ze\cache::cleanDirs() at this current time.
-		\ze\cache::createDir('clean_downloads', 'stats', true, false);
+		\ze\cache::createDir('clean_downloads', 'cache/stats', true, false);
 		
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 
-	//Formerly "incCSS()"
-	public static function incCSS($file) {
-		$file = CMS_ROOT. $file;
-		if (file_exists($file. '.min.css')) {
-			require $file. '.min.css';
-		} elseif (file_exists($file. '.css')) {
-			require $file. '.css';
-		}
-	
-		echo "\n/**/\n";
-	}
-
-	//Formerly "incJS()"
-	public static function incJS($file, $wrapWrappers = false) {
-		echo "\n";
-		$file = CMS_ROOT. $file;
-		if ($wrapWrappers && file_exists($file. '.js.php')) {
-			chdir(dirname($file));
-			require $file. '.js.php';
-			chdir(CMS_ROOT);
-	
-		} elseif (file_exists($file. '.pack.js')) {
-			require $file. '.pack.js';
-		} elseif (file_exists($file. '.min.js')) {
-			require $file. '.min.js';
-		} elseif (file_exists($file. '.js')) {
-			require $file. '.js';
-		} else {
-			return;
-		}
-		echo "/**/";
-	}
-
-
 	//Attempt to use caching for a page, to avoid sending something a client already has cached
-	//Formerly "useCache()"
 	public static function useBrowserCache($ETag = false, $maxAge = false) {
 	
 		if (!empty($_REQUEST['no_cache'])) {
@@ -355,21 +326,4 @@ class cache {
 		return str_replace(['`', '~'], ['`t', '`s'], $text);
 	}
 	
-	public static function outputMicrotemplates($microtemplateDirs, $targetVar) {
-		$output = '';
-		foreach ($microtemplateDirs as $mDir) {
-			foreach (scandir($dir = CMS_ROOT. $mDir) as $file) {
-				if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
-					$name = substr($file, 0, -5);
-					$output .=
-						\ze\cache::esctick($name). '~'.
-						\ze\cache::esctick(trim(
-							preg_replace('@\s+@', ' ', preg_replace('@%>\s*<%@', '', preg_replace('@<\!--.*?-->@s', '',
-								file_get_contents($dir. $file)
-						))))). '~';
-				}
-			}
-		}
-		echo "\nzenario._mkd(", $targetVar, ',', json_encode($output), ');';
-	}
 }

@@ -23,25 +23,25 @@
 		background-size:contain !important;
 	}
 	
-	.zenario_slideshow .zenario_banner .banner_content {
+	.Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content {
 		padding:0 50px;
 	}
 	
-	.zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
+	.Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size: 3.5em;
 		font-size: 3.5vh;
 	}
 
-	.zenario_slideshow .zenario_banner .banner_content .banner_text {
+	.Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size: 2em;
 		font-size: 2vh;
 	}
 	
-	.zenario_slideshow a.next {
+	.Slot_Slideshow .zenario_slideshow a.next {
 		right:15px;
 	}
 	
-	.zenario_slideshow a.prev {
+	.Slot_Slideshow .zenario_slideshow a.prev {
 		left:15px;
 	}
 	
@@ -122,12 +122,12 @@
 		font-size:0.875em;
 	}
 	
-	.zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
+	.Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size: 3em;
 		font-size: 3vh;
 	}
 
-	.zenario_slideshow .zenario_banner .banner_content .banner_text {
+	.Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size: 1.75em;
 		font-size: 1.75vh;
 	}
@@ -232,19 +232,19 @@
 		min-height:0;
 	}
 	
-	body.mobile .zenario_slideshow {
+	body.mobile .Slot_Slideshow .zenario_slideshow {
 		padding-bottom:20px;
 	}
 	
-	body.mobile .zenario_slideshow .banner_content {
+	body.mobile .Slot_Slideshow .zenario_slideshow .banner_content {
 		font-size:200%;
 	}
 	
-	body.mobile .zenario_slideshow .banner_content .banner_title {
+	body.mobile .Slot_Slideshow .zenario_slideshow .banner_content .banner_title {
 		line-height:1.2em;
 	}
 	
-	body.mobile .zenario_slideshow .banner_content .banner_text {
+	body.mobile .Slot_Slideshow .zenario_slideshow .banner_content .banner_text {
 		line-height:1.2em;
 	}
 	
@@ -278,7 +278,11 @@
 	body.mobile .zenario_banner.banner_masthead .banner_content .banner_text p {
 		font-size:0.875em;
 	}
-	
+
+	body.mobile .zenario_banner.banner_masthead .banner_wrap_inner > a + .banner_content {
+		margin-top:0;
+	}
+
 	body.mobile .nest_wrap .minigrid.span4 {
 		width:30%;
 		margin:0 1.5%;
@@ -472,26 +476,26 @@
 		padding:8px 15px 5px;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_wrap_inner .banner_image img {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_wrap_inner .banner_image img {
 		float:left;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_wrap_inner .banner_image + .banner_content {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_wrap_inner .banner_image + .banner_content {
 		margin-top:0;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size: 2.25em;
 		font-size: 2.25vh;
 	}
 
-	body.mobile .zenario_slideshow .zenario_banner .banner_content .banner_text {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size: 1.25em;
 		font-size: 1.25vh;
 	}
 	
-	body.mobile .zenario_slideshow.light .zenario_banner .banner_content *,
-	body.mobile .zenario_slideshow .zenario_banner.light .banner_content * {
+	body.mobile .Slot_Slideshow .zenario_slideshow.light .zenario_banner .banner_content *,
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner.light .banner_content * {
 		color:#000;
 		text-shadow:0 0 8px rgba(255,255,255,0.7);
 	}
@@ -591,6 +595,19 @@
 		min-width:80px;
 	}
 	
+	.zenario_job_vacancy_summary_list__default_style .content_list_data_row  {
+		display:block;
+	}
+
+	.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image {
+		padding:0 0 10px;
+	}
+	
+	.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image img {
+		display:block;
+		margin:auto;
+	}
+	
 }
 
 /* Layout max-width: 650px
@@ -633,7 +650,7 @@
 		height:300px !important;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_content {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content {
 		position:relative;
 		top:-5px;
 		background:#f0f0f0;
@@ -641,21 +658,21 @@
 		font-size:100%;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_title h2 {
 		font-size:1.2em;
 		margin-bottom:0;
 		padding-bottom:5px;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_content .banner_text {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-size:0.8em;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_content .banner_text p {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_text p {
 		font-size:1em;
 	}
 	
-	body.mobile .zenario_slideshow .zenario_banner .banner_content .banner_text {
+	body.mobile .Slot_Slideshow .zenario_slideshow .zenario_banner .banner_content .banner_text {
 		font-family:'robotolight',Arial, Helvetica, sans-serif;
 	}
 	

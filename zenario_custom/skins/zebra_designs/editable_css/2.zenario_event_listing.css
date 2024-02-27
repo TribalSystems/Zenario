@@ -34,33 +34,18 @@
 .zenario_event_listing__default_style .event_listing .single_event .single_event_description .event_title > h2 {
   	font-size: 1.25em;
 	font-family: 'robotolight',Arial, Helvetica, sans-serif;
-  	margin-bottom: 3px;
 }
 
 .zenario_event_listing__default_style .event_listing .single_event .single_event_description span {
 	display:block;
 }
 
-.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_date {
-	font-family:'cardoregular','Times New Roman','Georgia',serif;
-	padding-top:5px;
-}
-
-.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_description,
-.zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_location_name {
-	padding-top:8px;
-}
-
 .zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_date,
 .zenario_event_listing__default_style .event_listing .single_event .single_event_description span[class*="single_event_location"] {
+	color:#00659b;
 	position:relative;
-	padding-left:22px;
-	color:#000;
-}
-
-.zenario_event_listing__default_style .event_listing .single_event .single_event_description span[class*="single_event_location"] {
-	font-size:0.938em;
-	font-style:italic;
+	padding-left:25px;
+	padding-bottom:5px;
 }
 
 .zenario_event_listing__default_style .event_listing .single_event .single_event_description a.single_event_more_link {
@@ -87,7 +72,7 @@
 
 
 .zenario_event_listing__default_style .event_listing .single_event .single_event_description span.single_event_location_name:before {
-  	content: "\f276";
+  	content: "\f3c5";
   	position:absolute;
   	left:0;
   	font-style:normal;

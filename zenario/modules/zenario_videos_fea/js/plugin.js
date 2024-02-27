@@ -1,11 +1,13 @@
 (function() {
 
-	// Define a new library
-	var feaClass = createZenarioLibrary('videosFEA', zenarioFEA),
-		methods = methodsOf(feaClass);
 
 	
 	zenario_videos_fea.init = function(containerId, path, request, mode, pages, libraryName, idVarName) {
+		
+		//The Videos FEA does not need any custom modifications to the standard FEA class,
+		//so its instances can be instances of the FEA class without needing to extend it.
+		var feaClass = zenarioFEA;
+		
 		zenario_abstract_fea.setupAndInit(libraryName, feaClass, containerId, path, request, mode, pages, idVarName);
 	};
 	

@@ -108,18 +108,29 @@ if (!$content || !$version) {
 		unset($adminToolbar['sections']['icons']['buttons']['pinned']);
 	}
 	
-	//Show an icon for staging mode if enabled.
-	if ($stagingVersion = ze\row::get('content_item_versions',
-		['access_code', 'version'],
-		['id' => $cID, 'type' => $cType, 'access_code' => ['!' => null]]
-	)) {
+	//Show an icon for staging mode if available.
+	if (ze::setting('enable_staging_mode')
+	 && ze::$isDraft
+	 && $chain['privacy'] == 'public') {
+		if ($stagingVersion = ze\row::get('content_item_versions',
+			['access_code', 'version'],
+			['id' => $cID, 'type' => $cType, 'access_code' => ['!' => null]]
+		)) {
 		
-		$link = ze\contentAdm::stagingModeLink($cID, $cType, $stagingVersion['access_code']);
+			$link = ze\contentAdm::stagingModeLink($cID, $cType, $stagingVersion['access_code']);
 		
-		$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-			ze\admin::phrase('Staging enabled for version [[version]] with code [[access_code]]. Click to copy URL.', $stagingVersion);
-		$adminToolbar['sections']['icons']['buttons']['staging_mode']['onclick'] =
-			'zenarioA.copy("'. ze\escape::js($link). '");';
+			$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
+				ze\admin::phrase('Staging enabled for version [[version]] with code [[access_code]].', $stagingVersion);
+		
+			#$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
+			#	ze\admin::phrase('Staging enabled for version [[version]] with code [[access_code]]. Click to copy URL.', $stagingVersion);
+			#$adminToolbar['sections']['icons']['buttons']['staging_mode']['onclick'] =
+			#	'zenarioA.copy("'. ze\escape::js($link). '");';
+			
+			$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_enabled';
+		} else {
+			$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_disabled';
+		}
 	} else {
 		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']);
 	}
@@ -198,6 +209,8 @@ if ($cVersion == ze::$adminVersion) {
 	unset($adminToolbar['sections']['slot_controls']['buttons']['item_foot']);
 	unset($adminToolbar['sections']['status_button']['buttons']['delete_draft']);
 	unset($adminToolbar['sections']['status_button']['buttons']['hide_content']);
+	unset($adminToolbar['sections']['status_button']['buttons']['delist']);
+	unset($adminToolbar['sections']['status_button']['buttons']['relist']);
 	unset($adminToolbar['sections']['status_button']['buttons']['trash_content']);
 	unset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']);
 	unset($adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']);
@@ -326,6 +339,13 @@ if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 	
 
 	//Published Version
+	if ((ze::$status == 'unlisted' && $cVersion == ze::$visitorVersion)
+	 || (ze::$status == 'unlisted_with_draft' && $cVersion == ze::$visitorVersion)) {
+		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_green zenario_section_dark_text';
+		$adminToolbar['sections']['edit']['label'] = ze\admin::phrase('Published unlisted');
+		unset($adminToolbar['sections']['edit']['buttons']['no_rollback_item']);
+	
+	} else
 	if ($cVersion == ze::$visitorVersion) {
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_green zenario_section_dark_text';
 		$adminToolbar['sections']['edit']['label'] = ze\admin::phrase('Published');
@@ -408,6 +428,37 @@ if (isset($adminToolbar['sections']['status_button']['buttons']['hide_content'])
 		} else {
 			unset($adminToolbar['sections']['status_button']['buttons']['hide_content']);
 		}
+	}
+}
+
+$allowDelist = null;
+$allowRelist = null;
+if (isset($adminToolbar['sections']['status_button']['buttons']['delist'])) {
+	if (ze\content::isUnlisted(ze::$status)) {
+		$allowRelist = ze\contentAdm::allowRelist($cID, $cType, ze::$status);
+	
+		if (!$allowRelist) {
+			if ($allowRelist === ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE) {
+				$adminToolbar['sections']['status_button']['buttons']['relist']['disabled'] = true;
+				$adminToolbar['sections']['status_button']['buttons']['relist']['disabled_tooltip'] = ze\admin::phrase("You can't make this special page listed.");
+			} else {
+				unset($adminToolbar['sections']['status_button']['buttons']['relist']);
+			}
+		}
+		unset($adminToolbar['sections']['status_button']['buttons']['delist']);
+	
+	} else {
+		$allowDelist = ze\contentAdm::allowDelist($cID, $cType, ze::$status);
+		
+		if (!$allowDelist) {
+			if ($allowDelist === ze\contentAdm::CANT_BECAUSE_SPECIAL_PAGE) {
+				$adminToolbar['sections']['status_button']['buttons']['delist']['disabled'] = true;
+				$adminToolbar['sections']['status_button']['buttons']['delist']['disabled_tooltip'] = ze\admin::phrase("You can't make this special page unlisted.");
+			} else {
+				unset($adminToolbar['sections']['status_button']['buttons']['delist']);
+			}
+		}
+		unset($adminToolbar['sections']['status_button']['buttons']['relist']);
 	}
 }
 
@@ -512,79 +563,6 @@ if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying'
 }
 if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting'])) {
 	$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['pick_items']['path'] = 'zenario__content/panels/content/refiners/content_type//'. $cType. '//';
-}
-
-if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
-	$cTypeDetails = ze\contentAdm::cTypeDetails($cType);
-	
-	$tooltip =
-		'<strong>'. ze\admin::phrase('Title:'). '</strong> '. htmlspecialchars(ze::$pageTitle);
-
-	if (ze\lang::count() > 1) {
-		$tooltip .=
-			'<br/><strong>'. ze\admin::phrase('Language:'). '</strong> '. htmlspecialchars(ze\lang::name(ze::$langId));
-	}
-	
-	if ($cTypeDetails['description_field'] != 'hidden') {
-		$tooltip .= 
-			'<br/><strong>'. ze\admin::phrase('Description:'). '</strong> '. (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ze\admin::phrase('[Empty]'));
-	}
-	if ($cTypeDetails['keywords_field'] != 'hidden') {
-		$tooltip .= 
-			'<br/><strong>'. ze\admin::phrase('Keywords:'). '</strong> '. (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ze\admin::phrase('[Empty]'));
-	}
-	if ($cTypeDetails['release_date_field'] != 'hidden') {
-		$tooltip .= 
-			'<br/><strong>'. ze\admin::phrase('Release date:'). '</strong> ';
-		
-		if ($version['release_date']) {
-			$tooltip .=  htmlspecialchars(ze\admin::formatDate($version['release_date']));
-		} else {
-			$tooltip .= ze\admin::phrase('[Empty]');
-		}
-	}
-	if ($cTypeDetails['writer_field'] != 'hidden') {
-		$tooltip .= 
-			'<br/><strong>'. ze\admin::phrase('Writer:'). '</strong> ';
-		
-		if ($version['writer_id']) {
-			$writerProfile = ze\row::get('writer_profiles', ['first_name', 'last_name'], ['id' => (int) $version['writer_id']]);
-
-			if (!empty($writerProfile) && is_array($writerProfile)) {
-
-				if (!empty($writerProfile['first_name'])) {
-					$tooltip .= $writerProfile['first_name'];
-				}
-
-				if (!empty($writerProfile['last_name'])) {
-					$tooltip .= ' ' . $writerProfile['last_name'];
-				}
-			}
-		} else {
-			$tooltip .= ze\admin::phrase('[Empty]');
-		}
-	}
-	if ($cTypeDetails['summary_field'] != 'hidden') {
-		$tooltip .= 
-			'<br/><strong>'. ze\admin::phrase('Summary:'). '</strong> ';
-		
-		if ($version['content_summary']) {
-			$tooltip .= strip_tags(trim($version['content_summary']));
-		} else {
-			$tooltip .= ze\admin::phrase('[Empty]');
-		}
-	}
-	if ($cTypeDetails['allow_pinned_content'] == 1) {
-		if ($version['pinned']) {
-			$tooltip .= 
-				'<br/>'. ze\admin::phrase('Pinned'). ' ';
-		} else {
-			$tooltip .= 
-				'<br/>'. ze\admin::phrase('Not pinned'). ' ';
-		}
-	}
-	
-	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] .= $tooltip;
 }
 
 if (isset($adminToolbar['sections']['edit']['buttons']['item_template'])) {
@@ -729,7 +707,7 @@ if (isset($adminToolbar['sections']['status_button']['buttons']['publish'])) {
 
 } else {
 	$adminToolbar['sections']['status_button']['buttons']['status_button']['css_class'] .= ' '. ze\contentAdm::getContentItemVersionToolbarIcon($content, $cVersion, 'zenario_at_status_button_');
-	$adminToolbar['sections']['status_button']['buttons']['status_button']['label'] = ucwords($mrg['status']);
+	$adminToolbar['sections']['status_button']['buttons']['status_button']['label'] = ze\contentAdm::getContentItemVersionStatusLabel($content, $cVersion);
 }
 
 /*
@@ -826,7 +804,7 @@ if (isset($adminToolbar['sections']['layout'])) {
  	if ($layout['head_visitor_only']) {
  		$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
  	}
- 	$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['label'] = ze\admin::phrase('<head> HTML/JS for [[name]]', ['name' => $LayoutIdentifier]);
+ 	$adminToolbar['sections']['slot_controls']['buttons']['layout_head']['label'] = ze\admin::phrase('HTML/JS in <head> for [[name]]', ['name' => $LayoutIdentifier]);
  	
  	
  	
@@ -1042,7 +1020,7 @@ if (isset($adminToolbar['sections']['create'])) {
 	
 	// Create a 'create button' for each content type in the order HTML, News, Events, Others dropdown (Alphabetical)
 	$ord = 3;
-	foreach (ze\content::getContentTypes(false, true) as $contentTypeId => $contentType) {
+	foreach (ze\content::getContentTypes(true, true) as $contentTypeId => $contentType) {
 		if (ze\priv::check('_PRIV_EDIT_DRAFT', false, $contentTypeId)) {
 			$button = [
 				'label' => $contentType['content_type_name_en'],
@@ -1141,14 +1119,6 @@ if (ze\content::isSpecialPage(ze::$cID, ze::$cType)) {
 $adminToolbar['meta_info']['title'] = ze::$pageTitle;
 $adminToolbar['meta_info']['cversion_css_class'] =
 	ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $versionStatus);
-
-if ($isMultilingual) {
-	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] =
-		ze\admin::phrase('Title: [[title]]<hr/>Content item ID: [[tagId]]<br/>Version: [[cVersion]] ([[status]])<br/>Alias: [[alias]]<br/>Word count: [[wordcount]]<br/>Language: [[lang]]', $mrg);
-} else {
-	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] =
-		ze\admin::phrase('Title: [[title]]<hr/>Content item ID: [[tagId]]<br/>Version: [[cVersion]] ([[status]])<br/>Alias: [[alias]]<br/>Word count: [[wordcount]]', $mrg);
-}
 
 // Language
 if (!$isMultilingual) {
@@ -1360,6 +1330,14 @@ foreach ($showVersions as $showVersion => $dummy) {
 				$lastAction = $v['published_datetime'];
 				$lastActionBy = $v['publisher_id'];
 				break;
+			
+			case 'unlisted':
+				$labelPhrase = 'v[[version]] (published unlisted)';
+				$tooltipPhrase = 'Version [[version]], published by [[name]], [[time]] [[date]]';
+				$cssClass = 'zenario_at_icon_version_published zenario_at_icon_version_published_unlisted';
+				$lastAction = $v['published_datetime'];
+				$lastActionBy = $v['publisher_id'];
+				break;
 
 			case 'hidden':
 				$labelPhrase = 'v[[version]] (hidden)';
@@ -1438,7 +1416,7 @@ if (ze\row::exists('category_item_link', ['equiv_id' => $content['equiv_id'], 'c
 if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])) {
 	//If this item is in categories, list them
 	$sql = "
-		SELECT c.name
+		SELECT c.id, c.name
 		FROM ". DB_PREFIX. "category_item_link AS cil
 		LEFT JOIN ". DB_PREFIX. "categories AS c
 		   ON cil.category_id = c.id
@@ -1448,8 +1426,18 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])
 	$i = 0;
 	if ($sql && ($result = ze\sql::select($sql))) {
 		while ($row = ze\sql::fetchAssoc($result)) {
+			//Make sure the content item is linked to existing categories.
+			//Avoid dangling cross references.
+			if ($row['id']) {
+				if (!$row['name']) {
+					$row['name'] = '(unnamed category)';
+				}
+			} else {
+				$row['name'] = '(deleted category)';
+			}
+			
 			$adminToolbar['sections']['icons']['buttons']['item_categories_some']['tooltip'] .=
-				($i++? ', ' : ''). htmlspecialchars($row['name']);
+				($i++? ', ' : ''). htmlspecialchars($row['name'] ?: '(unnamed category)');
 		}
 	}
 }
@@ -1514,6 +1502,8 @@ $linkStatus = false;
 switch (ze::$status) {
 	case 'published':
 	case 'published_with_draft':
+	case 'unlisted':
+	case 'unlisted_with_draft':
 		$linkStatus = ze::$status;
 		
 		$perms = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, $cVersion, $checkRequestVars = false, $adminMode = true, $adminsSee400Errors = true);
@@ -1542,64 +1532,31 @@ if ($linkStatus) {
 //Handle the case where there's not enough width on the screen to show the delete draft and publish buttons
 //Also add a copy of them to various dropdowns on the edit tab:
 if (isset($adminToolbar['sections']['edit']['buttons'])) {
-	//Add to the "Actioins" dropdown...
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['start_editing'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['parent'] = 'action_dropdown';
-		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['start_editing_pos']['ord'] ?? 0.2;
-		$adminToolbar['sections']['edit']['buttons']['start_editing'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['cant_start_editing'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['parent'] = 'action_dropdown';
-		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['cant_start_editing_pos']['ord'] ?? 0.3;
-		$adminToolbar['sections']['edit']['buttons']['cant_start_editing'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['hide_content'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['parent'] = 'action_dropdown';
-		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['hide_content_pos']['ord'] ?? 994;
-		$adminToolbar['sections']['edit']['buttons']['hide_content'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['republish'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['parent'] = 'action_dropdown';
-		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['unhide_pos']['ord'] ?? 995;
-		$adminToolbar['sections']['edit']['buttons']['republish'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['trash_content'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['parent'] = 'action_dropdown';
-		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['trash_content_pos']['ord'] ?? 996;
-		$adminToolbar['sections']['edit']['buttons']['trash_content'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['redraft'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['parent'] = 'action_dropdown';
-		$button['ord'] = $adminToolbar['sections']['edit']['buttons']['redraft_pos']['ord'] ?? 997;
-		$adminToolbar['sections']['edit']['buttons']['redraft'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['delete_media_content_item'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['ord'] = 997;
-		$button['parent'] = 'action_dropdown';
-		$adminToolbar['sections']['edit']['buttons']['delete_media_content_item'] = $button;
-	}
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['delete_draft'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['ord'] = 998;
-		$button['parent'] = 'action_dropdown';
-		$adminToolbar['sections']['edit']['buttons']['delete_draft'] = $button;
+	
+	foreach ([
+		'start_editing',
+		'cant_start_editing',
+		'hide_content',
+		'publish',
+		'republish',
+		'trash_content',
+		'redraft',
+		'delete_media_content_item',
+		'delist',
+		'relist',
+		'delete_draft'
+	] as $buttonName) {
+		if ($button = $adminToolbar['sections']['status_button']['buttons'][$buttonName] ?? false) {
+			unset($button['tooltip'], $button['appears_in_toolbars']);
+			$button['parent'] = 'action_dropdown';
+			$button['ord'] = $adminToolbar['sections']['edit']['buttons'][$buttonName. '_pos']['ord'] ?? 999;
+			$adminToolbar['sections']['edit']['buttons'][$buttonName] = $button;
+		}
+		unset($adminToolbar['sections']['edit']['buttons'][$buttonName. '_pos']);
 	}
 	
-	//... and to the "Publishing" dropdown.
-	if ($button = $adminToolbar['sections']['status_button']['buttons']['publish'] ?? false) {
-		unset($button['tooltip'], $button['appears_in_toolbars']);
-		$button['ord'] = 1;
-		$button['parent'] = 'publishing_dropdown';
-		$adminToolbar['sections']['edit']['buttons']['publish'] = $button;
-		
-		//If the item is scheduled for publishing, update the label.
+	//If the item is scheduled for publishing, update the label.
+	if (isset($adminToolbar['sections']['edit']['buttons']['publish'])) {
 		$sql = "
 			SELECT c.id, c.type, v.scheduled_publish_datetime, c.lock_owner_id
 			FROM ". DB_PREFIX. "content_items AS c
@@ -1609,15 +1566,8 @@ if (isset($adminToolbar['sections']['edit']['buttons'])) {
 			  AND v.version = c.admin_version
 			WHERE c.tag_id = '". ze\escape::sql($tagId). "'
 			  AND v.scheduled_publish_datetime IS NOT NULL";
-		$result = ze\sql::select($sql);
-		if ($row = ze\sql::fetchAssoc($result)) {
+		if ($row = ze\sql::fetchAssoc($sql)) {
 			$adminToolbar['sections']['edit']['buttons']['publish']['label'] = ze\admin::phrase('Change or cancel scheduled publishing...');
 		}
 	}
 }
-unset($adminToolbar['sections']['edit']['buttons']['start_editing_pos']);
-unset($adminToolbar['sections']['edit']['buttons']['cant_start_editing_pos']);
-unset($adminToolbar['sections']['edit']['buttons']['hide_content_pos']);
-unset($adminToolbar['sections']['edit']['buttons']['unhide_pos']);
-unset($adminToolbar['sections']['edit']['buttons']['trash_content_pos']);
-unset($adminToolbar['sections']['edit']['buttons']['redraft_pos']);

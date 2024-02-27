@@ -2,6 +2,10 @@
 # Ensure that these are in the right order, as the first one will get id=1, then id 2 etc.
 imagelist:
     -
+        name: logo-zebra-designs.svg
+        alt_tag: Zebra Designs logo
+        mime_type: image/svg+xml
+    -
         name: pink_petals.png
         alt_tag: Pink petals on the ground
         mime_type: image/png

@@ -254,6 +254,10 @@ if ($resultSp = \ze\sql::select($sql)) {
 								if ($sp['publish']) {
 									\ze\contentAdm::publishContent($cID, $cType);
 								}
+								
+								if ($sp['listing_policy'] == 'must_be_unlisted') {
+									ze\contentAdm::delistContent($cID, $cType);
+								}
 							}
 						}
 					}
@@ -261,4 +265,27 @@ if ($resultSp = \ze\sql::select($sql)) {
 			}
 		}
 	}
+	
+	
+	//Check the listing policy is being enforced for all special pages
+	//(This is written this way to also allow us to migrate old sites using the same logic.)
+	$sql = "
+		UPDATE ". DB_PREFIX. "special_pages AS sp
+		INNER JOIN ". DB_PREFIX. "content_items AS c
+		   ON c.equiv_id = sp.equiv_id
+		  AND c.type = sp.content_type
+		SET c.status = IF (c.status = 'unlisted', 'published', 'published_with_draft')
+		WHERE sp.listing_policy = 'must_be_listed'
+		  AND c.status IN ('unlisted', 'unlisted_with_draft')";
+	\ze\sql::update($sql);
+	
+	$sql = "
+		UPDATE ". DB_PREFIX. "special_pages AS sp
+		INNER JOIN ". DB_PREFIX. "content_items AS c
+		   ON c.equiv_id = sp.equiv_id
+		  AND c.type = sp.content_type
+		SET c.status = IF (c.status = 'published', 'unlisted', 'unlisted_with_draft')
+		WHERE sp.listing_policy = 'must_be_unlisted'
+		  AND c.status IN ('published', 'published_with_draft')";
+	\ze\sql::update($sql);
 }

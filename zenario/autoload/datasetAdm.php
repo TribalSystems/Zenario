@@ -35,7 +35,6 @@ class datasetAdm {
 
 
 
-	//Formerly "registerDataset()"
 	public static function register(
 		$label, $table, $system_table = '',
 		$extends_admin_box = '', $extends_organizer_panel = '',
@@ -55,7 +54,6 @@ class datasetAdm {
 		return $datasetId;
 	}
 
-	//Formerly "registerDatasetSystemField()"
 	public static function registerSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = '', $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false, $includeInExport = false) {
 		//Try to catch the case where a system field was automatically registered
 		if ($fieldId = \ze\row::get(
@@ -104,7 +102,6 @@ class datasetAdm {
 		return $fieldId;
 	}
 
-	//Formerly "deleteDatasetField()"
 	public static function deleteField($fieldId) {
 		if (($field = \ze\dataset::fieldDetails($fieldId))
 		 && ($dataset = \ze\dataset::details($field['dataset_id']))
@@ -137,7 +134,7 @@ class datasetAdm {
 				//are removed along with the original.
 				//The function below will run all the necessary checks
 				//(whether the key is set, and whether the column is encrypted/hashed)
-				\ze\zewlAdm::decryptColumn($dataset['table'], $field['db_column']);
+				\ze\pdeAdm::decryptColumn($dataset['table'], $field['db_column']);
 
 				$sql = "
 					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
@@ -161,7 +158,6 @@ class datasetAdm {
 		}
 	}
 
-	//Formerly "deleteDataset()"
 	public static function delete($dataset) {
 		if ($dataset = \ze\dataset::details($dataset)) {
 			$sql = "
@@ -180,7 +176,6 @@ class datasetAdm {
 		}
 	}
 
-	//Formerly "getDatasetFieldDefinition()"
 	public static function fieldDefinition($field) {
 	
 		switch ($field['type']) {
@@ -223,7 +218,6 @@ class datasetAdm {
 		}
 	}
 
-	//Formerly "listCustomFields()"
 	public static function listCustomFields(
 		$dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false,
 		$putMergeFieldsIntoLabel = false, $specificTab = '', $mergeFieldsOpen = '[[', $mergeFieldsClose = ']]'
@@ -423,7 +417,6 @@ class datasetAdm {
 		}
 	}
 
-	//Formerly "getGroupPickerCheckboxesForFAB()"
 	public static function getGroupPickerCheckboxesForFAB() {
 		//Populate the list of groups
 		$lov = \ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
@@ -461,7 +454,6 @@ class datasetAdm {
 	}
 
 	//Given a field, get details on each of its child-fields.
-	//Formerly "getCustomFieldsChildren()"
 	public static function getCustomFieldsChildren($field, &$fields) {
 	
 		$sql = "
@@ -479,13 +471,11 @@ class datasetAdm {
 		}
 	}
 
-	//Formerly "getCustomTabsParents()"
 	public static function getCustomTabsParents($tab, &$fields) {
 		$tab['parent_id'] = $tab['parent_field_id'];
 		\ze\datasetAdm::getCustomFieldsParents($tab, $fields);
 	}
 
-	//Formerly "getCustomFieldsParents()"
 	public static function getCustomFieldsParents($field, &$fields) {
 		if (empty($field['parent_id'])) {
 			return;
@@ -511,7 +501,6 @@ class datasetAdm {
 	}
 
 	//Make child fields only visible if their parents are visible and checked
-	//Formerly "setChildFieldVisibility()"
 	public static function setChildFieldVisibility(&$field, $tags) {
 		$parents = [];
 		\ze\datasetAdm::getCustomFieldsParents($field, $parents);
@@ -556,7 +545,6 @@ class datasetAdm {
 
 
 
-	//Formerly "checkColumnExistsInDB()"
 	public static function checkColumnExistsInDB($table, $column) {
 	
 		if (!$table || !$column) {
@@ -574,7 +562,6 @@ class datasetAdm {
 		return false;
 	}
 
-	//Formerly "createDatasetFieldInDB()"
 	public static function createFieldInDB($fieldId, $oldName = false) {
 		if (($field = \ze\dataset::fieldDetails($fieldId))
 		 && ($dataset = \ze\dataset::details($field['dataset_id']))) {
@@ -778,7 +765,6 @@ class datasetAdm {
 
 
 
-	//Formerly "getCentralisedLists()"
 	public static function centralisedLists() {
 		$centralisedLists = [];
 		$result = \ze\row::query('centralised_lists', ['module_class_name', 'method_name', 'label'], [], 'label');

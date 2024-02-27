@@ -34,7 +34,6 @@ class menu {
 
 	//Returns a Content Item that points to a Menu Node
 	//Note that this will probably be the Content Item in the Primary Language
-	//Formerly "getContentFromMenu()"
 	public static function getContentItem($mID, $recurseLimit = 0) {
 	
 		if ($menu = \ze\row::get('menu_nodes', ['id', 'equiv_id', 'content_type', 'parent_id'], $mID)) {
@@ -50,7 +49,6 @@ class menu {
 		return false;
 	}
 
-	//Formerly "getMenuItemFromContent()"
 	public static function getFromContentItem($cID, $cType, $fetchSecondaries = false, $sectionId = false, $allowGhosts = false, $fetchEverything = false) {
 		if ($cID && $cType) {
 			$sql = "
@@ -116,16 +114,19 @@ class menu {
 		}
 	}
 
-	//Formerly "getSectionMenuItemFromContent()"
-	public static function getIdFromContentItem($equivId, $cType, $section, $mustBePrimary = false) {
+	public static function getIdFromContentItem($equivId, $cType, $sectionId = false, $mustBePrimary = false) {
 
 		$sql = "
 			SELECT id
 			FROM ". DB_PREFIX. "menu_nodes
 			WHERE equiv_id = ". (int) $equivId. "
 			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
-			  AND section_id = ". (int) \ze\menu::sectionId($section). "
 			  AND target_loc = 'int'";
+		
+		if ($sectionId) {
+			$sql .= "
+			  AND section_id = ". (int) \ze\menu::sectionId($sectionId);
+		}
 	
 		if ($mustBePrimary) {
 			$sql .= "
@@ -148,7 +149,6 @@ class menu {
 	}
 
 	//Get the content item in the menu above this one
-	//Formerly "getContentItemAbove()"
 	public static function getContentItemAbove(&$cID, &$cType, $equivId, $langId = false) {
 	
 		if ($langId === false) {
@@ -181,7 +181,6 @@ class menu {
 		}
 	}
 
-	//Formerly "menuSectionId()"
 	public static function sectionId($sectionIdOrName, $checkExists = false) {
 		if (!is_numeric($sectionIdOrName)) {
 			return \ze\row::get('menu_sections', 'id', ['section_name' => $sectionIdOrName]);
@@ -194,7 +193,6 @@ class menu {
 		}
 	}
 
-	//Formerly "menuSectionName()"
 	public static function sectionName($sectionIdOrName) {
 		if (is_numeric($sectionIdOrName)) {
 			return \ze\row::get('menu_sections', 'section_name', ['id' => $sectionIdOrName]);
@@ -203,7 +201,6 @@ class menu {
 		}
 	}
 
-	//Formerly "getMenuInLanguage()"
 	public static function getInLanguage($mID, $langId) {
 		$sql = "
 			SELECT
@@ -239,7 +236,6 @@ class menu {
 		return \ze\sql::fetchAssoc($result);
 	}
 
-	//Formerly "getMenuNodeDetails()"
 	public static function details($mID, $langId = false) {
 		$row = \ze\row::get('menu_nodes', true, $mID);
 	
@@ -272,7 +268,6 @@ class menu {
 		return \ze\row::get('menu_node_feature_image', 'image_id', ['node_id' => $nodeId, 'use_feature_image' => 1]);
 	}
 
-	//Formerly "isMenuNodeUnique()"
 	public static function isUnique($redundancy, $equiv_id, $content_type) {
 		if ($redundancy == 'primary') {
 			$sql = '
@@ -288,9 +283,9 @@ class menu {
 		}
 		return false;
 	}
-
-	//Formerly "getMenuName()"
-	public static function name($mID, $langId = false, $missingPhrase = '[[name]] ([[language_id]])') {
+	
+	const textFromTwig = true;
+	public static function text($mID, $langId = false, $missingPhrase = '[[name]] ([[language_id]])') {
 	
 		$markFrom = false;
 		if ($langId === false) {
@@ -324,13 +319,17 @@ class menu {
 			return false;
 		}
 	}
+	
+	//Deprecated old name
+	public static function name($mID, $langId = false, $missingPhrase = '[[name]] ([[language_id]])') {
+		return \ze\menu::text($mID, $langId, $missingPhrase);
+	}
 
-	//Formerly "isMenuItemAncestor()"
 	public static function isAncestor($childId, $ancestorId) {
 		return \ze\row::exists('menu_hierarchy', ['child_id' => $childId, 'ancestor_id' => $ancestorId]);
 	}
 
-	//Formerly "getMenuParent()"
+	const parentIdFromTwig = true;
 	public static function parentId($mID) {
 		return \ze\row::get('menu_nodes', 'parent_id', ['id' => $mID]);
 	}
@@ -339,7 +338,6 @@ class menu {
 	const privateItemsExist = 1;
 	const staticFunctionCalled = 2;
 
-	//Formerly "shouldShowMenuItem()"
 	public static function shouldShow(&$row, &$cachingRestrictions, $language, $getFullMenu = false, $adminMode = false) {
 	
 		// Hide menu node if static method is set
@@ -443,7 +441,6 @@ class menu {
 	}
 
 
-	//Formerly "lookForMenuItems()"
 	public static function query($language, $menuId, $byParent = true, $sectionId = false, $showInvisibleMenuItems = false, $getFullMenu = false, $adminMode = false) {
 	
 		$sql = "
@@ -506,14 +503,6 @@ class menu {
 			  AND m.equiv_id = c.equiv_id
 			  AND m.content_type = c.type
 			  AND c.language_id = '". \ze\escape::asciiInSQL($language). "'";
-	
-		if ($adminMode) {
-			$sql .= "
-				AND c.status != 'deleted'";
-		} else {
-			$sql .= "
-				AND c.status IN ('published', 'published_with_draft')";
-		}
 
 		$sql .= "
 			LEFT JOIN ".DB_PREFIX."translation_chains AS tc
@@ -533,9 +522,24 @@ class menu {
 			  AND m.section_id = ". (int) $sectionId;
 		}
 	
-		if (!$showInvisibleMenuItems) {
-			$sql .= "
-			  AND m.invisible != 1";
+		if ($adminMode) {
+			if ($showInvisibleMenuItems) {
+				$sql .= "
+					AND IFNULL(c.status, 'published') NOT IN ('deleted', 'trashed')";
+			} else {
+				$sql .= "
+					AND IFNULL(c.status, 'published') NOT IN ('deleted', 'trashed', 'unlisted', 'unlisted_with_draft')
+					AND m.invisible != 1";
+			}
+		} else {
+			if ($showInvisibleMenuItems) {
+				$sql .= "
+					AND IFNULL(c.status, 'published') NOT IN ('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted')";
+			} else {
+				$sql .= "
+					AND IFNULL(c.status, 'published') NOT IN ('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted', 'unlisted', 'unlisted_with_draft')
+					AND m.invisible != 1";
+			}
 		}
 	
 		$sql .= "
@@ -545,7 +549,6 @@ class menu {
 	}
 
 
-	//Formerly "getMenuStructure()"
 	public static function getStructure(
 		&$cachingRestrictions,
 		$sectionId,

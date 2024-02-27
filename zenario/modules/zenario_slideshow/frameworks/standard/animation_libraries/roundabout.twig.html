@@ -1,7 +1,0 @@
-{# N.b. for the Cycle2 library, we use the same framework/HTML as the plugin nest. #}
-
-{% set dir = ze('', 'moduleDir', 'zenario_plugin_nest', 'frameworks/standard/', false, true) %}
-
-{% if dir %}
-	{% include dir ~ 'framework.twig.html' %}
-{% endif %}

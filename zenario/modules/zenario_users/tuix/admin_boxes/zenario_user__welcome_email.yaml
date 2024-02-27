@@ -3,7 +3,6 @@
 zenario_user__welcome_email:
     key:
         id: ""
-    max_height: "300"
     tabs:
         details:
             label: Activation email
@@ -13,14 +12,18 @@ zenario_user__welcome_email:
                 non_plain_text_info:
                     ord: 1.1
                     full_width: 1
+                    #The snippet message is populated in the PHP class to distinguish between sending to 1 user or multiple users.
                     snippet:
-                        html: "You are about to send activation emails the selected users. <br> <br>As this site is configured to store only encrypted passwords for users (not plain text), the user's passwords will not be shown."
+                        html: ''
                     hidden: false
-                reset_password:
-                    priv: _PRIV_EDIT_USER
-                    label: "Reset and send password in activation email."
-                    type: checkbox
-                    side_note: "If checked, the user's password will be reset and a new one auto-generated."
+                do_not_include_personal_info_snippet:
+                    ord: 1.2
+                    full_width: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                You are sending to multiple users. Users' details will be merged into the [[merge fields]]. You may modify the email below but do not include any personal or user-specific information.
+                            </div>
                 email_to_send:
                     label: 'Email template:'
                     pick_items:
@@ -31,7 +34,16 @@ zenario_user__welcome_email:
                         select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
-                        required_if_not_hidden: Please select an email template
-                    side_note: >
-                        An email based on the selected email template will be sent
-                        to the selected users.
+                        required_if_not_hidden: Please select an email template.
+                email_to_send_body:
+                    #The label is created in the PHP class.
+                    label: ''
+                    type: editor
+                    editor_type: full_featured
+                    tall_as_possible: true
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                    style: |
+                        width: 98%;

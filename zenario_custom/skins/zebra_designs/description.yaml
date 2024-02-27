@@ -3,27 +3,64 @@ display_name: Zebra Designs
 type: usable
 
 import:
-	- zenario/styles/fea/fea_common.min.css
+    - zenario/styles/fea/fea_common.min.css
 
-style_formats:
-	-
-		title: "Button-style link"
-		selector: "a"
-		classes: "nice_button"
-	-
-		title: "Image without padding"
-		selector: "img"
-		classes: "image_no_padding"
-	-
-		title: "Paragraph highlight blue"
-		block: "div"
-		classes: "paragraph_highlight"
-	-
-		title: "Paragraph tip info"
-		selector: "p"
-		classes: "tip_info"
-	-
-		title: "Table no styles"
-		selector: "table"
-		classes: "table_no_styles"
+editor_options:
+    custom_colors: false
+    color_map:
+        - '000000'
+        - Black
+        - '808080'
+        - Gray
+        - 'FFFFFF'
+        - White
+        - 'FF0000'
+        - Red
+        - 'FFFF00'
+        - Yellow
+        - '008000'
+        - Green
+        - '0000FF'
+        - Blue
+    
+    font_family_formats: >
+        Andale Mono=andale mono,times;
+        Arial=arial,helvetica,sans-serif;
+        Arial Black=arial black,avant garde;
+        Book Antiqua=book antiqua,palatino;
+        Comic Sans MS=comic sans ms,sans-serif;
+        Courier New=courier new,courier;
+        Georgia=georgia,palatino;
+        Helvetica=helvetica;
+        Impact=impact,chicago;
+        Symbol=symbol;
+        Tahoma=tahoma,arial,helvetica,sans-serif;
+        Terminal=terminal,monaco;
+        Times New Roman=times new roman,times;
+        Trebuchet MS=trebuchet ms,geneva;
+        Verdana=verdana,geneva;
+        Webdings=webdings;
+        Wingdings=wingdings,zapf dingbats
+    
+    style_formats:
+        -
+            title: "Button-style link"
+            selector: "a"
+            classes: "nice_button"
+        -
+            title: "Image without padding"
+            selector: "img"
+            classes: "image_no_padding"
+        -
+            title: "Paragraph highlight blue"
+            block: "div"
+            classes: "paragraph_highlight"
+        -
+            title: "Paragraph tip info"
+            selector: "p"
+            classes: "tip_info"
+        -
+            title: "Table no styles"
+            selector: "table"
+            classes: "table_no_styles"
 

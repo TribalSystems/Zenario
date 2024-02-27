@@ -4,15 +4,15 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
+class ComposerStaticInitc4a361d8e0aed0b9efa535bddf5b4e19
 {
     public static $files = array (
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
         '0d59ee240a4cd96ddbb4ff164fccea4d' => __DIR__ . '/..' . '/symfony/polyfill-php73/bootstrap.php',
-        '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         '04c6c5c2f7095ccf6c481d3e53e1776f' => __DIR__ . '/..' . '/mustangostang/spyc/Spyc.php',
     );
@@ -53,20 +53,12 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'M' => 
         array (
             'MyCLabs\\Enum\\' => 13,
-            'MaxMind\\WebService\\' => 19,
-            'MaxMind\\Exception\\' => 18,
-            'MaxMind\\Db\\' => 11,
             'MatthiasMullie\\PathConverter\\' => 29,
             'MatthiasMullie\\Minify\\' => 22,
             'Matrix\\' => 7,
         ),
-        'G' => 
-        array (
-            'GeoIp2\\' => 7,
-        ),
         'C' => 
         array (
-            'Composer\\CaBundle\\' => 18,
             'Complex\\' => 8,
         ),
     );
@@ -126,8 +118,8 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -145,18 +137,6 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         array (
             0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
         ),
-        'MaxMind\\WebService\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/maxmind/web-service-common/src/WebService',
-        ),
-        'MaxMind\\Exception\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception',
-        ),
-        'MaxMind\\Db\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db',
-        ),
         'MatthiasMullie\\PathConverter\\' => 
         array (
             0 => __DIR__ . '/..' . '/matthiasmullie/path-converter/src',
@@ -168,14 +148,6 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'Matrix\\' => 
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
-        ),
-        'GeoIp2\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/geoip2/geoip2/src',
-        ),
-        'Composer\\CaBundle\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/composer/ca-bundle/src',
         ),
         'Complex\\' => 
         array (
@@ -231,39 +203,7 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'Complex\\Exception' => __DIR__ . '/..' . '/markbaker/complex/classes/src/Exception.php',
         'Complex\\Functions' => __DIR__ . '/..' . '/markbaker/complex/classes/src/Functions.php',
         'Complex\\Operations' => __DIR__ . '/..' . '/markbaker/complex/classes/src/Operations.php',
-        'Composer\\CaBundle\\CaBundle' => __DIR__ . '/..' . '/composer/ca-bundle/src/CaBundle.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'GeoIp2\\Database\\Reader' => __DIR__ . '/..' . '/geoip2/geoip2/src/Database/Reader.php',
-        'GeoIp2\\Exception\\AddressNotFoundException' => __DIR__ . '/..' . '/geoip2/geoip2/src/Exception/AddressNotFoundException.php',
-        'GeoIp2\\Exception\\AuthenticationException' => __DIR__ . '/..' . '/geoip2/geoip2/src/Exception/AuthenticationException.php',
-        'GeoIp2\\Exception\\GeoIp2Exception' => __DIR__ . '/..' . '/geoip2/geoip2/src/Exception/GeoIp2Exception.php',
-        'GeoIp2\\Exception\\HttpException' => __DIR__ . '/..' . '/geoip2/geoip2/src/Exception/HttpException.php',
-        'GeoIp2\\Exception\\InvalidRequestException' => __DIR__ . '/..' . '/geoip2/geoip2/src/Exception/InvalidRequestException.php',
-        'GeoIp2\\Exception\\OutOfQueriesException' => __DIR__ . '/..' . '/geoip2/geoip2/src/Exception/OutOfQueriesException.php',
-        'GeoIp2\\Model\\AbstractModel' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/AbstractModel.php',
-        'GeoIp2\\Model\\AnonymousIp' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/AnonymousIp.php',
-        'GeoIp2\\Model\\Asn' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/Asn.php',
-        'GeoIp2\\Model\\City' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/City.php',
-        'GeoIp2\\Model\\ConnectionType' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/ConnectionType.php',
-        'GeoIp2\\Model\\Country' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/Country.php',
-        'GeoIp2\\Model\\Domain' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/Domain.php',
-        'GeoIp2\\Model\\Enterprise' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/Enterprise.php',
-        'GeoIp2\\Model\\Insights' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/Insights.php',
-        'GeoIp2\\Model\\Isp' => __DIR__ . '/..' . '/geoip2/geoip2/src/Model/Isp.php',
-        'GeoIp2\\ProviderInterface' => __DIR__ . '/..' . '/geoip2/geoip2/src/ProviderInterface.php',
-        'GeoIp2\\Record\\AbstractPlaceRecord' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/AbstractPlaceRecord.php',
-        'GeoIp2\\Record\\AbstractRecord' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/AbstractRecord.php',
-        'GeoIp2\\Record\\City' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/City.php',
-        'GeoIp2\\Record\\Continent' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/Continent.php',
-        'GeoIp2\\Record\\Country' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/Country.php',
-        'GeoIp2\\Record\\Location' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/Location.php',
-        'GeoIp2\\Record\\MaxMind' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/MaxMind.php',
-        'GeoIp2\\Record\\Postal' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/Postal.php',
-        'GeoIp2\\Record\\RepresentedCountry' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/RepresentedCountry.php',
-        'GeoIp2\\Record\\Subdivision' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/Subdivision.php',
-        'GeoIp2\\Record\\Traits' => __DIR__ . '/..' . '/geoip2/geoip2/src/Record/Traits.php',
-        'GeoIp2\\Util' => __DIR__ . '/..' . '/geoip2/geoip2/src/Util.php',
-        'GeoIp2\\WebService\\Client' => __DIR__ . '/..' . '/geoip2/geoip2/src/WebService/Client.php',
         'HTMLPurifier' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.php',
         'HTMLPurifier_Arborize' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier/Arborize.php',
         'HTMLPurifier_AttrCollections' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier/AttrCollections.php',
@@ -536,23 +476,6 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'MatthiasMullie\\PathConverter\\Converter' => __DIR__ . '/..' . '/matthiasmullie/path-converter/src/Converter.php',
         'MatthiasMullie\\PathConverter\\ConverterInterface' => __DIR__ . '/..' . '/matthiasmullie/path-converter/src/ConverterInterface.php',
         'MatthiasMullie\\PathConverter\\NoConverter' => __DIR__ . '/..' . '/matthiasmullie/path-converter/src/NoConverter.php',
-        'MaxMind\\Db\\Reader' => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db/Reader.php',
-        'MaxMind\\Db\\Reader\\Decoder' => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db/Reader/Decoder.php',
-        'MaxMind\\Db\\Reader\\InvalidDatabaseException' => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db/Reader/InvalidDatabaseException.php',
-        'MaxMind\\Db\\Reader\\Metadata' => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db/Reader/Metadata.php',
-        'MaxMind\\Db\\Reader\\Util' => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db/Reader/Util.php',
-        'MaxMind\\Exception\\AuthenticationException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/AuthenticationException.php',
-        'MaxMind\\Exception\\HttpException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/HttpException.php',
-        'MaxMind\\Exception\\InsufficientFundsException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/InsufficientFundsException.php',
-        'MaxMind\\Exception\\InvalidInputException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/InvalidInputException.php',
-        'MaxMind\\Exception\\InvalidRequestException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/InvalidRequestException.php',
-        'MaxMind\\Exception\\IpAddressNotFoundException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/IpAddressNotFoundException.php',
-        'MaxMind\\Exception\\PermissionRequiredException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/PermissionRequiredException.php',
-        'MaxMind\\Exception\\WebServiceException' => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception/WebServiceException.php',
-        'MaxMind\\WebService\\Client' => __DIR__ . '/..' . '/maxmind/web-service-common/src/WebService/Client.php',
-        'MaxMind\\WebService\\Http\\CurlRequest' => __DIR__ . '/..' . '/maxmind/web-service-common/src/WebService/Http/CurlRequest.php',
-        'MaxMind\\WebService\\Http\\Request' => __DIR__ . '/..' . '/maxmind/web-service-common/src/WebService/Http/Request.php',
-        'MaxMind\\WebService\\Http\\RequestFactory' => __DIR__ . '/..' . '/maxmind/web-service-common/src/WebService/Http/RequestFactory.php',
         'MyCLabs\\Enum\\Enum' => __DIR__ . '/..' . '/myclabs/php-enum/src/Enum.php',
         'MyCLabs\\Enum\\PHPUnit\\Comparator' => __DIR__ . '/..' . '/myclabs/php-enum/src/PHPUnit/Comparator.php',
         'NumbersPHP\\Basic' => __DIR__ . '/..' . '/powder96/numbers.php/lib/NumbersPHP/Basic.php',
@@ -1301,6 +1224,7 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'Twig\\Sandbox\\SecurityNotAllowedTagError' => __DIR__ . '/..' . '/twig/twig/src/Sandbox/SecurityNotAllowedTagError.php',
         'Twig\\Sandbox\\SecurityPolicy' => __DIR__ . '/..' . '/twig/twig/src/Sandbox/SecurityPolicy.php',
         'Twig\\Sandbox\\SecurityPolicyInterface' => __DIR__ . '/..' . '/twig/twig/src/Sandbox/SecurityPolicyInterface.php',
+        'Twig\\Sandbox\\SourcePolicyInterface' => __DIR__ . '/..' . '/twig/twig/src/Sandbox/SourcePolicyInterface.php',
         'Twig\\Source' => __DIR__ . '/..' . '/twig/twig/src/Source.php',
         'Twig\\Template' => __DIR__ . '/..' . '/twig/twig/src/Template.php',
         'Twig\\TemplateWrapper' => __DIR__ . '/..' . '/twig/twig/src/TemplateWrapper.php',
@@ -1608,6 +1532,7 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'ZxcvbnPhp\\Zxcvbn' => __DIR__ . '/..' . '/bjeavons/zxcvbn-php/src/Zxcvbn.php',
         'ze\\admin' => __DIR__ . '/../../../..' . '/zenario/autoload/admin.php',
         'ze\\adminAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/adminAdm.php',
+        'ze\\bundle' => __DIR__ . '/../../../..' . '/zenario/autoload/bundle.php',
         'ze\\cache' => __DIR__ . '/../../../..' . '/zenario/autoload/cache.php',
         'ze\\category' => __DIR__ . '/../../../..' . '/zenario/autoload/category.php',
         'ze\\categoryAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/categoryAdm.php',
@@ -1637,6 +1562,8 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'ze\\moduleAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/moduleAdm.php',
         'ze\\moduleBaseClass' => __DIR__ . '/../../../..' . '/zenario/autoload/moduleBaseClass.php',
         'ze\\pageCache' => __DIR__ . '/../../../..' . '/zenario/autoload/pageCache.php',
+        'ze\\pde' => __DIR__ . '/../../../..' . '/zenario/autoload/pde.php',
+        'ze\\pdeAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/pdeAdm.php',
         'ze\\phi' => __DIR__ . '/../../../..' . '/zenario/autoload/phi.php',
         'ze\\phiParser' => __DIR__ . '/../../../..' . '/zenario/autoload/phiParser.php',
         'ze\\phraseAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/phraseAdm.php',
@@ -1661,18 +1588,15 @@ class ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7
         'ze\\user' => __DIR__ . '/../../../..' . '/zenario/autoload/user.php',
         'ze\\userAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/userAdm.php',
         'ze\\welcome' => __DIR__ . '/../../../..' . '/zenario/autoload/welcome.php',
-        'ze\\wrapper' => __DIR__ . '/../../../..' . '/zenario/autoload/wrapper.php',
-        'ze\\zewl' => __DIR__ . '/../../../..' . '/zenario/autoload/zewl.php',
-        'ze\\zewlAdm' => __DIR__ . '/../../../..' . '/zenario/autoload/zewlAdm.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit04a4ecfb9d3e0a00b2245aed3beafcb7::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitc4a361d8e0aed0b9efa535bddf5b4e19::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitc4a361d8e0aed0b9efa535bddf5b4e19::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitc4a361d8e0aed0b9efa535bddf5b4e19::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitc4a361d8e0aed0b9efa535bddf5b4e19::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -33,12 +33,10 @@ class link {
 
 
 	const absoluteFromTwig = true;
-	//Formerly "absCMSDirURL()"
 	public static function absolute() {
 		return \ze\link::protocol(). \ze\link::host(). SUBDIRECTORY;
 	}
 
-	//Formerly "absURLIfNeeded()"
 	public static function absoluteIfNeeded($cookieFree = true) {
 	
 		if ($cookieFree && $cookieFreeDomain = \ze\link::cookieFreeDomain()) {
@@ -53,7 +51,6 @@ class link {
 	}
 
 	//Check if this is https
-	//Formerly "isHttps()"
 	public static function isHttps() {
 		return
 			(isset($_SERVER['HTTPS']) && \ze\ring::engToBoolean($_SERVER['HTTPS']))
@@ -66,7 +63,6 @@ class link {
 	}
 
 	const hostFromTwig = true;
-	//Formerly "httpHost()"
 	public static function host() {
 		if (!empty($_SERVER['HTTP_HOST'])) {
 			return $_SERVER['HTTP_HOST'];
@@ -75,7 +71,6 @@ class link {
 		}
 	}
 
-	//Formerly "httpHostWithoutPort()"
 	public static function hostWithoutPort($host = false) {
 		if ($host === false) {
 			$host = \ze\link::host();
@@ -91,7 +86,6 @@ class link {
 	//Attempt to check whether we are in http or https, and return a value appropriately
 	//If the USE_FORWARDED_IP constant is set we should try to check the HTTP_X_FORWARDED_PROTO variable.
 	const protocolFromTwig = true;
-	//Formerly "httpOrhttps()", "httpOrHttps()"
 	public static function protocol() {
 		if (\ze\link::isHttps()) {
 			return 'https://';
@@ -101,7 +95,6 @@ class link {
 	}
 
 	//Deprecated, please just use DIRECTORY_INDEX_FILENAME instead!
-	//Formerly "indexDotPHP()"
 	public static function index($noBasePath = false) {
 		if (defined('DIRECTORY_INDEX_FILENAME')) {
 			$indexFile = DIRECTORY_INDEX_FILENAME;
@@ -120,7 +113,6 @@ class link {
 
 
 	const adminDomainFromTwig = true;
-	//Formerly "adminDomain()"
 	public static function adminDomain() {
 		if (\ze::setting('admin_domain')) {
 			return \ze::setting('admin_domain');
@@ -133,13 +125,11 @@ class link {
 		}
 	}
 
-	//Formerly "adminDomainIsPrivate()"
 	public static function adminDomainIsPrivate() {
 		return \ze::setting('admin_domain') && !\ze::setting('admin_domain_is_public');
 	}
 
 	const primaryDomainFromTwig = true;
-	//Formerly "primaryDomain()"
 	public static function primaryDomain() {
 		if (\ze::setting('primary_domain')) {
 			return \ze::setting('primary_domain');
@@ -156,7 +146,6 @@ class link {
 	}
 
 	//Warning: this is deprecated, please use \ze\cookie::set() instead!
-	//Formerly "cookieDomain()"
 	public static function cookieDomain() {
 		if (COOKIE_DOMAIN) {
 			return COOKIE_DOMAIN;
@@ -167,7 +156,6 @@ class link {
 	}
 
 
-	//Formerly "cookieFreeDomain()"
 	public static function cookieFreeDomain() {
 		if (\ze::setting('use_cookie_free_domain') && \ze::setting('cookie_free_domain') && !\ze\priv::check()) {
 			return \ze\link::protocol(). \ze::setting('cookie_free_domain'). SUBDIRECTORY;
@@ -177,7 +165,6 @@ class link {
 	}
 
 
-	//Formerly "importantGetRequests()"
 	public static function importantGetRequests($includeCIDAndType = false) {
 
 		$importantGetRequests = [];
@@ -201,7 +188,6 @@ class link {
 
 
 	const toEquivalentItemFromTwig = true;
-	//Formerly "linkToEquivalentItem()"
 	public static function toEquivalentItem(
 		$cID, $cType = 'html', $languageId = false, $fullPath = false, $request = '', $forceAliasInAdminMode = false
 	) {
@@ -250,7 +236,6 @@ class link {
 	const toItemInVisitorsLanguageFromTwig = true;
 	//Build a link to a content item
 	//n.b. \ze\link::toItem() and \ze\content::resolveFromRequest() are essentially opposites of each other...
-	//Formerly "linkToItemStayInCurrentLanguage()"
 	public static function toItemInVisitorsLanguage(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
@@ -273,7 +258,6 @@ class link {
 	const toItemFromTwig = true;
 	//Build a link to a content item
 	//n.b. \ze\link::toItem() and \ze\content::resolveFromRequest() are essentially opposites of each other...
-	//Formerly "linkToItem()"
 	public static function toItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
@@ -521,7 +505,6 @@ class link {
 		}
 	}
 
-	//Formerly "addHierarchicalAlias()"
 	public static function hierarchicalAlias($equivId, $cType, $languageId, $alias) {
 	
 		//Try to get the menu node that this content item is for, and check if it has a parent to follow

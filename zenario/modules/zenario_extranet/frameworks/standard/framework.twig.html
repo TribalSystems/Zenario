@@ -89,6 +89,7 @@
 				{% endif %}
 			</div>
 		{% endif %}
+		
 		{% if Logged_In %}
 			{% if Welcome_Message_Section %}
 				<div class="extranet_welcome_text">{{Welcome_Message}}</div>
@@ -113,7 +114,7 @@
 			</div>
 		{% endif %}
 		
-		 {% if Change_Password_Form %}
+		{% if Change_Password_Form %}
 			<h1>{{"For security, please change your password"|trans}}</h1>
 			
 			{% for item in Password_Error_Display %}
@@ -140,6 +141,12 @@
 				<div class="terms_not_accepted_message">
 					{{"You are now logged in, but this site requires you to accept our terms and conditions before proceeding. Please check the statement below."|trans}}
 				</div>
+				
+				{% if Is_Admin %}
+					<div class="extranet_error">
+						{{"You are an administrator impersonating a user. If you click the Continue button to accept the T&Cs, this will not be recorded in the database."|trans}}
+					</div>
+				{% endif %}
 				
 				{% for item in Error_Display %}
 					<div class="extranet_error">{{item.Error}}</div>

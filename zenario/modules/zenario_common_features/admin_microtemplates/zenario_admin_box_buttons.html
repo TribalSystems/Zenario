@@ -39,35 +39,13 @@
 	"><span>{{zenarioA.phrase.next}}</span></a>
 <% } %>
 
-<% if (zenarioAB.hasPreviewWindow && !m.isReadOnly) { %>
-	<% if (zenario.cID && zenarioAB.tuix.key.slotName) { %>
-		<input type="button"
-			id="zenario_fabPreviewFullPage"
-			value="{{zenarioA.phrase.previewFullWidth|e}}"
-			onclick="zenarioAB.showPreviewInPopoutBox(false, true);"/>
-		
-		<!--
-			Preview with the rest of the page intact. Works with most things, but not FEAs:
-			
-			<input type="button"
-				id="zenario_fabPreviewFullPage"
-				value="{{zenarioA.phrase.previewFullPage|e}}"
-				onclick="zenarioAB.showPreviewInPopoutBox(true, true);"/>
-		-->
-	<% } %>
-	
-	<input type="button" value="{{zenarioA.phrase.updatePreview|e}}" onclick="
-			zenarioAB.updatePreview(1);
-		" class="" id="zenario_fabUpdatePreview"/>
-<% } %>
-
 <% if (zenarioAB.tuix.save_and_continue_button_message) { %>
-	<input id="zenario_fabSaveAndContinue"  type="button" value="{{zenarioAB.tuix.save_and_continue_button_message|e}}"
+	<input id="zenario_fabSaveAndContinue" class="zenario_submit_button" type="button" value="{{zenarioAB.tuix.save_and_continue_button_message|e}}"
 	
 	<% if (m.isReadOnly) { %>
-		 class="submit_disabled"/>
+		 class="zenario_disabled_button"/>
 	<% } else { %>
-		 class="submit_selected" onclick="zenarioAB.save(undefined, true);"/>
+		 class="zenario_submit_button selected" onclick="zenarioAB.save(undefined, true);"/>
 	<% } %>
 <% } %>
 
@@ -75,9 +53,9 @@
 	<input id="zenario_fabCreateAnother"  type="button" value="{{zenarioA.phrase.createAnother}}"
 	
 	<% if (m.isReadOnly) { %>
-		 class="submit_disabled"/>
+		 class="zenario_disabled_button"/>
 	<% } else { %>
-		 class="submit_selected" onclick="zenarioAB.save(undefined, false, true);"/>
+		 class="zenario_submit_button selected" onclick="zenarioAB.save(undefined, false, true);"/>
 	<% } %>
 <% } %>
 
@@ -85,24 +63,24 @@
 	<input type="button" onclick="zenarioAB.openNext();" value="{{zenarioA.phrase.skipToNext|e}}" />
 	
 	<% if (!m.isReadOnly) { %>
-		<input type="button" class="submit_selected" onclick="zenarioAB.save(false, false, false, true);" value="{{zenarioA.phrase.saveAndNext|e}}" />
-		<input type="button" class="submit_selected" onclick="zenarioAB.save();" value="{{zenarioA.phrase.saveAndClose|e}}" />
+		<input type="button" class="zenario_submit_button selected" onclick="zenarioAB.save(false, false, false, true);" value="{{zenarioA.phrase.saveAndNext|e}}" />
+		<input type="button" class="zenario_submit_button selected" onclick="zenarioAB.save();" value="{{zenarioA.phrase.saveAndClose|e}}" />
 	<% } %>
 			 
 <% } else { %>
 	<% if (zenarioAB.tuix.save_button_message || zenarioAB.tuix.save_button_message === undefined) { %>
-		<input id="zenario_fabSave"  type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
+		<input id="zenario_fabSave" type="button" value="{{zenarioAB.tuix.save_button_message || zenarioA.phrase.save|e}}"
 
 		<% if (m.isReadOnly) { %>
-			 class="submit_disabled"/>
+			 class="zenario_disabled_button"/>
 		<% } else { %>
-			 class="submit_selected" onclick="zenarioAB.save();"/>
+			 class="zenario_submit_button selected" onclick="zenarioAB.save();"/>
 		<% } %>
 	<% } %>
 <% } %>
 
 <% if (zenarioAB.tuix.cancel_button_message) { %>
-	<input type="button" value="{{zenarioAB.tuix.cancel_button_message|e}}" onclick="zenarioAB.close();">
+	<input type="button" class="zenario_gp_button" value="{{zenarioAB.tuix.cancel_button_message|e}}" onclick="zenarioAB.close();">
 <% } %>
 
 <% if (zenarioAB.tuix.extra_button_html) { %>

@@ -61,7 +61,7 @@ if (!empty($_REQUEST['country_id']) && !empty($_REQUEST['user_lang'])) {
 		$targetLang = $_REQUEST['user_lang'];
 
 		$langSanitised = ze\lang::sanitiseLanguageId($targetLang);
-		$enabledContentTypes = ze\content::getContentTypes();
+		$enabledContentTypes = ze\content::getContentTypes(true, false);
 	
 		//Validation:
 		//cID needs to be an integer

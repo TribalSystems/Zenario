@@ -25,7 +25,7 @@
 	display:block;
 }
 
-.zenario_document_container__default_style .document_wrap .level_1 a:first-child {
+.zenario_document_container__default_style .document_wrap .level_1 > a:first-child {
 	color:#2a98ce;
 }
 
@@ -37,4 +37,38 @@
 	font-family: 'FontAwesome';
 	content:"\f07c";
 	padding-right:8px;
+}
+
+.zenario_document_container__default_style .file_size,
+.zenario_document_container__default_style .upload_date {
+	font-size:0.875em;
+}
+
+.zenario_document_container .view_button,
+.zenario_document_container .download_link {
+	display:inline-block;
+	margin-top:20px;
+}
+
+.zenario_document_container .view_button + .download_link a {
+	background:#2a98ce;
+}
+
+.zenario_document_container #archive_download_link > a {
+	margin-left:10px;
+}
+
+.zenario_document_container #archive_download_link:before {
+	font-family: "FontAwesome";
+  	content: "\f1c6";
+  	padding-right:5px;
+}
+
+/* Private item */
+
+.zenario_document_container .document_wrap.private .level_1 > a:before {
+	font-family: "FontAwesome";
+  	content: "\f023";
+  	padding-right:5px;
+  	color:#D92525;
 }

@@ -187,9 +187,9 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		if ($this->loadTabs()) {
 			
@@ -680,6 +680,24 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 		if ($this->show) {
 			$this->mergeFields['Tabs'][$this->slideNum]['Plugins'] = ze::$slotContents[$this->slotName]->eggsOnSlideNum($this->slideNum);
 		}
+		
+		if ($this->setting('show_heading') && $this->setting('nest_heading_is_a_link')) {
+			$this->mergeFields['Nest_Heading_Target_Blank'] = $this->setting('nest_heading_target_blank');
+			
+			$linkType = $this->setting('nest_heading_link_type');
+			
+			if ($linkType == 'content_item') {
+				$cID = $cType = false;
+				$contentItem = $this->setting('nest_heading_link_content_item');
+				ze\content::getCIDAndCTypeFromTagId($cID, $cType, $contentItem);
+				$href = ze\link::toItem($cID, $cType);
+			} elseif ($linkType == 'external_url') {
+				$href = $this->setting('nest_heading_link_url');
+			}
+			
+			$this->mergeFields['Nest_Heading_Href'] = htmlspecialchars($href);
+		}
+		
 		$this->twigFramework($this->mergeFields);
 	}
 	
@@ -965,8 +983,6 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			//Add the script of a Nested Plugin to the Nest
 			$scriptTypes = [];
 			$slot->class()->zAPICheckRequestedScripts($scriptTypes);
-			
-			$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'addJavaScript', $slot->moduleClassName(), $slot->moduleId());
 			
 			foreach ($scriptTypes as $scriptType => &$scripts) {
 				foreach ($scripts as &$script) {

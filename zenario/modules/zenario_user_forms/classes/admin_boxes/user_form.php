@@ -149,8 +149,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 			
 			
-			$values['details/partial_completion_mode__auto'] = ($record['partial_completion_mode'] == 'auto' || $record['partial_completion_mode'] == 'auto_and_button');
-			$values['details/partial_completion_mode__button'] = ($record['partial_completion_mode'] == 'button' || $record['partial_completion_mode'] == 'auto_and_button');
 			
 			if (!empty($record['redirect_after_submission'])) {
 				$values['data/success_message_type'] = 'redirect_after_submission';
@@ -243,7 +241,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				
 				$box['tabs']['translations']['fields'] = [];
 				
-				foreach($fieldsToTranslate as $name => $value) {
+				foreach ($fieldsToTranslate as $name => $value) {
 					// Create label for field with english translation (if set)
 					$label = $fields[$name]['label'];
 					$html = '<b>'.$label.'</b>';
@@ -360,6 +358,28 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 
 			$values['details/profanity_filter_text_fields'] = (bool) $record['profanity_filter_text'];
 			
+			//Handle referrer content item
+			if ($record['handle_referrer_content_item']) {
+				$values['details/handle_referrer_content_item'] = true;
+				
+				$referrerFields = [
+					'handle_referrer_content_item_title' => 'referrer_content_item_title',
+					'handle_referrer_content_item_description' => 'referrer_content_item_description',
+					'handle_referrer_content_item_release_date' => 'referrer_content_item_release_date',
+					'handle_referrer_content_item_reference' => 'referrer_content_item_reference',
+					'handle_referrer_content_item_deadline' => 'referrer_content_item_deadline',
+					'handle_referrer_content_item_alias' => 'referrer_content_item_alias',
+					'handle_referrer_content_item_tag' => 'referrer_content_item_tag'
+				];
+				
+				foreach ($referrerFields as $dbKey => $tuixKey) {
+					$values['details/' . $tuixKey] = $record[$dbKey];
+					$values['details/' . $tuixKey . '_label'] = $record[$tuixKey . '_label'];
+				}
+			}
+			
+			$values['data/referrer_content_item_summary_block_title'] = $record['referrer_content_item_summary_block_title'];
+			
 		} else {
 			unset($box['tabs']['translations']);
 			$box['title'] = ze\admin::phrase('Creating a form (enter basic settings, add fields after saving)');
@@ -460,6 +480,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 
 		if (ze\module::inc('zenario_extranet')) {
 			$fields['details/extranet_module_not_running_snippet']['hidden'] = true;
+		} else {
+			$fields['details/save_and_complete_later_extranet_note']['hidden'] = true;
 		}
 		
 		$scheduledTaskManagerProblemMessage = '';
@@ -631,8 +653,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['data/success_message']['hidden'] = true;
 			$fields['details/profanity_filter_text_fields']['hidden'] = true;
 			$fields['details/allow_partial_completion']['hidden'] = true;
-			$fields['details/partial_completion_mode__auto']['hidden'] = true;
-			$fields['details/partial_completion_mode__button']['hidden'] = true;
 			$fields['details/partial_completion_message']['hidden'] = true;
 			$fields['details/allow_clear_partial_data']['hidden'] = true;
 			$fields['details/clear_partial_data_message']['hidden'] = true;
@@ -757,10 +777,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		}
 		
-		if ($values['details/allow_partial_completion'] && !$values['details/partial_completion_mode__auto'] && !$values['details/partial_completion_mode__button']) {
-			$errors[] = ze\admin::phrase('You wish to enable the "Save and complete later" feature. Please select at least one method for saving user data (either auto-save, or a Save button, or both).');
-		}
-
 		if ($values['data/send_email_to_user'] && !($values['data/send_email_to_logged_in_user'] || $values['data/send_email_to_email_from_field'])) {
 			$fields['data/send_email_to_user']['error'] = ze\admin::phrase('Please select at least one of the options below.');
 		}
@@ -792,6 +808,28 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 
 		if (!$values['details/enable_summary_page'] && $values['details/last_page_visibility'] && $values['details/last_page_visibility'] != 'visible') {
 			$fields['details/enable_summary_page']['error'] = $this->phrase('The final step of the form is not always visible. Please make sure it is always visible before turning this off.');
+		}
+		
+		if ($values['details/handle_referrer_content_item']) {
+			if (
+				!$values['details/handle_referrer_content_item_title']
+				&& !$values['details/handle_referrer_content_item_description']
+				&& !$values['details/handle_referrer_content_item_release_date']
+				&& !$values['details/handle_referrer_content_item_reference']
+				&& !$values['details/handle_referrer_content_item_deadline']
+				&& !$values['details/handle_referrer_content_item_alias']
+				&& !$values['details/handle_referrer_content_item_tag']
+			) {
+				$fields['details/handle_referrer_content_item']['error'] = ze\admin::phrase('Please select at least one of the fields below.');
+				
+				$fields['details/handle_referrer_content_item_title']['error'] =
+				$fields['details/handle_referrer_content_item_description']['error'] =
+				$fields['details/handle_referrer_content_item_release_date']['error'] =
+				$fields['details/handle_referrer_content_item_reference']['error'] =
+				$fields['details/handle_referrer_content_item_deadline']['error'] =
+				$fields['details/handle_referrer_content_item_alias']['error'] =
+				$fields['details/handle_referrer_content_item_tag']['error'] = true;
+			}
 		}
 	}
 	
@@ -935,23 +973,12 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['allow_partial_completion'] = !empty($values['allow_partial_completion']);
 		
 		
-		$record['partial_completion_mode'] = null;
 		$record['partial_completion_message'] = null;
 		$record['allow_clear_partial_data'] = 0;
 		$record['clear_partial_data_message'] = null;
 		$record['partial_completion_get_request'] = null;
 		if (!empty($values['allow_partial_completion'])) {
-			if ($values['partial_completion_mode__auto'] && $values['partial_completion_mode__button']) {
-				$record['partial_completion_mode'] = 'auto_and_button';
-			} elseif ($values['partial_completion_mode__auto']) {
-				$record['partial_completion_mode'] = 'auto';
-			} elseif ($values['partial_completion_mode__button']) {
-				$record['partial_completion_mode'] = 'button';
-			}
-			
-			if ($values['partial_completion_mode__button']) {
-				$record['partial_completion_message'] = $values['partial_completion_message'];
-			}
+			$record['partial_completion_message'] = $values['partial_completion_message'];
 			
 			if ($record['allow_clear_partial_data'] = !empty($values['allow_clear_partial_data'])) {
 				$record['clear_partial_data_message'] = $values['clear_partial_data_message'];
@@ -996,6 +1023,37 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$record['make_urls_non_clickable_user'] = (($values['send_email_to_user'] && $values['make_urls_non_clickable_user']) ? true : false);
 		$record['make_urls_non_clickable_admin'] = (($values['send_email_to_admin'] && $values['make_urls_non_clickable_admin']) ? true : false);
+		
+		
+		//Handle content item referrer fields
+		$referrerFields = [
+			'handle_referrer_content_item_title' => 'referrer_content_item_title',
+			'handle_referrer_content_item_description' => 'referrer_content_item_description',
+			'handle_referrer_content_item_release_date' => 'referrer_content_item_release_date',
+			'handle_referrer_content_item_reference' => 'referrer_content_item_reference',
+			'handle_referrer_content_item_deadline' => 'referrer_content_item_deadline',
+			'handle_referrer_content_item_alias' => 'referrer_content_item_alias',
+			'handle_referrer_content_item_tag' => 'referrer_content_item_tag'
+		];
+		
+		if ($values['details/handle_referrer_content_item']) {
+			$record['handle_referrer_content_item'] = true;
+			
+			foreach ($referrerFields as $dbKey => $tuixKey) {
+				$record[$dbKey] = $values['details/' . $dbKey];
+				$record[$tuixKey . '_label'] = $values['details/' . $tuixKey . '_label'];
+			}
+			
+			$record['referrer_content_item_summary_block_title'] = $values['details/referrer_content_item_summary_block_title'];
+		} else {
+			$record['handle_referrer_content_item'] = false;
+			foreach ($referrerFields as $dbKey => $tuixKey) {
+				$record[$dbKey] = false;
+				$record[$tuixKey . '_label'] = '';
+			}
+			
+			$record['referrer_content_item_summary_block_title'] = '';
+		}
 		
 		if ($id = $box['key']['id']) {
 			ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, ['id' => $id]);
@@ -1104,8 +1162,8 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				if ($box['key']['type'] == 'profile') {
 					//TODO
 				} elseif ($box['key']['type'] == 'registration') {
-					//Create 1st page
-					$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', ['form_id' => $formId, 'ord' => 1, 'name' => 'Page 1']);
+					//Create 1st step
+					$pageId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'pages', ['form_id' => $formId, 'ord' => 1, 'name' => 'Step 1']);
 					
 					//salutation, first_name, last_name, email
 					$dataset = ze\dataset::details('users');

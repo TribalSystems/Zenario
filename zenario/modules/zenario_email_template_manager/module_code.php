@@ -497,9 +497,13 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$rcpts, $templateCode, $mergeFields = [],
 		$attachments = [], $attachmentFilenameMappings = [],
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false,
-		$makeURLsNotClickable = false, $ignoreDebugMode = false
+		$makeURLsNotClickable = false, $ignoreDebugMode = false, $customBody = null
 	) {
 		if ($template = self::getTemplateByCode($templateCode)) {
+			
+			if (!is_null($customBody)) {
+				$template['body'] = $customBody;
+			}
 			
 			//Have the option to use Twig code in an email template
 			if ($template['use_standard_email_template'] == 2) {
@@ -510,12 +514,15 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				$mergeFields = [];
 			}
 			
-			if ($template['head']) {
-				static::putHeadOnBody($template['head'], $template['body']);
+			if ($template['apply_css_rules']) {
+				$cssRules = ze::setting('email_css_rules');
+				static::putHeadOnBody($cssRules, $template['body']);
 			}
+			
 			if ($template['use_standard_email_template']) {
 				static::putBodyInTemplate($template['body']);
 			}
+			
 			if ($template['from_details'] == 'site_settings') {
 				$template['email_address_from'] = ze::setting('email_address_from');
 				$template['email_name_from'] = ze::setting('email_name_from');
@@ -580,8 +587,9 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 				$emailBody = $template['body'];
 			}
 			
-			if ($template['head']) {
-				static::putHeadOnBody($template['head'], $emailBody);
+			if ($template['apply_css_rules']) {
+				$cssRules = ze::setting('email_css_rules');
+				static::putHeadOnBody($cssRules, $emailBody);
 			}
 		
 			if ($template['use_standard_email_template']) {
@@ -644,7 +652,9 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 '<!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<style>
 '. $head. '
+</style>
 </head>
 <body>
 '. $body. '

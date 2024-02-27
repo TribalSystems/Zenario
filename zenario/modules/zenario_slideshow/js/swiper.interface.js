@@ -30,38 +30,18 @@
 
 
 
-zenario_swiper_interface.show = function(slotName, containerId, breakpoint) {
+zenario_swiper_interface.show = function(slotName, containerId, opt) {
 	
 	var elId = containerId + '_swiper';
 	
-	var opt = {
-		direction: 'horizontal',
-
-		pagination: {
-			el: '#' + elId + ' .swiper-pagination',
-		},
-
-		navigation: {
-			nextEl: '#' + elId + ' .swiper-button-next',
-			prevEl: '#' + elId + ' .swiper-button-prev',
-		},
-		
-		spaceBetween: 10,
-		centerInsufficientSlides: true,
-		
-		loop: false,
-		slidesPerView: 1,
-		breakpoints: {
-			[breakpoint]: {
-				loop: false,
-				slidesPerView: 2
-			},
-			980: {
-				loop: false,
-				slidesPerView: 3
-			}
-		}
+	opt.pagination = {
+		el: '#' + elId + ' .swiper-pagination',
 	};
+	opt.navigation = {
+		nextEl: '#' + elId + ' .swiper-button-next',
+		prevEl: '#' + elId + ' .swiper-button-prev',
+	};
+	opt.centerInsufficientSlides = true;
 	
 	var swiper = new Swiper('#' + elId, opt);
 	

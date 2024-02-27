@@ -42,15 +42,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $displayMode = false;
 	protected $reloaded = false;
 	protected $userId = false;
+	protected $referrerContentItemTag = false;
 	
 	public function init() {
+		$this->requireJsLib('zenario/js/fileupload.bundle.js.php');
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable.min.js');
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = true, $clearByFile = false, $clearByModuleData = true);
+			$clearByContent = true, $clearByMenu = false, $clearByFile = false, $clearByModuleData = true);
 		
 		$formId = $this->setting('user_form');
 		
@@ -109,13 +111,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Email verification for registration forms
 		if ($this->form['type'] == 'registration') {
 			if (isset($_GET['confirm_email']) && isset($_GET['hash'])) {
-				$user = ze\row::get('users', ['id', 'email_verified'], ['hash' => $_GET['hash']]);
+				$user = ze\row::get('users', ['id', 'email', 'email_verified'], ['hash' => $_GET['hash']]);
 				if (!$user) {
 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(static::fPhrase('We are sorry, but we were unable to find your registration. Please check whether the verification link is correct.', [], $t)) . '</p>';
-				} elseif ($user['email_verified']) {
+				} elseif (!empty($user['email']) && $user['email_verified'] == 'verified') {
 					$this->data['form_HTML'] = '<p class="success">' . htmlspecialchars(static::fPhrase('This email address has already been verified.', [], $t)) . '</p>';
 				} else {
-					ze\row::update('users', ['email_verified' => 1, 'status' => 'active'], $user['id']);
+					ze\row::update('users', ['email_verified' => 'verified', 'status' => 'active'], $user['id']);
 					$this->sendWelcomeEmail($user['id']);
 					$this->logUserIn($user['id']);
 					
@@ -143,7 +145,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$error = 'Please enter a valid email address.';
 					} elseif (!ze\row::exists('users', ['email' => $value])) {
 						$error = 'This email address is not associated with any account.';
-					} elseif (ze\row::get('users', 'email_verified', ['email' => $value])) {
+					} elseif (ze\row::get('users', 'email_verified', ['email' => $value]) == 'verified') {
 						$error = 'This email address has already been verified.';
 					} elseif (ze\row::get('users', 'status', ['email' => $value]) == 'contact') {
 						$error = 'The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance.';
@@ -200,22 +202,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$equivId = ze\content::equivId($this->cID, $this->cType);
 			$privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId, 'type' => $this->cType]);
 			if ($privacy == 'public') {
-				if (ze\admin::id()) {
-					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('This form has the "save and complete later" feature enabled and so must be placed on a password-protected page.')) . '</p>';
-				}
-				return true;
+				//As of 11 Oct 2023, a form with "Save and complete later" enabled
+				//may be placed on a public page. The restriction code is commented out in case we need to restore it.
+				// if (ze\admin::id()) {
+// 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('This form has the "save and complete later" feature enabled and so must be placed on a password-protected page.')) . '</p>';
+// 				}
+// 				return true;
 			}
 			
 			if (!ze\module::inc('zenario_extranet')) {
 				if (ze\admin::id()) {
 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Extranet Base Module must be running if the "Save and complete later" feature is enabled.')) . '</p>';
-				}
-				return true;
-			}
-			
-			if (!$this->userId) {
-				if (ze\admin::id()) {
-					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('You must be logged in as an extranet user to see this plugin.')) . '</p>';
 				}
 				return true;
 			}
@@ -313,25 +310,32 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($this->form['partial_completion_get_request']) {
 					$getRequestValue = $_REQUEST[$this->form['partial_completion_get_request']] ?? 0;
 				}
-				$partialSaveFound = ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['user_id' => $this->userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
-				if ($partialSaveFound) {
-					if (!$this->form['allow_clear_partial_data'] || ze::post('resume')) {
-						$this->loadPartialSaveData($this->userId, $formId, $getRequestValue);
-					} elseif ($this->form['allow_clear_partial_data'] && ze::post('clear')) {
-						static::deleteOldPartialResponse($formId, $this->userId, $getRequestValue);
-					} else {
-						$html = $this->getPartialSaveResumeFormHTML();
-						$html .= $this->getCloseButtonHTML();
-						$this->cssClass .= ' no_title';
-						$this->data['form_HTML'] = $html;
-						return true;
+				
+				if ($this->userId) {
+					$partialSaveFound = ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['user_id' => $this->userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
+					if ($partialSaveFound) {
+						if (!$this->form['allow_clear_partial_data'] || ze::post('resume')) {
+							$this->loadPartialSaveData($this->userId, $formId, $getRequestValue);
+						} elseif ($this->form['allow_clear_partial_data'] && ze::post('clear')) {
+							static::deleteOldPartialResponse($formId, $this->userId, $getRequestValue);
+						
+							if ($this->form['handle_referrer_content_item']) {
+								$this->referrerContentItemTag = ze::get('referrer');
+							}
+						} else {
+							$html = $this->getPartialSaveResumeFormHTML();
+							$html .= $this->getCloseButtonHTML();
+							$this->cssClass .= ' no_title';
+							$this->data['form_HTML'] = $html;
+							return true;
+						}
 					}
 				}
 			}
 		} else {
 			$this->formPageHash = $_POST['formPageHash'];
 		}
-				
+		
 		if (!isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash])) {
 			$ord = isset($_SESSION['custom_form_data'][$this->instanceId]) ? count($_SESSION['custom_form_data'][$this->instanceId]) : 0;
 			$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash] = ['date_created' => date('Y-m-d H:i:s'), 'ord' => $ord];
@@ -370,6 +374,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		$pageId = (!empty($this->pages) ? reset($this->pages)['id'] : 0);
 		$currentPageId = $_POST['current_page'] ?? $pageId;
+		$firstPageId = (!empty($this->pages) ? array_key_first($this->pages) : 0);
 		
 		//Get fields per page
 		$this->fields = $this->getFormFields($formId);
@@ -403,7 +408,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$submitted = !empty($_POST['submitForm']);
 				$moveToHigherPage = $this->pages[$pageId]['ord'] > $this->pages[$currentPageId]['ord'];
 				$saveToCompleteLaterButtonPressed = $this->form['allow_partial_completion'] && !empty($_POST['saveLater']);
-				$saveToCompleteLaterPageNav = $this->form['allow_partial_completion'] && in_array($this->form['partial_completion_mode'], ['auto', 'auto_and_button']) && $currentPageId != $pageId;
+				$saveToCompleteLaterPageNav = $this->form['allow_partial_completion'] && $currentPageId != $pageId;
 				
 				$valid = true;
 				if ($submitted || $moveToHigherPage || $saveToCompleteLaterButtonPressed) {
@@ -420,13 +425,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					} else {
 						$pageId = $currentPageId;
 					}
-
+					
 					if (!$showInFloatingBox) {
 						$this->callScript('zenario', 'scrollToSlotTop', $this->slotName, $neverScrollDown = false);
 					}
 				} elseif ($saveToCompleteLaterButtonPressed || $saveToCompleteLaterPageNav) {
-					$responseCreated = $this->createFormPartialResponse();
-					if ($saveToCompleteLaterButtonPressed && $responseCreated) {
+					if ($this->userId && $saveToCompleteLaterButtonPressed && ($responseCreated = $this->createFormPartialResponse())) {
 						if ($this->form['partial_completion_message']) {
 							$successMessage = static::fPhrase($this->form['partial_completion_message'], [], $t);
 						} elseif (ze\admin::id()) {
@@ -469,7 +473,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						//It will be added later on as a global success message if not blank.
 						//Otherwise, the setting check will return false or an empty string, and the form success message setting will be used instead.
 						if ($this->moduleClassName == 'zenario_extranet_profile_edit' && !empty($this->setting('profile_updated'))) {
-							$html = '<div class="success">' . $this->setting('profile_updated') . '</div>';
+							$html = '<div class="success">' . $this->phrase($this->setting('profile_updated')) . '</div>';
 						} else {
 							$html = $this->getSuccessMessageHTML();
 						}
@@ -478,7 +482,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$this->cssClass .= ' no_title';
 						
 						if ($this->form['show_success_message_and_the_form']) {
-							$html .= $this->getFormHTML($pageId);
+							$html .= $this->getFormHTML($pageId, $firstPageId);
 						}
 						
 						//If this is the "Extranet Profile" plugin, clear out the extranet_edit_profile parameter from the URL.
@@ -511,7 +515,15 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Get form HTML
 		$colorboxFormHTML = false;
-		$html = $this->getFormHTML($pageId);
+		$html = $this->getFormHTML($pageId, $firstPageId);
+		
+		if ($this->form['allow_partial_completion'] && !$this->userId) {
+			if (ze\admin::id()) {
+				$html =
+					'<p class="info">' . htmlspecialchars(ze\admin::phrase('This form has the "Save and complete later" feature enabled, but the feature is only active for logged in extranet users.')) . '</p>' .
+					$html;
+			}
+		}
 		
 		$this->data['form_HTML'] = $html;
 		
@@ -605,7 +617,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$fileCount = count($file['tmp_name']);
 					for ($j = 0; $j < $fileCount; $j++) {
 						if (!empty($file['tmp_name'][$j]) && ze\fileAdm::isUploadedFile($file['tmp_name'][$j]) && ze\cache::cleanDirs()) {
-							$randomDir = ze\cache::createRandomDir(30, 'uploads');
+							$randomDir = ze\cache::createRandomDir(30, 'private/uploads', $onlyForCurrentVisitor = true);
 							$newName = $randomDir. ze\file::safeName($file['name'][$j], true);
 							
 							if (!$randomDir) {
@@ -627,7 +639,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 									
 									ze\file::resizeImageString($imageString, $imageMimeType, $imageWidth, $imageHeight, $widthLimit, $heightLimit);
 									
-									$privateCacheDir = ze\cache::createRandomDir(15, 'private/images');
+									$privateCacheDir = ze\cache::createRandomDir(15, 'private/images', $onlyForCurrentVisitor = true);
 									$thumbnailPath = $privateCacheDir . 'thumbnail-' . $file['name'][$j];
 									file_put_contents(CMS_ROOT . $thumbnailPath, $imageString);
 									\ze\cache::chmod(CMS_ROOT . $thumbnailPath, 0666);
@@ -692,7 +704,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$fullPDFName .= '.pdf';
 				}
 				
-				$fullPDFDir = ze\cache::createRandomDir(30, 'uploads');
+				$fullPDFDir = ze\cache::createRandomDir(30, 'private/uploads', $onlyForCurrentVisitor = true);
 				if (!$fullPDFDir) {
 					exit('Could not create cache directory in private/uploads');
 				}
@@ -881,6 +893,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		} else {
 			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', []);
 			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', []);
+			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_referrer_info', []);
 		}
 	}
 	//Get visible form field data in email
@@ -912,7 +925,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
 	}
 	
-	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = [], $includeDownloadLinks = 'admin') {
+	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = [], $includeDownloadLinks = 'admin', $referrerContentItemTag = '') {
 		$html = '<table>';
 		
 		//Get form if loading from a responseId
@@ -931,6 +944,72 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($data) {
 			foreach ($data as $fieldId => $value) {
 				$fields[$fieldId]['value'] = $value;
+			}
+		}
+		
+		//If a form uses content item referrers, display the details.
+		$formDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $formId);
+		if ($formDetails && $formDetails['handle_referrer_content_item']) {
+			$referrerFields = self::getReferrerFieldsArray();
+			
+			if ($responseId) {
+				$formReferrerDetails = [];
+				
+				$formReferrerDetailsArray = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info', true, ['user_response_id' => $responseId], [], 'referrer_field');
+				
+				foreach ($referrerFields as $key => $value) {
+					if (isset($formReferrerDetailsArray[$key])) {
+						$formReferrerDetails[$key] = $formReferrerDetailsArray[$key];
+					}
+				}
+			} elseif ($referrerContentItemTag) {
+				$formReferrerDetails = [];
+				$referrerContentItemData = self::getReferrerFieldsValues($referrerContentItemTag);
+				
+				foreach ($referrerFields as $referrerDbField => $referrerFieldName) {
+					if ($formDetails[$referrerDbField]) {
+						$formReferrerDetails[$referrerDbField] = ['referrer_field' => $referrerDbField, 'value' => $referrerContentItemData[$referrerFieldName]];
+					}
+				}
+			}
+			
+			if (!empty($formReferrerDetails)) {
+				$html .= '<tr><th colspan="2" class="header">' . $formDetails['referrer_content_item_summary_block_title'] . '</th></tr>';
+				
+				foreach ($formReferrerDetails as $referrerDataRow) {
+					switch ($referrerDataRow['referrer_field']) {
+						case 'handle_referrer_content_item_title':
+							$label = $formDetails['referrer_content_item_title_label'];
+							break;
+						case 'handle_referrer_content_item_description':
+							$label = $formDetails['referrer_content_item_description_label'];
+							break;
+						case 'handle_referrer_content_item_release_date':
+							$label = $formDetails['referrer_content_item_release_date_label'];
+							break;
+						case 'handle_referrer_content_item_reference':
+							$label = $formDetails['referrer_content_item_reference_label'];
+							break;
+						case 'handle_referrer_content_item_deadline':
+							$label = $formDetails['referrer_content_item_deadline_label'];
+							break;
+						case 'handle_referrer_content_item_alias':
+							$label = $formDetails['referrer_content_item_alias_label'];
+							break;
+						case 'handle_referrer_content_item_tag':
+							$label = $formDetails['referrer_content_item_tag_label'];
+							break;
+						default:
+							$label = '';
+							break;
+					}
+				
+					$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . htmlspecialchars($referrerDataRow['value']) . '</td></tr>';
+				}
+			
+				$html .= '</table><br />';
+			
+				$html .= '<table>';
 			}
 		}
 		
@@ -1089,6 +1168,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 
 		if (!$onlyDeleteFiles) {
+			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info', ['user_response_id' => $responseId]);
 			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId]);
 			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
 		}
@@ -1171,6 +1251,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id' => $partialResponseId]);
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $partialResponseId]);
+		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_referrer_info', ['user_partial_response_id' => $partialResponseId]);
 	}
 	
 	public static function deletePredefinedTextTarget($fieldId) {
@@ -1672,7 +1753,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $fieldId . '_' . $row;
 	}
 	
-	private function getFormHTML($pageId) {
+	private function getFormHTML($pageId, $firstPageId) {
 		$t = $this->form['translate_text'];
 		$html = '';
 		$html .= '<div id="' . htmlspecialchars($this->containerId) . '_form_wrapper" class="form_wrapper';
@@ -1830,7 +1911,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$html .= '<div class="success global top">' . htmlspecialchars(static::fPhrase($this->messages['global_top'], [], $t)) . '</div>';
 		}
 		
-		$html .= $this->getFieldsHTML($pageId, $this->isFormReadonly($this->form));
+		if ($this->form['handle_referrer_content_item']) {
+			if (!$this->referrerContentItemTag) {
+				$this->referrerContentItemTag = ze::request("referrer");
+			}
+			$html .= '<input type="hidden" name="referrer" value="' . htmlspecialchars($this->referrerContentItemTag ) . '"/>';
+			
+			if ($firstPageId == $pageId) {
+				$html .= $this->getReferrerFieldsHTML($this->referrerContentItemTag);
+			}
+		}
+		
+		$html .= $this->getFieldsHTML($pageId, $this->isFormReadonly($this->form), $this->referrerContentItemTag);
 		$html .= $this->closeForm();
 		$html .= '</div>';
 		$html .= $this->getCloseButtonHTML();
@@ -1843,7 +1935,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $html;
 	}
 	
-	protected function getFieldsHTML($pageId, $readonly) {
+	protected function getFieldsHTML($pageId, $readonly, $referrerContentItemTag = '') {
 		$html = '';
 		$t = $this->form['translate_text'];
 		$isMultiPageForm = count($this->pages) > 1;
@@ -1870,8 +1962,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			foreach ($this->fields as $fieldId => $field) {
 				$data[$fieldId] = $this->getFieldCurrentValue($fieldId);
 			}
+			
 			$repeatRows = $this->getFormRepeatRows($this->form['id']);
-			$html .= static::getFormSummaryHTML(false, $this->form['id'], $data, $repeatRows);
+			$html .= static::getFormSummaryHTML(false, $this->form['id'], $data, $repeatRows, 'admin', $referrerContentItemTag);
 			
 			if ($this->form['summary_page_lower_text']) {
 				$html .= '<p>' . nl2br(static::fPhrase($this->form['summary_page_lower_text'], [], $t)) . '</p>';
@@ -2035,12 +2128,112 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $html;
 	}
 	
+	public static function getReferrerFieldsArray() {
+		$referrerFields = [
+			'handle_referrer_content_item_title' => 'title',
+			'handle_referrer_content_item_description' => 'description',
+			'handle_referrer_content_item_release_date' => 'release_date',
+			'handle_referrer_content_item_reference' => 'reference',
+			'handle_referrer_content_item_deadline' => 'deadline',
+			'handle_referrer_content_item_alias' => 'alias',
+			'handle_referrer_content_item_tag' => 'tag'
+		];
+		
+		return $referrerFields;
+	}
+	
+	private function getReferrerFieldsHTML($referrerId) {
+		$html = '';
+		
+		if ($referrerId) {
+			$html .= '<div class="form_referrer_content_item_fields">';
+			
+			$referrerContentItemData = self::getReferrerFieldsValues($referrerId);
+			
+			$referrerFields = self::getReferrerFieldsArray();
+			
+			foreach ($referrerFields as $referrerFieldDbColumn => $fererrerFieldName) {
+				if ($this->form[$referrerFieldDbColumn]) {
+					$fererrerFieldValue = '';
+					
+					if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['partial_response_referrer_info'][$referrerFieldDbColumn])) {
+						$fererrerFieldValue = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['partial_response_referrer_info'][$referrerFieldDbColumn];
+					} elseif (is_array($referrerContentItemData) && isset($referrerContentItemData[$fererrerFieldName])) {
+						$fererrerFieldValue =  $referrerContentItemData[$fererrerFieldName];
+					}
+					
+					$html .= $this->getFieldHTML(false, false, false, $referrerId, $referrerFieldDbColumn, $fererrerFieldValue);
+				}
+			}
+			
+			if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['partial_response_referrer_info'])) {
+				unset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['partial_response_referrer_info']);
+			}
+			
+			$html .= '</div>';
+		}
+		
+		return $html;
+	}
+	
+	public static function getReferrerFieldsValues($referrerId) {
+		$referrerContentItemData = [];
+		
+		if ($referrerId) {
+			$cID = $cType = '';
+			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $referrerId);
+			$cVersion = ze\content::appropriateVersion($cID, $cType);
+		
+			$referrerContentItemData = ze\row::get('content_item_versions', ['title', 'description', 'release_date'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]) ?: [];
+		
+			$referrerContentItemData['reference'] = $referrerContentItemData['deadline'] = '';
+		
+			if ($cType == 'vacancy' && ze\module::inc('zenario_ctype_job_vacancies')) {
+				$vacancyData = ze\row::get(
+					ZENARIO_CTYPE_JOB_VACANCIES_PREFIX . 'job_vacancies',
+					['reference', 'job_vacancy_has_deadline', 'job_vacancy_deadline_date', 'job_vacancy_specify_deadline_time', 'job_vacancy_deadline_time'],
+					['id' => $cID, 'version' => $cVersion]
+				);
+			
+				if ($vacancyData) {
+					$referrerContentItemData['reference'] = $vacancyData['reference'];
+					$vacancyDeadlineData = zenario_ctype_job_vacancies::processVacancyDeadlineData($vacancyData, false, $formSummary = true);
+					
+					$referrerContentItemData['deadline'] = $vacancyDeadlineData['vacancy_deadline'];
+					
+					if (ze::setting('zenario_ctype_job_vacancies__deadline_support')) {
+						if (!$referrerContentItemData['deadline']) {
+							$referrerContentItemData['deadline'] = ze\lang::phrase('Ongoing');
+						}
+					}
+				}
+			}
+		
+			$referrerContentItemData['alias'] = ze\row::get('content_items', 'alias', ['id' => $cID, 'type' => $cType]);
+			$referrerContentItemData['tag'] = ze\content::formatTagFromTagId($referrerId);
+		}
+		
+		return $referrerContentItemData;
+	}
+	
 	private function getPartialSaveButtonHTML() {
 		$html = '';
-		if ($this->form['allow_partial_completion'] && ($this->form['partial_completion_mode'] == 'button' || $this->form['partial_completion_mode'] == 'auto_and_button')) {
+		if ($this->form['allow_partial_completion']) {
 			$t = $this->form['translate_text'];
-			$html .= '<div class="complete_later"><input type="button" class="saveLater" value="' . htmlspecialchars(static::fPhrase('Save and complete later', [], $t)) . '" data-message="' . htmlspecialchars(static::fPhrase('You are about to save this part-completed form, so that you can return to it later. Save now?', [], $t)) . '"/></div>';
+			if (ze\user::id()) {
+				$html .= '<div class="complete_later"><input type="button" class="saveLater" value="' .
+					htmlspecialchars(static::fPhrase('Save and complete later', [], $t)) . '" data-message="' .
+					htmlspecialchars(static::fPhrase('You are about to save this part-completed form, so that you can return to it later. Save now?', [], $t)) . '"/></div>';
+			} elseif (ze\module::inc('zenario_extranet')) {
+				$cID = $cType = false;
+				ze\content::langSpecialPage('zenario_login', $cID, $cType);
+				
+				if ($loginSpecialPageLink = ze\link::toItem($cID, $cType)) {
+					$html .= '<div class="complete_later"><a href="' . htmlspecialchars($loginSpecialPageLink) . '" class="saveLater">' . $this->phrase('Save and complete later (login required)') . '</div>';
+				}
+			}
 		}
+		
 		return $html;
 	}
 	
@@ -2061,6 +2254,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			$currentDivWrapClass = $field['div_wrap_class'];
 		}
+		
 		return $html;
 	}
 	
@@ -2087,40 +2281,112 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	    return $html;
 	}
 	
-	private function getFieldHTML($fieldId, $pageId, $readonly) {
+	private function getFieldHTML($fieldId, $pageId, $readonly, $referrerContentItem = '', $referrerContentItemField = '', $referrerContentItemValue = '') {
 		$t = $this->form['translate_text'];
-		$field = $this->fields[$fieldId];
-		$fieldName = static::getFieldName($fieldId, $field['custom_code_name']);
-		$fieldElementId = $this->containerId . '__' . $fieldName;
-		$value = $this->getFieldCurrentValue($fieldId);
-		$readonly = $readonly || $field['is_readonly'];
-		$hidden = $this->isFieldHidden($field, $ignoreRepeat = true);
+		
+		if ($fieldId) {
+			$field = $this->fields[$fieldId];
+			$fieldName = static::getFieldName($fieldId, $field['custom_code_name']);
+			$fieldElementId = $this->containerId . '__' . $fieldName;
+			$value = $this->getFieldCurrentValue($fieldId);
+			$readonly = $readonly || $field['is_readonly'];
+			$hidden = $this->isFieldHidden($field, $ignoreRepeat = true);
+		} elseif ($referrerContentItem && $referrerContentItemField) {
+			$field = [
+				'field_validation' => '',
+				'is_required' => false,
+				'mandatory_if_visible' => '',
+				'mandatory_condition_field_id' => '',
+				'field_validation' => '',
+				'repeat_start_id' => '',
+				'placeholder' => '',
+				'db_column' => '',
+				'visibility' => 'visible'
+			];
+			
+			switch ($referrerContentItemField) {
+				case 'handle_referrer_content_item_title':
+					$fieldName = 'referrer_title';
+					$field['type'] = 'text';
+					$field['label'] = $this->form['referrer_content_item_title_label'];
+					break;
+				case 'handle_referrer_content_item_description':
+					$fieldName = 'referrer_description';
+					$field['type'] = 'textarea';
+					$field['label'] = $this->form['referrer_content_item_description_label'];
+					break;
+				case 'handle_referrer_content_item_release_date':
+					$fieldName = 'referrer_release_date';
+					$field['type'] = 'date';
+					$field['label'] = $this->form['referrer_content_item_release_date_label'];
+					break;
+				case 'handle_referrer_content_item_reference':
+					$fieldName = 'referrer_reference';
+					$field['type'] = 'text';
+					$field['label'] = $this->form['referrer_content_item_reference_label'];
+					break;
+				case 'handle_referrer_content_item_deadline':
+					$fieldName = 'referrer_deadline';
+					$field['type'] = 'text';
+					$field['label'] = $this->form['referrer_content_item_deadline_label'];
+					break;
+				case 'handle_referrer_content_item_alias':
+					$fieldName = 'referrer_alias';
+					$field['type'] = 'text';
+					$field['label'] = $this->form['referrer_content_item_alias_label'];
+					break;
+				case 'handle_referrer_content_item_tag':
+					$fieldName = 'referrer_tag';
+					$field['type'] = 'text';
+					$field['label'] = $this->form['referrer_content_item_tag_label'];
+					break;
+				default:
+					$fieldName = '';
+					$field['type'] = 'text';
+					$field['label'] = '';
+					break;
+			}
+			
+			$fieldElementId = $this->containerId . '__' . $fieldName;
+			$value = $referrerContentItemValue;
+			$readonly = true;
+			$hidden = false;
+			if ($field['type'] == 'date') {
+				$field['show_month_year_selectors'] = $field['no_past_dates'] = $field['no_future_dates'] = $field['disable_manual_input'] = false;
+			} elseif ($field['type'] == 'textarea') {
+				$field['predefined_text_target_id'] = '';
+				$field['rows'] = 4;
+			}
+		}
 		
 		$html = '';
 		$errorHTML = '';
 		$extraClasses = '';
-		if (
-			isset($this->errors[$fieldId])
-			|| (
-				ze::in($field['type'], 'checkbox', 'url', 'text', 'textarea')
-				&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
-			)
-		) {
-			$errorHTML = '<div id="' . htmlspecialchars($fieldElementId) . '__error_message" class="form_error"';
+		
+		if ($fieldId) {
+			if (
+				isset($this->errors[$fieldId])
+				|| (
+					ze::in($field['type'], 'checkbox', 'url', 'text', 'textarea')
+					&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
+				)
+			) {
+				$errorHTML = '<div id="' . htmlspecialchars($fieldElementId) . '__error_message" class="form_error"';
 			
-			if (isset($this->errors[$fieldId])) {
-				$errorHTML .= ' style="display: block;"';
-			} else {
-				$errorHTML .= ' style="display: none;"';
+				if (isset($this->errors[$fieldId])) {
+					$errorHTML .= ' style="display: block;"';
+				} else {
+					$errorHTML .= ' style="display: none;"';
+				}
+			
+				if (isset($this->errors[$fieldId])) {
+					$errorMessage = $this->errors[$fieldId];
+				} else {
+					$errorMessage = '';
+				}
+			
+				$errorHTML .= '>' . htmlspecialchars($errorMessage) . '</div>';
 			}
-			
-			if (isset($this->errors[$fieldId])) {
-				$errorMessage = $this->errors[$fieldId];
-			} else {
-				$errorMessage = '';
-			}
-			
-			$errorHTML .= '>' . htmlspecialchars($errorMessage) . '</div>';
 		}
 		
 		if ($value) {
@@ -2221,9 +2487,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$linkStart = '<a href="' . htmlspecialchars($changePasswordPageLink) . '" target="_blank">';
 						$linkEnd = '</a>';
 						
-						$field['extranet_profile_edit_note'] = $this->phrase('To update your email, please [[link_start]]click here[[link_end]].', ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+						$field['extranet_profile_edit_note'] = 'To update your email, please [[link_start]]click here[[link_end]].';
+						$extranetProfileEditNoteReplace = ['link_start' => $linkStart, 'link_end' => $linkEnd];
 					} else {
 						$field['extranet_profile_edit_note'] = 'This field may not be edited.';
+						$extranetProfileEditNoteReplace = [];
 					}
 				}
 				
@@ -2327,11 +2595,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}	
 				$html .= ' maxlength="' . htmlspecialchars($maxlength) . '" ';
 				
-				if (
-					($field['type'] == 'text' || $field['type'] == 'url')
-					&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
-				) {
-					$html .= $this->addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId);
+				if ($fieldId) {
+					if (
+						($field['type'] == 'text' || $field['type'] == 'url')
+						&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
+					) {
+						$html .= $this->addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId);
+					}
 				}
 				
 				$html .= '/>';
@@ -2749,6 +3019,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								<div class="files" style="min-height:200px;min-width:500px;border-style:dashed;">
 									...
 								</div>
+								<div id="' . htmlspecialchars($this->containerId) . '__field_' . htmlspecialchars($field['id']) . '__files_upload_error" class="error" style="display:none;"></div>
 								<div class="progress" style="display:none;">
 									<div class="progress_bar" style="background:green;height:5px;"></div>
 								</div>
@@ -2811,7 +3082,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		if (!empty($field['extranet_profile_edit_note'])) {
-			$html .= '<div class="extranet_profile_edit_note">'. static::fPhrase($field['extranet_profile_edit_note'], [], $t) .'</div>'; //can be HTML
+			$html .= '<div class="extranet_profile_edit_note">'. static::fPhrase($field['extranet_profile_edit_note'], $extranetProfileEditNoteReplace, $t) .'</div>'; //can be HTML
 		}
 		
 		if (!empty($field['note_to_user'])) {
@@ -3035,102 +3306,105 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$calculationCode = json_decode($calculationCodeJSON, true);
 		
 		$equation = '';
-		$isNaN = false;
+		$isNaN = $calculationHasError = false;
 		
 		if ($calculationCode) {
-			foreach ($calculationCode as $step) {
-				switch ($step['type']) {
-					case 'static_value':
-						$fieldValue = (float)$step['value'];
-						$fieldValue = sprintf('%f', $fieldValue);
-						$equation .= $fieldValue;
-						break;
-					case 'field':
-						$fieldValue = false;
-						if ($step['value']) {
-							$fieldValue = $this->getFieldCurrentValue($step['value'], ++$recursionCount);
-						}
-						if (!$fieldValue) {
-							$fieldValue = 0;
-						}
-						if (!static::validateNumericInput($fieldValue)) {
-							$isNaN = true;
-							break 2;
-						} else {
-							$fieldValue = sprintf('%f', (float)$fieldValue);
-							if (!empty($this->fields[$step['value']]['repeat_start_id'])) {
-								$repeatFieldValues = [$fieldValue];
-								$rows = $this->fields[$this->fields[$step['value']]['repeat_start_id']]['rows'];
-								
-								//Target field and calculated field are in the same repeat block
-								if (!empty($field['repeat_start_id']) && $field['repeat_start_id'] == $this->fields[$step['value']]['repeat_start_id']) {
-									if ($field['row'] > 1) {
-										$repeatFieldValues = [];
-										$rows = [$field['row']];
-									} else {
-										$rows = [];
-									}
-								}
-								
-								foreach ($rows as $row) {
-									if ($row != 1) {
-										$repeatFieldId = static::getRepeatFieldId($step['value'], $row);
-										$repeatFieldValue = $this->getFieldCurrentValue($repeatFieldId, ++$recursionCount);
-										if (!$repeatFieldValue) {
-											$repeatFieldValue = 0;
-										}
-										if (!static::validateNumericInput($repeatFieldValue)) {
-											$isNaN = true;
-											break 3;
-										} else {
-											$repeatFieldValue = sprintf('%f', (float)$repeatFieldValue);
-										}
-										$repeatFieldValues[] = $repeatFieldValue;
-									}
-								}
-								
-								$fieldValue = '(0+' . implode('+', $repeatFieldValues) . ')';
-							}
-							$equation .= $fieldValue;
-						}
-						$equation = '0+(' . $equation . ')';
-						break;
-					case 'parentheses_open':
-						$equation .= '(';
-						break;
-					case 'parentheses_close':
-						$equation .= ')';
-						break;
-					case 'operation_addition':
-						$equation .= '+';
-						break;
-					case 'operation_subtraction':
-						$equation .= '-';
-						break;
-					case 'operation_multiplication':
-						$equation .= '*';
-						break;
-					case 'operation_division':
-						$equation .= '/';
-						break;
-				}
-			}
+			$calculationError = self::validateCalculationCode($calculationCode);
 			
-			if (!$isNaN && $equation) {
-				$calculator = new calculator();
-				try {
-					$value = $calculator->calculate($equation);
-					if ($value === false || ($value > $maxNumberSize) || ($value < $minNumberSize)) {
+			if (!ze::isError($calculationError)) {
+				foreach ($calculationCode as $step) {
+					switch ($step['type']) {
+						case 'static_value':
+							$fieldValue = (float)$step['value'];
+							$fieldValue = sprintf('%f', $fieldValue);
+							$equation .= $fieldValue;
+							break;
+						case 'field':
+							$fieldValue = false;
+							if ($step['value']) {
+								$fieldValue = $this->getFieldCurrentValue($step['value'], ++$recursionCount);
+							}
+							if (!$fieldValue) {
+								$fieldValue = 0;
+							}
+							if (!static::validateNumericInput($fieldValue)) {
+								$isNaN = true;
+								break 2;
+							} else {
+								$fieldValue = sprintf('%f', (float)$fieldValue);
+								if (!empty($this->fields[$step['value']]['repeat_start_id'])) {
+									$repeatFieldValues = [$fieldValue];
+									$rows = $this->fields[$this->fields[$step['value']]['repeat_start_id']]['rows'];
+								
+									//Target field and calculated field are in the same repeat block
+									if (!empty($field['repeat_start_id']) && $field['repeat_start_id'] == $this->fields[$step['value']]['repeat_start_id']) {
+										if ($field['row'] > 1) {
+											$repeatFieldValues = [];
+											$rows = [$field['row']];
+										} else {
+											$rows = [];
+										}
+									}
+								
+									foreach ($rows as $row) {
+										if ($row != 1) {
+											$repeatFieldId = static::getRepeatFieldId($step['value'], $row);
+											$repeatFieldValue = $this->getFieldCurrentValue($repeatFieldId, ++$recursionCount);
+											if (!$repeatFieldValue) {
+												$repeatFieldValue = 0;
+											}
+											if (!static::validateNumericInput($repeatFieldValue)) {
+												$isNaN = true;
+												break 3;
+											} else {
+												$repeatFieldValue = sprintf('%f', (float)$repeatFieldValue);
+											}
+											$repeatFieldValues[] = $repeatFieldValue;
+										}
+									}
+								
+									$fieldValue = '(0+' . implode('+', $repeatFieldValues) . ')';
+								}
+								$equation .= $fieldValue;
+							}
+							$equation = '0+(' . $equation . ')';
+							break;
+						case 'parentheses_open':
+							$equation .= '(';
+							break;
+						case 'parentheses_close':
+							$equation .= ')';
+							break;
+						case 'operation_addition':
+							$equation .= '+';
+							break;
+						case 'operation_subtraction':
+							$equation .= '-';
+							break;
+						case 'operation_multiplication':
+							$equation .= '*';
+							break;
+						case 'operation_division':
+							$equation .= '/';
+							break;
+					}
+				}
+			
+				if (!$isNaN && $equation) {
+					$value = \ze\phi::carefullyRunPhiFragment($equation);
+					if ($value === null || $value === false || ($value > $maxNumberSize) || ($value < $minNumberSize)) {
 						$isNaN = true;
 					}
-				} catch (\Exception $e) {
-					$isNaN = true;
 				}
+			} else {
+				$calculationHasError = true;
 			}
 		}
 		
 		if ($isNaN) {
 			$value = 'NaN';
+		} elseif ($calculationHasError) {
+			$value = 'Invalid calculation';
 		} else {
 			if (!$value) {
 				$value = 0;
@@ -3354,7 +3628,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								}
 								
 								//File is valid, add to cache and remember the location
-								$randomDir = ze\cache::createRandomDir(30, 'uploads');
+								$randomDir = ze\cache::createRandomDir(30, 'private/uploads', $onlyForCurrentVisitor = true);
 								if (!$randomDir) {
 									exit('Could not create cache directory in private/uploads');
 								}
@@ -3522,6 +3796,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 		}
+		
+		if ($this->form['handle_referrer_content_item']) {
+			$formReferrerDetails = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_referrer_info', true, ['user_partial_response_id' => $partialSave['id']]);
+			$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['partial_response_referrer_info'] = $formReferrerDetails;
+			$referrerTag = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_referrer_info', 'referrer_content_item', ['user_partial_response_id' => $partialSave['id']]);
+			
+			$this->referrerContentItemTag = $referrerTag;
+		}
 	}
 	
 	private function validateForm($pageId, $validateAllFields, $ignoreRequiredFields) {
@@ -3539,9 +3821,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 
 		if ($pageId == 'summary') {
-			if ($this->form['enable_summary_page_required_checkbox'] && empty($_POST['summary_required_checkbox'])) {
+			//If a form shows a mandatory checkbox on the summary step, and it's not checked, show an error.
+			//Do NOT show an error if the user simply pressed "Save and complete later", though.
+			if ($this->form['enable_summary_page_required_checkbox'] && empty($_POST['summary_required_checkbox']) && !$ignoreRequiredFields) {
 				$this->errors['summary_required_checkbox'] = static::fPhrase($this->form['summary_page_required_checkbox_error_message'], [], $t);
 			}
+			
 			return empty($this->errors);;
 		}
 		
@@ -4003,10 +4288,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->form['save_record']) {
 			$responseId = $this->createFormResponse($userId, $rating, $tolerence, !$canSendEmails);
 		}
+		
 		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
-					if (!$url) {
-						$url = ze\link::absolute();
-					}
+		if (!$url) {
+			$url = ze\link::absolute();
+		}
+		
 		//Emails
 		if ($canSendEmails) {
 			$sendEmailToUser = ($this->form['send_email_to_logged_in_user'] || $this->form['send_email_to_email_from_field']);
@@ -4034,7 +4321,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
 						}
 						else {
-							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, [], false, false, false, $makeURLsNotClickableUser);
+							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, [], false, false, false, $makeURLsNotClickableUser, $this->referrerContentItemTag);
 						}
 					}
 				}
@@ -4052,7 +4339,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
 						}
 						else {
-							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, $makeURLsNotClickableUser);
+							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, $makeURLsNotClickableUser, $this->referrerContentItemTag);
 						}
 						
 					}
@@ -4145,7 +4432,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					else {
 						$startLine = 'Dear admin,';
 						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
-						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin);
+						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin, $this->referrerContentItemTag);
 					}
 				}
 			}
@@ -4189,7 +4476,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
 			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false, $this->form['verification_email_template'], $emailMergeFields, [], [], false, false, false, $makeURLsNotClickableAdmin);
+			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false, $this->form['verification_email_template'], $emailMergeFields, [], [], false, false, false, $makeURLsNotClickableAdmin = false);
 		}
 	}
 	
@@ -4218,21 +4505,26 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//User merge fields
 		if ($userId) {
 			$user = ze\user::details($userId);
-			$mergeFields['salutation'] = $user['salutation'];
-			$mergeFields['first_name'] = $user['first_name'];
-			$mergeFields['last_name'] = $user['last_name'];
-			$mergeFields['user_id'] = $userId;
+			$mergeFields['salutation'] = htmlspecialchars($user['salutation']);
+			$mergeFields['first_name'] = htmlspecialchars($user['first_name']);
+			$mergeFields['last_name'] = htmlspecialchars($user['last_name']);
+			$mergeFields['user_id'] = (int) $userId;
 		}
 		
 		//Data merge fields (after user merge fields so form merge fields are not overridden)
 		foreach ($this->fields as $fieldId => $field) {
 			
 			$column = $this->getFormFieldMergeName($field);
-			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $sendOrganizerLink);
+			if (!isset($field['value'])) {
+				//Account for spacers and subheading fields (they have no value)
+				$field['value'] = '';
+			}
+			
+			$displayHTML = htmlspecialchars(static::getFieldDisplayValue($field, $field['value'], $html = true, $sendOrganizerLink));
 			
 			if ($field['split_first_name_last_name']) {
-				$mergeFields['first_name'] = trim(substr($field['value'], 0, strpos($field['value'], ' ')));
-				$mergeFields['last_name'] = trim(substr($field['value'], strpos($field['value'], ' ')));
+				$mergeFields['first_name'] = htmlspecialchars(trim(substr($field['value'], 0, strpos($field['value'], ' '))));
+				$mergeFields['last_name'] = htmlspecialchars(trim(substr($field['value'], strpos($field['value'], ' '))));
 			} else {
 				$mergeFields[$column] = $displayHTML;
 				
@@ -4271,7 +4563,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $mergeFields;
 	}
 	
-	private function sendUnformattedFormEmail($startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false) {
+	private function sendUnformattedFormEmail($startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false, $referrerContentItemTag = '') {
 		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
 		$subject = 'New form submission for: ' . $formName;
 		$addressFrom = ze::setting('email_address_from');
@@ -4282,6 +4574,58 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->form['send_email_to_admin'] && !$this->form['admin_email_use_template']) {
 			if (!empty($mergeFields['breadcrumbs'])) {
 				$body .= '<p>Page submitted from: ' . htmlspecialchars($mergeFields['breadcrumbs']) . '</p>';
+			}
+		}
+		
+		if ($this->form['handle_referrer_content_item']) {
+			$referrerFields = self::getReferrerFieldsArray();
+		
+			if ($referrerContentItemTag) {
+				$formReferrerDetails = [];
+				$referrerContentItemData = self::getReferrerFieldsValues($referrerContentItemTag);
+			
+				foreach ($referrerFields as $referrerDbField => $referrerFieldName) {
+					if ($this->form[$referrerDbField]) {
+						$formReferrerDetails[$referrerDbField] = ['referrer_field' => $referrerDbField, 'value' => $referrerContentItemData[$referrerFieldName]];
+					}
+				}
+			}
+		
+			if (!empty($formReferrerDetails)) {
+				$body .= '<p>' . $this->form['referrer_content_item_summary_block_title'] . '</p>';
+			
+				foreach ($formReferrerDetails as $referrerDataRow) {
+					switch ($referrerDataRow['referrer_field']) {
+						case 'handle_referrer_content_item_title':
+							$label = $this->form['referrer_content_item_title_label'];
+							break;
+						case 'handle_referrer_content_item_description':
+							$label = $this->form['referrer_content_item_description_label'];
+							break;
+						case 'handle_referrer_content_item_release_date':
+							$label = $this->form['referrer_content_item_release_date_label'];
+							break;
+						case 'handle_referrer_content_item_reference':
+							$label = $this->form['referrer_content_item_reference_label'];
+							break;
+						case 'handle_referrer_content_item_deadline':
+							$label = $this->form['referrer_content_item_deadline_label'];
+							break;
+						case 'handle_referrer_content_item_alias':
+							$label = $this->form['referrer_content_item_alias_label'];
+							break;
+						case 'handle_referrer_content_item_tag':
+							$label = $this->form['referrer_content_item_tag_label'];
+							break;
+						default:
+							$label = '';
+							break;
+					}
+			
+					$body .= '<p>' . htmlspecialchars(trim($label, " \t\n\r\0\x0B:")) . ': ' . $referrerDataRow['value'] . '</p>';
+				}
+				
+				$body .= '<p>' . $this->phrase('Submission details') . '</p>';
 			}
 		}
 		
@@ -4534,6 +4878,30 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
 			}
 		}
+		
+		if ($this->form['handle_referrer_content_item']) {
+			$this->referrerContentItemTag = ze::request('referrer');
+			if ($this->referrerContentItemTag) {
+				$referrerContentItemData = self::getReferrerFieldsValues($this->referrerContentItemTag);
+			
+				$referrerFields = self::getReferrerFieldsArray();
+			
+				foreach ($referrerFields as $referrerFieldDbName => $fererrerFieldName) {
+					if ($this->form[$referrerFieldDbName]) {
+						ze\row::insert(
+							ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info',
+							[
+								'user_response_id' => $responseId,
+								'referrer_content_item' => ze\escape::sql($this->referrerContentItemTag),
+								'referrer_field' => ze\escape::sql($referrerFieldDbName),
+								'value' => ze\escape::sql($referrerContentItemData[$fererrerFieldName])
+							]
+						);
+					}
+				}
+			}
+		}
+		
 		return $responseId;
 	}
 	
@@ -4797,6 +5165,30 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
 		}
+		
+		if ($this->form['handle_referrer_content_item']) {
+			$this->referrerContentItemTag = ze::request('referrer');
+			if ($this->referrerContentItemTag) {
+				$referrerContentItemData = self::getReferrerFieldsValues($this->referrerContentItemTag);
+			
+				$referrerFields = self::getReferrerFieldsArray();
+			
+				foreach ($referrerFields as $referrerFieldDbName => $fererrerFieldName) {
+					if ($this->form[$referrerFieldDbName]) {
+						ze\row::insert(
+							ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_referrer_info',
+							[
+								'user_partial_response_id' => $responseId,
+								'referrer_content_item' => ze\escape::sql($this->referrerContentItemTag),
+								'referrer_field' => ze\escape::sql($referrerFieldDbName),
+								'value' => ze\escape::sql($referrerContentItemData[$fererrerFieldName])
+							]
+						);
+					}
+				}
+			}
+		}
+		
 		return $responseId;
 	}
 	
@@ -4944,16 +5336,33 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	protected function getPartialSaveResumeFormHTML() {
-		$t = $this->form['translate_text'];
+		if (ze\user::id()) {
+			$t = $this->form['translate_text'];
 		
-		$html  = '<div class="resume_box">';
-		$html .= $this->openForm('if (this.submited && !confirm("' . htmlspecialchars($this->phrase("Are you sure you want to clear all your data?")) . '")) { return false; }');
-		$html .= '<p>' . static::fPhrase(($this->form['clear_partial_data_message'] ?: ''), [], $t) . '</p>';
-		$html .= '<input type="submit" onclick="this.form.submited = false" name="resume" value="' . htmlspecialchars(static::fPhrase('Resume', [], $t)) . '">';
-		$html .= '<input type="submit" onclick="this.form.submited = true" name="clear" value="' . htmlspecialchars(static::fPhrase('Clear', [], $t)) . '">';
-		$html .= $this->closeForm();
-		$html .= '</div>';
-		return $html;
+			$html  = '<div class="resume_box">';
+			$html .= $this->openForm('if (this.submited && !confirm("' . htmlspecialchars($this->phrase("Are you sure you want to clear all your data?")) . '")) { return false; }');
+			$html .= '<p>' . static::fPhrase(($this->form['clear_partial_data_message'] ?: ''), [], $t) . '</p>';
+		
+			if ($this->form['handle_referrer_content_item']) {
+				if (!$this->referrerContentItemTag) {
+					$this->referrerContentItemTag = ze::get('referrer');
+				}
+				
+				$html .= '<input type="hidden" name="referrer" value="' . htmlspecialchars($this->referrerContentItemTag) . '"/>';
+			}
+		
+			$html .= '<input type="submit" onclick="this.form.submited = false" name="resume" value="' . htmlspecialchars(static::fPhrase('Resume', [], $t)) . '">';
+			
+			if ($this->form['allow_clear_partial_data']) {
+				$html .= '<input type="submit" onclick="this.form.submited = true" name="clear" value="' . htmlspecialchars(static::fPhrase('Clear', [], $t)) . '">';
+			}
+			
+			$html .= $this->closeForm();
+			$html .= '</div>';
+			return $html;
+		} else {
+			return '';
+		}
 	}
 	
 	protected function getVisibleConditionDataValuesHTML($field, $pageId) {
@@ -5066,13 +5475,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	public static function validateNumericInput($input) {
 		if (!is_numeric($input)) {
-			return false;
-		}
-		$input = (string)$input;
-		if (strpos($input, '.') !== false) {
-			$input = str_replace('.', '', $input);
-		}
-		if (!ctype_digit($input)) {
 			return false;
 		}
 		return true;
@@ -5557,10 +5959,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							}
 							
 							$update['visible_condition_field_value'] = implode(',', $newValueIds);
-					}
-					else
-					{
-						$update['visible_condition_field_value'] = $valueIdLink[$field['visible_condition_field_value']];
+					} else {
+						if (isset($valueIdLink[$field['visible_condition_field_value']])) {
+							$update['visible_condition_field_value'] = $valueIdLink[$field['visible_condition_field_value']];
+						} else {
+							$update['visible_condition_field_value'] = $field['visible_condition_field_value'];
+						}
 					}
 				}
 				if ($field['mandatory_condition_field_id'] && $field['mandatory_condition_field_value']) {
@@ -6115,61 +6519,103 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
 	}
 	
-}
-
-class calculator {
-    const PATTERN = '/(?:\-?\d+(?:\.?\d+)?[\+\-\*\/])+\-?\d+(?:\.?\d+)?/';
-
-    const PARENTHESIS_DEPTH = 10;
-
-    public function calculate($input){
-    	
-    	set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    		throw new \Exception($errstr);
-    	});
-    	
-    	$result = $input;
-        if(strpos($input, '+') != null || strpos($input, '-') != null || strpos($input, '/') != null || strpos($input, '*') != null){
-            // Remove white spaces and invalid math chars
-            $input = str_replace(',', '.', $input);
-            $input = preg_replace('[^0-9\.\+\-\*\/\(\)]', '', $input);
-            // Calculate each of the parenthesis from the top
-            $i = 0;
-            while(strpos($input, '(') || strpos($input, ')')){
-                $input = preg_replace_callback('/\(([^\(\)]+)\)/', 'self::callback', $input);
-
-                $i++;
-                if($i > self::PARENTHESIS_DEPTH){
-                    break;
-                }
-            }
-            // Calculate the result
-            if(preg_match(self::PATTERN, $input, $match)){
-                $result = $this->compute($match[0]);
-            } else {
-            	$result = 0;
-            }
-        }
-        
-        restore_error_handler();
-        
-        return $result;
-    }
-
-    private function compute($input){
-    	//Previously:
-    	//$compute = create_function('', 'return '.$input.';');
-        $compute = function() { return $input; };
-        return 0 + $compute();
-    }
-
-    private function callback($input){
-        if(is_numeric($input[1])){
-            return $input[1];
-        }
-        elseif(preg_match(self::PATTERN, $input[1], $match)){
-            return $this->compute($match[0]);
-        }
-        return 0;
-    }
+	public static function validateCalculationCode($calculationCode) {
+		$calculationCode = $calculationCode ? $calculationCode : [];
+		// Two or more operators may not be next to each other
+		// Fields and constants need operators between them
+		// Fields and constants may not be next to parentheses without an operator between
+		// Operators at the start and ad the end are not allowed
+		// Parentheses come in pairs
+		// Parentheses may not be empty
+		
+		$steps = count($calculationCode);
+		
+		$i = 0;
+		$previousOperation = $previousField = $previousValue = $previousOpenParentheses = $previousCloseParentheses = false;
+		$parenthesesOffset = 0;
+		foreach ($calculationCode as $step) {
+			++$i;
+			if ($i == 1 && !in_array($step['type'], ['parentheses_open', 'static_value', 'field'])) {
+				return new ze\error('Invalid symbol at start of equation.');
+			}
+			
+			$isOperation = $isField = $isValue = $isOpenParentheses = $isCloseParentheses = false;
+			
+			if (in_array($step['type'], ['operation_addition', 'operation_subtraction', 'operation_multiplication', 'operation_division'])) {
+				$isOperation = true;
+			} elseif (in_array($step['type'], ['static_value'])) {
+				if ($step['value'] > 999999999999999) {
+					return new ze\error('Constants cannot be greater than 999999999999999.');
+				} elseif ($step['value'] < -999999999999999) {
+					return new ze\error('Constants cannot be less than -999999999999999.');
+				} elseif (!zenario_user_forms::validateNumericInput($step['value'])) {
+					return new ze\error('Constants must be numeric.');
+				}
+				$isValue = true;
+			} elseif ($step['type'] == 'parentheses_open') {
+				$isOpenParentheses = true;
+				++$parenthesesOffset;
+			} elseif ($step['type'] == 'parentheses_close') {
+				$isCloseParentheses = true;
+				--$parenthesesOffset;
+			} elseif ($step['type'] == 'field') {
+				$isField = true;
+			}
+			
+			if ($previousOperation) {
+				if ($isOperation) {
+					return new ze\error('There cannot be two or more operators in a row.');
+				} elseif ($isCloseParentheses) {
+					return new ze\error('Parentheses cannot be closed after an operator.');
+				}
+			} elseif ($previousField) {
+				if ($isField) {
+					return new ze\error('There cannot be two or more fields in a row without an operator or parenthesis between them.');
+				} elseif ($isValue) {
+					return new ze\error('An operator or parenthesis is needed between a field and a constant.');
+				} elseif ($isOpenParentheses) {
+					return new ze\error('Parentheses cannot be opened after a field.');
+				}
+			} elseif ($previousValue) {
+				if ($isValue) {
+					return new ze\error('There cannot be two consecutive constants in the formula.');
+				} elseif ($isField) {
+					return new ze\error('There cannot be a field immediately after a constant without an operator or parenthesis between them.');
+				} elseif ($isOpenParentheses) {
+					return new ze\error('Parentheses cannot be opened after a constant.');
+				}
+			} elseif ($previousOpenParentheses) {
+				if ($isOperation) {
+					return new ze\error('There cannot be an operator after open parentheses.');
+				} elseif ($isCloseParentheses) {
+					return new ze\error('Parentheses cannot be empty.');
+				}
+			} elseif ($previousCloseParentheses) {
+				if ($isValue) {
+					return new ze\error('There cannot be a value after close parentheses.');
+				} elseif ($isField) {
+					return new ze\error('There cannot be a field after close parentheses.');
+				} elseif ($isOpenParentheses) {
+					return new ze\error('New parentheses cannot be opened immediately after previous closed parentheses.');
+				}
+			}
+			
+			if ($i == $steps && ($isOperation || $isOpenParentheses)) {
+				return new ze\error('An equation may not end with an operator or open parenthesis.');
+			}
+			
+			$previousOperation = $isOperation;
+			$previousField = $isField;
+			$previousValue = $isValue;
+			$previousOpenParentheses = $isOpenParentheses;
+			$previousCloseParentheses = $isCloseParentheses;
+		}
+		
+		if ($parenthesesOffset != 0) {
+			return new ze\error('Parentheses must come in pairs (open and close).');
+		}
+		
+		return true;
+	}
+	
 }

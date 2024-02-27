@@ -38,9 +38,9 @@ $langId = preg_replace('@[^\w\.-]@', '', $_GET['langId']);
 $ETag = 'zenario_users-visitor-password-phrases-'. $langId. '-'. $v. '-';
 ze\cache::useBrowserCache($ETag);
 
-if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.pre_load.inc.php';
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/bundle.pre_load.inc.php';
 
-ze\cache::start();
+
 ze\db::loadSiteConfig();
 
 //Enable the phrases translation system for this script
@@ -80,4 +80,4 @@ zenario._mkd(window.zenarioUserPasswordPhrase,', json_encode($output), ');';
 
 
 
-if (ze::$canCache) require CMS_ROOT. 'zenario/includes/wrapper.post_display.inc.php';
+if (ze::$canCache) require CMS_ROOT. 'zenario/includes/bundle.post_display.inc.php';

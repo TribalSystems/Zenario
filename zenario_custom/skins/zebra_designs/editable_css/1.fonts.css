@@ -131,13 +131,17 @@
 	margin-bottom:15px;
 }
 
+.zenario_skin table tr th,
+.zenario_skin table tr td {
+	vertical-align:top;
+}
+
 .zenario_skin table:not(.table_no_styles) tr th {
 	background:#CCC;
 }
 
 .zenario_skin table:not(.table_no_styles) tr th,
 .zenario_skin table:not(.table_no_styles) tr td {
-	border:1px solid #ccc;
 	padding:10px;
 }
 
@@ -145,6 +149,7 @@
 .zenario_skin table.table_no_styles tr td {
 	padding:revert-layer;
 }
+
 
 /*  Styles for text.
 	These rules are listed in the description.yaml file in the 'style_formats', 

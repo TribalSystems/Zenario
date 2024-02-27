@@ -34,14 +34,12 @@ class document {
 
 
 
-	//Formerly "zenario_common_features::uploadDocument()"
 	public static function upload($filepath, $filename, $folderId = false, $privacy = 'offline') {
 		if ($fileId = \ze\file::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true)) {
 			return \ze\document::create($fileId, $filename, $folderId, $privacy);
 		}
 	}
 	
-	//Formerly "zenario_common_features::createDocument()"
 	public static function create($fileId, $filename, $folderId, $privacy = 'offline') {
 		
 		//Get last ordinal within folder
@@ -93,7 +91,6 @@ class document {
 		return $documentId;
 	}
 	
-	//Formerly "zenario_common_features::createFolder()"
 	public static function createFolder($name, $parentId = false, $makeNameUnqiue = false) {
 		$name = mb_substr(trim($name), 0, 250, 'UTF-8');
 		$nameExists = \ze\row::exists('documents', ['folder_name' => $name, 'type' => 'folder', 'folder_id' => $parentId]);
@@ -135,12 +132,10 @@ class document {
 		);
 	}
 	
-	//Formerly "zenario_common_features::processDocumentRules()"
 	public static function processRules($documentIds) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	//Formerly "zenario_common_features::deleteHierarchicalDocumentPubliclink()"
 	public static function deletePubliclink($documentId, $documentDeleted = false, $privacy = false) {
 		$document = \ze\row::get('documents', ['id', 'file_id', 'filename'], $documentId);
 		$file = \ze\row::get('files', ['short_checksum'], $document['file_id']);
@@ -184,7 +179,6 @@ class document {
 		return true;
 	}
 
-	//Formerly "zenario_common_features::deleteHierarchicalDocument()"
 	public static function delete($documentId) {
 		$details = \ze\row::get('documents', ['type', 'file_id', 'thumbnail_id'], $documentId);
 		\ze\module::sendSignal('eventDocumentDeleted', [$documentId]);
@@ -252,7 +246,6 @@ class document {
 		}
 	}
 	
-	//Formerly "zenario_common_features::isDirEmpty()"
 	public static function isDirEmpty($dir) {
 		if (!is_readable($dir)){
 			return false; 
@@ -266,7 +259,6 @@ class document {
 		
 	}
 	
-	//Formerly "zenario_common_features::addExtractToDocument()"
 	public static function addExtract($file_id) {
 		$documentProperties = [];
 		$extract = [];
@@ -283,7 +275,6 @@ class document {
 		return $documentProperties;
 	}
 	
-	//Formerly "zenario_common_features::generateDocumentPublicLink()"
 	public static function generatePublicLink($document, $file = false) {
 		$error = new \ze\error();
 		
@@ -355,7 +346,6 @@ class document {
 		return $error;
 	}
 	
-	//Formerly "zenario_common_features::remakeDocumentRedirectHtaccessFiles()"
 	public static function remakeRedirectHtaccessFiles($documentId) {
 		$sql = '
 			SELECT d.filename, f.short_checksum
@@ -383,7 +373,6 @@ class document {
 		}
 	}
 	
-	//Formerly "zenario_common_features::makeDocumentRedirectHtaccessFile()"
 	public static function makeRedirectHtaccessFile($htaccessFilePath, $redirectFromFileName, $redirectToFileName, $redirectToChecksum){
 		$f = fopen($htaccessFilePath . "/.htaccess", "w");		
 		$content = "options -Indexes "."\n";

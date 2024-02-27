@@ -135,7 +135,7 @@ controlFields:
         visible_if: |
             zenarioGM.modeIs('body')? zenarioA.hasPriv('_PRIV_EDIT_TEMPLATE') : zenarioA.hasPriv('_PRIV_EDIT_SITEWIDE')
         type: button
-        css_class: submit_selected
+        css_class: zenario_submit_button selected
         value: Save
         onclick: zenarioGM.save();
     save_disabled:
@@ -144,7 +144,7 @@ controlFields:
             zenarioGM.modeIs('body')? zenarioA.hasNoPriv('_PRIV_EDIT_TEMPLATE') : zenarioA.hasNoPriv('_PRIV_EDIT_SITEWIDE')
         type: button
         disabled: true
-        css_class: submit_disabled
+        css_class: zenario_disabled_button
         value: Save
     save_as:
         grouping: save_area
@@ -153,7 +153,7 @@ controlFields:
             zenarioGM.modeIs: body
             zenarioGM.isExistingLayout: ''
         type: button
-        css_class: submit_selected
+        css_class: zenario_submit_button selected
         value: Save a copy
         onclick: zenarioGM.save(true);
     save_as_disabled:
@@ -164,7 +164,7 @@ controlFields:
             zenarioGM.isExistingLayout: ''
         type: button
         disabled: true
-        css_class: submit_disabled
+        css_class: zenario_disabled_button
         value: Save a copy
     spinner_area:
         #pre_grouping_html: |

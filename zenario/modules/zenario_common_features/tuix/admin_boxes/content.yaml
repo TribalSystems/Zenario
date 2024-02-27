@@ -124,7 +124,7 @@ zenario_content:
                     change_month_and_year: true
                     allow_typing_in_date_field: true
                     show_date_format_as_placeholder: true
-                    side_note: |
+                    tooltip: |
                         The official, or publicly-displayed date, of this content item. It may be different from the date you publish the page.
                 menu:
                     ord: 33
@@ -172,7 +172,7 @@ zenario_content:
                         specific:
                             label: |
                                 Choose position in the menu...
-                    redraw_onchange: true
+                    format_onchange: true
                 menu_pos_suggested:
                     grouping: menu
                     indent: 2
@@ -181,6 +181,7 @@ zenario_content:
                     hide_if_previous_outdented_value_isnt: suggested
                     type: select
                     values: {}
+                    format_onchange: true
                 menu_pos_before:
                     grouping: menu
                     indent: 2
@@ -217,6 +218,7 @@ zenario_content:
                     pick_items: *pick_menu_pos
                     validation:
                         required_if_not_hidden: Please select where this item should appear in the menu.
+                    format_onchange: true
                 menu_content_status:
                     type: hidden
                     same_row: true        
@@ -230,8 +232,10 @@ zenario_content:
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
                         required_if_not_hidden: Please enter some text for menu navigation.
-                    side_note: |
+                    tooltip: |
                         Brief text in the menu navigation linking to this content item. We suggest the same as browser title, or shorter.
+                    oninput: |
+                        $(zenarioAB.get('span__menu_path_preview')).text(this.value);
                 menu_id_when_editing:
                     type: hidden
                     hidden: true
@@ -266,12 +270,7 @@ zenario_content:
                             $warningEl.text('');
                         }
                         
-                        get('path_of__' + this.id).value =
-                            !this.value?
-                                ''
-                            :    !get('parent_path_of__' + this.id).value?
-                                    this.value + " [level 1]"
-                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level "+ (get('parent_path_of__' + this.id).value.split(" › ").length + 1) + "]";    
+                        $(zenarioAB.get('span__menu_path_preview')).text(this.value);
                 menu_text_when_editing_on_load:
                     type: hidden
                     hidden: true
@@ -282,17 +281,15 @@ zenario_content:
                     snippet:
                         html: |
                             <div id="redraft_menu_warning" class="zenario_fbWarning"></div>
-                path_of__menu_text_when_editing:
+                
+                menu_path_preview:
                     grouping: menu
                     ord: 1003
                     label: 'Menu path preview:'
-                    type: textarea
-                    disabled: disabled
-                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
-                parent_path_of__menu_text_when_editing:
-                    ord: 1004
-                    same_row: true
-                    type: hidden
+                    type: text
+                    show_as_a_span: true
+                    css_class: zenario_textbox_noborder zfab_menuPathPreviewNode zfab_menuPathPreviewUpdatingNode
+                
                 content_item_is_public:
                     type: hidden
                     hidden: true
@@ -394,7 +391,7 @@ zenario_content:
                     
                     enable_microtemplates_in_properties: true
                     post_field_html: |
-                        <% link = 'organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap~.site_settings~tsitemap~k{"id"%3A"urls_and_xml_sitemap"}'; %>
+                        <% link = 'organizer.php#zenario__administration/panels/site_settings//search_engine_optimisation~.site_settings~tsitemap~k{"id"%3A"search_engine_optimisation"}'; %>
                         <a
                             target="_blank"
                             href="{{URLBasePath|e}}{{link|e}}"
@@ -470,7 +467,7 @@ zenario_content:
                     label: 'Pin'
                     ord: 135
                     type: checkbox
-                    side_note: 'Pinned items appear first on content summary lists.'
+                    tooltip: 'Pinned items appear first on content summary lists.'
                     redraw_onchange: true
                 pinned_duration:
                     indent: 1
@@ -565,10 +562,9 @@ zenario_content:
                     editor_type: summary
                     editor_options:
                         invalid_elements: img, picture, iframe
+                        height: 135
                     dont_trim: true
-                    style: |
-                        height: 12em;
-                    side_note: >
+                    tooltip: >
                         Summary of the article or page. This may appear on this site in a content summary list. You may include simple HTML but not images.
                 lock_summary_view_mode:
                     label: 'Protected'
@@ -615,8 +611,8 @@ zenario_content:
                     full_width: true
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
-                    style: 'height: 250px;'
         content2:
             ord: 25.02
             edit_mode:
@@ -628,8 +624,8 @@ zenario_content:
                     full_width: true
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
-                    style: 'height: 250px;'
         content3:
             ord: 25.03
             edit_mode:
@@ -641,8 +637,8 @@ zenario_content:
                     full_width: true
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
-                    style: 'height: 250px;'
         content4:
             ord: 25.04
             edit_mode:
@@ -654,9 +650,8 @@ zenario_content:
                     full_width: true
                     type: editor
                     editor_type: full_featured
+                    tall_as_possible: true
                     dont_trim: true
-                    style: 'height: 250px;'
-                        html: ''
         rawhtml1:
             ord: 25.05
             edit_mode:
@@ -734,7 +729,7 @@ zenario_content:
                     label: 'CSS class names:'
                     type: text
                     maxlength: 100
-                    side_note: 'This CSS will be added to the outer <code>&lt;div&gt;</code> of the rendered HTML page.'
+                    tooltip: 'This CSS will be added to the outer <code>&lt;div&gt;</code> of the rendered HTML page.'
                 customise_background:
                     label: 'Customise page background'
                     type: checkbox
@@ -1003,108 +998,6 @@ zenario_content:
             ord: 35
             hidden: true
             fields: {}
-        
-        staging_mode:
-            ord: 36
-            label: Staging mode
-            edit_mode:
-                enabled: false
-                priv: _PRIV_EDIT_DRAFT
-            notices:
-                not_public:
-                    show: false
-                    type: information
-                    message: |
-                        Staging mode will be disabled for this content item as the 
-                        permissions are not set to
-                        <em style="font-style: italic;">
-                            &ldquo;Public: visible to everyone&rdquo;
-                        </em>
-                    html: true
-            fields:
-                desc:
-                    snippet:
-                        html: |
-                            You can use staging mode to share a draft of a public content
-                            item with a colleague who is not an administrator. 
-                            <br/>
-                            This will only work for content items with permissions set to
-                            <em style="font-style: italic;">
-                                &ldquo;Public: visible to everyone&rdquo;
-                            </em>
-                use_access_code:
-                    type: checkbox
-                    label: Enable staging mode for this version of this content item
-                    redraw_onchange: true
-                access_code:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    label: 'Access code:'
-                    type: text
-                    format_onchange: true
-                    style: |
-                        width: 4em;
-                        font-family: monospace;
-                    maxlength: 5
-                    validation:
-                        required_if_not_hidden: Please enter an access code.
-                        no_spaces: The access code may not contain spaces.
-                        no_special_characters: The access code may not contain special characters or multilingual characters.
-                        ascii_only: The access code may not contain special characters or multilingual characters.
-                existing_codes:
-                    same_row: true
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    type: select
-                    css_class: iconselectmenu
-                    format_onchange: true
-                    empty_value: ' -- Use existing code -- '
-                    values: {}
-                suggest_code:
-                    same_row: true
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    type: button
-                    format_onchange: true
-                    value: Suggest
-                    notices_below:
-                        code_reuse:
-                            hidden: true
-                            type: information
-                            message: ''
-                            html: true
-                copy_code_desc:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    visible_if:
-                        lib.valueIsNotEmpty: copy_code
-                    snippet:
-                        p: |
-                            To let a colleague see the draft of this page in staging mode,
-                            copy this URL and send it to them:
-                copy_code:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    hide_if_empty: true
-                    type: text
-                    readonly: true
-                    style: |
-                        width: 600px
-                    show_copy_text_button: true
-                not_saved_warning:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    visible_if: |
-                        lib.value('access_code') &&
-                        lib.value('access_code') != lib.field('access_code').value
-                    snippet: {}
-                    notices_below:
-                        not_saved_warning:
-                            hidden: false
-                            type: information
-                            message: >
-                                This code will start working as soon as you press the
-                                "Save" button.
         
         plugins:
             ord: 90

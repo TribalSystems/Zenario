@@ -32,11 +32,6 @@ class zenario_forum_search extends zenario_forum {
 	protected $results = false;
 	
 	public function init() {
-		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
-		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
-		
 		$this->page = (int) ($_REQUEST['comm_page'] ?? 1) ?: 1;
 		
 		$this->mode = 'showSearch';

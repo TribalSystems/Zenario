@@ -38,7 +38,7 @@ class zenario_common_features__organizer__translation_chains extends ze\moduleBa
 		//Set the list of content types in the content types quick-filter
 		$panel['columns']['type']['values'] = [];
 		$ord = 1;
-		foreach (ze\content::getContentTypes() as $cType) {
+		foreach (ze\content::getContentTypes(false, false) as $cType) {
 			$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
 
 			$panel['quick_filter_buttons'][$cType['content_type_id']] = [
@@ -63,35 +63,63 @@ class zenario_common_features__organizer__translation_chains extends ze\moduleBa
 		$showInOrganiser = ze::in($mode, 'full', 'quick', 'select');
 
 		foreach ($panel['items'] as $id => &$item) {
-			if ($showInOrganiser && ($privacy = $item['privacy'] ?? false)) {
-				$item['row_class'] = ' privacy_'. $privacy;
+			
+			if ($showInOrganiser) {
+				ze\contentAdm::formatItemRow($item);
+				
+				if ($privacy = $item['privacy'] ?? false) {
+					$item['row_class'] = ' privacy_'. $privacy;
+				}
 			}
 			
+			if ($showInOrganiser || $mode == 'get_item_data') {
+				$item['frontend_link'] = ze\link::toItem(
+					$item['id'], $item['type'], false, '', $item['alias'],
+					$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
+					$item['equiv_id'], $item['language_id']
+				);
+			}
+			
+			
 			$item['translations'] = 0;
+			$exampleTranslatedItem = null;
 			$equivs = ze\content::equivalences($item['id'], $item['type'], $includeCurrent = false, $item['equiv_id']);
+			
 			if (!empty($equivs)) {
 				foreach(\ze::$langs as $lang) {
 					if (!empty($equivs[$lang['id']])) {
 						if ($lang['id'] != $item['language_id']) {
 							++$item['translations'];
+							
+							if ($item['translations'] == 1) {
+								$exampleTranslatedItem = $equivs[$lang['id']];
+								//['id', 'type', 'language_id', 'equiv_id', 'status']
+							}
 						}
 					}
 				}
 			}
 			
+			if ($item['translations'] == 1) {
+				$item['example'] = ze\content::formatTag($exampleTranslatedItem['id'], $exampleTranslatedItem['type'], $exampleTranslatedItem['alias'], $exampleTranslatedItem['language_id']);
+			}
+			
 			if ($item['translations'] > 0) {
 				$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
-				$item['chain_desc'] = ze\admin::nphrase('[[tag]] and its translation', '[[tag]] and its [[count]] translations', $item['translations'], $item);
+				$item['chain_desc'] = ze\admin::nphrase('[[tag]] and [[example]]', '[[tag]] and [[count]] more', $item['translations'], $item);
 			
 			} elseif ($item['language_id'] == ze::$defaultLang) {
 				$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
-				$item['chain_desc'] = ze\admin::phrase('[[tag]] (no translations)', $item);
+				$item['chain_desc'] = ze\admin::phrase('[[tag]] (no others in chain)', $item);
 				$item['css_class'] = 'translation_chain_no_translations';
 			
 			} else {
-				$item['chain_desc'] = ze\admin::phrase('translation chain ID [[type]]_[[id]] (no content item in default language)', $item);
+				$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
+				$item['chain_desc'] = ze\admin::phrase('[[tag]] (no content item in default language)', $item);
 				$item['css_class'] = 'translation_chain_not_in_default';
 			}
+			
+			unset($item['example']);
 		}
 	}
 }

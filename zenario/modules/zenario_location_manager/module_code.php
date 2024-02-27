@@ -2582,6 +2582,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public static function searchFromModule($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
+		$recordCount = 0;
 		$resultsFromModule = [];
 
 		if ($searchString) {
@@ -2613,15 +2614,22 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				$sqlFields = "
 					SELECT l.id AS item_id, l.description AS title, li.image_id, f.filename";
 				
-				$sql = "
-					FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations l
+				$sqlFrom = "
+					FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations l";
+				
+				$sqlJoin = "
 					LEFT JOIN " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images li
 						ON li.location_id = l.id
 					LEFT JOIN " . DB_PREFIX . "files f
 						ON f.id = li.image_id
-						AND li.sticky_flag = 1
+						AND li.sticky_flag = 1";
+				
+				$sqlWhere = "
 					WHERE l.status = 'active'
 					AND (";
+				
+				$sqlMatch = '';
+				$sqlCount = '';
 
 				$sqlFields .= ", (";
 
@@ -2651,28 +2659,32 @@ class zenario_location_manager extends ze\moduleBaseClass {
 						
 						$sqlFields .= "(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
 						
-						$sql .= $or . "
+						$sqlMatch .= $or . "
 							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
+						
+						$sqlCount .= $or . "
+							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
 					}
 				}
 
 				$sqlFields .= "
 					) AS score";
 				
-				$sql .= ")";
+				$sqlMatch .= ")";
+				$sqlCount .= ")";
 
 				//Get the record count now...
-				$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sql);
+				$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sqlFrom . $sqlWhere . $sqlCount);
 				$row = ze\sql::fetchRow($result);
 				$recordCount = $row[0];
 
 				//... and then the results.
-				$sql .= "
-					ORDER BY l.description ASC";
+				$sqlMatch .= "
+					ORDER BY score DESC, l.description ASC";
 
-				$sql .= ze\sql::limit($page, $pageSize);
+				$sqlMatch .= ze\sql::limit($page, $pageSize);
 
-				$result = ze\sql::select($sqlFields . $sql);
+				$result = ze\sql::select($sqlFields . $sqlFrom . $sqlJoin . $sqlWhere . $sqlMatch);
 
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$item = [

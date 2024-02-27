@@ -47,18 +47,20 @@ class zenario_twig_snippet extends zenario_html_snippet {
 			case 'maximise':
 				$this->allowCaching(
 					$atAll = true, $this->setting('if_user_logged_in'),
-					$this->setting('if_get_set'), $this->setting('if_post_set'),
-					$this->setting('if_session_set'), $this->setting('if_cookie_set'));
+					$this->setting('if_get_or_post_var_set'),
+					$this->setting('if_session_var_or_cookie_set')
+				);
 				$this->clearCacheBy(
 					$this->setting('clear_by_content'), $this->setting('clear_by_menu'), $this->setting('clear_by_user'),
-					$this->setting('clear_by_file'), $this->setting('clear_by_module'));
+					$this->setting('clear_by_file'), $this->setting('clear_by_module')
+				);
 				break;
 			
 			case 'safely':
 				$this->allowCaching(
-					$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
+					$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
 				$this->clearCacheBy(
-					$clearByContent = true, $clearByMenu = true, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
+					$clearByContent = true, $clearByMenu = true, $clearByFile = true, $clearByModuleData = true);
 				break;
 			
 			default:

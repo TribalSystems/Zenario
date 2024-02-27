@@ -322,12 +322,12 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 
 				if (
 					($values['passwords/min_extranet_user_password_score'] == 4 & $values['passwords/min_extranet_user_password_length'] < 12)
-					|| ($values['passwords/min_extranet_user_password_score'] == 3 & $values['passwords/min_extranet_user_password_length'] < 9)
+					|| ($values['passwords/min_extranet_user_password_score'] == 3 & $values['passwords/min_extranet_user_password_length'] < 10)
 				) {
 					if ($values['passwords/min_extranet_user_password_score'] == 4) {
 						$requiredMinLength = 12;
 					} elseif ($values['passwords/min_extranet_user_password_score'] == 3) {
-						$requiredMinLength = 9;
+						$requiredMinLength = 10;
 					}
 					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase(
 						'To match score [[score]], the password length needs to be at least [[min_length]] characters.',

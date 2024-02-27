@@ -17,8 +17,9 @@ plugin_settings:
                         min_path: zenario__menu/panels/sections
                         max_path: zenario__menu/panels/sections
                         target_path: zenario__menu/panels/sections
-                        select_phrase: Select Menu Section...
+                        select_phrase: Select menu section...
                         hide_remove_button: true
+                        hide_info_button: true
                     value: 1
                     validation:
                         required: Please select a menu section

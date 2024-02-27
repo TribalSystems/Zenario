@@ -1,8 +1,3 @@
-{% if Error_no_event_content_type %}
-	{{"Error. This plugin will only work when placed on an Event content item."|trans}}
-{% endif %}
-
-
 {% if Event_Details %}
 	<div class="Event_details">
 		{% if show_title %}
@@ -10,6 +5,10 @@
 		{% endif %}
 
 		<h3>{{dates_range}}</h3>
+		{% if timezone_label %}
+			<div class="event_timezone">{{"Event timezone:"|trans}} {{timezone_label|e}}</div>
+		{% endif %}
+		
 		<div class="event_weekdays_details_wrap">
 			{% for day in Event_On_Weekday_Details %}
 				<div class="event_weekday">

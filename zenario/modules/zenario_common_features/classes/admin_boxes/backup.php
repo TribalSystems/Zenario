@@ -115,7 +115,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 		$fields['details/desc2']['snippet']['html'] = $contains;
 		
 		
-		if (!ze\zewl::loadClientKey()) {
+		if (!ze\pde::loadClientKey()) {
 			$fields['details/encrypt']['disabled'] = true;
 			$fields['details/encrypt']['side_note'] = ze\admin::phrase('Encryption is not enabled on this site.');
 		} else {

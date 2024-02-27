@@ -293,13 +293,14 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			
 			if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'=> $panel['key']['cType']])){
 				unset($panel['inline_buttons']['no_categories']);
-				unset($panel['inline_buttons']['one_or_more_categories']);
+				unset($panel['inline_buttons']['one_category']);
+				unset($panel['inline_buttons']['multiple_categories']);
 			}
 		}
 
 		$panel['columns']['type']['values'] = [];
 		$ord = 1;
-		foreach (ze\content::getContentTypes() as $cType) {
+		foreach (ze\content::getContentTypes(false, false) as $cType) {
 			$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
 
 			//Only populate the content type quick filter
@@ -360,12 +361,16 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		//If we're showing trashed items, don't show the status filter
 		if (isset($_GET['refiner__trash'])
 		 || !ze::in($mode, 'full', 'quick', 'select')) {
-			unset($panel['quick_filter_buttons']['status']);
-			unset($panel['quick_filter_buttons']['any_status']);
-			unset($panel['quick_filter_buttons']['first_draft']);
-			unset($panel['quick_filter_buttons']['published_with_draft']);
-			unset($panel['quick_filter_buttons']['published']);
-			unset($panel['quick_filter_buttons']['hidden']);
+			unset(
+				$panel['quick_filter_buttons']['status'],
+				$panel['quick_filter_buttons']['any_status'],
+				$panel['quick_filter_buttons']['first_draft'],
+				$panel['quick_filter_buttons']['published_with_draft'],
+				$panel['quick_filter_buttons']['published'],
+				$panel['quick_filter_buttons']['unlisted_with_draft'],
+				$panel['quick_filter_buttons']['unlisted'],
+				$panel['quick_filter_buttons']['hidden']
+		);
 		
 		//Otherwise if the status filter is set, make sure to change the label of the parent to what was chosen
 		} else
@@ -506,7 +511,14 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 	
 			if (isset($panel['item_buttons']['create_translation'])) {
 				$panel['item_buttons']['create_translation']['tooltip'] =
-					ze\admin::phrase('Duplicate "[[tag]]" ([[language_id]]) to create a translation in [[lang_name]]', ['tag' => ze\content::formatTag($cID, $cType), 'language_id' => ze\content::langId($cID, $cType)]);
+					ze\admin::phrase(
+						'Duplicate "[[tag]]" ([[language_id]]) to create a translation in [[lang_name]]',
+						[
+							'tag' => ze\content::formatTag($cID, $cType),
+							'language_id' => ze\content::langId($cID, $cType),
+							'lang_name' => '[[lang_name]]'
+						]
+					);
 			}
 
 		} elseif ($panel['key']['layoutId'] && $panel['key']['language']) {
@@ -621,6 +633,16 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			$panel['title'] = ze\admin::phrase('Content items using the image "[[filename]]"', $mrg);
 			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the image "[[filename]]"', $mrg);
 			unset($panel['trash']);
+
+		} elseif (ze::get('refiner__uses_access_code')) {
+			$panel['title'] = ze\admin::phrase('Content items using the access code "[[access_code]]"', ['access_code' => ze::get('refiner__uses_access_code')]);
+			$panel['no_items_message'] = ze\admin::phrase('No content item uses the access code "[[access_code]]"', ['access_code' => ze::get('refiner__uses_access_code')]);
+			unset($panel['collection_buttons']['create']);
+			unset($panel['item_buttons']['trash']);
+			unset($panel['item_buttons']['delete']);
+			unset($panel['item_buttons']['duplicate']);
+			unset($panel['item_buttons']['create_draft_by_copying']);
+			unset($panel['item_buttons']['create_draft_by_overwriting']);
 		}
         
 		//If this is full, quick or select mode, and the admin looking at this only has permissions
@@ -717,44 +739,13 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
 				}
 				
-				//
-				switch ($item['status']) {
-					case 'first_draft':
-						$item['draft'] = true;
-					break;
-			
-					case 'published':
-						//
-					break;
-			
-					case 'published_with_draft':
-						$item['draft'] = true;
-					break;
-			
-					case 'hidden':
-						//
-					break;
-			
-					case 'hidden_with_draft':
-						$item['draft'] = true;
-					break;
-			
-					case 'trashed':
-						//
-					break;
-			
-					case 'trashed_with_draft':
-						$item['draft'] = true;
-					break;
-				}
+				$item['draft'] = ze\content::isDraft($item['status']);
+				$item['published'] = ze\content::isPublished($item['status']);
 		
 				if (!$item['lock_owner_id'] || $item['lock_owner_id'] == ($_SESSION['admin_userid'] ?? false)) {
 					$item['not_locked'] = true;
 				}
 		
-				if ($item['status'] == 'published') {
-					$item['published'] = true;
-				}
 				if ($item['status'] == 'hidden') {
 					$item['hidden'] = true;
 				}
@@ -767,55 +758,18 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if (ze\contentAdm::allowHide($item['id'], $item['type'], $item['status'])) {
 					$item['hideable'] = true;
 				}
-				//To show blue icon in Content items Organizer panels for unique and primary menu node
-				$menuItems = ze\menu::getFromContentItem($item['id'], $item['type'], true, false, true, true);
-				
-				//Content that is not in the Menu
-				if (empty($menuItems)) {
-					//To show blue icon in Content items Organizer panels for orphan menu node
-
-					//If the check comes out empty, do an additional check
-					//to see if just the menu text is missing in the target language,
-					//or if the item is truly orphaned.
-					
-					$sql = "
-						SELECT m.id, t.name
-						FROM ". DB_PREFIX. "content_items AS c
-						INNER JOIN ". DB_PREFIX. "menu_nodes AS m
-						ON m.equiv_id = c.equiv_id
-						AND m.content_type = c.type
-						AND m.target_loc = 'int'
-						LEFT JOIN ". DB_PREFIX. "menu_text AS t
-						ON t.menu_id = m.id
-						AND t.language_id = c.language_id
-						WHERE c.id = ". (int) $item['id']. "
-						AND c.type = '" . \ze\escape::asciiInSQL($item['type']) . "'";
-					$result = ze\sql::fetchAssoc($sql);
-					
-					if (!empty($result) && is_array($result) && $result['id'] && empty($result['name'])) {
-						$item['menunodecounter'] = 'menu_node_text_missing';
-					} else {
-						$item['menunodecounter'] = 0;
+				if (ze\content::isUnlisted($item['status'])) {
+					if (ze\contentAdm::allowRelist($item['id'], $item['type'], $item['status'])) {
+						$item['relistable'] = true;
 					}
-
-				//Content with at least one Menu Node
 				} else {
-					
-					$numberOfMenuItems = 0;
-					foreach ($menuItems as $i => &$menuItem) {
-						++$numberOfMenuItems;
-						
-						//Start numbering Menu Nodes from 1, not from 0
-						++$i;
-						if ($i > 1)
-						{
-							$item['menunodecounter'] = 2;
-						}
-						else
-						{
-							$item['menunodecounter'] = 1;
-						}
+					if (ze\contentAdm::allowDelist($item['id'], $item['type'], $item['status'])) {
+						$item['delistable'] = true;
 					}
+				}
+				
+				if ($showInOrganiser) {
+					ze\contentAdm::formatItemRow($item);
 				}
 				
 				if (isset($item['menu_id'])) {
@@ -863,7 +817,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 					
 				}
 				
-				if ($mode === 'full' || $mode == 'get_item_data') {
+				if ($showInOrganiser || $mode == 'get_item_data') {
 					$item['frontend_link'] = ze\link::toItem(
 						$item['id'], $item['type'], false, '', $item['alias'],
 						$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
@@ -1054,7 +1008,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 		    $panel['collection_buttons']['create']['hidden'] = true;
 		    $j=0;  
                     
-            foreach(ze\content::getContentTypes() as $content){
+            foreach(ze\content::getContentTypes(true, true) as $content){
             	if (ze\priv::check('_PRIV_EDIT_DRAFT', false, $content['content_type_id'])) {
 					$j++;
 					$panel['collection_buttons']['new_node_'.$j]['label'] = $content['content_type_name_en']; 
@@ -1088,6 +1042,26 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
 					if (ze\contentAdm::allowHide($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 						ze\contentAdm::hideContent($cID, $cType);
+					}
+				}
+			}
+
+		} elseif (ze::post('delist')) {
+			foreach (ze\ray::explodeAndTrim($ids) as $id) {
+				$cID = $cType = false;
+				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
+					if (ze\contentAdm::allowDelist($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
+						ze\contentAdm::delistContent($cID, $cType);
+					}
+				}
+			}
+
+		} elseif (ze::post('relist')) {
+			foreach (ze\ray::explodeAndTrim($ids) as $id) {
+				$cID = $cType = false;
+				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
+					if (ze\contentAdm::allowRelist($cID, $cType) && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
+						ze\contentAdm::relistContent($cID, $cType);
 					}
 				}
 			}
@@ -1176,11 +1150,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
 			if (ze\content::getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
 			 && ($content = ze\row::get('content_items', ['id', 'type', 'status'], ['tag_id' => $ids]))
 			 && (ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type']))) {
-				$hasDraft =
-					$content['status'] == 'first_draft'
-				 || $content['status'] == 'published_with_draft'
-				 || $content['status'] == 'hidden_with_draft'
-				 || $content['status'] == 'trashed_with_draft';
+				$hasDraft = ze\content::isDraft($content['status']);
 		
 				if (!$hasDraft || ze\priv::check('_PRIV_EDIT_DRAFT', $content['id'], $content['type'])) {
 					if ($hasDraft) {

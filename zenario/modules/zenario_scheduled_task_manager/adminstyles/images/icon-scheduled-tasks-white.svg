@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="20px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-scheduled-tasks">
+        <g>
+            <g>
+                <path d="M10.001,2.909C13.912,2.909 17.091,6.09 17.091,10.001C17.091,13.91 13.911,17.091 10.001,17.091C6.092,17.091 2.909,13.91 2.909,10.001C2.909,6.09 6.092,2.909 10.001,2.909M10.001,0C4.479,0 0,4.479 0,10.001C0,15.523 4.479,20 10.001,20C15.523,20 20,15.523 20,10.001C20,4.479 15.523,0 10.001,0Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+            <g>
+                <path d="M9.075,9.854C9.075,9.452 9.4,9.127 9.802,9.127L13.428,9.127C13.829,9.127 14.155,9.452 14.155,9.854C14.155,10.255 13.829,10.581 13.428,10.581L9.803,10.581C9.4,10.581 9.075,10.255 9.075,9.854Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+            <g>
+                <path d="M9.803,10.581C9.401,10.581 9.076,10.256 9.076,9.854L9.076,5.034C9.076,4.633 9.401,4.307 9.803,4.307C10.204,4.307 10.53,4.633 10.53,5.034L10.53,9.854C10.53,10.257 10.204,10.581 9.803,10.581Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

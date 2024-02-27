@@ -34,7 +34,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //that only we can read, and then later use that to create an encrypted file
 //in the requested location
 if ($encrypt) {
-	if (!ze\zewl::loadClientKey()) {
+	if (!ze\pde::loadClientKey()) {
 		echo \ze\admin::phrase('Could not load the encryption library.');
 		exit;
 	}
@@ -117,7 +117,7 @@ password="'. DBPASS. '"';
 			
 			//Encrypt the backup file if requested
 			if ($encrypt) {
-				ze\zewl::encryptFile($backupPath, $encryptedBackupPath);
+				ze\pde::encryptFile($backupPath, $encryptedBackupPath);
 				unlink($backupPath);
 			}
 			
@@ -378,6 +378,6 @@ if ($awRunning) {
 
 //Encrypt the backup file if requested
 if ($encrypt) {
-	ze\zewl::encryptFile($backupPath, $encryptedBackupPath);
+	ze\pde::encryptFile($backupPath, $encryptedBackupPath);
 	unlink($backupPath);
 }

@@ -16,7 +16,7 @@ site_settings:
                     type: submit
                     format_onchange: true
                     value: Test Connection
-                    class: submit_selected
+                    class: zenario_submit_button
                     visible_if: zenarioAB.value('zenario_salesforce_api_form_integration__enable');
                 zenario_salesforce_api_form_integration__login_uri:
                     hide_with_previous_field: true

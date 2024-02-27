@@ -67,21 +67,10 @@
 	visibility:hidden;
 	-webkit-transition : opacity 200ms ease-in-out;
   	-moz-transition : opacity 200ms ease-in-out;
-  	-o-transition : opacity 200ms ease-in-out;
   	transition : opacity 200ms ease-in-out;
 }
 
 .zenario_menu_multicolumn__default_style ul li:hover .columns_wrap {
-	opacity:1;
-	visibility:visible;
-}
-
-body.ie .zenario_menu_multicolumn__default_style ul .columns_wrap {
-	display:none;
-}
-
-body.ie .zenario_menu_multicolumn__default_style ul li:hover .columns_wrap {
-	display:block;
 	opacity:1;
 	visibility:visible;
 }
@@ -135,8 +124,8 @@ body.ie .zenario_menu_multicolumn__default_style ul li:hover .columns_wrap {
 	text-decoration:none;
 }
 
-.zenario_menu_multicolumn__default_style ul li a:before:hover,
-.zenario_menu_multicolumn__default_style ul li a:after:hover {
+.zenario_menu_multicolumn__default_style ul li a:hover::before,
+.zenario_menu_multicolumn__default_style ul li a:hover::after {
 	display:inline-block;
 }
 

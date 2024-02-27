@@ -91,7 +91,7 @@ properties:
             additionalProperties: false
             properties:
                 label:
-                    type: *stringy
+                    type: string
                     description: >
                         The label for this toolbar's tab.
                 tooltip:
@@ -149,6 +149,14 @@ properties:
                         Default to "edit" if not set.
                         
                         This works from version 9.0 onwards.
+                label_when_grouping_active:
+                    type: string
+                    description: >
+                        Set this property to show a different label when the tab grouping is active.
+                label_when_grouping_inactive:
+                    type: string
+                    description: >
+                        Set this property to show a different label when the tab grouping is active.
 
 
     sections:

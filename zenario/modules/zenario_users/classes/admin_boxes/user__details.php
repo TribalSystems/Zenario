@@ -32,6 +32,12 @@ use ZxcvbnPhp\Zxcvbn;
 class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnFABIfConfIsBad($box);
+		
+		
 		if (!ze\module::isRunning('zenario_extranet')) {
 			$fields['details/status']['values']['active']['hidden'] = true;
 			$fields['details/status']['side_note'] = ze\admin::phrase("Creation of extranet users is disabled. Start the Extranet Base Module to create users.");
@@ -58,8 +64,8 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$box['last_updated'] = ze\admin::formatUserLastUpdated($user);
 			
 			$values['details/status'] = $user['status'];
-			$values['details/email'] = $user['email'];
-			$values['details/email_verified'] = $user['email_verified'];
+			$values['details/email'] = $values['details/email_on_load'] = $user['email'];
+			$values['details/email_verified'] = ($user['email'] && ($user['email_verified'] == 'verified'));
 			$values['details/salutation'] = $user['salutation'];
 			$values['details/first_name'] = $user['first_name'];
 			$values['details/last_name'] = $user['last_name'];
@@ -172,12 +178,28 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				'[[change_password_link_start]]Change user\'s password[[change_password_link_end]]',
 				['change_password_link_start' => $changePasswordLinkStart, 'change_password_link_end' => $changePasswordLinkEnd]
 			);
+			
+			//"Email verified" indicator
+			if ($values['details/email']) {
+				if ($values['details/email_verified']) {
+					$cssClass = 'email_status email_verified';
+					$phrase = ze\admin::phrase('Verified');
+				} else {
+					$cssClass = 'email_status email_not_verified';
+					$phrase = ze\admin::phrase('Not verified');
+				}
+			
+				$fields['details/email']['post_field_html'] = '<div class="' . htmlspecialchars($cssClass) . '">' . htmlspecialchars($phrase) . '</div>';
+			}
+			
+			if (!$values['details/email'] || !$values['details/email_verified']) {
+				unset($fields['details/email']['onblur']);
+			}
 		} else {
 			ze\priv::exitIfNot('_PRIV_EDIT_USER');
 			
 			unset($fields['details/status']['values']['suspended']);
 			unset($fields['details/status']['values']['pending']);
-			$fields['details/email_verified']['hidden'] = true;
 			
 			$box['title'] = ze\admin::phrase('Creating a user or contact');
 			
@@ -224,10 +246,18 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		//A little bit of a hacky work-around here.
+		//On the Users FAB, some custom tabs are added. These might not get caught by the
+		//call to showNoticeOnFABIfConfIsBad() above, so repeat the call again here as
+		//a work-around. It's safe to call this function twice as repeating the actions
+		//does not cause any harm.
+		ze\pdeAdm::showNoticeOnFABIfConfIsBad($box);
+		
+		
 		$fields['details/password']['type'] = empty($fields['details/reveal_password']['pressed'])? 'password' : 'text';
 		$fields['details/reveal_password']['value'] = empty($fields['details/reveal_password']['pressed'])? 'Reveal' : 'Hide';
 		
-		$fields['details/password']['side_note'] = ze\admin::displayPasswordRequirementsNoteAdmin($values['details/password']);
 		if (empty($fields['details/password']['hidden'])) {
 			//Validate password: show whether it matches the requirements or not,
 			//but don't show an admin box error if it doesn't.
@@ -320,6 +350,12 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				// }
 			}
 			$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
+		}
+		
+		if ($box['key']['id']) {
+			if ($values['details/email'] && ($values['details/email'] != $values['details/email_on_load'])) {
+				unset($fields['details/email']['post_field_html']);
+			}
 		}
 	}
 	
@@ -447,7 +483,6 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			
 			$cols = [
 				'email' => $values['details/email'],
-				'email_verified' => $values['details/email_verified'],
 				'salutation' => $values['details/salutation'],
 				'first_name' => $values['details/first_name'],
 				'last_name' => $values['details/last_name'],
@@ -475,8 +510,14 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				}
 			}
 			
-			if (empty($values['details/email'])) {
-				$cols['email_verified'] = 0;
+			if (!empty($values['details/email'])) {
+				if ($values['details/email'] != $values['details/email_on_load']) {
+					$cols['email_verified'] = 'not_verified';
+				} else {
+					$cols['email_verified'] = ($values['details/email_verified'] ? 'verified' : 'not_verified');
+				}
+			} else {
+				$cols['email_verified'] = 'email_not_set';
 			}
 			
 			$box['key']['id'] = ze\userAdm::save($cols, $box['key']['id']);

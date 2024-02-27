@@ -35,7 +35,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class miscAdm {
 
-	//Formerly "convertMySQLToJqueryDateFormat()"
 	public static function convertMySQLToJqueryDateFormat($value) {
 		return str_replace(
 			['[[_MONTH_SHORT_%m]]', '%Y', '%y', '%c', '%m', '%e', '%d'],
@@ -44,7 +43,6 @@ class miscAdm {
 	}
 
 	//Format the values for the date-format select lists in the installer and the site-settings
-	//Formerly "formatDateFormatSelectList()"
 	public static function formatDateFormatSelectList(&$field, $addFormatInBrackets = false, $isJavaScriptFormat = false) {
 	
 		//	//Check the current date
@@ -100,6 +98,45 @@ class miscAdm {
 			} else {
 				$details['label'] = $example;
 			}
+		}
+	}
+	
+	public static function addDateFormatAndExampleToDateFormatLabel(&$label, $intendedFormatSiteSetting, $addFormat = true, $addExample = true) {
+		$exampleDate = date('Y-m-d');
+		$ddmmyyyyDate = '2222-03-04';
+		
+		$value = str_replace(
+			['[[_WEEKDAY_%w]]', '[[_MONTH_LONG_%m]]', '[[_MONTH_SHORT_%m]]'],
+			['%W', '%M', '%b'],
+			$intendedFormatSiteSetting
+		);
+
+		$sql = "SELECT DATE_FORMAT('" . \ze\escape::sql($exampleDate) . "', '" . \ze\escape::sql($value) . "')";
+		$result = \ze\sql::select($sql);
+		$row = \ze\sql::fetchRow($result);
+		$example = $row[0];
+
+		$sql = "SELECT DATE_FORMAT('" . \ze\escape::sql($ddmmyyyyDate) . "', '" . \ze\escape::sql($value) . "')";
+		$result = \ze\sql::select($sql);
+		$row = \ze\sql::fetchRow($result);
+		$ddmmyyy = str_replace(
+			['04', '4', '03', '3', '2', 'Monday', 'Mon', 'March', 'Mar'],
+			['dd', 'd', 'mm', 'm', 'y', 'Day', 'Day', 'Month', 'Mmm'],
+			$row[0]
+		);
+
+		$label .= ' (';
+		
+		if ($addFormat) {
+			$label .= $ddmmyyy;
+			
+			if ($addExample) {
+				$label .= ' ';
+			}
+		}
+		
+		if ($addExample) {
+			$label .= 'e.g. ' . $example . ')';
 		}
 	}
 
@@ -659,7 +696,17 @@ class miscAdm {
 			$usageText[] = $text;
 		}
 		
-		
+		//Check if the Standard email template uses this
+		if (!empty($usage['standard_email_template'])) {
+			$link = 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~ttemplate~k{"id"%3A"email"}';
+			$text =
+					'<a target="_blank" href="'. htmlspecialchars($link). '">
+						<span
+							class="listicon organizer_item_image zenario_standard_email_template"
+						></span>'. \ze\admin::phrase('Standard email template'). '</a>';
+			
+			$usageText[] = $text;
+		}
 		
 		if (empty($usageText)) {
 			if ($overrideNotUsedMessage) {
@@ -684,7 +731,6 @@ class miscAdm {
 
 
 	//Generate a hierarchical select list from a table with a parent_id column
-	//Formerly "generateHierarchicalSelectList()"
 	public static function generateHierarchicalSelectList($table, $labelCol, $parentIdCol = 'parent_id', $ids = [], $orderBy = [], $flat = false, $parentId = 0, $pad = '    ') {
 		$output = [];
 		$cols = [$labelCol, $parentIdCol];
@@ -705,7 +751,6 @@ class miscAdm {
 	}
 
 	//Generate a hierarchical list from a table with a parent_id column
-	//Formerly "generateHierarchicalList()"
 	public static function generateHierarchicalList($table, $cols = [], $parentIdCol = 'parent_id', $ids = [], $orderBy = [], $parentId = 0) {
 		$output = [];
 	
@@ -721,7 +766,6 @@ class miscAdm {
 		return $output;
 	}
 
-	//Formerly "generateHierarchicalListR()"
 	public static function generateHierarchicalListR(&$output, $table, $cols, $parentIdCol, $ids, $orderBy, $parentId, $level) {
 	
 		$ids[$parentIdCol] = $parentId;
@@ -739,14 +783,12 @@ class miscAdm {
 	
 	}
 
-	//Formerly "generateDocumentFolderSelectList()"
 	public static function generateDocumentFolderSelectList($flat = false) {
 		return \ze\miscAdm::generateHierarchicalSelectList('documents', 'folder_name', 'folder_id', ['type' => 'folder'], 'ordinal', $flat);
 	}
 
 
 
-	//Formerly "exportPanelItems()"
 	public static function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export', $excelFileExtension = 'xls', $excelWorksheetTitle = '', $heading = '') {
 		$filename = str_replace('"', '\'', str_replace('/', ' ', $filename));
 		// Export as CSV file
@@ -823,7 +865,6 @@ class miscAdm {
 		}
 	}
 
-	//Formerly "setupSlideDestinations()"
 	public static function setupSlideDestinations(&$box, &$fields, &$values) {
 		//Check if this plugin is in a slide in a conductor
 		$box['key']['conductorState'] = '';
@@ -946,7 +987,6 @@ class miscAdm {
 		}
 	}
 
-	//Formerly "checkScheduledTaskRunning()"
 	public static function checkScheduledTaskRunning($jobName) {
 		return \ze\module::inc('zenario_scheduled_task_manager') && \zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName, true);
 	}
@@ -957,7 +997,6 @@ class miscAdm {
 
 
 	//Update the values stored for something (e.g. a content item) in a linking table
-	//Formerly "updateLinkingTable()"
 	public static function updateLinkingTable($table, $key, $idCol, $ids = []) {
 	
 		if (!is_array($ids)) {
@@ -984,7 +1023,6 @@ class miscAdm {
 	
 	
 
-	//Formerly "checkForChangesInYamlFiles()"
 	public static function checkForChangesInYamlFiles($forceScan = false) {
 	
 		//Safety catch - do not try to do anything if there is no database connection!
@@ -1300,7 +1338,6 @@ class miscAdm {
 	
 	
 
-	//Formerly "saveSystemFieldsFromTUIX()"
 	public static function saveSystemFieldsFromTUIX($datasetId) {
 		$dataset = \ze\dataset::details($datasetId);
 		//If this extends a system admin box, load the system tabs and fields

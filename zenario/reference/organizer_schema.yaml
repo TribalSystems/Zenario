@@ -408,7 +408,6 @@ additionalProperties:
                                     description: >
                                         Short description of the button.
                                 record_count:
-                                    record_count:
                                     type: *variable
                                     description: >
                                         A record count on the button. For example, the number of content items in draft form.
@@ -595,6 +594,34 @@ additionalProperties:
                                 only_show_on_refiner: *only_show_on_refiner
                                 hide_on_refiner: *hide_on_refiner
                                 hide_on_filter: *hide_on_filter
+                                
+                                hidden_in_view_options:
+                                    type: boolean
+                                    description: >
+                                        Set this to hide the column from the list in the
+                                        "Adjust view" box, even if it is shown in the panel.
+                                        
+                                        This works from version 9.6 onwards.
+                                shown_in_view_options:
+                                    type: boolean
+                                    description: >
+                                        Set this to show the column from the list in the
+                                        "Adjust view" box, even if it is hidden in the panel.
+                                        
+                                        This will override the usual hidden/visible_if logic.
+                                        However the hide_on_refiner and hide_on_filter properties
+                                        will still apply.
+                                        
+                                        This works from version 9.6 onwards.
+                                title_in_view_options:
+                                    type: string
+                                    description: >
+                                        An alternative title to use for the column in the
+                                        "Adjust view" box. 
+                                        
+                                        Defaults to the title property if not set.
+                                        
+                                        This works from version 9.6 onwards.
                                 
                                 db_column:
                                     type: string
@@ -2011,6 +2038,17 @@ additionalProperties:
                                                 
                                                 Currently only works for item buttons and collection buttons, and not inline buttons.
                                         request: *request
+                                
+                                record_count: &record_count
+                                    type: *variable
+                                    description: >
+                                        A record count to show on the button.
+                                        For example, if the button is a link to another panel, you might want to show the count of the items
+                                        that are on that panel.
+                                        
+                                        You can enter a number, or for an item button, you can enter the code-name of a column to load the number from.
+                                        
+                                        This works from version 9.6 onwards.
                         
                                       
                     item_buttons:
@@ -2284,6 +2322,9 @@ additionalProperties:
                         
                                 popout: *popout
                                 upload: *upload
+                                
+                                
+                                record_count: *record_count
                                 
                                 
                     inline_buttons:

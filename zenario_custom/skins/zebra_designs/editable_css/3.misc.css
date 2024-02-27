@@ -1,8 +1,3 @@
-.zenario_sking table tr th,
-.zenario_sking table tr td {
-	vertical-align:top;
-}
-
 /* Buttons
 --------------------------------------------------------------------------------------------------*/
 
@@ -15,7 +10,12 @@ a.nice_button,
 .zenario_user_forms .repeat_block_buttons .add,
 .zenario_ctype_event .event_more_info a,
 .zenario_ctype_document_search .search_results .result .result_info a,
-.zenario_user_forms .user_form_click_here h3 {
+.zenario_user_forms .user_form_click_here h3,
+.zenario_content_list__default_style a.content_list_more_link,
+.zenario_job_vacancy_summary_list__default_style a.content_list_more_link,
+.zenario_document_container .view_button a,
+.zenario_document_container .download_link a,
+.zenario_document_container #archive_download_link > a {
 	display:inline-block;
 	min-width:80px;
 	height:45px;
@@ -50,19 +50,24 @@ a.nice_button:hover,
 .zenario_user_forms .repeat_block_buttons .add:hover,
 .zenario_ctype_event .event_more_info a:hover,
 .zenario_ctype_document_search .search_results .result .result_info a:hover,
-.zenario_user_forms .user_form_click_here h3:hover {
+.zenario_user_forms .user_form_click_here h3:hover,
+.zenario_content_list__default_style a.content_list_more_link:hover,
+.zenario_job_vacancy_summary_list__default_style a.content_list_more_link:hover,
+.zenario_document_container .view_button a:hover,
+.zenario_document_container .download_link a:hover,
+.zenario_document_container #archive_download_link > a:hover {
 	background:rgb(0,101,155);
 	text-decoration:none;
 	opacity:1;
 }
 
-input.cancel,
-a.nice_button.cancel {
+.zenario_skin input.cancel,
+.zenario_skin a.nice_button.cancel {
 	background:#717b88;
 }
 
-input.cancel:hover,
-a.nice_button.cancel:hover {
+.zenario_skin input.cancel:hover,
+.zenario_skin a.nice_button.cancel:hover {
 	background:#8491a2;
 }
 
@@ -79,11 +84,22 @@ a.nice_button.cancel:hover {
 /* Small buttons */
 
 .zenario_user_forms .repeat_block_buttons .add,
-.zenario_ctype_document_search .search_results .result .result_info a {
+.zenario_ctype_document_search .search_results .result .result_info a,
+.zenario_document_container .view_button a,
+.zenario_document_container .download_link a,
+.zenario_document_container #archive_download_link > a {
 	min-width:auto;
 	height: 30px;
 	line-height: 28px;
 	font-size:0.9em;
+}
+
+/* Google map buttons reset  */
+
+.zenario_slot .gm-style button {
+	min-width:auto;
+	line-height:normal;
+	color: inherit;
 }
 
 /* Aligment and colors options
@@ -167,8 +183,8 @@ a.link_external:after {
   display: inline-block;
 }
 
-.link_external a:after:hover,
-a.link_external:after:hover {
+.link_external a:hover::after,
+a.link_external:hover::after {
 	text-decoration:none !important;
 }
 
@@ -194,7 +210,6 @@ a.link_external:after:hover {
 	text-indent:-99px;
 	background:#fff url('../images/icon-magnifyer.svg') no-repeat center / 18px 18px;
 	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
 	border-radius: 2px;
 	-webkit-transition : all 200ms ease-in-out;
   	-moz-transition : all 200ms ease-in-out;
@@ -451,6 +466,10 @@ body.mobile .zenario_multiple_image_container .banner_image span.banner_image_cr
 	font-size:1.8em;
 }
 
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap a {
+	color:#00659B;
+}
+
 .zenario_skin .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info h5 {
 	font-family:Verdana,Arial,Helvetica,Sans-Serif;
 	margin:0;
@@ -470,11 +489,11 @@ div.zenario_cookie_consent,
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences:hover,
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:hover:before, 
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form button.cancel:hover:after {
-	background-color:rgb(0,101,155);
+	background-color:#00659B;
 }
 
 div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
-	background-color:rgb(0,101,155);
+	background-color:#00659B;
 }
 
 .zenario_cookie_consent_manage_popup .switch input:disabled + .slider {
@@ -482,7 +501,7 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
 }
 
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons input.cookie_save_preferences:hover {
-	border-color:rgb(0,101,155);
+	border-color:#00659B;
 }
 
 /* Pagination
@@ -610,7 +629,6 @@ div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap {
 	background:#30302d;
 	color:#FFF;
 	-webkit-border-radius:4px;
-	-moz-border-radius:4px;
 	border-radius:4px;
    	-webkit-transition: all 0.2s ease-in-out;
     -moz-transition: all 0.2s ease-in-out;

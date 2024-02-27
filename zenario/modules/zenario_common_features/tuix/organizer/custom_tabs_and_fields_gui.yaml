@@ -48,6 +48,14 @@ zenario__administration:
                                 pre_field_html: <div class="dataset_warning">
                                 snippet:
                                     html: |
+                                        <p>This will not appear when editing a user, please see <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target="_blank">Users and contacts</a> site setting to enable this feature.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.dataset == 'users' && item.field_name == 'user_supervised_smart_groups' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
+                            user_supervised_smart_groups_site_setting_disabled:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
                                         <p>Warning: Country-based permissions are not enabled in site settings. Please go to the <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tcountries~k{"id"%3A"users"}' target="_blank">Users and contacts</a> site setting to enable country-based permissions.</p>
                                 post_field_html: </div>
                                 visible_if: |
@@ -103,11 +111,6 @@ zenario__administration:
                                 snippet:
                                     html: |
                                         <strong>Deleting or changing the code name of this field may break your site.</strong>
-                            is_readonly:
-                                label: Readonly
-                                type: checkbox
-                                visible_if: |
-                                    !item.is_system_field && (item.type == 'group' || item.type == 'checkbox' || item.type == 'text')
                             include_in_export:
                                 label: Include in export
                                 type: checkbox
@@ -247,20 +250,99 @@ zenario__administration:
                                 post_field_html: </div>
                                 visible_if: |
                                     item.is_system_field
-                            required:
-                                label: Required
-                                type: checkbox
-                                note_below: An administrator will not be able to save a record until all of the required fields are complete.
-                                format_onchange: true
+                            
+                            
+                            
+                            readonly_or_mandatory:
                                 visible_if: |
                                     !item.is_system_field
-                            required_message:
-                                label: 'Message if not complete:'
-                                type: text
-                                maxlength: 255
-                                visible_if: |
-                                    !item.is_system_field && item.required
+                                label: 'Mandatory / Read-only:'
+                                type: select
+                                values:
+                                    none:
+                                        label: None
+                                    mandatory:
+                                        label: Mandatory
+                                    #mandatory_all_values_required:
+#                                        label: Mandatory (select all values)
+                                    readonly:
+                                        label: Read-only
+                                    conditional_mandatory:
+                                        label: Mandatory on condition
+                                    mandatory_if_visible:
+                                        label: Mandatory if visible
+                                format_onchange: true
+                                note_below: Choose whether this field is mandatory or read-only.
+                            mandatory_condition_field_id:
                                 indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                   item.readonly_or_mandatory == 'conditional_mandatory'
+                                label: 'Mandatory on condition field:'
+                                type: select
+                                empty_value: -- Select --
+                                values: conditional_fields
+                                format_onchange: true
+                                note_below: |
+                                    Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, checkboxes, radios, select, centralised radios and centralised select)
+                            mandatory_condition_field_type:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.mandatory_condition_field_id
+                                type: select
+                                values:
+                                    mandatory_if:
+                                        label: Mandatory if...
+                                    mandatory_if_not:
+                                        label: Mandatory if not...
+                                format_onchange: true
+                            mandatory_condition_field_value:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.mandatory_condition_field_id
+                                type: select
+                                empty_value: -- Select --
+                                values:
+                                    checked:
+                                        label: Checked
+                                    unchecked:
+                                        label: Unchecked
+                            mandatory_condition_checkboxes_operator:
+                                indent: 2
+                                hidden: true
+                                type: select
+                                values:
+                                    AND:
+                                        label: All options below are checked
+                                    OR:
+                                        label: Any option below is checked
+                            mandatory_condition_checkboxes_field_value:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.mandatory_condition_field_id
+                                type: checkboxes
+                                values: field_lov
+                            required_message:
+                                indent: 1
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    !item.is_system_field && ['mandatory', 'conditional_mandatory', 'mandatory_if_visible'].indexOf(item.readonly_or_mandatory) != -1
+                                label: 'Error message when field is incomplete:'
+                                type: text
+                                maxlength: 250
+                                value: This field is required.
+                                note_below: Enter an error message when this field is incomplete.
+                                is_phrase: true
+                            
+                            
+                            
+                            
+                            
+                            
+                            
                             validation:
                                 label: 'Validation:'
                                 type: radios

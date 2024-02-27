@@ -35,7 +35,6 @@ class layoutAdm {
 		return 'L'. str_pad((string) $layoutId, 2, '0', STR_PAD_LEFT);
 	}
 
-	//Formerly "getDefaultTemplateId()"
 	public static function defaultId($cType) {
 		if (!$layoutId = \ze\row::get('content_types', 'default_layout_id', ['content_type_id' => $cType])) {
 			$layoutId = \ze\row::get('layouts', 'layout_id', ['content_type' => $cType]);
@@ -45,12 +44,10 @@ class layoutAdm {
 	}
 
 
-	//Formerly "getTemplateFamilyDetails()"
 	public static function familyDetails($familyName) {
 		return NULL;
 	}
 
-	//Formerly "validateChangeSingleLayout()"
 	public static function validateChangeSingleLayout(&$box, $cID, $cType, $cVersion, $newLayoutId, $saving) {
 		$box['confirm']['show'] = false;
 		$box['confirm']['message'] = '';
@@ -104,7 +101,6 @@ class layoutAdm {
 		}
 	}
 
-	//Formerly "saveTemplate()"
 	public static function save($submission, &$layoutId, $sourceLayoutId = false) {
 	
 		$values = [];
@@ -179,7 +175,8 @@ class layoutAdm {
 					`cols`,
 					small_screens,
 					is_header,
-					is_footer
+					is_footer,
+					in_grid_break
 				) SELECT 
 					". (int) $layoutId.  ",
 					slot_name,
@@ -187,7 +184,8 @@ class layoutAdm {
 					`cols`,
 					small_screens,
 					is_header,
-					is_footer
+					is_footer,
+					in_grid_break
 				FROM ". DB_PREFIX. "layout_slot_link
 				WHERE layout_id = ". (int) $sourceLayoutId;
 			\ze\sql::update($sql);
@@ -211,7 +209,6 @@ class layoutAdm {
 	}
 
 
-	//Formerly "changeContentItemLayout()"
 	public static function changeContentItemLayout($cID, $cType, $cVersion, $newLayoutId, $check = false, $warnOnChanges = false) {
 	
 		$oldLayoutId = \ze\content::layoutId($cID, $cType, $cVersion);
@@ -405,14 +402,12 @@ class layoutAdm {
 		}
 	}
 
-	//Formerly "checkSkinInUse()"
 	public static function skinInUse($skinId) {
 		return
 			\ze\row::exists('layouts', ['skin_id' => $skinId]);
 	}
 
 	//Delete a Layout from the system
-	//Formerly "deleteLayout()"
 	public static function delete($layoutId) {
 	
 		//Delete the layout from the database
@@ -425,7 +420,6 @@ class layoutAdm {
 	
 
 	//Check how many items use a Layout or a site-wite header
-	//Formerly "checkTemplateUsage()"
 	public static function usage($layoutId = false, $publishedOnly = false, $countItems = true, $checkWhereItemLayerIsUsed = false, $slotName = false) {
 		if ($countItems) {
 			$sql = "
@@ -465,11 +459,11 @@ class layoutAdm {
 	
 		if ($publishedOnly) {
 			$sql .= "
-			WHERE c.status IN ('published_with_draft', 'published')";
+			WHERE c.status IN ('published_with_draft', 'published', 'unlisted', 'unlisted_with_draft')";
 	
 		} else {
 			$sql .= "
-			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published')";
+			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'unlisted_with_draft', 'published', 'unlisted')";
 		}
 		
 		
@@ -529,7 +523,6 @@ class layoutAdm {
 
 
 	//Work out a slot to put a new Plugin into, favouring "Main" slots.
-	//Formerly "getTemplateMainSlot()"
 	public static function mainSlotByName($layoutId) {
 		$sql = "
 			SELECT lsl.slot_name
@@ -559,7 +552,6 @@ class layoutAdm {
 	}
 
 	//Similar to \ze\contentAdm::mainSlot(), but just use the Layout in the calculation
-	//Formerly "pluginMainSlotOnLayout()"
 	public static function mainSlot($layoutId, $moduleId = false, $limitToOne = true) {
 	
 		if (!$moduleId) {
@@ -635,7 +627,6 @@ class layoutAdm {
 		}
 	}
 
-	//Formerly "getTemplateUsageStorekeeperDeepLink()"
 	public static function usageOrganizerLink($layoutId) {
 		return \ze\link::absolute(). 'organizer.php#'.
 				'zenario__layouts/panels/layouts/view_content//'. (int) $layoutId.  '//';

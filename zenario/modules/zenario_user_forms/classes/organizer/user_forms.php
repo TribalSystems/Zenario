@@ -33,6 +33,8 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		if ($refinerName == 'archived') {
 			$panel['db_items']['where_statement'] = 'WHERE TRUE';
 			$panel['no_items_message'] = ze\admin::phrase('No forms have been archived.');
+			$panel['title'] = ze\admin::phrase('Archived forms');
+			$panel['item']['css_class'] = 'zenario_user_forms_archive';
 		}
 
 		if (!ze\module::inc('zenario_extranet_profile_edit')) {
@@ -83,6 +85,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 				$usageLinks = false;
 				
 				$instanceIds = zenario_user_forms::getFormPlugins($id);
+				$item['content_item_count'] = 0;
 				
 				if (!empty($instanceIds)) {
 					$pluginIds = zenario_user_forms::getFormPlugins($id, 'plugins');
@@ -108,6 +111,7 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 					
 					if (!empty($usage['content_items']) || !empty($usage['layouts'])) {
 						$item['plugin_is_used'] = true;
+						$item['content_item_count'] = $usage['content_items'];
 					}
 				}
 			
@@ -199,6 +203,8 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 				$valuesToImplode[] = $saveAndCompleteLaterPhrase;
 			} else {
 				$saveAndCompleteLaterPhrase = '';
+				
+				$item['partial_response_count'] = '';
 			}
 			
 			$item['form_extra_info'] = implode(", ", $valuesToImplode);

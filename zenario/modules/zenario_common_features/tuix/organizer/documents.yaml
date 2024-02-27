@@ -33,6 +33,8 @@ zenario__library:
             refiners:
                 public_documents_only:
                     sql: '(d.type = "folder" OR d.privacy = "public")'
+                folders_only:
+                    sql: 'd.type = "folder"'
 
             columns:
                 id:
@@ -144,6 +146,7 @@ zenario__library:
                     label: Upload documents
                     css_class: zenario_create_a_new
                     hide_on_filter: true
+                    hide_on_refiner: folders_only
                     admin_box:
                         path: zenario_document_upload
                 add_folder:
@@ -160,6 +163,7 @@ zenario__library:
                     label: Upload to selected folder
                     css_class: zenario_create_a_new
                     hide_on_filter: true
+                    hide_on_refiner: folders_only
                     admin_box:
                         path: zenario_document_upload
                     with_columns_set:

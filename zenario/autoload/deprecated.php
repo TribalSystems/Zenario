@@ -31,7 +31,6 @@ namespace ze;
 class deprecated {
 
 
-	//Formerly "putErrorsOnAdminBoxTabs()"
 	public static function putErrorsOnAdminBoxTabs(&$box, $e, $defaultTab = false, $specifics = []) {
 		if (\ze::isError($e)) {
 			$errors = $e->errors;
@@ -80,7 +79,6 @@ class deprecated {
 
 
 	//Deprecated, please use \ze\lang::phrase() instead
-	//Formerly "getVLPPhrase()"
 	public static function getVLPPhrase($code, $replace = false, $languageId = false, $returnFalseOnFailure = false, $moduleClass = '', $phrase = false, $altCode = false) {
 		return \ze\lang::phrase($code, $replace, $moduleClass, $languageId, 2);
 	}
@@ -90,20 +88,17 @@ class deprecated {
 
 
 	//Warning: this is deprecated, please use the SUBDIRECTORY constant instead!
-	//Formerly "CMSDir()"
 	public static function CMSDir() {
 		return SUBDIRECTORY;
 	}
 
 	//Warning: this is deprecated, please use the CMS_ROOT constant instead!
-	//Formerly "absCMSDir()"
 	public static function absCMSDir() {
 		return CMS_ROOT;
 	}
 
 
 
-	//Formerly "addSqlDateTimeByPeriodAndReturnStartEnd()"
 	public static function addSqlDateTimeByPeriodAndReturnStartEnd($sql_start_date, $by_period) {
 		if(strpos($sql_start_date, '23:59:59')) {
 			$sql_start_date = strtotime('+1 second', strtotime($sql_start_date));
@@ -121,7 +116,6 @@ class deprecated {
 	}
 
 	//Deprecated function, please call either \ze\sql::select() or \ze\sql::update() instead!
-	//Formerly "my_mysql_query()"
 	public static function my_mysql_query($sql, $updateDataRevisionNumber = -1, $checkCache = true, $return = 'sqlSelect') {
 	
 		if ($return === true || $return === 'mysql_affected_rows' || $return === 'mysql_affected_rows()' || $return === 'sqlAffectedRows' || $return === '\ze\sql::affectedRows()') {
@@ -142,7 +136,6 @@ class deprecated {
 	}
 
 	//Deprecated function, please call either \ze\sql::select() or \ze\sql::update() instead!
-	//Formerly "sqlQuery()"
 	public static function sqlQuery($sql, $checkCache = true) {
 		$test = strtoupper(substr(trim($sql), 0, 3));
 		if ($test != 'DES' && $test != 'SEL' && $test != 'SET' && $test != 'SHO') {
@@ -157,7 +150,6 @@ class deprecated {
 	
 	
 
-	//Formerly "SimpleXMLString()"
 	public static function SimpleXMLString(&$string) {
 		//Check if the input is false before processing it, so this function can safely be chained
 		if (!$string) {
@@ -187,7 +179,6 @@ class deprecated {
 
 
 	//Get a description of a table
-	//Formerly "getFields()"
 	public static function getFields($prefix, $tableName, $addPasswordConfirm = false) {
 		$fields = [];
 		$sql = "DESC ". \ze\escape::sql($prefix. $tableName);
@@ -218,7 +209,6 @@ class deprecated {
 
 	
 	//A function to help with saving the returns from these fields
-	//Formerly "addFieldToSQL()"
 	public static function addFieldToSQL(&$sql, $table, $field, $values, $editing, $details = []) {
 	
 		if ($sql) {

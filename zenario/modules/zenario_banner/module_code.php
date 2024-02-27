@@ -38,7 +38,6 @@ class zenario_banner extends ze\moduleBaseClass {
 	
 	protected $editing = false;
 	protected $editorId = '';
-	protected $request = '';
 	
 	protected $styles = [];
 	
@@ -93,17 +92,26 @@ class zenario_banner extends ze\moduleBaseClass {
 					&& ($cType = $product['content_item_type'])
 		 		)
 		) {
+			$request = '';
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
 			if ($downloadFile) {
-				$this->request = 'download=1';
+				$request = 'download=1';
+			}
+			
+			if ($this->setting('add_referrer')) {
+				if ($request !== '') {
+					$request .= '&';
+				}
+				
+				$request .= 'referrer='. ze::$cType. '_'. ze::$cID;
 			}
 			
 			if (!$this->isVersionControlled && $useTranslation) {
-				$link = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = false, $this->request);
+				$link = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = false, $request);
 			} else {
-				$link = ze\link::toItem($cID, $cType, $fullPath = false, $this->request);
+				$link = ze\link::toItem($cID, $cType, $fullPath = false, $request);
 			}
 
 			if ($this->setting('link_to_anchor') && ($anchor = $this->setting('hyperlink_anchor'))) {
@@ -122,9 +130,9 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			
 			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = $this->setting('hide_private_item') == '_ALWAYS_SHOW', $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+				$atAll = true, $ifUserLoggedIn = $this->setting('hide_private_item') == '_ALWAYS_SHOW', $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+				$clearByContent = true, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 			
 			//Check the Privacy settings on this banner
 			if (!ze\priv::check()) {
@@ -171,9 +179,9 @@ class zenario_banner extends ze\moduleBaseClass {
 				//Only allow caching for public documents.
 				if ($document['privacy'] == 'public') {
 					$this->allowCaching(
-						$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+						$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 					$this->clearCacheBy(
-						$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+						$clearByContent = false, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 				}
 			} else {
 				if (ze\admin::id()) {
@@ -185,9 +193,9 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 		} else {
 			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+				$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+				$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 			
 			// If the content item this banner was linking to has been removed, update setting to no-link
 			if ($linkTo == '_CONTENT_ITEM' && !$linkExists) {
@@ -398,6 +406,14 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 			}
 			
+			//Hiding/resizing/changing the mobile version of the image isn't supported
+			//when also using the lazy load or rollover advanced behaviour.
+			//The UI should now stop you selecting this but it didn't used to, so this line
+			//of code is just to catch the case from migrated sites.
+			if ($setBehaviour == 'lazy_load'
+			 || $setBehaviour == 'use_rollover') {
+				$setMobBehaviour = 'mobile_same_image';
+			}
 			
 			
 			$setLargeTitle = $this->setting('floating_box_title_mode');

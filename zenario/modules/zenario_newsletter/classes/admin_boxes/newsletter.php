@@ -34,8 +34,6 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$style_formats = ze\site::description('email_style_formats');
 		if (!empty($style_formats)) {
 			$box['tabs']['meta_data']['fields']['body']['editor_options']['style_formats'] = $style_formats;
-			$box['tabs']['meta_data']['fields']['body']['editor_options']['toolbar'] =
-				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
 		}
 		
 		//We're using an Organizer picker to select smart groups
@@ -48,12 +46,15 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$values['meta_data/test_send_email_address'] = $adminDetails['admin_email'];
 		$box['tabs']['meta_data']['fields']['add_user_field']['values'] =
 			ze\datasetAdm::listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true, false, $putMergeFieldsIntoLabel = true);
+		if (isset($box['tabs']['meta_data']['fields']['add_user_field']['values']['tab__zenario_organization_manager__roles'])) {
+			unset($box['tabs']['meta_data']['fields']['add_user_field']['values']['tab__zenario_organization_manager__roles']);
+		}
 		
 		
 		
 		if ($box['key']['id']) {
 			$details = $this->loadDetails($box['key']['id']);
-			$box['title'] = ze\admin::phrase('Viewing/Editing newsletter "[[newsletter_name]]"', $details);
+			$box['title'] = ze\admin::phrase('Editing newsletter "[[newsletter_name]]"', $details);
 			
 			$values['meta_data/newsletter_name'] = $details['newsletter_name'];
 			$values['unsub_exclude/recipients'] = 
@@ -69,7 +70,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$values['meta_data/email_address_from'] = $details['email_address_from'];
 			$values['meta_data/email_name_from'] = $details['email_name_from'];
 			$values['meta_data/body'] = $details['body'];
-			$values['advanced/head'] = $details['head'];
+			$values['meta_data/apply_css_rules'] = $details['apply_css_rules'];
 
 			$values['unsub_exclude/unsubscribe_text'] = $details['unsubscribe_text'];
 			$values['unsub_exclude/delete_account_text'] = $details['delete_account_text'];
@@ -101,13 +102,24 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			if ($details['status'] != '_DRAFT') {
 						
 				$box['tabs']['meta_data']['edit_mode']['enabled'] =
-				$box['tabs']['unsub_exclude']['edit_mode']['enabled'] =
-				$box['tabs']['advanced']['edit_mode']['enabled'] = false;
+				$box['tabs']['unsub_exclude']['edit_mode']['enabled'] = false;
 				$box['tabs']['meta_data']['fields']['test_send_button']['hidden'] =
 				$box['tabs']['meta_data']['fields']['test_send_button_dummy']['hidden'] = false;
 			}
 
-
+			$details['created_user_id'] =
+			$details['created_username'] =
+			$details['last_edited_user_id'] =
+			$details['last_edited_username'] = null;
+			
+			if ($box['key']['id']) {
+				$details['created'] = $details['date_created'];
+				$details['created_admin_id'] = $details['created_by_id'];
+				$details['last_edited'] = $details['date_modified'];
+				$details['last_edited_admin_id'] = $details['modified_by_id'];
+				
+				$box['last_updated'] = ze\admin::formatLastUpdated($details);
+			}
 		} else {
 			$i = 1;
 			$fuse = 100;
@@ -173,6 +185,10 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				$box['tabs']['unsub_exclude']['notices']['newsletter_consent_policy_not_selected']['message'] = ze\admin::phrase($siteSettingSring, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			}
 		}
+		
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
+		$linkEnd = "</a>";
+		ze\lang::applyMergeFields($fields['meta_data/apply_css_rules']['post_field_html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -208,9 +224,9 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				&& (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
 
 			$clearCopyFromSourceFields = true;
-			$emailTemplate = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['head', 'body'], ['id' => $values['meta_data/load_content_source_newsletter_template']]);
+			$emailTemplate = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['apply_css_rules', 'body'], ['id' => $values['meta_data/load_content_source_newsletter_template']]);
 			$values['meta_data/body'] = $emailTemplate['body'];
-			$values['advanced/head'] = $emailTemplate['head'];
+			$values['meta_data/apply_css_rules'] = $emailTemplate['apply_css_rules'];
 		}
 		if (($values['meta_data/load_content_source'] == 'copy_from_archived_newsletter')
 				&& $values['meta_data/load_content_source_archived_newsletter'] 
@@ -219,7 +235,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$clearCopyFromSourceFields= true;
 			$newsletter = $this->loadDetails($values['meta_data/load_content_source_archived_newsletter']);
 			$values['meta_data/body'] = $newsletter['body'];
-			$values['advanced/head'] = $newsletter['head'];
+			$values['meta_data/apply_css_rules'] = $newsletter['apply_css_rules'];
 		}
 
 		if (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_cancel','pressed')) {
@@ -283,6 +299,12 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			
 			} else {
 				$adminDetails = ze\admin::details($_SESSION['admin_userid'] ?? false);
+				if ($values['meta_data/apply_css_rules']) {
+					$cssRules = ze::setting('email_css_rules');
+				} else {
+					$cssRules = '';
+				}
+				
 				foreach (ze\ray::explodeAndTrim($values['meta_data/test_send_email_address']) as $email) {
 					$body = $values['meta_data/body'];
 					if ($values['unsub_exclude/unsubscribe_link'] == 'unsub') {
@@ -299,9 +321,8 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 						$error .= ($error? "\n" : ''). ze\admin::phrase('The test email(s) could not be sent because your Newsletter is blank.');
 						break;
 					
-					} else
-					if (($box['key']['id']) &&!$this->testSendNewsletter(
-						$values['advanced/head'],
+					} elseif (($box['key']['id']) && !$this->testSendNewsletter(
+						$cssRules,
 						$body, $adminDetails, $email,
 						$values['meta_data/subject'],
 						$values['meta_data/email_address_from'],
@@ -334,7 +355,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$link= ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"email"}');
 			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to receive newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
 		} else {
-			unset($fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below']);
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Users or contacts whose accounts don\'t have the terms_and_conditions_accepted checkbox checked will not be sent this newsletter. There is no need to make a smart group rule for this!');
 		}
 	}
 	
@@ -365,7 +386,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['edit_mode']['on'] ?? false)) {
 			
 			
-			$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['meta_data/body'], true);
+			$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['meta_data/body'], $preserveMergeFields = true, $allowAdvancedInlineStyles = true);
 			
 			//Try and ensure that we use absolute URLs where possible
 			ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
@@ -378,16 +399,19 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				'email_name_from' => $values['meta_data/email_name_from'],
 				'email_address_from' => $values['meta_data/email_address_from'],
 				'body' =>  $values['meta_data/body'],
-				'head' => $values['advanced/head']
+				'apply_css_rules' => $values['meta_data/apply_css_rules']
 			];
 			
-			if($id) {
-				$record['date_modified'] = ze\date::now();
-				$record['modified_by_id'] = ze\admin::id();
+			$lastUpdated = [];
+			ze\admin::setLastUpdated($lastUpdated, !$id);
+
+			if ($id) {
+				$record['date_modified'] = $lastUpdated['last_edited'];
+				$record['modified_by_id'] = $lastUpdated['last_edited_admin_id'];
 			} else {
-				$record['date_created'] = ze\date::now();
+				$record['date_created'] = $lastUpdated['created'];
+				$record['created_by_id'] = $lastUpdated['created_admin_id'];
 				$record['status'] = '_DRAFT';
-				$record['created_by_id'] = ze\admin::id();
 			}
 			
 			$box['key']['id'] = ze\row::set(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', $record, $id);

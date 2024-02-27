@@ -30,6 +30,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__user__activate extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnFABIfConfIsBad($box);
+		
+		
 		$userDetails = ze\user::details($box["key"]["id"] ?? false);
 	
 		$box['title'] = "Activating the user \"" . ($userDetails["identifier"] ?? false) . "\"";

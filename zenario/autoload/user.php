@@ -34,7 +34,6 @@ use ZxcvbnPhp\Zxcvbn;
 class user {
 
 
-	//Formerly "visitorIP()"
 	public static function ip() {
 		if (defined('USE_FORWARDED_IP')
 		 && constant('USE_FORWARDED_IP')
@@ -65,7 +64,6 @@ class user {
 	}
 
 	//Add an extranet user into a group, or out of a group
-	//Formerly "addUserToGroup()"
 	public static function addToGroup($userId, $groupId, $remove = false) {
 		if ($col = \ze\dataset::fieldDBColumn($groupId)) {
 			\ze\row::set('users_custom_data', [$col => ($remove ? 0 : 1)], ['user_id' => $userId]);
@@ -74,7 +72,6 @@ class user {
 
 
 	
-	//Formerly "getUserGroups()", "userGroups()"
 	public static function groups($userId = null, $flat = true, $getLabelWhenFlat = false) {
 		if ($userId === -1) {
 			$userId = $_SESSION['extranetUserID'] ?? false;
@@ -111,7 +108,6 @@ class user {
 		return $groups;
 	}
 
-	//Formerly "checkUserInGroup()"
 	public static function isInGroup($groupId, $userId = 'session') {
 	
 		if ($userId === 'session') {
@@ -135,7 +131,6 @@ class user {
 		return (bool) \ze\row::get('users_custom_data', $group_name, $userId);
 	}
 
-	//Formerly "getUserGroupsNames()"
 	public static function getUserGroupsNames( $userId ) {
 		$groups = \ze\user::groups($userId);
 	
@@ -146,7 +141,6 @@ class user {
 		}
 	}
 
-	//Formerly "getGroupLabel()"
 	public static function getGroupLabel($group_id) {
 		if ($group_id) {
 			if(is_numeric($group_id)) {
@@ -169,7 +163,6 @@ class user {
 	
 
 	//Attempt to automatically log a User in if the cookie is set on the User's Machine
-	//Formerly "logUserInAutomatically()"
 	public static function logInAutomatically() {
 		if (isset($_SESSION)) {
 			if (empty($_SESSION['extranetUserID'])) {
@@ -228,7 +221,6 @@ class user {
 		\ze::$userId = \ze\user::id();
 	}
 
-	//Formerly "logUserOut()"
 	public static function logOut() {
 		unset(
 			$_SESSION['extranetUserID'],
@@ -236,6 +228,7 @@ class user {
 			$_SESSION['extranetUserImpersonated'],
 			$_SESSION['extranetUserID_pending'],
 			$_SESSION['extranetUser_firstname'],
+			$_SESSION['extranetUser_lastname'],
 			$_SESSION['extranetUserSteps'],
 			$_SESSION['zenario_loggingInUserID'],
 			$_SESSION['zenario_loggingInUserSite']
@@ -297,7 +290,6 @@ class user {
 	
 	
 
-	//Formerly "getUserIdFromScreenName()"
 	public static function getIdFromScreenName($screenName) {
 		return \ze\row::get('users', 'id', ['screen_name' => $screenName]);
 	}
@@ -309,7 +301,6 @@ class user {
 
 
 
-	//Formerly "logUserIn()"
 	public static function logIn($userId, $impersonate = false) {
 		
 		\ze\cookie::antiSessionFixationScript();
@@ -343,12 +334,12 @@ class user {
 	
 		$_SESSION['extranetUserID'] = $userId;
 		$_SESSION['extranetUser_firstname'] = $user['first_name'];
+		$_SESSION['extranetUser_lastname'] = $user['last_name'];
 		$_SESSION['extranetUser_logged_into_site'] = COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id');
 	
 		return $user;
 	}
 
-	//Formerly "getUserDetails()"
 	public static function details($userId) {
 	
 		if ($user = \ze\row::get('users', true, $userId)) {
@@ -392,7 +383,6 @@ class user {
 		return $allowedFields;
 	}
 
-	//Formerly "checkUsersPassword()"
 	public static function checkPassword($userId, $password) {
 		//Look up some of this user's details
 		if (!$user = \ze\row::get('users', ['id', 'password', 'password_salt'], (int) $userId)) {
@@ -466,7 +456,6 @@ class user {
 		];
 	}
 	
-	//Formerly "checkNamedUserPermExists()"
 	public static function checkNamedPermExists($perm, &$directlyAssignedToUser, &$byGroupAndCountry, &$hasRoleAtCompany, &$hasRoleAtLocation, &$hasRoleAtLocationAtCompany, &$onlyIfHasRolesAtAllAssignedLocations) {
 	
 		switch ($perm) {
@@ -616,7 +605,6 @@ class user {
 		);
 	}
 
-	//Formerly "checkUserCan()"
 	public static function can($action, $target = 'unassigned', $targetId = false, $multiple = false, $authenticatingUserId = -1) {
 	
 		//If the multiple flag is set, we'll want an array of inputs.
@@ -1111,7 +1099,6 @@ class user {
 	}
 
 	//Shortcut function for creating things, which has a slightly less confusing syntax
-	//Formerly "checkUserCanCreate()"
 	public static function canCreate($thingToCreate, $assignedTo = 'unassigned', $assignedToId = false, $multiple = false, $authenticatingUserId = -1) {
 	
 		//Convenience feature: accept either the thing's type, or the thing's variable's name.
@@ -1165,7 +1152,6 @@ class user {
 
 	//Some password functions for users/admins
 
-	//Formerly "hashPassword()"
 	public static function hashPassword($salt, $password) {
 		if ($hash = \ze\user::hashPasswordSha2($salt, $password)) {
 			return $hash;
@@ -1174,7 +1160,6 @@ class user {
 		}
 	}
 
-	//Formerly "hashPasswordSha2()"
 	public static function hashPasswordSha2($salt, $password) {
 		if ($hash = @hash('sha256', $salt. $password, true)) {
 			return 'sha256'. base64_encode($hash);
@@ -1184,7 +1169,6 @@ class user {
 	}
 
 	//Old sha1 function for passwords created before version 6.0.5. Or if sha2 is not enabled on a server.
-	//Formerly "hashPasswordSha1()"
 	public static function hashPasswordSha1($salt, $password) {
 		$result = \ze\sql::select(
 			"SELECT SQL_NO_CACHE SHA('". \ze\escape::sql($salt. $password). "')");
@@ -1193,7 +1177,6 @@ class user {
 	}
 
 	//Check if a given password meets the strength requirements.
-	//Formerly "checkPasswordStrength()"
 	public static function checkPasswordStrength($password, $checkIfEasilyGuessable = false) {
 		$passwordRequirements = \ze\user::getPasswordRequirements();
 
@@ -1261,7 +1244,6 @@ class user {
 		return $validation;
 	}
 
-	//Formerly "getUserTimezone()"
 	public static function timeZone($userId = false) {
 		$timezone = false;
 		if (!$userId) {

@@ -71,7 +71,7 @@ class zenario_common_features__organizer__writer_profiles extends ze\moduleBaseC
 
         //Process enabled content types: check which ones use writer profiles.
         $contentItemsUsingWriterProfiles = [];
-        foreach (ze\content::getContentTypes() as $cType) {
+        foreach (ze\content::getContentTypes(true, true) as $cType) {
             if (ze\row::get('content_types', 'writer_field', ['content_type_id' => $cType['content_type_id']]) != 'hidden') {
                 $contentItemsUsingWriterProfiles[$cType['content_type_id']] = $cType['content_type_name_en'];
             }

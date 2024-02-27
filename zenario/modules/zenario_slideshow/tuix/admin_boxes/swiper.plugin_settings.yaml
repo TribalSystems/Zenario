@@ -1,0 +1,263 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_slideshow
+    tabs:
+        swiper:
+            visible_if: |
+                zenarioAB.value('animation_library', 'first_tab') == 'swiper'
+            label: Swiper
+            fields:
+                
+                swiper.direction:
+                    plugin_setting:
+                        name: swiper.direction
+                    label: 'Direction:'
+                    type: select
+                    value: horizontal
+                    values:
+                        horizontal:
+                            label: Horizontal
+                        vertical:
+                            label: Vertical
+                swiper.effect:
+                    plugin_setting:
+                        name: swiper.effect
+                    label: 'Transition effect:'
+                    type: select
+                    value: slide
+                    values:
+                        slide:
+                            label: Slide
+                        fade:
+                            label: Fade
+                        cube:
+                            label: Cube
+                        coverflow:
+                            label: Coverflow
+                        flip:
+                            label: Flip
+                
+                swiper.loop:
+                    plugin_setting:
+                        name: swiper.loop
+                    label: 'Loop slides'
+                    type: checkbox
+                    value: 1
+                    side_note: After the last slide, show the first one. Requires at least two slides to function.
+                swiper.oneWayMovement:
+                    plugin_setting:
+                        name: swiper.oneWayMovement
+                    label: 'Disable reverse movement'
+                    type: checkbox
+                    value: ''
+                    side_note: When the visitor swipes, the slideshow will always navigate forwards, even if they try to swipe backwards.
+                
+                swiper.speed:
+                    plugin_setting:
+                        name: swiper.speed
+                    label: 'Animation duration:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an animation duration.
+                        numeric: The animation duration must be a number.
+                    value: 300
+                    slider:
+                        min: 0
+                        max: 2000
+                        step: 50
+                        range: min
+                        before_field: true
+                    style: |
+                        width: 4em;
+                    post_field_html: ms
+                swiper.autoplay:
+                    plugin_setting:
+                        name: swiper.autoplay
+                    label: 'Auto-advance slides'
+                    type: checkbox
+                    value: ''
+                    redraw_onchange: true
+                swiper.autoplay.delay:
+                    plugin_setting:
+                        name: swiper.autoplay.delay
+                    visible_if:
+                        lib.value: swiper.autoplay
+                    indent: 1
+                    label: 'Display duration:'
+                    type: text
+                    slider:
+                        min: 0
+                        max: 50000
+                        step: 500
+                        range: min
+                        before_field: true
+                    validation:
+                        required_if_not_hidden: Please enter a display duration.
+                        numeric: The display duration must be a number.
+                    value: 4000
+                    style: |
+                        width: 4em;
+                    post_field_html: ms
+                
+                
+                swiper.breakpoints.title:
+                    snippet:
+                        html: |
+                            <strong><u>Breakpoint rules</u></strong>
+                
+                swiper.desktop.breakpoints:
+                    type: grouping
+                    grouping_css_class: zfab_block_row
+                swiper.desktop.slidesPerView:
+                    grouping: swiper.desktop.breakpoints
+                    legend: Desktop
+                    plugin_setting:
+                        name: swiper.desktop.slidesPerView
+                    label: 'Slides per view:'
+                    indent: 1
+                    type: select
+                    value: 2
+                    values:
+                        1:
+                            label: 1
+                        2:
+                            label: 2
+                        3:
+                            label: 3
+                        4:
+                            label: 4
+                        5:
+                            label: 5
+                swiper.desktop.spaceBetween:
+                    grouping: swiper.desktop.breakpoints
+                    plugin_setting:
+                        name: swiper.desktop.spaceBetween
+                    label: 'Space between:'
+                    indent: 1
+                    type: text
+                    style: |
+                        width: 4em;
+                    value: 10
+                    validation:
+                        integer_number: Please enter a positive whole number.
+                        positive_number: Please enter a positive whole number.
+                    post_field_html: px
+                
+                swiper.mobile.breakpoints:
+                    type: grouping
+                    grouping_css_class: zfab_block_row
+                swiper.mobile.slidesPerView:
+                    grouping: swiper.mobile.breakpoints
+                    legend: Mobile
+                    plugin_setting:
+                        name: swiper.mobile.slidesPerView
+                    label: 'Slides per view:'
+                    indent: 1
+                    type: select
+                    value: 1
+                    values:
+                        1:
+                            label: 1
+                        2:
+                            label: 2
+                        3:
+                            label: 3
+                        4:
+                            label: 4
+                        5:
+                            label: 5
+                swiper.mobile.spaceBetween:
+                    grouping: swiper.mobile.breakpoints
+                    plugin_setting:
+                        name: swiper.mobile.spaceBetween
+                    label: 'Space between:'
+                    indent: 1
+                    type: text
+                    style: |
+                        width: 4em;
+                    value: 10
+                    validation:
+                        integer_number: Please enter a positive whole number.
+                        positive_number: Please enter a positive whole number.
+                    post_field_html: px
+                
+                swiper.custom_1:
+                    plugin_setting:
+                        name: swiper.custom_1
+                        save_when_field_is_hidden: true
+                    visible_if:
+                        lib.valueIsEmpty: swiper.custom_1
+                    type: toggle
+                    row_class: zfab_add_row
+                    value: + Add custom breakpoint
+                    redraw_onchange: true
+                    pressed: false
+                    
+                
+                swiper.custom_1.breakpoints:
+                    type: grouping
+                    grouping_css_class: zfab_block_row
+                    visible_if:
+                        lib.value: swiper.custom_1
+                swiper.custom_1.remove:
+                    grouping: swiper.custom_1.breakpoints
+                    type: button
+                    css_class: zfab_remove_row
+                    value: Remove
+                    onclick: |
+                        zenarioAB.clickButton('swiper.custom_1');
+                        return false;
+                swiper.custom_1.breakpoint:
+                    grouping: swiper.custom_1.breakpoints
+                    plugin_setting:
+                        name: swiper.custom_1.breakpoint
+                    label: 'When window width is >='
+                    indent: 1
+                    type: text
+                    style: |
+                        width: 4em;
+                    value: ''
+                    validation:
+                        integer_number: Please enter a whole number greater than 0.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        required_if_not_hidden: true
+                    post_field_html: px
+                swiper.custom_1.slidesPerView:
+                    grouping: swiper.custom_1.breakpoints
+                    legend: Custom
+                    plugin_setting:
+                        name: swiper.custom_1.slidesPerView
+                    label: 'Slides per view:'
+                    indent: 1
+                    type: select
+                    value: 1
+                    values:
+                        1:
+                            label: 1
+                        2:
+                            label: 2
+                        3:
+                            label: 3
+                        4:
+                            label: 4
+                        5:
+                            label: 5
+                swiper.custom_1.spaceBetween:
+                    grouping: swiper.custom_1.breakpoints
+                    plugin_setting:
+                        name: swiper.custom_1.spaceBetween
+                    label: 'Space between:'
+                    indent: 1
+                    type: text
+                    style: |
+                        width: 4em;
+                    value: 10
+                    validation:
+                        integer_number: Please enter a positive whole number.
+                        positive_number: Please enter a positive whole number.
+                    post_field_html: px
+                
+                
+                
+                

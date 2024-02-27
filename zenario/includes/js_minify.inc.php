@@ -29,11 +29,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 class zenario_minify {
-	
+
 	//	Zenario's minification script includes some logic to shorten long function names.
 	//	All encapsulated functions in the libraries listed with names longer than five
 	//	characters have their names passed through a custom-written hashing function to
-	//	generate a short name,and this short name is then used in the minified copies of
+	//	generate a short name, and this short name is then used in the minified copies of
 	//	the libraries to reduce filesize/download size.
 
 	public static $shortNamesWhitelist = [
@@ -145,7 +145,6 @@ class zenario_minify {
 		'zenario.addClassesToColorbox(',		//'zenario._uzw('
 		'zenario.addJQueryElements(',		//'zenario._4oz('
 		'zenario.addLibPointers(',		//'zenario._ue6('
-		'zenario.addPluginJavaScript(',		//'zenario._4on('
 		'zenario.addRequest(',		//'zenario._ovh('
 		'zenario.addStyles(',		//'zenario._fvj('
 		'zenario.addTabIdToURL(',		//'zenario._mfk('
@@ -299,10 +298,13 @@ class zenario_minify {
 		'zenarioA.checkSlotsBeingEdited(',		//'zenarioA._x4q('
 		'zenarioA.checkSpecificPerms(',		//'zenarioA._om('
 		'zenarioA.checkSpecificPermsOnThisPage(',		//'zenarioA._f0b('
+		'zenarioA.checkToastThisPageLoad(',		//'zenarioA._yl3('
+		'zenarioA.clearMissingSlotsMessage(',		//'zenarioA._vbm('
 		'zenarioA.clearToast(',		//'zenarioA._bl4('
 		'zenarioA.clickOtherTutorialVideo(',		//'zenarioA._w46('
 		'zenarioA.closeBox(',		//'zenarioA._1qq('
 		'zenarioA.closeBoxHandler(',		//'zenarioA._ksb('
+		'zenarioA.closeDebugMenu(',		//'zenarioA._ckv('
 		'zenarioA.closeFloatingBox(',		//'zenarioA._7xa('
 		'zenarioA.closeInfoBox(',		//'zenarioA._6ii('
 		'zenarioA.closeSlotControls(',		//'zenarioA._tq0('
@@ -323,12 +325,10 @@ class zenario_minify {
 		'zenarioA.formatSKItemField(',		//'zenarioA._j8('
 		'zenarioA.generateRandomString(',		//'zenarioA._toz('
 		'zenarioA.getDefaultLanguageName(',		//'zenarioA._3fp('
-		'zenarioA.getEditorField(',		//'zenarioA._vqy('
 		'zenarioA.getGridSlotDetails(',		//'zenarioA._9b6('
 		'zenarioA.getItemFromOrganizer(',		//'zenarioA._mym('
 		'zenarioA.getSKBodyClass(',		//'zenarioA._uv5('
 		'zenarioA.getSKItem(',		//'zenarioA._ccf('
-		'zenarioA.getSkinDesc(',		//'zenarioA._r4d('
 		'zenarioA.hasNoPriv(',		//'zenarioA._tim('
 		'zenarioA.hasPriv(',		//'zenarioA._g9b('
 		'zenarioA.hideAJAXLoader(',		//'zenarioA._28e('
@@ -338,10 +338,12 @@ class zenario_minify {
 		'zenarioA.initTutorialSlideshow(',		//'zenarioA._bw9('
 		'zenarioA.isHtaccessWorking(',		//'zenarioA._9u0('
 		'zenarioA.keepSlotControlsOpen(',		//'zenarioA._6ea('
+		'zenarioA.layoutCodeName(',		//'zenarioA._gfd('
 		'zenarioA.loggedOut(',		//'zenarioA._lnb('
 		'zenarioA.loggedOutIframeCheck(',		//'zenarioA._ty0('
 		'zenarioA.longToast(',		//'zenarioA._oph('
 		'zenarioA.lookupFileDetails(',		//'zenarioA._fw7('
+		'zenarioA.manageToastOnReload(',		//'zenarioA._uin('
 		'zenarioA.movePlugin(',		//'zenarioA._vby('
 		'zenarioA.multipleLanguagesEnabled(',		//'zenarioA._4q2('
 		'zenarioA.nItems(',		//'zenarioA._bj6('
@@ -354,6 +356,7 @@ class zenario_minify {
 		'zenarioA.organizerQuick(',		//'zenarioA._296('
 		'zenarioA.organizerSelect(',		//'zenarioA._1bb('
 		'zenarioA.pickNewPlugin(',		//'zenarioA._7xt('
+		'zenarioA.pluginCodeName(',		//'zenarioA._io('
 		'zenarioA.pluginSlotEditSettings(',		//'zenarioA._y3m('
 		'zenarioA.refreshChangedPluginSlot(',		//'zenarioA._r0p('
 		'zenarioA.reloadMenuPlugins(',		//'zenarioA._i1x('
@@ -363,11 +366,6 @@ class zenario_minify {
 		'zenarioA.replacePluginSlot(',		//'zenarioA._4zg('
 		'zenarioA.savePageMode(',		//'zenarioA._p7i('
 		'zenarioA.scanHyperlinksAndDisplayStatus(',		//'zenarioA._8bp('
-		'zenarioA.setDocumentURL(',		//'zenarioA._5cg('
-		'zenarioA.setEditorField(',		//'zenarioA._kda('
-		'zenarioA.setImageURL(',		//'zenarioA._zt8('
-		'zenarioA.setLinkPickerOnTinyMCE(',		//'zenarioA._ldb('
-		'zenarioA.setLinkURL(',		//'zenarioA._yia('
 		'zenarioA.setModuleInfo(',		//'zenarioA._to6('
 		'zenarioA.setSlotParents(',		//'zenarioA._n54('
 		'zenarioA.setTooltipIfTooLarge(',		//'zenarioA._5yg('
@@ -376,13 +374,14 @@ class zenario_minify {
 		'zenarioA.showMessage(',		//'zenarioA._s34('
 		'zenarioA.showPagePreview(',		//'zenarioA._2u1('
 		'zenarioA.showPlugin(',		//'zenarioA._urm('
+		'zenarioA.showSourceFiles(',		//'zenarioA._nbg('
+		'zenarioA.showToastOnNextPageLoad(',		//'zenarioA._hwm('
 		'zenarioA.showTutorial(',		//'zenarioA._on('
 		'zenarioA.slotParentMouseOut(',		//'zenarioA._mt5('
 		'zenarioA.slotParentMouseOver(',		//'zenarioA._8jm('
 		'zenarioA.suspendStopWrapperClicks(',		//'zenarioA._kng('
 		'zenarioA.switchToolbarWithSlotControlsOpen(',		//'zenarioA._m9i('
 		'zenarioA.tinyMCEPasteRreprocess(',		//'zenarioA._9t9('
-		'zenarioA.toastOrNoToast(',		//'zenarioA._e45('
 		'zenarioA.toggleAdminToolbar(',		//'zenarioA._x3j('
 		'zenarioA.toggleShowEmptySlots(',		//'zenarioA._vp6('
 		'zenarioA.toggleShowGrid(',		//'zenarioA._ltf('
@@ -398,6 +397,7 @@ class zenario_minify {
 		'zenarioAB.cutText(',		//'zenarioAB._ng7('
 		'zenarioAB.enableOrDisableSite(',		//'zenarioAB._8e7('
 		'zenarioAB.generateAlias(',		//'zenarioAB._ymv('
+		'zenarioAB.getDockPosition(',		//'zenarioAB._qnb('
 		'zenarioAB.makeFieldAsTallAsPossible(',		//'zenarioAB._dvg('
 		'zenarioAB.openBox(',		//'zenarioAB._2p('
 		'zenarioAB.openSiteSettings(',		//'zenarioAB._wl6('
@@ -405,6 +405,7 @@ class zenario_minify {
 		'zenarioAB.previewDateFormatGo(',		//'zenarioAB._9zr('
 		'zenarioAB.removeHtmAndHtmlFromAlias(',		//'zenarioAB._gpp('
 		'zenarioAB.removeHttpAndHttpsFromAlias(',		//'zenarioAB._dhf('
+		'zenarioAB.setDockPosition(',		//'zenarioAB._f9n('
 		'zenarioAB.setTitle(',		//'zenarioAB._pd('
 		'zenarioAB.svgSelected(',		//'zenarioAB._4tb('
 		'zenarioAB.updateHash(',		//'zenarioAB._c3r('
@@ -495,7 +496,7 @@ class zenario_minify {
 		'zenarioO.checkButtonHidden(',		//'zenarioO._b0p('
 		'zenarioO.checkCondition(',		//'zenarioO._8id('
 		'zenarioO.checkDisabled(',		//'zenarioO._jdn('
-		'zenarioO.checkHiddenByFilter(',		//'zenarioO._v3t('
+		'zenarioO.checkHiddenByRefiner(',		//'zenarioO._4z6('
 		'zenarioO.checkIfClearAllAvailable(',		//'zenarioO._2v3('
 		'zenarioO.checkIfColumnPickerChangesAreAllowed(',		//'zenarioO._cai('
 		'zenarioO.checkItemButtonHidden(',		//'zenarioO._4k('
@@ -553,6 +554,7 @@ class zenario_minify {
 		'zenarioO.getPanel(',		//'zenarioO._c1k('
 		'zenarioO.getPanelType(',		//'zenarioO._xg('
 		'zenarioO.getQuickFilters(',		//'zenarioO._v94('
+		'zenarioO.getRecordCount(',		//'zenarioO._w1('
 		'zenarioO.getSelectedItemFromLastPanel(',		//'zenarioO._dr1('
 		'zenarioO.getShownColumns(',		//'zenarioO._hrx('
 		'zenarioO.getSortedIdsOfTUIXElements(',		//'zenarioO._219('
@@ -631,6 +633,7 @@ class zenario_minify {
 		'zenarioO.setDataAttributes(',		//'zenarioO._z22('
 		'zenarioO.setFilterValue(',		//'zenarioO._yvr('
 		'zenarioO.setHash(',		//'zenarioO._1a4('
+		'zenarioO.setMap(',		//'zenarioO._gm7('
 		'zenarioO.setNavigation(',		//'zenarioO._wkp('
 		'zenarioO.setOrganizerIcons(',		//'zenarioO._w8e('
 		'zenarioO.setPanel(',		//'zenarioO._9u('
@@ -672,6 +675,7 @@ class zenario_minify {
 		'zenarioT.canDoHTML5Upload(',		//'zenarioT._3gj('
 		'zenarioT.checkActionExists(',		//'zenarioT._r6f('
 		'zenarioT.checkActionUnique(',		//'zenarioT._hu6('
+		'zenarioT.checkDumps(',		//'zenarioT._iw6('
 		'zenarioT.checkFunctionExists(',		//'zenarioT._bxf('
 		'zenarioT.csvToObject(',		//'zenarioT._iru('
 		'zenarioT.disableFileDragDrop(',		//'zenarioT._3u4('
@@ -828,70 +832,89 @@ If you have svn, this script will only minify files that svn says are new or mod
 //Macros and replacements
 function applyCompilationMacros($code, $dir, $file) {
 	
-	//Check to see if this is a module file
-	$module = false;
-	$matches = [];
-	if (preg_match('@modules/(\w+)/@', $dir, $matches)) {
-		$module = $matches[1];
-	}
-	
-	//Check if this JavaScript file uses the zenario.lib function.
-	$isZenarioLib =
-		false !== strpos($code, 'zenario.lib(');
-	$isZenarioLibWithAllInputs =
-		$isZenarioLib
-	 && false !== strpos($code, 'extensionOf, methodsOf, has');
-	$usesThus =
-		$isZenarioLib
-	 && false !== strpos($code, 'thus');
-	
-	//If so, we can use the has() shortcut.
-	//If not, we need to write out zenario.has() in full.
-	if ($isZenarioLibWithAllInputs) {
-		$has = 'has';
-	} else {
-		$has = 'zenario.has';
-	}
-	
-	//Use the shortcuts for some string methods properties to save space
-	if ($isZenarioLib) {
-		$code = preg_replace('@.([mrs])(atch|eplace|plit)\(@', '.$1(', $code);
-	}
-	
-	//Automatically add "var thus = this;" to the start of any method declarations.
-	//Also add it to any static function declared on a module.
-	if ($usesThus) {
-		$code = preg_replace('@(\bmethods\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
-		
-		if ($module !== false) {
-			$code = preg_replace('@(\b'. $module. '\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
-		}
-	}
-	
-	//Where an encapsulated function has a whitelisted shortname, replace it with its shortname in the minified code.
-	if (zenario_minify::$longNames !== []) {
-		$code = str_replace(zenario_minify::$longNames, zenario_minify::$shortNames, $code);
-	}
-	
 	$patterns = [];
 	$replacements = [];
 	
-	//"foreach" is a macro for "for .. in ... hasOwnProperty"
-	$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
-	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue; \4 \5 = \1[\3];';
-	$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
-	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue;';
 	
-	//We don't have node as a dependency so we can't use Babel.
-	//So we'll try and make do with a few replacements instead!
-	$patterns[] = '@\(([\w\s,]*)\)\s*\=\>\s*\{@';
-	$replacements[] = 'function ($1) {';
-	$patterns[] = '@(\b[\w\$]+\b)\s*\=\>\s*\{@';
-	$replacements[] = 'function ($1) {';
+	//This is normally only called on our own internal JavaScript code, however as a bit of a hack,
+	//we'll use a special case in this function to fix a bug with TinyMCE 6 trying to call the
+	//classList.add() and classList.remove() functions with invalid values...
+	if ($file == 'tinymce') {
+		$patterns[] = '@classList\.remove\(clazz\)@';
+		$replacements[] = 'if (clazz !== "") classList.remove(clazz)';
+		
+		$patterns[] = '@element\.dom\.classList\.add\(clazz\)@';
+		$replacements[] = 'if (clazz !== "") element.dom.classList.add(clazz)';
+
+		$patterns[] = "@s\.replace\(r\, \'\'\)\;@";
+		$replacements[] = "{ if (!_.isString(s)) return ''; return s.replace(r, ''); }";
 	
-	//Not actually standard JavaScript but looks nice
-	$patterns[] = '@\=\>\s*\{@';
-	$replacements[] = 'function () {';
+	
+	} else {
+		//Check to see if this is a module file
+		$module = false;
+		$matches = [];
+		if (preg_match('@modules/(\w+)/@', $dir, $matches)) {
+			$module = $matches[1];
+		}
+	
+		//Check if this JavaScript file uses the zenario.lib function.
+		$isZenarioLib =
+			false !== strpos($code, 'zenario.lib(');
+		$isZenarioLibWithAllInputs =
+			$isZenarioLib
+		 && false !== strpos($code, 'extensionOf, methodsOf, has');
+		$usesThus =
+			$isZenarioLib
+		 && false !== strpos($code, 'thus');
+	
+		//If so, we can use the has() shortcut.
+		//If not, we need to write out zenario.has() in full.
+		if ($isZenarioLibWithAllInputs) {
+			$has = 'has';
+		} else {
+			$has = 'zenario.has';
+		}
+	
+		//Use the shortcuts for some string methods properties to save space
+		if ($isZenarioLib) {
+			$code = preg_replace('@.([mrs])(atch|eplace|plit)\(@', '.$1(', $code);
+		}
+	
+		//Automatically add "var thus = this;" to the start of any method declarations.
+		//Also add it to any static function declared on a module.
+		if ($usesThus) {
+			$code = preg_replace('@(\bmethods\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
+		
+			if ($module !== false) {
+				$code = preg_replace('@(\b'. $module. '\w*\.[\w\$]+\s*=\s*function\s*\([^\)]*\)\s*\{)@', '$1 var thus = this;', $code);
+			}
+		}
+	
+		//Where an encapsulated function has a whitelisted shortname, replace it with its shortname in the minified code.
+		if (zenario_minify::$longNames !== []) {
+			$code = str_replace(zenario_minify::$longNames, zenario_minify::$shortNames, $code);
+		}
+	
+		//"foreach" is a macro for "for .. in ... hasOwnProperty"
+		$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
+		$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue; \4 \5 = \1[\3];';
+		$patterns[] = '@\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{@';
+		$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue;';
+	
+		//We don't have node as a dependency so we can't use Babel.
+		//So we'll try and make do with a few replacements instead!
+		$patterns[] = '@\(([\w\s,]*)\)\s*\=\>\s*\{@';
+		$replacements[] = 'function ($1) {';
+		$patterns[] = '@(\b[\w\$]+\b)\s*\=\>\s*\{@';
+		$replacements[] = 'function ($1) {';
+	
+		//Not actually standard JavaScript but looks nice
+		$patterns[] = '@\=\>\s*\{@';
+		$replacements[] = 'function () {';
+	
+	}
+	
 	
 	return preg_replace($patterns, $replacements, $code);
 }
@@ -1033,10 +1056,11 @@ function minify($dir, $file, $level, $ext = '.js', $string = false) {
 					//foreach-style loops that also automatically add a call
 					//to .hasOwnProperty() for safety.
 					//Note that JavaScript works slightly differently to php; if you only
-					//specifiy one variable then it becomes the key, not the value
+					//specifiy one variable then it becomes the key, not the value.
+					//Also call it when minifying TinyMCE
 					if (!$isCSS
 					 && !$yamlToJSON
-					 && substr($dir, 0, 13) != 'zenario/libs/') {
+					 && (substr($dir, 0, 13) != 'zenario/libs/' || $file == 'tinymce')) {
 						$tmpFile = tempnam(sys_get_temp_dir(), 'js');
 						file_put_contents($tmpFile, applyCompilationMacros(file_get_contents($srcFile), $dir, $file));
 						$srcFile = $tmpFile;

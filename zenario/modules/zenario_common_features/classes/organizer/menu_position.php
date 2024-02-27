@@ -37,7 +37,7 @@ class zenario_common_features__organizer__menu_position extends ze\moduleBaseCla
 		
 		if (!isset($pathsByParents[$parentId])) {
 			if ($parentId) {
-				$pathsByParents[$parentId] = ze\menuAdm::pathWithSection($parentId, false, $this->seperator) . $this->seperator;
+				$pathsByParents[$parentId] = ze\menuAdm::path($parentId, false, $this->seperator) . $this->seperator;
 			} else {
 				$pathsByParents[$parentId] = ze\menu::sectionName($item['section_id']). $this->seperator;
 			}
@@ -143,7 +143,7 @@ class zenario_common_features__organizer__menu_position extends ze\moduleBaseCla
 						break;
 					
 					case 'existing':
-						$item['menu_path'] = ze\menuAdm::pathWithSection($item['menu_id'], false, $this->seperator);
+						$item['menu_path'] = ze\menuAdm::path($item['menu_id'], false, $this->seperator);
 						break;
 				}
 				 

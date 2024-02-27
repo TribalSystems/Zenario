@@ -586,6 +586,15 @@ diagnostics:
                 unknown_tables: *blank_child
                 unknown_module_tables: *blank_child
                 
+                encryption_key_issues:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
+                
                 admin_timeout_not_set_up_correctly: *blank_child
                 public_documents: *blank_child
                 public_images: *blank_child
@@ -700,18 +709,6 @@ diagnostics:
                             We recommend you ask your system administrator to enable PDE to improve the protection of data at rest.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
-                bad_encryption_key:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_level
-                    snippet:
-                        html: |
-                            This site uses Personal Data Encryption to protect user data.
-                            However, the encryption key is either not specified in the <code>zenario_siteconfig.php</code>
-                            file, or it does not correspond with the encryption key on this server,
-                            so no encrypted personal data will be displayed.
-                    hide_on_install: true
-                    visible_if: zenarioAW.togglePressed(field)
                 column_not_found:
                     grouping: sub_table
                     full_width: true
@@ -739,7 +736,7 @@ diagnostics:
                     snippet:
                         html: |
                             The .htaccess file exists and is readable, but Friendly URLs are disabled.
-                            Please go to <a href="organizer.php#zenario__administration/panels/site_settings//urls_and_xml_sitemap" target="_blank"><em>URL format, aliases and XML sitemap</em></a> in Configuration->Site Settings to change this.
+                            Please go to <a href="organizer.php#zenario__administration/panels/site_settings//search_engine_optimisation" target="_blank"><em>Search engine optimisation</em></a> in Configuration->Site Settings to change this.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 
@@ -837,46 +834,34 @@ diagnostics:
                 administrator_with_3_or_more_failed_logins_5: *blank_child
                 administrator_with_3_or_more_failed_logins_more: *blank_child
                 
-                continue:
-                    value: Continue
-                    type: submit
+                # T12576, Admin login page should have explicit buttons for where it will send you after login
+                continue_to:
+                    type: radios
                     full_width: true
-                    style: |
-                        float: right;
+                    values:
+                        default:
+                            label: Whatever you just came from
+                        citem:
+                            label: Continue to html_123
+                        home:
+                            label: Go to home page
+                        organizer:
+                            label: Go to Organizer
+                    pre_field_html: |
+                        <div class="continue_to_selector selector_wrap"><div>
+                    post_field_html: |
+                        </div></div>
+                
                 check_again:
                     value: Check again
                     type: submit
+                    style: |
+                        float: left;
+                continue:
+                    value: Continue
+                    type: submit
                     same_row: true
+                    full_width: true
                     style: |
                         float: right;
                 
-                # For T12576 (not yet implmented)
-                #check_again:
-                #    value: Check again
-                #    type: submit
-                #    style: |
-                #        float: left;
-                #        position: relative;
-                #        left: 47px;
-                #continue:
-                #    value: Continue
-                #    type: submit
-                #    full_width: true
-                #    same_row: true
-                #    style: |
-                #        float: right;
-                #continue_to:
-                #    type: select
-                #    values:
-                #        default:
-                #            label: Whatever you just came from
-                #        citem:
-                #            label: Continue to html_123
-                #        home:
-                #            label: Continue to home page
-                #        organizer:
-                #            label: Continue to Organizer
-                #    full_width: true
-                #    same_row: true
-                #    style: |
-                #        float: right;

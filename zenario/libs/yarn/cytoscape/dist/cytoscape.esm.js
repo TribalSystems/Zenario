@@ -16192,7 +16192,7 @@ var styfn$2 = {};
       enums: ['rectangle', 'roundrectangle', 'round-rectangle']
     },
     nodeShape: {
-      enums: ['rectangle', 'roundrectangle', 'round-rectangle', 'cutrectangle', 'cut-rectangle', 'bottomroundrectangle', 'bottom-round-rectangle', 'barrel', 'ellipse', 'triangle', 'round-triangle', 'square', 'pentagon', 'round-pentagon', 'hexagon', 'round-hexagon', 'concavehexagon', 'concave-hexagon', 'heptagon', 'round-heptagon', 'octagon', 'round-octagon', 'tag', 'round-tag', 'star', 'diamond', 'round-diamond', 'vee', 'rhomboid', 'polygon']
+      enums: ['rectangle', 'roundrectangle', 'round-rectangle', 'cutrectangle', 'cut-rectangle', 'bottomroundrectangle', 'bottom-round-rectangle', 'barrel', 'ellipse', 'triangle', 'round-triangle', 'square', 'pentagon', 'round-pentagon', 'hexagon', 'round-hexagon', 'concavehexagon', 'concave-hexagon', 'heptagon', 'round-heptagon', 'octagon', 'round-octagon', 'tag', 'round-tag', 'star', 'diamond', 'round-diamond', 'vee', 'rhomboid', 'right-rhomboid', 'polygon']
     },
     overlayShape: {
       enums: ['roundrectangle', 'round-rectangle', 'ellipse']
@@ -19997,6 +19997,12 @@ var createLayoutInfo = function createLayoutInfo(cy, layout, options) {
   // Shortcut
   var edges = options.eles.edges();
   var nodes = options.eles.nodes();
+  var bb = makeBoundingBox(options.boundingBox ? options.boundingBox : {
+    x1: 0,
+    y1: 0,
+    w: cy.width(),
+    h: cy.height()
+  });
   var layoutInfo = {
     isCompound: cy.hasCompoundNodes(),
     layoutNodes: [],
@@ -20007,14 +20013,9 @@ var createLayoutInfo = function createLayoutInfo(cy, layout, options) {
     layoutEdges: [],
     edgeSize: edges.size(),
     temperature: options.initialTemp,
-    clientWidth: cy.width(),
-    clientHeight: cy.width(),
-    boundingBox: makeBoundingBox(options.boundingBox ? options.boundingBox : {
-      x1: 0,
-      y1: 0,
-      w: cy.width(),
-      h: cy.height()
-    })
+    clientWidth: bb.w,
+    clientHeight: bb.h,
+    boundingBox: bb
   };
   var components = options.eles.components();
   var id2cmptId = {};
@@ -26825,6 +26826,7 @@ BRp$2.registerNodeShapes = function () {
   this.generatePolygon('star', star5Points);
   this.generatePolygon('vee', [-1, -1, 0, -0.333, 1, -1, 0, 1]);
   this.generatePolygon('rhomboid', [-1, -1, 0.333, -1, 1, 1, -0.333, 1]);
+  this.generatePolygon('right-rhomboid', [-0.333, -1, 1, -1, 0.333, 1, -1, 1]);
   this.nodeShapes['concavehexagon'] = this.generatePolygon('concave-hexagon', [-1, -0.95, -0.75, 0, -1, 0.95, 1, 0.95, 0.75, 0, 1, -0.95]);
   {
     var tagPoints = [-1, -1, 0.25, -1, 1, 0, 0.25, 1, -1, 1];
@@ -26983,7 +26985,7 @@ BRp.init = function (options) {
     if (!stylesheetAlreadyExists) {
       var stylesheet = document.createElement('style');
       stylesheet.id = stylesheetId;
-      stylesheet.innerHTML = '.' + className + ' { position: relative; }';
+      stylesheet.textContent = '.' + className + ' { position: relative; }';
       head.insertBefore(stylesheet, head.children[0]); // first so lowest priority
     }
 
@@ -31910,7 +31912,7 @@ sheetfn.appendToStyle = function (style) {
   return style;
 };
 
-var version = "3.24.0";
+var version = "3.25.0";
 
 var cytoscape = function cytoscape(options) {
   // if no options specified, use default

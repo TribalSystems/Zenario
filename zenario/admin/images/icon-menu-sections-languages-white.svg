@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="20px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="language">
+        <g>
+            <g>
+                <rect x="0" y="9.353" width="10.141" height="2.59" style="fill:white;"/>
+                <rect x="0" y="13.381" width="10.141" height="2.59" style="fill:white;"/>
+                <rect x="0" y="17.41" width="10.141" height="2.59" style="fill:white;"/>
+            </g>
+            <g>
+                <path d="M16.619,7.29L12.676,7.29C10.817,7.29 9.295,5.769 9.295,3.909L9.295,3.381C9.296,1.521 10.817,0 12.676,0L16.619,0C18.479,0 20,1.521 20,3.381L20,3.91C20,5.769 18.479,7.29 16.619,7.29Z" style="fill:white;fill-rule:nonzero;"/>
+                <path d="M10.93,10.935L15.507,7.2L12.828,6.192L10.93,10.935Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
+</svg>

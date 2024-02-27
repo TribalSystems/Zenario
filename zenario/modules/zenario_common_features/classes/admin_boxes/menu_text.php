@@ -61,9 +61,6 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 		
 		$box['identifier']['css_class'] = ze\menuAdm::cssClass($menu);
 		
-		if ($box['key']['parentMenuID']) {
-			$values['text/parent_path_of__menu_title'] = ze\menuAdm::path($box['key']['parentMenuID'], $box['key']['languageId']);
-		}
 		$values['text/menu_title'] = self::getMenuText($box['key']['id'], $box['key']['languageId']);
 		
 		if (ze::$defaultLang != $box['key']['languageId']
@@ -72,16 +69,13 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 				ze\admin::phrase('Menu text ([[english_name]]):',
 					['english_name' => ze\lang::name(ze::$defaultLang, false)]);
 			
-			$values['text/parent_path_of__text_in_default_language'] = ze\menuAdm::path($box['key']['parentMenuID'], ze::$defaultLang);
 			zenario_common_features::setMenuPath($box['tabs']['text']['fields'], 'text_in_default_language', 'value');
 		
 		} else {
 			$fields['text/left_column']['hidden'] =
 			$fields['text/right_column']['hidden'] =
-			$fields['text/path_of__text_in_default_language']['hidden'] =
 			$fields['text/text_in_default_language']['hidden'] = true;
-			$fields['text/menu_title']['grouping'] =
-			$fields['text/path_of__menu_title']['grouping'] = '';
+			$fields['text/menu_title']['grouping'] = '';
 		}
 		
 		zenario_common_features::setMenuPath($box['tabs']['text']['fields'], 'menu_title', 'value');
@@ -105,27 +99,21 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 					['english_name' => ze\lang::name($box['key']['languageId'], false)]);
 		}
 		
-		//For top-level menu modes, add a note to the "path" field to make it clear that it's
-		//at the top level
-		if (!$values['text/parent_path_of__menu_title']) {
-			$fields['text/path_of__menu_title']['label'] = ze\admin::phrase('Menu path preview (top level):');
-			$fields['text/path_of__text_in_default_language']['label'] = ze\admin::phrase('Menu path (top level):');
-		}
 		
-		if ($box['key']['parentMenuID']) {
-			$mpathArr = explode(' › ',$values['text/path_of__menu_title']);
-			
-			$fields['text/path_of__menu_title']['value'] = $values['text/path_of__menu_title']." [level ".count($mpathArr)."]"; 
-		}
-		else	
-		{
-			$fields['text/path_of__menu_title']['value'] = self::getMenuText($box['key']['id'], $box['key']['languageId'])." [level 1]";
-		}
 
+		
+		//Set the menu path preview
+		//Set the menu position to the exsting node.
+		//I'm using the "$isExistingNode" option here which is only supported by the ze\menuAdm::posToPathArray() function.
+		//This option is not supported by position pickers nor the ze\menuAdm::addContentItems() function.
+		$menuPos = $menu['section_id']. '_'. $menu['id']. '_3';
+		ze\menuAdm::setupPathPreview($menuPos, $fields['text/menu_path_preview'], $box['key']['languageId']);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($path != 'zenario_menu_text') return;
+		
+		$values['text/menu_path_preview'] = $values['text/menu_title'];
 	}
 
 

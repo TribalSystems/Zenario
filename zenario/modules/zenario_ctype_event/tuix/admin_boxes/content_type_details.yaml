@@ -6,9 +6,10 @@ zenario_content_type_details:
             fields:
                 zenario_ctype_event__location_field:
                     visible_if: zenarioAB.key('id') == 'event'
-                    label: 'Location field:'
+                    label: 'Enable location'
                     type: checkbox
                     onoff: true
+                    value: true
                     redraw_onchange: true
                 zenario_ctype_event__location_online:
                     indent: 1
@@ -32,3 +33,8 @@ zenario_content_type_details:
                     label: Allow addresses not in database (enable address text entry field)
                     type: checkbox
                     value: true
+                zenario_ctype_event__timezone_support:
+                    visible_if: zenarioAB.key('id') == 'event'
+                    label: 'Enable timezone support'
+                    type: checkbox
+                    onoff: true

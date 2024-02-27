@@ -103,7 +103,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 			if ($field['visibility'] == 'visible_on_condition' && $field['visible_condition_field_id'] && isset($panel['items'][$field['visible_condition_field_id']])) {
 				$conditionFieldType = $panel['items'][$field['visible_condition_field_id']]['type'];
 				
-				$values = explode(',', $field['visible_condition_field_value']);
+				$values = explode(',', ($field['visible_condition_field_value'] ?: ''));
 				if (
 					count($values) > 1
 					|| (
@@ -223,15 +223,14 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		unset($field);
 		
 		foreach ($panel['pages'] as $pageId => &$page) {
-			//$page['visible_condition_field_type'] = $page['visible_condition_invert'] ? 'visible_if_not' : 'visible_if';
-			if($page['visible_condition_invert'] == 0){
+			if ($page['visible_condition_invert'] == 0) {
 			    $page['visible_condition_field_type'] = 'visible_if';
-			    
-			}else if($page['visible_condition_invert'] == 1){
+			} elseif ($page['visible_condition_invert'] == 1) {
 			    $page['visible_condition_field_type'] = 'visible_if_not';
 			} else {
 			     $page['visible_condition_field_type'] = 'visible_if_one_of';
 			}
+			
 			if ($page['visibility'] == 'visible_on_condition' && $page['visible_condition_field_id'] && isset($panel['items'][$page['visible_condition_field_id']])) {
 				$conditionFieldType = $panel['items'][$page['visible_condition_field_id']]['type'];
 				$values = explode(',', $page['visible_condition_field_value']);

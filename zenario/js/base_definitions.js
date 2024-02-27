@@ -94,6 +94,7 @@
 		zenarioA = createZenarioLibrary('A'),
 		zenarioT = createZenarioLibrary('T'),
 		zenarioF = createZenarioLibrary('F'),
+		zenarioFEA = createZenarioLibrary('FEA', zenarioF),
 		zenarioAF = createZenarioLibrary('AF', zenarioF),
 		zenarioABToolkit = createZenarioLibrary('ABToolkit', zenarioAF),
 		zenarioAB = window.zenarioAB = new zenarioABToolkit(),

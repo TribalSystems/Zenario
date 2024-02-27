@@ -121,6 +121,7 @@ zenario__email_template_manager:
                     parent: view_dropdown
                     priv: _PRIV_VIEW_USER
                     label: Log of sent emails
+                    record_count: sent_email_count
                     link:
                         path: zenario__email_template_manager/panels/email_log
                         branch: true

@@ -48,12 +48,6 @@
 					{# As of 06 Sept 2021, the "Show writer's photo" setting is disabled. #}
 					{# Commenting out the code in case we want it back in the future. #}
 
-					{% if Show_Author_Image %}
-						<div class="content_list_author_image">
-							<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
-						</div>
-					{% endif %}
-
 					{% if Show_Author %}
 						<p class="content_list_author">{{item.Author|e}}</p>
 					{% endif %}

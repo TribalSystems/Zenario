@@ -49,6 +49,23 @@ zenario__content:
                     WHERE c.status NOT IN ('trashed','deleted')
                 
             quick_filter_buttons:
+                language:
+                    label: 'All languages'
+                all_languages:
+                    parent: language
+                    label: 'All languages'
+                    column: language_id
+                    value: ''
+                    remove_filter: true
+                content_type:
+                    label: 'All content types'
+                all_content_types:
+                    parent: content_type
+                    ord: 1
+                    label: 'All content types'
+                    column: type
+                    value: ''
+                    remove_filter: true
                 status:
                     label: 'Any status'
                 any_status:
@@ -67,33 +84,26 @@ zenario__content:
                     label: "Published with draft"
                     column: status
                     value: published_with_draft
+                unlisted_with_draft:
+                    parent: status
+                    label: "Published unlisted with draft"
+                    column: status
+                    value: unlisted_with_draft
                 published:
                     parent: status
                     label: "Published"
                     column: status
                     value: published
+                unlisted:
+                    parent: status
+                    label: "Published unlisted"
+                    column: status
+                    value: unlisted
                 hidden:
                     parent: status
                     label: "Hidden"
                     column: status
                     value: hidden
-                language:
-                    label: 'All languages'
-                all_languages:
-                    parent: language
-                    label: 'All languages'
-                    column: language_id
-                    value: ''
-                    remove_filter: true
-                content_type:
-                    label: 'All content types'
-                all_content_types:
-                    parent: content_type
-                    ord: 1
-                    label: 'All content types'
-                    column: type
-                    value: ''
-                    remove_filter: true
                 #All enabled content types will appear below.
                 #The list of values is populated in the PHP class.
                     
@@ -112,6 +122,8 @@ zenario__content:
                     sql: 'c.language_id = [[REFINER__LANGUAGE]]'
                 template:
                     sql: 'v.layout_id = [[REFINER__TEMPLATE]]'
+                uses_access_code:
+                    sql: 'v.access_code = [[REFINER__USES_ACCESS_CODE]]'
                 add_translation_to_chain:
                     sql: ''
                     add_translation_to_chain: ''
@@ -142,7 +154,7 @@ zenario__content:
                             WHERE vfcd.file_id = f.id AND vfcd.version IN (cfcd.admin_version, cfcd.visitor_version)) > 1
                 work_in_progress:
                     sql: |
-                        c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft')
+                        c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft','unlisted_with_draft')
                 module_usage:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]layouts AS l
@@ -283,13 +295,6 @@ zenario__content:
                 number_of_categories:
                     ord: 8
                     title: Number of categories
-                    db_column: |
-                        (
-                            SELECT COUNT(cil.category_id)
-                            FROM [[DB_PREFIX]]category_item_link AS cil
-                            WHERE cil.equiv_id = c.equiv_id
-                              AND cil.content_type = c.type
-                        )
                    # show_by_default: false
                     #hidden: true
                 menunodecounter:
@@ -372,9 +377,11 @@ zenario__content:
                     values:
                         first_draft: First draft
                         published_with_draft: Published with draft
+                        unlisted_with_draft: Published unlisted with draft
                         hidden_with_draft: Hidden with draft
                         trashed_with_draft: Trashed with draft
                         published: Published
+                        unlisted: Published unlisted
                         hidden: Hidden
                         trashed: Trashed
                 admin_version_status:
@@ -384,9 +391,11 @@ zenario__content:
                     values:
                         first_draft: Draft
                         published_with_draft: Draft
+                        unlisted_with_draft: Draft
                         hidden_with_draft: Draft
                         trashed_with_draft: Draft
                         published: Published
+                        unlisted: Published
                         hidden: Hidden
                         trashed: Trashed
                 visitor_version_status:
@@ -396,9 +405,11 @@ zenario__content:
                     values:
                         first_draft: '[Not published]'
                         published_with_draft: ""
+                        unlisted_with_draft: '[Unlisted]'
                         hidden_with_draft: '[Hidden]'
                         trashed_with_draft: '[Trashed]'
                         published: ""
+                        unlisted: '[Unlisted]'
                         hidden: '[Hidden]'
                         trashed: '[Trashed]'
                 privacy:
@@ -565,6 +576,7 @@ zenario__content:
                     db_column: mt.name
                     show_by_default: true
                     item_link: menu_item
+                    disallow_sorting: true
                 menu_id:
                     db_column: mi.id
                 scheduled_publish_datetime:
@@ -730,27 +742,29 @@ zenario__content:
                         message: >
                             This panel shows all of the content items that have been trashed.
                             To restore a content item, you need to re-draft and then publish it.
+                    
+                    
             inline_buttons:
                 no_menu_linked:
                     css_class: zenario_not_at_menu
                     tooltip: "This content item is not in the menu"
                     visible_if: >
-                        (item.menunodecounter == 0)
+                        item.menunodecounter == 0
                 menu_text_missing:
                     css_class: zenario_not_at_menu
                     tooltip: "This content item is in the menu, but the menu text is missing"
                     visible_if: >
-                        (item.menunodecounter == 'menu_node_text_missing')
+                        item.menunodecounter == 'menu_node_text_missing'
                 one_menu_linked:
                     css_class: zenario_at_menu_unique
                     tooltip: "This content item is in the menu"
                     visible_if: >
-                        (item.menunodecounter == 1)        
+                        item.menunodecounter == 1
                 one_or_more_menu_linked:
                     css_class: zenario_at_menu_primary
                     tooltip: "This content item has more than one menu node linking to it"
                     visible_if: >
-                        (item.menunodecounter == 2)
+                        item.menunodecounter != 'menu_node_text_missing' && item.menunodecounter > 1
                         
                 layout:
                     css_class: zenario_layout_inline_button
@@ -793,15 +807,23 @@ zenario__content:
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >
-                        (item.number_of_categories == 0)
-                one_or_more_categories:
+                        item.number_of_categories == 0
+                one_category:
                     ord: privacy.2
                     css_class: one_or_more_categories
-                    tooltip: "Content item is in one or more categories"
+                    tooltip: "Content item is in one category"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >
-                        (item.number_of_categories > 0)
+                        item.number_of_categories == 1
+                multiple_categories:
+                    ord: privacy.2
+                    css_class: one_or_more_categories
+                    tooltip: "Content item is in [[number_of_categories]] categories"
+                    admin_box:
+                        path: zenario_content_categories
+                    visible_if: >
+                        item.number_of_categories > 1
                 view_frontend:
                     css_class: view_frontend
                     tooltip: Go to content item in front-end window
@@ -1166,6 +1188,16 @@ zenario__content:
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
                 
+                copy_to_hierarchical_documents:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_DOCUMENTS
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    label: Copy to hierarchical documents
+                    admin_box:
+                        path: zenario_copy_to_hierarchical_documents
+                    visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')
+                
                 quick_add_to_menu:
                     parent: action_dropdown
                     priv: _PRIV_ADD_MENU_ITEM
@@ -1283,6 +1315,42 @@ zenario__content:
                                 message_type: warning
                             request:
                                 create_draft_by_copying: 1
+                staging_mode:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if: |
+                        zenarioA.siteSettings.enable_staging_mode
+                        && item.draft
+                        && item.privacy == 'public'
+                    label: 'Staging mode'
+                    admin_box:
+                        path: zenario_content_staging_mode
+                create_draft_by_overwriting:
+                    parent: action_dropdown
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                    with_columns_set:
+                        draft: true
+                        not_locked: true
+                        has_document: true
+                    label: Copy from other...
+                    combine_items:
+                        path: zenario__content/panels/content/refiners/filter_exclude_documents////
+                        min_path: zenario__content/panels/languages
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        one_to_one_choose_phrase: Copy from selected
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to copy the contents of the selected content item over the current draft?
+                                
+                                    This cannot be undone.
+                                button_message: Copy and overwrite
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                create_draft_by_copying: 1
                 
                 delete_archives:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -1343,6 +1411,82 @@ zenario__content:
                         ghost: true
                     admin_box:
                         path: zenario_delete_media_content_item
+                delist:
+                    parent: action_dropdown
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Make unlisted
+                    multiple_select: true
+                    multiple_select_label: Make selected content items unlisted
+                    with_columns_set:
+                        delistable: true
+                    without_columns_set:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            html: true
+                            message: |
+                                <p>Are you sure you want to make this content item unlisted?</p>
+                                <p>Unlisted content items:</p>
+                                <ul><li>
+                                    Are not shown in menus
+                                </li><li>
+                                    Are not shown in content summary lists
+                                </li><li>
+                                    Are not displayed in search plugins
+                                </li><li>
+                                    Are not displayed in site-maps
+                                </li><li>
+                                    Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                                </li></ul>
+                            multiple_select_message: |
+                                <p>Are you sure you want to make [[item_count]] content items unlisted?</p>
+                                <p>Unlisted content items:</p>
+                                <ul><li>
+                                    Are not shown in menus
+                                </li><li>
+                                    Are not shown in content summary lists
+                                </li><li>
+                                    Are not displayed in search plugins
+                                </li><li>
+                                    Are not displayed in site-maps
+                                </li><li>
+                                    Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                                </li></ul>
+                            button_message: Make unlisted
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delist: 1
+                relist:
+                    parent: action_dropdown
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Make listed
+                    multiple_select: true
+                    multiple_select_label: Make selected content items listed
+                    with_columns_set:
+                        relistable: true
+                    without_columns_set:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            html: true
+                            message: |
+                                <p>Are you sure you want to make this content item listed?</p>
+                                <p>When listed, the content item will appear in any menu/content summary list/search plugins as normal.</p>
+                            multiple_select_message: |
+                                <p>Are you sure you want to make [[item_count]] content items listed?</p>
+                                <p>When listed, the content items will appear in any menu/content summary list/search plugins as normal.</p>
+                            button_message: Make listed
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            relist: 1
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -1399,11 +1543,3 @@ zenario__content:
                             message_type: question
                         request:
                             create_draft: 1
-                migrate_old_documents:
-                    hide_in_select_mode: true
-                    multiple_select: true
-                    label: Migrate to hierarchy
-                    tooltip: Migrate to new Document system, where documents are arranged in folders
-                    admin_box:
-                        path: zenario_migrate_old_documents
-                    visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')

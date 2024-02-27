@@ -19,7 +19,23 @@ site_settings:
                         name: google_maps_api_key
                     label: 'Google Maps API key:'
                     type: text
-                    note_below: You can obtain an API key <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank">here</a>.
+                    note_below: You can obtain an API key <a href="https://developers.google.com/maps/documentation/javascript/get-api-key" target="_blank">here</a>. We recommend you restrict this on the Google interface by referrer, and include <b>[[cms_url]]</b> as an allowed domain.
+                use_an_alternative_google_maps_api_key:
+                    site_setting:
+                        name: use_an_alternative_google_maps_api_key
+                    label: 'Use a different API Key for scheduled tasks'
+                    type: checkbox
+                    redraw_onchange: true
+                alternative_google_maps_api_key:
+                    indent: 1
+                    site_setting:
+                        name: alternative_google_maps_api_key
+                    label: 'Alternative API Key for scheduled tasks:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: 'Please enter the alternative Google Maps API key.'
+                    visible_if: zenarioAB.value('use_an_alternative_google_maps_api_key')
+                    note_below: Scheduled tasks will use this API key instead of the first one. It appears that your server's public IP address is <b>[[server_IP_address]]</b>, you should add this IP address to the Google credentials panel. 
         google_custom_search:
             label: Google Programmable Search
             edit_mode:

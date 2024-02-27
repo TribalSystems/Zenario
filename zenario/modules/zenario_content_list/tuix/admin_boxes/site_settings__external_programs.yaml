@@ -41,7 +41,7 @@ site_settings:
                         zenarioAB.value: zip_path
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     format_onchange: true
                 max_unpacked_size:

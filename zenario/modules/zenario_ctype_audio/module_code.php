@@ -36,9 +36,9 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		$clearByContent = $this->setting('show_details_and_link') == 'another_content_item';
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+			$clearByContent, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 		
 		return true;
 	}

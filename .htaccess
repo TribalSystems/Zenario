@@ -84,6 +84,8 @@ Options -Indexes -MultiViews
 	# A friendly URL for the XML sitemap:
 	RewriteRule ^sitemap.xml$ index.php?method_call=showSitemap [L]
 	
+	# A friendly URL for the robots.txt file:
+	RewriteRule ^robots.txt$ index.php?method_call=robots [L]
 	
 	
 	# Remove cached pages and stats from public view:

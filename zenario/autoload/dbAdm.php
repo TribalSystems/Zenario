@@ -46,7 +46,6 @@ class dbAdm {
 
 
 	//Get an array containing the patch levels of all installed modules.
-	//Formerly "getAllCurrentRevisionNumbers()"
 	public static function getAllCurrentRevisionNumbers() {
 
 		$modulesToRevisionNumbers = [];
@@ -125,7 +124,6 @@ class dbAdm {
 
 	//Check the current revisions as recorded in the revision_numbers tables
 	//to see if database updates are needed from the updates directory
-	//Formerly "checkIfDBUpdatesAreNeeded()"
 	public static function checkIfUpdatesAreNeeded(&$moduleErrors, $andDoUpdates = false, $uninstallPluginOnFail = false, $quickCheckForUpdates = true) {
 		
 		if ($andDoUpdates) {
@@ -389,7 +387,6 @@ class dbAdm {
 
 
 	//Update the revision number for a module
-	//Formerly "setModuleRevisionNumber()"
 	public static function setModuleRevisionNumber($revisionNumber, $path, $updateFile) {
 	
 		//Ignore updates in some cases
@@ -438,7 +435,6 @@ class dbAdm {
 	//Run a patch file, making the revisions needed
 	//If $currentRevision and $latestRevisionNumber are set, it will use revision control for updates;
 	//i.e. updates that have already been applied can be skipped
-	//Formerly "performDBUpdate()"
 	public static function performUpdate($path, $updateFile, $uninstallPluginOnFail, $currentRevision = \ze\dbAdm::RUN_EVERY_UPDATE, $latestRevisionNumber = \ze\dbAdm::RUN_EVERY_UPDATE) {
 	
 	
@@ -509,7 +505,6 @@ class dbAdm {
 		\ze\dbAdm::setModuleRevisionNumber($latestRevisionNumber, $path, $updateFile);
 	}
 
-	//Formerly "needRevision()"
 	public static function needRevision($revisionNumber) {
 
 		//Check the latest revision number, and if we have applied this revision yet
@@ -523,7 +518,6 @@ class dbAdm {
 		}
 	}
 
-	//Formerly "resetDatabaseStructureCache()"
 	public static function resetTableDefs() {
 		if (isset(\ze::$dbL)) {
 			\ze::$dbL->cols = [];
@@ -538,7 +532,6 @@ class dbAdm {
 	//This function is used for database revisions. It's called from the patch files.
 	//WARNING: It expects to already be connected to the correct database, and to have
 	//the self::$dbupPath, self::$dbupUpdateFile and self::$dbupCurrentRevision global variables set
-	//Formerly "revision()"
 	public static function revision($revisionNumber) {
 
 		//The first arguement to this function should be the revision number.
@@ -611,7 +604,6 @@ class dbAdm {
 	}
 
 	//Take a string, and add any defined constants in using the [[CONSTANT_NAME]] format
-	//Formerly "addConstantsToString()"
 	public static function addConstantsToString($sql, $replaceUnmatchedConstants = true) {
 		
 		$content = explode('[[', $sql);
@@ -647,7 +639,6 @@ class dbAdm {
 
 
 	//Organizer needs reloading if a module that adds to Organizer, or has a content type, is installed or uninstalled
-	//Formerly "needToReloadOrganizerWhenModuleIsInstalled()"
 	public static function needToReloadOrganizerWhenModuleIsInstalled($moduleName) {
 		$tags = [];
 		return \ze::moduleDir($moduleName, 'tuix/organizer', true)
@@ -659,7 +650,6 @@ class dbAdm {
 
 	//Functions for site backups and restores
 
-	//Formerly "initialiseBackupFunctions()"
 	public static function initialiseBackupFunctions($includeWarnings = false) {
 	
 		$errors = [];
@@ -707,7 +697,6 @@ class dbAdm {
 	}
 
 
-	//Formerly "generateFilenameForBackups()"
 	public static function generateFilenameForBackups($gzip = true, $encrypt = false, $dataArchive = false) {
 		//Get the current date and time, and create a filename with that timestamp
 		return preg_replace('/[^\w\\.]+/', '-',
@@ -723,7 +712,6 @@ class dbAdm {
 	//and return them in an array.
 	//We're interested in returning tables with the patten:
 		//PREFIX - i_m_p_ - table_name
-	//Formerly "lookupImportedTables()"
 	public static function lookupImportedTables($refiner) {
 	
 		$refiner .= 'i_m_p_';
@@ -744,7 +732,6 @@ class dbAdm {
 	}
 
 	//Look up the name of every CMS table in the database, and return them in an array.
-	//Formerly "lookupExistingCMSTables()"
 	public static function lookupExistingCMSTables($dbUpdateSafeMode = false) {
 	
 		//Get a list of Modules that are installed on the site
@@ -812,7 +799,6 @@ class dbAdm {
 
 
 	//Suggest what the path of the backup/docstore/dropbox
-	//Formerly "suggestDir()"
 	public static function suggestDir($dir) {
 		$root = CMS_ROOT;
 	
@@ -836,7 +822,6 @@ class dbAdm {
 	}
 
 
-	//Formerly "apacheMaxFilesize()"
 	public static function apacheMaxFilesize() {
 		$postMaxSize = (int) preg_replace('/\D/', '', ini_get('post_max_size'));
 		$postMaxSizeMag = strtoupper(preg_replace('/\d/', '', ini_get('post_max_size')));
@@ -905,12 +890,10 @@ class dbAdm {
 
 
 	//Create a backup of the database
-	//Formerly "createDatabaseBackupScript()"
 	public static function createBackupScript($backupPath, $gzip = true, $encrypt = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	//Formerly "callMySQL()"
 	public static function callMySQL($mysqldump, $args = '', $input = '') {
 
 		if ($mysqldump) {
@@ -935,7 +918,6 @@ class dbAdm {
 		return false;
 	}
 
-	//Formerly "testMySQL()"
 	public static function testMySQL($mysqldump) {
 		$result = \ze\dbAdm::callMySQL($mysqldump, ' --version');
 	
@@ -978,14 +960,12 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 
 
 	//Given a backup, restore the database from it
-	//Formerly "restoreDatabaseFromBackup()"
 	public static function restoreFromBackup($backupPath, &$failures, $restoringOverExistingSite) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 
 	//Reset a site, putting all of its tables back to an initial state
-	//Formerly "resetSite()"
 	public static function resetSite() {
 		\ze\dbAdm::getTableEngine();
 		
@@ -995,9 +975,8 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		//which aren't usually loaded into memory, so we can restore them later.
 		$site_disabled_title = \ze::setting('site_disabled_title');
 		$site_disabled_message = \ze::setting('site_disabled_message');
-		//Also save the values of email_address_admin, email_address_from and email_name_from
+		//Also save the values of email_address_from and email_name_from
 		//which \ze\dbAdm::restoreLocationalSiteSettings() doesn't cover.
-		$email_address_admin = \ze::setting('email_address_admin');
 		$email_address_from = \ze::setting('email_address_from');
 		$email_name_from = \ze::setting('email_name_from');
 		//Don't change a site's default timezone when doing a site reset
@@ -1053,7 +1032,6 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		
 		\ze\site::setSetting('site_disabled_title', $site_disabled_title);
 		\ze\site::setSetting('site_disabled_message', $site_disabled_message);
-		\ze\site::setSetting('email_address_admin', $email_address_admin);
 		\ze\site::setSetting('email_address_from', $email_address_from);
 		\ze\site::setSetting('email_name_from', $email_name_from);
 		\ze\site::setSetting('zenario_timezones__default_timezone', $zenario_timezones__default_timezone);
@@ -1103,7 +1081,6 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 	}
 	
 	
-	//Formerly "restoreLocationalSiteSettings()"
 	public static function restoreLocationalSiteSettings() {
 		
 		foreach (self::$lss as $name => $row) {
@@ -1131,7 +1108,6 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 	//Not intended to be secure; it's more to prevent Admins accidently causing bad data
 	//(e.g. by restoring a backup on which they don't have an account and continuing to use the site,
 	//or installing two sites in different directories on the same domain, and switching between the two)
-	//Formerly "generateRandomSiteIdentifierKey()"
 	public static function generateRandomSiteIdentifierKey() {
 		return substr(base64_encode(microtime()), 3);
 	}
@@ -1156,7 +1132,6 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 	}
 
 
-	//Formerly "configFileSize()"
 	public static function configFileSize($size) {
 		//Define labels to use
 		$labels = ['', 'K', 'M', 'G', 'T'];

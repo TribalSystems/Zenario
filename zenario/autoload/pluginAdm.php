@@ -31,7 +31,6 @@ namespace ze;
 class pluginAdm {
 
 	//Attempt to add a new instance
-	//Formerly "createNewInstance()"
 	public static function create($moduleId, $instanceName, &$instanceId, &$errors, $onlyValidate = false, $forceName = false) {
 	
 		if (!$moduleId) {
@@ -84,7 +83,6 @@ class pluginAdm {
 	}
 
 
-	//Formerly "fillAdminSlotControlPluginInfo()"
 	public static function fillSlotControlPluginInfo($slot, $cID, $cType, $level, &$info, &$actions, &$re_move_place) {
 		
 		$isNest = $slot->isNest();
@@ -239,7 +237,6 @@ class pluginAdm {
 		}
 	}
 
-	//Formerly "setupAdminSlotControls()"
 	public static function setupSlotControls(&$slotContents, $ajaxReload) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -248,7 +245,6 @@ class pluginAdm {
 
 
 	//List all of the Frameworks available to a Module
-	//Formerly "listModuleFrameworks()"
 	public static function listFrameworks($className, $limit = 10, $recursive = false) {
 		if (!--$limit) {
 			return false;
@@ -309,7 +305,6 @@ class pluginAdm {
 	}
 
 	//Gets a list of pagination options for modules
-	//Formerly "paginationOptions()"
 	public static function paginationOptions() {
 		$options = [];
 	
@@ -326,7 +321,6 @@ class pluginAdm {
 	}
 
 	//Remove any Version Controlled plugin settings, that are not actually being used for a Content Item
-	//Formerly "removeUnusedVersionControlledPluginSettings()"
 	public static function removeUnusedVCs($cID, $cType, $cVersion) {
 		$slotContents = [];
 		\ze\plugin::checkSlotContents(
@@ -350,7 +344,6 @@ class pluginAdm {
 
 	//Copy version controlled plugins from one Content Item to another, as part of creating a new draft.
 	//Logic similar to \ze\pluginAdm::removeUnusedVCs() above needs to be used to check that only Settings that are actually being used are copied
-	//Formerly "duplicateVersionControlledPluginSettings()"
 	public static function duplicateVC($cIDFrom, $cTypeFrom, $cVersionFrom, $cIDTo, $cTypeTo, $cVersionTo) {
 		
 		$slotContents = [];
@@ -372,7 +365,6 @@ class pluginAdm {
 
 	//Duplicate or rename an instance if possible
 	//Also has the functionality to convert a Plugin between a Wireframe and a Reusable or vice versa when duplicating
-	//Formerly "renameInstance()"
 	public static function rename(&$instanceId, &$eggId, $newName, $createNewInstance, $cID = false, $cType = false, $cVersion = false, $slotName = false) {
 		$instance = \ze\plugin::details($instanceId);
 		
@@ -644,7 +636,6 @@ class pluginAdm {
 	}
 
 	//Check how many content items use a Library plugin
-	//Formerly "checkInstancesUsage()"
 	public static function usage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false, $publicPagesOnly = false) {
 	
 		if (!$instanceIds) {
@@ -732,10 +723,10 @@ class pluginAdm {
 	
 		if ($publishedOnly) {
 			$sql .= "
-			WHERE c.status IN ('published_with_draft', 'published')";
+			WHERE c.status IN ('published_with_draft', 'published', 'unlisted_with_draft', 'unlisted')";
 		} else {
 			$sql .= "
-			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden', 'hidden_with_draft', 'trashed_with_draft', 'published')";
+			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden', 'hidden_with_draft', 'trashed_with_draft', 'unlisted_with_draft', 'published', 'unlisted')";
 		}
 	
 		if (!$itemLayerOnly) {
@@ -826,14 +817,17 @@ class pluginAdm {
 					ON ci.id = pil.content_id
 					AND ci.type = pil.content_type
 					AND pil.content_version IN (ci.visitor_version, ci.admin_version)
-					AND ci.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published', 'hidden')
+					AND ci.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'unlisted_with_draft', 'published', 'unlisted', 'hidden')
 					AND (pil.content_version, ci.status) IN (
 						(ci.admin_version, 'first_draft'),
 						(ci.admin_version, 'hidden_with_draft'),
 						(ci.admin_version, 'trashed_with_draft'),
 						(ci.admin_version, 'published_with_draft'),
+						(ci.admin_version, 'unlisted_with_draft'),
 						(ci.visitor_version, 'published_with_draft'),
 						(ci.visitor_version, 'published'),
+						(ci.visitor_version, 'unlisted_with_draft'),
+						(ci.visitor_version, 'unlisted'),
 						(ci.admin_version - 1, 'hidden_with_draft'),
 						(ci.admin_version, 'hidden')
 					)
@@ -873,7 +867,6 @@ class pluginAdm {
 	
 
 	//Replace one instance with another
-	//Formerly "replacePluginInstance()"
 	public static function replace($oldmoduleId, $oldInstanceId, $newmoduleId, $newInstanceId, $cID = false, $cType = false, $cVersion = false, $slotName = false) {
 	
 		if ((!$oldmoduleId && !($oldmoduleId = \ze\row::get('plugin_instances', 'module_id', $oldInstanceId)))
@@ -903,7 +896,6 @@ class pluginAdm {
 	}
 
 
-	//Formerly "managePluginCSSFile()"
 	public static function manageCSSFile($action, $oldInstanceId, $oldEggId = false, $newInstanceId = false, $newEggId = false) {
 	
 		$instance = \ze\row::get('plugin_instances', ['module_id', 'content_id'], $oldInstanceId);
@@ -966,7 +958,6 @@ class pluginAdm {
 	}
 
 
-	//Formerly "deletePluginInstance()"
 	public static function delete($instanceId) {
 	
 		foreach (\ze\row::getValues('nested_plugins', 'id', ['is_slide' => 0, 'instance_id' => $instanceId]) as $eggId) {
@@ -996,7 +987,6 @@ class pluginAdm {
 		\ze\module::sendSignal('eventPluginInstanceDeleted', ['instanceId' => $instanceId]);
 	}
 
-	//Formerly "deleteVersionControlledPluginSettings()"
 	public static function deleteVC($cID, $cType, $cVersion) {
 		$result = \ze\row::query('plugin_instances', ['id'], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 		while ($row = \ze\sql::fetchAssoc($result)) {
@@ -1007,7 +997,6 @@ class pluginAdm {
 
 
 	//Update or remove a modules in slots
-	//Formerly "updatePluginInstanceInItemSlot()"
 	public static function updateItemSlot($instanceId, $slotName, $cID, $cType = false, $cVersion = false, $moduleId = false, $copySwatchUp = false) {
 	
 		if (!$cVersion) {
@@ -1064,7 +1053,6 @@ class pluginAdm {
 	}
 	
 
-	//Formerly "updatePluginInstanceInTemplateSlot()"
 	public static function updateLayoutSlot($instanceId, $slotName, $layoutId, $moduleId = false) {
 	
 		if (!$moduleId && $instanceId) {
@@ -1104,7 +1092,6 @@ class pluginAdm {
 	}
 	
 
-	//Formerly "updatePluginInstanceInTemplateSlot()"
 	public static function updateSitewideSlot($slotName, $instanceId, $moduleId = false) {
 	
 		if (!$moduleId && $instanceId) {
@@ -1140,7 +1127,6 @@ class pluginAdm {
 	}
 
 	//Remove the "hide plugin on this content item" option if it has been set
-	//Formerly "unhidePlugin()"
 	public static function unhide($cID, $cType, $cVersion, $slotName) {
 	
 		if ($cID && $cType && $cVersion) {
@@ -1157,7 +1143,6 @@ class pluginAdm {
 	}
 
 
-	//Formerly "getPluginInstanceUsageStorekeeperDeepLink()"
 	public static function usageOrganizerLink($instanceId, $moduleId = false) {
 	
 		if (!$moduleId) {
@@ -1172,7 +1157,6 @@ class pluginAdm {
 	
 	
 
-	//Formerly "getNestDetails()"
 	public static function getNestDetails($eggId, $instanceId = false) {
 
 		$sql = "
@@ -1201,7 +1185,6 @@ class pluginAdm {
 		return \ze\sql::fetchAssoc($result);
 	}
 
-	//Formerly "getNestedPluginName()"
 	public static function nestedPluginName($eggId, $instanceId = null, $moduleId = null, $moduleClassName = null) {
 		if ($instanceId === null
 		 || ($moduleId === null && $moduleClassName === null)) {
@@ -1217,7 +1200,6 @@ class pluginAdm {
 		}
 	}
 
-	//Formerly "conductorEnabled()"
 	public static function conductorEnabled($instanceId) {
 		return \ze\plugin::setting('nest_type', $instanceId) == 'conductor';
 	}

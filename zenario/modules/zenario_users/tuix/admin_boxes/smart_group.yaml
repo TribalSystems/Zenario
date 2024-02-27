@@ -303,12 +303,14 @@ zenario_smart_group:
                 remove__znz:
                     same_row: true
                     type: submit
+                    css_class: zenario_gp_button
                     value: '-'
                     visible_if: |
                         zenarioAB.value('type__znz') || znz > 1
                 add__znz:
                     same_row: true
                     type: submit
+                    css_class: zenario_gp_button
                     value: '+'
                     visible_if: |
                         zenarioAB.value('type__znz') && znz == zenarioAB.tuix.key.num_rules

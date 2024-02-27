@@ -37,11 +37,11 @@ if ($this->forumNotSetUp && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT')) {
 			zenarioA.floatingBox(
 				'". ze\admin::phrase('Are you sure you wish to create a new Forum on this Content Item?'). "',
 				'". ze\escape::js('
-					<input type="button" class="submit_selected" value="'. ze\admin::phrase('Create a Forum here'). '" onclick="
+					<input type="button" class="zenario_submit_button" value="'. ze\admin::phrase('Create a Forum here'). '" onclick="
 						zenario_forum.AJAX({cID: zenario.cID, cType: zenario.cType, create_new_forum: 1}, true);
 						zenario_forum.refreshPluginSlot(\''. $this->slotName. '\');
 					"/>
-					<input type="button" class="submit" value="'. ze\admin::phrase('Cancel'). '"/>
+					<input type="button" class="zenario_gp_button" value="'. ze\admin::phrase('Cancel'). '"/>
 				'). "',
 				'warning');
 			return false;"];

@@ -239,12 +239,24 @@ class pageCache {
 					case 'spare_aliases':
 					case 'layout_slot_link':
 					
-					//I am 99.99% sure these tables are now just junk and are no longer used.
-					//I think we can ignore these.
-					case 'characteristic_user_link':
-					case 'user_characteristic_values':
-					case 'user_characteristic_values_link':
-					case 'user_sync_log':
+					//The hierarchical document-related plugins do not use page caching.
+					//So all tables related to hierarchical documents can be ignored.
+					case 'documents':
+					case 'document_tags':
+					case 'document_tag_link':
+					case 'documents_custom_data':
+					
+					//Nothing user-related should be used by the caching system.
+					//So if anything user-related changes, we can also ignore it.
+					case 'groups':
+					case 'user_country_link':
+					case 'users':
+					case 'users_custom_data':
+					case 'custom_dataset_files_link':
+					case 'custom_dataset_values_link':
+					case 'smart_group_opt_outs':
+					case 'smart_group_rules':
+					case 'smart_groups':
 					
 					//Anything that relies on group-membership or private items should never be cached, so we can ignore these tables too
 					case 'group_link':
@@ -259,44 +271,12 @@ class pageCache {
 						self::$clearCacheBy['file'] = true;
 						break;
 					
-					//Documents
-					case 'documents':
-					
-					//Document related tables.
-						//Some of these entries may be a little redundant as the documents table will likely also
-						//change at the same time as these, but better to list them here anyway and be safe.
-					case 'document_tags':
-					case 'document_tag_link':
-					case 'documents_custom_data':
-						//If a document id changed, clear anything that links to a file
-						self::$clearCacheBy['file'] = true;
-						//If we ever implement code snippets instead of links to documents, we will need
-						//to clear the contents of WYSIWYG Editors as well
-						//self::$clearCacheBy['content'] = true;
-						break;
-					
 					//Menu
 					case 'menu_node_feature_image':
 					case 'menu_nodes':
 					case 'menu_sections':
 					case 'menu_text':
 						self::$clearCacheBy['menu'] = true;
-						break;
-					
-					//User-related
-						//Note: This section may likely be removed soon and moved to the "ignore" list,
-						//as we don't think we actually have any plugin that shows user-related data
-						//and is also cached!
-					case 'groups':
-					case 'user_country_link':
-					case 'users':
-					case 'users_custom_data':
-					case 'custom_dataset_files_link':
-					case 'custom_dataset_values_link':
-					case 'smart_group_opt_outs':
-					case 'smart_group_rules':
-					case 'smart_groups':
-						self::$clearCacheBy['user'] = true;
 						break;
 					
 					//These tables relate to Content, and should clear anything that ties into Content
@@ -344,7 +324,7 @@ class pageCache {
 							if ((isset($ids['status']) && $status = $ids['status'])
 							 || (isset($values['status']) && $status = $values['status'])) {
 								//Special case: if we are changing the status of a Content Item, there's no need to look the status up
-								if (\ze::in($status, 'published', 'hidden', 'trashed')) {
+								if (\ze::in($status, 'published', 'hidden', 'trashed', 'unlisted')) {
 									//The live version is being changed to published, hidden, trashed
 									self::clearContentItem($ids['id'], $ids['type'], false, true);
 								} else {
@@ -488,22 +468,16 @@ class pageCache {
 			if (!self::$clearOnShutdownRegistered && (!empty(self::$clearCacheBy) || !empty(self::$clearTags))) {
 				
 				//Send a debug email to help developers debug why the cache was cleared.
-				//This is just some rough-and-ready test code at the moment, but at some point
-				//it might be nice to spend some more time on this and turn it into a proper
-				//logging feature you can turn on in the site settings!
-				#\ze\server::sendEmailSimple(
-				#	$tableNameRecognised? 'Cache cleared!' : 'Cache cleared due to a table not in the list!', 
-				#	$sql.
-				#	"\n\n".
-				#	print_r($ids, true).
-				#	"\n\n".
-				#	print_r($values, true).
-				#	"\n\n".
-				#	print_r($table, true).
-				#	"\n\n".
-				#	print_r($runSql, true),
-				#	false
-				#);
+				if (\ze::setting('caching_email_on_clear')) {
+					\ze\db::reportEvent(
+						$tableNameRecognised? 'Cache cleared on' : 'A changed to an unknown table cleared the cache on', 
+						$sql,
+						$ids,
+						$values,
+						$table,
+						$runSql
+					);
+				}
 													
 				
 				register_shutdown_function(['ze\\pageCache', 'clearOnShutdown']);
@@ -512,54 +486,60 @@ class pageCache {
 		}
 	}
 	
-	//This function is not yet implemented. It will be implemented in a 9.6 post-branch fix.
-	//However we need to patch back some code fixes from 9.6 into 9.5, so I'll add a definition for this function,
-	//but just make it clear everything.
 	public static function clearWebPages() {
-		register_shutdown_function(['ze\\pageCache', 'clearOnShutdown'], $clearAll = true);
+		register_shutdown_function(['ze\\pageCache', 'clearOnShutdown'], $clearAll = true, $clearWebPages = true, $clearPlugins = false);
 	}
 	
-	public static function clearOnShutdown($clearAll = false) {
+	public static function clearOnShutdown($clearAll = false, $clearWebPages = true, $clearPlugins = true) {
 		
 		if ($clearAll) {
 			self::$clearCacheBy['all'] = true;
 		}
 		
-		//Loop through the page-cache directory
-		if (is_dir(CMS_ROOT. 'cache/pages/')) {
-			if ($dh = opendir(CMS_ROOT. 'cache/pages/')) {
-				while (($file = readdir($dh)) !== false) {
-					if (substr($file, 0, 1) != '.') {
-						$dir = CMS_ROOT. 'cache/pages/'. $file. '/';
-						
-						//Remove any directory that is marked to be cleared by one of the types of thing that we are clearing by
-						if (!$rmDir = !empty(self::$clearCacheBy['all'])) {
-							foreach (self::$clearCacheBy as $clearBy => $notEmpty) {
-								if ($clearBy != 'all' && file_exists($dir. $clearBy)) {
-									$rmDir = true;
-									break;
-								}
-							}
-							
-							if (!$rmDir) {
-								//Remove any directory that is for a Content Item that we are clearing by
-								if (file_exists($dir. 'tag_id')
-								 && ($id = file_get_contents($dir. 'tag_id'))
-								 && (!empty(self::$clearTags[$id]))) {
-									$rmDir = true;
-								}
-							}
-						}
-						
-						if ($rmDir) {
-							\ze\cache::deleteDir($dir);
-						}
-					}
-				}
-				closedir($dh);
-			}
+		$cacheDirs = [];
+		if ($clearWebPages) {
+			$cacheDirs[] = CMS_ROOT. 'cache/pages/';
+		}
+		if ($clearPlugins) {
+			$cacheDirs[] = CMS_ROOT. 'cache/plugins/';
 		}
 		
+		//Loop through the page and plugin-cache directories
+		foreach ($cacheDirs as $cacheDir) {
+			if (is_dir($cacheDir)) {
+				if ($dh = opendir($cacheDir)) {
+					while (($file = readdir($dh)) !== false) {
+						if (substr($file, 0, 1) != '.') {
+							$dir = $cacheDir. $file. '/';
+						
+							//Remove any directory that is marked to be cleared by one of the types of thing that we are clearing by
+							if (!$rmDir = !empty(self::$clearCacheBy['all'])) {
+								foreach (self::$clearCacheBy as $clearBy => $notEmpty) {
+									if ($clearBy != 'all' && file_exists($dir. $clearBy)) {
+										$rmDir = true;
+										break;
+									}
+								}
+							
+								if (!$rmDir) {
+									//Remove any directory that is for a Content Item that we are clearing by
+									if (file_exists($dir. 'tag_id')
+									 && ($id = file_get_contents($dir. 'tag_id'))
+									 && (!empty(self::$clearTags[$id]))) {
+										$rmDir = true;
+									}
+								}
+							}
+						
+							if ($rmDir) {
+								\ze\cache::deleteDir($dir);
+							}
+						}
+					}
+					closedir($dh);
+				}
+			}
+		}
 	}
 	
 	

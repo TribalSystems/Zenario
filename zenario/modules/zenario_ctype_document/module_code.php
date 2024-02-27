@@ -40,16 +40,16 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	
 	function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = true);
 			
 		
 		
 		if ($this->setting('show_details_and_link') == 'another_content_item') {
 			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+				$clearByContent = true, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 		} else {
 			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = false);
+				$clearByContent = false, $clearByMenu = false, $clearByFile = true, $clearByModuleData = false);
 		}
 		
 		if ($this->cType == 'document' && ze\priv::check()) {
@@ -166,16 +166,25 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				$s3FileDownloadPhrase = ze::setting('s3_file_link_text');
 			} else {
 				//This will be translated in the framework.
-				$localFileDownload = 'Download Now';
+				$localFileDownload = 'Download now';
 			}
 			
 			$localFileDetails = ze\row::get('files', ['filename','path','size'], $version['file_id']);
 			if ($this->setting('local_file') && $localFileDetails && $localFileDetails['filename']) {
-				$link = $this->linkToItem($this->targetID, $this->targetType, false, 'download=1'. ($this->eggId? '&eggId='. $this->eggId : ''));
+				
+				$this->mergeFields['Links_should'] = $this->setting('links_should');
+				
+				$request = 'download=1';
+				
+				if ($this->eggId) {
+					$request .= '&eggId='. $this->eggId;
+				}
+				
+				$link = $this->linkToItem($this->targetID, $this->targetType, false, $request);
 				$link = htmlspecialchars($link);
 
 				if ($this->setting('show_view_link')) {
-					$linkForViewing = ze\file::link($version['file_id']);
+					$linkForViewing = ze\file::linkForCurrentVisitor($version['file_id'], false, $type = 'private/downloads');
 					$this->mergeFields['Link_For_Viewing'] = htmlspecialchars($linkForViewing);
 				}
 

@@ -118,12 +118,12 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 			unset($fields['slot/html']['note_below']);
 			
 			if ($box['key']['level'] == 'item') {
-				$box['title'] = ze\admin::phrase('<head> HTML/JS for the content item "[[tag]]", version [[version]]', ['tag' => $formatTag, 'version' => $box['key']['cVersion']]);
+				$box['title'] = ze\admin::phrase('HTML/JS in <head> for the content item "[[tag]]", version [[version]]', ['tag' => $formatTag, 'version' => $box['key']['cVersion']]);
 				$fields['slot/description']['snippet']['html'] =
 					ze\admin::phrase('This content item will have the following HTML/JavaScript within the <code>&lt;head&gt;</code> tag (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
 				
 			} elseif ($box['key']['level'] == 'layout') {
-				$box['title'] = ze\admin::phrase('<head> HTML/JS for content items using "[[id_and_name]]"', $layout);
+				$box['title'] = ze\admin::phrase('HTML/JS in <head> for content items using "[[id_and_name]]"', $layout);
 				$fields['slot/description']['snippet']['html'] =
 					ze\admin::phrase('All content items using this layout will have the following HTML/JavaScript (e.g. <code>&lt;meta&gt;</code> and <code>&lt;style&gt;</code> tags):');
 			}

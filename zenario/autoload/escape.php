@@ -73,7 +73,6 @@ class escape {
 	}
 
 
-	//Formerly "eschyp()"
 	public static function hyp($text) {
 		return str_replace(
 			['`',	'-',	':',	"\n",	"\r",	'&',	'"',	'<',	'>'],
@@ -83,13 +82,11 @@ class escape {
 	}
 
 	const jsFromTwig = true;
-	//Formerly "jsEscape()"
 	public static function js($text) {
 		return strtr(addcslashes((string) $text, "\\\n\r\"'"), ['&' => '\\x26', '<' => '\\x3c', '>' => '\\x3e', '{' => '\\x7b', '}' => '\\x7d']);
 	}
 
 	const jsOnClickFromTwig = true;
-	//Formerly "jsOnClickEscape()", "jsOnclickEscape()"
 	public static function jsOnClick($text) {
 		return htmlspecialchars(addcslashes((string) $text, "\\\n\r\"'"));
 	}
@@ -98,7 +95,6 @@ class escape {
 		return mb_detect_encoding($string, 'UTF-8', true)? $string : '<<invalid UTF-8 string>>';
 	}
 
-	//Formerly "XMLEscape()"
 	public static function xml($text) {
 		return str_ireplace(["'", '&nbsp;'], ['&apos;', ' '], htmlspecialchars($text));
 	}
@@ -106,7 +102,6 @@ class escape {
 
 
 
-	//Formerly "likeEscape()"
 	public static function like($text, $allowStarsAsWildcards = false) {
 	
 		if (!$allowStarsAsWildcards) {
@@ -129,7 +124,6 @@ class escape {
 	
 
 	//Replacement for mysql_real_escape_string()
-	//Formerly "sqlEscape()"
 	public static function sql($text) {
 		return \ze::$dbL->con->escape_string($text);
 	}
@@ -154,7 +148,6 @@ class escape {
 	//There are two modes here:
 		//By default, strings are always converted into either an int or a float.
 		//If $sqlEscapeStrings is set, strings may be left as strings and will be \ze\escape::sql()'ed if needed
-	//Formerly "stringToIntOrFloat()"
 	public static function stringToIntOrFloat($text, $sqlEscapeStrings = false, $isJSON = false) {
 		
 		if ($isJSON) {
@@ -189,7 +182,6 @@ class escape {
 
 
 
-	//Formerly "inEscape()"
 	public static function in($csv, $escaping = -1, $prefix = false) {
 		if (!is_array($csv)) {
 			$csv = explode(',', $csv);

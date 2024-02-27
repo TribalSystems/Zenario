@@ -87,6 +87,10 @@ if (!$cIDTo || !($content = \ze\row::get('content_items', true, ['id' => $cIDTo,
 		$content['status'] = 'published_with_draft';
 		++$content['admin_version'];
 	
+	} elseif ($content['status'] == 'unlisted') {
+		$content['status'] = 'unlisted_with_draft';
+		++$content['admin_version'];
+	
 	} elseif ($content['status'] == 'hidden') {
 		$content['status'] = 'hidden_with_draft';
 		++$content['admin_version'];

@@ -19,7 +19,7 @@
 	{% endif %}
 	{% if Documents %}
 		{% for item in Documents %}
-			<div class="document_wrap">
+			<div class="document_wrap{% if item.privacy == 'private' %} private{% endif %}">
 				{% if item.privacy_warning %}
 					<div class="privacy_warning">
 						{% if item.privacy == 'private' %}

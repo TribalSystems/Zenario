@@ -331,12 +331,11 @@ class phiParser {
 		//Attempt to run the code
 		$error = false;
 		$twigCode = '';
-		$result = null;
 		
 		try {
 			\ze::$ers = [];
 			$twigCode = self::phiToTwig($phiCode);
-			$result = \ze\phi::runTwig($twigCode, $outputs, $vars, true);
+			\ze\phi::runTwig($twigCode, $outputs, $vars, true);
 	
 		//Handle any errors
 		} catch (\Twig\Error\Error $e) {
@@ -369,7 +368,7 @@ class phiParser {
 			$error = true;
 		}
 	
-		return ['result' => $result, 'error' => $error, 'errors' => \ze::$ers, 'varDumps' => \ze\phi::$varDumps, 'twig' => $twigCode];
+		return ['error' => $error, 'errors' => \ze::$ers, 'varDumps' => \ze\phi::$varDumps, 'twig' => $twigCode];
 	}
 	
 	

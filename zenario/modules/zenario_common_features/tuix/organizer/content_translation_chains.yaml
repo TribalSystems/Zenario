@@ -91,6 +91,8 @@ zenario__content:
                             label: "Permissions: Call a module's static method to decide"
                         send_signal:
                             label: 'Permissions: Send a signal to decide'
+                number_of_categories:
+                    title: Number of categories
                 
                     
             default_sort_column: chain_desc
@@ -99,8 +101,67 @@ zenario__content:
             label_format_for_popouts: '[[chain_desc]]'
             
             inline_buttons:
+                no_menu_linked:
+                    css_class: zenario_not_at_menu
+                    tooltip: "This chain is not in the menu"
+                    visible_if: >
+                        item.menunodecounter == 0
+                menu_text_missing:
+                    css_class: zenario_not_at_menu
+                    tooltip: "This chain is in the menu, but the menu text is missing"
+                    visible_if: >
+                        item.menunodecounter == 'menu_node_text_missing'
+                one_menu_linked:
+                    css_class: zenario_at_menu_unique
+                    tooltip: "This chain is in the menu"
+                    visible_if: >
+                        item.menunodecounter == 1
+                one_or_more_menu_linked:
+                    css_class: zenario_at_menu_primary
+                    tooltip: "This chain has more than one menu node linking to it"
+                    visible_if: >
+                        item.menunodecounter != 'menu_node_text_missing' && item.menunodecounter > 1
                 privacy:
                     css_class: privacy_inline_button
                     tooltip: "[[privacy]]"
                     admin_box:
                         path: zenario_content_privacy
+                
+                no_categories:
+                    ord: privacy.2
+                    css_class: no_categories
+                    tooltip: "Chain is not in any categories"
+                    admin_box:
+                        path: zenario_content_categories
+                    visible_if: >
+                        item.number_of_categories == 0
+                one_category:
+                    ord: privacy.2
+                    css_class: one_or_more_categories
+                    tooltip: "Chain is in one category"
+                    admin_box:
+                        path: zenario_content_categories
+                    visible_if: >
+                        item.number_of_categories == 1
+                multiple_categories:
+                    ord: privacy.2
+                    css_class: one_or_more_categories
+                    tooltip: "Chain is in [[number_of_categories]] categories"
+                    admin_box:
+                        path: zenario_content_categories
+                    visible_if: >
+                        item.number_of_categories > 1
+                
+                view_frontend:
+                    css_class: view_frontend
+                    tooltip: Go to first content item in chain in front-end window
+                    frontend_link: true
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
+                inspect:
+                    css_class: inspect
+                    tooltip: Quick-view first content item in chain in floating box
+                    popout:
+                        iframe: true
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)

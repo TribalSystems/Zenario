@@ -28,6 +28,9 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+$this->requireJSLibsForTinyMCE();
+
+
 //Show any errors from a previous submissin
 if (!empty($this->postingErrors)) {
 	$this->sections['Post_Errors'] = true;

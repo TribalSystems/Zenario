@@ -8,6 +8,7 @@ zenario_trash:
         cType: ""
         id_is_menu_node_id: ''
         menu_node_id: ''
+        go_to_url_after_trashing: ''
     tabs:
         trash:
             edit_mode:

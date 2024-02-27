@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.bundle.js.php for step (3).
 */
 
 
@@ -333,10 +333,16 @@ zenarioO.loadMap = function(after) {
 	
 	//zenario.ajax(url, post, json, useCache, retry, continueAnyway, settings, timeout, AJAXErrorHandler, onRetry, onCancel)
 	zenario.ajax(url, false, true, true, true, true).after(function (data) {
-		zenarioO.map = data;
-		zenarioO.lookForBranches(zenarioO.map);
+		zenarioO.setMap(data);
 		after();
 	});
+};
+
+
+zenarioO.setMap = function(data) {
+	zenarioT.checkDumps(data);
+	zenarioO.map = data;
+	zenarioO.lookForBranches(zenarioO.map);
 };
 
 
@@ -1260,12 +1266,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	//(Or run straight away if the server was never polled)
 zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefinerName, lastRefiners, server_side, backwards, runFunctionAfter, data) {
 	
-	//For debugging
-	if (data
-	 && defined(data.comment)
-	 && window.console) {
-		console.log(data.comment);
-	}
+	zenarioT.checkDumps(data);
 	
 	if (!zenarioA.isFullOrganizerWindow && !zenarioA.checkIfBoxIsOpen('og')) {
 		return;
@@ -2353,7 +2354,7 @@ zenarioO.getHash = function(ignoreSelectedItem) {
 		oneItemSelected = false,
 		selectedItem = '',
 		selectedItems = zenarioO.pi && zenarioO.pi.returnSelectedItems(),
-		prevPanels, prevPanelInstance, prevSelectedItems,
+		prevPanels, prevPanelInstance,
 		fabPath = zenarioAB.isOpen && zenarioAB.path,
 		fabKey = zenarioAB.isOpen && zenarioAB.openingKey,
 		fabTab = zenarioAB.isOpen && zenarioAB.tuix && zenarioAB.tuix.tab;
@@ -3825,15 +3826,40 @@ zenarioO.setViewOptions = function() {
 		alwaysShown,
 		lastCol = false,
 		lastColName = false,
-		prefs = zenarioO.prefs[zenarioO.path] || {};
+		prefs = zenarioO.prefs[zenarioO.path] || {},
+		title, shownInPanel;
 	
 	
 	foreach (zenarioO.sortedColumns as colNo => c) {
 		
-		if ((column = zenarioO.tuix.columns[c])
-		 && (zenarioO.isShowableColumn(c, false))) {
+		if (!(column = zenarioO.tuix.columns[c])) {
+			continue;
+		}
+		
+		if (zenarioO.checkHiddenByRefiner(column)) {
+			continue;
+		}
+		
+		//Normally the list of columns in the view options should match the list of columns you see,
+		//however the hidden_in_view_options and shown_in_view_options properties can be used
+		//to overwrite the logic to either hide or show a view option for a column that is shown or hidden.
+		if (column.hidden_in_view_options) {
+			continue;
+		}
+		
+		shownInPanel = zenarioO.isShowableColumn(c, false);
+		
+		if (column.shown_in_view_options || shownInPanel) {
 			
-			alwaysShown = engToBoolean(column.always_show);
+			//Don't allow the admin to toggle off view of the column that's always shown.
+			//Also don't allow them to toggle the view of the column that's hidden and only shown
+			//in the view options
+			alwaysShown = !shownInPanel || engToBoolean(column.always_show);
+			
+			title = column.title_in_view_options;
+			if (!defined(title)) {
+				title = column.title;
+			}
 			
 			fields['start_of_row__' + c] = {
 				ord: 100 * colNo,
@@ -3886,7 +3912,7 @@ zenarioO.setViewOptions = function() {
 				ord: 100 * colNo + 6,
 				same_row: true,
 				snippet: {
-					html: '<label class="zenario_filter_column_name" for="showcol_' + c + '">' + htmlspecialchars(column.title) + '</label>'
+					html: '<label class="zenario_filter_column_name" for="showcol_' + c + '">' + htmlspecialchars(title) + '</label>'
 				}
 			};
 			
@@ -3951,7 +3977,7 @@ zenarioO.setViewOptions = function() {
 				
 				} else if (filterFormat == 'yes_or_no') {
 					//Attempt to add a colon to the title of the column
-					var label = ('' + column.title);
+					var label = ('' + title);
 					if (label.indexOf(':') == -1) {
 						label += ':';
 						label = label.replace(/\s*:/, ':');
@@ -4531,9 +4557,9 @@ zenarioO.changeFilters = function() {
 	}
 	
 	
-	var value;
-	foreach (zenarioO.tuix.columns as var c) {
-		if (zenarioO.isShowableColumn(c)) {
+	var value, c, column;
+	foreach (zenarioO.tuix.columns as c => column) {
+		if (column.shown_in_view_options || zenarioO.isShowableColumn(c)) {
 			if (get('v' + c) || get('v' + c + '___yes')) {
 				if (value = zenarioVO.readField('v' + c)) {
 					zenarioO.setFilterValue('v', c, value);
@@ -4595,7 +4621,7 @@ zenarioO.isShowableColumn = function(c, shown) {
 			&& column.title
 			&& !engToBoolean(column.server_side_only)
 			&& !zenarioT.hidden(undefined, zenarioO, undefined, c, undefined, column)
-			&& !zenarioO.checkHiddenByFilter(column);
+			&& !zenarioO.checkHiddenByRefiner(column);
 	}
 };
 
@@ -4656,6 +4682,22 @@ zenarioO.columnNotEqual = function(column, value) {
 	return zenarioO.checkCondition(function(id) {
 		return zenarioO.columnRawValue(id, column) != value;
 	});
+};
+
+//Convert the record_count property to the referenced column value, if needed
+zenarioO.getRecordCount = function(valueOrColumnName) {
+	
+	var itemId = zenarioO.getKeyId(true, true),
+		val;
+	
+	if (itemId
+	 && (val = zenarioO.tuix.items)
+	 && (val = val[itemId])
+	 && (defined(val = val[valueOrColumnName]))) {
+		return val;
+	}
+	
+	return valueOrColumnName;
 };
 
 zenarioO.columnRawValue = function(i, c) {
@@ -5159,7 +5201,12 @@ zenarioO.setNavigation = function(returnData) {
 	
 	//Loop through all of the first and second level navs
 	foreach (zenarioO.map as i) {
-		if (i != 'top_right_buttons'
+		//There are three exceptions in the map, where we put things in at the top level
+		//that are not top level items. Don't show these.
+		if (i != 'dummy_item'
+		 && i != '__dumps'
+		 && i != '__source_files'
+		 && i != 'top_right_buttons'
 		 && typeof zenarioO.map[i] == 'object'
 		 && zenarioO.map[i].nav) {
 			foreach (zenarioO.map[i].nav as j) {
@@ -5203,7 +5250,11 @@ zenarioO.setNavigation = function(returnData) {
 			panelItemDefaults,
 			item_css_class;
 		
-		if (i == 'top_right_buttons'
+		//There are three exceptions in the map, where we put things in at the top level
+		//that are not top level items. Don't show these.
+		if (i == 'dummy_item'
+		 || i == '__source_files'
+		 || i == 'top_right_buttons'
 			//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 		 || zenarioT.hidden(undefined, zenarioO, undefined, i, undefined, undefined, undefined, topLevel)) {
 			continue;
@@ -5327,12 +5378,8 @@ zenarioO.splitCols = function(items) {
 	var i, halfWay,
 		di, deepArray = [[]];
 	
-	//console.log(items);
-	
 	for (i = 0; i < items.length; ++i) {
 		deepArray[deepArray.length-1].push(items[i]);
-		
-		//console.log(items[i], items[i+1]);
 		
 		if (items[i+1]
 		 && ((items[i].css_class
@@ -5901,7 +5948,7 @@ zenarioO.checkDisabled = function(button, buttonId, items) {
 	return false;
 };
 
-zenarioO.checkHiddenByFilter = function(button) {
+zenarioO.checkHiddenByRefiner = function(button) {
 	
 	var refiner = zenarioO.refiner,
 		refinerName = refiner && refiner.name,
@@ -5980,9 +6027,7 @@ zenarioO.checkButtonHidden = function(button, items) {
 	}
 	
 	//Check if this button should be hidden in quick/select mode (or hidden if not in quick/select mode)
-	//Also, automatically hide a button in quick/select mode if it is a front-end link
-	if ((window.zenarioONotFull && button.frontend_link)
-	||  (window.zenarioOQuickMode && engToBoolean(button.hide_in_quick_mode))
+	if ((window.zenarioOQuickMode && engToBoolean(button.hide_in_quick_mode))
 	||  (window.zenarioOSelectMode && engToBoolean(button.hide_in_select_mode))
 	||  (!window.zenarioOQuickMode && engToBoolean(button.quick_mode_only) && !(window.zenarioOSelectMode && engToBoolean(button.select_mode_only)))
 	||  (!window.zenarioOSelectMode && engToBoolean(button.select_mode_only) && !(window.zenarioOQuickMode && engToBoolean(button.quick_mode_only)))) {
@@ -5990,7 +6035,7 @@ zenarioO.checkButtonHidden = function(button, items) {
 	}
 	
 	//Check fi there is any refiner/filter logic that should hide this button
-	if (zenarioO.checkHiddenByFilter(button)) {
+	if (zenarioO.checkHiddenByRefiner(button)) {
 		return true;
 	}
 	
@@ -6185,7 +6230,7 @@ zenarioO.setChooseButton = function() {
 	if (window.zenarioOSelectMode) {
 		var choosePhrase = window.zenarioOChoosePhrase || phrase.choose,
 			disabled = true,
-			className = 'submit_disabled',
+			className = 'zenario_disabled_button',
 			selectedItems = zenarioO.pi.returnSelectedItems();
 		
 		if (zenarioO.chooseButtonActive()
@@ -6194,7 +6239,7 @@ zenarioO.setChooseButton = function() {
 		 && (zenarioO.itemsSelected > 0 || window.zenarioOAllowNoSelection)
 		 && (zenarioO.itemsSelected <= 1 || window.zenarioOMultipleSelect)) {
 			disabled = false;
-			className = window.zenarioOChooseButtonActiveClass? 'submit_selected' : 'submit';
+			className = window.zenarioOChooseButtonActiveClass? 'zenario_submit_button' : 'zenario_gp_button';
 			
 			if (zenarioO.itemsSelected == 0 && window.zenarioOAllowNoSelection && window.zenarioONoSelectionChoosePhrase) {
 				choosePhrase = window.zenarioONoSelectionChoosePhrase;
@@ -6352,12 +6397,15 @@ zenarioO.setOrganizerIcons = function() {
 	var i, j,
 		_$div = zenarioT.div,
 		lowerLeftIcons = [], panelIcons = [], upperRightIcons = [],
-		pos, icons, iconGroups, icon;
+		iconGroups,
+		callbacks = [], cbi, cb,
+		cbWrapper = new zenario.callback,
+		part2;
 	
 	//Add the dev tools button to the panel icons if dev tools are enabled.
 	//This is added even in select/quick mode.
 	if (zenarioT.showDevTools()) {
-		panelIcons.push([_$div("id", "organizer_debug_button", "class", "zenario_debug", "onmouseover", "zenarioO.infoBox(this);", "onclick", "zenarioO.closeInfoBox(); zenarioA.debug('zenarioO');", _$div()), 99]);
+		panelIcons.push([_$div("id", "organizer_debug_button", "class", "zenario_debug", "onmouseover", "zenarioO.infoBox(this);", "onclick", "zenarioO.closeInfoBox(); zenarioA.debug(this, event, 'zenarioO');", _$div()), 99]);
 	}
 	
 	//Only add the rest of the icons in full-mode.
@@ -6367,10 +6415,12 @@ zenarioO.setOrganizerIcons = function() {
 		upperRightIcons.push([zenarioT.microTemplate('zenario_organizer_top_right_icons', {}), 1]);
 		
 		//Look for any icons from modules
-		icons = zenario.sendSignal('eventSetOrganizerIcons');
-		
+		callbacks = zenario.sendSignal('eventSetOrganizerIcons');
+	}
+	
+	part2 = function() {
 		//Look through each icon, checking the last entry in the array for its position
-		foreach (icons as i => iconGroups) {
+		foreach (arguments as i => iconGroups) {
 			if (iconGroups['↗']) {
 				upperRightIcons = upperRightIcons.concat(iconGroups['↗']);
 			}
@@ -6381,30 +6431,44 @@ zenarioO.setOrganizerIcons = function() {
 				lowerLeftIcons = lowerLeftIcons.concat(iconGroups['↙']);
 			}
 		}
-		
+	
 		//Sort each group
 		upperRightIcons.sort(zenarioT.sortArray);
 		panelIcons.sort(zenarioT.sortArray);
 		lowerLeftIcons.sort(zenarioT.sortArray);
+	
+		//Remove the sort columns and just leave the HTML
+		foreach (upperRightIcons as i) {
+			upperRightIcons[i] = upperRightIcons[i][0];
+		}
+	
+		foreach (panelIcons as i) {
+			panelIcons[i] = panelIcons[i][0];
+		}
+	
+		foreach (lowerLeftIcons as i) {
+			lowerLeftIcons[i] = lowerLeftIcons[i][0];
+		}
+	
+		//Set the icons
+		$('#organizer_topRightIcons').html(upperRightIcons.join('\n'));
+		$('#organizer_panelIcons').html(panelIcons.join('\n'));
+		$('#organizer_lowerLeftColumn').html(lowerLeftIcons.join('\n'));
+		
+		zenario.sendSignal('eventOrganizerIconsRendered');
 	}
 	
-	//Remove the sort columns and just leave the HTML
-	foreach (upperRightIcons as i) {
-		upperRightIcons[i] = upperRightIcons[i][0];
-	}
 	
-	foreach (panelIcons as i) {
-		panelIcons[i] = panelIcons[i][0];
-	}
 	
-	foreach (lowerLeftIcons as i) {
-		lowerLeftIcons[i] = lowerLeftIcons[i][0];
+	if (!_.isEmpty(callbacks)) {
+		foreach (callbacks as cbi => cb) {
+			cbWrapper.add(cb);
+		}
+		cbWrapper.after(part2);
+	} else {
+		part2();
 	}
-	
-	//Set the icons
-	$('#organizer_topRightIcons').html(upperRightIcons.join('\n'));
-	$('#organizer_panelIcons').html(panelIcons.join('\n'));
-	$('#organizer_lowerLeftColumn').html(lowerLeftIcons.join('\n'));
+		
 
 };
 

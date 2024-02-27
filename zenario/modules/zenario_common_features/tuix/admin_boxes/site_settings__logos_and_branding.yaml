@@ -13,53 +13,65 @@ site_settings:
                 desc:
                     snippet:
                         html: >
-                            You may set an image to use as a favicon, an image that visitors save as a home screen icon on mobile devices, and an OG image when the site is mentioned on social media.
+                            Set the image used as a favicon, an image that can be saved as a home screen icon on mobile devices, and an OG image for when the site is mentioned on social media.
                 favicon: 
                     site_setting:
                         name: favicon
                     label: |
                         Browser favicon:
                     upload: 
-                        accept: "image/*"
+                        accept: "image/png, image/gif, image/x-icon"
                         extensions: 
                             - .gif
                             - .ico
                             - .png
                         drag_and_drop: false
+                    pick_items: 
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
+                        disabled_if_for_all_selected_items: |
+                            !zenario.IN(item.mime_type, 'image/png', 'image/gif', 'image/x-icon')
                     note_below: |
-                        You may upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.) Should be square with 32×32 pixels or larger.
+                        You may upload a <code>.ico</code>, <code>.gif</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.) Should be square with 32×32 pixels or larger.
                     validation:
                         must_be_gif_ico_or_png: |
-                            The favicon must be a file with format <code>.gif</code>, <code>.ico</code> or a <code>.png</code>.
+                            The favicon must be a file with format .gif, .ico or .png.
+                    format_onchange: true
                 mobile_icon: 
                     site_setting:
                         name: mobile_icon
                     label: |
                         Mobile device "home screen" icon:
                     upload: 
-                        accept: "image/*"
+                        accept: "image/png, image/gif"
                         extensions: 
                             - .gif
                             - .png
                         drag_and_drop: false
                     pick_items: 
-                        path: zenario__library/panels/image_library
-                        min_path: zenario__library/panels/image_library
-                        max_path: zenario__library/panels/image_library
-                        target_path: zenario__library/panels/image_library
-                        select_phrase: Select from image library...
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
+                        disabled_if_for_all_selected_items: |
+                            !zenario.IN(item.mime_type, 'image/png', 'image/gif')
                     note_below: >
-                        You may upload a <code>.gif</code> or a <code>.png</code> file. (<code>.svg</code> files are not supported.)
+                        You may upload a <code>.png</code> or <code>.gif</code> file. (<code>.svg</code> files are not supported.)
                         We recommend that the image be 144×144 pixels in size; larger images will be auto-downsized.
                     validation:
                         must_be_gif_or_png: >
                             The home screen icon must be a .gif or a .png file.
+                    format_onchange: true
                 default_icon:
                     site_setting:
                         name: default_icon
                     label: "Open Graph (OG) image for the site:"
                     upload: 
-                        accept: "image/*"
+                        accept: "image/png, image/gif, image/jpg, image/jpeg"
                         extensions: 
                             - .gif
                             - .png
@@ -67,11 +79,13 @@ site_settings:
                             - .jpeg
                         drag_and_drop: false
                     pick_items: 
-                        path: zenario__library/panels/image_library
-                        min_path: zenario__library/panels/image_library
-                        max_path: zenario__library/panels/image_library
-                        target_path: zenario__library/panels/image_library
-                        select_phrase: Select from image library...
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
+                        disabled_if_for_all_selected_items: |
+                            !zenario.IN(item.mime_type, 'image/png', 'image/gif', 'image/jpg', 'image/jpeg')
                     note_below: >
                         When a content item doesn’t have a featured image, this image will be used for the content item's <code>og:image</code> meta data tags.<br>
                         You should upload a <code>.jpg</code>, <code>.jpeg</code>, <code>.gif</code> or a <code>.png</code> file for a default icon (<code>.svg</code> files are not supported).
@@ -80,6 +94,7 @@ site_settings:
                     validation:
                         must_be_image: >
                             The OG image must be a .gif, .jpg, .jpeg or a .png file.
+                    format_onchange: true
         admin_login:
             label: Admin/site disabled
             edit_mode:
@@ -91,7 +106,7 @@ site_settings:
                     full_width: Yes
                     snippet:
                         html: >
-                            Use this to change the logo used on the site disabled and admin login screens.
+                            Set the logo used that is shown on the administrator login, and site disabled screens.
                 
                 brand_logo:
                     site_setting:
@@ -123,11 +138,11 @@ site_settings:
                             - .svg
                         drag_and_drop: true
                     pick_items: 
-                        path: zenario__library/panels/image_library
-                        min_path: zenario__library/panels/image_library
-                        max_path: zenario__library/panels/image_library
-                        target_path: zenario__library/panels/image_library
-                        select_phrase: Select from image library...
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
                     note_below: >
                         If your image is larger than 500p× wide by 250px high, it will be scaled down to fit.
                     validation:
@@ -135,6 +150,7 @@ site_settings:
                             Please upload an image.
                         must_be_image_or_svg: >
                             The custom logo must be a .gif, .jpg, .png or a .svg file.
+                    format_onchange: true
                 
                 site_disabled_title:
                     label: "Browser title when site disabled:"
@@ -192,11 +208,11 @@ site_settings:
                             - .svg
                         drag_and_drop: true
                     pick_items: 
-                        path: zenario__library/panels/image_library
-                        min_path: zenario__library/panels/image_library
-                        max_path: zenario__library/panels/image_library
-                        target_path: zenario__library/panels/image_library
-                        select_phrase: Select from image library...
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
                     validation:
                         required_if_not_hidden: >
                             Please upload an image.
@@ -204,6 +220,7 @@ site_settings:
                             The admin login logo must be a .gif, .jpg, .png or a .svg file.
                     note_below: >
                         This image will be resized down if it is larger than 50×50 pixels in size.
+                    format_onchange: true
                 
                 admin_link_logo_pos:
                     site_setting:
@@ -278,14 +295,23 @@ site_settings:
                     visible_if: |
                         zenarioAB.value('organizer_favicon') == 'custom'
                     upload:
-                        accept: "image/*"
+                        accept: "image/png, image/gif, image/x-icon"
                         extensions: 
                             - .gif
                             - .ico
                             - .png
                         drag_and_drop: true
+                    pick_items: 
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
+                        disabled_if_for_all_selected_items: |
+                            !zenario.IN(item.mime_type, 'image/png', 'image/gif', 'image/x-icon')
                     note_below: >
                         You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file.<br/>
                     validation:
                         must_be_gif_ico_or_png: >
                             The favicon must be a .gif, .ico or a .png file.
+                    format_onchange: true

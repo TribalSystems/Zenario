@@ -34,7 +34,6 @@ class tuix {
 
 
 	//Some functions for loading a YAML file
-	//Formerly "tuixCacheDir()"
 	public static function cacheDir($path) {
 	
 		$path = str_replace('/tuix/', '/', \ze\ring::chopPrefix('zenario/', \ze\ring::chopPrefix(CMS_ROOT, $path, true), true));
@@ -45,7 +44,7 @@ class tuix {
 	
 		\ze\cache::cleanDirs();
 		
-		if ($cd = \ze\cache::createDir($dir, $type = 'tuix', $onlyForCurrentVisitor = true, $ip = false)) {
+		if ($cd = \ze\cache::createDir($dir, $type = 'cache/tuix', $onlyForCurrentVisitor = true, $ip = false)) {
 			return CMS_ROOT. $cd. $file. '.json';
 		
 		} else {
@@ -54,7 +53,6 @@ class tuix {
 	}
 
 
-	//Formerly "zenarioReadTUIXFile()"
 	public static function readFile($path, $useCache = true, $updateCache = true) {
 		$type = explode('.', $path);
 		$type = $type[count($type) - 1];
@@ -97,16 +95,6 @@ class tuix {
 		}
 	
 		switch ($type) {
-			case 'xml':
-				//If this is admin mode, allow an old xml file to be loaded and read as a yaml file
-				$tags = [];
-				if (function_exists('zenarioReadTUIXFileR')) {
-					$xml = simplexml_load_file($path);
-					\ze\tuix::readFileR($tags, $xml);
-				}
-			
-				break;
-			
 			case 'yml':
 			case 'yaml':
 				$contents = file_get_contents($path);
@@ -179,7 +167,6 @@ class tuix {
 
 
 	//A recursive function that comes up with a list of all of the Organizer paths that a TUIX file references
-	//Formerly "logTUIXFileContentsR()"
 	public static function logFileContentsR(&$paths, &$tags, $type, $path = '') {
 	
 		if (is_array($tags)) {
@@ -221,7 +208,6 @@ class tuix {
 
 
 	//Try to check the tuix_file_contents table to see which files we need to include
-	//Formerly "modulesAndTUIXFiles()"
 	public static function modulesAndTUIXFiles(
 		$type, $requestedPath = false, $settingGroup = '',
 		$getIndividualFiles = true, $includeBaseFunctionalityWithSettingGroups = true,
@@ -233,7 +219,6 @@ class tuix {
 
 	//This function scans the Module directory for Modules with certain TUIX files, reads them, and turns them into a php array
 		//You should initialise $modules and $tags to empty arrays before calling this function.
-	//Formerly "loadTUIX()"
 	public static function load(
 		&$modules, &$tags, $type, $requestedPath = '', $settingGroup = '', $compatibilityClassNames = false,
 		$runningModulesOnly = true, $exitIfError = true
@@ -439,7 +424,6 @@ class tuix {
 	}
 	
 	
-	//Formerly "zenarioReadTUIXFileR()"
 	public static function readFileR(&$tags, &$xml) {
 		$lastKey = null;
 		$children = false;
@@ -487,7 +471,6 @@ class tuix {
 
 		//$thisTags = \ze\tuix::readFile($path, $moduleClassName);
 
-	//Formerly "zenarioParseTUIX()"
 	public static function parse(&$tags, &$par, $type, $moduleClassName = false, $settingGroup = '', $compatibilityClassNames = [], $requestedPath = false, $tag = '', $path = '', $goodURLs = [], $level = 0, $ord = 1, $parent = false, $parentsParent = false, $parentsParentsParent = false) {
 	
 		if ($path === '') {
@@ -823,7 +806,6 @@ class tuix {
 
 	//Strip out any tags/sections that require a priv that the current admin does not have
 	//Also count each tags' children
-	//Formerly "zenarioParseTUIX2()"
 	public static function parse2(&$tags, &$removedColumns, $type, $requestedPath = '', $mode = false, $path = '', $parentKey = false, $parentParentKey = false, $parentParentParentKey = false) {
 	
 		//Keep track of the path to this point
@@ -990,14 +972,12 @@ class tuix {
 
 
 
-	//Formerly "sortTUIX()"
 	public static function sort(&$tags) {
 		if (is_array($tags)) {
 			uasort($tags, 'ze\\tuix::sortCompare');
 		}
 	}
 
-	//Formerly "sortTUIXCompare()"
 	public static function sortCompare($a, $b) {
 		$ordA = $ordB = 999999;
 		if (isset($a['ord'])) {
@@ -1017,7 +997,6 @@ class tuix {
 	}
 
 
-	//Formerly "sortCompareByLabel()"
 	public static function sortCompareByLabel($a, $b) {
 		if ($a['label'] == $b['label']) {
 			return 0;
@@ -1025,7 +1004,6 @@ class tuix {
 		return ($a['label'] < $b['label']) ? -1 : 1;
 	}
 
-	//Formerly "addOrdinalsToTUIX()"
 	public static function addOrdinalsToTUIX(&$tuix) {
 	
 		$ord = 0;
@@ -1134,7 +1112,6 @@ class tuix {
 
 
 	//Include a Module
-	//Formerly "zenarioAJAXIncludeModule()"
 	public static function includeModule(&$modules, &$tag, $type, $requestedPath, $settingGroup) {
 
 		if (!empty($modules[$tag['class_name']])) {
@@ -1147,7 +1124,6 @@ class tuix {
 		}
 	}
 
-	//Formerly "TUIXLooksLikeFAB()"
 	public static function looksLikeFAB(&$tags) {
 		return !empty($tags['tabs']) && is_array($tags['tabs']);
 	}
@@ -1173,7 +1149,6 @@ class tuix {
 		}
 	}
 
-	//Formerly "TUIXIsFormField()"
 	public static function isFormField(&$field) {
 	
 		if (!$field || !empty($field['snippet'])) {
@@ -1193,7 +1168,6 @@ class tuix {
 		return true;
 	}
 
-	//Formerly "saveCopyOfTUIXOnServer()"
 	public static function saveCopyOnServer(&$tags) {
 
 		//Try to save a copy of the admin box in the cache directory
@@ -1217,7 +1191,6 @@ class tuix {
 		}
 	}
 
-	//Formerly "loadCopyOfTUIXFromServer()"
 	public static function loadCopyFromServer(&$tags, &$clientTags) {
 
 		//Attempt to pick the right box and load from the Storage
@@ -1243,7 +1216,6 @@ class tuix {
 	}
 
 
-	//Formerly "adminBoxSyncStoragePath()"
 	public static function syncStoragePath(&$box) {
 	
 		if (empty($box['key'])) {
@@ -1274,7 +1246,6 @@ class tuix {
 	}
 
 	//Encode the contents of the cached FABs before we save the cached copy to the disk
-	//Formerly "adminBoxEncodeTUIX()"
 	public static function encode(&$tags) {
 		
 		//Strip out all user-entered values before we save a copy of this admin box, for security reasons
@@ -1354,7 +1325,6 @@ class tuix {
 	}
 
 	//Reverse the above
-	//Formerly "adminBoxDecodeTUIX()"
 	public static function decode(&$tags, &$clientTags, $string) {
 		if (function_exists('openssl_encrypt') && !empty($clientTags['_sync']['password'])) {
 			$iv = '';
@@ -1376,7 +1346,6 @@ class tuix {
 			|| (isset($tab) && empty($tab['edit_mode']['on']));
 	}
 
-	//Formerly "readAdminBoxValues()"
 	public static function readValues(&$box, &$fields, &$values, &$changes, $filling, $resetErrors, $checkLOVs = false, $addOrds = false) {
 	
 		if (!empty($box['tabs']) && is_array($box['tabs'])) {
@@ -1567,7 +1536,6 @@ class tuix {
 		}
 	}
 
-	//Formerly "applyValidationFromTUIXOnTab()"
 	public static function applyValidation(&$tab, $saving) {
 		
 		$uniques = [
@@ -1653,6 +1621,92 @@ class tuix {
 				} elseif (($msg = $field['validation']['required_if_not_hidden'] ?? false) && !$hidden && $notSet) {
 					$field['error'] = $msg;
 			
+				//Check if a field is required on condition
+				} elseif (isset($field['validation']['required_on_condition'])) {
+					$fieldIsRequired = false;
+					
+					$requiredFieldValue = $field['validation']['required_on_condition']['condition_field_value'];
+					
+					$conditionalFieldValue = '';
+					if (isset($tab['fields'][$field['validation']['required_on_condition']['condition_field_code_name']]['current_value'])) {
+						$conditionalFieldValue = (string) $tab['fields'][$field['validation']['required_on_condition']['condition_field_code_name']]['current_value'];
+					} elseif (isset($tab['fields'][$field['validation']['required_on_condition']['condition_field_code_name']]['value'])) {
+						$conditionalFieldValue = (string) $tab['fields'][$field['validation']['required_on_condition']['condition_field_code_name']]['value'];
+					}
+					
+					switch ($field['validation']['required_on_condition']['condition_field_type']) {
+						case 'checkbox':
+						case 'group':
+							
+							$fieldIsRequired = ($conditionalFieldValue == $requiredFieldValue);
+							break;
+						case 'radios':
+						case 'select':
+						case 'centralised_radios':
+						case 'centralised_select':
+							//The conditional values can be:
+							//"Mandatory if" with 1 option selected, OR
+							//"Mandatory if not" with 1 option selected, OR
+							//"Mandatory if at least one of" with 1 or more options selected.
+							
+							//Please note: it is possible to select "Mandatory if any value" or "Mandatory if not any value",
+							//and these cases are validated just the same.
+							if ($field['validation']['required_on_condition']['condition_invert'] === 2) { // "Mandatory if at least one of"
+								$requiredFieldValues = explode(',', $requiredFieldValue);
+								
+								if ($conditionalFieldValue) {
+									foreach ($requiredFieldValues as $conditionalValue) {
+										if ($conditionalFieldValue == $conditionalValue) {
+											$fieldIsRequired = true;
+											break;
+										}
+									}
+								}
+							} else {
+								if (($conditionalFieldValue && ($conditionalFieldValue == $requiredFieldValue)) || (!$requiredFieldValue && $conditionalFieldValue)) {
+									$fieldIsRequired = true;
+								}
+							}
+							break;
+						case 'checkboxes':
+							$requiredFieldValues = explode(',', $requiredFieldValue);
+							if (!$requiredFieldValues) {
+								$requiredFieldValues = [];
+							}
+							
+							$multipleCheckboxesValues = $conditionalFieldValue ? explode(',', $conditionalFieldValue) : [];
+					
+							if ($field['validation']['required_on_condition']['condition_operator'] == 'AND') {
+								$allRequiredValuesAreSelected = true;
+								foreach ($requiredFieldValues as $requiredFieldValue) {
+									if (!in_array($requiredFieldValue, $multipleCheckboxesValues)) {
+										$allRequiredValuesAreSelected = false;
+										break;
+									}
+								}
+								
+								if ($allRequiredValuesAreSelected) {
+									$fieldIsRequired = true;
+								}
+							} else {
+								foreach ($requiredFieldValues as $requiredFieldValue) {
+									if (in_array($requiredFieldValue, $multipleCheckboxesValues)) {
+										$fieldIsRequired = true;
+										break;
+									}
+								}
+							}
+							break;
+					}
+			
+					if ($field['validation']['required_on_condition']['condition_invert'] === 1) { // "Mandatory if not"
+						$fieldIsRequired = !$fieldIsRequired;
+					}
+					
+					if ($fieldIsRequired && $notSet && ($msg = $field['validation']['required_on_condition']['required_message'] ?? false)) {
+						$field['error'] = $msg;
+					}
+				
 				//If a field was not required, do not run any further validation logic on it if it is empty 
 				} elseif ($notSet) {
 					continue;
@@ -1803,7 +1857,6 @@ class tuix {
 	public static $yamlFilePath = -1;
 
 
-	//Formerly "translatePhraseInTUIX()"
 	public static function translatePhrase(&$tag, &$overrides, $path, &$moduleClass, &$languageId, &$scan, $i = false, $j = false, $k = false) {
 	
 		if ($k !== false) {
@@ -1853,7 +1906,6 @@ class tuix {
 		}
 	}
 	
-	//Formerly "translatePhrasesInTUIXObject()"
 	public static function translatePhrasesInObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType = false) {
 	
 		if ($objectType === false) {
@@ -2041,7 +2093,6 @@ class tuix {
 	}
 
 
-	//Formerly "translatePhrasesInTUIXObjects()"
 	public static function translatePhrasesInObjects($tagNames, &$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false, $overrideObjectType = null) {
 	
 		if (!is_array($tagNames)) {
@@ -2060,7 +2111,6 @@ class tuix {
 	}
 
 	//Automatically translate any titles/labels in TUIX
-	//Formerly "translatePhrasesInTUIX()"
 	public static function translatePhrases(&$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false) {
 		
 		$path = 'phrase.'. $path;
@@ -2073,7 +2123,6 @@ class tuix {
 			$tags, $overrides, $path, $moduleClass, $languageId, $scan);
 	}
 
-	//Formerly "lookForPhrasesInTUIX()"
 	public static function lookForPhrases($path = '') {
 	
 		$overrides = [];
@@ -2089,7 +2138,6 @@ class tuix {
 		return $overrides;
 	}
 
-	//Formerly "setupOverridesForPhrasesInTUIX()"
 	public static function setupOverridesForPhrases(&$box, &$fields, $path = '', $valuesInDB = null) {
 	
 		$ord = 1000;
@@ -2228,7 +2276,15 @@ class tuix {
 	}
 
 
-	//Formerly "setupMultipleRowsInTUIX()"
+	//Utility function to set up a multi-row FAB or FEA plugin.
+	//You need to pass this an array of $templateFields, all of which need to have code names
+	//in the form of "code_name__znz".
+	//This function will then copy the template fields into the main fields array as many times
+	//as needed.
+	//The inputs provide some flexibility. You could have a fixed number of rows, or allow the
+	//person using the form to add as manay rows as they want.
+	//There is also the functionailty to have a "delete" button on each row that will hide
+	//the row from view when the user presses it.
 	public static function setupMultipleRows(
 		&$box, &$fields, &$values, &$changes, $filling,
 		&$templateFields,
@@ -2490,6 +2546,32 @@ class tuix {
 			'lastRow' => $lastRow
 		];
 	}
+	
+	//If you have a series of rows on your FAB or FEA plugin created using the
+	//ze\tuix::setupMultipleRows() function, you can use this function as part of a for-loop
+	//to loop through them all.
+	//For this to work, you need to provide the code-name of a field that's always on the row
+	//to use as an existance check.
+	//If you've been using the delete button, you'll also need to provide the code name you used for that.
+	//It will return an array of row suffixes (e.g. "__1", "__2", "__3", and so on) and whether or not the
+	//delete button has been pressed for each row.
+	public static function loopThroughMultipleRows(
+		&$fields,
+		$startAt = 1,
+		$tabName = 'details',
+		$existsFieldCodeName = 'id',
+		$deleteButtonCodeName = 'delete'
+	) {
+		$suffixes = [];
+		
+		for ($n = $startAt; (($suffix = '__'. $n) && (!empty($fields[$tabName. '/'. $existsFieldCodeName. $suffix]))); ++$n) {
+			$deletePressed = !empty($fields[$tabName. '/'. $deleteButtonCodeName. $suffix]['pressed']);
+			
+			$suffixes[$suffix] = $deletePressed;
+		}
+		
+		return $suffixes;
+	}
 
 
 
@@ -2507,7 +2589,6 @@ class tuix {
 
 
 
-	//Formerly "loadAllPluginSettings()"
 	public static function loadAllPluginSettings(&$box, &$valuesInDB) {
 		$valuesInDB = [];
 		if (!empty($box['key']['instanceId'])) {
@@ -2526,7 +2607,6 @@ class tuix {
 
 
 	//Sync updates from the client to the array stored on the server
-	//Formerly "syncAdminBoxFromClientToServer()"
 	public static function syncFromClientToServer(&$serverTags, &$clientTags, $key1 = false, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false) {
 		
 		if ($key1 === false) {
@@ -2608,7 +2688,6 @@ class tuix {
 	}
 
 	//Sync updates from the server to the array stored on the client
-	//Formerly "syncAdminBoxFromServerToClient()"
 	public static function syncFromServerToClient($serverTags, $clientTags, &$output) {
 	
 		$keys = \ze\ray::valuesToKeys(array_keys($serverTags));
@@ -2654,7 +2733,6 @@ class tuix {
 		//['reload_organizer' => true]
 		//['open_admin_box' => $path]
 		//['go_to_url' => $url]
-	//Formerly "closeFABWithFlags()"
 	public static function closeWithFlags($flags) {
 	
 		$tags = [
@@ -2672,7 +2750,6 @@ class tuix {
 	public static $feaSelectQuery = false;
 	public static $feaSelectCountQuery = false;
 
-	//Formerly "displayDebugMode()"
 	public static function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $queryIds = false, $queryFullSelect = false, $querySelectCount = false) {
 	
 		$modules_loaded = [];
@@ -2697,7 +2774,6 @@ class tuix {
 
 
 	//For using encrypted columns in Organizer. Work in progress.
-	//Formerly "flagEncryptedColumnsInOrganizer()"
 	public static function flagEncryptedColumns(&$panel, $alias, $table) {
 	
 		$tableName = DB_PREFIX. $table;

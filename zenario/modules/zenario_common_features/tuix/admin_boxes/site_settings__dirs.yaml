@@ -56,7 +56,7 @@ site_settings:
                     visible_if: zenarioAB.value('check_automated_backups')
                     type: submit
                     value: Test
-                    class: submit
+                    class: zenario_gp_button
                     can_be_pressed_in_view_mode: true
                     validate_onchange: true
                 automated_backup_days:

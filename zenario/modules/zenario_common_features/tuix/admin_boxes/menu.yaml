@@ -44,22 +44,13 @@ zenario_menu:
                     type: text
                     maxlength: 250
                     onkeyup: |
-                        get('path_of__' + this.id).value =
-                            !this.value?
-                                ''
-                            :    !get('parent_path_of__' + this.id).value?
-                                    this.value + " [level 1]"
-                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level"+ (get('parent_path_of__' + this.id).value.split("›").length + 1) + "]";
+                        $(zenarioAB.get('span__path_of__' + this.id)).text(this.value);
                 path_of__menu_title:
                     ord: 1003
                     label: 'Menu path preview:'
-                    type: textarea
-                    disabled: disabled
-                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
-                parent_path_of__menu_title:
-                    ord: 1004
-                    same_row: true
-                    type: hidden
+                    type: text
+                    show_as_a_span: true
+                    css_class: zenario_textbox_noborder zfab_menuPathPreviewNode zfab_menuPathPreviewUpdatingNode
                 target_loc:
                     ord: 1005
                     label: 'Type of link:'

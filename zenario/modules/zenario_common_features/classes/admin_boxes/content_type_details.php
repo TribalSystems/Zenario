@@ -143,7 +143,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				$underNodeAtStart = 2;	//N.b. this option is not supported by position pickers using Organizer Select, but supported by ze\menuAdm::addContentItems() when saving
 				$defaultPos = '';
 				
-				$mPath = ze\menuAdm::pathWithSection($menuNode['id'], true). ' › '. ze\admin::phrase('[ Create at the start ]');
+				$mPath = ze\menuAdm::path($menuNode['id'], true). ' › '. ze\admin::phrase('[ Create at the start ]');
 				$mVal = $menuNode['section_id']. '_'. $menuNode['id']. '_'. $underNodeAtStart;
 				
 				$suggestedPositions[$mVal] = htmlspecialchars($mPath);

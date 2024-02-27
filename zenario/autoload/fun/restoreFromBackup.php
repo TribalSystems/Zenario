@@ -47,7 +47,7 @@ $encrypted =
 
 //If the back was encrypted, decrypt it first!
 if ($encrypted) {
-	if (!\ze\zewl::loadClientKey()) {
+	if (!\ze\pde::loadClientKey()) {
 		echo \ze\admin::phrase('Could not load the encryption library.');
 		exit;
 	}
@@ -56,7 +56,7 @@ if ($encrypted) {
 	chmod($backupPath, 0600);
 	
 	try {
-		\ze\zewl::decryptFile($encryptedBackupPath, $backupPath);
+		\ze\pde::decryptFile($encryptedBackupPath, $backupPath);
 	} catch (\Exception $e) {
 		echo \ze\admin::phrase('Could not decrypt this backup. It may be corrupted, or may have been created using a different encryption key.');
 		exit;

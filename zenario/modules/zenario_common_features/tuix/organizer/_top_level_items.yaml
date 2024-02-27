@@ -72,6 +72,14 @@ zenario__content:
             label: Trashed content items
             link:
                 path: zenario__content/panels/content/refiners/trash////
+        access_codes:
+            ord: 30
+            visible_if: >
+                zenarioA.siteSettings.enable_staging_mode
+            css_class: access_code
+            label: Staging content
+            link:
+                path: zenario__content/panels/access_codes
         # This hidden nav is here so that, if you're on the content item translations panel,
         # then you see your position in a sensible place in the nav on the left
         translation_chains:
@@ -117,6 +125,14 @@ zenario__library:
                 Images on all content items are stored in a central library, edit them here.
             link:
                 path: zenario__library/panels/image_library
+        special_images:
+            ord: 1.1
+            css_class: media_image
+            label: Special images
+            tooltip: |
+                Images for site settings are stored in a central library, edit them here.
+            link:
+                path: zenario__library/panels/special_images
         #MIC images will be here if the module is enabled. (ord: 2)
         categories:
             ord: 3
@@ -282,9 +298,9 @@ zenario__administration:
                 invisible
                 meta head tag analytics social media 
                 mod_rewrite suffix behaviour for translations alias language code 
-                screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url
+                screen names log all sign-ins logins passwords maximum user image file sizes google bing search index sitemap url xml robots.txt robots robot friendly url urls
                 country countries
-                CSS wrappers compress
+                CSS bundles wrappers compress
                 queries query SQL run-time notices strict errors
                 caching cache stats statistics clear
             link:

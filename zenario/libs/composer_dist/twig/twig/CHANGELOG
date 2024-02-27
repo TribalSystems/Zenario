@@ -1,3 +1,15 @@
+**Twig 2 is not maintained anymore**
+
+# 2.16.0 (2023-12-22)
+
+ * Last version for the 2.x series
+ * Add SourcePolicyInterface to selectively enable the Sandbox based on a template's Source
+
+# 2.15.6 (2023-21-11)
+
+ * Add return type for Symfony 7 compatibility
+ * Fix premature loop exit in Security Policy lookup of allowed methods/properties
+
 # 2.15.5 (2023-05-03)
 
  * Make the Lexer initialize itself lazily

@@ -60,6 +60,10 @@ $downloading = !$filling && (bool) ze::post('_download');
 $validating = !$filling && ($saving || $downloading || (bool) ze::post('_validate'));
 $confirmed = $saving && ze::post('_confirm');
 
+if (!$debugMode && $filling && ze\admin::setting('show_dev_tools')) {
+	ze::$recordFiles = true;
+}
+
 
 
 //If this isn't the first load, attempt to load the defintion from the Storage
@@ -114,6 +118,14 @@ if ($loadDefinition) {
 	$originalTags = [];
 	$moduleFilesLoaded = [];
 	ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
+	
+	if (ze::$recordFiles) {
+		foreach ($moduleFilesLoaded as $moduleFiles) {
+			foreach ($moduleFiles['paths'] as $path) {
+				ze::$tuixFiles[$path] = true;
+			}
+		}
+	}
 	
 	
 	//If we had a requested path, drill straight down to that level
@@ -314,13 +326,12 @@ if ($debugMode) {
 				$record = ze\row::get($dataset['table'], true, $tags['key']['id']);
 			}
 			
+			$customFields = ze\row::getAssocs('custom_dataset_fields', true, ['dataset_id' => $dataset['id'], 'is_system_field' => 0], 'ord');
+			
 			//Add custom fields
-			foreach (ze\row::getAssocs(
-				'custom_dataset_fields',
-				true,
-				['dataset_id' => $dataset['id'], 'is_system_field' => 0],
-				'ord'
-			) as $cfield) {
+			foreach ($customFields as $cfield) {
+				$cfield['label'] = htmlspecialchars($cfield['label']);
+				
 				$cFieldName = '__custom_field__'. ($cfield['db_column'] ?: $cfield['id']);
 			
 				if (!isset($tags['tabs'][$cfield['tab_name']])
@@ -412,6 +423,30 @@ if ($debugMode) {
 					$cfield['validation']['required'] = $cfield['required_message'];
 				}
 				
+				if ($cfield['mandatory_if_visible']
+				 && $cfield['required_message']) {
+					$cfield['validation']['required_if_not_hidden'] = $cfield['required_message'];
+				}
+				
+				//Handle fields which are mandatory on condition.
+				if ($cfield['mandatory_condition_field_id']) {
+					$requiredFieldId = $cfield['mandatory_condition_field_id'];
+					$requiredField = $customFields[$requiredFieldId];
+					
+					$requiredFieldTabName = $requiredField['tab_name'];
+					$requiredFieldName = '__custom_field__'. ($requiredField['db_column'] ?: $requiredField['id']);
+					
+					$cfield['validation']['required_on_condition'] = [
+						'condition_field_tab_name' => $requiredFieldTabName,
+						'condition_field_code_name' => $requiredFieldName,
+						'condition_field_type' => $requiredField['type'],
+						'condition_field_value' => $cfield['mandatory_condition_field_value'],
+						'condition_operator' => $cfield['mandatory_condition_checkboxes_operator'], //Values: "AND", "OR"
+						'condition_invert' => $cfield['mandatory_condition_invert'], //Values: 0 = "mandatory if", 1 = "mandatory if not", 2 = "mandatory if one of"
+						'required_message' => $cfield['required_message']
+					];
+				}
+				
 				// Handle field visibility
 				if ($cfield['admin_box_visibility'] != 'show_on_condition') {
 					unset($cfield['parent_id']);
@@ -455,6 +490,16 @@ if ($debugMode) {
 				$cfield['row_class'] = 'zenario_fab_custom_field_row zenario_fab_custom_field_row__'. $cfield['type'];
 				$cfield['label_class'] = 'zenario_fab_custom_field_label zenario_fab_custom_field_label__'. $cfield['type'];
 				
+				//If a custom field has a note_below and/or side_note, escape any HTML.
+				//Developers can still add core TUIX fields with HTML notes, and they will not be escaped.
+				if (!empty($cfield['note_below'])) {
+					$cfield['note_below'] = htmlspecialchars($cfield['note_below']);
+				}
+				
+				if (!empty($cfield['side_note'])) {
+					$cfield['side_note'] = htmlspecialchars($cfield['side_note']);
+				}
+				
 				if ($cfield['type'] == 'group' || $cfield['type'] == 'consent') {
 					$cfield['type'] = 'checkbox';
 				} else {
@@ -486,7 +531,7 @@ if ($debugMode) {
 				$customisedField['ord'] = $cfield['ord'];
 			}
 			if ($cfield['label']) {
-				$customisedField['label'] = $cfield['label'];
+				$customisedField['label'] = htmlspecialchars($cfield['label']);
 			}
 			if ($cfield['note_below']) {
 				$customisedField['note_below'] = htmlspecialchars($cfield['note_below']);
@@ -786,7 +831,17 @@ if (!empty($originalTags)) {
 
 
 
+if (ze::$recordFiles) {
+	$tags['__source_files'] = [
+		'root' => CMS_ROOT,
+		'paths' => ze::$tuixFiles
+	];
+}
 
+if (!empty(ze::$dumps)) {
+	$tags['__dumps'] = ze::$dumps;
+	ze::$dumps = [];
+}
 
 //Display the output as JSON
 header('Content-Type: text/javascript; charset=UTF-8');

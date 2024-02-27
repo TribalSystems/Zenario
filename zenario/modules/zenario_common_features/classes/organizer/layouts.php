@@ -98,7 +98,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		}
 		
 		$panel['columns']['content_type']['values'] = [];
-		foreach (ze\content::getContentTypes() as $cType) {
+		foreach (ze\content::getContentTypes(false, false) as $cType) {
 			$panel['columns']['content_type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
 		}
 		
@@ -161,7 +161,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				];
 				
 				$contentTypeEnname='';
-				foreach (ze\content::getContentTypes() as $cType) {
+				foreach (ze\content::getContentTypes(false, false) as $cType) {
 					if($cType['content_type_id'] == $item['content_type']) {
 						if(count($usageContentItems)==1) {
 							$contentTypeEnname = $cType['content_type_name_en'].' content item';
@@ -212,6 +212,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			}
 			
 			$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+			$item['usage_content_items'] = $usage['content_items'] ?? 0;
 			
 			$item['row_class'] = ' layout_status_' . $item['status'];
 		}

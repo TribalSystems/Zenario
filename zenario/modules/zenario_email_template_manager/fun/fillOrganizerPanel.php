@@ -54,6 +54,28 @@ switch ($path) {
 			$panel['collection_buttons']['test']['hidden'] = true;
 		}
 		
+		$panelItemKeys = array_keys($panel['items']);
+		
+		if ($panelItemKeys) {
+			$sql = "
+				SELECT t.code, COUNT(etsl.id) AS sent_email_count
+				FROM " . DB_PREFIX . "email_template_sending_log AS etsl
+				LEFT JOIN " . DB_PREFIX . "email_templates AS t
+					ON etsl.email_template_id = t.id
+				WHERE t.code IN (" . ze\escape::in($panelItemKeys) . ")
+				GROUP BY t.code";
+		
+			$result = ze\sql::fetchAssocs($sql);
+		
+			$emailTemplateSentEmailCountArray = [];
+		
+			if ($result) {
+				foreach ($result as $templateSentEmailRow) {
+					$emailTemplateSentEmailCountArray[$templateSentEmailRow['code']] = $templateSentEmailRow['sent_email_count'];
+				}
+			}
+		}
+		
 		
 		foreach ($panel['items'] as $K=>$item){
 			$body_extract = strip_tags($panel['items'][$K]['body_extract']);
@@ -74,6 +96,12 @@ switch ($path) {
 			$details = self::checkTemplateIsProtectedAndGetCreatedDetails($K);
 			if ($details['protected']) {
 				$panel['items'][$K]['protected'] = true;
+			}
+			
+			if (!empty($emailTemplateSentEmailCountArray[$K])) {
+				$panel['items'][$K]['sent_email_count'] = $emailTemplateSentEmailCountArray[$K];
+			} else {
+				$panel['items'][$K]['sent_email_count'] = 0;
 			}
 		}
 		

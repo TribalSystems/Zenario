@@ -63,7 +63,6 @@ if ($methodCall == 'refreshPlugin'
 
 	//showRSS and showFloatingBox method calls relate to content items
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
-	ze\cache::start();
 	
 	//Check the content item that this is being linked from, and whether the current user has permissions to access it
 	$cID = $cType = $content = $chain = $version = $redirectNeeded = $aliasInURL = $langIdInURL = $instanceFound = false;
@@ -157,11 +156,6 @@ if ($methodCall == 'refreshPlugin'
 		require 'adminheader.inc.php';
 	} else {
 		require 'visitorheader.inc.php';
-	}
-	
-	//Use compression where possible, except in a couple of cases where we're using ob_start()
-	if ($methodCall != 'handleOrganizerPanelAJAX' && $methodCall != 'handleAdminToolbarAJAX') {
-		ze\cache::start();
 	}
 	
 	if (ze::request('__pluginClassName__')) {
@@ -279,7 +273,6 @@ if ($methodCall == 'refreshPlugin'
 	//Check to see if the CMS' library of functions has been included, and include it if not
 	if (!function_exists('checkPriv')) {
 		require 'adminheader.inc.php';
-		ze\cache::start();
 	}
 	
 	//Otherwise look for a Module Name
@@ -375,6 +368,11 @@ if ($methodCall == 'showFile') {
 		ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode);
 	}
 	
+	if (!empty(ze::$dumps)) {
+		$tags['__dumps'] = ze::$dumps;
+		ze::$dumps = [];
+	}
+	
 	ze\ray::jsonDump($tags);
 	
 	
@@ -444,12 +442,6 @@ if ($methodCall == 'showFile') {
 	
 	$newIds = false;
 	$message = false;
-
-	if (ze::request('_sk_form_submission')) {
-		ob_start();
-	} else {
-		ze\cache::start();
-	}
 	
 	$newIds = false;
 	if ($methodCall == 'handleAdminToolbarAJAX') {
@@ -484,7 +476,6 @@ if ($methodCall == 'showFile') {
 		}
 		
 		//Send the results to Organizer in the parent frame
-		ze\cache::start();
 		echo '
 			<html>
 				<body>
@@ -691,6 +682,11 @@ if ($methodCall == 'showFile') {
 		}
 		
 		ze\escape::flag('PAGE_TITLE', ze::$pageTitle, false);
+		
+		if (!empty(ze::$dumps)) {
+			ze\escape::flag('DUMPS', json_encode(ze::$dumps), false);
+			ze::$dumps = [];
+		}
 	}
 }
 

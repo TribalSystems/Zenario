@@ -151,7 +151,7 @@ if (ze::$canCache
 		
 		$cacheStatusText = implode('', ze::$saveEnv);
 		
-		if (ze\cache::cleanDirs() && ($path = ze\cache::createDir(zenarioPageCacheDir(ze::$knownReq). $cacheStatusText, 'pages', false))) {
+		if (ze\cache::cleanDirs() && ($path = ze\cache::createDir(zenarioPageCacheDir(ze::$knownReq). $cacheStatusText, 'cache/pages', false))) {
 			foreach ($clearCacheBy as $if => $set) {
 				touch(CMS_ROOT. $path. $if);
 				\ze\cache::chmod(CMS_ROOT. $path. $if, 0666);

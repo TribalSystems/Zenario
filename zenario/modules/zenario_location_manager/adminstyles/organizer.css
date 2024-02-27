@@ -4,12 +4,14 @@
 
 #zenario_at_top_left_menu .organizer_top_level_image.locations_top_level,
 #organizer_leftColumn .legend_on a.locations_top_level,
-.organizer_top_level_image.locations_top_level:hover {
+.organizer_top_level_image.locations_top_level:hover,
+ul li span.organizer_item_image.all_locations,
+ul li span.organizer_item_image.zenario_location_manager_location,
+#zenario_at_top_left_menu .organizer_item_image.all_locations {
 	background: url('images/icon-locations-on.svg') no-repeat center / auto 16px;
 }
 
-.organizer_item_image.zenario_location_manager_location,
-#zenario_at_top_left_menu .organizer_item_image.all_locations {
+.organizer_item_image.zenario_location_manager_location {
 	background: url('images/icon-locations.svg') no-repeat center / auto 18px;
 }
 
@@ -17,16 +19,38 @@
 	background: url('images/icon-sectors.svg') no-repeat center / auto 18px;
 }
 
+ul li span.organizer_item_image.zenario_location_manager_sector {
+	background: url('images/icon-sectors-white.svg') no-repeat center / auto 18px;
+}
+
 .organizer_item_image.zenario_location_manager_supplier {
 	background: url('images/icon-suppliers-dark.svg') no-repeat center / auto 18px;
+}
+
+ul li span.organizer_item_image.zenario_location_manager_supplier {
+	background: url('images/icon-suppliers-white.svg') no-repeat center / auto 18px;
 }
 
 .organizer_item_image.zenario_location_manager_areas {
 	background: url('images/icon-areas-dark.svg') no-repeat center / auto 18px;
 }
 
+ul li span.organizer_item_image.zenario_location_manager_areas {
+	background: url('images/icon-areas-white.svg') no-repeat center / auto 18px;
+}
+
 .organizer_item_image.zenario_location_manager_ratings {
 	background: url('images/icon-acreditors-dark.svg') no-repeat center / auto 18px;
 }
 
+ul li span.organizer_item_image.zenario_location_manager_ratings {
+	background: url('images/icon-acreditors-white.svg') no-repeat center / auto 18px;
+}
 
+.organizer_item_image.zenario_location_manager__score {
+	background: url('images/icon-sectors-score-dark.svg') no-repeat center / auto 22px;
+}
+
+ul li span.organizer_item_image.zenario_location_manager__score {
+	background: url('images/icon-sectors-score-white.svg') no-repeat center / auto 22px;
+}

@@ -16,7 +16,8 @@
 		
 			{% set Column = 0 %}
 			{% if Search_Result_Rows %}
-				<div id="{{Container_Id}}_search_results" class="search_results {% if Mode == 'search_entry_box' %} column_count_{{Column_Count}} {% endif %}">
+				<div id="{{Container_Id}}_search_results" class="search_results {% if Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always' %} column_count_{{Column_Count}} {% endif %}">
+					{% set Maximum_Results_Number = this.setting('maximum_results_number') %}
 					{% for searchResultType in Search_Result_Types_Order %}
 						{% if searchResultType == 'html' %}
 							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_html_pages.twig.html' %}

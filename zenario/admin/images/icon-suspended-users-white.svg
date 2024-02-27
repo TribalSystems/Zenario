@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="20px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-suspended-users">
+        <g>
+            <g>
+                <path d="M7.134,6.897C7.339,8.475 8.001,8.977 8.001,8.977L7.99,10.105L13.611,4.538C13.709,3.794 13.778,3.127 13.744,2.769C13.612,1.423 12.273,0 10.213,0C8.154,0 6.814,1.423 6.683,2.768C6.646,3.138 6.721,3.835 6.824,4.607C6.32,4.502 6.24,5.531 6.263,5.902C6.286,6.285 6.72,7.016 7.134,6.897Z" style="fill:white;fill-rule:nonzero;"/>
+                <path d="M6.925,11.159C6.631,11.289 6.263,11.446 5.801,11.637C4.036,12.365 2.253,12.875 1.722,13.695C1.437,14.136 1.374,15.577 1.369,16.662L6.925,11.159Z" style="fill:white;fill-rule:nonzero;"/>
+                <path d="M15.568,11.894C13.803,11.166 13.384,10.913 13.384,10.913L13.367,9.235C13.367,9.235 13.735,8.955 14.007,8.159L3.854,18.214L19.979,18.214C19.979,18.214 20.122,14.687 19.646,13.951C19.117,13.132 17.334,12.622 15.568,11.894Z" style="fill:white;fill-rule:nonzero;"/>
+            </g>
+            <path d="M19.793,1.145L0.755,20L0,19.252L19.038,0.397L19.793,1.145Z" style="fill:white;fill-rule:nonzero;"/>
+        </g>
+    </g>
+</svg>

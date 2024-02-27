@@ -102,7 +102,7 @@ foreach($this->frameworkFields as $name => $field) {
 				$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 			
 			} else {
-				if ($field['pattern'] == 'unverified_email' && ze\row::get('users', 'email_verified', ['email' => ($_POST[$name] ?? false)])) {
+				if ($field['pattern'] == 'unverified_email' && ze\row::get('users', 'email_verified', ['email' => ($_POST[$name] ?? false)]) == 'verified') {
 					$errorMessage = $this->setting('already_verified_message');
 					$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 				}

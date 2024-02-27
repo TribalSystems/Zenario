@@ -62,7 +62,7 @@ body.zenario_showing_preview .zenario_slotWithNoContents,
 body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .pluginAdminLinks,
 body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .pluginAdminEditButton,
 
-body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_layout .zenario_missing_slots,
+body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_layout x-zenario-missing-slots,
 
 body.zenario_pageMode_preview .zenario_nestSlot:hover .zenario_slotEggControlBox,
 body.zenario_pageMode_preview .zenario_slotNotShownInVisitorMode,
@@ -177,8 +177,7 @@ body.zenario_pageModeIsnt_layout .zenario_slot_layout_preview {
 }
 
 #zenario_citem h1:hover {
-	-webkit-box-shadow:inset 1px 1px 1px blue;
-	box-shadow:inset 1px 1px 1px blue;
+	box-shadow:inset 1px 1px blue;
 }
 
 #zenario_citem h1:hover:before {
@@ -197,9 +196,8 @@ body.zenario_pageModeIsnt_layout .zenario_slot_layout_preview {
 }
 
 #zenario_citem .zenario_slot_being_edited h1:hover {
-	-webkit-box-shadow:0;
-	-moz-box-shadow:0;
-	box-shadow:0;
+	-webkit-box-shadow:none;
+	box-shadow:none;
 }
 
 
@@ -261,6 +259,18 @@ body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.
 body.zenario_being_edited .zenario_slot_being_edited .zenario_slot {
 	outline-width: 2px;
 }
+
+
+
+/*	When the WYSIWYG editor controls are being displayed in the admin toolbar, hide the rest of the admin toolbar elements  */
+body.zenario_being_edited #zenario_at_wrap #zenario_at_top_left_menu,
+body.zenario_being_edited #zenario_at_wrap #zenario_at_title,
+body.zenario_being_edited #zenario_at_wrap #zenario_at_logout_link,
+body.zenario_being_edited #zenario_at_wrap #zenario_at {
+	display: none;
+}
+
+
 
 /*  When you get a not accesible slot, remove all border  */
 body.zenario_pageMode_edit .zenario_hideSlotInEditMode .zenario_slot,
@@ -351,45 +361,46 @@ body.zenario_pageMode_preview .zenario_whatsInSlotTooltip {
 
 /*  Missing Slots  */
 
-div.zenario_missing_slots {
+x-zenario-missing-slots {
+	display: block;
 	border-top: 3px solid #ff4040;
 	margin-top: 2em;
 	padding: 1.2em;
 	padding-top: 0.4em;
 }
 
-.zenario_missing_slots .zenario_missing_slots_title {
+x-zenario-missing-slots x-zenario-missing-slots-title {
 	display: block;
 	font-size: 1.5em;
 	font-weight: bold;
 	margin: 0 0 0.67em 0;
 }
 
-.zenario_missing_slots .zenario_missing_slots_message {
+x-zenario-missing-slots x-zenario-missing-slots-message {
 	display: block;
 	font-size: 0.85em;
 	margin: 1em 0;
 }
 
-.zenario_missing_slots .zenario_missing_slots_title,
-.zenario_missing_slots .zenario_missing_slots_message {
+x-zenario-missing-slots x-zenario-missing-slots-title,
+x-zenario-missing-slots x-zenario-missing-slots-message {
 	font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
 }
 
-.zenario_missing_slots .zenario_missing_slot {
+x-zenario-missing-slots .zenario_missing_slot {
 	margin: 1em;
 }
 
-.zenario_missing_slots .zenario_slotWithNoContents {
+x-zenario-missing-slots .zenario_slotWithNoContents {
 	display: none;
 }
 
-.zenario_missing_slots .zenario_slotWithContents .zenario_missing_slot {
+x-zenario-missing-slots .zenario_slotWithContents .zenario_missing_slot {
 	margin-left: 5em;
 	width: 60%;
 }
 
-.zenario_missing_slots .zenario_slotWithContents .zenario_missing_slot .zenario_slotContents {
+x-zenario-missing-slots .zenario_slotWithContents .zenario_missing_slot .zenario_slotContents {
 	border: 3px dashed #ff4040;
 	width: 100%;
 }
@@ -428,7 +439,6 @@ body.zenario_pageMode_template .zenario_libraryPlugin.zenario_level1 {
 	/*background-color:rgba(255, 0, 0, 0.1);*/ /* red */
 
 	-webkit-border-radius:5px;
-	-moz-border-radius:5px;
 	border-radius:5px;
 }
 
@@ -442,7 +452,6 @@ body.zenario_pageMode_menu .zenario_libraryPlugin.zenario_level2:not(.zenario_sh
 	/*background-color:rgba(128, 0, 128, 0.1);*/ /* purple */
 
 	-webkit-border-radius:5px;
-	-moz-border-radius:5px;
 	border-radius:5px;
 }
 
@@ -614,7 +623,6 @@ div.zenario_slotControlsWrap {
 	font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
 	background-color: #333;
 	-webkit-box-shadow: 0 4px 5px rgba(0,0,0,.85);
-	-moz-box-shadow: 0 4px 5px rgba(0,0,0,.85);
 	box-shadow: 0 4px 5px rgba(0,0,0,.85);
 	border: solid 1px #333;
 }

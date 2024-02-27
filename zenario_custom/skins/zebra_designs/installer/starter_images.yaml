@@ -1,0 +1,7 @@
+# Images that the installer script should insert into the site settings
+favicon:
+    name: favicon-zebra.png
+    alt_tag: Zebra Designs favicon
+logo:
+    name: logo-zebra-designs.svg
+    alt_tag: Zebra Designs logo

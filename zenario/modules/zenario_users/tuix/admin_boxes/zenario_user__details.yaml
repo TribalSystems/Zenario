@@ -20,26 +20,39 @@ zenario_user__details:
                     message: This user's password has expired. Reset their password to give the user more time to login.
                     type: warning
             fields:
-                email: 
+                email:
                     label: "Email:"
                     type: text
-                email_verified: 
+                    onblur: |
+                        var emailOnLoad = $('#email_on_load');
+                        var emailNow = $('#email');
+                        var emailVerifiedStatus = $('.email_status');
+                        
+                        if (emailNow && emailOnLoad) {
+                            emailNow = emailNow.val();
+                            emailOnLoad = emailOnLoad.val();
+                            if ((emailNow != emailOnLoad) && emailVerifiedStatus) {
+                                emailVerifiedStatus.remove();
+                            }
+                        }
+                email_on_load:
+                    type: hidden
+                email_verified:
+                    #This field is only used for storing the value.
                     label: "Email address verified"
                     type: checkbox
-                    redraw_onchange: true
-                    readonly: true
-                    side_note: Read-only. If checked, the user has clicked on a verification link within an email from this site, proving that the email address exists and they can access it.
-                salutation: 
+                    hidden: true
+                salutation:
                     label: "Salutation:"
                     type: text
                     allow_admin_to_change_visibility: true
-                first_name: 
+                first_name:
                     label: "First name:"
                     type: text
-                last_name: 
+                last_name:
                     label: "Last name:"
                     type: text
-                status: 
+                status:
                     label: "Status:"
                     type: radios
                     values: 
@@ -245,7 +258,7 @@ zenario_user__details:
                     visible_if: |
                         zenarioAB.value('status', 'details')
                     label: "Has accepted terms and conditions"
-                    side_note: "When checked, this indicates the user or contact has accepted the site's terms and conditions."
+                    note_below: "This indicates if the user or contact has accepted the site's terms and conditions (recorded in the consent log when a user/contact signs up themself). If using Newsletters in Zenario, they will only be sent to recipients where this is checked."
                     type: checkbox
                 send_activation_email_to_user:
                     label: 'Send activation email to user'

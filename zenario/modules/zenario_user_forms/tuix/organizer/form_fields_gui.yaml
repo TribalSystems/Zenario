@@ -83,12 +83,12 @@ zenario__user_forms:
                                 value: Previous
                                 maxlength: 250
                             hide_in_page_switcher:
-                                label: Hide in page switcher
+                                label: Hide in step switcher
                                 type: checkbox
                             show_in_summary: &show_in_summary
                                 label: Show in summary
                                 type: checkbox
-                                note_below: This will show in the form summary page and when viewing form responses.
+                                note_below: Show this step in the form summary step, and when viewing form responses.
             
             form_field_details:
                 tabs:
@@ -349,33 +349,26 @@ zenario__user_forms:
                                 label: 'Stop user editing filename'
                                 type: checkbox
                             
-                            note_to_user:
-                                visible_if: |
-                                    ['section_description', 'section_spacer', 'repeat_start'].indexOf(item.type) == -1
-                                label: 'Note below field (HTML):'
-                                type: textarea
-                                maxlength: 250
-                                note_below: Enter a note to the user that will be displayed below this field.
-                                is_phrase: true
                             show_in_summary: *show_in_summary
                                 visible_if: |
                                     item.type == 'section_description' || item.type == 'section_spacer'
                                 
-                            value_prefix:
-                                label: 'Value prefix:'
-                                type: text
-                                maxlength: 250
-                                visible_if: |
-                                    item.type == 'calculated'
-                            value_postfix:
-                                hide_with_previous_field: true
-                                label: 'Value postfix:'
-                                type: text
-                                maxlength: 250
                             calculation_code:
-                                hide_with_previous_field: true
                                 type: calculation_code
                                 format_onchange: true
+                                label: 'Calculation:'
+                                visible_if: |
+                                    item.type == 'calculated'
+                            value_prefix:
+                                hide_with_previous_field: true
+                                label: 'Prefix before value:'
+                                type: text
+                                maxlength: 250
+                            value_postfix:
+                                hide_with_previous_field: true
+                                label: 'Suffix after value:'
+                                type: text
+                                maxlength: 250
                             
                             restatement_field:
                                 visible_if: |
@@ -385,6 +378,15 @@ zenario__user_forms:
                                 empty_value: -- Select --
                                 values: mirror_fields
                                 note_below: You can mirror text, calculated, select lists and centralised select lists.
+                            
+                            note_to_user:
+                                visible_if: |
+                                    ['section_description', 'section_spacer', 'repeat_start'].indexOf(item.type) == -1
+                                label: 'Note below field (HTML):'
+                                type: textarea
+                                maxlength: 250
+                                note_below: Enter a note to the user that will be displayed below this field.
+                                is_phrase: true
                     
                     values:
                         label: Values

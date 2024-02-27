@@ -44,7 +44,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 		toolbar,
 		toolbarLeft = 'bold italic underline strikethrough style-code | removeformat',
 		toolbarRight = 'style-p style-pre | numlist bullist | blockquote outdent indent',
-		plugins = 'lists paste autoresize stylebuttons',
+		plugins = ['lists', 'paste', 'autoresize', 'stylebuttons'],
 		fixed_toolbar_container = '#toolbar_container_for_' + editorId,
 		options;
 	
@@ -61,7 +61,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 		
 			if (enableImages) {
 				toolbar += 'image';
-				plugins += ' image';
+				plugins.push('image');
 			}
 			
 			if (enableLinks) {
@@ -70,7 +70,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 				}
 				
 				toolbar += 'link unlink';
-				plugins += ' autolink link';
+				plugins.push('autolink', 'link');
 			}
 		}
 		
@@ -78,7 +78,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 	}
 	
 	options = {
-		script_url: zenario.addBasePath(zenario.tinyMCEPath),
+		promotion: false,
 		browser_spellcheck: true,
 		height: 250,
 		menubar: false,
@@ -96,6 +96,8 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 
 		inline: true,
 		fixed_toolbar_container: fixed_toolbar_container,
+		toolbar_persist: true,
+		
 		setup: function(editor) {
 			tinyMCE.i18n.add('en', {
 				'Bold': window.anonymousCommentsPhrase.editorBold,

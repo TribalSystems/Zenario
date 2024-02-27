@@ -111,7 +111,7 @@ snTools.reviewShortNames = function() {
 	output += "\n\t//	Zenario's minification script includes some logic to shorten long function names.";
 	output += "\n\t//	All encapsulated functions in the libraries listed with names longer than five";
 	output += "\n\t//	characters have their names passed through a custom-written hashing function to";
-	output += "\n\t//	generate a short name,and this short name is then used in the minified copies of";
+	output += "\n\t//	generate a short name, and this short name is then used in the minified copies of";
 	output += "\n\t//	the libraries to reduce filesize/download size.";
 	output += "\n";
 	output += "\n\tpublic static $shortNamesWhitelist = [";

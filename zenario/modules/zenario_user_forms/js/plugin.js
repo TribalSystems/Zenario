@@ -518,7 +518,7 @@
 					dataType: 'json',
 					maxFileSize: maxUploadSize,
 					messages: {
-						maxFileSize: 'Exceeded filesize limit of ' + maxUploadSizeFormatted + '.',
+						maxFileSize: 'The max file size limit is ' + maxUploadSizeFormatted + '.',
 					},
 					start: function(e) {
 						updateProgressBar(fieldId, 0, true);
@@ -561,6 +561,10 @@
 						var fileId = $(this).parent().data('id');
 						delete(files[fileId]);
 						redrawFiles(fieldId, files);
+						
+						var uploadErrorContainer = $('#' + containerId + '__field_' + fieldId + '__files_upload_error');
+						uploadErrorContainer.html("");
+						uploadErrorContainer.hide();
 					}
 				});
 			};
@@ -684,13 +688,28 @@
 					}
 				};
 				
+				var justStartedUploading = false;
+				
 				$(this).find('.popup_1 .upload_complete_files').fileupload({
 					url: ajaxURL + '&fileUpload=1',
 					dataType: 'json',
 					dropZone: $popup1FileList,
 					maxFileSize: maxUploadSize,
 					messages: {
-						maxFileSize: 'Exceeded filesize limit of ' + maxUploadSizeFormatted + '.',
+						maxFileSize: 'The max file size limit is ' + maxUploadSizeFormatted + '.',
+					},
+					processstart: function(e) {
+						if (!justStartedUploading) {
+							justStartedUploading = true;
+							
+							var uploadErrorContainer = $('#' + containerId + '__field_' + fieldId + '__files_upload_error');
+							uploadErrorContainer.html("");
+							uploadErrorContainer.hide();
+							
+							setTimeout(function() {
+								justStartedUploading = false;
+							}, 10000);
+						}
 					},
 					start: function(e) {
 						updateProgressBar(fieldId, 'popup_1', 0, true);
@@ -712,6 +731,11 @@
 					},
 					stop: function(e) {
 						updateProgressBar(fieldId, 'popup_1', 0, false);
+					},
+					processfail: function(e, data) {
+						var uploadErrorContainer = $('#' + containerId + '__field_' + fieldId + '__files_upload_error');
+						uploadErrorContainer.append("<p>The file \"" + data.files[0].name + "\" could not be uploaded. " + data.files[0].error + "</p>");
+						uploadErrorContainer.show();
 					}
 				});
 				
@@ -738,7 +762,7 @@
 					dropZone: $popup2FileList,
 					maxFileSize: maxUploadSize,
 					messages: {
-						maxFileSize: 'Exceeded filesize limit of ' + maxUploadSizeFormatted + '.',
+						maxFileSize: 'The max file size limit is ' + maxUploadSizeFormatted + '.',
 					},
 					start: function(e) {
 						updateProgressBar(fieldId, 'popup_2', 0, true);
@@ -1020,7 +1044,7 @@
 			}
 			
 			zenario.ajax(this.ajaxURL + '&validateFormFieldJs=1', requests).after(function(response) {
-				errorMessageDiv.innerHTML = response;
+				errorMessageDiv.innerHTML = htmlspecialchars(response);
 				
 				if (response) {
 					containerEl.classList.remove("no_error");

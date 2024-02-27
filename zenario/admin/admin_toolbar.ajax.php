@@ -44,6 +44,10 @@ $compatibilityClassNames = [];
 ze::$tuixType = $type = 'admin_toolbar';
 ze::$tuixPath = $requestedPath = false;
 
+if (!$debugMode && ze\admin::setting('show_dev_tools')) {
+	ze::$recordFiles = true;
+}
+
 
 
 
@@ -52,6 +56,14 @@ $moduleFilesLoaded = [];
 $tags = [];
 $originalTags = [];
 ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
+
+if (ze::$recordFiles) {
+	foreach ($moduleFilesLoaded as $moduleFiles) {
+		foreach ($moduleFiles['paths'] as $path) {
+			ze::$tuixFiles[$path] = true;
+		}
+	}
+}
 
 ze\tuix::checkAdminToolbar($tags);
 
@@ -106,6 +118,18 @@ header('Content-Type: text/javascript; charset=UTF-8');
 	
 if (ze::request('_script')) {
 	echo 'zenarioAT.init2(';
+}
+
+if (ze::$recordFiles) {
+	$tags['__source_files'] = [
+		'root' => CMS_ROOT,
+		'paths' => ze::$tuixFiles
+	];
+}
+
+if (!empty(ze::$dumps)) {
+	$tags['__dumps'] = ze::$dumps;
+	ze::$dumps = [];
 }
 
 ze\ray::jsonDump($tags);

@@ -111,15 +111,15 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			unset($_REQUEST[$name]);
 		}
 	}
+
+
+	public function requireJSLibsForTinyMCE() {
+		$this->requireJsLib('zenario/libs/yarn/tinymce/tinymce.min.js');
+		$this->requireJsLib('zenario/libs/yarn/@tinymce/tinymce-jquery/dist/tinymce-jquery.min.js');
+	}
 	
 	
 	function init() {
-		if (!$this->setting('show_user_online_status')) {
-			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
-			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
-		}
 		
 		if (ze::in(ze\content::isSpecialPage($this->cID, $this->cType), 'zenario_no_access', 'zenario_not_found')) {
 			return $this->show = false;
@@ -284,7 +284,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		if ($this->canQuotePost() && ($post['status']=='published') ) {
 			$controls = true;
 			$sections['Quote_Post'] = true;
-			$mergeFields['Quote_Post_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=post_reply&comm_enter_text=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
+			$mergeFields['Quote_Post_Link'] = $this->linkToItemAnchor($this->cID, $this->cType, false, '&comm_page='. $this->page. '&comm_request=post_reply&comm_enter_text=1&comm_post='. $post['id']. '&forum_thread='. $this->thread['id']);
 		}
 
 		if ($this->canEditFirstPost($post)) {
@@ -842,7 +842,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		
 		if ($this->canMakePost()) {
 			$this->sections['Add_Reply'] = true;
-			$this->mergeFields['Add_Reply_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&comm_request=post_reply&comm_enter_text=1&forum_thread='. $this->thread['id'], false);
+			$this->mergeFields['Add_Reply_Link'] = $this->linkToItemAnchor($this->cID, $this->cType, false, '&comm_page='. $this->page. '&comm_request=post_reply&comm_enter_text=1&forum_thread='. $this->thread['id'], false);
 			
 		} elseif ($this->locked()) {
 			if (!$this->canUnlockThread()) {
@@ -1038,7 +1038,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				}
 				
 				if (isset($box['tabs']['moderation']['fields']['email_address_for_reports']) && !$box['key']['instanceId']) {
-					$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = ze::setting('email_address_admin');
+					$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 				}
 				
 				

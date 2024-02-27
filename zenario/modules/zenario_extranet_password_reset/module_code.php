@@ -37,9 +37,9 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->registerPluginPage();
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->mode = 'modeResetPasswordStage1';
 		
@@ -130,7 +130,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 				$this->errors[] = ['Error' => $this->phrase("Sorry, we couldn't find an account associated with that email address.")];
 			}
 		} else {
-			if (ze\row::exists('users', ['email' => ze::post('extranet_email'), 'status' => 'pending', 'email_verified' => false  ])) {
+			if (ze\row::exists('users', ['email' => ze::post('extranet_email'), 'status' => 'pending', 'email_verified' => 'not_verified'])) {
 				$this->errors[] = ['Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.')];
 			} else {
 				if ($userDetails['status'] == 'active') {
@@ -192,7 +192,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		} else {
 			ze\userAdm::setPassword($userId, ze::post('extranet_new_password'), false);
 			//Set email verified flag
-			ze\row::update('users', ['email_verified' => 1], ['id' => $userId]);
+			ze\row::update('users', ['email_verified' => 'verified'], ['id' => $userId]);
 			return true;
 		}
 	}

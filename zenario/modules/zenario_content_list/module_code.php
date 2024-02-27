@@ -73,15 +73,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 				wp.first_name AS writer_first_name, wp.last_name AS writer_last_name';
 		}
 		
-		//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
-		//Commenting out the code in case we want it back in the future.
-		
-		// if ($this->setting('show_author_image')) {
-		// 	$sql .= ', 
-		// 		wp.photo AS writer_image_id,
-		// 		fi.alt_tag';
-		// }
-		
 		if ($this->setting('only_show_child_items')) {
 			$sql .= ",
 				mi2.id AS menu_id,
@@ -201,19 +192,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 		
 		$this->isRSS = $this->methodCallIs('showRSS');
-		if ($this->setting('show_author') || ($this->isRSS && $this->setting('rss_include_item_author')) /* || $this->setting('show_author_image')*/) {
+		if ($this->setting('show_author') || ($this->isRSS && $this->setting('rss_include_item_author'))) {
 			$sql .= '
 				LEFT JOIN ' . DB_PREFIX . 'writer_profiles AS wp
 					ON v.writer_id = wp.id';
-			
-			//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
-			//Commenting out the code in case we want it back in the future.
-
-			// if ($this->setting('show_author_image')) {
-			// 	$sql .= '
-			// 		LEFT JOIN ' . DB_PREFIX . 'files AS fi
-			// 			ON wp.photo = fi.id';
-			// }
 		}
 		
 		return $sql;
@@ -230,7 +212,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			  AND v.type = '". ze\escape::asciiInSQL($this->setting('content_type')). "'";
 		} else {
 			$cTypes = [];
-			foreach (ze\content::getContentTypes() as $cType) {
+			foreach (ze\content::getContentTypes(false, false) as $cType) {
 				switch ($cType['content_type_id'] ?? false){
 					case 'recurringevent':
 					case 'event':
@@ -487,9 +469,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 	
 	
 	protected function addExtraMergeFields(&$row, &$item) {
-		if ($row['privacy'] != 'public') {
-			$item['Content_item_is_private'] = true;
-		}
+		
 	}
 	
 	
@@ -536,11 +516,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$this->show_language = $this->setting('show_language') || $this->isRSS;
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = !$this->setting('hide_private_items'), $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = !$this->setting('hide_private_items'), $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
 		
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = ($this->setting('only_show_child_items') || ($this->setting('title_source') == 'content_item_menu_node')),
-			$clearByUser = (bool) $this->setting('hide_private_items'),
 			$clearByFile = $this->setting('show_featured_image'), $clearByModuleData = false
 		);
 		
@@ -566,7 +545,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//Loop through each item to display, and add its details to an array of merge fields
 		$this->items = [];
 		
-		if ($showCategory = $this->setting('show_content_items_lowest_category') && ze::setting('enable_display_categories_on_content_lists')) {
+		if ($showCategory = $this->setting('show_content_items_lowest_category')) {
 			$categories = ze\row::getAssocs('categories', ['name', 'id', 'parent_id', 'public'], []);
 		}
 		
@@ -604,18 +583,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 						$item['Author'] = $row['writer_name'];
 					}
 				}
-
-				//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
-				//Commenting out the code in case we want it back in the future.
-
-				// if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
-				// 	$width = $height = $url = false;
-				// 	ze\file::imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('image_2_width'), $this->setting('image_2_height'), $this->setting('image_2_canvas'), (int)$this->setting('author_offset'), $this->setting('image_2_retina'));
-				// 	$item['Author_Image_Src'] = $url;
-				// 	$item['Author_Image_Alt'] = $row['alt_tag'];
-				// 	$item['Author_Image_Width'] = $width;
-				// 	$item['Author_Image_Height'] = $height;
-				// }
 				
 				$item['language_id'] = $row['language_id'];
 				$item['equiv_id'] = $row['equiv_id'];
@@ -904,6 +871,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 				
 				if (!$dontAddItem) {
+					if ($row['privacy'] != 'public') {
+						$item['Content_item_is_private'] = true;
+					}
+					
 					$this->addExtraMergeFields($row, $item);
 					$this->items[$item['Id']] = $item;
 				} 
@@ -1108,7 +1079,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 
 		//To add Zip download link
-		$downLoadpage = false;
+		$downloadPage = false;
 		$linkResult = [];
 		$fileName = $this->phrase('Prepare zip');
 		$Link = '';
@@ -1165,7 +1136,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 						if ($linkResult[0]) {
 							if ($linkResult[1]) {
 								
-								$downLoadpage = true;
+								$downloadPage = true;
 								
 								$fileNameArr['fileName'] = $linkResult[2];
 								$fileNameArr['linkName'] = $linkResult[1];
@@ -1192,7 +1163,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 							}
 						} else {
 							if ((int) ($_SESSION['admin_userid'] ?? false)) {
-								$downLoadpage = true;
+								$downloadPage = true;
 								$fileDocCtr++;
 								$filename = '';
 								if ($zipFileids[0]) {
@@ -1250,11 +1221,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Row' => $this->items,
 			'Show_Date' => $this->setting('show_dates'),
 			'Show_Author' => $this->setting('show_author'),
-
-			//As of 06 Sept 2021, the "Show writer's photo" setting is disabled.
-			//Commenting out the code in case we want it back in the future.
-			//'Show_Author_Image' => $this->setting('show_author_image'),
-
 			'Show_Excerpt' => (bool) $this->dataField,
 			'Show_Item_Title' => (bool)$this->setting('show_titles'),
 			'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
@@ -1264,10 +1230,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 			'Show_Title' => (bool)$this->setting('show_headings'),
 			'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
-			'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)ze::setting('enable_display_categories_on_content_lists'),
+			'Show_Category' => (bool)$this->setting('show_content_items_lowest_category'),
 			'Show_Filename' => (bool) $this->setting('show_filename') && ze::in($this->setting('content_type'), 'all', 'document', 'picture'),
 			'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height'),
-			'Show_Category_Public' => (bool)$this->setting('show_category_name') && (bool)ze::setting('enable_display_categories_on_content_lists'),
+			'Show_Category_Public' => (bool)$this->setting('show_category_name'),
 			'Local_File_Link_Text' => ze::setting('local_file_link_text') ? ze::setting('local_file_link_text') : 'Download',
 			'Local_File_Size' => ze::setting('local_file_size'),
 			'Show_File_Size' => $this->setting('show_file_size'),
@@ -1283,7 +1249,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'ARCHIVE_READY_FOR_DOWNLOAD' => $this->phrase('Download zip:'),
 			'NO_CONTENT_ITEMS' => $this->phrase('No content items to download.'),
 			'PREPARING_DOCUMENTS' => $this->phrase('Preparing your zip file...'),
-			'Download_Page' => $downLoadpage,
+			'Download_Page' => $downloadPage,
 			'Main_Link_Array' => $mainLinkArr,
 			'Show_Permalink' => $this->setting('show_permalink'),
 			'module_loc' => ze::moduleDir('zenario_content_list'),
@@ -1381,12 +1347,11 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$categoryName = implode (" / ", $categoryName);
 					$allCurrentlySelectedCategories[] = $categoryName;
 				}
-			    If($this->setting('show_category_name') && ze::setting('enable_display_categories_on_content_lists')){
-				 		$inner['All_Currently_Selected_Categories'] = $allCurrentlySelectedCategories;	
-				}
-				else{
-						$inner['All_Currently_Selected_Categories'] = "";
-
+				
+			    if ($this->setting('show_category_name')) {
+				 	$inner['All_Currently_Selected_Categories'] = $allCurrentlySelectedCategories;	
+				} else {
+					$inner['All_Currently_Selected_Categories'] = "";
 				}
 			}
 		}
@@ -1443,7 +1408,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$box['tabs']['pagination']['fields']['maximum_results_number']['value'] = 5;
 				}
 				
-				foreach (ze\content::getContentTypes() as $cType) {
+				foreach (ze\content::getContentTypes(false, false) as $cType) {
 					switch ($cType['content_type_id'] ?? false){
 						case 'recurringevent':
 						case 'event':
@@ -1467,25 +1432,6 @@ class zenario_content_list extends ze\moduleBaseClass {
 						'max_unpacked_size' => ze::setting('max_unpacked_size')
 					]
 				);
-				
-				$categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
-				if (!$categoriesEnabled) {
-					$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//categories~.site_settings~tcategories~k{\"id\"%3A\"categories\"}' target='_blank'>site settings</a>";
-					
-					$categoriesSiteSettingPhrase = ze\admin::phrase(
-						'You must enable this option in your [[site_settings_link]] under "Categories".',
-						['site_settings_link' => $siteSettingsLink]
-					);
-
-					$fields['each_item/show_content_items_lowest_category']['side_note'] =
-					$fields['first_tab/show_category_name']['side_note'] =
-						$categoriesSiteSettingPhrase;
-					
-					$fields['each_item/show_content_items_lowest_category']['disabled'] = true;
-					$values['each_item/show_content_items_lowest_category'] = false;
-					$fields['first_tab/show_category_name']['disabled'] = true;
-					$values['first_tab/show_category_name'] = false;
-				}
 				
 				//Show a warning if "Choose categories to filter by" is selected but no categories have been picked
 				if (
@@ -1566,7 +1512,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 						
 						if ($this->getArchiveNameNoExtension($zipArchive)) {
 							ze\cache::cleanDirs();
-							$randomDir = ze\cache::createRandomDir(15, 'downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
+							$randomDir = ze\cache::createRandomDir(15, 'private/downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
 							$contentSubdirectory = $this->getArchiveNameNoExtension($zipArchive);
 							if (mkdir($randomDir . '/' . $contentSubdirectory)) {
 								foreach ($documentIDs as $ID){

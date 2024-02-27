@@ -27,16 +27,6 @@ zenario_menu_text:
                     label: ''
                     type: text
                     readonly: true
-                path_of__text_in_default_language:
-                    grouping: left_column
-                    label: 'Menu path preview:'
-                    type: textarea
-                    disabled: disabled
-                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
-                parent_path_of__text_in_default_language:
-                    grouping: left_column
-                    same_row: true
-                    type: hidden
                 
                 right_column:
                     type: grouping
@@ -49,22 +39,14 @@ zenario_menu_text:
                     maxlength: 250
                     validation:
                         required: Please enter the text for this menu node
-                    onkeyup: |
-                        get('path_of__' + this.id).value =
-                            !this.value?
-                                ''
-                            :    !get('parent_path_of__' + this.id).value?
-                                    this.value + " [level 1]"
-                                :    get('parent_path_of__' + this.id).value + ' › ' + this.value + " [level"+ (get('parent_path_of__' + this.id).value.split("›").length + 1) + "]";
-                path_of__menu_title:
-                    grouping: right_column
-                    label: 'Path preview:'
-                    type: textarea
-                    disabled: disabled
-                    css_class: zenario_textbox_noborder zenario_breadcrumb_preview
-                parent_path_of__menu_title:
-                    same_row: true
-                    type: hidden
+                    oninput: |
+                        $(zenarioAB.get('span__menu_path_preview')).text(this.value);
+                
+                menu_path_preview:
+                    label: 'Menu path preview:'
+                    type: text
+                    show_as_a_span: true
+                    css_class: zenario_textbox_noborder zfab_menuPathPreviewNode zfab_menuPathPreviewUpdatingNode
     
     extra_button_html: |
         <input

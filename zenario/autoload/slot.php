@@ -157,7 +157,7 @@ abstract class slot {
 	}
 	
 	protected $jsLibs = [];
-	public final function requireJsLib($lib, $stylesheet = null) {
+	public final function requireJsLib($lib, $stylesheet = false) {
 		$this->jsLibs[$lib] = $stylesheet;
 	}
 	
@@ -169,6 +169,7 @@ abstract class slot {
 	protected $level;
 	protected $isHeader = false;
 	protected $isFooter = false;
+	protected $inGridBreak = false;
 	protected $isOpaque = false;
 	
 	protected $isVersionControlled = false;
@@ -215,7 +216,6 @@ abstract class slot {
 	//Work out whether we are displaying the Plugin in this slot.
 	//Run the plugin's own initalisation routine. If it returns true, then display the plugin.
 	//(But note that modules are always displayed in admin mode.)
-	//Formerly "initPluginInstance()"
 	public function initInstance() {
 		
 		$status = $this->class->init();
@@ -392,9 +392,10 @@ abstract class slot {
 		//Add flags to say whether this slot is in the header, and in the footer.
 		//(The slotContents() function only adds these flags for full slots, not empty ones, so we might need to set them here.)
 		if (!isset($this->isHeader)) {
-			if ($slotInfo = \ze\row::get('layout_slot_link', ['is_header', 'is_footer'], ['layout_id' => \ze::$layoutId, 'slot_name' => $slotName])) {
+			if ($slotInfo = \ze\row::get('layout_slot_link', ['is_header', 'is_footer', 'in_grid_break'], ['layout_id' => \ze::$layoutId, 'slot_name' => $slotName])) {
 				$this->isHeader = $slotInfo['is_header'];
 				$this->isFooter = $slotInfo['is_footer'];
+				$this->inGridBreak = $slotInfo['in_grid_break'];
 			}
 		}
 	}
@@ -402,9 +403,9 @@ abstract class slot {
 	
 	
 	public function allowCaching(
-		$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
+		$atAll, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true
 	) {
-		foreach (['a' => $atAll, 'u' => $ifUserLoggedIn, 'g' => $ifGetSet, 'p' => $ifPostSet, 's' => $ifSessionSet, 'c' => $ifCookieSet] as $if => $set) {
+		foreach (['a' => $atAll, 'u' => $ifUserLoggedIn, 'g' => $ifGetOrPostVarIsSet, 's' => $ifSessionVarOrCookieIsSet] as $if => $set) {
 			if (!isset($this->cacheIf[$if])) {
 				$this->cacheIf[$if] = true;
 			}
@@ -413,9 +414,9 @@ abstract class slot {
 	}
 	
 	public function clearCacheBy(
-		$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
+		$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false
 	) {
-		foreach (['content' => $clearByContent, 'menu' => $clearByMenu, 'user' => $clearByUser, 'file' => $clearByFile, 'module' => $clearByModuleData] as $if => $set) {
+		foreach (['content' => $clearByContent, 'menu' => $clearByMenu, 'file' => $clearByFile, 'module' => $clearByModuleData] as $if => $set) {
 			if (!isset($this->cacheClearBy[$if])) {
 				$this->cacheClearBy[$if] = false;
 			}
@@ -502,10 +503,11 @@ abstract class slot {
 //Empty slots, used in admin mode where there is a slot there but with no plugin inside it.
 class opaqueSlot extends slot {
 	
-	public function __construct($level, $isHeader, $isFooter, $slotName) {
+	public function __construct($level, $isHeader, $isFooter, $inGridBreak, $slotName) {
 		$this->level = $level;
 		$this->isHeader = $isHeader;
 		$this->isFooter = $isFooter;
+		$this->inGridBreak = $inGridBreak;
 		$this->slotName = $slotName;
 		$this->isOpaque = true;
 	}
@@ -515,13 +517,14 @@ class opaqueSlot extends slot {
 class normalSlot extends slot {
 	
 	public function __construct(
-		$level, $isHeader, $isFooter,
+		$level, $isHeader, $isFooter, $inGridBreak,
 		$isVersionControlled, $cID, $cType, $cVersion, $slotName,
 		$instanceId, $moduleId, $module
 	) {
 		$this->level = $level;
 		$this->isHeader = $isHeader;
 		$this->isFooter = $isFooter;
+		$this->inGridBreak = $inGridBreak;
 		$this->moduleId = $moduleId;
 		$this->instanceId = $instanceId;
 		$this->slotName = $slotName;

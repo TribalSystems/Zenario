@@ -43,7 +43,7 @@
 					<div class="event_title">
 						<h2><a href="{{Event.Link_To_Event}}">{{Event.Event_Title}}</a></h2>
 					</div>
-					<span class="single_event_date">{{Event.Event_Dates}}</span>
+					<span class="single_event_date">{{Event.Event_Dates}}{% if Event.Event_Timezone %}, {{Event.Event_Timezone}}{% endif %}</span>
 					{% if Event.Event_location_name %}
 						<span class="single_event_location_name">{{Event.Event_location_name}}</span>
 					{% endif %}
@@ -56,7 +56,7 @@
 					<span class="single_event_description">{{Event.Event_Description}}</span>
 					{% if Show_Category and Event.Category %}
 						{% if Event.Category_Landing_Page_Link %}
-							<a href="{{Event.Category_Landing_Page_Link|e}}">
+							<a href="{{Event.Category_Landing_Page_Link|e}}" target="_blank">
 						{% endif %}
 						<div class="single_event_category category_{{Event.Category_Id|e}}">{{Event.Category|e}}</div>
 						{% if Event.Category_Landing_Page_Link %}

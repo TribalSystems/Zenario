@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and visitor.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and visitor.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -596,6 +596,7 @@ methods.after = function(fun, that) {
 //The result you give will be added as an arguement to the callback function
 //Note: "call()" is a deprectated alias.
 methods.call = 
+methods.return = 
 methods.done = function(result) {
 	this.isOwnCallback = true;
 	this.completes[0] = true;
@@ -696,9 +697,9 @@ methods.checkComplete = function() {
 
 //Some different examples of how to use the callback function above
 //window.test = function() {
-//	var url1 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_1&_limit=1',
-//		url2 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_2&_limit=1',
-//		url3 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_3&_limit=1';
+//	var url1 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_item=html_1&_limit=1',
+//		url2 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_item=html_2&_limit=1',
+//		url3 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Fcontent&_item=html_3&_limit=1';
 //	
 //	zenario.ajax(url1, false, true).after(function(data) {
 //		console.log(1, data.items.html_1.tag);
@@ -2193,17 +2194,22 @@ zenario.slot = function(pluginInstances) {
 			zenario.mainSlot = slotName;
 		}
 		
-		//Record if this slot is being edited (note: only appears in admin mode)
+		//Record if this slot is being edited
 		if (instance[6]) {
 			p.beingEdited = true;
 		}
 		
-		//Record if this plugin is version controlled (note: only set in admin mode)
+		//Record if this plugin is version controlled
 		if (instance[7]) {
 			p.isVersionControlled = true;
 		}
+		//Record if this plugin is menu-related (note: only set in admin mode)
 		if (instance[8]) {
 			p.isMenu = true;
+		}
+		//Record if this plugin is in a missing slot (note: only set in admin mode)
+		if (instance[9]) {
+			p.isMissing = true;
 		}
 		
 		//If we are replacing an existing instance in admin mode, delete that first
@@ -2427,6 +2433,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	var forceReloadHref = false,
 		level = false,
 		slideId = 0,
+		dumps,
 		cutoff,
 		info = [],
 		beingEdited = false,
@@ -2480,6 +2487,12 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	
 	if (flags.PAGE_TITLE) {
 		document.title = flags.PAGE_TITLE;
+	}
+	
+	if (dumps = flags.DUMPS) {
+		if (dumps = JSON.parse(dumps)) {
+			zenario.dumps(dumps);
+		}
 	}
 	
 	//Watch out for the "In Edit Mode" tag from modules in their edit modes
@@ -2767,6 +2780,14 @@ zenario.callScript = function(script, className, secondTime, options) {
 		
 			encapObject[functionName].apply(encapObject, script);
 		}
+	}
+};
+
+
+zenario.dumps = function(dumps) {
+	var di, dump;
+	foreach (dumps as di => dump) {
+		console.log.apply(this, _.toArray(dump));
 	}
 };
 
@@ -3078,9 +3099,22 @@ var setMyChildrenElementsExist = false;
 zenario.resize = function(event) {
 	
 	var isMobile,
-		wasMobile = zenarioL.mobile;
+		wasMobile = zenarioL.mobile,
+		zenarioGrid = window.zenarioGrid,
+		showingMobilePreview = windowParent && windowParent.zenarioAB && windowParent.zenarioAB.showingMobilePreview;
 	
-	zenarioL.resize(window.zenarioGrid);
+	//When showing a mobile preview of a plugin, the body classes won't be correct as the preview window does not
+	//actually use the layout meta information.
+	//In this case, come up with some fake info just so the classes are set roughly right.
+	if (showingMobilePreview) {
+		zenarioGrid = {
+			responsive: true,
+			minWidth: 9999,
+			maxWidth: 9999
+		};
+	}
+	
+	zenarioL.resize(zenarioGrid);
 	
 	//Watch out for the screen transitioning switching between desktop and mobile, or vice versa
 	isMobile = zenarioL.mobile;
@@ -3606,19 +3640,6 @@ zenario.fixJSON = function(json) {
 
 
 
-//Add a new plugin stylesheet to the page dynamically
-zenario.addPluginJavaScript = function(moduleId, callback) {
-	
-	//Work out the path from the plugin name and the swatch name
-	var filePath = 'zenario/js/plugin.wrapper.js.php?ids=' + moduleId + '&v=' + zenarioCSSJSVersionNumber;
-	
-	if (zenario.inAdminMode) {
-		filePath += '&admin=1';
-	}
-	
-	return zenario.loadLibrary(zenario.addBasePath(filePath), callback);
-};
-
 zenario.rightHandedSubStr = function(string, ammount) {
 	if (zenario.browserIsIE()) {
 		var len = string.length;
@@ -3899,7 +3920,7 @@ zenario.init = function(
 	decPoint,
 	visLang
 ) {
-
+	
 	window.zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumber = zenarioCSSJSVersionNumberIn;
 	
 	zenario.userId = userId;

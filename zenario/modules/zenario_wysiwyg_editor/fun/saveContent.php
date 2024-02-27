@@ -41,7 +41,7 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	//triggering Cloudflare to blocks it, so we need to call decodeIdForOrganizer() to decode it.
 	
 	//As of Zenario 9.5 we are using HTML Purifier as an extra precaution against admins trying to save XSS code or anything else that might be nasty.
-	$html = ze\ring::sanitiseWYSIWYGEditorHTML($html);
+	$html = ze\ring::sanitiseWYSIWYGEditorHTML($html, false, $allowAdvancedInlineStyles = true);
 	
 	ze\file::addImageDataURIsToDatabase($html);
 	

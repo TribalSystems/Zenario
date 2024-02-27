@@ -34,13 +34,13 @@ class zenario_event_listing extends ze\moduleBaseClass {
     
 	public function init() {
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
+			$clearByContent = true, $clearByMenu = false, $clearByFile = true, $clearByModuleData = true);
 		
 		$this->page = is_numeric(ze::get('page'))? (int) ze::get('page') : 1;
 		
-		switch ($this->setting('period_mode')){
+		switch ($this->setting('period_mode')) {
 			case 'date_range':
 				$periodName = 'date_range';
 				$periodShift = 0;
@@ -103,7 +103,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			    ze\file::imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
 			}
 			
-			if ($showCategory = $this->setting('show_content_items_category') && ze::setting('enable_display_categories_on_content_lists')) {
+			if ($showCategory = $this->setting('show_content_items_category')) {
 				$categories = ze\row::getAssocs('categories', ['name', 'id', 'parent_id', 'public'], []);
 			}
 			
@@ -165,55 +165,99 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$datetime['end_time'] = '';
 				
 				$datetime['separator'] = ' ';
+				
+				$useTimezones = false;
+				$selectedTimezone = '';
+				$timezoneLabel = '';
+				
+				if (ze::setting('zenario_ctype_event__timezone_support')) {
+					if ($row['specify_time']) {
+						if ($row['event_timezone'] == 'default_timezone') {
+							$selectedTimezone = ze::setting('zenario_timezones__default_timezone');
+						} else {
+							$selectedTimezone = $row['event_other_timezone'];
+						}
+					}
+				
+					if ($selectedTimezone) {
+						$useTimezones = true;
+				
+						$timezones = ze\dataset::getTimezonesLOV();
+						$timezoneLabel = $timezones[$selectedTimezone]['label'];
+					}
+				}
 
-				switch ($this->setting('date_display')){
+				switch ($this->setting('date_display')) {
 					case 'dont_show':
 						$datetime['start_date'] = '';
 						$datetime['end_date'] = '';
 						break;
 					case 'show_start_time_only':
-						$datetime['start_date'] = ze\date::format($row['start_date'],$this->setting('date_format'));
+						$datetime['start_date'] = $row['start_date'];
 						$datetime['end_date'] = '';
 						break;
 					case 'show_start_and_end_date':
-						$datetime['start_date'] = ze\date::format($row['start_date'],$this->setting('date_format'));
-						if ($row['start_date']!=$row['end_date']) {
-							$datetime['end_date'] = ze\date::format($row['end_date'],$this->setting('date_format'));
+						$datetime['start_date'] = $row['start_date'];
+						if ($row['start_date'] != $row['end_date']) {
+							$datetime['end_date'] = $row['end_date'];
 						} 
 						break;
 				}
 
-				switch ($this->setting('time_display')){
+				switch ($this->setting('time_display')) {
 					case 'dont_show':
 						$datetime['start_time'] = '';
 						$datetime['end_time'] = '';
 						break;
 					case 'show_start_time_only':
 						if ($row['specify_time'] ?? false){
-							$datetime['start_time'] = ze\date::formatTime($row['start_time'], ze::setting('vis_time_format'));
+							$datetime['start_time'] = $row['start_time'];
 						}
 						$datetime['end_time'] = '';
 						break;
 					case 'show_start_and_end_time':
 						if ($row['specify_time'] ?? false){
-							$datetime['start_time'] = ze\date::formatTime($row['start_time'], ze::setting('vis_time_format'));
-							if ($row['start_time']!=$row['end_time']) {
-								$datetime['end_time'] = ze\date::formatTime($row['end_time'], ze::setting('vis_time_format'));
+							$datetime['start_time'] = $row['start_time'];
+							
+							if ($row['start_time'] != $row['end_time']) {
+								$datetime['end_time'] = $row['end_time'];
 							} 
 						}
 						break;
 				}
+				
+				if ($datetime['start_date'] || $datetime['start_time']) {
+					if ($datetime['start_date']) {
+						$datetime['start_date'] = ze\date::format($datetime['start_date'], $this->setting('date_format'));
+					}
+					
+					if ($datetime['start_time']) {
+						$datetime['start_time'] = ze\date::formatTime($datetime['start_time'], ze::setting('vis_time_format'));
+					}
+				}
+				
 				if ($datetime['end_date'] || $datetime['end_time']) {
+					if ($datetime['end_date']) {
+						$datetime['end_date'] = ze\date::format($datetime['end_date'], $this->setting('date_format'));
+					}
+					
+					if ($datetime['end_time']) {
+						$datetime['end_time'] = ze\date::formatTime($datetime['end_time'], ze::setting('vis_time_format'));
+					}
+					
 					$datetime['separator'] = '-';
 				}
 				
-
+				$eventRow['Event_Dates'] = trim(
+					($datetime['start_date'] ?? false) . ' ' 
+					. ($datetime['start_time'] ?? false) . ' ' 
+					.  ($datetime['separator'] ?? false) . ' ' 
+					. ($datetime['end_date'] ?? false) . ' ' 	
+					. ($datetime['end_time'] ?? false));
 				
-				$eventRow['Event_Dates'] = ($datetime['start_date'] ?? false) . ' ' 
-											. ($datetime['start_time'] ?? false) . ' ' 
-												.  ($datetime['separator'] ?? false) . ' ' 
-													. ($datetime['end_date'] ?? false) . ' ' 	
-													 	. ($datetime['end_time'] ?? false);
+				if ($eventRow['Event_Dates'] && $useTimezones && $selectedTimezone && $timezoneLabel) {
+					$eventRow['Event_Timezone'] = $timezoneLabel;
+				}
 
 
 
@@ -286,7 +330,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			
 			$this->data['Events_List'] = true;
 			$this->data['Event_Row_On_List'] = $eventRows;
-			$this->data['Show_Category'] = (bool)$this->setting('show_content_items_category') && (bool)ze::setting('enable_display_categories_on_content_lists');
+			$this->data['Show_Category'] = (bool)$this->setting('show_content_items_category');
 		} else {
 		    $this->data['No_Events'] = true;
 		}
@@ -556,6 +600,8 @@ class zenario_event_listing extends ze\moduleBaseClass {
 								ce.end_date,
 								ce.start_time,
 								ce.end_time,
+								ce.event_timezone,
+								ce.event_other_timezone,
 								( ce.end_date<'" . date('Y-m-d') . "' ) as sort_past,
 								( ce.start_date<='" . date('Y-m-d') . "' AND ce.end_date>='" . date('Y-m-d') . "'  ) as sort_ongoing,
 								( ce.start_date>'" . date('Y-m-d') . "' ) as sort_future " 
@@ -730,14 +776,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
                 $hidden = !$values['each_item/show_featured_image'];
                 $this->showHideImageOptions($fields, $values, 'each_item', $hidden);
                 
-                $categoriesEnabled = ze::setting('enable_display_categories_on_content_lists');
-				if (!$categoriesEnabled) {
-					$fields['each_item/show_content_items_category']['disabled'] = true;
-					$fields['each_item/show_content_items_category']['side_note'] = ze\admin::phrase('You must enable this option in your site settings under "Categories".');
-					$values['each_item/show_content_items_category'] = false;
-				}
-				
-				if (!empty($fields['overall_list/group_events_by_year_and_month']['current_value'])) {
+                if (!empty($fields['overall_list/group_events_by_year_and_month']['current_value'])) {
 					$fields['overall_list/sort_field']['values']['end_date']['disabled'] = true;
 					$fields['overall_list/sort_field']['side_note'] = ze\lang::phrase('Cannot sort by end date if grouping events by year and month is enabled.');
 				} else {

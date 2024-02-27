@@ -14,7 +14,9 @@ plugin_settings:
                     format_onchange: true
                     values:
                         search_entry_box:
-                            label: "Inline search entry box"
+                            label: "Inline search (hover to show)"
+                        search_entry_box_show_always:
+                            label: "Inline search (show always)"
                         search_page:
                             label: "Full page search and results"
                     value: search_entry_box
@@ -22,7 +24,7 @@ plugin_settings:
             ord: "1"
             label: Display
             fields:
-                search_entry_box_info:
+                search_entry_box_hover_to_show_info:
                     snippet:
                         html: |
                             <div class="zenario_fbInfo">    
@@ -30,6 +32,14 @@ plugin_settings:
                             </div>
                     visible_if:
                         lib.modeIs: search_entry_box
+                search_entry_box_show_always_info:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">    
+                                Shows a drop-down predictive search box. Can be placed on every layout or content item in a slot.
+                            </div>
+                    visible_if:
+                        lib.modeIs: search_entry_box_show_always
                 search_page_info:
                     snippet:
                         html: |
@@ -74,7 +84,7 @@ plugin_settings:
                     value: 0
                     format_onchange: Yes
                     visible_if: 
-                        lib.modeIn: search_entry_box
+                        lib.modeIn: search_entry_box, search_entry_box_show_always
                 show_clear_search_button:
                     plugin_setting:
                         name: show_clear_search_button
@@ -213,10 +223,10 @@ plugin_settings:
                     note_below: |
                         When a visitor presses the Enter key or clicks the Search button, they will be redirected to a full page of search results. This should contain a plugin of the Advanced Search module in "Full page search and results" mode.
                     redraw_onchange: true
-                    visible_if: lib.modeIn('search_entry_box')
+                    visible_if: lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 specific_search_results_page:
                     indent: 1
-                    visible_if: lib.modeIn('search_entry_box') && lib.value('use_specific_search_results_page')
+                    visible_if: lib.modeIn('search_entry_box', 'search_entry_box_show_always') && lib.value('use_specific_search_results_page')
                     plugin_setting:
                         name: specific_search_results_page
                         foreign_key_to: content
@@ -239,7 +249,7 @@ plugin_settings:
                     type: checkbox
                     label: 'Show a link to a further search page'
                     redraw_onchange: true
-                    visible_if: lib.modeIn('search_entry_box')
+                    visible_if: lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 additional_search_page_text:
                     plugin_setting:
                         name: additional_search_page_text
@@ -249,10 +259,10 @@ plugin_settings:
                     value: 'To search other areas of this site, click here'
                     validation:
                         required_if_not_hidden: 'This field is required.'
-                    visible_if: lib.modeIn('search_entry_box') && lib.value('show_further_search_page_link')
+                    visible_if: lib.modeIn('search_entry_box', 'search_entry_box_show_always') && lib.value('show_further_search_page_link')
                 further_search_page_target:
                     indent: 1
-                    visible_if: lib.modeIn('search_entry_box') && lib.value('show_further_search_page_link')
+                    visible_if: lib.modeIn('search_entry_box', 'search_entry_box_show_always') && lib.value('show_further_search_page_link')
                     plugin_setting:
                         name: further_search_page_target
                         foreign_key_to: content
@@ -381,7 +391,7 @@ plugin_settings:
                     label: 'Width:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a width for listing photo.
+                        required_if_not_hidden: Please enter a width value.
                         numeric: The width must be a number.
                     value: "120"
                     maxlength: "5"
@@ -394,7 +404,7 @@ plugin_settings:
                     label: 'Height:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a height for listing photo.
+                        required_if_not_hidden: Please enter a height value.
                         numeric: The height must be a number.
                     value: "80"
                     maxlength: "5"
@@ -439,7 +449,7 @@ plugin_settings:
                     decimal_places: 2
                     style: "width: 4em;"
                     post_field_html: "%"
-                    visible_if: lib.value('search_html') && lib.modeIn('search_entry_box')
+                    visible_if: lib.value('search_html') && lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 
                 #####################
                 ## Search document ##
@@ -555,7 +565,7 @@ plugin_settings:
                     label: 'Width:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a width for listing photo.
+                        required_if_not_hidden: Please enter a width value.
                         numeric: The width must be a number.
                     value: "120"
                     maxlength: "5"
@@ -568,7 +578,7 @@ plugin_settings:
                     label: 'Height:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a height for listing photo.
+                        required_if_not_hidden: Please enter a height value.
                         numeric: The height must be a number.
                     value: "80"
                     maxlength: "5"
@@ -622,7 +632,7 @@ plugin_settings:
                     decimal_places: 2
                     style: "width: 4em;"
                     post_field_html: "%"
-                    visible_if: lib.value('search_document') && lib.modeIn('search_entry_box')
+                    visible_if: lib.value('search_document') && lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 
                 #################
                 ## Search news ##
@@ -738,7 +748,7 @@ plugin_settings:
                     label: 'Width:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a width for listing photo.
+                        required_if_not_hidden: Please enter a width value.
                         numeric: The width must be a number.
                     value: "120"
                     maxlength: "5"
@@ -751,7 +761,7 @@ plugin_settings:
                     label: 'Height:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a height for listing photo.
+                        required_if_not_hidden: Please enter a height value.
                         numeric: The height must be a number.
                     value: "80"
                     maxlength: "5"
@@ -796,7 +806,7 @@ plugin_settings:
                     decimal_places: 2
                     style: "width: 4em;"
                     post_field_html: "%"
-                    visible_if: lib.value('search_news') && lib.modeIn('search_entry_box')
+                    visible_if: lib.value('search_news') && lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 
                 #################
                 ## Search blog ##
@@ -912,7 +922,7 @@ plugin_settings:
                     label: 'Width:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a width for listing photo.
+                        required_if_not_hidden: Please enter a width value.
                         numeric: The width must be a number.
                     value: "120"
                     maxlength: "5"
@@ -925,7 +935,7 @@ plugin_settings:
                     label: 'Height:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a height for listing photo.
+                        required_if_not_hidden: Please enter a height value.
                         numeric: The height must be a number.
                     value: "80"
                     maxlength: "5"
@@ -970,7 +980,7 @@ plugin_settings:
                     decimal_places: 2
                     style: "width: 4em;"
                     post_field_html: "%"
-                    visible_if: lib.value('search_blog') && lib.modeIn('search_entry_box')
+                    visible_if: lib.value('search_blog') && lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 
                 ###########
                 ## Other ##
@@ -1045,7 +1055,7 @@ plugin_settings:
                     label: 'Width:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a width for listing photo.
+                        required_if_not_hidden: Please enter a width value.
                         numeric: The width must be a number.
                     value: "120"
                     maxlength: "5"
@@ -1058,7 +1068,7 @@ plugin_settings:
                     label: 'Height:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a height for listing photo.
+                        required_if_not_hidden: Please enter a height value.
                         numeric: The height must be a number.
                     value: "80"
                     maxlength: "5"
@@ -1114,7 +1124,7 @@ plugin_settings:
                     decimal_places: 2
                     style: "width: 4em;"
                     post_field_html: "%"
-                    visible_if: lib.value('search_in_other_modules') && lib.modeIn('search_entry_box')
+                    visible_if: lib.value('search_in_other_modules') && lib.modeIn('search_entry_box', 'search_entry_box_show_always')
                 search_result_types_order:
                     plugin_setting:
                         name: search_result_types_order

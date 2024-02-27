@@ -104,6 +104,13 @@ zenario__user_forms:
                     align_right: true
                     width: small
                     show_by_default: true
+                partial_response_count_internal:
+                    db_column: |
+                        (
+                                SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response
+                                WHERE form_id = f.id
+                        )
+                    hidden: true
                 latest_response:
                     title: Latest
                     tooltip: Latest response date/time
@@ -180,6 +187,8 @@ zenario__user_forms:
                         path: zenario_user_form
                         key:
                             type: registration
+                    #As of Zenario 9.6, this button is hidden and the feature may be removed.
+                    hidden: true
             
             item_buttons:
                 edit_form_fields_gui:
@@ -222,6 +231,7 @@ zenario__user_forms:
                     label: Responses for this form
                     parent: view_dropdown
                     priv: _PRIV_VIEW_FORM_RESPONSES
+                    record_count: response_count_internal
                     link:
                         path: zenario__user_forms/panels/user_form_responses
                         refiner: form_id
@@ -229,6 +239,7 @@ zenario__user_forms:
                     ord: 6
                     label: Content items with this form
                     parent: view_dropdown
+                    record_count: content_item_count
                     link:
                         path: zenario__content/panels/content
                         refiner: form_id

@@ -39,24 +39,29 @@ require '../basicheader.inc.php';
 ze\cookie::startSession();
 
 //Check to see if the CMS is installed
-$adminId = $freshInstall = $skipDiagnosticsOnfreshInstall = false;
+$adminId = false;
 $installStatus = 0;
-$installed =
-	ze\welcome::checkConfigFileExists()
- && ($installStatus = 1)
- && (defined('DBHOST'))
- && (defined('DBNAME'))
- && (defined('DBUSER'))
- && (defined('DBPASS'))
- && (ze::$dbL = new ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
- && (ze::$dbL->con)
- && ($result = @ze::$dbL->con->query("SHOW TABLES LIKE '". DB_PREFIX. "site_settings'"))
- && ($installStatus = 2)
- && ($result->num_rows)
- && ($installStatus = 3);
+$installed = ze\site::isInstalled($installStatus);
+
 
 if (!$installed) {
-	ze::$dbL = null;
+	$task = 'install';
+
+} else {
+	switch ($_REQUEST['task'] ?? null) {
+		case 'change_password':
+		case 'new_admin':
+		case 'diagnostics':
+		case 'reload_sk':
+		case 'end':
+		case 'logout':
+		case 'restore':
+		case 'site_reset':
+			$task = $_REQUEST['task'];
+			break;
+		default:
+			$task = 'login';
+	}
 }
 
 
@@ -147,8 +152,6 @@ if (empty($getRequest) || !is_array($getRequest)) {
 	$getRequest = [];
 }
 
-$task = $_GET['task'] ?? false;
-
 
 
 
@@ -182,7 +185,7 @@ if (!$systemRequirementsMet = !empty($_SESSION['zenario_system_requirements_met'
 //Run the installer if the CMS is not installed
 if ($systemRequirementsMet && !$installed) {
 	ze\welcome::prepareAdminWelcomeScreen('install', $source, $tags, $fields, $values, $changes);
-	$installed = ze\welcome::installerAJAX($source, $tags, $fields, $values, $changes, $task, $installStatus, $freshInstall, $adminId);
+	$installed = ze\welcome::installerAJAX($source, $tags, $fields, $values, $changes, $task, $installStatus, $adminId);
 	
 	if ($installed) {
 		@include_once CMS_ROOT. 'zenario_siteconfig.php';
@@ -193,7 +196,7 @@ if ($systemRequirementsMet && !$installed) {
 if ($systemRequirementsMet && $installed) {
 	//If the CMS is installed, move on to the login check and then database updates
 	
-	if ($freshInstall || $task == 'site_reset') {
+	if ($task == 'install' || $task == 'site_reset') {
 		if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
 			define('SHOW_SQL_ERRORS_TO_VISITORS', true);
 		}
@@ -204,10 +207,9 @@ if ($systemRequirementsMet && $installed) {
 	
 	
 	//The fresh install (if not using the install from backup option) should log the admin
-	//in automatically and skip the diagnostics screen for this once only.
-	if ($freshInstall && ze::isAdmin()) {
+	//in automatically and skip the diagnostics screen for this time only.
+	if ($task == 'install' && ze::isAdmin()) {
 		$loggedIn = true;
-		$skipDiagnosticsOnfreshInstall = true;
 	
 	//Check that the local and global databases are not set to the same database and table prefix
 	} else
@@ -296,7 +298,7 @@ if ($systemRequirementsMet && $installed) {
 			//This is a new install
 			//This is a migration from an old site, and the admin_settings table hasn't been created yet
 			//Security tokens are not enabled in the site_description.yaml file
-		if ($freshInstall
+		if ($task == 'install'
 		 || !ze::$dbL->checkTableDef(DB_PREFIX. 'admin_settings', true)
 		 || !ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
 			$securityCodeChecked = true;
@@ -383,8 +385,9 @@ if ($systemRequirementsMet && $installed) {
 					//Don't show the diagnostics page if someone is performing the site reset,
 					//reload_sk or change password tasks.
 					//Also don't show it to people who don't have the permissions to see it
-					if ($skipDiagnosticsOnfreshInstall
+					if ($task == 'install'
 					 || $task == 'reload_sk'
+					 || $task == 'change_password'
 					 || $task == 'password_changed'
 					 || $task == 'site_reset'
 					 || !ze\priv::check('_PRIV_VIEW_DIAGNOSTICS', false, false, false, $welcomePage = true)) {
@@ -394,7 +397,7 @@ if ($systemRequirementsMet && $installed) {
 					} else {
 						//Otherwise show the diagnostics page if there are errors to display
 						ze\welcome::prepareAdminWelcomeScreen('diagnostics', $source, $tags, $fields, $values, $changes);				
-						$doneWithDiagnostics = ze\welcome::diagnosticsAJAX($source, $tags, $fields, $values, $changes, $task, $freshInstall, $continueTo);
+						$doneWithDiagnostics = ze\welcome::diagnosticsAJAX($source, $tags, $fields, $values, $changes, $task, $getRequest, $continueTo);
 					}
 				
 					if ($doneWithDiagnostics) {
@@ -422,6 +425,11 @@ if ($systemRequirementsMet && $installed) {
 
 
 $tags['_task'] = $task;
+
+if (!empty(ze::$dumps)) {
+	$tags['__dumps'] = ze::$dumps;
+	ze::$dumps = [];
+}
 
 if (empty($clientTags)) {
 	echo json_encode($tags);

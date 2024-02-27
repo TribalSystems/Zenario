@@ -34,7 +34,7 @@ window.zenarioCI = function() {};
 zenarioCI.box = function(slotName, type, cantCache) {
 	var css = '',
 		html = '',
-		cache_if = {u: 'User', g: 'GET', p: 'POST', s: 'SESSION', c: 'COOKIE'},
+		cache_if = {u: true, g: true, s: true},
 		clear_cache_by = {},
 		lType = type.toLowerCase(),
 		pluginDesc = '',
@@ -56,7 +56,7 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			} else {
 				for (i in slot.cache_if) {
 					if (!slot.cache_if[i]) {
-						delete cache_if[i];
+						cache_if[i] = false;
 					}
 				}
 				if (slot.clear_cache_by) {
@@ -115,26 +115,22 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		}
 		
 		var ruleNotMet = false,
-			load = {c: 'COOKIE', s: 'SESSION', g: 'GET', p: 'POST', u: 'User'},
-			by = {content: 'Content', menu: 'Menu', user: 'User', file: 'File', module: 'Module'},
+			conditions = {s: 's', g: 'g', u: 'u'},
+			by = {content: 'content', menu: 'menu', file: 'file', module: 'module'},
 			
 			key = {
-				c: 'Cookie*',
-				s: 'Session variable†',
-				g: 'Additional GET parameters‡',
-				p: 'POST request',
-				u: 'Logged in extranet user',
-				content: 'Other content items, any changes to categories',
-				menu: 'Menu nodes',
-				user: "Users, and their group memberships",
-				file: 'Images and documents stored in Zenario',
-				module: 'Any data added by a module'
+				g: 'Additional GET parameters or a POST request†',
+				s: 'A cookie or session variable*',
+				u: 'A logged in extranet user',
+				content: 'There are changes to content items or categories',
+				menu: 'A menu node is added/moved/renamed/deleted',
+				file: 'A file or image is uploaded to the database, cropped, deleted or renamed',
+				module: 'Data is added/updated/deleted by a module'
 			};
 		
-		
 		html += '<h2>The caching rules for this ' + lType + ' are as follows:</h2>';
-		html += '<table><tr><th>Request contents</th><th>This request</th><th>' + type + ' requirements</th><th>Result</th></tr>';
-		for (i in load) {
+		html += '<table><tr><th>Condition</th><th>Can the ' + lType + ' be cached with this?</th><th>Does this request have this?</th><th>Result</th></tr>';
+		for (i in conditions) {
 			ruleNotMet = zenarioCD.load[i] && !cache_if[i];
 			
 			if (ruleNotMet) {
@@ -142,8 +138,8 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			}
 			
 			html += '<tr><th>' + zenario.htmlspecialchars(key[i]) + '</th>';
+			html += 	'<td class="zenario_cache_req">' + (cache_if[i]? 'Yes' : 'No') + '</td>';
 			html += 	'<td>' + (zenarioCD.load[i]? 'Yes' : 'No') + '</td>';
-			html += 	'<td class="zenario_cache_req">' + (cache_if[i]? 'Either' : 'No') + '</td>';
 			html += 	'<td>' + (ruleNotMet? 'Can\'t cache' : 'OK to cache') + '</td></tr>';
 		}
 		html += '<tr class="zenario_cache_table_last_row"><th>Result</th><td>&nbsp;</td><td>&nbsp;</td><td>' + (css == 'zenario_not_cached'? 'Can\'t cache' : 'OK to cache') +  '</td></tr>';
@@ -154,7 +150,7 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		for (i in by) {
 			if (clear_cache_by[i]) {
 				if (!found) {
-					html += '<h2>This ' + lType + '\ will be cleared from the cache when any of the following change:</h2><ul>';
+					html += '<h2>This ' + lType + '\ will be cleared from the cache when:</h2><ul>';
 					found = true;
 				}
 				html += '<li>' + zenario.htmlspecialchars(key[i]) + '</li>';
@@ -175,9 +171,8 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			html = '<h1 class="' + css + '">This ' + lType + zenario.htmlspecialchars(pluginDesc) + ' can be cached. It was served from the database but has now been written to the cache for further requests.</h1>' + html;
 		}
 		
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(*)</span> <em>Some cookies do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlyCookieVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(†)</span> <em>Some session variables do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlySessionVar()</code> function in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(‡)</span> <em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>), and a &ldquo;<code>page</code>&rdquo; number when pagination is used, and any additional GET parameters such as <code>searchString</code>.</em></p>';
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(*)</span> <em>Some session variables and cookies do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlySessionVar()</code> and <code>ze::cacheFriendlyCookieVar()</code> functions in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
+		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(†)</span> <em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>). Some plugins also add additional parameters, for example a <code>page</code> number or a <code>search</code> string.</em></p>';
 	}
 	
 	return '<x-zenario-cache-info class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></x-zenario-cache-info>';
@@ -198,6 +193,7 @@ zenarioCI.pluginDesc = function(slotName) {
 			pluginDesc += 'nested ' + slot.moduleClassName;
 		
 		} else {
+			//N.b. this logic is a copy of the zenarioA.pluginCodeName() function!
 			switch (slot.moduleClassName) {
 				case 'zenario_plugin_nest':
 					pluginDesc += 'N';

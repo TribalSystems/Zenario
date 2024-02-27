@@ -200,7 +200,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			//Loop through each moved files and save
 			foreach ($idsArray as $id) {
 				//Look up the current id, folder_id and ordinal
-				if ($file = ze\row::get('documents', ['id', 'folder_id', 'ordinal'], $id)) {
+				if ($file = ze\row::get('documents', ['id', 'type', 'folder_id', 'ordinal'], $id)) {
 					$cols = [];
 					
 					//Update the ordinal if it is different
@@ -213,9 +213,15 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 						$cols['folder_id'] = $_POST['parent_ids'][$id];
 						$folder = ze\row::get('documents', ['id', 'type'], $_POST['parent_ids'][$id]);
 						if ($folder['type'] == "file") {
-							echo '<!--Message_Type:Error-->';
-							echo ze\admin::phrase('Files may not be moved under other files, files can only be placed under folders.');
-							exit;
+							if ($file['type'] == 'file') {
+								echo '<!--Message_Type:Error-->';
+								echo ze\admin::phrase('Files may not be moved under other files. They may only be placed under folders or at the top level.');
+								exit;
+							} elseif ($file['type'] == 'folder') {
+								echo '<!--Message_Type:Error-->';
+								echo ze\admin::phrase('Folders may not be moved under files.');
+								exit;
+							}
 						}
 					}
 					

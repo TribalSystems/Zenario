@@ -141,6 +141,12 @@ zenario__modules:
                     show_by_default: true
                 in_edition:
                     db_column: '1'
+                plugin_count:
+                    db_column: 'COUNT(pi.id)'
+                    hidden: true
+                    table_join: |
+                        LEFT JOIN [[DB_PREFIX]]plugin_instances AS pi
+                        ON m.id = pi.module_id
             label_format_for_grid_view: |
                 [[display_name]]
                 [[comment]]
@@ -211,6 +217,7 @@ zenario__modules:
                 view_instances:
                     label: "Module's plugins"
                     parent: view_dropdown
+                    record_count: plugin_count
                     visible_if: |
                         item.is_pluggable &&
                         item.nestable !== 2 &&

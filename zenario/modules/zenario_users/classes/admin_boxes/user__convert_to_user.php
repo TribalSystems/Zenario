@@ -30,13 +30,19 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnFABIfConfIsBad($box);
+		
+		
 		$userDetails = ze\user::details($box["key"]["id"] ?? false);
 		$values['details/email'] = $userDetails['email'];
 		$values['details/salutation'] = $userDetails['salutation'];
 		$values['details/first_name'] = $userDetails['first_name'];
 		$values['details/last_name'] = $userDetails['last_name'];
 	
-		$box['title'] = "Converting the contact \"" . ($userDetails["identifier"] ?? false) . "\"";
+		$box['title'] = "Converting the contact \"" . ($userDetails["identifier"] ?? false) . "\" to an extranet user";
 	
 		$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
 

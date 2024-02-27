@@ -42,7 +42,7 @@
 							<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
 						</div>
 					{% endif %}
-				
+					
 					{% if Remember_Me_Section %}
 						<div class="extranet_remember_me">
 							{{this.frameworkField({'type': "checkbox", 'name': "extranet_remember_me", 'id': "extranet_remember_me", 'checked': "checked"})}}
@@ -90,7 +90,7 @@
 
 			</div>
 		{% endif %}
-
+		
 		{% if Logged_In %}
 			{% if Welcome_Message_Section %}
 				<div class="extranet_welcome_text">{{Welcome_Message}}</div>
@@ -142,6 +142,12 @@
 				<div class="terms_not_accepted_message">
 					{{"You are now logged in, but this site requires you to accept our terms and conditions before proceeding. Please check the statement below."|trans}}
 				</div>
+				
+				{% if Is_Admin %}
+					<div class="extranet_error">
+						{{"You are an administrator impersonating a user. If you click the Continue button to accept the T&Cs, this will not be recorded in the database."|trans}}
+					</div>
+				{% endif %}
 				
 				{% for item in Error_Display %}
 					<div class="extranet_error">{{item.Error}}</div>

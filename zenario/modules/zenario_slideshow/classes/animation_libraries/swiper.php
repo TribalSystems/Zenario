@@ -63,26 +63,86 @@ class zenario_slideshow__animation_libraries__swiper extends zenario_slideshow {
 	protected function startSlideshow() {
 		
 		$jsDir = ze::moduleDir('zenario_slideshow', 'js');
-		$this->requireJsLib($jsDir. '/swiper.wrapper.js.php', 'zenario/libs/yarn/swiper/swiper-bundle.min.css');
+		$this->requireJsLib($jsDir. '/swiper.bundle.js.php', 'zenario/libs/yarn/swiper/swiper-bundle.min.css');
 		
-		$breakpoint = 1;
-		if (ze::$responsive) {
-			$breakpoint = ze::$minWidth;
+		
+		$opt = [
+			//Set to true to enable continuous loop mode
+			//Because of nature of how the loop mode works (it will rearrange slides), total number of slides must be >= slidesPerView * 2
+			'loop' => (bool) $this->setting('swiper.loop'),
+			
+			//When enabled, will swipe slides only forward (one-way) regardless of swipe direction
+			'oneWayMovement' => (bool) $this->setting('swiper.oneWayMovement'),
+			
+			//Duration of transition between slides (in ms)
+			'speed' => (int) $this->setting('swiper.speed'),
+			
+			//Mobile options
+			'slidesPerView' => ((int) $this->setting('swiper.mobile.slidesPerView')) ?: 1,
+			'spaceBetween' => (int) $this->setting('swiper.mobile.spaceBetween')
+		];
+		
+		//Are we on a responsive layout?
+		if (!ze::$responsive) {
+			//Always use the desktop options if not
+			$opt['slidesPerView'] = ((int) $this->setting('swiper.desktop.slidesPerView')) ?: 1;
+			$opt['spaceBetween'] = (int) $this->setting('swiper.desktop.spaceBetween');
+		
+		} else {
+			//Otherwise set up all of the options for breakpoints
+			
+			//Mobile options
+			$opt['slidesPerView'] = ((int) $this->setting('swiper.mobile.slidesPerView')) ?: 1;
+			$opt['spaceBetween'] = (int) $this->setting('swiper.mobile.spaceBetween');
+			
+			//Desktop breakpoint and options
+			$opt['breakpoints'] = [];
+			$opt['breakpoints'][ze::$minWidth] = [
+				'slidesPerView' => ((int) $this->setting('swiper.desktop.slidesPerView')) ?: 1,
+				'spaceBetween' => (int) $this->setting('swiper.desktop.spaceBetween')
+			];
+			
+			//Custom breakpoint and options
+			if ($this->setting('swiper.custom_1')) {
+				$opt['breakpoints'][(int) $this->setting('swiper.custom_1.breakpoint')] = [
+					'slidesPerView' => ((int) $this->setting('swiper.custom_1.slidesPerView')) ?: 1,
+					'spaceBetween' => (int) $this->setting('swiper.custom_1.spaceBetween')
+				];
+			}
 		}
 		
-		/*$opt = [
-			'timeout' => $this->setting('use_timeout')? (int) $this->setting('timeout') : 0,
-			'pause' => $this->setting('use_timeout')? (int) $this->setting('pause') : 0,
-			'next_prev_buttons_loop' => (bool) $this->setting('next_prev_buttons_loop'),
-			'fx' => $this->setting('cycle2_fx'),
-			'sync' => (bool) $this->setting('cycle2_sync'),
-			'speed' => (int) $this->setting('cycle2_speed')
-		];*/
+		//Set direction
+		switch ($sVal = $this->setting('swiper.direction')) {
+			case 'vertical':
+				$opt['direction'] = $sVal;
+				break;
+			default:
+				$opt['direction'] = 'horizontal';
+		}
+		
+		//Transition effect
+		switch ($sVal = $this->setting('swiper.effect')) {
+			case 'fade':
+			case 'cube':
+			case 'coverflow':
+			case 'flip':
+				$opt['effect'] = $sVal;
+				break;
+			default:
+				$opt['effect'] = 'slide';
+		}
+		
+		//Auto-advance slides
+		if ($this->setting('swiper.autoplay')) {
+			$opt['autoplay'] = [
+				'delay' => (int) $this->setting('swiper.autoplay.delay')
+			];
+		}
 		
 		$this->callScript(static::$interfaceClassName, 'show',
 			$this->slotName,
 			$this->containerId,
-			$breakpoint
+			$opt
 		);
 	}
 }

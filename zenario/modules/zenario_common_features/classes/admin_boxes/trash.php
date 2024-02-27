@@ -58,9 +58,9 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 		
 		//Look for any access codes in use
 		ze\contentAdm::checkForAccessCodes($box, $fields['trash/access_codes_warning'], $ids, $contentItemsCount,
-			'This content item has a staging code ([[access_code]]). This will be removed when it is trashed.',
-			'One content item has a staging code ([[access_code]]). This will be removed when it is trashed.',
-			'[[count]] content items have a staging code. These will be removed when it is trashed.'
+			'This content item has an access code ([[access_code]]). This will be removed when it is trashed.',
+			'One content item has an access code ([[access_code]]). This will be removed when it is trashed.',
+			'[[count]] content items have an access code. These will be removed when it is trashed.'
 		);
 
 		
@@ -140,7 +140,10 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($box['key']['go_to_url_after_trashing']) {
-			ze\tuix::closeWithFlags(['go_to_url' => $box['key']['go_to_url_after_trashing']]);
+			$flags = [];
+			$flags['go_to_url'] = $box['key']['go_to_url_after_trashing'];
+			$flags['toast_next_pageload'] = ze\admin::phrase("Content item trashed!");
+			ze\tuix::closeWithFlags($flags);
 		}
 	}
 }

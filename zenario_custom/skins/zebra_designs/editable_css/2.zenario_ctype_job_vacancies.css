@@ -1,0 +1,41 @@
+/* This class will be applied to all plugins of this type,
+	unless overridden or removed for a specific plugin. */
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_online_text,
+.zenario_ctype_job_vacancies__default_style .job_vacancy_address_text,
+.zenario_ctype_job_vacancies__default_style .job_vacancy_reference,
+.zenario_ctype_job_vacancies__default_style .job_vacancy_deadline {
+	color:#00659b;
+	position:relative;
+	padding-left:25px;
+	padding-bottom:5px;
+}
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_online_text:before,
+.zenario_ctype_job_vacancies__default_style .job_vacancy_address_text:before,
+.zenario_ctype_job_vacancies__default_style .job_vacancy_reference:before,
+.zenario_ctype_job_vacancies__default_style .job_vacancy_deadline:before {
+	font-family:"FontAwesome";
+	position:absolute;
+	left:0;
+}
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_reference:before {
+	content:"\f0b1";
+}
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_online_text:before {
+	content:"\f108";
+}
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_address_text:before {
+	content:"\f3c5";
+}
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_deadline:before {
+	content:"\f017";
+}
+
+.zenario_ctype_job_vacancies__default_style .job_vacancy_reference p {
+	margin:0;
+}

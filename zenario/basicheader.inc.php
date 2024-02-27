@@ -157,7 +157,7 @@ class ze {
 	public static $saveEnv;
 	public static $knownReq;
 	public static $allReq;
-	public static $cacheWrappers = false;
+	public static $cacheBundles = false;
 	public static $cacheCoreVars = ['cID' => '', 'cType' => 'T', 'visLang' => 'L', 'slotName' => 'S', 'instanceId' => 'I', 'method_call' => 'M'];
 	
 	
@@ -178,7 +178,6 @@ class ze {
 	public static $date = false;
 	public static $rss = [];
 	public static $rss1st = true;
-	public static $pluginJS = '';
 	public static $jsLibs = [];
 	public static $itemCSS = '';
 	public static $templateCSS = '';
@@ -190,6 +189,9 @@ class ze {
 
 	public static $tuixType = 'visitor';
 	public static $tuixPath = '';
+	public static $tuixFiles = [];
+	public static $recordFiles = false;
+	public static $dumps = [];
 	public static $dbUpdating = false;
 	public static $pq = [];
 	public static $apcDirs = [];
@@ -258,6 +260,10 @@ class ze {
 	public static function noteErrors() {
 		--ze::$igEr;
 	}
+	
+	public static function dump(...$dumps) {
+		ze::$dumps[] = $dumps;
+	}
 
 	
 	
@@ -265,7 +271,6 @@ class ze {
 		return !empty($_SESSION['admin_logged_into_site']) && ze\priv::check();
 	}
 
-	//Formerly "funIncPath()"
 	public static function funIncPath($filePathOrModuleClassName, $functionName) {
 		if (strpos($filePathOrModuleClassName, '/') === false
 		 && strpos($filePathOrModuleClassName, '\\') === false) {
@@ -278,22 +283,18 @@ class ze {
 
 
 	const hash64FromTwig = true;
-	//Formerly "hash64()"
 	public static function hash64($text, $len = 28) {
 		return substr(rtrim(strtr(base64_encode(sha1($text, true)), '+/', '-_'), '='), 0, $len);
 	}
 
-	//Formerly "base64()"
 	public static function base64($text) {
 		return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
 	}
 
-	//Formerly "base16To64()"
 	public static function base16To64($text) {
 		return ze::base64(pack('H*', $text));
 	}
 
-	//Formerly "isError()"
 	public static function isError($object) {
 		return is_object($object) && get_class($object) == 'ze\\error';
 	}
@@ -301,7 +302,6 @@ class ze {
 
 	//Return a path to a Module or a Module's sub-directory, given that the Module might be in one of two directories
 	const moduleDirFromTwig = true;
-	//Formerly "moduleDir()"
 	public static function moduleDir($moduleName, $subDir = '', $checkExists = false, $checkFrameworks = false, $checkS2O = true) {
 		$moduleName = preg_replace('/\W/', '', $moduleName);
 	
@@ -353,7 +353,6 @@ class ze {
 		}
 	}
 
-	//Formerly "moduleDirs()"
 	public static function moduleDirs($tests = 'module_code.php') {
 		$dirs = [];
 	
@@ -383,7 +382,6 @@ class ze {
 	}
 
 	//Get the value of a site setting
-	//Formerly "setting()", "getSiteConfig()"
 	public static function setting($settingName, $useCache = true, $default = false, $secret = false) {
 		$secret = (int) $secret;
 		
@@ -408,8 +406,8 @@ class ze {
 			
 			if ($row = ze\sql::fetchRow($sql)) {
 				if ($row[1]) {
-					ze\zewl::init();
-					return ze::$siteConfig[$secret][$settingName] = ze\zewl::decrypt($row[0]);
+					ze\pde::init();
+					return ze::$siteConfig[$secret][$settingName] = ze\pde::decrypt($row[0]);
 				} else {
 					return ze::$siteConfig[$secret][$settingName] = $row[0];
 				}
@@ -424,12 +422,10 @@ class ze {
 		return ze::setting($settingName, $useCache, false, true);
 	}
 
-	//Formerly "requireJsLib()"
-	public static function requireJsLib($lib, $stylesheet = null) {
+	public static function requireJsLib($lib, $stylesheet = false) {
 		ze::$jsLibs[$lib] = $stylesheet;
 	}
 
-	//Formerly "editionInclude()"
 	public static function editionInclude($name, $continueFrom = false) {
 	
 		foreach (ze::$editions as $className) {
@@ -450,7 +446,6 @@ class ze {
 	//Must be called from code within the plugin's own folder with the __FILE__ Magic Constant
 	//The main reason for this function is to use in the latest_revision_no.inc.php files, to keep them
 	//nice and tidy.
-	//Formerly "moduleName()"
 	public static function moduleName($file) {
 		//Take the current path
 			//Match up to and including the modules directory with .*[/\\]modules[/\\]
@@ -462,23 +457,18 @@ class ze {
 	
 	//Functions for magic variables
 	//Consider using the null coalescing operator (??) instead of these functions...
-	//Formerly "get()"
 	public static function get($n) {
 		return $_GET[$n] ?? false;
 	}
-	//Formerly "post()"
 	public static function post($n) {
 		return $_POST[$n] ?? false;
 	}
-	//Formerly "request()"
 	public static function request($n) {
 		return $_REQUEST[$n] ?? false;
 	}
-	//Formerly "session()"
 	public static function session($n) {
 		return $_SESSION[$n] ?? false;
 	}
-	//Formerly "ifNull()"
 	public static function ifNull($a, $b, $c = null) {
 		return $a ?: ($b ?: $c);
 	}
@@ -501,7 +491,6 @@ class ze {
 	}
 	
 	//A shortcut function to in_array, that looks similar to the MySQL IN() function
-	//Formerly "in()"
 	public static function in($needle, ...$haystack) {
 		return in_array($needle, $haystack);
 	}
@@ -523,7 +512,7 @@ class ze {
 	//Returns true if a $_SESSION variable does not affect caching (or is already covered by another existing category)
 	public static function cacheFriendlySessionVar($var) {
 		return substr($var, 0, 11) == 'can_cache__'
-			|| in_array($var, ['unnecessary_cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle']);
+			|| in_array($var, ['unnecessary_cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'extranetUser_lastname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle']);
 	}
 	
 	

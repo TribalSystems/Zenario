@@ -1,13 +1,22 @@
-{% if Mode == 'search_entry_box' %}
-	<div id="{{Container_Id}}_search_button_panel" class="search_button_panel">
-		<div
-			id="{{Container_Id}}_search_button"
-			class="search_button"
-			onclick="zenario_advanced_search.searchButtonOnClick('{{Container_Id}}');"
-			style="display: block;"
-		>
-			{{"Open search"|trans}}
+{% if Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always' %}
+	{% if Mode == 'search_entry_box' %}
+		<div id="{{Container_Id}}_search_button_panel" class="search_button_panel">
+			<div
+				id="{{Container_Id}}_search_button"
+				class="search_button"
+				onclick="zenario_advanced_search.searchButtonOnClick('{{Container_Id}}');"
+				style="display: block;"
+			>
+				{{"Open search"|trans}}
+			</div>
 		</div>
-	</div>
-	<div id="{{Container_Id}}-search_entry_box_panel" class="search_entry_box_panel" style="display: none;">
+	{% endif %}
+	
+	{% if Mode == 'search_entry_box' %}
+		{% set Search_Entry_Box_Panel_Style = "display: none;" %}
+	{% elseif Mode == 'search_entry_box' %}
+		{% set Search_Entry_Box_Panel_Style = "display: block;" %}
+	{% endif %}
+	
+	<div id="{{Container_Id}}-search_entry_box_panel" class="search_entry_box_panel" style="{{Search_Entry_Box_Panel_Style|e}}">
 {% endif %}

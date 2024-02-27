@@ -3,7 +3,7 @@
 zenario__locations:
     panel:
         title: Locations
-        no_items_message: No locations exist, click "Create" to create a location.
+        no_items_message: No locations exist
         
         panel_type: google_map_or_list
         lat_column: latitude
@@ -111,6 +111,7 @@ zenario__locations:
                 db_column: l.country_id
                 show_by_default: false
                 searchable: true
+                ascii_only: true
                 hidden: false
             country:
                 title: Country
@@ -159,7 +160,6 @@ zenario__locations:
                 title: Status
                 db_column: l.status
                 always_show: true
-                searchable: true
                 hidden: false
                 format: enum
                 values:
@@ -246,7 +246,6 @@ zenario__locations:
                 title: Last edited by
                 db_column: l.last_edited_admin_id
                 show_by_default: false
-                searchable: true
                 format: enum
                 hidden: false
             last_updated_via_import:
@@ -259,7 +258,6 @@ zenario__locations:
                 title: On map
                 db_column: '(l.latitude AND l.longitude)'
                 show_by_default: true
-                searchable: true
                 format: yes_or_no
                 width: xsmall
                 ord: "999"

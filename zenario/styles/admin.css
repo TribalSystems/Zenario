@@ -395,7 +395,6 @@ div.zenario_show_on_open {
 	color:#FFF;
 	border:2px solid #F6F6F6;
 	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
 	border-radius: 8px;
 }
 
@@ -404,7 +403,6 @@ div.zenario_show_on_open {
 	background:#02CB01;
 	border:0;
 	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
 	border-radius: 5px;
 }
 
@@ -516,7 +514,6 @@ body .zenario_admin_tooltip_over_tinymce {
 
 .zenario_admin_tooltip.ui-widget-shadow,
 .ui-tooltip.ui-widget-shadow {
-	filter: Alpha(Opacity=100); /* support: IE8 */
 	opacity:1 !important;
 }
 
@@ -670,11 +667,9 @@ span.zenario_conditionally_hidden {
 	display: block;
 	cursor:pointer;
 	-webkit-border-radius:50%;
-	-moz-border-radius:50%;
 	border-radius:50%;
 	-webkit-transition: all 0.3s ease-out;
 	-moz-transition: all 0.3s ease-out;
-	-o-transition: all 0.3s ease-out;
 	transition: all 0.3s ease-out;
 }
 
@@ -871,7 +866,7 @@ label.zenario_tag_grey::before {
 
 #zenario_skin .mce-content-body {
 	margin-top: 0;
-	line-height:auto !important; /* overwrite inline style */
+	line-height:normal !important; /* overwrite inline style */
 }
 
 .empty_contenteditable_with_placeholder:before {
@@ -1020,8 +1015,29 @@ del.zenario_link_status__published_403 > del {
 	background:url('../admin/images/link_status/published-403-v3.svg') no-repeat center;
 }
 
+del.zenario_link_status__unlisted_with_draft > del {
+	background:url('../admin/images/link_status/published-with-draft-v3.svg') no-repeat center / 16px 16px;
+}
+
+del.zenario_link_status__unlisted_with_draft_401 > del {
+	background:url('../admin/images/link_status/published-with-draft-protected-v3.svg') no-repeat center;
+}
+
+del.zenario_link_status__unlisted_with_draft_403 > del {
+	background:url('../admin/images/link_status/published-with-draft-403-v3.svg') no-repeat center;
+}
+
+del.zenario_link_status__unlisted_401 > del {
+	background:url('../admin/images/link_status/published-protected-v3.svg') no-repeat center / 16px 16px;
+}
+
+del.zenario_link_status__unlisted_403 > del {
+	background:url('../admin/images/link_status/published-403-v3.svg') no-repeat center;
+}
+
 del.zenario_link_status__spare_alias > del,
-del.zenario_link_status__published_301 > del {
+del.zenario_link_status__published_301 > del,
+del.zenario_link_status__unlisted_301 > del {
 	background:url('../admin/images/link_status/spare-domain-v3.svg') no-repeat center / 16px 16px;
 }
 
@@ -1126,4 +1142,66 @@ body.zenario_showing_plugin_preview .zenario_image_properties_button {
 
 .ui-widget-header .ui-icon.ui-icon-circle-triangle-e {
 	background:url('../admin/images/icon-circle-next.svg') no-repeat center center / 14px 14px;
+}
+
+.ui-state-hover, 
+.ui-widget-content .ui-state-hover, 
+.ui-widget-header .ui-state-hover, 
+.ui-state-focus, 
+.ui-widget-content .ui-state-focus, 
+.ui-widget-header .ui-state-focus { 
+	border-color:#bed9ec; 
+	background:#bed9ec;
+	color:#454545;
+}
+
+.ui-state-highlight, 
+.ui-widget-content .ui-state-highlight, 
+.ui-widget-header .ui-state-highlight {
+	border-color: #dad55e;
+  	background: #fffa90;
+  	color:#777620;
+}
+
+
+/* Debug menus (these use jQuery UI Menu, so just need a couple of tweaks) */
+
+#zenario_debug_menu {
+	z-index: 999999;
+	top:4px;
+	background:#F6F6F6;
+	border:1px solid #333;
+	-webkit-border-radius: 4px;
+  	border-radius: 4px;
+  	-webkit-box-shadow: 0 1px 5px rgba(0,0,0,.85),inset 0 1px #fff;
+  	box-shadow: 0 1px 5px rgba(0,0,0,.85),inset 0 1px #fff;
+}
+
+#zenario_debug_menu.ui-menu-icons .ui-menu-item-wrapper {
+    padding: 0 10px;
+	line-height:30px;
+	font-family: Verdana,Arial,Helvetica,sans-serif;
+  	font-size: 9pt;
+  	border-top:1px solid #DCDCDC;
+}
+
+#zenario_debug_menu.ui-menu-icons .ui-menu-item-wrapper.ui-state-active {
+	margin:0;
+	border:0;
+	border-top:1px solid #DCDCDC;
+	background:transparent;
+	color:#007fa2;
+}
+
+#zenario_debug_menu li:first-child .ui-menu-item-wrapper,
+#zenario_debug_menu.ui-menu-icons li:first-child .ui-menu-item-wrapper.ui-state-active {
+	border-top:0;
+}
+
+#zenario_debug_menu i {
+	position: absolute;
+    left: 5px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
 }

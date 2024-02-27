@@ -39,6 +39,9 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 			} elseif ($box['key']['field_type'] == 'restatement') {
 				$fields['details/warning_message']['snippet']['html'] = 
 					'<p>' . ze\admin::phrase('Are you sure you want to delete this mirror field?') . '</p>';
+			} elseif ($box['key']['field_type'] == 'section_spacer') {
+				$fields['details/warning_message']['snippet']['html'] = 
+					'<p>' . ze\admin::phrase('Are you sure you want to delete this spacer?') . '</p>';
 			} else {
 				$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
 				

@@ -643,7 +643,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 				//Disable user documents options if module is not running
 				if (!ze\module::inc('zenario_user_documents')) {
 					$fields['first_tab/container_mode']['values']['user_documents']['disabled'] = true;
-					$fields['first_tab/container_mode']['note_below'] = ze\admin::phrase('The "Confidential User Documents" module must be running to show private documents.');
+					$fields['first_tab/container_mode']['note_below'] = ze\admin::phrase('The "Confidential User Documents" module must be running to show documents related to the logged-in user.');
 				}
 				
 				//Load list of filters (radios, select, checkboxes)

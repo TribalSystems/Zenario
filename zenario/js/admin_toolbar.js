@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.bundle.js.php for step (3).
 */
 
 
@@ -79,6 +79,8 @@ zenarioAT.init2 = function(tuix) {
 	//This $(document).ready() is to ensure that this function runs after everything in visitor.ready.js
 	$(document).ready(function() {
 		
+		zenarioT.checkDumps(tuix);
+		
 		//If the admin has just closed grid maker, try to start this next page load showing
 		//empty slots.
 		//(I am forced to implement this using purely client-side code though, as the
@@ -113,7 +115,7 @@ zenarioAT.init2 = function(tuix) {
 		zenarioAT.runOnInit = [];
 		
 		if (tuix.lock_warning) {
-			zenarioA.longToast(tuix.lock_warning, 'zenario_lock_warning');
+			zenarioA.longToast(tuix.lock_warning, 'warning');
 		}
 	});
 };
@@ -442,22 +444,31 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 	foreach (zenarioAT.sortedToolbars as var i) {
 		var id = zenarioAT.sortedToolbars[i],
 			tab = tuix.toolbars[id],
-			selected = id == zenarioA.toolbar;
+			selected = id == zenarioA.toolbar,
+			label, groupingActive;
 		
 		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 		if (!zenarioT.hidden(undefined, zenarioAT, undefined, id, undefined, undefined, undefined, undefined, tab)) {
+			
+			groupingActive = (tab.toolbar_tab_grouping || 'edit') == currentToolbarTabGrouping;
+			
+			if (groupingActive) {
+				label = tab.label_when_grouping_active || tab.label;
+			} else {
+				label = tab.label_when_grouping_inactive || tab.label;
+			}
 			
 			toolbar.tabs[++ti] = {
 				id: id,
 				parent: tab.parent,
 				css_class: tab.css_class,
-				label: tab.label,
+				label: label,
 				warning_icon: tab.warning_icon,
 				tooltip: tab.tooltip,
 				toolbar_microtemplate: tab.toolbar_microtemplate,
 				selected: selected,
 				highlight: selected && flashNewTabToHighlightChange,
-				groupingActive: (tab.toolbar_tab_grouping || 'edit') == currentToolbarTabGrouping
+				groupingActive: groupingActive
 			};
 			
 			if (id == zenarioA.toolbar) {

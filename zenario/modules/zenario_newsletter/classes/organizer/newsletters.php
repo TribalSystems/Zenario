@@ -60,6 +60,12 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			}
 		}
 		
+		if ($refinerName != 'outbox' && $refinerName != 'archive') {
+			if (ze\row::count(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['status' => '_IN_PROGRESS'])) {
+				$panel['notice']['show'] = true;
+			}
+		}
+		
 		if (!ze\server::isWindows()) {
 			if (ze\module::inc('zenario_scheduled_task_manager')) {
 				if (zenario_scheduled_task_manager::checkScheduledTaskRunning('jobSendNewsletters')) {
@@ -202,6 +208,14 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 					$item['tooltip'] = ze\admin::phrase("Scheduled to be sent on [[sending_time]].", $item);
 				}
 			}
+		}
+		
+		//Only show the "Outbox" collection button if there is at least 1 newsletter in there
+		$outboxCount = ze\row::count(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', ['status' => '_IN_PROGRESS']);
+		if ($outboxCount == 0) {
+			$panel['collection_buttons']['process']['hidden'] = true;
+		} else {
+			$panel['collection_buttons']['process']['hidden'] = false;
 		}
 	}
 	

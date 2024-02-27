@@ -25,7 +25,7 @@
 			<span class="link_title">{{item.Title|e}}</span>
 			
 			{% if Show_Permalink and item.Local_File_Id %}
-				<span class="link_permanent_link">{% include this.frameworkBaseDir() ~ 'includes/permalink.twig.html' %}</span>
+				<span class="link_permanent_link">{% include ze('', 'moduleDir', 'zenario_content_list', 'frameworks/') ~ 'includes/permalink.twig.html' %}</span>
 			{% endif %}
 		</{{Item_Title_Tags}}>
 		
@@ -95,12 +95,6 @@
 
 {# As of 06 Sept 2021, the "Show writer's photo" setting is disabled. #}
 {# Commenting out the code in case we want it back in the future. #}
-
-{% if Show_Author_Image %}
-	<div class="content_list_author_image">
-		<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}" width="{{item.Author_Image_Width|e}}" height="{{item.Author_Image_Height|e}}"/>
-	</div>
-{% endif %}
 
 {% if Show_Author %}
 	<p class="content_list_author">{{item.Author|e}}</p>

@@ -13,10 +13,12 @@
 	"license": "BSD-3-Clause",
 	"dependencies": {
 		"@fortawesome\/fontawesome-free": "6.*",
+		"@tinymce\/tinymce-jquery": "^2.1.0",
 		"SVG-Sanitizer": "TribalSystems\/SVG-Sanitizer",
 		"ace-builds": "1.*",
 		"animate.css": "3.*",
 		"bez": "*",
+		"blueimp-file-upload": "^10.32.0",
 		"cytoscape": "*",
 		"jquery": "*",
 		"jquery-cycle2": "malsup\/cycle2",
@@ -28,11 +30,12 @@
 		"moment-timezone": "^0.5.34",
 		"rcrop": "aewebsolutions\/rcrop",
 		"spectrum-colorpicker": "*",
-		"swiper": "9.*",
+		"swiper": "11.*",
+		"tinymce": "^6.4.2",
 		"toastr": "*",
 		"underscore.string": "*",
 		"wow.js": "^1.2.2",
 		"zxcvbn": "^4.4.2"
 	},
-	"version": "9.5.60602"
+	"version": "9.6.60604"
 }

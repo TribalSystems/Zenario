@@ -34,7 +34,6 @@ use ZxcvbnPhp\Zxcvbn;
 class welcome {
 
 
-	//Formerly "directoryIsWritable()"
 	public static function directoryIsWritable($dir) {
 	
 		//Check to see if the directory is flagged as writable
@@ -136,7 +135,6 @@ class welcome {
 		return $passwordMessageSnippet;
 	}
 	
-	//Formerly "quickValidateWelcomePage()"
 	public static function quickValidateWelcomePage(&$values, &$rowClasses, &$snippets, $tab) {
 		if ($tab == 5 || $tab == 'change_password' || $tab == 'new_admin') {
 			
@@ -166,7 +164,6 @@ class welcome {
 
 	//This file includes common functionality for running SQL scripts
 
-	//Formerly "runSQL()"
 	public static function runSQL($prefix, $file, &$error, $patterns = false, $replacements = false) {
 		
 		\ze\dbAdm::getTableEngine();
@@ -251,7 +248,6 @@ class welcome {
 	}
 
 
-	//Formerly "readSampleConfigFile()"
 	public static function readSampleConfigFile($patterns, $multiDBValue) {
 		$searches = $replaces = [];
 		foreach ($patterns as $pattern => $value) {
@@ -266,28 +262,10 @@ class welcome {
 		}
 	}
 
-	//Check whether the config file exists.
-	//Note: if it doesn't exist, return false
-	//Note: if exists but is empty, return 0
-	//Formerly "checkConfigFileExists()"
-	public static function checkConfigFileExists() {
-		if (!@file_exists(CMS_ROOT. 'zenario_siteconfig.php')) {
-			return false;
-		}
-		$filesize = @filesize(CMS_ROOT. 'zenario_siteconfig.php');
-		if ($filesize && $filesize >= 20) {
-			return true;
-		} else {
-			return 0;
-		}
-	}
-
-	//Formerly "compareVersionNumber()"
 	public static function compareVersionNumber($actual, $required) {
 		return version_compare(preg_replace('@[^\d\.]@', '', $actual), $required, '>=');
 	}
 
-	//Formerly "getSVNInfo()"
 	public static function svnInfo() {
 		if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
 			$output = [];
@@ -323,19 +301,16 @@ class welcome {
 		return false;
 	}
 
-	//Formerly "installerReportError()"
 	public static function installerReportError() {
 		return "\n". \ze\admin::phrase('(Error [[errno]]: [[error]])', ['errno' => \ze\sql::errno(), 'error' => \ze\sql::error()]);
 	}
 	
-	//Formerly "refreshAdminSession()"
 	public static function refreshAdminSession() {
 		if (\ze\admin::id()) {
 			\ze\admin::setSession(\ze\admin::id(), ($_SESSION['admin_global_id'] ?? false));
 		}
 	}
 
-	//Formerly "prepareAdminWelcomeScreen()"
 	public static function prepareAdminWelcomeScreen($path, &$source, &$tags, &$fields, &$values, &$changes) {
 	
 		$resetErrors = true;
@@ -385,7 +360,6 @@ class welcome {
 	//	return $sampleSites;
 	//}
 
-	//Formerly "listSampleThemes()"
 	public static function listSampleThemes() {
 		$themes = [];
 		$sDir = 'zenario_custom/skins/';
@@ -420,7 +394,6 @@ class welcome {
 		return $mimeTypes[$type] ?? 'application/octet-stream';
 	}
 
-	//Formerly "systemRequirementsAJAX()"
 	public static function systemRequirementsAJAX(&$source, &$tags, &$fields, &$values, $changes, $isDiagnosticsPage = false) {
 	
 		if ($isDiagnosticsPage) {
@@ -1144,8 +1117,7 @@ class welcome {
 		}
 	}
 
-	//Formerly "installerAJAX()"
-	public static function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $installStatus, &$freshInstall, &$adminId) {
+	public static function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $installStatus, &$adminId) {
 		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
 		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
 		
@@ -1422,7 +1394,7 @@ class welcome {
 		if ($tags['tab'] == 7 && (!empty($fields['7/ive_done_it']['pressed']) || !empty($fields['7/do_it_for_me']['pressed']))) {
 			$tags['tabs'][7]['errors'] = [];
 		
-			$checkConfigFileExists = \ze\welcome::checkConfigFileExists();
+			$checkConfigFileExists = \ze\site::checkConfigFileExists();
 			if (!empty($fields['7/do_it_for_me']['pressed'])) {
 				$permErrors = false;
 				if (!$checkConfigFileExists) {
@@ -1659,24 +1631,12 @@ class welcome {
 				if (empty($values['4/theme'])) {
 					$values['4/theme'] = INSTALLER_DEFAULT_THEME;
 				}
-				$fields['4/theme']['values'] = [];
+				
+				$skinThumbnails = [];
 				foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
-					$fields['4/theme']['values'][$dir] = [
-						'label' => '',
-						'post_field_html' =>
-							'<label
-								for="theme___'. htmlspecialchars($dir). '"
-								id="skin_selector_box___'. htmlspecialchars($dir). '"
-								class="skin_selector_box '. ($dir == $values['4/theme']? 'skin_selector_box_selected' : ''). '"
-							>
-								<img src="'. htmlspecialchars($imageSrc). '"/>
-							</label>',
-						'onchange' => '
-							$(".skin_selector_box").removeClass("skin_selector_box_selected");
-							$("#skin_selector_box___'. htmlspecialchars(\ze\escape::js($dir)). '").addClass("skin_selector_box_selected");
-						'
-					];
+					$skinThumbnails[$dir] = '<img src="'. htmlspecialchars($imageSrc). '"/>';
 				}
+				\ze\welcome::setupRadioSelectorValues('theme', $fields['4/theme'], $skinThumbnails, $values['4/theme']);
 			
 				break;
 		
@@ -1889,8 +1849,6 @@ class welcome {
 						//(If someone is doing repeated fresh installs, this stops data from an old one getting cached and used in another)
 						\ze\row::set('local_revision_numbers', ['revision_no' => rand(1, 32767)], ['path' => 'data_rev', 'patchfile' => 'data_rev']);
 					
-						$freshInstall = true;
-					
 						//Create an Admin, and give them all of the core permissions.
 						//Also set the login IP address and browser information.
 						
@@ -1954,32 +1912,6 @@ class welcome {
 							\ze\site::setSetting('email_name_from', (string)$values['4/organisation_name']);
 							\ze\site::setSetting('organizer_title', \ze\admin::phrase('Organizer for [[organisation_name]]', $values));
 						}
-						
-						//Check if a logo was uploaded during the installer, and try to add it to the filesystem
-						if ($values['4/logo']
-						 && ($location = \ze\file::getPathOfUploadInCacheDir($values['4/logo']))
-						 && ($imageId = \ze\file::addToDatabase('image', $location, false, $mustBeAnImage = true, $deleteWhenDone = false))) {
-							
-							//Change the image in the banner to use this image
-							\ze\row::update('plugin_settings',
-								[
-									'value' => $imageId,
-									'foreign_key_id' => $imageId
-								],
-								['name' => 'image', 'instance_id' => 1, 'egg_id' => 0]
-							);
-							
-							//Also set the image as the image on the login screen
-							$imageId = \ze\file::addToDatabase('site_setting', $location);
-							
-							\ze\site::setSetting('brand_logo', 'custom');
-							\ze\site::setSetting('custom_logo', $imageId);
-							
-							//Unless the image was a SVG, also set it as the default og:image
-							if (\ze\file::isImage(\ze\file::mimeType($location))) {
-								\ze\site::setSetting('default_icon', $imageId);
-							}
-						}
 
 						if ($values['7/site_enabled'] == 'enabled') {
 							\ze\site::setSetting('site_enabled', 1);
@@ -1987,7 +1919,7 @@ class welcome {
 							\ze\site::setSetting('site_enabled', '');
 						}
 					
-						\ze\welcome::postInstallTasks();
+						\ze\welcome::postInstallTasks($values['4/theme'], $values['4/logo']);
 					}
 				}
 			
@@ -2012,13 +1944,39 @@ class welcome {
 		return false;
 	}
 	
+	//Setup a radio-selector box
+	public static function setupRadioSelectorValues($fieldCodeName, &$field, $lov, $currentValue = '') {
+		
+		$ord = 0;
+		$field['values'] = [];
+		
+		foreach ($lov as $val => $html) {
+			$field['values'][$val] = [
+				'ord' => ++$ord,
+				'label' => '',
+				'post_field_html' =>
+					'<label
+						for="'. htmlspecialchars($fieldCodeName). '___'. htmlspecialchars($val). '"
+						id="radio_selector_box___'. htmlspecialchars($val). '"
+						class="radio_selector_box '. ($val == $currentValue? 'radio_selector_box_selected' : ''). '"
+					>
+						'. $html. '
+					</label>',
+				'onchange' => '
+					$(".radio_selector_box").removeClass("radio_selector_box_selected");
+					$("#radio_selector_box___'. htmlspecialchars(\ze\escape::js($val)). '").addClass("radio_selector_box_selected");
+				'
+			];
+		}
+	}
+	
 	//Insert the starter images from the starter_images/ directory (also using the yaml file for their metadata).
 	public static function addStarterImagesToDB() {
 		$tags = \ze\tuix::readFile('zenario/admin/db_install/starter_image_list.yaml', false);
 		if ($tags) {
 			foreach ($tags['imagelist'] as $image) {
 				$imagepath = 'zenario/admin/db_install/starter_images/'. $image['name'];
-				$imageId = \ze\file::addToDatabase('image', $imagepath, $image['name'], false, false, false, $image['alt_tag'], false, false, $image['mime_type']);
+				$imageId = \ze\welcome::addImageToDatabase('image', $imagepath, $image['name'], $image['alt_tag'], $image['mime_type']);
 				
 				#//For the starter images, we'll make sure they're initially public images, not auto or private.
 				#if ($imageId) {
@@ -2032,11 +1990,80 @@ class welcome {
 		}
 	}
 	
+	//
+	public static function addImageToDatabase($usage, $imagePath, $imageName = false, $imageAltTag = false, $imageMimeType = false) {
+		return \ze\file::addToDatabase($usage, $imagePath, $imageName, true, false, false, $imageAltTag, false, false, $imageMimeType);
+	}
+	
 	//Some tasks that should be run immediately after a fresh install or site reset.
-	public static function postInstallTasks() {
+	public static function postInstallTasks($skin = '', $uploadedLogo = '') {
+		
 		//Zenario has lots of metadata tables, that might not have been correctly populated
 		//by the hand-written installer SQL after a fresh install or site reset.
 		//We'll automatically populate them now
+		
+		
+		//Check a skin was selected during the install (or default to the default skin if not set).
+		if (empty($skin) || !is_dir(CMS_ROOT. 'zenario_custom/skins/'. $skin)) {
+			$skin = INSTALLER_DEFAULT_THEME;
+		}
+		
+		$logoName = $logoAltTag = $logoPath = false;
+		
+		//Check if this skin has the starter_images.yaml file inside
+		if (is_file($yamlPath = ($dir = CMS_ROOT. 'zenario_custom/skins/'. $skin. '/installer/'). 'starter_images.yaml')) {
+			if ($tags = \ze\tuix::readFile($yamlPath, false)) {
+				
+				//If a default favicon is defined in the file, set it in the site settings
+				if ($image = $tags['favicon'] ?? null) {
+					$imagePath = $dir. 'starter_images/'. $image['name'];
+					if ($imageId = \ze\welcome::addImageToDatabase('site_setting', $imagePath, $image['name'], $image['alt_tag'])) {
+						\ze\site::setSetting('favicon', $imageId);
+					}
+				}
+				
+				//Also note if a default logo is selected (though this can be changed).
+				if ($image = $tags['logo'] ?? null) {
+					$logoName = $image['name'];
+					$logoAltTag = $image['alt_tag'];
+					$logoPath = $dir. 'starter_images/'. $image['name'];
+				}
+			}
+		}
+		
+		//If a logo was uploaded during the installer, this should be used instead of the default one.
+		if ($uploadedLogo
+		 && ($path = \ze\file::getPathOfUploadInCacheDir($uploadedLogo))) {
+			$logoName =
+			$logoAltTag = false;
+			$logoPath = $path;
+		}
+		
+		//If we have a logo from either of the above, use it in the site
+		if ($logoPath
+		 && ($imageId = \ze\welcome::addImageToDatabase('image', $logoPath, $logoName, $logoAltTag))) {
+			
+			//Change the image in the banner created on the site-wide header to use this image
+			\ze\row::update('plugin_settings',
+				[
+					'value' => $imageId,
+					'foreign_key_id' => $imageId
+				],
+				['name' => 'image', 'instance_id' => 1, 'egg_id' => 0]
+			);
+			
+			//Also set the image as the image on the login screen
+			$imageId = \ze\welcome::addImageToDatabase('site_setting', $logoPath, $logoName, $logoAltTag);
+			
+			\ze\site::setSetting('brand_logo', 'custom');
+			\ze\site::setSetting('custom_logo', $imageId);
+			
+			//Unless the image was a SVG, also set it as the default og:image
+			if (\ze\file::isImage(\ze\file::mimeType($logoPath))) {
+				\ze\site::setSetting('default_icon', $imageId);
+			}
+		}
+		
 		
 		//Populate the menu_hierarchy and the menu_positions tables
 		\ze\menuAdm::recalcAllHierarchy();
@@ -2321,7 +2348,6 @@ class welcome {
 		return false;
 	}
 
-	//Formerly "updateNoPermissionsAJAX()"
 	public static function updateNoPermissionsAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $getRequest) {
 		//Handle the "back to site" button
 		if (!empty($fields['0/previous']['pressed'])) {
@@ -2376,7 +2402,6 @@ class welcome {
 		}
 	}
 
-	//Formerly "updateAJAX()"
 	public static function updateAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task) {
 		$tags['tab'] = 1;
 	
@@ -2482,7 +2507,6 @@ class welcome {
 	}
 
 	//Log the current admin out
-	//Formerly "logoutAdminAJAX()"
 	public static function logoutAdminAJAX(&$tags, $getRequest) {
 		\ze\admin::unsetSession();
 		$tags['_clear_local_storage'] = true;
@@ -2490,20 +2514,17 @@ class welcome {
 	}
 
 	//Return the UNIX time, $offset ago, converted to a string
-	//Formerly "zenarioSecurityCodeTime()"
 	public static function securityCodeTime($offset = 0) {
 		return str_pad(time() - (int) $offset * 86400, 16, '0', STR_PAD_LEFT);
 	}
 
 	//This returns the name that the cookie for the security code should have.
 	//This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[ADMIN_ID]]"
-	//Formerly "zenarioSecurityCodeCookieName()"
 	public static function securityCodeCookieName() {
 		return 'COOKIE_ADMIN_SECURITY_CODE_'. \ze::session('admin_userid');
 	}
 
 	//Get the value of the cookie above
-	//Formerly "zenarioSecurityCodeCookieValue()"
 	public static function securityCodeCookieValue() {
 		if (isset($_COOKIE[\ze\welcome::securityCodeCookieName()])) {
 			return preg_replace('@[^-_=\w]@', '', $_COOKIE[\ze\welcome::securityCodeCookieName()]);
@@ -2517,7 +2538,6 @@ class welcome {
 	//This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]", or
 	//"COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]_[[IP_ADDRESS]]", depending on
 	//whether the apply_two_factor_authentication_by_ip option is set in the site_description.yaml file.
-	//Formerly "zenarioSecurityCodeSettingName()"
 	public static function securityCodeSettingName() {
 	
 		if ('' == ($sccn = \ze\welcome::securityCodeCookieValue())) {
@@ -2533,7 +2553,6 @@ class welcome {
 
 	//Remove very old security codes
 	//(But keep ones that have recently expired, so we can show a different message to the admin on the login screen.)
-	//Formerly "zenarioTidySecurityCodes()"
 	public static function tidySecurityCodes() {
 		$sql = "
 			DELETE FROM ". DB_PREFIX. "admin_settings
@@ -2551,7 +2570,6 @@ class welcome {
 		}
 	}
 
-	//Formerly "securityCodeAJAX()"
 	public static function securityCodeAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $getRequest, $time) {
 	
 		$firstTimeHere = empty($_SESSION['COOKIE_ADMIN_SECURITY_CODE']);
@@ -2603,6 +2621,9 @@ class welcome {
 			//... and also build a clickable link with the code.
 			$getRequestsMerged = '';
 			if (!empty($getRequest)) {
+				if (isset($getRequest['verification_code'])) {
+					unset($getRequest['verification_code']);
+				}
 				$getRequestsMerged = '&' . http_build_query($getRequest);
 			}
 			$merge['VERIFICATION_LINK'] = 
@@ -2734,7 +2755,6 @@ class welcome {
 		\ze\sql::update($sql, false, false);
 	}
 
-	//Formerly "changePasswordAJAX()"
 	public static function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task) {
 		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
 		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
@@ -2866,8 +2886,7 @@ class welcome {
 		return false;
 	}
 
-	//Formerly "diagnosticsAJAX()"
-	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $freshInstall, &$continueTo) {
+	public static function diagnosticsAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $getRequest, &$continueTo) {
 		
 		//Run a check on the last modified times of the skin CSS files, even in production mode, so that we can
 		//be sure that the css_skin_version variable is up to date. This is used when calculating whether the
@@ -3319,8 +3338,7 @@ class welcome {
 		$fields['0/administrators']['row_class'] = 'section_valid';
 	
 		//Don't show the "site" section yet if we've just finished an install
-		if ($freshInstall
-		 || $task == 'install'
+		if ($task == 'install'
 		 || !\ze\row::exists('languages', [])) {
 			foreach ($tags['tabs'][0]['fields'] as $fieldName => &$field) {
 				if (!empty($field['hide_on_install'])) {
@@ -3482,8 +3500,24 @@ class welcome {
 			
 			//Check if the scheduled task manager is running
 			if (!\ze\module::inc('zenario_scheduled_task_manager')) {
-				$fields['0/scheduled_task_manager']['row_class'] = 'valid';
-				$fields['0/scheduled_task_manager']['hidden'] = true;
+				
+				//If this is a basic version of the CMS, allow the scheduled task manager not to be running.
+				//However if running ProBusiness or Enterprise (which will be most people, as the public release
+				//is the ProBusiness version) it should be running, so nag about it.
+				switch (\ze\site::description('edition')) {
+					case 'ProBusiness':
+					case 'Enterprise':
+					case 'Enterprise (checked out from SVN)':
+						$show_warning = true;
+						$fields['0/scheduled_task_manager']['row_class'] = 'warning';
+						$fields['0/scheduled_task_manager']['snippet']['html'] =
+							\ze\admin::phrase('The Scheduled Tasks Manager is not installed. Please run this module so the site can benefit from background tasks.', $mrg);
+						break;
+					
+					default:
+						$fields['0/scheduled_task_manager']['row_class'] = 'valid';
+						$fields['0/scheduled_task_manager']['hidden'] = true;
+				}
 		
 			} elseif (!\zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
 				$show_warning = true;
@@ -3496,6 +3530,12 @@ class welcome {
 				$fields['0/scheduled_task_manager']['row_class'] = 'warning';
 				$fields['0/scheduled_task_manager']['snippet']['html'] =
 					\ze\admin::phrase('The Scheduled Tasks Manager is installed, but not correctly configured in your crontab. <a href="[[manageJobsLink]]" target="_blank">Manage scheduled tasks</a>', $mrg);
+		
+			} elseif (!\zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = 'jobCleanDirectories')) {
+				$show_warning = true;
+				$fields['0/scheduled_task_manager']['row_class'] = 'warning';
+				$fields['0/scheduled_task_manager']['snippet']['html'] =
+					\ze\admin::phrase('The Scheduled Tasks Manager is installed, but the <code>jobCleanDirectories</code> task is not enabled. Please enable this to improve page speed. <a href="[[manageJobsLink]]" target="_blank">Manage scheduled tasks</a>', $mrg);
 			
 			} else {
 				$fields['0/scheduled_task_manager']['row_class'] = 'valid';
@@ -3557,17 +3597,17 @@ class welcome {
 					);
 			}
 
-			$cssFileWrapperSetting = \ze::setting('css_wrappers');
-			if ($cssFileWrapperSetting == 'visitors_only') {
+			$bundle_skins = \ze::setting('bundle_skins');
+			if ($bundle_skins == 'visitors_only') {
 				$fields['0/css_file_wrappers_not_on_for_visitors']['hidden'] = true;
 			} else {
 				$show_warning = true;
 				$fields['0/css_file_wrappers_not_on_for_visitors']['row_class'] = 'warning';
 
-				if ($cssFileWrapperSetting == 'on') {
-					$string = 'CSS file wrapper is always on. This will make the website load faster, but designers may want to turn this off for easier debugging.';
-				} elseif ($cssFileWrapperSetting == 'off') {
-					$string = 'CSS file wrapper is always off. This will cause the website to load more slowly.';
+				if ($bundle_skins == 'on') {
+					$string = 'CSS file bundle is always on. This will make the website load faster, but designers may want to turn this off for easier debugging.';
+				} elseif ($bundle_skins == 'off') {
+					$string = 'CSS file bundle is always off. This will cause the website to load more slowly.';
 				}
 				$string .= ' ' . $cacheSiteSettingString;
 
@@ -3675,7 +3715,7 @@ class welcome {
 				
 				$missingModulesSnippet =
 					\ze\admin::phrase(
-						'The following [[link_start]]modules[[link_end]] are no longer in the file system (the folders under zenario/modules may have been deleted, or a recent upgrade of Zenario may have removed them because they are no longer supported):',
+						'This site makes use of some [[link_start]]modules[[link_end]] that were not found in the file system. (Zenario checked inside zenario/modules, zenario_extra_modules, and zenario_custom/modules, and could not find the expected sub-folders). Either the sub-folders are missing, or it may be because you have upgraded Zenario and they are no longer supported:',
 						['link_start' => $linkStart, 'link_end' => $linkEnd]
 					).
 					'<ul><li>'.
@@ -3803,9 +3843,13 @@ class welcome {
 				$fields['0/plugin_must_be_on_public_page_error']['hidden'] = true;
 			}
 			
+			//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+			//show an error message.
+			if (\ze\pde::checkForSetupError()) {
+			
 			//If company key exists, and users module is running, show a warning if the consent table is not encrypted
-			$warnAboutThis = \ze\zewl::checkConfIsOkay() && $storesUserData;
-			if ($warnAboutThis) {
+			$warnAboutThis = \ze\pde::checkConfIsOkay() && $storesUserData;
+			} elseif ($warnAboutThis) {
 				
 				$encryptedColumns = ['ip_address', 'email', 'first_name', 'last_name'];
 				$unencryptedColumns = [];
@@ -3820,7 +3864,7 @@ class welcome {
 					$fields['0/consent_table_encrypted']['row_class'] = 'warning';
 					
 					$fields['0/consent_table_encrypted']['snippet']['html'] = 
-						\ze\admin::phrase('The following columns should be encrypted and hashed in the table <code>consents</code>: [[columns]]. Put the site into developer mode, cd to <code>public_html</code>, and run <code>php zenario/libs/not_to_redistribute/zewl/encrypt_and_hash_column.php consents [field name]</code>.', ['columns' => implode(', ', $unencryptedColumns)]);
+						\ze\admin::phrase('The following columns should be encrypted and hashed in the table <code>consents</code>: [[columns]]. Put the site into developer mode, cd to <code>public_html</code>, and run <code>php zenario/scripts/pde/encrypt_and_hash_column.php consents [field name]</code>.', ['columns' => implode(', ', $unencryptedColumns)]);
 				}
 			} else {
 				//Otherwise, hide the warning.
@@ -3858,27 +3902,13 @@ class welcome {
 			
 			
 			//Check if a site is using encryption and has any encrypted columns on the users table
-			$pdeUsed = false;
-			$checkTableName = null;
-			$checkColName = null;
-			foreach (['users', 'users_custom_data'] as $tableName) {
-				\ze::$dbL->checkTableDef(DB_PREFIX. $tableName);
-				foreach (\ze::$dbL->cols[DB_PREFIX. $tableName] as $uColumn) {
-					if ($uColumn->encrypted) {
-						$checkTableName = $tableName;
-						$checkColName = $uColumn->col;
-						$pdeUsed = true;
-						break 2;
-					}
-				}
-			}
-			
 			//If it is, show a warning if the encryption keys are not correctly set
-			if ($pdeUsed && !\ze\zewl::init()) {
+			$fields['0/encryption_key_issues']['hidden'] = true;
+			if (\ze\pde::checkForSetupError()) {
 				$show_warning = true;
-				$fields['0/bad_encryption_key']['row_class'] = 'warning';
-			} else {
-				$fields['0/bad_encryption_key']['hidden'] = true;
+				$fields['0/encryption_key_issues']['hidden'] = false;
+				$fields['0/encryption_key_issues']['row_class'] = 'warning';
+				$fields['0/encryption_key_issues']['snippet']['html'] = \ze\pdeAdm::setupErrorMessage();
 			}
 			
 			//Check if site contains user/contact data encrypted and corresponding plain text column does not exist
@@ -3961,22 +3991,98 @@ class welcome {
 	        
 			//Do some basic checks on the robots.txt file
 			$robotsDotTextError = false;
-			if (!file_exists(CMS_ROOT. 'robots.txt')) {
+			$robotsTxtSiteSettingPath = 'organizer.php#zenario__administration/panels/site_settings//search_engine_optimisation~.site_settings~trobots_txt~k{"id"%3A"search_engine_optimisation"}';
+			$linkStart = '<a href="' . htmlspecialchars($robotsTxtSiteSettingPath) . '" target="_blank">';
+			$linkEnd = '</a>';
+			if (file_exists(CMS_ROOT. 'robots.txt')) {
 				$robotsDotTextError =
-					\ze\admin::phrase('The <code>robots.txt</code> file for this site is missing.');
+					\ze\admin::phrase(
+						'A static <code>robots.txt</code> file exists and is no longer supported. Please delete the file and use the site setting in the [[link_start]]Search engine optimisation[[link_end]] section.',
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
 			
-			} elseif ($robotsDotTextContents = self::getTrimmedFileContents(CMS_ROOT. 'robots.txt')) {
-				$robotsFileLink = 'robots.txt';
-				if (strpos($robotsDotTextContents, ' User-agent:* Disallow:/ ') !== false) {
+			} else {
+				$robotsDotTextContents = \ze::setting('robots_txt_file_contents');
+				
+				if (!self::trimContents($robotsDotTextContents)) {
 					$robotsDotTextError =
-						\ze\admin::phrase("This site has a <code>robots.txt</code> that is blocking search engine indexing. <a href=".$robotsFileLink." target='_blank'>View robots.txt file</a>");
-				
+						\ze\admin::phrase(
+							"The <code>robots.txt</code> file is blank. Please check the setting in the [[link_start]]Search engine optimisation[[link_end]] section.",
+							['link_start' => $linkStart, 'link_end' => $linkEnd]
+						);
 				} else {
-				
-					if (($standardRobotsDotTextContents = self::getTrimmedFileContents(CMS_ROOT. 'zenario/includes/test_files/default_robots.txt'))
-					 && ($standardRobotsDotTextContents != $robotsDotTextContents)) {
+					$robotsFileLink = 'robots.txt';
+					
+					$currentFileRules = [];
+					foreach (explode("\n", $robotsDotTextContents) as $line) {
+						$parts = explode(':', $line, 2);
+						if (!empty($parts[1])) {
+							$command = trim(strtolower($parts[0]));
+							$param = trim($parts[1]);
+						
+							if (!isset($currentFileRules[$command])) {
+								$currentFileRules[$command] = [];
+							}
+						
+							$currentFileRules[$command][$param] = true;
+						}
+					}
+					
+					if (isset($currentFileRules['user-agent']['*']) && isset($currentFileRules['disallow']['/'])) {
 						$robotsDotTextError =
-							\ze\admin::phrase("This site has a <code>robots.txt</code> that has non-standard modifications. <a href=".$robotsFileLink." target='_blank'>View robots.txt file</a>");
+							\ze\admin::phrase(
+								"This site has a <code>robots.txt</code> that is blocking search engine indexing. Please check the setting in the [[link_start]]Search engine optimisation[[link_end]] section.",
+								['link_start' => $linkStart, 'link_end' => $linkEnd]
+							);
+				
+					} else {
+						//Check if the current robots file has non-standard modifications.
+						//Get the contents of the default file...
+						$defaultRobotsDotTextContents = @file_get_contents(CMS_ROOT. 'zenario/includes/test_files/default_robots.txt');
+						if ($defaultRobotsDotTextContents) {
+							//... and split them into a multi-dimensional array.
+							$defaultFileRules = [];
+							foreach (explode("\n", $defaultRobotsDotTextContents) as $line) {
+								$parts = explode(':', $line, 2);
+								if (!empty($parts[1])) {
+									$command = trim(strtolower($parts[0]));
+									$param = trim($parts[1]);
+						
+									if (!isset($defaultFileRules[$command])) {
+										$defaultFileRules[$command] = [];
+									}
+						
+									$defaultFileRules[$command][$param] = true;
+								}
+							}
+							
+							//Ignore the sitemap line if the current file references it.
+							if (isset($currentFileRules['sitemap'])) {
+								unset($currentFileRules['sitemap']);
+							}
+							
+							//Compare the contents. Remove everything from the current file array that is a default setting.
+							foreach ($defaultFileRules as $command => $rules) {
+								foreach ($rules as $rule => $value) {
+									if (isset($currentFileRules[$command][$rule])) {
+										unset($currentFileRules[$command][$rule]);
+									}
+								}
+								
+								if (empty($currentFileRules[$command])) {
+									unset($currentFileRules[$command]);
+								}
+							}
+							
+							//If the current file has no non-standard modifications, the array should be empty.
+							if (!empty($currentFileRules)) {
+								$robotsDotTextError =
+									\ze\admin::phrase(
+										"This site has a <code>robots.txt</code> that has non-standard modifications. Please check the setting in the [[link_start]]Search engine optimisation[[link_end]] section.",
+										['link_start' => $linkStart, 'link_end' => $linkEnd]
+									);
+							}
+						}
 					}
 				}
 			}
@@ -4228,7 +4334,7 @@ class welcome {
 				   ON c.id = v.id
 				  AND c.type = v.type
 				  AND c.admin_version = v.version
-				WHERE c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft')
+				WHERE c.status IN ('first_draft','published_with_draft','unlisted_with_draft','hidden_with_draft','trashed_with_draft')
 				ORDER BY last_modified_datetime DESC";
 			
 			$result = \ze\sql::select($sql);
@@ -4475,7 +4581,7 @@ class welcome {
 			 && $fields['0/docstore_dir_status']['row_class'] == 'sub_valid';
 		}
 	
-		if ($_SESSION['zenario_installer_disallow_changes_to_dirs'] && !$freshInstall && $task != 'install') {
+		if ($_SESSION['zenario_installer_disallow_changes_to_dirs'] && $task != 'install') {
 			$fields['0/backup_dir']['readonly'] = true;
 			$fields['0/docstore_dir']['readonly'] = true;
 	
@@ -4535,16 +4641,118 @@ class welcome {
 		if (!empty($fields['0/continue']['pressed'])) {
 			unset($_SESSION['zenario_installer_disallow_changes_to_dirs']);
 			
-			# For T12576 (not yet implmented)
-			//$continueTo = $values['0/continue_to'];
+			# T12576, Admin login page should have explicit buttons for where it will send you after login
+			$continueTo = $values['0/continue_to'] ?: 'default';
 			
 			return true;
 	
 		} else {
 			
-			# For T12576 (not yet implmented)
-			//To do - populate the values in the "continue to" list
-			//$fields['0/continue_to'] ... 
+			# T12576, Admin login page should have explicit buttons for where it will send you after login
+			$initialValue = '';
+				
+			$cID = $cType = false;
+			$destStatus = \ze\welcome::redirectAdmin($getRequest, false, 'default', $returnChoice = true);
+			
+			$destThumbnails = [];
+			$destOptions = [];
+		
+			//Don't show the choice in a few specific situations.
+			if ($destStatus === false) {
+				$fields['0/continue_to']['hidden'] = true;
+				$initialValue = 'default';
+		
+			//Case where there is an Organizer path in the URL
+			} elseif ($destStatus == 'organizer') {
+				//Don't show the "go to content item" option in this case
+				$destOptions['home'] = '';
+				$destOptions['organizer'] = '';
+				$initialValue = 'organizer';
+				
+				//Tony wants labels to say "Continue" if a deep link, or "Go" where they are standard things.
+				$fields['0/continue_to']['values']['organizer']['label'] = \ze\admin::phrase('Continue to Organizer');
+		
+			//Case where there is a content item in the URL
+			} elseif (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $destStatus)) {
+			
+				//Catch the case where the admin just came from the home page
+				if (\ze\content::isSpecialPage($cID, $cType) == 'zenario_home') {
+					//Don't show the "go to content item" option in this case
+					$destOptions['home'] = '';
+					$destOptions['organizer'] = '';
+					$initialValue = 'home';
+			
+				} else {
+					//Show all three options
+					$destOptions['citem'] = '';
+					$destOptions['home'] = '';
+					$destOptions['organizer'] = '';
+					$initialValue = 'citem';
+				
+					//Change the label on the "citem" option to mention the actual name of the page
+					$fields['0/continue_to']['values']['citem']['label'] =
+						\ze\admin::phrase('Continue to [[tag]]', ['tag' => \ze\content::formatTag($cID, $cType)]);
+					
+					//If the content item has a featured image, show that as an icon in the select list.
+					$width = $height = $url = false;
+					$widthLimit = $heightLimit = 80;
+					if (($featuredImageId = \ze\file::itemStickyImageId($cID, $cType))
+					 && (\ze\file::imageLink($width, $height, $url, $featuredImageId, $widthLimit, $heightLimit, 'resize_and_crop', 0, false, $fullPath = true))) {
+						
+						$destThumbnails['citem'] = $url;
+					}
+				}
+		
+			//Case where there is nothing in the URL
+			} else {
+				//Just offer the "home" and "organizer" options
+				$destOptions['home'] = '';
+				$destOptions['organizer'] = '';
+				$initialValue = 'home';
+			}
+			
+			//If the site has a favicon, show that as an icon in the select list.
+			if (empty($fields['0/continue_to']['hidden'])
+			 && ($faviconId = \ze::setting('favicon'))
+			 && ($url = \ze\file::link($faviconId, false, 'public/images'))) {
+				
+				$destThumbnails['home'] = \ze\link::absolute(). $url;
+			}
+			
+			
+			//Convert the options here into radio selector boxes
+			foreach ($destOptions as $val => &$html) {
+				$html .= '<span class="continue_to_block">';
+				
+				if (isset($destThumbnails[$val])) {
+					$html .=
+						'<span
+							class="continue_to_icon continue_to_thumbnail"
+							style="background-image: url('. htmlspecialchars($destThumbnails[$val]). ');"
+						></span>';
+				} else {
+					$html .=
+						'<span
+							class="continue_to_icon continue_to_icon__'. htmlspecialchars($val). '"
+						></span>';
+				}
+				
+				$html .=
+					'<span class="continue_to_label">'. htmlspecialchars($fields['0/continue_to']['values'][$val]['label']). '</span>';
+				
+				$html .= '</span>';
+			}
+			unset($html);
+			
+			if (empty($values['0/continue_to'])) {
+				$values['0/continue_to'] = $initialValue;
+			} else {
+				$initialValue = $values['0/continue_to'];
+			}
+			
+			\ze\welcome::setupRadioSelectorValues('continue_to', $fields['0/continue_to'], $destOptions, $initialValue);
+			
+			
 			
 			//If the Admin has pressed the "Save and Continue" button...
 			if (!empty($fields['0/check_again']['pressed'])) {
@@ -4571,8 +4779,15 @@ class welcome {
 			return false;
 		}
 	}
+	
+	public static function trimContents($string) {
+		if ($string) {
+			return preg_replace('@[\n\r]+@', ' ', preg_replace('@[^\S\n\r]@', '', "\n". $string. "\n"));
+		} else {
+			return false;
+		}
+	}
 
-	//Formerly "protectBackupAndDocstoreDirsIfPossible()"
 	public static function protectBackupAndDocstoreDirsIfPossible() {
 		foreach ([\ze::setting('backup_dir'), \ze::setting('docstore_dir')] as $dir) {
 			if ($dir
@@ -4591,7 +4806,6 @@ class welcome {
 		}
 	}
 
-	//Formerly "licenseExpiryDate()"
 	public static function licenseExpiryDate($file) {
 		$return = false;
 	
@@ -4607,13 +4821,11 @@ class welcome {
 		return $return;
 	}
 
-	//Formerly "congratulationsAJAX()"
 	public static function congratulationsAJAX(&$source, &$tags, &$fields, &$values, $changes) {
 		\ze\lang::applyMergeFields($fields['0/blurb2']['snippet']['html'], ['site_url' => \ze\link::protocol(). $_SERVER['HTTP_HOST']. SUBDIRECTORY]);
 	}
 
-	//Formerly "redirectAdmin()"
-	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false, $continueTo = 'default') {
+	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false, $continueTo = 'default', $returnChoice = false) {
 		
 		//If the visitor's original request was from a content item, try to use that as the destination.
 		$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
@@ -4630,23 +4842,34 @@ class welcome {
 		//A language needs to be enabled, when an admin logs in, the admin should always be taken to
 		//the languages panel in Organizer to enable it.
 		if (!\ze\row::exists('languages', []) && $isAdmin) {
-			return
-				'organizer.php'.
-				'#zenario__languages/panels/languages';
+			if ($returnChoice) {
+				return false;
+			} else {
+				return
+					'organizer.php'.
+					'#zenario__languages/panels/languages';
+			}
 		
 		
 		//Handle the case where we want to go to Organizer
 		} elseif ($isAdmin && ($continueTo == 'organizer' || ($continueTo == 'default' && $hasOrgPath))) {
-			return
-				'organizer.php'.
-				(isset($getRequest['fromCID']) && isset($getRequest['fromCType'])? '?fromCID='. $getRequest['fromCID']. '&fromCType='. $getRequest['fromCType'] : '').
-				($hasOrgPath? '#'. $getRequest['og'] : '');
+			if ($returnChoice) {
+				return 'organizer';
+			} else {
+				return
+					'organizer.php'.
+					(isset($getRequest['fromCID']) && isset($getRequest['fromCType'])? '?fromCID='. $getRequest['fromCID']. '&fromCType='. $getRequest['fromCType'] : '').
+					($hasOrgPath? '#'. $getRequest['og'] : '');
+			}
 		
 		
 		//Handle the case where we have a custom desturl to go back to
 		} elseif ($continueTo == 'default' && !empty($getRequest['desturl']) && $isAdmin) {
-			return \ze\link::protocol(). $domain. $getRequest['desturl'];
-		
+			if ($returnChoice) {
+				return false;
+			} else {
+				return \ze\link::protocol(). $domain. $getRequest['desturl'];
+			}
 		}
 		
 		
@@ -4655,19 +4878,27 @@ class welcome {
 			$cID = $_SESSION['destCID'];
 			$cType = $_SESSION['destCType'] ?? 'html';
 		}
-	
+		
 		if ($cID && ($continueTo == 'citem' || $continueTo == 'default') && \ze\content::checkPerm($cID, $cType)) {
+			if ($returnChoice) {
+				return $cType. '_'. $cID;
+			} else {
+				unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion'], $getRequest['verification_code'], $getRequest['change_email_code']);
 		
-			unset($getRequest['task'], $getRequest['cID'], $getRequest['cType'], $getRequest['cVersion'], $getRequest['verification_code'], $getRequest['change_email_code']);
+				return \ze\link::toItem($cID, $cType, true, http_build_query($getRequest), false, false, $forceAliasInAdminMode);
+			}
 		
-			return \ze\link::toItem($cID, $cType, true, http_build_query($getRequest), false, false, $forceAliasInAdminMode);
+		//Return to the homepage
 		} else {
-			return (DIRECTORY_INDEX_FILENAME ?: SUBDIRECTORY);
+			if ($returnChoice) {
+				return 'home';
+			} else {
+				return (DIRECTORY_INDEX_FILENAME ?: SUBDIRECTORY);
+			}
 		}
 	}
 
 
-	//Formerly "lastAutomatedBackupTimestamp()"
 	public static function lastAutomatedBackupTimestamp($automated_backup_log_path = false) {
 		$backup = \ze\welcome::lastAutomatedBackup($automated_backup_log_path);
 		if ($backup) {
@@ -4823,7 +5054,6 @@ class welcome {
 		return $warnings;
     }
 
-	//Formerly "deleteNamedPluginSetting()"
 	public static function deleteNamedPluginSetting($moduleClassName, $settingName) {
 	
 		$sql = "

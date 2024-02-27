@@ -54,9 +54,9 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 		
 		//Look for any access codes in use
 		ze\contentAdm::checkForAccessCodes($box, $fields['hide/access_codes_warning'], $ids, $contentItemsCount,
-			'This content item has a staging code ([[access_code]]). This will be removed when it is hidden.',
-			'One content item has a staging code ([[access_code]]). This will be removed when it is hidden.',
-			'[[count]] content items have a staging code. These will be removed when it is hidden.'
+			'This content item has an access code ([[access_code]]). This will be removed when it is hidden.',
+			'One content item has an access code ([[access_code]]). This will be removed when it is hidden.',
+			'[[count]] content items have an access code. These will be removed when it is hidden.'
 		);
 		
 		ze\module::incSubclass('zenario_common_features');
@@ -119,7 +119,10 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 		//(i.e. there's no sign of any of Organizer's variables)
 		//then try to redirect the admin to whatever the visitor URL should be
 		if ($goToContentItem) {
-			ze\tuix::closeWithFlags(['go_to_url' => $goToContentItem]);
+			$flags = [];
+			$flags['go_to_url'] = $goToContentItem;
+			$flags['toast_next_pageload'] = ze\admin::phrase("Content item hidden!");
+			ze\tuix::closeWithFlags($flags);
 		}
 	}
 }

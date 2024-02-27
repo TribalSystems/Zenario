@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and tuix.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and tuix.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -1102,15 +1102,15 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 				html += '</form>';
 				
 				buttonsHTML =
-					_$input('type', 'button', 'class', 'submit_selected', 'value', object.ajax.confirm.button_message, 'onclick', "get('" + formId + "').submit();");
+					_$input('type', 'button', 'class', 'zenario_submit_button', 'value', object.ajax.confirm.button_message, 'onclick', "get('" + formId + "').submit();");
 			//...otherwise it should launch a syncronous AJAX request.
 			} else {
 				buttonsHTML =
-					_$input('type', 'button', 'class', 'submit_selected', 'value', object.ajax.confirm.button_message, 'onclick', zenarioCallingLibrary.globalName + '.action2()');
+					_$input('type', 'button', 'class', 'zenario_submit_button', 'value', object.ajax.confirm.button_message, 'onclick', zenarioCallingLibrary.globalName + '.action2()');
 			}
 			
 			buttonsHTML +=
-				_$input('type', 'button', 'class', 'submit', 'value', object.ajax.confirm.cancel_button_message);
+				_$input('type', 'button', 'class', 'zenario_gp_button', 'value', object.ajax.confirm.cancel_button_message);
 			
 			
 			zenarioA.showMessage(html, buttonsHTML, object.ajax.confirm.message_type, undefined, !isHTML);
@@ -1517,6 +1517,7 @@ zenarioT.setKin = function(buttons, parentClass) {
 	
 	var bi, button, originalTUIX,
 		pi, parentId, parentButton,
+		in_use,
 		buttonsPos = {};
 	
 	foreach (buttons as bi => button) {
@@ -1550,6 +1551,24 @@ zenarioT.setKin = function(buttons, parentClass) {
 					parentButton.children = [];
 				}
 				parentButton.children.push(button);
+				
+				
+				//The "in use" flagging feature.
+				//If we see a parent button has childen flagged as in use or not in use,
+				//add some properties to track that.
+				if (defined(in_use = originalTUIX.in_use)) {
+					if (in_use) {
+						if (defined(parentButton.children_used)) {
+							++parentButton.children_used;
+						} else {
+							parentButton.children_used = 1;
+						}
+						
+						parentButton.children_in_use = true;
+					} else {
+						parentButton.children_not_in_use = true;
+					}
+				}
 			}
 		}
 	}
@@ -1744,6 +1763,8 @@ zenarioT.showDevTools = function() {
 	return (zenarioA.adminSettings || {}).show_dev_tools;
 };
 
+
+
 zenarioT.filter = function(filter) {
 	
 	if (filter === false) {
@@ -1773,6 +1794,13 @@ zenarioT.find = function(collection, filter) {
 //for decimal points/thousand-separators that were entered into the language properties
 zenarioT.numberFormat = function(number, decimals) {
 	return s.numberFormat(number, decimals, zenario.decPoint, zenario.thousandsSep);
+};
+
+zenarioT.checkDumps = function(data) {
+	if (data && data.__dumps) {
+		zenario.dumps(data.__dumps);
+		delete data.__dumps;
+	}
 };
 
 

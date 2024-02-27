@@ -88,15 +88,35 @@ class moduleAPI {
 	/////////////////////////////
 	
 	public final function allowCaching(
-		$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
+		//Old call
+		//$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
+		//New call
+		$atAll, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true, $bc1 = null, $bc2 = null
 	) {
-		\ze::$slotContents[$this->slotNameNestId]->allowCaching($atAll, $ifUserLoggedIn, $ifGetSet, $ifPostSet, $ifSessionSet, $ifCookieSet);
+		
+		//Watch out for plugins that have not been updated to the new 9.6 options
+		if ($bc2 !== null) {
+			$ifGetOrPostVarIsSet = $ifGetOrPostVarIsSet && $ifSessionVarOrCookieIsSet;
+			$ifSessionVarOrCookieIsSet = $bc1 && $bc2;
+		}
+		
+		\ze::$slotContents[$this->slotNameNestId]->allowCaching($atAll, $ifUserLoggedIn, $ifGetOrPostVarIsSet, $ifSessionVarOrCookieIsSet);
 	}
 	
 	public final function clearCacheBy(
-		$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
+		//Old call
+		//$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
+		//New call
+		$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false, $bc = null
 	) {
-		\ze::$slotContents[$this->slotNameNestId]->clearCacheBy($clearByContent, $clearByMenu, $clearByUser, $clearByFile, $clearByModuleData);
+		
+		//Watch out for plugins that have not been updated to the new 9.6 options
+		if ($bc !== null) {
+			$clearByFile = $clearByModuleData;
+			$clearByModuleData = $bc;
+		}
+		
+		\ze::$slotContents[$this->slotNameNestId]->clearCacheBy($clearByContent, $clearByMenu, $clearByFile, $clearByModuleData);
 	}
 	
 	public final function callScriptBeforeAJAXReload($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
@@ -132,7 +152,7 @@ class moduleAPI {
 		$this->zAPICallScriptWhenLoaded(2, $args);
 	}
 	
-	public final function requireJsLib($lib, $stylesheet = null) {
+	public final function requireJsLib($lib, $stylesheet = false) {
 		
 		//Record that a plugin in this slot is requesting this library, so if the plugin is cached
 		//this request should be cached as well.

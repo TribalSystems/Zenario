@@ -113,3 +113,27 @@ site_settings:
                     label: 'Automated backups:'
                     snippet:
                         html: ''
+                
+        staging_mode:
+            ord: 25
+            label: Staging mode
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            <p>You can use staging mode to share a draft of a content
+                            item with a colleague who's not a Zenario administrator.</p>
+                            <p>(This works for content items with permissions set to
+                            <em style="font-style: italic;">
+                                &ldquo;Public: visible to everyone&rdquo;
+                            </em> but not private content items.)</p>
+                enable_staging_mode:
+                    site_setting:
+                        name: enable_staging_mode
+                    type: checkbox
+                    label: Enable staging mode
+                    value: 1

@@ -31,7 +31,6 @@ namespace ze;
 class module {
 
 
-	//Formerly "getModuleDetails()"
 	public static function details($idOrName, $fetchBy = 'id') {
 		$sql = "
 			SELECT
@@ -69,37 +68,30 @@ class module {
 		}
 	}
 
-	//Formerly "getModuleName()", "getModuleClassName()"
 	public static function className($id) {
 		return \ze\row::get('modules', 'class_name', ['id' => $id]);
 	}
 
-	//Formerly "getModuleDisplayName()"
 	public static function displayName($id) {
 		return \ze\row::get('modules', 'display_name', ['id' => $id]);
 	}
 
-	//Formerly "getModuleDisplayNameByClassName()"
 	public static function getModuleDisplayNameByClassName($name) {
 		return \ze\row::get('modules', 'display_name', ['class_name' => $name]);
 	}
 
-	//Formerly "getModuleId()", "getModuleIdByClassName()"
 	public static function id($name) {
 		return \ze\row::get('modules', 'id', ['class_name' => $name]);
 	}
 
-	//Formerly "getModuleStatus()"
 	public static function status($id) {
 		return \ze\row::get('modules', 'status', ['id' => $id]);
 	}
 
-	//Formerly "getModuleStatusByClassName()"
 	public static function statusByName($name) {
 		return \ze\row::get('modules', 'status', ['class_name' => $name]);
 	}
 
-	//Formerly "checkModuleRunning()"
 	public static function isRunning($className) {
 	
 		return (bool) \ze\sql::fetchRow("
@@ -111,7 +103,6 @@ class module {
 	}
 
 
-	//Formerly "canActivateModule()"
 	public static function canActivate($name, $fetchBy = 'name', $activate = false) {
 	
 		$error = [];
@@ -145,7 +136,6 @@ class module {
 		}
 	}
 
-	//Formerly "activateModule()"
 	public static function activate($name) {
 		return \ze\module::canActivate($name, 'class', true);
 	}
@@ -154,7 +144,6 @@ class module {
 
 
 
-	//Formerly "inc()"
 	public static function inc($module) {
 		
 		
@@ -179,7 +168,6 @@ class module {
 		}
 	}
 
-	//Formerly "includeModuleSubclass()"
 	public static function incSubclass($filePathOrModuleClassName, $type = false, $path = false) {
 	
 		if ($type === false) {
@@ -249,6 +237,9 @@ class module {
 			require_once $phpPath;
 	
 			if (class_exists($className)) {
+				if (\ze::$recordFiles) {
+					\ze::$tuixFiles[$phpPath] = true;
+				}
 				return $className;
 			} else {
 				$msg = 'The module [[moduleClassName]] is trying to load the [[className]] PHP class, which it expects to find in [[phpPath]]. The file exists but the class was not defined!';
@@ -261,7 +252,6 @@ class module {
 		exit(\ze\admin::phrase($msg, ['moduleClassName' => $moduleClassName, 'className' => $className, 'phpPath' => str_replace('//', '/', $phpPath)]));
 	}
 
-	//Formerly "getModuleDependencies()"
 	public static function dependencies($moduleName) {
 		$sql = "
 			SELECT
@@ -283,7 +273,6 @@ class module {
 
 	//Include all of a Module's Dependency files, then include the Module
 	//Note: you need to check to see if a Module is running first, before calling this
-	//Formerly "includeModuleAndDependencies()"
 	public static function incWithDependencies($moduleName, &$missingPlugin, $recurseCount = 9) {
 	
 		if (!$recurseCount) {
@@ -320,7 +309,6 @@ class module {
 
 
 
-	//Formerly "getModuleInheritance()"
 	public static function inheritance($moduleClassName, $type) {
 		$sql = "
 			SELECT dependency_class_name
@@ -337,7 +325,6 @@ class module {
 		}
 	}
 
-	//Formerly "getModuleInheritances()"
 	public static function inheritances($moduleClassName, $type, $includeCurrent = true, $recurseLimit = 9) {
 		$inheritances = [];
 	
@@ -353,12 +340,10 @@ class module {
 	}
 
 
-	//Formerly "getPluginInItemSlot()"
 	public static function idInItemSlot($slotName, $cID, $cType = 'html', $cVersion = false) {
 		return \ze\plugin::idInItemSlot($slotName, $cID, $cType, $cVersion, true);
 	}
 
-	//Formerly "getPluginInTemplateSlot()"
 	public static function idInLayoutSlot($slotName, $layoutId) {
 		return \ze\plugin::idInLayoutSlot($slotName, $layoutId, true);
 	}
@@ -366,7 +351,6 @@ class module {
 
 
 
-	//Formerly "sendSignal()"
 	public static function sendSignal($signalName, $signalParams) {
 		//Don't try to send a signal if we are in the Admin Login Screen applying Database Updates
 		if (!class_exists('\ze\moduleBaseClass')) {
@@ -418,19 +402,16 @@ class module {
 
 
 	//Get all existing modules
-	//Formerly "getModules()"
 	public static function modules($onlyGetRunningPlugins = false, $ignoreUninstalledPlugins = false, $dbUpdateSafemode = false, $orderBy = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 	//Get all of the existing modules that are running
-	//Formerly "getRunningModules()"
 	public static function runningModules($dbUpdateSafemode = false, $orderBy = false) {
 		return \ze\module::modules($onlyGetRunningPlugins = true, false, $dbUpdateSafemode, $orderBy);
 	}
 
 
-	//Formerly "getModulePrefix()"
 	public static function prefix($module, $mustBeRunning = true, $define = false) {
 	
 		if (!is_array($module)) {
@@ -451,7 +432,6 @@ class module {
 
 
 	//Define a plugin's database table prefix
-	//Formerly "setModulePrefix()"
 	public static function setPrefix(&$module, $define = true) {
 	
 		if (empty($module['class_name'])) {
@@ -495,36 +475,18 @@ class module {
 	//Get an array of all a modules plugins (including nested), and also an array of their settings.
 	//Useful for updating plugin settings via a db update.
 	public static function getModuleInstancesAndPluginSettings($className) {
-		$instances = [];
 		
-		//Get moduleId
-		$sql = '
-			SELECT id
-			FROM ' . DB_PREFIX . 'modules
-			WHERE class_name = "' . \ze\escape::asciiInSQL($className) . '"';
-		$result = \ze\sql::select($sql);
-		$row = \ze\sql::fetchAssoc($result);
-		$moduleId = $row['id'];
+		$moduleId = \ze\module::id($className);
 		
-		//Get Ids of plugin instances
-		$sql = '
-			SELECT id
-			FROM ' . DB_PREFIX . 'plugin_instances
-			WHERE module_id = ' . (int)$moduleId;
-		$result = \ze\sql::select($sql);
-		while ($row = \ze\sql::fetchAssoc($result)) {
-			$instances[] = ['instance_id' => $row['id'], 'egg_id' => 0];
-		}
-		
-		//Ids of nested plugins
-		$sql = '
-			SELECT instance_id, id
+		$instances = \ze\sql::fetchAssocs('
+			SELECT id AS instance_id, 0 AS egg_id
+			FROM '. DB_PREFIX. 'plugin_instances
+			WHERE module_id = '. (int) $moduleId. '
+			UNION
+			SELECT instance_id, id AS egg_id
 			FROM ' . DB_PREFIX . 'nested_plugins
-			WHERE module_id = ' . (int)$moduleId;
-		$result = \ze\sql::select($sql);
-		while ($row = \ze\sql::fetchAssoc($result)) {
-			$instances[] = ['instance_id' => $row['instance_id'], 'egg_id' => $row['id']];
-		}
+			WHERE module_id = '. (int) $moduleId
+		);
 		
 		//Load default plugin settings
 		$defaultSettings = [];

@@ -40,16 +40,15 @@ class zenario_slideshow extends zenario_plugin_nest {
 		ze::$slotContents[$this->slotName]->flagAsSlideshow();
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = true);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		
 		//Check if an animation library has been selected in the plugin settings (and it's actually a valid value).
 		$this->aLib = $this->setting('animation_library');
 		switch ($this->aLib) {
 			case 'cycle2':
-			case 'roundabout':
 			case 'swiper':
 				//Create a subclass for the library, so we can use different logic depending on which one was selected
 				if ($this->subClass = $this->runSubClass('zenario_slideshow', 'animation_libraries', $this->aLib)) {

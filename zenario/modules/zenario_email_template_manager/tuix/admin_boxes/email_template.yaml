@@ -140,9 +140,9 @@ zenario_email_template:
                     type: radios
                     values:
                         yes:
-                            label: Use standard header and footer; edit the body using rich text (recommended)
+                            label: Use standard email template; edit the body using rich text (recommended)
                         twig:
-                            label: Use standard header and footer; edit the body using HTML and Twig code (advanced)
+                            label: Use standard email template; edit the body using HTML and Twig code (advanced)
                         no:
                             label: Edit the entire email using rich text (advanced)
                     note_below: "[[standard_email_template_link]]"
@@ -184,7 +184,7 @@ zenario_email_template:
                             ord: 2
                             label: "Send actual file"
                     value: send_organizer_link
-                    note_below: "Visitor-uploaded attachments are not sent to visitors"
+                    note_below: "Attachments uploaded by visitors are never sent by email to visitors."
                 body:
                     label: 'Email body:'
                     type: editor
@@ -193,9 +193,9 @@ zenario_email_template:
                     editor_options:
                         convert_urls: false
                         relative_urls: false
+                        height: 400px
                     style: |
                         width: 98%;
-                    rows: 30
                     language: twig
                     insert_image_button:
                         pick_items:
@@ -205,6 +205,12 @@ zenario_email_template:
                             max_path: 'zenario__library/panels/image_library'
                             disallow_refiners_looping_on_min_path: true
                 
+                apply_css_rules:
+                    label: Apply
+                    type: checkbox
+                    note_below: 'These CSS rules will not be visible on the Preview tab. Use the "Test send" feature to view them.'
+                    post_field_html: |
+                        &nbsp;[[link_start]]CSS rules[[link_end]]
                 
                 test_send_email_address:
                     type: text
@@ -217,7 +223,7 @@ zenario_email_template:
                     type: submit
                     value: Send sample
                     visible_if: '!zenarioAB.tuix.key.id'
-                    class: 'submit_disabled'
+                    class: 'zenario_disabled_button'
                     onclick: 'return false;'
                 test_send_button:
                     same_row: true
@@ -226,7 +232,7 @@ zenario_email_template:
                     can_be_pressed_in_view_mode: true
                     value: Test Send
                     visible_if: 'zenarioAB.tuix.key.id'
-                    class: 'submit_selected'
+                    class: 'zenario_submit_button'
 
         preview:
             label: Preview
@@ -237,8 +243,8 @@ zenario_email_template:
                 body:
                     type: editor
                     editor_type: readonly
+                    tall_as_possible: true
                     dont_trim: true
-                    rows: 30
         data_deletion:
             label: Data deletion
             edit_mode:
@@ -308,26 +314,6 @@ zenario_email_template:
                             label: Delete after 1 year
                         730: 
                             label: Delete after 2 years
-        advanced:
-            label: Advanced
-            edit_mode:
-                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
-                enabled: true
-            fields:
-                desc:
-                    snippet:
-                        html: >
-                            Use this tab to add CSS styles and media queries, for email-clients
-                            that support these features.
-                head:
-                    label: 'HTML in head of email:'
-                    type: code_editor
-                    dont_trim: true
-                    tall_as_possible: true
-                    language: html
-                    style: >
-                        width: 98%;
-                    rows: 30
         protection:
             label: Protection
             fields:

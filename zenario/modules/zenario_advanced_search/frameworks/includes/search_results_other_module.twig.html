@@ -1,9 +1,9 @@
-{% if Mode == 'search_entry_box' and (Results_From_Module) %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Results_From_Module) %}
     {% set Column = Column + 1 %}
     <div id="{{Container_Id}}_results_from_module" class="column_{{Column}} column column_results_from_module">
 {% endif %}
 
-{% if Mode == 'search_entry_box' and Results_From_Module_Heading_Text and not Results_From_Module_No_Results %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and Results_From_Module_Heading_Text and not Results_From_Module_No_Results %}
     <span class="column_title">{{Results_From_Module_Heading_Text|e}}</span>
 {% endif %}
 
@@ -34,6 +34,12 @@
             </div>
         </a>
     {% endfor %}
+    
+    {% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Module_Search_Results_Count > Maximum_Results_Number) %}
+    	{% if Module_And_X_More_Results_Phrase %}
+    		<p class="more_results">{{Module_And_X_More_Results_Phrase}}</p>
+    	{% endif %}
+    {% endif %}
 {% endif %}
 
 {% if Results_From_Module_No_Results %}
@@ -42,6 +48,6 @@
     </div>
 {% endif %}
 
-{% if Mode == 'search_entry_box' and (Results_From_Module or Results_From_Module_No_Results) %}
+{% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Results_From_Module or Results_From_Module_No_Results) %}
     </div>
 {% endif %}

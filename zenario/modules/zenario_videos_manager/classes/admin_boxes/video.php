@@ -37,7 +37,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 		$linkEnd = "</a>";
 		
 		$fields['details/no_categories']['snippet']['html'] = ze\admin::phrase(
-			'No video item categories have been created. [[Link_start]]Create categories...[[Link_end]]',
+			'No video categories have been created. [[Link_start]]Create categories...[[Link_end]]',
 			['Link_start' => $linkStart, 'Link_end' => $linkEnd]
 		);
 
@@ -178,7 +178,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 							$thumbnailUrl = $json['thumbnail_url'];
 
 							$sha = sha1($thumbnailUrl);
-							if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'uploads', false))) {
+							if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'private/uploads', false))) {
 								echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
 							} else {
 								$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';
@@ -258,7 +258,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 										$thumbnailUrl = $json['thumbnail_url'];
 			
 										$sha = sha1($thumbnailUrl);
-										if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'uploads', false))) {
+										if (!\ze\cache::cleanDirs() || !($dir = \ze\cache::createDir($sha, 'private/uploads', false))) {
 											echo ze\admin::phrase('Zenario cannot currently receive uploaded files, because the private/ folder is not writeable.');
 										} else {
 											$filename = 'video_' . ze\escape::sql($videoId) . '_thumbnail.jpg';

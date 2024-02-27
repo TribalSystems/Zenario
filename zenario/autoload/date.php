@@ -35,8 +35,6 @@ class date {
 	private static $timeNow = null;
 	
 	const nowFromTwig = true;
-	//Formerly "NOW()"
-	//Formerly "now()"
 	public static function now($cache = false) {
 		
 		if ($cache && self::$timeNow !== null) {
@@ -47,14 +45,12 @@ class date {
 	}
 
 	const ymdFromTwig = true;
-	//Formerly "dateNow()"
 	public static function ymd() {
 		$row = \ze\sql::fetchRow('SELECT DATE(NOW())');
 		return $row[0];
 	}
 
 
-	//Formerly "formatDateNicely()"
 	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false, $adminPhrase = false) {
 		
 		if (empty($date)) {
@@ -128,12 +124,10 @@ class date {
 		return $returnDate;
 	}
 
-	//Formerly "formatDateTimeNicely()"
 	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false, $adminPhrase = false) {
 		return \ze\date::format($date, $format_type, $languageId, true, $rss, $cli, $adminPhrase);
 	}
 
-	//Formerly "formatTimeNicely()"
 	public static function formatTime($time, $format_type) {
 	
 		if (is_numeric($time)) {
@@ -239,7 +233,6 @@ class date {
 	
 	
 	//Given a MySQL timestamp, a unix timestamp, or a PHP date object, return a PHP date object in the current user's timezone
-	//Formerly "convertToUserTimezone()"
 	public static function convertToUsersTimeZone($time) {
 	
 		$time = \ze\date::new($time);
@@ -268,7 +261,6 @@ class date {
 
 
 	const formatRelativeDateTimeFromTwig = true;
-	//Formerly "getRelativeDate()"
 	public static function formatRelativeDateTime(
 		$timestamp, $maxPeriod = "day", $addFullTime = true,
 		$format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false,

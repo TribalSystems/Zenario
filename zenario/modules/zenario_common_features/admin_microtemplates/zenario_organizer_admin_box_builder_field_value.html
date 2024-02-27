@@ -1,5 +1,5 @@
 <div class="field_value" data-id="{{m.id}}">
-	<input type="text" value="{{m.label}}" data-id="{{m.id}}" <% if (m.readonly) { %> disabled readonly<% } %>/>
+	<input type="text" value="{{m.label|e}}" data-id="{{m.id}}" <% if (m.readonly) { %> disabled readonly<% } %>/>
 	<div class="form_field_value_inline_buttons">
 		<span class="delete_icon" data-id="{{m.id}}">Delete</span>
 		<span class="drag_icon"></span>

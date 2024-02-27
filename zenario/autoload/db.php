@@ -229,7 +229,7 @@ abstract class abstractQueryCursor implements \Iterator {
 					//Decrypt columns that were flagged as being encrypted
 					if ($d->encrypted) {
 						if ($val) {
-							$val = \ze\zewl::decrypt($val);
+							$val = \ze\pde::decrypt($val);
 						} else {
 							if (!isset($decrypts[$d->tbl])) {
 								$decrypts[$d->tbl] = [];
@@ -369,7 +369,6 @@ class db {
 	// Functions for connecting to a MySQL database
 	//
 	
-	//Formerly "connectLocalDB()"
 	public static function connectLocal() {
 		if (!\ze::$dbL) {
 			\ze::$dbL = new \ze\db(DB_PREFIX, DBHOST, DBNAME, DBUSER, DBPASS, DBPORT);
@@ -381,7 +380,6 @@ class db {
 	}
 
 
-	//Formerly "globalDBDefined()"
 	public static function hasGlobal() {
 		return defined('DBHOST_GLOBAL')
 			&& defined('DBNAME_GLOBAL')
@@ -391,7 +389,6 @@ class db {
 			&& !(DBHOST_GLOBAL == DBHOST && DBNAME_GLOBAL == DBNAME);
 	}
 
-	//Formerly "connectGlobalDB()"
 	public static function connectGlobal() {
 	
 		if (!\ze\db::hasGlobal()) {
@@ -498,7 +495,6 @@ class db {
 	
 
 
-	//Formerly "reviewDatabaseQueryForChanges()"
 	public function reviewQueryForChanges(&$sql, &$ids, &$values, $table = false, $runSql = false) {
 	
 		//Only do the review when Modules are running normally and we're connected to the local db
@@ -519,7 +515,6 @@ class db {
 	public $pks = [];	//formerly \ze::$pkCols
 
 	//Check a table definition and see which columns are numeric
-	//Formerly "checkTableDefinition()"
 	public function checkTableDef($prefixAndTable, $checkExists = false, $useCache = false) {
 		$pkCol = false;
 		$exists = false;
@@ -563,7 +558,7 @@ class db {
 					//get corrupted in the first place.
 					
 					//If they exist, load the encryption wrapper library
-					\ze\zewl::init();
+					\ze\pde::init();
 					//Record that this column should be encrypted
 					$this->cols[$prefixAndTable][substr($col, 1)]->encrypted = true;
 			
@@ -624,7 +619,6 @@ class db {
 	
 
 
-	//Formerly "columnIsEncrypted()"
 	public function columnIsEncrypted($table, $column) {
 	
 		$tableName = $this->prefix. $table;
@@ -637,7 +631,6 @@ class db {
 	}
 
 
-	//Formerly "columnIsHashed()"
 	public function columnIsHashed($table, $column) {
 	
 		$tableName = $this->prefix. $table;
@@ -647,6 +640,27 @@ class db {
 		}
 
 		return isset($this->cols[$tableName][$column])? $this->cols[$tableName][$column]->hashed : null;
+	}
+	
+	
+	//Check the users table to see if any encrypted columns exist
+	public function tableHasEncryptedColumns($table) {
+	
+		$tableName = $this->prefix. $table;
+	
+		if (!isset($this->cols[$tableName])) {
+			$this->checkTableDef($tableName);
+		}
+		
+		if (!empty($this->cols[$tableName])) {
+			foreach ($this->cols[$tableName] as $col => $d) {
+				if ($d->encrypted) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 	
 	
@@ -663,7 +677,6 @@ class db {
 	//Update the data revision number
 	//It's designed to update the local revision number if we're connected to the local database,
 	//otherwise update the global revision number if we're connected to the global database
-	//Formerly "updateDataRevisionNumber()"
 	public static function updateDataRevisionNumber() {
 	
 		//We only need to do this at most once per request/load
@@ -673,7 +686,6 @@ class db {
 		}
 	}
 
-	//Formerly "updateDataRevisionNumber2()"
 	public static function updateDataRevisionNumber2() {
 		\ze\db::connectLocal();
 	
@@ -716,7 +728,6 @@ class db {
 	
 
 
-	//Formerly "connectToDatabase()"
 	public static function connect($dbhost, $dbname, $dbuser, $dbpass, $dbport = '', $reportErrors = true) {
 		try {
 			\ze::ignoreErrors();
@@ -762,7 +773,6 @@ class db {
 		return false;
 	}
 
-	//Formerly "loadSiteConfig()"
 	public static function loadSiteConfig() {
 		
 		//We use our own error reporting system for database errors, that mails them to the support mailbox.
@@ -806,8 +816,8 @@ class db {
 		$result = \ze\sql::select($sql);
 		while ($row = \ze\sql::fetchRow($result)) {
 			if ($row[2]) {
-				\ze\zewl::init();
-				$row[1] = \ze\zewl::decrypt($row[1]);
+				\ze\pde::init();
+				$row[1] = \ze\pde::decrypt($row[1]);
 			}
 			\ze::$siteConfig[(int) $row[3]][$row[0]] = $row[1];
 		}
@@ -825,7 +835,7 @@ class db {
 			}
 		}
 	
-		\ze::$cacheWrappers = \ze::setting('caching_enabled') && \ze::setting('cache_css_js_wrappers');
+		\ze::$cacheBundles = \ze::setting('caching_enabled') && \ze::setting('cache_bundles');
 	
 		//When we set the timezone in basicheader.inc.php, we were using whatever the server settings were.
 		//Now we have access to the database, check if it's been set in the site-settings, and set it to that if so.
@@ -915,7 +925,6 @@ class db {
 	}
 	
 
-	//Formerly "handleDatabaseError()"
 	public static function handleError($con, $sql) {
 		$sqlErrno = mysqli_errno($con);
 		$sqlError = mysqli_error($con);
@@ -980,15 +989,19 @@ class db {
 		return defined('EMAIL_ADDRESS_GLOBAL_SUPPORT') && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true;
 	}
 	
+	public static function reportEvent($subjectPrefix, ...$eventInfo) {
+		\ze\db::reportErrorInternal(false, $subjectPrefix, $eventInfo, false);
+	}
+	
 	public static function reportError($subjectPrefix, ...$errorInfo) {
-		\ze\db::reportErrorInternal(false, $subjectPrefix, $errorInfo);
+		\ze\db::reportErrorInternal(false, $subjectPrefix, $errorInfo, true);
 	}
 	
 	public static function reportDatabaseError($subjectPrefix, ...$errorInfo) {
-		\ze\db::reportErrorInternal(true, $subjectPrefix, $errorInfo);
+		\ze\db::reportErrorInternal(true, $subjectPrefix, $errorInfo, true);
 	}
 	
-	private static function reportErrorInternal($dbError, $subjectPrefix, $errorInfo) {
+	private static function reportErrorInternal($dbError, $subjectPrefix, $errorInfo, $antiSpider) {
 		
 		//
 		// Send a mail about the db error to the support box
@@ -997,7 +1010,7 @@ class db {
 		
 		//Insert an artificial delay, intended to make it slightly harder to spider a site
 		//looking for vulnerabilities
-		if (!defined('RUNNING_FROM_COMMAND_LINE')) {
+		if ($antiSpider && !defined('RUNNING_FROM_COMMAND_LINE')) {
 			sleep(1);
 		}
 		
@@ -1024,8 +1037,16 @@ class db {
 		if (!empty($_SERVER['REQUEST_URI'])) {
 			$body .= ' accessing '. $_SERVER['REQUEST_URI'];
 		}
-	
-		$body .= "\n\n". implode("\n\n", $errorInfo);
+		
+		foreach ($errorInfo as $seg) {
+			$body .= "\n\n";
+			
+			if (is_array($seg)) {
+				$body .= print_r($seg, true);
+			} else {
+				$body .= $seg;
+			}
+		}
 		
 		
 		//Don't allow the sendEmail functions to connect to the database if this is a database error!
@@ -1053,7 +1074,6 @@ class db {
 	//We'll check the CMS_ROOT and the zenario_custom directory for a modification time and
 	//use whatever is the latest.
 	//If there isn't a .svn directory then fall-back to using the latest db_update revision number.
-	//Formerly "zenarioCodeLastUpdated()"
 	public static function codeLastUpdated($getChecksum = true) {
 		$v = 0;
 	
@@ -1091,13 +1111,11 @@ class db {
 	//This won't be completely foolproof though, as \ze\db::codeLastUpdated() relies on
 	//svn to give an accurate result, and \ze::setting('css_js_version') is only accurate
 	//if the site is set to Development mode.
-	//Formerly "zenarioCodeVersion()"
 	public static function codeVersion() {
 		return \ze\site::versionNumber(false, false). '.'. trim(max(\ze\db::codeLastUpdated(), \ze::setting('css_js_version')));
 	}
 
 
-	//Formerly "trimDebugBacktrace()"
 	public static function trimDebugBacktrace(&$debugBacktrace) {
 		array_shift($debugBacktrace);
 		self::tbtR($debugBacktrace);
@@ -1121,7 +1139,6 @@ class db {
 		}
 	}
 
-	//Formerly "reportDatabaseErrorFromHelperFunction()"
 	public static function reportDatabaseErrorFromHelperFunction($error) {
 	
 		$debugBacktrace = debug_backtrace();
@@ -1146,14 +1163,12 @@ class db {
 
 
 
-	//Formerly "hashDBColumn()"
 	public static function hashDBColumn($val) {
 		return hash('sha256', \ze::$siteConfig[0]['site_id']. strtolower($val), true);
 	}
 
 
 
-	//Formerly "getNewThingFromSession()"
 	public static function getNewThingFromSession($table, $clear = true) {
 		$return = false;
 		if (isset($_SESSION['new_id_in_'. $table])) {

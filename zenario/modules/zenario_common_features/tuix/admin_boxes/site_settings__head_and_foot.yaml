@@ -5,7 +5,7 @@ site_settings:
     title: Site-wide <head> and <body> HTML/JavaScript
     tabs:
         head:
-            label: <head> HTML/JS
+            label: HTML/JS in <head>
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -60,7 +60,7 @@ site_settings:
                     label: Enable Twig code here
                     </div>:
         body:
-            label: Start of <body> HTML/JS
+            label: HTML/JS in start of <body>
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -110,7 +110,7 @@ site_settings:
                     label: Enable Twig code here
                     </div>:
         foot:
-            label: End of </body> HTML/JS
+            label: HTML/JS before </body>
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING

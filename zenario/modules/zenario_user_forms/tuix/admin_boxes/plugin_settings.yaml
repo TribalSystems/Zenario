@@ -14,7 +14,7 @@ plugin_settings:
                         min_path: zenario__user_forms/panels/user_forms
                         max_path: zenario__user_forms/panels/user_forms
                         target_path: zenario__user_forms/panels/user_forms
-                        select_phrase: Select Form...
+                        select_phrase: Select form...
                         hide_remove_button: true
                     format_onchange: true
                 display_mode:

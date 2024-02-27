@@ -78,11 +78,11 @@ if (ze::request('mID') && ze::post('menu_item')) {
 			case 'deleted':
 				if (!empty($menu['parent_id'])) {
 					echo '<!--Go_To_URL:?mID='. $menu['parent_id']. '-->';
-					$_SESSION['zenario__deleted_so_up'] = true;
+					echo '<!--Toast_Next_Pageload:'. ze\admin::phrase("Content item deleted, you've been taken to the page above in the menu."). '-->';
 				
 				} else {
 					echo '<!--Go_To_URL:-->';
-					$_SESSION['zenario__deleted_so_home'] = true;
+					echo '<!--Toast_Next_Pageload:'. ze\admin::phrase("Content item deleted, you've been taken to the home page."). '-->';
 				}
 				break;
 		}

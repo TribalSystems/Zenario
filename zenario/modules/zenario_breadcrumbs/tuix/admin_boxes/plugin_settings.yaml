@@ -11,14 +11,15 @@ plugin_settings:
                         name: menu_section
                         foreign_key_to: menu_section
                         dangling_cross_references: delete_instance
-                    label: 'Menu Section:'
+                    label: 'Menu section:'
                     pick_items:
                         path: zenario__menu/panels/sections
                         min_path: zenario__menu/panels/sections
                         max_path: zenario__menu/panels/sections
                         target_path: zenario__menu/panels/sections
-                        select_phrase: Select Menu Section...
+                        select_phrase: Select menu section...
                         hide_remove_button: true
+                        hide_info_button: true
                     value: "1"
                     validation:
                         required: Please select a menu section
@@ -75,4 +76,14 @@ plugin_settings:
                     type: checkbox
                     note_below: |
                         The first slide's title will not appear in the breadcrumb trail, edit the content item's menu node to set this.
+                        
+                add_json_ld:
+                    plugin_setting:
+                        name: add_json_ld
+                    visible_if: |
+                        !lib.tuix.key.eggId
+                    label: 'Generate structured data to describe rich results, breadcrumb type'
+                    type: checkbox
+                    note_below: |
+                            This option will generate JSON-LD structured data in the <code>&lt;head&gt;</code> of the page, describing the breadcrumb trail to this page. For more information or to test the page, see <a href="https://search.google.com/test/rich-results" target="_blank">https://search.google.com/test/rich-results</a>.
                 

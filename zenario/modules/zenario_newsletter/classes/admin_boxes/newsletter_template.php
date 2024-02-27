@@ -32,19 +32,21 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($id = $box['key']['id']) {
-			$templateDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['name', 'head', 'body'], ['id' => $id]);
+			$templateDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['name', 'apply_css_rules', 'body'], ['id' => $id]);
 			$box['title'] = ze\admin::phrase('Editing the newsletter template "[[name]]"', ['name' => $templateDetails['name']]);
 			$values['details/name'] = $templateDetails['name'];
 			$values['details/body'] = $templateDetails['body'];
-			$values['advanced/head'] = $templateDetails['head'];
+			$values['details/apply_css_rules'] = $templateDetails['apply_css_rules'];
 		}
 		
 		$style_formats = ze\site::description('email_style_formats');
 		if (!empty($style_formats)) {
 			$box['tabs']['details']['fields']['body']['editor_options']['style_formats'] = $style_formats;
-			$box['tabs']['details']['fields']['body']['editor_options']['toolbar'] =
-				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
 		}
+		
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
+		$linkEnd = "</a>";
+		ze\lang::applyMergeFields($fields['details/apply_css_rules']['post_field_html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -58,7 +60,7 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['details/body'], true);
+		$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['details/body'], $preserveMergeFields = true, $allowAdvancedInlineStyles = true);
 		
 		//Try and ensure that we use absolute URLs where possible
 		ze\contentAdm::addAbsURLsToAdminBoxField($fields['details/body']);
@@ -66,7 +68,7 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 		$record = [
 			'name' => $values['details/name'],
 			'body' => $values['details/body'],
-			'head' => $values['advanced/head']];
+			'apply_css_rules' => $values['details/apply_css_rules']];
 		
 		if ($box['key']['id']) {
 			$record['date_modified'] = ze\date::now();

@@ -48,10 +48,14 @@ if (ze::$dbL
 $errorTitle = ze::setting('site_disabled_title');
 
 
-//A couple of specific messages
+//A few specific messages
+$adminLink = '';
 if ($mode == 'reportDBOutOfDate' && \ze\priv::check()) {
 	$errorMessage = '<p>This site is currently unavailable because a major database update needs to be applied.</p><p>Please go to <a href="[[admin_link]]">/admin</a> to apply the update.</p>';
 	$adminLink = \ze\link::absolute(). 'admin.php';
+
+} elseif ($mode == 'stagingModeNotEnabled') {
+	$errorMessage = '<p>Staging mode is not enabled on this site.</p>';
 
 } elseif ($mode == 'noStagingModeInAdminMode') {
 	$errorMessage = '<p>You can\'t view this page in staging mode while logged in as an administrator. Either log out or open an "incognito" browser window.</p>';

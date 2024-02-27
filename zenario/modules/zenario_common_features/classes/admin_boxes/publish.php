@@ -41,6 +41,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			$tagsCount = count($tags);
 			if ($tagsCount == 1) {
 				ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $tags[0]);
+			
+			} else {
+				$fields['publish/publish_options']['values']['unlisted']['label'] = ze\admin::phrase('Publish as unlisted content items');
 			}
 		}
 		
@@ -54,9 +57,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		
 		//Look for any access codes in use
 		ze\contentAdm::checkForAccessCodes($box, $fields['publish/access_codes_warning'], $tags, $tagsCount,
-			'This content item has a staging code ([[access_code]]). This will be removed when it is published.',
-			'One content item has a staging code ([[access_code]]). This will be removed when it is published.',
-			'[[count]] content items have a staging code. These will be removed when it is published.'
+			'This content item has an access code ([[access_code]]). This will be removed when it is published.',
+			'One content item has an access code ([[access_code]]). This will be removed when it is published.',
+			'[[count]] content items have an access code. These will be removed when it is published.'
 		);
 		
 		$clash = static::checkForClashingPublicationDates($box['key']['id']);
@@ -64,6 +67,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		// Scheduled publishing options
 		$scheduledTaskManagerInc = ze\module::inc('zenario_scheduled_task_manager');
 		if ($scheduledTaskManagerInc) {
+			
+			$fields['publish/publish_options']['values']['immediately']['label'] = ze\admin::phrase('Publish immediately');
+
 			$allJobsEnabled = ze::setting('jobs_enabled');
 			$scheduledPublishingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features']);
 			if (!($allJobsEnabled && $scheduledPublishingEnabled)) {
@@ -100,14 +106,66 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			}
 		
 		} else {
-			$fields['publish/publish_options']['hidden'] = true;
+			$fields['publish/publish_options']['values']['schedule']['hidden'] = true;
 			$fields['publish/publishing_before_release_date_warning']['hidden'] = true;
 			
 			if ($clash) {
+				ze\escape::flag('Message_Type', 'Warning');
+				ze\escape::flag('BUTTON_HTML', '');
 				echo ze\admin::phrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
 				exit;
 			}
 		}
+		
+		
+		//If we're not allowed to list or delist one of the selected content items (e.g. they're special pages),
+		//disable those option.
+		$canList = $canUnlist = true;
+		foreach ($tags as $tagId) {
+			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+			
+			if ($canUnlist && !ze\contentAdm::allowPublishUnlisted($cID, $cType)) {
+				$canUnlist = false;
+				$fields['publish/publish_options']['values']['unlisted']['disabled'] = true;
+				$fields['publish/publish_options']['values']['unlisted']['note_below'] =
+					ze\admin::nPhrase("You can't make this special page unlisted.", "One of the selected content items is a special page that cannot be unlisted.", $tagsCount);
+			}
+			
+			if ($canList && !ze\contentAdm::allowPublishListed($cID, $cType)) {
+				$canList = false;
+				$fields['publish/publish_options']['values']['schedule']['disabled'] =
+				$fields['publish/publish_options']['values']['immediately']['disabled'] = true;
+				$fields['publish/publish_options']['values']['schedule']['note_below'] =
+				$fields['publish/publish_options']['values']['immediately']['note_below'] =
+					ze\admin::nPhrase("You can't make this special page listed.", "One of the selected content items is a special page that cannot be listed.", $tagsCount);
+			}
+		}
+		
+		if (!$canList && !$canUnlist) {
+			echo ze\admin::phrase("You have selected a mix of special pages, one of which cannot be listed, and one of which cannot be unlisted.");
+			exit;
+		}
+		
+		if ($canUnlist) {
+			if (!$canList) {
+				//Default to "unlisted" if that's the only option available.
+				$values['publish/publish_options'] = 'unlisted';
+		
+			} else {
+				//Check if all of these content items are unlisted
+				$sql = "
+					SELECT 1
+					FROM ". DB_PREFIX. "content_items AS c
+					WHERE c.tag_id IN (". ze\escape::in($tags, 'asciiInSQL'). ")
+					  AND c.status NOT IN ('unlisted', 'unlisted_with_draft')";
+		
+				if (!ze\sql::numRows($sql)) {
+					//If so, select the default option to still be "unlisted"
+					$values['publish/publish_options'] = 'unlisted';
+				}
+			}
+		}
+		
 		
 		//Show a note if any of these items are scheduled to be published
 		$sql = "
@@ -284,7 +342,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			
 			if ($cID && $cType && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 				$adminId = $_SESSION['admin_userid'] ?? false;
-				if ($values['publish/publish_options'] == 'immediately') {
+				if (($values['publish/publish_options'] == 'immediately' && ze\contentAdm::allowPublishListed($cID, $cType))
+				 || ($values['publish/publish_options'] == 'unlisted' && ze\contentAdm::allowPublishUnlisted($cID, $cType))) {
 					// Publish now
 					if ($box['tabs']['publish']['notices']['scheduled_warning']['show']) {
 						//If this content item was scheduled for publishing, but now an admin immediately publishes it,
@@ -298,6 +357,10 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					ze\contentAdm::publishContent($cID, $cType);
 					if (ze\ring::chopPrefix($cType. '_'. $cID. '.', ze::session('last_item'))) {
 						unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
+					}
+					
+					if ($values['publish/publish_options'] == 'unlisted') {
+						ze\contentAdm::delistContent($cID, $cType);
 					}
 					
 					//If a content item was previously scheduled, but an admin has published it immediately,
@@ -368,7 +431,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 // 						
 // 						$indexNowCallResult = ze\curl::fetch($indexNowUrl, $post = true);
 // 					}
-				} elseif ($values['publish/publish_options'] == 'schedule') {
+				} elseif ($values['publish/publish_options'] == 'schedule' && ze\contentAdm::allowPublishListed($cID, $cType)) {
 					// Publish on a later date
 					$scheduled_publish_datetime = $values['publish/publish_date'].' '.$values['publish/publish_hours'].':'.$values['publish/publish_mins'].':00';
 					$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);

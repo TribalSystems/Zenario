@@ -117,6 +117,7 @@ zenario__languages:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Advanced
                     hide_in_select_mode: true
+                    hide_when_children_are_not_visible: true
                 create:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Define a language

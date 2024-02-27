@@ -333,7 +333,7 @@ install:
                     #full_width: true
                     label: 'Skin:'
                     pre_field_html: |
-                        <div class="skin_selector horizontal_scroll">
+                        <div class="skin_selector selector_wrap">
                             <div>
                     type: radios
                     post_field_html: |
@@ -525,6 +525,7 @@ install:
                     readonly: readonly
                 copy_siteconfig_data:
                     type: button
+                    css_class: zenario_gp_button
                     value: Copy siteconfig
                     onclick: |
                         $("textarea").select();

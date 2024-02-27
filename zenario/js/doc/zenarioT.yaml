@@ -1,539 +1,62 @@
-#action:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-canDoHTML5Upload:
-    summary: |
-        Checks if the browser supports doing a HTML 5 upload.
-    desc: |
-        <h2>Description</h2>
-        <p>
+desc: |
+    A library containing common functions by all TUIX apps.
+funs:
+    canDoHTML5Upload:
+        summary: |
             Checks if the browser supports doing a HTML 5 upload.
-        </p>
-#checkActionUnique:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-checkFunctionExists:
-    summary: |
-        This checks whether a named function exists.
-    desc: |
-        <h2>Description</h2>
-        <p>
+    checkFunctionExists:
+        summary: |
             This checks whether a named function exists.
-        </p><p>
-            If you specify the name of a library, this will check the library for the function,
-            otherwise it will check for a global function.
-        </p>
-#csvToObject:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#disableFileDragDrop:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#doHTML5Upload:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#doNextUpload:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-eval:
-    summary: |
-        Given a snippet of JavaScript code, this does an eval() and returns the results.
-    desc: |
-        <h2>Description</h2>
-        <p>
+        desc: |
+            <p>
+                If you specify the name of a library, this will check the library for the function,
+                otherwise it will check for a global function.
+            </p>
+    eval:
+        summary: |
             Given a snippet of JavaScript code, this does an eval() and returns the results.
-        </p><p>
-            Alternately, you can pass an object of functions (as keys) and parameters (as values).
-            This is more efficient.
-        </p>
-        <h2>Return Value</h2>
-        <p>
+        desc: |
+            <p>
+                Alternately, you can pass an object of functions (as keys) and parameters (as values).
+                This is more efficient.
+            </p>
+        returns: |
             This returns true or false.
-        </p>
-#filter:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#find:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#getSortedIdsOfTUIXElements:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-hidden:
-    summary: |
-        Checks whether a TUIX object should be hidden.
-    desc: |
-        <h2>Description</h2>
-        <p>
+    hidden:
+        summary: |
             Checks whether a TUIX object should be hidden.
-        </p><p>
-            This checks the hidden and visible_if properties as they are generic to all TUIX apps.
-            Any properties that are specific to one app are not checked, and need to be checked in the source code for that app.
-        </p>
-        <h2>Return Value</h2>
-        <p>
+        desc: |
+            <p>
+                This checks the hidden and visible_if properties as they are generic to all TUIX apps.
+                Any properties that are specific to one app are not checked, and need to be checked in the source code for that app.
+            </p>
+        returns: |
             Returns true or false.
-        </p>
-#keepTrying:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#lib:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#microTemplate:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#onbeforeunload:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#onChangeOrSearch:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#parse:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#prop:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#resizeImage:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#setButtonKin:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-setHTML5UploadFromDragDrop:
-    summary: |
-        This function sets an HTML 5 upload on an element.
-    desc: |
-        <h2>Description</h2>
-        <p>
+    setHTML5UploadFromDragDrop:
+        summary: |
             This function sets an HTML 5 upload on an element.
-        </p><p>
-            If you don't specify an element, the upload area is set on the entire page.
-        </p>
-        <h2>Return Value</h2>
-        <p>
-            Nothing.
-        </p>
-#setKin:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-showDevTools:
-    summary: |
-        This checks whether the current admin has permissions to see the dev tools.
-    desc: |
-        <h2>Description</h2>
-        <p>
+        desc: |
+            <p>
+                If you don't specify an element, the upload area is set on the entire page.
+            </p>
+    showDevTools:
+        summary: |
             This checks whether the current admin has permissions to see the dev tools.
-        </p>
-        <h2>Return Value</h2>
-        <p>
+        returns: |
             Returns true or false.
-        </p>
-#sortArray:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#sortArrayByOrd:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#sortArrayByOrdinal:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#sortArrayDesc:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#sortArrayForOrganizer:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#sortArrayWithGrouping:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#sortLogic:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#splitDataFromErrorMessage:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-stopDefault:
-    summary: |
-        A shortcut function to calling the stopPropagation() and preventDefault() methods on an event.
-    desc: |
-        <h2>Description</h2>
-        <p>
-            A shortcut function to calling the <code>stopPropagation()</code> and <code>preventDefault()</code> methods on an event.
-        </p>
-        <h2>Return Value</h2>
-        <p>
-            Nothing.
-        </p>
-stopFileDragDrop:
-    summary: |
-        Disables the ability to navigate away from the current page by dragging a file or an image into the browser from the filesystem.
-    desc: |
-        <h2>Description</h2>
-        <p>
-            By default, if a user drags a file from their filesystem onto the browser, the browser
-            will navigate away from the current page and try to show the file.
-        </p><p>
-            Calling this function disables this, and just makes it so that nothing happens.
-        </p><p>
-            This can be useful, e.g. if a user tries to do a drag-and-drop upload but misses with their
-            drag and drop, it stops them losing the page that they were on.
-        </p>
-        <h2>Return Value</h2>
-        <p>
-            Nothing.
-        </p>
-#stopTrying:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#tuixToArray:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#uploadDone:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
-#uploadProgress:
-#    summary: |
-#        A summary.
-#    desc: |
-#        <h2>Description</h2>
-#        <p>
-#            A summary.
-#        </p><p>
-#            More words.
-#        </p>
-#        <h2>Return Value</h2>
-#        <p>
-#            Nothing.
-#        </p>
+    stopDefault:
+        summary: |
+            A shortcut function to calling the stopPropagation() and preventDefault() methods on an event.
+    stopFileDragDrop:
+        summary: |
+            Disables the ability to navigate away from the current page by dragging a file or an image into the browser from the filesystem.
+        desc: |
+            <p>
+                By default, if a user drags a file from their filesystem onto the browser, the browser
+                will navigate away from the current page and try to show the file.
+            </p><p>
+                Calling this function disables this, and just makes it so that nothing happens.
+            </p><p>
+                This can be useful, e.g. if a user tries to do a drag-and-drop upload but misses with their
+                drag and drop, it stops them losing the page that they were on.
+            </p>

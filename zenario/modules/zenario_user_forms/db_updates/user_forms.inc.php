@@ -182,7 +182,7 @@ if (ze\dbAdm::needRevision(19)) {
 			'name' => 'Simple Contact us',
 			'title' => 'Send us a message',
 			'send_email_to_admin' => 1,
-			'admin_email_addresses' => ze::setting('email_address_admin'),
+			'admin_email_addresses' => EMAIL_ADDRESS_GLOBAL_SUPPORT,
 			'save_data' => 0,
 			'save_record' => 1,
 			'user_status' => 'contact',
@@ -1502,7 +1502,7 @@ _sql
 ); ze\dbAdm::revision(250
 , <<<_sql
 	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]pages`
-	SET `name` = 'Page 1', `label` = 'Page 1'
+	SET `name` = 'Step 1', `label` = 'Step 1'
 	WHERE `name` = 'Page end'
 	AND `ord` = 1
 _sql
@@ -1671,3 +1671,100 @@ _sql
 _sql
 
 );
+
+ze\dbAdm::revision(282
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `handle_referrer_content_item` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_title` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_description` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_release_date` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_reference` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_deadline` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_alias` tinyint(1) NOT NULL DEFAULT '0',
+	ADD COLUMN `handle_referrer_content_item_tag` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_referrer_info`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_referrer_info` (
+		`user_response_id` int(10) unsigned NOT NULL,
+		`referrer_content_item` varchar(255) DEFAULT '',
+		`referrer_field` varchar(255) DEFAULT '',
+		`value` text NOT NULL,
+		PRIMARY KEY (`user_response_id`, `referrer_content_item`, `referrer_field`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_referrer_info`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_referrer_info` (
+		`user_partial_response_id` int(10) unsigned NOT NULL,
+		`referrer_content_item` varchar(255) DEFAULT '',
+		`referrer_field` varchar(255) DEFAULT '',
+		`value` text NOT NULL,
+		PRIMARY KEY (`user_partial_response_id`, `referrer_content_item`, `referrer_field`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+_sql
+
+);
+
+ze\dbAdm::revision(283
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `referrer_content_item_summary_block_title` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item`,
+	ADD COLUMN `referrer_content_item_title_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_title`,
+	ADD COLUMN `referrer_content_item_description_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_description`,
+	ADD COLUMN `referrer_content_item_release_date_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_release_date`,
+	ADD COLUMN `referrer_content_item_reference_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_reference`,
+	ADD COLUMN `referrer_content_item_deadline_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_deadline`,
+	ADD COLUMN `referrer_content_item_alias_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_alias`,
+	ADD COLUMN `referrer_content_item_tag_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_tag`
+_sql
+
+);
+
+//In 9.6, we dropped the choice between a save button and auto-saving when switching steps.
+//These features are now always active when "Save and complete later" is enabled.
+ze\dbAdm::revision(284
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP COLUMN `partial_completion_mode`
+_sql
+
+);
+
+if (ze\dbAdm::needRevision(285)) {
+	//Fix a bug where certain fields are visible on condition, and the conditional value is wrong.
+	$userForms = ze\row::getValues(ZENARIO_USER_FORMS_PREFIX. 'user_forms', 'id', []);
+	
+	if (!empty($userForms)) {
+		foreach ($userForms as $userForm) {
+			$sql = "
+				SELECT *
+				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields
+				WHERE user_form_id = " . (int) $userForm . "
+				AND visibility = 'visible_on_condition'
+				AND visible_condition_field_id > 0";
+			$result = ze\sql::select($sql);
+			
+			while ($row = ze\sql::fetchAssoc($result)) {
+				$conditionalField = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', true, ['user_form_id' => $userForm, 'id' => $row['visible_condition_field_id']]);
+				
+				if (!empty($conditionalField) && $conditionalField['field_type'] == 'checkbox') {
+					if (!$row['visible_condition_field_value'] || $row['visible_condition_field_value'] > 1) {
+						ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['visible_condition_field_value' => 1], ['user_form_id' => $userForm, 'id' => $row['id']]);
+					}
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(285);
+}

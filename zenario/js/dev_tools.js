@@ -66,7 +66,9 @@ devTools.internalCMSProperties = {
 	_filters: {description: 'Data on the filters that the admin selected'},
 	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},
 	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
-	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'}
+	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'},
+	__source_files: {description: 'Used for the &ldquo;open in editor&rdquo; feature.'},
+	__dumps: {description: 'Used by the ze::dump() function to pass debug information to the console.'}
 };
 
 //A little hack to turn on flagging undefined additional properties in tv4
@@ -363,9 +365,12 @@ devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 	
 	foreach (tuix as var key) {
 		
-		//Show everything in the dummy_item and top_right_buttons
+		//There are three exceptions in the map, where we put things in at the top level
+		//that are not top level items. Don't filter these.
 		if (!defined(parentKey)
 		 && (key == 'dummy_item'
+		  || key == '__dumps'
+		  || key == '__source_files'
 		  || key == 'top_right_buttons')) {
 			continue;
 		}

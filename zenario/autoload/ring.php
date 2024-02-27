@@ -81,10 +81,15 @@ class ring {
 		//This function was taken from one of the comments in the PHP documentation:
 		//https://www.php.net/manual/en/function.mb-convert-encoding.php
 		//This is in the public domain.
-		return mb_convert_encoding($text, "UTF-8", mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true));
+		
+		//PLEASE NOTE: On 12 Jun 2023, the original code was updated to better support languages like Romanian.
+		//The array of encodings to try is now a null instead.
+		//Original encoding detection logic:
+		//mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
+		
+		return mb_convert_encoding($text, "UTF-8", mb_detect_encoding($text, null, true));
 	}
 
-	//Formerly "chopPrefixOffString()", "chopPrefixOffOfString()"
 	public static function chopPrefix($prefix, $string, $returnStringOnFailure = false, $caseInsensitive = false) {
 		$compareString = $caseInsensitive ? strtolower($string) : $string;
 		$comparePrefix = $caseInsensitive ? strtolower($prefix) : $prefix;
@@ -129,7 +134,6 @@ class ring {
 	}
 
 	//Reverses \ze\ring::encodeIdForOrganizer()
-	//Formerly "decodeItemIdForOrganizer()", "decodeItemIdForStorekeeper()"
 	public static function decodeIdForOrganizer($id, $prefix = '~') {
 		$len = strlen($prefix);
 		if (substr($id, 0, $len) == $prefix) {
@@ -169,7 +173,6 @@ class ring {
 	}
 
 	//Given a string, this function makes it safe to use in the URL after a hash (i.e. a safe id for Storekeeper)
-	//Formerly "encodeItemIdForOrganizer()", "encodeItemIdForStorekeeper()"
 	public static function encodeIdForOrganizer($id, $prefix = '~') {
 		if (is_numeric($id)) {
 			return $id;
@@ -337,7 +340,7 @@ class ring {
 
 	//A less restrictive HTML sanitiser.
 	//Aimed at sanitising HTML provided by admins, e.g. in WYSIWYG Editors
-	public static function sanitiseWYSIWYGEditorHTML($html, $preserveMergeFields = false) {
+	public static function sanitiseWYSIWYGEditorHTML($html, $preserveMergeFields = false, $allowAdvancedInlineStyles = false) {
 		
 		//By default HTMLPurifier will mangle any spaces and merge fields in attributes, and doesn't have any config option
 		//to disable this other than to switch off some of its security, which we don't want to do.
@@ -358,6 +361,11 @@ class ring {
 		]);
 		
 		$config->set('Cache.DefinitionImpl', null);
+		
+		if ($allowAdvancedInlineStyles) {
+			$config->set('CSS.AllowTricky', true);
+		}
+		
 		$purifier = new \HTMLPurifier($config);
 		$html = $purifier->purify($html);
 		
@@ -426,7 +434,6 @@ class ring {
 
 
 	//Generate a random string of numbers and letters
-	//Formerly "randomString()"
 	public static function random($requiredLength = 12) {
 	
 		\ze\ring::seedRandomNumberGeneratorIfNeeded();
@@ -442,7 +449,6 @@ class ring {
 	//Generate a string from a specific set of characters
 		//By default I've stripped out vowels, just in case a swearword is randomly generated.
 		//Also "1"s look too much like "l"s and "0"s look too much like "o"s so I've removed those too for clarity.
-	//Formerly "randomStringFromSet()"
 	public static function randomFromSet($requiredLength = 12, $set = 'BCDFGHJKMNPQRSTVWXYZbcdfghjkmnpqrstvwxyz23456789') {
 		$lettersToUse = str_split($set);
 		$max = count($lettersToUse) - 1;

@@ -44,9 +44,8 @@ ze\dbAdm::revision(6,
 		 'To User: Account activated',
 		 'Your account on [[cms_url]] has been activated',
 		 '<p>Dear [[first_name]] [[last_name]],</p>
-		<p>Your account has been activated and you can now log in using your email address and password:</p>
-		<p>Email address: [[email]]<br /> 
-		Password: [[password]]</p>
+		<p>Your account has been activated and you can now log in using your email address and password.</p>
+		<p>&nbsp;</p>
 		<p>Click here to go to the site now: [[cms_url]]</p>',
 		 NOW(),
 		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",

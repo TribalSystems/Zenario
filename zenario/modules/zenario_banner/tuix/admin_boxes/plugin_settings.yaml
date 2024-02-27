@@ -512,6 +512,18 @@ plugin_settings:
                         Link to the file's download page, rather than a direct link to the file.
                         Note that this option only applies to document content items.
                     hidden: true
+                add_referrer:
+                    indent: 1
+                    plugin_setting:
+                        name: add_referrer
+                    label: "Add the current content item's ID as a referrer code in the URL"
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        This will add a string in the format <code>referrer=html_123</code> to
+                        the link. Plugins on the destination page may check this to see which content
+                        item the visitor just came from.
+                    hidden: true
                 url:
                     indent: 1
                     plugin_setting:

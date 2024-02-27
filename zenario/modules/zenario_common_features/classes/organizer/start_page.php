@@ -85,7 +85,7 @@ class zenario_common_features__organizer__start_page extends ze\moduleBaseClass 
 				'text' => ze\admin::phrase('Go to [[cItem]]', $mrg)
 			];
 		}
-				$wipCount = ze\row::count('content_items', ['status' => ['first_draft','published_with_draft','hidden_with_draft','trashed_with_draft']]);
+				$wipCount = ze\row::count('content_items', ['status' => ['first_draft','published_with_draft','unlisted_with_draft','hidden_with_draft','trashed_with_draft']]);
 				if($wipCount > 0) {
 						
 					$links[] = [

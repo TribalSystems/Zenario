@@ -1,0 +1,128 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content_staging_mode:
+    key:
+        id: ''
+        cID: ''
+        cType: ''
+        cVersion: ''
+    
+    identifier:
+        css_class: content_draft
+        label: Content item ID 
+    hide_tab_bar: true
+    tabs:
+        staging_mode:
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            <div style="
+                                float: left;
+                                display: inline-block;
+                                width: 45px;
+                                height: 45px;
+                                background: url(zenario/admin/images/icon-thumbs-up-shadow.svg) 50% 50%;
+                                background-size: 32px 32px;
+                                background-repeat: no-repeat;
+                                background-color: #ff5600;
+                                border-radius: 4px;
+                            "></div>
+                            <div style="
+                                float: left;
+                                display: inline-block;
+                                margin-left: 10px;
+                                margin-top: 4px;
+                                margin-bottom: 15px;
+                            ">
+                                <p>You can use staging mode to share a draft of a content
+                                item with a colleague who's not a Zenario administrator.</p>
+                                <p>(This works for content items with permissions set to
+                                <em style="font-style: italic;">
+                                    &ldquo;Public: visible to everyone&rdquo;
+                                </em> but not private content items.)
+                            </div>
+                use_access_code:
+                    type: checkbox
+                    redraw_onchange: true
+                access_code:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Access code:'
+                    type: text
+                    format_onchange: true
+                    style: |
+                        width: 4em;
+                        font-family: monospace;
+                    maxlength: 5
+                    validation:
+                        required_if_not_hidden: Please enter an access code.
+                        no_spaces: The access code may not contain spaces.
+                        no_special_characters: The access code may not contain special characters or multilingual characters.
+                        ascii_only: The access code may not contain special characters or multilingual characters.
+                existing_codes:
+                    same_row: true
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: select
+                    css_class: iconselectmenu
+                    format_onchange: true
+                    empty_value: ' -- Use existing code -- '
+                    values: {}
+                suggest_code:
+                    same_row: true
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    type: button
+                    css_class: zenario_gp_button
+                    format_onchange: true
+                    value: Suggest
+                    notices_below:
+                        code_reuse:
+                            hidden: true
+                            type: information
+                            message: ''
+                            html: true
+                copy_code_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if:
+                        lib.valueIsNotEmpty: copy_code
+                    snippet:
+                        p: |
+                            To let a colleague see the draft of this page in staging mode,
+                            copy this URL and send it to them:
+                copy_code:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    hide_if_empty: true
+                    type: text
+                    readonly: true
+                    style: |
+                        width: 600px
+                    show_copy_text_button: true
+                not_saved_warning:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if: |
+                        lib.value('access_code') &&
+                        lib.value('access_code') != lib.field('access_code').value
+                    snippet: {}
+                    notices_below:
+                        not_saved_warning:
+                            hidden: false
+                            type: information
+                            message: >
+                                This code will start working as soon as you press the
+                                "Save" button.
+                
+                note_about_links:
+                    snippet:
+                        html: |
+                            <em style="font-style: italic;">
+                                Please note that staging mode will not show links to unpublished
+                                content items, even if they are in staging mode.
+                            </em>

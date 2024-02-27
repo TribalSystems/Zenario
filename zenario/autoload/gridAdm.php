@@ -389,14 +389,6 @@ body {
 	clear: both;
 }";
 	
-	//Hack to fix a bug in IE 6/7.
-	$css .= '
-
-body.ie6 .container,
-body.ie7 .container {
-	zoom: 1;
-}';
-	
 	} else {
 		//Make sure the <div>s clear properly
 		$css .= '
@@ -814,7 +806,8 @@ public static function updateMetaInfoInDB(&$data, $layoutId) {
 			'cols' => $cell['width'],
 			'small_screens' => ($cell['small'] ?? false) ?: 'show',
 			'is_header' => !empty($cell['isHeader']),
-			'is_footer' => !empty($cell['isFooter'])
+			'is_footer' => !empty($cell['isFooter']),
+			'in_grid_break' => !empty($cell['grid_break'])
 		],
 		[
 			'layout_id' => $layoutId,

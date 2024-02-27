@@ -626,10 +626,11 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['first_tab/mobile_canvas']['side_note'] = "";
 		}
 		
-		//Lazy load - only works if Mobile Behaviour is set to "Same image".
+		//Lazy load and rollover only work if Mobile Behaviour is set to "Same image".
 		if ($values['first_tab/mobile_behaviour'] != 'mobile_same_image') {
-			$fields['first_tab/advanced_behaviour']['values']['lazy_load']['disabled'] = true;
-			$fields['first_tab/advanced_behaviour']['side_note'] = ze\admin::phrase('Lazy load may not be used if Mobile Behaviour is not set to "Same image".');
+			$fields['first_tab/advanced_behaviour']['values']['lazy_load']['disabled'] =
+			$fields['first_tab/advanced_behaviour']['values']['use_rollover']['disabled'] = true;
+			$fields['first_tab/advanced_behaviour']['side_note'] = ze\admin::phrase('The lazy load and rollover options are only available when using the "Same image" option for mobile browsers.');
 		} else {
 			$fields['first_tab/advanced_behaviour']['values']['lazy_load']['disabled'] = false;
 			unset($fields['first_tab/advanced_behaviour']['side_note']);
@@ -639,12 +640,19 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['first_tab/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
 			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['first_tab/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
-			$fields['first_tab/mobile_behaviour']['note_below'] = ze\admin::phrase('If lazy load is enabled, only "Same image" setting may be used.');
+			$fields['first_tab/mobile_behaviour']['side_note'] = ze\admin::phrase('When lazy loading images, only the "Same image" option for mobile browsers is supported.');
+		
+		} elseif ($values['first_tab/advanced_behaviour'] == 'use_rollover') {
+			$fields['first_tab/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
+			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
+			$fields['first_tab/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = true;
+			$fields['first_tab/mobile_behaviour']['side_note'] = ze\admin::phrase('When using rollover images, only the "Same image" option for mobile browsers is supported.');
+		
 		} else {
 			$fields['first_tab/mobile_behaviour']['values']['mobile_same_image_different_size']['disabled'] = 
 			$fields['first_tab/mobile_behaviour']['values']['mobile_change_image']['disabled'] = 
 			$fields['first_tab/mobile_behaviour']['values']['mobile_hide_image']['disabled'] = false;
-			unset($fields['first_tab/mobile_behaviour']['note_below']);
+			unset($fields['first_tab/mobile_behaviour']['side_note']);
 		}
 		
 		if ($values['title_and_description/set_an_anchor']) {
@@ -694,11 +702,9 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 				//...and display it to the admin...
 				$fields['first_tab/hide_private_item']['note_below'] = '<p>Selected content item privacy setting is:</p><p>"' . ze\contentAdm::privacyDesc($contentItemPrivacy) . '"</p>';
 				$fields['first_tab/hide_private_item']['indent'] = 2;
-				$fields['first_tab/target_blank']['indent'] = 2;
 			} else {
 				//...or don't show the note at all if no content item is selected.
 				$fields['first_tab/hide_private_item']['indent'] = 1;
-				$fields['first_tab/target_blank']['indent'] = 1;
 				unset($fields['first_tab/hide_private_item']['note_below']);
 			}
 		}

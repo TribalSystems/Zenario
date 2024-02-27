@@ -84,36 +84,32 @@ zenario_user_form:
                         This allows extranet users to save their progress on a form and come back later to fill it in. 
                         Only extranet users will be able to see this form.
                     format_onchange: true
-                extranet_module_not_running_snippet:
+                save_and_complete_later_extranet_note:
                     indent: 1
                     ord: 13.1
                     snippet:
                         html: |
-                            <div class="zenario_fbWarning">In order to use this feature, the module "Extranet Base Module and Login" (zenario_extranet) must be running.</div>
+                            <div class="zenario_fbInfo">
+                                <p>If the form is viewed by a logged in extranet user, there will be a "Save" button displayed, and switching steps in a multi-step form will automatically save the data.</p>
+                                <p>Anonymous visitors will see a link to the Login special page, and the "Save and complete later" feature will be unavailable until they log in.</p>
+                            </div>
+                    visible_if: zenarioAB.value('allow_partial_completion')
+                extranet_module_not_running_snippet:
+                    indent: 1
+                    ord: 13.2
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">In order to use this feature, the module "Extranet Base Module and Login" (zenario_extranet) must be running. The form will not be displayed otherwise.</div>
                 scheduled_task_manager_problem:
                     type: hidden
                     hidden: true
                 scheduled_task_manager_problem_message:
                     indent: 1
-                    ord: 13.2
+                    ord: 13.3
                     hidden: true
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">[[scheduled_task_manager_problem]]</div>
-                partial_completion_mode__auto:
-                    ord: 13.2
-                    type: checkbox
-                    label: Auto-save data when user goes to next or previous form step
-                    visible_if: zenarioAB.value('allow_partial_completion')
-                    value: 1
-                    indent: 1
-                partial_completion_mode__button:
-                    ord: 13.3
-                    type: checkbox
-                    label: Show a Save button (appears on each form step)
-                    visible_if: zenarioAB.value('allow_partial_completion')
-                    redraw_onchange: true
-                    indent: 1
                 partial_completion_message:
                     ord: 14
                     label: |
@@ -121,7 +117,7 @@ zenario_user_form:
                     type: text
                     value: 'Your data will be here the next time you open this form.'
                     maxlength: 255
-                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('partial_completion_mode__button')
+                    visible_if: zenarioAB.value('allow_partial_completion')
                     validation:
                         required_if_not_hidden: 'Please enter a message.'
                     indent: 2  
@@ -166,25 +162,27 @@ zenario_user_form:
                 
                 show_page_switcher:
                     ord: 15
-                    label: Show step switcher
+                    label: Show step indicators on multi-step forms
+                    side_note: Most forms have a single step, or page, but Zenario supports forms with multiple steps. To add a step, edit the form's fields, go to the tab bar above the fields, and click + to add a step.
                     type: checkbox
                     redraw_onchange: true
                 page_switcher_navigation:
                     ord: 16
-                    label: 'Step switcher navigation:'
+                    label: 'Navigation between steps:'
                     type: select
                     values:
                         none:
                             ord: 1
-                            label: Show a tab for each step without a hyperlink
+                            label: Show a tab for each step (tabs are indicators only)
                         only_visited_pages:
                             ord: 2
-                            label: Show a tab for each step and show a hyperlink if the user has visited the step
+                            label: Show a tab for each step, and make tabs clicakable where the user has already visited the step
                     visible_if: zenarioAB.value('show_page_switcher');
                     indent: 1
                 enable_summary_page:
                     ord: 17
                     label: 'Show a summary as the final step'
+                    side_note: An additional step will be shown after the defined form steps, with a summary of all fields of the form.
                     type: checkbox
                     redraw_onchange: true
                 enable_summary_page_required_checkbox:
@@ -223,13 +221,149 @@ zenario_user_form:
                 
                 error_message_position:
                     ord: 22
-                    label: 'Error message position:'
+                    label: 'When a field has an error, show error message:'
                     type: select
                     values:
                         above:
-                            label: Above field
+                            label: Above the field
                         below:
-                            label: Below field
+                            label: Below the field
+                
+                handle_referrer_content_item:
+                    ord: 23
+                    label: 'Handle referrer code from Banner plugin on a content item linking to this one ("referrer")'
+                    type: checkbox
+                    note_below: "If a Banner plugin on another content item links to the content item on which this form appears, and its sends the referrer code, the form will refer back to that content item. It will be shown on the form log and sent on any emails."
+                    redraw_onchange: true
+                referrer_content_item_summary_block_title:
+                    ord: 24
+                    indent: 1
+                    type: text
+                    maxlength: 255
+                    label: 'Summary block title:'
+                    value: 'Subject details'
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                    validation:
+                        required_if_not_hidden: 'Please enter the summary block title.'
+                handle_referrer_content_item_title:
+                    ord: 25
+                    indent: 1
+                    label: 'Title'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_title_label:
+                    ord: 26
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Title field label:'
+                    value: 'Title:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_title')
+                    validation:
+                        required_if_not_hidden: 'Please enter the title label.'
+                handle_referrer_content_item_description:
+                    ord: 27
+                    indent: 1
+                    label: 'Description'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_description_label:
+                    ord: 28
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Description field label:'
+                    value: 'Description:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_description')
+                    validation:
+                        required_if_not_hidden: 'Please enter the description label.'
+                handle_referrer_content_item_release_date:
+                    ord: 29
+                    indent: 1
+                    label: 'Release date'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_release_date_label:
+                    ord: 30
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Release date field label:'
+                    value: 'Release date:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_release_date')
+                    validation:
+                        required_if_not_hidden: 'Please enter the release date label.'
+                handle_referrer_content_item_reference:
+                    ord: 31
+                    indent: 1
+                    label: 'Reference'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_reference_label:
+                    ord: 32
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Reference field label:'
+                    value: 'Reference:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_reference')
+                    validation:
+                        required_if_not_hidden: 'Please enter the reference label.'
+                handle_referrer_content_item_deadline:
+                    ord: 33
+                    indent: 1
+                    label: 'Deadline'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_deadline_label:
+                    ord: 34
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Deadline field label:'
+                    value: 'Deadline:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_deadline')
+                    validation:
+                        required_if_not_hidden: 'Please enter the deadline label.'
+                handle_referrer_content_item_alias:
+                    ord: 35
+                    indent: 1
+                    label: 'Alias'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_alias_label:
+                    ord: 36
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Alias field label:'
+                    value: 'Alias:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_alias')
+                    validation:
+                        required_if_not_hidden: 'Please enter the alias label.'
+                handle_referrer_content_item_tag:
+                    ord: 37
+                    indent: 1
+                    label: 'Content item tag'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                referrer_content_item_tag_label:
+                    ord: 38
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Content item tag field label:'
+                    value: 'Content item tag:'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_tag')
+                    validation:
+                        required_if_not_hidden: 'Please enter the content item tag label.'
             
         data:
             label: Actions
@@ -419,7 +553,7 @@ zenario_user_form:
                     values:
                         visible_fields:
                             ord: 1
-                            label: 'Send all visible fields'
+                            label: 'Send all visible fields (recommended)'
                         send_data:
                             ord: 2
                             label: 'Send all form data (unformatted)'
@@ -428,7 +562,7 @@ zenario_user_form:
                         use_template:
                             ord: 3
                             label: 'Send email using template'
-                    value: use_template
+                    value: visible_fields
                     format_onchange: true
                     indent: 2
                     
@@ -462,7 +596,7 @@ zenario_user_form:
                     values:
                         visible_fields:
                             ord: 1
-                            label: 'Send all visible fields'
+                            label: 'Send all visible fields (recommended)'
                         send_data:
                             ord: 2
                             label: 'Send all form data (unformatted)'
@@ -471,7 +605,7 @@ zenario_user_form:
                         use_template:
                             ord: 3
                             label: 'Send email using template'
-                    value: use_template
+                    value: visible_fields
                     format_onchange: true
                     indent: 2
                     
@@ -535,7 +669,7 @@ zenario_user_form:
                     values:
                         visible_fields:
                             ord: 1
-                            label: 'Send all visible fields'
+                            label: 'Send all visible fields (recommended)'
                         send_data:
                             ord: 2
                             label: 'Send all form data (unformatted)'
@@ -543,7 +677,7 @@ zenario_user_form:
                             ord: 3
                             label: 'Send email using template'
                     
-                    value: send_data
+                    value: visible_fields
                     format_onchange: true
                     indent: 1
                     

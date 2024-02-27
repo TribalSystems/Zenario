@@ -35,9 +35,6 @@ zenario__administration:
                     name: API keys
                     desc: API keys and settings for third party services.
                     keywords: key keys api dropbox captcha recaptcha google map maps translate translation tools
-                categories:
-                    name: Categories
-                    desc: Settings for categories.
                 cookies:
                     name: Cookie control
                     desc: "Settings that control when cookies are placed on a visitor's computer."
@@ -45,7 +42,9 @@ zenario__administration:
                 data_protection:
                     name: Data Protection
                     desc: "Settings that control how long data is stored and shows what data is encrypted."
-                    keywords: data protection recording deletion encryption consent log two 2 factor authentication
+                    keywords: >
+                        data protection recording deletion encryption consent log two 2 factor authentication
+                        access code staging code staging mode
                 date_and_time:
                     name: Date and time
                     desc: Set the formats used when displaying dates and times.
@@ -111,10 +110,10 @@ zenario__administration:
                     desc: >
                         Control which JavaScript libraries/font libraries are included site-wide on the front-end.
                     keywords: library libraries js javascript font
-                urls_and_xml_sitemap:
-                    name: URL format, aliases and XML sitemap
-                    desc: Settings that affect how URLs for your site are generated, and to enable an XML sitemap.
-                    keywords: mod_rewrite suffix default behaviour for translations alias language code links
+                search_engine_optimisation:
+                    name: Search engine optimisation
+                    desc: Settings that affect how URLs for your site are generated, and to manage an XML sitemap and robots.txt file.
+                    keywords: mod_rewrite suffix default behaviour for translations alias language code links sitemap xml robots.txt robots robot friendly url urls
                 users:
                     name: Users
                     desc: Settings that affect extranet users & contacts.
@@ -126,7 +125,7 @@ zenario__administration:
                     desc: Settings that affect or speed up web pages.
                     keywords: >
                         compress web pages quickly
-                        CSS file wrappers
+                        CSS file bundles wrappers
                         caching of SQL queries
                         query cache size
                         show SQL errors to visitors

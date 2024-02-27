@@ -160,13 +160,13 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 		$box['tabs']['layout']['notices']['archived_template']['show'] = false;
 		
 		if (!$values['layout_id']) {
-			$fields['skin_id']['hidden'] = true;
+			$fields['skin_name']['hidden'] = true;
 		} else {
-			$fields['skin_id']['hidden'] = false;
+			$fields['skin_name']['hidden'] = false;
 			
-			$fields['skin_id']['value'] =
-			$fields['skin_id']['current_value'] =
-				ze\content::layoutSkinId($values['layout_id']);
+			$skinId = ze\content::layoutSkinId($values['layout_id']);
+			
+			$fields['skin_name']['value'] = $fields['skin_name']['current_value'] = ze\row::get('skins', 'display_name', $skinId);
 			
 			if (ze\row::get('layouts', 'status', $values['layout_id']) != 'active') {
 				$box['tabs']['layout']['notices']['archived_template']['show'] = true;

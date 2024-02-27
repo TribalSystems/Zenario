@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $codeVersion = ze\db::codeVersion();
 $v = $w = 'v='. $codeVersion;
 
-if (!\ze::$cacheWrappers) {
+if (!\ze::$cacheBundles) {
 	$w .= '&amp;no_cache=1';
 }
 
@@ -38,7 +38,7 @@ $isWelcome = $mode === true || $mode === 'welcome';
 $isOrganizer = $mode === 'organizer';
 $httpUserAgent = ($_SERVER['HTTP_USER_AGENT'] ?? '');
 $isAdmin = \ze::isAdmin();
-$css_wrappers = \ze::setting('css_wrappers');
+$bundle_skins = \ze::setting('bundle_skins');
 
 
 //In admin mode, completely reject anything that looks like Internet Explorer, and
@@ -63,27 +63,6 @@ if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcome)) {
 }
 
 
-//Work out what's on this page, which wrappers we need to include, and which Plugin/Swatches need to be requested
-
-//Send the id of each plugin on the page to a JavaScript wrapper to include their JavaScript
-//Send the plugin name of each
-if (!empty(\ze::$slotContents) && is_array(\ze::$slotContents)) {
-	$comma = '';
-	$comma2 = '';
-	$JavaScriptOnPage = [];
-	$themesOnPage = [];
-	
-	foreach(\ze::$slotContents as &$slot) {
-		
-		if ($slot->moduleClassName() && $slot->class()) {
-			if (empty($JavaScriptOnPage[$slot->moduleClassName()])) {
-				$JavaScriptOnPage[$slot->moduleClassName()] = true;
-				\ze::$pluginJS .= $comma. $slot->moduleId();
-				$comma = ',';
-			}
-		}
-	}
-}
 
 
 if ($isWelcome || ($isOrganizer && \ze::setting('organizer_favicon') == 'zenario')) {
@@ -122,7 +101,7 @@ $useFA = \ze::setting('lib.fontawesome');
 
 if ($useFA == 'bc') {
 	echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/fontawesome.wrapper.css.php?', $w, '"/>';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/fontawesome.bundle.css.php?', $w, '"/>';
 
 } elseif ($useFA || $isWelcome || $isAdmin) {
 	echo '
@@ -130,26 +109,41 @@ if ($useFA == 'bc') {
 }
 
 
+//Add the CSS rules for colorbox, if anything on the page uses it.
+if ($isWelcome
+ || $isAdmin
+ || ze::setting('lib.colorbox')
+ || isset(ze::$jsLibs['zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js'])) {
+	echo '
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/colorbox/colorbox.min.css?', $v, '"/>';
+}
+
+//Add the CSS rules for jQuery UI, if anything on the page uses it.
+if ($isWelcome
+ || $isAdmin
+ || ze::setting('lib.jqueryui.theme')
+ || isset(ze::$jsLibs['zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js'])
+ || isset(ze::$jsLibs['zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable.min.js'])) {
+	echo '
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.min.css?', $v, '"/>';
+}
+
+
+
 //Add CSS needed for the CMS in Admin mode
 if ($isWelcome || $isAdmin) {
-	if (!\ze::$skinId) {
-		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/colorbox/colorbox.css?', $v, '"/>';
-	}
-	
 	echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.css?', $v, '"/>
 <link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/admin_print.min.css?', $v, '"/>';
 	
 	//Add the CSS for admin mode... unless this is a layout preview
 	if ($mode != 'layout_preview') {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.wrapper.css.php?', $w, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.bundle.css.php?', $w, '"/>';
 	}
 	
 	if ($includeOrganizer) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/organizer.wrapper.css.php?', $w, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/organizer.bundle.css.php?', $w, '"/>';
 		
 		if ($isOrganizer) {
 			echo '
@@ -166,7 +160,7 @@ if ($isWelcome || $isAdmin) {
 		
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.wrapper.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.bundle.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
 		}
 	}
 }
@@ -182,9 +176,9 @@ if (\ze::$layoutId && ($minFile = \ze\content::layoutCssPath(\ze::$layoutId))) {
 //Add the CSS for a skin, if there is a skin
 if (\ze::$skinId) {
 	
-	//Check if wrappers are enabled for skins.
-	//(Note that wrappers are forced off when viewing a preview of layouts/CSS.)
-	if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappers == 'visitors_only' && !$isAdmin))) {
+	//Check if bundles are enabled for skins.
+	//(Note that bundles are forced off when viewing a preview of layouts/CSS.)
+	if ($overrideFrameworkAndCSS === false && ($bundle_skins == 'on' || ($bundle_skins == 'visitors_only' && !$isAdmin))) {
 	
 		//Check if we have a minified version of the skin and use that if possible.
 		//However we should only use a minified version if the skin files have not had any changes since the minified version was created.
@@ -194,16 +188,16 @@ if (\ze::$skinId) {
 			echo '
 <link rel="stylesheet" type="text/css" href="', $absURL. $skinPath, '"/>';
 	
-		//Otherwise link to skin.cache_wrapper.css.php to generate a non-minified version
+		//Otherwise link to skin.bundle.css.php to generate a non-minified version
 		} else {
 			echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/skin.cache_wrapper.css.php?', $v, '&amp;id=', (int) \ze::$skinId, '"/>';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/skin.bundle.css.php?', $v, '&amp;id=', (int) \ze::$skinId, '"/>';
 		}
 	
 	} else {
 		
 		//Watch out for the variables from the CSS preview, and translate them to the format
-		//needed by \ze\wrapper::includeSkinFiles() if we see them there.
+		//needed by \ze\bundle::includeSkinFiles() if we see them there.
 		$overrideCSS = false;
 		if ($overrideFrameworkAndCSS !== false) {
 			$files = [];
@@ -258,7 +252,7 @@ if (\ze::$skinId) {
 			}
 		}
 		
-		\ze\wrapper::includeSkinFiles(\ze::$skinId, $v, $overrideCSS);
+		\ze\bundle::includeSkinFiles(\ze::$skinId, $v, $overrideCSS);
 	}
 }
 
@@ -295,7 +289,7 @@ if ($isAdmin) {
 	
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.wrapper.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;admin_frontend=1" media="screen" />';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.bundle.css.php?', $w, '&amp;ids=', $cssModuleIds, '&amp;admin_frontend=1" media="screen" />';
 		}
 	}
 	
@@ -434,5 +428,4 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	
 }
 
-//Used by service workers to cache wrapper files
 echo '<script type="text/javascript">window.zenarioCodeVersion = "', $codeVersion, '"</script>';

@@ -30,7 +30,6 @@ namespace ze;
 
 class categoryAdm {
 
-	//Formerly "setContentItemCategories()"
 	public static function setContentItemCategories($cID, $cType, $categories) {
 		$equivId = \ze\content::equivId($cID, $cType);
 	
@@ -44,7 +43,6 @@ class categoryAdm {
 			}
 		}
 	}
-	//Formerly "addSingleContentItemToCategories()"
 	public static function addSingleContentItemToCategories($cID, $cType, $categories) {
 		$equivId = \ze\content::equivId($cID, $cType);
 	
@@ -58,7 +56,6 @@ class categoryAdm {
 			}
 		}
 	}
-	//Formerly "addContentItemToCategories()"
 	public static function addContentItemToCategories($cID, $cType, $categories) {
 		$equivId = \ze\content::equivId($cID, $cType);
 	
@@ -73,7 +70,6 @@ class categoryAdm {
 		}
 	}
 
-	//Formerly "removeContentItemCategories()"
 	public static function removeContentItemCategories($cID, $cType, $categories) {
 		$equivId = \ze\content::equivId($cID, $cType);
 		foreach ($categories as $value) {
@@ -85,7 +81,6 @@ class categoryAdm {
 
 
 
-	//Formerly "setupCategoryCheckboxes()"
 	public static function setupFABCheckboxes(&$field, $showTotals = false, $cID = false, $cType = false, $cVersion = false) {
 		$field['values'] = [];
 	
@@ -140,7 +135,6 @@ class categoryAdm {
 		}
 	}
 
-	//Formerly "countCategoryChildren()"
 	public static function countChildren($id, $recurseCount = 0) {
 		$count = 0;
 		++$recurseCount;
@@ -160,7 +154,6 @@ class categoryAdm {
 		return $count;
 	}
 
-	//Formerly "getCategoryAncestors()"
 	public static function ancestors($id, &$categoryAncestors, $recurseCount = 0) {
 		$recurseCount++;
 	
@@ -173,7 +166,6 @@ class categoryAdm {
 		}
 	}
 
-	//Formerly "getCategoryPath()"
 	public static function path($id) {
 		$path = '';
 		$categoryAncestors = [];
@@ -190,7 +182,6 @@ class categoryAdm {
 
 
 
-	//Formerly "checkIfCategoryExists()"
 	public static function exists($categoryName, $catId = false, $parentCatId = false) {
 
 		$sql = "SELECT name

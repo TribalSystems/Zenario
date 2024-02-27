@@ -27,9 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$v = $w = 'v='. \ze\db::codeVersion();
+$v = $w = 'v='. ($codeVersion = \ze\db::codeVersion());
 
-if (!ze::$cacheWrappers) {
+if (!ze::$cacheBundles) {
 	$w .= '&amp;no_cache=1';
 }
 
@@ -40,6 +40,8 @@ $isAdmin = ze::isAdmin();
 if ($absURL = \ze\link::absoluteIfNeeded(!$isWelcome)) {
 	$prefix = $absURL. 'zenario/';
 }
+
+$bundlesNeedAbsPath = $absURL || $prefix !== 'zenario/';
 
 if (!$isAdmin
  && !$isWelcome
@@ -58,25 +60,13 @@ if (!$isAdmin
 echo '
 ', $scriptTag, ' src="', $prefix, 'libs/yarn/jquery/dist/jquery.min.js?', $v, '"></script>
 ', $scriptTag, ' src="', $prefix, 'libs/manually_maintained/mit/jqueryui/jquery-ui.visitor.min.js?', $v, '"></script>
-', $scriptTag, ' src="', $prefix, 'js/visitor.wrapper.js.php?', $w;
+', $scriptTag, ' src="';
 
-//Have the option to include some common libraries in with the main wrapper, if enabled in the site settings.
-$libs = [];
-if (ze::setting('lib.colorbox')) {
-	$libs[] = 'cb';
-}
-if (ze::setting('lib.doubletaptogo')) {
-	$libs[] = 'dt';
-}
-if (ze::setting('lib.modernizr')) {
-	$libs[] = 'm';
+if ($bundlesNeedAbsPath) {
+	echo htmlspecialchars(\ze\link::absolute());
 }
 
-if ($libs !== []) {
-	echo '&amp;libs='. implode(',', $libs);
-}
-
-echo '"></script>';
+echo ze\bundle::visitorJS(false, $codeVersion), '"></script>';
 
 
 $currentLangId = \ze\content::currentLangId();
@@ -128,7 +118,6 @@ if (ze::$visLang && ze::$visLang != $currentLangId) {
 	echo ',"', \ze\escape::js(ze::$visLang), '"';
 }
 
-
 echo ');', $inlineStop, '</script>';
 
 
@@ -147,26 +136,30 @@ if ($isAdmin) {
 </div>';
 	
 	//Note down that we need various extra libraries in admin mode...
-	ze::requireJsLib('zenario/js/ace.wrapper.js.php');
+	ze::requireJsLib('zenario/js/ace.bundle.js.php');
 	ze::requireJsLib('zenario/libs/yarn/rcrop/dist/rcrop.min.js', 'zenario/libs/yarn/rcrop/dist/rcrop.min.css');
-	//Debug version of the above line
-	//ze::requireJsLib('zenario/libs/yarn/rcrop/src/js/rcrop.js', 'zenario/libs/yarn/rcrop/dist/rcrop.css');
+	
+	//Add libraries for TinyMCE 6
+	ze::requireJsLib('zenario/libs/yarn/tinymce/tinymce.min.js');
+	ze::requireJsLib('zenario/libs/yarn/@tinymce/tinymce-jquery/dist/tinymce-jquery.min.js');
+	ze::requireJsLib('zenario/js/tinymce.integration.min.js');
+	
 }
 
 
 if ($isAdmin || $isWelcome) {
 	//...or on the admin-login screen
-	ze::requireJsLib('zenario/js/tuix.wrapper.js.php');
+	ze::requireJsLib('zenario/js/tuix.bundle.js.php');
 	ze::requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 	ze::requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
 	ze::requireJsLib('zenario/js/admin.microtemplates_and_phrases.js.php');
-	ze::requireJsLib('zenario/js/admin.wrapper.js.php');
+	ze::requireJsLib('zenario/js/admin.bundle.js.php');
 	ze::requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 	\ze::requireJsLib('zenario/js/password_functions.min.js');
 }
 
 
-//Catch the case where a dev has requested a specific library that's already being included in the main wrapper
+//Catch the case where a dev has requested a specific library that's already being included in the main bundle
 if (ze::setting('lib.colorbox')) {
 	unset(ze::$jsLibs['zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js']);
 }
@@ -252,45 +245,15 @@ if ($isAdmin && !$isWelcome) {
 
 
 //Add JS needed for modules
-if (!$isWelcome && ze::$pluginJS) {
-	if ($isAdmin) {
-		ze::$pluginJS .= '&amp;admin=1';
-	}
-	
+if (!$isWelcome) {
 	echo '
-', $scriptTag, ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', ze::$pluginJS, '"></script>';
-}
+', $scriptTag, ' src="';
 
-
-//Add JS needed for modules in Admin Mode in the frontend
-if ($isAdmin && ze::$cID) {
-	$jsModuleIds = '';
-	foreach (\ze\module::runningModules() as $module) {
-		if (ze::moduleDir($module['class_name'], 'js/admin_frontend.js', true)
-		 || ze::moduleDir($module['class_name'], 'js/admin_frontend.min.js', true)) {
-			$jsModuleIds .= ($jsModuleIds? ',' : ''). $module['id'];
-		}
+	if ($bundlesNeedAbsPath) {
+		echo htmlspecialchars(\ze\link::absolute());
 	}
 	
-	if ($jsModuleIds) {
-		echo '
-', $scriptTag, ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', $jsModuleIds, '&amp;admin_frontend=1"></script>';
-	}
-	
-	//If we've just made a draft, and there's a callback, perform the callback
-	if (!empty($_SESSION['zenario_draft_callback'])) {
-		echo '
-		', $scriptTag, '>
-			$(document).ready(function() {
-				zenarioA.draftDoCallback(
-					"', \ze\escape::js($_SESSION['zenario_draft_callback']), '",
-					', (int) ($_SESSION['zenario_draft_callback_scroll_pos'] ?? 0), '
-				);
-			});
-		</script>';
-		
-		unset($_SESSION['zenario_draft_callback']);
-	}
+	echo ze\bundle::pluginJS(false, $codeVersion, false, false), '"></script>';
 }
 
 //Are there plugins on this page..?
@@ -379,8 +342,9 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 				
 				if ($isAdmin) {
 					$isMenu = $slot->shownInMenuMode()? 1 : 0;
+					$isMissing = $slot->missing()? 1 : 0;
 					
-					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled, ',', (int) $isMenu;
+					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled, ',', (int) $isMenu, ',', (int) $isMissing;
 				} elseif ($isVersionControlled) {
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
 				} elseif ($beingEdited) {
@@ -499,4 +463,11 @@ if (ze::$cID && $includeAdminToolbar && $isAdmin && !$isWelcome) {
 	
 	echo '
 ', $scriptTag, ' src="', $prefix, 'admin/admin_toolbar.ajax.php?', $v, '&amp;', $params, '"></script>';
+}
+
+
+
+if (!empty(ze::$dumps)) {
+	echo "\n", $scriptTag, '>', $inlineStart, 'zenario.dumps(', json_encode(ze::$dumps), ');', $inlineStop, '</script>';
+	ze::$dumps = [];
 }

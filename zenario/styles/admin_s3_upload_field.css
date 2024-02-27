@@ -138,18 +138,15 @@ form {
 	outline:0;
 	outline:none;
 	-webkit-box-shadow: 0 0 0 1px #FF5733;
-	-moz-box-shadow: 0 0 0 1px #FF5733;
 	box-shadow: 0 0 0 1px #FF5733;
 	border: solid 1px #FF5733;
 }
 
 .upload_file_msg_container input:hover {
 	-webkit-border-radius: 3px/2px 2px 3px 3px;
-	-moz-border-radius: 3px/2px 2px 3px 3px;
 	border-radius: 3px/2px 2px 3px 3px;
 	background-color: #ba0505;
 	-webkit-box-shadow: 0 0 4px rgba(0,0,0,.45);
-	-moz-box-shadow: 0 0 4px rgba(0,0,0,.45);
 	box-shadow: 0 0 4px rgba(0,0,0,.45);
 	border: solid 1px #8d0303;
 }
@@ -162,7 +159,6 @@ form {
 	border: 1px solid #dadada !important;
 	color: #6F6F6F !important;
 	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
 	box-shadow: none;
 	cursor:default;
 }
@@ -170,7 +166,6 @@ form {
 .upload_file_msg_container input[disabled]:focus,
 .upload_file_msg_container input[readonly]:focus {
 	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
 	box-shadow: none;
 	border: solid 1px #dadada;
 }

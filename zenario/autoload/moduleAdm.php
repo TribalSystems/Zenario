@@ -34,7 +34,6 @@ class moduleAdm {
 
 
 
-	//Formerly "siteEdition()"
 	public static function siteEdition() {
 		if ($edition = \ze\site::description('edition')) {
 			$edition = explode(' ', $edition);
@@ -43,7 +42,6 @@ class moduleAdm {
 		return 'Community';
 	}
 
-	//Formerly "moduleDescriptionFilePath()"
 	public static function descriptionFilePath($moduleName) {
 		if (($path = \ze::moduleDir($moduleName, 'description.yaml', true))
 		 || ($path = \ze::moduleDir($moduleName, 'description.yml', true))
@@ -55,7 +53,6 @@ class moduleAdm {
 	}
 
 
-	//Formerly "loadModuleDescription()"
 	public static function loadDescription($moduleName, &$tags) {
 	
 		if (!\ze::moduleDir($moduleName, '', true)) {
@@ -119,7 +116,6 @@ class moduleAdm {
 		return true;
 	}
 
-	//Formerly "readModuleDependencies()"
 	public static function readDependencies($targetModuleClassName, &$desc) {
 		$modules = [];
 	
@@ -157,7 +153,6 @@ class moduleAdm {
 	}
 
 
-	//Formerly "runModule()"
 	public static function run($id, $test) {
 		$desc = false;
 		$missingModules = [];
@@ -271,14 +266,12 @@ class moduleAdm {
 		}
 	}
 
-	//Formerly "suspendModule()"
 	public static function suspend($id) {
 		\ze\moduleAdm::checkForDependenciesBeforeSuspending(\ze\module::details($id));
 		\ze\row::update('modules', ['status' => 'module_suspended'], ['id' => $id, 'status' => 'module_running']);
 	}
 
 
-	//Formerly "addNewModules()"
 	public static function addNew($skipIfFilesystemHasNotChanged = true, $runModulesOnInstall = false, $dbUpdateSafeMode = false) {
 		$moduleDirs = \ze::moduleDirs([
 			'module_code.php',
@@ -395,7 +388,6 @@ class moduleAdm {
 
 
 
-	//Formerly "suspendModuleCheckForDependencies()"
 	public static function checkForDependenciesBeforeSuspending($module) {
 	
 		//Check that the core does not depend on the module
@@ -434,7 +426,6 @@ class moduleAdm {
 	}
 
 
-	//Formerly "uninstallModuleCheckForDependencies()"
 	public static function checkForDependenciesBeforeUninstalling($module) {
 		//Check that the module has no dependencies
 		$sql = "
@@ -456,7 +447,6 @@ class moduleAdm {
 	}
 
 	//Completely removes all traces of a module from a site.
-	//Formerly "uninstallModule()"
 	public static function uninstall($moduleId, $uninstallRunningModules = false) {
 
 		$module = \ze\module::details($moduleId);
@@ -594,14 +584,39 @@ class moduleAdm {
 			}
 			
 		}
-
+		
+		//In 9.6, we added logic to remove any "suggest" connections with menu hierarchy
+		//if a ctype module is uinstalled.
+		$contentModules = [
+			'zenario_ctype_audio' => 'audio',
+			'zenario_ctype_blog' => 'blog',
+			'zenario_ctype_document' => 'document',
+			'zenario_ctype_event' => 'event',
+			'zenario_ctype_job_vacancies' => 'vacancy',
+			'zenario_ctype_news' => 'news',
+			'zenario_ctype_picture' => 'picture',
+			'zenario_ctype_testimonial' => 'testimonial',
+			'zenario_ctype_video' => 'video'
+		];
+		
+		$contentModuleClassNames = array_keys($contentModules);
+		if (in_array($module['class_name'], $contentModuleClassNames)) {
+			if (!empty($contentModules[$module['class_name']])) {
+				$contentType = $contentModules[$module['class_name']];
+				
+				$sql = "
+					UPDATE " . DB_PREFIX . "menu_nodes
+					SET	`restrict_child_content_types` = NULL
+					WHERE `restrict_child_content_types` = '" . \ze\escape::sql($contentType) . "'";
+				\ze\sql::update($sql);
+			}
+		}
 	}
 
 
 
 
 	//Attempt to check if this module can work with instances
-	//Formerly "checkIfModuleUsesPluginInstances()"
 	public static function isPluggable($moduleId) {
 		return \ze\row::get('modules', 'is_pluggable', $moduleId);
 	}
@@ -610,7 +625,6 @@ class moduleAdm {
 
 
 	//Get the XML description of a module, and apply it
-	//Formerly "setupModuleFromDescription()"
 	public static function setupFromDescription($moduleClassName) {
 		$desc = false;
 		if (!\ze\moduleAdm::loadDescription($moduleClassName, $desc)
@@ -733,8 +747,14 @@ class moduleAdm {
 					} else {
 						$logic = $defaultLogic;
 					}
-			
-			
+					
+					$listingPolicy = 'either';
+					if (!empty($page['must_be_listed'])) {
+						$listingPolicy = 'must_be_listed';
+					} elseif (!empty($page['must_be_unlisted'])) {
+						$listingPolicy = 'must_be_unlisted';
+					}
+					
 					//Check if this special page already exists
 					if (!$specialPage = \ze\row::get('special_pages', true, ['page_type' => $page['page_type']])) {
 						$specialPageChanges = true;
@@ -746,7 +766,8 @@ class moduleAdm {
 								'allow_hide' => \ze\ring::engToBoolean($page['allow_hide'] ?? 0),
 								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0),
 								'page_type' => $page['page_type'],
-								'allow_search' => \ze\ring::engToBoolean($page['allow_search'] ?? 0)
+								'allow_search' => \ze\ring::engToBoolean($page['allow_search'] ?? 0),
+								'listing_policy' => $listingPolicy
 							]
 						);
 			
@@ -759,7 +780,8 @@ class moduleAdm {
 								'logic' => $logic,
 								'allow_hide' => \ze\ring::engToBoolean($page['allow_hide'] ?? 0),
 								'publish' => \ze\ring::engToBoolean($page['publish'] ?? 0),
-								'allow_search' => \ze\ring::engToBoolean($page['allow_search'] ?? 0)
+								'allow_search' => \ze\ring::engToBoolean($page['allow_search'] ?? 0),
+								'listing_policy' => $listingPolicy
 							],
 							[
 								'page_type' => $page['page_type']
@@ -821,9 +843,7 @@ class moduleAdm {
 							log_on_action = ". \ze\ring::engToBoolean($job['log_on_action'] ?? false). ",
 							log_on_no_action = ". \ze\ring::engToBoolean($job['log_on_no_action'] ?? false). ",
 							email_on_action = ". \ze\ring::engToBoolean($job['email_on_action'] ?? false). ",
-							email_on_no_action = ". \ze\ring::engToBoolean($job['email_on_no_action'] ?? false). ",
 							email_address_on_action = '". \ze\escape::sql(EMAIL_ADDRESS_GLOBAL_SUPPORT). "',
-							email_address_on_no_action = '". \ze\escape::sql(EMAIL_ADDRESS_GLOBAL_SUPPORT). "',
 							email_address_on_error = '". \ze\escape::sql(EMAIL_ADDRESS_GLOBAL_SUPPORT). "'";
 					\ze\sql::update($sql);
 				}
@@ -1026,7 +1046,6 @@ class moduleAdm {
 		return true;
 	}
 
-	//Formerly "scanModulePermissionsInTUIXDescription()"
 	public static function scanPermissionsFromDescription($moduleClassName, &$perms, &$labels) {
 		$perms = [];
 		$labels = [];
@@ -1071,7 +1090,6 @@ class moduleAdm {
 
 
 	//Set up the Content Types of a module
-	//Formerly "setupModuleContentTypesFromXMLDescription()"
 	public static function setupContentTypesFromDescription($moduleName) {
 		$desc = false;
 		if (!\ze\moduleAdm::loadDescription($moduleName, $desc)
@@ -1121,7 +1139,6 @@ class moduleAdm {
 							$layoutDetails['name'] = (string) $type['content_type_name_en'];
 						}
 						
-						//var_dump('layoutAdm::save', $layoutDetails, $layoutId);
 						\ze\layoutAdm::save($layoutDetails, $layoutId);
 						
 						
@@ -1137,41 +1154,57 @@ class moduleAdm {
 							$cols = 12;
 						}
 						
-						//Add a grid-break called "Gridbreak_Body", then a slot called "Slot_Main", to the layout
-						$data['cells'] = [
-							['width' => $cols, 'grid_break' => true, 'grid_css_class' => 'Gridbreak_Body'],
-							['width' => $cols, 'slot' => true, 'name' => $slotName = 'Slot_Main']
+						
+						$pluginsToAdd = [];
+						
+						if (\ze\ring::engToBoolean($desc['is_pluggable'])) {
+							if (\ze\ring::engToBoolean($desc['can_be_version_controlled'])) {
+								$pluginsToAdd['Slot_Data'] = [
+									'versionControlled' => true,
+									'moduleId' => $moduleId
+								];
+							} else {
+								$pluginsToAdd['Slot_Data'] = [
+									'versionControlled' => false,
+									'moduleId' => $moduleId
+								];
+							}
+						}
+						$pluginsToAdd['Slot_Main'] = [
+							'versionControlled' => true,
+							'moduleId' => \ze\module::id('zenario_wysiwyg_editor')
 						];
 						
+						
+						
+						//Add a grid-break called "Gridbreak_Body", then a slot called "Slot_Main", to the layout
+						$data['cells'] = [
+							['width' => $cols, 'grid_break' => true, 'grid_css_class' => 'Gridbreak_Body']
+						];
+						
+						foreach ($pluginsToAdd as $slotName => $slotDetails) {
+							$data['cells'][] = ['width' => $cols, 'slot' => true, 'name' => $slotName];
+						}
+						
 						//Save the grid layout
-						//var_dump('gridAdm::updateHeadAndFootAndSaveLayoutData', $layoutId, $data);
 						\ze\gridAdm::updateHeadAndFootAndSaveLayoutData($layoutId, $data);
-					
-				
-						//Put an instance of this Plugin on that template, if this module uses instances
-						//Otherwise put an instance of the WYSIWYG Plugin on that template, if it's running
-						$addingEditor = false;
-						if ((\ze\ring::engToBoolean($desc['is_pluggable']) && ($addmoduleId = $moduleId))
-						 || (($addmoduleId = (\ze\module::id('zenario_wysiwyg_editor'))) && ($addingEditor = true))) {
-					
-							//Insert this Plugin onto the page
-							if ($addingEditor || \ze\ring::engToBoolean($desc['can_be_version_controlled'])) {
-								//Prefer a Wireframe Plugin if the Plugin allows it
-								\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, $addmoduleId);
-					
+						
+						foreach ($pluginsToAdd as $slotName => $slotDetails) {
+							if ($slotDetails['versionControlled']) {
+								\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, $slotDetails['moduleId']);
 							} else {
 								//Otherwise set a Reusable Instance there
-								if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $addmoduleId, 'content_id' => 0])) {
+								if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $slotDetails['moduleId'], 'content_id' => 0])) {
 									//Create a new reusable instance if one does not already exist
 									$errors = [];
 									\ze\pluginAdm::create(
-										$addmoduleId,
+										$slotDetails['moduleId'],
 										$desc['default_instance_name'],
 										$instanceId,
 										$errors, $onlyValidate = false, $forceName = true);
 								}
 						
-								\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $addmoduleId);
+								\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $slotDetails['moduleId']);
 							}
 						}
 					}
@@ -1188,7 +1221,6 @@ class moduleAdm {
 
 
 	//Read the pagination-types of a module from an XML description
-	//Formerly "getPluginPaginationTypesFromDescription()"
 	public static function getPaginationTypesFromDescription($moduleName, &$paginationTypes) {
 	
 		$paginationTypes = [];

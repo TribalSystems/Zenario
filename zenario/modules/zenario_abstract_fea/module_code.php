@@ -281,7 +281,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 	
 	public function requireJSLibsForFEAs() {
-		$this->requireJsLib('zenario/js/tuix.wrapper.js.php');
+		$this->requireJsLib('zenario/js/tuix.bundle.js.php');
+		$this->requireJsLib('zenario/js/zenario/js/fea.min.js');
 		$this->requireJsPhrases('zenario/js/visitor.phrases.js.php');
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 	}
@@ -662,7 +663,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	
 	protected function includeEditor() {
 		if (!ze::isAdmin()) {
-			$this->requireJsLib('zenario/js/ace.wrapper.js.php');
+			$this->requireJsLib('zenario/js/ace.bundle.js.php');
 			$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
 			$this->requireJsLib('zenario/libs/yarn/spectrum-colorpicker/spectrum.min.js', 'zenario/libs/yarn/spectrum-colorpicker/spectrum.min.css');
 		}

@@ -44,6 +44,8 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 	protected $documentEnvelopesModuleIsRunning;
 	protected $vimeoPrivacySettingsEnabled;
 	
+	protected $videoCategories;
+	
 	public function init() {
 		$this->mode = $this->getMode();
 		

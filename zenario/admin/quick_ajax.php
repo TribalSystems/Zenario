@@ -33,12 +33,6 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	//This request has no purpose other than to start the session and keep the session
 	//from timing out
 
-//Remember a toast message that was being displayed shortly before a page reload
-} elseif (isset($_POST['_remember_toast']) && json_decode($_POST['_remember_toast'])) {
-	//N.b. json_decode() above is just to validate the data
-	
-	$_SESSION['_remember_toast'] = $_POST['_remember_toast'];
-
 
 } elseif (isset($_POST['_draft_set_callback'])) {
 	
@@ -197,6 +191,8 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 					switch ($data[$tagId]['content']['status']) {
 						case 'published':
 						case 'published_with_draft':
+						case 'unlisted':
+						case 'unlisted_with_draft':
 							$linkStatus = $data[$tagId]['content']['status'];
 						
 							if ($perms === ZENARIO_401_NOT_LOGGED_IN) {

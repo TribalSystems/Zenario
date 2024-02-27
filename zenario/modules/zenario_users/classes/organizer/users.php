@@ -85,6 +85,12 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
+		
+		
 		if (!ze\module::isRunning('zenario_extranet')) {
 			$panel['collection_buttons']['add']['label'] = ze\admin::phrase('Create a contact');
 			unset($panel['item_buttons']['convert_to_user']);
@@ -183,10 +189,15 @@ class zenario_users__organizer__users extends zenario_users {
 		if ($refinerName == 'group_members') {
 			$groupDetails = zenario_users::getGroupDetails($refinerId);
 				
-			$panel['title'] = ze\admin::phrase('Members of the Group "[[label]]"', $groupDetails);
-			$panel['no_items_message'] = ze\admin::phrase('This Group has no members.');
+			$panel['title'] = ze\admin::phrase('Members of the group "[[label]]"', $groupDetails);
+			$panel['no_items_message'] = ze\admin::phrase('This group has no members.');
 			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['message'] = str_replace(['<<', '>>'], ['[[', ']]'], ze\admin::phrase('Are you sure you wish to remove the user/contact "<<identifier>>" from the group "[[label]]"?', ['label' => $groupDetails['label']]));
 			ze\lang::applyMergeFields($panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['multiple_select_message'], ['label' => $groupDetails['label'], 'item_count' => '[[item_count]]']);
+		} elseif ($refinerName == 'smart_group') {
+			$groupDetails = ze\smartGroup::details($refinerId);
+				
+			$panel['title'] = ze\admin::phrase('Members of smart group "[[name]]"', $groupDetails);
+			$panel['no_items_message'] = ze\admin::phrase('This smart group has no members.');
 		}
 	
 		//Don't show the "Create User" or "Delete User" or "Import" buttons on a refiner

@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.bundle.js.php for step (3).
 */
 
 
@@ -109,11 +109,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	//Show Growl message if saved changes
 	if (thus.changesSaved) {
 		thus.changesSaved = false;
-		var toast = {
-			message_type: 'success',
-			message: 'Your changes have been saved!'
-		};
-		zenarioA.toast(toast);
+		zenarioA.notification(phrase.changesSaved);
 	}
 };
 
@@ -1334,7 +1330,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 						} else {
 							tags.tabs[tab].fields.mandatory_condition_checkboxes_field_value.hidden = true;
 							if (conditionField.type != 'checkbox' && conditionField.type != 'group') {
-							    tags.tabs[tab].fields.mandatory_condition_field_type.values.mandatory_if_one_of = {label: 'Mandatory if one of...'};
+							    tags.tabs[tab].fields.mandatory_condition_field_type.values.mandatory_if_one_of = {label: 'Mandatory if at least one of...'};
 								tags.tabs[tab].fields.mandatory_condition_field_value.values = JSON.parse(JSON.stringify(conditionField.lov));
 								tags.tabs[tab].fields.mandatory_condition_field_value.empty_value = '-- Any value --';
 								if (item.mandatory_condition_field_type == 'mandatory_if_one_of') {
@@ -1395,8 +1391,9 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 				
 				//Update calculation code preview
 				if (item.type == 'calculated') {
+					var displayHTML = false;
 					if (item.calculation_code) {
-						tags.tabs[tab].fields.calculation_code.value = thus.getCalculationCodeDisplay(item.calculation_code);
+						tags.tabs[tab].fields.calculation_code.value = thus.getCalculationCodeDisplay(item.calculation_code, displayHTML);
 					}
 				}
 				
@@ -1425,7 +1422,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 				}
 				
 				if (item.custom_code_name) {
-					tags.tabs[tab].fields.merge_name.snippet.html = '<div><b>Merge names:</b> ' + item.custom_code_name + ', ' + thus.getFormFieldMergeName(item.id) + '</div>';
+					tags.tabs[tab].fields.merge_name.snippet.html = '<div><b>Merge names:</b> ' + htmlspecialchars(item.custom_code_name) + ', ' + thus.getFormFieldMergeName(item.id) + '</div>';
 				} else {
 					tags.tabs[tab].fields.merge_name.snippet.html = '<div><b>Merge name:</b> ' + thus.getFormFieldMergeName(item.id) + '</div>';
 				}
@@ -1564,7 +1561,7 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 					    
 					    }
 					    else if(item.mandatory_condition_field_type == "mandatory_if_one_of"){
-                            error =0;
+                            error = 0;
                             if(_.isEmpty(item.mandatory_condition_checkboxes_field_value) && item.mandatory_condition_field_id!=""){
                                 tags.tabs[tab].fields.mandatory_condition_field_value.error = "Please select a checkbox for mandatory condition.";
                             }
@@ -1697,12 +1694,30 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 				
 				//Custom code names must be unique
 				if (item.custom_code_name) {
-					var formFields = thus.getOrderedFields();
-					for (var i = 0; i < formFields.length; i++) {
-						var field = formFields[i];
-						if (field.id != item.id && (item.custom_code_name == field.custom_code_name)) {
-							tags.tabs[tab].fields.custom_code_name.error = 'Another field already has this code name on this form.';
+					let pattern = /[a-zA-Z0-9\_\-]+$/;
+					
+					if (!pattern.test(item.custom_code_name)) {
+						tags.tabs[tab].fields.custom_code_name.error = 'Custom field names may only contain capital and lower case letters, numbers, dashes and underscores.';
+					} else {
+						var formFields = thus.getOrderedFields();
+						for (var i = 0; i < formFields.length; i++) {
+							var field = formFields[i];
+							if (field.id != item.id && (item.custom_code_name == field.custom_code_name)) {
+								tags.tabs[tab].fields.custom_code_name.error = 'Another field already has this code name on this form.';
+							}
 						}
+					}
+				}
+				
+				if (item.css_classes) {
+					if (item.css_classes.indexOf('<') != -1 || item.css_classes.indexOf('>') != -1) {
+						tags.tabs[tab].fields.css_classes.error = 'CSS classes may not contain < or >.';
+					}
+				}
+				
+				if (item.div_wrap_class) {
+					if (item.div_wrap_class.indexOf('<') != -1 || item.div_wrap_class.indexOf('>') != -1) {
+						tags.tabs[tab].fields.div_wrap_class.error = 'Wrapper div CSS class may not contain < or >.';
 					}
 				}
 				
@@ -2020,15 +2035,34 @@ methods.getFieldReadableType = function(item) {
 	}
 };
 
-methods.getCalculationCodeDisplay = function(calculationCode) {
+methods.getCalculationCodeDisplay = function(calculationCode, displayHTML) {
+	//If this is called from the "Edit calculation" admin box,
+	//the calculation code display will use HTML to lay out every field/operator in a separate row.
+	//If this is called from the form builder,
+	//the calculation code will be displayed as a single string.
 	var calculationDisplay = '';
 	if (calculationCode) {
 		var lastIsParenthesisOpen = false;
 		for (var i = 0; i < calculationCode.length; i++) {
 			if (!lastIsParenthesisOpen && calculationCode[i].type != 'parentheses_close') {
-				calculationDisplay += ' ';
+				if (displayHTML) {
+					calculationDisplay += '<br />';
+				} else {
+					calculationDisplay += ' ';
+				}
+			} else if (!lastIsParenthesisOpen && calculationCode[i].type == 'parentheses_close') {
+				if (displayHTML) {
+					calculationDisplay += '<br />';
+				}
 			} else if (lastIsParenthesisOpen) {
 				lastIsParenthesisOpen = false;
+				if (displayHTML) {
+					calculationDisplay += '<br />';
+				}
+			}
+			
+			if (displayHTML) {
+				calculationDisplay += "<span>";
 			}
 			
 			switch (calculationCode[i].type) {
@@ -2065,6 +2099,11 @@ methods.getCalculationCodeDisplay = function(calculationCode) {
 					calculationDisplay += '"' + name + '"';
 					break;
 			}
+			
+			if (displayHTML) {
+				calculationDisplay += "</span>";
+			}
+			
 			calculationDisplay = calculationDisplay.trim();
 		}
 	}
@@ -2091,8 +2130,10 @@ methods.calculationAdminBoxAddSomthing = function(type, value) {
 			}
 			break;
 		case 'field':
-			code = {type: type, value: value};
-			$('#numeric_field').val('');
+			if (value) {
+				code = {type: type, value: value};
+				$('#numeric_field').val('');
+			}
 			break;
 	}
 	if (code) {
@@ -2118,8 +2159,9 @@ methods.calculationAdminBoxDelete = function() {
 	thus.calculationAdminBoxUpdateDisplay(calculationCode);
 };
 methods.calculationAdminBoxUpdateDisplay = function(calculationCode) {
-	var calculationDisplay = thus.getCalculationCodeDisplay(calculationCode);
-	$('#zenario_calculation_display').text(calculationDisplay);
+	var displayHTML = true;
+	var calculationDisplay = thus.getCalculationCodeDisplay(calculationCode, displayHTML);
+	$('#zenario_calculation_display').html(calculationDisplay);
 };
 
 

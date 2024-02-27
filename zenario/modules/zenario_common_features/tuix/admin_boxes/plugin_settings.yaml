@@ -33,6 +33,13 @@ plugin_settings:
     tabs:
         first_tab:
             label: Details
+            notices:
+                advanced_plugin_in_readonly_mode:
+                    type: information
+                    show: false
+                    message: >
+                        This plugin is an advanced plugin and requires a higher level of
+                        permission to change its settings.
             fields:
                 plugin_name:
                     type: grouping

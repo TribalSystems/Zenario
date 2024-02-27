@@ -13,8 +13,10 @@ plugin_settings:
                     label: 'Display this HTML:'
                     type: editor
                     editor_type: standard_with_images
+                    tall_as_possible: true
                     dont_trim: true
-                    style: 'width: 750px; height: 250px;'
+                    style: |
+                        width: 750px;
                     insert_image_button:
                         pick_items:
                             path: zenario__library/panels/image_library

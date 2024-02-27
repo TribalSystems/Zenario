@@ -1,18 +1,14 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- Generator: Adobe Illustrator 21.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 16.25 20" style="enable-background:new 0 0 16.25 20;" xml:space="preserve">
-<g id="icon-html-pages">
-	<g>
-		<path style="fill:#333333;" d="M10.518,0H0v20h16.25V5.732L10.518,0z M13.75,17.5H2.5v-15h6.982L10,3.018V6.25h3.232l0.518,0.518
-			V17.5z"/>
-		<g>
-			<path style="fill:#333333;" d="M6.736,14.863l-3.68-1.6v-0.886l3.68-1.593v1.044l-2.567,0.982l2.567,1.018V14.863z"/>
-			<path style="fill:#333333;" d="M7.076,15.567l1.329-5.552h0.773l-1.344,5.552H7.076z"/>
-			<path style="fill:#333333;" d="M9.519,14.867v-1.036l2.571-1.011l-2.571-1v-1.029l3.684,1.593v0.879L9.519,14.867z"/>
-		</g>
-	</g>
-</g>
-<g id="Layer_1">
-</g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 17 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-html-pages">
+        <g>
+            <path d="M16.25,0L0,0L0,20L16.25,20L16.25,0ZM13.75,17.5L2.5,17.5L2.5,2.5L13.75,2.5L13.75,17.5Z" style="fill:rgb(51,51,51);fill-rule:nonzero;"/>
+            <g>
+                <path d="M6.736,14.863L3.056,13.263L3.056,12.377L6.736,10.784L6.736,11.828L4.169,12.81L6.736,13.828L6.736,14.863Z" style="fill:rgb(51,51,51);fill-rule:nonzero;"/>
+                <path d="M7.076,15.567L8.405,10.015L9.178,10.015L7.834,15.567L7.076,15.567Z" style="fill:rgb(51,51,51);fill-rule:nonzero;"/>
+                <path d="M9.519,14.867L9.519,13.831L12.09,12.82L9.519,11.82L9.519,10.791L13.203,12.384L13.203,13.263L9.519,14.867Z" style="fill:rgb(51,51,51);fill-rule:nonzero;"/>
+            </g>
+        </g>
+    </g>
 </svg>

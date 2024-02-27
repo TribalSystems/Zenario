@@ -1191,7 +1191,7 @@ _sql
 if (ze\dbAdm::needRevision(57982)) {
 	
 	//If someone was using the zenario_promo_menu at some point between Zenario 8.8 and 9.4 (inclusive),
-	//it will have created a module-version of this table. We can simple rename the table.
+	//it will have created a module-version of this table. We can simply rename the table.
 	if (ze\module::prefix('zenario_menu', true, true)
 	 && ze\module::prefix('zenario_menu_multicolumn', true, true)
 	 && ze\module::prefix('zenario_promo_menu', true, true)
@@ -1300,7 +1300,7 @@ _sql
 if (ze\dbAdm::needRevision(58499)) {
 	
 	//If someone was using the zenario_promo_menu at some point between Zenario 8.8 and 9.4 (inclusive),
-	//it will have created a module-version of this table. We can simple rename the table.
+	//it will have created a module-version of this table. We can simply rename the table.
 	if (ze\module::prefix('zenario_email_template_manager', true, true)
 	 && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', 'debug_mode', false))) {
 		
@@ -1366,7 +1366,7 @@ if (ze\dbAdm::needRevision(58499)) {
 if (ze\dbAdm::needRevision(58500)) {
 	
 	//If someone was using the zenario_error_log at some point between Zenario 8.8 and 9.4 (inclusive),
-	//it will have created a module-version of this table. We can simple rename the table.
+	//it will have created a module-version of this table. We can simply rename the table.
 	if (ze\module::prefix('zenario_error_log', true, true)
 	 && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_ERROR_LOG_PREFIX. 'error_log', true, false))) {
 		
@@ -1412,26 +1412,26 @@ ze\dbAdm::revision( 58550
 	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
 	WHERE foot_html like '%zenario/libs/yarn/wowjs%'
 _sql
-);
+
 
 //In 9.5, we removed the domain redirects (or spare domains, as previously called).
 //This logic will remove an obsolete site setting and drop the spare domain names table.
-ze\dbAdm::revision( 58551
+);	ze\dbAdm::revision( 58551
 , <<<_sql
 	DELETE FROM `[[DB_PREFIX]]site_settings`
 	WHERE name = "admin_use_ssl"
 _sql
-);
 
-ze\dbAdm::revision( 58552
+
+);	ze\dbAdm::revision( 58552
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]]spare_domain_names`;
 _sql
-);
+
 
 //In 9.5, we removed two scheduled tasks which were not in use for a long time:
 //importCustomerData, importCustomerLocationData. Clean up the site settings table.
-ze\dbAdm::revision( 58559
+);	ze\dbAdm::revision( 58559
 , <<<_sql
 	DELETE FROM `[[DB_PREFIX]]site_settings`
 	WHERE name IN (
@@ -1442,11 +1442,11 @@ ze\dbAdm::revision( 58559
 		"zenario_company_locations_manager__error_email"
 	)
 _sql
-);
+
 
 //Also in 9.5, the per-image settings for canvas/width/height/retina were removed from promo menu images.
 //Instead, the Menu with Promo Images plugin has its own settings. Drop the obsolete columns.
-ze\dbAdm::revision( 58560
+);	ze\dbAdm::revision( 58560
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]menu_node_feature_image`
 	DROP COLUMN `canvas`,
@@ -1457,9 +1457,40 @@ ze\dbAdm::revision( 58560
 _sql
 
 
+
+
+
+
+
+
+
+//
+//	Zenario 9.6
+//
+
+
+//Tidy up some old, unused tables
+);	ze\dbAdm::revision( 58700
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]characteristic_user_link`;
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values`;
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values_link`;
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]user_sync_log`;
+_sql
+
+
 //Fix a bug where a column could be created with the wrong collation.
-//Note that this is being added in 9.5 as a post-branch patch, but will be safe to reapply again in 9.6.
-);	ze\dbAdm::revision( 58561
+//Note that this was also added in 9.5 as a post-branch patch, but is safe to reapply if a site already has it.
+);	ze\dbAdm::revision( 58800
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]menu_node_feature_image`
 	MODIFY COLUMN `overwrite_alt_tag` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] default NULL
@@ -1469,7 +1500,7 @@ _sql
 //Another update to fix the wrong path to the wow.js library, this time in the versions table.
 //Please note: this patch was made in 9.6 and backpatched to 9.5 and 9.4.
 //However this code is safe to run more than once without a specific check needed.
-);	ze\dbAdm::revision( 58562
+);	ze\dbAdm::revision( 59000
 , <<<_sql
 	UPDATE IGNORE `[[DB_PREFIX]]content_item_versions`
 	SET foot_html = REPLACE(foot_html, 'zenario/libs/yarn/wowjs', 'zenario/libs/yarn/wow.js')
@@ -1481,7 +1512,7 @@ _sql
 //if it was migrated from an earlier version of Zenario.
 //Please note: this patch was made in 9.6 and backpatched to 9.5.
 //However this code is safe to run more than once without a specific check needed.
-);	ze\dbAdm::revision( 58563
+);	ze\dbAdm::revision( 59010
 , <<<_sql
 	 DELETE FROM `[[DB_PREFIX]]plugin_settings`
 	 WHERE egg_id = 0
@@ -1502,4 +1533,97 @@ _sql
 	   AND `name` = 'roundabout_speed'
 	   AND `value` IS NULL
 _sql
+);
+
+
+if (ze\dbAdm::needRevision(59020)) {
+	
+	if (ze::$dbL->checkTableDef(DB_PREFIX. 'jobs', 'email_on_no_action', false)) {
+		ze\dbAdm::revision(59020
+		, <<<_sql
+			ALTER TABLE `[[DB_PREFIX]]jobs`
+			DROP COLUMN `email_on_no_action`
+		_sql
+		);
+	}
+}
+
+if (ze\dbAdm::needRevision(59030)) {
+	
+	if (ze::$dbL->checkTableDef(DB_PREFIX. 'jobs', 'email_address_on_no_action', false)) {
+		ze\dbAdm::revision(59030
+		, <<<_sql
+			ALTER TABLE `[[DB_PREFIX]]jobs`
+			DROP COLUMN `email_address_on_no_action`
+		_sql
+		);
+	}
+}
+
+
+//Add one more bit of metadata to the layout_slot_link table, so we can easily see which slots
+//are in a grid break
+	ze\dbAdm::revision( 59330
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layout_slot_link`
+	ADD COLUMN `in_grid_break` tinyint(1) unsigned NOT NULL default 0
+	AFTER `is_footer`
+_sql
+
+);
+
+
+//Address an issue where we dropped a couple of coolumns during the development of 9.6,
+//but then changed our minds.
+//Restore them on any dev or staging site that lost them.
+if (ze\dbAdm::needRevision(59350)) {
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'categories', 'landing_page_equiv_id', false)) {
+		ze\dbAdm::revision(59350
+		, <<<_sql
+			ALTER TABLE `[[DB_PREFIX]]categories`
+			ADD COLUMN `landing_page_equiv_id` int(10) unsigned NOT NULL default 0
+			AFTER `public` 
+		_sql
+		);
+	}
+}
+
+if (ze\dbAdm::needRevision(59360)) {
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'categories', 'landing_page_content_type', false)) {
+		ze\dbAdm::revision(59360
+		, <<<_sql
+			ALTER TABLE `[[DB_PREFIX]]categories`
+			ADD COLUMN `landing_page_content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
+			AFTER `landing_page_equiv_id` 
+		_sql
+		);
+	}
+}
+
+
+//Add the unlisted status for content items
+	ze\dbAdm::revision( 59450
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_items`
+	MODIFY COLUMN `status` enum('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft','published','hidden','trashed','deleted','unlisted','unlisted_with_draft') NOT NULL DEFAULT 'first_draft'
+_sql
+
+
+//Add an option to control whether special pages should be listed/unlisted
+);	ze\dbAdm::revision(59550
+, <<<_sql
+	 ALTER TABLE `[[DB_PREFIX]]special_pages`
+	 ADD COLUMN `listing_policy` enum('either', 'must_be_listed', 'must_be_unlisted') NOT NULL DEFAULT 'either'
+	 AFTER `allow_search`
+_sql
+
+);	ze\dbAdm::revision(59560
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_templates`
+	DROP COLUMN `head`,
+	ADD COLUMN `apply_css_rules` tinyint(1) NOT NULL default 0
+_sql
+
 );

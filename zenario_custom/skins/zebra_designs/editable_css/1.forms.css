@@ -21,9 +21,6 @@
 ::-moz-placeholder { /* Firefox 19+ */
   color: #ccc;
 }
-:-ms-input-placeholder { /* IE 10+ */
-  color: #ccc;
-}
 :-moz-placeholder { /* Firefox 18- */
   color: #ccc;
 }
@@ -43,10 +40,6 @@
 .zenario_slot:not(.zenario_comments) select {
 	font-size:1em;
 	font-family:'robotolight',Arial, Helvetica, sans-serif;
-}
-
-body.ie .zenario_skin input[type='password'] {
-	font-family: Helvetica, Arial, sans-serif;
 }
 
 .zenario_skin input[type='text'],
@@ -133,12 +126,33 @@ body.ie .zenario_skin input[type='password'] {
 	border-color:#171717;
 }
 
+.zenario_skin input[type='text']:focus,
+.zenario_skin input[type='password']:focus,
+.zenario_skin input[type='email']:focus,
+.zenario_skin textarea:focus,
+.zenario_skin select:focus,
+.form_field.mandatory input[type='text']:focus, 
+.form_field.mandatory input[type='password']:focus, 
+.form_field.mandatory input[type='email']:focus, 
+.form_field.mandatory textarea:focus, 
+.form_field.mandatory select:focus,
+.field_checkbox.mandatory input[type=checkbox] + label:focus:before,
+.field_radios.mandatory input[type=radio] + label:focus:before {
+	border-color:#80dd78;
+}
+
 .form_field.has_error input[type='text'], 
 .form_field.has_error input[type='password'], 
 .form_field.has_error input[type='email'], 
 .form_field.has_error input[type='search'], 
 .form_field.has_error textarea, 
-.form_field.has_error select {
+.form_field.has_error select,
+.form_field.has_error input[type='text']:focus, 
+.form_field.has_error input[type='password']:focus, 
+.form_field.has_error input[type='email']:focus, 
+.form_field.has_error input[type='search']:focus, 
+.form_field.has_error textarea:focus, 
+.form_field.has_error select:focus {
 	border-color:#C10516;
 }
 

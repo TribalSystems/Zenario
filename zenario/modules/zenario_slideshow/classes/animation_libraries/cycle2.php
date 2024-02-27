@@ -112,7 +112,7 @@ class zenario_slideshow__animation_libraries__cycle2 extends zenario_slideshow {
 	protected function startSlideshow() {
 		
 		$jsDir = ze::moduleDir('zenario_slideshow', 'js');
-		$this->requireJsLib($jsDir. '/cycle2.wrapper.js.php');
+		$this->requireJsLib($jsDir. '/cycle2.bundle.js.php');
 		
 		$opt = [
 			'timeout' => $this->setting('use_timeout')? (int) $this->setting('timeout') : 0,

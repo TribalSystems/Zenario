@@ -33,6 +33,19 @@
 	font-family:Verdana,Arial,Helvetica,sans-serif;
 }
 
+.zenario_being_edited #zenario_at_wrap {
+	background:#333;
+}
+
+.zenario_being_edited #zenario_at_wrap .tox-tinymce,
+.zenario_being_edited .tox.tox-tinymce-inline .tox-editor-header {
+	border-radius:0;
+}
+
+.zenario_being_edited #zenario_at_wrap .tox-tinymce {
+	margin-top:45px;
+}
+
 #zenario_at_wrap a {
 	text-decoration:none;
 }
@@ -106,11 +119,7 @@
 	font-weight:bold;
 }
 
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_hide_content a,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_start_editing a,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_unhide_content a,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_delete a,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_redraft_content a {
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_action a {
 	display: block;
     margin-top:0;
     margin-left:0;
@@ -121,16 +130,11 @@
 	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat right 10px;
 	-webkit-transition : background-color 200ms ease-in-out;
   	-moz-transition : background-color 200ms ease-in-out;
-  	-o-transition : background-color 200ms ease-in-out;
   	transition : background-color 200ms ease-in-out;
 	cursor:pointer;
 }
 
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_hide_content a:hover,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_start_editing a:hover,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_unhide_content a:hover,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_delete a:hover,
-#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_redraft_content a:hover {
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_big_action_button.zenario_at_action a:hover {
 	background-color:#fbf290;
 }
 
@@ -210,32 +214,17 @@
 	line-height:25px;
 	padding:0 15px;
 	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
 	border-radius: 2px;
 	display:inline-block;
 	cursor:pointer;
 	-webkit-animation: blink 2s ease-in-out 2s infinite;
 	-moz-animation: blink 2s ease-in-out 2s infinite;
-	-ms-animation: blink 2s ease-in-out 2s infinite;
-	-o-animation: blink 2s ease-in-out 2s infinite;
 	animation: blink 2s ease-in-out 2s infinite;
 }
 
-#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_delete a {	
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_delete_action a {	
 	color:#D90000;
 }
-/*
-#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_delete a {	
-	margin-top:7px;
-	font-size:11px;
-	font-weight:normal;
-	color:#D90000;
-	line-height:25px;
-	padding:0 8px;
-	margin-left:0;
-	display:inline-block;
-	cursor:pointer;
-}*/
 
 #zenario_at .zenario_at_tabs_container {
 	background:#333333;
@@ -267,16 +256,11 @@
 	text-align:center;
 	color:#7F7F7F;	
 	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
 	border-radius: 2px;
 	background-color: rgba(246,246,246,0);
 	-webkit-box-shadow: inset 0 0 1px rgba(0,0,0,.7);
-	-moz-box-shadow: inset 0 0 1px rgba(0,0,0,.7);
 	box-shadow: inset 0 0 1px rgba(0,0,0,.7);
-	background-image: -webkit-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
 	background-image: -moz-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
-	background-image: -o-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
-	background-image: -ms-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
 	background-image: linear-gradient(to top, #e5e2e2, #f1f1f1 56%);
 	margin:9px 8px 0 8px;
 }
@@ -332,7 +316,6 @@
 	color: #fff;
 	text-shadow: 0 1px 1px #000;
 	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
 	border-radius: 3px;
 	line-height: 20px;
 	padding: 2px 10px 2px 9px;
@@ -397,22 +380,15 @@
 	cursor:pointer;
 	-webkit-border-top-left-radius: 2px;
 	-webkit-border-top-right-radius: 2px;
-	-moz-border-radius-topleft: 2px;
-	-moz-border-radius-topright: 2px;
 	border-top-left-radius: 2px;
 	border-top-right-radius: 2px;
 }
-
-/*body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_at_menu_tab {
-	background:#666666;
-}*/
 
 #zenario_at .zenario_at_tabs .zenario_toolbar,
 #zenario_at .zenario_at_tabs .zenario_middle_inner {
 	background-color:#676767;
 	-webkit-transition: background-color 0.3s ease-out;
 	-moz-transition: background-color 0.3s ease-out;
-	-o-transition: background-color 0.3s ease-out;
 	transition: background-color 0.3s ease-out;
 	border-top-right-radius: 2px;
 	border-top-left-radius: 2px;
@@ -458,13 +434,12 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .pinned a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .not_pinned a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode_enabled a {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode a {
 	height:22px;
 	background:#E2E2E2;
 	float:right;
 	line-height:22px;
 	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
 	border-radius: 2px;
 }
 
@@ -478,7 +453,7 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .pinned a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .not_pinned a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode_enabled a {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode a {
 	width:24px;
 }
 
@@ -497,7 +472,7 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .pinned a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .not_pinned a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode_enabled a {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode a {
 	background-repeat:no-repeat;
 	background-position:center center;
 	background-size:auto 16px;
@@ -634,11 +609,15 @@
 	background-color:#4b4d4c;
 }
 
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode_enabled a {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode a {
 	background-image:url('../admin/images/icon-thumbs-up-shadow.svg');
 	background-size:auto 16px;
 	background-color:#ff5600;
 	cursor:pointer;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_staging_mode.zenario_at_icon_staging_mode_disabled a {
+	background-color:#666;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle .zenario_middle_inner {
@@ -933,7 +912,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenar
     display: inline-block;
     background:transparent;
     -webkit-border-radius:0;
-    -moz-border-radius:0;
     border-radius:0;
 }
 
@@ -949,7 +927,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenar
 	font-size: 0;
 	line-height: 0;
     -webkit-border-radius:50%;
-    -moz-border-radius:50%;
     border-radius:50%;
     cursor:pointer;
 }
@@ -1008,7 +985,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenar
 #zenario_at .zenario_at_status_icons_container .zenario_at_button_with_children ul li a {
 	-webkit-transition : background-color 200ms ease-in-out;
   	-moz-transition : background-color 200ms ease-in-out;
-  	-o-transition : background-color 200ms ease-in-out;
   	transition : background-color 200ms ease-in-out;
 }
 
@@ -1346,7 +1322,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	background: #f6f6f6;
 	border: 1px solid #333;
 	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
 	border-radius: 3px;
 	-webkit-box-shadow: 0 0 3px 0 #888;
 	box-shadow: 0 0 3px 0 #888;
@@ -1358,7 +1333,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 
 .zenario_at_status_icons .zenario_at_button_with_children ul li {
 	background: none!important;
-	/*padding: 4px 0;*/
 }
 
 .zenario_at_status_icons .zenario_at_button_with_children ul li a {
@@ -1374,19 +1348,10 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	border-top: 0;
 }
 
-/*.zenario_at_button_with_children ul li a:hover {
-	background:#fbf290;
-}
-
-.zenario_at_button_with_children ul li span:hover {
-	background:#fbf290;
-}*/
-
 #zenario_at ul ul {
 	background:#F6F6F6;
 	border:1px solid #333;
 	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
 	border-radius: 3px;
 	-webkit-box-shadow: 0px 0px 3px 0px #888;
 	box-shadow: 0px 0px 3px 0px #888;  
@@ -1489,7 +1454,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	line-height:20px;
 	border:1px solid #C5C5C5;
 	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
 	border-radius: 2px;
 	padding:0 5px;
 	color:#777;
@@ -1523,7 +1487,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	height:22px;
 	line-height:20px;
 	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
 	border-radius: 2px;
 	width:calc(44% - 12px);
 	color:#000;
@@ -1546,9 +1509,6 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 
 #zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar span {
 	display:block;
-}
-
-#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar:hover span {
 	background-image:url('../admin/images/icon-edit-on-state.svg');
 	background-repeat:no-repeat;
 	background-position:right center;
@@ -1595,7 +1555,7 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	width: 40px;
 	height: 14px;
 	display: block;
-	background: #333 url('../admin/images/icon-bar-collapse.svg') no-repeat center center / auto 6px;
+	background: #333 url('../admin/images/icon-arrow-to-collapse.svg') no-repeat center center / auto 6px;
 	position: absolute;
 	right: 10px;
 	top: 114px;
@@ -1605,18 +1565,9 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;
 }
-/*
+
 span.zenario_icon_to_show_the_admin_toolbar {
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	background: #333 url('../admin/images/icon-bar-expand-02.svg') no-repeat center center / 15px 15px;
-	-webkit-border-radius: 5px;
-	border-radius: 5px;
-}
-*/
-span.zenario_icon_to_show_the_admin_toolbar {
-	background: #333 url('../admin/images/icon-bar-expand-04.svg') no-repeat center 0 / auto 4px;
+	background: #333 url('../admin/images/icon-arrow-to-expand-2.svg') no-repeat center 0 / auto 4px;
 	width: 24px;
 	height: 10px;
 	display: inline-block;
@@ -2081,7 +2032,6 @@ div.zenario_admin_toolbar div.zenario_linkbar .zenario_message input {
 	border-top: 1px solid #dddddd;
 	border-left: 1px solid #dddddd;
 	border-radius: 3px;
-	-moz-border-radius: 3px;
 	text-align: left;
 	color:#08667e;
 	font-family: Verdana,Arial,Helvetica;
@@ -2096,7 +2046,7 @@ div.zenario_admin_toolbar div.zenario_linkbar div.zenario_right {
 }
 
 div.zenario_grid_overlay_view {
-	position: 'absolute';
+	position: absolute;
 	height:100%;
 	opacity:0.3;
 	z-index:901;
@@ -2159,7 +2109,6 @@ div.zenario_grid_overlay_view .row {
 	background-color: #545454;
 	-webkit-transition: background-color 0.3s ease-out;
 	-moz-transition: background-color 0.3s ease-out;
-	-o-transition: background-color 0.3s ease-out;
 	transition: background-color 0.3s ease-out;
 }
 
@@ -2179,7 +2128,6 @@ div.zenario_grid_overlay_view .row {
 	float: none;
 	-webkit-transition: all 0.4s ease-in-out;
   	-moz-transition: all 0.4s ease-in-out;
-  	-o-transition: all 0.4s ease-in-out;
   	transition: all 0.4s ease-in-out;
 }
 
@@ -2187,28 +2135,6 @@ div.zenario_grid_overlay_view .row {
 #zenario_at_top_left_menu ul li ul li:hover ul {
 	opacity:1;
 	visibility:visible;
-}
-
-body.ie8 #zenario_at_top_left_menu ul li ul,
-body.ie8 #zenario_at_top_left_menu ul li ul::after,
-body.ie9 #zenario_at_top_left_menu ul li ul,
-body.ie9 #zenario_at_top_left_menu ul li ul::after,
-body.ie8 #zenario_at_top_left_menu ul li ul li ul,
-body.ie8 #zenario_at_top_left_menu ul li:hover ul li ul,
-body.ie9 #zenario_at_top_left_menu ul li ul li ul,
-body.ie9 #zenario_at_top_left_menu ul li:hover ul li ul {
-	display: none;
-	opacity:1;
-	visibility:visible;
-}
-
-body.ie8 #zenario_at_top_left_menu ul li:hover ul,
-body.ie8 #zenario_at_top_left_menu ul li ul::after,
-body.ie9 #zenario_at_top_left_menu ul li:hover ul,
-body.ie9 #zenario_at_top_left_menu ul li ul::after,
-body.ie8 #zenario_at_top_left_menu ul li ul li:hover ul,
-body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
-	display: block;
 }
 
 #zenario_at_top_left_menu ul li a span {
@@ -2250,9 +2176,10 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	border-top: 0;
 }
 
-#zenario_at_top_left_menu ul li ul li:hover a,
-#zenario_at_top_left_menu ul li ul li a:hover {
-	background-color: #5f5f5f;
+#zenario_at_top_left_menu ul li ul li:hover > a,
+#zenario_at_top_left_menu ul li ul li > a:hover {
+	/*background-color: #5f5f5f;*/
+	background-color: #000;
 }
 
 #zenario_at_top_left_menu ul li ul li:hover a span,
@@ -2292,7 +2219,8 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	
 	position: absolute;
 	left: 230px;
-	margin-top: -40px;
+	margin-top: -41px;
+	border-left:1px solid grey;
 }
 
 
@@ -2301,14 +2229,14 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 }
 
 #zenario_at_top_left_menu ul li ul li ul {
-	background-color: #fff;
+	background-color: #333;
 	border-color: #c5c5c5;
 }
 
 #zenario_at_top_left_menu ul li ul li ul li a,
 #zenario_at_top_left_menu ul li ul li:first-child ul li a {
 	border-top: 1px solid grey;
-	background-color: #fff;
+	background-color: #333;
 }
 
 #zenario_at_top_left_menu ul li ul li ul li:first-child a,
@@ -2318,18 +2246,11 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 
 #zenario_at_top_left_menu ul li ul li ul li a,
 #zenario_at_top_left_menu ul li ul li:hover ul li a span {
-	color: #000;
+	color:#fff;
 }
 
-#zenario_at_top_left_menu ul li ul li:hover ul li a,
 #zenario_at_top_left_menu ul li ul li ul li a:hover {
-	background-color: #fff;
-}
-
-#zenario_at_top_left_menu ul li ul li:hover ul li a span:hover,
-#zenario_at_top_left_menu ul li ul li ul li a:hover span,
-#zenario_at_top_left_menu ul li ul li ul li a span:hover {
-	color:#027DC9;
+	background-color:#000;
 }
 
 #zenario_at_top_left_menu ul li ul li ul::after {
@@ -2405,7 +2326,7 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 /* 2 sections, 1st section */
  
 #zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) {
-	background:#f3f3f3;
+	background:#333;
 }
 
 #zenario_at_top_left_menu ul li ul li:hover > .zenario_attld_vertical_blocks.zenario_attld_2_vertical_blocks .zenario_attld_vertical_block:nth-child(1) ul li a {
@@ -2439,9 +2360,6 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	position:relative;
 	top:-2px;
 }
-
-
-
 
 /* "Admin toolbar for ..." text */
 
@@ -2732,6 +2650,20 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 		line-height:inherit;
 	}
 	
+	/* Hide buttons on toolbar */
+	
+	#zenario_at .zenario_at_toolbar .zenario_at_help,
+	#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_delete_action.zenario_at_button_disabled,
+	#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_hide_action.zenario_at_button_disabled,
+	#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_listed_action.zenario_at_button_disabled,
+	#zenario_at #zenario_at_toolbars .zenario_at_status_button span.zenario_at_unlisted_action.zenario_at_button_disabled,
+	.zenario_at_dev_icon.site_mode,
+	.zenario_at_dev_icon.organizer_info_box,
+	.zenario_at_dev_icon.organizer_help_box,
+	.zenario_at_dev_icon.organizer_diagnostics {
+		display:none;
+	}
+	
 }
 
 /* Layout max-width: 960px
@@ -2746,25 +2678,6 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	#zenario_at_title {
 		display:none;
 	}
-
-}
-
-/* Layout max-width: 840px
---------------------------------------------------------------------------------------------------*/
-
-@media all and (max-width: 841px) {
-
-	#zenario_at .zenario_at_status_icons_container,
-	.zenario_at_topRightIcons {
-		display:none;
-	}
-	
-}
-
-/* Layout max-width: 640px
---------------------------------------------------------------------------------------------------*/
-
-@media all and (max-width: 641px) {
 
 	.zenario_at_status_button {
 		display:none;
@@ -2787,8 +2700,8 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 		color:#000 !important;
 	}
 
-	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete a,
-	#zenario_at ul li.zenario_at_button_with_children li.zenario_delete:hover a {	
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_at_delete_action a,
+	#zenario_at ul li.zenario_at_button_with_children li.zenario_at_delete_action:hover a {	
 		color:#D90000 !important;
 	}
 	
@@ -2800,6 +2713,18 @@ body.ie9 #zenario_at_top_left_menu ul li ul li:hover ul {
 	
 	#zenario_at .zenario_at_tabs {
 		overflow:hidden;
+	}
+	
+}
+
+/* Layout max-width: 660px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 841px) {
+
+	#zenario_at .zenario_at_status_icons_container,
+	.zenario_at_topRightIcons {
+		display:none;
 	}
 	
 }

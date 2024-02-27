@@ -1,0 +1,45 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        access_codes:
+            title: Access codes
+            db_items:
+                table: >
+                    [[DB_PREFIX]]content_item_versions AS v
+                    INNER JOIN [[DB_PREFIX]]content_items AS c
+                     ON c.id = v.id
+                    AND c.type = v.type
+                    AND c.admin_version = v.version
+                    AND c.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'unlisted_with_draft')
+                id_column: v.access_code
+                group_by: v.access_code
+                where_statement: "WHERE v.access_code IS NOT NULL"
+            no_items_message: There are no access codes in use on this site.
+            panel_type: list
+            #use_tall_rows: true
+            default_sort_column: path
+            label_format_for_grid_view: '[[access_code]]'
+            columns:
+                access_code:
+                    title: Access code
+                    db_column: v.access_code
+                    searchable: true
+                    always_show: true
+                usage:
+                    title: Usage
+                    db_column: |
+                        COUNT(DISTINCT c.id, c.type)
+                    searchable: false
+                    always_show: true
+                    width: xsmall
+            
+            item:
+                name: Access code
+                names: Access codes
+                css_class: access_code
+                tooltip_when_link_is_active: 'View content items using the access code &quot;[[access_code]]&quot;'
+                link:
+                    path: zenario__content/panels/content
+                    branch: true
+                    refiner: uses_access_code

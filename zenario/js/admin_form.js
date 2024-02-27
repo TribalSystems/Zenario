@@ -31,9 +31,9 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (thus is to reduce the number of http requests on a page).
+		3. It may be bundled together with other files (thus is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.bundle.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -113,6 +113,8 @@ methods.start = function(path, key, tab, values) {
 
 methods.load = function(data) {
 	thus.loaded = true;
+	
+	zenarioT.checkDumps(data);
 	
 	if (data.toast
 	 && zenarioA.toast) {

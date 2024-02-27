@@ -1,0 +1,19 @@
+<ul id="zenario_debug_menu">
+	<li id="zenario_dm_open_dev_tools">
+		<div>Open TUIX inspector</div>
+	</li>
+	<% if (m.canShowSource) { %>
+		<li id="zenario_dm_copy_ls">
+			<div>List files: copy source file list in <code>ls -l</code> format</div>
+		</li>
+		<li id="zenario_dm_copy_grep">
+			<div>Search in files: copy source file list in <code>grep</code> format</div>
+		</li>
+		<li id="zenario_dm_copy_bbedit">
+			<div>Edit files: copy source file list in <code>bbedit</code> format</div>
+		</li>
+	<% } %>
+	
+	<!-- This line is needed as a workaround to make the jQuery UI menu widget work properly -->
+	<li style="display: none;" class="ui-icon"></li>
+</ul>

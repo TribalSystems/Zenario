@@ -64,25 +64,19 @@ class phi {
 	}
 	
 	
-	private static $testing = false;
-	private static $output = null;
+	private static $enableVarDumps = false;
+	private static $suppressErrors = false;
 	private static $outputs = [];
 	public static $varDumps = [];	//N.b. this is public because it's referenced in zenario_phi_parser
 
-	public static function getReturnValue($var) {
-		return self::$output;
-	}
-
-	public static function returnValue($var = null) {
-		self::$output = $var;
-		return null;
-		//ob_clean();
-	}
-
 	public static function varDump() {
-		if (self::$testing) {
+		if (self::$enableVarDumps) {
 			self::$varDumps[] = func_get_args();
 		}
+	}
+
+	public static function suppressErrors() {
+		return self::$suppressErrors;
 	}
 
 	public static function setValue($key = '', $value = null) {
@@ -92,6 +86,20 @@ class phi {
 	public static function fireTrigger($codeName = '', $explanation = '') {
 		self::$outputs['t'. $codeName] = (string) $explanation;
 	}
+	
+	
+	
+	//Version 1 of Phi used to support return statements.
+	//These were not re-implemented in version 2.
+#	private static $output = null;
+#	public static function getReturnValue($var) {
+#		return self::$output;
+#	}
+#	public static function returnValue($var = null) {
+#		self::$output = $var;
+#		return null;
+#		//ob_clean();
+#	}
 	
 	
 	//This function is used as part of a work-around to allow changing object properties,
@@ -118,6 +126,118 @@ class phi {
 			$array[$finalKey] = $value;
 		}
 	}
+	
+	
+	
+	
+
+
+
+
+
+
+	private static $whitelistedFuns = [
+		//http://php.net/manual/en/book.math.php
+		'abs',
+		'acos',
+		'acosh',
+		'array_merge',
+		'asin',
+		'asinh',
+		'atan',
+		'atan2',
+		'atanh',
+		'base_convert',
+		'bindec',
+		'ceil',
+		'cos',
+		'cosh',
+		'decbin',
+		'dechex',
+		'decoct',
+		'deg2rad',
+		'floor',
+		'hexdec',
+		'is_finite',
+		'is_infinite',
+		'is_nan',
+		'log',
+		'log10',
+		'octdec',
+		'rad2deg',
+		'round',
+		'sin',
+		'sinh',
+		'sqrt',
+		'tan',
+		'tanh'
+	];
+
+	private static $renamedAndCustomFuns = [
+		'ceiling' => 'ceil',
+		'count' => 'count',
+		'c' => 'array',
+		'trim' => 'trim',
+		'list' => 'array',
+		'arrayMerge' => 'array_merge',
+		'baseConvert' => 'base_convert',
+		'isFinite' => 'is_finite',
+		'isInfinite' => 'is_infinite',
+		'isNaN' => 'is_nan',
+		
+		'dump' => 'ze\\phi::varDump',
+		'print' => 'ze\\phi::varDump',
+		'var_dump' => 'ze\\phi::varDump',
+		'setValue' => 'ze\\phi::setValue',
+		'fireTrigger' => 'ze\\phi::fireTrigger',
+		'_zPhiSAK_' => 'ze\\phi::_zPhiSAK_',
+		
+		'paste' => 'ze\\phi::paste',
+		'length' => 'ze\\phi::length',
+		'rev' => 'ze\\phi::reverse',
+		'reverse' => 'ze\\phi::reverse',
+		'sort' => 'ze\\phi::sort',
+		'shuffle' => 'ze\\phi::shuffle',
+		'sum' => 'ze\\phi::sum',
+		'max' => 'ze\\phi::max',
+		'min' => 'ze\\phi::min',
+		'mean' => 'ze\\phi::mean',
+		'median' => 'ze\\phi::median',
+		'mode' => 'ze\\phi::mode',
+		'lowerQuartile' => 'ze\\phi::firstQuartile',
+		'firstQuartile' => 'ze\\phi::firstQuartile',
+		'thirdQuartile' => 'ze\\phi::thirdQuartile',
+		'upperQuartile' => 'ze\\phi::thirdQuartile',
+		'standardDev' => 'ze\\phi::standardDev',
+		'product' => 'ze\\phi::product',
+		'factorial' => 'ze\\phi::factorial',
+		'gcd' => 'ze\\phi::gcd',
+		'lcm' => 'ze\\phi::lcm',
+		'int' => 'ze\\phi::int',
+		'float' => 'ze\\phi::float',
+		'string' => 'ze\\phi::string'
+	];
+
+	private static $assetwolfFuns = [
+		'getMinValue' => 'ze\\assetwolf::getMinValue',
+		'getMaxValue' => 'ze\\assetwolf::getMaxValue',
+		'getHistoricValue' => 'ze\\assetwolf::getHistoricValue',
+		'getMetricValue' => 'ze\\assetwolf::getMetricValue',
+		'getTimestamp' => 'ze\\assetwolf::getTimestamp',
+		'getAllChildIds' => 'ze\\assetwolf::getAllChildIds',
+		'getAllChildAssetIds' => 'ze\\assetwolf::getAllChildAssetIds',
+		'getAllChildDataPoolIds' => 'ze\\assetwolf::getAllChildDataPoolIds',
+		'getAssetReliability' => 'ze\\assetwolf::getAssetReliabilityFromPhi',
+		'getImmediateChildIds' => 'ze\\assetwolf::getImmediateChildIds',
+		'getInheritedMetadata' => 'ze\\assetwolf::getInheritedMetadataFromPhi',
+		'getLocationMetadata' => 'ze\\assetwolf::getLocationMetadataFromPhi',
+		'getParentNodeId' => 'ze\\assetwolf::getParentNodeId',
+		'formatValue' => 'ze\\assetwolf::formatValue',
+		'query' => 'ze\\assetwolf::query',
+		
+		//Deprecated
+		'getMetadata' => 'ze\\assetwolf::getInheritedMetadataFromPhi'
+	];
 	
 	
 	public static function init() {
@@ -158,109 +278,18 @@ class phi {
 		
 		
 		//Set up the whitelist of allowed functions
-		$whitelist = [
-			//http://php.net/manual/en/book.math.php
-			'abs',
-			'acos',
-			'acosh',
-			'array_merge',
-			'asin',
-			'asinh',
-			'atan',
-			'atan2',
-			'atanh',
-			'base_convert',
-			'bindec',
-			'ceil',
-			'cos',
-			'cosh',
-			'decbin',
-			'dechex',
-			'decoct',
-			'deg2rad',
-			'floor',
-			'hexdec',
-			'is_finite',
-			'is_infinite',
-			'is_nan',
-			'log',
-			'log10',
-			'octdec',
-			'rad2deg',
-			'round',
-			'sin',
-			'sinh',
-			'sqrt',
-			'tan',
-			'tanh'
-		];
-
-		foreach ($whitelist as $phpName) {
+		foreach (self::$whitelistedFuns as $phpName) {
 			self::$twig->addFunction(new \Twig\TwigFunction($phpName, $phpName));
 		}
-		
-		$whitelist = [
-			'paste' => 'ze\\phi::paste',
-			'dump' => 'ze\\phi::varDump',
-			'print' => 'ze\\phi::varDump',
-			'var_dump' => 'ze\\phi::varDump',
-			'setValue' => 'ze\\phi::setValue',
-			'fireTrigger' => 'ze\\phi::fireTrigger',
-			'_zPhiSAK_' => 'ze\\phi::_zPhiSAK_',
-			'ceiling' => 'ceil',
-			'count' => 'count',
-			'c' => 'array',
-			'trim' => 'trim',
-			'list' => 'array',
-			'length' => 'ze\\phi::length',
-			'rev' => 'ze\\phi::reverse',
-			'reverse' => 'ze\\phi::reverse',
-			'sort' => 'ze\\phi::sort',
-			'shuffle' => 'ze\\phi::shuffle',
-			'sum' => 'ze\\phi::sum',
-			'max' => 'ze\\phi::max',
-			'min' => 'ze\\phi::min',
-			'mean' => 'ze\\phi::mean',
-			'median' => 'ze\\phi::median',
-			'mode' => 'ze\\phi::mode',
-			'lowerQuartile' => 'ze\\phi::firstQuartile',
-			'firstQuartile' => 'ze\\phi::firstQuartile',
-			'thirdQuartile' => 'ze\\phi::thirdQuartile',
-			'upperQuartile' => 'ze\\phi::thirdQuartile',
-			'standardDev' => 'ze\\phi::standardDev',
-			'product' => 'ze\\phi::product',
-			'factorial' => 'ze\\phi::factorial',
-			'gcd' => 'ze\\phi::gcd',
-			'lcm' => 'ze\\phi::lcm',
-			'int' => 'ze\\phi::int',
-			'float' => 'ze\\phi::float',
-			'string' => 'ze\\phi::string'
-		];
+		foreach (self::$renamedAndCustomFuns as $twigName => $phpName) {
+			self::$twig->addFunction(new \Twig\TwigFunction($twigName, $phpName));
+		}
 		
 		//If assetwolf is running and has been included, make its getHistoricValue() function available
 		if (class_exists('ze\\assetwolf')) {
-			$whitelist['getMinValue'] = 'ze\\assetwolf::getMinValue';
-			$whitelist['getMaxValue'] = 'ze\\assetwolf::getMaxValue';
-			$whitelist['getHistoricValue'] = 'ze\\assetwolf::getHistoricValue';
-			$whitelist['getMetricValue'] = 'ze\\assetwolf::getMetricValue';
-			$whitelist['getTimestamp'] = 'ze\\assetwolf::getTimestamp';
-			$whitelist['getAllChildIds'] = 'ze\\assetwolf::getAllChildIds';
-			$whitelist['getAllChildAssetIds'] = 'ze\\assetwolf::getAllChildAssetIds';
-			$whitelist['getAllChildDataPoolIds'] = 'ze\\assetwolf::getAllChildDataPoolIds';
-			$whitelist['getAssetReliability'] = 'ze\\assetwolf::getAssetReliabilityFromPhi';
-			$whitelist['getImmediateChildIds'] = 'ze\\assetwolf::getImmediateChildIds';
-			$whitelist['getInheritedMetadata'] = 'ze\\assetwolf::getInheritedMetadataFromPhi';
-			$whitelist['getLocationMetadata'] = 'ze\\assetwolf::getLocationMetadataFromPhi';
-			$whitelist['getParentNodeId'] = 'ze\\assetwolf::getParentNodeId';
-			$whitelist['formatValue'] = 'ze\\assetwolf::formatValue';
-			$whitelist['query'] = 'ze\\assetwolf::query';
-			
-			//Deprecated
-			$whitelist['getMetadata'] = 'ze\\assetwolf::getInheritedMetadataFromPhi';
-		}
-
-		foreach ($whitelist as $twigName => $phpName) {
-			self::$twig->addFunction(new \Twig\TwigFunction($twigName, $phpName));
+			foreach (self::$assetwolfFuns as $twigName => $phpName) {
+				self::$twig->addFunction(new \Twig\TwigFunction($twigName, $phpName));
+			}
 		}
 		
 		
@@ -445,9 +474,9 @@ class phi {
 	
 	
 	
-	public static function runTwig($twigCode, &$outputs, $vars = [], $testing = false) {
-		self::$testing = $testing;
-		self::$output = null;
+	public static function runTwig($twigCode, &$outputs, $vars = [], $enableVarDumps = false, $suppressErrors = false) {
+		self::$enableVarDumps = $enableVarDumps;
+		self::$suppressErrors = $suppressErrors;
 		self::$outputs = &$outputs;
 		self::$varDumps = [];
 		
@@ -457,24 +486,33 @@ class phi {
 			$vars = array_merge($vars, self::$vars);
 		}
 		
-		\ze::ignoreErrors();
-			\ze::$isTwig = true;
-				self::$twig->render($twigCode, $vars);
-			\ze::$isTwig = false;
-		\ze::noteErrors();
+		try {
+			\ze::ignoreErrors();
+				\ze::$isTwig = true;
+					self::$twig->render($twigCode, $vars);
+				\ze::$isTwig = false;
+			\ze::noteErrors();
+		
+		} catch (\DivisionByZeroError | \Exception $e) {
+			\ze::noteErrors();
+			
+			if ($suppressErrors) {
+				return null;
+			} else {
+				throw $e;
+			}
+		}
 		
 		$emptyArray = [];
 		self::$outputs = &$emptyArray;
-		self::$testing = false;
-		return self::$output;
+		self::$enableVarDumps = false;
+		self::$suppressErrors = false;
+		
+		return true;
 	}
 	
 	public static function carefullyRunTwig($twigCode, &$outputs, $vars = []) {
-		try {
-			return self::runTwig($twigCode, $outputs, $vars);
-		} catch (\DivisionByZeroError | \Exception $e) {
-			return null;
-		}
+		return self::runTwig($twigCode, $outputs, $vars, false, true);
 	}
 	
 	public static function runPhi($phiCode, &$outputs, $vars = []) {
@@ -491,6 +529,15 @@ class phi {
 	
 	public static function phiToTwig($phiCode) {
 		return \ze\phiParser::phiToTwig($phiCode);
+	}
+	
+	
+	
+	public static function carefullyRunPhiFragment($phiCodeFragment, $vars = []) {
+		$outputs = [];
+		$phiCode = 'setValue("output", '. $phiCodeFragment. ')';
+		\ze\phiParser::carefullyRunPhi($phiCode, $outputs, $vars);
+		return $outputs['voutput'] ?? null;
 	}
 }
 \ze\phi::init();

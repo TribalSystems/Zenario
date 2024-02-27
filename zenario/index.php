@@ -64,6 +64,12 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 		chdir('zenario');
 		require 'sitemap.php';
 		exit;
+	
+	//Logic for robots.txt file
+	} elseif ($methodCall == 'robots') {
+		chdir('zenario');
+		require 'robots.php';
+		exit;
 	}
 }
 
@@ -242,17 +248,17 @@ require ze::editionInclude('index.pre_get_contents');
 $hideLayout = false;
 $fakeLayout = false;
 $singleSlot = false;
+$runNestWhenRunningSpecificEgg = false;
 
 if ($methodCall == 'showSingleSlot' || $methodCall == 'showIframe') {
 	$singleSlot = true;
+	$runNestWhenRunningSpecificEgg = true;
 	
 	if ($slotName) {
 		if (!$hideLayout = (bool) ze::request('hideLayout')) {
 			$fakeLayout = (bool) ze::request('fakeLayout');
 		}
 	}
-} else {
-	$overrideSettings = false;
 }
 
 ze\plugin::runSlotContents(
@@ -260,7 +266,9 @@ ze\plugin::runSlotContents(
 	ze::$cID, ze::$cType, ze::$cVersion,
 	ze::$layoutId, $singleSlot, $slotName,
 	$instanceId, $slideId, $slideNum, $state, $eggId,
-	$overrideSettings, $overrideFrameworkAndCSS
+	$overrideSettings, $overrideFrameworkAndCSS,
+	false, true,
+	$runNestWhenRunningSpecificEgg
 );
 
 
@@ -455,7 +463,7 @@ if (ze\lang::count() > 1) {
 			WHERE tc.privacy = 'public'
 			  AND c.equiv_id = ". (int) ze::$equivId. "
 			  AND c.type = '". ze\escape::asciiInSQL(ze::$cType). "'
-			  AND c.status IN ('published_with_draft', 'published')";
+			  AND c.status IN ('published_with_draft', 'published', 'unlisted', 'unlisted_with_draft')";
 		$result = ze\sql::select($sql);
 		if (ze\sql::numRows($result) > 1) {
 			while($row = ze\sql::fetchAssoc($result)) {
@@ -525,7 +533,7 @@ if ($singleSlot) {
 	//Just show the plugin, without any of the <div>s from the layout around it
 	if ($hideLayout) {
 		ze\content::pageBody('zenario_showing_plugin_without_layout', '', true);
-		ze\plugin::slot($slotName, 'grid', $eggId);
+		
 	
 	//Try and "fake" the grid, to get as many styles from the Skin as possible,
 	//while still showing the plugin on its own taking up the full width
@@ -539,19 +547,50 @@ if ($singleSlot) {
 			ze\content::pageBody('zenario_showing_standalone_plugin', '', true);
 		}
 		
-		echo $skinDiv, $templateDiv, $contentItemDiv, '
+		echo $skinDiv, $templateDiv, $contentItemDiv;
+		
+		if ($inGridBreak = isset(ze::$slotContents[$slotName]) && ze::$slotContents[$slotName]->inGridBreak()) {
+			echo '
+			<div class="slot ', htmlspecialchars($slotName), '">';
+		} else {
+			echo '
 			<div class="container ', empty($_GET['grid_container'])? '' : 'container_'. (int) $_GET['grid_container'], '">
 				<div
 					class="
-						alpha span
+						alpha span slot ', htmlspecialchars($slotName), '
 						', empty($_GET['grid_columns'])? 'span1_1' : 'span'. (int) $_GET['grid_columns'], '
 						', empty($_GET['grid_cssClass'])? '' : htmlspecialchars($_GET['grid_cssClass']), '
 					"
 					', empty($_GET['grid_pxWidth'])? '' : 'style="max-width: '. (int) $_GET['grid_pxWidth']. 'px;"', '
 				>';
-					ze\plugin::slot($slotName, 'grid', $eggId);
+		}
+	}
+	
+	//When showing a nested plugin in the nest, try to add wrapper <div>s from the nest
+	//to give a more accurate preview.
+	$parentInstance = false;
+	if ($eggId && isset(\ze::$slotContents[$slotName])) {
+		$parentInstance = \ze::$slotContents[$slotName]->class();
+		
+		echo
+			$parentInstance->startInner(),
+			'<div class="nest_wrap"><div class="nest_plugins_wrap"><div class="nest_plugins">';
+	}
+	
+	ze\plugin::slot($slotName, 'grid', $eggId);
+	
+	if ($parentInstance) {
+		echo
+			'</div></div></div>',
+			$parentInstance->endInner();
+	}
+	
+	if (!$hideLayout) {
+		if (!$inGridBreak) {
+			echo '
+				</div>';
+		}
 		echo '
-				</div>
 			</div>
 		</div></div></div>';
 	}
@@ -563,6 +602,15 @@ if ($singleSlot) {
 		</script>';
 	
 	ze\content::pageFoot('zenario/', false, false, false);
+	
+	//If showing a plugin preview inside a fake layout, add a call to
+	//zenario.resize() as this is needed but won't happen naturally.
+	if ($fakeLayout) {
+		echo '
+			<script type="text/javascript">
+				zenario.resize();
+			</script>';
+	}
 
 //Show a preview, without the Admin Toolbar or any JavaScript
 } elseif (!empty($_REQUEST['_show_page_preview'])) {

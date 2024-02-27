@@ -26,9 +26,6 @@
 	background-position: top right;
 }
 
-body.ie6 .zenario_toolbar_header .toolbar .button a,
-body.ie6 .zenario_toolbar_header .toolbar .button div,
-body.ie6 .zenario_toolbar_header .toolbar .zenario_admin_toolbar_button a,
 .zenario_toolbar_header .toolbar .zenario_admin_toolbar_button div {
 	width: 28px;
 	white-space: nowrap;

@@ -30,10 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_email_template':
 		
-		$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['meta_data/body'], true);
+		$values['meta_data/body'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['meta_data/body'], $preserveMergeFields = true, $allowAdvancedInlineStyles = true);
 	
-		//Try and ensure that we use absolute URLs where possible
-		ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
 		
 		
 		$files = [];
@@ -86,10 +84,14 @@ switch ($path) {
 					break;
 			}
 			
-			$columns['body'] = $values['meta_data/body'];
 			$htmlChanged = false;
-			ze\file::addImageDataURIsToDatabase($columns['body'], ze\link::absolute());
-			ze\contentAdm::syncInlineFileLinks($files, $columns['body'], $htmlChanged);
+			ze\file::addImageDataURIsToDatabase($values['meta_data/body'], ze\link::absolute());
+			ze\contentAdm::syncInlineFileLinks($files, $values['meta_data/body'], $htmlChanged);
+			
+			//Try and ensure that we use absolute URLs where possible
+			ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);
+			
+			$columns['body'] = $values['meta_data/body'];
 		}
 		
 		if (ze\ring::engToBoolean($box['tabs']['data_deletion']['edit_mode']['on'] ?? false)) {
@@ -102,10 +104,7 @@ switch ($path) {
 			}
 		}
 		
-		if (ze\ring::engToBoolean($box['tabs']['advanced']['edit_mode']['on'] ?? false)) {
-			ze\priv::exitIfNot('_PRIV_MANAGE_EMAIL_TEMPLATE');
-			$columns['head'] = $values['advanced/head'];
-		}
+		$columns['apply_css_rules'] = $values['meta_data/apply_css_rules'];
 		
 		if (!empty($columns)) {
 			if ($box['key']['id'] && !$box['key']['duplicate']) {
@@ -124,6 +123,13 @@ switch ($path) {
 		//Record the images used in this email template.
 		$key = ['foreign_key_to' => 'email_template', 'foreign_key_id' => $box['key']['numeric_id'], 'foreign_key_char' => $box['key']['id']];
 		ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
+		
+		//Make all images in this email template public.
+		if (!empty($files)) {
+			foreach ($files as $file) {
+				ze\row::update('files', ['privacy' => 'public'], ['id' => $file['id']]);
+			}
+		}
 		
 		break;
 }

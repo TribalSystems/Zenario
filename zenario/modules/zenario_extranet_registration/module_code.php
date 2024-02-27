@@ -35,18 +35,17 @@ class zenario_extranet_registration extends zenario_extranet {
 	public function init() {
 		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 		$this->requireJsLib('zenario/js/password_functions.min.js');
+		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
 		
 		$this->registerPluginPage();
 		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
 		$this->clearCacheBy(
-			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
 		
 		$this->mode = 'modeRegistration';
-		
-		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
 		
 		$this->registerGetRequest('extranet_resend');
 		
@@ -481,8 +480,8 @@ class zenario_extranet_registration extends zenario_extranet {
 		
 		
 		
-		$fields['email_verified'] = 0;
-		if ($this->setting('initial_account_status')=='pending'){
+		$fields['email_verified'] = 'not_verified';
+		if ($this->setting('initial_account_status')=='pending') {
 			$fields['status'] = 'pending';
 			if ($this->setting('user_password') == 'user_to_choose_password') {
 				$fields['password'] = $_POST['extranet_new_password'] ?? false;
@@ -611,7 +610,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($userId) {
 			$sql = "
 				UPDATE " . DB_PREFIX . "users 
-				SET email_verified = 1
+				SET email_verified = 'verified'
 				WHERE id = " . (int) $userId;
 			ze\sql::update($sql);
 		}
@@ -850,8 +849,13 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 	
-	protected function isEmailAddressVerified($userId){
-		return (bool) ze\row::get('users', 'email_verified', ['id' => $userId]);
+	protected function isEmailAddressVerified($userId) {
+		$userData = ze\row::get('users', ['email', 'email_verified'], ['id' => $userId]);
+		if (!empty($userData) && !empty($userData['email']) && $userData['email_verified'] == 'verified') {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	protected function isActive($userId){

@@ -31,6 +31,11 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
+		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
+		//show an error message.
+		ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
+		
+		
 		if (!ze\module::isRunning('zenario_extranet')) {
 			unset($panel['collection_buttons']['perms']);
 		}

@@ -11,7 +11,7 @@
 #        - A "type: checkboxes" field on its own to act as a list of
 #          permissions.
 #        - A "type:" checkboxes field with the "checking_child_checks_parents"
-#          property set to act as a list of permissions with hierarchal dependencies.
+#          property set to act as a list of permissions with hierarchical dependencies.
 #        - A "type: checkbox" field immediately followed by a
 #          "type: checkboxes: field to act as a list of permissions that can
 #          be quickly turned on or off by the first checkbox. This will also add a

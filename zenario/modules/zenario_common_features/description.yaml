@@ -34,6 +34,7 @@ special_pages:
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
+        must_be_listed: true
         default_content: |
             <h2>Welcome to your new Zenario site!</h2>
             <p>Congratulations, you have just installed your new Zenario site.</p>
@@ -51,6 +52,7 @@ special_pages:
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
+        must_be_unlisted: true
     zenario_no_access:
         page_type: zenario_no_access
         default_alias: no-access
@@ -61,6 +63,7 @@ special_pages:
         publish: true
         logic: create_and_maintain_in_default_language
         allow_hide: false
+        must_be_unlisted: true
     zenario_example_page:
         page_type: zenario_example_page
         default_alias: second-page
@@ -136,7 +139,6 @@ jobs:
         log_on_action: false
         log_on_no_action: false
         email_on_action: false
-        email_on_no_action: false
         enabled_by_default: true
     -
         name: jobPublishContent
@@ -149,7 +151,6 @@ jobs:
         log_on_action: true
         log_on_no_action: false
         email_on_action: false
-        email_on_no_action: false
     -
         name: jobUnpinContent
         static: true
@@ -160,7 +161,6 @@ jobs:
         log_on_action: true
         log_on_no_action: false
         email_on_action: false
-        email_on_no_action: false
     -
         name: jobDataProtectionCleanup
         static: true
@@ -171,7 +171,6 @@ jobs:
         log_on_action: true
         log_on_no_action: false
         email_on_action: false
-        email_on_no_action: false
 
 signals:
     - 

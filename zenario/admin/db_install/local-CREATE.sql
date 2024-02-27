@@ -49,19 +49,6 @@ CREATE TABLE `[[DB_PREFIX]]centralised_lists` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
-DROP TABLE IF EXISTS `[[DB_PREFIX]]characteristic_user_link`;
-CREATE TABLE `[[DB_PREFIX]]characteristic_user_link` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) NOT NULL,
-  `characteristic_id` int(10) NOT NULL,
-  `characteristic_value_id` int(10) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_characteristic_value` (`user_id`,`characteristic_id`,`characteristic_value_id`),
-  KEY `characteristic_id` (`characteristic_id`),
-  KEY `characteristic_value_id` (`characteristic_value_id`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
 DROP TABLE IF EXISTS `[[DB_PREFIX]]consents`;
 CREATE TABLE `[[DB_PREFIX]]consents` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -647,9 +634,7 @@ CREATE TABLE `[[DB_PREFIX]]jobs` (
   `log_on_action` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `log_on_no_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `email_on_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `email_on_no_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `email_address_on_action` varchar(200) NOT NULL DEFAULT '',
-  `email_address_on_no_action` varchar(200) NOT NULL DEFAULT '',
   `email_address_on_error` varchar(200) NOT NULL DEFAULT '',
   `last_run_started` datetime DEFAULT NULL,
   `last_run_finished` datetime DEFAULT NULL,
@@ -1275,27 +1260,6 @@ CREATE TABLE `[[DB_PREFIX]]tuix_snippets` (
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 
-DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values`;
-CREATE TABLE `[[DB_PREFIX]]user_characteristic_values` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `characteristic_id` int(10) NOT NULL,
-  `ordinal` int(10) NOT NULL,
-  `name` text NOT NULL,
-  `label` varchar(255) NOT NULL DEFAULT 'Label not assigned',
-  `help_text` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `characteristic_id` (`characteristic_id`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values_link`;
-CREATE TABLE `[[DB_PREFIX]]user_characteristic_values_link` (
-  `user_id` int(10) unsigned NOT NULL,
-  `user_characteristic_value_id` int(10) NOT NULL,
-  PRIMARY KEY (`user_id`,`user_characteristic_value_id`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_content_accesslog`;
 CREATE TABLE `[[DB_PREFIX]]user_content_accesslog` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -1344,15 +1308,6 @@ CREATE TABLE `[[DB_PREFIX]]user_signin_log` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `login_datetime` (`login_datetime`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]user_sync_log`;
-CREATE TABLE `[[DB_PREFIX]]user_sync_log` (
-  `user_id` int(10) unsigned NOT NULL,
-  `last_synced_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user_id`),
-  KEY `last_synced_timestamp` (`last_synced_timestamp`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 

@@ -105,13 +105,6 @@ class zenario_forum extends zenario_comments {
 			$this->form_encode_type = 'multipart/form-data';
 			$this->sections['Show_File_Uploads'] = true;
 		}
-		
-		if (!$this->setting('show_user_online_status')) {
-			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = false, $ifGetSet = true, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
-			$this->clearCacheBy(
-				$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = true, $clearByModuleData = true);
-		}
 
 		//Require the phrases
 		$this->requireJsPhrases('zenario/modules/zenario_anonymous_comments/js/editor_phrases.js.php');
@@ -130,13 +123,11 @@ class zenario_forum extends zenario_comments {
 			} elseif (ze::request('comm_request') == 'add_thread' && $this->newThreadPageIsForumPage() && $this->canMakeThread()) {
 				$this->mode = 'showAddThread';
 				$this->useCannonicalURLs = false;
-				$this->allowCaching(false);
 				$_GET['comm_enter_text'] = 1;
 			
 			} elseif (ze::request('forum_thread') && $this->threadPageIsForumPage() && $this->loadThreadInfo()) {
 				$this->mode = 'showPosts';
 				$this->useCannonicalURLs = false;
-				$this->allowCaching(false);
 			
 			} else {
 				$this->mode = 'showThreads';

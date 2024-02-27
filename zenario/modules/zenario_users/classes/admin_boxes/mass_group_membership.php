@@ -150,15 +150,15 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 			if ($box['key']['remove']) {
 				if ($box['key']['count'] > 1) {
 					if ($box['key']['diff'] > 1) {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove [[count]] users from [[diff]] groups?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Remove [[count]] users from [[diff]] groups?', $box['key']);
 					} else {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove [[count]] users from 1 group?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Remove [[count]] users from 1 group?', $box['key']);
 					}
 				} else {
 					if ($box['key']['diff'] > 1) {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove the user "[[identifier]]" from [[diff]] groups?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Remove the user "[[identifier]]" from [[diff]] groups?', $box['key']);
 					} else {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to remove the user "[[identifier]]" from 1 group?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Remove the user "[[identifier]]" from 1 group?', $box['key']);
 					}
 				}
 				$box['confirm']['button_message'] = ze\admin::phrase('Remove');
@@ -166,17 +166,17 @@ class zenario_users__admin_boxes__mass_group_membership extends ze\moduleBaseCla
 			} else {
 				if ($box['key']['count'] > 1) {
 					if ($box['key']['diff'] > 1) {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to add [[count]] users to [[diff]] groups?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Add [[count]] users to [[diff]] groups?', $box['key']);
 				
 					} else {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to add [[count]] users to 1 group?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Add [[count]] users to 1 group?', $box['key']);
 					}
 				} else {
 					if ($box['key']['diff'] > 1) {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to add the user "[[identifier]]" to [[diff]] groups?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Add the user "[[identifier]]" to [[diff]] groups?', $box['key']);
 				
 					} else {
-						$box['confirm']['message'] = ze\admin::phrase('Are you sure you wish to add the user "[[identifier]]" to 1 group?', $box['key']);
+						$box['confirm']['message'] = ze\admin::phrase('Add the user "[[identifier]]" to 1 group?', $box['key']);
 					}
 				}
 				$box['confirm']['button_message'] = ze\admin::phrase('Add');

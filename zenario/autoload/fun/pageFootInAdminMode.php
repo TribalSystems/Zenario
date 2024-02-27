@@ -36,16 +36,6 @@ if (ze::setting('dropbox_api_key')) {
 if ($includeOrganizer) {
 	$moduleCodeHash = \ze\db::codeLastUpdated(). '___'. ze::setting('yaml_version');
 	
-	$jsModuleIds = '';
-	foreach (\ze\module::runningModules() as $module) {
-		if (ze::moduleDir($module['class_name'], 'js/organizer.js', true)
-		 || ze::moduleDir($module['class_name'], 'js/organizer.min.js', true)
-		 || ze::moduleDir($module['class_name'], 'js/storekeeper.js', true)
-		 || ze::moduleDir($module['class_name'], 'js/storekeeper.min.js', true)) {
-			$jsModuleIds .= ($jsModuleIds? ',' : ''). $module['id'];
-		}
-	}
-	
 	$sql = "
 		SELECT DISTINCT tfc.panel_type
 		FROM ". DB_PREFIX. "tuix_file_contents AS tfc
@@ -70,7 +60,7 @@ if ($includeOrganizer) {
 	}
 	
 	echo '
-'. $scriptTag. ' src="', $prefix, 'js/organizer.wrapper.js.php?', $w, '"></script>';
+'. $scriptTag. ' src="', $prefix, 'js/organizer.bundle.js.php?', $w, '"></script>';
 	echo '
 '. $scriptTag. ' src="', $prefix, 'admin/organizer.ajax.php?_script=1?v=', $moduleCodeHash, '"></script>';
 	
@@ -87,10 +77,21 @@ zenarioA.maxUpload = ', (int) $MaxFilesize, ';
 zenarioA.maxUploadF = "', \ze\escape::js(\ze\lang::formatFilesizeNicely($MaxFilesize, $precision = 0, $adminMode = true)), '";';
 	}
 	
+	if (ze::$skinName) {
+		$desc = false;
+		if (\ze\skinAdm::loadDescription(['name' => ze::$skinName], $desc)) {
+			if (!empty($desc['editor_options'])) {
+				echo '
+zenarioA.skinEditorOptions = ', json_encode($desc['editor_options']), ';';
+			}
+		}
+	}
+	
 		echo '
-</script>
-'. $scriptTag. ' src="', $prefix, 'js/plugin.wrapper.js.php?', $w, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
+</script>';
 }
+
+echo "\n". $scriptTag. ' src="', $prefix, 'js/plugin.bundle.js.php?', $w, '&amp;admin=1"></script>';
 
 
 $settings = [];
@@ -215,40 +216,19 @@ zenarioA.init(
 );';
 
 
-//If a toast was displayed shortly before the page was reloaded for some reason, attempt to display it again.
-if (!empty($_SESSION['_remember_toast'])
- && json_decode($_SESSION['_remember_toast'])) {
- 	
- 	echo '
- 		zenarioA.toast(', $_SESSION['_remember_toast'], ');';
- 	//N.b. this should already be json_encoded so I don't need to escape this, but I still need
- 	//the call to json_decode() above to check it is actually valid JSON and not a XSS attack!
-}
-unset($_SESSION['_remember_toast']);
-
-
-if (!empty($_SESSION['zenario__deleted_so_home'])) {
-	unset($_SESSION['zenario__deleted_so_home']);
-	echo '
-		zenarioA.longToast(', json_encode(ze\admin::phrase("Content item deleted, you've been taken to the home page.")), ', "zenario_content_item_deleted");';
-}
-
-if (!empty($_SESSION['zenario__deleted_so_up'])) {
-	unset($_SESSION['zenario__deleted_so_up']);
-	echo '
-		zenarioA.longToast(', json_encode(ze\admin::phrase("Content item deleted, you've been taken to the page above in the menu.")), ', "zenario_content_item_deleted");';
-}
-
-if (!empty($_SESSION['zenario__content_item_created'])) {
-	unset($_SESSION['zenario__content_item_created']);
-	echo '
-		zenarioA.longToast(', json_encode(ze\admin::phrase("New content item created! Now in Edit mode.")), ', "zenario_content_item_deleted");';
-}
-
-if (!empty($_SESSION['zenario__content_item_duplicated'])) {
-	unset($_SESSION['zenario__content_item_duplicated']);
-	echo '
-		zenarioA.longToast(', json_encode(ze\admin::phrase("Content item duplicated! Now in Edit mode.")), ', "zenario_content_item_deleted");';
+//If we've just made a draft, and there's a callback, perform the callback
+if (ze::$cID) {
+	if (!empty($_SESSION['zenario_draft_callback'])) {
+		echo '
+			$(document).ready(function() {
+				zenarioA.draftDoCallback(
+					"', \ze\escape::js($_SESSION['zenario_draft_callback']), '",
+					', (int) ($_SESSION['zenario_draft_callback_scroll_pos'] ?? 0), '
+				);
+			});';
+		
+		unset($_SESSION['zenario_draft_callback']);
+	}
 }
 
 

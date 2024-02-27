@@ -1,5 +1,6 @@
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_storekeeper_prefs`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]characteristic_user_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]disused_custom_phrases`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_content_link`;
@@ -15,9 +16,12 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]template_files`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]template_slot_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]tuix_customisations`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_admin_box_tabs`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristic_values_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_characteristics`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_content_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_form_fields`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]user_forms`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]user_sync_log`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]versions`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]xml_file_tuix_contents`;
