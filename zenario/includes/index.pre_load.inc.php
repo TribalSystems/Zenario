@@ -206,6 +206,18 @@ if ($simpleCookieOptions
 													
 													zenarioPageCacheLogStats(['hits', 'total']);
 													touch($chPath. 'accessed');
+													
+													
+													//Try and record the destCID and destCType as we would a normal page view
+													if ($tagId = file_get_contents($chPath. 'tag_id')) {
+														$tag = explode('_', $tagId, 2);
+														if (isset($tag[1])) {
+															if ($cID = (int) $tag[1]) {
+																$_SESSION['destCID'] = $cID;
+																$_SESSION['destCType'] = $tag[0];
+															}
+														}
+													}
 												
 												
 													//If there are cached images on this page, mark that they've been accessed

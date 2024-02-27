@@ -2096,7 +2096,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
-		if (!array_key_exists("refinerName", $_GET)){
+		//If we're creating a new content item from the admin toolbar, navigate to that content item
+		//after the FAB closes.
+		if (!empty($box['key']['create_from_toolbar'])) {
 			$contentItemLink = ze\link::toItem($box['key']['cID'], $box['key']['cType']);
 			if ($contentItemLink) {
 				ze\tuix::closeWithFlags(['go_to_url' => $contentItemLink]);

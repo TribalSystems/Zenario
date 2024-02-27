@@ -950,6 +950,12 @@ class plugin {
 						$setFiles = [];
 						foreach ($eggsToCache as $slotNameNestId => &$cacheVars) {
 							$slot = \ze::$slotContents[$slotNameNestId];
+							$eggInstance = $slot->class();
+							
+							//Don't try and check the cache for a nested plugin that refused to load.
+							if (is_null($eggInstance)) {
+								continue;
+							}
 						
 							//Loop through this slot and any child slots, coming up with the rules as to when we should clear the cache
 							//For nests with child slots, we should combine the rules
@@ -964,7 +970,7 @@ class plugin {
 								}
 							}
 							
-							$cacheVars['c'] = $slot->class()->zAPIGetCachableVars();
+							$cacheVars['c'] = $eggInstance->zAPIGetCachableVars();
 							
 							$temps[$slotNameNestId] = $slot->trimVarsBeforeCaching();
 							$cacheVars['s'] = $slot;

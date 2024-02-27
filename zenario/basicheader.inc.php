@@ -517,7 +517,7 @@ class ze {
 			|| substr($var, 0, 4) == '_ga_'
 			|| substr($var, 0, 9) == 'PHPSESSID'
 			|| substr($var, 0, 11) == 'can_cache__'
-			|| in_array($var, ['cookies_accepted', '_ga', '_gat', 'is_returning']);
+			|| in_array($var, ['cookies_accepted', '_ga', '_gat', '_fbp', '_clck', '_uetvid', 'is_returning', 'COOKIE_LAST_ADMIN_USER', 'COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED', 'ZENARIO_ADMIN_LOGIN_LINK']);
 	}
 	
 	//Returns true if a $_SESSION variable does not affect caching (or is already covered by another existing category)

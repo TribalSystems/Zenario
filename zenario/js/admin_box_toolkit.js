@@ -1214,7 +1214,7 @@ methods.showConfirm = function(saveAndContinue, createAnother, saveAndNext) {
 		}
 		
 		var buttons =
-			'<input type="button" class="submit_selected" value="' + thus.tuix.confirm.button_message + '" onclick="' + thus.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ');"/>' +
+			'<input type="button" class="submit_selected" value="' + thus.tuix.confirm.button_message + '" onclick="' + thus.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ', ' + engToBoolean(saveAndNext) + ');"/>' +
 			'<input type="button" class="submit" value="' + (thus.tuix.confirm.cancel_button_message || zenarioA.phrase.cancel) + '"/>';
 		
 		zenarioA.floatingBox(message, buttons, thus.tuix.confirm.message_type || 'none');

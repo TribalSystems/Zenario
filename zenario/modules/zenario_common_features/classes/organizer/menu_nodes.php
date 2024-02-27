@@ -150,14 +150,6 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			unset($panel['item_buttons']['view_content']);
 		}
 
-		if (isset($panel['collection_buttons']['tree_explorer']['popout']['href'])) {
-			if ($panel['key']['parentId']) {
-				$panel['collection_buttons']['tree_explorer']['popout']['href'] .= '?type=menu_node&id='. (int) $panel['key']['parentId'];
-			} else {
-				$panel['collection_buttons']['tree_explorer']['popout']['href'] .= '?type=section&id='. (int) $panel['key']['sectionId'];
-			}
-		}
-
 
 		//Pass the Storekeeper Mode onto the create and edit buttons
 		if (isset($panel['item_buttons']['edit'])) {

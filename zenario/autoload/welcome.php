@@ -4615,8 +4615,10 @@ class welcome {
 	//Formerly "redirectAdmin()"
 	public static function redirectAdmin($getRequest, $forceAliasInAdminMode = false, $continueTo = 'default') {
 		
+		//If the visitor's original request was from a content item, try to use that as the destination.
 		$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
-		if (!empty($getRequest)) {
+		if (!empty($getRequest)
+		 && !(empty($getRequest['cID']) && empty($getRequest['cType']) && empty($getRequest['langId']))) {
 			\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $getRequest, $getRequest, []);
 		}
 		
