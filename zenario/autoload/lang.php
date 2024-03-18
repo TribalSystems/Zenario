@@ -439,8 +439,18 @@ class lang {
 	public static function getLanguages($includeAllLanguages = false, $orderByEnglishName = false, $defaultLangFirst = false) {
 		
 		$sql = "
-			SELECT
-				l.id,
+			SELECT";
+	
+		if ($includeAllLanguages) {
+			$sql .= "
+				vp.language_id AS id";
+	
+		} else {
+			$sql .= "
+				l.id";
+		}
+	
+		$sql .= ",
 				IFNULL(en.local_text, lo.local_text) AS english_name,
 				IFNULL(lo.local_text, en.local_text) AS language_local_name,
 				IFNULL(f.local_text, 'white') as flag,
@@ -453,11 +463,11 @@ class lang {
 		if ($includeAllLanguages) {
 			$sql .= "
 				FROM (
-					SELECT DISTINCT language_id AS id
+					SELECT DISTINCT language_id
 					FROM ". DB_PREFIX. "visitor_phrases
-				) AS l
-				LEFT JOIN ". DB_PREFIX. "languages el
-				   ON l.id = el.id";
+				) AS vp
+				LEFT JOIN ". DB_PREFIX. "languages AS l
+				   ON l.id = vp.language_id";
 	
 		} else {
 			$sql .= "
@@ -488,10 +498,9 @@ class lang {
 		} else {
 			$sql .= "l.id";
 		}
-	
-		$result = \ze\sql::select($sql);
+		
 		$langs = [];
-		while ($row = \ze\sql::fetchAssoc($result)) {
+		foreach (\ze\sql::select($sql) as $row) {
 			$langs[$row['id']] = $row;
 		}
 	

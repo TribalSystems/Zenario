@@ -10,6 +10,7 @@ plugin_settings:
                         name: html
                         is_searchable_content: true
                         translate: true
+                        advanced_inline_styles: true
                     label: 'Display this HTML:'
                     type: editor
                     editor_type: standard_with_images

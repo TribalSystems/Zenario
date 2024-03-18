@@ -2,7 +2,7 @@
 #
 #   This file contains descriptive information about your site. It should be called 
 #   site_description.yaml and be placed in your zenario_custom/ directory.
-#
+#   
 #   The original of this file is in zenario/reference/sample_site_descriptions/.
 #   
 #   Some of this information is descriptive: for example you can specify a license that
@@ -48,6 +48,9 @@ two_factor_authentication_timeout: 30
 # Normally, when an admin logs in, Zenario will show the last IP address of that administrator.
 # Set this option to true to hide that info.
 hide_admin_ip_address_on_login: false
+
+# The days before administrators are marked as inactive and a warning is displayed next to them.
+days_before_admin_is_inactive: 90
 
 
 # Style formats are class names that can be selected in the WYSIWYG Editor

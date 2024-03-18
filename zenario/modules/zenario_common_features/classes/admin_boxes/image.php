@@ -515,7 +515,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			ze\file::internalImageAndWebPPath($width, $height, $internalPath, true, $internalWebPPath, false, $isRetina, $mimeType, $box['key']['id']);
 			
 			$originalImageSize = ze\file::formatSizeUnits(filesize($internalPath));
-			$webPSize = ze\file::formatSizeUnits(filesize(addslashes($internalWebPPath)));
+			$webPSize = ze\file::formatSizeUnits(filesize($internalWebPPath));
 			
 			$values['link/internal_original_image_link'] = htmlspecialchars($url);
 			$values['link/external_original_image_link'] = htmlspecialchars(ze\link::absolute(). $url);

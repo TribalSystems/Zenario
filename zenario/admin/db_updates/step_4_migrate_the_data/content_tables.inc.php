@@ -943,11 +943,13 @@ if (ze\dbAdm::needRevision(56660)) {
 			'fluid' => $headerInfo['fluid'],
 			'responsive' => $headerInfo['responsive']
 		])) {
-			unset($layoutData['cells']);
-			ze\row::update('layout_head_and_foot', [
-				'head_json_data' => $layoutData,
-				'foot_json_data' => (object) []		//N.b. I want an empty object here, not an empty array.
-			], []);
+			if (is_array($layoutData) && !empty($layoutData)) {
+				unset($layoutData['cells']);
+				ze\row::update('layout_head_and_foot', [
+					'head_json_data' => $layoutData,
+					'foot_json_data' => (object) []		//N.b. I want an empty object here, not an empty array.
+				], []);
+			}
 		}
 	}
 	

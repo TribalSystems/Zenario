@@ -462,6 +462,8 @@ class ring {
 	}
 	
 	public static function stringContainsTooManyProfanities($text = '', $toleranceLevel = "none") {
+		$rating = 0;
+		
 		if (is_numeric($toleranceLevel)) {
 			$toleranceLevelNumeric = (int) $toleranceLevel;
 		} else {
@@ -483,20 +485,21 @@ class ring {
 		}
 		
 		$path = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
-		$file = fopen($path, "r");
-		$rating = 0;
-		
-		if (is_string($text)) {
-			while(!feof($file)) {
-				$line = fgetcsv($file);
-				$word = str_replace('-', '\\W*', $line[0]);
-				$level = $line[1];
+		if (file_exists($path)) {
+			$file = fopen($path, "r");
 			
-				preg_match_all("#\b". $word ."(?:es|s)?\b#si", $text, $matches, PREG_SET_ORDER);
-				$rating += count($matches) * $level;
+			if (is_string($text)) {
+				while (!feof($file)) {
+					$line = fgetcsv($file);
+					$word = str_replace('-', '\\W*', $line[0]);
+					$level = $line[1];
+				
+					preg_match_all("#\b". $word ."(?:es|s)?\b#si", $text, $matches, PREG_SET_ORDER);
+					$rating += count($matches) * $level;
+				}
+			
+				fclose($file);
 			}
-		
-			fclose($file);
 		}
 		
 		return $rating > $toleranceLevelNumeric;

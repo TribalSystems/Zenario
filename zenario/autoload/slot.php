@@ -192,6 +192,11 @@ abstract class slot {
 	protected $cssClass;
 	
 	
+	public function isSitewide() {
+		return $this->isHeader || $this->isFooter;
+	}
+	
+	
 	public function setSlideNum($slide_num) {
 		$this->slideNum = $slide_num;
 	}

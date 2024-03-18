@@ -283,8 +283,9 @@ if (ze::$dbL
 //T9732, Admin login panel, show warning when a redirect from other URL has occurred
 $refererHostWarning = false;
 if (!empty($_SERVER['HTTP_REFERER'])
+ && ($refererURL = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST))
+ && ($refererHost = ze\link::hostWithoutPort($refererURL))
  && ($currentHost = ze\link::hostWithoutPort())
- && ($refererHost = ze\link::hostWithoutPort(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST)))
  && ($refererHost != $currentHost)) {
 	$refererHostWarning =
 		ze\admin::phrase('Your URL has changed. This is the admin login page at "[[currentHost]]", you were previously at "[[refererHost]]".',

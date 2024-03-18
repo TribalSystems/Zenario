@@ -49,6 +49,9 @@ two_factor_authentication_timeout: 30
 # Set this option to true to hide that info.
 hide_admin_ip_address_on_login: false
 
+# The days before administrators are marked as inactive and a warning is displayed next to them.
+days_before_admin_is_inactive: 90
+
 
 # Style formats are class names that can be selected in the WYSIWYG Editor
 # under the Styles menu.

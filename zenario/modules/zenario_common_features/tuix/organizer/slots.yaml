@@ -23,7 +23,7 @@ zenario__content:
             columns:
                 ord:
                     hidden: true
-                slotname:
+                slot_name:
                     title: Slot name
                     disallow_sorting: true
                     always_show: true
@@ -76,6 +76,8 @@ zenario__content:
                             addPlugin: ''
                     with_columns_set:
                         empty: true
+                    without_columns_set:
+                        is_sitewide: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
             
@@ -100,6 +102,8 @@ zenario__content:
                             addPluginInstance: 1
                     with_columns_set:
                         empty: true
+                    without_columns_set:
+                        is_sitewide: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
                 
@@ -117,6 +121,8 @@ zenario__content:
                             addPluginInstance: 1
                     with_columns_set:
                         empty: true
+                    without_columns_set:
+                        is_sitewide: true
                     visible_if: >
                         zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
                         
@@ -139,7 +145,7 @@ zenario__content:
                             removePlugin: 1
                     with_columns_set:
                         full: true
-                        layout: true
+                        layout_filled: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
                 
@@ -157,7 +163,7 @@ zenario__content:
                             removePlugin: 1
                     with_columns_set:
                         full: true
-                        content_item: true
+                        content_item_filled: true
                     visible_if: >
                         zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
                 
@@ -174,8 +180,7 @@ zenario__content:
                             hidePlugin: 1
                     with_columns_set:
                         full: true
-                        reusable: true
-                        layout: true
+                        layout_or_sitewide_filled: true
                     visible_if: >
                         zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
                 
@@ -184,7 +189,7 @@ zenario__content:
                     label: Stop hiding on this content item
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to stop hiding [[layout]] on this content item?'
+                            message: 'Are you sure you wish to stop hiding [[layout_plain_text]] on this content item?'
                             button_message: Show
                             cancel_button_message: Cancel
                             message_type: warning
@@ -193,6 +198,6 @@ zenario__content:
                             showPlugin: 1
                     with_columns_set:
                         opaque: true
-                        layout: true
+                        layout_or_sitewide_filled: true
                     visible_if: >
                         zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')

@@ -21,9 +21,11 @@ zenario__content:
                             level: 2
                             addPluginInstance: 1
                     with_columns_set:
-                        traits.empty: true
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
                     visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'template'
+                        zenarioO.refiner && zenarioO.refiner.name == 'layout'
                 
                 insert_nest_on_item_layer:
                     class_name: zenario_common_features
@@ -40,6 +42,8 @@ zenario__content:
                             level: 1
                             addPluginInstance: 1
                     with_columns_set:
-                        traits.empty: true
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'content_item'
