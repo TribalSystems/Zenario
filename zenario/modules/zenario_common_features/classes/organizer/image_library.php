@@ -441,7 +441,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			}
 
 			//Try to add the uploaded image to the database
-			$fileId = ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+			$fileId = ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
 
 			if ($fileId) {
 

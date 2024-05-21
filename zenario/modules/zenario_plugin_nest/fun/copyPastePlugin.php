@@ -77,12 +77,12 @@ if ($dest['is_slide']) {
 if ($newEggId = self::addPlugin($source['module_id'], $instanceId, $dest['slide_num'])) {
 	
 	//Bump up the ordinals of any other plugins on this slide by one,
-	//so we can place this new plugin just after the one we duplicated
+	//so we can place this new plugin just before the one we duplicated
 	if ($insert) {
 		ze\sql::update("
 			UPDATE ". DB_PREFIX. "nested_plugins
 			  SET ord = ord + 1
-			WHERE ord > ". (int) $ord. "
+			WHERE ord >= ". (int) $ord. "
 			  AND instance_id = ". (int) $instanceId. "
 			  AND slide_num = ". (int) $dest['slide_num']
 		);

@@ -881,7 +881,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 								SELECT 1
 								FROM ". DB_PREFIX. "plugin_instances
 								WHERE name =  '". ze\escape::sql($values['first_tab/instance_name']). "'
-								  AND id != ". (int) $box['key']['id'];
+								  AND id != ". (int) $box['key']['instanceId'];
 				
 							if (ze\sql::fetchRow($sql)) {
 								$fields['first_tab/instance_name']['error'] =

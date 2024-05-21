@@ -366,6 +366,11 @@ class ring {
 			$config->set('CSS.AllowTricky', true);
 		}
 		
+		//By default, the settings don't allow large retina images.
+		//It's not 2010 anymore though, let's allow larger images up to 4k.
+		$config->set('CSS.MaxImgLength', '3840px');
+		$config->set('HTML.MaxImgLength', 3840);
+		
 		$purifier = new \HTMLPurifier($config);
 		$html = $purifier->purify($html);
 		

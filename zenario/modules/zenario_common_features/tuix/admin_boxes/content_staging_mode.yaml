@@ -78,8 +78,10 @@ zenario_content_staging_mode:
                     hide_if_previous_outdented_value_isnt: 1
                     type: button
                     css_class: zenario_gp_button
-                    format_onchange: true
                     value: Suggest
+                    format_onchange: true
+                    onclick: |
+                        lib.markAsChanged();
                     notices_below:
                         code_reuse:
                             hidden: true

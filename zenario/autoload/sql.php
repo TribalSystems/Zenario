@@ -74,8 +74,9 @@ class sql {
 	}
 
 	//Replacement for mysql_insert_id()
+	protected static $lastInsertID;
 	public static function insertId() {
-		return static::$db->con->insert_id;
+		return static::$lastInsertID;
 	}
 
 	//Replacement for mysql_num_rows()
@@ -163,6 +164,10 @@ class sql {
 		//}
 		
 		if ($result = static::$db->con->query($sql)) {
+			
+			if (!empty(static::$db->con->insert_id)) {
+				static::$lastInsertID = static::$db->con->insert_id;
+			}
 		
 			if ($checkRevNo && static::$db->con->affected_rows) {
 				\ze\db::updateDataRevisionNumber();

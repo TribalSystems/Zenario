@@ -3,7 +3,7 @@ display_name: Zebra Designs
 type: usable
 
 import:
-    - zenario/styles/fea/fea_common.min.css
+    - zenario/styles/fea/fea_common.css
 
 editor_options:
     custom_colors: false
