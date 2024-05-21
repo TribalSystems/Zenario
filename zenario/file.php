@@ -73,19 +73,19 @@ if ($checksum) {
 
 //There are several places in Organizer/admin mode where an image is displayed with an id and no checksum.
 //Allow this, but only in admin mode.
-if (isset($_GET['adminDownload'])
- || !$checksum
- && (isset($_GET['og'])
-  || isset($_GET['closeup'])
-  || isset($_GET['popout']))) {
+if (!$checksum
+ || isset($_GET['og'])
+ || isset($_GET['closeup'])
+ || isset($_GET['popout'])
+ || isset($_GET['adminDownload'])) {
 	
 	ze\cookie::startSession();
 	if (empty($_SESSION['allow_file_uploads_in_the_installer'])) {
 		require CMS_ROOT. 'zenario/adminheader.inc.php';
-		$adminBackend = true;
 	} else {
 		require 'visitorheader.inc.php';
 	}
+	$adminBackend = true;
 	
 	
 //All other usage should use the visitor header
@@ -148,7 +148,9 @@ if ($usage == 'user' && ze::request('user_id')) {
 } elseif ($usage == 'template' && ze::request('layout_id')) {
 	$id = ze\row::get('layouts', 'image_id', ze::request('layout_id'));
 
-} elseif ($adminBackend && !empty($_GET['id'])) {
+//When showing an image from the admin backend, and an admin is logged in,
+//allow an image to be displayed from an ID in the URL without a checksum
+} elseif ($adminBackend && $checksum === '' && !empty($_GET['id'])) {
 	$id = $_GET['id'];
 }
 
@@ -167,6 +169,8 @@ if (isset($_GET['og'])) {
 } elseif (isset($_GET['popout']) && ze\priv::check()) {
 	$width = 900;
 	$height = 900;
+	//N.b. after doing a code review I don't think these parameters are actually used in this case,
+	//and the image will be displayed at its full size.
 
 //Handle resizes, using an entry in a visitor's session to prevent visitors hacking the URL and asking for whatever size image they want.
 } elseif ($checksum && $usage == 'resize') {
@@ -312,12 +316,13 @@ if ($getUploadedFileInCacheDir) {
 			filename,
 			";
 
-	//If this is a thumbnail then we'll grab the image data up straight away.
+	//If we are going to be drawing a thumbnail for admin mode, then we'll grab the thumbnail image data.
+	//(But note that SVGs won't have this set, we still need to pull the original data in their case.)
 	if (isset($_GET['og'])) {
-		$sql .= "thumbnail_180x130_data AS data";
+		$sql .= "IFNULL(thumbnail_180x130_data, data) AS data";
 
 	//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.
-	} elseif ($usage == 'content') {
+	} elseif ($adminBackend || $usage == 'content') {
 		$sql .= "data";
 
 	//Otherwise we won't load it now, and we'll use the ze\file::imageLink() function to get it below.
@@ -445,7 +450,7 @@ if (!$filename && !empty($file['filename'])) {
 }
 
 if ($filename) {
-	if (ze::request('download') || $usage == 'content') {
+	if (ze::request('download') || ($usage == 'content' && !ze::request('showInWindow'))) {
 		header('Content-Disposition: attachment; filename="'. urlencode($filename). '"');
 	} else {
 		header('Content-Disposition: filename="'. urlencode($filename). '"');

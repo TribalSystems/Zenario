@@ -20,7 +20,7 @@ plugin_settings:
                         _SPECIFIC:
                             ord: "1"
                             label: Custom
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: >
                         Select "Auto" to generate the menu around the current content item (recommended). Select "Custom" to show the menu of a different part of the site.
                 menu_section:
@@ -36,12 +36,12 @@ plugin_settings:
                         max_path: zenario__menu/panels/sections
                         target_path: zenario__menu/panels/sections
                         select_phrase: Select menu section...
-                        hide_remove_button: Yes
+                        hide_remove_button: true
                         hide_info_button: true
                     value: "1"
                     validation:
                         required: Please select a menu section
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: >
                         The principal menu navigation is usually in a secton called "Main". To display menu nodes from a different section, choose it here.
                 specific_menu_node:
@@ -55,10 +55,10 @@ plugin_settings:
                         max_path: zenario__menu/panels/menu_nodes
                         target_path: zenario__menu/panels/menu_nodes
                         select_phrase: Select menu node...
-                        hide_remove_button: Yes
+                        hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a menu node
-                    hidden: Yes
+                    hidden: true
                 menu_start_from:
                     indent: 1
                     plugin_setting:

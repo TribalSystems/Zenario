@@ -24,6 +24,10 @@
 						{% endif %}
 					
 						<div class="document_details_content_details">
+							{% if Show_Language_Name %}
+								<div class="ctype_document_language_name">{{"Language:"|trans}} {{Language_Name}}</div>
+							{% endif %}
+							
 							{% if Show_document_extra_data and Extra_data %}
 								{% for extraDataKey, extraDataValue in Extra_data %}
 									<p class="{{extraDataKey|e}}">{{extraDataValue|e}}</p>

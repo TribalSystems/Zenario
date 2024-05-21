@@ -700,7 +700,7 @@ zenario__menu:
                     visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     parent: linked_content_item_dropdown
-                    label: Change categories
+                    label: Change categories...
                     admin_box:
                         path: zenario_content_categories
                         key:

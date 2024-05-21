@@ -44,13 +44,13 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 			$userDetails = ze\user::details($userIds[0]);
 			$box['title'] = "Sending activation email to the user \"" . $userDetails["identifier"] . "\"";
 			$fields['details/do_not_include_personal_info_snippet']['hidden'] = true;
-			$infoNote .= 'As this site is configured to store only encrypted passwords for users (not plain text), the user\'s password will not be shown.';
+			$infoNote .= 'Zenario stores passwords in encrypted form, so passwords cannot be sent except when changing password.';
 			
 			$fields['details/email_to_send_body']['label'] = ze\admin::phrase('Email body (modify as required):');
 		} else {
 			$box['title'] = "Sending activation emails to " . count($userIds) . " users";
 			$infoNote .= 'You are about to send activation emails to [[count]] selected users.<br> <br>';
-			$infoNote .= 'As this site is configured to store only encrypted passwords for users (not plain text), the users\' passwords will not be shown.';
+			$infoNote .= 'Zenario stores passwords in encrypted form, so passwords cannot be sent except when changing password.';
 			
 			$fields['details/email_to_send_body']['label'] = ze\admin::phrase('Email body:');
 		}
@@ -85,7 +85,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		foreach ($userIds as $userId) {
 			$user = ze\row::get('users', ['identifier', 'email'], $userId);
 			if (!$user['email']) {
-				$box['tabs']['details']['errors'][] = ze\admin::phrase('The user "[[identifier]]" must have an email address to send a activation email.', $user);
+				$box['tabs']['details']['errors'][] = ze\admin::phrase('The user "[[identifier]]" must have an email address to send an activation email.', $user);
 			}
 		}
 	}

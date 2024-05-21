@@ -334,7 +334,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 						$backupsCount++;
 					}
 				}
-				$fields['backup/manual_backups']['snippet']['html'] .= '<p>' . ze\admin::nphrase('There is 1 manual backup.', 'There are [[count]] manual backups.', $backupsCount) . '</p>';
+				$fields['backup/manual_backups']['snippet']['html'] .= '<p>' . ze\admin::nPhrase('There is 1 manual backup.', 'There are [[count]] manual backups.', $backupsCount) . '</p>';
 			} else {
 				$fields['backup/manual_backups']['snippet']['html'] .= '<p>' . ze\admin::phrase('The backups directory "[[path]]" could not be found.', ['path' => $dirpath]) . '</p>';
 			}
@@ -397,6 +397,55 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			if (!$values['cookies/popup_cookie_type_switches_initial_state']) {
 				$fields['cookies/popup_cookie_type_switches_initial_state']['value'] = 'off';
 			}
+			
+			//Re-apply the default values if needed
+			if (!$fields['cookies/cookie_box1_01_implied_msg']['value']) {
+				$fields['cookies/cookie_box1_01_implied_msg']['value'] = ze\admin::phrase("This site uses cookies, and places cookies on your computer to provide you with the best experience. If you continue to use this site, we will assume that you consent to this. Please see our privacy policy for more information.");
+			}
+			
+			if (!$fields['cookies/cookie_box1_02_continue_btn']['value']) {
+				$fields['cookies/cookie_box1_02_continue_btn']['value'] = ze\admin::phrase("Continue");
+			}
+			
+			if (!$fields['cookies/cookie_box1_03_cookie_consent_msg']['value']) {
+				$fields['cookies/cookie_box1_03_cookie_consent_msg']['value'] = ze\admin::phrase("This site would like to place cookies on your computer. These are designed to improve your experience and provide personalised content. You can accept all cookies, or find out more and accept only certain types.");
+			}
+			
+			if (!$fields['cookies/cookie_box1_04_manage_btn']['value']) {
+				$fields['cookies/cookie_box1_04_manage_btn']['value'] = ze\admin::phrase("Manage cookies");
+			}
+			
+			if (!$fields['cookies/cookie_box1_05_accept_btn']['value']) {
+				$fields['cookies/cookie_box1_05_accept_btn']['value'] = ze\admin::phrase("Accept all");
+			}
+			
+			if (!$fields['cookies/cookie_box2_01_intro_msg']['value']) {
+				$fields['cookies/cookie_box2_01_intro_msg']['value'] = ze\admin::phrase("<h2>Cookie settings</h2><p>This site uses cookies, which are small text files, to improve your experience and show you personalised content. You can accept all cookies, or manage them by type.</p><p>You can find out more on our privacy page.</p>");
+			}
+			
+			if (!$fields['cookies/cookie_image_canvas']['value']) {
+				$fields['cookies/cookie_image_canvas']['value'] = "fixed_width_and_height";
+			}
+			
+			if (!$fields['cookies/cookie_image_width']['value']) {
+				$fields['cookies/cookie_image_width']['value'] = 275;
+			}
+			
+			if (!$fields['cookies/cookie_image_height']['value']) {
+				$fields['cookies/cookie_image_height']['value'] = 60;
+			}
+			
+			if (!$fields['cookies/cookie_box2_02_accept_all_btn']['value']) {
+				$fields['cookies/cookie_box2_02_accept_all_btn']['value'] = ze\admin::phrase("Accept all");
+			}
+			
+			if (!$fields['cookies/cookie_box2_11_save_preferences_btn']['value']) {
+				$fields['cookies/cookie_box2_11_save_preferences_btn']['value'] = ze\admin::phrase("Save preferences");
+			}
+			
+			if (!$fields['cookies/popup_cookie_type_switches_initial_state']['value']) {
+				$fields['cookies/popup_cookie_type_switches_initial_state']['value'] = "off";
+			}
 		}
 
 		if ($settingGroup == 'head_and_foot' && !ze\priv::check('_PRIV_EDIT_SITEWIDE')) {
@@ -404,6 +453,48 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$box['tabs']['body']['edit_mode']['enabled'] =
 			$box['tabs']['foot']['edit_mode']['enabled'] =
 			$box['tabs']['cookie_content']['edit_mode']['enabled'] = false;
+		}
+		
+		
+		if ($settingGroup == 'aws_s3_and_vector_data_processing') {
+			
+			if (!class_exists('Aws\\S3\\S3Client')) {
+				$values['awss3_file_downloads/enable_aws_support'] = '';
+				$fields['awss3_file_downloads/enable_aws_support']['disabled'] = true;
+				
+				$awsPackageDocumentationHref = 'https://zenar.io/download-page/advanced-installation/installing-aws-s3-support';
+				$linkStart = '<a href="' . $awsPackageDocumentationHref . '" target="_blank">';
+				$linkEnd = '</a>';
+				$fields['awss3_file_downloads/enable_aws_support']['note_below'] = ze\admin::phrase(
+					'To use this feature, please [[link_start]]install the AWS library[[link_end]].',
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			}
+			
+			
+			//Check the scheduled task is running
+			if (ze\module::inc('zenario_scheduled_task_manager')) {
+			
+				if (!ze::setting('jobs_enabled')
+				 || !ze\row::get('jobs', 'enabled', ['job_name' => 'jobFetchDocumentExtract', 'module_class_name' => 'zenario_common_features'])) {
+					
+					$link = 'href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks'). '" target="_blank"';
+					$fields['awss3_file_downloads/textract_description']['notices_below'] = [[
+						'type' => 'warning',
+						'message' => ze\admin::phrase('Document extracts are not available. The Scheduled Task Manager is installed but the document extract task (jobFetchDocumentExtract) is not enabled. <a [[link]]>Click for more info.</a>', ['link' => $link]),
+						'html' => true
+					]];
+				}
+		
+			} else {
+				$scheduledTaskManagerModuleId = ze\module::id('zenario_scheduled_task_manager');
+				$link = 'href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__modules/panels/modules//'. (int) $scheduledTaskManagerModuleId. '~-scheduled_task_manager'). '" target="_blank"';
+				$fields['awss3_file_downloads/textract_description']['notices_below'] = [[
+					'type' => 'warning',
+					'message' => ze\admin::phrase('Document extracts are not available. To enable them, please install the Scheduled Task Manager module. <a [[link]]>See available modules.</a>', ['link' => $link]),
+					'html' => true
+				]];
+			}
 		}
 	}
 
@@ -604,7 +695,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$extract = '';
 				ze\site::setSetting('ghostscript_path', $values['ghostscript/ghostscript_path'], $updateDB = false);
 
-				if (ze\file::createPpdfFirstPageScreenshotPng(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+				if (ze\file::createPdfFirstPageScreenshotPng(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
 					$box['tabs']['ghostscript']['notices']['success']['show'] = true;
 				} else {
 					$box['tabs']['ghostscript']['notices']['error']['show'] = true;
@@ -792,7 +883,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							zenario_email_template_manager::putBodyInTemplate($body);
 						}
 						
-						$result = ze\server::sendEmailAdvanced(
+						$result = ze\server::sendEmailAdvancedAndShowErrorMessages(
 							$subject, $body,
 							$email,
 							$addressToOverriddenBy,
@@ -805,7 +896,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							$isHTML = true, 
 							$exceptions = true);
 				
-						if ($result) {
+						if ($result && !ze::isError($result)) {
 							$success = ze\admin::phrase('Test email sent to "[[email]]".', ['email' => $email]);
 						} else {
 							$error = ze\admin::phrase('An email could not be sent to "[[email]]".', ['email' => $email]);
@@ -838,14 +929,42 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		//Note: This is done in formatAdminBox() and not fillAdminBox() as one of the default values changes depending
 		//on the settings chosen in the sitemap tab!
 		if ($settingGroup == 'search_engine_optimisation') {
-			$fields['robots_txt/block_all']['custom__val'] = self::setRobotsTxtToBlockAll();
-			$fields['robots_txt/default_config']['custom__val'] = self::setRobotsTxtToDefaultConfig($values['sitemap/sitemap_enabled'], $values['sitemap/sitemap_url']);
+			$defaultConfig = self::setRobotsTxtToDefaultConfig($values['sitemap/sitemap_enabled'], $values['sitemap/sitemap_url']);
+			$blockAll = self::setRobotsTxtToBlockAll();
+			
+			if (!empty($fields['robots_txt/default_config']['pressed'])) {
+				unset($fields['robots_txt/default_config']['pressed']);
+				
+				$fields['robots_txt/default_config']['disabled'] = true;
+				$values['robots_txt/robots_txt_file_contents'] = $defaultConfig;
+			} else {
+				$fields['robots_txt/default_config']['disabled'] = false;
+			}
+			
+			if (!empty($fields['robots_txt/block_all']['pressed'])) {
+				unset($fields['robots_txt/block_all']['pressed']);
+				
+				$fields['robots_txt/block_all']['disabled'] = true;
+				$values['robots_txt/robots_txt_file_contents'] = $blockAll;
+			} else {
+				$fields['robots_txt/block_all']['disabled'] = false;
+			}
+			
+			$fields['robots_txt/robots_config_info_message__blocks_all']['hidden'] = true;
+			$fields['robots_txt/robots_config_info_message__default_config']['hidden'] = true;
+			
+			if ($values['robots_txt/robots_txt_file_contents'] == $blockAll) {
+				$fields['robots_txt/robots_config_info_message__blocks_all']['hidden'] = false;
+			} elseif ($values['robots_txt/robots_txt_file_contents'] == $defaultConfig) {
+				$fields['robots_txt/robots_config_info_message__default_config']['hidden'] = false;
+			}
 			
 			$robotxTxtReferencesSitemap = false;
 			if (strpos($values['robots_txt/robots_txt_file_contents'], 'Sitemap:') !== false) {
 				$robotxTxtReferencesSitemap = true;
 			}
 			$box['tabs']['robots_txt']['notices']['robots_txt_refers_to_disabled_sitemap']['show'] = $robotxTxtReferencesSitemap && !$values['sitemap/sitemap_enabled'];
+			$box['tabs']['robots_txt']['notices']['robots_txt_does_not_include_sitemap']['show'] = !$robotxTxtReferencesSitemap && $values['sitemap/sitemap_enabled'];
     	}
 	}
 
@@ -940,9 +1059,18 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('The JPEG quality must be a number between 80 and 100.');
 			}
 		}
-		if (isset($values['filesizes/content_max_filesize']) && $values['filesizes/content_max_filesize'] && ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'],$values['filesizes/content_max_filesize_unit']) > ze\dbAdm::apacheMaxFilesize()) {
-			$box['tabs']['filesizes']['errors'][] = ze\admin::phrase('The maximum file size value should not exceed the server-wide maximum uploadable file size.');
+		
+		if (
+			isset($values['filesizes/content_max_filesize'])
+			&& $values['filesizes/content_max_filesize']
+			&& ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'], $values['filesizes/content_max_filesize_unit']) > ze\dbAdm::apacheMaxFilesize()
+		) {
+			$box['tabs']['filesizes']['errors'][] = ze\admin::phrase(
+				'The Zenario maximum uploadable file size value should not exceed the server maximum uploadable file size ([[apacheMaxFilesize]]).',
+				['apacheMaxFilesize' => $fields['filesizes/apache_max_filesize']['value']]
+			);
 		}
+		
 		if (!empty($values['smtp/smtp_specify_server'])) {
 			if (empty($values['smtp/smtp_host'])) {
 				$box['tabs']['smtp']['errors'][] = ze\admin::phrase('Please enter the SMTP server name.');
@@ -1106,6 +1234,38 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				if (!$robotstxtContentsAreValid) {
 					$fields['robots_txt/robots_txt_file_contents']['error'] = ze\admin::phrase('Please check the note below and make sure the required lines are present in the robots.txt file contents.');
 					$fields['robots_txt/robots_txt_file_contents_required_lines_description']['hidden'] = false;
+				}
+			}
+		}
+		
+		
+		if ($settingGroup == 'aws_s3_and_vector_data_processing') {
+			
+			if (class_exists('Aws\\S3\\S3Client')
+			 && $values['awss3_file_downloads/enable_aws_support']
+			 && $values['awss3_file_downloads/enable_aws_textract']) {
+				
+				$awsS3Region = $values['awss3_file_downloads/aws_s3_region'];
+				$awsS3KeyId = $values['awss3_file_downloads/aws_s3_key_id'];
+				$awsS3SecretKey = $values['awss3_file_downloads/aws_s3_secret_key'];
+				$awsS3Bucket = $values['awss3_file_downloads/aws_textract_temporary_storage_bucket'];
+		
+				if ($awsS3Region && $awsS3KeyId && $awsS3SecretKey && $awsS3Bucket) {
+					$bucket = ltrim($awsS3Bucket, 'arn:aws:s3:::');
+					$s3 = new Aws\S3\S3Client([
+						'region'  => $awsS3Region,
+						'version' => 'latest',
+						'credentials' => [
+							'key'    => $awsS3KeyId,
+							'secret' => $awsS3SecretKey,
+						]
+					]);
+
+					// Send a PutObject request and get the result object.
+					$bucketResponse = $s3->doesBucketExist($bucket);
+					if (!$bucketResponse) {
+						$box['tabs']['awss3_file_downloads']['errors']['aws'] = ze\admin::phrase('Connection failed! Please check your credentials.');
+					}
 				}
 			}
 		}
@@ -1364,6 +1524,6 @@ Disallow: /';
 			$defaultValue .= 'Sitemap: ' . $siteMapUrl;
 		}
 		
-		return $defaultValue;
+		return trim($defaultValue);
 	}
 }

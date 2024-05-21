@@ -6,6 +6,7 @@ zenario_phrase:
     key:
         id: ""
         code: ""
+        is_html: false
         language_id: ""
         module_class_name: ""
         is_code: false

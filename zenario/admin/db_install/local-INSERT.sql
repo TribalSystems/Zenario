@@ -108,7 +108,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_settings` VALUES
  (1,'mobile_behaviour',0,'mobile_same_image_different_size','synchronized_setting','text',NULL,0,'','remove',NULL),
  (1,'mobile_canvas',0,'fixed_height','synchronized_setting','text',NULL,0,'','remove',NULL),
  (1,'mobile_height',0,'30','synchronized_setting','text',NULL,0,'','remove',NULL),
- (4,'text',2,'<p class=\"phone\">[[Call us on +44 118 324 5555]]</p>','synchronized_setting','translatable_html',NULL,0,'','remove',NULL),
+ (4,'text',2,'<p class=\"phone\">Call us on +44 118 324 5555</p>','synchronized_setting','translatable_html',NULL,0,'','remove',NULL),
  (4,'title_tags',2,'p','synchronized_setting','text',NULL,0,'','remove',NULL),
  (5,'advanced_behaviour',5,'none','synchronized_setting','text',NULL,0,'','remove',NULL),
  (5,'advanced_behaviour',7,'none','synchronized_setting','text',NULL,0,'','remove',NULL),

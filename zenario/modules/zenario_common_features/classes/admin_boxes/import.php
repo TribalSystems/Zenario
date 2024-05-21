@@ -646,8 +646,8 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				
 				//Build the label for the problems/warnings field
 				$problemsPhrase = ze\admin::phrase('Problems');
-				$errorsPhrase = ze\admin::nphrase('1 error', '[[n]] errors', $totalErrorCount, ['n' => $totalErrorCount]);
-				$warningsPhrase = ze\admin::nphrase('1 warning', '[[n]] warnings', $totalWarningCount, ['n' => $totalWarningCount]);
+				$errorsPhrase = ze\admin::nPhrase('1 error', '[[n]] errors', $totalErrorCount, ['n' => $totalErrorCount]);
+				$warningsPhrase = ze\admin::nPhrase('1 warning', '[[n]] warnings', $totalWarningCount, ['n' => $totalWarningCount]);
 				$fields['preview/problems']['label'] = $problemsPhrase . ' (' . $errorsPhrase . ', ' . $warningsPhrase . '):';
 				
 				$fields['preview/total_readable_lines']['snippet']['html'] = '<b>' . ze\admin::phrase('Total readable lines (header and data):') . '</b> '. $totalReadableLines;
@@ -659,12 +659,12 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 				if ($values['file/type'] == 'insert_data') {
 					$created = $totalReadableLinesWithoutErrors - $totalUpdateCount;
 					$box['key']['new_records'] = $created;
-					$html = ze\admin::nphrase('<b>1</b> new record will be inserted.', '<b>[[n]]</b> new records will be inserted.', $created, ['n' => $created]);
+					$html = ze\admin::nPhrase('<b>1</b> new record will be inserted.', '<b>[[n]]</b> new records will be inserted.', $created, ['n' => $created]);
 					if ($totalUpdateCount) {
-						$html .= ' ' . ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> record will be updated.', $totalUpdateCount, ['n' => $totalUpdateCount]);
+						$html .= ' ' . ze\admin::nPhrase('<b>1</b> record will be updated.', '<b>[[n]]</b> record will be updated.', $totalUpdateCount, ['n' => $totalUpdateCount]);
 					}
 				} else {
-					$html = ze\admin::nphrase('<b>1</b> record will be updated.', '<b>[[n]]</b> records will be updated.', $totalReadableLinesWithoutErrors, ['n' => $totalReadableLinesWithoutErrors]);
+					$html = ze\admin::nPhrase('<b>1</b> record will be updated.', '<b>[[n]]</b> records will be updated.', $totalReadableLinesWithoutErrors, ['n' => $totalReadableLinesWithoutErrors]);
 				}
 				$fields['actions/records_statement']['snippet']['html'] = $html;
 			}

@@ -98,10 +98,10 @@ zenario_image:
                     indent: 1
                     label: 'Caption:'
                     type: editor
-                    editor_type: standard
+                    editor_type: description_editor
+                    editor_options: 
+                        height: 150
                     dont_trim: true
-                    style: |
-                        height: 5em;
                     side_note: >
                         If image is displayed in an enlarged box, use this caption.
                     visible_if:
@@ -113,7 +113,7 @@ zenario_image:
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_MEDIA
-            label: Link
+            label: Link to image
             fields:
                 descriptions_grouping:
                     type: grouping
@@ -136,7 +136,7 @@ zenario_image:
                 
                 internal_webp_link:
                     grouping: links_grouping
-                    label: "Internal link to optimised WebP ([[size]]), recommended when linking to it within this site:"
+                    label: "Internal link to optimised WebP version for internal links ([[size]]) (most commonly used):"
                     type: text
                     readonly: true
                     show_copy_text_button: true

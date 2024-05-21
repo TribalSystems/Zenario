@@ -11,16 +11,16 @@ zenario_content:
                     snippet:
                         html: |
                             Specify the attached file.
+                            
                 text_extract:
                     ord: 30
                     label: |
-                        Text extract (cannot be edited):
+                        Text extract:
                     visible_if: |
                         zenarioAB.tuix.key.cType == 'document'
                     type: textarea
                     style: "height:300px"
-                    note_below: |
-                        With PDF and Word files, Zenario attempts to make a plain-text extract of the file's contents. To re-extract, close this box and click "Rescan".
+                    note_below: ''
                     value: ""
                     read_only: true
                 text_extract_word_count:
@@ -30,3 +30,11 @@ zenario_content:
                     value: ""
                     read_only: true
                     show_as_a_span: true
+                
+                text_extract_processing:
+                    ord: 32
+                    notices_below:
+                        text_extract_processing:
+                            show: true
+                            type: information
+                            message: ''

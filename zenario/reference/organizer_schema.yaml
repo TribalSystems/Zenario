@@ -817,6 +817,11 @@ additionalProperties:
                                         
                                         If you enter an asterisk (*) as the value, this will match any non-empty value.
                                         (Or match any empty value when the admin inverts the filter.)
+                                        
+                                        From 9.7 onwards, you can set this on a date or datetime formatted column.
+                                        The column will then display as a date if a date is entered, but display a label if
+                                        a value from the list of values is entered. This only effects the display of the column,
+                                        not searching/filtering.
                                     additionalProperties:
                                         type: *variable
                                 empty_value:
@@ -933,6 +938,8 @@ additionalProperties:
                                     preFillOrganizerPanel: true
                                     description: >
                                         Disallows quick-searching on a column.
+                                        You should set this property if you want a column that can be filtered on using the "Adjust view" box,
+                                        but that is not searched when the administrator types a phrase into the search box.
                                                                 
                                 tag_colors:
                                     type: object

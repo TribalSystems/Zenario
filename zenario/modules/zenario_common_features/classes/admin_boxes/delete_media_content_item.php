@@ -98,7 +98,7 @@ class zenario_common_features__admin_boxes__delete_media_content_item extends ze
 		//(i.e. there's no sign of any of Organizer's variables)
 		//then try to redirect the admin to whatever the visitor URL should be
 		if ($goToContentItem) {
-			ze\tuix::closeWithFlags(['go_to_url' => $goToContentItem]);
+			ze\tuix::closeWithFlags(['GO_TO_URL' => $goToContentItem]);
 		}
 	}
 }

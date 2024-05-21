@@ -116,14 +116,14 @@ plugin_settings:
                 search_private_items:
                     plugin_setting:
                         name: search_private_items
-                    label: 'Search private items'
+                    label: 'Search content items that are private'
                     type: checkbox
                     value: "1"
                     format_onchange: Yes
                 show_private_content_item_link_control:
                     plugin_setting:
                         name: show_private_content_item_link_control
-                    label: 'Private items:'
+                    label: 'Private content items:'
                     type: select
                     value: "1"
                     values:

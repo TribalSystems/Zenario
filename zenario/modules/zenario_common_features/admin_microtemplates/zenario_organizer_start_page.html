@@ -1,31 +1,83 @@
 <div id="organizer_start_page" class="organizer_start_page">
 	
 	<!-- Show the links at the top of the panel -->
-	<div class="organizer_start_page_section organizer_start_page_links_section">
+	<div class="organizer_start_page_section organizer_start_page_links_section single_row">
 		
-		<!-- The links should be passed to us in the m.links merge field, so just loop through them -->
+		<!-- The WIP links should be passed to us in the m.wip_content_links merge field, so just loop through them -->
 		<% var li, link; %>
-		<% foreach (m.links as li => link) { %>
+		<% foreach (m.wip_content_links as li => link) { %>
 			
-			<!-- For each one, draw it here here  -->
-			<div class="organizer_start_page_item zenario_item_record_count_parent" id="organizer_start_page_item__{{link.id|escape}}">
-				<a
-					<% if (link.href) { %>
-						href="{{link.href|escape}}"
-					<% } %>
-					<% if (link.onclick) { %>
-						onclick="{{link.onclick|escape}}"
-					<% } %>
-				>
-					<span class="organizer_start_page_item_icon {{link.css_class|escape}}"></span>
-					<label class="organizer_start_page_item_title">{{link.title|escape}}</label>
-					<label class="organizer_start_page_item_text">{{link.text|escape}}</label>
-					<% if (link.record_count) { %>
-						<span class="organizer_start_page_item_recordCount zenario_item_record_count">{{link.record_count|escape}}</span>
-					<% } %>					
-				</a>
-			</div>
+			<!--
+				The home page is first,
+				then the last visited item (if applicable),
+				then a list of WIP content items (if there are any)
+				and a link to the WIP panel (if there are any WIP items)
+			-->
+			<% if (link.type == 'wip_content_item') { %>
+				<div class="organizer_start_page_item zenario_item_record_count_parent" id="organizer_start_page_item__content_{{link.status|escape}}">
+					<a
+						<% if (link.href) { %>
+							href="{{link.href|escape}}"
+						<% } %>
+					>
+						<span class="organizer_start_page_item_icon content_{{link.status|escape}}"></span>
+						<label class="organizer_start_page_item_title">{{link.title|escape}}</label>
+						<label class="organizer_start_page_item_text">{{link.tag_and_alias|escape}}</label>
+						<label class="organizer_start_page_item_text description">{{link.status_formatted_nicely|escape}}</label>			
+					</a>
+				</div>
+			<% } else { %>
+
+				<div class="organizer_start_page_item zenario_item_record_count_parent" id="organizer_start_page_item__{{link.type|escape}}">
+					<a
+						<% if (link.href) { %>
+							href="{{link.href|escape}}"
+						<% } %>
+						<% if (link.onclick) { %>
+							onclick="{{link.onclick|escape}}"
+						<% } %>
+					>
+						<span class="organizer_start_page_item_icon {{link.css_class|escape}}"></span>
+						<label class="organizer_start_page_item_title">{{link.title|escape}}</label>
+						<label class="organizer_start_page_item_text">{{link.text|escape}}</label>
+						<% if (link.record_count) { %>
+							<span class="organizer_start_page_item_recordCount zenario_item_record_count">{{link.record_count|escape}}</span>
+						<% } %>					
+					</a>
+				</div>
+			<% } %>
 		<% } %>
+			
+	</div>
+	
+	<!-- Show the enabled content types links in the second row of the panel. They should be passed in the m.enabled_content_types array.  -->
+	<div class="organizer_start_page_section organizer_content_types_links_section single_row">
+		<% if (m.enabled_content_types) { %>
+			<% var i = 0; %>
+			
+			<% foreach (m.enabled_content_types as contentTypeName => contentTypeData) { %>
+				<% i++; %>
+				
+				<div class="organizer_start_page_item" id="organizer_start_page_item__{{i|escape}}">
+					<a
+						href="#zenario__content/panels/content/refiners/content_type//{{contentTypeName|escape}}//"
+					>
+						<span class="organizer_start_page_item_icon content_type_{{contentTypeName|escape}}"></span>
+						<label class="organizer_start_page_item_title">{{contentTypeData.content_type_plural_en|escape}}</label>
+						<label class="organizer_start_page_item_text">{{contentTypeData.published_and_unlisted_count_phrase|escape}}</label>
+						
+						<% if (contentTypeData.revised_draft_count_phrase) { %>
+							<label class="organizer_start_page_item_text">{{contentTypeData.revised_draft_count_phrase|escape}}</label>
+						<% } %>
+						
+						<% if (contentTypeData.first_draft_count_phrase) { %>
+							<label class="organizer_start_page_item_text">{{contentTypeData.first_draft_count_phrase|escape}}</label>
+						<% } %>
+					</a>
+				</div>
+			<% } %>
+		<% } %>
+		
 	</div>
 	
 	
@@ -36,8 +88,9 @@
 		
 		<!-- Loop through each item  -->
 		<% foreach (nav.items as ni => navItem) { %>
-			<!-- Skip the enter for the start page though!  -->
-			<% if (navItem.id == "zenario__organizer") continue; %>
+			<!-- Skip the enter for the start page.  -->
+			<!-- Also skip the content items link, as all content types enabled are displayed above.  -->
+			<% if (navItem.id == "zenario__organizer" || navItem.id == "zenario__content") continue; %>
 			
 			<!-- For each one, draw it here here  -->
 			<div class="organizer_start_page_item" id="organizer_start_page_item__{{navItem.id|escape}}">

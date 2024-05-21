@@ -104,6 +104,13 @@ switch ($path) {
 		$values['preview/body'] = $values['meta_data/body'];
 		static::putBodyInTemplate($values['preview/body']);
 		
+		if ($values['meta_data/apply_css_rules']) {
+			$fields['preview/body']['editor_options']['content_style'] = $fields['meta_data/body']['editor_options']['content_style'] = ze::setting('email_css_rules');
+		} else {
+			unset($fields['preview/body']['editor_options']['content_style']);
+			unset($fields['meta_data/body']['editor_options']['content_style']);
+		}
+		
 		
 		//Send a test email for the email template
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] = false;

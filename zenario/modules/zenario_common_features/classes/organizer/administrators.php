@@ -41,6 +41,8 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__administration/panels/administrators') return;
 		
+		$currentlyLoggedInAdmin = ze\admin::id();
+		
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$item['has_permissions'] = ze\row::exists('action_admin_link', ['admin_id' => $id]);
@@ -112,7 +114,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			//Check if an admin has ever logged in.
 			if ($sessionId = $item['session_id']) {
 
-				if(file_exists(session_save_path(). "/sess_" . $sessionId)) {
+				if (file_exists(session_save_path(). "/sess_" . $sessionId)) {
 					clearstatcache(true, session_save_path(). "/sess_" . $sessionId);
 					$sessionInfo = stat(session_save_path(). "/sess_" . $sessionId);
 				
@@ -122,24 +124,24 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 					//If the admin was active less than 10 mins ago, show "Logged in now" instead of a date.
 					$inactivityDuration = (time() - $lastActivityTimestamp);
 				
-					if($inactivityDuration < 600) {
-						//When 2FA is true, show logged in now (pending 2FA) in last_login column.
-						if(ze\site::description('enable_two_factor_authentication_for_admin_logins'))
-						{
+					if ($inactivityDuration < 600) {
+						//When 2FA is enabled, show the login status of this admin.
+						if (ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
 							$sqlCode = "
 								Select value FROM ". DB_PREFIX. "admin_settings
 								WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
-								  AND admin_id = ". (int) $id;
-								  $sqlCodeResult = ze\sql::select($sqlCode);
-								  $sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
-								  if($sqlCodeRow['value'])
-								  {
-									  $item['last_login'] = 'Logged in now';
-								  } else {
-									  $item['last_login'] = 'Logged in now (pending 2FA)';
-								  }
+								AND admin_id = ". (int) $id;
+							
+							$sqlCodeResult = ze\sql::select($sqlCode);
+							$sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
+							
+							if (!empty($sqlCodeRow) && is_array($sqlCodeRow) && !empty($sqlCodeRow['value'])) {
+								$item['last_login'] = ze\admin::phrase('Logged in now');
+							} else {
+								$item['last_login'] = ze\admin::phrase('Logged in now (pending 2FA)');
+							}
 						} else {
-							$item['last_login'] = 'Logged in now';
+							$item['last_login'] = ze\admin::phrase('Logged in now');
 						}
 						
 					}
@@ -202,6 +204,10 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 					}
 					break;
 			}
+			
+			if ($currentlyLoggedInAdmin == $id) {
+				$item['currently_logged_in_admin'] = true;
+			}
 		}
 		
 		if ($refinerName == 'trashed') {
@@ -225,14 +231,21 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		$localAdminCountQuery = ze\row::query('admins', ['id'], ['status' => 'active', 'authtype' => 'local']);
 		$localAdminCount = ze\sql::numRows($localAdminCountQuery);
 		if ($localAdminCount < 2) {
-			if (isset($panel['collection_buttons']['copy_perms'])) {
-				$panel['collection_buttons']['copy_perms']['disabled'] = true;
+			if (isset($panel['item_buttons']['copy_perms'])) {
+				$panel['item_buttons']['copy_perms']['disabled'] = true;
 			}
+			
+			//These two buttons are not used anywhere in Zenario core.
+			//Are these for a client custom module?...
 			if (isset($panel['item_buttons']['copy_perms_to'])) {
 				$panel['item_buttons']['copy_perms_to']['disabled'] = true;
 			}
 			if (isset($panel['item_buttons']['copy_perms_from'])) {
 				$panel['item_buttons']['copy_perms_from']['disabled'] = true;
+			}
+		} else {
+			if (isset($panel['item_buttons']['copy_perms'])) {
+				$panel['item_buttons']['copy_perms']['disabled_tooltip'] = ze\admin::phrase("You cannot copy another admin's permissions to yourself.");
 			}
 		}
 		

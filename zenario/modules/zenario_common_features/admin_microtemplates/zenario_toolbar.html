@@ -6,6 +6,7 @@
 					class="zenario_at_top_left_org_link"
 					href="{{zenarioATLinks.organizer|escape}}#zenario__organizer/panels/start_page"
 					id="zenario_organizer_button"
+					onclick="return !(window.zenarioA && zenarioA.organizerDropDownMenu(this, event));"
 				><span class="zenario_at_button_main">
 					Go to Organizer
 				</span></a>
@@ -31,11 +32,15 @@
 				{{zenarioT.microTemplate('zenario_toolbar_tab', m.tabs)}}
 			</div>
 		</div>
-		<div class="zenario_at_status_icons_container">
-			<div class="zenario_at_status_icons">
-				{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.icons)}}
+		
+		<% if (m.current_toolbar.page_mode != 'layout') { %>
+			<div class="zenario_at_status_icons_container">
+				<div class="zenario_at_status_icons">
+					{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.icons)}}
+				</div>
 			</div>
-		</div>
+		<% } %>
+		
 		<div class="zenario_at_container zenario_at_toolbar_container">
 			<div id="zenario_at_toolbars">
 				
@@ -117,10 +122,6 @@
 					<% } %>
 					
 			</div>
-		
-				<div class="zenario_at_status_button">
-					{{zenarioT.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}
-				</div>
 				{{zenarioT.microTemplate(m.toolbar_microtemplate, m)}}
 			</div>
 		</div>

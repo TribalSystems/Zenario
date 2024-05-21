@@ -327,13 +327,6 @@ class contentAdm {
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 
-		if ($cType == 'document') {
-			//Rescan extract when publishing
-			if (\ze\module::inc('zenario_ctype_document')) {
-				\zenario_ctype_document::rescanExtract($cType . '_' . $cID);
-			}
-		}
-
 		\ze\module::sendSignal("eventContentPublished",["cID" => $cID,"cType" => $cType, "cVersion" => $cVersion]);
 	}
 
@@ -1521,7 +1514,7 @@ class contentAdm {
 				
 				case 'unlisted_with_draft':
 				case 'unlisted':
-					return 'published';
+					return 'published_unlisted';
 			}
 	
 		} elseif ($cVersion == $content['admin_version']) {
@@ -1584,6 +1577,7 @@ class contentAdm {
 
 
 
+
 	//Validation function for checking aliases
 	public static function validateAlias($alias, $cID = false, $cType = false, $equivId = false, $isSpareAlias = false) {
 		$error = [];
@@ -1595,7 +1589,7 @@ class contentAdm {
 			}
 		
 			if ($alias == 'admin' || is_dir(CMS_ROOT. $alias)) {
-				$error[] = \ze\admin::phrase("Your alias/spare alias should not contain a directory name (e.g. 'admin', 'cache', 'private', 'public', or 'zenario'). The alias itself is enough for it to be unique.");
+				$error[] = \ze\admin::phrase("An alias is a unique identifier for a content item on this site. An alias (or spare alias) should not be a reserved name (e.g. 'admin', 'cache', 'private', 'public', or 'zenario').");
 		
 			} elseif (is_numeric($alias)) {
 				$error[] = \ze\admin::phrase("An alias or spare alias must start with a letter, not a digit or special character.");
@@ -1818,7 +1812,7 @@ class contentAdm {
 				' | '.
 				\ze\contentAdm::getSmartGroupDescription($smartGroupId).
 				' | '.
-				\ze\admin::nPhrase('1 user', '[[count]] users', (int) \ze\smartGroup::countMembers($smartGroupId), [], 'empty');
+				\ze\admin::nzPhrase('empty', '1 user', '[[count]] users', (int) \ze\smartGroup::countMembers($smartGroupId), []);
 		}
 		return $smartGroups;
 	}

@@ -189,7 +189,7 @@ zenario.lib(function(
 		};
 	
 		this.nphrase = function(text, pluralText, n, mrg) {
-			return zenario.nphrase(this.moduleClassNameForPhrases, text, pluralText, n, mrg);
+			return zenario.nPhrase(this.moduleClassNameForPhrases, text, pluralText, n, mrg);
 		};
 	 
 		//Go to a content item

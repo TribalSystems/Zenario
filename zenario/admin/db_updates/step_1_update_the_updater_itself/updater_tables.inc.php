@@ -38,26 +38,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-//Automatically convert any table that's not using our preferred engine to that engine
-if (ze\dbAdm::needRevision(50950)) {
-	
-	foreach (ze\sql::fetchValues("
-		SELECT `TABLE_NAME`
-		FROM information_schema.tables
-		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME). "'
-		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX). "%'
-		  AND `ENGINE` != '". ze\escape::sql(ZENARIO_TABLE_ENGINE). "'
-	") as $tableName) {
-		ze\sql::update("
-			ALTER TABLE `". ze\escape::sql($tableName). "`
-			ENGINE=". ze\escape::sql(ZENARIO_TABLE_ENGINE)
-		);
-	}
-	
-	ze\dbAdm::revision(50950);
-}
-
-
 //Automatically convert any table that's not using utf8mb4
 if (ze\dbAdm::needRevision(55151)) {
 	
@@ -97,5 +77,29 @@ if (ze\dbAdm::needRevision(55151)) {
 	}
 	
 	ze\dbAdm::revision(55151);
+}
+
+
+
+
+
+//Automatically convert any table that's not using our preferred engine to that engine.
+//(This is a reissue of "T11400, Change all tables to InnoDB (if MySQL 5.6)" - however this time there's no exception, as we don't support 5.6 any more.)
+if (ze\dbAdm::needRevision(60114)) {
+	
+	foreach (ze\sql::fetchValues("
+		SELECT `TABLE_NAME`
+		FROM information_schema.tables
+		WHERE `TABLE_SCHEMA` = '". ze\escape::sql(DBNAME). "'
+		  AND `TABLE_NAME` LIKE '". ze\escape::like(DB_PREFIX). "%'
+		  AND `ENGINE` != '". ze\escape::sql(ZENARIO_TABLE_ENGINE). "'
+	") as $tableName) {
+		ze\sql::update("
+			ALTER TABLE `". ze\escape::sql($tableName). "`
+			ENGINE=". ze\escape::sql(ZENARIO_TABLE_ENGINE)
+		);
+	}
+	
+	ze\dbAdm::revision(60114);
 }
 

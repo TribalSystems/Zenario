@@ -188,7 +188,7 @@ zenario_email_template:
                 body:
                     label: 'Email body:'
                     type: editor
-                    editor_type: full_featured
+                    editor_type: email_editor
                     dont_trim: true
                     editor_options:
                         convert_urls: false
@@ -199,7 +199,7 @@ zenario_email_template:
                     language: twig
                     insert_image_button:
                         pick_items:
-                            path: 'zenario__library/panels/image_library'
+                            path: 'zenario__library/panels/image_library/refiners/from_email_template_admin_box////'
                             target_path: 'zenario__library/panels/image_library'
                             min_path: 'zenario__library/panels/image_library'
                             max_path: 'zenario__library/panels/image_library'
@@ -208,7 +208,7 @@ zenario_email_template:
                 apply_css_rules:
                     label: Apply
                     type: checkbox
-                    note_below: 'These CSS rules will not be visible on the Preview tab. Use the "Test send" feature to view them.'
+                    format_onchange: true
                     post_field_html: |
                         &nbsp;[[link_start]]CSS rules[[link_end]]
                 

@@ -113,6 +113,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
 				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
 			];
+			$this->objects['Container_Id'] = $this->containerId;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		
@@ -164,7 +165,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	
 	public static function getExtranetPasswordResetLink($userId, $cID = false, $cType = false) {
 		
-		$hash = ze\row::get('users', 'hash', $userId);
+		$hash = ze\row::get('users', 'hash_verify_email', $userId);
 		$request = '&extranet_reset_password=1&hash='. urlencode($hash);
 		
 		if ($cID && $cType) {
@@ -175,7 +176,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	}
 	
 	private function getUserIdFromHashCode($hash){
-		if ($hash && ($userId = (int) ze\row::get("users","id",['hash'=>$hash]))){
+		if ($hash && ($userId = (int) ze\row::get("users", "id", ['hash_verify_email' => $hash]))) {
 			return $userId;
 		} else {
 			return 0;
@@ -192,7 +193,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		} else {
 			ze\userAdm::setPassword($userId, ze::post('extranet_new_password'), false);
 			//Set email verified flag
-			ze\row::update('users', ['email_verified' => 'verified'], ['id' => $userId]);
+			ze\row::update('users', ['email_verified' => 'verified', 'hash_verify_email' => ''], ['id' => $userId]);
 			return true;
 		}
 	}

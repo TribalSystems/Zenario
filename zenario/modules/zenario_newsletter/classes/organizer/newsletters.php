@@ -243,7 +243,8 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			$link .= ze\admin::phrase('View Sent Newsletter in Archive.');
 			$link .= '</a>';
 			
-			echo '<!--Message_Type:Success-->
+			ze\escape::bFlag('MESSAGE_TYPE', 'success');
+			echo '
 				<p>' . ze\admin::phrase('Newsletter Sent.') . '</p>
 				<p>' . $link . '</p>';
 		

@@ -93,7 +93,7 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 							$item['defaults'] .= ze\admin::phrase('. New items restricted to under [[menu_path]]', $mrg);
 						
 							--$count;
-							$item['defaults'] .= ze\admin::nPhrase(' and 1 other place', ', and [[count]] other places', $count, [], '');
+							$item['defaults'] .= ze\admin::nzPhrase([], '', ' and 1 other place', ', and [[count]] other places', $count);
 						}
 					} else {
 						if ($count > 0) {
@@ -101,7 +101,7 @@ class zenario_common_features__organizer__content_types extends ze\moduleBaseCla
 							$item['defaults'] .= ze\admin::phrase('. New items attached to menu under [[menu_path]]', $mrg);
 						
 							--$count;
-							$item['defaults'] .= ze\admin::nPhrase(' and 1 other place', ', and [[count]] other places', $count, [], '');
+							$item['defaults'] .= ze\admin::nzPhrase([], '', ' and 1 other place', ', and [[count]] other places', $count);
 						}
 					}
 				}

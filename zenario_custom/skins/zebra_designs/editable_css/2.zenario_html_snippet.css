@@ -62,9 +62,17 @@
     bottom: -20px;
 }
 
+.zenario_html_snippet pre {
+	margin-bottom:15px;
+	padding:1em;
+	background:#f5f2f0;
+	white-space:break-spaces;
+}
+
 .zenario_html_snippet p + h2,
 .zenario_html_snippet p + h3,
-.zenario_html_snippet p + h4 {
+.zenario_html_snippet p + h4,
+.zenario_html_snippet hr + h1 {
 	margin-top:30px;
 }
 
@@ -104,59 +112,6 @@
 
 .zenario_html_snippet .social_links a:hover i {
 	opacity:0.85;
-}
-
-/* Preformatted
---------------------------------------------------------------------------------------------------*/
-
-.zenario_html_snippet pre {
-	margin-bottom:15px;
-	padding:1em;
-	background:#f5f2f0;
-}
-
-/* Format class defined on description.yaml : Image no padding
---------------------------------------------------------------------------------------------------*/
-
-.zenario_html_snippet img.image_no_padding {
-	padding:0;
-}
-
-/* Format class defined on description.yaml : Paragraph highlight
---------------------------------------------------------------------------------------------------*/
-.zenario_html_snippet .paragraph_highlight {
-	padding:15px;
-	margin-bottom:15px;
-	background:#2A46CE;
-	color:#FFF;
-}
-
-/* Format class defined on description.yaml : Paragraph tip info
---------------------------------------------------------------------------------------------------*/
-
-.zenario_html_snippet p.tip_info {
-	position:relative;
-	padding:15px 15px 15px 55px;
-	background:#DEBC31;
-}
-
-.zenario_html_snippet p.tip_info,
-.zenario_html_snippet p.tip_info a {
-	color:#FFF;
-}
-
-.zenario_html_snippet p.tip_info a {
-	text-decoration:underline;
-}
-
-.zenario_html_snippet p.tip_info:before {    
-	font-family: "FontAwesome";
-    content: "\f05a";
-    padding-right: 10px;
-    font-size: 30px;
-    position: absolute;
-    left: 15px;
-    top: 0;
 }
 
 /* Main site

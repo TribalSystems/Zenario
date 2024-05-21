@@ -39,10 +39,7 @@ if (!ze::setting('enable_staging_mode')) {
 	ze\content::showStartSitePageIfNeeded('stagingModeNotEnabled');
 	exit;
 }
-if ($isAdmin = ze::isAdmin()) {
-	ze\content::showStartSitePageIfNeeded('noStagingModeInAdminMode');
-	exit;
-}
+
 
 
 
@@ -112,6 +109,14 @@ if (isset($_GET['code'])
 //
 
 ze\content::setShowableContent($content, $chain, $version, true);
+
+
+if ($isAdmin = ze::isAdmin()) {
+	ze\content::showStartSitePageIfNeeded('noStagingModeInAdminMode');
+	exit;
+}
+
+
 
 $specialPage = ze\content::isSpecialPage(ze::$cID, ze::$cType);
 
@@ -189,6 +194,10 @@ ze\cookie::showConsentBox(false, false, false);
 //	Show a collapsable info-box, warning about staging mode.
 //
 
+$mrg = [];
+$mrg['tag'] = ze\content::formatTag(ze::$cID, ze::$cType);
+$mrg['version'] = ze::$cVersion;
+
 echo '
 <style type="text/css">
 .zenario_staging_mode_warning {
@@ -236,7 +245,15 @@ echo '
 <div
 	class="zenario_staging_mode_warning"
 	onclick="if (window.$) $(this).toggleClass(\'zenario_staging_mode_warning_closed\');"
->', ze\admin::phrase("You are viewing this page in staging mode. Note that some parts of the page may not be visible where they link to other unpublished pages."), '</div>';
+>
+	<div class="zenario_staging_mode_warning_heading">
+		<strong>', ze\admin::phrase('[[tag]] (v[[version]])', $mrg), '</strong>
+	</div>
+	<div class="zenario_staging_mode_warning_message">
+		', ze\admin::phrase('You are viewing this page in staging mode. Parts that link to other unpublished pages may not be visible.'), '
+	</div>
+</div>';
+
 
 echo $skinDiv, $templateDiv, $contentItemDiv;
 

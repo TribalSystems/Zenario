@@ -45,8 +45,8 @@ zenario_help_line:
                 query_message:
                     label: "Your query:"
                     type: editor
-                    editor_type: summary
+                    editor_type: description_editor
+                    editor_options:
+                        height: 300
                     validation:
                         required: Please enter your query.
-                    style: |
-                        height: 52em;

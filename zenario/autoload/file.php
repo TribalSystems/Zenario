@@ -212,7 +212,11 @@ class file {
 		}
 	}
 
-	public static function addToDatabase($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, $imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '') {
+	public static function addToDatabase(
+		$usage, $location, $filename = false,
+		$mustBeAnImage = false, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+		$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '', $setPrivacy = null
+	) {
 		//$overrideMimeType should only be specified when running the installer, because we don't yet have the proper handling for mime types
 		
 		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
@@ -290,7 +294,11 @@ class file {
 		
 		//Otherwise we must insert the new file
 		} else {
-			$file['privacy'] = \ze::oneOf(\ze::setting('default_image_privacy'), 'auto', 'public', 'private');
+			if (!is_null($setPrivacy)) {
+				$file['privacy'] = $setPrivacy;
+			} else {
+				$file['privacy'] = \ze::oneOf(\ze::setting('default_image_privacy'), 'auto', 'public', 'private');
+			}
 		}
 		
 		if ($usage == 'site_setting') {
@@ -512,7 +520,7 @@ class file {
 	}
 	public static function optimiseImage($path) {
 	
-		$mimeType = self::mimeType($path);
+		$mimeType = \ze\file::mimeType($path);
 
 		if (!\ze::in($mimeType, 'image/png', 'image/jpeg')
 		 || !is_file($path)
@@ -556,6 +564,9 @@ class file {
 			}
 		
 			\ze\row::delete('files', $fileId);
+			
+			//Delete the linked row from the file_extracts table as well if it exists
+			\ze\row::delete('file_extracts', ['file_id' => $fileId]);
 		}
 	}
 
@@ -877,13 +888,34 @@ class file {
 		if ($type == 'upload') {
 			$type = $parts[count($parts) - 2];
 		}
+		$type = strtolower($type);
 		
-		//Look up this mime type.
-		//But if we don't have database access (e.g. we're not installed), call commonMimeType() as a fallback
-		if (is_null(\ze::$dbL)) {
-			return \ze\welcome::commonMimeType($type);
-		} else {
-			return \ze\row::get('document_types', 'mime_type', ['type' => strtolower($type)]) ?: 'application/octet-stream';
+		//Look up this mime type if we have database access
+		$mimeType = false;
+		if (!is_null(\ze::$dbL)) {
+			$mimeType = \ze\row::get('document_types', 'mime_type', ['type' => $type]);
+		}
+		
+		if ($mimeType !== false) {
+			return $mimeType;
+		}
+		
+		//Some fallbacks.
+		switch ($type) {
+			case 'gif':
+				return 'image/gif';
+			case 'jpe':
+			case 'jpeg':
+			case 'jpg':
+				return 'image/jpeg';
+			case 'png':
+				return 'image/png';
+			case 'svg':
+				return 'image/svg+xml';
+			case 'sql':
+				return 'text/plain';
+			default:
+				return 'application/octet-stream';
 		}
 	}
 
@@ -1577,11 +1609,27 @@ class file {
 		);
 	}
 	
+	public static function adminImageLink(
+		&$width, &$height, &$url, $retina, &$isRetina, &$mimeType,
+		$fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$fullPath = false, $useCacheDir = true
+	) {
+		$webPURL = $mimeType = $isRetina = null;
+
+		return self::imageAndWebPLink(
+			$width, $height, $url, false, $webPURL, $retina, $isRetina, $mimeType,
+			$fileId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, 'auto',
+			$useCacheDir, false, false, true
+		);
+	}
+	
 	public static function imageAndWebPLink(
 		&$width, &$height, &$url, $makeWebP, &$webPURL, $retina, &$isRetina, &$mimeType,
 		$fileId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$fullPath = false, $privacy = 'auto',
-		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
+		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false,
+		$adminFacing = false
 	) {
 		$madeWebP =
 		$url = $webPURL =
@@ -1608,6 +1656,18 @@ class file {
 		 || !(self::isImageOrSVG($image['mime_type']))) {
 			return false;
 		}
+		
+		//From version 9.7 on Zenario we're adding an extra protection for private images.
+		//If an image has been flagged as private, we won't show it unless we're on a private content item.
+		if (!$adminFacing && \ze::$isPublic !== false && $image['privacy'] == 'private') {
+			
+			if (\ze::isAdmin()) {
+				\ze\content::$piWarnings[$fileId] = $image['filename'];
+			}
+			
+			return false;
+		}
+		
 		
 		$mimeType = $image['mime_type'];
 	
@@ -1682,14 +1742,8 @@ class file {
 		if ($image['privacy'] == 'auto') {
 		
 			//If the privacy settings here weren't specified, try to work them out form the current content item
-			//(Note that this won't we shouldn't try to do this running from a published content item.)
-			if ($privacy == 'auto'
-			 && \ze::$equivId
-			 && \ze::$cType
-			 && \ze::$cVersion
-			 && \ze::$cVersion == \ze::$visitorVersion
-			 && ($citemPrivacy = \ze\row::get('translation_chains', 'privacy', ['equiv_id' => \ze::$equivId, 'type' => \ze::$cType]))) {
-				if ($citemPrivacy == 'public') {
+			if ($privacy == 'auto' && \ze::$equivId) {
+				if (\ze::$isPublic) {
 					$privacy = 'public';
 				} else {
 					$privacy = 'private';
@@ -2100,9 +2154,9 @@ class file {
 		return false;
 	}
 
-	public static function createPpdfFirstPageScreenshotPng($file) {
+	public static function createPdfFirstPageScreenshotPng($file) {
 		if (file_exists($file) && is_readable($file)) {
-			if (self::mimeType($file) == 'application/pdf') {
+			if (\ze\file::mimeType($file) == 'application/pdf') {
 				if ($programPath = \ze\server::programPathForExec(\ze::setting('ghostscript_path'), 'gs')) {
 					if ($temp_file = tempnam(sys_get_temp_dir(), 'pdf2png')) {
 						$escaped_file = escapeshellarg($file);
@@ -2121,7 +2175,7 @@ class file {
 	}
 
 	public static function addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file_name, $setAsStickImage=false){
-		if($img_file = self::createPpdfFirstPageScreenshotPng($file_name)) {
+		if($img_file = self::createPdfFirstPageScreenshotPng($file_name)) {
 			$img_base_name = basename($file_name) . '.png';
 			$fileId = self::addToDatabase('image', $img_file, $img_base_name, true, true);
 			if ($fileId) {
@@ -2140,11 +2194,11 @@ class file {
 		return false;
 	}
 
-	public static function plainTextExtract($file, &$extract) {
+	public static function plainTextExtract($filePath, &$extract) {
 		$extract = '';
-	
-		if (file_exists($file) && is_readable($file)) {
-			switch (self::mimeType($file)) {
+		
+		if (file_exists($filePath) && is_readable($filePath)) {
+			switch (\ze\file::mimeType($filePath)) {
 				//.doc
 				case 'application/msword':
 					if ($programPath = \ze\server::programPathForExec(\ze::setting('antiword_path'), 'antiword')) {
@@ -2152,13 +2206,13 @@ class file {
 						exec(
 							escapeshellarg($programPath).
 							' '.
-							escapeshellarg($file),
+							escapeshellarg($filePath),
 						$extract, $return_var);
 					
 						if ($return_var == 0) {
 							$extract = \ze\ring::encodeToUtf8(implode("\n", $extract));
 							$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
-							return true;
+							return 'antiword';
 						}
 					}
 				
@@ -2169,12 +2223,12 @@ class file {
 				case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
 					if (class_exists('ZipArchive')) {
 						$zip = new \ZipArchive;
-						if ($zip->open($file) === true) {
+						if ($zip->open($filePath) === true) {
 							if ($extract = html_entity_decode(strip_tags($zip->getFromName('word/document.xml')), ENT_QUOTES, 'UTF-8')) {
 								$zip->close();
 							
 								$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
-								return true;
+								return 'ZipArchive';
 							}
 							$zip->close();
 						}
@@ -2191,7 +2245,7 @@ class file {
 							exec(
 								escapeshellarg($programPath).
 								' -enc UTF-8 -raw -eol unix '.
-								escapeshellarg($file).
+								escapeshellarg($filePath).
 								' '.
 								escapeshellarg($temp_file),
 							$output, $return_var);
@@ -2201,7 +2255,7 @@ class file {
 							//If pdftotext couldn't read the file, try copying the file to a sensible name
 							if ($return_var == 1) {
 								if ($temp_pdf_file = tempnam(sys_get_temp_dir(), 'pdf')) {
-									copy($file, $temp_pdf_file);
+									copy($filePath, $temp_pdf_file);
 								
 									$return_var = $output = false;
 									exec(
@@ -2227,7 +2281,7 @@ class file {
 							
 								$extract = trim(\ze\ring::encodeToUtf8($extract));
 
-								return true;
+								return 'pdftotext';
 							}
 						}
 					}
@@ -2240,38 +2294,45 @@ class file {
 		return false;
 	}
 
-	public static function updatePlainTextExtract($cID, $cType, $cVersion, $fileId = false) {
+	public static function updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId = false, $forceRescan = false) {
 		if ($fileId === false) {
 			$fileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		}
 	
-		$success = false;
-	
-		$extract = ['extract' => '', 'extract_wordcount' => 0];
 		if ($fileId && $file = self::docstorePath($fileId)) {
-			$success = self::plainTextExtract($file, $extract['extract']);
-			$extract['extract_wordcount'] = str_word_count($extract['extract']);
 			self::addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file, true);
 		}
+		
+		//Get the file's extract
+		$extract = \ze\file::textExtract($fileId, $allowAsync = true, $forceRescan);
 	
-		\ze\row::set('content_cache', $extract, ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
+		\ze\row::set('content_cache', [
+			'extract' => $extract['extract'],
+			'extract_wordcount' => $extract['extract_wordcount']
+		], [
+			'content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion
+		]);
 	
-		return $success;
+		return $extract;
 	}
 
-	public static function updateDocumentPlainTextExtract($fileId, &$extract, &$imgFileId) {
-		$errors = [];
-		$extract = ['extract' => '', 'extract_wordcount' => 0];
+	public static function updateHierarchicalDocumentExtract($fileId, &$extract, &$imgFileId, $forceRescan = false) {
+		
+		//Get the file's extract
+		$extract = \ze\file::textExtract($fileId, $allowAsync = false, $forceRescan);
+		
+		//Trim down to just the columns we use in the documents table
+		$extract = [
+			'extract' => $extract['extract'],
+			'extract_wordcount' => $extract['extract_wordcount']
+		];
 	
 		$filePath = self::docstorePath($fileId);
-	
-		self::plainTextExtract($filePath, $extract['extract']);
-		$extract['extract_wordcount'] = str_word_count($extract['extract']);
 		
 		$mime = \ze\row::get('files', 'mime_type', $fileId);
 		switch ($mime) {
 			case 'application/pdf':
-				if ($imgFile = self::createPpdfFirstPageScreenshotPng($filePath)) {
+				if ($imgFile = self::createPdfFirstPageScreenshotPng($filePath)) {
 					$imgBaseName = basename($filePath) . '.png';
 					$imgFileId = self::addToDatabase('documents', $imgFile, $imgBaseName, true, true);
 				}
@@ -2290,6 +2351,124 @@ class file {
 				} 
 				break;
 		}
+	}
+
+	public static function textExtract($fileId, $allowAsync, $forceRescan = false) {
+		
+		$key = ['file_id' => $fileId];
+		
+		//If we're already scanned a file, we'd not normally rescan it.
+		if (!$forceRescan && ($extract = \ze\row::get('file_extracts', true, $key))) {
+			return $extract;
+		}
+		
+		$extract = [
+			'extract' => null,
+			'extract_wordcount' => 0,
+			'extract_status' => 'failed'
+		];
+		
+		//Currently this will only work for files stored in the docstore, and not files stored in the database.
+		//If we wanted to overcome this limitation, we'd need to clopy the file data into a temporary file.
+		if ($fileId
+		 && ($file = \ze\row::get('files', ['usage', 'short_checksum', 'filename', 'mime_type'], $fileId))
+		 && ($filePath = self::docstorePath($fileId))
+		 && (file_exists($filePath))
+		 && (is_readable($filePath))) {
+			
+			$useTextract = false;
+			
+			switch ($file['mime_type']) {
+				case 'application/pdf':
+					$useTextract = \ze::setting('enable_aws_support') && \ze::setting('enable_aws_textract') && \ze::setting('aws_textract_extract_from_pdf');
+					break;
+				
+				case 'image/jpeg':
+				case 'image/png':
+					$useTextract = \ze::setting('enable_aws_support') && \ze::setting('enable_aws_textract') && \ze::setting('aws_textract_extract_from_jpg_and_png');
+					break;
+			}
+			
+			if ($useTextract) {
+				//Get the file's extension
+				$parts = explode('.', $file['filename']);
+				$type = $parts[count($parts) - 1];
+				
+				//Make a filename out of the id, usage, checksum and extension
+				$remoteFileName = 'textract-target-'. $file['usage']. '-'. $fileId. '-'. $file['short_checksum']. '.'. $type;
+				
+				//Upload the file to AWS S3
+				$cS3 = $cTextract = $s3BucketName = null;
+				try {
+					\ze\file::textractConnection($cS3, $cTextract, $s3BucketName);
+					
+					$result = $cS3->putObject([
+						'Bucket' => $s3BucketName,
+						'Key' => $remoteFileName,
+						'SourceFile' => $filePath,
+					]);
+
+				} catch (AwsException $e) {
+					echo 'Error sending file to AWS S3: ' . $e->getMessage();
+					exit;
+				}
+
+				// Start the Textract job
+				$result = $cTextract->startDocumentTextDetection([
+					'DocumentLocation' => [
+						'S3Object' => [
+							'Bucket' => $s3BucketName,
+							'Name' => $remoteFileName,
+						],
+					],
+				]);
+				
+				$extract['extract_source'] = 'Textract';
+				$extract['extract_status'] = 'processing';
+				$extract['requested_on'] = \ze\date::now();
+				$extract['extract_job_id'] = $result['JobId'];
+				
+				\ze\row::set('file_extracts', $extract, $key);
+				return $extract;
+			
+			} elseif ($extract['extract_source'] = \ze\file::plainTextExtract($filePath, $extract['extract'])) {
+				$extract['extract_wordcount'] = str_word_count($extract['extract']);
+				$extract['extract_status'] = 'completed';
+				
+				\ze\row::set('file_extracts', $extract, $key);
+				return $extract;
+			}
+		}
+		
+		//If anything failed, remove the row from the extracts table
+		\ze\row::delete('file_extracts', $key);
+		return $extract;
+	}
+
+	public static function textractConnection(&$cS3, &$cTextract, &$s3BucketName) {
+		$credentials = [
+			'key'    => \ze::setting('aws_s3_key_id'),
+			'secret' => \ze::setting('aws_s3_secret_key'),
+			// 'token' => 'your_session_token', // Uncomment and provide a session token if you're using temporary credentials
+		];
+		$region = \ze::setting('aws_s3_region');
+
+		// Document details
+		$s3BucketName = \ze::setting('aws_textract_temporary_storage_bucket');
+
+		// Create an S3 client
+		$cS3 = new \Aws\S3\S3Client([
+			'version' => 'latest',
+			'region' => $region,
+			'credentials' => $credentials,
+		]);
+
+		// Create AWS Textract client
+		$cTextract = new \Aws\Textract\TextractClient([
+			'region' => $region,
+			'version' => 'latest',
+			'credentials' => $credentials,
+		]);
 	}
 
 	public static function safeName($filename, $strict = false, $replaceSpaces = false) {

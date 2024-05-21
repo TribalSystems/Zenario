@@ -4,6 +4,9 @@ zenario__user_forms:
     panels:
         user_form_responses:
             priv: _PRIV_VIEW_FORM_RESPONSES
+            panel_type: multi_line_list_or_grid
+            css_class: two_line_list_panel
+            use_tall_rows: true
             title: User Responses
             no_items_message: No user responses have been recorded.
             hidden: true
@@ -47,9 +50,14 @@ zenario__user_forms:
                 user_id:
                     db_column: ur.user_id
                     hidden: true
-                user:
-                    title: Identifier if User/Contact
+                user_deleted:
+                    db_column: ur.user_deleted
+                    hidden: true
+                user_identifier:
                     db_column: u.identifier
+                    hiddent: true
+                user:
+                    title: 'Identifier if User/Contact:'
                     disallow_sorting: true
                     searchable: true
                     #If displaying responses for a specific form, this column will always be shown.
@@ -57,6 +65,23 @@ zenario__user_forms:
                     always_show: true
                     width: xlarge
                     html: true
+                processing_actions:
+                    title: Processing actions
+                    width: xxlarge
+                    always_show: true
+                allocated_to_admin:
+                    parent: processing_actions
+                    title: Processing control
+                    disallow_sotring: true
+                    searchable: false
+                    width: xxlarge
+                    always_show: true
+                allocated_to_admin_id:
+                    db_column: ur.allocated_to_admin_id
+                    hidden: true
+                allocated_to_admin_datetime:
+                    db_column: ur.allocated_to_admin_datetime
+                    hidden: true
                 form_id:
                     db_column: ur.form_id
                     hidden: true
@@ -109,6 +134,11 @@ zenario__user_forms:
                     label: 'View response'
                     admin_box:
                         path: zenario_user_form_response
+                send_form_response_to_admin_by_email:
+                    priv: _PRIV_VIEW_FORM_RESPONSES
+                    label: 'Send by email...'
+                    admin_box:
+                        path: zenario_send_form_response_to_admin_by_email
                 delete:
                     priv: _PRIV_VIEW_FORM_RESPONSES
                     label: 'Delete'
@@ -141,4 +171,3 @@ zenario__user_forms:
                             message_type: warning
                         request:
                             delete_form_responses: 1
-                

@@ -5,6 +5,7 @@ zenario_user__details:
     key:
         id: ""
         parent_id: ''
+        email_on_load: ''
     identifier:
         css_class: user
         label: User ID
@@ -20,24 +21,27 @@ zenario_user__details:
                     message: This user's password has expired. Reset their password to give the user more time to login.
                     type: warning
             fields:
+                email_grouping:
+                    dataset_label: '[Email grouping]'
+                    type: grouping
+                    name: email_grouping
                 email:
+                    grouping: email_grouping
                     label: "Email:"
                     type: text
                     onblur: |
-                        var emailOnLoad = $('#email_on_load');
+                        var emailOnLoad = zenarioAB.tuix.key.email_on_load;
                         var emailNow = $('#email');
                         var emailVerifiedStatus = $('.email_status');
                         
                         if (emailNow && emailOnLoad) {
                             emailNow = emailNow.val();
-                            emailOnLoad = emailOnLoad.val();
                             if ((emailNow != emailOnLoad) && emailVerifiedStatus) {
                                 emailVerifiedStatus.remove();
                             }
                         }
-                email_on_load:
-                    type: hidden
                 email_verified:
+                    grouping: email_grouping
                     #This field is only used for storing the value.
                     label: "Email address verified"
                     type: checkbox
@@ -237,6 +241,7 @@ zenario_user__details:
                 password_message:
                     grouping: password_grouping
                     indent: 1
+                    dataset_label: '[Password validation message]'
                     visible_if: |
                         !zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')

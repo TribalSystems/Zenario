@@ -103,6 +103,6 @@ zenario__content:
                     css_class: inspect
                     tooltip: View image
                     popout:
-                        href: zenario/file.php
+                        href: zenario/file.php?popout=1
                         options:
                             type: image

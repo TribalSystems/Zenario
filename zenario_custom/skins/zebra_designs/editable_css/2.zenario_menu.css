@@ -244,11 +244,6 @@
 	float:left;
 }
 
-.zenario_menu__default_style .wrap_menu_inner > ul > li span.menu_image img {
-	width:auto !important;
-	max-height:22px !important;
-}
-
 .zenario_menu__default_style .wrap_menu_inner > ul > li span.menu_image a {
 	padding-right:3px;
 }

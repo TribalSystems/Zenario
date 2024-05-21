@@ -49,6 +49,14 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 	zenario_pro_features::addAtt($isXML, $f, 'cID', ($targetCID ?: $cID));
 	zenario_pro_features::addAtt($isXML, $f, 'cType', ($targetCType ?: $cType));
 	zenario_pro_features::addAtt($isXML, $f, 'pinned', $version['pinned']);
+	
+	if ($version['in_sitemap']) {
+		zenario_pro_features::addAtt($isXML, $f, 'in_sitemap', '1');
+	}
+	if ($version['apply_noindex_meta_tag']) {
+		zenario_pro_features::addAtt($isXML, $f, 'apply_noindex_meta_tag', '1');
+	}
+	
 	zenario_pro_features::openTagEnd($isXML, $encodeHTMLAtt, $f);
 	zenario_pro_features::closeTag($isXML, $f, 'target');
 	

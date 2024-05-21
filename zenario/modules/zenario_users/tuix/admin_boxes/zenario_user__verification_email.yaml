@@ -1,0 +1,51 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user__verification_email:
+    key:
+        id: ""
+    tab: details
+    hide_tab_bar: true
+    tabs:
+        details:
+            label: Verification email
+            edit_mode:
+                enabled: Yes
+            fields:
+                non_plain_text_info:
+                    ord: 1.1
+                    full_width: 1
+                    #The snippet message is populated in the PHP class to distinguish between sending to 1 user or multiple users.
+                    snippet:
+                        html: ''
+                    hidden: false
+                do_not_include_personal_info_snippet:
+                    ord: 1.2
+                    full_width: 1
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                You are sending to multiple users. Users' details will be merged into the [[merge fields]]. You may modify the email below but do not include any personal or user-specific information.
+                            </div>
+                email_to_send:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select an email template.
+                email_to_send_body:
+                    #The label is created in the PHP class.
+                    label: ''
+                    type: editor
+                    editor_type: full_featured
+                    tall_as_possible: true
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                    style: |
+                        width: 98%;

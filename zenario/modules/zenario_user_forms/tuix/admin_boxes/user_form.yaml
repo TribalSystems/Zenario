@@ -5,6 +5,7 @@ zenario_user_form:
         id: ""
         type: ""
         tab: ""
+        repeat_section_count: 0
     identifier:
         css_class: zenario_user_forms
         label: Form ID
@@ -366,7 +367,7 @@ zenario_user_form:
                         required_if_not_hidden: 'Please enter the content item tag label.'
             
         data:
-            label: Actions
+            label: Actions on response
             edit_mode:
                 enabled: true
             ord: 2
@@ -374,11 +375,16 @@ zenario_user_form:
                 actions_desc: 
                     class_name: zenario_user_forms
                     snippet: 
-                        html: "When a form is successfully submitted, various actions can be performed."
+                        html: "When someone successfully submits this form, various actions can be performed."
                     ord: 1
                     id: data_tab_description
+                line_br_0:
+                    snippet:
+                        html: |
+                            <hr />
+                            <b>Logging responses</b>
                 save_record:
-                    label: 'Create form submission log record'
+                    label: 'Log the form response'
                     type: checkbox
                     format_onchange: true
                 line_br_1:
@@ -503,10 +509,10 @@ zenario_user_form:
                             <hr />
                             <b>For logged in users</b>
                 update_linked_fields:
-                    label: Update linked fields
+                    label: Update fields in an existing user's data
                     type: checkbox
                     value: 1
-                    side_note: Certain fields such as "email" will not be updated.
+                    side_note: Update the stored user record with the newly-submitted data. The "Email" field is used as a key and will not be updated.
                 no_duplicate_submissions:
                     label: Don't allow duplicate submissions
                     type: checkbox
@@ -536,13 +542,11 @@ zenario_user_form:
                     snippet:
                         html: | 
                             <hr />
-                            <b>Emails</b>
-        
+                            <b>Emailing the response</b>
                 send_email_to_user:
-                    label: 'Send email to form user'
+                    label: 'Send email to person submitting the form'
                     type: checkbox
                     format_onchange: true
-        
                 send_email_to_logged_in_user:
                     label: Send to logged-in user's email (if user logged in or new account was created)
                     type: checkbox
@@ -813,7 +817,26 @@ zenario_user_form:
                     snippet:
                         html: | 
                             <hr />
-                            <b>Advanced</b>
+                            <b>Workflow</b>
+                show_checkbox_for_allocating_form_responses:
+                    label: "Show a checkbox for this form's responses"
+                    type: checkbox
+                    redraw_onchange: true
+                form_responses_allocate_checkbox_label:
+                    indent: 1
+                    label: 'Checkbox label:'
+                    type: text
+                    maxlength: 25
+                    value: 'Allocated'
+                    validation:
+                        required_if_not_hidden: 'Please enter the label.'
+                    visible_if: zenarioAB.value('show_checkbox_for_allocating_form_responses');
+                
+                line_br_5:
+                    snippet:
+                        html: | 
+                            <hr />
+                            <b>Advanced actions</b>
                 set_simple_access_cookie:
                     label: 'Set SIMPLE_ACCESS cookie'
                     type: checkbox

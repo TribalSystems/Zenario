@@ -152,6 +152,19 @@ zenarioP.updatePasswordNotifier = function(passwordField, settings, passwordMess
 			passwordField.addClass('border_red');
 		}
 	}
-}
+};
+
+zenarioP.revealOrHidePasswordIconOnclick = function(containerId, iconElementId, passwordFieldElementId) {
+	var el = $('#' + containerId + '-' + iconElementId);
+	if (el.hasClass('fa-eye-slash')) {
+		el.removeClass('fa-eye-slash');
+		el.addClass('fa-eye');
+		$('#' + passwordFieldElementId).attr('type', 'text');
+	} else {
+		el.removeClass('fa-eye');
+		el.addClass('fa-eye-slash');  
+		$('#' + passwordFieldElementId).attr('type', 'password');
+	}
+};
 
 zenario.shrtNms(zenarioP);

@@ -32,6 +32,28 @@ plugin_settings:
                     side_note: |
                         Choose which HTML tags the title will be displayed in
                     indent: 1
+                show_language_name:
+                    plugin_setting:
+                        name: show_language_name
+                    label: "Show language name"
+                    type: checkbox
+                    redraw_onchange: true
+                show_language_name_in_which_language:
+                    indent: 1
+                    plugin_setting:
+                        name: show_language_name_in_which_language
+                    type: radios
+                    value: in_site_default_language
+                    values:
+                        in_site_default_language:
+                            ord: 1
+                            label: "Show the document's language name in the default language ([[default_site_language]])"
+                        in_local_language:
+                            ord: 2
+                            label: "Show the document's language name in local language"
+                    visible_if: lib.value('show_language_name')
+                    validation:
+                        required_if_not_hidden: "Please select one of the options."
                 show_filename_local_file:
                     plugin_setting:
                         name: show_filename_local_file

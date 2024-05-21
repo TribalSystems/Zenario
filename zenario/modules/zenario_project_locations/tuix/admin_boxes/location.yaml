@@ -22,7 +22,7 @@ zenario_project_locations__project:
                 summary:
                     label: 'Summary:'
                     type: editor
-                    editor_type: standard
+                    editor_type: summary_editor
                     dont_trim: true
                 content_item:
                     label: 'Descriptive HTML page:'

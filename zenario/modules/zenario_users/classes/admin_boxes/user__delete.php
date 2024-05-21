@@ -48,7 +48,7 @@ class zenario_users__admin_boxes__user__delete extends zenario_users {
 		$allDataExplained = '';
 		$moduleDataResponses = ze\module::sendSignal('deleteUserDataGetInfo', [$userIds]);
 		if (!empty($moduleDataResponses)) {
-			$allDataExplained .= '<p>' . ze\admin::phrase('If deleting all data, the following will be removed:') . '<p>';
+			$allDataExplained .= '<p>' . ze\admin::phrase('If deleting data related to this account, the following will be also be removed:') . '<p>';
 			$allDataExplained .= implode('<br />', $moduleDataResponses);
 		}
 		

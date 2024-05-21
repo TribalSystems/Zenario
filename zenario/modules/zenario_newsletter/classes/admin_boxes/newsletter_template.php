@@ -52,6 +52,12 @@ class zenario_newsletter__admin_boxes__newsletter_template extends zenario_newsl
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Try and ensure that we use absolute URLs where possible
 		ze\contentAdm::addAbsURLsToAdminBoxField($fields['details/body']);
+		
+		if ($values['details/apply_css_rules']) {
+			$fields['details/body']['editor_options']['content_style'] = ze::setting('email_css_rules');
+		} else {
+			unset($fields['details/body']['editor_options']['content_style']);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

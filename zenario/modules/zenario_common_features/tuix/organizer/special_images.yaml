@@ -154,9 +154,9 @@ zenario__library:
                     hide_when_children_are_not_visible: true
                 view:
                     parent: actions_dropdown
-                    label: View original
+                    label: View image
                     popout:
-                        href: zenario/file.php
+                        href: zenario/file.php?popout=1
                         type: image
                 download:
                     parent: actions_dropdown

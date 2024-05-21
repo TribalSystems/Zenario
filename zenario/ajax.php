@@ -631,6 +631,36 @@ if ($methodCall == 'showFile') {
 				$layoutPreview = ob_get_clean();
 				$cssClass .= ' zenario_slot_with_layout_preview';
 			}
+			
+			//Warn the admin is this content item is public and someone had set a private image to display here
+			if (!empty(\ze\content::$piWarnings)) {
+	
+				$others = count(\ze\content::$piWarnings) - 1;
+	
+				$mrg = [];
+				$mrg['eg1'] = array_shift(\ze\content::$piWarnings);
+	
+				if ($others) {
+					$mrg['eg2'] = array_shift(\ze\content::$piWarnings);
+				}
+				
+				ze\escape::flag('IMAGES_BLOCKED');
+				ze\escape::flag('IMAGES_BLOCKED_TITLE',
+					ze\admin::nzPhrase("Images blocked",
+						"Image blocked",
+						"Images blocked",
+						$others, $mrg
+					)
+				);
+				ze\escape::flag('IMAGES_BLOCKED_MSG',
+					ze\admin::nzPhrase(
+						"[[eg1]] is a private image and cannot be shown on a public content item",
+						"[[eg1]] and [[eg2]] are private images and cannot be shown on a public content item",
+						"[[eg1]] and [[count]] others are private images and cannot be shown on a public content item",
+						$others, $mrg
+					)
+				);
+			}
 		}
 		
 		ze\escape::flag('CSS_CLASS', $cssClass);

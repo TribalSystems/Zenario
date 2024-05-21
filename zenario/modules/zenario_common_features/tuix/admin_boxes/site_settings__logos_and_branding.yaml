@@ -158,7 +158,7 @@ site_settings:
                 site_disabled_message:
                     label: "Message for all visitors when site disabled:"
                     type: editor
-                    editor_type: standard
+                    editor_type: description_editor
                     dont_trim: true
                     editor_options:
                         convert_urls: true

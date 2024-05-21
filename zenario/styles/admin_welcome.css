@@ -1000,10 +1000,6 @@ input:-webkit-autofill.password:active {
 	color:#333;
 }
 
-.welcome div.thickbox_table input.zenario_gp_button {
-	color:#FFF;
-}
-
 .welcome div.thickbox_table input.username,
 .welcome div.thickbox_table input.password {
 	color:#6f6f6f;
@@ -1084,6 +1080,10 @@ input:-webkit-autofill.password:active {
 	gap:20px;
 }
 
+.selector_wrap.skin_selector > div {
+	overflow-x:auto;
+}
+
 .selector_wrap > div div.zenario_group_col_1 {
 	clear:none;
 	display:inline-block;
@@ -1105,6 +1105,7 @@ input:-webkit-autofill.password:active {
 }
 
 .selector_wrap > div div.zenario_group_col_1 label.radio_selector_box {
+	position:relative;
 	display:inline-block;
 	padding:3px;
 	border-radius:3px;
@@ -1123,25 +1124,22 @@ input:-webkit-autofill.password:active {
 	background-color:#01D103;
 }
 
-.selector_wrap > div div.zenario_group_col_1 label.radio_selector_box_selected {
-	position:relative;
-}
-
 .selector_wrap > div div.zenario_group_col_1 label.radio_selector_box_selected:after {
-	font-family:"FontAwesome";
-	content:"\f058";
-	width:20px;
-	height:20px;
-	font-size: 20px;
+	content:"";
+	width:22px;
+	height:22px;
 	display:block;
 	position:absolute;
-	top:-10px;
-	left:0;
-	right:0;
+	bottom:10%;
+	left:-11px;
 	margin:auto;
-	background:#fff;
-	color:#01d103;
+	background:#FFF url('../admin/images/icon-arrow-go-to-green.svg') no-repeat center / auto 14px;
+	border:2px solid #01d103;
 	border-radius: 50%;
+}
+
+.selector_wrap.skin_selector > div div.zenario_group_col_1 label.radio_selector_box_selected:after {
+	display:none;
 }
 
 /* License */
@@ -1529,7 +1527,7 @@ input:-webkit-autofill.password:active {
 	background:url("../admin/images/icon-content-published.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_draft_unlisted {
-	background:url("../admin/images/icon-content-draft-unlisted.svg") no-repeat center center / 20px 23px;
+	background:url("../admin/images/icon-content-draft-unlisted-02.svg") no-repeat center center / 20px 23px;
 }
 .organizer_item_image.content_unlisted {
 	background:url("../admin/images/icon-content-published-unlisted.svg") no-repeat center center / 20px 23px;
@@ -1670,6 +1668,7 @@ span.continue_to_block {
 }
 
 .continue_to_selector > div div.zenario_group_col_1 label.radio_selector_box_selected {
+	position:relative;
 	transform:scale(1.05);
 }
 

@@ -200,7 +200,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 		
 		if (!array_key_exists("refinerName",$_GET)){
 
-				ze\tuix::closeWithFlags(['go_to_url' => $values['meta_data/alias'] ]);
+				ze\tuix::closeWithFlags(['GO_TO_URL' => $values['meta_data/alias'] ]);
 				exit;
 		}
 		

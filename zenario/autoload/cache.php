@@ -193,7 +193,7 @@ class cache {
 
 	public static function htaccessFileForCurrentVisitor($path, $ip = -1) {
 		if ($ip === -1) {
-			$ip = \ze\user::ip();
+			$ip = \ze\cache::visitorIP();
 		}
 	
 		if (!$ip) {
@@ -324,6 +324,91 @@ class cache {
 	//Functions for outputting microtemplates
 	public static function esctick($text) {
 		return str_replace(['`', '~'], ['`t', '`s'], $text);
+	}
+	
+	
+	//Returns the IP address of the current visitor.
+	//I'm defining it here instead of in the user library so we can call it without the autoloader
+	//having to load the user library when we want to serve pages from the cache.
+	public static function visitorIP() {
+		if (defined('USE_FORWARDED_IP')
+		 && constant('USE_FORWARDED_IP')
+		 && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+	
+		} elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+			$ip = $_SERVER['REMOTE_ADDR'];
+	
+		} else {
+			return false;
+		}
+	
+		$ip = explode(',', $ip, 2);
+		return $ip[0];
+	}
+	
+	
+	public static function shouldSeeDebugInfo($limit_caching_debug_info_by_ip) {
+		return !$limit_caching_debug_info_by_ip || $limit_caching_debug_info_by_ip == \ze\cache::visitorIP();
+	}
+	
+	public static function writeDebugInfo($chSlots) {
+		echo '
+			<script type="text/javascript">
+				window.zenarioCD = {slots: ', json_encode($chSlots), '};
+			</script>';
+	}
+	
+	
+	public static function showDebugInfo($fromCache, $allowPageCaching = true, $canCache = true) {
+		
+		
+		$phrase = 'Click to see caching information for this page.';
+		
+		$v = '1';
+		$stylesheet = SUBDIRECTORY. 'zenario/styles/cache_info.min.css?v='. $v;
+		$script = SUBDIRECTORY. 'zenario/js/cache_info.min.js?v='. $v;
+		
+		$onclick = 'zenarioCI.init('. (int) $allowPageCaching. ');';
+		
+		//Add a check to load the JS library the first time the debug info is clicked
+		$onclick = '
+			if (window.zenario) {
+				if (!window.zenarioCI) {
+					$.getScript(\''. htmlspecialchars($script). '\', function() {'. $onclick. '});
+				} else {
+					'. $onclick. '
+				}
+			}';
+		
+		if ($fromCache) {
+			$class = 'zenario_from_cache';
+		
+		} elseif (!$allowPageCaching) {
+			$class = 'zenario_cache_disabled';
+		
+		} elseif (!$canCache) {
+			$class = 'zenario_not_cached';
+		
+		} else {
+			$class = 'zenario_cache_in_use';
+		}
+
+		echo '
+			<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($stylesheet), '"/>
+			<x-zenario-cache-info id="zenario_cache_info" class="zenario_cache_info">
+				<x-zenario-cache-info class="', $class, '" title="', $phrase, '" onclick="', $onclick, '"></x-zenario-cache-info>
+			</x-zenario-cache-info>
+			<script type="text/javascript">
+				window.zenarioCD.load = ', json_encode(\ze::$cacheEnv), ';';
+		
+		if ($fromCache) {
+			echo '
+				window.zenarioCD.served_from_cache = true;';
+		}
+		
+		echo '
+			</script>';
 	}
 	
 }

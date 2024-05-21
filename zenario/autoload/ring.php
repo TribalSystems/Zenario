@@ -522,4 +522,39 @@ class ring {
 		
 		return $code;
 	}
+	
+	//Apply a basic rule for grouping text together into sentences.
+	//This is just to get the project going, but we may come back to this in the future and improve this,
+	//e.g. we think Amazon might have a better API we can use that will do this for us.
+	public static function parseExtractStart(&$lines, &$line) {
+		$line = '';
+		$lines = [];
+	}
+	public static function parseExtractBlock(&$lines, &$line, $text) {
+		
+		//Ignore certain patterns
+		if (is_numeric($text)) {
+			return;
+		}
+		if (preg_match('@^page \d* of \d*$@i', $text)) {
+			return;
+		}
+		
+		if ($line !== '') {
+			$line .= ' ';
+		}
+		$line .= $text;
+		
+		//Start a new sentence if we see this end in an obvious sentence ending character.
+		if (preg_match('@[\.\?\!]$@', $text)) {
+			$lines[] = $line;
+			$line = '';
+		}
+	}
+	public static function parseExtractEnd(&$lines, &$line) {
+		if ($line !== '') {
+			$lines[] = $line;
+		}
+		$line = '';
+	}
 }

@@ -226,7 +226,7 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 
 		$message = '<!--Message_Type:Success-->';
 		$message .= ze\admin::phrase('Email change successful.');
-		ze\tuix::closeWithFlags(['close_with_message' => $message]);
+		ze\tuix::closeWithFlags(['CLOSE_WITH_MESSAGE' => $message]);
 		exit;
 	}
 }

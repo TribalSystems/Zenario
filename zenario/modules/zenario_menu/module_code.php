@@ -619,6 +619,20 @@ class zenario_menu extends ze\moduleBaseClass {
 					}
 				}
 				
+				if (isset($box['tabs']['first_tab']['fields']['show_group_name_when_user_is_in_groups']) && isset($box['tabs']['first_tab']['fields']['user_groups'])) {
+					unset($fields['first_tab/show_group_name_when_user_is_in_groups']['notices_below']);
+					
+					if ($values['first_tab/show_group_name_when_user_is_in_groups']) {
+						if (empty($fields['first_tab/user_groups']['values'])) {
+							$fields['first_tab/show_group_name_when_user_is_in_groups']['notices_below']['no_groups_exist'] = [
+								'hidden' => false,
+								'type' => 'information',
+								'message' => 'No groups exist'
+							];
+						}
+					}
+				}
+				
 				break;
 		}
 	}

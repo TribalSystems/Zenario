@@ -58,7 +58,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		
 		if ($this->setting('show_details_and_link')=='another_content_item'){
 			$item = $this->setting('another_document');
-			if (count($arr = explode("_",$item))==2){
+			if (count($arr = explode("_",$item)) == 2) {
 				$this->targetID = $arr[1];
 				$this->targetType = $arr[0];
 				if (!$this->targetVersion = ze\content::showableVersion($this->targetID,$this->targetType)){
@@ -79,7 +79,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		if (!$version = ze\row::get(
 			'content_item_versions',
 			['title', 'description', 'published_datetime', 'release_date', 'file_id', 'filename', 's3_filename','s3_file_id'],
-			['id'=> $this->targetID, 'version'=> $this->targetVersion, 'type'=> $this->targetType]
+			['id'=> $this->targetID, 'type'=> $this->targetType, 'version'=> $this->targetVersion]
 		)) {
 			return false;
 		}
@@ -89,6 +89,22 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			$this->mergeFields['Show_Title'] = true;
 			$this->mergeFields['Title'] = htmlspecialchars($version['title']);
 			$this->mergeFields['Title_Tags'] = $this->setting('title_tags');
+		}
+		
+		if ($this->setting('show_language_name')) {
+			$this->mergeFields['Show_Language_Name'] = true;
+			
+			$contentItemLanguageId = ze\row::get('content_items', 'language_id', ['id'=> $this->targetID, 'type'=> $this->targetType]);
+			$showInWhichLanguage = $this->setting('show_language_name_in_which_language');
+			if ($showInWhichLanguage == 'in_local_language') {
+				$localName = true;
+			} else {
+				$localName = false;
+			}
+			
+			$languageName = ze\lang::name($contentItemLanguageId, true, true, $localName);
+			
+			$this->mergeFields['Language_Name'] = htmlspecialchars($languageName);
 		}
 		
 		if (!is_null($version['description'])) {
@@ -161,7 +177,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			}
 		} else {
 			
-			if ($s3SupportEnabledOnSite = ze::setting('aws_s3_support')) {
+			if ($s3SupportEnabledOnSite = (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3'))) {
 				$localFileDownload = ze::setting('local_file_link_text');
 				$s3FileDownloadPhrase = ze::setting('s3_file_link_text');
 			} else {
@@ -321,33 +337,15 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		if ($path == 'site_settings' && $settingGroup == 'files_and_images') {
-		
-			if (isset($fields['awss3_file_downloads/local_file_link_text']) && !$fields['awss3_file_downloads/local_file_link_text']['value']) {
-				$fields['awss3_file_downloads/local_file_link_text']['value'] = ze\admin::phrase('Download');
-			}
-
-			if (isset($fields['awss3_file_downloads/s3_file_link_text']) && !$fields['awss3_file_downloads/s3_file_link_text']['value']) {
-				$fields['awss3_file_downloads/s3_file_link_text']['value'] = ze\admin::phrase('Download from S3');
-			}
-
-			if (isset($fields['awss3_file_downloads/s3_file_play_video_text']) && !$fields['awss3_file_downloads/s3_file_play_video_text']['value']) {
-				$fields['awss3_file_downloads/s3_file_play_video_text']['value'] = ze\admin::phrase('Play video');
-			}
+		if ($path == 'site_settings' && $settingGroup == 'aws_s3_and_vector_data_processing') {
 			
 			if (!class_exists('Aws\\S3\\S3Client')) {
-				$fields['awss3_file_downloads/aws_s3_support']['disabled'] = true;
-				
-				$awsPackageDocumentationHref = 'https://zenar.io/download-page/advanced-installation/installing-aws-s3-support';
-				$linkStart = '<a href="' . $awsPackageDocumentationHref . '" target="_blank">';
-				$linkEnd = '</a>';
-				$fields['awss3_file_downloads/aws_s3_support']['note_below'] = ze\admin::phrase(
-					'To use this feature, please [[link_start]]install the AWS library[[link_end]].',
-					['link_start' => $linkStart, 'link_end' => $linkEnd]
-				);
+				$values['awss3_file_downloads/allow_document_content_items_to_be_stored_on_aws_s3'] = '';
+				$fields['awss3_file_downloads/allow_document_content_items_to_be_stored_on_aws_s3']['disabled'] = true;
 			}
+		
 		} elseif ($path == 'plugin_settings') {
-			if (ze::setting('aws_s3_support')) {
+			if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
 				$fields['first_tab/download_source']['hidden'] = false;
 				$fields['first_tab/s3_file']['hidden'] = false;
 				$fields['first_tab/show_filename_s3_file']['hidden'] = false;
@@ -356,19 +354,14 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				$fields['first_tab/local_file']['label'] = ze\admin::phrase('Show local file Download button for immediate download (if local file exists)');
 				$fields['first_tab/s3_file']['label'] = ze\admin::phrase('Show S3 file Download button for immediate download');
 			}
+			
+			$defaultLanguage = ze\lang::name(ze::$defaultLang);
+			ze\lang::applyMergeFields($fields['first_tab/show_language_name_in_which_language']['values']['in_site_default_language'], ['default_site_language' => $defaultLanguage]);
 
 			//Extra option available if the "Document content type: extra data"
 			//module is running.
 			if (!ze\module::isRunning('zenario_ctype_document_extra_data')) {
 				unset($box['tabs']['first_tab']['fields']['show_document_extra_data']);
-			}
-		} elseif ($path == 'zenario_content') {
-			if ($box['key']['cID'] && $box['key']['cType'] && ($box['key']['cType'] == 'document') && $box['key']['cVersion']) {
-				$extract = ze\row::get('content_cache', ['extract', 'extract_wordcount'], ['content_id' => $box['key']['cID'], 'content_type' => 'document', 'content_version' => $box['key']['cVersion']]);
-				if (!empty($extract) && is_array($extract)) {
-					$fields['file/text_extract']['value'] = $extract['extract'];
-					$fields['file/text_extract_word_count']['value'] = $extract['extract_wordcount'];
-				}
 			}
 		}
 	}
@@ -387,7 +380,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		        $hidden = !($values['first_tab/show_default_stick_image'] && $values['first_tab/use_sticky_image']);
 		        $this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_');
 				
-				if (ze::setting('aws_s3_support')) {
+				if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
 					$fields['first_tab/download_source']['hidden'] = false;
 					$fields['first_tab/local_file']['hidden'] = false;
 					$fields['first_tab/s3_file']['hidden'] = false;
@@ -397,10 +390,60 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			
 			
 			case 'zenario_content':
+				$fields['file/text_extract_processing']['hidden'] =
+				$fields['file/text_extract']['hidden'] =
+				$fields['file/text_extract_word_count']['hidden'] = true;
+				
 				if ($box['key']['cType'] == 'document') {
 					$box['tabs']['file']['hidden'] = false;
 					unset($box['tabs']['file']['fields']['file']['upload']['accept']);
 					unset($box['tabs']['file']['fields']['file']['upload']['extensions']);
+					
+					if ($values['file/file']
+					 && is_numeric($values['file/file'])
+					 && ($extract = ze\row::get('file_extracts', ['extract', 'extract_wordcount', 'extract_source', 'extract_status', 'requested_on'], $values['file/file']))) {
+				
+						switch ($extract['extract_status']) {
+							case 'completed':
+								$fields['file/text_extract']['hidden'] =
+								$fields['file/text_extract_word_count']['hidden'] = false;
+								$fields['file/text_extract']['value'] = $extract['extract'];
+								$fields['file/text_extract_word_count']['value'] = $extract['extract_wordcount'];
+								
+								switch ($extract['extract_source']) {
+									case 'antiword':
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract by Antiword:');
+										break;
+									case 'pdftotext':
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract by pdftotext:');
+										break;
+									case 'Textract':
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract by Textract:');
+										break;
+									case 'ZipArchive':
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract:');
+										break;
+								}
+								
+								if (ze::setting('aws_textract_extract_from_jpg_and_png')) {
+									$fields['file/text_extract']['note_below'] = ze\admin::phrase('Cannot be edited. With PDFs, PNG and JPEG images, and Word files, Zenario makes a plain-text extract of the file\'s contents. To re-run an extract, close this box and click "Rescan".');
+								} else {
+									$fields['file/text_extract']['note_below'] = ze\admin::phrase('Cannot be edited. With PDFs and Word files, Zenario makes a plain-text extract of the file\'s contents. To re-run an extract, close this box and click "Rescan".');
+								}
+								
+								break;
+							
+							
+							case 'processing':
+								$mrg = ['ago' => \ze\admin::formatRelativeDateTime($extract['requested_on'], 'day', false)];
+								
+								$fields['file/text_extract_processing']['hidden'] = false;
+								$fields['file/text_extract_processing']['notices_below']['text_extract_processing']['message'] =
+									ze\admin::phrase('The text extract for this file is still processing. Scan requested from Textract [[ago]], the extract will appear here in a few minutes.', $mrg);
+								
+								break;
+						}
+					}
 				}
 				
 				break;
@@ -412,7 +455,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			case 'zenario_content':
 				if ($box['key']['cType'] == 'document') {
 					if (ze\ring::engToBoolean($box['tabs']['file']['edit_mode']['on'] ?? false)) {
-						if (ze::setting('aws_s3_support')) {
+						if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
 							if (empty($values['file/file']) && empty($values['file/s3_file_id']) && $saving) {
 								$box['tabs']['file']['errors'][] = ze\admin::phrase('Please upload a local file or an S3 file.');
 							}
@@ -446,9 +489,9 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				
 				
 			case 'site_settings':
-				if ($settingGroup == 'files_and_images') {
+				if ($settingGroup == 'aws_s3_and_vector_data_processing') {
 					
-					if ($values['awss3_file_downloads/aws_s3_support'] && class_exists('Aws\\S3\\S3Client')) {
+					if ($values['awss3_file_downloads/enable_aws_support'] && $values['awss3_file_downloads/allow_document_content_items_to_be_stored_on_aws_s3'] && class_exists('Aws\\S3\\S3Client')) {
 						$awsS3Region = $values['awss3_file_downloads/aws_s3_region'];
 						$awsS3KeyId = $values['awss3_file_downloads/aws_s3_key_id'];
 						$awsS3SecretKey = $values['awss3_file_downloads/aws_s3_secret_key'];
@@ -468,7 +511,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 							// Send a PutObject request and get the result object.
 							$bucketResponse = $s3->doesBucketExist($bucket);
 							if (!$bucketResponse) {
-								$box['tabs']['awss3_file_downloads']['errors'][] = ze\admin::phrase('Connection failed! Please check your credentials.');
+								$box['tabs']['awss3_file_downloads']['errors']['aws'] = ze\admin::phrase('Connection failed! Please check your credentials.');
 							}
 						}
 					}
@@ -481,10 +524,20 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
 			case 'zenario__content/panels/content':
-				if (isset($panel['collection_buttons']['zenario_ctype_document__create_multiple'])) {
-					if ($panel['key']['cType'] != 'document') {
-						unset($panel['collection_buttons']['zenario_ctype_document__create_multiple']);
-					}
+				if ($panel['key']['cType'] != 'document') {
+					unset($panel['collection_buttons']['zenario_ctype_document__create_multiple']);
+					unset($panel['collection_buttons']['aws_s3_and_vector_data_processing']);
+				}
+				
+				if (!ze::in($mode, 'full', 'quick', 'select')) {
+					unset(
+						$panel['item_buttons']['no_extract'],
+						$panel['item_buttons']['extract_processing'],
+						$panel['item_buttons']['extract_textract'],
+						$panel['item_buttons']['extract_antiword'],
+						$panel['item_buttons']['extract_pdftotext'],
+						$panel['item_buttons']['extract_zip']
+					);
 				}
 				
 				break;
@@ -553,7 +606,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 									$newIds[] = $cType. '_'. $cID;
 									
-									ze\file::updatePlainTextExtract($cID, $cType, $cVersion, $fileId);
+									ze\file::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId);
 								}
 							}
 						}
@@ -573,7 +626,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	public static function getS3FilePresignedUrl($keyName) {
 		
 		$presignedUrl = '';
-		if (ze::setting('aws_s3_support')) {
+		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
 			$bucketArn = ze::setting('aws_s3_bucket');
 			$bucket = ltrim($bucketArn, 'arn:aws:s3:::');
 			$s3 = Aws\S3\S3Client::factory([
@@ -620,7 +673,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	}
 
 	public static function getS3FileDetails($s3FileId) {
-		if (ze::setting('aws_s3_support') && $s3FileId) {
+		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3') && $s3FileId) {
 			$fileDetails = ze\row::get('files', ['filename', 'checksum'], ['id' => (int) $s3FileId]);
 
 			$bucketArn = ze::setting('aws_s3_bucket');
@@ -662,7 +715,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	}
 	
 	public static function uploadS3File($usage, $s3CachePath, $s3Filename, $s3MimeType, $fileInsert = true) {
-		if (ze::setting('aws_s3_support')) {
+		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
 			$s3Filename = ze\file::safeName($s3Filename);
 			$checksum = ze::base16To64(md5_file($s3CachePath));
 			$presignedUrl = '';
@@ -741,7 +794,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	}
 
 	public static function rescanExtract($ids, $showResultMessage = false) {
-		$stats = ['successes' => 0, 'fails' => 0];
+		$failed = $processing = $completed = 0;
 		$cID = $cType = false;
 		foreach (explode(',', $ids) as $id) {
 			if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $id)) {
@@ -752,25 +805,39 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 							['id', 'type', 'admin_version', 'visitor_version'],
 							['id' => $cID, 'type' => $cType, 'status' => ['!1' => 'trashed', '!2' => 'deleted']]
 						)) {
+							$forceRescan = true;
 							$doneSomething = false;
 							$success = true;
+							$extractOneStatus = '';
+							$extractTwoStatus = '';
 						
+							//Plain text extracts for the latest published version and any drafts are stored separately,
+							//because a draft may use a different file. Update the extract for both if applicable.
 							if ($row['admin_version']) {
+								$extract = ze\file::updateDocumentContentItemExtract($row['id'], $row['type'], $row['admin_version'], false, $forceRescan);
+								$extractOneStatus = $extract['extract_status'] ?? '';
 								$doneSomething = true;
-								$success &= ze\file::updatePlainTextExtract($row['id'], $row['type'], $row['admin_version']);
+								$forceRescan = false;
 							}
 						
 							if ($row['visitor_version'] && $row['visitor_version'] != $row['admin_version']) {
+								$extract = ze\file::updateDocumentContentItemExtract($row['id'], $row['type'], $row['visitor_version'], false, $forceRescan);
+								$extractTwoStatus = $extract['extract_status'] ?? '';
 								$doneSomething = true;
-								$success &= ze\file::updatePlainTextExtract($row['id'], $row['type'], $row['visitor_version']);
+								$forceRescan = false;
 							}
-						
-							if ($doneSomething) {
-								if ($success) {
-									++$stats['successes'];
-								} else {
-									++$stats['fails'];
-								}
+							
+							if ($extractOneStatus == 'failed'
+							 || $extractTwoStatus == 'failed') {
+								++$failed;
+							
+							} elseif ($extractOneStatus == 'processing'
+							 || $extractTwoStatus == 'processing') {
+								++$processing;
+							
+							} elseif ($extractOneStatus == 'completed'
+							 || $extractTwoStatus == 'completed') {
+								++$completed;
 							}
 						}
 					}
@@ -779,24 +846,24 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		}
 		
 		if ($showResultMessage) {
-			if ($stats['fails']) {
-				echo '<!--Message_Type:Error-->';
-				if ($stats['successes']) {
-					echo ze\admin::phrase('[[successes]] extract(s) were updated. [[fails]] extract(s) could not be updated.', $stats);
-				} else {
-					echo ze\admin::phrase('[[fails]] extract(s) could not be updated.', $stats);
-				}
+			if ($failed) {
+				ze\escape::bFlag('MESSAGE_TYPE', 'error');
+			
+			} elseif ($completed || $processing) {
+				ze\escape::bFlag('MESSAGE_TYPE', 'success');
 			} else {
-				if ($stats['successes']==1) {
-					echo '<!--Message_Type:Success-->';
-					echo ze\admin::phrase('This document\'s extract was updated.', $stats);
-				} elseif ($stats['successes']>1) {
-					echo '<!--Message_Type:Success-->';
-					echo ze\admin::phrase('The extracts of [[successes]] documents were updated.', $stats);
-				} else {
-					echo '<!--Message_Type:Warning-->';
-					echo ze\admin::phrase('No extracts were updated.');
-				}
+				ze\escape::bFlag('MESSAGE_TYPE', 'warning');
+				echo ze\admin::phrase('No extracts were updated.');
+			}
+			
+			if ($completed) {
+				echo ze\admin::nPhrase('1 extract was updated.', '[[count]] extracts were updated.', $completed), ' ';
+			}
+			if ($processing) {
+				echo ze\admin::nPhrase('1 extract is in process and will be updated soon.', '[[count]] extracts are in process and will be updated soon.', $processing), ' ';
+			}
+			if ($failed) {
+				echo ze\admin::nPhrase('1 extract could not be updated.', '[[count]] extracts could not be updated.', $failed), ' ';
 			}
 		}
 	}

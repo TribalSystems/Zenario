@@ -23,14 +23,14 @@ site_settings:
                 use_an_alternative_google_maps_api_key:
                     site_setting:
                         name: use_an_alternative_google_maps_api_key
-                    label: 'Use a different API Key for scheduled tasks'
+                    label: 'Use a different API Key (for scheduled tasks or geocode)'
                     type: checkbox
                     redraw_onchange: true
                 alternative_google_maps_api_key:
                     indent: 1
                     site_setting:
                         name: alternative_google_maps_api_key
-                    label: 'Alternative API Key for scheduled tasks:'
+                    label: 'Alternative API Key (for scheduled tasks or geocode):'
                     type: text
                     validation:
                         required_if_not_hidden: 'Please enter the alternative Google Maps API key.'

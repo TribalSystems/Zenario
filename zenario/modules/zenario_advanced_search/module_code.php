@@ -250,12 +250,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		$fields = [];
 		$fields[] =	['name' => 'c.alias',				'weighting' => $weights[$this->setting('alias_weighting')]];
-		$fields[] =	['name' => 'c.language_id',		'weighting' => 0];
+		$fields[] =	['name' => 'c.language_id',			'weighting' => 0];
 		$fields[] =	['name' => 'v.title',				'weighting' => $weights[$this->setting('title_weighting')]];
 		$fields[] =	['name' => 'v.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]];
-		$fields[] =	['name' => 'v.description',		'weighting' => $weights[$this->setting('description_weighting')]];
+		$fields[] =	['name' => 'v.description',			'weighting' => $weights[$this->setting('description_weighting')]];
 		$fields[] =	['name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]];
-		$fields[] =	['name' => 'v.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]];
+		$fields[] =	['name' => 'v.content_summary',		'weighting' => $weights[$this->setting('content_summary_weighting')]];
 		$fields[] =	['name' => 'v.feature_image_id',	'weighting' => 0];
 		$fields[] =	['name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]];
 		$fields[] =	['name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]];
@@ -684,8 +684,17 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					2) The target module will need its own logic for returning results, including a DB key if appropriate
 					3) Expecting the module's function to return an array: ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => '(the module's variable id, e.g. id, locationId, etc)']
 					4) Expecting the following properties for each result: item_id, title, thumbnail_Id, filename, score
-					5) To view results from another module, Advanced Search uses a content item picker and a conductor state to generate "View" links
+					5) There may be additional properties: short_description, date. Please note that at the moment, only Videos Manager returns these
+					6) To view results from another module, Advanced Search uses a content item picker and a conductor state to generate "View" links
 				*/
+				
+				/* Current list of searchable modules:
+					Location Manager
+					Videos Manager
+					Ecommerce Physical Products
+					Ecommerce Document Products
+				*/
+				
 				$weights = [
 					'_NONE'		=> 0,
 					'_LOW'		=> 1,
@@ -696,7 +705,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				//Get the weights values
 				$weightingsForModule = ['title' =>  $weights[$this->setting('other_module_title_weighting')], 'description' =>  $weights[$this->setting('other_module_description_weighting')]];
 
-				$resultsFromModule = $moduleToSearch::searchFromModule($this->searchString, $weightingsForModule, $usePagination, $this->page, $pageSize, $weightingsForModule);
+				$resultsFromModule = $moduleToSearch::searchFromModule($this->searchString, $weightingsForModule, $usePagination, $this->page, $pageSize);
 				$countResultsFromModule = $resultsFromModule['Record_Count'];
 				if ($countResultsFromModule > 0) {
 					$this->mergeFields['Search_Result_Rows'] = true;
@@ -726,6 +735,10 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$cID = $cType = false;
 							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $contentItem);
 							$resultFromModule['url'] = ze\link::toItem($cID, $cType, true, ($resultsFromModule['Variable_name'] . '=' . $resultFromModule['item_id'] . '&state=' . htmlspecialchars($conductorState)));
+						}
+						
+						if ($this->setting('limit_num_of_chars_in_summary') && ($charLimit = $this->setting('summary_char_limit_value')) && !empty($resultFromModule['short_description'])) {
+							self::applyCharacterLimit($charLimit, $resultFromModule['short_description']);
 						}
 					}
 
@@ -1073,9 +1086,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		
 		if ($searchPrivateItems) {
-			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL);
+			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
 		} else {
-			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
+			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
 		}
 		
 		$sql = $sqlFrom;
@@ -1436,9 +1449,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				AND results.type = v.type";
 		
 		if ($searchPrivateItems) {
-			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL);
+			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
 		} else {
-			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL);
+			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
 		}
 
 		$resultsCountSql .= $sqlFrom;

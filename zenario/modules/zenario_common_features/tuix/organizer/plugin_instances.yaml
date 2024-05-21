@@ -252,7 +252,7 @@ zenario__modules:
                     parent: view_dropdown
                     label: Plugin's image
                     popout:
-                        href: zenario/file.php
+                        href: zenario/file.php?popout=1
                         options:
                             type: image
                     with_columns_set:

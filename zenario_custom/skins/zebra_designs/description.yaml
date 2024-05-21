@@ -8,20 +8,50 @@ import:
 editor_options:
     custom_colors: false
     color_map:
+        - 'F5AA69'
+        - Light orange
+        - 'FB6757'
+        - Light red
+        - '0da8fb'
+        - Light sapphire blue
+        - '38b9f9'
+        - Light pacific blue
+        - '8AD7FF'
+        - Light blue
+        - 'E67E23'
+        - Orange
+        - 'E03E2D'
+        - Red
+        - '00659b'
+        - Sapphire blue
+        - '2a98ce'
+        - Pacific blue
+        - '66A3C3'
+        - Blue
+        - 'BD5902'
+        - Dark orange
+        - '8F261B'
+        - Dark red
+        - '012b42'
+        - Dark sapphire blue
+        - '165777'
+        - Dark pacific blue
+        - '385C6F'
+        - Dark blue
+        - 'eeeeee'
+        - Light gray
+        - 'CED4D9'
+        - Medium gray
+        - '95A5A6'
+        - Gray
+        - '525151'
+        - Dark gray
+        - '4cb957'
+        - Green
         - '000000'
         - Black
-        - '808080'
-        - Gray
         - 'FFFFFF'
         - White
-        - 'FF0000'
-        - Red
-        - 'FFFF00'
-        - Yellow
-        - '008000'
-        - Green
-        - '0000FF'
-        - Blue
     
     font_family_formats: >
         Andale Mono=andale mono,times;
@@ -44,23 +74,19 @@ editor_options:
     
     style_formats:
         -
-            title: "Button-style link"
+            title: "Div: highlight blue"
+            block: "div"
+            classes: "div_highlight"
+        -
+            title: "Link: button-style"
             selector: "a"
             classes: "nice_button"
         -
-            title: "Image without padding"
-            selector: "img"
-            classes: "image_no_padding"
-        -
-            title: "Paragraph highlight blue"
-            block: "div"
-            classes: "paragraph_highlight"
-        -
-            title: "Paragraph tip info"
+            title: "Paragraph: tip info"
             selector: "p"
             classes: "tip_info"
         -
-            title: "Table no styles"
+            title: "Table: no styles"
             selector: "table"
             classes: "table_no_styles"
 

@@ -26,12 +26,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-if (version_compare(phpversion(), '7.2.0', '<')) {
+if (version_compare(phpversion(), '8.1.0', '<')) {
 	echo '
 		<h1>System Requirements</h1>
 		<p>It looks like your server doesn\'t meet the requirements for Zenario.</p>
 		<p>
-			Zenario needs PHP version 7.2 or later to run (<em>you have version ', htmlspecialchars(phpversion()), '</em>).
+			Zenario needs PHP version 8.1 or later to run (<em>you have version ', htmlspecialchars(phpversion()), '</em>).
 		</p>';
 	exit;
 }
@@ -323,7 +323,7 @@ echo '
 	zenarioAW.getRequest = ', json_encode($_GET), ';
 	
 	var step2 = cb.add(),
-		msg = "', ze\escape::js('<!--Logged_Out-->'. ze\admin::phrase('You have been logged out.')), '";
+		msg = "', ze\escape::js('<!--LOGGED_OUT-->'. ze\admin::phrase('You have been logged out.')), '";
 		
 	$(document).ready(function () {
 		if (!zenarioA.loggedOutIframeCheck(msg)) {

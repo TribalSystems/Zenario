@@ -293,9 +293,9 @@ zenario_menu:
                     label: 'Description (HTML):'
                     type: editor
                     dont_trim: true
-                    editor_type: standard_with_links
+                    editor_type: phrase_editor
                     cols: "80"
-                    rows: "10"
+                    rows: "4"
                     value: ""
                 
                 

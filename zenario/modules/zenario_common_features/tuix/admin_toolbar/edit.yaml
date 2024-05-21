@@ -4,7 +4,7 @@ sections:
     edit:
         buttons:
             property_dropdown: &property_dropdown
-                label: Properties
+                label: Content item properties
                 hide_when_children_are_not_visible: true
 
             item_meta_data:
@@ -40,230 +40,19 @@ sections:
             categories:
                 parent: property_dropdown
                 priv: _PRIV_EDIT_DRAFT
-                label: Change categories
+                label: Change categories...
                 appears_in_toolbars:
                     edit: true
                 admin_box:
                     path: zenario_content_categories
 
             
-            action_dropdown: &action_dropdown
-                label: Actions
-                hide_when_children_are_not_visible: true
-                onmouseover: 'zenarioA.closeSlotControls();'
-                #PLEASE NOTE: Some of the buttons on the right-hand side (Publish, Hide, Delete, Trash)
-                #will also appear in this dropdown. Please check the fun/fillAdminToolbar.php file
-                #for the copying logic.
-            
-            start_editing_pos: {}
-            cant_start_editing_pos: {}
-            redraft_pos: {}
-            
-            lock:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Lock this draft
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                ajax:
-                    confirm:
-                        message: |
-                            Lock this draft?
-
-                            No other administrator will be able to edit it until it is unlocked, published or deleted.
-                        button_message: Lock
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        lock: 1
-            locked:
-                parent: action_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                label: Locked
-                css_class: zenario_item_locked
-            unlock:
-                parent: action_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                label: Unlock
-                tooltip: This content item is locked by you
-                ajax:
-                    confirm:
-                        button_message: Unlock
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        unlock: 1
-            force_open:
-                parent: action_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                priv: _PRIV_CANCEL_CHECKOUT
-                label: Force unlock
-                tooltip: This content item is locked by another administrator
-                ajax:
-                    confirm:
-                        message: |
-                            This content item's latest draft is locked by another administrator, which prevents it being edited by anyone else.
-                            
-                            You have permission to force-unlock this content item's latest draft. Would you like to do this?
-                            
-                            Any administrator who has authoring permission will then be able to make changes to it.
-                        button_message: Unlock draft
-                        cancel_button_message: Leave it alone
-                        message_type: warning
-                    request:
-                        unlock: 1
-            rescan_extract:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPerms(id)
-                label: Rescan text/image extract
-                with_columns_set:
-                    traits.is_document: true
-                ajax:
-                    confirm:
-                        message: |
-                            Are you sure you wish to rescan and update the text extract for the document "[[tag]]"?
-                            
-                            This action will read the contents of a Microsoft Word or PDF document
-                            (subject to external server programs being available).
-                            
-                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a featured image.
-                        button_message: Rescan text extract
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        rescan_extract: 1
-
-            
-            #Placeholders for buttons copied from the right-area
-            publish_pos: {}
-            delist_pos: {}
-            relist_pos: {}
-            republish_pos: {}
-            create_draft_by_copying:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                appears_in_toolbars:
-                    edit: true
-                label: Copy from other...
-                pick_items:
-                    path: ""
-                    min_path: zenario__content/panels/languages
-                    max_path: zenario__content/panels/content
-                    target_path: zenario__content/panels/content
-                    one_to_one_choose_phrase: Copy from selected
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you wish to copy the contents of the selected content item?
-                                
-                                This will create a draft of the current content item with the contents of the one you selected.
-                            button_message: Create draft and copy
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            create_draft_by_copying: 1
-            create_draft_by_overwriting:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                appears_in_toolbars:
-                    edit: true
-                label: Copy from other...
-                pick_items:
-                    path: ""
-                    min_path: zenario__content/panels/languages
-                    max_path: zenario__content/panels/content
-                    target_path: zenario__content/panels/content
-                    one_to_one_choose_phrase: Copy from selected
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you wish to copy the contents of the selected content item over the current draft?
-                                
-                                This cannot be undone.
-                            button_message: Copy and overwrite
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            create_draft_by_copying: 1
-            rollback_item:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Rollback
-                css_class: zenario_rollback label_to_the_left
-                tooltip: >
-                    Rollback this content item|Rollback this content item by
-                    creating a new draft based on the current version in view.
-                ajax:
-                    confirm:
-                        message: |
-                            This action will create a new draft based on the current version in view.
-                            
-                            The Published version will not be affected until the newly created draft is published.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Rollback
-                        cancel_button_message: Cancel
-                        message_type: question
-                    request:
-                        rollback: 1
-            no_rollback_item:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: "Can't Rollback"
-                css_class: zenario_rollback_disabled label_to_the_left
-                tooltip: >
-                    Rollback this content item|You cannot rollback this item to
-                    this version because a draft exists.
-
-            #Placeholders for buttons copied from the right-area
-            delete_draft_pos: {}
-            hide_content_pos: {}
-            trash_content_pos: {}
-            
-            delete_archives:
-                parent: action_dropdown
-                priv: _PRIV_PUBLISH_CONTENT_ITEM
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                hide_in_select_mode: true
-                label: Delete archived versions
-                multiple_select: true
-                ajax:
-                    confirm:
-                        message: |
-                            Are you sure you wish to delete any archived versions of this content item?
-                            
-                            This cannot be undone.
-                        button_message: Delete archived versions
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        delete_archives: 1
             
             view_items_images: &view_items_images
                 featured_image_container: true
                 featured_image_src: ''
                 featured_image_alt: ''
-                label: Images
+                label: Attached images
                 organizer_quick:
                     target_path: zenario__library/panels/image_library
                     min_path: zenario__library/panels/image_library
@@ -275,6 +64,5 @@ sections:
     restricted_editing:
         buttons:
             property_dropdown: *property_dropdown
-            action_dropdown: *action_dropdown
             #view_dropdown: *view_dropdown
             view_items_images: *view_items_images

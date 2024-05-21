@@ -46,7 +46,7 @@ zenario_videos_manager__video:
                     format_onchange: true
                     hidden: true
                 video_privacy:
-                    label: "Privacy (determined on the fly; applies to Vimeo only):"
+                    label: "Privacy (applies to Vimeo only):"
                     snippet:
                         html: ""
                 image:
@@ -75,7 +75,7 @@ zenario_videos_manager__video:
                 description:
                     label: 'Full description (HTML):'
                     type: editor
-                    editor_type: standard
+                    editor_type: description_editor
                 date:
                     label: 'Date:'
                     type: date

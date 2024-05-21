@@ -70,6 +70,10 @@
 	</div>
 	{{Pagination}}
 {% elseif No_Events %}
+	{% if Title %}
+		<h2>{{Title}}</h2>
+	{% endif %}
+	
     <div class="no_events_to_show" > 
 		{{'There are no events to show.'|trans}}
 	</div>

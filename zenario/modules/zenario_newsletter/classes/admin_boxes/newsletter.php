@@ -357,6 +357,12 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		} else {
 			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Users or contacts whose accounts don\'t have the terms_and_conditions_accepted checkbox checked will not be sent this newsletter. There is no need to make a smart group rule for this!');
 		}
+		
+		if ($values['meta_data/apply_css_rules']) {
+			$fields['meta_data/body']['editor_options']['content_style'] = ze::setting('email_css_rules');
+		} else {
+			unset($fields['meta_data/body']['editor_options']['content_style']);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

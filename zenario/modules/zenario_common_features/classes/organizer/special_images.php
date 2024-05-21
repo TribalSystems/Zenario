@@ -115,7 +115,8 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			if ($fileId) {
 
 				if ($existingFilename && $existingFilename != $_FILES['Filedata']['name']) {
-					echo '<!--Message_Type:Warning-->',
+					ze\escape::bFlag('MESSAGE_TYPE', 'warning');
+					echo
 						ze\admin::phrase('This file already existed on the system, but with a different name. "[[old_name]]" has now been renamed to "[[new_name]]".',
 							['old_name' => $existingFilename, 'new_name' => $_FILES['Filedata']['name']]);
 				} else {

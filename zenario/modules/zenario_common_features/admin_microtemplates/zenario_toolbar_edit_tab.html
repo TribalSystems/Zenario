@@ -21,6 +21,14 @@
 			</div>
 		<% } %>
 	</div>
+	<div class="zenario_at_content zenario_at_toolbar zenario_at_actions_section">
+		<!-- zenario_at_action_button -->
+		<% if (!zenarioT.hidden(m.sections.actions)) { %>
+			<div class="zenario_at_actions">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.actions)}}
+			</div>
+		<% } %>
+	</div>
 </div>
 <div class="zenario_at_toolbar_container_bottom">
 	<div id="zenario_at_lower_section">

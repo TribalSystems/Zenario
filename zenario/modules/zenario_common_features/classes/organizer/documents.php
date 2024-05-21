@@ -183,7 +183,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 							$type = 'file';
 							$name = $filename;
 						}
-						echo '<!--Message_Type:Error-->';
+						ze\escape::bFlag('MESSAGE_TYPE', 'error');
 						if ($parent_id == 0) {
 							$error = ze\admin::phrase('You cannot have more than one [[type]] named "[[name]]" in the root directory', ['name' => $name, 'type' => $type]);
 						} else {
@@ -214,11 +214,11 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 						$folder = ze\row::get('documents', ['id', 'type'], $_POST['parent_ids'][$id]);
 						if ($folder['type'] == "file") {
 							if ($file['type'] == 'file') {
-								echo '<!--Message_Type:Error-->';
+								ze\escape::bFlag('MESSAGE_TYPE', 'error');
 								echo ze\admin::phrase('Files may not be moved under other files. They may only be placed under folders or at the top level.');
 								exit;
 							} elseif ($file['type'] == 'folder') {
-								echo '<!--Message_Type:Error-->';
+								ze\escape::bFlag('MESSAGE_TYPE', 'error');
 								echo ze\admin::phrase('Folders may not be moved under files.');
 								exit;
 							}
@@ -262,11 +262,11 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 		} elseif (ze::post('rescan')) {
 			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
-			$documentProperties = ze\document::addExtract($file_id);
+			$documentProperties = ze\document::addExtract($file_id, $reScan = true);
 			if (empty($documentProperties['extract']) || empty($documentProperties['thumbnail_id'])) {
-				echo "<!--Message_Type:Error-->";
+				ze\escape::bFlag('MESSAGE_TYPE', 'error');
 			} else {
-				echo "<!--Message_Type:Success-->";
+				ze\escape::bFlag('MESSAGE_TYPE', 'success');
 			}
 			
 			if (empty($documentProperties['extract'])) {
@@ -284,7 +284,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			if (empty($documentProperties['thumbnail_id'])) {
 				echo '<p>', ze\admin::phrase('Unable to update document image.'), '</p>';
 				
-				if (!ze\file::createPpdfFirstPageScreenshotPng(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+				if (!ze\file::createPdfFirstPageScreenshotPng(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
 					echo '<p>', ze\admin::phrase('<code>ghostscript</code> does not appear to be working.'), '</p>';
 					$externalProgramError = true;
 				}
@@ -299,7 +299,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			$documentProperties = [];
 			$extract = [];
 			$thumbnailId = false;
-			ze\file::updateDocumentPlainTextExtract($file_id, $extract, $thumbnailId);
+			ze\file::updateHierarchicalDocumentExtract($file_id, $extract, $thumbnailId);
 			
 			if ($thumbnailId) {
 				$documentProperties['thumbnail_id'] = $thumbnailId;
@@ -308,11 +308,11 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 		} elseif (ze::post('rescan_text')) { 
 			$file_id = ze\row::get('documents', 'file_id', ['id' => $ids]);
-			$documentProperties = ze\document::addExtract($file_id);
+			$documentProperties = ze\document::addExtract($file_id, $reScan = true);
 			if (empty($documentProperties['extract'])) {
-				echo "<!--Message_Type:Error-->";
+				ze\escape::bFlag('MESSAGE_TYPE', 'error');
 			} else {
-				echo "<!--Message_Type:Success-->";
+				ze\escape::bFlag('MESSAGE_TYPE', 'success');
 			}
 			if (empty($documentProperties['extract'])) {
 				echo '<p>', ze\admin::phrase('Unable to update document text extract.'), '</p>';
@@ -401,7 +401,8 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			}
 			
 			if($count == 1) {
-				echo '<!--Message_Type:' . $messageType . '-->' . $html;
+				ze\escape::bFlag('MESSAGE_TYPE', $messageType);
+				echo $html;
 			}
 			
 		} elseif (ze::post('make_document_private')) {
@@ -427,14 +428,14 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					
 					//Show success message only if 1 item was selected
 					if($count == 1) {
-						echo "<!--Message_Type:Success-->";
+						ze\escape::bFlag('MESSAGE_TYPE', 'success');
 						echo 'This document is now offline.';
 					}
 				} else {
 					
 					//Show error message only if 1 item was selected
 					if($count == 1) {
-						echo '<!--Message_Type:Error-->';
+						ze\escape::bFlag('MESSAGE_TYPE', 'error');
 						echo $result;
 					}
 				}

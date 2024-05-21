@@ -91,16 +91,15 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 					$url = false;
 					if (isset($parsed['host'])) {
 						if (strpos($parsed['host'], 'vimeo.com') !== false) {
-							$vimeoVideoId = (int)str_replace('/', '', $parsed['path']);
-							$videoData = zenario_videos_manager::getVimeoVideoData($vimeoVideoId);
-							$privacy = $videoData['privacy']['view'] ?? '';
 							$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
 					
-							if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
-								$privacyString = $vimeoPrivacySettingsFormattedNicely[$privacy]['note'];
+							if ($video['vimeo_privacy_setting'] && array_key_exists($video['vimeo_privacy_setting'], $vimeoPrivacySettingsFormattedNicely)) {
+								$privacyString = $vimeoPrivacySettingsFormattedNicely[$video['vimeo_privacy_setting']]['note'];
+								ze\lang::applyMergeFields($privacyString, ['code' => $video['vimeo_privacy_setting'], 'date_time' => ze\date::formatRelativeDateTime(strtotime($video['vimeo_privacy_last_cached']))]);
 							} else {
 								$privacyString = $this->phrase('Sorry, cannot fetch privacy setting');
 							}
+							
 							$fields['details/video_privacy']['snippet']['html'] = $privacyString;
 						}
 					}
@@ -226,6 +225,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 			}
 		} elseif (!empty($fields['details/fetch_vimeo_details']['pressed'])) {
 			//Vimeo version
+			$fields['details/video_privacy']['snippet']['html'] = '';
 			if ($values['details/url'] && $parsed) {
 				if (strpos($parsed['host'], 'vimeo.com') !== false) {
 
@@ -235,6 +235,10 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 						$videoId = $parsed['path'];
 						if (substr($videoId, 0, 1) == '/') {
 							$videoId = substr($videoId, 1);
+						}
+						
+						if (($forwardSlashPos = strpos($videoId, '/')) !== false) {
+							$videoId = substr($videoId, 0, $forwardSlashPos);
 						}
 
 						$thumbnailUrl = false;
@@ -295,6 +299,18 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 												$fields['details/image']['values'][$file['id']] = $file;
 												$values['details/image'] = $file['id'];
 											}
+											
+											$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely($creatingNewVideo = true);
+					
+											$privacy = $videoData['privacy']['view'] ?? '';
+											
+											if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
+												$privacyString = $vimeoPrivacySettingsFormattedNicely[$privacy]['note'];
+											} else {
+												$privacyString = $this->phrase('Sorry, cannot fetch privacy setting');
+											}
+							
+											$fields['details/video_privacy']['snippet']['html'] = $privacyString;
 										}
 									}
 								} else {
@@ -316,30 +332,32 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($values['details/url'] && !filter_var($values['details/url'], FILTER_VALIDATE_URL)) {
-			$fields['details/url']['error'] = ze\admin::phrase("Please enter a valid URL beginning with https://");
-		} else {
-			$parsed = parse_url($values['details/url']);
-
-			if (strpos($parsed['host'], 'vimeo.com') !== false) {
-				if (strpos($values['details/url'], 'manage') !== false) {
-					$fields['details/url']['error'] = ze\admin::phrase('It looks like you entered a Vimeo video management link. Please check the URL again.');
-				}
-			}
-			
-			//Check if the URL is unique. If there already is some error with the URL,
-			//let the admin deal with that first before checking for uniqueness.
-			if (empty($fields['details/url']['error'])) {
-				$whereStatement = ['url' => $values['details/url']];
-				
-				if ($box['key']['id']) {
-					$whereStatement['id'] = ['!' => $box['key']['id']];
+		if ($values['details/url']) {
+			if (!filter_var($values['details/url'], FILTER_VALIDATE_URL)) {
+				$fields['details/url']['error'] = ze\admin::phrase("Please enter a valid URL beginning with https://");
+			} else {
+				$parsed = parse_url($values['details/url']);
+	
+				if (!empty($parsed) && !empty($parsed['host']) && strpos($parsed['host'], 'vimeo.com') !== false) {
+					if (strpos($values['details/url'], 'manage') !== false) {
+						$fields['details/url']['error'] = ze\admin::phrase('It looks like you entered a Vimeo video management link. Please check the URL again.');
+					}
 				}
 				
-				$urlIsNotUnique = ze\row::exists(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos', $whereStatement);
-				
-				if ($urlIsNotUnique) {
-					$fields['details/url']['error'] = ze\admin::phrase('One or more videos with this URL already exist.');
+				//Check if the URL is unique. If there already is some error with the URL,
+				//let the admin deal with that first before checking for uniqueness.
+				if (empty($fields['details/url']['error'])) {
+					$whereStatement = ['url' => $values['details/url']];
+					
+					if ($box['key']['id']) {
+						$whereStatement['id'] = ['!' => $box['key']['id']];
+					}
+					
+					$urlIsNotUnique = ze\row::exists(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos', $whereStatement);
+					
+					if ($urlIsNotUnique) {
+						$fields['details/url']['error'] = ze\admin::phrase('One or more videos with this URL already exist.');
+					}
 				}
 			}
 		}
@@ -355,16 +373,40 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 			$values['details/date'] = date('Y-m-d');
 		}
 
-		$url = mb_substr($values['details/url'], 0, 255, 'UTF-8');
-		
 		$videoDetails = [
-			'url' => $url,
+			'url' => mb_substr($values['details/url'], 0, 255, 'UTF-8'),
 			'image_id' => (int)$imageId,
 			'title' => mb_substr($values['details/title'], 0, 255, 'UTF-8'),
 			'short_description' => mb_substr($values['details/short_description'], 0, 65535, 'UTF-8'),
 			'description' => mb_substr(ze\ring::sanitiseWYSIWYGEditorHTML($values['details/description']), 0, 65535, 'UTF-8'),
 			'date' => $values['details/date']
 		];
+		
+		if (!$box['key']['id']) {
+			$parsed = parse_url($values['details/url']);
+			if ($parsed) {
+				$url = false;
+				if (isset($parsed['host'])) {
+					if (strpos($parsed['host'], 'vimeo.com') !== false) {
+						$vimeoVideoId = $parsed['path'];
+						if (substr($vimeoVideoId, 0, 1) == '/') {
+							$vimeoVideoId = substr($vimeoVideoId, 1);
+						}
+						
+						if (($forwardSlashPos = strpos($vimeoVideoId, '/')) !== false) {
+							$vimeoVideoId = substr($vimeoVideoId, 0, $forwardSlashPos);
+						}
+						
+						$videoData = zenario_videos_manager::getVimeoVideoData($vimeoVideoId);
+						
+						$dateNow = ze\date::now();
+						
+						$videoDetails['vimeo_privacy_setting'] = ze\escape::sql($videoData['privacy']['view'] ?? '');
+						$videoDetails['vimeo_privacy_last_cached'] = ze\escape::sql($dateNow);
+					}
+				}
+			}
+		}
 		
 		$documentEnvelopesModuleIsRunning = ze\module::inc('zenario_document_envelopes_fea');
 		if ($documentEnvelopesModuleIsRunning && $values['details/language_id']) {

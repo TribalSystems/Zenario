@@ -736,7 +736,7 @@ plugin_settings:
                         translate: true
                     label: 'Description (HTML):'
                     type: editor
-                    editor_type: standard_with_links
+                    editor_type: description_editor
                     dont_trim: true
                     cols: 80
                     rows: 10

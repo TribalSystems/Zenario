@@ -675,7 +675,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($this->needReload) {
-			ze\tuix::closeWithFlags(['reload_organizer' => true]);
+			ze\tuix::closeWithFlags(['RELOAD_ORGANIZER' => true]);
 			exit;
 		}
 	}

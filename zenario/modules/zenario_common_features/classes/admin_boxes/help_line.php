@@ -104,7 +104,7 @@ class zenario_common_features__admin_boxes__help_line extends ze\moduleBaseClass
 			$msg = '<!--Message_Type:Success-->';
 			$msg .= '<p>'. ze\admin::phrase("Thanks for your message, we'll be in touch in the next 1 working day."). '</p>';
 			
-			ze\tuix::closeWithFlags(['close_with_message' => $msg]);
+			ze\tuix::closeWithFlags(['CLOSE_WITH_MESSAGE' => $msg]);
 			exit;
 		}
 	}
@@ -112,7 +112,7 @@ class zenario_common_features__admin_boxes__help_line extends ze\moduleBaseClass
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		if (!$_GET['refinerName']) {
-			ze\tuix::closeWithFlags(['go_to_url' => $box['key']['currentUrl'] ]);
+			ze\tuix::closeWithFlags(['GO_TO_URL' => $box['key']['currentUrl'] ]);
 			exit;
 		}
 	}

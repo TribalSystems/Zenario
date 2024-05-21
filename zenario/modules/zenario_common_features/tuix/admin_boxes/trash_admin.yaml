@@ -18,6 +18,8 @@ zenario_trash_admin:
                         Are you sure you wish to trash the administrator account "[[adminString]]"?
                         
                         Once trashed, login will be prevented, but the account will be preserved for audit trail purposes.
+                        
+                        The admin's email address and all permissions will be removed.
 
                         You can view trashed accounts via the "trash can" icon.
             fields:

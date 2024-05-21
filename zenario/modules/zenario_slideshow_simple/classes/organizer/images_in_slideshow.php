@@ -45,8 +45,8 @@ class zenario_slideshow_simple__organizer__images_in_slideshow extends zenario_s
 			unset($panel['item_buttons']['insert']);
 		
 		} elseif (isset($panel['item_buttons']['insert'])) {
-			$panel['collection_buttons']['paste']['label'] = ze\admin::nphrase('Paste plugin', 'Paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
-			$panel['item_buttons']['insert']['label'] = ze\admin::nphrase('Insert/paste plugin', 'Insert/paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
+			$panel['collection_buttons']['paste']['label'] = ze\admin::nPhrase('Paste plugin', 'Paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
+			$panel['item_buttons']['insert']['label'] = ze\admin::nPhrase('Insert/paste plugin', 'Insert/paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
 		}
 	}
 	
@@ -256,8 +256,8 @@ class zenario_slideshow_simple__organizer__images_in_slideshow extends zenario_s
 				$_SESSION['zenario_copy_plugin']['eggs'] = true;
 				$_SESSION['zenario_copy_plugin']['all_banners'] = $allBanners;
 				
-				echo '<!--Toast_Type:success-->';
-				echo '<!--Toast_Message:'. ze\escape::hyp(ze\admin::nphrase('Plugin copied', '[[count]] plugins copied', count($eggIds))). '-->';
+				ze\escape::bFlag('TOAST_TYPE', 'success');
+				ze\escape::bFlag('TOAST_MESSAGE', ze\admin::nPhrase('Plugin copied', '[[count]] plugins copied', count($eggIds)));
 			}
 			
 		
@@ -296,6 +296,11 @@ class zenario_slideshow_simple__organizer__images_in_slideshow extends zenario_s
 						$newEggIds[] = $newEggId;
 					}
 				}
+			}
+			
+			if (!empty($newEggIds)) {
+				ze\escape::bFlag('TOAST_TYPE', 'success');
+				ze\escape::bFlag('TOAST_MESSAGE', ze\admin::nPhrase('Plugin pasted', '[[count]] plugins pasted', count($newEggIds)));
 			}
 			
 			unset($_SESSION['zenario_copy_plugin']);

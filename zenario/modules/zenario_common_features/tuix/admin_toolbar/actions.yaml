@@ -1,0 +1,392 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    actions:
+        buttons:
+            status_button:
+                css_class: zenario_at_action_button
+                label: 
+                tooltip: 
+            locked:
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                label: Locked
+                css_class: zenario_item_locked
+            publish:
+                appears_in_toolbars: &publish_appears_in_toolbars
+                    preview: true
+                    edit_disabled: true
+                    edit: true
+                    rollback: true
+                    restricted_editing: true
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Publish
+                css_class: zenario_at_big_action_button zenario_at_publish_button
+                admin_box:
+                    path: zenario_publish
+                    
+            action_dropdown: &action_dropdown
+                label: Actions
+                hide_when_children_are_not_visible: true
+                onmouseover: 'zenarioA.closeSlotControls();'
+            
+            
+            start_editing:
+                # Warning: the presence of this button affects how the zenarioA.draft() function
+                # works. If this button is missing then zenarioA.draft() won't attempt to make
+                # a draft!
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Start editing
+                css_class: zenario_at_big_action_button zenario_at_action
+                ajax:
+                    confirm:
+                        message: |
+                            This content item is published. Zenario will make a draft version that can be edited.
+                                                       
+                            Proceed?
+                        message__editing_published: |
+                            You are editing a published content item.
+                                
+                            Zenario will make a draft version. This won't been seen by visitors until it is published.
+                        button_message: Make a draft
+                        button_message__just_view: Just view settings
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        create_draft: 1
+                        switch_to_edit_mode: 1
+            cant_start_editing:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: "Published; draft exists so editing not allowed"
+                css_class: zenario_at_big_action_button zenario_at_cant_start_editing
+            
+            redraft:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Re-draft
+                css_class: zenario_at_big_action_button zenario_at_action 
+                tooltip: >
+                    Re-draft this content item|This will create a new draft of
+                    this content item, which will be available to visitors if
+                    you publish it.
+                ajax:
+                    confirm:
+                        message: >
+                            Do you wish to re-draft this content item? This will create
+                            a new draft of this content item, which will be available to
+                            visitors if you publish it.
+                        button_message: Re-draft
+                        cancel_button_message: Cancel
+                        message_type: question
+                    request:
+                        create_draft: 1
+            
+            lock:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Lock this draft
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                ajax:
+                    confirm:
+                        message: |
+                            Lock this draft?
+
+                            No other administrator will be able to edit it until it is unlocked, published or deleted.
+                        button_message: Lock
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        lock: 1
+            unlock:
+                parent: action_dropdown
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                label: Unlock
+                tooltip: This content item is locked by you
+                ajax:
+                    confirm:
+                        button_message: Unlock
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        unlock: 1
+            force_open:
+                parent: action_dropdown
+                appears_in_toolbars:
+                    edit: true
+                    edit_disabled: true
+                priv: _PRIV_CANCEL_CHECKOUT
+                label: Force unlock
+                tooltip: This content item is locked by another administrator
+                ajax:
+                    confirm:
+                        message: |
+                            This content item's latest draft is locked by another administrator, which prevents it being edited by anyone else.
+                            
+                            You have permission to force-unlock this content item's latest draft. Would you like to do this?
+                            
+                            Any administrator who has authoring permission will then be able to make changes to it.
+                        button_message: Unlock draft
+                        cancel_button_message: Leave it alone
+                        message_type: warning
+                    request:
+                        unlock: 1
+            rescan_extract:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPerms(id)
+                label: Rescan text/image extract
+                with_columns_set:
+                    traits.is_document: true
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to rescan and update the text extract for the document "[[tag]]"?
+                            
+                            This action will read the contents of a Microsoft Word or PDF document
+                            (subject to external server programs being available).
+                            
+                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a featured image.
+                        button_message: Rescan text extract
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        rescan_extract: 1
+
+            
+            delist:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make unlisted
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_unlisted_action
+                ajax:
+                    confirm:
+                        html: true
+                        message: |
+                            <p>Are you sure you want to make this content item unlisted?</p>
+                            <p>Unlisted content items:</p>
+                            <ul><li>
+                                Are not shown in menus
+                            </li><li>
+                                Are not shown in content summary lists
+                            </li><li>
+                                Are not displayed in search plugins
+                            </li><li>
+                                Are not displayed in site-maps
+                            </li><li>
+                                Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                            </li></ul>
+                        button_message: Make unlisted
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delist: 1
+            relist:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make listed
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_listed_action
+                ajax:
+                    confirm:
+                        html: true
+                        message: |
+                            <p>Are you sure you want to make this content item listed?</p>
+                            <p>When listed, the content item will appear in any menu/content summary list/search plugins as normal.</p>
+                        button_message: Make listed
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        relist: 1
+            republish:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Re-publish
+                css_class: zenario_at_big_action_button zenario_at_action
+                admin_box:
+                    path: zenario_publish
+            
+            create_draft_by_copying:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    edit: true
+                label: Copy from other...
+                pick_items:
+                    path: ""
+                    min_path: zenario__content/panels/languages
+                    max_path: zenario__content/panels/content
+                    target_path: zenario__content/panels/content
+                    one_to_one_choose_phrase: Copy from selected
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to copy the contents of the selected content item?
+                                
+                                This will create a draft of the current content item with the contents of the one you selected.
+                            button_message: Create draft and copy
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            create_draft_by_copying: 1
+            create_draft_by_overwriting:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    edit: true
+                label: Copy from other...
+                pick_items:
+                    path: ""
+                    min_path: zenario__content/panels/languages
+                    max_path: zenario__content/panels/content
+                    target_path: zenario__content/panels/content
+                    one_to_one_choose_phrase: Copy from selected
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to copy the contents of the selected content item over the current draft?
+                                
+                                This cannot be undone.
+                            button_message: Copy and overwrite
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            create_draft_by_copying: 1
+            rollback_item:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Rollback
+                css_class: zenario_rollback label_to_the_left
+                tooltip: >
+                    Rollback this content item|Rollback this content item by
+                    creating a new draft based on the current version in view.
+                ajax:
+                    confirm:
+                        message: |
+                            This action will create a new draft based on the current version in view.
+                            
+                            The Published version will not be affected until the newly created draft is published.
+                            
+                            Are you sure you wish to proceed?
+                        button_message: Rollback
+                        cancel_button_message: Cancel
+                        message_type: question
+                    request:
+                        rollback: 1
+            no_rollback_item:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: "Can't Rollback"
+                css_class: zenario_rollback_disabled label_to_the_left
+                tooltip: >
+                    Rollback this content item|You cannot rollback this item to
+                    this version because a draft exists.
+
+            delete_draft:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Delete draft
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_delete_action 
+                ajax:
+                    confirm:
+                        message: |
+                            Zenario will delete the draft version of this content item. Any edits on the draft will be lost.
+                            
+                            This will not affect the published version.
+                            
+                            Proceed?
+                        button_message: Delete draft
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delete: 1
+            delete_media_content_item:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Delete content item
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_delete_action 
+                admin_box:
+                    path: zenario_delete_media_content_item
+            hide_content:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Hide
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_hide_action
+                admin_box:
+                    path: zenario_hide
+            trash_content:
+                appears_in_toolbars: *publish_appears_in_toolbars
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Trash
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_delete_action 
+                
+                admin_box:
+                    path: zenario_trash
+            
+            delete_archives:
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                hide_in_select_mode: true
+                label: Delete archived versions
+                multiple_select: true
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to delete any archived versions of this content item?
+                            
+                            This cannot be undone.
+                        button_message: Delete archived versions
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delete_archives: 1

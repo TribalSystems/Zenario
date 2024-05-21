@@ -96,7 +96,7 @@ class zenario_common_features__admin_boxes__create_vlp extends ze\moduleBaseClas
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		ze\tuix::closeWithFlags(['open_admin_box' => 'zenario_setup_language//'. $box['key']['id']]);
+		ze\tuix::closeWithFlags(['OPEN_ADMIN_BOX' => 'zenario_setup_language//'. $box['key']['id']]);
 		exit;
 	}
 }

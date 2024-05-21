@@ -140,3 +140,51 @@ ze\dbAdm::revision(126,
 	AND `template_name` = 'To User: Account activated'
 "
 );
+
+ze\dbAdm::revision(127,
+	"INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`,
+		`use_standard_email_template`,
+		`module_class_name`
+	) VALUES 
+		(
+		 'zenario_extranet__to_user_email_verification_admin',
+		 'To User: Email verification by admin',
+		 'Email address verification',
+		 '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Please click the button below to confirm your email address on <a href=\"[[cms_url]]\">[[cms_url]]</a>.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[email_confirmation_link]]\">CONFIRM EMAIL</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[email_confirmation_link]]\">[[email_confirmation_link]]</a></p>
+		<p>&nbsp;</p>
+		<p>This is an auto-generated email from [[cms_url]] .</p>',
+		 NOW(),
+		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
+		 0,
+		 1,
+		 'zenario_extranet'
+		)
+"
+);
+
+ze\dbAdm::revision(128,
+	"UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Please click the button below to confirm your email address on <a href=\"[[cms_url]]\">[[cms_url]]</a>.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[email_confirmation_link]]\">CONFIRM EMAIL</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[email_confirmation_link]]\">[[email_confirmation_link]]</a></p></p>'
+	WHERE `code` = 'zenario_extranet__to_user_email_verification_admin'
+	AND `template_name` = 'To User: Email verification by admin'
+"
+);

@@ -1096,21 +1096,6 @@ _sql
 	ADD COLUMN `sensitive_content_message` tinyint(1) NOT NULL default 0
 _sql
 
-);	if (ze\dbAdm::needRevision(57305) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'users LIKE "consent_hash"')) ze\dbAdm::revision(57305
-, <<<_sql
-	ALTER TABLE [[DB_PREFIX]]users 
-	ADD COLUMN `consent_hash` varchar(28) NULL
-_sql
-
-//In addition to the previous comment, this update was in Zenario User Consent Forms.
-//A core table column should not have different sizes depending on what module is or isn't running,
-//so this will be standardised.
-);	ze\dbAdm::revision( 57306
-, <<<_sql
-	ALTER TABLE [[DB_PREFIX]]users 
-	MODIFY COLUMN `consent_hash` varchar(35) NULL
-_sql
-
 //Add a setting to control whether conductor should change the page title
 );	ze\dbAdm::revision(57550
 , <<<_sql
@@ -1624,6 +1609,138 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]email_templates`
 	DROP COLUMN `head`,
 	ADD COLUMN `apply_css_rules` tinyint(1) NOT NULL default 0
+_sql
+
+
+//
+//	Zenario 9.7
+//
+
+//Changes to the flags used for phrases
+);	ze\dbAdm::revision(59765
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	DROP COLUMN `seen_in_file`,
+	ADD COLUMN `first_seen_by_visitor` datetime default NULL AFTER `seen_in_visitor_mode`,
+	ADD COLUMN `modified_date` datetime default NULL AFTER `first_seen_by_visitor`
+_sql
+
+);	ze\dbAdm::revision(59790
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	ADD COLUMN `is_html` tinyint(1) NOT NULL default 0
+_sql
+
+);
+
+//Drop the "first_seen" column for any of our dev sites where it was added during development
+if (ze\dbAdm::needRevision(59990)) {
+	
+	if (ze::$dbL->checkTableDef(DB_PREFIX. 'visitor_phrases', 'first_seen', false)) {
+		ze\dbAdm::revision(59990
+		, <<<_sql
+			ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+			DROP COLUMN `first_seen`
+		_sql
+		);
+	}
+}
+
+//Rework how the "seen_at_url" column works to instead track the content item.
+	ze\dbAdm::revision(60000
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	DROP COLUMN `seen_at_url`,
+	ADD COLUMN `seen_at_content_id` int(10) unsigned NULL default NULL,
+	ADD COLUMN `seen_at_content_type` varchar(20) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL
+_sql
+
+//Also do a reset on the existing tracked data, as when migrating a site you'd see some rows where
+//they had some data in the previously existing columns but no data in the newly creately columns,
+//which was confusing.
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]visitor_phrases`
+	SET seen_in_visitor_mode = 0,
+		first_seen_by_visitor = NULL
+_sql
+
+
+//Create a new table to store text extracts of files by checksum.
+//Then instead of regenerating the extract each time, any time a cached copy of the extract needs to be updated we can used the stored value in this table
+);	ze\dbAdm::revision(60060
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]file_extracts`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]file_extracts` (
+		`file_id` int(10) unsigned NOT NULL,
+		`extract` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+		`extract_wordcount` int(10) unsigned NOT NULL default 0,
+		`extract_source` enum('antiword', 'pdftotext', 'Textract', 'ZipArchive') NOT NULL,
+		`extract_status` enum('processing', 'completed') CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+		`extract_job_id` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL,
+		PRIMARY KEY (`file_id`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+_sql
+
+
+//Attempt to migrate any existing scan data for hierarchical documents so no-one needs to rescan anything.
+);	ze\dbAdm::revision(60070
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]file_extracts` (`file_id`, `extract`, `extract_wordcount`, `extract_source`, `extract_status`)
+	SELECT d.file_id, d.extract, d.extract_wordcount, 'completed', IF (
+		f.mime_type = 'application/pdf', 'pdftotext', IF(
+		f.mime_type = 'application/msword', 'antiword', 'ZipArchive'
+	))
+	FROM `[[DB_PREFIX]]documents` AS d
+	INNER JOIN `[[DB_PREFIX]]files` AS f
+	   ON f.id = d.file_id
+	  AND f.mime_type IN ('application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+	WHERE d.extract IS NOT NULL
+	  AND d.extract_wordcount > 0
+_sql
+
+
+//Attempt to migrate any existing scan data for document content items so no-one needs to rescan anything.
+);	ze\dbAdm::revision(60080
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]file_extracts` (`file_id`, `extract`, `extract_wordcount`, `extract_status`, `extract_source`)
+	SELECT v.file_id, cc.extract, cc.extract_wordcount, 'completed', IF (
+		f.mime_type = 'application/pdf', 'pdftotext', IF(
+		f.mime_type = 'application/msword', 'antiword', 'ZipArchive'
+	))
+	FROM `[[DB_PREFIX]]content_items` AS c
+	INNER JOIN `[[DB_PREFIX]]content_item_versions` AS v
+	   ON v.id = c.id
+	  AND v.type = c.type
+	  AND v.version IN (c.visitor_version, c.admin_version)
+	INNER JOIN `[[DB_PREFIX]]content_cache` AS cc
+	   ON cc.content_id = v.id
+	  AND cc.content_type = v.type
+	  AND cc.content_version = v.version
+	INNER JOIN `[[DB_PREFIX]]files` AS f
+	   ON f.id = v.file_id
+	  AND f.mime_type IN ('application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+	WHERE cc.extract IS NOT NULL
+	  AND cc.extract_wordcount > 0
+_sql
+
+
+//Some small tweaks and fixes to the file_extracts table
+);	ze\dbAdm::revision(60100
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]file_extracts`
+	MODIFY COLUMN `extract_status` enum('processing', 'completed') CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+	ADD COLUMN `requested_on` datetime NULL default NULL after `extract_status`
+_sql
+
+
+);	ze\dbAdm::revision(60110
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]file_extracts`
+	ADD KEY (`extract_source`),
+	ADD KEY (`extract_status`)
 _sql
 
 );

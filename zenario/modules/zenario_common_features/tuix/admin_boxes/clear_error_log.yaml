@@ -1,0 +1,38 @@
+zenario_clear_error_log:
+    title: "Clear error log"
+    max_height: 100
+    hide_tab_bar: true
+    save_button_message: Clear
+    cancel_button_message: Cancel
+    key:
+        id: ""
+    tabs:
+        clear:
+            edit_mode:
+                enabled: true
+            notices: 
+                are_you_sure: 
+                    show: "1"
+                    type: warning
+                    message: "Are you sure you wish to clear the error log?"
+            fields:
+                info_1:
+                    snippet:
+                        html: This action will clear errors older than
+                older_than:
+                    type: select
+                    values:
+                        1_second:
+                            label: clear all
+                        1_week:
+                            label: 1 week
+                        1_month:
+                            label: 1 month
+                        1_year:
+                            label: 1 year
+                    value: 1_second
+                    same_row: true
+                info_2:
+                    snippet:
+                        html: 
+                    same_row: true

@@ -508,6 +508,35 @@ plugin_settings:
                     visible_if: lib.value('show_pinned_text') != 'do_not_show'
                     validation:
                         required_if_not_hidden: 'Please enter the "pinned" text'
+                highlight_new_items:
+                    plugin_setting:
+                        name: highlight_new_items
+                    type: checkbox
+                    label: 'Highlight "new" items'
+                    redraw_onchange: true
+                release_date_within:
+                    plugin_setting:
+                        name: release_date_within
+                    indent: 1
+                    type: select
+                    label: 'Highlight items with release date in the past:'
+                    empty_value: ' -- Select -- '
+                    values:
+                        1:
+                            ord: 1
+                            label: '1 day'
+                        3:
+                            ord: 2
+                            label: '3 days'
+                        7:
+                            ord: 3
+                            label: '7 days'
+                        14:
+                            ord: 4
+                            label: '14 days'
+                    visible_if: lib.value('highlight_new_items')
+                    validation:
+                        required_if_not_hidden: 'Please select the number of days.'
                 show_more_link:
                     plugin_setting:
                         name: show_more_link

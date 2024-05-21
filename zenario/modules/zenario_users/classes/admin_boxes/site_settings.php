@@ -245,7 +245,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				
 				//Show the number of records currently stored
 				$count = ze\row::count('user_signin_log');
-				$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+				$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
 				
 				if ($count) {
 					$min = ze\row::min('user_signin_log', 'login_datetime');
@@ -257,7 +257,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				$fields['data_protection/period_to_delete_sign_in_log']['note_below'] = $note;
 				
 				$count = ze\row::count('user_content_accesslog');
-				$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+				$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
 				
 				if ($count) {
 					$min = ze\row::min('user_content_accesslog', 'hit_datetime');

@@ -121,8 +121,7 @@ if (ze::get('_select_mode')) {
 
 //Require admin permissions
 if (!ze\priv::check()) {
-	header('Zenario-Admin-Logged_Out: 1');
-	echo '<!--Logged_Out-->', ze\admin::phrase('You have been logged out.');
+	ze\admin::wasLoggedOut();
 	exit;
 }
 

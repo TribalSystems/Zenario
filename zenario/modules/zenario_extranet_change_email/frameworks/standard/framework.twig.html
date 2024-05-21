@@ -27,7 +27,15 @@
                 </div>
                 <div class="extranet_field">
                     <div class="label"><label for="extranet_password">{{"Your password:"|trans}}</label></div>
-                    {{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_field"})}}
+                    <div class="password_field_with_eye">
+                    	{{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_field"})}}
+                    	
+                    	<i
+							id="{{Container_Id}}-password-reveal-hide-icon"
+							class="fas fa-eye-slash eye_icon"
+							onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'password-reveal-hide-icon', 'extranet_password')})"
+						></i>
+                    </div>
                 </div>
                 {{this.frameworkField({'type': "hidden", 'name': "action", 'value': "prepare_email_change"})}}
                 
@@ -40,7 +48,7 @@
                     </div>
                 {% endif %}
                 
-                <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_email" class="extranet_submit i" value="{{'Change'|trans}}" /></div></div>
+                <div class="extranet_btn"><input type="submit" name="extranet_change_email" class="extranet_submit" value="{{'Change'|trans}}" /></div>
             </div>
         {% endif %}
 

@@ -482,3 +482,29 @@ if (ze\dbAdm::needRevision(59040)) {
 	
 	ze\dbAdm::revision(59040);
 }
+
+//In 9.7, the Error Log module was integrated into Common Features.
+//Uninstall the leftovers.
+if (ze\dbAdm::needRevision(60010)) {
+	$errorLogModuleId = ze\module::id('zenario_error_log');
+	
+	if ($errorLogModuleId) {
+		ze\moduleAdm::uninstall($errorLogModuleId, $uninstallRunningModules = true);
+	}
+	
+	ze\dbAdm::revision(60010);
+}
+
+//In 9.7, Document Container canvas options were updated
+//to match Content Summary List. "Resize and crop" was replaced with "Crop and zoom".
+if (ze\dbAdm::needRevision(60113)) {
+	$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_document_container');
+	
+	foreach ($instances as $instance) {
+		if (!empty($instance['settings']['canvas']) && $instance['settings']['canvas'] == 'resize_and_crop') {
+			ze\row::set('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'canvas']);
+		}
+	}
+	
+	ze\dbAdm::revision(60113);
+}

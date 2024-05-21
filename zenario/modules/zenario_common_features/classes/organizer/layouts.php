@@ -119,6 +119,14 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				$item['status'] = 'active_default';
 			}
 			
+			if ($item['status'] == 'suspended') {
+				//This logic will only trigger when duplicating a content item that uses a retired layout.
+				//Suspended layouts use a separate Organizer panel.
+				$item['css_class'] = 'archived_layout';
+			} else {
+				$item['css_class'] = 'template';
+			}
+			
 			if ($item['header_and_footer']) {
 				$summary .= ze\admin::phrase('Uses site-wide header and footer');
 			

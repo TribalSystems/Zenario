@@ -304,17 +304,23 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				
 				
 				if (isset($item['privacy'])) {
-					if ($item['privacy'] == 'auto') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] will auto-detect whether it is public or private. (When first used on a published content item, it will become public if the content item is public, or become private if the content item is private.)', ['name' => htmlspecialchars($item['filename'])]);
+					$mrg = ['name' => htmlspecialchars($item['filename'])];
+					
+					if ($item['privacy'] == 'public') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (Accessible by any visitor via a friendly URL. Can be used in WYSIWYG editors and may be indexed by search engines.)', $mrg);
+					
 					} elseif ($item['privacy'] == 'private') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They will not be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
-					} elseif ($item['privacy'] == 'public') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (The URL for the image will stay the same, and may be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They cannot be used in WYSIWYG editors and will not be indexed by search engines.)', $mrg);
+					
+					} elseif ($item['privacy'] == 'auto') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] will auto-detect whether it is public or private. (When next displayed, will be set to Public if on a public content item, or Private if on a private content item.)', $mrg);
 					}
 				}
 			}
 		}
 		
+		
+		$allImagesArePublic = true;
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$img = 'zenario/file.php?c='. $item['checksum'];
@@ -332,12 +338,14 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				switch ($item['privacy']) {
 					case 'auto':
 						$classes[] = 'zenario_image_privacy_auto';
+						$allImagesArePublic = false;
 						break;
 					case 'public':
 						$classes[] = 'zenario_image_privacy_public';
 						break;
 					case 'private':
 						$classes[] = 'zenario_image_privacy_private';
+						$allImagesArePublic = false;
 						break;
 				}
 			}
@@ -350,6 +358,14 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			 && !empty($item['duplicate_filename'])) {
 				$item['filename'] .= ' '. ze\admin::phrase('[checksum [[short_checksum]]]', $item);
 			}
+		}
+		
+		if ($mode == 'select'
+		 && !$allImagesArePublic
+		 && ze::in($refinerName, 'images_for_content_item', 'images_for_newsletter', 'from_email_template_admin_box', 'images_for_misc_picker')) {
+			$panel['notice']['type'] = 'warning';
+			$panel['notice']['message'] = ze\admin::phrase('Only images with the privacy "Public" may be selected. Use the "Make image public" button to change image privacy.');
+			$panel['notice']['show'] = true;
 		}
 		
 	}
@@ -427,6 +443,14 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				break;
 		}
 		
+		
+		//When uploading images in situations where we can only pick a public image, default any newly created images to public to save the admin a few clicks.
+		$setPrivacy = null;
+		if (ze::in($refinerName, 'images_for_content_item', 'images_for_newsletter', 'from_email_template_admin_box', 'images_for_misc_picker')) {
+			$setPrivacy = 'public';
+		}
+		
+		
 		//Upload a new file
 		if (ze::post('upload') && $privCheck) {
 			
@@ -441,9 +465,19 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			}
 
 			//Try to add the uploaded image to the database
-			$fileId = ze\file::addToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
-
+			$fileId = ze\file::addToDatabase(
+				'image', $_FILES['Filedata']['tmp_name'], $filename = $_FILES['Filedata']['name'],
+				$mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+				$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '', $setPrivacy
+			);
+			
 			if ($fileId) {
+				
+				//If the initial state of the image is public, add it to the public/images/ directory straight away
+				if ($setPrivacy === 'public'
+				 || (is_null($setPrivacy) && \ze::setting('default_image_privacy') == 'public')) {
+					ze\file::addPublicImage($fileId);
+				}
 
 				//If this was a content item or newsletter, attach the uploaded image to the content item/newsletter
 				if ($key) {
@@ -460,13 +494,27 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 						ze\row::set('image_tag_link', [], ['tag_id' => $imageTagId, 'image_id' => $fileId]);
 					}
 				}
+				
+				
+				//Add a warning if the newly created image was defaulted to public, aginast the usual site rules.
+				$mrg = ['filename' => $filename];
+				if ($setPrivacy === 'public'
+				 && $setPrivacy != \ze::setting('default_image_privacy')
+				 && $setPrivacy === ze\row::get('files', 'privacy', $fileId)) {
+					ze\escape::bFlag('TOAST_TYPE', 'success');
+					ze\escape::bFlag('TOAST_MESSAGE', ze\admin::phrase('[[filename]] was uploaded and made public.', $mrg));
+				} else {
+					ze\escape::bFlag('TOAST_TYPE', 'success');
+					ze\escape::bFlag('TOAST_MESSAGE', ze\admin::phrase('[[filename]] was uploaded.', $mrg));
+				}
 
 				if ($existingFilename && $existingFilename != $_FILES['Filedata']['name']) {
-					echo '<!--Message_Type:Warning-->',
+					ze\escape::bFlag('MESSAGE_TYPE', 'warning');
+					echo
 						ze\admin::phrase('This file already existed on the system, but with a different name. "[[old_name]]" has now been renamed to "[[new_name]]".',
 							['old_name' => $existingFilename, 'new_name' => $_FILES['Filedata']['name']]);
 				} else {
-					echo 1;
+					echo '';
 				}
 
 

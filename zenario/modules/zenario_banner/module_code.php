@@ -776,7 +776,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				if (!$this->isVersionControlled) {
 					if ($this->setting('translate_text')) {
-						$this->replacePhraseCodesInString($this->mergeFields['Text']);
+						$this->mergeFields['Text'] = $this->htmlPhrase($this->mergeFields['Text']);
 					}
 				} else {
 					if ($this->editing) {

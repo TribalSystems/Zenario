@@ -497,7 +497,8 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		$rcpts, $templateCode, $mergeFields = [],
 		$attachments = [], $attachmentFilenameMappings = [],
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false,
-		$makeURLsNotClickable = false, $ignoreDebugMode = false, $customBody = null
+		$makeURLsNotClickable = false, $ignoreDebugMode = false, $customBody = null,
+		$commentByAboveEmail = '', $commentAboveEmail = ''
 	) {
 		if ($template = self::getTemplateByCode($templateCode)) {
 			
@@ -521,6 +522,10 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 			
 			if ($template['use_standard_email_template']) {
 				static::putBodyInTemplate($template['body']);
+			}
+			
+			if ($commentByAboveEmail || $commentAboveEmail) {
+				$template['body'] = $commentByAboveEmail . $commentAboveEmail . '<hr />' . $template['body'];
 			}
 			
 			if ($template['from_details'] == 'site_settings') {

@@ -128,7 +128,7 @@ funs:
             Checks whether the .htaccess file on the server appears to be set up and working.
     loggedOut:
         summary: |
-            Checks a message to see if it has the <!--Logged_Out--> flag set at the start,
+            Checks a message to see if it has the <!--LOGGED_OUT--> flag set at the start,
             and displays the "you have been logged out" box if it is there.
         returns: |
             Returns true if the flag was set.
@@ -272,7 +272,7 @@ funs:
                 the type of plugin needs to match the one that was copied,
                 and the contents are swapped with the contents from the user's $_SESSION and not the user's clipboard.
             </p>
-    tinyMCEPasteRreprocess:
+    editorPastePreprocess:
         summary: |
             This function attempts to do lots of string-replacements in
             an attempt tidy any bad/messy HTML from TinyMCE up a little bit.

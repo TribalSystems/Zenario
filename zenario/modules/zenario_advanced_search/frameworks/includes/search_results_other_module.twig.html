@@ -25,6 +25,18 @@
                         {% endif %}
                     </div>
                     
+                    {% if item.short_description %}
+						<div class="search_result_description">
+							<span class="description">{{item.short_description}}</span>
+						</div>
+					{% endif %}
+					
+					{% if item.date %}
+						<div class="search_result_date">
+							<span class="date">{{item.date}}</span>
+						</div>
+					{% endif %}
+                    
                     {% if item.Breadcrumb %}
                         <div class="breadcrumb">{{item.Breadcrumb}}</div>
                     {% endif %}

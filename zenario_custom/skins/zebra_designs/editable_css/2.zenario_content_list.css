@@ -363,6 +363,20 @@ body.desktop .zenario_content_list__default_style .currently_selected_categories
 	content:"- ";
 }
 
+/* Recent */
+
+.zenario_content_list__default_style .content_list_listing .content_list_data_row.recent .content_list_new {
+	display:inline-block;
+	background:#00659b;
+	color:#FFF;
+	padding:0 8px 2px 8px;
+	border-radius:2px;
+	margin-right:5px;
+	font-size: 0.857em;
+  	font-family: 'cardoregular','Times New Roman','Georgia',serif;
+}
+
+
 /* Three columns (use this class to display in 3 columns)
 --------------------------------------------------------------------------------------------------*/
 

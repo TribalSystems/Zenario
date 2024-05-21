@@ -20,7 +20,6 @@ sections:
                 label: ""
             staging_mode:
                 css_class: zenario_at_icon_staging_mode
-                tooltip: 'Staging mode, not enabled. Click to enable.'
                 admin_box:
                     path: zenario_content_staging_mode
             alias_dropdown:

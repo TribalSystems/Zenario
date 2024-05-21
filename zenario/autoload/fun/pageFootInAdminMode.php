@@ -215,6 +215,35 @@ zenarioA.init(
 	', json_encode($draftMessage), '
 );';
 
+//Warn the admin is this content item is public and someone had set a private image to display here
+if (!empty(\ze\content::$piWarnings)) {
+	
+	$others = count(\ze\content::$piWarnings) - 1;
+	
+	$mrg = [];
+	$mrg['eg1'] = array_shift(\ze\content::$piWarnings);
+	
+	if ($others) {
+		$mrg['eg2'] = array_shift(\ze\content::$piWarnings);
+	}
+	
+	echo "\n", 'zenarioA.imagesWarning(', json_encode(
+		ze\admin::nzPhrase(
+			"Image blocked",
+			"Images blocked",
+			"Images blocked",
+			$others, $mrg
+		)
+	), ', ', json_encode(
+		ze\admin::nzPhrase(
+			"[[eg1]] is a private image and cannot be shown on a public content item",
+			"[[eg1]] and [[eg2]] are private images and cannot be shown on a public content item",
+			"[[eg1]] and [[count]] others are private images and cannot be shown on a public content item",
+			$others, $mrg
+		)
+	), ');';
+}
+
 
 //If we've just made a draft, and there's a callback, perform the callback
 if (ze::$cID) {

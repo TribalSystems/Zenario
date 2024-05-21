@@ -720,6 +720,33 @@
 	.zenario_event_listing__default_style .event_listing .single_event .single_event_sticky_image img {
 		margin:auto;
 	}
+	
+	.zenario_ai_qdrant_search .search_box {
+		padding:1em;
+	}
+	
+	.zenario_ai_qdrant_search .search_results .search_result {
+		padding:1em 0;
+	}
+	
+	.zenario_ai_qdrant_search .search_box > div {
+		display:block;
+		text-align:center;
+	}
+	
+	.zenario_ai_qdrant_search .search_box label {
+		width:70px;
+		float:left;
+	}
+	
+	.zenario_ai_qdrant_search .search_box input.search_input_box {
+		width:calc(100% - 22px - 70px);
+	}
+	
+	.zenario_ai_qdrant_search .search_box input.search_entry_button {
+		clear:both;
+		margin-top:15px;
+	}
 
 	
 }
@@ -752,6 +779,15 @@
 	body.mobile .zenario_user_forms.form_popup.show .close:before {
 		color:#FFF !important;
 		font-size:20px;
+	}
+	
+	.zenario_ai_qdrant_search .search_box label {
+		width:auto;
+		float:none;
+	}
+	
+	.zenario_ai_qdrant_search .search_box input.search_input_box {
+		width:calc(100% - 22px);
 	}
 	
 }

@@ -737,7 +737,8 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 	if (field.upload) {
 		mi.isUpload = true;
 		
-		extension = (('' + label).match(/(.*?)\.(\w+)$/)) || (('' + label).match(/(.*?)\.(\w+) \[.*\]$/));
+		//N.b. the way this works will likely need rewriting for T12723 
+		extension = (('' + label).match(/(.*?)\.(\w+)$/)) || (('' + label).match(/(.*?)\.(\w+) [^\.]*\[.*\]$/));
 	
 		//Attempt to get the extension of the file this is chosen
 		if (extension && extension[2]) {
@@ -1173,44 +1174,44 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 		isOrganizer = zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode;
 	
 	
-	if (flags.close_with_message) {
+	if (flags.CLOSE_WITH_MESSAGE) {
 		thus.close();
 		
 		if (isOrganizer) {
 			zenarioO.reload();
 		}
 		
-		zenarioA.showMessage(flags.close_with_message);
+		zenarioA.showMessage(flags.CLOSE_WITH_MESSAGE);
 	
-	} else if (flags.reload_organizer && isOrganizer) {
+	} else if (flags.RELOAD_ORGANIZER && isOrganizer) {
 		thus.close();
 		zenarioA.manageToastOnReload(flags, true);
 	
 		zenarioT.uploading = false;
 		zenarioO.setWrapperClass('uploading', zenarioT.uploading);
 	
-		zenarioO.reloadPage(flags.organizer_path);
+		zenarioO.reloadPage(flags.ORGANIZER_PATH);
 
 	//Open an Admin Box
-	} else if (flags.open_admin_box && zenarioAB.init) {
+	} else if (flags.OPEN_ADMIN_BOX && zenarioAB.init) {
 		thus.close();
-		zenarioAB.open(flags.open_admin_box);
+		zenarioAB.open(flags.OPEN_ADMIN_BOX);
 
 	//Go somewhere
-	} else if (flags.go_to_url) {
+	} else if (flags.GO_TO_URL) {
 		thus.close();
 		zenarioA.manageToastOnReload(flags);
-		zenario.goToURL(zenario.addBasePath(flags.go_to_url), true);
+		zenario.goToURL(zenario.addBasePath(flags.GO_TO_URL), true);
 	
-	} else if (flags.valid) {
+	} else if (flags.VALID) {
 		
-		if (flags.confirm) {
+		if (flags.CONFIRM) {
 			thus.load(data);
 			thus.sortTabs();
 			thus.draw();
 			thus.showConfirm(saveAndContinue, createAnother, saveAndNext);
 		
-		} else if (flags.download) {
+		} else if (flags.DOWNLOAD) {
 			zenarioA.doDownload(
 				thus.getURL('download'),
 				{
@@ -1226,7 +1227,7 @@ methods.save2 = function(data, saveAndContinue, createAnother, saveAndNext) {
 			
 			thus.refreshParentAndClose(true, saveAndContinue, createAnother, saveAndNext);
 		
-		} else if (flags.saved) {
+		} else if (flags.SAVED) {
 			thus.load(data);
 			thus.refreshParentAndClose(false, saveAndContinue, createAnother, saveAndNext);
 		

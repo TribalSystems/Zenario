@@ -23,9 +23,9 @@ zenario_user__delete:
                     type: radios
                     values:
                         delete_account:
-                            label: Delete account (account only)
+                            label: Delete account
                         delete_all_data:
-                            label: Delete account and all other data (record of emails sent to this account, form responses, etc.)
+                            label: Delete account and related data...
                     value: delete_account
                     redraw_onchange: true
                 all_data_explained:

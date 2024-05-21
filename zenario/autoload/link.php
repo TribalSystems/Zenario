@@ -234,8 +234,6 @@ class link {
 
 
 	const toItemInVisitorsLanguageFromTwig = true;
-	//Build a link to a content item
-	//n.b. \ze\link::toItem() and \ze\content::resolveFromRequest() are essentially opposites of each other...
 	public static function toItemInVisitorsLanguage(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
@@ -251,6 +249,20 @@ class link {
 			$cID, $cType, $fullPath, $request, $alias,
 			$autoAddImportantRequests, $forceAliasInAdminMode,
 			$equivId, $languageId, $stayInCurrentLanguage
+		);
+	}
+
+
+	const toItemInCurrentLanguageFromTwig = true;
+	public static function toItemInCurrentLanguage(
+		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
+		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
+		$equivId = false, $languageId = false
+	) {
+		return \ze\link::toItem(
+			$cID, $cType, $fullPath, $request, $alias,
+			$autoAddImportantRequests, $forceAliasInAdminMode,
+			$equivId, $languageId, true
 		);
 	}
 
@@ -468,7 +480,7 @@ class link {
 		//language
 		if ($stayInCurrentLanguage
 		 && \ze::$visLang != $languageId
-		 && \ze::$visLang != \ze::$defaultLang) {
+		) {
 			$request .= '&visLang='. rawurlencode(\ze::$visLang);
 		}
 	

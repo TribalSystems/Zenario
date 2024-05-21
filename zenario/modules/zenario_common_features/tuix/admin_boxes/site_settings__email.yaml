@@ -48,40 +48,6 @@ site_settings:
                         A name associated with the &quot;From&quot; email address.
                     validation:
                         required: Please enter a "From" sending name.
-                warning_email_frequency:
-                    site_setting:
-                        name: warning_email_frequency
-                    label: 'Warning email frequency:'
-                    type: select
-                    values:
-                        no_limit:
-                            ord: 0
-                            label: No limit
-                        5 minutes:
-                            ord: 1
-                            label: 5 minutes
-                        10 minutes:
-                            ord: 2
-                            label: 10 minutes
-                        30 minutes:
-                            ord: 3
-                            label: 30 minutes
-                        1 hour:
-                            ord: 4
-                            label: 1 hour
-                        2 hours:
-                            ord: 5
-                            label: 2 hours
-                        6 hours:
-                            ord: 6
-                            label: 6 hours
-                        12 hours:
-                            ord: 7
-                            label: 12 hours
-                        1 day:
-                            ord: 8
-                            label: 1 day
-                    value: 'no_limit'
         template:
             label: Standard email template
             edit_mode:
@@ -113,44 +79,39 @@ site_settings:
                             max_path: 'zenario__library/panels/image_library'
                             disallow_refiners_looping_on_min_path: true
                     value: |
-                        <table style="table-layout: auto; width: 860px; height: 656px;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                        <table style="table-layout: auto; background: #EFEFEF;" border="0" width="100%" cellspacing="0" cellpadding="0">
                             <tbody>
                                 <tr>
-                                    <td style="vertical-align: top; width: 860px; background: #f0f0f0;">
-                                        <table style="table-layout: auto; margin: 30px auto;" border="0" width="620" cellspacing="0" cellpadding="0" align="center">
+                                    <td style="vertical-align: top;">
+                                        <table style="table-layout: auto; margin: 30px auto; border: 1px solid #000000;" border="0" width="620" cellspacing="0" cellpadding="0" align="center">
                                             <tbody>
                                                 <tr>
                                                     <td style="background: #FFFFFF; vertical-align: top;">
                                                         <table style="table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0">
                                                             <tbody>
-                                                                
-                                                                <!-- HEADER -->
                                                                 <tr>
-                                                                    <td style="background: #3c3c3b; color: #fff; padding: 35px 0; border-bottom: 3px solid  #132833; text-align: center;">Company Logo</td>
+                                                                    <td style="padding: 35px 0; border-bottom: 3px solid #000000; text-align: center;">Company Logo</td>
                                                                 </tr>
-                                                                
-                                                                <!-- BODY -->
                                                                 <tr>
-                                                                    <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px; color: #132833;">
-                                                                    <p>&nbsp;</p>
-                                                                    [[email_body_content]]
-                                                                    <p>&nbsp;</p>
-                                                                    
+                                                                    <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px; color: #000000;">
+                                                                        <p>&nbsp;</p>
+                                                                        [[email_body_content]]
+                                                                        <p>&nbsp;</p>
                                                                     </td>
                                                                 </tr>
-                                                                
-                                                                <!-- FOOTER -->
                                                                 <tr>
                                                                     <td style="padding: 0px;">
-                                                                        <table style="font-family: Tahoma, Geneva, sans-serif; table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0" bgcolor="#3c3c3b">
+                                                                        <table style="font-family: Tahoma, Geneva, sans-serif; table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0" bgcolor="#000000">
                                                                             <tbody>
                                                                                 <tr>
                                                                                     <td>&nbsp;</td>
                                                                                 </tr>
                                                                                 <tr>
-                                                                                    <td>
-                                                                                        <br>
-                                                                                        <p style="text-align: center; color: #fff; font-size: 13px; line-height: 18px;">© Your company<br> <span style="font-size: 11px;">Contact details</span></p>
+                                                                                    <td><br>
+                                                                                        <p style="text-align: center; color: #fff; font-size: 13px; line-height: 18px;">
+                                                                                            &copy; Your company<br>
+                                                                                            <span style="font-size: 11px;">Contact details<br></span>
+                                                                                        </p>
                                                                                     </td>
                                                                                 </tr>
                                                                                 <tr>
@@ -172,22 +133,31 @@ site_settings:
                         </table>
 
         smtp:
-            label: Sending
+            label: SMTP
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
                 validate_on_revert: true
+            notices:
+                php_mail:
+                    show: true
+                    visible_if:
+                        lib.valueIsNot: smtp_specify_server,1
+                    type: warning
+                    message: >
+                        Email from this site will be sent using the PHP mail() function.
+                        This is not secure and email sent this way has a likelihood of being classed as spam.
+                        We recommend changing to using an SMTP gateway.
             fields:
                 description:
                     full_width: true
                     snippet:
                         html: |
-                            <p>
                                     When Zenario sends an email, it can either use the PHP <code>mail()</code> function,
                                     or it can connect to a SMTP server.
                                     If not correctly set up, any emails sent could be lost without trace.
-                                </p>
+                
                 smtp_specify_server:
                     site_setting:
                         name: smtp_specify_server
@@ -195,11 +165,15 @@ site_settings:
                     type: radios
                     value: ""
                     values:
-                        - Use PHP mail()
-                        - Use SMTP
+                        0:
+                            ord: 1
+                            label: Use PHP mail() function
+                            tooltip: |
+                                With mail(), email sent from this site may not be encrypted (this depends on server-level settings). If your site may send password-related or other sensitive information it's better to use SMTP with a TLS secure connection.
+                        1:
+                            ord: 2
+                            label: Use an SMTP gateway (recommended)
                     redraw_onchange: true
-                    side_note: |
-                        With mail(), email sent from this site may not be encrypted (this depends on server-level settings). If your site may send password-related or other sensitive information it's better to use SMTP with a TLS secure connection.
                 base64_encode_emails:
                     site_setting:
                         name: base64_encode_emails
@@ -217,7 +191,7 @@ site_settings:
                 smtp_host:
                     site_setting:
                         name: smtp_host
-                    label: 'Server name:'
+                    label: 'SMTP server hostname:'
                     type: text
                     value: ""
                     side_note: e.g. smtp.example.com. Get this information from your SMTP service provider.

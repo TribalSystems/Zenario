@@ -167,11 +167,11 @@ class zenario_common_features__admin_boxes__content_staging_mode extends ze\modu
 				
 				$fields['staging_mode/suggest_code']['notices_below']['code_reuse']['hidden'] = false;
 				$fields['staging_mode/suggest_code']['notices_below']['code_reuse']['message'] =
-					ze\admin::nPhrase(
+					ze\admin::nzPhrase(
+						"The access code you've chosen is the same as that for [[tag]], also in staging mode.",
 						"The access code you've chosen is the same as that for [[tag]] and [[count]] other content item in staging mode.",
 						"The access code you've chosen is the same as that for [[tag]] and [[count]] other content items in staging mode.",
-						$others, $mrg,
-						"The access code you've chosen is the same as that for [[tag]], also in staging mode.",
+						$others, $mrg
 					);
 			}
 			

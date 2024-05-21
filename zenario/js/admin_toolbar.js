@@ -426,18 +426,24 @@ zenarioAT.slotDisabled = function(slotName) {
 
 zenarioAT.draw = function(flashNewTabToHighlightChange) {
 	var html = '',
-		toolbar = {
-			tabs: [],
-			sections: {}
-		},
 		ti = -1,
-		tuix = zenarioAT.tuix,
 		sectionId,
 		section,
+		tuix = zenarioAT.tuix,
 		
 		//Work out what the current toolbar group is
-		currentTab = ((zenarioA.toolbar && tuix.toolbars[zenarioA.toolbar]) || {}),
-		currentToolbarTabGrouping = (currentTab.toolbar_tab_grouping || 'edit');
+		currentToolbar = ((zenarioA.toolbar && tuix.toolbars[zenarioA.toolbar]) || {}),
+		currentToolbarTabGrouping = (currentToolbar.toolbar_tab_grouping || 'edit'),
+		
+		mrg = {
+			tabs: [],
+			sections: {},
+			current_toolbar: currentToolbar,
+			current_toolbar_tab_grouping: currentToolbarTabGrouping
+		};
+		
+	
+	
 	
 	
 	//Loop through the toolbars, adding a tab for each
@@ -458,7 +464,7 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 				label = tab.label_when_grouping_inactive || tab.label;
 			}
 			
-			toolbar.tabs[++ti] = {
+			mrg.tabs[++ti] = {
 				id: id,
 				parent: tab.parent,
 				css_class: tab.css_class,
@@ -472,13 +478,13 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 			};
 			
 			if (id == zenarioA.toolbar) {
-				toolbar.toolbar_microtemplate = tab.toolbar_microtemplate;
+				mrg.toolbar_microtemplate = tab.toolbar_microtemplate;
 			}
 		}
 	}
 	
 	//Add parent/child relationships for sub-tabs within tabs
-	zenarioT.setKin(toolbar.tabs, 'zenario_at_tab_with_children');
+	zenarioT.setKin(mrg.tabs, 'zenario_at_tab_with_children');
 	
 	//Loop through each section
 	foreach (tuix.sections as sectionId => section) {
@@ -551,11 +557,11 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 				zenarioT.setKin(buttons, 'zenario_at_button_with_children');
 			}
 			
-			toolbar.sections[sectionId] = buttons;
+			mrg.sections[sectionId] = buttons;
 		}
 	}
 	
-	get('zenario_at_wrap').innerHTML = zenarioT.microTemplate('zenario_toolbar', toolbar);
+	get('zenario_at_wrap').innerHTML = zenarioT.microTemplate('zenario_toolbar', mrg);
 	zenarioA.tooltips('#zenario_at_wrap a[title]');
 	zenarioA.tooltips('#zenario_at_wrap div[title]');
 	zenarioA.tooltips('#zenario_at_wrap ul ul a[title]', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});

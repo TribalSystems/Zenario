@@ -62,7 +62,7 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		ze\tuix::closeWithFlags(['reload_organizer' => true, 'organizer_path' => 'zenario__menu/panels/by_language/item//'. ze::$defaultLang. '//'. $box['key']['id']]);
+		ze\tuix::closeWithFlags(['RELOAD_ORGANIZER' => true, 'ORGANIZER_PATH' => 'zenario__menu/panels/by_language/item//'. ze::$defaultLang. '//'. $box['key']['id']]);
 		exit;
 	}
 

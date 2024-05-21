@@ -27,16 +27,16 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 59603);	//N.b. 9.6 starts at revision #59765
-define('LATEST_BIG_CHANGE_REVISION_NO', 59560);
+define('LATEST_REVISION_NO', 60114);	//N.b. 10.0 starts at revision #60750
+define('LATEST_BIG_CHANGE_REVISION_NO', 60113);
 define('INSTALLER_REVISION_NO', 56900);
 define('INSTALLER_DEFAULT_THEME', 'zebra_designs');
 define('EARLIEST_SUPPORTED_MIGRATION', 52150);
 
 define('ZENARIO_IS_HEAD', false);
-define('ZENARIO_VERSION', '9.6');
+define('ZENARIO_VERSION', '9.7');
 define('ZENARIO_MAJOR_VERSION', '9');
-define('ZENARIO_MINOR_VERSION', '6');
-define('ZENARIO_CHANGELOG_URL', 'https://zenar.io/zenario-96');
+define('ZENARIO_MINOR_VERSION', '7');
+define('ZENARIO_CHANGELOG_URL', 'https://zenar.io/zenario-97');
 define('ZENARIO_IS_BUILD', true);
 define('ZENARIO_REVISION', '61188');

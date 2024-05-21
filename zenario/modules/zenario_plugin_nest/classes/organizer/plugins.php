@@ -55,7 +55,7 @@ class zenario_plugin_nest__organizer__plugins extends ze\moduleBaseClass {
 					));
 					
 					if ($slides > 1) {
-						$item['contents'] = ze\lang::nphrase('1 slide', '[[count]] slides', $slides);
+						$item['contents'] = ze\lang::nPhrase('1 slide', '[[count]] slides', $slides);
 					
 					} else {
 						$modules = ze\sql::fetchRows('
@@ -74,7 +74,7 @@ class zenario_plugin_nest__organizer__plugins extends ze\moduleBaseClass {
 							$mrg['display_name'] = ze\module::displayName($module[0]);
 							$mrg['display_name_plural'] = ze\admin::pluralPhrase($mrg['display_name']);
 							
-							$contents[] = ze\lang::nphrase('1 [[display_name]]', '[[count]] [[display_name_plural]]', $module[1], $mrg);
+							$contents[] = ze\lang::nPhrase('1 [[display_name]]', '[[count]] [[display_name_plural]]', $module[1], $mrg);
 						}
 						
 						if (empty($contents)) {
@@ -109,8 +109,8 @@ class zenario_plugin_nest__organizer__plugins extends ze\moduleBaseClass {
 				$_SESSION['zenario_copy_plugin']['all_banners'] =
 					!ze\row::exists('plugin_instances', ['id' => $ids, 'module_id' => ['!' => ze\module::id('zenario_banner')]]);
 				
-				echo '<!--Toast_Type:success-->';
-				echo '<!--Toast_Message:'. ze\escape::hyp(ze\admin::nphrase('Plugin copied', '[[count]] plugins copied', count($ids))). '-->';
+				ze\escape::bFlag('TOAST_TYPE', 'success');
+				ze\escape::bFlag('TOAST_MESSAGE', ze\admin::nPhrase('Plugin copied', '[[count]] plugins copied', count($ids)));
 			}
 		}
 	}

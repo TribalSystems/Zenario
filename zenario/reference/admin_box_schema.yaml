@@ -2871,6 +2871,23 @@ additionalProperties:
                                     properties:
                                         pick_items: *pick_items
                                 
+                                editor_type:
+                                    type: string
+                                    description: >
+                                        An option to pass to TinyMCE.
+                                    description: >
+                                        Defines the type of TinyMCE editor that is shown. Depending on the context of where the editor
+                                        is being used, different toolbars and/or menus may be shown. See editor definitions in zenario/js/form.js.
+                                        
+                                        
+                                        Possible values: <code>full_featured</code>, <code>description_editor</code>, <code>summary_editor</code>,
+                                        <code>phrase_editor</code>, <code>email_editor</code>, <code>readonly</code>.
+                                        
+                                        
+                                        If no editor type is specified, the default value will be <code>summary_editor</code>.
+                                        
+                                        
+                                        This works from version 9.5 onwards. The list of possible values was revised in version 9.7.
                                 editor_options:
                                     type: object
                                     additionalProperties:
@@ -2886,8 +2903,6 @@ additionalProperties:
                                         properties are set.
                                         
                                         
-                                        This works from version 7.0.6 onwards.
-                                
                                 return_key_presses_button:
                                     type: *stringy
                                     description: >

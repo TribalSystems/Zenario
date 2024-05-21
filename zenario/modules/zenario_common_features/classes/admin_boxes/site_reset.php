@@ -63,7 +63,7 @@ class zenario_common_features__admin_boxes__site_reset extends ze\moduleBaseClas
 		
 		ze\dbAdm::resetSite();
 		
-		ze\tuix::closeWithFlags(['reload_organizer' => true, 'organizer_path' => 'zenario__languages/panels/languages']);
+		ze\tuix::closeWithFlags(['RELOAD_ORGANIZER' => true, 'ORGANIZER_PATH' => 'zenario__languages/panels/languages']);
 		exit;
 	}
 }

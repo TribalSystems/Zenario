@@ -306,8 +306,8 @@ class zenario_users__organizer__users extends zenario_users {
 				static::suspendUser($id);
 			}
 			
-			echo '<!--Toast_Type:success-->';
-			echo '<!--Toast_Message:'. ze\escape::hyp(ze\admin::phrase('Item saved, but your filter prevents it from appearing')). '-->';
+			ze\escape::bFlag('TOAST_TYPE', 'success');
+			ze\escape::bFlag('TOAST_MESSAGE', ze\admin::phrase('Item saved, but your filter prevents it from appearing'));
 			
 			
 		//Set a new avatar for a User/Users

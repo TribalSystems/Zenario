@@ -199,21 +199,37 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 	}
 	
 	var i, id, button,
+		children, ci, child,
 		uploadButton = false,
-		uploadIsItemLevel = false;
+		uploadIsItemLevel = false,
+		thisIsAnUploadButton = function(button, isItemLevel) {
+			if (!button.disabled
+			 && button.tuix.upload
+			 && engToBoolean(button.tuix.upload.drag_and_drop)) {
+				uploadIsItemLevel = isItemLevel;
+				uploadButton = button.tuix;
+				return true;
+			}
+			return false;
+		};
 	
 	//Look to see if there is an upload button available, and break when we find one
-	do {
+	lookingForUploadButton: {
 		//First look through the merge fields for the item buttons this are being shown,
 		//looking to see if any are upload buttons
 		if (itemButtons) {
 			foreach (itemButtons as i => button) {
-				if (!button.disabled
-				 && button.tuix.upload
-				 && engToBoolean(button.tuix.upload.drag_and_drop)) {
-					uploadIsItemLevel = true;
-					uploadButton = button.tuix;
-					break;
+				if (thisIsAnUploadButton(button, true)) {
+					break lookingForUploadButton;
+				}
+				
+				//Also check children
+				if (!_.isEmpty(children = button.children)) {
+					foreach (children as ci => child) {
+						if (thisIsAnUploadButton(child, true)) {
+							break lookingForUploadButton;
+						}
+					}
 				}
 			}
 		}
@@ -222,11 +238,17 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		//looking to see if any are upload buttons
 		if (collectionButtons) {
 			foreach (collectionButtons as i => button) {
-				if (!button.disabled
-				 && button.tuix.upload
-				 && engToBoolean(button.tuix.upload.drag_and_drop)) {
-					uploadButton = button.tuix;
-					break;
+				if (thisIsAnUploadButton(button, false)) {
+					break lookingForUploadButton;
+				}
+				
+				//Also check children
+				if (!_.isEmpty(children = button.children)) {
+					foreach (children as ci => child) {
+						if (thisIsAnUploadButton(child, false)) {
+							break lookingForUploadButton;
+						}
+					}
 				}
 			}
 		
@@ -246,8 +268,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 			}	
 		}
 	
-	} while (false);
-	
+	}
 	
 	
 	if (uploadButton) {

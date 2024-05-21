@@ -91,7 +91,15 @@ zenario_videos_manager:
                 language:
                     title: Language
                     db_column: v.language_id
+                vimeo_privacy_setting:
+                    #This column loads the privacy setting from the DB.
+                    db_column: v.vimeo_privacy_setting
+                    hidden: true
+                vimeo_privacy_last_cached:
+                    db_column: v.vimeo_privacy_last_cached
+                    hidden: true
                 video_privacy:
+                    #This column has the nicely formatted privacy setting.
                     title: Video privacy
                     show_by_default: true
                     width: xlarge
@@ -137,3 +145,14 @@ zenario_videos_manager:
                     label: Add a video by URL
                     admin_box:
                         path: zenario_videos_manager__video
+                update_vimeo_privacy:
+                    hide_in_select_mode: true
+                    label: "Update all videos' privacy from Vimeo"
+                    ajax:
+                        confirm:
+                            message: This action will update the privacy settings for all Vimeo videos. It may take a long time. Proceed?
+                            button_message: Update
+                            cancel_button_message: Cancel
+                            message_type: question
+                        request:
+                            update_vimeo_privacy: 1

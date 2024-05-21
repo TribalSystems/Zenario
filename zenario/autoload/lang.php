@@ -46,7 +46,7 @@ class lang {
 	}
 	
 	
-	public static function replacePhraseCodesInString(&$string, $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 2, $cli = false) {
+	public static function replacePhraseCodesInString(&$string, $moduleClass = 'zenario_common_features', $languageId = false) {
 		
 		if (!is_string($string)) {
 			return;
@@ -57,17 +57,23 @@ class lang {
 		
 		foreach ($content as $i => $part) {
 			if ($i % 2 === 1) {
-				$string .= \ze\lang::phrase($part, false, $moduleClass, $languageId, $backtraceOffset, $cli);
+				$string .= \ze\lang::phrase($part, false, $moduleClass, $languageId);
 			} else {
 				$string .= $part;
 			}
 		}
 	}
+	
+	
+	//Shortcut function to calling the phrase() function with the $isHTML option set
+	public static function htmlPhrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false) {
+		return \ze\lang::phrase($code, $replace, $moduleClass, $languageId, true);
+	}
 
 
 	const phraseFromTwig = true;
 	//Replacement function for gettext()/ngettext() in our Twig frameworks
-	public static function phrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
+	public static function phrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false, $isHTML = false) {
 	
 		if (false === $code
 		 || $code === null
@@ -92,16 +98,24 @@ class lang {
 	
 		$isCode = substr($code, 0, 1) == '_';
 		$needsTranslating = $isCode || !empty(\ze::$langs[$languageId]['translate_phrases']);
-		$needsUpdate = false;
 		$phrase = $code;
+		
+		$needsUpdate = false;
+		$neverSeenByVisitorBefore = false;
+		$neverSeenOnContentItemBefore = false;
+		$seenAtCID = null;
+		$seenAtCType = null;
 	
 		//Phrase codes (which start with an underscore) always need to be looked up
 		//Otherwise we only need to look up phrases on multi-lingual sites
 		if (\ze::$trackPhrases || $needsTranslating) {
-		
+			
+			global $argc;
+			$isFromCommandLine = !empty($argc);
+			
 			//Attempt to find a record of the phrase in the database
 			$sql = "
-				SELECT local_text, seen_in_visitor_mode, seen_at_url IS NULL
+				SELECT local_text, seen_in_visitor_mode, seen_at_content_id IS NULL, is_html
 				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
 				  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
@@ -116,7 +130,8 @@ class lang {
 				if ($needsTranslating) {
 					if (is_null($row[0])) {
 						$phrase = $code;
-						if (!$cli && \ze\priv::check()) {
+						
+						if (!$isFromCommandLine && \ze::isAdmin()) {
 							$phrase .= ' (untranslated)';
 						}
 					} else {
@@ -124,12 +139,82 @@ class lang {
 					}
 				}
 			
-				//If we've never recorded a URL for this phrase before, we need to note it down
-				if ($row[2]) {
-					$needsUpdate = true;
-			
 				//If this is the first time we've seen this phrase in visitor mode, note it down
-				} elseif (!$row[1] && ($cli || !\ze\priv::check())) {
+				if (!$row[1] && ($isFromCommandLine || !\ze::isAdmin())) {
+					$needsUpdate = true;
+					$neverSeenByVisitorBefore = true;
+				}
+			
+				//If we've never recorded a URL for this phrase before, we need to note it down
+				if ($row[2] && !$isFromCommandLine) {
+					
+					//Try and check if we know what content item this is on
+					do {
+						//If the phrase is actually on a page, we can just record the cID and cType
+						if (!empty(\ze::$cID)) {
+							$seenAtCID = \ze::$cID;
+							$seenAtCType = \ze::$cType;
+							$needsUpdate = true;
+							$neverSeenOnContentItemBefore = true;
+							break;
+						}
+						
+						//For AJAX requests, try and check the referer
+						if (!isset($_SERVER['HTTP_REFERER'])) {
+							break;
+						}
+						$parsedURL = parse_url($_SERVER['HTTP_REFERER']);
+						
+						//This logic checks to see if this was a URL in the form "index.php?cID=123", and tries to parse it to get the content item.
+						if (!empty($parsedURL['query'])) {
+							$parsedQuery = [];
+							parse_str($parsedURL['query'] ?? '', $parsedQuery);
+							
+							if (!empty($parsedQuery)) {
+								$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
+								\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $parsedQuery, $parsedQuery, []);
+								
+								if ($cID) {
+									$seenAtCID = $cID;
+									$seenAtCType = $cType;
+									$needsUpdate = true;
+									$neverSeenOnContentItemBefore = true;
+									break;
+								}
+							}
+						}
+							
+						//This logic checks to see if this was a friendly in the form "/alias" or "/alias.html", and tries to parse it to get the content item.
+						if (!empty($parsedURL['path'])) {
+							
+							$pathParts = \ze\ray::explodeAndTrim($parsedURL['path'], false, '/');
+							
+							if (!empty($pathParts)) {
+								$alias = array_pop($pathParts);
+								$aliasParts = \ze\ray::explodeAndTrim($alias, false, '.');
+								
+								if (!empty($aliasParts)) {
+									$alias = array_shift($aliasParts);
+									$parsedQuery = ['cID' => $alias];
+									
+									$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
+									\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $parsedQuery, $parsedQuery, []);
+								
+									if ($cID) {
+										$seenAtCID = $cID;
+										$seenAtCType = $cType;
+										$needsUpdate = true;
+										$neverSeenOnContentItemBefore = true;
+										break;
+									}
+								}
+							}
+						}
+					} while (false);
+				}
+			
+				//Catch the case where the isHTML flag has been changed by a dev, we need to update this
+				if ($isHTML != ((bool) $row[3])) {
 					$needsUpdate = true;
 				}
 		
@@ -137,7 +222,7 @@ class lang {
 				//If we didn't find a translation that we needed, complain about it
 				if ($needsTranslating) {
 					$phrase = $code;
-					if (!$cli && \ze\priv::check()) {
+					if (!$isFromCommandLine && \ze::isAdmin()) {
 						$phrase .= ' (untranslated)';
 					}
 				}
@@ -153,6 +238,10 @@ class lang {
 							'code' => $code]
 				))) {
 					$needsUpdate = true;
+					
+					if ($isFromCommandLine || !\ze::isAdmin()) {
+						$neverSeenByVisitorBefore = true;
+					}
 				}
 			}
 		
@@ -165,36 +254,10 @@ class lang {
 			 && empty($_REQUEST['grid_container'])
 			 && empty($_REQUEST['grid_pxWidth'])) {
 			
-				//Attempt to log the filename that this phrase appeared in by checking debug backtrace
-				if (is_string($backtraceOffset)) {
-					$filename = $backtraceOffset;
-			
-				} else {
-					$filename = '';
-			
-					$back = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-			
-					if (!empty($back[$backtraceOffset]['file'])) {
-						//Strip off the CMS root
-						$filename = str_replace('$'. CMS_ROOT, '', '$'. $back[$backtraceOffset]['file']);
-						
-						//If this looks like it was in a framework, try to overwrite this with the path to the
-						//source of the framework file
-						if (\ze::$frameworkFile
-						 && ($filename == 'zenario/autoload/moduleBaseClass.php'
-						  || \ze\ring::chopPrefix('cache/frameworks/', $filename)
-						  || \ze\ring::chopPrefix('zenario/libs/composer_dist/twig/', $filename)
-						  || \ze\ring::chopPrefix('zenario/libs/composer_no_dist/twig/', $filename)
-						)) {
-							$filename = \ze::$frameworkFile;
-						}
-					}
-				}
-			
 			
 				//Unless we're running from the command line, attempt to get a URL for this page
 				$url = null;
-				if (!$cli) {
+				if (!$isFromCommandLine) {
 					//If it looks like this is an AJAX request or something like that,
 					//then rather than report an actual URL we'll try and generate a link with the same GET requests
 					if (!empty($_REQUEST['method_call'])
@@ -223,38 +286,46 @@ class lang {
 						$url = substr($url, 0, 0xffff);
 					}
 				}
-			
-				\ze\row::set(
-					'visitor_phrases',
-					[
-						'seen_in_visitor_mode' => (!$cli && \ze\priv::check())? 0 : 1,
-						'seen_in_file' => substr($filename, 0, 0xff),
-						'seen_at_url' => $url],
-					[
-						'language_id' => \ze::$defaultLang,
-						'module_class_name' => $moduleClass,
-						'code' => $code],
 				
-					//Don't clear the cache for this update
-					false, false, false, true, $checkCache = false);
+				$details = [];
+				$details['is_html'] = $isHTML;
+				
+				if ($neverSeenByVisitorBefore) {
+					$details['seen_in_visitor_mode'] = 1;
+					$details['first_seen_by_visitor'] = \ze\date::now(true);
+				}
+				
+				if ($neverSeenOnContentItemBefore) {
+					$details['seen_at_content_id'] = $seenAtCID;
+					$details['seen_at_content_type'] = $seenAtCType;
+				}
+				
+				$key = [
+					'language_id' => \ze::$defaultLang,
+					'module_class_name' => $moduleClass,
+					'code' => $code
+				];
+							
+				//Don't clear the cache for this update
+				\ze\row::cacheFriendlySet(
+					'visitor_phrases',
+					$details,
+					$key
+				);
 			
 				//For multilingual sites, we need to note down this information against
 				//the current language as well, to
 				//fix a bug where missing phrases would continously clear the cache.
 				if (\ze::$defaultLang != $languageId) {
-					\ze\row::set(
-						'visitor_phrases',
-						[
-							'seen_in_visitor_mode' => (!$cli && \ze\priv::check())? 0 : 1,
-							'seen_in_file' => '-',
-							'seen_at_url' => '-'],
-						[
-							'language_id' => $languageId,
-							'module_class_name' => $moduleClass,
-							'code' => $code],
 					
-						//Don't clear the cache for this update
-						false, false, false, true, $checkCache = false);
+					$key['language_id'] = $languageId;
+					
+					//Don't clear the cache for this update
+					\ze\row::cacheFriendlySet(
+						'visitor_phrases',
+						$details,
+						$key
+					);
 				}
 			}
 		}
@@ -344,7 +415,7 @@ class lang {
 	}
 
 	const nphraseFromTwig = true;
-	public static function nphrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false, $zeroText = null) {
+	public static function nPhrase($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $zeroText = null) {
 	
 		//Allow the caller to enter the name of a merge field that contains $n
 		if (is_string($n) && !is_numeric($n) && isset($replace[$n])) {
@@ -359,17 +430,40 @@ class lang {
 		}
 		
 		if ($zeroText !== null && empty($n)) {
-			return \ze\lang::phrase($zeroText, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli);
+			return \ze\lang::phrase($zeroText, $replace, $moduleClass, $languageId);
 		} else if ($pluralText !== false && $n !== 1 && $n !== '1') {
-			return \ze\lang::phrase($pluralText, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli);
+			return \ze\lang::phrase($pluralText, $replace, $moduleClass, $languageId);
 		} else {
-			return \ze\lang::phrase($text, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli);
+			return \ze\lang::phrase($text, $replace, $moduleClass, $languageId);
 		}
 	}
 	
 	const nzphraseFromTwig = true;
-	public static function nzphrase($zeroText, $text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $backtraceOffset = 1, $cli = false) {
-		return \ze\lang::nphrase($text, $pluralText, $n, $replace, $moduleClass, $languageId, $backtraceOffset + 1, $cli, $zeroText);
+	public static function nzPhrase($zeroText, $text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false) {
+		return \ze\lang::nPhrase($text, $pluralText, $n, $replace, $moduleClass, $languageId, $zeroText);
+	}
+	
+	const phraseInHTMLFromTwig = true;
+	public static function phraseInHTML($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false) {
+		$text = \ze\lang::phrase($code, $replace, $moduleClass, $languageId);
+		if (is_string($text)) {
+			$text = htmlspecialchars($text);
+		}
+		return $text;
+	}
+	
+	const nPhraseInHTMLFromTwig = true;
+	public static function nPhraseInHTML($text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false, $zeroText = null) {
+		$text = \ze\lang::nPhraseInHTML($text, $pluralText, $n, $replace, $moduleClass, $languageId, $zeroText);
+		if (is_string($text)) {
+			$text = htmlspecialchars($text);
+		}
+		return $text;
+	}
+	
+	const nzphraseInHTMLFromTwig = true;
+	public static function nzPhraseInHTML($zeroText, $text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false) {
+		return \ze\lang::nPhraseInHTML($text, $pluralText, $n, $replace, $moduleClass, $languageId, $zeroText);
 	}
 
 
@@ -513,7 +607,13 @@ class lang {
 			$languageId = (\ze::$visLang ?: \ze::$defaultLang);
 		}
 	
-		$name = \ze\row::get('visitor_phrases', 'local_text', ['code' => '__LANGUAGE_ENGLISH_NAME__', 'language_id' => $languageId, 'module_class_name' => 'zenario_common_features']);
+		if ($localName) {
+			$code = '__LANGUAGE_LOCAL_NAME__';
+		} else {
+			$code = '__LANGUAGE_ENGLISH_NAME__';
+		}
+		
+		$name = \ze\row::get('visitor_phrases', 'local_text', ['code' => $code, 'language_id' => $languageId, 'module_class_name' => 'zenario_common_features']);
 	
 		if ($name !== false) {
 			if ($addIdInBracketsToEnd) {

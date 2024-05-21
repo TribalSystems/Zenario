@@ -77,13 +77,19 @@
 	font-size:1em;
 }
 
-.zenario_skin h1,
+.zenario_skin h1 {
+	line-height:1.2;
+}
+
 .zenario_skin h2,
 .zenario_skin h3,
-.zenario_skin h4,
+.zenario_skin h4 {
+	line-height:1.2;
+}
+
 .zenario_skin h5,
 .zenario_skin h6 {
-	line-height:1.2;
+	line-height:1.4;
 }
 
 .zenario_skin h1,
@@ -114,6 +120,12 @@
 	margin-left:30px;
 }
 
+.zenario_skin ul li,
+.zenario_skin ol li {
+	line-height:1.5;
+	padding-bottom:0.3em;
+}
+
 .zenario_skin ul li {
 	list-style:disc;
 	line-height:1.5;
@@ -124,6 +136,7 @@
 	color:#CCC;
 	background-color:#CCC;
 	height:2px;
+	margin:2em 0;
 }
 
 .zenario_skin table {
@@ -134,6 +147,13 @@
 .zenario_skin table tr th,
 .zenario_skin table tr td {
 	vertical-align:top;
+}
+
+.zenario_skin table thead tr td { 
+  	background: #389ed1;
+  	color: #fff;
+  	font-size:1.1em;
+  	font-weight:700;
 }
 
 .zenario_skin table:not(.table_no_styles) tr th {
@@ -149,7 +169,6 @@
 .zenario_skin table.table_no_styles tr td {
 	padding:revert-layer;
 }
-
 
 /*  Styles for text.
 	These rules are listed in the description.yaml file in the 'style_formats', 

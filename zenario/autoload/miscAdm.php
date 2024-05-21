@@ -193,7 +193,7 @@ class miscAdm {
 			//Add other item text
 			$count = $usage['modules'];
 			if ($count > 1) {
-				$text = \ze\admin::nphrase(
+				$text = \ze\admin::nPhrase(
 					'[[name]] and 1 other module', 
 					'[[name]] and [[count]] other modules',
 					$count - 1, 
@@ -222,7 +222,7 @@ class miscAdm {
 			//Add other item text
 			$count = $usage['banners'];
 			if ($count > 1) {
-				$text = \ze\admin::nphrase(
+				$text = \ze\admin::nPhrase(
 					'[[name]] and 1 other banner', 
 					'[[name]] and [[count]] other banners',
 					$count - 1, 
@@ -250,7 +250,7 @@ class miscAdm {
 			//Add other item text
 			$count = $usage['csls'];
 			if ($count > 1) {
-				$text = \ze\admin::nphrase(
+				$text = \ze\admin::nPhrase(
 					'[[name]] and 1 other content summary list', 
 					'[[name]] and [[count]] other content summary lists',
 					$count - 1, 
@@ -279,14 +279,14 @@ class miscAdm {
 			$count = $usage['plugins'];
 			if ($count > 1) {
 				if (isset($usageLinks['plugins'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[plugins]]">1 other plugin</a>', 
 						'[[name]] and <a target="_blank" href="[[plugins]]">[[count]] other plugins</a>', 
 						$count - 1, 
 						['name' => $name, 'plugins' => $prefix. $usageLinks['plugins']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other plugin', 
 						'[[name]] and [[count]] other plugins',
 						$count - 1, 
@@ -317,14 +317,14 @@ class miscAdm {
 			$count = $usage['nests'];
 			if ($count > 1) {
 				if (isset($usageLinks['nests'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[nests]]">1 other nest</a>', 
 						'[[name]] and <a target="_blank" href="[[nests]]">[[count]] other nests</a>', 
 						$count - 1, 
 						['name' => $name, 'nests' => $prefix. $usageLinks['nests']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other nest', 
 						'[[name]] and [[count]] other nests',
 						$count - 1, 
@@ -355,14 +355,14 @@ class miscAdm {
 			$count = $usage['slideshows'];
 			if ($count > 1) {
 				if (isset($usageLinks['slideshows'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[slideshows]]">1 other slideshow</a>', 
 						'[[name]] and <a target="_blank" href="[[slideshows]]">[[count]] other slideshows</a>', 
 						$count - 1, 
 						['name' => $name, 'slideshows' => $prefix. $usageLinks['slideshows']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other slideshow', 
 						'[[name]] and [[count]] other slideshows',
 						$count - 1, 
@@ -412,14 +412,14 @@ class miscAdm {
 			$count = $usage['content_items'];
 			if ($count > 1) {
 				if (isset($usageLinks['content_items'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[content_items]]">1 other content item</a>', 
 						'[[name]] and <a target="_blank" href="[[content_items]]">[[count]] other content items</a>',
 						$count - 1, 
 						['name' => $name, 'content_items' => $prefix. $usageLinks['content_items']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other content item', 
 						'[[name]] and [[count]] other content items', 
 						$count - 1, 
@@ -458,14 +458,14 @@ class miscAdm {
 			$count = $usage['layouts'];
 			if ($count > 1) {
 				if (isset($usageLinks['layouts'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[layouts]]">1 other layout</a>', 
 						'[[name]] and <a target="_blank" href="[[layouts]]">[[count]] other layouts</a>', 
 						$count - 1, 
 						['name' => $name, 'layouts' => $prefix. $usageLinks['layouts']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other layout', 
 						'[[name]] and [[count]] other layouts', 
 						$count - 1, 
@@ -491,7 +491,7 @@ class miscAdm {
 				INNER JOIN '. DB_PREFIX. 'menu_text AS mt
 				   ON mn.id = mt.menu_id
 				WHERE mn.id = '. (int) $menuNodeId. '
-				ORDER BY mt.language_id = \''. \ze\escape::asciiInSQL(\ze::$defaultLang). '\'
+				ORDER BY mt.language_id = \''. \ze\escape::asciiInSQL(\ze::$defaultLang). '\' DESC
 				LIMIT 1'
 			);
 			
@@ -532,14 +532,14 @@ class miscAdm {
 			$count = $usage['menu_nodes'];
 			if ($count > 1) {
 				if (isset($usageLinks['menu_nodes'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[menu_nodes]]">1 other menu node</a>', 
 						'[[name]] and <a target="_blank" href="[[menu_nodes]]">[[count]] other menu nodes</a>', 
 						$count - 1, 
 						['name' => $name, 'menu_nodes' => $prefix. $usageLinks['menu_nodes']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other menu node', 
 						'[[name]] and [[count]] other menu nodes', 
 						$count - 1, 
@@ -580,14 +580,14 @@ class miscAdm {
 				$count = $usage['email_templates'];
 				if ($count > 1) {
 					if (isset($usageLinks['email_templates'])) {
-						$text = \ze\admin::nphrase(
+						$text = \ze\admin::nPhrase(
 							'[[name]] and <a target="_blank" href="[[email_templates]]">1 other email template</a>', 
 							'[[name]] and <a target="_blank" href="[[email_templates]]">[[count]] other email templates</a>', 
 							$count - 1, 
 							['name' => $name, 'email_templates' => $prefix. $usageLinks['email_templates']]
 						);
 					} else {
-						$text = \ze\admin::nphrase(
+						$text = \ze\admin::nPhrase(
 							'[[name]] and 1 other email template', 
 							'[[name]] and [[count]] other email templates', 
 							$count - 1, 
@@ -636,14 +636,14 @@ class miscAdm {
 			$count = $usage['newsletters'];
 			if ($count > 1) {
 				if (isset($usageLinks['newsletters'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[newsletters]]">1 other newsletter</a>', 
 						'[[name]] and <a target="_blank" href="[[newsletters]]">[[count]] other newsletters</a>', 
 						$count - 1, 
 						['name' => $name, 'newsletters' => $prefix. $usageLinks['newsletters']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other newsletter', 
 						'[[name]] and [[count]] other newsletters', 
 						$count - 1, 
@@ -676,14 +676,14 @@ class miscAdm {
 			$count = $usage['newsletter_templates'];
 			if ($count > 1) {
 				if (isset($usageLinks['newsletter_templates'])) {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and <a target="_blank" href="[[newsletter_templates]]">1 other newsletter template</a>', 
 						'[[name]] and <a target="_blank" href="[[newsletter_templates]]">[[count]] other newsletter templates</a>', 
 						$count - 1, 
 						['name' => $name, 'newsletter_templates' => $prefix. $usageLinks['newsletter_templates']]
 					);
 				} else {
-					$text = \ze\admin::nphrase(
+					$text = \ze\admin::nPhrase(
 						'[[name]] and 1 other newsletter template', 
 						'[[name]] and [[count]] other newsletter templates', 
 						$count - 1, 

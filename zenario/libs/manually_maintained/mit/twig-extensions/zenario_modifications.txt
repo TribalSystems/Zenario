@@ -1,4 +1,4 @@
-Replaced calls to gettext() and ngettext() with calls to the phrase() or nphrase() functions:
+Replaced calls to gettext() and ngettext() with calls to the phrase() or nPhrase() functions:
 
 lib/Twig/Extensions/Node/Trans.php:
 	Replace:

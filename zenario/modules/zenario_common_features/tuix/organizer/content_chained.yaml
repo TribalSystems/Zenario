@@ -242,7 +242,7 @@ zenario__content:
                 categories:
                     hidden: true
                     priv: _PRIV_EDIT_DRAFT
-                    label: Change categories
+                    label: Change categories...
                     admin_box:
                         path: zenario_content_categories
             inline_buttons:

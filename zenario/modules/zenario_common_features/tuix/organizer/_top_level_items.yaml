@@ -14,7 +14,10 @@ dummy_item:
 zenario__organizer:
     ord: -999
     css_class: zenario_cms_core_organizer
-    hide_in_frontend: true
+    
+    # We used to not show this on the drop-down menu in the front end, but I am experimenting with showing it now.
+    #hide_in_frontend: true
+    
     label: Organizer start page
     tooltip: "Organizer is the under-the-hood view of your site, and lets you access everything in one central place"
     nav:
@@ -350,6 +353,14 @@ zenario__administration:
                 and set the MIME type for each extension.
             link:
                 path: zenario__administration/panels/file_types
+        error_log:
+            priv: _PRIV_VIEW_SITE_SETTING
+            visible_if: >
+                zenarioA.siteSettings.default_language
+            label: Error log
+            tooltip: Manage logged errors
+            link:
+                path: zenario__administration/panels/error_log
 
 
     data-step: 14

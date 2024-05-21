@@ -222,7 +222,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			ze\menuAdm::setupPathPreview($menuPos, $box['tabs']['text']['fields'][$pathCodename], $lang['id']);
 	
 			if ($numLangs > 1) {
-				$box['tabs']['text']['fields'][$title]['label'] = ze\admin::phrase('Text ([[english_name]]):', $lang);
+				$box['tabs']['text']['fields'][$title]['label'] = ze\admin::phrase('Menu node text ([[english_name]]):', $lang);
 				$box['tabs']['text']['fields'][$url]['label'] = ze\admin::phrase('Link for text in [[english_name]]:', $lang);
 			}
 	

@@ -124,7 +124,10 @@ switch ($path) {
 		$key = ['foreign_key_to' => 'email_template', 'foreign_key_id' => $box['key']['numeric_id'], 'foreign_key_char' => $box['key']['id']];
 		ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 		
-		//Make all images in this email template public.
+		//The image picker will not allow an admin to pick private or auto-detect images.
+		//However, if one or more of such images were picked in the past for this email template,
+		//make them public now.
+		
 		if (!empty($files)) {
 			foreach ($files as $file) {
 				ze\row::update('files', ['privacy' => 'public'], ['id' => $file['id']]);

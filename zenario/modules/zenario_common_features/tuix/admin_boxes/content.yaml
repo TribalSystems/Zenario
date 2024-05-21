@@ -52,10 +52,6 @@ zenario_content:
                 enabled: false
                 priv: _PRIV_EDIT_DRAFT
             notices:
-                archived_template:
-                    show: false
-                    type: warning
-                    message: The chosen layout is retired.
                 locked_warning:
                     show: false
                     type: warning
@@ -559,7 +555,7 @@ zenario_content:
                     label: 'Short summary:'
                     ord: 130
                     type: editor
-                    editor_type: summary
+                    editor_type: summary_editor
                     editor_options:
                         invalid_elements: img, picture, iframe
                         height: 135
@@ -584,8 +580,13 @@ zenario_content:
                     note_below: >
                         By protecting the Summary, changes made using the WYSIWYG
                         Editor Plugin cannot be synced to the Summary.
-                layout_id:
+                archived_template_notice:
                     ord: 160
+                    snippet:
+                        html: '<div class="zenario_fbWarning">The chosen layout is retired.</div>'
+                    hidden: true
+                layout_id:
+                    ord: 161
                     label: 'Layout:'
                     pick_items:
                         path: zenario__layouts/panels/layouts
@@ -919,6 +920,7 @@ zenario_content:
                         drag_and_drop: true
                         accept: ''
                         extensions: []
+                    format_onchange: true
                     notices_below:
                         file_is_missing:
                             hidden: true

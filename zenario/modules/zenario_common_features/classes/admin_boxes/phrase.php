@@ -45,7 +45,7 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 				'module_class_name' => 'zenario_country_manager'];
 		
 		} else {
-		 	$details = ze\row::get('visitor_phrases', ['code', 'module_class_name'], $box['key']['id']);
+		 	$details = ze\row::get('visitor_phrases', ['code', 'module_class_name', 'is_html'], $box['key']['id']);
 		}
 		
 		//From 7.0.3 we not longer offer the ability to create a new phrase using this box,
@@ -54,15 +54,28 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			exit;
 		}
 		
-		
+		$mostRecentDate = null;
 		$existingPhrases = [];
-		$result = ze\row::query('visitor_phrases', ['local_text', 'language_id', 'protect_flag'], ['code'=>$details['code'], 'module_class_name'=>$details['module_class_name']]);
+		$result = ze\row::query('visitor_phrases', ['local_text', 'language_id', 'protect_flag', 'modified_date'], ['code'=>$details['code'], 'module_class_name'=>$details['module_class_name']]);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$existingPhrases[$row['language_id']] = $row;
+			
+			if ($row['modified_date']) {
+				if (is_null($mostRecentDate)
+				 || $mostRecentDate < $row['modified_date']) {
+					$mostRecentDate = $row['modified_date'];
+				}
+			}
 		}
+		
+		if ($mostRecentDate) {
+			$box['last_updated'] = ze\admin::phrase('Last edited [[date]]', ['date' => \ze\date::formatDateTime($mostRecentDate, 'vis_date_format_short')]);
+		}
+		
 		$languages = ze\lang::getLanguages(false, true, true);
 		
 		$box['key']['code'] = $details['code'];
+		$box['key']['is_html'] = $details['is_html'] ?? false;
 		$box['key']['module_class_name'] = $details['module_class_name'];
 		$box['key']['is_code'] = substr($box['key']['code'], 0, 1) == '_';
 		
@@ -83,10 +96,18 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			
 			$fields['phrase/code']['label'] = ze\admin::phrase('Phrase / [[language_english_name]]:', $mrg);
 			
-			$fields['phrase/code']['side_note'] = 
+			$fields['phrase/code']['note_below'] = 
 				ze\admin::phrase('This code comes from a module or one of its plugins. In order to edit the text in [[language_english_name]]
 							please go to the [[module_display_name]] and inspect its plugins\' settings, their frameworks, 
 							and possibly the module\'s program code.', $mrg);
+		}
+		
+		if ($box['key']['is_html']) {
+			$fields['phrase/code']['type'] = 'editor';
+			$fields['phrase/code']['editor_type'] = 'phrase_editor';
+			$fields['phrase/code']['editor_options'] = [
+				'height' => 150
+			];
 		}
 		
 		$ord = 4;
@@ -114,11 +135,6 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 						'type' => 'textarea',
 						'readonly' => !$hasPerms,
 						'rows' => '4',
-						'side_note' => 
-							"This is HTML text.
-							Any special characters such as <code>&amp;</code> <code>&quot;</code> <code>&lt;</code> or <code>&gt;</code>
-							should be escaped (i.e. by replacing them with <code>&amp;amp;</code> <code>&amp;quot;</code> <code>&amp;lt;</code>
-							and <code>&amp;gt;</code> respectively).",
 						'value' => $phraseValue
 						];
 		
@@ -135,6 +151,14 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 						"If importing a CSV/Excel translation file, prevent this phrase from being overwritten."
 					];
 				$ord += 2;
+				
+				if ($box['key']['is_html']) {
+					$box['tabs']['phrase']['fields'][$language['id']]['type'] = 'editor';
+					$box['tabs']['phrase']['fields'][$language['id']]['editor_type'] = 'phrase_editor';
+					$box['tabs']['phrase']['fields'][$language['id']]['editor_options'] = [
+						'height' => 200
+					];
+				}
 			}
 		}
 		
@@ -179,7 +203,7 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			if (ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $language['id'])
 			 && ($box['key']['is_code'] || $language['translate_phrases'])) {
 				ze\row::set('visitor_phrases', 
-					['local_text' => $values['phrase/'. $language['id']], 'protect_flag' => $values['phrase/protect_flag_'. $language['id']]], 
+					['local_text' => $values['phrase/'. $language['id']], 'protect_flag' => $values['phrase/protect_flag_'. $language['id']], 'modified_date' => ze\date::now(true)], 
 					['code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $language['id']]);
 			}
 		}

@@ -85,21 +85,7 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids[0]);
 			$menu = ze\menu::getFromContentItem($cID, $cType);
 
-			if (!empty($menu) && is_array($menu) && !empty($menu['parent_id'])) {
-				$parentMenuContentItem = ze\menu::getContentItem($menu['parent_id']);
-
-				if (!empty($parentMenuContentItem) && is_array($parentMenuContentItem)) {
-					$goToContentItem = ze\link::toItem(
-						$parentMenuContentItem['content_id'], $parentMenuContentItem['content_type'],
-						$fullPath = true, '', false, false, $forceAliasInAdminMode = true
-					);
-				}
-			} else {
-				$goToContentItem = ze\link::toItem(
-					ze::$homeEquivId, ze::$homeCType,
-					$fullPath = true, '', false, false, $forceAliasInAdminMode = true
-				);
-			}
+			$goToContentItem = ze\link::toItem($cID, $cType, $fullPath = true, '', false, false, $forceAliasInAdminMode = true);
 		}
         
         foreach ($ids as $id) {
@@ -120,8 +106,8 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 		//then try to redirect the admin to whatever the visitor URL should be
 		if ($goToContentItem) {
 			$flags = [];
-			$flags['go_to_url'] = $goToContentItem;
-			$flags['toast_next_pageload'] = ze\admin::phrase("Content item hidden!");
+			$flags['GO_TO_URL'] = $goToContentItem;
+			$flags['TOAST_NEXT_PAGELOAD'] = ze\admin::phrase("Content item hidden!");
 			ze\tuix::closeWithFlags($flags);
 		}
 	}

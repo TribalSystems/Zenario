@@ -214,16 +214,16 @@ function zenario_callLibFromTwig($lib, $fun, ...$args) {
 
 
 
-//Define the phrase() and the nphrase() functions for use in Twig frameworks.
+//Define the phrase() and the nPhrase() functions for use in Twig frameworks.
 //These should map to the phrase/nphrase functions of whatever plugin is currently running
 function zenario_nphrase($text, $replace = []) {
 	if (\ze::$plugin) {
-		return \ze::$plugin->nphrase($text, $replace);
+		return \ze::$plugin->nPhraseInHTML($text, $replace);
 	}
 }
 
 function zenario_phrase($text, $pluralText = false, $n = 1, $replace = []) {
 	if (\ze::$plugin) {
-		return \ze::$plugin->phrase($text, $pluralText, $n, $replace);
+		return \ze::$plugin->phraseInHTML($text, $pluralText, $n, $replace);
 	}
 }

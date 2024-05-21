@@ -123,7 +123,7 @@ zenario_newsletter:
                 apply_css_rules:
                     label: Apply
                     type: checkbox
-                    note_below: 'These CSS rules will not be visible on the Preview tab. Use the "Test send" feature to view them.'
+                    format_onchange: true
                     post_field_html: |
                         &nbsp;[[link_start]]CSS rules[[link_end]]
                 test_send_email_address:

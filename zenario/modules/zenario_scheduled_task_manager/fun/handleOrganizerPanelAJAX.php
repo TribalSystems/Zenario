@@ -60,14 +60,14 @@ switch ($path) {
 		
 		} elseif (!empty($_POST['enable_all']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			ze\site::setSetting('jobs_enabled', 1);
-			echo '<!--Clear_Toast-->';
-			echo '<!--Reload_Organizer-->';
+			ze\escape::bFlag('CLEAR_TOAST');
+			ze\escape::bFlag('RELOAD_ORGANIZER');
 			return;
 		
 		} elseif (!empty($_POST['suspend_all']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			ze\site::setSetting('jobs_enabled', 0);
-			echo '<!--Clear_Toast-->';
-			echo '<!--Reload_Organizer-->';
+			ze\escape::bFlag('CLEAR_TOAST');
+			ze\escape::bFlag('RELOAD_ORGANIZER');
 			return;
 			
 		} elseif (!empty($_POST['enable']) && ze\priv::check('_PRIV_MANAGE_SCHEDULED_TASK')) {
@@ -84,7 +84,8 @@ switch ($path) {
 		
 			
 		} elseif (!empty($_POST['get_code'])) {
-			echo '<!--Message_Type:Info-->',
+			ze\escape::bFlag('MESSAGE_TYPE', 'info');
+			echo
 				ze\admin::phrase('To enable Scheduled Tasks to run, please add the following command into your crontab:'),
 				'<br/><br/>
 				<form>

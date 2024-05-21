@@ -437,12 +437,12 @@ class userAdm {
 		$emailAddress = \ze\row::get('users', 'email', $userId);
 		$sql = "
 			UPDATE ". DB_PREFIX. "users 
-			SET hash = '". \ze\escape::asciiInSQL(\ze\userAdm::createHash($userId, $emailAddress)). "'
+			SET hash_verify_email = '". \ze\escape::asciiInSQL(\ze\userAdm::createHash()). "'
 			WHERE id = ". (int) $userId;
 		\ze\sql::update($sql, false, false);
 	}
 	
-	public static function createHash($userId, $emailAddress) {
-		return \ze::hash64($userId. '-'. date('Yz'). '-'. \ze\link::primaryDomain(). '-'. $emailAddress);
+	public static function createHash() {
+		return \ze\ring::randomFromSetNoProfanities(15) . time();
 	}
 }

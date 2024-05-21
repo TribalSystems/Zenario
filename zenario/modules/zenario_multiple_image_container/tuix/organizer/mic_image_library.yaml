@@ -119,15 +119,24 @@ zenario__library:
                         <table>
                             <tr>
                                 <th style="text-align: left;">Public (green border):</th>
-                                <td style="vertical-align: text-top;">Accessible by any visitor via a friendly URL; may be indexed by search engines.</td>
+                                <td style="vertical-align: text-top;">
+                                    Accessible by any visitor via a friendly URL. Can be used in WYSIWYG editors and may be indexed by search engines.
+                                </td>
                             </tr>
                             <tr>
                                 <th style="text-align: left;">Private (blue border):</th>
-                                <td style="vertical-align: text-top;">Contains an cryptic directory path to prevent unauthorised visitor access; may not be indexed by search engines.</td>
+                                <td style="vertical-align: text-top;">
+                                    Private images have a URL that is unguessable and keeps changing. Generated URLs will be taken down after roughly two hours.
+                                    They cannot be used in WYSIWYG editors and will not be indexed by search engines.
+                                    
+                                    When a plugin uses a private image, the plugin will only output the image if it finds itself on a private page.
+                                </td>
                             </tr>
                             <tr>
                                 <th style="text-align: left;">Will auto-detect (orange border):</th>
-                                <td style="vertical-align: text-top;">When next displayed to a visitor, will be set to Public if on a public content item, or Private if on a private content item.</td>
+                                <td style="vertical-align: text-top;">
+                                    When next displayed, will be set to Public if on a public content item, or Private if on a private content item.
+                                </td>
                             </tr>
                         </table>
                     
@@ -170,9 +179,9 @@ zenario__library:
                     hide_when_children_are_not_visible: true
                 view:
                     parent: actions_dropdown
-                    label: View original
+                    label: View image
                     popout:
-                        href: zenario/file.php
+                        href: zenario/file.php?popout=1
                         type: image
                 download:
                     parent: actions_dropdown
@@ -205,15 +214,19 @@ zenario__library:
                         zenarioO.itemButtonClick('mark_as_public');
                     ajax:
                         confirm:
-                            message: |
+                            message: >
                                 Make the image "[[filename]]" public?
                                 
-                                Public images may be indexed by search engines.
                                 
-                            multiple_select_message: |
+                                Public images are accessible by any visitor via a friendly URL,
+                                can be used in WYSIWYG editors, and may be indexed by search engines.
+                                
+                            multiple_select_message: >
                                 Make the selected images public?
                                 
-                                Public images may be indexed by search engines.
+                                
+                                Public images are accessible by any visitor via a friendly URL,
+                                can be used in WYSIWYG editors, and may be indexed by search engines.
 
                             button_message: Make public
                             cancel_button_message: Cancel
@@ -240,11 +253,13 @@ zenario__library:
                             message: >
                                 Make the image "[[filename]]" private?
                                 
-
-                                Private images have a URL that is unguessable and keeps changing;
-                                they will not be indexed by search engines.
+                                
+                                Private images have a URL that is unguessable and keeps changing. Generated URLs will be taken down after roughly two hours.
+                                They cannot be used in WYSIWYG editors and will not be indexed by search engines.
 
                                 
+                                If a plugin uses a private image, the plugin will only output
+                                the image if it finds itself on a private page.
                                 You should not link to an image you want to be private using a managed link (e.g. in a Banner or Multiple Image Container),
                                 unless it's on a private content item.
                                 
@@ -252,10 +267,12 @@ zenario__library:
                                 Are you sure you wish to make the selected images private?
                                 
                                 
-                                Private images have a URL that is unguessable and keeps changing;
-                                they will not be indexed by search engines.
+                                Private images have a URL that is unguessable and keeps changing. Generated URLs will be taken down after roughly two hours.
+                                They cannot be used in WYSIWYG editors and will not be indexed by search engines.
                                 
                                 
+                                If a plugin uses a private image, the plugin will only output
+                                the image if it finds itself on a private page.
                                 You should not link to an image you want to be private using a managed link (e.g. in a Banner or Multiple Image Container),
                                 unless it's on a private content item.
                             

@@ -1022,7 +1022,7 @@ class zenario_common_features__organizer__content extends ze\moduleBaseClass {
    
 		}
 		
-		if (ze::setting('aws_s3_support')
+		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')
 		 && $path != 'zenario__content/panels/chained'
 		 && ze\module::inc('zenario_ctype_document')) {
 			$panel['item_buttons']['download']['label'] = ze\admin::phrase('Download local file');

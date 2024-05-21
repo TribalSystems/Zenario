@@ -104,7 +104,7 @@ _sql
 //Loop through the users table, looking for rows without an email, and set the email_verified column to 
 //the email_not_set option.
 //This can't be done in pure SQL, it needs to be done in PHP using our database libraries as the email column may be encrypted.
-if (ze\dbAdm::needRevision(59602)) {
+if (ze\dbAdm::needRevision(59799)) {
 	
 	$sql = "
 		SELECT id, email, email_verified
@@ -118,5 +118,5 @@ if (ze\dbAdm::needRevision(59602)) {
 		}
 	}
 	
-	ze\dbAdm::revision(59602);
+	ze\dbAdm::revision(59799);
 }

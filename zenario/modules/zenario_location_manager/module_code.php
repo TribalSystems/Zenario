@@ -1571,7 +1571,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 							// Output report
 							$locationCount = count($locationIds);
 							if ($report['succeeded'] == $locationCount) {
-								echo '<!--Message_Type:Success-->';
+								ze\escape::bFlag('MESSAGE_TYPE', 'success');
 							}
 							
 							if ($locationCount == 1 && ($report['succeeded'] == $locationCount)) {

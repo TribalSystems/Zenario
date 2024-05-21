@@ -1207,6 +1207,42 @@ class moduleAdm {
 								\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $slotDetails['moduleId']);
 							}
 						}
+					} else {
+						//If a layout exists for this content type, try to add a plugin instance upon starting.
+						$pluginsToAdd = [];
+					
+						if (\ze\ring::engToBoolean($desc['is_pluggable'])) {
+							if (\ze\ring::engToBoolean($desc['can_be_version_controlled'])) {
+								$pluginsToAdd['Slot_Data'] = [
+									'versionControlled' => true,
+									'moduleId' => $moduleId
+								];
+							} else {
+								$pluginsToAdd['Slot_Data'] = [
+									'versionControlled' => false,
+									'moduleId' => $moduleId
+								];
+							}
+						}
+					
+						foreach ($pluginsToAdd as $slotName => $slotDetails) {
+							if ($slotDetails['versionControlled']) {
+								\ze\pluginAdm::updateLayoutSlot(0, $slotName, $layoutId, $slotDetails['moduleId']);
+							} else {
+								//Otherwise set a Reusable Instance there
+								if (!$instanceId = \ze\row::get('plugin_instances', 'id', ['module_id' => $slotDetails['moduleId'], 'content_id' => 0])) {
+									//Create a new reusable instance if one does not already exist
+									$errors = [];
+									\ze\pluginAdm::create(
+										$slotDetails['moduleId'],
+										$desc['default_instance_name'],
+										$instanceId,
+										$errors, $onlyValidate = false, $forceName = true);
+								}
+					
+								\ze\pluginAdm::updateLayoutSlot($instanceId, $slotName, $layoutId, $slotDetails['moduleId']);
+							}
+						}
 					}
 			
 					//Ensure a default template is set

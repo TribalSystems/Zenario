@@ -5,23 +5,48 @@ zenario_user_form_response:
     save_button_message: false
     key:
         id: ''
+        form_id: ''
     tabs:
         form_fields:
             label: Fields
             edit_mode:
                 enabled: false
             fields:
+                workflow_control_grouping:
+                    type: grouping
+                    snippet:
+                        label: 'Workflow control:'
+                        label_class: subheading
+                    hidden: true
+                workflow_control_allocated:
+                    grouping: workflow_control_grouping
+                    label: ''
+                    type: checkbox
+                form_response_grouping:
+                    type: grouping
+                    snippet:
+                        label: 'Form response:'
+                        label_class: subheading
                 response_datetime:
+                    grouping: form_response_grouping
                     label: 'Date/Time Responded:'
                     type: text
                     show_as_a_span: true
                     readonly: true
                     style: "width:10em"
+                response_user_id:
+                    grouping: form_response_grouping
+                    label: 'Identifier if User/Contact'
+                    readonly: true
+                    style: "width:10em"
+                    #The value is created in the PHP class.
                 crm_response:
+                    grouping: form_response_grouping
                     label: 'CRM response:'
                     type: textarea
                     show_as_a_span: true
                     readonly: true
                 data:
+                    grouping: form_response_grouping
                     snippet:
                         html: ''

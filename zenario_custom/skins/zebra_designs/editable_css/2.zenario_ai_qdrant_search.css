@@ -1,0 +1,53 @@
+body.desktop .zenario_ai_qdrant_search {
+	padding-bottom:3em;
+}
+
+.zenario_ai_qdrant_search .search_box {
+	background:#efefef;
+	margin-bottom:0.5em;
+}
+
+.zenario_ai_qdrant_search .search_box,
+.zenario_ai_qdrant_search .search_results .search_result {
+	padding:20px;
+}
+
+.zenario_ai_qdrant_search .search_box > div {
+	display:flex;
+	gap:10px;
+}
+
+.zenario_ai_qdrant_search .search_box label {
+	line-height:36px;
+}
+
+.zenario_ai_qdrant_search .search_box input.search_input_box {
+	max-width:400px;
+}
+
+.zenario_ai_qdrant_search .search_box input[type="submit"].search_entry_button {
+	height: 42px;
+  	line-height: 38px;
+}
+
+.zenario_ai_qdrant_search .search_results .search_result {
+	border-top:1px solid #ccc;
+}
+
+.zenario_ai_qdrant_search .search_results > .search_result:first-child {
+	border-top:0;
+}
+
+.zenario_ai_qdrant_search .search_results .search_result .search_result_title h2,
+.zenario_ai_qdrant_search .search_results .search_result .search_result_score {
+	margin-bottom:5px;
+}
+
+.zenario_ai_qdrant_search .search_results .search_result .search_result_score {
+	font-size:90%;
+	color:#606060;
+}
+
+.zenario_ai_qdrant_search .search_results .search_result .search_result_matching_sentence {
+	line-height:1.4;
+}

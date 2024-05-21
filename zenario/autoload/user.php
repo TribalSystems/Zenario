@@ -34,21 +34,11 @@ use ZxcvbnPhp\Zxcvbn;
 class user {
 
 
+	//Returns the IP address of the current visitor.
+	//I'm defining it in the cache library instead of here so we can call it without the autoloader
+	//having to load the user library when we want to serve pages from the cache.
 	public static function ip() {
-		if (defined('USE_FORWARDED_IP')
-		 && constant('USE_FORWARDED_IP')
-		 && !empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-	
-		} elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-			$ip = $_SERVER['REMOTE_ADDR'];
-	
-		} else {
-			return false;
-		}
-	
-		$ip = explode(',', $ip, 2);
-		return $ip[0];
+		return \ze\cache::visitorIP();
 	}
 	
 	public static function anonymizeIP($ip) {

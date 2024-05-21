@@ -150,7 +150,7 @@ styles_fab_white: &styles_fab
             fields:
                 editor:
                     type: editor
-                    editor_type: standard
+                    editor_type: description_editor
                     tall_as_possible: true
         
         code_editor:

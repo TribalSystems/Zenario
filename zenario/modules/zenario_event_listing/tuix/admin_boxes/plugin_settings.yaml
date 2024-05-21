@@ -178,15 +178,6 @@ plugin_settings:
         overall_list:
             label: Overall list
             fields:
-                use_phrases:
-                    plugin_setting:
-                        name: use_phrases
-                    label: 'Use visitor phrases'
-                    type: checkbox
-                    side_note: >
-                        When enabled, visitor phrases will be merged into the header field. For example, use [[_MY_PHRASE]]
-                        to merge a phrase called _MY_PHRASE
-                    value: 1
                 heading:
                     label: 'Heading:'
                     plugin_setting:

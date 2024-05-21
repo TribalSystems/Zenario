@@ -257,10 +257,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$loadContentInColorbox = false;
 		$this->displayMode = $this->setting('display_mode');
 		if ($this->displayMode == 'in_modal_window') {
+			$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
+			
 			if ($reloadedWithAjax || ze::get('showInFloatingBox')) {
 				$showInFloatingBox = true;
-				
-				$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 				
 				$floatingBoxParams = [
 					'escKey' => false, 
@@ -377,7 +377,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$firstPageId = (!empty($this->pages) ? array_key_first($this->pages) : 0);
 		
 		//Get fields per page
-		$this->fields = $this->getFormFields($formId);
+		$this->fields = static::getFormFields($formId, false, $this->instanceId, $this->formPageHash);
 		foreach ($this->fields as $fieldId => $field) {
 			if ($field['dataset_field_id']) {
 				if ($field['db_column'] && is_numeric($fieldId)) {
@@ -727,7 +727,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$fieldId = ze::request('fieldId');
 			$fieldValue = ze::request('fieldValue');
 			$conditionalFieldValue = ze::request('conditionalFieldValue') ?: null;
-			$this->fields = $this->getFormFields($formId);
+			$this->fields = static::getFormFields($formId);
 			if (is_numeric($fieldId)) {
 				$error = $this->validateFormField($fieldId, $ignoreRequiredFields = false, $fieldValue, $conditionalFieldValue);
 			} else {
@@ -897,9 +897,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	//Get visible form field data in email
-	private function sendVisibleFieldsFormEmail($startLine, $email, $mergeFields, $responseId, $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false) {
-		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
-		$formId = $this->form['id'];
+	public static function sendVisibleFieldsFormEmail($form, $startLine, $email, $mergeFields, $responseId, $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false, $commentBy = '', $commentForAdmin = '') {
+		$formName = $form['name'] ? trim($form['name']) : '[blank name]';
+		$formId = $form['id'];
 		
 		$subject = 'New form submission for: ' . $formName;
 		$addressFrom = ze::setting('email_address_from');
@@ -910,7 +910,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		
-		$body = $this->getFormSummaryHTML($responseId);
+		$body = static::getFormSummaryHTML($responseId);
 		
 		if ($makeURLsNotClickable) {
 			$body = ze\escape::makeURLsNotClickable($body);
@@ -922,7 +922,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
 		
 		zenario_email_template_manager::putBodyInTemplate($body);
-		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
+		
+		$ignoreDebugMode = false;
+		if ($commentBy || $commentForAdmin) {
+			$body = $commentBy . $commentForAdmin . '<hr />' . $body;
+			$ignoreDebugMode = true;
+		}
+		
+		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName, '', '', '', false, $ignoreDebugMode);
 	}
 	
 	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = [], $includeDownloadLinks = 'admin', $referrerContentItemTag = '') {
@@ -1461,7 +1468,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		ze\module::sendSignal('eventFormFieldValueDeleted', [$valueId]);
 	}
 	
-	private function getFormRepeatRows($formId) {
+	public static function getFormRepeatRows($formId, $instanceId = '', $formPageHash = '') {
 		$repeatRows = [];
 		$sql = '
 			SELECT f.id, f.min_rows, f.max_rows, d.id AS dataset_field_id, IFNULL(f.field_type, d.type) AS type
@@ -1472,7 +1479,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			AND (f.field_type = "repeat_start" OR d.type = "repeat_start")';
 		$result = ze\sql::select($sql);
 		while ($field = ze\sql::fetchAssoc($result)) {
-			$repeatRows[$field['id']] = $this->loadRepeatRows($field);
+			$repeatRows[$field['id']] = static::loadRepeatRows($field, $instanceId, $formPageHash);
 		}
 		return $repeatRows;
 	}
@@ -1541,9 +1548,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	private function getFormFields($formId) {
-		$repeatRows = $this->getFormRepeatRows($formId);
-		return static::getFormFieldsStatic($formId, $repeatRows);
+	public static function getFormFields($formId, $loadFromResponseId = false, $instanceId = '', $formPageHash = '') {
+		$repeatRows = static::getFormRepeatRows($formId, $instanceId, $formPageHash);
+		return static::getFormFieldsStatic($formId, $repeatRows, $loadFromResponseId);
 	}
 	
 	public static function getFormFieldsStatic($formId, $repeatRows = [], $loadFromResponseId = false, $loadFromPartialResponseId = false, $fieldId = false, $codeName = false) {
@@ -1963,7 +1970,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$data[$fieldId] = $this->getFieldCurrentValue($fieldId);
 			}
 			
-			$repeatRows = $this->getFormRepeatRows($this->form['id']);
+			$repeatRows = static::getFormRepeatRows($this->form['id'], $this->instanceId, $this->formPageHash);
 			$html .= static::getFormSummaryHTML(false, $this->form['id'], $data, $repeatRows, 'admin', $referrerContentItemTag);
 			
 			if ($this->form['summary_page_lower_text']) {
@@ -3283,7 +3290,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//There is also the option to externaly load a value with a post request
-		$mergeName = $this->getFormFieldMergeName($field);
+		$mergeName = static::getFormFieldMergeName($field);
 		if (!empty($_POST['preload_from_post']) && $mergeName && isset($_POST[$mergeName])) {
 			$value = $_POST[$mergeName];
 		}
@@ -3513,13 +3520,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	private function loadRepeatRows($repeatStartField) {
+	public static function loadRepeatRows($repeatStartField, $instanceId = '', $formPageHash = '') {
 		$fieldId = $repeatStartField['id'];
 		$fieldName = static::getFieldName($fieldId, static::getFieldCustomCodeName($fieldId) ?: false);
 		if (isset($_POST[$fieldName])) {
 			$rows = explode(',', $_POST[$fieldName]);
-		} elseif (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
-			$rows = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
+		} elseif (isset($_SESSION['custom_form_data'][$instanceId][$formPageHash]['data'][$fieldId])) {
+			$rows = $_SESSION['custom_form_data'][$instanceId][$formPageHash]['data'][$fieldId];
 		} elseif ($repeatStartField['dataset_field_id']) {
 			$datasetStoredValue = ze\dataset::fieldValue($this->dataset, $repeatStartField['dataset_field_id'], $this->userId);
 			$rows = static::getFieldValueFromStored($repeatStartField, $datasetStoredValue);
@@ -3544,7 +3551,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Save new rows here since this function runs before savePageData
-		$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $rows;
+		$_SESSION['custom_form_data'][$instanceId][$formPageHash]['data'][$fieldId] = $rows;
 		
 		return $rows;
 	}
@@ -4307,21 +4314,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($sendEmailToUser) {
 				$startLine = '<p>Dear user,</p>';
 				$startLine .= '<p>The form was submitted from '.$url.' with the following data:</p>';
-				$userEmailMergeFields = $this->getTemplateEmailMergeFields($userId);
+				$userEmailMergeFields = static::getTemplateEmailMergeFields($userId, $this->fields);
 				$emails = [];
 				if ($this->form['send_email_to_logged_in_user'] && $userId) {
 					$email = ze\row::get('users', 'email', $userId);
 					if ($email) {
-						if ($this->form['user_email_use_template_for_logged_in_user']==1) {
+						if ($this->form['user_email_use_template_for_logged_in_user'] == 1) {
 							if ($this->form['user_email_template_logged_in_user']) {
 								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_logged_in_user'], $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, false, false, $makeURLsNotClickableUser);
 							}
 						}
-						elseif($this->form['user_email_use_template_for_logged_in_user']==2) {
-							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
+						elseif($this->form['user_email_use_template_for_logged_in_user'] == 2) {
+							static::sendVisibleFieldsFormEmail($this->form, $startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
 						}
 						else {
-							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, [], false, false, false, $makeURLsNotClickableUser, $this->referrerContentItemTag);
+							static::sendUnformattedFormEmail($this->form, $this->fields, $startLine, $email, $userEmailMergeFields, [], false, false, false, $makeURLsNotClickableUser, $this->referrerContentItemTag);
 						}
 					}
 				}
@@ -4329,17 +4336,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$email = $this->fields[$this->form['user_email_field']]['value'];
 					
 					if ($email) {
-						if ($this->form['user_email_use_template_for_email_from_field']==1) {
+						if ($this->form['user_email_use_template_for_email_from_field'] == 1) {
 							if ($this->form['user_email_template_from_field']) {
-								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_from_field'], $userEmailMergeFields, [], [], false, false, false, $makeURLsNotClickableUser);
+								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_from_field'], $userEmailMergeFields, [], [], $disableHTMLEscaping = true, false, false, $makeURLsNotClickableUser);
 								
 							}
 						}
-						elseif($this->form['user_email_use_template_for_email_from_field']==2) {
-							$this->sendVisibleFieldsFormEmail($startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
+						elseif($this->form['user_email_use_template_for_email_from_field'] == 2) {
+							static::sendVisibleFieldsFormEmail($this->form, $startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
 						}
 						else {
-							$this->sendUnformattedFormEmail($startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, $makeURLsNotClickableUser, $this->referrerContentItemTag);
+							static::sendUnformattedFormEmail($this->form, $this->fields, $startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, $makeURLsNotClickableUser, $this->referrerContentItemTag);
 						}
 						
 					}
@@ -4350,91 +4357,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//If there is a condition, make sure the email is only sent if the correct
 			//checkbox is selected.
 			if ($sendEmailToAdmin) {
-				$conditionFieldId = $this->form['send_email_to_admin_condition_field'];
-				print($conditionFieldId);
-				if ($this->form['send_email_to_admin_condition'] == 'always_send'
-					|| ($this->form['send_email_to_admin_condition'] == 'send_on_condition'
-						&& $conditionFieldId
-						&& $this->fields[$conditionFieldId]['value'] === true
-						)
-				) {
-					$sendOrganizerLink = $allowVisitorUploadedAttachments = true;
-					if ($this->form['admin_email_use_template'] && $this->form['admin_email_template']) {
-						$template = ze\row::get('email_templates', ['when_sending_attachments', 'allow_visitor_uploaded_attachments'], ['code' => $this->form['admin_email_template']]);
-						if ($template['when_sending_attachments'] == 'send_organizer_link') {
-							$sendOrganizerLink = 'admin';
-						} elseif ($template['when_sending_attachments'] == 'send_actual_file') {
-							$sendOrganizerLink = false;
-						}
-						
-						if (!$template['allow_visitor_uploaded_attachments']) {
-							$allowVisitorUploadedAttachments = false;
-							$sendOrganizerLink = false;
-						}
-					}
-					
-					$adminEmailMergeFields = $this->getTemplateEmailMergeFields($userId, true, $sendOrganizerLink);
-				
-					//Set reply to address and name
-					$replyToEmail = false;
-					$replyToName = false;
-					if ($this->form['reply_to'] && $this->form['reply_to_email_field'] && isset($this->fields[$this->form['reply_to_email_field']])) {
-						$replyToEmail = $this->fields[$this->form['reply_to_email_field']]['value'];
-						$replyToName = '';
-						if (isset($this->fields[$this->form['reply_to_first_name']])) {
-							$replyToName .= $this->fields[$this->form['reply_to_first_name']]['value'];
-						}
-						if (isset($this->fields[$this->form['reply_to_last_name']])) {
-							$replyToName .= ' ' . $this->fields[$this->form['reply_to_last_name']]['value'];
-						}
-						if (!$replyToName) {
-							$replyToName = $replyToEmail;
-						}
-					}
-				
-					//If the form uses an email template, and the template is set to send form attachments to admins...
-					$allowVisitorUploadedAttachments = true;
-					if ($this->form['admin_email_use_template']) {
-						$allowVisitorUploadedAttachments = ze\row::get('email_templates', 'allow_visitor_uploaded_attachments', ['code' => $this->form['admin_email_template']]);
-					}
-					
-					$attachments = [];
-					//... or the site setting for sending attachments is enabled, add any attachments submitted with this form.
-					if ($allowVisitorUploadedAttachments) {
-						foreach ($this->fields as $fieldId => $field) {
-							switch ($field['type']) {
-								case 'attachment':
-									if ($field['value']) {
-										$attachments[] = $field['value'];
-									}
-									break;
-								case 'file_picker':
-								case 'document_upload':
-									foreach ($field['value'] as $fileId => $file) {
-										$attachments[] = $file['path'];
-									}
-									break;
-							}
-						}
-					}
-					
-		
-			
-					if ($this->form['admin_email_use_template']==1 && $this->form['admin_email_template']) {
-						zenario_email_template_manager::sendEmailsUsingTemplate($this->form['admin_email_addresses'], $this->form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName, $makeURLsNotClickableAdmin);
-					}
-					elseif($this->form['admin_email_use_template']==2) {
-						$startLine = '<p>Dear admin,<p>';
-						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
-						
-						$this->sendVisibleFieldsFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields,$responseId, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin);
-					}
-					else {
-						$startLine = 'Dear admin,';
-						$startLine .= '<p>The form "' . htmlspecialchars($this->form['name']) . '" (form ID '.htmlspecialchars($this->form['id']).') was submitted from '. $url .' with the following data:</p>';
-						$this->sendUnformattedFormEmail($startLine, $this->form['admin_email_addresses'], $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin, $this->referrerContentItemTag);
-					}
-				}
+				static::sendEmailResponseToAdmin($responseId, $this->form, $userId, $this->fields, $url, $makeURLsNotClickableAdmin, $commentForAdmin = '', $commentAuthorAdminId = 0, $recipientEmailAddress = '', $this->referrerContentItemTag);
 			}
 		}
 		
@@ -4451,7 +4374,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			ze\module::sendSignal(
 				'eventUserFormSubmitted', 
 				[
-					'data' => $this->getTemplateEmailMergeFields($userId),
+					'data' => static::getTemplateEmailMergeFields($userId, $this->fields, $this->parentNest),
 					'form' => $this->form,
 					'fieldIdValueLink' => $fieldIdValueLink,
 					'responseId' => $responseId
@@ -4496,31 +4419,141 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	private function getFormFieldMergeName($field) {
+	public static function sendEmailResponseToAdmin($responseId, $form, $userId, $formFields, $url, $makeURLsNotClickableAdmin, $commentForAdmin = '', $commentAuthorAdminId = 0, $recipientEmailAddress = '', $referrerContentItemTag = '', $ignoreConditionsAndAlwaysSend = false, $parentNest = false) {
+		$conditionFieldId = $form['send_email_to_admin_condition_field'];
+		print($conditionFieldId);
+		if ($form['send_email_to_admin_condition'] == 'always_send'
+			|| ($form['send_email_to_admin_condition'] == 'send_on_condition'
+				&& $conditionFieldId
+				&& isset($formFields[$conditionFieldId]['value'])
+				&& $formFields[$conditionFieldId]['value'] === true
+				)
+			|| $ignoreConditionsAndAlwaysSend
+		) {
+			$sendOrganizerLink = $allowVisitorUploadedAttachments = true;
+			if ($form['admin_email_use_template'] && $form['admin_email_template']) {
+				$template = ze\row::get('email_templates', ['when_sending_attachments', 'allow_visitor_uploaded_attachments'], ['code' => $form['admin_email_template']]);
+				if ($template['when_sending_attachments'] == 'send_organizer_link') {
+					$sendOrganizerLink = 'admin';
+				} elseif ($template['when_sending_attachments'] == 'send_actual_file') {
+					$sendOrganizerLink = false;
+				}
+				
+				if (!$template['allow_visitor_uploaded_attachments']) {
+					$allowVisitorUploadedAttachments = false;
+					$sendOrganizerLink = false;
+				}
+			}
+			
+			$adminEmailMergeFields = static::getTemplateEmailMergeFields($userId, $formFields, $parentNest, true, $sendOrganizerLink);
+		
+			//Set reply to address and name
+			$replyToEmail = false;
+			$replyToName = false;
+			if ($form['reply_to'] && $form['reply_to_email_field'] && isset($formFields[$form['reply_to_email_field']])) {
+				$replyToEmail = $formFields[$form['reply_to_email_field']]['value'];
+				$replyToName = '';
+				if (isset($formFields[$form['reply_to_first_name']])) {
+					$replyToName .= $formFields[$form['reply_to_first_name']]['value'];
+				}
+				if (isset($formFields[$form['reply_to_last_name']])) {
+					$replyToName .= ' ' . $formFields[$form['reply_to_last_name']]['value'];
+				}
+				if (!$replyToName) {
+					$replyToName = $replyToEmail;
+				}
+			}
+		
+			//If the form uses an email template, and the template is set to send form attachments to admins...
+			$allowVisitorUploadedAttachments = true;
+			if ($form['admin_email_use_template']) {
+				$allowVisitorUploadedAttachments = ze\row::get('email_templates', 'allow_visitor_uploaded_attachments', ['code' => $form['admin_email_template']]);
+			}
+			
+			$attachments = [];
+			//... or the site setting for sending attachments is enabled, add any attachments submitted with this form.
+			if ($allowVisitorUploadedAttachments) {
+				foreach ($formFields as $fieldId => $field) {
+					switch ($field['type']) {
+						case 'attachment':
+							if ($field['value']) {
+								$attachments[] = $field['value'];
+							}
+							break;
+						case 'file_picker':
+						case 'document_upload':
+							foreach ($field['value'] as $fileId => $file) {
+								$attachments[] = $file['path'];
+							}
+							break;
+					}
+				}
+			}
+			
+			$ignoreDebugMode = false;
+			$commentBy = '';
+			if ($commentAuthorAdminId) {
+				$adminName = ze\admin::formatName($commentAuthorAdminId);
+				
+				if ($commentForAdmin) {
+					$commentBy = ze\lang::phrase('Comment by [[admin]]:', ['admin' => $adminName]);
+				} else {
+					$commentBy = ze\lang::phrase('Sent by [[admin]]', ['admin' => $adminName]);
+				}
+				$ignoreDebugMode = true;
+			}
+			
+			if ($recipientEmailAddress) {
+				$adminEmailAddresses = $recipientEmailAddress;
+			} else {
+				$adminEmailAddresses = $form['admin_email_addresses'];
+			}
+			
+			if ($form['admin_email_use_template'] == 1 && $form['admin_email_template']) {
+				zenario_email_template_manager::sendEmailsUsingTemplate($adminEmailAddresses, $form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName, $makeURLsNotClickableAdmin, $ignoreDebugMode, null, $commentBy, $commentForAdmin);
+			
+			} elseif ($form['admin_email_use_template'] == 2) {
+				$startLine = '';
+				
+				$startLine .= '<p>Dear admin,<p>';
+				$startLine .= '<p>The form "' . htmlspecialchars($form['name']) . '" (form ID ' . htmlspecialchars($form['id']) . ') was submitted from ' . $url . ' with the following data:</p>';
+				
+				static::sendVisibleFieldsFormEmail($form, $startLine, $adminEmailAddresses, $adminEmailMergeFields,$responseId, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin, $commentBy, $commentForAdmin);
+			} else {
+				$startLine = '';
+				
+				$startLine .= 'Dear admin,';
+				$startLine .= '<p>The form "' . htmlspecialchars($form['name']) . '" (form ID '.htmlspecialchars($form['id']) . ') was submitted from ' . $url . ' with the following data:</p>';
+				static::sendUnformattedFormEmail($form, $formFields, $startLine, $adminEmailAddresses, $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin, $referrerContentItemTag, $commentBy, $commentForAdmin);
+			}
+		}
+	}
+	
+	public static function getFormFieldMergeName($field) {
 		return $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $field['id'];
 	}
 	
-	private function getTemplateEmailMergeFields($userId, $toAdmin = false, $sendOrganizerLink = false) {
+	public static function getTemplateEmailMergeFields($userId, $formFields, $parentNest = false, $toAdmin = false, $sendOrganizerLink = false) {
 		$mergeFields = [];
 		//User merge fields
 		if ($userId) {
 			$user = ze\user::details($userId);
-			$mergeFields['salutation'] = htmlspecialchars($user['salutation']);
-			$mergeFields['first_name'] = htmlspecialchars($user['first_name']);
-			$mergeFields['last_name'] = htmlspecialchars($user['last_name']);
+			$mergeFields['salutation'] = htmlspecialchars($user['salutation'] ?: '');
+			$mergeFields['first_name'] = htmlspecialchars($user['first_name'] ?: '');
+			$mergeFields['last_name'] = htmlspecialchars($user['last_name'] ?: '');
 			$mergeFields['user_id'] = (int) $userId;
 		}
 		
 		//Data merge fields (after user merge fields so form merge fields are not overridden)
-		foreach ($this->fields as $fieldId => $field) {
+		foreach ($formFields as $fieldId => $field) {
 			
-			$column = $this->getFormFieldMergeName($field);
+			$column = static::getFormFieldMergeName($field);
 			if (!isset($field['value'])) {
 				//Account for spacers and subheading fields (they have no value)
 				$field['value'] = '';
 			}
 			
-			$displayHTML = htmlspecialchars(static::getFieldDisplayValue($field, $field['value'], $html = true, $sendOrganizerLink));
+			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $sendOrganizerLink);
 			
 			if ($field['split_first_name_last_name']) {
 				$mergeFields['first_name'] = htmlspecialchars(trim(substr($field['value'], 0, strpos($field['value'], ' '))));
@@ -4543,10 +4576,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$currentMenuNode = ze\menu::getFromContentItem(ze::$cID, ze::$cType);
 		if ($currentMenuNode && isset($currentMenuNode['mID']) && !empty($currentMenuNode['mID'])) {
 			$menuNodes = static::drawMenu($currentMenuNode['mID'], ze::$cID, ze::$cType);
-			if ($this->parentNest) {
-				$backs = $this->parentNest->getBackLinks();
+			if ($parentNest) {
+				$backs = $parentNest->getBackLinks();
 				foreach ($backs as $state => $back) {
-					$menuNodes[] = $this->parentNest->formatTitleText(ze\lang::phrase($back['slide']['slide_label'], [], 'zenario_breadcrumbs'));
+					$menuNodes[] = $parentNest->formatTitleText(ze\lang::phrase($back['slide']['slide_label'], [], 'zenario_breadcrumbs'));
 				}
 			}
 		}
@@ -4563,21 +4596,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $mergeFields;
 	}
 	
-	private function sendUnformattedFormEmail($startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false, $referrerContentItemTag = '') {
-		$formName = $this->form['name'] ? trim($this->form['name']) : '[blank name]';
+	public static function sendUnformattedFormEmail($form, $fields, $startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false, $referrerContentItemTag = '', $commentBy = '', $commentForAdmin = '') {
+		$formName = $form['name'] ? trim($form['name']) : '[blank name]';
 		$subject = 'New form submission for: ' . $formName;
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
 		
 		$body = '';
 		
-		if ($this->form['send_email_to_admin'] && !$this->form['admin_email_use_template']) {
+		if ($form['send_email_to_admin'] && !$form['admin_email_use_template']) {
 			if (!empty($mergeFields['breadcrumbs'])) {
 				$body .= '<p>Page submitted from: ' . htmlspecialchars($mergeFields['breadcrumbs']) . '</p>';
 			}
 		}
 		
-		if ($this->form['handle_referrer_content_item']) {
+		if ($form['handle_referrer_content_item']) {
 			$referrerFields = self::getReferrerFieldsArray();
 		
 			if ($referrerContentItemTag) {
@@ -4585,37 +4618,37 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$referrerContentItemData = self::getReferrerFieldsValues($referrerContentItemTag);
 			
 				foreach ($referrerFields as $referrerDbField => $referrerFieldName) {
-					if ($this->form[$referrerDbField]) {
+					if ($form[$referrerDbField]) {
 						$formReferrerDetails[$referrerDbField] = ['referrer_field' => $referrerDbField, 'value' => $referrerContentItemData[$referrerFieldName]];
 					}
 				}
 			}
 		
 			if (!empty($formReferrerDetails)) {
-				$body .= '<p>' . $this->form['referrer_content_item_summary_block_title'] . '</p>';
+				$body .= '<p>' . $form['referrer_content_item_summary_block_title'] . '</p>';
 			
 				foreach ($formReferrerDetails as $referrerDataRow) {
 					switch ($referrerDataRow['referrer_field']) {
 						case 'handle_referrer_content_item_title':
-							$label = $this->form['referrer_content_item_title_label'];
+							$label = $form['referrer_content_item_title_label'];
 							break;
 						case 'handle_referrer_content_item_description':
-							$label = $this->form['referrer_content_item_description_label'];
+							$label = $form['referrer_content_item_description_label'];
 							break;
 						case 'handle_referrer_content_item_release_date':
-							$label = $this->form['referrer_content_item_release_date_label'];
+							$label = $form['referrer_content_item_release_date_label'];
 							break;
 						case 'handle_referrer_content_item_reference':
-							$label = $this->form['referrer_content_item_reference_label'];
+							$label = $form['referrer_content_item_reference_label'];
 							break;
 						case 'handle_referrer_content_item_deadline':
-							$label = $this->form['referrer_content_item_deadline_label'];
+							$label = $form['referrer_content_item_deadline_label'];
 							break;
 						case 'handle_referrer_content_item_alias':
-							$label = $this->form['referrer_content_item_alias_label'];
+							$label = $form['referrer_content_item_alias_label'];
 							break;
 						case 'handle_referrer_content_item_tag':
-							$label = $this->form['referrer_content_item_tag_label'];
+							$label = $form['referrer_content_item_tag_label'];
 							break;
 						default:
 							$label = '';
@@ -4625,11 +4658,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$body .= '<p>' . htmlspecialchars(trim($label, " \t\n\r\0\x0B:")) . ': ' . $referrerDataRow['value'] . '</p>';
 				}
 				
-				$body .= '<p>' . $this->phrase('Submission details') . '</p>';
+				$body .= '<p>' . ze\lang::phrase('Submission details') . '</p>';
 			}
 		}
 		
-		foreach ($this->fields as $fieldId => $field) {
+		foreach ($fields as $fieldId => $field) {
 			switch ($field['type']) {
 				case 'repeat_start':
 				case 'repeat_end':
@@ -4641,6 +4674,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			
 			$includeDownloadLinks = $adminDownloadLinks ? 'admin' : false;
+			if (!isset($field['value'])) {
+				$field['value'] = '';
+			}
 			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $includeDownloadLinks);
 			if ($field['type'] != 'attachment') {
 				if ($field['type'] == 'textarea' && $displayHTML) {
@@ -4665,7 +4701,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
 		
 		zenario_email_template_manager::putBodyInTemplate($body);
-		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName);
+		
+		$ignoreDebugMode = false;
+		if ($commentBy || $commentForAdmin) {
+			$body = $commentBy . $commentForAdmin . '<hr />' . $body;
+			$ignoreDebugMode = true;
+		}
+		
+		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName, '', '', '', false, $ignoreDebugMode);
 	}
 	
 	

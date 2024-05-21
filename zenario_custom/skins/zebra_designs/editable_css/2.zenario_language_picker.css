@@ -23,7 +23,7 @@
 }
 
 .zenario_language_picker .lang_pick_box .lang_choices .lang_flag span {
-	display:none;
+	font-size:0;
 }
 
 .zenario_language_picker .lang_pick_box .lang_choices .lang_flag > a {

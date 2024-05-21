@@ -71,6 +71,7 @@ zenario_import:
                         required: Please select an import type.
                 next:
                     value: Next
+                    css_class: zenario_gp_button
                     type: submit
                     ord: 999999
         headers:
@@ -172,10 +173,12 @@ zenario_import:
                 
                 previous:
                     value: Previous
+                    css_class: zenario_gp_button
                     type: submit
                     ord: 999998
                 next:
                     value: Next
+                    css_class: zenario_gp_button
                     type: submit
                     ord: 999999
         preview:
@@ -202,10 +205,12 @@ zenario_import:
                     readonly: true
                 previous:
                     value: Previous
+                    css_class: zenario_gp_button
                     type: submit
                     ord: 999998
                 next:
                     value: Next
+                    css_class: zenario_gp_button
                     type: submit
                     ord: 999999
         actions:
@@ -272,5 +277,6 @@ zenario_import:
                             <br/><br/>
                 previous:
                     value: Previous
+                    css_class: zenario_gp_button
                     type: submit
                     ord: 999999

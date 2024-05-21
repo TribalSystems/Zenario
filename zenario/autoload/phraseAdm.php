@@ -50,7 +50,7 @@ class phraseAdm {
 		$t = '';
 		$s = '';
 		foreach ($a as $v) {
-			if ($v = \ze\admin::nPhrase($v[0], $v[1], $v[2], ['n' => $v[2]], '')) {
+			if ($v = \ze\admin::nzPhrase('', $v[0], $v[1], $v[2], ['n' => $v[2]])) {
 				$t = $v. $s. $t;
 			
 				if ($s === '') {

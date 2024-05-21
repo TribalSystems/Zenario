@@ -19,6 +19,39 @@ plugin_settings:
                                 Screen Name (requires the "user_use_screen_name" site
                                 setting enabled)
                     value: Email
+                show_title:
+                    plugin_setting:
+                        name: show_title
+                    type: checkbox
+                    value: true
+                    label: 'Show title'
+                    redraw_onchange: true
+                title:
+                    indent: 1
+                    plugin_setting:
+                        name: title
+                    type: text
+                    label: 'Enter title:'
+                    value: 'Sign in'
+                    visible_if: lib.value('show_title')
+                    validation:
+                        required_if_not_hidden: 'Please enter the title.'
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags'
+                    type: select
+                    values:
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h2
+                    visible_if: lib.value('show_title')
+                    same_row: true
                 use_captcha:
                     plugin_setting:
                         name: use_captcha

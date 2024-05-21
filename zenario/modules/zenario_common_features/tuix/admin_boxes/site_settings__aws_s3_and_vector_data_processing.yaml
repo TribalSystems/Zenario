@@ -1,0 +1,102 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Editing settings for AWS S3 and Vector data processing
+    setting_group: aws_s3_and_vector_data_processing
+    tabs:
+        awss3_file_downloads:
+            label: AWS S3
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>Zenario supports integration with AWS, for s3 document storage and text extraction using Amazon Textract.</p>
+                            <p>To use AWS, you will need an AWS account and an IAM programmatic user account with access keys.</p>
+                enable_aws_support:
+                    site_setting:
+                        name: enable_aws_support
+                    label: 'Enable support for AWS'
+                    type: checkbox
+                    redraw_onchange: true
+                    
+                aws_s3_region:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_region
+                    label: 'Region:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    validation:
+                        required_if_not_hidden: Please enter a region.
+                    side_note: 'Enter AWS region, e.g. "eu-west-2"'
+                aws_s3_key_id:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_key_id
+                    label: 'AWS access key ID:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    validation:
+                        required_if_not_hidden: Please enter key ID.
+                aws_s3_secret_key:
+                    indent: 1
+                    site_setting:
+                        name: aws_s3_secret_key
+                    label: 'AWS secret access key:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    validation:
+                        required_if_not_hidden: Please enter access key.
+                
+                textract_description:
+                    indent: 1
+                    full_width: true
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    snippet:
+                        html: |
+                            <p>
+                                You can use Amazon Textract to extract text from PDF and image documents.
+                            </p>
+                enable_aws_textract:
+                    indent: 1
+                    site_setting:
+                        name: enable_aws_textract
+                    type: checkbox
+                    label: 'Extract text from documents using Amazon Textract'
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    redraw_onchange: true
+                aws_textract_extract_from_pdf:
+                    indent: 2
+                    site_setting:
+                        name: aws_textract_extract_from_pdf
+                    type: checkbox
+                    label: 'Extract text from PDFs (with or without text layer)'
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('enable_aws_textract')
+                aws_textract_extract_from_jpg_and_png:
+                    indent: 2
+                    site_setting:
+                        name: aws_textract_extract_from_jpg_and_png
+                    type: checkbox
+                    label: 'Extract text JPGs and PNGs'
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('enable_aws_textract')
+                aws_textract_temporary_storage_bucket:
+                    indent: 2
+                    site_setting:
+                        name: aws_textract_temporary_storage_bucket
+                    label: 'S3 bucket name for Textract temporary storage:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('enable_aws_textract')
+                    validation:
+                        required_if_not_hidden: 'Please enter the temporary storage bucket.'

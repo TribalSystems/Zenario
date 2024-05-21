@@ -301,25 +301,21 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			}
 		}
 
+		switch ($this->setting('heading')) {
+			case 'show_heading':
+				$this->data['Title'] = $this->phrase($this->setting('heading_text'));
+				
+				break;
+			case 'show_period_name':
+				$this->data['Title'] = $this->getPeriodName($periodName, $periodShift);
+				break;
+			case 'dont_show':
+			default:
+				$this->data['Title'] = false;
+				break;
+		}
+		
 		if ($eventRows) {
-			switch ($this->setting('heading')) {
-				case 'show_heading':
-					$heading_text = $this->setting('heading_text');
-					if ($this->setting('use_phrases')) {
-						$this->replacePhraseCodesInString($heading_text);
-					}
-					$this->data['Title'] = $heading_text;
-					
-					break;
-				case 'show_period_name':
-					$this->data['Title'] = $this->getPeriodName($periodName, $periodShift);
-					break;
-				case 'dont_show':
-				default:
-					$this->data['Title'] = false;
-					break;
-			}
-
 			if ($this->setting('show_pagination') && count($pages) > 1) {
 				$this->pagination('pagination_style', $this->page, $pages, $this->data['Pagination']);
 			}

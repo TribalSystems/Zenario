@@ -95,7 +95,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 					}
 
 					if ($this->setting('show_writer_profile')) {
-						$this->mergeFields['Writer_profile'] = ['value' => htmlspecialchars($writerArray['profile']), 'html_tag' => $this->setting('writer_profile_label_html_tag'), 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
+						$this->mergeFields['Writer_profile'] = ['value' => $writerArray['profile'], 'html_tag' => $this->setting('writer_profile_label_html_tag'), 'label' => $this->phrase('Writer\'s profile'), 'class' => 'writer_profile'];
 						$this->showSections['show_writer_profile'] = true;
 					}
 				

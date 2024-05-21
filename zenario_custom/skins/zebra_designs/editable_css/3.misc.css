@@ -102,6 +102,43 @@ a.nice_button:hover,
 	color: inherit;
 }
 
+/* Format class defined on description.yaml : Block highlight
+--------------------------------------------------------------------------------------------------*/
+.zenario_slot .div_highlight {
+	padding:15px;
+	margin-bottom:15px;
+	background:#2A46CE;
+	color:#FFF;
+}
+
+/* Format class defined on description.yaml : Paragraph tip info
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_slot p.tip_info {
+	position:relative;
+	padding:15px 15px 15px 55px;
+	background:#DEBC31;
+}
+
+.zenario_slot p.tip_info,
+.zenario_slot p.tip_info a {
+	color:#FFF;
+}
+
+.zenario_slot p.tip_info a {
+	text-decoration:underline;
+}
+
+.zenario_slot p.tip_info:before {    
+	font-family: "FontAwesome";
+    content: "\f05a";
+    padding-right: 10px;
+    font-size: 30px;
+    position: absolute;
+    left: 15px;
+    top: 0;
+}
+
 /* Aligment and colors options
 --------------------------------------------------------------------------------------------------*/
 
@@ -355,6 +392,37 @@ a.link_external:hover::after {
 
 .extranet_wrap .extranet_close_account_button:hover {
 	color:#FFF;
+}
+
+/* Password field with eye icon
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin .password_field_with_eye {
+	position:relative;
+}
+
+.zenario_skin .password_field_with_eye input {
+	padding-right:40px;
+}
+
+.zenario_skin .password_field_with_eye .eye_icon {
+	display: inline-block;
+	position:absolute;
+	z-index:1;
+	top: 50%;
+  	transform: translateY(-50%);
+	left:calc(100% - 30px);
+	transition:all 0.2s ease-in-out;
+	cursor:pointer;
+}
+
+.zenario_skin .password_field_with_eye .eye_icon:hover {
+	color:#000;
+}
+
+.zenario_skin .password_field_with_eye input,
+.zenario_skin .password_field_with_eye input[type="password"] {
+	width:calc(100% - 12px - 40px);
 }
 
 /* Image Credits, banner, MIC plugin, meta data

@@ -379,20 +379,6 @@ class welcome {
 	
 		return $themes;
 	}
-	
-	//A list of some common mime types, including images. Used in the installer where we don't have database access
-	public static function commonMimeType($type) {
-		$mimeTypes = [
-			'gif' => 'image/gif',
-			'jpe' => 'image/jpeg',
-			'jpeg' => 'image/jpeg',
-			'jpg' => 'image/jpeg',
-			'png' => 'image/png',
-			'svg' => 'image/svg+xml'
-		];
-	
-		return $mimeTypes[$type] ?? 'application/octet-stream';
-	}
 
 	public static function systemRequirementsAJAX(&$source, &$tags, &$fields, &$values, $changes, $isDiagnosticsPage = false) {
 	
@@ -718,7 +704,7 @@ class welcome {
 				$fields['0/os_1']['row_class'] = $valid;
 			}
 
-			if (!\ze\file::createPpdfFirstPageScreenshotPng(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+			if (!\ze\file::createPdfFirstPageScreenshotPng(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tghostscript~k{"id"%3A"external_programs"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
@@ -821,7 +807,25 @@ class welcome {
 			}	
 		
 			$extract = '';
-			if (!(\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
+			//If AWS Textract is enabled, do not attempt to check if pdftotext is working.
+			$awsTextractIsEnabled = (\ze::setting('enable_aws_support') && \ze::setting('enable_aws_textract') && \ze::setting('aws_textract_extract_from_pdf'));
+			if ($awsTextractIsEnabled) {
+				$fields['0/os_5']['row_class'] = $valid;
+				$fields['0/os_5']['hidden'] = true;
+			} elseif (!\ze::setting('pdftotext_path')) {
+				//Pdftotext is not in use, do not display a warning
+				$fields['0/os_5']['row_class'] = $valid;
+				
+				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpdftotext~k{"id"%3A"external_programs"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				$otherServerProgramsString = 'PDF-To-Text<br><small>The program pdftotext is not in use.';
+				$pdfToTextOtherServerProgramsSiteSettingLink = '<br />Please go to [[link_start]]<em>Other server programs</em>[[link_end]] in Configuration->Site Settings to enable text scanning from PDFs.</small>';
+				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase(
+					$otherServerProgramsString . $pdfToTextOtherServerProgramsSiteSettingLink,
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
+				);
+			} elseif (!(\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpdftotext~k{"id"%3A"external_programs"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
@@ -837,6 +841,7 @@ class welcome {
 			} else {
 				$fields['0/os_5']['row_class'] = $valid;
 			}
+			
 			$optipng = \ze\server::programPathForExec(\ze::setting('optipng_path'), 'optipng', true);
 			$advpng = \ze\server::programPathForExec(\ze::setting('advpng_path'), 'advpng', true);
 			if ($optipng == NULL || $advpng ==NULL) {
@@ -927,10 +932,10 @@ class welcome {
 			$fields['0/gd_3']['row_class'] = $invalid;
 			$fields['0/gd_4']['row_class'] = $invalid;
 			
-			\ze\lang::applyMergeFields($fields['0/mb_1']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/gd_1']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 			\ze\lang::applyMergeFields($fields['0/gd_2']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
-			\ze\lang::applyMergeFields($fields['0/mb_3']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
-			\ze\lang::applyMergeFields($fields['0/mb_4']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/gd_3']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
+			\ze\lang::applyMergeFields($fields['0/gd_4']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
 		} else {
 			$fields['0/gd_1']['row_class'] = $valid;
 			\ze\lang::applyMergeFields($fields['0/gd_1']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
@@ -2650,18 +2655,22 @@ class welcome {
 				\zenario_email_template_manager::putBodyInTemplate($message);
 			}
 			
-			$emailSent = \ze\server::sendEmailSimple(
-				$subject, $message, $isHTML = true,
-				//Security codes should always be sent to the intended recipient even if debug mode is on.
-				$ignoreDebugMode = true,
-				$addressTo = $admin['email'], $nameTo = $merge['NAME'],
-				$addressFrom = false, $nameFrom = $source['email_templates'][$emailTemplate]['from']
+			$addressToOverriddenBy = false;
+			
+			$emailSent = \ze\server::sendEmailAdvancedAndShowErrorMessages(
+				$subject, $message, $admin['email'], $addressToOverriddenBy,
+				$merge['NAME'], $addressFrom = false, $source['email_templates'][$emailTemplate]['from'], 
+				$attachments = [], $attachmentFilenameMappings = [],
+				$precedence = 'bulk', $isHTML = true, $exceptions = false,
+				$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+				$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = true,
+				$showErrorMessage = true
 			);
 		
-			if (!$emailSent) {
+			if (\ze::isError($emailSent)) {
 				$tags['tabs']['security_code']['errors'][] =
 					\ze\admin::phrase('Error! Zenario could not send an email. Please contact your server administrator. 2FA can be disabled if you have access to your zenario_custom/site_description.yaml file.');
-			
+				$tags['tabs']['security_code']['errors'][] = \ze\admin::phrase('Error message: [[error_message]]', ['error_message' => $emailSent->errors['send_email_error']]);
 			} elseif ($resend) {
 				$tags['tabs']['security_code']['notices']['email_resent']['show'] = true;
 			}
@@ -3379,10 +3388,11 @@ class welcome {
 				
 				$fields['0/public_documents']['row_class'] = 'warning';
 				$fields['0/public_documents']['snippet']['html'] =
-					\ze\admin::nPhrase('There is a problem with the public link for [[exampleFile]] and 1 other document. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+					\ze\admin::nzPhrase(
+						'There is a problem with the public link for the document [[exampleFile]]. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						'There is a problem with the public link for [[exampleFile]] and 1 other document. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
 						'There is a problem with the public link for [[exampleFile]] and [[count]] other documents. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
-						abs($errors - 1), $mrg,
-						'There is a problem with the public link for the document [[exampleFile]]. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>'
+						abs($errors - 1), $mrg
 					);
 		
 			} else {
@@ -3403,10 +3413,11 @@ class welcome {
 				$fields['0/public_images']['row_class'] = 'warning';
 				$fields['0/public_images']['hidden'] = false;
 				$fields['0/public_images']['snippet']['html'] =
-					\ze\admin::nPhrase('There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
+					\ze\admin::nzPhrase(
+						'There is a problem with the public link for the document &quot;[[exampleFile]]&quot;. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
 						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other images. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
-						abs($mrg['numMissing'] - 1), $mrg,
-						'There is a problem with the public link for the document &quot;[[exampleFile]]&quot;. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.'
+						abs($mrg['numMissing'] - 1), $mrg
 					);
 				
 				$fields['0/repair_public_images']['hidden'] = false;
@@ -3694,6 +3705,20 @@ class welcome {
 			} else {
 				$fields['0/email_addresses_overridden']['hidden'] = true;
 			}
+		
+			//Show a warning about using the PHP mail function
+			if (!\ze::setting('smtp_specify_server')) {
+				$show_warning = true;
+				$fields['0/email_via_php_mail']['row_class'] = 'warning';
+
+				$mrg = ['link' => htmlspecialchars('organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tsmtp~k{"id"%3A"email"}')];
+				
+
+				$fields['0/email_via_php_mail']['snippet']['html'] =
+					\ze\admin::phrase('Email from this site is being sent using the PHP mail() function, whereas SMTP should be used. <a href="[[link]]" target="_blank"><em>See Email site settings</em></a>.', $mrg);
+			} else {
+				$fields['0/email_via_php_mail']['hidden'] = true;
+			}
 			
 			//Check for missing modules
 			$missingModules = [];
@@ -3821,7 +3846,8 @@ class welcome {
 				$fields['0/plugin_must_be_on_private_page_error']['hidden'] = false;
 				$fields['0/plugin_must_be_on_private_page_error']['row_class'] = 'warning';
 				$fields['0/plugin_must_be_on_private_page_error']['snippet']['html'] = 
-						\ze\admin::nPhrase('This content item is public, but contains one or more plugins which must be on a private page:[[listOfContentItems]]',
+						\ze\admin::nPhrase(
+							'This content item is public, but contains one or more plugins which must be on a private page:[[listOfContentItems]]',
 							'These content items are public, but contain one or more plugins which must be on a private page:[[listOfContentItems]]',
 							count($privatePagesWithPluginsThatMustBeOnPublicPage),
 							['listOfContentItems' => implode('<br>', $privatePagesWithPluginsThatMustBeOnPublicPage)]);
@@ -4143,7 +4169,7 @@ class welcome {
 				$unknownFiles = implode(', ', $unknownFiles);
 				$fields['0/unknown_files_in_zenario_root_directory']['row_class'] = 'warning';
 				$fields['0/unknown_files_in_zenario_root_directory']['snippet']['html'] =
-					\ze\admin::nphrase('There is an unknown file in the Zenario root directory: [[files]]. Please remove this if possible.', 'There are [[count]] unknown files in the Zenario root directory: [[files]]. Please remove them if possible.', $count, ['files' => $unknownFiles]);
+					\ze\admin::nPhrase('There is an unknown file in the Zenario root directory: [[files]]. Please remove this if possible.', 'There are [[count]] unknown files in the Zenario root directory: [[files]]. Please remove them if possible.', $count, ['files' => $unknownFiles]);
 			} else {
 				//If there are no unknown files, hide the warning.
 				$fields['0/unknown_files_in_zenario_root_directory']['hidden'] = true;
@@ -4185,7 +4211,7 @@ class welcome {
 				$fields['0/admin_timeout_not_set_up_correctly']['hidden'] = false;
 				$show_warning = true;
 				
-				$fields['0/admin_timeout_not_set_up_correctly']['snippet']['html'] = \ze\admin::phrase('The session timeout should preferably be between 120 (i.e. 2 minutes) and 21600 (6 hours). Please edit the zenario_siteconfig.php file and set the "SESSION_TIMEOUT" constant to be in this range.');
+				$fields['0/admin_timeout_not_set_up_correctly']['snippet']['html'] = \ze\admin::phrase('The session timeout should be between 120 (2 minutes) and 21600 (6 hours); we recommend setting it to 1800 (30 minutes). Please edit the zenario_siteconfig.php file and set the "SESSION_TIMEOUT" constant to be in this range.');
 			} else {
 				$fields['0/admin_timeout_not_set_up_correctly']['hidden'] = true;
 			}
@@ -4864,7 +4890,7 @@ class welcome {
 		
 		
 		//Handle the case where we have a custom desturl to go back to
-		} elseif ($continueTo == 'default' && !empty($getRequest['desturl']) && $isAdmin) {
+		} elseif ($continueTo == 'default' && !empty($getRequest['desturl'])) {
 			if ($returnChoice) {
 				return false;
 			} else {

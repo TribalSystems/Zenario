@@ -55,9 +55,9 @@ function zenarioPageCacheLogStats($stats) {
 	touch($dir. 'accessed');
 	if (!file_exists($dir. 'from')) {
 		touch($dir. 'from');
-		\ze\cache::chmod($dir. 'to', 0666);
-		\ze\cache::chmod($dir. 'accessed', 0666);
-		\ze\cache::chmod($dir. 'from', 0666);
+		ze\cache::chmod($dir. 'to', 0666);
+		ze\cache::chmod($dir. 'accessed', 0666);
+		ze\cache::chmod($dir. 'from', 0666);
 	}
 	
 	foreach ($stats as $stat) {
@@ -66,7 +66,7 @@ function zenarioPageCacheLogStats($stats) {
 			file_put_contents($dir. $stat, ++$hits);
 		} else {
 			file_put_contents($dir. $stat, 1);
-			\ze\cache::chmod($dir. $stat, 0666);
+			ze\cache::chmod($dir. $stat, 0666);
 		}
 	}
 	
@@ -247,17 +247,16 @@ if ($simpleCookieOptions
 									} else {
 										echo $page;
 									}
-								
-									if (file_exists($chPath. 'show_cache_info')) {
-										echo '
-											<script type="text/javascript">
-												window.zenarioCD.load = ', json_encode(ze::$cacheEnv), ';
-												window.zenarioCD.served_from_cache = true;
-											</script>';
 									
-										echo "\n</body>\n</html>";
+									if (file_exists($chPath. 'show_cache_info')) {
+										$limit_caching_debug_info_by_ip = file_get_contents($chPath. 'show_cache_info');
+										
+										if (ze\cache::shouldSeeDebugInfo($limit_caching_debug_info_by_ip)) {
+											ze\cache::showDebugInfo(true);
+										}
 									}
-								
+									
+									echo "\n</body>\n</html>";
 									exit;
 								}
 							

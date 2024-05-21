@@ -261,7 +261,7 @@ class row {
 	private static function selectInternal(
 		$table, $ids,
 		$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = [],
-		$distinct = false, $returnArrayIndexedBy = false, $addId = false, $storeResult = true
+		$distinct = false, $returnArrayIndexedBy = false, $addId = false, $storeResult = true, $checkCache = true
 	) {
 		
 		$tableName = static::$db->prefix. $table;
@@ -457,7 +457,7 @@ class row {
 	
 		if ($mode == 'delete') {
 			$values = false;
-			if ($affectedRows = static::$db->reviewQueryForChanges($sql, $ids, $values, $table, true)) {
+			if ($checkCache && ($affectedRows = static::$db->reviewQueryForChanges($sql, $ids, $values, $table, true))) {
 				\ze\db::updateDataRevisionNumber();
 			}
 			return $affectedRows;
@@ -566,6 +566,10 @@ class row {
 	
 	public static function setAndMarkNew($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
 		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, true);
+	}
+	
+	public static function cacheFriendlySet($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
+		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, false, true, false);
 	}
 	
 	private static function setInternal(
@@ -739,16 +743,27 @@ class row {
 	public static function insertAndMarkNew($table, $values, $ignore = false, $ignoreMissingColumns = false) {
 		return static::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, true, true);
 	}
-
-
+	
+	public static function cacheFriendlyInsert($table, $values, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
+		return static::setInternal($table, $values, [], $ignore, $ignoreMissingColumns, $markNewThingsInSession, true, false);
+	}
+	
 	public static function update($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
 		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, false, false);
+	}
+	
+	public static function cacheFriendlyUpdate($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
+		return static::setInternal($table, $values, $ids, $ignore, $ignoreMissingColumns, false, false, false);
 	}
 
 
 
 	public static function delete($table, $ids, $multiple = true) {
 		return static::selectInternal($table, $ids, false, false, $multiple, 'delete');
+	}
+	
+	public static function cacheFriendlyDelete($table, $ids, $multiple = true) {
+		return static::selectInternal($table, $ids, false, false, $multiple, 'delete', [], false, false, false, true, true);
 	}
 
 	public static function get($table, $cols, $ids, $orderBy = [], $ignoreMissingColumns = false) {

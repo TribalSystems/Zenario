@@ -90,6 +90,7 @@ class zenario_extranet_change_password extends zenario_extranet {
 				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
 				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
 			];
+			$this->objects['Container_Id'] = $this->containerId;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		

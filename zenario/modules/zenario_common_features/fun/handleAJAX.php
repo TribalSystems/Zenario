@@ -478,7 +478,7 @@ if (ze\priv::check()) {
 				
 				if (!empty($contentItemsWithPluginsInThisSlot)) {
 					echo '<br/><br/>';
-					echo ze\admin::nphrase('[[itemLayerUsage]] has a plugin placed here on the item layer.', '[[itemLayerUsage]] have plugins placed here on the item layer.', $itemLayerUsage['content_items'], $mrg);
+					echo ze\admin::nPhrase('[[itemLayerUsage]] has a plugin placed here on the item layer.', '[[itemLayerUsage]] have plugins placed here on the item layer.', $itemLayerUsage['content_items'], $mrg);
 				}
 				
 				if ($placementOnLayout) {
@@ -576,18 +576,20 @@ if (ze\priv::check()) {
 			if ($placement || ze::get('movePlugin')) {
 				echo '<br/><br/>';
 				echo
-					ze\admin::nPhrase('This will affect [[layouts]] layout.',
+					ze\admin::nzPhrase(
+						'This will not affect any layout.',
+						'This will affect [[layouts]] layout.',
 						'This will affect [[layouts]] layouts.',
-						$mrg['layouts'], $mrg,
-						'This will not affect any layout.'
+						$mrg['layouts'], $mrg
 					);
 			
 				echo '<br/><br/>';
 				echo
-					ze\admin::nPhrase('This will affect [[pages]] (<b>[[published]] published</b>) content item.',
+					ze\admin::nzPhrase(
+						'This will not affect any content items.',
+						'This will affect [[pages]] (<b>[[published]] published</b>) content item.',
 						'This will affect [[pages]] (<b>[[published]] published</b>) content items.',
-						$mrg['pages'], $mrg,
-						'This will not affect any content items.'
+						$mrg['pages'], $mrg
 					);
 			
 			} else {
@@ -735,8 +737,7 @@ if (ze\priv::check()) {
 	}
 
 } else {
-	header('Zenario-Admin-Logged_Out: 1');
-	echo '<!--Logged_Out-->', ze\admin::phrase('You have been logged out.');
+	ze\admin::wasLoggedOut();
 }
 
 return false;

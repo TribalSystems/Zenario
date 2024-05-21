@@ -32,6 +32,10 @@ $methodCall = $_REQUEST['method_call'] ?? false;
 if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 	header('Location: ../');
 	exit;
+	
+} elseif (version_compare(phpversion(), '8.1.0', '<')) {
+	require 'zenario/includes/php_version.inc.php';
+	exit;
 
 //Check to see if the config file has been created, and if not, link to the installer.
 } elseif (!file_exists('zenario_siteconfig.php') || filesize('zenario_siteconfig.php') < 20) {
@@ -208,14 +212,12 @@ if ($status === ZENARIO_403_NO_PERMISSION) {
 	ze\content::langSpecialPage('zenario_not_found', $cID, $cType);
 	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType);
 	
-	//Log error if errors module is running
-	if (ze\module::inc('zenario_error_log')) {
-		$httpReferer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-		$requestURI = rtrim($_SERVER['REQUEST_URI'], '/');
-		$URI = explode('/', $requestURI);
-		$pageAlias = end($URI);
-		zenario_error_log::log404Error($pageAlias, $httpReferer);
-	}
+	//Log error
+	$httpReferer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+	$requestURI = rtrim($_SERVER['REQUEST_URI'], '/');
+	$URI = explode('/', $requestURI);
+	$pageAlias = end($URI);
+	zenario_common_features::log404Error($pageAlias, $httpReferer);
 }
 
 //Try to go to the home page as a fallback if the Not Found/No Access/Login pages could not be used above

@@ -71,6 +71,10 @@ class escape {
 			echo '<x-zenario-flag value="', $flag, '"/>';
 		}
 	}
+	
+	public static function bFlag($name, $val = null) {
+		\ze\escape::flag($name, $val, false);
+	}
 
 
 	public static function hyp($text) {

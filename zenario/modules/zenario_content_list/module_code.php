@@ -67,8 +67,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				tc.privacy,
 				". ($this->dataField ?: "''"). " AS `content_table_data`";
 		
-			$this->isRSS = $this->methodCallIs('showRSS');
-			if ($this->setting('show_author') || ($this->isRSS && $this->setting('rss_include_item_author'))) {
+		$this->isRSS = $this->methodCallIs('showRSS');
+		if ($this->setting('show_author') || ($this->isRSS && $this->setting('rss_include_item_author'))) {
 			$sql .= ', 
 				wp.first_name AS writer_first_name, wp.last_name AS writer_last_name';
 		}
@@ -213,7 +213,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		} else {
 			$cTypes = [];
 			foreach (ze\content::getContentTypes(false, false) as $cType) {
-				switch ($cType['content_type_id'] ?? false){
+				switch ($cType['content_type_id'] ?? false) {
 					case 'recurringevent':
 					case 'event':
 						break;
@@ -332,7 +332,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$startDate = $this->setting('start_date');
 			$endDate = $this->setting('end_date');
 			
-			if ($this->setting('release_date')=='date_range'){
+			if ($this->setting('release_date') == 'date_range') {
 				$dateQuery .= "
 					DATE(v.release_date) >= '" . ze\escape::sql($startDate) . "'
 					";
@@ -343,10 +343,10 @@ class zenario_content_list extends ze\moduleBaseClass {
 			}
 
 			//Relative date range
-			if ($this->setting('release_date')=='relative_date_range' && $this->setting('relative_operator')
-				&& ((int)$this->setting('relative_value')) >0 && $this->setting('relative_units')
+			if ($this->setting('release_date') == 'relative_date_range' && $this->setting('relative_operator')
+				&& ((int) $this->setting('relative_value')) > 0 && $this->setting('relative_units')
 			) {
-				if ($this->setting('relative_operator')=='older'){
+				if ($this->setting('relative_operator')=='older') {
 					$sqlOperator = " < ";
 				} else {
 					$sqlOperator = " >= ";
@@ -354,19 +354,19 @@ class zenario_content_list extends ze\moduleBaseClass {
 				
 				switch ($this->setting('relative_units')) {
 					case 'days':
-						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " DAY)  ";
+						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int) $this->setting('relative_value') . " DAY)  ";
 						break;
 					case 'months':
-						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " MONTH)  ";
+						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int) $this->setting('relative_value') . " MONTH)  ";
 						break;
 					case 'years':
-						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " YEAR)  ";
+						$dateQuery .= "release_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int) $this->setting('relative_value') . " YEAR)  ";
 						break;
 				}
 			}
 			
 			//prior_to_date
-			if ($this->setting('release_date')=='prior_to_date'){
+			if ($this->setting('release_date') == 'prior_to_date') {
 				$priorToDate = $this->setting('prior_to_date');
 				
 				$dateQuery .= "
@@ -374,7 +374,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					";
 			}
 			//on_date
-			if ($this->setting('release_date')=='on_date'){
+			if ($this->setting('release_date') == 'on_date') {
 				$onDate = $this->setting('on_date');
 
 				
@@ -383,7 +383,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					";
 			}
 			//after_date
-			if ($this->setting('release_date')=='after_date'){
+			if ($this->setting('release_date') == 'after_date') {
 				$afterDate = $this->setting('after_date');
 				
 				$dateQuery .= "
@@ -551,7 +551,15 @@ class zenario_content_list extends ze\moduleBaseClass {
 		
 		
 		if ($result = $this->lookForContent()) {
-			while($row = ze\sql::fetchAssoc($result)) {
+			if ($this->setting('highlight_new_items')) {
+				$dateToday = ze\date::now();
+				$timestampToday = strtotime($dateToday);
+				
+				$dateTodayObject = ze\date::new($timestampToday);
+				$timestampXDaysAgo = $dateTodayObject->modify('-' . (int) $this->setting('release_date_within') . ' days')->getTimestamp();
+			}
+			
+			while ($row = ze\sql::fetchAssoc($result)) {
 				$item = [];
 				if ($this->setting('show_text_preview') && $this->dataField == 'v.description') {
 					if (!$row['content_table_data']) {
@@ -614,7 +622,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 						$fileName = $s3FileDetails['filename'];
 					}
 					
-					if ($fileName && ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
+					if ($fileName && ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3') && ze\module::inc('zenario_ctype_document')) {
 						if (ze::setting('mod_rewrite_enabled') && ze::setting('mod_rewrite_admin_mode')) {
 							$fullpath = true;
 						} else {
@@ -683,7 +691,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 						$showAsBackgroundImage = $lazyLoad = $hideOnMob = $changeOnMob =
 						$mobImageId = $mobMaxWidth = $mobMaxHeight = $mobCanvas = $mobRetina = false;
 						$cssClass = $styles = $attributes = '';
-						$altTag = $row['title'];
+						$altTag = ze\row::get('files', 'alt_tag', $imageId);
 						$preferInlineStypes = false;
 						
 						//Get the resize options for the image from the plugin settings
@@ -786,7 +794,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					
 				}
 				//Added info icon when viewed in admin mode
-				if ((bool)ze\admin::id()) {
+				if ((bool) ze\admin::id()) {
 					$item['Logged_in_user_is_admin'] = true;
 					$item['Content_panel_organizer_href_start'] = htmlspecialchars(ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//'.$row['type'].'//'.$item['Id']);
 					
@@ -870,6 +878,14 @@ class zenario_content_list extends ze\moduleBaseClass {
 					}
 				}
 				
+				if ($this->setting('highlight_new_items') && !empty($row['release_date'])) {
+					$releaseDateTimestamp = strtotime($row['release_date']);
+					
+					if ($timestampToday >= $releaseDateTimestamp && $releaseDateTimestamp >= $timestampXDaysAgo) {
+						$item['Item_Is_Recent'] = true;
+					}
+				}
+				
 				if (!$dontAddItem) {
 					if ($row['privacy'] != 'public') {
 						$item['Content_item_is_private'] = true;
@@ -886,7 +902,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//Otherwise the styles will be added using addToPageHead() and addStylesOnAJAXReload() as as normal.
 		$this->addStylesOnAJAXReload($this->styles);
 		
-		return !empty($this->items) || ((bool)$this->setting('show_headings_if_no_items'));
+		return !empty($this->items) || ((bool) $this->setting('show_headings_if_no_items'));
 	}
 	
 	public function addToPageHead() {
@@ -910,7 +926,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			FROM ' . DB_PREFIX . 'category_item_link l
 			INNER JOIN ' . DB_PREFIX . 'categories c
 				ON l.category_id = c.id
-			WHERE l.equiv_id = ' . (int)$equivId . '
+			WHERE l.equiv_id = ' . (int) $equivId . '
 			AND l.content_type = "' . ze\escape::asciiInSQL($cType) . '"';
 		$result = ze\sql::select($sql);
 		while ($row = ze\sql::fetchAssoc($result)) {
@@ -1029,7 +1045,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 	
 	public function showSlot() {
 		
-		if (!(!empty($this->items) || ((bool)$this->setting('show_headings_if_no_items')))) {
+		if (!(!empty($this->items) || ((bool) $this->setting('show_headings_if_no_items')))) {
 			if (ze::isAdmin()) {
 				echo ze\admin::phrase('This plugin will not be shown to visitors because there are no results.');
 			}
@@ -1097,15 +1113,15 @@ class zenario_content_list extends ze\moduleBaseClass {
 			$cType = $this->setting('content_type');
 
 			if (ze::in($cType, 'document', 'picture')) {
-				if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size'))<=0){
+				if (($maxUnpackedSize = (int) ze::setting('max_unpacked_size')) <= 0) {
 					$maxUnpackedSize = 64;
 				} 
 				$maxUnpackedSize*=1048576;
 
 				//As of 04 Jun 2021, the .zip download feature is also available
 				//for picture content items, in addition to documents.
-				if ($documentIDs = explode(",",$getIds)){
-					foreach ($documentIDs as $dID){
+				if ($documentIDs = explode(",",$getIds)) {
+					foreach ($documentIDs as $dID) {
 						
 						if ($zipFileSize + $this->getUnpackedFilesSize($dID) > $maxUnpackedSize) {
 							$zipFiles[] = $zipFile;
@@ -1123,8 +1139,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 				$fileCtr = 0;
 				$fileDocCtr = 0;
-				foreach ($zipFiles as $zipFileids){
-					if($zipFileids){
+				foreach ($zipFiles as $zipFileids) {
+					if($zipFileids) {
 						$zipFileValue = implode(",", $zipFileids);
 						$fileNameArr = [];
 						$fileCtr++;
@@ -1168,7 +1184,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 								$filename = '';
 								if ($zipFileids[0]) {
 									$latestVersion = ze\content::latestVersion($zipFileids[0], $cType);
-									$fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $zipFileids[0], 'type'=> $cType, 'version' => $latestVersion]);
+									$fileID = (int) ze\row::get('content_item_versions', 'file_id', ['id' => $zipFileids[0], 'type'=> $cType, 'version' => $latestVersion]);
 									$filename = ze\row::get('files', 'filename', ['id' => $fileID]);
 								}
 
@@ -1190,8 +1206,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$ctr++;
 				}
 			}
-			if($ctr > 0 && $this->setting('zip_archive_enabled'))
-			{
+			
+			if ($ctr > 0 && $this->setting('zip_archive_enabled')) {
 				$Link_To_Download_Page = true;
 			}
 			ksort($allIds);
@@ -1208,7 +1224,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Results' => $this->rows,
 			'RSS_Link' => $this->setting('enable_rss')? $this->escapeIfRSS($this->showRSSLink(true)) : null,
 			'Title_With_Content' => $titleWithContent,
-			'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
+			'Title_With_No_Content' => ((bool) $this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
 			'Title_Tags' => $this->setting('heading_tags') ?: 'h2',
 			'Title_Tags_If_No_Items' => $this->setting('heading_tags_if_no_items') ?: 'h2'
 		];
@@ -1222,23 +1238,23 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'Show_Date' => $this->setting('show_dates'),
 			'Show_Author' => $this->setting('show_author'),
 			'Show_Excerpt' => (bool) $this->dataField,
-			'Show_Item_Title' => (bool)$this->setting('show_titles'),
+			'Show_Item_Title' => (bool) $this->setting('show_titles'),
 			'Item_Title_Tags' => $this->setting('titles_tags') ? $this->setting('titles_tags') : 'h2',
-			'Show_Text_Preview' => (bool)$this->setting('show_text_preview'),
+			'Show_Text_Preview' => (bool) $this->setting('show_text_preview'),
 			'Show_Featured_Image' => (bool) $this->setting('show_featured_image'),
 			'Show_Sticky_Image' => (bool) $this->setting('show_featured_image'),	//Old name for this in the frameworks, included for backwards compatibility with custom frameworks
 			'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
-			'Show_Title' => (bool)$this->setting('show_headings'),
-			'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
-			'Show_Category' => (bool)$this->setting('show_content_items_lowest_category'),
+			'Show_Title' => (bool) $this->setting('show_headings'),
+			'Show_No_Title' => (bool) $this->setting('show_headings_if_no_items'),
+			'Show_Category' => (bool) $this->setting('show_content_items_lowest_category'),
 			'Show_Filename' => (bool) $this->setting('show_filename') && ze::in($this->setting('content_type'), 'all', 'document', 'picture'),
-			'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height'),
-			'Show_Category_Public' => (bool)$this->setting('show_category_name'),
+			'Content_Items_Equal_Height' => (bool) $this->setting('make_content_items_equal_height'),
+			'Show_Category_Public' => (bool) $this->setting('show_category_name'),
 			'Local_File_Link_Text' => ze::setting('local_file_link_text') ? ze::setting('local_file_link_text') : 'Download',
 			'Local_File_Size' => ze::setting('local_file_size'),
 			'Show_File_Size' => $this->setting('show_file_size'),
 			'S3_File_Link_Text' => ze::setting('s3_file_link_text') ? ze::setting('s3_file_link_text') : 'Download original/large version',
-			'Aws_Link' => ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document'),
+			'Aws_Link' => (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) && ze\module::inc('zenario_ctype_document'),
 			'Show_Format_And_Size' => ze::setting('show_format_and_size'),
 			'Link_To_Download_Page' => $Link_To_Download_Page,
 			'Anchor_Link' => $this->linkToItemAnchor($this->cID,$this->cType,true,'&build=1&slotName='.$this->slotName.'&ids=' . $allIdsValue),
@@ -1257,7 +1273,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'closeForm' => $this->closeForm(),
 			'Request_Docids' => $allIdsValue,
 			'Request_slotName' => $this->slotName,
-			'DownloadRequest' => '&build=1&slotName='.$this->slotName.'&ids=' . $allIdsValue
+			'DownloadRequest' => '&build=1&slotName='.$this->slotName.'&ids=' . $allIdsValue,
+			'Recent_Item_Phrase' => $this->phrase('New')
 		];
 
 		switch ($this->setting('content_type')) {
@@ -1310,7 +1327,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			    	}
 			    }
 				$allCurrentlySelectedCategories = [];
-				If($this->setting('show_category_name')){
+				If($this->setting('show_category_name')) {
 					$sql = '
 						SELECT id,name,parent_id
 						FROM ' . DB_PREFIX . 'categories
@@ -1409,7 +1426,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 				
 				foreach (ze\content::getContentTypes(false, false) as $cType) {
-					switch ($cType['content_type_id'] ?? false){
+					switch ($cType['content_type_id'] ?? false) {
 						case 'recurringevent':
 						case 'event':
 							break;
@@ -1478,13 +1495,15 @@ class zenario_content_list extends ze\moduleBaseClass {
 		}
 	}
 	
-	function canZip(){
+	function canZip() {
 		if (ze\server::isWindows() || !ze\server::execEnabled() || !$this->getZIPExecutable()) {
 			return false;
 		}
-		exec(escapeshellarg($this->getZIPExecutable()) .' -v',$arr,$rv);
-		return ! (bool)$rv;
+		
+		exec(escapeshellarg($this->getZIPExecutable()) . ' -v', $arr, $rv);
+		return ! (bool) $rv;
 	}
+	
 	function getZIPExecutable() {
 		return ze\server::programPathForExec(ze::setting('zip_path'), 'zip');
 	}
@@ -1493,7 +1512,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 		$archiveEmpty = true;
 		$oldDir = getcwd();
 		
-		if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size')) <= 0) {
+		if (($maxUnpackedSize = (int) ze::setting('max_unpacked_size')) <= 0) {
 			$maxUnpackedSize = 64;
 		} 
 		$maxUnpackedSize *= 1048576;
@@ -1515,7 +1534,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 							$randomDir = ze\cache::createRandomDir(15, 'private/downloads', $onlyForCurrentVisitor = ze::setting('restrict_downloads_by_ip'));
 							$contentSubdirectory = $this->getArchiveNameNoExtension($zipArchive);
 							if (mkdir($randomDir . '/' . $contentSubdirectory)) {
-								foreach ($documentIDs as $ID){
+								foreach ($documentIDs as $ID) {
 									$version = ze\content::showableVersion($ID, $cType, false, ($_SESSION['admin_username'] ?? false), ($_SESSION['extranetUserID'] ?? false));
 									
 									if ($filename = $this->getItemFilename($ID, $cType)) {
@@ -1524,13 +1543,13 @@ class zenario_content_list extends ze\moduleBaseClass {
 										
 										$nextFileName = $this->getNextFileName($contentSubdirectory . '/' . $filename);
 										$latestVersion = ze\content::latestVersion($ID, $cType);
-										if ($fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
+										if ($fileID = (int) ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
 											$filePath = (ze\file::docstorePath($fileID));
 											if (!empty($filePath)) {
 												copy($filePath, $nextFileName);
 												if (($err = $this->addToZipArchive($zipArchive, $nextFileName)) == "") {
 													$archiveEmpty = false;
-													if ((int)($_SESSION['extranetUserID'] ?? false)) {
+													if ((int) ($_SESSION['extranetUserID'] ?? false)) {
 														if (ze\module::inc('zenario_probusiness_features')) {
 															zenario_probusiness_features::logUserAccess($_SESSION['extranetUserID'] ?? false, $ID, $cType, $version );
 														}
@@ -1566,7 +1585,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					return [true, []];
 				}
 			} else {
-				return [false, 'The size of the file exceeds the ' . (int)ze::setting('max_unpacked_size') . 'MB per volume limit.'];
+				return [false, 'The size of the file exceeds the ' . (int) ze::setting('max_unpacked_size') . 'MB per volume limit.'];
 			}
 		} else {
 			return [false, 'Error. Cannot create ZIP archives using ' . $this->getZIPExecutable() . '.'];
@@ -1596,7 +1615,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					$version = ze\content::showableVersion($ID, $cType, false, ($_SESSION['admin_username'] ?? false), ($_SESSION['extranetUserID'] ?? false));
 					if ($filename = $this->getItemFilename($ID, $cType)) {
 						$latestVersion = ze\content::latestVersion($ID, $cType);
-						if ($fileID = (int)ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
+						if ($fileID = (int) ze\row::get('content_item_versions', 'file_id', ['id' => $ID, 'type' => $cType, 'version' => $latestVersion])) {
 							$filePath = ze\file::docstorePath($fileID);
 							if (!empty($filePath)) {
 								$filesize += filesize($filePath);
@@ -1647,7 +1666,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 			case 'site_settings':
 				//If a user has entered the value, validate it.
 				//If the user has not enterd anything then default value is 64, set in saveAdminBox.
-				if ($box['setting_group'] == 'external_programs'){
+				if ($box['setting_group'] == 'external_programs') {
 					if(strlen($values['zip/max_unpacked_size']) > 0 && $values['zip/max_unpacked_size'] < 1 )
 					{
 						$fields['zip/max_unpacked_size']['error'] = ze\admin::phrase('Please enter an integer number, and a minimum of 1.');

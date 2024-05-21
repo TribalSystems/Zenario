@@ -1768,3 +1768,23 @@ if (ze\dbAdm::needRevision(285)) {
 	
 	ze\dbAdm::revision(285);
 }
+
+//In 9.7, we added a new feature where if an admin is supposed to handle form responses,
+//we track which admin it was and when they were allocated.
+ze\dbAdm::revision(286
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `show_checkbox_for_allocating_form_responses` tinyint(1) NOT NULL DEFAULT 0,
+	ADD COLUMN `form_responses_allocate_checkbox_label` varchar(25) DEFAULT ''
+_sql
+
+);
+
+ze\dbAdm::revision(287
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ADD COLUMN `allocated_to_admin_id` int(10) unsigned NOT NULL DEFAULT 0,
+	ADD COLUMN `allocated_to_admin_datetime` datetime DEFAULT NULL
+_sql
+
+);

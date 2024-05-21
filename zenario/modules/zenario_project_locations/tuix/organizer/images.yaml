@@ -84,7 +84,7 @@ zenario__projects:
                         css_class: inspect
                         label: View image
                         popout:
-                            href: zenario/file.php
+                            href: zenario/file.php?popout=1
                             options:
                                 type: image
                 item_buttons:
@@ -114,7 +114,7 @@ zenario__projects:
                         parent: view_dropdown
                         label: Image
                         popout:
-                            href: zenario/file.php
+                            href: zenario/file.php?popout=1
                             options:
                                 type: image
                     

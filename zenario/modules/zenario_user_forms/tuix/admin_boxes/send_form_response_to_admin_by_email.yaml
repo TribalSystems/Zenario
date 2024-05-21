@@ -1,0 +1,35 @@
+---
+zenario_send_form_response_to_admin_by_email:
+    title: "Form response"
+    hide_tab_bar: Yes
+    save_button_message: Send
+    key:
+        id: ''
+        form_id: ''
+    tabs:
+        send_form_response_to_admin_by_email:
+            label: Fields
+            edit_mode:
+                enabled: true
+            fields:
+                from:
+                    label: "From:"
+                    type: text
+                    show_as_a_span: true
+                send_to_admin_ids:
+                    label: "To:"
+                    pick_items:
+                        path: zenario__administration/panels/administrators
+                        target_path: zenario__administration/panels/administrators
+                        min_path: zenario__administration/panels/administrators
+                        select_phrase: Select one or more administrators...
+                        nothing_selected_phrase: Nobody selected
+                        multiple_select: true
+                    validation:
+                        required: 'Please select at least one administrator.'
+                comment:
+                    label: "Comment:"
+                    type: editor
+                    editor_type: description_editor
+                    editor_options:
+                        height: 300

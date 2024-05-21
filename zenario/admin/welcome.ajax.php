@@ -217,11 +217,11 @@ if ($systemRequirementsMet && $installed) {
 	 && defined('DBNAME_GLOBAL') && DBNAME_GLOBAL == DBNAME
 	 && defined('DB_PREFIX_GLOBAL') && DB_PREFIX_GLOBAL == DB_PREFIX) {
 		
-		echo
-			'<!--Message_Type:Error-->',
-			'<!--Modal-->',
-			'<!--Reload_Button:', ze\admin::phrase('Retry and Resume'), '-->',
-			ze\admin::phrase('Your local and global databases are set to the same database and table prefix. Please edit your zenario_siteconfig.php and correct this!');
+		ze\escape::bFlag('MESSAGE_TYPE', 'error');
+		ze\escape::bFlag('MODAL');
+		ze\escape::bFlag('RELOAD_BUTTON', ze\admin::phrase('Retry and Resume'));
+		
+		echo ze\admin::phrase('Your local and global databases are set to the same database and table prefix. Please edit your zenario_siteconfig.php and correct this!');
 		exit;
 	
 	//Log the current admin out if they've clicked the logout button

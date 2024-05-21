@@ -60,9 +60,14 @@
 
 /* Indicators */
 
+.zenario_slideshow .nest_plugins_wrap {
+	z-index:10;
+}
+
 .zenario_slideshow .nest_tabs.indicators {
 	position:absolute;
-	bottom:-35px !important;
+	z-index:50;
+	bottom:20px !important;
 	width:100% !important;
 	height:24px !important;
 	text-align:center;

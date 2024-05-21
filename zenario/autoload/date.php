@@ -51,7 +51,7 @@ class date {
 	}
 
 
-	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false, $adminPhrase = false) {
+	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $adminPhrase = false) {
 		
 		if (empty($date)) {
 			return '';
@@ -118,14 +118,14 @@ class date {
 		} elseif ($adminPhrase) {
 			\ze\lang::applyMergeFields($returnDate, \ze\admin::$englishDatePhrases);
 		} else {
-			\ze\lang::replacePhraseCodesInString($returnDate, 'zenario_common_features', $languageId, 2, $cli);
+			\ze\lang::replacePhraseCodesInString($returnDate, 'zenario_common_features', $languageId);
 		}
 	
 		return $returnDate;
 	}
 
-	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false, $adminPhrase = false) {
-		return \ze\date::format($date, $format_type, $languageId, true, $rss, $cli, $adminPhrase);
+	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $adminPhrase = false) {
+		return \ze\date::format($date, $format_type, $languageId, true, $rss, $adminPhrase);
 	}
 
 	public static function formatTime($time, $format_type) {
@@ -263,7 +263,7 @@ class date {
 	const formatRelativeDateTimeFromTwig = true;
 	public static function formatRelativeDateTime(
 		$timestamp, $maxPeriod = "day", $addFullTime = true,
-		$format_type = 'vis_date_format_med', $languageId = false, $time_format = true, $cli = false,
+		$format_type = 'vis_date_format_med', $languageId = false, $time_format = true,
 		$showDateTime = false, $adminPhrase = false, $phrasePrefix = '[[time_elapsed]] ', $phraseSuffix = ' ago'
 	) {
 		if (is_object($timestamp)) {
@@ -282,7 +282,7 @@ class date {
 			if ($adminPhrase) {
 				return \ze\admin::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0]);
 			} else {
-				return \ze\lang::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0], 'zenario_common_features', $languageId, 1, $cli);
+				return \ze\lang::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0], 'zenario_common_features', $languageId);
 			}
 		}
 	
@@ -307,22 +307,22 @@ class date {
 						if ($adminPhrase) {
 							$relativeDate = \ze\admin::phrase($phrasePrefix. $uPlurals[$i]. $phraseSuffix, ['time_elapsed' => $r]);
 						} else {
-							$relativeDate = \ze\lang::phrase($phrasePrefix. $uPlurals[$i]. $phraseSuffix, ['time_elapsed' => $r], 'zenario_common_features', $languageId, 1, $cli);
+							$relativeDate = \ze\lang::phrase($phrasePrefix. $uPlurals[$i]. $phraseSuffix, ['time_elapsed' => $r], 'zenario_common_features', $languageId);
 						}
 					} else {
 						
 						if ($adminPhrase) {
 							$relativeDate = \ze\admin::phrase($phrasePrefix. $units[$i]. $phraseSuffix, ['time_elapsed' => $r]);
 						} else {
-							$relativeDate = \ze\lang::phrase($phrasePrefix. $units[$i]. $phraseSuffix, ['time_elapsed' => $r], 'zenario_common_features', $languageId, 1, $cli);
+							$relativeDate = \ze\lang::phrase($phrasePrefix. $units[$i]. $phraseSuffix, ['time_elapsed' => $r], 'zenario_common_features', $languageId);
 						}
 					}
 			
 					if ($addFullTime) {
 						if (is_string($addFullTime)) {
-							return $relativeDate. ' ('. \ze\date::format($time, $addFullTime, $languageId, $time_format, false, $cli, $adminPhrase). ')';
+							return $relativeDate. ' ('. \ze\date::format($time, $addFullTime, $languageId, $time_format, false, $adminPhrase). ')';
 						} else {
-							return $relativeDate. ' ('. \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $adminPhrase). ')';
+							return $relativeDate. ' ('. \ze\date::format($time, $format_type, $languageId, $time_format, false, $adminPhrase). ')';
 						}
 					
 					} else {
@@ -336,7 +336,7 @@ class date {
 			$time_format = '';
 		}
 	
-		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $cli, $adminPhrase);
+		return \ze\date::format($time, $format_type, $languageId, $time_format, false, $adminPhrase);
 
 	}
 	//Added new relative date function for CSLs

@@ -141,8 +141,8 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($box['key']['go_to_url_after_trashing']) {
 			$flags = [];
-			$flags['go_to_url'] = $box['key']['go_to_url_after_trashing'];
-			$flags['toast_next_pageload'] = ze\admin::phrase("Content item trashed!");
+			$flags['GO_TO_URL'] = $box['key']['go_to_url_after_trashing'];
+			$flags['TOAST_NEXT_PAGELOAD'] = ze\admin::phrase("Content item trashed!");
 			ze\tuix::closeWithFlags($flags);
 		}
 	}

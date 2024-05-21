@@ -39,7 +39,8 @@ class server {
 		$attachments = [], $attachmentFilenameMappings = [],
 		$precedence = 'bulk', $isHTML = true, $exceptions = false,
 		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
-		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false
+		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false,
+		$showErrorMessage = false
 	) {
 	
 		$debug = \ze::setting('debug_override_enable');
@@ -47,24 +48,6 @@ class server {
 			$sendToDebugAddressOrDontSentAtAll = \ze::setting('send_to_debug_address_or_dont_send_at_all');
 			if ($sendToDebugAddressOrDontSentAtAll == 'dont_send_at_all' && $ignoreDebugMode == false) {
 				return false;
-			}
-		}
-		
-		// If this is a warning email only send it as oftern as the site setting "warning_email_frequency" allows
-		if ($warningEmailCode && \ze::setting('warning_email_frequency') && (\ze::setting('warning_email_frequency') != 'no_limit')) {
-			// If no record is set create one
-			if (!\ze\row::exists('last_sent_warning_emails', ['warning_code' => $warningEmailCode])) {
-				\ze\row::insert('last_sent_warning_emails', ['timestamp' => \ze\date::now(), 'warning_code' => $warningEmailCode]);
-			// If a record is found check when it was last sent
-			} else {
-				$lastSent = \ze\row::get('last_sent_warning_emails', 'timestamp', ['warning_code' => $warningEmailCode]);
-				$lastSent = strtotime($lastSent);
-				// If email was sent within the frequency time, return false
-				if (strtotime('+ '.\ze::setting('warning_email_frequency'), $lastSent) > time()) {
-					return false;
-				}
-				// Otherwise send email and update last sent time
-				\ze\row::update('last_sent_warning_emails', ['timestamp' => \ze\date::now()], ['warning_code' => $warningEmailCode]);
 			}
 		}
 	
@@ -204,8 +187,39 @@ class server {
 				}
 			}
 		}
+		
+		if ($showErrorMessage) {
+			$e = new \ze\error();
+		
+			if ($mail->Send()) {
+				return true;
+			} else {
+				$e->add('send_email_error', $mail->ErrorInfo);
+				return $e;
+			}
+		} else {
+			return $mail->Send();
+		}
+	}
 	
-		return $mail->Send();
+	public static function sendEmailAdvancedAndShowErrorMessages(
+		$subject, $body, $addressTo, &$addressToOverriddenBy,
+		$nameTo = false, $addressFrom = false, $nameFrom = false, 
+		$attachments = [], $attachmentFilenameMappings = [],
+		$precedence = 'bulk', $isHTML = true, $exceptions = false,
+		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false,
+		$showErrorMessage = true
+	) {
+		return \ze\server::sendEmailAdvanced(
+			$subject, $body, $addressTo, $addressToOverriddenBy,
+			$nameTo, $addressFrom, $nameFrom, 
+			$attachments, $attachmentFilenameMappings,
+			$precedence , $isHTML, $exceptions,
+			$addressReplyTo, $nameReplyTo, $warningEmailCode,
+			$ccs , $bccs, $action, $ignoreDebugMode,
+			$showErrorMessage = true
+		);
 	}
 	
 	

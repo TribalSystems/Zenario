@@ -274,159 +274,20 @@ class zenario_common_features extends ze\moduleBaseClass {
 	}
 	
 	public static function jobPublishContent($serverTime) {
-		$sql = "
-			SELECT v.id, v.type, v.version, c.status, c.lock_owner_id, v.last_author_id, v.creating_author_id, v.scheduled_publish_datetime
-			FROM ". DB_PREFIX. "content_item_versions AS v
-			INNER JOIN ". DB_PREFIX. "content_items AS c
-			   ON c.id = v.id
-			  AND c.type = v.type
-			WHERE v.scheduled_publish_datetime <= STR_TO_DATE('". ze\escape::sql($serverTime). "', '%Y-%m-%d %H:%i:%s')";
-		$result = ze\sql::select($sql);
-		
-		$action = false;
-		$emailTemplateManagerModuleRunning = ze\module::inc('zenario_email_template_manager');
-		$contentItemPublishedEmailText = self::getEmailTextContentItemPublished();
-		$addressFrom = ze::setting('email_address_from');
-		$nameFrom = ze::setting('email_name_from');
-		$subject = ze\admin::phrase('Content item published');
-		
-		while ($citem = ze\sql::fetchAssoc($result)) {
-			
-			if ($citem['status'] == 'hidden' || ze\content::isDraft($citem['status'])) {
-				// Publish marked draft items
-				$adminId = $citem['lock_owner_id'];
-				ze\contentAdm::publishContent($citem['id'], $citem['type'], $adminId);
-				$action = true;
-				$tag = ze\content::formatTag($citem['id'], $citem['type']);
-				$contentItemTitle = ze\content::title($citem['id'], $citem['type'], $citem['version']);
-				echo ze\admin::phrase('Published content item [[tag]]', ['tag' => $tag]), "\n";
-				
-				//Send emails to concerned admins:
-				//Admin who requested the scheduled publish...
-				$lockingAdminDetails = ze\admin::details($citem['lock_owner_id']);
-				
-				//... and the last editor, or the author if the content item has never been edited.
-				if ($citem['last_author_id'] != 0) {
-					$lastEditAdminId = $citem['last_author_id'];
-				} else {
-					$lastEditAdminId = $citem['creating_author_id'];
-				}
-				
-				$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
-				
-				if ($emailTemplateManagerModuleRunning) {
-					$text = $contentItemPublishedEmailText;
-					zenario_email_template_manager::putBodyInTemplate($text);
-					
-					$mergeFields = [
-						'admin_first_name' => $lockingAdminDetails['first_name'],
-						'admin_last_name' => $lockingAdminDetails['last_name'],
-						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $citem['type']]),
-						'content_item_title' => $contentItemTitle,
-						'date_and_time' => ze\date::formatDateTime($citem['scheduled_publish_datetime']),
-						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
-						'content_item' => $tag,
-						'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
-					];
-					
-					zenario_email_template_manager::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-					echo ze\admin::phrase(
-						'Sent notification to "' . htmlspecialchars($lockingAdminDetails['email']) . '" admin for content item [[tag]]',
-						['tag' => $tag]
-					), "\n";
-				}
-				
-				if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
-					$text = $contentItemPublishedEmailText;
-					zenario_email_template_manager::putBodyInTemplate($text);
-					
-					$mergeFields = [
-						'admin_first_name' => $lastEditingAdminDetails['first_name'],
-						'admin_last_name' => $lastEditingAdminDetails['last_name'],
-						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $citem['type']]),
-						'content_item_title' => $contentItemTitle,
-						'date_and_time' => ze\date::formatDateTime($citem['scheduled_publish_datetime']),
-						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
-						'content_item' => $tag,
-						'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
-					];
-					
-					zenario_email_template_manager::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-					echo ze\admin::phrase(
-						'Sent notification to "' . htmlspecialchars($lastEditingAdminDetails['email']) . '" admin for content item [[tag]]',
-						['tag' => $tag]
-					), "\n";
-				}
-			}
-			
-			//Update scheduled time
-			ze\row::update('content_item_versions',
-				['scheduled_publish_datetime' => null],
-				['id' => $citem['id'], 'type' => $citem['type'], 'version' => $citem['version']]
-			);
-		}
-		
-		if (!$action) {
-			echo ze\admin::phrase('No content items to publish'), "\n";
-		}
-		
-		return $action;
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
 	public static function jobUnpinContent($serverTime) {
-		$sql = "
-			SELECT v.id, v.type, v.version, c.status
-			FROM ". DB_PREFIX. "content_item_versions AS v
-			INNER JOIN ". DB_PREFIX. "content_items AS c
-			   ON c.id = v.id
-			  AND c.type = v.type
-			WHERE v.pinned = 1
-			AND v.pinned_duration IN ('fixed_date', 'fixed_duration')
-			AND v.unpin_date <= STR_TO_DATE('". ze\escape::sql($serverTime). "', '%Y-%m-%d %H:%i:%s')";
-		$result = ze\sql::select($sql);
-		
-		$action = false;
-		while ($citem = ze\sql::fetchAssoc($result)) {
-			$action = true;
-			echo ze\admin::phrase('Unpinned content item [[tag]]', ['tag' => ze\content::formatTag($citem['id'], $citem['type'])]), "\n";
-			
-			// Update scheduled time
-			ze\row::update('content_item_versions',
-				['pinned' => 0, 'pinned_duration' => null, 'pinned_fixed_duration_value' => 0, 'pinned_fixed_duration_unit' => null, 'unpin_date' => null],
-				['id' => $citem['id'], 'type' => $citem['type'], 'version' => $citem['version']]
-			);
-		}
-		
-		if (!$action) {
-			echo ze\admin::phrase('No content items to publish'), "\n";
-		}
-		
-		return $action;
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	//A scheduled task to delete stored content
-	public static function jobDataProtectionCleanup() {
-		$actionsTaken = 0;
-		
-		//Modules that want to clear some kind of data have a clearOldData public static method that deletes it
-		//based on some site-setting.
-		$modulesWithDataToClear = [
-			'zenario_email_template_manager',
-			'zenario_scheduled_task_manager',
-			'zenario_incoming_email_manager',
-			'zenario_users',
-			'zenario_user_forms'
-		];
-		
-		$logResult = true;
-		
-		foreach ($modulesWithDataToClear as $moduleName) {
-			if (ze\module::inc($moduleName)) {
-				$actionsTaken += call_user_func([$moduleName, 'clearOldData'], $logResult);
-			}
-		}
-		
-		return $actionsTaken > 0;
+	public static function jobDataProtectionCleanup($serverTime) {
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+
+	public static function jobFetchDocumentExtract($serverTime) {
+		return require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
@@ -553,5 +414,29 @@ Requesting admin: [[requesting_admin]]
 <p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[content_item_url]]\">View content item</a></p>";
 		
 		return nl2br($emailText);
+	}
+	
+	//Called when a 404 error is triggered to log it
+	public static function log404Error($pageAlias, $httpReferer = '') {
+		
+		$pageAlias = ze\escape::utf8($pageAlias);
+		
+		$logged = date('Y-m-d H:i:s');
+		if (strlen($pageAlias) > 255) {
+			$pageAlias = mb_substr($pageAlias, 0, 252, 'UTF-8') . '...';
+		}
+		if (strlen($httpReferer) > 65535) {
+			$httpReferer = mb_substr($httpReferer, 0, 65532, 'UTF-8') . '...';
+		}
+		ze\row::insert('error_404_log', ['logged' => $logged, 'page_alias' => $pageAlias, 'referrer_url' => $httpReferer]);
+		
+		//Delete old log entries according to site setting
+		if (($days = ze::setting('period_to_delete_error_log')) && is_numeric($days)) {
+			$date = date('Y-m-d', strtotime('-' . $days . ' day', strtotime($logged)));
+			$sql = '
+				DELETE FROM '. DB_PREFIX. 'error_404_log
+				WHERE logged <= "' . ze\escape::sql($date) . '"';
+			ze\sql::update($sql);
+		}
 	}
 }

@@ -33,34 +33,21 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__languages/panels/phrases') return;
 		
-		if (!$refinerName || $refinerName == 'language' || $refinerName == 'language_and_plugin') {
-			$mrg = ['lang_name' => htmlspecialchars(ze\lang::name(FOCUSED_LANGUAGE_ID__NO_QUOTES))];
-	
-			if ($refinerName == 'language_and_plugin') {
-				if ($module = ze\module::details(ze::get('refiner__language_and_plugin'))) {
+		if (!$refinerName || $refinerName == 'modules_phrases') {
+			if ($refinerName == 'modules_phrases') {
+				if ($module = ze\module::details(ze::get('refiner__modules_phrases'))) {
+					$mrg = [];
 					$mrg['display_name'] = $module['display_name'];
 					$panel['key']['moduleClass'] = $module['class_name'];
 			
-					$panel['title'] = ze\admin::phrase('Phrases of the module [[display_name]] in the language "[[lang_name]]"', $mrg);
-					$panel['no_items_message'] = ze\admin::phrase('The module [[display_name]] has no phrases in language "[[lang_name]]"', $mrg);
+					$panel['title'] = ze\admin::phrase('Phrases of the module [[display_name]]', $mrg);
+					$panel['no_items_message'] = ze\admin::phrase('The module [[display_name]] has no phrases', $mrg);
 				}
 		
 				unset($panel['columns']['module_class_name']);
-	
-			} elseif ($refinerName == 'language') {
-				$panel['title'] = ze\admin::phrase('Phrases in the language "[[lang_name]]"', $mrg);
-				$panel['no_items_message'] = ze\admin::phrase('There are no phrases in the language "[[lang_name]]"', $mrg);
 			}
 	
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
-			$panel['key']['language_id'] = FOCUSED_LANGUAGE_ID__NO_QUOTES;
-	
-			if (isset($panel['item_buttons']['delete'])) {
-		
-				if (FOCUSED_LANGUAGE_ID__NO_QUOTES == ze::$defaultLang) {
-					$panel['item_buttons']['delete']['ajax']['request']['delete_translated_phrases'] = 1;
-				}
-			}
 
 		} elseif ($refinerName == 'translations') {
 			$mrg = ze\row::get('visitor_phrases', ['code', 'module_class_name'], $refinerId);
@@ -126,7 +113,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 		}
 
 		// Hide import button if not showing module phrases OR no phrases directory found
-		if (($refinerName == 'language_and_plugin') && file_exists(CMS_ROOT . ze::moduleDir(ze\module::className($refinerId)) . 'phrases/')) {
+		if (($refinerName == 'modules_phrases') && file_exists(CMS_ROOT . ze::moduleDir(ze\module::className($refinerId)) . 'phrases/')) {
 			$moduleDetails = ze\row::get('modules', ['class_name', 'display_name'], $refinerId);
 			$importFiles = ze\phraseAdm::scanModulePhraseDir($moduleDetails['class_name'], 'number and file');
 			$list = [];
@@ -259,56 +246,45 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 					$item['tooltip'] = ze\admin::phrase('This phrase has been translated into all site languages.');
 				}
 			}
+			
+			if ($item['seen_in_visitor_mode'] && is_null($item['first_seen_by_visitor'])) {
+				$item['first_seen_by_visitor'] = 'unknown';
+			}
 		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($path != 'zenario__languages/panels/phrases') return;
 		
-		if (ze::request('delete_phrase') && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+		if (ze::post('delete_phrase') && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			//Handle translated and/or customised phrases that are linked to the current phrase
-			if (ze::request('delete_translated_phrases')) {
-				$sql = "
-					FROM ". DB_PREFIX. "visitor_phrases AS t
-					INNER JOIN ". DB_PREFIX. "visitor_phrases AS l
-					   ON l.module_class_name = t.module_class_name
-					  AND l.code = t.code
-					WHERE t.id IN (". ze\escape::in($ids, 'numeric'). ")
-					  AND t.language_id != l.language_id";
-	
-				if (ze::get('delete_phrase')) {
-					$result = ze\sql::select("SELECT COUNT(DISTINCT l.id) AS cnt". $sql);
-					$mrg = ze\sql::fetchAssoc($result);
+			$sql = "
+				SELECT l.id
+				FROM ". DB_PREFIX. "visitor_phrases AS t
+				INNER JOIN ". DB_PREFIX. "visitor_phrases AS l
+				   ON l.module_class_name = t.module_class_name
+				  AND l.code = t.code
+				WHERE t.id IN (". ze\escape::in($ids, 'numeric'). ")
+				  AND substr(t.code, 1, 1) != '_'";
+						//N.b. this last line is a safety-catch to stop someone trying to delete a code-based phrase
 			
-					if (is_numeric($ids)) {
-						$mrg['code'] = ze\row::get('visitor_phrases', 'code', ['id' => $ids]);
-						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the phrase &quot;[[code]]&quot;?', $mrg), '</p>';
-					} else {
-						echo '<p>', ze\admin::phrase('Are you sure you wish to delete the selected phrases?'), '</p>';
-					}
-			
-					if ($mrg['cnt']) {
-						if ($mrg['cnt'] == 1) {
-							echo '<p>', ze\admin::phrase('1 translated phrase will also be deleted.', $mrg), '</p>';
-				
-						} else {
-							echo '<p>', ze\admin::phrase('[[cnt]] translated phrases will also be deleted.', $mrg), '</p>';
-						}
-					}
-		
-				} elseif (ze::post('delete_phrase')) {
-					$result = ze\sql::select("SELECT l.id". $sql);
-					while ($row = ze\sql::fetchAssoc($result)) {
-						ze\row::delete('visitor_phrases', ['id' => $row['id']]);
-					}
-				}
+			foreach (ze\sql::fetchValues($sql) as $id) {
+				ze\row::delete('visitor_phrases', ['id' => $id]);
 			}
-	
-			if (ze::post('delete_phrase') && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
-				foreach (ze\ray::explodeAndTrim($ids) as $id) {
-					ze\row::delete('visitor_phrases', ['id' => $id]);
-				}
-			}
+
+		} elseif (ze::post('mark_as_unseen') && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+			//Clear all of the "seen in/seen at" flags for a phrase
+			$sql = "
+				UPDATE ". DB_PREFIX. "visitor_phrases AS t
+				INNER JOIN ". DB_PREFIX. "visitor_phrases AS l
+				   ON l.module_class_name = t.module_class_name
+				  AND l.code = t.code
+				SET l.seen_in_visitor_mode = 0,
+					l.first_seen_by_visitor =  NULL,
+					l.seen_at_content_id =  NULL,
+					l.seen_at_content_type =  NULL
+				WHERE t.id IN (". ze\escape::in($ids, 'numeric'). ")";
+			ze\sql::update($sql);
 
 		} elseif (ze::request('merge_phrases') && ze\priv::check('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			//Merge phrases together
@@ -435,14 +411,16 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 					ze\admin::phrase("Language Pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	
 		} elseif ($numberOf['added'] || $numberOf['updated']) {
-			echo '<!--Message_Type:Success-->';
+			ze\escape::bFlag('MESSAGE_TYPE', 'success');
+			
 			if ($changeButtonHTML) {
-				echo '<!--Button_HTML:<input type="button" class="submit zenario_gp_button" value="', ze\admin::phrase('OK'), '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>-->';
+				ze\escape::bFlag('BUTTON_HTML', '<input type="button" class="submit zenario_gp_button" value="'. ze\admin::phrase('OK'). '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>');
 			}
+			
 			echo ze\admin::phrase("Language pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	
 		} else {
-			echo '<!--Message_Type:Warning-->';
+			ze\escape::bFlag('MESSAGE_TYPE', 'warning');
 			echo ze\admin::phrase("No phrases were imported.");
 	
 			if ($numberOf['protected'] > 0) {

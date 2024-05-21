@@ -1654,6 +1654,8 @@ zenarioT.splitDataFromErrorMessage = function(resp) {
 		}
 	}
 	
+	resp.flags = resp.flags || {};
+	
 	return resp;
 };
 

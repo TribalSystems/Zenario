@@ -81,6 +81,10 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 						$vimeoVideoId = substr($vimeoVideoId, 1);
 					}
 					
+					if (($forwardSlashPos = strpos($vimeoVideoId, '/')) !== false) {
+						$vimeoVideoId = substr($vimeoVideoId, 0, $forwardSlashPos);
+					}
+					
 					//Get Vimeo data
 					$videoData = zenario_videos_manager::getVimeoVideoData($vimeoVideoId);
 
@@ -98,7 +102,7 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 							if ($this->setting('show_privacy_info')) {
 								$this->data['show_privacy_info'] = true;
 
-								$privacy = $videoData['privacy']['view'] ?? '';
+								$privacy = $this->video['vimeo_privacy_setting'];
 								$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
 								
 								if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {

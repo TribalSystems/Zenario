@@ -77,7 +77,7 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 		
 		if (!$box['key']['openFromAdminToolbar']) {
 			//Bypass the rest of the script in admin_boxes.ajax.php, and go to the new URL straight away
-			ze\tuix::closeWithFlags(['go_to_url' => ze\link::absolute()]);
+			ze\tuix::closeWithFlags(['GO_TO_URL' => ze\link::absolute()]);
 			exit;
 		}
 	}

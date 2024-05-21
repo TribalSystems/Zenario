@@ -13,8 +13,8 @@
 	</a>
 	<% if (m.items && m.items.length) { %>
 		
+		<!-- Show the "Configuration" section using two columns -->
 		<% if (m.id == 'zenario__administration') { %>
-			<!-- Show the "Configuration" section using two columns -->
 			<% var hi, hBlock, vi, vBlock, vBlocks = zenarioO.splitCols(m.items); %>
 			<div class="
 				zenario_attld_vertical_blocks
@@ -43,7 +43,10 @@
 					</div>
 				<% } %>
 			</div>
-		<% } else { %>
+		
+		<!-- Have a rule saying that we only show the top-level and don't decent into children for the start page -->
+		<% } else if (m.id != 'zenario__organizer') { %>
+		
 			<!-- Show all other sections using one column -->
 			<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link_children', m.items)}}</ul>
 		<% } %>

@@ -256,7 +256,7 @@ zenario__modules:
                     hide_in_select_mode: true
                     link:
                         path: zenario__languages/panels/phrases
-                        refiner: language_and_plugin
+                        refiner: modules_phrases
                 show_frameworks:
                     parent: view_dropdown
                     label: "Module's frameworks"

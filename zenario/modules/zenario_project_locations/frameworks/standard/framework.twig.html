@@ -13,9 +13,7 @@
 		{{this.frameworkField({'type': "select", 'class': "input_select", 'name': "service_id", 'source_method': "getServicesOptions", 'onchange': "this.form.doSearch.click()"})}} {{"Sector:"|trans}} {{this.frameworkField({'type': "select", 'class': "input_select", 'name': "sector_id", 'source_method': "getSectorsOptions", 'onchange': "this.form.doSearch.click()"})}}
 		<div class="form_button">
 			<div class="nice_btn">
-				<div class="r">
-					<input type="submit" class="i" name="doSearch" value="Search" />
-				</div>
+				<input type="submit" name="doSearch" value="Search" />
 			</div>
 		</div>
 		{{Close_Form}}

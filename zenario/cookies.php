@@ -45,9 +45,18 @@ if (isset($_REQUEST['check_cookies_enabled'])) {
 
 ze\cookie::startSession();
 if (!empty($_REQUEST['clear_admin_cookie'])) {
+	
+	//Clear the cookies that remember that an administrator previously logged into the site.
 	ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
 	ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
 	ze\cookie::clear('COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED');
+	
+	//Also clear every 2FA code stored on the machine
+	foreach (array_keys($_COOKIE) as $name) {
+		if (ze\ring::chopPrefix('COOKIE_ADMIN_SECURITY_CODE_', $name) !== false) {
+			ze\cookie::clear($name);
+		}
+	}
 
 } elseif (!empty($_REQUEST['accept_cookies']) || !empty($_REQUEST['cookie_accept_all'])) {
 	ze\cookie::clear('cookies_accepted');

@@ -283,7 +283,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 								$noContent = true;
 							}
 						} else {
-							if ((int)($_SESSION['admin_userid'] ?? false)){
+							if ((int) ($_SESSION['admin_userid'] ?? false)){
 								$downloadPage = true;
 								$fileDocCtr++;
 								$filename = '';
@@ -355,8 +355,9 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 			return false;
 		}
 		exec(escapeshellarg($this->getZIPExecutable()) .' -v',$arr,$rv);
-		return ! (bool)$rv;
+		return ! (bool) $rv;
 	}
+	
 	function getZIPExecutable() {
 		return ze\server::programPathForExec(ze::setting('zip_path'), 'zip');
 	}
@@ -365,7 +366,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 		$archiveEmpty = true;
 		$oldDir = getcwd();
 		
-		if (($maxUnpackedSize = (int)ze::setting('max_unpacked_size')) <= 0) {
+		if (($maxUnpackedSize = (int) ze::setting('max_unpacked_size')) <= 0) {
 			$maxUnpackedSize = 64;
 		} 
 		$maxUnpackedSize *= 1048576;
@@ -423,7 +424,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 					return [true, []];
 				}
 			} else {
-				return [false, 'The size of the file exceeds the ' . (int)ze::setting('max_unpacked_size') . 'MB per volume limit.'];
+				return [false, 'The size of the file exceeds the ' . (int) ze::setting('max_unpacked_size') . 'MB per volume limit.'];
 			}
 		} else {
 			return [false, 'Error. Cannot create ZIP archives using ' . $this->getZIPExecutable() . '.'];

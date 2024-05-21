@@ -498,31 +498,35 @@ class moduleAPI {
 		\ze\tuix::translatePhrasesInObjects($tagNames, $tags, $this->zAPISettings, $path, $this->moduleClassNameForPhrases, $languageId, $scan);
 	}
 		
-	public final function phrase($text, $replace = []) {
-		
+	private function checkPhraseOverride(&$text) {
 		if (isset($this->zAPISettings['phrase.framework.'. $text])) {
 			$text = $this->zAPISettings['phrase.framework.'. $text];
 		}
+	}
 		
+	public final function phrase($text, $replace = []) {
+		$this->checkPhraseOverride($text);
 		return \ze\lang::phrase($text, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
-	
-	public final function nphrase($text, $pluralText = false, $n = 1, $replace = []) {
 		
-		if (isset($this->zAPISettings['phrase.framework.'. $text])) {
-			$text = $this->zAPISettings['phrase.framework.'. $text];
-		}
+	public final function htmlPhrase($text, $replace = []) {
+		$this->checkPhraseOverride($text);
+		return \ze\lang::htmlPhrase($text, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
+	}
 		
-		return \ze\lang::nphrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
+	public final function phraseInHTML($text, $replace = []) {
+		$this->checkPhraseOverride($text);
+		return \ze\lang::phraseInHTML($text, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
-	public final function nzphrase($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
-		
-		if (isset($this->zAPISettings['phrase.framework.'. $text])) {
-			$text = $this->zAPISettings['phrase.framework.'. $text];
-		}
-		
-		return \ze\lang::nzphrase($zeroText, $text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
+	public final function nPhrase($text, $pluralText = false, $n = 1, $replace = []) {
+		$this->checkPhraseOverride($text);
+		return \ze\lang::nPhrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
+	}
+	
+	public final function nzPhrase($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
+		$this->checkPhraseOverride($text);
+		return \ze\lang::nzPhrase($zeroText, $text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
 	}
 	
 	public final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
@@ -564,7 +568,7 @@ class moduleAPI {
 	}
 	
 	protected final function replacePhraseCodesInString(&$string) {
-		\ze\lang::replacePhraseCodesInString($string, $this->moduleClassNameForPhrases, $languageId = false, $backtraceOffset = 3);
+		\ze\lang::replacePhraseCodesInString($string, $this->moduleClassNameForPhrases, $languageId = false);
 	}
 	
 	public function returnGlobalName() {

@@ -35,6 +35,10 @@ zenario__administration:
                     name: API keys
                     desc: API keys and settings for third party services.
                     keywords: key keys api dropbox captcha recaptcha google map maps translate translation tools
+                aws_s3_and_vector_data_processing:
+                    name: AWS S3 and Vector data processing
+                    desc: Settings for Amazon Web Services (text extract and storage), and Qdrant vector database storage.
+                    keywords: aws, amazon, s3, textract, extract, text, pdf, jpg, jpeg, png, scan, document, vector, ai, artificial, intelligence, qdrant, sentences
                 cookies:
                     name: Cookie control
                     desc: "Settings that control when cookies are placed on a visitor's computer."

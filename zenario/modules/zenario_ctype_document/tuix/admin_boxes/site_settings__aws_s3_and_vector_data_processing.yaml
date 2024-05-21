@@ -1,0 +1,86 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: aws_s3_and_vector_data_processing
+    tabs:
+        awss3_file_downloads:
+            fields:
+                s3_description:
+                    indent: 1
+                    full_width: true
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    snippet:
+                        html: |
+                            <p>
+                                You can store document content items locally in the docstore, and/or on Amazon's AWS S3 storage.
+                                This works for both public and private document content items. When downloading, Zenario creates a pre-signed URL for users to access each file.
+                            </p>
+                allow_document_content_items_to_be_stored_on_aws_s3:
+                    indent: 1
+                    site_setting:
+                        name: allow_document_content_items_to_be_stored_on_aws_s3
+                    type: checkbox
+                    label: 'Allow document content items to be stored on AWS S3'
+                    note_below: |
+                        AWS S3 permits files up to 5GB to be uploaded, but also see the "Documents, images and file handling" settings (File Upload Sizes tab and the Largest Possible Upload Size setting for your server); if that is lower than 5GB, file sizes will be limited at the lower size.
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support')
+                    redraw_onchange: true
+                aws_s3_bucket:
+                    indent: 2
+                    site_setting:
+                        name: aws_s3_bucket
+                    label: 'Bucket ARN:'
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('allow_document_content_items_to_be_stored_on_aws_s3')
+                    validation:
+                        required_if_not_hidden: Please enter a bucket.
+                csl_download_note:
+                    indent: 2
+                    class_name: zenario_content_list
+                    pre_field_html: "<div class=\"zenario_fbInfo\">"
+                    snippet: 
+                        html: "The settings below are used for document content items to show download link and file size of local and S3 files on Content Summary List plugins."
+                    post_field_html: "</div>"
+                    id: csl_download_note
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('allow_document_content_items_to_be_stored_on_aws_s3')
+                local_file_link_text:
+                    indent: 2
+                    site_setting:
+                        name: local_file_link_text
+                    label: '"Download" link text for local files (applies to Content Summary Lists and Document content items):'
+                    type: text
+                    value: "Download"
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('allow_document_content_items_to_be_stored_on_aws_s3')
+                
+                s3_file_link_text:
+                    indent: 2
+                    site_setting:
+                        name: s3_file_link_text
+                    label: '"Download" link text for s3 files (applies to Content Summary Lists and Document content items):'
+                    type: text
+                    value: "Download from S3"
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('allow_document_content_items_to_be_stored_on_aws_s3')
+                s3_file_play_video_text:
+                    indent: 2
+                    site_setting:
+                        name: s3_file_play_video_text
+                    label: 'Play s3 video text:'
+                    type: text
+                    value: "Play video"
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('allow_document_content_items_to_be_stored_on_aws_s3')
+                show_format_and_size:
+                    indent: 2
+                    site_setting:
+                        name: show_format_and_size
+                    label: 'Show format and size (applies to Content Summary Lists)'
+                    type: checkbox
+                    value:  1
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('allow_document_content_items_to_be_stored_on_aws_s3')

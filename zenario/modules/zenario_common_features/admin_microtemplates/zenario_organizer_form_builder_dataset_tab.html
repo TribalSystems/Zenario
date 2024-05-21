@@ -3,7 +3,13 @@
 </div>
 <div id="organizer_dataset_tab_fields_{{m.name|e}}" class="dataset_fields">
 	<% if (m.fields.length > 0) { %>
-		<p>Dataset tab: {{m.default_label|e}}</p>
+		<% var tabLabel; %>
+		<% if (m.label) { %>
+			<% tabLabel = m.label; %>
+		<% } else { %>
+			<% tabLabel = m.default_label; %>
+		<% } %>
+		<p>Dataset tab: {{tabLabel|e}}</p>
 		{{zenarioT.microTemplate('zenario_organizer_form_builder_dataset_field', m.fields)}}
 	<% } %>
 </div>

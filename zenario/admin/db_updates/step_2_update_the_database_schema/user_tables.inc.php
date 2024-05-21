@@ -59,6 +59,31 @@ _sql
 
 
 //
+//	Zenario 9.4
+//
+
+//Bugfixes: moved logic to add columns from:
+//Email Template Manager, Common Features and Users.
+//Also added checks to make sure the columns exist before attempting to add them again.
+//Please note: this set of updates was backpatched from HEAD to 9.3.
+//It was added to 9.3 as a post-branch fix.
+);	if (ze\dbAdm::needRevision(57305) && !ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'users LIKE "consent_hash"')) ze\dbAdm::revision(57305
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	ADD COLUMN `consent_hash` varchar(28) NULL
+_sql
+
+//In addition to the previous comment, this update was in Zenario User Consent Forms.
+//A core table column should not have different sizes depending on what module is or isn't running,
+//so this will be standardised.
+);	ze\dbAdm::revision( 57306
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	MODIFY COLUMN `consent_hash` varchar(35) NULL
+_sql
+
+
+//
 //	Zenario 9.6
 //
 
@@ -101,6 +126,26 @@ _sql
 , <<<_sql
 	 ALTER TABLE `[[DB_PREFIX]]users`
 	 CHANGE COLUMN `email_verified_temp` `email_verified` enum('verified', 'not_verified', 'email_not_set') DEFAULT 'email_not_set'
+_sql
+
+
+//
+//	Zenario 9.7
+//
+
+//In 9.7, we changed the way we handle email changes and verification. A module-specific table was dropped
+//and the logic was merged into the users table.
+);	ze\dbAdm::revision(59800
+, <<<_sql
+	 ALTER TABLE `[[DB_PREFIX]]users`
+	 ADD COLUMN `email_new` varchar(100) NOT NULL DEFAULT '' AFTER `email_verified`,
+	 ADD COLUMN `hash_change_email` varchar(28) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '' AFTER `creation_method_note`
+_sql
+
+, <<<_sql
+	 ALTER TABLE `[[DB_PREFIX]]users`
+	 ADD COLUMN `hash_change_email_expiry` datetime DEFAULT NULL AFTER `hash_change_email`,
+	 CHANGE COLUMN `hash` `hash_verify_email` varchar(28) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
 _sql
 
 );

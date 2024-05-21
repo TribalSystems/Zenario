@@ -52,6 +52,17 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
             $alias = ze\row::get('content_items', 'alias', ['id' => $cID, 'type' => $cType]);
             $box['tabs']['trash']['fields']['alias__' . $i]['value'] = $alias;
             ze\lang::applyMergeFields($box['tabs']['trash']['fields']['create_spare_alias__' . $i]['label'], ['content_item' => ze\content::formatTagFromTagId($tagId)]);
+            
+            if (!$alias) {
+            	$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['value'] = false;
+            	
+            	if ($totalRowNum == 1) {
+					$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['hidden'] = true;
+            	} elseif ($totalRowNum > 1) {
+            		$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['disabled'] = true;
+					$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['side_note'] = ze\admin::phrase('This content item has no alias.');
+            	}
+            }
         }
 	}
 
@@ -128,7 +139,8 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
                 $row = [
                     'ext_url' => '',
                     'content_id' => 0,
-                    'content_type' => ''
+                    'content_type' => '',
+                    'created_datetime' => ze\date::now()
                 ];
                 
                 if ($values['trash/target_loc__' . $i] == 'int') {

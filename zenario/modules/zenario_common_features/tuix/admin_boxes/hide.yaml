@@ -18,11 +18,11 @@ zenario_hide:
                 hide_item:
                     type: warning
                     message: |
-                        When this content item is hidden, it will no longer be seen by visitors, nor appear in the menu navigation.
+                        When this content item is hidden, it will no longer be seen by visitors, and will be hidden in menu navigation.
                 hide_items:
                     type: warning
                     message: |
-                        When these content items are hidden, they will no longer be seen by visitors, nor appear in the menu navigation.
+                        When these content items are hidden, they will no longer be seen by visitors, and will be hidden in menu navigation.
             fields:
                 access_codes_warning:
                     snippet: {}

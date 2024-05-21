@@ -4,7 +4,8 @@
 
 #organizer_leftColumn div.legend_on a.Projects_top_level,
 #organizer_leftColumn div.organizer_legend a.Projects_top_level:hover,
-#zenario_at_top_left_menu .organizer_top_level_image.Projects_top_level{ 
+#zenario_at_top_left_menu .organizer_top_level_image.Projects_top_level,
+ul li span.organizer_item_image.project_locations__projects { 
 	background: url('images/icon-development-projects-on.png') no-repeat center / 20px 20px;
 }
      
@@ -16,7 +17,18 @@
 	background: url('images/icon-sectors.svg') no-repeat center / auto 18px;
 }
 
+ul li span.organizer_item_image.zenario__project_locations_sector { 
+	background: url('images/icon-sectors-white.svg') no-repeat center / auto 18px;
+}
 
 .organizer_item_image.zenario__project_locations_service {
 	background: url('images/icon-services-dark.svg') no-repeat center / auto 18px;
+}
+
+ul li span.organizer_item_image.zenario__project_locations_service { 
+	background: url('images/icon-services-white.svg') no-repeat center / auto 18px;
+}
+
+#organizer_rightColumnContent .organizer_start_page .organizer_start_page_section .organizer_start_page_item .organizer_start_page_item_icon.Projects_top_level {
+	background-image: url('images/icon-projects-green.svg');
 }

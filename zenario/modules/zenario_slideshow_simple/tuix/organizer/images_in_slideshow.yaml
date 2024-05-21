@@ -245,7 +245,7 @@ zenario__modules:
                 view:
                     label: View image
                     popout:
-                        href: zenario/file.php
+                        href: zenario/file.php?popout=1
                         options:
                             type: image
                     with_columns_set:

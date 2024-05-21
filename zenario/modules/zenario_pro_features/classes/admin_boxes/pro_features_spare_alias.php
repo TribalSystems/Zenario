@@ -31,11 +31,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		if ($box['key']['id']
-		 && $box['key']['id_is_error_log_id']
-		 && ze\module::inc('zenario_error_log')) {
+		if ($box['key']['id'] && $box['key']['id_is_error_log_id']) {
 			$brokenAlias = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
 			$brokenAlias = substr($brokenAlias, 0, 255);
+			
+			if (!$brokenAlias) {
+				echo ze\admin::phrase('Item not found.');
+				exit;
+			}
 			
 			if (ze\row::exists('spare_aliases', ['alias' => $brokenAlias])) {
 				$box['key']['id'] = $brokenAlias;
@@ -62,7 +65,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		if (!$box['key']['id']) {
 			$box['tabs']['spare_alias']['edit_mode']['on'] = true;
 			
-			if(isset($values['spare_alias/hyperlink_target'])){
+			if (isset($values['spare_alias/hyperlink_target'])) {
 				$values['spare_alias/hyperlink_target'] = ze::$homeCType . '_' . ze::$homeEquivId;
 			}
 			
@@ -128,14 +131,12 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		$box['confirm']['show'] = false;
 		$box['confirm']['message'] = '';
 		if ($values['spare_alias/delete_error_log'] == true) {
-			if (ze\module::inc('zenario_error_log')) {
-				
-				$aliasCount = ze\row::count('error_404_log', ['page_alias' => $values['spare_alias/alias']]);
 			
-				$box['confirm']['show'] = true;
-				$box['confirm']['message'] = \ze\admin::phrase('[[number]] instances of "[[name]]" will be deleted from the error log.',['number' => $aliasCount, 'name' => $values['spare_alias/alias']]);
-				$box['confirm']['button_message'] = \ze\admin::phrase('Confirm ');
-			}
+			$aliasCount = ze\row::count('error_404_log', ['page_alias' => $values['spare_alias/alias']]);
+		
+			$box['confirm']['show'] = true;
+			$box['confirm']['message'] = \ze\admin::phrase('[[number]] instances of "[[name]]" will be deleted from the error log.',['number' => $aliasCount, 'name' => $values['spare_alias/alias']]);
+			$box['confirm']['button_message'] = \ze\admin::phrase('Confirm ');
 		}
 		if (!$box['key']['id']) {
 			if (!$values['spare_alias/alias']) {
@@ -181,15 +182,13 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		
 		//Delete all instances of alias from error log		
 		if ($values['spare_alias/delete_error_log'] == true) {
-			if (ze\module::inc('zenario_error_log')) {
-				$deleteAliasLog = $values['spare_alias/delete_alias'];
-				
-				if ($deleteAliasLog) {
-					$sql = '
-					DELETE FROM '. DB_PREFIX. 'error_404_log
-					WHERE page_alias = "' . ze\escape::sql($deleteAliasLog) . '"';
-					ze\sql::update($sql);
-				}
+			$deleteAliasLog = $values['spare_alias/delete_alias'];
+			
+			if ($deleteAliasLog) {
+				$sql = '
+				DELETE FROM '. DB_PREFIX. 'error_404_log
+				WHERE page_alias = "' . ze\escape::sql($deleteAliasLog) . '"';
+				ze\sql::update($sql);
 			}
 			
 		}

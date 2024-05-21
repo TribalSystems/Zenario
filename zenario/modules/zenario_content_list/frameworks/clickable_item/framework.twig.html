@@ -14,7 +14,7 @@
 				<a {{item.Link}}{{item.Target_Blank}} class="content_list_data_row_link">
 			{% endif %}
 			
-			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %}">
+			<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %} {% if item.Item_Is_Recent %} recent {% endif %}">
 				{% if Show_Featured_Image %}
 					<div class="sticky_image">
 						{% if item.Featured_Image_HTML %}
@@ -43,6 +43,10 @@
 			
 						</{{Item_Title_Tags}}>
 
+					{% endif %}
+					
+					{% if item.Item_Is_Recent %}
+						<p class="content_list_new">{{Recent_Item_Phrase|e}}</p>
 					{% endif %}
 
 					{# As of 06 Sept 2021, the "Show writer's photo" setting is disabled. #}

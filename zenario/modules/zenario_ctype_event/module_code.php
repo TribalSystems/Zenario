@@ -301,11 +301,12 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						$values['zenario_ctype_event__when_and_where/event_other_timezone'] = $eventDetails['event_other_timezone'];
 					}
 					
+					$defaultTimezone = ze::setting('zenario_timezones__default_timezone');
+					$timezones = ze\dataset::getTimezonesLOV();
+					ze\lang::applyMergeFields($fields['zenario_ctype_event__when_and_where/event_timezone']['values']['default_timezone']['label'], ['default_timezone' => $timezones[$defaultTimezone]['label']]);
+					
 					if ($eventTimezoneSupport) {
-						$defaultTimezone = ze::setting('zenario_timezones__default_timezone');
-						$timezones = ze\dataset::getTimezonesLOV();
 						$fields['zenario_ctype_event__when_and_where/event_other_timezone']['values'] = $timezones;
-						ze\lang::applyMergeFields($fields['zenario_ctype_event__when_and_where/event_timezone']['values']['default_timezone']['label'], ['default_timezone' => $timezones[$defaultTimezone]['label']]);
 					} else {
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['disabled'] = $fields['zenario_ctype_event__when_and_where/event_other_timezone']['disabled'] = true;
 					
@@ -681,7 +682,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if (ze::get('refiner__content_type')!='event') {
+		if (ze::get('refiner__content_type') != 'event') {
 			if ($panel['columns']['zenario_ctype_event__start_date'] ?? false) {
 				unset($panel['columns']['zenario_ctype_event__start_date']);
 			}

@@ -73,7 +73,12 @@ $xml->startDocument('1.0', 'UTF-8');
 
 		while ($item = ze\sql::fetchAssoc($result)) {
 			$xml->startElement('url');
-			$xml->writeElement('lastmod', substr((!empty($item['published_datetime']) ? $item['published_datetime'] : ''), 0, 10));
+			
+			$lastMod = (!empty($item['published_datetime']) ? $item['published_datetime'] : '');
+			if ($lastMod) {
+				$xml->writeElement('lastmod', substr(($lastMod), 0, 10));
+			}
+			
 			$xml->writeElement('loc', ze\link::toItem($item['id'], $item['type'], true, '', $item['alias'], false, true));
 			$xml->endElement();
 		}
@@ -86,7 +91,12 @@ if (!empty($returnedPages)) {
 	foreach($returnedPages as $pages) {
 		foreach ($pages as $page) {
 			$xml->startElement('url');
-			$xml->writeElement('lastmod', substr((!empty($page['published_datetime']) ? $page['published_datetime'] : ''), 0, 10));
+			
+			$lastMod = (!empty($page['published_datetime']) ? $page['published_datetime'] : '');
+			if ($lastMod) {
+				$xml->writeElement('lastmod', substr(($lastMod), 0, 10));
+			}
+			
 			$xml->writeElement('loc', ze\link::toItem($page['id'], $page['type'], true, $page['requests'], $page['alias'], false, true));
 			$xml->endElement();
 		}

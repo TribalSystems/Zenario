@@ -132,3 +132,12 @@ _sql
 _sql
 
 );
+
+//In 9.7, we reviewed the module tables and decided to no longer use a module-specific table
+//and instead merge the functionality into the users table.
+ze\dbAdm::revision(41,
+<<<_sql
+	DROP TABLE IF EXISTS [[DB_PREFIX]][[ZENARIO_EXTRANET_CHANGE_EMAIL_PREFIX]]new_user_emails
+_sql
+
+);

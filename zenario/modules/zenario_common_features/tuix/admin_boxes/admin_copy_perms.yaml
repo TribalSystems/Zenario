@@ -4,9 +4,7 @@ admin_copy_perms:
     priv: _PRIV_EDIT_ADMIN
     key:
         id: ''
-        id_is_to: ''
-        id_is_from: ''
-    title: Copying administrator permissions
+    title: Copying administrator permissions to admin [[admin]]
     hide_tab_bar: true
     tabs:
         copy:
@@ -18,33 +16,23 @@ admin_copy_perms:
                     full_width: true
                     snippet:
                         html: |
-                            Use this to copy the permissions from one administrator to another.
+                            Use this to copy the permissions from another administrator.
+                            
+                            All of the target administrator's permissions will be removed and replaced with those of the target administrator's.
                             
                             You cannot use multi-site administrators or trashed administrators, and
                             you cannot copy permissions to yourself.
                 
-                left_column:
-                    type: grouping
-                    name: left_column
                 copy_from:
-                    grouping: left_column
                     label: 'Copy permissions from:'
-                    type: select
-                    empty_value: ' -- Select -- '
-                    redraw_onchange: true
+                    pick_items:
+                        path: zenario__administration/panels/administrators/refiners/active_local////
+                        target_path: zenario__administration/panels/administrators
+                        min_path: zenario__administration/panels/administrators
+                        select_phrase: Select administrator...
+                        nothing_selected_phrase: No source admin selected
                     validation:
-                        required: Please select an administrator to copy permissions from
-                
-                right_column:
-                    type: grouping
-                    name: right_column
-                copy_to:
-                    grouping: right_column
-                    label: 'Copy permissions to:'
-                    type: checkboxes
-                    cols: 1
-                    validation:
-                        required: Please select an administrator to copy permissions to
+                        required: Please select an administrator to copy permissions from.
     
     save_button_message: Copy permissions
     cancel_button_message: Cancel

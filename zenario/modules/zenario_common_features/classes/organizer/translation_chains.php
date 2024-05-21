@@ -106,7 +106,7 @@ class zenario_common_features__organizer__translation_chains extends ze\moduleBa
 			
 			if ($item['translations'] > 0) {
 				$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);
-				$item['chain_desc'] = ze\admin::nphrase('[[tag]] and [[example]]', '[[tag]] and [[count]] more', $item['translations'], $item);
+				$item['chain_desc'] = ze\admin::nPhrase('[[tag]] and [[example]]', '[[tag]] and [[count]] more', $item['translations'], $item);
 			
 			} elseif ($item['language_id'] == ze::$defaultLang) {
 				$item['tag'] = ze\content::formatTag($item['id'], $item['type'], $item['alias'], $item['language_id']);

@@ -32,9 +32,46 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$responseId = $box['key']['id'];
 		$box['title'] = ze\admin::phrase('Form response [[id]]', ['id' => $responseId]);
-		$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['response_datetime', 'crm_response', 'form_id'], $responseId);
-		$formId = $responseDetails['form_id'];
+		$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['user_id', 'response_datetime', 'crm_response', 'form_id', 'allocated_to_admin_id', 'allocated_to_admin_datetime'], $responseId);
+		$box['key']['form_id'] = $responseDetails['form_id'];
+		
+		if ($responseDetails['user_id']) {
+			$userIdentifier = ze\row::get('users', 'identifier', ['id' => $responseDetails['user_id']]);
+			
+			if ($userIdentifier) {
+				$usersPanelLink = ze\link::absolute() . 'organizer.php#zenario__users/panels/users//' . (int) $responseDetails['user_id'] . '~-' . $userIdentifier;
+				$fields['form_fields/response_user_id']['snippet']['html'] = '<a href="' . $usersPanelLink . '" target="_blank">' . $userIdentifier . '</a>';
+			} else {
+				$fields['form_fields/response_user_id']['snippet']['html'] = ze\admin::phrase('(user account deleted)');
+			}
+		} else {
+			$fields['form_fields/response_user_id']['snippet']['html'] = ze\admin::phrase('(visitor)');
+		}
+		
 		$values['response_datetime'] = ze\admin::formatDateTime($responseDetails['response_datetime'], 'vis_date_format_med');
+		
+		$formWorkflowDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['show_checkbox_for_allocating_form_responses', 'form_responses_allocate_checkbox_label'], ['id' => $box['key']['form_id']]);
+		
+		if (!empty($formWorkflowDetails['show_checkbox_for_allocating_form_responses'])) {
+			$fields['form_fields/workflow_control_grouping']['hidden'] = false;
+			$label = $formWorkflowDetails['form_responses_allocate_checkbox_label'];
+			$labelMergeFields = [];
+			
+			if (!empty($responseDetails['allocated_to_admin_id']) && !empty($responseDetails['allocated_to_admin_datetime'])) {
+				$fields['form_fields/workflow_control_allocated']['label'] = ze\admin::phrase($formWorkflowDetails['form_responses_allocate_checkbox_label']);
+				$values['form_fields/workflow_control_allocated'] = true;
+				
+				$label .= ' [[allocated_relative_date]] by [[admin_name]]';
+				
+				$timestampAllocated = strtotime($responseDetails['allocated_to_admin_datetime']);
+				$labelMergeFields = ['allocated_relative_date' => ze\date::formatRelativeDateTime($timestampAllocated), 'admin_name' => ze\admin::formatName($responseDetails['allocated_to_admin_id'])];
+			} elseif (ze\priv::check('_PRIV_VIEW_FORM_RESPONSES')) {
+				$box['tabs']['form_fields']['edit_mode']['enabled'] = true;
+				$box['save_button_message'] = ze\admin::phrase('Save');
+			}
+			
+			$fields['form_fields/workflow_control_allocated']['label'] = ze\admin::phrase($label, $labelMergeFields);
+		}
 		
 		$crmEnabled = false;
 		if (zenario_user_forms::isFormCRMEnabled($responseDetails['form_id'], false)) {
@@ -62,4 +99,28 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 		return $data;
 	}
 	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		ze\priv::exitIfNot('_PRIV_VIEW_FORM_RESPONSES');
+		
+		$formWorkflowDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['show_checkbox_for_allocating_form_responses', 'form_responses_allocate_checkbox_label'], ['id' => $box['key']['form_id']]);
+		
+		if (!empty($formWorkflowDetails['show_checkbox_for_allocating_form_responses'])) {
+			//Check if the form response is already allocated
+			$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['allocated_to_admin_id', 'allocated_to_admin_datetime'], $box['key']['id']);
+			if (!empty($responseDetails) && !empty($responseDetails['allocated_to_admin_id']) && !empty($responseDetails['allocated_to_admin_datetime'])) {
+				//Do nothing, the form is already allocated.
+			} elseif ($values['form_fields/workflow_control_allocated']) {
+				$dateToday = ze\date::now();
+				$adminId = ze\admin::id();
+				
+				if ($dateToday && $adminId) {
+					ze\row::set(
+						ZENARIO_USER_FORMS_PREFIX. 'user_response',
+						['allocated_to_admin_id' => (int) $adminId, 'allocated_to_admin_datetime' => ze\escape::sql($dateToday)],
+						['id' => $box['key']['id'], 'form_id' => $box['key']['form_id']]
+					);
+				}
+			}
+		}
+	}
 }

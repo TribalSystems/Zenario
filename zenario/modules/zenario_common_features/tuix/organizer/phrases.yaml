@@ -14,12 +14,10 @@ zenario__languages:
                 custom_where_statement_if_no_refiner: |
                     WHERE vp.language_id = [[FOCUSED_LANGUAGE_ID]]
             refiners:
-                language:
-                    exists: true
-                language_and_plugin:
+                modules_phrases:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]modules AS m
-                        ON m.id = [[REFINER__LANGUAGE_AND_PLUGIN]]
+                        ON m.id = [[REFINER__MODULES_PHRASES]]
                     sql: vp.module_class_name = m.class_name
                 category_public_name:
                     sql: |
@@ -36,42 +34,59 @@ zenario__languages:
                     db_column: vp.code
                     show_by_default: true
                     width: large
-                    ord: 1
+                is_code:
+                    title: Is code
+                    db_column: SUBSTR(vp.code, 1, 1) = '_'
+                    format: yes_or_no
+                    yes_phrase: Code-based
+                    no_phrase: Text-based
+                    show_by_default: false
+                    width: xsmall
+                is_html:
+                    title: Is HTML
+                    db_column: vp.is_html
+                    format: yes_or_no
+                    yes_phrase: HTML
+                    no_phrase: Plain text
+                    show_by_default: false
+                    width: small
                 module_name:
                     title: Source module name
                     db_column: vp.module_class_name
                     format: module_class_name
                     show_by_default: true
                     width: large
-                    ord: 1.1
                 module_class_name:
-                    title: Source module class name
                     db_column: vp.module_class_name
-                    width: large
-                    ord: 1.2
-                is_code:
-                    title: Is code
-                    db_column: SUBSTR(vp.code, 1, 1) = '_'
-                    format: yes_or_no
-                    show_by_default: false
-                    width: xsmall
                 seen_in_visitor_mode:
                     title: Seen in visitor mode
                     db_column: vp.seen_in_visitor_mode
                     format: yes_or_no
-                    show_by_default: true
-                    width: small
-                seen_in_file:
-                    title: Found in file
-                    db_column: vp.seen_in_file
-                    show_by_default: true
-                    width: large
-                seen_at_url:
-                    title: Seen at URL
-                    db_column: vp.seen_at_url
+                    yes_phrase: Seen
+                    no_phrase: Unseen
                     show_by_default: false
+                    width: small
+                seen_at:
+                    db_column: |
+                        IF (vp.seen_at_content_id IS NULL, NULL, CONCAT(vp.seen_at_content_type, '_', vp.seen_at_content_id))
+                    title: Seen at
+                    show_by_default: true
                     width: large
                     item_link: content_item_or_url
+                first_seen_by_visitor:
+                    title: First seen in visitor mode
+                    db_column: vp.first_seen_by_visitor
+                    format: date
+                    show_by_default: true
+                    values:
+                        unknown: Unknown
+                    #width: small
+                #modified_date:
+                #    title: Last modified by admin
+                #    db_column: vp.modified_date
+                #    format: date
+                #    show_by_default: true
+                #    #width: small
             default_sort_column: code
             item:
                 name: Phrase
@@ -141,15 +156,83 @@ zenario__languages:
                             message_type: warning
                         request:
                             merge_phrases: 1
-                delete:
+                
+                mark_as_unseen_plain_text:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Mark as unseen
+                    multiple_select: true
+                    visible_if_for_all_selected_items: |
+                        !item.is_html
+                    visible_if_for_any_selected_items: |
+                        item.seen_in_visitor_mode
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to clear the record of where the phrase "[[code]]" was first seen?
+                            multiple_select_message: |
+                                Are you sure you wish to clear the record of where the [[item_count]] selected phrases were first seen?
+                            button_message: Mark as unseen
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_unseen: 1
+                mark_as_unseen_html:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Mark as unseen
+                    multiple_select: true
+                    visible_if_for_any_selected_items: |
+                        item.is_html && item.seen_in_visitor_mode
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to clear the record of where the selected phrase was first seen?
+                            multiple_select_message: |
+                                Are you sure you wish to clear the record of where the [[item_count]] selected phrases were first seen?
+                            button_message: Mark as unseen
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_unseen: 1
+                
+                delete_plain_text:
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                     label: Delete
                     multiple_select: true
+                    visible_if_for_all_selected_items: |
+                        !item.is_code && !item.is_html
                     ajax:
                         confirm:
-                            html: Yes
-                            message: 'Are you sure you wish to delete the phrase &quot;[[code]]&quot;?'
-                            multiple_select_message: Are you sure you wish to delete the selected phrases?
+                            message: |
+                                Are you sure you wish to delete the translations of the phrase "[[code]]"?
+                                
+                                This will not delete any plugin settings or customised phrases.
+                            multiple_select_message: |
+                                Are you sure you wish to delete the translations of the [[item_count]] selected phrases?
+                                
+                                This will not delete any plugin settings or customised phrases.
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_phrase: 1
+                delete_html:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Delete
+                    multiple_select: true
+                    visible_if_for_all_selected_items: |
+                        !item.is_code
+                    visible_if_for_any_selected_items: |
+                        item.is_html
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete the translations of the selected phrase?
+                                
+                                This will not delete any plugin settings or customised phrases.
+                            multiple_select_message: |
+                                Are you sure you wish to delete the translations of the [[item_count]] selected phrases?
+                                
+                                This will not delete any plugin settings or customised phrases.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

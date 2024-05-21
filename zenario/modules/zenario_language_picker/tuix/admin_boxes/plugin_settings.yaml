@@ -6,21 +6,27 @@ plugin_settings:
             label: Settings
             fields:
                 destination:
-                    label: 'Link Destination:'
+                    label: 'Link destination:'
                     plugin_setting:
                         name: destination
                     type: radios
                     values:
                         home:
-                            label: Link to the Language Home Page.
+                            label: Always link to the home page of the target language.
                         equiv_or_home:
                             label: >
-                                Link to the translation of the current Content Item.
-                                Otherwise link to the Language Home Page.
+                                Link to the translation of the current content item.
+                                If one does not exist, link to the home page in the target language.
                         equiv_only:
                             label: >
-                                Link to the translation of the current Content Item.
-                                Otherwise do not show a link.
+                                Link to the translation of the current content item.
+                                If one does not exist, do not show a link.
                     value: equiv_or_home
-                    post_field_html: '<br/><br/>'
+                languages_without_home_page_warning:
+                    snippet:
+                        html: '<div class="zenario_fbWarning">[[languages_without_home_page_warning]]</div>'
+                    hidden: true
+                language_settings_info:
+                    snippet:
+                        html: '<div class="zenario_fbInfo">[[language_settings_info]]</div>'
     module_class_name: zenario_language_picker

@@ -64,7 +64,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$box['last_updated'] = ze\admin::formatUserLastUpdated($user);
 			
 			$values['details/status'] = $user['status'];
-			$values['details/email'] = $values['details/email_on_load'] = $user['email'];
+			$values['details/email'] = $box['key']['email_on_load'] = $user['email'];
 			$values['details/email_verified'] = ($user['email'] && ($user['email_verified'] == 'verified'));
 			$values['details/salutation'] = $user['salutation'];
 			$values['details/first_name'] = $user['first_name'];
@@ -353,7 +353,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		}
 		
 		if ($box['key']['id']) {
-			if ($values['details/email'] && ($values['details/email'] != $values['details/email_on_load'])) {
+			if ($values['details/email'] && ($values['details/email'] != $box['key']['email_on_load'])) {
 				unset($fields['details/email']['post_field_html']);
 			}
 		}
@@ -511,7 +511,7 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			}
 			
 			if (!empty($values['details/email'])) {
-				if ($values['details/email'] != $values['details/email_on_load']) {
+				if ($values['details/email'] != $box['key']['email_on_load']) {
 					$cols['email_verified'] = 'not_verified';
 				} else {
 					$cols['email_verified'] = ($values['details/email_verified'] ? 'verified' : 'not_verified');

@@ -617,7 +617,7 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 	protected function getUserIdFromHashCode($hash){
-		if ($hash && ($userId = (int) ze\row::get("users", "id", ['hash' => $hash]))) {
+		if ($hash && ($userId = (int) ze\row::get("users", "id", ['hash_verify_email' => $hash]))) {
 			return $userId;
 		} else {
 			return 0;
@@ -628,7 +628,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		ze\userAdm::updateHash($userId);
 		$emailMergeFields = ze\user::userDetailsForEmails($userId);
 		
-		$hash = ze\row::get('users', 'hash', $userId);
+		$hash = ze\row::get('users', 'hash_verify_email', $userId);
 		
 		if (!empty($emailMergeFields['email']) && $this->setting('verification_email_template')) {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
@@ -650,7 +650,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if ($this->setting('user_signup_notification_email_address') && $this->setting('user_signup_notification_email_template')) {
 			ze\userAdm::updateHash($userId);
 			
-			$hash = ze\row::get('users', 'hash', $userId);
+			$hash = ze\row::get('users', 'hash_verify_email', $userId);
 			
 			$emailMergeFields = ze\user::userDetailsForEmails($userId);
 			$emailMergeFields['cms_url'] = ze\link::absolute();
@@ -889,6 +889,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
 				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
 			];
+			$this->objects['Container_Id'] = $this->containerId;
 			$this->framework('Outer', $this->objects, $this->subSections);
 		echo $this->closeForm();
 		

@@ -47,10 +47,10 @@ if (ze::request('mID') && ze::post('menu_item')) {
 		ze\contentAdm::trashContent($cID, $cType);
 		
 		if (!empty($menu['parent_id'])) {
-			echo '<!--Go_To_URL:?mID='. $menu['parent_id']. '-->';
+			ze\escape::bFlag('GO_TO_URL', '?mID='. $menu['parent_id']);
 		
 		} else {
-			echo '<!--Go_To_URL:-->';
+			ze\escape::bFlag('GO_TO_URL', '');
 		}
 	}
 
@@ -68,21 +68,21 @@ if (ze::request('mID') && ze::post('menu_item')) {
 		switch (ze\content::status($cID, $cType)) {
 			case 'trashed':
 				if (!empty($menu['parent_id'])) {
-					echo '<!--Go_To_URL:?mID='. $menu['parent_id']. '-->';
+					ze\escape::bFlag('GO_TO_URL', '?mID='. $menu['parent_id']);
 				
 				} else {
-					echo '<!--Go_To_URL:-->';
+					ze\escape::bFlag('GO_TO_URL', '');
 				}
 				break;
 				
 			case 'deleted':
 				if (!empty($menu['parent_id'])) {
-					echo '<!--Go_To_URL:?mID='. $menu['parent_id']. '-->';
-					echo '<!--Toast_Next_Pageload:'. ze\admin::phrase("Content item deleted, you've been taken to the page above in the menu."). '-->';
+					ze\escape::bFlag('GO_TO_URL', '?mID='. $menu['parent_id']);
+					ze\escape::bFlag('TOAST_NEXT_PAGELOAD', ze\admin::phrase("Content item deleted, you've been taken to the page above in the menu."));
 				
 				} else {
-					echo '<!--Go_To_URL:-->';
-					echo '<!--Toast_Next_Pageload:'. ze\admin::phrase("Content item deleted, you've been taken to the home page."). '-->';
+					ze\escape::bFlag('GO_TO_URL', '');
+					ze\escape::bFlag('TOAST_NEXT_PAGELOAD', ze\admin::phrase("Content item deleted, you've been taken to the home page."));
 				}
 				break;
 		}

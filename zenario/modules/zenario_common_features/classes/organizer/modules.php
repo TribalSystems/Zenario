@@ -473,7 +473,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 
 		//Send a command to reload Organizer if a module adds to Organizer, or has a content type
 		if ($reloadIfNeeded && ze\dbAdm::needToReloadOrganizerWhenModuleIsInstalled($module['class_name'])) {
-			echo '<!--Reload_Organizer-->';
+			ze\escape::bFlag('RELOAD_ORGANIZER');
 		}
 		
 		return $return;

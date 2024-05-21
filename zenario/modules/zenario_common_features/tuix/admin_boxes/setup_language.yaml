@@ -22,7 +22,7 @@ zenario_setup_language:
                             </div>
                             
                             <p>
-                                [[language_english_name]] [[is_or_will_be]] the default language for this site. All web pages will include its ISO code, [[iso_code]].
+                                [[language_english_name]] [[is_or_will_be]] the default language for this site. All web pages will include its ISO code, "[[iso_code]]".
                             </p>
 
                             <p>
@@ -50,7 +50,7 @@ zenario_setup_language:
                             </div>
                              
                             <p>
-                                [[language_english_name]] [[is_or_will_be]] a language of this site. All web pages will include its ISO code, [[iso_code]].
+                                [[language_english_name]] [[is_or_will_be]] enabled as a language of this site. All content items (web pages) will include its ISO code, "[[iso_code]]".
                             </p>
 
                             <p>
@@ -66,22 +66,21 @@ zenario_setup_language:
                     visible_if: |
                         zenarioAB.tuix.key.id && (zenarioA.siteSettings.default_language && zenarioAB.tuix.key.id != zenarioA.siteSettings.default_language)
                 english_name:
-                    label: 'Language English Name:'
+                    label: 'Language name (in English):'
                     type: text
                     maxlength: 100
                     validation:
-                        required: Please enter an English name.
+                        required: Please enter the name of this language. This should be written in English as the Zenario administrator interface is in English.
                     side_note: >
-                        The name of the language in English, as will be seen by administrators.
+                        Please enter the name of the language. This should be in English, as the Zenario administrator interface is in English.
                 language_local_name:
-                    label: 'Language Local Name:'
+                    label: 'Language name in its own language:'
                     type: text
                     maxlength: 100
                     validation:
-                        required: Please enter a local name.
+                        required: Please enter the name of this language in its own language.
                     side_note: >
-                        The name of the language, in its local tongue. This will be
-                        displayed to visitors.
+                        The name of the language, in its own language. This name will be displayed to visitors who see the site in that language.
                 
                 translate_phrases:
                     type: checkbox
@@ -147,6 +146,9 @@ zenario_setup_language:
                         Enter one or more language codes, separate multiple codes with a comma.
                     visible_if: "zenarioAB.value('detect')"
                     indent: 1
+                    note_below: |
+                        <p>The visitor's browser's language code must start with that code or be equal to it.</p>
+                        <p>Multiple language codes may be entered (separated by commas). For example, for Portuguese, the value may be:<br /><code>pt-eu,pt-br,pt</code></p>
                 
                 search_type:
                     label: 'Search algorithm:'
@@ -159,15 +161,17 @@ zenario_setup_language:
                         simple:
                             label: Use "LIKE" in searches
                             side_note: Search for anything containing the search term, e.g. a search for "van" would match "caravan". We suggest this for languages that use symbols such as Japanese and Chinese.
-                thousands_sep:
-                    label: 'Thousands separator:'
+                dec_point:
+                    label: 'When displaying numbers, decimal separator:'
                     type: text
+                    note_below: Usually a period (.) or comma (,).
                     maxlength: 5
                     style: |
                         width: 2em;
-                dec_point:
-                    label: 'Decimal point:'
+                thousands_sep:
+                    label: 'When displaying numbers, thousands separator:'
                     type: text
+                    note_below: Usually a comma (,) a period (.) or a space.
                     maxlength: 5
                     style: |
                         width: 2em;

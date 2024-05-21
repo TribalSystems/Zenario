@@ -5,14 +5,14 @@
 	<div class="lang_choices">
 		{% for lang in Languages %}
 			{% if lang.current_language %}
-				<div class="lang_{{lang.flag|e}} lang_flag" title="{{lang.name|e}}">
-					<span class="flag">{{lang.flag|e}}</span>
+				<div class="lang_flag" title="{{lang.name|e}}">
+					<span class="fflag ff-md fflag-{{lang.flag|e|upper}}">{{lang.flag|e}}</span>
 				</div>
 			
 			{% elseif lang.link %}
-				<div class="lang_{{lang.flag|e}} lang_flag" title="{{lang.name|e}}">
+				<div class="lang_flag" title="{{lang.name|e}}">
 					<a href="{{lang.link|e}}">
-						<span class="flag">{{lang.flag|e}}</span>
+						<span class="fflag ff-md fflag-{{lang.flag|e|upper}}">{{lang.flag|e}}</span>
 					</a>
 				</div>
 			

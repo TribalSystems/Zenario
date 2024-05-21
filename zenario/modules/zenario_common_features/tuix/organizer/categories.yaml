@@ -115,7 +115,7 @@ zenario__library:
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_CATEGORY
-                    label: Category properties
+                    label: Edit category
                     admin_box:
                         path: zenario_categories
                 view_dropdown:

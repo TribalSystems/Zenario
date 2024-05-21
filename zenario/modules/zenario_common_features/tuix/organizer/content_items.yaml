@@ -40,6 +40,8 @@ zenario__content:
                       AND mt.language_id = c.language_id
                     LEFT JOIN [[DB_PREFIX]]files AS f
                        ON f.id = v.file_id
+                    LEFT JOIN [[DB_PREFIX]]file_extracts AS fe
+                       ON fe.file_id = v.file_id
                     LEFT JOIN [[DB_PREFIX]]content_cache AS cc
                        ON v.id = cc.content_id
                       AND v.type = cc.content_type
@@ -129,6 +131,9 @@ zenario__content:
                     add_translation_to_chain: ''
                 filter_by_language_and_content_type:
                     exists: true
+                
+                published_draft_and_unlisted_only:
+                    sql: 'c.status IN("published", "published_with_draft", "unlisted", "unlisted_with_draft", "first_draft")'
                 
                 category:
                     table_join: |
@@ -611,6 +616,7 @@ zenario__content:
                     css_class: zenario_create_a_new
                     label: New
                 create:
+                    parent: new_dropdown
                     priv: _PRIV_EDIT_DRAFT
                     hide_in_select_mode: true
                     hide_on_filter: true
@@ -727,14 +733,6 @@ zenario__content:
                     link:
                         path: zenario__modules/panels/modules~-zenario_ctype
                 
-                help:
-                    label: Help
-                    hide_on_refiner: true
-                    help:
-                        message: >
-                            Every page of your website is stored as a "content item".
-                            This panel shows all of the content items of your site in a
-                            list view.
                 help_trash:
                     label: Help
                     only_show_on_refiner: trash
@@ -870,7 +868,7 @@ zenario__content:
                 head__populated:
                     parent: property_dropdown
                     priv: _PRIV_MANAGE_ITEM_SLOT
-                    label: HTML in head of page
+                    label: HTML/JS in <head>
                     tooltip: 'Populated'
                     admin_box:
                         path: zenario_head_foot_slot
@@ -881,7 +879,7 @@ zenario__content:
                 head__empty:
                     parent: property_dropdown
                     priv: _PRIV_MANAGE_ITEM_SLOT
-                    label: HTML in head of page
+                    label: HTML/JS in <head>
                     tooltip: 'Empty'
                     admin_box:
                         path: zenario_head_foot_slot
@@ -891,7 +889,7 @@ zenario__content:
                     visible_if: !item.head_html
                 foot__populated:
                     copy_of: head__populated
-                    label: HTML at foot of page
+                    label: HTML/JS before </body>
                     tooltip: 'Populated'
                     admin_box:
                         key:
@@ -899,7 +897,7 @@ zenario__content:
                     visible_if: item.foot_html
                 foot__empty:
                     copy_of: head__empty
-                    label: HTML at foot of page
+                    label: HTML/JS before </body>
                     tooltip: 'Empty'
                     admin_box:
                         key:
@@ -951,7 +949,7 @@ zenario__content:
                     parent: publishing_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
                     hide_in_select_mode: true
-                    label: Change or cancel scheduled publishing...
+                    label: Change scheduled publishing...
                     multiple_select: true
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id) &&
@@ -1070,6 +1068,15 @@ zenario__content:
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
                 
+                open:
+                    parent: view_dropdown
+                    label: Open file
+                    hide_in_select_mode: true
+                    onclick: |
+                        var item = zenarioO.selectedItemDetails();
+                        window.open(URLBasePath + 'zenario/file.php?usage=content&showInWindow=1&cID=' + item.id + '&cType=' + item.type);
+                        return false;
+                    visible_if: (item.type == 'document' || item.type == 'picture' || item.type == 'audio' || item.type == 'video')
                 download:
                     parent: view_dropdown
                     label: Download
@@ -1164,7 +1171,7 @@ zenario__content:
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
-                    label: Change categories
+                    label: Change categories...
                     admin_box:
                         path: zenario_content_categories
                     without_columns_set:

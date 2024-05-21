@@ -66,8 +66,7 @@ if (!ze\priv::check()) {
 	 || ze::request('method_call') == 'handleOrganizerPanelAJAX'
 	 || ze::request('method_call') == 'handleAdminToolbarAJAX') {
 		
-		header('Zenario-Admin-Logged_Out: 1');
-		echo '<!--Logged_Out-->', ze\admin::phrase('You have been logged out.');
+		ze\admin::wasLoggedOut();
 		exit;
 	
 	//Also don't do the redirect for index.php or organizer.php

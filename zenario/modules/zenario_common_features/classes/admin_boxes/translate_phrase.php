@@ -34,13 +34,15 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		
 		//Don't use this box for editing phrases in the default language
 		if (!$box['key']['language_id']
-		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name'], $box['key']['id']))) {
+		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name', 'is_html'], $box['key']['id']))) {
 			exit;
 		}
 		
 		$box['key']['code'] = $phraseKey['code'];
+		$box['key']['is_html'] = $phraseKey['is_html'];
 		$box['key']['module_class_name'] = $phraseKey['module_class_name'];
 		$box['key']['is_code'] = substr($box['key']['code'], 0, 1) == '_';
+		unset($phraseKey['is_html']);
 
 		$languages = ze\lang::getLanguages(false, true, true);
 		$translateDefaultLang = $languages[ze::$defaultLang]['translate_phrases'];
@@ -54,6 +56,13 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		$fields['phrase/phrase']['label'] = ze\admin::phrase('Phrase in [[default_lang]]:', $mrg);
 		$fields['phrase/local_text']['label'] = ze\admin::phrase('Phrase in [[this_lang]]:', $mrg);
 		
+		if ($box['key']['is_html']) {
+			$fields['phrase/phrase']['type'] =
+			$fields['phrase/local_text']['type'] = 'editor';
+			$fields['phrase/phrase']['editor_type'] =
+			$fields['phrase/local_text']['editor_type'] = 'phrase_editor';
+		}
+		
 		$phraseKey['language_id'] = ze::$defaultLang;
 		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag'], $phraseKey)) {
 			
@@ -65,9 +74,13 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		}
 		
 		$phraseKey['language_id'] = $box['key']['language_id'];
-		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag'], $phraseKey)) {
+		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag', 'modified_date'], $phraseKey)) {
 			$values['phrase/local_text'] = $phrase['local_text'];
 			$values['phrase/protect_flag'] = $phrase['protect_flag'];
+			
+			if ($phrase['modified_date']) {
+				$box['last_updated'] = ze\admin::phrase('Last edited [[date]]', ['date' => \ze\date::formatDateTime($phrase['modified_date'], 'vis_date_format_short')]);
+			}
 		}
 		
 		//If this is the default language, don't show two columns
@@ -91,7 +104,7 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $box['key']['language_id'])) {
 			ze\row::set('visitor_phrases', 
-				['local_text' => $values['phrase/local_text'], 'protect_flag' => $values['phrase/protect_flag']], 
+				['local_text' => $values['phrase/local_text'], 'protect_flag' => $values['phrase/protect_flag'], 'modified_date' => ze\date::now()], 
 				['code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $box['key']['language_id']]);
 			
 			ze\phraseAdm::flagAsUpdated();

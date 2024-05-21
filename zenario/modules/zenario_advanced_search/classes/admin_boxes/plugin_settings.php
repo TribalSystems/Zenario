@@ -202,6 +202,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 							case 'zenario_location_manager':
 								$suggestedModule = 'zenario_locations_fea';
 								break;
+							case 'zenario_videos_manager':
+								$suggestedModule = 'zenario_videos_fea';
+								break;
 						}
 					}
 					

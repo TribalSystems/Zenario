@@ -150,15 +150,22 @@ class adminAdm {
 
 	public static function delete($adminId, $undo = false) {
 		$sql = "
-			UPDATE ". DB_PREFIX. "admins SET
+			UPDATE " . DB_PREFIX . "admins SET
 				status = '". ($undo? "active" : "deleted"). "',
 				modified_date = NOW(),
+				email = '',
 				password = '',
 				password_salt = '',
 				reset_password_salt = '',
 				password_needs_changing = 1
 			WHERE authtype = 'local'
-			  AND id = ". (int) $adminId;
+			  AND id = " . (int) $adminId;
+		\ze\sql::update($sql);
+		
+		//Also delete that admin's permissions
+		$sql = "
+			DELETE FROM " . DB_PREFIX . "action_admin_link
+			WHERE admin_id = " . (int) $adminId;
 		\ze\sql::update($sql);
 	}
 	

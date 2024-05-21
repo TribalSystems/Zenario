@@ -84,37 +84,42 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			} else {
 				$values['publish/publish_date'] = date('Y-m-d');
 			}
-			
-			if ($clash) {
-				$href = ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//' . $box['key']['id'] . '~.zenario_content~tmeta_data~k{"id"%3A"' . $box['key']['id'] . '"}';
-				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="blank">';
-				$linkEnd = '</a>';
-				ze\lang::applyMergeFields($fields['publish/publishing_before_release_date_warning']['snippet']['html'],
-					[
-						'publishing_before_release_date_warning_note' => ze\admin::phrase(
-							'This content item has a release date of [[date]], which is in the future. If that is not correct, [[link_start]]edit its meta data[[link_end]] to change the release date.',
-							[
-								'link_start' => $linkStart,
-								'date' => $clash['date'],
-								'link_end' => $linkEnd
-							]
-						)
-					]
-				);
-			} else {
-				$fields['publish/publishing_before_release_date_warning']['hidden'] = true;
-			}
 		
 		} else {
-			$fields['publish/publish_options']['values']['schedule']['hidden'] = true;
-			$fields['publish/publishing_before_release_date_warning']['hidden'] = true;
+			$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
 			
-			if ($clash) {
-				ze\escape::flag('Message_Type', 'Warning');
-				ze\escape::flag('BUTTON_HTML', '');
-				echo ze\admin::phrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
-				exit;
-			}
+			$values['publish/publish_date'] = date('Y-m-d');
+			
+			$scheduledTaskManagerModuleId = ze\module::id('zenario_scheduled_task_manager');
+			$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__modules/panels/modules//' . (int) $scheduledTaskManagerModuleId . '~-scheduled_task_manager';
+			
+			$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
+			$linkEnd = "</a>";
+
+			$string = "Scheduled publishing is not available. To enable it, please install the Scheduled Task Manager module. [[link_start]]See available modules.[[link_end]]";
+
+			$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
+			$fields['publish/publish_options']['values']['schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+		}
+		
+		if ($clash) {
+			$href = ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//' . $box['key']['id'] . '~.zenario_content~tmeta_data~k{"id"%3A"' . $box['key']['id'] . '"}';
+			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="blank">';
+			$linkEnd = '</a>';
+			ze\lang::applyMergeFields($fields['publish/publishing_before_release_date_warning']['snippet']['html'],
+				[
+					'publishing_before_release_date_warning_note' => ze\admin::phrase(
+						'This content item has a release date of [[date]], which is in the future. If that is not correct, [[link_start]]edit its meta data[[link_end]] to change the release date.',
+						[
+							'link_start' => $linkStart,
+							'date' => $clash['date'],
+							'link_end' => $linkEnd
+						]
+					)
+				]
+			);
+		} else {
+			$fields['publish/publishing_before_release_date_warning']['hidden'] = true;
 		}
 		
 		
@@ -218,10 +223,10 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			unset($fields['publish/publish_options']['values']['cancel']);
 			
 			if ($scheduledTaskManagerInc && $allJobsEnabled && $scheduledPublishingEnabled) {
-				//Set the default date to be +1 hr in the future. Round up to the nearest 5 mins.
+				//Set the default date to be +5 min in the future. Round up to the nearest 5 mins.
 				//This will push the date +1 day forward if needed.
 				$sdate = ze\date::new(ze\date::now());
-				$sdate->modify('+1 hour');
+				$sdate->modify('+5 minutes');
 				$sdate->setTime($sdate->format('H'), ceil($sdate->format('i') / 5) * 5, 0);
 				
 				$values['publish/publish_hours'] = $sdate->format('G');
@@ -562,7 +567,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 
 		//If it looks like this was opened from the front-end
 		//(i.e. there's no sign of any of Organizer's variables)
-		//then try to redirect the admin to whatever the visitor URL should be
+		//then try to redirect the admin to whatever the visitor URL should be.
+		
 		if (!isset($_GET['refinerName']) && count($tags) == 1) {
 			$link = ze\link::toItem(
 				$box['key']['cID'], $box['key']['cType'],
@@ -570,7 +576,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				false, $forceAliasInAdminMode = true
 			);
 			
-			ze\tuix::closeWithFlags(['go_to_url' => $link]);
+			$flags = [];
+			$flags['GO_TO_URL'] = $link;
+			ze\tuix::closeWithFlags($flags);
 			exit;
 		}
 	}

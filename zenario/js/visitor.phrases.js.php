@@ -59,7 +59,7 @@ foreach([
 	'copiedToClipboard' => 'Copied to clipboard'
 ] as $code => $phrase) {
 	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick(
-		ze\lang::phrase($phrase, false, 'zenario_common_features', $langId, $backtraceOffset = 1)
+		ze\lang::phrase($phrase, false, 'zenario_common_features', $langId)
 	). '~';
 }
 

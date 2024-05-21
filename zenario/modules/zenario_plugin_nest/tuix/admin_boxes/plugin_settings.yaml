@@ -342,7 +342,7 @@ plugin_settings:
                     value: crop_and_zoom
                     values:
                         unlimited:
-                            label: Unlimited size
+                            label: Set individually
                         crop_and_zoom:
                             label: Crop and zoom
                         fixed_width:
@@ -353,7 +353,7 @@ plugin_settings:
                             label: Constrain by width and height
                     format_onchange: true
                     note_below: |
-                        Use the <em style="font-style: italic;">Unlimited size</em> option if you will set the size on each image separately.
+                        Use the <em style="font-style: italic;">Set individually</em> option if you will set the size on each image separately.
                 banner_width:
                     plugin_setting:
                         name: banner_width
@@ -484,7 +484,7 @@ plugin_settings:
                     values:
                         unlimited:
                             ord: 1
-                            label: Unlimited size
+                            label: Set individually
                         fixed_width:
                             ord: 2
                             label: Constrain by width
@@ -496,7 +496,7 @@ plugin_settings:
                             label: Constrain by width and height
                     format_onchange: true
                     note_below: |
-                        Use the <em style="font-style: italic;">Unlimited size</em> option if you will set the size on each image separately.
+                        Use the <em style="font-style: italic;">Set individually</em> option if you will set the size on each image separately.
                 enlarge_width:
                     plugin_setting:
                         name: enlarge_width

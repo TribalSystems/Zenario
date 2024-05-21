@@ -305,11 +305,25 @@ zenario__users:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
                     label: Send activation email
+                    multiple_select_label: Send activation emails
                     multiple_select: true
                     with_columns_set:
                         traits.active: true
                     admin_box:
                         path: zenario_user__welcome_email
+                    visible_if_for_all_selected_items: item.email != ''
+                send_verification_email:
+                    hide_in_select_mode: true
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_USER
+                    label: Send verification email
+                    multiple_select_label: Send verification emails
+                    multiple_select: true
+                    with_columns_set:
+                        traits.active: true
+                    admin_box:
+                        path: zenario_user__verification_email
+                    visible_if_for_all_selected_items: item.email != '' && item.email_verified == 'not_verified'
                 change_password:
                     hide_in_select_mode: true
                     parent: action_dropdown
@@ -391,7 +405,7 @@ zenario__users:
                     parent: image_dropdown
                     ord: "70"
                     popout:
-                        href: zenario/file.php?usage=user
+                        href: zenario/file.php?popout=1&usage=user
                     with_columns_set:
                         traits.has_image: true
                 upload_image:

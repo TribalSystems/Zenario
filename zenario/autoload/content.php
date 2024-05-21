@@ -191,9 +191,9 @@ class content {
 
 	//Automatically generate SQL to search through Content, for example for a content list
 	//A bit of a techy function so we've included the full code here, so you can see exactly what it does
-	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false) {
+	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false, $displayHiddenContentItemsForAdmins = true) {
 		$adminMode = \ze::isAdmin();
-		
+
 		$sql = "
 			FROM ". DB_PREFIX. "content_item_versions AS v
 			INNER JOIN ". DB_PREFIX. "content_items AS c
@@ -205,8 +205,18 @@ class content {
 		
 		if ($adminMode) {
 			$sql .= "
-			  AND v.version = c.admin_version
-			  AND c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft','published')";
+			  AND v.version = c.admin_version";
+			
+			$statusList = ['first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published'];
+			
+			//Search modules should not display hidden content items to admins,
+			//so the $displayHiddenContentItemsForAdmins value should be false.
+			if ($displayHiddenContentItemsForAdmins) {
+				$statusList[] = 'hidden';
+			}
+			
+			$sql .= "
+			  AND c.status IN (" . \ze\escape::in($statusList) . ")";
 		} else {
 			$sql .= "
 			  AND v.version = c.visitor_version
@@ -791,8 +801,8 @@ class content {
 				WHERE c.equiv_id = ". (int) $equivId. "
 				  AND c.type = '". \ze\escape::asciiInSQL($cType). "'";
 			
-				//If an admin is logged in, any drafts/hidden content items should effect which language they get directed to
-				//If not, only published pages should effect the logic.
+				//If an admin is logged in, any drafts/hidden content items should affect which language they get directed to
+				//If not, only published pages should affect the logic.
 				if ($adminMode) {
 					$sql .= "
 					  AND c.status NOT IN ('trashed', 'deleted')";
@@ -1161,6 +1171,8 @@ class content {
 	
 		return false;
 	}
+	
+	public static $piWarnings = [];
 
 	public static function setShowableContent(&$content, &$chain, &$version, $checkTranslations) {
 		\ze::$equivId = $content['equiv_id'];

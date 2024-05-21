@@ -86,7 +86,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'implied'
                     label: "Initial message:"
                     type: editor
-                    editor_type: standard_with_links
+                    editor_type: phrase_editor
                     validation:
                         required_if_not_hidden: Please enter a message
                     note_below: 'The CSS class will be "cookies_implied".'
@@ -116,7 +116,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit'
                     label: "Initial popup message:"
                     type: editor
-                    editor_type: standard_with_links
+                    editor_type: phrase_editor
                     validation:
                         required_if_not_hidden: Please enter a message
                     note_below: 'The CSS class will be "cookies_explicit".'
@@ -162,7 +162,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit'
                     label: '"Manage cookies" popup message:'
                     type: editor
-                    editor_type: standard_with_links
+                    editor_type: phrase_editor
                     validation:
                         required_if_not_hidden: Please enter a message.
                 cookie_show_image:

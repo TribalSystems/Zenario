@@ -88,10 +88,22 @@ class zenario_blog_news_list extends zenario_content_list {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
+				$blogModuleIsRunning = ze\module::isRunning('zenario_ctype_blog');
+				$newsModuleIsRunning = ze\module::isRunning('zenario_ctype_news');
+				
 				$box['tabs']['pagination']['fields']['pagination_style']['values'] = 
 					ze\pluginAdm::paginationOptions();
 				
-				unset($box['tabs']['first_tab']['fields']['content_type']['value']);
+				if (!ze::in($box['tabs']['first_tab']['fields']['content_type']['value'], 'blog', 'news')) {
+					if ($blogModuleIsRunning) {
+						$box['tabs']['first_tab']['fields']['content_type']['value'] = 'blog';
+					} elseif ($newsModuleIsRunning) {
+						$box['tabs']['first_tab']['fields']['content_type']['value'] = 'news';
+					} else {
+						$box['tabs']['first_tab']['fields']['content_type']['value'] = 'blog';
+					}
+				}
+				
 				foreach ($box['tabs']['first_tab']['fields']['content_type']['values'] as $key => $cType) {
 					if ($key != "blog" && $key != "news") {
 						unset($box['tabs']['first_tab']['fields']['content_type']['values'][$key]);
@@ -99,7 +111,7 @@ class zenario_blog_news_list extends zenario_content_list {
 				}
 				
 				//Catch the case where this module is running, but neither Blog nor News content items are enabled
-				if (!ze\module::isRunning('zenario_ctype_blog') && !ze\module::isRunning('zenario_ctype_news')) {
+				if (!$blogModuleIsRunning && !$newsModuleIsRunning) {
 					$fields['first_tab/content_type']['disabled'] = true;
 				}
 				
@@ -112,7 +124,7 @@ class zenario_blog_news_list extends zenario_content_list {
 			case 'plugin_settings':
 				//Catch the case where this module is running, but neither Blog nor News content items are enabled
 				if (!ze\module::isRunning('zenario_ctype_blog') && !ze\module::isRunning('zenario_ctype_news')) {
-					$fields['first_tab/content_type']['error'] = $this->phrase('Please enable content type "Blog" and/or "News" module to use this plugin.');
+					$fields['first_tab/content_type']['error'] = ze\admin::phrase('Please enable content type "Blog" and/or "News" module to use this plugin.');
 				}
 				break;
 		}
@@ -152,7 +164,7 @@ class zenario_blog_news_list extends zenario_content_list {
 	
 	public function showSlot() {
 		$categoriesTree = [];
-		$selectedCategoryName = "All Categories";
+		$allCategoriesPhrase = $selectedCategoryName = "All categories";
 		$topLevelParent = false;
 		
 		if ($this->setting('enable_user_category_filter')) {
@@ -226,6 +238,10 @@ class zenario_blog_news_list extends zenario_content_list {
 			$titleWithContent = htmlspecialchars($this->setting('heading_if_items'));
 			
 			if (!$this->isVersionControlled && $this->setting('translate_text')) {
+				if ($selectedCategoryName == $allCategoriesPhrase) {
+					$selectedCategoryName = $this->phrase($selectedCategoryName);
+				}
+				
 				$titleWithContent = $this->phrase($titleWithContent, ['category' => $selectedCategoryName]);
 			}
 		}
@@ -288,9 +304,11 @@ class zenario_blog_news_list extends zenario_content_list {
 				'Categories' => $categoriesTree,
 				'SelectedCategory' => $this->catId,
 				'SelectedCategoryName' => $selectedCategoryName,
+				'allCategoriesPhrase' => $this->phrase('All categories'),
 				'TopLevelParent' => $topLevelParent,
 				'AllBlogPostsLinks' => $allBlogPostsLink,
-				'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height')
+				'Content_Items_Equal_Height' => (bool)$this->setting('make_content_items_equal_height'),
+				'Recent_Item_Phrase' => $this->phrase('New')
 			]
 		);
 	}

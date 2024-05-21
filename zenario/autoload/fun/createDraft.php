@@ -152,6 +152,7 @@ $version['id'] = $content['id'];
 $version['type'] = $content['type'];
 $version['tag_id'] = $content['tag_id'];
 $version['version'] = $cVersionTo = $content['admin_version'];
+$version['version_changed'] = 'not_checked';
 
 //Remove publication columns
 unset($version['last_author_id']);

@@ -28,7 +28,7 @@
                         <div class="label"><label for="extranet_email">{{"Please enter your email address:"|trans}}</label></div>
                         {{this.frameworkField({'type': "email", 'name': "extranet_email", 'id': "extranet_email", 'pattern': "email", 'required': "true", 'class': "extranet_text"})}}
                     </div>
-                    <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_send_reset_email" class="extranet_submit i" value="{{'Reset password'|trans}}" /></div></div>
+                    <div class="extranet_btn"><input type="submit" name="extranet_send_reset_email" class="extranet_submit" value="{{'Reset password'|trans}}" /></div>
                 </div>
                 <div class="extranet_links">
 					{% if Resend_Link_Section %}
@@ -47,8 +47,23 @@
                 	<input type="hidden" name="extranet_reset_password" value="{{extranet_reset_password}}"/>
                     <div class="extranet_field zenario_visitor_tooltip_wrap">
                         <div class="label"><label for="extranet_new_password">{{"Your new password:"|trans}}</label></div>
-                        {{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true",
-                        'class': "extranet_password", oninput: "zenarioP.updatePasswordNotifier('#extranet_new_password', " ~ json_encode(Password_Requirements_Settings) ~ ", '#password_message', false, false)"})}}
+                        <div class="password_field_with_eye">
+							{{this.frameworkField({
+								'type': "password",
+								'name': "extranet_new_password",
+								'id': "extranet_new_password",
+								'pattern': "new_password",
+								'required': "true",
+								'class': "extranet_password",
+								oninput: "zenarioP.updatePasswordNotifier('#extranet_new_password', " ~ json_encode(Password_Requirements_Settings) ~ ", '#password_message', false, false)"
+							})}}
+							
+							<i
+								id="{{Container_Id}}-password-reveal-hide-icon"
+								class="fas fa-eye-slash eye_icon"
+								onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'password-reveal-hide-icon', 'extranet_new_password')})"
+							></i>
+                        </div>
                     </div>
                     
                     <div>
@@ -57,9 +72,17 @@
                     
                     <div class="extranet_field">
                         <div class="label"><label for="extranet_new_password_confirm">{{"Repeat your new password:"|trans}}</label></div>
-                        {{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_text"})}}
+                        <div class="password_field_with_eye">
+                        	{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_text"})}}
+                        	
+                        	<i
+								id="{{Container_Id}}-repeat-password-reveal-hide-icon"
+								class="fas fa-eye-slash eye_icon"
+								onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'repeat-password-reveal-hide-icon', 'extranet_new_password_confirm')})"
+							></i>
+                        </div>
                     </div>
-                    <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'Reset password'|trans}}" /></div></div>
+                    <div class="extranet_btn"><input type="submit" name="extranet_change_password" class="extranet_submit" value="{{'Reset password'|trans}}" /></div>
                 </div>
             {% endif %}
             

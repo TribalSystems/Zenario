@@ -76,12 +76,16 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 		if ($addFullDetails) {
 			foreach ($panel['items'] as $id => &$item) {
 				if (isset($item['privacy'])) {
-					if ($item['privacy'] == 'auto') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] will auto-detect whether it is public or private. (When first used on a published content item, it will become public if the content item is public, or become private if the content item is private.)', ['name' => htmlspecialchars($item['filename'])]);
+					$mrg = ['name' => htmlspecialchars($item['filename'])];
+					
+					if ($item['privacy'] == 'public') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (Accessible by any visitor via a friendly URL. Can be used in WYSIWYG editors and may be indexed by search engines.)', $mrg);
+					
 					} elseif ($item['privacy'] == 'private') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They will not be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
-					} elseif ($item['privacy'] == 'public') {
-						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (The URL for the image will stay the same, and may be indexed by search engines.)', ['name' => htmlspecialchars($item['filename'])]);
+						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They cannot be used in WYSIWYG editors and will not be indexed by search engines.)', $mrg);
+					
+					} elseif ($item['privacy'] == 'auto') {
+						$item['tooltip'] = ze\admin::phrase('[[name]] will auto-detect whether it is public or private. (When next displayed, will be set to Public if on a public content item, or Private if on a private content item.)', $mrg);
 					}
 				}
 			}
@@ -146,7 +150,8 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 			if ($fileId) {
 
 				if ($existingFilename && $existingFilename != $_FILES['Filedata']['name']) {
-					echo '<!--Message_Type:Warning-->',
+					ze\escape::bFlag('MESSAGE_TYPE', 'warning');
+					echo
 						ze\admin::phrase('This file already existed on the system, but with a different name. "[[old_name]]" has now been renamed to "[[new_name]]".',
 							['old_name' => $existingFilename, 'new_name' => $_FILES['Filedata']['name']]);
 				} else {

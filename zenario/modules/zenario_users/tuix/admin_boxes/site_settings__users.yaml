@@ -195,6 +195,18 @@ site_settings:
                         select_phrase: Select email template...
                         hide_remove_button: Yes
                     value: zenario_users__to_user_account_activated
+                default_verification_email_template:
+                    site_setting:
+                        name: default_verification_email_template
+                    label: 'Verification email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: Yes
+                    value: zenario_extranet__to_user_email_verification_admin
                 default_password_reset_email_template:
                     site_setting:
                         name: default_password_reset_email_template

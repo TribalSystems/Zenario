@@ -10,18 +10,18 @@
 						<img class="existing_image" src="{{Image_Src}}" width="{{Image_Width}}" height="{{Image_Height}}" alt="{{'User Image'|trans}}" />
 					</div>
 					{% if Remove_Image %}
-						<div class="extranet_btn"><div class="r">    
-							<input class="remove_image i" type="submit" name="extranet_remove_image" value="{{'Remove'|trans}}" />
-						</div></div>
+						<div class="extranet_btn">   
+							<input class="remove_image" type="submit" name="extranet_remove_image" value="{{'Remove'|trans}}" />
+						</div>
 					{% endif %}
 					{% if Remove_Image_Confirm %}
 						<div class="extranet_confirm">{{"Are you sure you wish to remove your existing image?"|trans}}</div>
-						<div class="extranet_btn"><div class="r">    
-							<input class="remove_image i" type="submit" name="extranet_remove_image_cancel" value="{{'Cancel'|trans}}" />
-						</div></div>
-						<div class="extranet_btn"><div class="r">    
-							<input class="remove_image i" type="submit" name="extranet_remove_image_confirm" value="{{'Remove'|trans}}" />
-						</div></div>
+						<div class="extranet_btn">  
+							<input class="remove_image" type="submit" name="extranet_remove_image_cancel" value="{{'Cancel'|trans}}" />
+						</div>
+						<div class="extranet_btn">    
+							<input class="remove_image" type="submit" name="extranet_remove_image_confirm" value="{{'Remove'|trans}}" />
+						</div>
 					{% endif %}
 	
 				</div>
@@ -37,9 +37,9 @@
 					<div class="new_image">
 						<input class="upload_image" type="file" name="extranet_upload_image" accept="image/gif,image/jpeg,image/png" />
 					</div>
-					<div class="extranet_btn"><div class="r">
-						<input class="add_image i" type="submit" name="extranet_add_image" value="{{Upload_Button_Phrase}}" />
-					</div></div>
+					<div class="extranet_btn">
+						<input class="add_image" type="submit" name="extranet_add_image" value="{{Upload_Button_Phrase}}" />
+					</div>
 					{% endif %}
 				</div>
             {% endif %}

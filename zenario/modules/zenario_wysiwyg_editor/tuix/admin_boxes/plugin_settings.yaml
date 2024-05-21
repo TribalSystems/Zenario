@@ -13,7 +13,7 @@ plugin_settings:
                         advanced_inline_styles: true
                     label: 'Display this HTML:'
                     type: editor
-                    editor_type: standard_with_images
+                    editor_type: full_featured
                     tall_as_possible: true
                     dont_trim: true
                     style: |

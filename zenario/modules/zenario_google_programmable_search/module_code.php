@@ -76,7 +76,15 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 					if ($result) {
 						
 						$resultDecoded = json_decode($result, true);
-						$totalNumOfResults = $resultDecoded['queries']['request'][0]['totalResults'];
+						
+						if (isset($resultDecoded['queries']['request'][0]['totalResults'])) {
+							$totalNumOfResults = $resultDecoded['queries']['request'][0]['totalResults'];
+						} elseif (isset($resultDecoded['searchInformation']['totalResults'])) {
+							$totalNumOfResults = $resultDecoded['searchInformation']['totalResults'];
+						} else {
+							$totalNumOfResults = 0;
+						}
+						
 						$numPages = ceil($totalNumOfResults / 10);
 
 						if (isset($resultDecoded['items']) && count($resultDecoded['items']) > 0) {
@@ -85,13 +93,14 @@ class zenario_google_programmable_search extends ze\moduleBaseClass {
 							$oddOrEven = 'odd';
 							
 							foreach ($resultDecoded['items'] as $row) {
-								$this->data['Search_Results'][] = [
-									'htmlTitle' => $row['htmlTitle'],
-									'link' => $row['link'],
-									'htmlSnippet' => $row['htmlSnippet'],
-									'cse_thumbnail' => $row['pagemap']['cse_thumbnail'][0],
-									'oddOrEven' => $oddOrEven
-								];
+								$resultData = [];
+								$resultData['htmlTitle'] = (!empty($row['htmlTitle']) ? $row['htmlTitle'] : '');
+								$resultData['link'] = (!empty($row['link']) ? $row['link'] : '');
+								$resultData['htmlSnippet'] = (!empty($row['htmlSnippet']) ? $row['htmlSnippet'] : '');
+								$resultData['cse_thumbnail'] = (!empty($row['pagemap']['cse_thumbnail'][0]) ? $row['pagemap']['cse_thumbnail'][0] : '');
+								$resultData['oddOrEven'] = $oddOrEven;
+								
+								$this->data['Search_Results'][] = $resultData;
 
 								$oddOrEven = ($oddOrEven == 'even'? 'odd' : 'even');
 							}

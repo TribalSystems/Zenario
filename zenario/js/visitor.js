@@ -123,7 +123,7 @@ zenario.lib(function(
 	
 
 	zenario.addBasePath = function(url) {
-		if (!defined(url)) {
+		if (!_.isString(url)) {
 			return undefined;
 	
 		} else if (url.indexOf('://') == -1 && url.substr(0, 1) != '/') {
@@ -224,7 +224,7 @@ zenario.lib(function(
 		return zenario.applyMergeFields(text, mrg);
 	};
 
-	zenario.nphrase = function(vlpClass, text, pluralText, n, mrg) {
+	zenario.nPhrase = function(vlpClass, text, pluralText, n, mrg) {
 		
 		mrg = mrg || {};
 		
@@ -2119,13 +2119,13 @@ zenario.splitFlagsFromMessage = function(resp) {
 	if (resp.responseText = resp.responseText || '') {
 		//Strip the flags off of from start
 		while ((flag = resp.responseText.split(/^(\<\!--|\<x-zenario-flag value\=\")([^\:-]*?)(|\:([^\:-]*?))(\"\/\>|--\>)/)) && (flag.length > 1)) {
-			resp.flags[flag[2]] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
+			resp.flags[flag[2].toUpperCase()] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
 			resp.responseText = flag[6];
 		}
 	
 		//Strip the flags off from the end
 		while ((flag = resp.responseText.split(/(\<\!--|\<x-zenario-flag value\=\")([^\:-]*?)(|\:([^\:-]*?))(\"\/\>|--\>)$/)) && (flag.length > 1)) {
-			resp.flags[flag[2]] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
+			resp.flags[flag[2].toUpperCase()] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
 			resp.responseText = flag[0];
 		}
 	}

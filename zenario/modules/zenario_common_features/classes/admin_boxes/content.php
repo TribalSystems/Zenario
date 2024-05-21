@@ -266,7 +266,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					['id' => $box['key']['source_cID'], 'type' => $box['key']['cType']]);
 			
 			if (!$content) {
-				echo ze\admin::phrase('Source content item not found');
+				echo ze\admin::phrase('Source content item not found.');
 				exit;
 			}
 		}
@@ -353,8 +353,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$values['meta_data/alias'] = $content['alias'];
 
 			if ($creatingNewContentItem = $box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
-				//Don't allow the layout to be changed when duplicating
-				$fields['meta_data/layout_id']['readonly'] = true;
 				
 				if ($box['key']['translate']) {
 					$box['tabs']['categories']['hidden'] = true;
@@ -427,7 +425,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$box['tabs']['plugins']['hidden'] = false;
 					
 					$fields['plugins/desc']['snippet']['p'] =
-						ze\admin::nphrase('There is 1 library plugins/nests/slideshows in slots on this content item. Please select what you wish to do with this.',
+						ze\admin::nPhrase('There is 1 library plugins/nests/slideshows in slots on this content item. Please select what you wish to do with this.',
 							'There are [[count]] library plugins/nests/slideshows in slots on this content item. Please select what you wish to do with them.',
 							$numPlugins
 						);
@@ -543,7 +541,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					);
 				}
 
-				if (ze::setting('aws_s3_support')) {
+				if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
 					if ($values['file/s3_file_id'] && ze\module::inc('zenario_ctype_document')) {
 						$s3FileDetails = zenario_ctype_document::getS3FileDetails($values['file/s3_file_id']);
 
@@ -1028,7 +1026,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 		}
 		
-		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
+		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3') && ze\module::inc('zenario_ctype_document')) {
 			$fields['file/file']['label'] = ze\admin::phrase('Local file:');
 			$fields['file/s3_file_upload']['hidden'] = false;
 			$maxUploadSize = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
@@ -1080,7 +1078,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		
 		$box['tabs']['file']['hidden'] = true;
-		if (ze::setting('aws_s3_support') && ze\module::inc('zenario_ctype_document')) {
+		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3') && ze\module::inc('zenario_ctype_document')) {
 			$src = ze\link::protocol(). \ze\link::host(). SUBDIRECTORY.'zenario/s3FileUpload.php';
 			$requests = '?cId='. $box['key']['cID'] .'&cType='. $box['key']['cType']. '&cVersion='. $box['key']['source_cVersion'] . '&mime_type=' . htmlspecialchars($values['file/s3_mime_type']);
 
@@ -1103,13 +1101,14 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$fields['css/bg_color']['side_note'] = '';
 		$fields['css/bg_position']['side_note'] = '';
 		$fields['css/bg_repeat']['side_note'] = '';
-		$box['tabs']['meta_data']['notices']['archived_template']['show'] = false;
 
 		if ($values['meta_data/layout_id']
 		 && ($layout = ze\content::layoutDetails($values['meta_data/layout_id']))) {
 	
 			if ($layout['status'] != 'active') {
-				$box['tabs']['meta_data']['notices']['archived_template']['show'] = true;
+				$fields['meta_data/archived_template_notice']['hidden'] = false;
+			} else {
+				$fields['meta_data/archived_template_notice']['hidden'] = true;
 			}
 	
 			if ($layout['bg_image_id']) {
@@ -1734,6 +1733,21 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 			}
 		}
+		
+		if (
+			(!$box['key']['cID'] || $box['key']['cID'] != $box['key']['source_cID'])
+			&& $values['meta_data/layout_id']
+		 	&& ($layout = ze\content::layoutDetails($values['meta_data/layout_id']))
+		 	&& $layout['status'] != 'active'
+		) {
+			if ($box['key']['translate']) {
+				$fields['meta_data/layout_id']['error'] = ze\admin::phrase(
+					'The chosen layout is retired. Please select a different layout. If you want both the original content and its translation to look exactly the same, you should first change the layout of the original content item to an available (non-retired) layout.'
+				);
+			} else {
+				$fields['meta_data/layout_id']['error'] = ze\admin::phrase('The chosen layout is retired. Please select a different layout.');
+			}
+		}
 	}
 	
 	protected $isNewContentItem = false;
@@ -2030,8 +2044,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 
 		if ($version['file_id']) {
-			if ($box['key']['cType'] && $box['key']['cType'] == 'document' && ze\module::inc('zenario_ctype_document')) {
-				zenario_ctype_document::rescanExtract($box['key']['cType'] . '_' . $box['key']['cID']);
+			if ($box['key']['cType'] && $box['key']['cType'] == 'document') {
+				ze\file::updateDocumentContentItemExtract($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version['file_id']);
 			}
 		}
 		
@@ -2070,12 +2084,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$contentItemLink = ze\link::toItem($box['key']['cID'], $box['key']['cType']);
 			if ($contentItemLink) {
 				$flags = [];
-				$flags['go_to_url'] = $contentItemLink;
+				$flags['GO_TO_URL'] = $contentItemLink;
 				
 				if ($showCreatedToast) {
-					$flags['toast_next_pageload'] = ze\admin::phrase("New content item created! Now in Edit mode.");
+					$flags['TOAST_NEXT_PAGELOAD'] = ze\admin::phrase("New content item created! Now in Edit mode.");
 				} elseif ($showDuplicatedToast) {
-					$flags['toast_next_pageload'] = ze\admin::phrase("Content item duplicated! Now in Edit mode.");
+					$flags['TOAST_NEXT_PAGELOAD'] = ze\admin::phrase("Content item duplicated! Now in Edit mode.");
 				}
 				
 				ze\tuix::closeWithFlags($flags);

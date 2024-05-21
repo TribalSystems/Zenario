@@ -173,6 +173,34 @@ class admin {
 		}
 	}
 	
+	const nzPhraseFromTwig = true;
+	public static function nzPhrase($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
+		return \ze\admin::nPhrase($text, $pluralText, $n, $replace, $zeroText);
+	}
+	
+	const phraseInHTMLFromTwig = true;
+	public static function phraseInHTML($code, $replace = false, $moduleClass = false, $open = '[[', $close = ']]') {
+		$text = \ze\admin::phrase($code, $replace, $moduleClass, $open, $close);
+		if (is_string($text)) {
+			$text = htmlspecialchars($text);
+		}
+		return $text;
+	}
+	
+	const nPhraseInHTMLFromTwig = true;
+	public static function nPhraseInHTML($text, $pluralText = false, $n = 1, $replace = [], $zeroText = false) {
+		$text = \ze\admin::nPhrase($text, $pluralText, $n, $replace, $zeroText);
+		if (is_string($text)) {
+			$text = htmlspecialchars($text);
+		}
+		return $text;
+	}
+	
+	const nzPhraseInHTMLFromTwig = true;
+	public static function nzPhraseInHTML($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
+		return \ze\admin::nPhraseInHTML($text, $pluralText, $n, $replace, $zeroText);
+	}
+	
 	public static function pluralPhrase($word) {
 		if (substr($word, 0, -1) == 's') {
 			return $word. 'es';
@@ -293,12 +321,12 @@ class admin {
 		'_WEEKDAY_6' => 'Saturday'
 	];
 	
-	public static function formatDate($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $cli = false) {
-		return \ze\date::format($date, $format_type, $languageId, $time_format, $rss, $cli, $admin = true);
+	public static function formatDate($date, $format_type = false, $languageId = false, $time_format = '', $rss = false) {
+		return \ze\date::format($date, $format_type, $languageId, $time_format, $rss, $admin = true);
 	}
 	
-	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false, $cli = false) {
-		return \ze\date::formatDateTime($date, $format_type, $languageId, $rss, $cli, $admin = true);
+	public static function formatDateTime($date, $format_type = false, $languageId = false, $rss = false) {
+		return \ze\date::formatDateTime($date, $format_type, $languageId, $rss, $admin = true);
 	}
 	
 	public static function formatRelativeDate($date) {
@@ -306,7 +334,7 @@ class admin {
 	}
 	
 	public static function formatRelativeDateTime($timestamp, $maxPeriod = "day", $addFullTime = true, $format_type = 'vis_date_format_med', $time_format = true, $showDateTime = false) {
-		return \ze\date::formatRelativeDateTime($timestamp, $maxPeriod, $addFullTime, $format_type, false, $time_format, false, $showDateTime, true);
+		return \ze\date::formatRelativeDateTime($timestamp, $maxPeriod, $addFullTime, $format_type, false, $time_format, $showDateTime, true);
 	}
 
 
@@ -430,6 +458,15 @@ class admin {
 		
 			session_destroy();
 		}
+	}
+
+	//If we can't run an AJAX request because the admin has been logged out, send a flag
+	//and an error message for this.
+	public static function wasLoggedOut() {
+		\ze\escape::flag('LOGGED_OUT');
+		\ze\escape::bFlag('LOGGED_OUT');
+		//echo '<!--LOGGED_OUT-->';
+		echo \ze\admin::phrase('You have been logged out.');
 	}
 
 

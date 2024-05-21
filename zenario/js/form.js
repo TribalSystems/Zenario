@@ -2229,7 +2229,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			case 'editor':
 				html += '<textarea';
 				if (!field.editor_type) {
-					field.editor_type = 'basic';
+					field.editor_type = 'summary_editor';
 				}
 				
 				if (readOnly) {
@@ -2237,7 +2237,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				}
 				
 				var skinEditorOptions,
-					isAdvancedEditor = field.editor_type != 'readonly' && field.editor_type != 'basic';
+					isAdvancedEditor = field.editor_type != 'readonly';
 				
 				if (isAdvancedEditor) {
 					skinEditorOptions = zenarioA.skinEditorOptions;
@@ -2249,8 +2249,28 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							thus.fieldChange(inst.id);
 					},
 					options,
+					useTwoEditorRows = false,
 					skinEditorOptions,
 					fontSizes = "8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 30pt 36pt",
+					
+					//We don't want to show the "title" attributes in the drop-down menus from TinyMCE's menu bar,
+					//however TinyMCE doesn't give us an option to control this.
+					//Try to attach events to the menu bar, and aggressively try to kill off the title attributes.
+					clearTitleAttributes = function() {
+						clearTitleAttributesOff();
+						$('.tox-selected-menu div[title]').attr('title', '');
+						
+						setTimeout(function() {
+							clearTitleAttributesOn();
+						}, 0);
+					},
+					clearTitleAttributesOn = function() {
+						$('.tox-menubar > button, .tox-menu').on('mouseover click', clearTitleAttributes);
+					},
+					clearTitleAttributesOff = function() {
+						$('.tox-menubar > button, .tox-menu').off('mouseover click', clearTitleAttributes);
+					},
+					
 					initInstanceCallback = function(instance) {
 						zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
 						
@@ -2265,253 +2285,167 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						if (field.tall_as_possible) {
 							zenarioAB.makeFieldAsTallAsPossible();
 						}
+						
+						clearTitleAttributesOn();
 					};
 				
 				switch (field.editor_type) {
+
+					case 'full_featured':
+						options = {
+							plugins: [
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "nonbreaking", "table", "directionality", "fullscreen",
+								"visualblocks", "wordcount"
+							],
+							menubar: "edit insert format adjust custom table tools",
+							menu: {
+								edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall'},
+								insert: {title: 'Insert', items: 'image link | anchor hr charmap emoticons'},
+								format: {title: 'Format', items: 'blocks align lineheight'},
+								adjust: {title: 'Adjust', items: 'bold italic underline strikethrough superscript subscript codeformat | removeformat'},
+								custom: {title: 'Custom', items: '' + (skinEditorOptions && skinEditorOptions.style_formats? 'styles ' : ' ') + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : ' ') + ' fontsize | forecolor backcolor'},
+								table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
+								tools: {title: 'Tools', items: 'fullscreen | searchreplace wordcount | visualblocks | code'}
+							},
+							toolbar: "fullscreen | image link unlink | blocks | styles | fontsize | bold italic underline strikethrough | forecolor | removeformat | alignleft aligncenter alignright alignjustify | bullist numlist | charmap emoticons | code wordcount",
+
+							height: 'auto',
+							relative_urls: false,
+							removed_menuitems: 'file newdocument restoredraft print',
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
+						};
+						
+						extraAtt['class'] = ' tinymce_full_featured';
+						break;
+
+					case 'description_editor':
+						options = {
+							plugins: [
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "nonbreaking", "table", "directionality", "fullscreen"
+							],
+							menubar: "edit insert adjust tools",
+							menu: {
+								edit: {title: 'Edit', items: 'cut copy paste pastetext | selectall'},
+								insert: {title: "Insert", items: "link | anchor hr charmap"},
+								adjust: {title: 'Adjust', items: 'bold italic underline strikethrough superscript subscript | removeformat'},
+								tools: {title: "Tools", items: "fullscreen | searchreplace | code"}
+							},
+							
+							relative_urls: !zenario.slashesInURL,
+							content_css: content_css,
+							toolbar: "fullscreen | link unlink | styles | blocks | fontsize | bold italic underline strikethrough | removeformat | charmap emoticons | code",
+							oninit: undefined,
+							
+							removed_menuitems: 'file newdocument restoredraft print',
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
+						};
+						
+						extraAtt['class'] = ' tinymce_description_editor';
+						break;
+
+					case 'summary_editor':
+						options = {
+							plugins: [
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "nonbreaking", "table", "directionality", "fullscreen", "wordcount"
+							],
+							menubar: false,
+							toolbar: "fullscreen | link unlink blocks fontsize bold italic underline strikethrough removeformat | blockquote | charmap emoticons | code wordcount",
+							
+							relative_urls: false,
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
+						};
+						
+						extraAtt['class'] = ' tinymce_summary_editor';
+						break;
+
+					case 'phrase_editor':
+						options = {
+							plugins: [
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "nonbreaking", "table", "directionality", "fullscreen"
+							],
+							menubar: false,
+							toolbar: "blocks | bold italic underline strikethrough removeformat | charmap | code",
+							
+							relative_urls: !zenario.slashesInURL,
+							content_css: content_css,
+							oninit: undefined
+						};
+						
+						extraAtt['class'] = ' tinymce_phrase_editor';
+						break;
+
+					case 'email_editor':
+						options = {
+							plugins: [
+								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
+								"searchreplace", "code", "nonbreaking", "table", "directionality", "fullscreen",
+								"visualblocks", "wordcount"
+							],
+							menubar: "edit insert format adjust custom table tools",
+							menu: {
+								edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall'},
+								insert: {title: 'Insert', items: 'image link | anchor hr charmap emoticons'},
+								format: {title: 'Format', items: 'blocks  align lineheight'},
+								adjust: {title: 'Adjust', items: 'bold italic underline strikethrough superscript subscript codeformat | removeformat'},
+								custom: {title: 'Custom', items: 'styles fontfamily fontsize | forecolor backcolor'},
+								table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
+								tools: {title: 'Tools', items: 'fullscreen | searchreplace wordcount | visualblocks | code'}
+							},
+							toolbar: "fullscreen | image link unlink | styles | bold italic underline strikethrough | forecolor | removeformat | alignleft aligncenter alignright alignjustify | bullist numlist | charmap emoticons | code",
+
+							height: 'auto',
+							relative_urls: false,
+							removed_menuitems: 'file newdocument restoredraft print',
+							file_picker_callback: zenarioA.fileBrowser,
+							init_instance_callback: initInstanceCallback
+						};
+						
+						extraAtt['class'] = ' tinymce_email_editor';
+						break;
+
 					case 'readonly':
 						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							inline: false,
-							menubar: false,
-							statusbar: false,
 							plugins: [
-								"advlist", "autolink", "lists", "link", "image", "charmap", "anchor",
-								"searchreplace", "code", "fullscreen",
-								"nonbreaking", "table", "directionality",
-								"fullscreen"
+								"advlist", "autolink", "lists", "link", "image", "charmap", "anchor", 
+								"searchreplace", "code", "nonbreaking", "table", "directionality", "fullscreen"
 							],
 							
-							image_advtab: true,
-							visual_table_class: ' ',
-							
-							
-							convert_urls: true,
 							readonly: true,
-							
-							inline_styles: false,
-							allow_events: true,
-							allow_script_urls: true,
-							
-							browser_spellcheck: true,
 							relative_urls: !zenario.slashesInURL,
-							
 							content_css: content_css,
+
+							menubar: false,
 							toolbar: false,
-							font_size_formats: fontSizes,
 							oninit: undefined
 						};
 						
 						extraAtt['class'] = ' tinymce_readonly';
 						break;
-					case 'basic':
-						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							plugins: [
-								"autolink", "link", "charmap", "emoticons"
-							],
-							browser_spellcheck: true,
-							height: 250,
-							menubar: false,
-							toolbar: 'undo redo | styles | fontsize | blocks | bold italic removeformat | link unlink | charmap emoticons'
-						};
-						break;
-					case 'standard':
-						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							inline: false,
-							menubar: false,
-							statusbar: false,
-							plugins: [
-								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
-								"searchreplace", "code", "fullscreen",
-								"nonbreaking", "table", "directionality",
-								"fullscreen"
-							],
-							
-							image_advtab: true,
-							visual_table_class: ' ',
-							
-							
-							convert_urls: true,
-							readonly: false,
-							
-							inline_styles: false,
-							allow_events: true,
-							allow_script_urls: true,
-							
-							browser_spellcheck: true,
-							relative_urls: !zenario.slashesInURL,
-							
-							content_css: content_css,
-							toolbar: "undo redo | styles | fontsize | blocks | bold italic underline strikethrough forecolor backcolor removeformat | numlist bullist | blockquote outdent indent | charmap emoticons | code fullscreen",
-							font_size_formats: fontSizes,
-							oninit: undefined
-						};
-						
-						extraAtt['class'] = ' tinymce';
-						break;
-					case 'summary':
-						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							inline: false,
-							menubar: false,
-							statusbar: false,
-							plugins: [
-								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
-								"searchreplace", "code", "fullscreen",
-								"nonbreaking", "table", "directionality",
-								"fullscreen"
-							],
-							convert_urls: true,
-							readonly: false,
-							inline_styles: false,
-							allow_events: true,
-							allow_script_urls: true,
-							
-							image_advtab: true,
-							visual_table_class: ' ',
-							browser_spellcheck: true,
-							relative_urls: false,
-							toolbar: "undo redo | styles | fontsize | blocks | bold italic underline strikethrough forecolor backcolor removeformat | link unlink | charmap emoticons | code fullscreen",
-							font_size_formats: fontSizes,
-							file_picker_callback: zenarioA.fileBrowser,
-							init_instance_callback: initInstanceCallback
-						};
-						
-						extraAtt['class'] = ' tinymce_with_links';
-						break;
-					case 'standard_with_images':
-						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							inline: false,
-							menubar: true,
-							statusbar: false,
-							plugins: [
-								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
-								"searchreplace", "code", "fullscreen",
-								"nonbreaking", "table", "directionality",
-								"fullscreen"
-							],
-							convert_urls: true,
-							readonly: false,
-							inline_styles: false,
-							allow_events: true,
-							allow_script_urls: true,
-							
-							image_advtab: true,
-							visual_table_class: ' ',
-							browser_spellcheck: true,
-							relative_urls: false,
-							toolbar: "undo redo | blocks | styles | fontsize | bold italic underline strikethrough forecolor backcolor removeformat | image | numlist bullist | blockquote outdent indent | charmap emoticons | code fullscreen",
-							font_size_formats: fontSizes,
-							menu: {
-								insert: {title: "Insert", items: "link | anchor hr charmap"},
-								table: {title: "Table", items: "inserttable tableprops deletetable | cell row column"},
-								tools: {title: "Tools", items: "searchreplace | code"}
-							},
-							removed_menuitems: 'file newdocument restoredraft print',
-							file_picker_callback: zenarioA.fileBrowser,
-							init_instance_callback: initInstanceCallback
-						};
-						
-						extraAtt['class'] = ' tinymce_with_images';
-						break;
-					case 'standard_with_links':
-						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							inline: false,
-							menubar: true,
-							statusbar: false,
-							plugins: [
-								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
-								"searchreplace", "code", "fullscreen",
-								"nonbreaking", "table", "directionality",
-								"fullscreen"
-							],
-							convert_urls: true,
-							readonly: false,
-							inline_styles: false,
-							allow_events: true,
-							allow_script_urls: true,
-							
-							image_advtab: true,
-							visual_table_class: ' ',
-							browser_spellcheck: true,
-							relative_urls: false,
-							toolbar: "undo redo | styles | fontsize | blocks | bold italic underline strikethrough superscript subscript forecolor backcolor removeformat | link unlink | numlist bullist | blockquote outdent indent | alignleft aligncenter alignright alignjustify | charmap emoticons | code fullscreen",
-							font_size_formats: fontSizes,
-							menu: {
-								insert: {title: "Insert", items: "link | anchor hr charmap"},
-								table: {title: "Table", items: "inserttable tableprops deletetable | cell row column"},
-								tools: {title: "Tools", items: "searchreplace | code"}
-							},
-							removed_menuitems: 'file newdocument restoredraft print',
-							file_picker_callback: zenarioA.fileBrowser,
-							init_instance_callback: initInstanceCallback
-						};
-						
-						extraAtt['class'] = ' tinymce_with_links';
-						break;
-					case 'full_featured':
-						options = {
-							promotion: false,
-							document_base_url: URLBasePath,
-							paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-							paste_data_images: false,
-							height: 'auto',
-							inline: false,
-							menubar: true,
-							statusbar: false,
-							plugins: [
-								"advlist", "autolink", "lists", "link", "image", "charmap", "emoticons", "anchor",
-								"searchreplace", "code", "fullscreen",
-								"nonbreaking", "table", "directionality",
-								"visualblocks", "fullscreen"
-							],
-							convert_urls: true,
-							readonly: false,
-							inline_styles: false,
-							allow_events: true,
-							allow_script_urls: true,
-							image_advtab: true,
-							visual_table_class: ' ',
-							browser_spellcheck: true,
-							relative_urls: false,
-							toolbar: "undo redo | image link unlink | styles | fontsize | blocks | bold italic underline | removeformat | alignleft aligncenter alignright alignjustify | outdent indent | bullist numlist | forecolor backcolor | charmap emoticons",
-							font_size_formats: fontSizes,
-							menu: {
-								edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace'},
-								format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (skinEditorOptions && skinEditorOptions.style_formats? ' | styles' : '') + ' ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : '') + 'align'},
-								insert: {title: 'Insert', items: 'image link | anchor hr charmap'},
-								table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
-								view: {title: 'View', items: 'code | visualblocks | fullscreen'}
-							},
-							removed_menuitems: 'file newdocument restoredraft print',
-							file_picker_callback: zenarioA.fileBrowser,
-							init_instance_callback: initInstanceCallback
-						};
-						
-						extraAtt['class'] = ' tinymce_with_images_and_links';
-						break;
 				}
+				
+				// Here are the options that are common to all of the above editor types
+				options.promotion = false;
+				options.document_base_url = URLBasePath;
+				options.paste_preprocess = zenarioA.editorPastePreprocess;
+				options.paste_data_images = false;
+				options.statusbar = false;
+				options.inline = false;
+				options.visual_table_class = ' ';
+				options.convert_urls = true;
+				options.inline_styles = false;
+				options.allow_events = true;
+				options.allow_script_urls = true;
+				options.browser_spellcheck = true;
+				options.font_size_formats = fontSizes;
+				options.image_advtab = true;
+
 				
 				//Only display the "Styles" dropdown if styles formats were passed (e.g. from a module), otherwise hide it.
 				if (_.isObject(field.editor_options) ) {
@@ -2551,6 +2485,16 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					if (domTab) {
 						tabDisplay = domTab.style.display;
 						domTab.style.display = 'block';
+					}
+					
+					//At some point, TinyMCE seems to have changed the format of its inputs.
+					//I've added some logic here to fix & convert a couple of known issues we've seen so far.
+					//Will need to come back to this and hopefully find a better fix after our next branch.
+					if (defined(options.convert_urls)) {
+						options.convert_urls = !!options.convert_urls;
+					}
+					if (defined(options.relative_urls)) {
+						options.relative_urls = !!options.relative_urls;
 					}
 				
 					$field.tinymce(options);
@@ -3840,6 +3784,11 @@ methods.formatLabelFromFile = function(file) {
 	if (defined(file.filename)) {
 		label = file.filename;
 		
+		//Initial failed attempt at T12723
+		//if (file.privacy) {
+		//	label += ' ' + file.privacy;
+		//}
+		
 		if (file.ssc) {
 			label += ' [checksum ' + file.short_checksum + ']';
 		}
@@ -4510,6 +4459,10 @@ methods.setPickedItems = function(path, key, row, panel) {
 		values[i] = {
 			missing: item.missing,
 			image: item.image,
+			
+			//Initial failed attempt at T12723
+			//privacy: item.privacy,
+			
 			css_class: item.css_class || (panel.item && panel.item.css_class),
 			label: zenarioA.formatOrganizerItemName(panel, i)
 		};

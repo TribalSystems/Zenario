@@ -40,7 +40,7 @@ class zenario_pro_features__organizer__sections extends ze\moduleBaseClass {
 				ze\contentAdm::removeItemFromPluginSettings('menu_section', $ids);
 				ze\menuAdm::recalcTopLevelPositions();
 				
-				echo '<!--Reload_Organizer-->';
+				ze\escape::bFlag('RELOAD_ORGANIZER');
 			}
 		}
 	}

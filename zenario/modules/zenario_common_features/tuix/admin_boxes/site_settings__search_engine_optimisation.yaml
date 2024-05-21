@@ -185,9 +185,13 @@ site_settings:
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: No
             notices:
+                robots_txt_does_not_include_sitemap:
+                    show: false
+                    message: XML sitemap is not being referred to; click "Default config" to use a default configuration and to add it.
+                    type: warning
                 robots_txt_refers_to_disabled_sitemap:
                     show: false
-                    message: The robots.txt content refers to the sitemap.xml path, but sitemap.xml is not enabled
+                    message: XML sitemap is being referred to but is not enabled; go to the XML sitemap tab to enable the XML sitemap.
                     type: warning
             fields:
                 description:
@@ -200,6 +204,14 @@ site_settings:
                     type: checkbox
                     value: true
                     readonly: true
+                robots_config_info_message__blocks_all:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">Using the block-all configuration</div>
+                robots_config_info_message__default_config:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">Using the default configuration</div>
                 robots_txt_file_contents:
                     indent: 1
                     label: 'robots.txt file contents:'
@@ -234,14 +246,7 @@ site_settings:
                     validation:
                         required: 'Please enter the contents for the robots.txt file.'
                     # Reset the state of the buttons below if the user types in the box
-                    oninput: |
-                        if (window.zfabRobotsSet) {
-                            window.zfabRobotsSet = false;
-                            $(zenarioAB.get('block_all')).show();
-                            $(zenarioAB.get('default_config')).show();
-                            $(zenarioAB.get('block_all_pressed')).hide();
-                            $(zenarioAB.get('default_config_pressed')).hide();
-                        }
+                    format_onchange: true
                 robots_txt_file_contents_required_lines_description:
                     indent: 1
                     snippet:
@@ -268,45 +273,20 @@ site_settings:
                 # Here we want two buttons that change the textarea above to one of two template values.
                 # If the buttons are pressed they should also appear temporarily greyed out until the text box is changed.
                 # We'll do this by using dummy buttons that are swapped out as needed.
-                block_all: &block_all
+                block_all:
                     indent: 1
-                    type: button
+                    type: submit
+                    onclick: |
+                        lib.markAsChanged();
                     css_class: zenario_gp_button
                     value: 'Block all'
-                    onclick: |
-                        $(this).hide();
-                        $(zenarioAB.get('block_all_pressed')).show();
-                        $(zenarioAB.get('robots_txt_file_contents')).val(field.custom__val);
-                        
-                        if (window.zfabRobotsSet) {
-                            $(zenarioAB.get('default_config')).show();
-                            $(zenarioAB.get('default_config_pressed')).hide();
-                        }
-                        window.zfabRobotsSet = true;
-                block_all_pressed: *block_all
-                    same_row: true
-                    disabled: true
-                    onclick: ''
-                    style: |
-                        display: none;
-                default_config: &default_config
+                    format_onchange: true
+                default_config:
                     same_row: true
                     indent: 1
-                    type: button
+                    type: submit
+                    onclick: |
+                        lib.markAsChanged();
                     css_class: zenario_gp_button
                     value: 'Default config'
-                    onclick: |
-                        $(this).hide();
-                        $(zenarioAB.get('default_config_pressed')).show();
-                        $(zenarioAB.get('robots_txt_file_contents')).val(field.custom__val);
-                        
-                        if (window.zfabRobotsSet) {
-                            $(zenarioAB.get('block_all')).show();
-                            $(zenarioAB.get('block_all_pressed')).hide();
-                        }
-                        window.zfabRobotsSet = true;
-                default_config_pressed: *default_config
-                    disabled: true
-                    onclick: ''
-                    style: |
-                        display: none;
+                    format_onchange: true

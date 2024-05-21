@@ -112,3 +112,34 @@ _sql
 _sql
 
 );
+
+if (ze\dbAdm::needRevision(17)) {
+	$keySql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos") . "`
+		ADD FULLTEXT KEY `title_fulltext_key` (`title`)";
+	ze\sql::update($keySql);
+	
+	$keySql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos") . "`
+		ADD FULLTEXT KEY `short_description_fulltext_key` (`short_description`)";
+	ze\sql::update($keySql);
+	
+	$keySql = "
+		ALTER TABLE `" . ze\escape::sql(DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos") . "`
+		ADD FULLTEXT KEY `description_fulltext_key` (`description`)";
+	ze\sql::update($keySql);
+	
+	ze\dbAdm::revision(17);
+}
+
+//In 9.7 (backpatched to 9.6), we changed the Vimeo privacy handling.
+//Now we store the privacy code in the DB instead of having to get it via the API every time.
+//This greatly speeds up loading the Videos panel when multiple Vimeo videos exist.
+ze\dbAdm::revision(18
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos`
+	ADD COLUMN `vimeo_privacy_setting` varchar(100) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL,
+	ADD COLUMN `vimeo_privacy_last_cached` datetime DEFAULT NULL
+_sql
+
+);

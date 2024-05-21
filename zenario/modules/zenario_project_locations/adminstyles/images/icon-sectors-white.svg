@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="20px" height="20px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g id="icon-sectors">
+        <g>
+            <path d="M5.606,4.002C2.35,5.08 0,8.16 0,11.792C0,16.324 3.653,20 8.157,20C10.856,20 13.241,18.675 14.726,16.646L7.477,12.477L5.606,4.002Z" style="fill:white;fill-rule:nonzero;"/>
+            <path d="M12.915,0.588C11.934,0.213 10.873,0 9.761,0C8.782,0 7.845,0.163 6.965,0.454L9.016,9.74L12.915,0.588Z" style="fill:white;fill-rule:nonzero;"/>
+            <path d="M14.271,2.797L10.196,12.022L18.239,16.646C19.342,15.135 20,13.277 20,11.261C20,7.414 17.625,4.128 14.271,2.797Z" style="fill:white;fill-rule:nonzero;"/>
+        </g>
+    </g>
+</svg>

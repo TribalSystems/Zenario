@@ -10,12 +10,20 @@
 			<div class="extranet_message">{{Message}}</div>
 		{% endif %}
 		
+		{% if Email_Verified %}
+			<div class="extranet_message">{{"Your email address has been successfully verified."|trans}}</div>
+		{% elseif Email_Could_Not_Be_Verified %}
+			<div class="extranet_error">{{"The link provided is not valid or the email address has already been verified."|trans}}</div>
+		{% endif %}
+		
 		{% if Login_Form %}
 			<div>
 				
 				{{openForm}}
 				
-					<h2>{{main_login_heading}}</h2>
+					{% if main_login_heading %}
+						<{{main_login_heading_tags|e}}>{{main_login_heading|trans}}</{{main_login_heading_tags|e}}>
+					{% endif %}
 			
 					{% for item in Error_Display %}
 						<div class="extranet_error">{{item.Error}}</div>
@@ -34,7 +42,15 @@
 					{% endif %}
 					<div class="extranet_field">
 						<div class="label"><label for="extranet_password">{{password_field_label}}</label></div>
-						{{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_password"})}}
+						<div class="password_field_with_eye">
+							{{this.frameworkField({'type': "password", 'name': "extranet_password", 'id': "extranet_password", 'required': "true", 'class': "extranet_password"})}}
+							
+							<i
+								id="{{Container_Id}}-password-reveal-hide-icon"
+								class="fas fa-eye-slash eye_icon"
+								onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'password-reveal-hide-icon', 'extranet_password')})"
+							></i>
+						</div>
 					</div>
 					{% if Ts_And_Cs_Section %}
 						<div class="extranet_terms_and_conditions">
@@ -67,14 +83,12 @@
 					{% endif %}
 					
 					<div class="extranet_btn">
-						<div class="r">
-							<input
+						<input
 								type="submit"
 								name="extranet_login"
-								class="login_entry_button i"
+								class="login_entry_button"
 								value="{{login_button_text}}"
 							/>
-						</div>
 					</div>
 				
 				{{ this.closeForm() }}
@@ -94,6 +108,7 @@
 			{% if Welcome_Message_Section %}
 				<div class="extranet_welcome_text">{{Welcome_Message}}</div>
 			{% endif %}
+			
 			{% if Destination_url_section %} 
 				<div class="extranet_requested_link">
 					{{"Your requested page:"|trans}}
@@ -124,13 +139,29 @@
 			<div>
 				<div class="extranet_field">
 					<div class="label"><label for="extranet_new_password">{{"New password"|trans}}:</label></div>
-					{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+					<div class="password_field_with_eye">
+						{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+						
+						<i
+							id="{{Container_Id}}-password-reveal-hide-icon"
+							class="fas fa-eye-slash eye_icon"
+							onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'password-reveal-hide-icon', 'extranet_new_password')})"
+						></i>
+					</div>
 				</div>
 				<div class="extranet_field">
 					<div class="label"><label for="extranet_new_password_confirm">{{"Repeat password"|trans}}:</label></div>
-					{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
+					<div class="password_field_with_eye">
+						{{this.frameworkField({'type': "password", 'name': "extranet_new_password_confirm", 'id': "extranet_new_password_confirm", 'required': "true", 'class': "extranet_password"})}}
+						
+						<i
+							id="{{Container_Id}}-repeat-password-reveal-hide-icon"
+							class="fas fa-eye-slash eye_icon"
+							onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'repeat-password-reveal-hide-icon', 'extranet_new_password_confirm')})"
+						></i>
+					</div>
 				</div>
-				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="{{'Change your password'|trans}}" /></div></div>
+				<div class="extranet_btn"><input type="submit" name="extranet_change_password" class="extranet_submit" value="{{'Change your password'|trans}}" /></div>
 			</div>
 		{% endif %}
 		
@@ -156,7 +187,7 @@
 					{{this.frameworkField({'type': "checkbox", 'name': "extranet_terms_and_conditions", 'id': "extranet_terms_and_conditions"})}}
 					<label for="extranet_terms_and_conditions">{{Ts_And_Cs_Link}}</label>
 				</div>
-				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="{{login_button_text}}" /></div></div>
+				<div class="extranet_btn"><input type="submit" name="extranet_login" class="login_entry_button" value="{{login_button_text}}" /></div>
 			</div>
 		{% endif %}
 		

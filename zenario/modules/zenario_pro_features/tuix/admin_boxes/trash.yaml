@@ -65,7 +65,7 @@ zenario_trash:
                     grouping: grouping_right__znz
                     label: 'Content item:'
                     pick_items:
-                        path: zenario__content/panels/content
+                        path: zenario__content/panels/content/refiners/published_draft_and_unlisted_only////
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content

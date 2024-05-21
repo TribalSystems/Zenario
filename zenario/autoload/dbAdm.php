@@ -1112,15 +1112,12 @@ you must first edit your <code>zenario_siteconfig.php file</code> and add either
 		return substr(base64_encode(microtime()), 3);
 	}
 	
-	//If running on MySQL 5.6 or later, use InnoDB. Otherwise use MyISAM.
+	//Define some constants used for creating tables
 	public static function getTableEngine() {
 		if (!defined('ZENARIO_TABLE_ENGINE')) {
-			if (($mysqlVersion = \ze\sql::fetchValue('SELECT version()'))
-			 && (version_compare($mysqlVersion, '5.7.0', '>='))) {
-				define('ZENARIO_TABLE_ENGINE', 'InnoDB');
-			} else {
-				define('ZENARIO_TABLE_ENGINE', 'MyISAM');
-			}
+			//We don't support versions of MySQL 5.6 or older any more,
+			//so our table engine will always be InnoDB.
+			define('ZENARIO_TABLE_ENGINE', 'InnoDB');
 			
 			//We don't support versions of MySQL 5.5 or older any more,
 			//so our default character-set will always be utf8mb4.

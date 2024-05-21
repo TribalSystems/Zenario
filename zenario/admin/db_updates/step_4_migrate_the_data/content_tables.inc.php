@@ -478,12 +478,12 @@ if (ze\dbAdm::needRevision(52526)) {
 			'example' => $missingLayoutFiles[0]
 		];
 		
-		echo ze\admin::nPhrase(
+		echo ze\admin::nzPhrase(
+			'Your layouts need migrating to Zenario 9, but [[example]] and its .css equivalent are missing or not readable.',
 			'Your layouts need migrating to Zenario 9, but [[example]] and 1 other file-pair are missing from the disk or not readable.',
 			'Your layouts need migrating to Zenario 9, but [[example]] and [[count]] other file-pairs are missing from the disk or not readable.',
 			count($missingLayoutFiles) - 1,
-			$mrg,
-			'Your layouts need migrating to Zenario 9, but [[example]] and its .css equivalent are missing or not readable.'
+			$mrg
 		);
 		exit;
 	}
@@ -1447,12 +1447,12 @@ if (ze\dbAdm::needRevision(59600)) {
 			'example' => $printFiles[0]
 		];
 		
-		echo ze\admin::nPhrase(
+		echo ze\admin::nzPhrase(
+			'The print-stylesheet at [[example]] is missing its "@media print { ... }" rule. Please either add this, or make the file writable so this script can automatically add the rule.',
 			'The print-stylesheet at [[example]] and 1 other are missing their "@media print { ... }" rule. Please either add this, or make the files writable so this script can automatically add the rule.',
 			'The print-stylesheet at [[example]] and [[count]] others are missing their "@media print { ... }" rule. Please either add this, or make the files writable so this script can automatically add the rule.',
 			count($printFiles) - 1,
-			$mrg,
-			'The print-stylesheet at [[example]] is missing its "@media print { ... }" rule. Please either add this, or make the file writable so this script can automatically add the rule.'
+			$mrg
 		);
 		exit;
 	}
@@ -1471,4 +1471,24 @@ if (ze\dbAdm::needRevision(59601)) {
 	ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 	
 	ze\dbAdm::revision(59601);
+}
+
+//In 9.7, we enhanced AWS support to also allow extracting text from document content items by using AWS Textract.
+//A setting was renamed and an additional setting to enable S3 was added. Make the necessary adjustments.
+if (ze\dbAdm::needRevision(60020)) {
+	if (ze\module::inc('zenario_ctype_document')) {
+		$enableAwsSupport = ze::setting('aws_s3_support');
+		ze\site::setSetting('enable_aws_support', $enableAwsSupport);
+		ze\row::delete('site_settings', ['name' => 'aws_s3_support']);
+		
+		//There is a new setting "Allow document content items to be stored on AWS S3"
+		//which must now be enabled to use AWS S3. Enable the new checkbox if the feature is in use.
+		$awsS3Bucket = ze::setting('aws_s3_bucket');
+		
+		if ($awsS3Bucket) {
+			ze\site::setSetting('allow_document_content_items_to_be_stored_on_aws_s3', true);
+		}
+	}
+	
+	ze\dbAdm::revision(60020);
 }

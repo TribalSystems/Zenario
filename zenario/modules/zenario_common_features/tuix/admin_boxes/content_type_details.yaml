@@ -136,7 +136,7 @@ zenario_content_type_details:
                     onoff: true
                     side_note: |
                         When enabled, administrator will be able to assign content items of this content type to categories.
-                        This is useful if you use a Content Summary List plugin, for example to make a list of recent news items.
+                        This is useful if you use a Content Summary List plugin, for example to make a list of recent News items.
                 when_creating_put_title_in_body:
                     label: 'When creating a content item, copy the title into the content area'
                     type: checkbox
@@ -173,10 +173,10 @@ zenario_content_type_details:
                     type: checkbox
                     onoff: true
                     side_note: |
-                        This allows administrators to give content items a &quot;publication date&quot;.
-                        This will appear on the page itself and in a Content Summary List that lists the content item
-                        (subject to appropriate plugin settings).
-                        Recommended for news, blog or other date-sensitive content.
+                        This allows administrators to give content items a &quot;release date&quot;, an official date when
+                        the article was released. This may appear on the content item itself and in a Content Summary List 
+                        that lists the content item, subject to appropriate plugin settings.
+                        Recommended for News and Blog articles.
                     redraw_onchange: true
                 release_date_field_mandatory:
                     indent: 1
@@ -207,7 +207,10 @@ zenario_content_type_details:
                     label: 'Enable summary field'
                     type: checkbox
                     onoff: true
-                    side_note: "This allows administrators to save a WYSIWYG summary of the content item. Summaries are usually displayed by Content Summary List plugins. For example, use this for showing a summary of a news content item."
+                    side_note: |
+                        This allows administrators to save a formatted summary of the content item. 
+                        Summaries are usually displayed by Content Summary List plugins. Recommended for 
+                        News and Blog content items.
                     redraw_onchange: true
                 summary_field_mandatory:
                     indent: 1
@@ -220,7 +223,9 @@ zenario_content_type_details:
                     type: checkbox
                     label: 'Enable auto-update of summaries'
                 allow_pinned_content:
-                    label: 'Allow content items to be pinned'
+                    label: |
+                        Allow content items to be "pinned"
                     type: checkbox
                     onoff: true
-                    side_note: 'Pinned content items always appear first on content summary lists.'
+                    side_note: |
+                        Pinned content items appear first on Content Summary List plugins.

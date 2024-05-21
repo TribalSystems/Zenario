@@ -75,12 +75,32 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 	
 	var $editor = $('div#' + editorId),
 		skinEditorOptions = zenarioA.skinEditorOptions,
+		
+		//We don't want to show the "title" attributes in the drop-down menus from TinyMCE's menu bar,
+		//however TinyMCE doesn't give us an option to control this.
+		//Try to attach events to the menu bar, and aggressively try to kill off the title attributes.
+		clearTitleAttributes = function() {
+			clearTitleAttributesOff();
+			$('.tox-selected-menu div[title]').attr('title', '');
+			
+			setTimeout(function() {
+				clearTitleAttributesOn();
+			}, 0);
+		},
+		clearTitleAttributesOn = function() {
+			$('.tox-menubar > button, .tox-menu').on('mouseover click', clearTitleAttributes);
+		},
+		clearTitleAttributesOff = function() {
+			$('.tox-menubar > button, .tox-menu').off('mouseover click', clearTitleAttributes);
+		},
+		
 		options = {
 			promotion: false,
 
 			plugins: [
 				"advlist", "autolink", "lists", "link", "image", "charmap", "anchor", "emoticons",
 				"searchreplace", "code",
+				"wordcount",
 				"nonbreaking", "table", "directionality",
 				"autoresize",
 				"visualblocks",
@@ -91,16 +111,23 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 			visual_table_class: ' ',
 			browser_spellcheck: true,
 		
+			//The "menubar" property sets the order of elements and/or allows them to be hidden.
+			//The "menu" property sets the contents of the menus (they can be in any order).
+			//Please note: if a plugin isn't loaded for the intended menu item, it will not be shown.
+			//For more info visit https://www.tiny.cloud/docs/tinymce/6/menus-configuration-options/
+			menubar: "edit insert format adjust custom table tools",
 			menu: {
-				edit: {title: 'Edit', items: 'undo redo | cut copy paste | selectall | searchreplace'},
-				format: {title: 'Format', items: 'bold italic underline strikethrough superscript subscript codeformat removeformat' + (skinEditorOptions && skinEditorOptions.style_formats? ' | forecolor backcolor | styles' : '') + ' ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : '') + 'align'},
-				insert: {title: 'Insert', items: 'image link | anchor hr charmap'},
+				edit: {title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall'},
+				insert: {title: 'Insert', items: 'image link | anchor hr charmap emoticons'},
+				format: {title: 'Format', items: 'blocks align lineheight'},
+				adjust: {title: 'Adjust', items: 'bold italic underline strikethrough superscript subscript codeformat | removeformat'},
+				custom: {title: 'Custom', items: (skinEditorOptions && skinEditorOptions.style_formats? ' | styles' : '') + ' ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily' : '') + ' fontsize | forecolor backcolor'},
 				table: {title: 'Table', items: 'inserttable tableprops deletetable | cell row column'},
-				view: {title: 'View', items: 'code | visualblocks'}
+				tools: {title: 'Tools', items: 'searchreplace wordcount | visualblocks | code'}
 			},
 			removed_menuitems: 'file newdocument restoredraft print',
 		
-			toolbar: 'undo redo | image link unlink | blocks' + (skinEditorOptions && skinEditorOptions.style_formats? ' | styles' : '') + ' | ' + (skinEditorOptions && skinEditorOptions.font_family_formats? 'fontfamily ' : '') + 'fontsize | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | blockquote | charmap emoticons | code | zenario_save_and_continue zenario_save_and_close zenario_abandon',
+			toolbar: 'image link unlink blocks fontsize bold italic underline strikethrough forecolor removeformat | alignleft aligncenter alignright alignjustify | bullist numlist | blockquote | charmap emoticons | code| zenario_save_and_continue zenario_save_and_close zenario_abandon',
 			statusbar: false,
 		
 			//This would change how the toolbar overflows if space is tight
@@ -109,7 +136,7 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 		
 			//autoresize_max_height: Math.max(Math.floor(($(window).height() - 130 - 100) * 0.9), 400),
 			autoresize_min_height: 100,
-			paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+			paste_preprocess: zenarioA.editorPastePreprocess,
 			paste_data_images: false,
 		
 			inline: true,
@@ -144,6 +171,7 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 				instance.setContent(html);
 				
 				zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
+				
 			
 				//Attempt to restore the scroll position, if something in this process overwrote it.
 				if (defined(currentScrollPosition)) {
@@ -195,6 +223,31 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 						zenarioA.notification(phrase.editorStripsTagsWarning, 'warning', {timeOut: 15000, extendedTimeOut: 60000});
 					}
 				});
+				
+				//N.b. the following patch has been taken out, as the slight errors seem to be harmless.
+				//	//When used inside a fluid layout, TinyMCE has a bug when creating tables, where it will come up with % widths for the column
+				//	//layouts but there will be weird rounding errors in the actual numbers.
+				//	//For example, it might produce numbers such as 49.9584% or 100.017%, when it should really have been 50% or 100%.
+				//	//I have a little script here to watch out for TinyMCE's NewCell event, and when it fires, go through checking the widths of
+				//	//the columns and the table itself. If they match a regular expression, I'll consider them bugged and round them to one
+				//	//decimal place to try and fix the issue.
+				//	instance.on('NewCell', function(a, b, c) {
+				//		zenario.actAfterDelayIfNotSuperseded('editorFixColumnWidths', function() {
+				//			$('#' + containerId + ' .mce-content-body table, #' + containerId + ' .mce-content-body table colgroup col').each(function (i, el) {
+				//			
+				//				var width = el.style.width,
+				//					match;
+				//			
+				//				if (width && (match = width.match(/((\d+)\.(\d\d\d+))\%/))) {
+				//				
+				//					width = zenario.round(1 * match[1], 1);
+				//					el.style.width = width + '%';
+				//				}
+				//			});
+				//		}, 10);
+				//	});
+				
+				clearTitleAttributesOn();
 			}
 		};
 	

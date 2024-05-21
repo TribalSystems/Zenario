@@ -232,5 +232,6 @@ zenario_content:
                     ord: 106
                     same_row: Yes
                     type: button
+                    css_class: zenario_gp_button
                     value: Test
                     onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"

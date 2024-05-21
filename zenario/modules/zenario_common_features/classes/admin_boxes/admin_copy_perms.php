@@ -31,28 +31,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
-		if ($box['key']['id_is_from']) {
-			$values['copy/copy_from'] = $box['key']['id'];
-		} elseif ($box['key']['id_is_to']) {
-			$values['copy/copy_to'] = $box['key']['id'];
+		if ($box['key']['id'] == ze\admin::id()) {
+			$box['tabs']['copy']['edit_mode']['enabled'] = false;
 		}
-		
-		$fields['copy/copy_from']['values'] =
-		$fields['copy/copy_to']['values'] = [];
-		
-		foreach (ze\row::getAssocs(
+		$targetAdmin = ze\row::get(
 			'admins',
 			['first_name', 'last_name', 'username', 'authtype'],
-			['status' => 'active', 'authtype' => 'local']
-		) as $adminId => $admin) {
-			
-			$fields['copy/copy_from']['values'][$adminId] = [
-				'label' => ze\admin::formatName($admin)];
-			
-			$fields['copy/copy_to']['values'][$adminId] = [
-				'label' => ze\admin::formatName($admin),
-				'visible_if' => "id != zenario.adminId && id != zenarioAB.value('copy_from')"];
+			['status' => 'active', 'authtype' => 'local', 'id' => $box['key']['id']]
+		);
+		
+		if ($targetAdmin) {
+			ze\lang::applyMergeFields($box['title'], ['admin' => ze\admin::formatName($targetAdmin)]);
 		}
 	}
 
@@ -60,18 +49,28 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 	
 	}
 
-
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$adminsTo = ze\ray::explodeAndTrim($values['copy/copy_to'], true);
-		$count = count($adminsTo);
-		
-		if ($count == 1) {
-			$box['confirm']['message'] = ze\admin::phrase("Are you sure you wish to overwrite the permissions of [[name]]?", ['name' => ze\admin::formatName($adminsTo[0])]);
+		if ($box['key']['id'] == $values['copy/copy_from']) {
+			$fields['copy/copy_from']['error'] = ze\admin::phrase('The source administrator needs to be a different account.');
 		} else {
-			$box['confirm']['message'] = ze\admin::phrase("Are you sure you wish to overwrite the permissions of the [[count]] selected administrators?", ['count' => $count]);
+			$targetAdmin = ze\row::get(
+				'admins',
+				['first_name', 'last_name', 'username', 'authtype'],
+				['status' => 'active', 'authtype' => 'local', 'id' => $box['key']['id']]
+			);
+		
+			$sourceAdmin = ze\row::get(
+				'admins',
+				['first_name', 'last_name', 'username', 'authtype'],
+				['status' => 'active', 'authtype' => 'local', 'id' => $values['copy/copy_from']]
+			);
+		
+			$box['confirm']['message'] = ze\admin::phrase(
+				"This will update [[target_admin]]'s permissions to match those of [[source_admin]]'s permissions.\n\nProceed?",
+				['target_admin' => ze\admin::formatName($targetAdmin), 'source_admin' => ze\admin::formatName($sourceAdmin)]
+			);
 		}
 	}
-	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
@@ -88,11 +87,12 @@ class zenario_common_features__admin_boxes__admin_copy_perms extends ze\moduleBa
 				$perms = ze\admin::loadPerms($values['copy/copy_from']);
 			}
 			
-			foreach (ze\ray::explodeAndTrim($values['copy/copy_to'], true) as $adminIdTo) {
-				if ($adminIdTo != ze\admin::id()
-				 && ze\row::exists('admins',['status' => 'active', 'authtype' => 'local', 'id' => $adminIdTo])) {
-					ze\adminAdm::removeExistingPermsAndSaveNewPerms($adminIdTo, $adminFrom['permissions'], $perms, $adminFrom);
-				}
+			if (
+				$box['key']['id'] != ze\admin::id()
+				&& $box['key']['id'] != $values['copy/copy_from']
+				&& ze\row::exists('admins',['status' => 'active', 'authtype' => 'local', 'id' => $box['key']['id']])
+			) {
+				ze\adminAdm::removeExistingPermsAndSaveNewPerms($box['key']['id'], $adminFrom['permissions'], $perms, $adminFrom);
 			}
 		}
 	}

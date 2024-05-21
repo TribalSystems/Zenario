@@ -65,7 +65,7 @@ foreach([
 	'enter_password' => 'Please enter a password.'
 ] as $code => $phrase) {
 	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick(
-		ze\lang::phrase($phrase, false, 'zenario_users', $langId, $backtraceOffset = 1)
+		ze\lang::phrase($phrase, false, 'zenario_users', $langId)
 	). '~';
 }
 

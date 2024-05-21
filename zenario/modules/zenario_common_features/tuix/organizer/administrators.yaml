@@ -18,6 +18,8 @@ zenario__administration:
                     sql: "status != 'deleted'"
                 trashed:
                     sql: "status = 'deleted'"
+                active_local:
+                    sql: "status != 'deleted' AND authtype = 'local'"
             default_sort_column: full_name
             notice:
                 show: false
@@ -147,15 +149,6 @@ zenario__administration:
                     admin_box:
                         path: zenario_admin
                         create_another: true
-                copy_perms:
-                    priv: _PRIV_EDIT_ADMIN
-                    label: Copy permissions...
-                    admin_box:
-                        path: admin_copy_perms
-                    disabled_tooltip: |
-                        You can only copy permissions when you have at least two local administrators
-                    hide_on_refiner: trashed
-                    hide_in_select_mode: true
             item_buttons:
                 edit:
                     ord: 1
@@ -168,6 +161,20 @@ zenario__administration:
                     label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                copy_perms:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_ADMIN
+                    label: Copy permissions from...
+                    admin_box:
+                        path: admin_copy_perms
+                    #If there are 2 or more local admins, this tooltip will be changed
+                    #in the module code to "You cannot copy another admin's permissions to yourself."
+                    disabled_tooltip: |
+                        You can only copy permissions when you have at least two local administrators
+                    hide_on_refiner: trashed
+                    hide_in_select_mode: true
+                    visible_if: item.authtype == 'local'
+                    disabled_if: item.currently_logged_in_admin
                 restore_admin:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_ADMIN

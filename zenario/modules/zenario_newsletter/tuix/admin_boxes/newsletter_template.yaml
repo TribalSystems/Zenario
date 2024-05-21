@@ -41,5 +41,6 @@ zenario_newsletter_template:
                 apply_css_rules:
                     label: Apply
                     type: checkbox
+                    format_onchange: true
                     post_field_html: |
                         &nbsp;[[link_start]]CSS rules[[link_end]]

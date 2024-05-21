@@ -34,7 +34,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		$formsProfanityFilterSiteSetting = ze::setting('zenario_user_forms_set_profanity_filter');
 
 		if ($refinerName == 'form_id') {
-			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text', 'period_to_delete_response_headers'], $refinerId);
+			$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text', 'period_to_delete_response_headers', 'show_checkbox_for_allocating_form_responses', 'form_responses_allocate_checkbox_label'], $refinerId);
 			$panel['title'] = ze\admin::phrase('Responses for form "[[name]]" (ID: [[form_id]])', ['name' => $form['name'], 'form_id' => (int) $refinerId]);
 
 			//Information to view Data Protection settings
@@ -135,17 +135,52 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		
 		//Get user and email from form response details if they cannot be found from the recorded user Id
 		if ($refinerName == 'form_id') {
-			foreach ($panel['items'] as $responseId => $response) {
-				if (!$response['user']) {
-					if (!$response['user_id']) {
-						$panel['items'][$responseId]['user'] = ze\admin::phrase('Visitor, view response for details');
-					} else {
-						$panel['items'][$responseId]['user'] = ze\admin::phrase('Deleted user account, view response for details');
+			$responsesCanBeAllocated = $form['show_checkbox_for_allocating_form_responses'];
+			
+			//Check if the user identifier column is encrypted
+			$identifierIsEncrypted = false;
+			if (ze::$dbL->columnIsEncrypted('users', 'identifier')) {
+				$identifierIsEncrypted = true;
+			}
+			
+			foreach ($panel['items'] as $responseId => &$response) {
+				$userPhrase = '';
+				if ($response['user_id']) {
+					if ($identifierIsEncrypted) {
+						$response['user_identifier'] = ze\row::get('users', 'identifier', ['id' => $response['user_id']]);
+					}
+					
+					if ($response['user_identifier']) {
+						$usersPanelLink = ze\link::absolute() . 'organizer.php#zenario__users/panels/users//' . (int) $response['user_id'] . '~-' . $response['user_identifier'];
+						$userPhrase = '<a href="' . $usersPanelLink . '" target="_blank">' . $panel['items'][$responseId]['user_identifier'] . '</a>';
 					}
 				} else {
-					$usersPanelLink = ze\link::absolute() . 'organizer.php#zenario__users/panels/users//' . (int) $response['user_id'] . '~-' . $response['user'];
-					$panel['items'][$responseId]['user'] = '<a href="' . $usersPanelLink . '" target="_blank">' . $panel['items'][$responseId]['user'] . '</a>';
+					if ($response['user_deleted']) {
+						$userPhrase = 'Deleted user account, view response for details';
+					} else {
+						$userPhrase = 'Visitor, view response for details';
+					}
 				}
+				
+				$panel['items'][$responseId]['user'] = ze\admin::phrase($userPhrase);
+				
+				if ($responsesCanBeAllocated) {
+					$label = $form['form_responses_allocate_checkbox_label'];
+					$labelMergeFields = [];
+					
+					if (!empty($response['allocated_to_admin_id']) && !empty($response['allocated_to_admin_datetime'])) {
+						$label .= ' [[allocated_relative_date]] by [[admin_name]]';
+			
+						$timestampAllocated = strtotime($response['allocated_to_admin_datetime']);
+						$labelMergeFields = ['allocated_relative_date' => ze\date::formatRelativeDateTime($timestampAllocated), 'admin_name' => ze\admin::formatName($response['allocated_to_admin_id'])];
+						
+						$response['allocated_to_admin'] = ze\admin::phrase($label, $labelMergeFields);
+					}
+				}
+			}
+			
+			if (!$responsesCanBeAllocated) {
+				$panel['columns']['allocated_to_admin']['hidden'] = true;
 			}
 		} elseif ($refinerName == 'user_id') {
 			if (!$formsProfanityFilterSiteSetting) {

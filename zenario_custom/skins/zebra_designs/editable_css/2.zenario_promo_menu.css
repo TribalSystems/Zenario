@@ -50,6 +50,7 @@
 .zenario_promo_menu__default_style ul li > span.menu_image {
 	height:50px;
 	padding-top:30px;
+	display:inline-block;
 }
 
 .zenario_promo_menu__default_style ul,
@@ -80,16 +81,15 @@
 	visibility:visible;
 }
 
-.zenario_promo_menu__default_style ul .columns_wrap .column {
+.zenario_promo_menu__default_style ul .columns_wrap .column,
+.zenario_promo_menu__default_style .feature_wrap {
 	float:left;
 	width:calc(33.33% - 40px);
 	padding:10px 20px;
 }
 
-.zenario_promo_menu__default_style .feature_wrap {
+.zenario_promo_menu__default_style .column + .feature_wrap {
 	float:right;
-	width:calc(33.33% - 20px);
-	padding:10px 20px 20px 0;
 }
 
 .zenario_promo_menu__default_style ul li.has_child .columns_wrap .column > div > a,

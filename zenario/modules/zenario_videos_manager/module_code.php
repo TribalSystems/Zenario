@@ -58,7 +58,7 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 	
 	public static function getVimeoVideoData($vimeoVideoId) {
 		$vimeoAccessToken = ze::setting('vimeo_access_token');
-		$link = "https://api.vimeo.com/videos/" . (int)$vimeoVideoId;
+		$link = "https://api.vimeo.com/videos/" . (int) $vimeoVideoId;
 		$params = [
 			"Content-Type: application/json",
 			"Authorization: Bearer " . $vimeoAccessToken
@@ -120,7 +120,7 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 		return $result['thumbnail_url'];
 	}
 	
-	public static function getVimeoPrivacySettingsFormattedNicely() {
+	public static function getVimeoPrivacySettingsFormattedNicely($creatingNewVideo = false) {
 		$vimeoPrivacySettingsFormattedNicely = [
 			'anybody' => [
 				'label' => "Public/anybody",
@@ -144,6 +144,142 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 			]
 		];
 		
+		if (!$creatingNewVideo) {
+			foreach (['anybody', 'disable', 'nobody', 'unlisted'] as $privacy) {
+				$vimeoPrivacySettingsFormattedNicely[$privacy]['note'] .= " (Vimeo privacy: \"[[code]]\". Last cached: [[date_time]]).";
+			}
+		}
+		
 		return $vimeoPrivacySettingsFormattedNicely;
+	}
+	
+	public static function signalAdvancedSearchPopulateValuesSearchInOtherModules() {
+		return 'zenario_videos_manager';
+	}
+	
+	public static function searchFromModule($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
+		$recordCount = 0;
+		$resultsFromModule = [];
+
+		if ($searchString) {
+			//Calculate the search terms
+			$searchTerms = ze\content::searchtermParts($searchString);
+
+			//Get a list of MySQL stop-words to exclude.
+			$stopWordsSql = "
+				SELECT value FROM INFORMATION_SCHEMA.INNODB_FT_DEFAULT_STOPWORD";
+			$stopWords = ze\sql::fetchValues($stopWordsSql);
+
+			//Remove the stop words from search.
+			$searchTermsWithoutStopWords = $searchTerms;
+			foreach ($searchTerms as $searchTerm => $searchTermType) {
+				if (in_array($searchTerm, $stopWords)) {
+					unset($searchTermsWithoutStopWords[$searchTerm]);
+				}
+			}
+
+			$searchTermsAreAllStopWords = true;
+			if (!empty($searchTermsWithoutStopWords) && count($searchTermsWithoutStopWords) > 0) {
+				$searchTermsAreAllStopWords = false;
+			}
+			unset($searchTermsWithoutStopWords);
+
+			if ($searchTerms && !$searchTermsAreAllStopWords && count($searchTerms) > 0) {
+				$firstRow = true;
+
+				$sqlFields = "
+					SELECT v.id AS item_id, v.title, v.image_id, f.filename, v.short_description, v.date";
+				
+				$sqlFrom = "
+					FROM " . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos v";
+				
+				$sqlJoin = "
+					LEFT JOIN " . DB_PREFIX . "files f
+						ON f.id = v.image_id";
+				
+				$sqlWhere = "
+					WHERE (";
+				
+				$sqlMatch = '';
+				$sqlCount = '';
+
+				$sqlFields .= ", (";
+
+				$scoreStatementFirstLine = true;
+				foreach ($searchTerms as $searchTerm => $searchTermType) {
+					$wildcard = "*";
+
+					//The location name column is called description.
+					//Treat it as a title.
+					foreach (['v.title', 'v.short_description', 'v.description'] as $column) {
+						if ($firstRow) {
+							$or = '';
+							$firstRow = false;
+						} else {
+							$or = " OR";
+						}
+
+						if (!$scoreStatementFirstLine) {
+							$sqlFields .= " + ";
+						}
+	
+						$scoreStatementFirstLine = false;
+
+						if ($column == 'v.title') {
+							$weighting = $weightings['title'];
+						} elseif (ze::in($column, 'v.short_description', 'v.description')) {
+							$weighting = $weightings['description'];
+						}
+						
+						$sqlFields .= "(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+						
+						$sqlMatch .= $or . "
+							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
+						
+						$sqlCount .= $or . "
+							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+					}
+				}
+
+				$sqlFields .= "
+					) AS score";
+				
+				$sqlMatch .= ")";
+				$sqlCount .= ")";
+
+				//Get the record count now...
+				$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sqlFrom . $sqlWhere . $sqlCount);
+				$row = ze\sql::fetchRow($result);
+				$recordCount = $row[0];
+
+				//... and then the results.
+				$sqlMatch .= "
+					ORDER BY score DESC, v.title ASC";
+
+				$sqlMatch .= ze\sql::limit($page, $pageSize);
+
+				$result = ze\sql::select($sqlFields . $sqlFrom . $sqlJoin . $sqlWhere . $sqlMatch);
+
+				while ($row = ze\sql::fetchAssoc($result)) {
+					$item = [
+						'item_id' => $row['item_id'],
+						'title' => $row['title'],
+						'short_description' => $row['short_description'],
+						'date' => ze\date::format($row['date']),
+						'filename' => $row['filename'],
+						'score' => $row['score']
+					];
+
+					if ($row['image_id']) {
+						$item['thumbnail_Id'] = $row['image_id'];
+					} else {
+						$item['thumbnail_Id'] = '';
+					}
+					$resultsFromModule[$row['item_id']] = $item;
+				}
+			}
+		}
+
+		return ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => 'videoId'];
 	}
 }

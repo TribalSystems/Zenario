@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]documents_custom_data`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]email_template_sending_log`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]email_templates`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]error_404_log`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]file_extracts`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]files`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]image_tag_link`;

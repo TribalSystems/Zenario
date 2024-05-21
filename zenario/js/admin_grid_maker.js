@@ -1952,7 +1952,7 @@ zenarioGM.getSlotDescription = function(slot) {
 		
 		pluginDesc = htmlspecialchars(slot.moduleDisplayName);
 		
-		//N.b. similar logic to the following is also used inline in zenario/modules/zenario_pro_features/js/cache_info.js
+		//N.b. similar logic to the following is also used inline in zenario/js/cache_info.js
 		if (slot.isVersionControlled) {
 			pluginDesc += ' (' + phrase.versionControlled + ')';
 		

@@ -3,8 +3,16 @@
 zenario__content:
     panels:
         content:
+            columns:
+                extract_wordcount:
+                    db_column: fe.extract_wordcount
+                extract_source:
+                    db_column: fe.extract_source
+                extract_status:
+                    db_column: fe.extract_status
             collection_buttons:
                 zenario_ctype_document__create_multiple:
+                    parent: new_dropdown
                     ord: 2
                     priv: _PRIV_EDIT_DRAFT
                     # For limited admins: if the create button is not enabled, don't enable
@@ -21,6 +29,17 @@ zenario__content:
                         drag_and_drop: true
                         request:
                             create_multiple: 1
+                
+                aws_s3_and_vector_data_processing:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    label: Settings for AWS S3 and Vector data processing
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: site_settings
+                        key:
+                            id: aws_s3_and_vector_data_processing
+            
             item_buttons:
                 zenario_ctype_document__rescan_extract:
                     priv: _PRIV_EDIT_DRAFT
@@ -51,3 +70,69 @@ zenario__content:
                             message_type: warning
                         request:
                             rescan_extract: 1
+            
+            
+            inline_buttons:
+                no_extract: 
+                    visible_if: |
+                        item.type == 'document' &&
+                        item.extract_status == 'completed' &&
+                        item.extract_wordcount == 0
+                    css_class: no_extract
+                    tooltip: "0 words"
+                    admin_box: 
+                        path: zenario_content
+                        tab: file
+                extract_processing: 
+                    visible_if: |
+                        item.type == 'document' &&
+                        item.extract_status == 'processing'
+                    css_class: extract_processing
+                    tooltip: "Awaiting extract"
+                    admin_box: 
+                        path: zenario_content
+                        tab: file
+                extract_textract: 
+                    visible_if: |
+                        item.type == 'document' &&
+                        item.extract_status == 'completed' &&
+                        item.extract_wordcount > 0 &&
+                        item.extract_source == 'Textract'
+                    css_class: textract
+                    tooltip: "[[extract_wordcount]] words, Textract"
+                    admin_box: 
+                        path: zenario_content
+                        tab: file
+                extract_antiword: 
+                    visible_if: |
+                        item.type == 'document' &&
+                        item.extract_status == 'completed' &&
+                        item.extract_wordcount > 0 &&
+                        item.extract_source == 'antiword'
+                    css_class: extract
+                    tooltip: "[[extract_wordcount]] words, Antiword"
+                    admin_box: 
+                        path: zenario_content
+                        tab: file
+                extract_pdftotext: 
+                    visible_if: |
+                        item.type == 'document' &&
+                        item.extract_status == 'completed' &&
+                        item.extract_wordcount > 0 &&
+                        item.extract_source == 'pdftotext'
+                    css_class: extract
+                    tooltip: "[[extract_wordcount]] words, pdftotext"
+                    admin_box: 
+                        path: zenario_content
+                        tab: file
+                extract_zip: 
+                    visible_if: |
+                        item.type == 'document' &&
+                        item.extract_status == 'completed' &&
+                        item.extract_wordcount > 0 &&
+                        item.extract_source == 'ZipArchive'
+                    css_class: extract
+                    tooltip: "[[extract_wordcount]] words"
+                    admin_box: 
+                        path: zenario_content
+                        tab: file

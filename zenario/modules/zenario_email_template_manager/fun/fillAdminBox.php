@@ -251,7 +251,7 @@ switch ($path) {
 			
 			//Show the number of sent emails currently stored
 			$count = ze\row::count('email_template_sending_log');
-			$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+			$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
 			
 			if ($count) {
 				$min = ze\row::min('email_template_sending_log', 'sent_datetime');

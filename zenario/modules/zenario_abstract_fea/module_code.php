@@ -608,12 +608,12 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			if ($this->checkThingEnabled('search_box') && !empty($_REQUEST['search'])) {
 				$mrg = ['search' => $_REQUEST['search']];
 				if($itemCount) {
-					$tags['__items_phrase__'] = $this->nphrase('1 item found from search "[[search]]"', '[[count]] items found from search "[[search]]"', $itemCount, $mrg);
+					$tags['__items_phrase__'] = $this->nPhrase('1 item found from search "[[search]]"', '[[count]] items found from search "[[search]]"', $itemCount, $mrg);
 				} else {
 					$tags['__items_phrase__'] = $this->phrase('No items found from search "[[search]]"', $mrg);
 				}
 			} elseif ($itemCount) {
-				$tags['__items_phrase__'] = $this->nphrase('1 item', '[[count]] items', $itemCount);
+				$tags['__items_phrase__'] = $this->nPhrase('1 item', '[[count]] items', $itemCount);
 			}
 		}
 	}

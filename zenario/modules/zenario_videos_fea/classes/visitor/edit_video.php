@@ -97,7 +97,14 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 				if ($this->mode == 'edit_video') {
 					$parsed = parse_url($url);
 					if ($parsed && strpos($parsed['host'], 'vimeo.com') !== false) {
-						$vimeoVideoId = (int)str_replace('/', '', $parsed['path']);
+						$vimeoVideoId = $parsed['path'];
+						if (substr($vimeoVideoId, 0, 1) == '/') {
+							$vimeoVideoId = substr($vimeoVideoId, 1);
+						}
+						
+						if (($forwardSlashPos = strpos($vimeoVideoId, '/')) !== false) {
+							$vimeoVideoId = substr($vimeoVideoId, 0, $forwardSlashPos);
+						}
 					
 						$currentVimeoThumnailId = ze\row::get(ZENARIO_VIDEOS_MANAGER_PREFIX . 'videos', 'image_id', $this->videoId);
 						if (!$currentVimeoThumnailId) {
@@ -238,9 +245,17 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 			if ($parsed) {
 				$url = false;
 				if (strpos($parsed['host'], 'vimeo.com') !== false) {
-					$vimeoVideoId = (int)str_replace('/', '', $parsed['path']);
+					$vimeoVideoId = $parsed['path'];
+					if (substr($vimeoVideoId, 0, 1) == '/') {
+						$vimeoVideoId = substr($vimeoVideoId, 1);
+					}
+					
+					if (($forwardSlashPos = strpos($vimeoVideoId, '/')) !== false) {
+						$vimeoVideoId = substr($vimeoVideoId, 0, $forwardSlashPos);
+					}
+					
 					$videoData = zenario_videos_manager::getVimeoVideoData($vimeoVideoId);
-					$privacy = $videoData['privacy']['view'] ?? '';
+					$privacy = $this->video['vimeo_privacy_setting'];
 					$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
 					
 					//Video thumbnail

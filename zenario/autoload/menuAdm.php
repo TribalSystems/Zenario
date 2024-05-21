@@ -303,7 +303,12 @@ class menuAdm {
 		$preHTML = '<div class="zfab_menuPathPreview">';
 		
 		foreach ($menuPath as $node) {
-			$preHTML .= '<span class="zfab_menuPathPreviewNode">'. htmlspecialchars($node['text']). '</span> ';
+			if (!empty($node['text'])) {
+				$nodeText = $node['text'];
+			} else {
+				$nodeText = '';
+			}
+			$preHTML .= '<span class="zfab_menuPathPreviewNode">'. htmlspecialchars($nodeText). '</span> ';
 		}
 		
 		$postHTML = ' <span class="zfab_menuPathPreviewMeta">';

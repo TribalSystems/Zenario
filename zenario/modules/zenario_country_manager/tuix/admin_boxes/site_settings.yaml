@@ -15,7 +15,7 @@ site_settings:
                     site_setting:
                         name: zenario_country_manager__region_type_management
                     values:
-                        0: Do not use region types
-                        1: Regions must have type
-                    side_note: |
-                        <p>If set to "Regions must have type" then each region must be mark as either a region, state or city.</p>
+                        0: Use simple regions
+                        1: Use types of region
+                    note_below: |
+                        <p>If set to "Use types of region", regions will be identified as a region, a state or a city.</p>

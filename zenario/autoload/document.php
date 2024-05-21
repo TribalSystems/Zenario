@@ -223,6 +223,10 @@ class document {
 				
 				if (($numberFileIds == 1) && !$fileInUseByOtherDocuments) {
 					\ze\row::delete('files', ['id' => $details['file_id']]);
+					
+					//Delete the linked row from the file_extracts table as well if it exists
+					\ze\row::delete('file_extracts', ['file_id' => $details['file_id']]);
+					
 					if ($details['thumbnail_id']) {
 						\ze\row::delete('files', ['id' => $details['thumbnail_id']]);
 					}
@@ -259,11 +263,11 @@ class document {
 		
 	}
 	
-	public static function addExtract($file_id) {
+	public static function addExtract($fileId, $reScan = false) {
 		$documentProperties = [];
 		$extract = [];
 		$thumbnailId = false;
-		\ze\file::updateDocumentPlainTextExtract($file_id, $extract, $thumbnailId);
+		\ze\file::updateHierarchicalDocumentExtract($fileId, $extract, $thumbnailId, $reScan);
 		
 		if ($extract['extract']) {
 			$documentProperties['extract'] = $extract['extract'];

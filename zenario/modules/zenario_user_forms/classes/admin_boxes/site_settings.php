@@ -72,7 +72,7 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 			
 			//Show the number of form responses currently stored
 			$count = ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response');
-			$note = ze\admin::nphrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+			$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
 						
 			if ($count) {
 				$min = ze\row::min(ZENARIO_USER_FORMS_PREFIX . 'user_response', 'response_datetime');

@@ -60,6 +60,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		} else {
 			$this->userLoggedIn = false;
 			$this->idOfUserTryingToLogIn = $this->getIdOfUserTryingToLogIn();
+			$this->requireJsLib('zenario/js/password_functions.min.js');
 		}
 		
 		
@@ -214,7 +215,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 								
 								//user is pending, show error
 								if ($emailVerifiedStatus == 'verified') {
-									//user has verified email, wanting on admin to activate there account.
+									//user has verified email, wanting on admin to activate their account.
 									$errorMessage = $this->setting('account_pending_message');
 									$this->errors[] = ['Error' => $this->phrase($errorMessage)];
 								} else {
@@ -295,13 +296,17 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	//Display a login form
 	protected function modeLogin() {
-		$this->addLoginLinks();
-		$this->add401MessageIfNeeded();
-		
-		$this->subSections['Login_title_section'] = true;
-		$this->subSections['Login_Form'] = true;
-		
-		$this->objects['openForm'] = $this->getLoginOpenForm();
+		if ($this->moduleClassName == 'zenario_extranet' && $this->signInUsingEmailAddress() && ze::get('action') == 'confirm_email') {
+			$this->processEmailVerificationRequestIfNeeded();
+		} else {
+			$this->addLoginLinks();
+			$this->add401MessageIfNeeded();
+	
+			$this->subSections['Login_title_section'] = true;
+			$this->subSections['Login_Form'] = true;
+	
+			$this->objects['openForm'] = $this->getLoginOpenForm();
+		}
 			
 		$this->framework('Outer', $this->objects, $this->subSections);
 	}
@@ -391,6 +396,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	protected function modeChangePassword(){
 		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
+			$this->objects['Container_Id'] = $this->containerId;
 			$this->framework('Change_Password_Form', $this->objects, $this->subSections);
 		echo $this->closeForm();
 	}
@@ -501,6 +507,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		//Log the user in if they're passed all of the steps
 		if (!$this->userLoggedIn) {
 			$this->logUserIn($this->idOfUserTryingToLogIn);
+			
 			$this->redirectToPage();
 		}
 	}
@@ -508,10 +515,36 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	//Display a welcome message when the user is logged in
 	protected function modeLoggedIn() {
-		$this->addLoggedInLinks();
+		if ($this->moduleClassName == 'zenario_extranet' && $this->signInUsingEmailAddress() && ze::get('action') == 'confirm_email') {
+			$this->processEmailVerificationRequestIfNeeded();
+		} else {
+			$this->addLoggedInLinks();
+			$this->subSections['Logged_In'] = true;
+			
+			$userId = ze\user::id();
+			$userDetails = ze\row::get('users', ['id', 'email_verified'], ['id' => $userId]);
 		
-		$this->subSections['Logged_In'] = true;
+			if ($userDetails['email_verified'] == 'verified') {
+				ze\row::set('users', ['hash_verify_email' => ''], ['id' => $userId]);
+			}
+		}
+		
 		$this->framework('Outer', $this->objects, $this->subSections);
+	}
+	
+	protected function processEmailVerificationRequestIfNeeded() {
+		$userDetails = ze\row::get('users', ['id', 'email_verified'], ['hash_verify_email' => ze::get('hash')]);
+		
+		if (!empty($userDetails)) {
+			if ($userDetails['email_verified'] != 'verified') {
+				ze\row::set('users', ['email_verified' => 'verified'], ['hash_verify_email' => ze::get('hash')]);
+				$this->subSections['Email_Verified'] = true;
+				
+				ze\row::set('users', ['hash_verify_email' => ''], ['id' => $userDetails['id']]);
+			}
+		} else {
+			$this->subSections['Email_Could_Not_Be_Verified'] = true;
+		}
 	}
 	
 	
@@ -779,7 +812,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	}
 	
 	protected function getDetailsFromEmail($email) {
-		return ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash', 'status'], ['email' => $email]);
+		return ze\row::get('users', ['id', 'first_name', 'last_name', 'screen_name', 'password', 'password_salt', 'email', 'hash_verify_email', 'status'], ['email' => $email]);
 	}
 	
 	function validatePassword($newPassword, $confirmation, $oldPassword = false, $vlpClass = false, $userId = false) {
@@ -834,7 +867,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 	}
 	
 	protected function getTitleAndLabelMergeFields() {
-		$this->objects['main_login_heading'] = $this->phrase('Sign in');
+		if ($this->setting('show_title')) {
+			$this->objects['main_login_heading'] = $this->setting('title');
+			$this->objects['main_login_heading_tags'] = $this->setting('title_tags');
+		}
 		$this->objects['email_field_label'] = $this->phrase('Your email:');
 		$this->objects['screen_name_field_label'] = $this->phrase('Your screen name:');
 		$this->objects['password_field_label'] = $this->phrase('Your password:');

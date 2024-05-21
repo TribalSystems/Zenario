@@ -83,6 +83,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		
 		$canvasSetting = $this->setting('canvas');
 		$retinaSetting = $this->setting('retina');
+		if ($canvasSetting != 'unlimited') {
+			$retinaSetting = true;
+		} 
 		$widthSetting = $this->setting('width');
 		$heightSetting = $this->setting('height');
 		

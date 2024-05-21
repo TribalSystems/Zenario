@@ -1008,3 +1008,15 @@ if (ze\dbAdm::needRevision(183)) {
 	
 	ze\dbAdm::revision(183);
 }
+
+if (ze\dbAdm::needRevision(188)) {
+	$indexSql = "
+		CREATE INDEX idx_latitude ON " . ze\escape::sql(DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations") . " (latitude)";
+	ze\sql::update($indexSql);
+	
+	$indexSql = "
+		CREATE INDEX idx_longitude ON " . ze\escape::sql(DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations") . " (longitude)";
+	ze\sql::update($indexSql);
+	
+	ze\dbAdm::revision(188);
+}

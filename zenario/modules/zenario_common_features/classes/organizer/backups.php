@@ -109,21 +109,29 @@ class zenario_common_features__organizer__backups extends ze\moduleBaseClass {
 			$filename = $_FILES['Filedata']['name'];
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if (!in_array($ext, ['sql', 'gz', 'encrypted'])) {
-				echo '<!--Message_Type:Error-->Only .sql, .gz, or .encrypted files can be uploaded as database backups';
+				ze\escape::bFlag('MESSAGE_TYPE', 'error');
+				echo ze\admin::phrase('Only .sql, .gz, or .encrypted files can be uploaded as database backups');
+			
 			} elseif (file_exists(ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
-				echo '<!--Message_Type:Error-->A database backup with the same name already exists';
+				ze\escape::bFlag('MESSAGE_TYPE', 'error');
+				echo ze\admin::phrase('A database backup with the same name already exists');
+			
 			} elseif (\ze\fileAdm::moveUploadedFile($_FILES['Filedata']['tmp_name'], ze::setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
-				echo '<!--Message_Type:Success-->Successfully uploaded the database backup';
+				ze\escape::bFlag('MESSAGE_TYPE', 'success');
+				echo ze\admin::phrase('Successfully uploaded the database backup');
+				
 				return ze\ring::encodeIdForOrganizer($filename);
+			
 			} else {
-				echo '<!--Message_Type:Error-->Unable to upload the database backup';
+				ze\escape::bFlag('MESSAGE_TYPE', 'error');
+				echo ze\admin::phrase('Unable to upload the database backup');
 			}
 		
 		} elseif (ze::post('restore') && ze\priv::check('_PRIV_RESTORE_SITE')) {
 			//Restore a database backup from the file system
 			$failures = [];
 			if (ze\dbAdm::restoreFromBackup($filename, $failures, true)) {
-				echo '<!--Reload_Organizer-->';
+				ze\escape::bFlag('RELOAD_ORGANIZER');
 			} else {
 				foreach ($failures as $text) {
 					echo $text;

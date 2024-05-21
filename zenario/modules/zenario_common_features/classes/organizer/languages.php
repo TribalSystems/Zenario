@@ -290,7 +290,7 @@ _text
 		
 				// Enable a language
 				if (ze::post('enable_language') && ze::post('id')) {
-					echo '<!--Open_Admin_Box:zenario_setup_language//' . ze\escape::hyp(ze::post('id')) . '-->';
+					ze\escape::bFlag('OPEN_ADMIN_BOX', 'zenario_setup_language//'. ze::post('id'));
 				}
 		
 				break;

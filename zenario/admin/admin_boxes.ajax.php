@@ -677,14 +677,14 @@ if ($debugMode) {
 			
 			if ($doSave) {
 				$tags['_sync']['flags'] = [
-					'valid' => false,
-					'confirm' => false,
-					'download' => false,
-					'saved' => false
+					'VALID' => false,
+					'CONFIRM' => false,
+					'DOWNLOAD' => false,
+					'SAVED' => false
 				];
 				
 				if (!($downloading)) {
-					$tags['_sync']['flags']['valid'] = true;
+					$tags['_sync']['flags']['VALID'] = true;
 				}
 				
 				$download =
@@ -694,10 +694,10 @@ if ($debugMode) {
 				
 				//Check if a confirmation is needed
 				if (ze\ring::engToBoolean($tags['confirm']['show'] ?? false) && !($confirmed || $downloading)) {
-					$tags['_sync']['flags']['confirm'] = true;
+					$tags['_sync']['flags']['CONFIRM'] = true;
 					
 				} else if ($download && !$downloading) {
-					$tags['_sync']['flags']['download'] = true;
+					$tags['_sync']['flags']['DOWNLOAD'] = true;
 					$doFormat = $_POST['_save_and_continue'] ?? false;
 					
 				} else {
@@ -789,7 +789,7 @@ if ($debugMode) {
 						exit;
 				
 					} else {
-						$tags['_sync']['flags']['saved'] = true;
+						$tags['_sync']['flags']['SAVED'] = true;
 						$doFormat = $_POST['_save_and_continue'] ?? false;
 					}
 				}

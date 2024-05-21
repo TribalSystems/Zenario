@@ -154,7 +154,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 					ze\admin::phrase('No positions in the menu have been set for [[content_type_plural_en]]. You can set a position by editing a menu node and going to the <em style="font-style: italic;">Advanced</em> tab.', $details);
 			} else {
 				$fields['details/menu_node_position_edit']['note_below'] =
-					ze\admin::nphrase('The following position in the menu has been set for [[content_type_plural_en]]:',
+					ze\admin::nPhrase('The following position in the menu has been set for [[content_type_plural_en]]:',
 						'The following positions in the menu have been set for [[content_type_plural_en]]:',
 						count($suggestedPositions), $details).
 					'<ul><li>'. implode('</li><li>', $suggestedPositions). '</li></ul>'.

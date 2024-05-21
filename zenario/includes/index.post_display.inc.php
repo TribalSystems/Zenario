@@ -85,12 +85,9 @@ if (ze::$canCache
 		ze::$cacheEnv['l'] = true;
 	}
 	
-	$caching_debug_info = ze::setting('caching_debug_info');
-	if ($caching_debug_info && ze::setting('limit_caching_debug_info_by_ip')) {
-		$caching_debug_info = (ze::setting('limit_caching_debug_info_by_ip') == ze\user::ip());
-	}
-	
-	if ($caching_debug_info) {
+	if ($caching_debug_info = ze::setting('caching_debug_info')) {
+		$limit_caching_debug_info_by_ip = ze::setting('limit_caching_debug_info_by_ip');
+		
 		$chSlots = [];
 		foreach (ze::$slotContents as $slotName => &$slot) {
 			if ($slot->instanceId() && $slot->class()) {
@@ -108,31 +105,7 @@ if (ze::$canCache
 			$chSlots['__misc__']['cache_if']['u'] = false;
 		}
 		
-		$css = 'zenario_cache_in_use';
-		if (!$allowPageCaching) {
-			$css = 'zenario_cache_disabled';
-		
-		} elseif (!$canCache) {
-			$css = 'zenario_not_cached';
-		}
-		
-		echo '
-			<link rel="stylesheet" type="text/css" media="screen" href="', ze::moduleDir('zenario_pro_features', 'adminstyles/cache_info.css'), '?v=', ze::setting('css_js_version'), '"/>
-			<x-zenario-cache-info id="zenario_cache_info" class="zenario_cache_info"><x-zenario-cache-info class="', $css, '" title="', ze\admin::phrase('Click to see caching information for this page.'), '" onclick="
-				if (window.zenario) {
-					if (!window.zenarioCI) {
-						$.getScript(\'', ze::moduleDir('zenario_pro_features', 'js/cache_info.min.js'), '?v=', ze::setting('css_js_version'), '\', function() {zenarioCI.init(', (int) $allowPageCaching, '); });
-					} else {
-						zenarioCI.init(', (int) $allowPageCaching, ');
-					}
-				}
-			"></x-zenario-cache-info></x-zenario-cache-info>
-			<script type="text/javascript">
-				window.zenarioCD = {load:', json_encode(ze::$cacheEnv), ', slots: ', json_encode($chSlots), '};
-				zOnLoad(function() {
-					zenario.tooltips(\'#zenario_cache_info *\');
-				});
-			</script>';
+		ze\cache::writeDebugInfo($chSlots);
 	}
 	
 	
@@ -154,7 +127,7 @@ if (ze::$canCache
 		if (ze\cache::cleanDirs() && ($path = ze\cache::createDir(zenarioPageCacheDir(ze::$knownReq). $cacheStatusText, 'cache/pages', false))) {
 			foreach ($clearCacheBy as $if => $set) {
 				touch(CMS_ROOT. $path. $if);
-				\ze\cache::chmod(CMS_ROOT. $path. $if, 0666);
+				ze\cache::chmod(CMS_ROOT. $path. $if, 0666);
 			}
 			
 			
@@ -182,38 +155,44 @@ if (ze::$canCache
 			
 			//Put a marker on the page to note that it came from the cache
 			if ($caching_debug_info) {
-				touch(CMS_ROOT. $path. 'show_cache_info');
-				\ze\cache::chmod(CMS_ROOT. $path. 'show_cache_info', 0666);
-				$html = str_replace('<x-zenario-cache-info class="zenario_cache_in_use"', '<x-zenario-cache-info class="zenario_from_cache"', $html);
-			
-			} else {
-				$html .= "\n</body>\n</html>";
+				if ($limit_caching_debug_info_by_ip) {
+					file_put_contents(CMS_ROOT. $path. 'show_cache_info', $limit_caching_debug_info_by_ip);
+				} else {
+					touch(CMS_ROOT. $path. 'show_cache_info');
+				}
+				ze\cache::chmod(CMS_ROOT. $path. 'show_cache_info', 0666);
 			}
 			
 			file_put_contents(CMS_ROOT. $path. 'tag_id', ze::$cType. '_'. ze::$cID);
 			file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
 			file_put_contents(CMS_ROOT. $path. 'page.html', $html);
-			\ze\cache::chmod(CMS_ROOT. $path. 'tag_id', 0666);
-			\ze\cache::chmod(CMS_ROOT. $path. 'cached_files', 0666);
-			\ze\cache::chmod(CMS_ROOT. $path. 'page.html', 0666);
+			ze\cache::chmod(CMS_ROOT. $path. 'tag_id', 0666);
+			ze\cache::chmod(CMS_ROOT. $path. 'cached_files', 0666);
+			ze\cache::chmod(CMS_ROOT. $path. 'page.html', 0666);
 			
 			//When using implied consent, write a flag if the $_SESSION['cookies_accepted'] variable would have just been set.
 			if (ze::setting('cookie_require_consent') == 'implied' && empty($_COOKIE['cookies_accepted'])) {
 				file_put_contents(CMS_ROOT. $path. 'consent_implied', $images);
-				\ze\cache::chmod(CMS_ROOT. $path. 'consent_implied', 0666);
+				ze\cache::chmod(CMS_ROOT. $path. 'consent_implied', 0666);
 			}
 			
 			zenarioPageCacheLogStats(['writes', 'total']);
-			return;
+		} else {
+			$canCache = false;
 		}
 	}
 	
+	if (!$canCache) {
+		if ($pluginsFromCache) {
+			zenarioPageCacheLogStats(['partial_hits', 'total']);
+		} elseif ($pluginsCached) {
+			zenarioPageCacheLogStats(['partial_writes', 'total']);
+		} else {
+			zenarioPageCacheLogStats(['misses', 'total']);
+		}
+	}
 	
-	if ($pluginsFromCache) {
-		zenarioPageCacheLogStats(['partial_hits', 'total']);
-	} elseif ($pluginsCached) {
-		zenarioPageCacheLogStats(['partial_writes', 'total']);
-	} else {
-		zenarioPageCacheLogStats(['misses', 'total']);
+	if ($caching_debug_info && ze\cache::shouldSeeDebugInfo($limit_caching_debug_info_by_ip)) {
+		ze\cache::showDebugInfo(false, $allowPageCaching, $canCache);
 	}
 }

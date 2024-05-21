@@ -60,7 +60,6 @@ class zenario_language_picker extends ze\moduleBaseClass {
 			);
 		}
 		
-		
 		//Loop through all of the languages enabled on this site, adding the details of each to an array
 		foreach (ze\lang::getLanguages() as $langId => $langCfg) {
 			
@@ -104,7 +103,13 @@ class zenario_language_picker extends ze\moduleBaseClass {
 				$lang['equivId'] = ze::$homeEquivId;
 			}
 			
-			if (!$lang['cID'] && $lpl === 'visible_or_hidden') {
+			if (
+				!$lang['cID']
+				&& (
+					$lpl === 'visible_or_hidden'
+					|| ($useEquivs && !$useHomepage)
+				)
+			) {
 				continue;
 			}
 			
@@ -119,7 +124,6 @@ class zenario_language_picker extends ze\moduleBaseClass {
 		//Don't show the picker if there were no links!
 		return !empty($this->langs);
 	}
-	
 	
 	function showSlot()	{
 		if (!empty($this->langs)) {
@@ -140,7 +144,64 @@ class zenario_language_picker extends ze\moduleBaseClass {
 		}
 	}
 	
-	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if ($path == 'plugin_settings') {
+			//Show a warning for any enabled languages that don't have a home page published
+			$languages = ze\lang::getLanguages();
+			
+			if (count($languages) > 1) {
+				unset($languages[ze::$defaultLang]);
+				
+				$languagesWithoutPublishedHomepage = [];
+				
+				foreach ($languages as $langId => $language) {
+					$langArray = [
+						'cID' => false,
+						'cType' => false,
+						'flag' => $language['flag'],
+						'name' => $language['language_local_name']
+					];
+					
+					ze\content::langSpecialPage('zenario_home', $langArray['cID'], $langArray['cType'], $langId, true);
+					
+					if (!$langArray['cID'] || !$langArray['cType'] || !ze\content::isPublished($langArray['cID'], $langArray['cType'])) {
+						$languagesWithoutPublishedHomepage[] = $language['english_name'];
+					}
+				}
+				
+				$languagesWithoutPublishedHomepageCount = count($languagesWithoutPublishedHomepage);
+				
+				if ($languagesWithoutPublishedHomepageCount > 0) {
+					$lastLanguageInTheArray = $languagesWithoutPublishedHomepage[$languagesWithoutPublishedHomepageCount - 1];
+					unset($languagesWithoutPublishedHomepage[$languagesWithoutPublishedHomepageCount - 1]);
+					
+					if (count($languagesWithoutPublishedHomepage) > 0) {
+						$languagesList = implode(', ', $languagesWithoutPublishedHomepage);
+						
+						$languagesList .= ' and ' . $lastLanguageInTheArray;
+						
+						$phrase = 'The languages [[language_list]] do not currently have a published home page.';
+						$mergeFields = ['language_list' => $languagesList];
+					} else {
+						$languagesList = $lastLanguageInTheArray;
+						
+						$phrase = 'The language [[language]] does not currently have a published home page.';
+						$mergeFields = ['language' => $languagesList];
+					}
+					
+					$languagesWithoutPublishedHomepagePhrase = ze\admin::phrase($phrase, $mergeFields);
+					ze\lang::applyMergeFields($fields['first_tab/languages_without_home_page_warning']['snippet']['html'], ['languages_without_home_page_warning' => $languagesWithoutPublishedHomepagePhrase]);
+					$fields['first_tab/languages_without_home_page_warning']['hidden'] = false;
+				}
+			}
+			
+			//Show a link to the languages panel
+			$href = 'organizer.php#zenario__languages/panels/languages';
+			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+			$linkEnd = '</a>';
+			$siteSettingsLink = ze\admin::phrase('To access the settings of all languages, [[link_start]]click here[[link_end]].', ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			
+			ze\lang::applyMergeFields($fields['first_tab/language_settings_info']['snippet']['html'], ['language_settings_info' => $siteSettingsLink]);
+		}
+	}
 }
-
-

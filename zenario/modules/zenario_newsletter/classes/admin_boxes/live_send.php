@@ -169,7 +169,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 							$msg .= '<p><a href="#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/process//'. (int) $ids. '//" onclick="zenarioA.closeFloatingBox();">'. ze\admin::phrase('View Outbox.'). '</a></p>';
 							
 							
-							ze\tuix::closeWithFlags(['close_with_message' => $msg]);
+							ze\tuix::closeWithFlags(['CLOSE_WITH_MESSAGE' => $msg]);
 							exit;
 						}
 					}
@@ -193,7 +193,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				$msg .= '<p>'. ze\admin::phrase('Newsletter Sent.'). '</p>';
 				$msg .= '<p>' . $link . '</p>';
 				
-				ze\tuix::closeWithFlags(['close_with_message' => $msg]);
+				ze\tuix::closeWithFlags(['CLOSE_WITH_MESSAGE' => $msg]);
 				exit;
 			}
 		}

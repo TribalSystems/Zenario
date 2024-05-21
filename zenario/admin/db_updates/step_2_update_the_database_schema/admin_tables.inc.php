@@ -82,4 +82,44 @@ _sql
 	DELETE FROM `[[DB_PREFIX]]admin_settings`
 	WHERE `name` = 'drop_downs_open_at'
 _sql
+
+
+//
+//	Zenario 9.7
+//
+
+//In 9.7, we changed the "Trash admin" behaviour to also blank out
+//the admin's email and remove all their permissions.
+//Update existing trashed admin accounts to match.
+);
+
+if (ze\dbAdm::needRevision(59850)) {
+	$result = ze\row::query('admins', 'id', ['status' => 'deleted']);
+    $trashedAdmins = ze\sql::fetchValues($result);
+    
+    if (!empty($trashedAdmins)) {
+    	$sql = "
+    		UPDATE " . DB_PREFIX . "admins
+    		SET email = ''
+    		WHERE id IN (" . ze\escape::in($trashedAdmins) . ")";
+    	ze\sql::update($sql);
+    	
+    	$sql = "
+    		DELETE FROM " . DB_PREFIX . "action_admin_link
+			WHERE admin_id IN (" . ze\escape::in($trashedAdmins) . ")";
+		ze\sql::update($sql);
+    }
+	ze\dbAdm::revision(59850);
+}
+
+//We also deleted the _PRIV_EDIT_VACANCIES permission.
+//Instead, job vacancies will be managed by the existing permissions systems
+//(either _PRIV_EDIT_DRAFT or permissions for a specific content type).
+//PLEASE NOTE: The permission is not use anymore, and the removal was backpatched to 9.6.
+//However, the DB cleanup logic itself was not backpatched to 9.6.
+ze\dbAdm::revision(60112
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE `action_name` IN ('_PRIV_EDIT_VACANCIES', 'perm_job_vacanies')
+_sql
 );

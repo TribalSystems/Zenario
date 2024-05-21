@@ -43,6 +43,9 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 		//If there are Vimeo videos, Zenario will load their privacy settings.
 		//This will be done using 1 query with multiple IDs.
 		$vimeoVideos = [];
+		
+		$vimeoAccessToken = ze::setting('vimeo_access_token');
+		$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
 
 		foreach ($panel['items'] as $id => &$item) {
 			if (!empty($item['thumbnail_id'])) {
@@ -61,7 +64,7 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 				}
 			}
 			
-			if (ze::setting('vimeo_access_token')) {
+			if ($vimeoAccessToken) {
 				$parsed = parse_url($item['url']);
 				if ($parsed) {
 					$url = false;
@@ -70,64 +73,20 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 							$vimeoVideoId = $parsed['path'];
 							if (substr($vimeoVideoId, 0, 1) == '/') {
 								$vimeoVideoId = substr($vimeoVideoId, 1);
+								
+								if ($item['vimeo_privacy_setting'] && array_key_exists($item['vimeo_privacy_setting'], $vimeoPrivacySettingsFormattedNicely)) {
+									$privacyString = $vimeoPrivacySettingsFormattedNicely[$item['vimeo_privacy_setting']]['note'];
+									ze\lang::applyMergeFields($privacyString, ['code' => $item['vimeo_privacy_setting'], 'date_time' => ze\date::formatRelativeDateTime(strtotime($item['vimeo_privacy_last_cached']))]);
+								} else {
+									$privacyString = $this->phrase('Sorry, cannot show privacy setting');
+								}
+
+								//... and populate the value.
+								$item['video_privacy'] = $privacyString;
 							}
 
 							//Remember the Zenario video ID for easier processing later.
 							$vimeoVideos[$vimeoVideoId][] = $id;
-						}
-					}
-				}
-			}
-		}
-
-		if (ze::setting('vimeo_access_token')) {
-			$videosCount = count($vimeoVideos);
-			if ($videosCount > 0) {
-				//There appears to be a limit of IDs that can be passed to Vimeo,
-				//around 100. If the page size is set to 200, make 2 requests.
-				if ($videosCount > 100) {
-					$preserveKeys = true;
-					$videoIdsArray = [array_slice($vimeoVideos, 0, 100, $preserveKeys), array_slice($vimeoVideos, 100, 100, $preserveKeys)];
-				} else {
-					$videoIdsArray = [$vimeoVideos];
-				}
-
-				$vimeoPrivacySettingsFormattedNicely = zenario_videos_manager::getVimeoPrivacySettingsFormattedNicely();
-
-				foreach ($videoIdsArray as $videos) {
-					$videoData = zenario_videos_manager::getVimeoVideoDataForMultiple(array_keys($videos));
-					
-					if (is_array($videoData) && !empty($videoData['data']) && count($videoData['data']) > 0) {
-						foreach ($videoData['data'] as $video) {
-							//Match the Vimeo ID to Zenario video ID...
-							$videoId = str_replace('/videos/', '', $video['uri']);
-							
-							$itemIds = isset($vimeoVideos[$videoId]) ? $vimeoVideos[$videoId] : false;
-							//Handle unlisted videos, which have an additional string after the URL.
-							//Vimeo response only contains the first part.
-							if (!$itemIds) {
-								foreach ($vimeoVideos as $vimeoId => $zenarioIds) {
-									if (stristr($vimeoId, $videoId) === false) {
-										continue;
-									} else {
-										$itemIds = $zenarioIds;
-										break;
-									}
-								}
-							}
-
-							$privacy = $video['privacy']['view'] ?? '';
-						
-							if ($privacy && array_key_exists($privacy, $vimeoPrivacySettingsFormattedNicely)) {
-								$privacyString = $vimeoPrivacySettingsFormattedNicely[$privacy]['note'];
-							} else {
-								$privacyString = $this->phrase('Sorry, cannot show privacy setting');
-							}
-
-							//... and populate the value.
-							foreach ($itemIds as $itemId) {
-								$panel['items'][$itemId]['video_privacy'] = $privacyString;
-							}
 						}
 					}
 				}
@@ -139,6 +98,84 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 		if (isset($_POST['delete_video']) && $ids) {
 			foreach (explode(',', $ids) as $videoId) {
 				static::deleteVideo($videoId);
+			}
+		} elseif (isset($_POST['update_vimeo_privacy'])) {
+			//Every video stored on Zenario has a URL which contains a Vimeo ID.
+			$zenarioVideosAndUrls = [];
+			$vimeoVideos = [];
+			
+			//This function will send about 30 videos at a time in 1 request with multiple IDs.
+			$videoCount = 0;
+			$requestNumber = 1;
+			$videosCount = 0;
+			$dateNow = ze\date::now();
+			
+			$sql = "
+				SELECT id, url
+				FROM " . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos
+				WHERE url LIKE '%vimeo.com%'";
+			$result = ze\sql::select($sql);
+			
+			while ($row = ze\sql::fetchAssoc($result)) {
+				$videoCount++;
+				$parsed = parse_url($row['url']);
+				if ($parsed) {
+					$url = false;
+					if (isset($parsed['host'])) {
+						if (strpos($parsed['host'], 'vimeo.com') !== false) {
+							
+							//Every video should have a unique URL, but the site may not have many videos,
+							//or there may be videos that had been created before the validation logic for URL uniqueness was implemented.
+							//If that is the case, it is possible that the videos count is over 30,
+							//but there are fewer unique URLs that will be sent to Vimeo for processing.
+							$videosCount++;
+							if ($videosCount > 30) {
+								$requestNumber++;
+								$videosCount = 1;
+							}
+							
+							$vimeoVideoId = $parsed['path'];
+							if (substr($vimeoVideoId, 0, 1) == '/') {
+								$vimeoVideoId = substr($vimeoVideoId, 1);
+							}
+							
+							if (($forwardSlashPos = strpos($vimeoVideoId, '/')) !== false) {
+								$vimeoVideoId = substr($vimeoVideoId, 0, $forwardSlashPos);
+							}
+							
+							//Remember which Zenario IDs are associated with each Vimeo ID.
+							//If a Vimeo URL is used in multiple videos, because had been created
+							//before the validation logic was implemented, the entry will store multiple Zenario IDs.
+							$zenarioVideosAndUrls[$vimeoVideoId][] = $row['id'];
+							$vimeoVideos[$requestNumber][$vimeoVideoId] = true;
+						}
+					}
+				}
+			}
+			
+			if (!empty($vimeoVideos)) {
+				foreach ($vimeoVideos as $requestNumber => $videosRequest) {
+					$videoData = zenario_videos_manager::getVimeoVideoDataForMultiple(array_keys($videosRequest));
+					
+					if (is_array($videoData) && !empty($videoData['data']) && count($videoData['data']) > 0) {
+						foreach ($videoData['data'] as $video) {
+							// //Match the Vimeo ID to Zenario video IDs.
+							$videoId = str_replace('/videos/', '', $video['uri']);
+							
+							$zenarioIds = isset($zenarioVideosAndUrls[$videoId]) ? $zenarioVideosAndUrls[$videoId] : false;
+							
+							$privacy = $video['privacy']['view'] ?? '';
+						
+							$sql = "
+								UPDATE " . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos
+								SET
+									vimeo_privacy_setting = '" . ze\escape::sql($privacy) . "',
+									vimeo_privacy_last_cached = '" . ze\escape::sql($dateNow) . "'
+								WHERE id IN (" . ze\escape::in($zenarioIds) . ")";
+							ze\sql::update($sql);
+						}
+					}
+				}
 			}
 		}
 	}

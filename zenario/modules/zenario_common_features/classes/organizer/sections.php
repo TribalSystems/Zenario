@@ -66,6 +66,10 @@ class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 		if (ze\lang::count() == 1) {
 			unset($panel['item']['link']);
 		}
+		
+		if ($mode == 'select') {
+			$panel['notice']['show'] = false;
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

@@ -581,10 +581,17 @@ class zenario_document_container extends ze\moduleBaseClass {
 		ze\file::imageLink($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas);
 		$thumbnailHtml = '<img class="sticky_image ';
 		if ($lazyload) {
-			$thumbnailHtml .= 'lazy" data-src="'. htmlspecialchars($thumbnailLink). '"';
-		} else {
-			$thumbnailHtml .= '" src="'. htmlspecialchars($thumbnailLink). '"';
+			$thumbnailHtml .= 'lazy" data-src="'. htmlspecialchars($thumbnailLink);
 		}
+		
+		//If in admin mode, add a specific CSS class to images
+		//to let the admin access the "Crop and zoom" feature.
+		if (ze::isAdmin()) {
+			$thumbnailHtml .= ' zenario_image_properties zenario_image_id__'. $thumbnail['id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
+		}
+		
+		$thumbnailHtml .= '" src="'. htmlspecialchars($thumbnailLink) . '"';
+		
 		$thumbnailHtml .= ' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
 		return $thumbnailHtml;
 	}
@@ -631,6 +638,25 @@ class zenario_document_container extends ze\moduleBaseClass {
 		} else {
 			return false;
 		}
+	}
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		$documentSource = ze\plugin::setting('document_source', $instanceId, $eggId);
+		
+		if ($documentSource) {
+			$row = \ze\row::get('documents', ['type', 'filename', 'folder_name'], ['id' => (int) $documentSource]);
+			
+			if (!empty($row) && is_array($row)) {
+				if ($row['type'] == 'folder') {
+					return ze\admin::phrase('Document Container for folder [[folder_name]]', ['folder_name' => $row['folder_name']]);
+				} elseif ($row['type'] == 'file') {
+					return ze\admin::phrase('Document Container for file [[file_name]]', ['file_name' => $row['filename']]);
+				}
+			}
+		}
+			
+		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
 	}
 	
 	

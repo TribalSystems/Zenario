@@ -93,6 +93,10 @@
 	{% endif %}
 {% endif %}
 
+{% if item.Item_Is_Recent %}
+	<p class="content_list_new">{{Recent_Item_Phrase|e}}</p>
+{% endif %}
+
 {# As of 06 Sept 2021, the "Show writer's photo" setting is disabled. #}
 {# Commenting out the code in case we want it back in the future. #}
 

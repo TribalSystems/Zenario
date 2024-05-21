@@ -129,13 +129,13 @@
 		    		<tbody>
 						{% if Table_header %}
 	    	    			<tr class="day_header">
-    	   				     	<td>{{Cal_day_1}}</td>
-    	   				     	<td>{{Cal_day_2}}</td>
-    	   				     	<td>{{Cal_day_3}}</td>
-    	   				     	<td>{{Cal_day_4}}</td>
-    	   				     	<td>{{Cal_day_5}}</td>
-    	   				     	<td>{{Cal_day_6}}</td>
-    	   				     	<td>{{Cal_day_7}}</td>
+    	   				     	<td>{{Cal_day_1|e}}</td>
+    	   				     	<td>{{Cal_day_2|e}}</td>
+    	   				     	<td>{{Cal_day_3|e}}</td>
+    	   				     	<td>{{Cal_day_4|e}}</td>
+    	   				     	<td>{{Cal_day_5|e}}</td>
+    	   				     	<td>{{Cal_day_6|e}}</td>
+    	   				     	<td>{{Cal_day_7|e}}</td>
        					 	</tr>
 						{% endif %}
 						{% for row in Days_row_element %}

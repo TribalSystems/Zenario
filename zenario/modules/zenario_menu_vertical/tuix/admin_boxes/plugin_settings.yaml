@@ -23,7 +23,7 @@ plugin_settings:
                 change_welcome_message:
                     plugin_setting:
                         name: change_welcome_message
-                    label: Customise welcome message
+                    label: Customise welcome message for extranet users
                     type: checkbox
                     format_onchange: true
                 welcome_message:
@@ -31,18 +31,17 @@ plugin_settings:
                     plugin_setting:
                         name: welcome_message
                     type: text
-                    label: Welcome message
+                    label: |
+                        Welcome message:
                     visible_if: "zenarioAB.value('change_welcome_message')"
                     value: "Welcome, [[first_name]] [[last_name]]"
-                    note_below: 'The framework must include the merge field "welcome_message" in order to display this.'
                     show_phrase_icon: true
                 show_group_name_when_user_is_in_groups:
                     plugin_setting:
                         name: show_group_name_when_user_is_in_groups
                     type: checkbox
-                    label: "Show group name when user is in the following group:"
-                    redraw_onchange: true
-                    note_below: 'The framework must include the merge field "groups" in order to display this.'
+                    label: "Show group name when user is in a group..."
+                    format_onchange: true
                 user_groups:
                     indent: 1
                     plugin_setting:
@@ -51,4 +50,6 @@ plugin_settings:
                     values: {}
                     #The list of values is populated in the parent module, Zenario Menu (fillAdminBox).
                     visible_if: lib.value('show_group_name_when_user_is_in_groups')
+                    validation:
+                        required_if_not_hidden: 'Please select at least one group.'
     module_class_name: zenario_menu_vertical

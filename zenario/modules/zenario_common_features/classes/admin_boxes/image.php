@@ -78,8 +78,13 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		
 		//Show a resized version of the image front-and-center in the properties tab
-		$width = $height = $url = false;
-		\ze\file::retinaImageLink($width, $height, $url, $box['key']['id'], $widthLimit = 700, $heightLimit = 200);
+		$width = $height = $url = $isRetina = $mimeType = false;
+		
+		\ze\file::adminImageLink(
+			$width, $height, $url, true, $isRetina, $mimeType,
+			$box['key']['id'], $widthLimit = 700, $heightLimit = 200
+		);
+		
 		$fields['details/image']['image'] = [
 			'width' => $width,
 			'height' => $height,
@@ -514,24 +519,37 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			ze\file::imageAndWebPLink($width, $height, $url, true, $webPURL, false, $isRetina, $mimeType, $box['key']['id']);
 			ze\file::internalImageAndWebPPath($width, $height, $internalPath, true, $internalWebPPath, false, $isRetina, $mimeType, $box['key']['id']);
 			
+			
 			$originalImageSize = ze\file::formatSizeUnits(filesize($internalPath));
-			$webPSize = ze\file::formatSizeUnits(filesize($internalWebPPath));
 			
 			$values['link/internal_original_image_link'] = htmlspecialchars($url);
 			$values['link/external_original_image_link'] = htmlspecialchars(ze\link::absolute(). $url);
-			$values['link/internal_webp_link'] = htmlspecialchars($webPURL);
-			$values['link/external_webp_link'] = htmlspecialchars(ze\link::absolute(). $webPURL);
 			
 			ze\lang::applyMergeFields($fields['link/internal_original_image_link']['label'], ['size' => $originalImageSize]);
 			ze\lang::applyMergeFields($fields['link/external_original_image_link']['label'], ['size' => $originalImageSize]);
 			
-			ze\lang::applyMergeFields($fields['link/internal_webp_link']['label'], ['size' => $webPSize]);
-			ze\lang::applyMergeFields($fields['link/external_webp_link']['label'], ['size' => $webPSize]);
+			
+			if (!$isSVG && $internalWebPPath) {
+				$webPSize = ze\file::formatSizeUnits(filesize($internalWebPPath));
+				
+				$values['link/internal_webp_link'] = htmlspecialchars($webPURL);
+				$values['link/external_webp_link'] = htmlspecialchars(ze\link::absolute(). $webPURL);
+				
+				ze\lang::applyMergeFields($fields['link/internal_webp_link']['label'], ['size' => $webPSize]);
+				ze\lang::applyMergeFields($fields['link/external_webp_link']['label'], ['size' => $webPSize]);
+				
+				//Code for embedding
+				$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($webPURL) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
+			
+			} else {
+				$fields['link/internal_webp_link']['hidden'] = true;
+				$fields['link/external_webp_link']['hidden'] = true;
+				
+				//Code for embedding
+				$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($url) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
+			}
 			
 			ze::$mustUseFullPath = $rememberWhatThisWas;
-			
-			//Code for embedding
-			$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($webPURL) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '">';
 		} else {
 			if ($details['usage'] == 'mic') {
 				$box['tabs']['link']['hidden'] = true;

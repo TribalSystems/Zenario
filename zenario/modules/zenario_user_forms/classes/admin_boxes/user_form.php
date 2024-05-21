@@ -380,6 +380,14 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 			$values['data/referrer_content_item_summary_block_title'] = $record['referrer_content_item_summary_block_title'];
 			
+			$values['data/show_checkbox_for_allocating_form_responses'] = $record['show_checkbox_for_allocating_form_responses'];
+			
+			if ($record['show_checkbox_for_allocating_form_responses'] && $record['form_responses_allocate_checkbox_label']) {
+				$values['data/form_responses_allocate_checkbox_label'] = $record['form_responses_allocate_checkbox_label'];
+			} else {
+				$fields['data/form_responses_allocate_checkbox_label']['value'] = 'Allocated';
+			}
+			
 		} else {
 			unset($box['tabs']['translations']);
 			$box['title'] = ze\admin::phrase('Creating a form (enter basic settings, add fields after saving)');
@@ -524,6 +532,18 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			ze\lang::applyMergeFields($fields['details/scheduled_task_manager_problem_message']['snippet']['html'], ['scheduled_task_manager_problem' => $scheduledTaskManagerProblemMessage]);
 			$fields['details/scheduled_task_manager_problem_message']['hidden'] = false;
 		}
+		
+		//Check how many repeat sections the form has
+		if ($box['key']['id']) {
+			$formFields = zenario_user_forms::getFormFields($box['key']['id']);
+			if (!empty($formFields)) {
+				foreach ($formFields as $formField) {
+					if ($formField['field_type'] == 'repeat_start') {
+						$box['key']['repeat_section_count']++;
+					}
+				}
+			}
+		}
 	}
 	
 	protected function fillFieldValues(&$fields, &$rec){
@@ -641,8 +661,34 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['data/duplicate_submission_message']['hidden'] = !$values['data/no_duplicate_submissions'];
 		}
 		
+		$messageNoRepeatingSections = 'Warning: please only use this option if a form does not have any repeating sections.';
+		$messageOneRepeatingSection = 'Warning: this form has 1 repeating section. An email template is not recommended.';
+		$messageMultipleRepeatingSections = 'Warning: this form has [[count]] repeating sections. An email template is not recommended.';
+		
 		if (!empty($box['key']['id'])) {
 			$box['title'] = ze\admin::phrase('Editing settings for the form "[[name]]"', ['name' => $values['details/name']]);
+			if ($box['key']['repeat_section_count'] > 0) {
+				$replace = ['count' => $box['key']['repeat_section_count']];
+			}
+		} else {
+			$replace = [];
+		}
+		
+		foreach (['user_email_options_logged_in_user', 'user_email_options_from_field', 'admin_email_options'] as $sendEmailField) {
+			if ($values['data/' . $sendEmailField] == 'use_template') {
+				$fields['data/' . $sendEmailField]['notices_below']['repeat_section_notice']['show'] = true;
+				$fields['data/' . $sendEmailField]['notices_below']['repeat_section_notice']['type'] = 'warning';
+				
+				if ($box['key']['repeat_section_count'] > 0) {
+					$fields['data/' . $sendEmailField]['notices_below']['repeat_section_notice']['message'] = ze\admin::nPhrase(
+						$messageOneRepeatingSection, $messageMultipleRepeatingSections, $box['key']['repeat_section_count'], $replace
+					);
+				} else {
+					$fields['data/' . $sendEmailField]['notices_below']['repeat_section_notice']['message'] = ze\admin::phrase($messageNoRepeatingSections);
+				}
+			} else {
+				unset($fields['data/' . $sendEmailField]['notices_below']['repeat_section_notice']);
+			}
 		}
 		
 		
@@ -1015,7 +1061,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$record['send_email_to_admin_condition'] = 'send_on_condition';
 			
 			//Note: the module select list uses the plural (fields), but the DB table uses the singular (field).
-			$record['send_email_to_admin_condition_field'] = (int)$values['send_email_to_admin_condition_fields'];
+			$record['send_email_to_admin_condition_field'] = (int) $values['send_email_to_admin_condition_fields'];
 		} else {
 			$record['send_email_to_admin_condition'] = 'always_send';
 			$record['send_email_to_admin_condition_field'] = null;
@@ -1023,6 +1069,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		$record['make_urls_non_clickable_user'] = (($values['send_email_to_user'] && $values['make_urls_non_clickable_user']) ? true : false);
 		$record['make_urls_non_clickable_admin'] = (($values['send_email_to_admin'] && $values['make_urls_non_clickable_admin']) ? true : false);
+		
+		$record['show_checkbox_for_allocating_form_responses'] = (int) $values['data/show_checkbox_for_allocating_form_responses'];
+		if ($values['data/show_checkbox_for_allocating_form_responses'] && $values['data/form_responses_allocate_checkbox_label']) {
+			$record['form_responses_allocate_checkbox_label'] = $values['data/form_responses_allocate_checkbox_label'];
+		} else {
+			$record['form_responses_allocate_checkbox_label'] = '';
+		}
 		
 		
 		//Handle content item referrer fields

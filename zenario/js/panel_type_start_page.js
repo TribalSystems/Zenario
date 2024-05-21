@@ -69,8 +69,10 @@ methods.showPanel = function($header, $panel, $footer) {
 	
 	//Get all of the merge fields we'll need to draw this panel
 	var m = {
-		//Include the array of links generated in our fillOrganizerPanel() method
-		links: thus.tuix.links || []
+		//Include the array of WIP links generated in our fillOrganizerPanel() method
+		wip_content_links: thus.tuix.wip_content_links || [],
+		//Include the array of enabled content types
+		enabled_content_types: thus.tuix.enabled_content_types || [],
 	};
 	
 	//Get the HTML for this panel from the "start page" microtemplate
