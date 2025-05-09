@@ -39,4 +39,4 @@ define('ZENARIO_MAJOR_VERSION', '10');
 define('ZENARIO_MINOR_VERSION', '1');
 define('ZENARIO_CHANGELOG_URL', 'https://zenar.io/zenario-101');
 define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '63392');
+define('ZENARIO_REVISION', '63396');

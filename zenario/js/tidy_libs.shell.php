@@ -140,6 +140,7 @@ filterWantedCode('blueimp-file-upload', 'js');
 removeUnwantedCode('blueimp-file-upload/js/cors');
 removeUnwantedCode('blueimp-file-upload/js/vendor');
 filterWantedCode('cytoscape', 'dist');
+filterWantedCode('cytoscape/dist', 'cytoscape');
 filterWantedCode('@fortawesome/fontawesome-free', 'attribution.js', 'css', 'webfonts');
 filterWantedCode('@fortawesome/fontawesome-free/css', 'all', 'v4-shims');
 removeUnwantedCode('jquery/src');
@@ -192,6 +193,7 @@ removeUnwantedComposerCode('bin');
 //removeUnwantedComposerCode('aws/aws-sdk-php/src/data');	# Actually this seems to be needed...
 removeUnwantedComposerCode('geoip2/geoip2/examples');
 removeUnwantedComposerCode('guzzlehttp/psr7/.github');
+removeUnwantedComposerCode('imagine/imagine/src/resources/Adobe');
 removeUnwantedComposerCode('matthiasmullie/minify/bin');
 removeUnwantedComposerCode('maxmind/web-service-common/dev-bin');
 removeUnwantedComposerCode('maxmind-db/reader/ext');
