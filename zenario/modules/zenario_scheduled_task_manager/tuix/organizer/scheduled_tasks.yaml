@@ -4,6 +4,7 @@ zenario__administration:
     nav:
         zenario_scheduled_task_manager__scheduled_tasks:
             priv: _PRIV_VIEW_SCHEDULED_TASK
+            ord: custom_datasets + 0.1
             name: Scheduled tasks
             tooltip: View and manage tasks that run by themselves, e.g. overnight processes
             link:
@@ -15,6 +16,10 @@ zenario__administration:
             panel_type: list_with_master_switch
             
                         
+            notice_site_disabled:
+                show: true
+                type: warning
+                message: The site is disabled. Scheduled tasks will not run whilst the site is disabled.
             notice_master_switch_off:
                 show: true
                 type: warning
@@ -152,7 +157,7 @@ zenario__administration:
                     ajax:
                         confirm:
                             message: >
-                                Are you sure that you wish to turn on the master switch?
+                                Turn the master switch to On?
                             button_message: Enable
                             cancel_button_message: Cancel
                             message_type: question

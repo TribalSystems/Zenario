@@ -16,7 +16,7 @@ description: |
     <p>Note that when removing a Document, it can only be deleted and not trashed, unlike other content items. This frees up disk space by deleting the attached file.</p>
 category: content_type
 keywords: >
-    document, file, download, pdf, word, doc, docx, excel, xls,
+    document, documents, file, files, download, pdf, word, doc, docx, excel, xls,
     xlsx, powerpoint, ppt, mime
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
@@ -33,11 +33,10 @@ content_types:
         content_type_name_en: Document content item
         content_type_plural_en: Document content items
         default_template_name: Document Layout
-        enable_summary_auto_update: false
         description_field: optional
         tooltip_text: Documents, for version-controlled creation of downloads, optionally categorised and private
         keywords_field: hidden
         summary_field: optional
         release_date_field: optional
         writer_field: hidden
-default_instance_name: Document details viewer
+default_instance_name: Document content item download

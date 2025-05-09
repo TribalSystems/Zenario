@@ -31,9 +31,14 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		$formId = $refinerId;
-		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'type', 'title', 'translate_text', 'enable_summary_page'], $formId);
+		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'type', 'title', 'translate_text', 'enable_summary_page', 'status'], $formId);
 		
-		$panel['title'] = ze\admin::phrase('Form fields for "[[name]]"', $form);
+		if ($form['status'] == 'archived') {
+			$panel['title'] = ze\admin::phrase('Form fields for "[[name]]" (the form is archived, editing is disabled)', $form);
+		} else {
+			$panel['title'] = ze\admin::phrase('Form fields for "[[name]]"', $form);
+		}
+		
 		$panel['form'] = $form;
 		$panel['link'] = ze\link::absolute();
 		
@@ -120,6 +125,45 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 					}
 				} elseif ($conditionFieldType == 'checkbox' || $conditionFieldType == 'group') {
 					$field['visible_condition_field_value'] = $field['visible_condition_field_value'] ? 'checked' : 'unchecked';
+				}
+				
+				$currentFieldStepId = $field['page_id'];
+				$currentFieldStepOrdinal = $panel['pages'][$currentFieldStepId]['ord'];
+				$currentFieldOrdinal = $field['ord'];
+				
+				$conditionField = $panel['items'][$field['visible_condition_field_id']];
+				$conditionalFieldStepId = $conditionField['page_id'];
+				$conditionalFieldStepOrdinal = $panel['pages'][$conditionalFieldStepId]['ord'];
+				$conditionalFieldOrdinal = $conditionField['ord'];
+				
+				$errorAlreadySet = false;
+				if ($field['repeat_start_id']) {
+					$repeatingSectionId = $field['repeat_start_id'];
+					foreach ($panel['items'] as $fieldId2 => $field2) {
+						if ($fieldId2 == $field['visible_condition_field_id'] && (!$field2['repeat_start_id'] || $field2['repeat_start_id'] != $field['repeat_start_id'])) {
+							$field['visibility_on_condition_error_message'] = ze\admin::phrase('Visibility should only be conditional on another field in this repeating section');
+							$errorAlreadySet = true;
+							break;
+						}
+					}
+				} else {
+					if ($panel['pages'][$currentFieldStepId] && $panel['pages'][$currentFieldStepId]['visibility'] == 'visible_on_condition') {
+						//If this field is on a step that is visible on condition,
+						//AND the field itself is also visible on condition,
+						//but its conditional field is on yet another step, show a warning.
+						if ($conditionalFieldStepOrdinal != $currentFieldStepOrdinal) {
+							$field['visibility_on_condition_error_message'] = ze\admin::phrase('Visibility should only be conditional on another field on this step.');
+							$errorAlreadySet = true;
+						}
+					}
+				}
+				
+				if (!$errorAlreadySet) {
+					if ($conditionalFieldStepId != $currentFieldStepId && $conditionalFieldStepOrdinal > $currentFieldStepOrdinal) {
+						$field['visibility_on_condition_error_message'] = ze\admin::phrase('Visibility should only be conditional on another field on this step.');
+					} elseif ($conditionalFieldStepId == $currentFieldStepId && $conditionalFieldOrdinal > $currentFieldOrdinal) {
+						$field['visibility_on_condition_error_message'] = ze\admin::phrase('Visibility should only be conditional on a previous field.');
+					}
 				}
 			}
 			
@@ -371,8 +415,7 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 				cdf.default_label, 
 				cdf.ord, 
 				cdf.values_source, 
-				cdf.values_source_filter,
-				cdf.repeat_start_id
+				cdf.values_source_filter
 			FROM ' . DB_PREFIX . 'custom_dataset_fields cdf
 			WHERE cdf.dataset_id = ' . (int)$dataset['id'] . '
 			AND (
@@ -584,6 +627,15 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							$values['repeat_start_id'] = $repeatStartField ? $repeatStartField['id'] : 0;
 						}
 						
+						$values['subheading_tag'] = null;
+						if ($field['type'] == 'section_description') {
+							if (!empty($field['subheading_tag'])) {
+								$values['subheading_tag'] = $field['subheading_tag'];
+							} else {
+								$values['subheading_tag'] = 'p';
+							}
+						}
+						
 						if ($values) {
 							ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $values, $field['id']);
 						}
@@ -595,8 +647,8 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 								//Get a list of files in full responses to this field
 								$sql = "
 								SELECT urd.value
-								FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-								INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+								FROM " . DB_PREFIX . "user_response ur
+								INNER JOIN " . DB_PREFIX . "user_response_data urd
 									ON urd.user_response_id = ur.id
 								INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 									ON urd.form_field_id = uff.id 
@@ -642,8 +694,8 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 									//Full responses...
 									$sql = "
 										SELECT urd.value
-										FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-										INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+										FROM " . DB_PREFIX . "user_response ur
+										INNER JOIN " . DB_PREFIX . "user_response_data urd
 											ON urd.user_response_id = ur.id
 										INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 											ON urd.form_field_id = uff.id 
@@ -692,11 +744,11 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 							}
 
 							//Delete existing responses
-							ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $field['id']]);
+							ze\row::delete('user_response_data', ['form_field_id' => $field['id']]);
 							
 							//Move responses
 							ze\row::update(
-								ZENARIO_USER_FORMS_PREFIX . 'user_response_data', 
+								'user_response_data', 
 								['form_field_id' => $field['id']],
 								['form_field_id' => $field['_migrate_responses_from']]
 							);

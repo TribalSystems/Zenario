@@ -38,10 +38,6 @@ if ($this->eggId && isset($this->parentNest)) {
 	
 	switch ($this->parentNest->moduleClassName) {
 		case 'zenario_slideshow':
-			$buttonName = 'plugins_in_slideshow';
-			$isSlideshow = true;
-			break;
-		case 'zenario_slideshow_simple':
 			$isSlideshow = true;
 			$buttonName = 'images_in_slideshow';
 			$tagPath = 'zenario__modules/panels/images_in_slideshow';
@@ -138,17 +134,22 @@ if ($this->eggId && isset($this->parentNest)) {
 		echo '
 			<a
 				class="zenario_slotButton zenario_swapPlugin"
-				title="', htmlspecialchars(\ze\admin::phrase('Click to swap with the Plugin in the Slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
+				title="', htmlspecialchars(\ze\admin::phrase('Swap with plugin in slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
 				onclick="return zenarioA.doMovePlugin(this, \''. $this->slotName. '\');"
 			></a>
 			<a
 				class="zenario_slotButton zenario_movePlugin"
-				title="', htmlspecialchars(\ze\admin::phrase('Click to move into the empty Slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
+				title="', htmlspecialchars(\ze\admin::phrase('Move into slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
+				onclick="return zenarioA.doMovePlugin(this, \''. $this->slotName. '\');"
+			></a>
+			<a
+				class="zenario_slotButton zenario_copyPluginPlacement"
+				title="', htmlspecialchars(\ze\admin::phrase('Copy into slot "[[slotname]]"', ['slotname' => $this->slotName])), '"
 				onclick="return zenarioA.doMovePlugin(this, \''. $this->slotName. '\');"
 			></a>
 			<a
 				class="zenario_slotButton zenario_cancelMovePlugin"
-				title="', \ze\admin::phrase('Click to cancel the move'), '"
+				title="', \ze\admin::phrase('Cancel moving'), '"
 				onclick="return zenarioA.cancelMovePlugin(this);"
 			></a>';
 	}

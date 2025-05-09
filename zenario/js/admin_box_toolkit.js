@@ -437,7 +437,6 @@ methods.draw2 = function() {
 	//Don't show the requested tab if it has been hidden
 	if (tuix.tab
 	 && (!tuix.tabs[tuix.tab]
-		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 	  || zenarioT.hidden(undefined, thus, undefined, tuix.tab, undefined, undefined, undefined, undefined, tuix.tabs[tuix.tab]))) {
 		tuix.tab = false;
 	}
@@ -655,6 +654,10 @@ methods.parseTypeaheadSearch = function(field, id, tab, readOnly, panel) {
 			data.push({value: valueId, text: label, html: thus.drawPickedItem(valueId, id, field, readOnly, true)});
 		}
 	}
+	
+	//Rather than the order being undefined/random/by ID, try to sort the suggestions by their label
+	//so they look more logical to a human reading down the list.
+	data.sort(zenarioT.sortArrayByText);
 	
 	return data;
 };

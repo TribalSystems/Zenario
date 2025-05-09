@@ -32,6 +32,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$box['title'] = $box['key']['title'];
 		
+		//The logic that populates the numeric fields is in zenario/js/panel_type_form_builder.js.
 		$numericFields = json_decode($values['details/dummy_field'], true);
 		if ($numericFields) {
 			$fields['details/numeric_field']['values'] = $numericFields;
@@ -43,6 +44,10 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 		if ($calculationCode) {
 			$values['details/calculation_code'] = $box['key']['calculation_code'];
 			static::calculationAdminBoxUpdateDisplay($calculationCode, $fields);
+		}
+		
+		if ($box['key']['form_status'] == 'archived') {
+			$box['tabs']['details']['edit_mode']['enabled'] = false;
 		}
 	}
 	

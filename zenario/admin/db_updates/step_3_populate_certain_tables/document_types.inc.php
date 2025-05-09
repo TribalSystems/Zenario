@@ -229,6 +229,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		('wav', 'audio/x-wav', 0),
 		('wcm', 'application/vnd.ms-works', 0),
 		('wdb', 'application/vnd.ms-works', 0),
+		('webp', 'image/webp', 0),
 		('wks', 'application/vnd.ms-works', 0),
 		('wmf', 'application/x-msmetafile', 0),
 		('wmv', 'audio/x-ms-wmv', 0),

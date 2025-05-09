@@ -27,9 +27,10 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-//This file works like local.inc.php, but should contain any updates for local admin tables
-//(i.e. updates that won't be re-run after a site-reset)
-
+/*
+	Any admin-related tables should be created in this script.
+	Reminder: every table you create here should also be listed in the local-admin-DROP.sql file
+*/
 
 
 
@@ -122,4 +123,32 @@ ze\dbAdm::revision(60112
 	DELETE FROM `[[DB_PREFIX]]action_admin_link`
 	WHERE `action_name` IN ('_PRIV_EDIT_VACANCIES', 'perm_job_vacanies')
 _sql
+
+
+
+//
+//	Zenario 10.0
+//
+
+//In Zenario 10, we renamed a lot of cookies. Tidy up and delete anything from the
+//admin settings table that was using the old name
+);	ze\dbAdm::revision(60810
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]admin_settings`
+	WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
+_sql
+
+//In Zenario 10, we removed an unused module Content Notifications.
+//Remove obsolete site settings and admin perms.
+);	ze\dbAdm::revision(60951
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE `action_name` = '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST'
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE `name` IN ('content_notification_email_subject', 'content_notification_email_body')
+_sql
+
 );

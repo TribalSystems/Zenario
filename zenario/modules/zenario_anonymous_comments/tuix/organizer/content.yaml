@@ -2,7 +2,7 @@
 ---
 zenario__content:
     panels:
-        content:
+        content: &contentPanelDefinition
             columns:
                 zenario_comments__post_count:
                     title: Comments
@@ -20,3 +20,7 @@ zenario__content:
                         [[DB_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]comment_content_items AS cci
                                                  ON cci.content_id = c.id
                                                 AND cci.content_type = c.type
+        
+        trashed_content_items: *contentPanelDefinition
+        
+        hidden_content_items: *contentPanelDefinition

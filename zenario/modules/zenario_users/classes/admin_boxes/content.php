@@ -64,6 +64,20 @@ class zenario_users__admin_boxes__content extends zenario_users__privacy_options
 				}
 			}
 		}
+		
+		if (!$cID || !$cType) {
+			unset(
+				$fields['privacy/group_ids']['format_onchange'],
+				$fields['privacy/smart_group_id']['format_onchange'],
+				$fields['privacy/role_ids']['format_onchange'],
+				$fields['privacy/at_location']['format_onchange'],
+				$fields['privacy/module_class_name']['oninput'],
+				$fields['privacy/method_name']['oninput'],
+				$fields['privacy/param_1']['oninput'],
+				$fields['privacy/param_2']['oninput'],
+				$fields['privacy/content_item_privacy_info_warning']
+			);
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -72,6 +86,44 @@ class zenario_users__admin_boxes__content extends zenario_users__privacy_options
 		if ($values['privacy/privacy'] != 'public') {
 			$fields['meta_data/excluded_from_sitemap']['hidden'] = false;
 			$fields['meta_data/included_in_sitemap']['hidden'] = true;
+		}
+		
+		$cID = $box['key']['source_cID'];
+		$cType = $box['key']['cType'];
+		
+		if ($box['key']['id'] && $cID && $cType && isset($fields['privacy/content_item_privacy_info_warning'])) {
+			$showWarning = false;
+			if ($values['privacy/privacy'] != $box['key']['privacy_settings_on_load']['privacy_setting_value']) {
+				$showWarning = true;
+			} else {
+				switch ($box['key']['privacy_settings_on_load']['privacy_setting_value']) {
+					case 'group_members':
+						if ($values['privacy/group_ids'] != $box['key']['privacy_settings_on_load']['group_ids']) {
+							$showWarning = true;
+						}
+						break;
+					case 'in_smart_group':
+					case 'logged_in_not_in_smart_group':
+						if ($values['privacy/smart_group_id'] != $box['key']['privacy_settings_on_load']['smart_group_id']) {
+							$showWarning = true;
+						}
+						break;
+					case 'with_role':
+						if (
+							$values['privacy/role_ids'] != $box['key']['privacy_settings_on_load']['role_ids']
+							|| $values['privacy/at_location'] != $box['key']['privacy_settings_on_load']['at_location']
+						) {
+							$showWarning = true;
+						}
+						break;
+				}
+			}
+			
+			if ($showWarning) {
+				unset($fields['privacy/content_item_privacy_info_warning']['row_class']);
+			} else {
+				$fields['privacy/content_item_privacy_info_warning']['row_class'] = 'zfab_inline_warning_hidden';
+			}
 		}
 	}
 	

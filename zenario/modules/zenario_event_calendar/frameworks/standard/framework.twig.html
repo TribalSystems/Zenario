@@ -1,5 +1,15 @@
 <div class="calendar">
-	{% if Event_calendar_year_view %}
+	{% if Event_calendar_error_view %}
+		<div class="calendar_content error_view">
+			<div class="calendar_title">
+				<h2>{{"Events Calendar"|trans}}</h2>
+			</div>
+			
+			<div class="calendar_header"></div>
+			
+			<p class="error">{{"Sorry, the date provided is not valid."|trans}}</p>
+		</div>
+	{% elseif Event_calendar_year_view %}
 		<div class="calendar_content year_view">
 			{% if Calendar_year_view_title %}
 				<div class="calendar_title">
@@ -227,11 +237,19 @@
 										
 										{% if event.Event_title %}
 											<h3>
-												<a href="{{event.Event_link}}" target="_parent">{{event.Event_title}}</a>
+												{% if event.Event_link %}
+													<a href="{{event.Event_link}}" target="_parent">
+												{% endif %}
+												{{event.Event_title}}
+												{% if event.Event_link %}
+													</a>
+												{% endif %}
 											</h3>
 										{% endif %}
                                     	<div class="day_view_event_summary"> {{event.Event_summary}}</div>
-                                    	<div class="day_view_event_more"> <a href="{{event.Event_link}}" target="_parent">{{"View"|trans}}</a></div>
+                                    	{% if event.Event_link %}
+                                    		<div class="day_view_event_more"> <a href="{{event.Event_link}}" target="_parent">{{"View"|trans}}</a></div>
+                                    	{% endif %}
 									</div>
 								</li>
 							{% endfor %}

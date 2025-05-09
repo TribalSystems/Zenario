@@ -160,7 +160,7 @@ zenario__projects:
                 collection_buttons: 
                     create_project: 
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS
-                        ord: "1"
+                        ord: 1
                         label: Create
                         css_class: zenario_create_a_new
                         hide_on_filter: true
@@ -170,14 +170,14 @@ zenario__projects:
                 item_buttons: 
                     rename_location: 
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS
-                        ord: "1"
+                        ord: 1
                         label: Edit
                         hide_in_select_mode: Yes
                         admin_box: 
                             path: zenario_project_locations__project
                     delete_locations:
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS 
-                        ord: "9998"
+                        ord: 9998
                         label: Delete
                         multiple_select: Yes
                         multiple_select_only: Yes
@@ -192,7 +192,7 @@ zenario__projects:
                         hide_in_select_mode: Yes
                     delete_location: 
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS
-                        ord: "9999"
+                        ord: 9999
                         label: Delete
                         ajax: 
                             confirm: 

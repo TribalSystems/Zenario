@@ -37,6 +37,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	public $missingFieldsErrors;
 	public $incorrectEmailFormatErrors;
 	public $errors;
+	public $dateIsValid;
 	
 	function init() {
 		$this->allowCaching(
@@ -49,31 +50,77 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 		$this->registerGetRequest('day');
 		$this->registerGetRequest('month');
 		$this->registerGetRequest('year');
+		
+		//Check that the day, month and year passed form a valid date.
+		$day = (int) ze::get('day');
+		if (!$day) {
+			if (ze::get('method_call') == 'showFloatingBox' && ze::get('mode') == 'month_view') {
+				$this->dateIsValid = false;
+				return true;
+			} else {
+				$day = '01';
+			}
+		}
+		
+		$month = (int) ze::get('month');
+		if (!$month) {
+			if (ze::get('method_call') == 'showFloatingBox') {
+				$this->dateIsValid = false;
+				return true;
+			} else {
+				$month = (int) date('n', time());
+			}
+		}
+		
+		$year = (int) ze::get('year');
+		if (!$year) {
+			if (ze::get('method_call') == 'showFloatingBox') {
+				$this->dateIsValid = false;
+				return true;
+			} else {
+				$year = (int) date('Y', time());
+			}
+		}
+		
+		if ($year > 1969 && $year < 2038 && $month >= 1 && $month <= 12 && $day >= 1 && $day <= 31 && checkdate($month, $day, $year)) {
+			$this->dateIsValid = true;
+		} else {
+			$this->dateIsValid = false;
+		}
+		
 		return true;
 	}
 
 	function showSlot() {
-		if ($this->setting('view_mode') == 'year_view') {
-			$this->showYearView();
+		if ($this->dateIsValid) {
+			if ($this->setting('view_mode') == 'year_view') {
+				$this->showYearView();
+			} else {
+				$this->showMonthView();
+			}
+	
+			$this->data['Enable_popup'] = $this->setting('enable_popup');
+			$this->data['Show_event_count'] = $this->setting('event_count');
 		} else {
-			$this->showMonthView();
+			$this->errorView();
 		}
-
-		$this->data['Enable_popup'] = $this->setting('enable_popup');
-		$this->data['Show_event_count'] = $this->setting('event_count');
+		
 		$this->twigFramework($this->data);
 	}
 
+	function errorView() {
+		$this->data['Event_calendar_error_view'] = true;
+	}
+	
 	function showMonthView() {
-		if (ze::get('month')) {
-			$month = (int) ze::get('month');
-		} else {
-			$month=date('n', time());
+		$month = (int) ze::get('month');
+		if (!$month) {
+			$month = (int) date('n', time());
 		}
-		if (ze::get('year') && (ze::get('year') > 1969) && (ze::get('year') < 2038)) {
-			$year = (int) ze::get('year');
-		} else {
-			$year = date('Y', time());
+		
+		$year = (int) ze::get('year');
+		if (!$year) {
+			$year = (int) date('Y', time());
 		}
 		
 		if ($month == 1) {
@@ -959,115 +1006,119 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	}
 
 	function showFloatingBox() {
-		$langIDs = $this->getAllowedLanguages();
-		$events = $this->getEventsDesc($_GET['year'] ?? false, ze::get('month'), ze::get('day'), $langIDs);
-		
-		$this->data['EFrame'] = true;
-		$this->data['Single_event'] = [];
-		
-		if (count($events) > 0) {
-			$eventTimezoneSupportEnabled = ze::setting('zenario_ctype_event__timezone_support');
+		if ($this->dateIsValid) {
+			$langIDs = $this->getAllowedLanguages();
+			$events = $this->getEventsDesc($_GET['year'] ?? false, ze::get('month'), ze::get('day'), $langIDs);
 			
-			foreach ($events as $event) {
-				/* Sticky image */
-				$htmlStickyImage = "";
-				$stickyImageEnabled = $this->setting('show_featured_image');
-				if ($stickyImageEnabled) {
-					$stickyImageUrl = self::getStickyImage($event['id'], 'event', $event['version']);
-					if ($stickyImageUrl) {
-						$htmlStickyImage = "<div class='sticky_image'><img src=".$stickyImageUrl."></div>";
-					}
-				}
+			$this->data['EFrame'] = true;
+			$this->data['Single_event'] = [];
 			
-				$arr = [	
-					'Event_title' => (htmlspecialchars($event['title']) ?: ''),
-					'Event_summary'=> ($this->setting('show_summary') ? $event['content_summary'] :''),
-					'Event_link' => ze\link::toItem((int) $event['id'], 'event'),
-					'StickyImage' => $htmlStickyImage
-				];
-
-				$useTimezones = false;
-				$selectedTimezone = '';
-				$timezoneLabel = '';
-			
-				if ($eventTimezoneSupportEnabled) {
-					if ($event['specify_time']) {
-						if ($event['event_timezone'] == 'default_timezone') {
-							$selectedTimezone = ze::setting('zenario_timezones__default_timezone');
-						} else {
-							$selectedTimezone = $event['event_other_timezone'];
+			if (count($events) > 0) {
+				$eventTimezoneSupportEnabled = ze::setting('zenario_ctype_event__timezone_support');
+				
+				foreach ($events as $event) {
+					/* Sticky image */
+					$htmlStickyImage = "";
+					$stickyImageEnabled = $this->setting('show_featured_image');
+					if ($stickyImageEnabled) {
+						$stickyImageUrl = self::getStickyImage($event['id'], 'event', $event['version']);
+						if ($stickyImageUrl) {
+							$htmlStickyImage = "<div class='sticky_image'><img src=".$stickyImageUrl."></div>";
 						}
 					}
-			
-					if ($selectedTimezone) {
-						$useTimezones = true;
-			
-						$timezones = ze\dataset::getTimezonesLOV();
-						$timezoneLabel = $timezones[$selectedTimezone]['label'];
+				
+					$arr = [	
+						'Event_title' => (htmlspecialchars($event['title']) ?: ''),
+						'Event_summary'=> ($this->setting('show_summary') ? $event['content_summary'] :''),
+						'Event_link' => ze\link::toItem((int) $event['id'], 'event'),
+						'StickyImage' => $htmlStickyImage
+					];
+	
+					$useTimezones = false;
+					$selectedTimezone = '';
+					$timezoneLabel = '';
+				
+					if ($eventTimezoneSupportEnabled) {
+						if ($event['specify_time']) {
+							if ($event['event_timezone'] == 'default_timezone') {
+								$selectedTimezone = ze::setting('zenario_timezones__default_timezone');
+							} else {
+								$selectedTimezone = $event['event_other_timezone'];
+							}
+						}
+				
+						if ($selectedTimezone) {
+							$useTimezones = true;
+				
+							$timezones = ze\dataset::getTimezonesLOV();
+							$timezoneLabel = $timezones[$selectedTimezone]['label'];
+						}
 					}
-				}
-				
-				if (($event['start_date'] ?? false) == ($event['end_date'] ?? false)) {
-					$arr['Time_of_event'] = $this->phrase('[[date]]', ['date' => ze\date::format($event['start_date'] ?? false, $this->setting('date_format'), false, false)]);
-				} else {
-					$arr['Time_of_event'] = $this->phrase('[[start_date]] to [[end_date]]', ['start_date' => ze\date::format($event['start_date'] ?? false, $this->setting('date_format'), false, false)
-																								,'end_date' => ze\date::format($event['end_date'] ?? false, $this->setting('date_format'), false, false)]);
-				}
-				
-				if ($event['specify_time'] && !empty($event['start_time']) && (($event['start_time'] ?? false) != '00:00:00')) {
-					if ( $event['end_time'] && ($event['end_time']!='00:00:00' || $event['next_day_finish']) && (($event['start_time'] ?? false) != ($event['end_time'] ?? false))) {
-						$arr['Time_of_event'] .= " " . $this->phrase('[[start_time]] to [[end_time]]',['start_time' => ze\date::formatTime($event['start_time'], ze::setting('vis_time_format'), ''),
-																									'end_time' => ze\date::formatTime($event['end_time'], ze::setting('vis_time_format'), '')]);
+					
+					if (($event['start_date'] ?? false) == ($event['end_date'] ?? false)) {
+						$arr['Time_of_event'] = $this->phrase('[[date]]', ['date' => ze\date::format($event['start_date'] ?? false, $this->setting('date_format'), false, false)]);
 					} else {
-						$arr['Time_of_event'] .= " " .  $this->phrase('[[time]]', ['time' => ze\date::formatTime($event['start_time'], ze::setting('vis_time_format'), '')]);
+						$arr['Time_of_event'] = $this->phrase('[[start_date]] to [[end_date]]', ['start_date' => ze\date::format($event['start_date'] ?? false, $this->setting('date_format'), false, false)
+																									,'end_date' => ze\date::format($event['end_date'] ?? false, $this->setting('date_format'), false, false)]);
 					}
+					
+					if ($event['specify_time'] && !empty($event['start_time']) && (($event['start_time'] ?? false) != '00:00:00')) {
+						if ( $event['end_time'] && ($event['end_time']!='00:00:00' || $event['next_day_finish']) && (($event['start_time'] ?? false) != ($event['end_time'] ?? false))) {
+							$arr['Time_of_event'] .= " " . $this->phrase('[[start_time]] to [[end_time]]',['start_time' => ze\date::formatTime($event['start_time'], ze::setting('vis_time_format'), ''),
+																										'end_time' => ze\date::formatTime($event['end_time'], ze::setting('vis_time_format'), '')]);
+						} else {
+							$arr['Time_of_event'] .= " " .  $this->phrase('[[time]]', ['time' => ze\date::formatTime($event['start_time'], ze::setting('vis_time_format'), '')]);
+						}
+					}
+					
+					if ($timezoneLabel) {
+						$arr['Event_timezone'] = $timezoneLabel;
+					}
+					
+					$this->data['Single_event'][] = $arr;
+				}
+			} else {
+				$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('No events on [[date]]', ['date' => ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'), $this->setting('date_format'), false, false)]))];
+			}
+			
+			if (ze::get('day')) {
+				$numerOfEvents = $this->getEventDay($_GET['year'] ?? false, ze::get('month'), ze::get('day'), $langIDs);
+				if ($numerOfEvents == 1) {
+					$counter = $numerOfEvents . " " . $this->phrase('event');
+				} else {
+					$counter = $numerOfEvents . " " . $this->phrase('events');
 				}
 				
-				if ($timezoneLabel) {
-					$arr['Event_timezone'] = $timezoneLabel;
+				
+				if ($this->setting('event_count')) {
+					$this->data['Close_popup_script'] = '$.colorbox.close();';
+					$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'),  $this->setting('date_format'), false, false);
+					$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>" . $counter . "</p>";
+				} else {
+					$this->data['Close_popup_script'] = '$.colorbox.close();';
+					$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'), $this->setting('date_format'), false, false);
+					$this->data['Event_counter_class_in_window'] = "";
+				}
+			} else {
+				$numerOfEvents = $this->getMonthEvent($_GET['year'] ?? false, ze::get('month'), $langIDs);
+				if ($numerOfEvents == 1) {
+					$counter = $numerOfEvents . " " . $this->phrase('event');
+				} else {
+					$counter = $numerOfEvents . " " . $this->phrase('events');
 				}
 				
-				$this->data['Single_event'][] = $arr;
+				if ($this->setting('event_count')) {
+					$this->data['Close_popup_script'] = '$.colorbox.close();';
+					$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
+					$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>" . $counter . "</p>";
+				} else {
+					$this->data['Close_popup_script'] = '$.colorbox.close();';
+					$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
+					$this->data['Event_counter_class_in_window'] = "";
+				}
 			}
 		} else {
-			$this->data['Single_event'][] = ['Event_title'=>htmlspecialchars($this->phrase('No events on [[date]]', ['date' => ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'), $this->setting('date_format'), false, false)]))];
-		}
-		
-		if (ze::get('day')) {
-			$numerOfEvents = $this->getEventDay($_GET['year'] ?? false, ze::get('month'), ze::get('day'), $langIDs);
-			if ($numerOfEvents > 1) {
-				$counter = $numerOfEvents . " " . $this->phrase('events');
-			} else {
-				$counter = $numerOfEvents . " " . $this->phrase('event');
-			}
-			
-			
-			if ($this->setting('event_count')) {
-				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'),  $this->setting('date_format'), false, false);
-				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>" . $counter . "</p>";
-			} else {
-				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-' . ze::get('day'), $this->setting('date_format'), false, false);
-				$this->data['Event_counter_class_in_window'] = "";
-			}
-		} else {
-			$numerOfEvents = $this->getMonthEvent($_GET['year'] ?? false, ze::get('month'), $langIDs);
-			if ($numerOfEvents > 1) {
-				$counter = $numerOfEvents . " " . $this->phrase('events');
-			} else {
-				$counter = $numerOfEvents . " " . $this->phrase('event');
-			}
-			
-			if ($this->setting('event_count')) {
-				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
-				$this->data['Event_counter_class_in_window'] = "<p class='event_count_in_window has_events'>" . $counter . "</p>";
-			} else {
-				$this->data['Close_popup_script'] = '$.colorbox.close();';
-				$this->data['Date_of_event'] = ze\date::format(ze::get('year') . '-' . ze::get('month') . '-01', '[[_MONTH_LONG_%m]] %Y', false, false);
-				$this->data['Event_counter_class_in_window'] = "";
-			}
+			$this->errorView();
 		}
 		
 		$this->twigFramework($this->data);
@@ -1083,7 +1134,7 @@ class zenario_event_calendar extends ze\moduleBaseClass {
 	
 	public function getStickyImage($id, $type, $version) {
 		$width = $height = $url = false;
-		ze\file::itemStickyImageLink($width, $height, $url, $id, $type, $version, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+		ze\content::featureImageLink($width, $height, $url, $id, $type, $version, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
 		if ($url) {
 			return htmlspecialchars($url);
 		} else {

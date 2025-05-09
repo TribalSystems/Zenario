@@ -67,22 +67,122 @@ empty_slot:
     actions:
         insert_reusable_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert a plugin...
+            label: Insert a plugin on this content item...
             page_modes:
                 edit: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: |
+            #    if (zenarioA.draft(this.id)) {
+            #        zenarioAT.clickTab('edit');
+            #        zenarioA.pickNewPlugin(this, slotName, 1, false);
+            #    }
+            #    return false;
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 1
+                is_nest: false
+        
+        insert_nest_on_item_layer:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Insert nest on this content item...
+            page_modes:
+                edit: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: |
+            #    if (zenarioA.draft(this.id)) {
+            #        zenarioAT.clickTab('edit');
+            #        zenarioA.pickNewPlugin(this, slotName, 1, true);
+            #    }
+            #    return false;
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 1
+                is_nest: true
+        
+        insert_slideshow_on_item_layer:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Insert slideshow on this content item...
+            page_modes:
+                edit: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: |
+            #    if (zenarioA.draft(this.id)) {
+            #        zenarioAT.clickTab('edit');
+            #        zenarioA.pickNewPlugin(this, slotName, 1, 'slideshow');
+            #    }
+            #    return false;
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 1
+                is_nest: 'slideshow'
+        
+        insert_fab_item_layer:
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            page_modes:
+                edit: true
+            visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'edit');
             onclick: |
                 if (zenarioA.draft(this.id)) {
                     zenarioAT.clickTab('edit');
-                    zenarioA.pickNewPlugin(this, slotName, 1, false);
+                    zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'edit');
                 }
                 return false;
+            label: Insert a plugin/nest/slideshow on this content item...
+        
+        
         insert_reusable_on_layout_layer:
-            ord: 997
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
             label: Insert a plugin on this layout...
             page_modes:
                 layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false);
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 2
+                is_nest: false
+        
+        insert_nest_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert nest on this layout...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 2, true);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 2
+                is_nest: true
+        
+        insert_slideshow_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert slideshow on this layout...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 2, 'slideshow');
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 2
+                is_nest: 'slideshow'
+        
+        insert_fab_layout_layer:
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            page_modes:
+                layout: true
+            visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'layout');
+            onclick: return zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'layout');
+            label: Insert a plugin/nest/slideshow on this layout...
     
     
     

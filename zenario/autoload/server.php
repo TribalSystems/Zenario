@@ -38,7 +38,7 @@ class server {
 		$nameTo = false, $addressFrom = false, $nameFrom = false, 
 		$attachments = [], $attachmentFilenameMappings = [],
 		$precedence = 'bulk', $isHTML = true, $exceptions = false,
-		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+		$addressReplyTo = false, $nameReplyTo = false,
 		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false,
 		$showErrorMessage = false
 	) {
@@ -129,7 +129,7 @@ class server {
 						$nameTo, $addressFrom, $nameFrom, 
 						$attachments, $attachmentFilenameMappings,
 						$precedence, $isHTML, $exceptions,
-						$addressReplyTo, $nameReplyTo, $warningEmailCode,
+						$addressReplyTo, $nameReplyTo,
 						'', '', 'CC');
 				} else {
 					$mail->AddCC($emailAddress);
@@ -144,7 +144,7 @@ class server {
 						$nameTo, $addressFrom, $nameFrom, 
 						$attachments, $attachmentFilenameMappings,
 						$precedence, $isHTML, $exceptions,
-						$addressReplyTo, $nameReplyTo, $warningEmailCode,
+						$addressReplyTo, $nameReplyTo,
 						'', '', 'BCC');
 				} else {
 					$mail->AddBCC($emailAddress);
@@ -207,7 +207,7 @@ class server {
 		$nameTo = false, $addressFrom = false, $nameFrom = false, 
 		$attachments = [], $attachmentFilenameMappings = [],
 		$precedence = 'bulk', $isHTML = true, $exceptions = false,
-		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+		$addressReplyTo = false, $nameReplyTo = false,
 		$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = false,
 		$showErrorMessage = true
 	) {
@@ -216,7 +216,7 @@ class server {
 			$nameTo, $addressFrom, $nameFrom, 
 			$attachments, $attachmentFilenameMappings,
 			$precedence , $isHTML, $exceptions,
-			$addressReplyTo, $nameReplyTo, $warningEmailCode,
+			$addressReplyTo, $nameReplyTo,
 			$ccs , $bccs, $action, $ignoreDebugMode,
 			$showErrorMessage = true
 		);
@@ -242,7 +242,7 @@ class server {
 			$nameTo, $addressFrom, $nameFrom, 
 			[], [],
 			'bulk', $isHTML, false,
-			false, false, false,
+			false, false,
 			'', '', 'To', $ignoreDebugMode
 		);
 	}
@@ -262,7 +262,7 @@ class server {
 			$nameTo, $addressFrom, $nameFrom, 
 			$attachments, $attachmentFilenameMappings,
 			$precedence, $isHTML, $exceptions,
-			$addressReplyTo, $nameReplyTo, $warningEmailCode,
+			$addressReplyTo, $nameReplyTo,
 			$ccs, $bccs, $action, $ignoreDebugMode
 		);
 	}

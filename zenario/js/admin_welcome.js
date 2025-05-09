@@ -213,9 +213,13 @@ zenarioAW.quickValidateWelcomePageGo = function() {
 
 
 ////T9732, Admin login panel, show warning when a redirect from other URL has occurred
-zenarioAW.refererHostWarning = function(msg) {
+zenarioAW.refererHostMessage = function(msg, type) {
 	if (msg) {
-		toastr.warning(msg, undefined, {timeOut: 0, extendedTimeOut: 0});
+		if (type == 'warning') {
+			toastr.warning(msg, undefined, {timeOut: 0, extendedTimeOut: 0});
+		} else if (type == 'info') {
+			toastr.info(msg, undefined, {timeOut: 0, extendedTimeOut: 0});
+		}
 	}
 };
 

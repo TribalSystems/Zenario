@@ -25,10 +25,10 @@ plugin_settings:
                         name: show_details_and_link
                     values:
                         current_content_item:
-                            ord: "1"
+                            ord: 1
                             label: Current Content Item (this must be an Audio Content Item)
                         another_content_item:
-                            ord: "2"
+                            ord: 2
                             label: Another Audio Content Item
                     value: current_content_item
                     format_onchange: Yes

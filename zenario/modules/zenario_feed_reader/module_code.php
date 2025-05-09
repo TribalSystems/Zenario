@@ -28,8 +28,6 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-
-
 class zenario_feed_reader extends ze\moduleBaseClass {
 
 	protected $xmlParser;
@@ -49,44 +47,112 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 	protected $feedTitle = '';
 	protected $field = '';
 	protected $pattern = '';
-	protected $feedIsOffline = false;
-	protected $lastModifiedDate = '';
 	
-	function init() {
+	public function init() {
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByFile = false, $clearByModuleData = false);
 		
-		if ('new_window' == $this->setting('target')) {
-			$this->linkTarget = ' target="_blank"';
+		if (!ze::get('getFeedContent')) {
+			$this->callScript('zenario_feed_reader', 'getFeedContent', $this->containerId, $this->pluginAJAXLink('getFeedContent=1'));
 		}
-		
-		$this->field = $this->setting('regexp_field');
-		$this->pattern = '/'. $this->setting('regexp') . '/';
-
-		$feedSource = $this->setting('feed_source');
-		$result = '';
-
-		if ($feedSource) {
-			//Check if the source is a valid.
-			$ch = curl_init();
-			$timeout = 5;
-			curl_setopt($ch, CURLOPT_URL, $feedSource);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-			$result = curl_exec($ch);
-			curl_close($ch);
-		}
-
-		if (!$feedSource || !$result) {
-			if (ze::isAdmin()) {
-				$this->setErrorMessage(ze\admin::phrase('Specified feed URL does not appear to be valid'));
-			}
-
-			return false;
-		}
-		
 		return true;
 	}
-
-
+	
+	public function showSlot() {
+		//Do nothing: the plugin is initially supposed to load blank in order not to slow down
+		//the page load. The content is loaded later via AJAX request. 
+	}
+	
+	public function handlePluginAJAX() {
+		if (isset($_GET['getFeedContent'])) {
+			$feedSource = $this->setting('feed_source');
+			$this->itemCount = $this->setting('number_feeds_to_show');
+			
+			$items = $this->getRssFeed();
+			
+			switch ($this->setting('title')) {
+				case 'use_custom_title':
+					$title = $this->setting('feed_title');
+					break;
+				case 'use_feed_title':
+					$title = $this->feedTitle;
+					break;
+				default: 
+					$title = '';
+					break;
+			}
+			
+			$pageMergeFields = [
+				'Title' => $title,
+				'Source' => '<p>Feed source: <a href="' . $feedSource . '">' . $feedSource . '</a></p>',
+				'Content_Section' => true,
+				'Feed_Reader' => true
+			];
+			
+			$dateFormat = '';
+	
+			if ($this->setting('show_date_time') == "dont_show") {
+				$pageMergeFields['Date_Section'] = false; 
+			} else {
+				$pageMergeFields['Date_Section'] = true; 
+				if ($this->setting('date_format') == '_SHORT') {
+					$dateFormat = ze::setting('vis_date_format_short');
+				} elseif ($this->setting('date_format') == '_LONG') {
+					$dateFormat = ze::setting('vis_date_format_long');
+				} elseif ($this->setting('date_format') == '_MEDIUM') {
+					$dateFormat = ze::setting('vis_date_format_med');
+				}
+			}
+			
+			$pageMergeFields['Feeds'] = [];
+			$itemCount = 0;
+			foreach ($items as $feedContent) {
+				if (++$itemCount > $this->itemCount) {
+					break;
+				}
+				if ($this->setting('rss_date_format') == 'backslashed_american') {
+					$dateFeedContent = $feedContent['date'];
+				} elseif ($this->setting('rss_date_format') == 'backslashed_european') {
+					$dateFeedContent = explode('/', $feedContent['date']);
+					if (count($dateFeedContent) == 3) {
+						$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
+					} else {
+						$dateFeedContent=$feedContent['date'];
+					}
+				} elseif ($this->setting('rss_date_format') == 'autodetect') {
+					$dateFeedContent = $feedContent['date'];
+				} else {
+					$dateFeedContent = $feedContent['date'];
+				}
+	
+				if ($this->setting('show_date_time') == "date_only") {
+					$feedContent['date'] = ze\date::format( date( 'Y-m-d', strtotime($dateFeedContent)), $dateFormat);
+				} elseif ($this->setting('show_date_time') == "date_and_time") {
+					$feedContent['date'] = ze\date::formatDateTime(date('Y-m-d H:i:s', strtotime($dateFeedContent)), $dateFormat);
+				}
+				
+				if (!$this->setting( 'size' ) > 0) {
+					$feedContent['description'] = '';
+				} else {
+					$feedContent['description'] = $this->truncateNicely(trim(strip_tags(strtr($feedContent['description'], ["\n" => '<br> ', "\r\n" => '<br> ']))), $this->setting('size'));
+				}
+				$feedMergeFields = [ 
+					'Feed_Title' => $feedContent['title'], 
+					'Feed_Description' => $feedContent['description'], 
+					'Date' => $feedContent['date'] 
+				];
+				$pageMergeFields['Feeds'][] = $feedMergeFields;
+			}
+			
+			$pageMergeFields['title_tags'] = $this->setting('title_tags');
+			$pageMergeFields['feed_title_tags'] = $this->setting('feed_title_tags');
+			
+			$this->twigFramework($pageMergeFields);
+		}
+	}
+	
 	public function __construct() {
 		$this->xmlParser = xml_parser_create();
 		xml_parser_set_option($this->xmlParser, XML_OPTION_CASE_FOLDING, 1);
@@ -113,6 +179,10 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 
 	function endElementHandler($xmlParser, $tagName) {
 		if ($this->insideItem && ('ITEM' == $tagName || 'ENTRY' == $tagName)) {
+			
+			$this->field = $this->setting('regexp_field');
+			$this->pattern = '/' . $this->setting('regexp') . '/';
+			
 			if (( $this->field == 'title' && !preg_match($this->pattern, $this->title)) 
 				|| ($this->field == 'description' && !preg_match($this->pattern, $this->description))
 				|| ($this->field == 'date' && !preg_match($this->pattern, $this->date))
@@ -127,6 +197,10 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 						'description' => (trim($this->description)),
 						'date' => trim($this->date)]); 
 				} else {
+					if ($this->setting('target') == 'new_window') {
+						$this->linkTarget = ' target="_blank"';
+					}
+					
 					array_push($this->content,
 						[
 							'title' => '<a href="' . trim($this->link) . '"' . $this->linkTarget . '>'. htmlspecialchars(trim($this->title)) . '</a>',
@@ -199,90 +273,6 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 		}
 	}
 	
-	function showSlot() {
-		$this->itemCount = $this->setting('number_feeds_to_show');
-		
-		$items = $this->getRssFeed();
-		
-		switch ($this->setting('title')) {
-			case 'use_custom_title':
-				$title = $this->setting('feed_title');
-				break;
-			case 'use_feed_title':
-				$title = $this->feedTitle;
-				break;
-			default: 
-				$title = '';
-				break;
-		}
-		
-		$pageMergeFields = [
-			'Title' => $title,
-			'Source' => '<p>Feed source: <a href="' . $this->setting('feed_source') . '">' . $this->setting('feed_source') . '</a></p>'
-		];
-
-		$subSections = ['Content_Section' => true];
-		$dateFormat = '';
-
-		if ($this->setting('show_date_time') == "dont_show") {
-			$subSections['Date_Section'] = false; 
-		} else {
-			$subSections['Date_Section'] = true; 
-			if ($this->setting('date_format') == '_SHORT') {
-				$dateFormat = ze::setting('vis_date_format_short');
-			} elseif ($this->setting('date_format') == '_LONG') {
-				$dateFormat = ze::setting('vis_date_format_long');
-			} elseif ($this->setting('date_format') == '_MEDIUM') {
-				$dateFormat = ze::setting('vis_date_format_med');
-			}
-		}
-
-		$subSections['Feeds'] = [];
-		$itemCount = 0;
-		foreach ($items as $feedContent) {
-			if (++$itemCount > $this->itemCount) {
-				break;
-			}
-			if ($this->setting('rss_date_format') == 'backslashed_american') {
-				$dateFeedContent = $feedContent['date'];
-			} elseif ($this->setting('rss_date_format') == 'backslashed_european') {
-				$dateFeedContent = explode('/', $feedContent['date']);
-				if (count($dateFeedContent) == 3) {
-					$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
-				} else {
-					$dateFeedContent=$feedContent['date'];
-				}
-			} elseif ($this->setting('rss_date_format') == 'autodetect') {
-				$dateFeedContent = $feedContent['date'];
-			} else {
-				$dateFeedContent = $feedContent['date'];
-			}
-
-			if ($this->setting('show_date_time') == "date_only") {
-				$feedContent['date'] = ze\date::format( date( 'Y-m-d', strtotime($dateFeedContent)), $dateFormat);
-			} elseif ($this->setting('show_date_time') == "date_and_time") {
-				$feedContent['date'] = ze\date::formatDateTime(date('Y-m-d H:i:s', strtotime($dateFeedContent)), $dateFormat);
-			}
-			
-			if (!$this->setting( 'size' ) > 0) {
-				$feedContent['description'] = '';
-			} else {
-				$feedContent['description'] = $this->truncateNicely(trim(strip_tags(strtr($feedContent['description'], ["\n" => '<br> ', "\r\n" => '<br> ']))), $this->setting('size'));
-			}
-			$feedMergeFields = [ 
-				'Feed_Title' => $feedContent['title'], 
-				'Feed_Description' => $feedContent['description'], 
-				'Date' => $feedContent['date'] 
-			];
-			$subSections['Feeds'][] = $feedMergeFields;
-		}
-		
-		$pageMergeFields['title_tags'] = $this->setting('title_tags');
-		$pageMergeFields['feed_title_tags'] = $this->setting('feed_title_tags');
-		
-		$this->framework('Feed_Reader', $pageMergeFields, $subSections);
-	}
-	
 	protected function getLiveFeed() {
 		$feedSource = $this->setting('feed_source');
 		$feed = '';
@@ -297,50 +287,94 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 		);
 
 		if ($feedSource) {
-			//First check if the source is valid and can be accessed.
-			$result = ze\curl::fetch($feedSource);
+			//Attempt to use the cached value first.
+			//If the source is invalid, or offline, check if the reader is still within the tolerance period.
+			$timestampNow = strtotime(ze\date::now());
+			$useByTimestamp = $lastTolerableTimestamp = 0;
 			
-			if ($result) {
-				$feed = file_get_contents($feedSource, 0, $context);
-			} else {
-				//If the source is invalid, or offline, check if the reader is still within the tolerance period.
-				$sql = "
-					SELECT store, last_updated
-					FROM ". DB_PREFIX. "plugin_instance_store
-					WHERE method_name = '". ze\escape::sql('getLiveFeed'). "'
-					  AND request = '". ze\escape::sql($this->setting('feed_source')). "'
-					  AND instance_id = ". (int) $this->instanceId;
-				$result = ze\sql::select($sql);
+			$sql = "
+				SELECT store, last_updated, IFNULL(use_by_time, '') AS use_by_time, IFNULL(last_tolerable_time, '') AS last_tolerable_time
+				FROM ". DB_PREFIX. "plugin_instance_store
+				WHERE method_name = '". ze\escape::sql('getLiveFeed'). "'
+				  AND request = '". ze\escape::sql($feedSource). "'
+				  AND instance_id = ". (int) $this->instanceId;
+			$result = ze\sql::select($sql);
+			
+			$cachedFeed = ze\sql::fetchAssoc($result);
+			
+			//First, check if the feed was cached.
+			if (!empty($cachedFeed) && is_array($cachedFeed)) {
+				$dateTime = ze\date::new($cachedFeed['use_by_time']);
+				$useByTimestamp = $dateTime->getTimestamp();
 				
-				$cachedFeed = ze\sql::fetchAssoc($result);
+				$dateTime = ze\date::new($cachedFeed['last_tolerable_time']);
+				$lastTolerableTimestamp = $dateTime->getTimestamp();
 				
-				if (!empty($cachedFeed) && is_array($cachedFeed)) {
-					$dateTime = new DateTime($cachedFeed['last_updated']);
+				//If there is a cached feed, and it has not expired, use that.
+				if ($useByTimestamp >= $timestampNow) {
+					//If the reader is still within the tolerance period of the feed going offline,
+					//just return the last cached value.
+					$feed = $cachedFeed['store'];
+				}
+			}
+			
+			if (!$feed) {
+				//If the cached feed is past its use by date, or there was no cached feed,
+				//try to get the live data.
+				$result = ze\curl::fetch($feedSource);
+				
+				if ($result) {
+					$feed = file_get_contents($feedSource, 0, $context);
 					
-					$feedGoingOfflineToleranceInMins = (int) $this->setting('feed_going_offline_tolerance');
-					$dateTime->modify('+' . $feedGoingOfflineToleranceInMins . ' minutes');
-					$timestampLastUpdatedPlusTolerancePeriod = $dateTime->getTimestamp();
-					unset($dateTime);
-			
-					$timestampNow = strtotime(ze\date::now());
-			
-					if ($timestampLastUpdatedPlusTolerancePeriod >= $timestampNow) {
-						//If the reader is still within the tolerance period of the feed going offline,
-						//just return the last cached value...
-						$feed = $cachedFeed['store'];
-						$this->feedIsOffline = true;
-						$this->lastModifiedDate = $cachedFeed['last_updated'];
-					} else {
-						//... otherwise, try to force download the feed
-						//and trigger an error email.
-						$feed = file_get_contents($feedSource);
+					if ($feed) {
+						$sdateTimeObj = ze\date::new(ze\date::now());
+						$dateTimeNow = $sdateTimeObj->format("Y-m-d H:i:s");
+						
+						if (($keepContentCachedFor = $this->setting('cache'))) {
+							$sdateTimeObj->modify('+' . (int) $keepContentCachedFor . " minutes");
+							$useByTime = $sdateTimeObj->format("Y-m-d H:i:s");
+						}
+						
+						if (($feedGoingOfflineTolerance = $this->setting('feed_going_offline_tolerance'))) {
+							$sdateTimeObj->modify('+' . (int) $feedGoingOfflineTolerance . " minutes");
+							$lastTolerableTime = $sdateTimeObj->format("Y-m-d H:i:s");
+						}
+						
+						$sql = "
+							REPLACE INTO ". DB_PREFIX. "plugin_instance_store SET
+								store = '". \ze\escape::sql($feed). "',
+								last_updated = '" . ze\escape::sql($dateTimeNow) . "',
+								use_by_time = '" . ze\escape::sql($useByTime) . "',
+								last_tolerable_time = '" . ze\escape::sql($lastTolerableTime) . "',
+								is_cache = 1,
+								method_name = '". ze\escape::sql('getLiveFeed'). "',
+								request = '". ze\escape::sql($feedSource). "',
+								instance_id = ". (int) $this->instanceId;
+						ze\sql::update($sql);
 					}
+				}
+			}
+			
+			if (!$feed) {
+				//If there still is no feed to show, but there is a cached version
+				//which is within the offline tolerance period, try displaying it.
+				if (!empty($cachedFeed) && $lastTolerableTimestamp && ($lastTolerableTimestamp >= $timestampNow)) {
+					$feed = $cachedFeed['store'];
 				}
 			}
 		}
 
-		if (!$feed) { 
-			$feed = '<?xml version="1.0" encoding="UTF-8"			<error>
+
+		return mb_convert_encoding($feed, "UTF-8");
+	}
+
+	protected function getRssFeed() {
+		$this->content = [];
+		$xml = $this->getLiveFeed();
+		
+		if (!$xml) {
+			$feedSource = $this->setting('feed_source');
+			$xml = '<?xml version="1.0" encoding="UTF-8"			<error>
 				<item>
 					<title>Feed read error</title>
 					<link>' . htmlentities($feedSource) . '</link>
@@ -349,27 +383,6 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 					<updated>' . date('Y-m-d H:i:s') . '</updated>
 				</item>
 			</error>';
-		}
-
-		return mb_convert_encoding($feed, "UTF-8");
-	}
-
-	protected function getRssFeed() {
-		$this->content = [];
-		$xml = $this->cache('getLiveFeed', 60 * (int) $this->setting('cache'), $this->setting('feed_source'));
-		
-		if ($this->feedIsOffline) {
-			$sql = "
-				UPDATE ". DB_PREFIX. "plugin_instance_store SET
-					last_updated = '" . ze\escape::sql($this->lastModifiedDate) . "'
-				WHERE
-					method_name = '". ze\escape::sql('getLiveFeed'). "'
-					AND request = '". ze\escape::sql($this->setting('feed_source')). "'
-					AND instance_id = ". (int) $this->instanceId;
-			ze\sql::update($sql);
-			
-			$this->feedIsOffline = false;
-			$this->lastModifiedDate = '';
 		}
 		
 		xml_parse($this->xmlParser, $xml);
@@ -399,16 +412,5 @@ class zenario_feed_reader extends ze\moduleBaseClass {
 			}
 		}
 		return $string;
-	}
-
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path){
-			case 'plugin_settings':
-				$box['tabs']['display']['fields']['date_format']['hidden'] = $values['display/show_date_time'] == 'dont_show';
-				$box['tabs']['display']['fields']['feed_title']['hidden'] = $values['display/title'] != 'use_custom_title';
-				$box['tabs']['filtering']['fields']['regexp']['hidden'] = $values['filtering/regexp_field'] == 'do_no_filter';
-				$box['tabs']['display']['fields']['title_tags']['hidden'] = $values['display/title'] == 'dont_show';
-				break;
-		}
 	}
 }

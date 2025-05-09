@@ -708,7 +708,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$this->sections['Confirmation_Box'] = [];
 		$this->sections['Confirmation_Box']['Submit_Button_Text'] = $submitButtonText;
 		$this->sections['Confirmation_Box']['Confirmation_Message'] = $message;
-		$this->sections['Confirmation_Box']['Cancel_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&forum_thread='. ze\ray::value($this->thread, 'id'), false);
+		$this->sections['Confirmation_Box']['Cancel_Link'] = $this->refreshPluginSlotAnchor('&comm_page='. $this->page. '&forum_thread='. ($this->thread['id'] ?? ''), false);
 		
 		$this->sections['Confirmation_Box']['Open_Form'] = $this->openForm('', 'class="'. htmlspecialchars(ze::request('comm_request')). '"'). 
 			$this->remember('comm_request').

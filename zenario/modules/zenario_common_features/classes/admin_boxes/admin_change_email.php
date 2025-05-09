@@ -61,7 +61,7 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 				$details = ze\admin::details($box['key']['id']);
 
 				$merge = [];
-				$merge['NAME'] = ze::ifNull(trim($details['first_name'] . ' ' . $details['last_name']), $details['username']);
+				$merge['NAME'] = trim($details['first_name'] . ' ' . $details['last_name']) ?: $details['username'];
 				$merge['URL'] = ze\link::protocol(). $_SERVER['HTTP_HOST'];
 				$merge['SUBDIRECTORY'] = SUBDIRECTORY;
 				$merge['IP'] = preg_replace('[^W\.\:]', '', ze\user::ip());
@@ -92,9 +92,7 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 					$message = $emailTemplate['body'];
 					$message = nl2br($message);
 				
-					if (ze\module::inc('zenario_email_template_manager')) {
-						zenario_email_template_manager::putBodyInTemplate($message);
-					}
+					zenario_common_features::putBodyInTemplate($message);
 			
 					$subject = $emailTemplate['subject'];
 			
@@ -180,7 +178,7 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 
 		//... and send confirmation emails to both the new and old email address.
 		$merge = [];
-		$merge['NAME'] = ze::ifNull(trim($adminDetails['first_name']. ' '. $adminDetails['last_name']), $adminDetails['username']);
+		$merge['NAME'] = trim($adminDetails['first_name']. ' '. $adminDetails['last_name']) ?: $adminDetails['username'];
 		$merge['OLD_EMAIL'] = $adminDetails['email'];
 		$merge['NEW_EMAIL'] = $_SESSION['ADMIN_CHANGE_EMAIL_EDIT_SELF_NEW_EMAIL'];
 		$merge['URL'] = ze\link::protocol(). $_SERVER['HTTP_HOST'];
@@ -201,9 +199,7 @@ class zenario_common_features__admin_boxes__admin_change_email extends ze\module
 		$message = $emailTemplate['body'];
 		$message = nl2br($message);
 	
-		if (ze\module::inc('zenario_email_template_manager')) {
-			zenario_email_template_manager::putBodyInTemplate($message);
-		}
+		zenario_common_features::putBodyInTemplate($message);
 
 		$subject = $emailTemplate['subject'];
 

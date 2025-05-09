@@ -57,6 +57,14 @@ plugin_settings:
                     indent: 1
                     visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
                     redraw_onchange: true
+                output_form_id_in_the_form_element:
+                    plugin_setting:
+                        name: output_form_id_in_the_form_element
+                    label: 'Output the form ID as form_[number] in the HTML <form> element'
+                    note_below: 'Only enable this if this form appears only once on the content item; the occurrence of duplicate "id" fields can invalidate page HTML.'
+                    type: checkbox
+                    indent: 1
+                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
                 print_page_button_pages:
                     plugin_setting:
                         name: print_page_button_pages

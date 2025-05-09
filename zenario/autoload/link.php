@@ -145,16 +145,6 @@ class link {
 		}
 	}
 
-	//Warning: this is deprecated, please use \ze\cookie::set() instead!
-	public static function cookieDomain() {
-		if (COOKIE_DOMAIN) {
-			return COOKIE_DOMAIN;
-	
-		} else {
-			return \ze\link::host();
-		}
-	}
-
 
 	public static function cookieFreeDomain() {
 		if (\ze::setting('use_cookie_free_domain') && \ze::setting('cookie_free_domain') && !\ze\priv::check()) {
@@ -221,6 +211,20 @@ class link {
 		return false;
 	}
 
+	const toSpecialPageFromTwig = true;
+	public static function toSpecialPage(
+		$pageType, $preferredLanguageId = false, $languageMustMatch = false,
+		$fullPath = false, $request = '', $forceAliasInAdminMode = false, $checkPerm = false
+	) {
+		$cID = $cType = $state = false;
+		if (\ze\content::langSpecialPage($pageType, $cID, $cType, $preferredLanguageId, $languageMustMatch, !$checkPerm)) {
+			
+			return \ze\link::toItem($cID, $cType, $fullPath, $request, false, false, $forceAliasInAdminMode);
+		}
+		return false;
+	}
+	
+
 	const toPluginPageIfPermissibleFromTwig = true;
 	public static function toPluginPageIfPermissible(
 		$moduleClassName, $mode = '', $languageId = false, $fullPath = false, $request = '',
@@ -264,6 +268,14 @@ class link {
 			$autoAddImportantRequests, $forceAliasInAdminMode,
 			$equivId, $languageId, true
 		);
+	}
+	
+	//Show a friendly URL, even in admin mode where we'd normally not
+	public static function toItemWithAlias(
+		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
+		$equivId = false, $languageId = false
+	) {
+		return \ze\link::toItem($cID, $cType, $fullPath, $request, $alias, false, true, $equivId, $languageId);
 	}
 
 
@@ -389,7 +401,11 @@ class link {
 			$domain = $adminDomain;
 
 		} else {
-			$domain = \ze\link::primaryDomain();
+			if (\ze::isAdmin()) {
+				$domain = \ze\link::adminDomain();
+			} else {
+				$domain = \ze\link::primaryDomain();
+			}
 		}
 	
 		//If there is nothing in the request then links to the homepage
@@ -476,10 +492,14 @@ class link {
 			$aliasOrCID = $languageId. '/'. $aliasOrCID;
 		}
 	
-		//If a translation isn't available, have an option to show the page in the default
-		//language
-		if ($stayInCurrentLanguage
+		//If a translation isn't available, record the intended language.
+		//Please note: this will not run for document content items.
+		//They will always be displayed/downloaded using the current language code provided
+		//and the desired language of an unavailable translation will not be recorded.
+		if ($multilingual
+		 && $stayInCurrentLanguage
 		 && \ze::$visLang != $languageId
+		 && $cType != 'document'
 		) {
 			$request .= '&visLang='. rawurlencode(\ze::$visLang);
 		}

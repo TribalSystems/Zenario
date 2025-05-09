@@ -32,7 +32,7 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$responseId = $box['key']['id'];
 		$box['title'] = ze\admin::phrase('Form response [[id]]', ['id' => $responseId]);
-		$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['user_id', 'response_datetime', 'crm_response', 'form_id', 'allocated_to_admin_id', 'allocated_to_admin_datetime'], $responseId);
+		$responseDetails = ze\row::get('user_response', ['user_id', 'response_datetime', 'crm_response', 'form_id', 'allocated_to_admin_id', 'allocated_to_admin_datetime'], $responseId);
 		$box['key']['form_id'] = $responseDetails['form_id'];
 		
 		if ($responseDetails['user_id']) {
@@ -80,14 +80,28 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 			unset($box['tabs']['form_fields']['fields']['crm_response']);
 		}
 		
-		$html = zenario_user_forms::getFormSummaryHTML($responseId);
+		$html = zenario_user_forms::getFormResponseHTML($responseId);
 		
 		$fields['form_fields/data']['snippet']['html'] = $html;
+		
+		//"Email sent to" field
+		$sql = "
+			SELECT GROUP_CONCAT(DISTINCT(email_address_to) SEPARATOR ', ')
+			FROM " . DB_PREFIX . "email_template_sending_log
+			WHERE form_response_id = " . (int) $box['key']['id'] . "
+			ORDER BY id";
+		$result = ze\sql::select($sql);
+		$sentTo = ze\sql::fetchValue($result);
+		
+		if ($sentTo) {
+			$fields['form_fields/sent_to_admins_or_users']['hidden'] = false;
+			$fields['form_fields/sent_to_admins_or_users']['snippet']['html'] = ze\admin::phrase('Sent to [[sent_to_admins_or_users]]', ['sent_to_admins_or_users' => $sentTo]);
+		}
 	}
 	
 	private function getFormDataFromResponse($responseId) {
 		$result = ze\row::query(
-			ZENARIO_USER_FORMS_PREFIX . 'user_response_data',
+			'user_response_data',
 			['form_field_id', 'value', 'internal_value'],
 			['user_response_id' => $responseId, 'field_row' => 0]
 		);
@@ -106,7 +120,7 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 		
 		if (!empty($formWorkflowDetails['show_checkbox_for_allocating_form_responses'])) {
 			//Check if the form response is already allocated
-			$responseDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['allocated_to_admin_id', 'allocated_to_admin_datetime'], $box['key']['id']);
+			$responseDetails = ze\row::get('user_response', ['allocated_to_admin_id', 'allocated_to_admin_datetime'], $box['key']['id']);
 			if (!empty($responseDetails) && !empty($responseDetails['allocated_to_admin_id']) && !empty($responseDetails['allocated_to_admin_datetime'])) {
 				//Do nothing, the form is already allocated.
 			} elseif ($values['form_fields/workflow_control_allocated']) {
@@ -115,7 +129,7 @@ class zenario_user_forms__admin_boxes__user_form_response extends ze\moduleBaseC
 				
 				if ($dateToday && $adminId) {
 					ze\row::set(
-						ZENARIO_USER_FORMS_PREFIX. 'user_response',
+						'user_response',
 						['allocated_to_admin_id' => (int) $adminId, 'allocated_to_admin_datetime' => ze\escape::sql($dateToday)],
 						['id' => $box['key']['id'], 'form_id' => $box['key']['form_id']]
 					);

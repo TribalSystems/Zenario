@@ -32,7 +32,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-			if (!$details = ze\content::layoutDetails($box['key']['id'], $showUsage = true, $checkIfDefault = true, $getDefinition = false)) {
+			if (!$details = ze\layout::details($box['key']['id'], $showUsage = true, $checkIfDefault = true, $getDefinition = false)) {
 				exit;
 			}
 			$box['key']['current_name'] =
@@ -147,7 +147,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 		
 		//Say what the default skin is for the Template Family, if one is set
 		if (empty($box['tabs']['template']['fields']['skin_id']['value'])
-		 && ($skin = ze\content::skinDetails(1))) {
+		 && ($skin = ze\skin::details(1))) {
 			$box['tabs']['template']['fields']['skin_id']['pick_items']['nothing_selected_phrase'] = 
 				ze\admin::phrase('Use the default skin for this layout [[[display_name]]]', $skin);
 		}
@@ -214,7 +214,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			$vals['css_class'] = $values['css/css_class'];
 			
 			if (($filepath = ze\file::getPathOfUploadInCacheDir($values['css/background_image']))
-			 && ($imageId = ze\file::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+			 && ($imageId = ze\fileAdm::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
 				$vals['bg_image_id'] = $imageId;
 			} else {
 				$vals['bg_image_id'] = $values['css/background_image'];

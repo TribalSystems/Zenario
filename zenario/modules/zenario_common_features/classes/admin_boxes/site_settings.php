@@ -105,16 +105,16 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$fields['email/email_address_system']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 
-		if (isset($fields['filesizes/apache_max_filesize'])) {
-			$fields['filesizes/apache_max_filesize']['value'] = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
+		if (isset($fields['file_storage/apache_max_filesize'])) {
+			$fields['file_storage/apache_max_filesize']['value'] = ze\file::fileSizeConvert(ze\dbAdm::apacheMaxFilesize());
 		}
-		if (isset($fields['filesizes/max_allowed_packet'])) {
-			$fields['filesizes/max_allowed_packet']['value'] = '?';
+		if (isset($fields['file_storage/max_allowed_packet'])) {
+			$fields['file_storage/max_allowed_packet']['value'] = '?';
 	
 			if ($result = @ze\sql::select("SHOW VARIABLES LIKE 'max_allowed_packet'")) {
 				$settings = [];
 				if ($row = ze\sql::fetchRow($result)) {
-					$fields['filesizes/max_allowed_packet']['value'] = ze\file::fileSizeConvert($row[1]);
+					$fields['file_storage/max_allowed_packet']['value'] = ze\file::fileSizeConvert($row[1]);
 				}
 			}
 		}
@@ -291,10 +291,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		//On multisite sites, don't allow local Admins to change the directory paths
 		if (ze\db::hasGlobal() && !($_SESSION['admin_global_id'] ?? false)) {
-			foreach (['backup_dir', 'docstore_dir'] as $dir) {
-				if (isset($box['tabs'][$dir]['edit_mode'])) {
-					$box['tabs'][$dir]['edit_mode']['enabled'] = false;
-				}
+			if (isset($box['tabs']['backup_dir']['edit_mode'])) {
+				$box['tabs'][$dir]['edit_mode']['enabled'] = false;
+			}
+			
+			if (isset($box['tabs']['file_storage'])) {
+				$box['tabs']['file_storage']['fields']['docstore_dir']['readonly'] = true;
 			}
 		}
 
@@ -358,6 +360,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$fields['backup/automated_backups']['snippet']['html'] = '<p>' . ze\admin::phrase('None found.') . '</p>';
 			}
 			
+			
+			//Show the number of sent emails currently stored
+			$count = ze\row::count('email_template_sending_log');
+			$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+			
+			if ($count) {
+				$min = ze\row::min('email_template_sending_log', 'sent_datetime');
+				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
+			}
+			
+			$link = ze\link::absolute() . 'organizer.php#zenario__email_template_manager/panels/email_log';
+			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
+			$fields['data_protection/period_to_delete_the_email_template_sending_log_headers']['note_below'] = $note;
+			
 		} elseif ($settingGroup == 'dirs') {
             		$warnings = ze\welcome::getBackupWarningsWithoutHtmlLinks();
             		if (!empty($warnings) && isset($warnings['show_warning'])) {
@@ -380,71 +396,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			if (ze::setting('captcha_status_and_version') == 'enabled_v2' && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
 				$fields['recaptcha_policy/recaptcha_info']['hidden'] = true;
 				$fields['recaptcha_policy/recaptcha_warning']['hidden'] = false;
-			}
-			
-			if (!$values['cookies/cookie_image_canvas']) {
-				$fields['cookies/cookie_image_canvas']['value'] = 'fixed_width_and_height';
-			}
-			
-			if (!$values['cookies/cookie_image_width']) {
-				$fields['cookies/cookie_image_width']['value'] = 275;
-			}
-			
-			if (!$values['cookies/cookie_image_height']) {
-				$fields['cookies/cookie_image_height']['value'] = 60;
-			}
-			
-			if (!$values['cookies/popup_cookie_type_switches_initial_state']) {
-				$fields['cookies/popup_cookie_type_switches_initial_state']['value'] = 'off';
-			}
-			
-			//Re-apply the default values if needed
-			if (!$fields['cookies/cookie_box1_01_implied_msg']['value']) {
-				$fields['cookies/cookie_box1_01_implied_msg']['value'] = ze\admin::phrase("This site uses cookies, and places cookies on your computer to provide you with the best experience. If you continue to use this site, we will assume that you consent to this. Please see our privacy policy for more information.");
-			}
-			
-			if (!$fields['cookies/cookie_box1_02_continue_btn']['value']) {
-				$fields['cookies/cookie_box1_02_continue_btn']['value'] = ze\admin::phrase("Continue");
-			}
-			
-			if (!$fields['cookies/cookie_box1_03_cookie_consent_msg']['value']) {
-				$fields['cookies/cookie_box1_03_cookie_consent_msg']['value'] = ze\admin::phrase("This site would like to place cookies on your computer. These are designed to improve your experience and provide personalised content. You can accept all cookies, or find out more and accept only certain types.");
-			}
-			
-			if (!$fields['cookies/cookie_box1_04_manage_btn']['value']) {
-				$fields['cookies/cookie_box1_04_manage_btn']['value'] = ze\admin::phrase("Manage cookies");
-			}
-			
-			if (!$fields['cookies/cookie_box1_05_accept_btn']['value']) {
-				$fields['cookies/cookie_box1_05_accept_btn']['value'] = ze\admin::phrase("Accept all");
-			}
-			
-			if (!$fields['cookies/cookie_box2_01_intro_msg']['value']) {
-				$fields['cookies/cookie_box2_01_intro_msg']['value'] = ze\admin::phrase("<h2>Cookie settings</h2><p>This site uses cookies, which are small text files, to improve your experience and show you personalised content. You can accept all cookies, or manage them by type.</p><p>You can find out more on our privacy page.</p>");
-			}
-			
-			if (!$fields['cookies/cookie_image_canvas']['value']) {
-				$fields['cookies/cookie_image_canvas']['value'] = "fixed_width_and_height";
-			}
-			
-			if (!$fields['cookies/cookie_image_width']['value']) {
-				$fields['cookies/cookie_image_width']['value'] = 275;
-			}
-			
-			if (!$fields['cookies/cookie_image_height']['value']) {
-				$fields['cookies/cookie_image_height']['value'] = 60;
-			}
-			
-			if (!$fields['cookies/cookie_box2_02_accept_all_btn']['value']) {
-				$fields['cookies/cookie_box2_02_accept_all_btn']['value'] = ze\admin::phrase("Accept all");
-			}
-			
-			if (!$fields['cookies/cookie_box2_11_save_preferences_btn']['value']) {
-				$fields['cookies/cookie_box2_11_save_preferences_btn']['value'] = ze\admin::phrase("Save preferences");
-			}
-			
-			if (!$fields['cookies/popup_cookie_type_switches_initial_state']['value']) {
-				$fields['cookies/popup_cookie_type_switches_initial_state']['value'] = "off";
 			}
 		}
 
@@ -475,7 +426,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			//Check the scheduled task is running
 			if (ze\module::inc('zenario_scheduled_task_manager')) {
 			
-				if (!ze::setting('jobs_enabled')
+				if (!ze::setting('site_enabled')
+				 || !ze::setting('jobs_enabled')
 				 || !ze\row::get('jobs', 'enabled', ['job_name' => 'jobFetchDocumentExtract', 'module_class_name' => 'zenario_common_features'])) {
 					
 					$link = 'href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks'). '" target="_blank"';
@@ -528,6 +480,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if ($settingGroup == 'cookies') {
 			$hidden = $values['cookies/cookie_require_consent'] != 'explicit' || !$values['cookies/cookie_show_image'] || !$values['cookies/cookie_image'];
 			$this->showHideImageOptions($fields, $values, 'cookies', $hidden, 'cookie_image_');
+		}
+		
+		if ($settingGroup == 'head_and_foot') {
+			$fields['head/twig_snippet']['values'] = ze\pluginAdm::listTwigSnippets($values['head/twig_snippet'], true);
+			
+			if (($snippet = $fields['head/twig_snippet']['values'][$values['head/twig_snippet']] ?? false)
+			 && (!empty($snippet['path']))) {
+				$values['head/twig'] = file_get_contents(CMS_ROOT. $snippet['path']);
+				$fields['head/twig_path']['snippet']['label'] = $snippet['path'];
+				
+			} else {
+				$values['head/twig'] = '';
+				$fields['head/twig_path']['snippet']['label'] = ' ';
+			}
 		}
 
 		if (isset($fields['mysql/debug_use_strict_mode']) && defined('DEBUG_USE_STRICT_MODE')) {
@@ -661,7 +627,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$extract = '';
 				ze\site::setSetting('antiword_path', $values['antiword/antiword_path'], $updateDB = false);
 		
-				if ((ze\file::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+				if ((ze\fileAdm::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 				 && ($extract == 'Test')) {
 					$box['tabs']['antiword']['notices']['success']['show'] = true;
 				} else {
@@ -678,7 +644,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$extract = '';
 				ze\site::setSetting('pdftotext_path', $values['pdftotext/pdftotext_path'], $updateDB = false);
 		
-				if ((ze\file::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))
+				if ((ze\fileAdm::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))
 				 && (trim($extract, "\0\t..\r ") == 'Test')) {
 					$box['tabs']['pdftotext']['notices']['success']['show'] = true;
 				} else {
@@ -738,28 +704,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					$box['tabs']['mysql']['notices']['success3']['show'] = true;
 				} else {
 					$box['tabs']['mysql']['notices']['error3']['show'] = true;
-				}
-			}
-			
-			if ($settingGroup == 'external_programs') {
-				foreach ([
-					'advpng' => 'png',
-					'jpegoptim' => 'jpeg',
-					'jpegtran' => 'jpeg',
-					'optipng' => 'png',
-					'pngcrush' => 'png',
-					'pngquant' => 'png'
-				] as $program => $tab) {
-					$box['tabs'][$tab]['notices']['error_'. $program]['show'] =
-					$box['tabs'][$tab]['notices']['success_'. $program]['show'] = false;
-					if (!empty($fields[$tab. '/test_'. $program]['pressed'])) {
-				
-						if (ze\server::programPathForExec($values[$tab. '/'. $program. '_path'], $program, true)) {
-							$box['tabs'][$tab]['notices']['success_'. $program]['show'] = true;
-						} else {
-							$box['tabs'][$tab]['notices']['error_'. $program]['show'] = true;
-						}
-					}
 				}
 			}
 		}
@@ -879,8 +823,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 						$addressToOverriddenBy = false;
 						
 						if ($values['test/test_send_format'] == "standard_email_template") {
-							ze\module::inc('zenario_email_template_manager');
-							zenario_email_template_manager::putBodyInTemplate($body);
+							zenario_common_features::putBodyInTemplate($body);
 						}
 						
 						$result = ze\server::sendEmailAdvancedAndShowErrorMessages(
@@ -894,7 +837,14 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							$attachmentFilenameMappings = false,
 							$precedence = false,
 							$isHTML = true, 
-							$exceptions = true);
+							$exceptions = true,
+							$addressReplyTo = false,
+							$nameReplyTo = false,
+							$ccs = '',
+							$bccs = '',
+							$action = 'To',
+							$ignoreDebugMode = true
+						);
 				
 						if ($result && !ze::isError($result)) {
 							$success = ze\admin::phrase('Test email sent to "[[email]]".', ['email' => $email]);
@@ -966,6 +916,33 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$box['tabs']['robots_txt']['notices']['robots_txt_refers_to_disabled_sitemap']['show'] = $robotxTxtReferencesSitemap && !$values['sitemap/sitemap_enabled'];
 			$box['tabs']['robots_txt']['notices']['robots_txt_does_not_include_sitemap']['show'] = !$robotxTxtReferencesSitemap && $values['sitemap/sitemap_enabled'];
     	}
+    	
+    	if ($settingGroup == 'logos_and_branding') {
+    		if (isset($fields['favicon/favicon'])) {
+    			$fields['favicon/favicon']['notices_below']['favicon_size_warning']['hidden'] = true;
+    			
+				if ($values['favicon/favicon']) {
+					$mimeType = $imageWidth = $imageHeight = '';
+					
+					if (is_numeric($values['favicon/favicon']) && ($file = ze\row::get('files', true, $values['favicon/favicon']))) {
+						$imageWidth = $file['width'];
+						$imageHeight = $file['height'];
+						$mimeType = $file['mime_type'];
+					//Add new uploads into the pool.
+					} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($values['favicon/favicon'])) {
+						$imageSize = getimagesize($filepath);
+						
+						$imageWidth = $imageSize[0];
+						$imageHeight = $imageSize[1];
+						$mimeType = $imageSize['mime'];
+					}
+					
+					if (ze\file::isImageOrSVG($mimeType) && ((($imageWidth % 48) != 0) || ($imageHeight % 48) != 0)) {
+						$fields['favicon/favicon']['notices_below']['favicon_size_warning']['hidden'] = false;
+					}
+				}
+			}
+    	}
 	}
 
 
@@ -979,7 +956,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		}
 		
 		if (isset($fields['favicon/favicon']) && $values['favicon/favicon']) {
-			$mimeType = $mimeType = $mimeType = '';
+			$mimeType = $imageWidth = $imageHeight = '';
 			
 			if (is_numeric($values['favicon/favicon']) && ($file = ze\row::get('files', true, $values['favicon/favicon']))) {
 				$imageWidth = $file['width'];
@@ -994,8 +971,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$mimeType = $imageSize['mime'];
 			}
 			
-			if (ze\file::isImageOrSVG($mimeType) && ($imageWidth > 512 || $imageHeight > 512)) {
-				$fields['favicon/favicon']['error'] = ze\admin::phrase('The favicon dimensions may not exceed 512 x 512 px.');
+			if (ze\file::isImageOrSVG($mimeType) && ($imageWidth > 528 || $imageHeight > 528)) {
+				$fields['favicon/favicon']['error'] = ze\admin::phrase('The favicon dimensions may not exceed 528 x 528 px.');
 			}
 		}
 
@@ -1045,29 +1022,16 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 		}
-
-		if (isset($fields['image_resizing/jpeg_quality_limit'])) {
-			if (!$values['image_resizing/jpeg_quality_limit']) {
-				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('Please enter a JPEG quality.');
-	
-			} elseif (!is_numeric($values['image_resizing/jpeg_quality_limit'])) {
-				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('The JPEG quality must be a number.');
-	
-			} else
-			if ((int) $values['image_resizing/jpeg_quality_limit'] < 80
-			 || (int) $values['image_resizing/jpeg_quality_limit'] > 100) {
-				$box['tabs']['image_sizes']['errors'][] = ze\admin::phrase('The JPEG quality must be a number between 80 and 100.');
-			}
-		}
+		
 		
 		if (
-			isset($values['filesizes/content_max_filesize'])
-			&& $values['filesizes/content_max_filesize']
-			&& ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'], $values['filesizes/content_max_filesize_unit']) > ze\dbAdm::apacheMaxFilesize()
+			isset($values['file_storage/content_max_filesize'])
+			&& $values['file_storage/content_max_filesize']
+			&& ze\file::fileSizeBasedOnUnit($values['file_storage/content_max_filesize'], $values['file_storage/content_max_filesize_unit']) > ze\dbAdm::apacheMaxFilesize()
 		) {
-			$box['tabs']['filesizes']['errors'][] = ze\admin::phrase(
+			$box['tabs']['file_storage']['errors'][] = ze\admin::phrase(
 				'The Zenario maximum uploadable file size value should not exceed the server maximum uploadable file size ([[apacheMaxFilesize]]).',
-				['apacheMaxFilesize' => $fields['filesizes/apache_max_filesize']['value']]
+				['apacheMaxFilesize' => $fields['file_storage/apache_max_filesize']['value']]
 			);
 		}
 		
@@ -1103,27 +1067,30 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			} elseif (!is_readable($values['automated_backups/automated_backup_log_path'])) {
 				$box['tabs']['automated_backups']['errors'][] = ze\admin::phrase('This file is not readable.');
 	
-			} elseif (false !== ze\ring::chopPrefix(realpath(CMS_ROOT), realpath($values['automated_backups/automated_backup_log_path']))) {
+			} elseif (false !== ze\ring::chopPrefix(realpath(CMS_ROOT). '/', realpath($values['automated_backups/automated_backup_log_path']). '/')) {
 				$box['tabs']['automated_backups']['errors'][] = ze\admin::phrase('Zenario is installed in this directory. Please choose a different path.');
 			}
 		}
 
-		foreach (['backup_dir', 'docstore_dir'] as $dir) {
+		foreach (
+			['backup_dir' => 'backup_dir', 'file_storage' => 'docstore_dir']
+		as $tab => $dir) {
 			if ($saving
-			 && isset($box['tabs'][$dir]['fields'][$dir])
-			 && ze\ring::engToBoolean($box['tabs'][$dir]['edit_mode']['on'] ?? false)) {
-				if (!$values[$dir. '/'. $dir]) {
-					$box['tabs'][$dir]['errors'][] = ze\admin::phrase('Please enter a directory.');
+			 && isset($box['tabs'][$tab]['fields'][$dir])
+			 && ze\ring::engToBoolean($box['tabs'][$tab]['edit_mode']['on'] ?? false)
+			 && empty($box['tabs'][$tab]['fields'][$dir]['readonly'])) {
+				if (!$values[$tab. '/'. $dir]) {
+					$box['tabs'][$tab]['errors'][] = ze\admin::phrase('Please enter a directory.');
 		
-				} elseif (!is_dir($values[$dir. '/'. $dir])) {
-					$box['tabs'][$dir]['errors'][] = ze\admin::phrase('This directory does not exist.');
+				} elseif (!is_dir($values[$tab. '/'. $dir])) {
+					$box['tabs'][$tab]['errors'][] = ze\admin::phrase('This directory does not exist.');
 		
-				} elseif (false !== ze\ring::chopPrefix(realpath(CMS_ROOT), realpath($values[$dir. '/'. $dir]))) {
-					$box['tabs'][$dir]['errors'][] = ze\admin::phrase('Zenario is installed in this directory. Please choose a different directory.');
+				} elseif (false !== ze\ring::chopPrefix(realpath(CMS_ROOT). '/', realpath($values[$tab. '/'. $dir]). '/')) {
+					$box['tabs'][$tab]['errors'][] = ze\admin::phrase('Zenario is installed in this directory. Please choose a different directory.');
 		
 				} else {
 					//Strip any trailing slashes off of a directory path
-					$box['tabs'][$dir]['fields'][$dir]['current_value'] = preg_replace('/[\\\\\\/]+$/', '', $box['tabs'][$dir]['fields'][$dir]['current_value']);
+					$box['tabs'][$tab]['fields'][$dir]['current_value'] = preg_replace('/[\\\\\\/]+$/', '', $box['tabs'][$tab]['fields'][$dir]['current_value']);
 				}
 			}
 		}
@@ -1269,6 +1236,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
 		}
+		
+		if ($settingGroup == 'data_protection') {
+			//Make sure you cannot ask content to be stored longer than headers
+			$headersDays = $values['data_protection/period_to_delete_the_email_template_sending_log_headers'];
+			$contentDays = $values['data_protection/period_to_delete_the_email_template_sending_log_content'];
+			
+			if ($values['data_protection/delete_email_template_sending_log_content_sooner']
+				&& ((is_numeric($headersDays) && is_numeric($contentDays) && ($contentDays > $headersDays))
+					|| (is_numeric($headersDays) && $contentDays == 'never_delete')
+				)
+			) {
+				$fields['data_protection/period_to_delete_the_email_template_sending_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
+			}
+		}
 	}
 	
 	
@@ -1292,7 +1273,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		foreach ($box['tabs'] as $tabName => &$tab) {
 	
 			$recreateCustomThumbnailTwos = $recreateCustomThumbnailOnes = false;
-			$jpegOnly = true;
 	
 			if (is_array($tab)
 			 && !empty($tab['fields'])
@@ -1307,13 +1287,17 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 						$settingOpts = $field['site_setting'];
 						$setting = $settingOpts['name'];
 						$isSecret = !empty($settingOpts['secret']);
+						$clearSiteSetting = false;
 						
-						//Get the value of the setting. Hidden fields should count as being empty
+						//Get the value of the setting.
+						
+						//Don't save a value for a field if it was hidden.
 						if (ze\ring::engToBoolean($field['hidden'] ?? false)
 						 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
 							$value = '';
+							$clearSiteSetting = true;
 						} else {
-							$value = ze\ray::value($values, $tabName. '/'. $fieldName);
+							$value = $values[$tabName. '/'. $fieldName] ?? '';
 						}
 				
 						//Setting the primary or admin domain to "none" should count as being empty
@@ -1349,12 +1333,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							//If a file ID from the database has been selected, check if it's a file
 							//from the site settings pool, and copy it into the pool if it's not.
 							if (is_numeric($value)) {
-								$value = ze\file::copyInDatabase('site_setting', $value);
+								$value = ze\fileAdm::copyInDatabase('site_setting', $value);
 							
 							//Add new uploads into the pool.
 							} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($value)) {
 								$oldPathCodename = $value;
-								$value = ze\file::addToDatabase('site_setting', $filepath);
+								$value = ze\fileAdm::addToDatabase('site_setting', $filepath);
 								
 								$field['current_value'] = 
 								$values[$tabName. '/'. $fieldName] = $value;
@@ -1384,7 +1368,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							if ($settingChanged) {
 								ze\site::setSetting($setting, $value,
 									true, ze\ring::engToBoolean($settingOpts['encrypt'] ?? false),
-									true, ze\ring::engToBoolean($settingOpts['secret'] ?? false));
+									true, ze\ring::engToBoolean($settingOpts['secret'] ?? false),
+									$clearSiteSetting);
 							
 								//Handle changing the default language of the site
 								if ($setting == 'default_language') {
@@ -1405,11 +1390,9 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					
 								} elseif ($setting == 'custom_thumbnail_1_width' || $setting == 'custom_thumbnail_1_height') {
 									$recreateCustomThumbnailOnes = true;
-									$jpegOnly = false;
 					
 								} elseif ($setting == 'custom_thumbnail_2_width' || $setting == 'custom_thumbnail_2_height') {
 									$recreateCustomThumbnailTwos = true;
-									$jpegOnly = false;
 								} elseif ($setting == 'standard_email_template') {
 									$files = [];
 									$htmlChanged = false;
@@ -1424,7 +1407,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			}
 	
 			if ($recreateCustomThumbnailOnes || $recreateCustomThumbnailTwos) {
-				ze\contentAdm::rerenderWorkingCopyImages($recreateCustomThumbnailOnes, $recreateCustomThumbnailTwos, true, $jpegOnly);
+				ze\fileAdm::rerenderWorkingCopyImages($recreateCustomThumbnailOnes, $recreateCustomThumbnailTwos, true);
 			}
 		}
 
@@ -1440,8 +1423,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		//
 		//Also the settings for max user image file upload size, and max location image size, were changed to work like the global setting
 		//(text field + unit selector). Replicate the same logic for it.
-		if ($settingGroup == 'files_and_images' && isset($values['filesizes/content_max_filesize']) && $values['filesizes/content_max_filesize']) {
-			$maxFileSize = ze\file::fileSizeBasedOnUnit($values['filesizes/content_max_filesize'], $values['filesizes/content_max_filesize_unit']);
+		if ($settingGroup == 'files_and_images' && isset($values['file_storage/content_max_filesize']) && $values['file_storage/content_max_filesize']) {
+			$maxFileSize = ze\file::fileSizeBasedOnUnit($values['file_storage/content_max_filesize'], $values['file_storage/content_max_filesize_unit']);
 			
 			if (ze::setting('zenario_user_forms_max_attachment_file_size_override')) {
 				$maxUserFormsFileSize = ze\file::fileSizeBasedOnUnit(ze::setting('zenario_user_forms_content_max_filesize'), ze::setting('zenario_user_forms_content_max_filesize_unit'));

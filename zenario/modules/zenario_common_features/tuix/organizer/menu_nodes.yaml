@@ -97,7 +97,7 @@ zenario__menu:
                     searchable: true
                     db_column: mt.name
                     always_show: true
-                    length_limit: "30"
+                    length_limit: "50"
                 invisible:
                     title: Invisible
                     db_column: mi.invisible
@@ -240,7 +240,7 @@ zenario__menu:
                 #All buttons for creating a menu node and content item
                 #are created in the PHP class.
                 create_menu_node:
-                    priv: _PRIV_ADD_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     hide_in_select_mode: true
                     hide_on_filter: true
                     parent: create_dropdown
@@ -347,7 +347,7 @@ zenario__menu:
                 #All buttons for creating a menu node and content item
                 #are created in the PHP class.
                 create_menu_node:
-                    priv: _PRIV_ADD_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     hide_in_select_mode: true
                     hide_on_filter: true
                     parent: create_child_dropdown
@@ -429,7 +429,7 @@ zenario__menu:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 quick_add_to_menu:
-                    priv: _PRIV_ADD_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     label: Create secondary menu node for this item
                     parent: action_dropdown
                     combine_items:
@@ -442,7 +442,7 @@ zenario__menu:
                             mass_add_to_menu: 1
                     visible_if_for_all_selected_items: item.linked_content_item && (item.redundancy != 'secondary')
                 duplicate_as_child:
-                    priv: _PRIV_ADD_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     label: Duplicate as child
                     parent: action_dropdown
                     tooltip: Duplicate this menu node as a child and make it the primary node
@@ -500,7 +500,7 @@ zenario__menu:
             
             
                 delete:
-                    priv: _PRIV_DELETE_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     label: Delete menu node
                     multiple_select_label: Delete multiple nodes
                     parent: action_dropdown
@@ -523,7 +523,7 @@ zenario__menu:
                         removable: true
                         ghost: true
                 delete_recursive:
-                    priv: _PRIV_DELETE_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     label: Delete recursively
                     parent: action_dropdown
                     multiple_select: false
@@ -548,7 +548,7 @@ zenario__menu:
                         removable: true
                         ghost: true
                 delete_grandchild:
-                    priv: _PRIV_DELETE_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     label: Cannot delete
                     parent: action_dropdown
                     multiple_select: false
@@ -569,6 +569,8 @@ zenario__menu:
                 linked_content_item_dropdown:
                     label: Content item [[linked_content_item_tag_id]]
                     hide_when_children_are_not_visible: true
+                    hide_in_select_mode: true
+                    hide_in_quick_mode: true
                     visible_if: item.linked_content_item && (item.redundancy != 'secondary')
                 linked_content_item__edit:
                     ord: 1

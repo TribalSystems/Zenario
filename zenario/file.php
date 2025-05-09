@@ -71,8 +71,22 @@ if ($checksum) {
 }
  
 
+//Allow visitors looking at a thumbnail in a FEA form to be able to see the thumbnail
+//if they have the correct access code in the URL.
+$accessCodePassed = false;
+if (isset($_GET['access_code']) && $checksum) {
+	
+	require CMS_ROOT. 'zenario/visitorheader.inc.php';
+	$accessCodePassed = $_GET['access_code'] === ze\file::accessCode($checksum);
+	
+	if (!$accessCodePassed) {
+		header('HTTP/1.0 404 Not Found');
+		exit;
+	}
+
 //There are several places in Organizer/admin mode where an image is displayed with an id and no checksum.
 //Allow this, but only in admin mode.
+} else
 if (!$checksum
  || isset($_GET['og'])
  || isset($_GET['closeup'])
@@ -148,6 +162,9 @@ if ($usage == 'user' && ze::request('user_id')) {
 } elseif ($usage == 'template' && ze::request('layout_id')) {
 	$id = ze\row::get('layouts', 'image_id', ze::request('layout_id'));
 
+} elseif ($usage == 'documents' && ze::request('document_id')) {
+	$id = ze\row::get('documents', 'file_id', ze::request('document_id'));
+
 //When showing an image from the admin backend, and an admin is logged in,
 //allow an image to be displayed from an ID in the URL without a checksum
 } elseif ($adminBackend && $checksum === '' && !empty($_GET['id'])) {
@@ -155,18 +172,18 @@ if ($usage == 'user' && ze::request('user_id')) {
 }
 
 
-//Generate or load a thumbnail for Storekeeper
+//Generate or load a thumbnail for Organizer
 if (isset($_GET['og'])) {
 	$width = 180;
 	$height = 130;
 
-//Generate a close-up view for Storekeeper
-} elseif (isset($_GET['closeup']) && ze\priv::check()) {
+//Generate a close-up view for Organizer
+} elseif (isset($_GET['closeup']) && ($accessCodePassed || ze\priv::check())) {
 	$width = 400;
 	$height = 400;
 
-//Generate a pop-out view for Storekeeper
-} elseif (isset($_GET['popout']) && ze\priv::check()) {
+//Generate a pop-out view for Organizer
+} elseif (isset($_GET['popout']) && ($accessCodePassed || ze\priv::check())) {
 	$width = 900;
 	$height = 900;
 	//N.b. after doing a code review I don't think these parameters are actually used in this case,
@@ -225,7 +242,7 @@ if ($getUploadedFileInCacheDir) {
 			$file['mime_type'] = $image['mime'];
 		
 			if ($width && $height) {
-				ze\file::resizeImageString(
+				ze\image::resize(
 					$file['data'], $file['mime_type'],
 					$file['width'], $file['height'],
 					$width, $height,
@@ -302,6 +319,13 @@ if ($getUploadedFileInCacheDir) {
 
 	//If this wasn't a request for a Content Item file/Favicon/Home screen icon,
 	//and if no id or checksum was requested, exit
+	} elseif ($usage == 'documents') {
+		$hasPerm = ze\priv::check('_PRIV_VIEW_DOCUMENTS');
+		
+		if (!$hasPerm) {
+			header('HTTP/1.0 404 Not Found');
+			exit;
+		}
 	} elseif (!$checksum && !$id) {
 		header('HTTP/1.0 404 Not Found');
 		exit;
@@ -325,7 +349,7 @@ if ($getUploadedFileInCacheDir) {
 	} elseif ($adminBackend || $usage == 'content') {
 		$sql .= "data";
 
-	//Otherwise we won't load it now, and we'll use the ze\file::imageLink() function to get it below.
+	//Otherwise we won't load it now, and we'll use the ze\image::link() function to get it below.
 	} else {
 		$sql .= "NULL AS data";
 	}
@@ -399,7 +423,7 @@ if ($getUploadedFileInCacheDir) {
 		if (empty($file['data'])) {
 			if (ze\file::isImageOrSVG($file['mime_type'])) {
 				$result =
-					ze\file::imageLink(
+					ze\image::link(
 						$width, $height, $filePath, $file['id'], $width, $height, $mode, $offset,
 						$retina, $fullPath = false, $privacy = 'auto',
 						$useCacheDir, $internalFilePath = true, $returnImageStringIfCacheDirNotWorking = true);

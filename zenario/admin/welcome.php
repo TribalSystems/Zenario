@@ -264,7 +264,7 @@ ze\content::pageFoot('zenario/', 'welcome', false, false);
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (ze\image::link($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = ze\link::absolute(). $logoURL;
@@ -281,15 +281,17 @@ if (ze::$dbL
 
 
 //T9732, Admin login panel, show warning when a redirect from other URL has occurred
-$refererHostWarning = false;
+$refererHostMessage = false;
+$referrerHostMessageType = 'warning';
 if (!empty($_SERVER['HTTP_REFERER'])
  && ($refererURL = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST))
  && ($refererHost = ze\link::hostWithoutPort($refererURL))
  && ($currentHost = ze\link::hostWithoutPort())
  && ($refererHost != $currentHost)) {
-	$refererHostWarning =
+	$refererHostMessage =
 		ze\admin::phrase('Your URL has changed. This is the admin login page at "[[currentHost]]", you were previously at "[[refererHost]]".',
 			['refererHost' => $refererHost, 'currentHost' => $currentHost]);
+	$referrerHostMessageType = 'info';
 }
 
 echo '
@@ -331,7 +333,7 @@ echo '
 				zenarioA.checkCookiesEnabled().after(function(cookiesEnabled) {
 					if (cookiesEnabled) {
 						step2.done();
-						zenarioAW.refererHostWarning(', json_encode($refererHostWarning), ');
+						zenarioAW.refererHostMessage(', json_encode($refererHostMessage), ', ', json_encode($referrerHostMessageType), ');
 					} else {
 						zenario.get("no_something").style.display = "block";
 						zenario.get("no_cookies").style.display = "inline";

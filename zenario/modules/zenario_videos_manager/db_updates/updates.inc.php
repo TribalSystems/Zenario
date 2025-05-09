@@ -143,3 +143,20 @@ ze\dbAdm::revision(18
 _sql
 
 );
+
+//In 10.0, we removed any auto-population or fallback logic for the date.
+//Update the column definition to allow NULL.
+ze\dbAdm::revision(19
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos`
+	CHANGE COLUMN `date` `date` date DEFAULT NULL
+_sql
+
+//In 10.1, we added support for starting a video at a specific time.
+); ze\dbAdm::revision(21
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]videos`
+	ADD COLUMN `start_time` varchar(255) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT ''
+_sql
+
+);

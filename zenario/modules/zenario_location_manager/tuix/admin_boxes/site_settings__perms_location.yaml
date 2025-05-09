@@ -90,7 +90,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: The location is in a company at which the current user has
+                    label: The location is in an organization at which the current user has
                 perm.view.location.atLocationAtCompany.role:
                     site_setting:
                         name: perm.view.location.atLocationAtCompany.role
@@ -99,7 +99,7 @@ site_settings:
                     type: select
                     empty_value: ANY role
                     values: roles
-                    post_field_html: '&nbsp; at ANY location in that company'
+                    post_field_html: '&nbsp; at ANY location in that organization'
                 
                 perm.view.location.enforce:
                     indent: 1
@@ -131,7 +131,7 @@ site_settings:
                 
                 perm.create-location.company:
                     snippet:
-                        label: "Create/company: users can create a location assigned to a company if..."
+                        label: "Create/organization: users can create a location assigned to an organization if..."
                 perm.create-location.company.by.group:
                     site_setting:
                         name: perm.create-location.company.by.group
@@ -146,7 +146,7 @@ site_settings:
                     indent: 2
                     pick_items: *pick_group
                     validation:
-                        required_if_not_hidden: Please select one or more groups, members of which can edit a company.
+                        required_if_not_hidden: Please select one or more groups, members of which can edit an organization.
                 perm.create-location.company.atCompany:
                     site_setting:
                         name: perm.create-location.company.atCompany
@@ -163,7 +163,7 @@ site_settings:
                     type: select
                     empty_value: ANY role
                     values: roles
-                    post_field_html: '&nbsp; at ANY location in the company'
+                    post_field_html: '&nbsp; at ANY location in the organization'
                 
                 perm.edit.location:
                     snippet:

@@ -2,6 +2,7 @@
 	{% if item.Pinned or item.Pinned_Text %}
 		<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
 	{% endif %}
+	
 	{% if Aws_Link and item.s3_File_Id %}
 		<{{Item_Title_Tags}}
 			class="
@@ -34,14 +35,14 @@
 				<a {{item.Link}}{{item.Target_Blank}}>{{Local_File_Link_Text}}</a>
 				
 				{% if Show_Format_And_Size %}
-					({{item.Local_File_Size}}) | 
+					({{item.Local_File_Format}}, {{item.Local_File_Size}}) | 
 				{% endif %}
 			{% endif %}
 			{% if item.s3_File_Id %}
 				<a href="{{item.S3_Anchor_Link}}"{{item.Target_Blank}}>{{S3_File_Link_Text}}...</a>
 				
 				{% if Show_Format_And_Size %}
-					({{item.S3_File_Size}})
+					({{item.S3_File_Format}}, {{item.S3_File_Size}})
 				{% endif %}
 			{% endif %}
 		</div>
@@ -65,7 +66,7 @@
 			{% endif %}
 		>
 
-			{% if LINKS_IN_INCLUDES %}
+			{% if LINKS_IN_INCLUDES and not item.Disabled %}
 				<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
 			{% else %}
 				{{item.Title|e}}

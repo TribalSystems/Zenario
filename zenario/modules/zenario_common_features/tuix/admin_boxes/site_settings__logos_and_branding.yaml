@@ -35,11 +35,16 @@ site_settings:
                         disabled_if_for_all_selected_items: |
                             !zenario.IN(item.mime_type, 'image/png', 'image/gif', 'image/x-icon')
                     note_below: |
-                        You may upload a <code>.ico</code>, <code>.gif</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.) Should be square with 32×32 pixels or larger.
+                        You may upload a <code>.ico</code>, <code>.gif</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.) The favicon must be a multiple of 48px square, for example: 48x48px, 96x96px, 144x144px and so on, up to a maximum of 528x528px.
                     validation:
                         must_be_gif_ico_or_png: |
                             The favicon must be a file with format .gif, .ico or .png.
                     format_onchange: true
+                    notices_below:
+                        favicon_size_warning:
+                            hidden: true
+                            type: warning
+                            message: 'The image dimensions are not multiples of 48.'
                 mobile_icon: 
                     site_setting:
                         name: mobile_icon

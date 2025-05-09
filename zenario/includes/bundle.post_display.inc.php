@@ -31,9 +31,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if (ze::$canCache) {
 	
 	$type = str_replace(['.bundle', '.php'], '', basename($_SERVER['PHP_SELF']));
-	$chFile = zenarioPageCacheDir($_GET, $type);
+	$chFile = ze\cache::bundleRequestHash($_GET, $type);
 	
-	if (ze\cache::cleanDirs() && ($path = ze\cache::createDir(zenarioPageCacheDir($_GET, $type), 'cache/bundles', false))) {
+	if (ze\cache::cleanDirs() && ($path = ze\cache::createDir($chFile, 'cache/bundles', false))) {
 		file_put_contents(CMS_ROOT. $path. $type, ob_get_contents());
 		\ze\cache::chmod(CMS_ROOT. $path. $type, 0666);
 		

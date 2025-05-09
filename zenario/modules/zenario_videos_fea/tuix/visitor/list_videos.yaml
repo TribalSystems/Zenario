@@ -2,6 +2,7 @@ zenario_list_videos:
     fea_type: list
     key:
         id: ''
+        view: blocks
     microtemplate: fea_list_blocks
     css_class: zfea_block_like_block
     title: Videos
@@ -12,8 +13,7 @@ zenario_list_videos:
             tag: div
             html: true
         title:
-            title: Title
-            html: true
+            title: Video title
         description:
             title: Description
             html: true
@@ -23,10 +23,12 @@ zenario_list_videos:
         view:
             visible_if: |
                 tuix.enable.view_video && lib.navigationEnabled('view_video')
-            css_class: small_button
             label: View
             go:
                 command: view_video
+            show_as_link_on_column:
+                image: true
+                title: true
         edit:
             visible_if: |
                 tuix.enable.edit_video && lib.navigationEnabled('edit_video') && tuix.perms.manage
@@ -45,3 +47,17 @@ zenario_list_videos:
             go:
                 mode: new_video
                 command: new_video
+        block_view:
+            css_class: small_button block_view_button
+            icon_left: fa-solid fa-grip
+            location: top
+            label: View as blocks
+            go:
+                view: blocks
+        list_view:
+            css_class: small_button list_view_button
+            icon_left: fa-solid fa-bars
+            location: top
+            label: View as list
+            go:
+                view: list

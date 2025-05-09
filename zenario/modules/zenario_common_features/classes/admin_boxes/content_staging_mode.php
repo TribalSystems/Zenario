@@ -140,7 +140,8 @@ class zenario_common_features__admin_boxes__content_staging_mode extends ze\modu
 		
 		//Watch out for the suggest button being pressed
 		} elseif (!empty($fields['staging_mode/suggest_code']['pressed'])) {
-			$values['staging_mode/access_code'] = ze\ring::randomFromSetNoProfanities();
+			//Generate a 6 digit code
+			$values['staging_mode/access_code'] = ze\ring::randomMultiDigitCode();
 		}
 		unset($fields['staging_mode/suggest_code']['pressed']);
 		

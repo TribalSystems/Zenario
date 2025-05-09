@@ -28,6 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+ze::$vars['docId'] =
 ze::$vars['userId'] =
 ze::$vars['companyId'] =
 ze::$vars['locationId'] = 0;
@@ -77,6 +78,16 @@ if ($zclmPrefix) {
 	}
 }
 
+if (!ze::$vars['docId']) {
+	if (!empty($_REQUEST['docId'])) {
+		ze::$vars['docId'] = (int) $_REQUEST['docId'];
+	}
+}
+
+if (ze::$vars['docId'] && !ze\user::can('view', 'document', ze::$vars['docId'])) {
+	return ZENARIO_403_NO_PERMISSION;
+}
+
 if (!ze::$vars['userId']) {
 	if (!empty($_REQUEST['userId'])) {
 		ze::$vars['userId'] = (int) $_REQUEST['userId'];
@@ -97,8 +108,7 @@ if ((ze::$vars['userId'] && !ze\user::can('view', 'user', ze::$vars['userId']))
 if (isset($a2Prefix) && $a2Prefix
  && !ze::$vars['dataPoolId']
  && !empty(ze::$vars['locationId'])) {
-	ze::$vars['dataPoolId'] =
-	ze::$vars['dataPoolId1'] = (int) ze\row::get(
+	ze::$vars['dataPoolId'] = (int) ze\row::get(
 		$a2Prefix. 'nodes',
 		'id',
 		['owner_type' => 'location', 'owner_id' => ze::$vars['locationId'], 'is_data_pool' => 1, 'parent_id' => 0]

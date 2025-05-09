@@ -70,7 +70,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
-			if (ze\ray::issetArrayKey($values,'email/send_email_to_user') && ze\ray::issetArrayKey($values,'email/email_to_send') && (ze\module::inc('zenario_email_template_manager'))) {
+			if (ze\ray::issetArrayKey($values,'email/send_email_to_user') && ze\ray::issetArrayKey($values,'email/email_to_send')) {
 				$mergeFields=ze\user::userDetailsForEmails($box['key']['id']);
 				$mergeFields['cms_url'] = ze\link::absolute();
 				
@@ -85,7 +85,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 					}
 				}
 	
-				zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['email/email_to_send'] ?? false),$mergeFields);
+				zenario_common_features::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['email/email_to_send'] ?? false),$mergeFields);
 			}
 		}
 	}

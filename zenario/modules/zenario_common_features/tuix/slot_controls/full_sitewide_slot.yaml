@@ -63,12 +63,6 @@ full_sitewide_slot:
                 edit: true
                 layout: true
     actions:
-        switch_to_layout:
-            page_modes:
-                edit: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
-            label: Switch to Layout mode to edit plugin settings
-        
         settings:
             label:
                 settings: Edit plugin settings
@@ -88,7 +82,43 @@ full_sitewide_slot:
             label_like4like: Replace with a different plugin on the site-wide ~header~...
             page_modes:
                 layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 3, false, [[preselectCurrentChoice]]);
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 3, false, [[preselectCurrentChoice]]);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 3
+                is_nest: false
+        
+        replace_nest_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Replace with a nest on the site-wide ~header~...
+            label_like4like: Replace with a different nest on the site-wide ~header~...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 3, true, [[preselectCurrentChoice]]);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 3
+                is_nest: true
+        
+        replace_slideshow_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Replace with a slideshow on the site-wide ~header~...
+            label_like4like: Replace with a different slideshow on the site-wide ~header~...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 3, 'slideshow', [[preselectCurrentChoice]]);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 3
+                is_nest: 'slideshow'
         
         hide_plugin:
             page_modes:
@@ -99,6 +129,14 @@ full_sitewide_slot:
                 }
                 return false;
             label: Show nothing on this content item
+        
+        replace_fab_layout_layer:
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            page_modes:
+                layout: true
+            visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 're_move_place', 'layout');
+            onclick: return zenarioA.showSlotOptionsInFAB(slotName, 're_move_place', 'layout');
+            label: Replace this ~plugin~ on the site-wide ~header~...
         
         remove_from_layout_layer:
             ord: 99
@@ -112,3 +150,9 @@ full_sitewide_slot:
                 edit: true
             css_class: zenario_slotControl_no_perms
             label: 'Limited options: you lack Designer permission'
+    switch_to:
+        switch_to_layout:
+            page_modes:
+                edit: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
+            label: Switch to Layout view to edit plugin settings

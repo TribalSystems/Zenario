@@ -38,7 +38,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		$result = ze\sql::select($sql);
 		
 		$action = false;
-		$emailTemplateManagerModuleRunning = ze\module::inc('zenario_email_template_manager');
 		$contentItemPublishedEmailText = self::getEmailTextContentItemPublished();
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
@@ -68,31 +67,29 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				
 				$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
 				
-				if ($emailTemplateManagerModuleRunning) {
-					$text = $contentItemPublishedEmailText;
-					zenario_email_template_manager::putBodyInTemplate($text);
-					
-					$mergeFields = [
-						'admin_first_name' => $lockingAdminDetails['first_name'],
-						'admin_last_name' => $lockingAdminDetails['last_name'],
-						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $citem['type']]),
-						'content_item_title' => $contentItemTitle,
-						'date_and_time' => ze\date::formatDateTime($citem['scheduled_publish_datetime']),
-						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
-						'content_item' => $tag,
-						'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
-					];
-					
-					zenario_email_template_manager::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-					echo ze\admin::phrase(
-						'Sent notification to "' . htmlspecialchars($lockingAdminDetails['email']) . '" admin for content item [[tag]]',
-						['tag' => $tag]
-					), "\n";
-				}
+				$text = $contentItemPublishedEmailText;
+				zenario_common_features::putBodyInTemplate($text);
+				
+				$mergeFields = [
+					'admin_first_name' => $lockingAdminDetails['first_name'],
+					'admin_last_name' => $lockingAdminDetails['last_name'],
+					'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $citem['type']]),
+					'content_item_title' => $contentItemTitle,
+					'date_and_time' => ze\date::formatDateTime($citem['scheduled_publish_datetime']),
+					'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
+					'content_item' => $tag,
+					'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
+				];
+				
+				zenario_common_features::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+				echo ze\admin::phrase(
+					'Sent notification to "' . htmlspecialchars($lockingAdminDetails['email']) . '" admin for content item [[tag]]',
+					['tag' => $tag]
+				), "\n";
 				
 				if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
 					$text = $contentItemPublishedEmailText;
-					zenario_email_template_manager::putBodyInTemplate($text);
+					zenario_common_features::putBodyInTemplate($text);
 					
 					$mergeFields = [
 						'admin_first_name' => $lastEditingAdminDetails['first_name'],
@@ -105,7 +102,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 						'content_item_url' => ze\link::toItem($citem['id'], $citem['type'])
 					];
 					
-					zenario_email_template_manager::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+					zenario_common_features::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
 					echo ze\admin::phrase(
 						'Sent notification to "' . htmlspecialchars($lastEditingAdminDetails['email']) . '" admin for content item [[tag]]',
 						['tag' => $tag]

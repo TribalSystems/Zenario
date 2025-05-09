@@ -111,7 +111,9 @@ echo '
 	(int) ze::$equivId, ',',
 	(int) ze::$cID, ',',
 	json_encode(ze::$isPublic), ',',
-	(int) ze::setting('mod_rewrite_slashes'), ',"',
+	(int) ze::setting('mod_rewrite_slashes'), ',',
+	json_encode($_GET['cID'] ?? null), ',',
+	json_encode($_GET['cType'] ?? null), ',"',
 	\ze\escape::js(ze::$langs[ze::$visLang]['thousands_sep'] ?? ''), '","', \ze\escape::js(ze::$langs[ze::$visLang]['dec_point'] ?? ''), '"';
 
 if (ze::$visLang && ze::$visLang != $currentLangId) {
@@ -128,18 +130,20 @@ echo ');', $inlineStop, '</script>';
 //Add JS needed for the CMS in Admin mode
 if ($isAdmin) {
 	//Write all of the slot controls to the page
-	echo '
+	if ($includeAdminToolbar) {
+		echo '
 <div id="zenario_slotControls">';
 	\ze\pluginAdm::setupSlotControls(ze::$slotContents, false);
 	
-	echo '
+		echo '
 </div>';
+	}
 	
 	//Note down that we need various extra libraries in admin mode...
 	ze::requireJsLib('zenario/js/ace.bundle.js.php');
 	ze::requireJsLib('zenario/libs/yarn/rcrop/dist/rcrop.min.js', 'zenario/libs/yarn/rcrop/dist/rcrop.min.css');
 	
-	//Add libraries for TinyMCE 6
+	//Add libraries for TinyMCE
 	ze::requireJsLib('zenario/libs/yarn/tinymce/tinymce.min.js');
 	ze::requireJsLib('zenario/libs/yarn/@tinymce/tinymce-jquery/dist/tinymce-jquery.min.js');
 	ze::requireJsLib('zenario/js/tinymce.integration.min.js');
@@ -343,8 +347,12 @@ if (!empty(ze::$slotContents) && is_array(ze::$slotContents)) {
 				if ($isAdmin) {
 					$isMenu = $slot->shownInMenuMode()? 1 : 0;
 					$isMissing = $slot->missing()? 1 : 0;
+					$isHeader = $slot->isHeader()? 1 : 0;
+					$isFooter = $slot->isFooter()? 1 : 0;
+					$isSitewide = $slot->isSitewide()? 1 : 0;
 					
-					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled, ',', (int) $isMenu, ',', (int) $isMissing;
+					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled,
+						 ',', (int) $isMenu, ',', (int) $isMissing, ',', (int) $isHeader, ',', (int) $isFooter, ',', (int) $isSitewide;
 				} elseif ($isVersionControlled) {
 					echo ',', (int) $slideId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
 				} elseif ($beingEdited) {
@@ -384,12 +392,12 @@ if (ze::$cID && ze::$cID !== -1) {
 	
 	
 	//Include the site-wide foot first
-	ze\content::sitewideHTML('sitewide_foot');
+	ze\layout::sitewideHTML('sitewide_foot');
 	if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'foot') {
-		ze\content::sitewideHTML('sitewide_analytics_html');
+		ze\layout::sitewideHTML('sitewide_analytics_html');
 	}
 	if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'foot') {
-		ze\content::sitewideHTML('sitewide_social_media_html');
+		ze\layout::sitewideHTML('sitewide_social_media_html');
 	}
 	
 	

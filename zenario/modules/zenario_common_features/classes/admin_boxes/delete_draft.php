@@ -51,12 +51,6 @@ class zenario_common_features__admin_boxes__delete_draft extends ze\moduleBaseCl
 		
 		ze\module::incSubclass('zenario_common_features');
 		zenario_common_features::getTranslationsAndPluginsLinkingToThisContentItem($ids, $box, $fields, $values, 'delete_draft', $this->totalRowNum, $getPlugins = true, $getTranslations = true);
-
-		$fields['delete_draft/links_warning_part_2']['snippet']['html'] = '<br /><p>' . ze\admin::nPhrase(
-			'Delete this draft?',
-			'Delete these drafts?',
-			$contentItemsCount
-		) . '</p>';
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

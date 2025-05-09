@@ -1212,17 +1212,26 @@ var normalGetMergeField = function(mrg, key) {
 	}
 };
 
-zenario.applyMergeFields = function(text, mrg, getMergeField) {
+zenario.applyMergeFieldsIntoHTML = function(text, mrg, getMergeField) {
+	return zenario.applyMergeFields(text, mrg, getMergeField, true);
+};
+
+zenario.applyMergeFields = function(text, mrg, getMergeField, escapeHTML) {
 	mrg = mrg || {};
 	getMergeField = getMergeField || normalGetMergeField;
 
 	var trans = '',
 		b,
-		bits = ('' + text).split(/\[\[(.*?)\]\]/g);
+		bits = ('' + text).split(/\[\[(.*?)\]\]/g),
+		val;
 
 	foreach (bits as b) {
 		if (b % 2) {
-			trans += getMergeField(mrg, bits[b]);
+			val = getMergeField(mrg, bits[b]);
+			if (escapeHTML) {
+				val = htmlspecialchars(val);
+			}
+			trans += val;
 		} else {
 			trans += bits[b];
 		}
@@ -1314,6 +1323,10 @@ zenario.toObject = function(object, clone) {
 
 zenario.clone = function(a, b, c) {
 	return $.extend(true, {}, a, b, c);
+};
+
+zenario.isEmpty = function(a) {
+	return a && a !== '0';
 };
 
 
@@ -2211,6 +2224,16 @@ zenario.slot = function(pluginInstances) {
 		if (instance[9]) {
 			p.isMissing = true;
 		}
+		//Record if this slot is in the header/footer/sitewide (again, admin mode only)
+		if (instance[10]) {
+			p.isHeader = true;
+		}
+		if (instance[11]) {
+			p.isFooter = true;
+		}
+		if (instance[12]) {
+			p.isSitewide = true;
+		}
 		
 		//If we are replacing an existing instance in admin mode, delete that first
 		var old;
@@ -2503,7 +2526,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	slideId = flags.TAB_ID;
 	level = 1*flags.LEVEL;
 	
-	domSlot.className = 'zenario_slot ' + (flags.CSS_CLASS || '');
+	domSlot.className = 'zenario_slot zenario_slot_reloaded ' + (flags.CSS_CLASS || '');
 	
 	//Add any libraries needed
 	var libInfo, i = 1;
@@ -3175,8 +3198,6 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited, firstLoad) 
 		path = '';
 	}
 	
-	var noWebPSupport = $('body').hasClass('no_webp');
-	
 	//If the "Show menu structure in friendly URLs" setting is set, watch out for any links, e.g.:
 		//<a href="#top">
 	//that would break due to this setting being enabled, and automatically fix them.
@@ -3195,28 +3216,6 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited, firstLoad) 
 	zenario.setChildrenToTheSameHeight(path);
 	
 	if ($.Lazy) {
-		//Some fallback logic for Lazy loading images on browsers with no WebP support
-		if (noWebPSupport) {
-			$(path + 'img.lazyWebP').each(function(i, el) {
-				var $img = $(el),
-					src = $img.data('no-webp-src'),
-					srcset = $img.data('no-webp-srcset'),
-					type = $img.data('no-webp-type');
-			
-				if (src) {
-					$img.data('src', src)
-						.attr('data-src', src);
-				}
-				if (srcset) {
-					$img.data('srcset', srcset)
-						.attr('data-srcset', srcset);
-				}
-				if (type) {
-					$img.attr('type', type);
-				}
-			});
-		}
-	
 		//Initiate the jQuery plugin for lazy-loading images
 		$(path + 'img.lazy').Lazy();
 	}
@@ -3224,18 +3223,6 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited, firstLoad) 
 	//Fancybox/Lightbox replacement
 	if ($.colorbox) {
 		$(path + "a[rel^='colorbox'], a[rel^='lightbox']").colorbox({
-			href: function() {
-			
-				//Allow support for WebP images
-				var href = $(this).attr('href'),
-					webp = $(this).attr('data-webp-href');
-			
-				if (!noWebPSupport && webp) {
-					return webp;
-				}
-			
-				return href;
-			},
 			title: function() { return $(this).attr('data-box-title'); },
 			className: function() { return $(this).attr('data-box-className'); },
 			maxWidth: '100%',
@@ -3916,6 +3903,9 @@ zenario.init = function(
 	isPublic,
 	
 	slashesInURL,
+	requestedID,
+	requestedType,
+	
 	thousandsSep,
 	decPoint,
 	visLang
@@ -3965,6 +3955,38 @@ zenario.init = function(
 	//Enable the resize handler
 	//(This was defined in body.js, but not immediately enabled.)
 	$(window).resize(zenario.resize);
+	
+	
+	//Check to see if this is a page in visitor mode, and the z_admin_login_shown cookie is set,
+	//and if so, try to load the admin login link remotely.
+	//We're doing it in this convoluted way so people can use the caching system yet still see the admin URL.
+	$(function() {
+		if (zenario.cID
+		 && !zenario.adminId
+		 && document.cookie.match(/z_admin_login_shown=1/)) {
+			
+			//Add the CSS file that will be needed onto the page
+			$('head').append('<link rel="stylesheet" type="text/css" href="' + URLBasePath + 'zenario/styles/admin_login_link.min.css?v=' + zenarioCSSJSVersionNumber + '" media="screen" />');
+			
+			
+			//Build up a URL to the admin_login_link.php script, which should contain the current cID, cType and GET request.
+			var query = document.location.search,
+				url;
+	
+			if (query) {
+				query += '&';
+			} else {
+				query = '?';
+			}
+			query += 'cID=' + encodeURIComponent(requestedID || zenario.cID) + '&cType=' + encodeURIComponent(requestedType || zenario.cType);
+			url = URLBasePath + 'zenario/admin_login_link.php' + query;
+			
+			//Launch an AJAX request to the server to generate what the HTML for the link should be.
+			zenario.ajax(url).after(function(html) {
+				$(document.body).append($(html));
+			})
+		}
+	});
 };
 
 zenario.canSetCookie = function(type) {
@@ -3998,6 +4020,38 @@ zenario.manageCookies = function() {
 	}
 	
 	$.getScript(url);
+};
+
+//Send the visitor to the zenario/cookies.php script to accept cookies.
+//If JavaScript isn't enabled there is a normal hyperlink there, from which the visitor will
+//then be redirected back from. However this will not remember any anchor links the visitor
+//has in their URL.
+//If JavaScript is enabled we can use this short script instead of the link to pass what the
+//anchor was, so they don't lose their place.
+zenario.acceptCookies = function() {
+	zenario.stop();
+	
+	var url = URLBasePath + 'zenario/cookies.php?accept_cookies=1',
+		hash = document.location.hash;
+	
+	if (hash) {
+		url += '&hash=' + encodeURIComponent(hash)
+	}
+	
+	zenario.goToURL(url);
+	
+	return true;
+};
+
+zenario.submitCookieChoice = function(formEl) {
+	var url = URLBasePath + 'zenario/cookies.php',
+		hash = document.location.hash;
+	
+	if (hash) {
+		url += '?hash=' + encodeURIComponent(hash)
+	}
+	
+	formEl.action = url;
 };
 
 

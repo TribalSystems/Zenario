@@ -214,10 +214,8 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				&& (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
 
 			$clearCopyFromSourceFields = true;
-			if (ze\module::inc('zenario_email_template_manager')) {
-				$emailTemplate = zenario_email_template_manager::getTemplateByCode($values['meta_data/load_content_source_email_template']);
-				$values['meta_data/body'] = $emailTemplate['body'];
-			}
+			$emailTemplate = zenario_common_features::getTemplateByCode($values['meta_data/load_content_source_email_template']);
+			$values['meta_data/body'] = $emailTemplate['body'];
 		}
 		if (($values['meta_data/load_content_source'] == 'use_newsletter_template')
 			&& $values['meta_data/load_content_source_newsletter_template'] 
@@ -433,7 +431,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$body = $values['meta_data/body'];
 			$files = [];
 			$htmlChanged = false;
-			ze\file::addImageDataURIsToDatabase($body, ze\link::absolute());
+			ze\fileAdm::addImageDataURIsToDatabase($body, ze\link::absolute());
 			ze\contentAdm::syncInlineFileLinks($files, $body, $htmlChanged);
 			ze\contentAdm::syncInlineFiles(
 				$files,

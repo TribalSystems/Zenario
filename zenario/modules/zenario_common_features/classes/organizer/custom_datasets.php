@@ -37,9 +37,9 @@ class zenario_common_features__organizer__custom_datasets extends ze\moduleBaseC
 			if ($item['extends_admin_box']) {
 				if (!ze\row::exists('tuix_file_contents', ['type' => 'admin_boxes', 'path' => $item['extends_admin_box']])) {
 					$item['link'] = false;
-					$item['type'] = ze\admin::phrase('Extends system dataset [[extends_admin_box]] (module not enabled!)', $item);
+					$item['type'] = ze\admin::phrase('Extends the admin box with the path "[[extends_admin_box]]" (module not enabled!)', $item);
 				} else {
-					$item['type'] = ze\admin::phrase('Extends system dataset [[extends_admin_box]]', $item);
+					$item['type'] = ze\admin::phrase('Extends the admin box with the path "[[extends_admin_box]]"', $item);
 				}
 			} else {
 				$item['type'] = ze\admin::phrase('Standalone dataset', $item);

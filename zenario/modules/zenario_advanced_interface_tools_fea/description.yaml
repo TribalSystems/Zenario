@@ -39,7 +39,7 @@ inheritance:
 # You should define the command that your plugin uses below. For each command, you should give it a
 # label, and list which modes it's used in (no list means every mode), and the request_vars it uses.
 # Note that you will need to increment the LATEST_REVISION_NO in this module's latest_revision_no.inc.php file
-# every time you add or change the request_vars or hierarchical_var properties, to have them re-read by the CMS.
+# every time you add or change the request_vars properties, to have them re-read by the CMS.
 path_commands:
     list_tuix_snippets:
         hidden: true

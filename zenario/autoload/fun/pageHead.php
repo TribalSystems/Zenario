@@ -168,7 +168,7 @@ if ($isWelcome || $isAdmin) {
 
 //Include the layout.
 //This is only a few K in size, so In Zenario 9.5 I'm going to try simply inlining this to avoid an extra request or combining it with the skin.
-if (\ze::$layoutId && ($minFile = \ze\content::layoutCssPath(\ze::$layoutId))) {
+if (\ze::$layoutId && ($minFile = \ze\layout::cssPath(\ze::$layoutId))) {
 	echo '
 <style type="text/css">', file_get_contents(CMS_ROOT. $minFile), '</style>';
 }
@@ -221,7 +221,7 @@ if (\ze::$skinId) {
 			//Also add editable CSS files used by the skin.
 			if (\ze::$skinId && ($skin = ze\row::get('skins', 'name', \ze::$skinId))) {
 				$editableCssFiles = [];
-				$skinPath = CMS_ROOT . ze\content::skinPath($skin) . 'editable_css/';
+				$skinPath = CMS_ROOT . ze\skin::path($skin) . 'editable_css/';
 				if ($handle = opendir($skinPath)) {
 					while (($entry = readdir($handle)) !== false) {
 						if ($entry != "." && $entry != ".." && strpos($entry, '2.') === 0) {
@@ -294,18 +294,12 @@ if ($isAdmin) {
 	}
 	
 	//Add the CSS file for skin-specific admin styles, if it exists
-	if (\ze::$skinId && ($skinPath = \ze\content::skinPath())) {
+	if (\ze::$skinId && ($skinPath = \ze\skin::path())) {
 		if (is_file(CMS_ROOT. ($filePath = $skinPath. 'adminstyles/admin_frontend.css'))) {
 			echo '
 	<link rel="stylesheet" type="text/css" media="screen" href="', $absURL, $filePath, '"/>';
 		}
 	}
-	
-
-//Add the CSS for the login link for admins if this looks like a logged out admin
-} else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !\ze\link::adminDomainIsPrivate()) { 
-	echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/admin_login_link.min.css?', $v, '" media="screen" />';
 }
 
 
@@ -315,13 +309,13 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	
 
 	//Include the site-wide head first
-	ze\content::sitewideHTML('sitewide_head');
+	ze\layout::sitewideHTML('sitewide_head', true);
 
 	if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'head') {
-		ze\content::sitewideHTML('sitewide_analytics_html');
+		ze\layout::sitewideHTML('sitewide_analytics_html');
 	}
 	if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'head') {
-		ze\content::sitewideHTML('sitewide_social_media_html');
+		ze\layout::sitewideHTML('sitewide_social_media_html');
 	}
 	
 	
@@ -385,9 +379,9 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	
 	//Check to see if there is a background image on this content item (or on this layout if not on the content item)
 	if ($itemHTML['bg_image_id']) {
-		ze\file::imageLink($bgWidth, $bgHeight, $bgURL, $itemHTML['bg_image_id']);
+		ze\image::link($bgWidth, $bgHeight, $bgURL, $itemHTML['bg_image_id']);
 	} elseif ($templateHTML['bg_image_id']) {
-		ze\file::imageLink($bgWidth, $bgHeight, $bgURL, $templateHTML['bg_image_id']);
+		ze\image::link($bgWidth, $bgHeight, $bgURL, $templateHTML['bg_image_id']);
 	}
 	
 	$bgColor = $itemHTML['bg_color']? $itemHTML['bg_color'] : $templateHTML['bg_color'];

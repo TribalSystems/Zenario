@@ -1,4 +1,5 @@
 update:
+    key: {}
     tab: 1
     tabs:
         1:
@@ -15,6 +16,50 @@ update:
                         html: "&nbsp;"
                     post_field_html: |
                         </p>
+                
+                webp_image_migration:
+                    visible_if: |
+                        lib.tuix.key.contentMigrationRevision > 1 &&
+                        lib.tuix.key.contentMigrationRevision < 61230
+                    notices_above:
+                        notice:
+                            type: warning
+                            html: true
+                            message: |
+                                <p>
+                                    In Zenario 10.1 we're now using WebP for images in the <code>public/</code> directory.
+                                </p><p>
+                                    This migration script will generate a WebP version of every publicly accessible image on the site.
+                                    On a site with large images, this may take some time.
+                                </p>
+                docstore_move_warning:
+                    visible_if: |
+                        lib.tuix.key.contentMigrationRevision > 1 &&
+                        lib.tuix.key.contentMigrationRevision < 61616
+                    notices_above:
+                        notice:
+                            type: warning
+                            html: true
+                            message: |
+                                <p>
+                                    In Zenario 10.1 we've changed the format of the directory structure in the docstore directory.
+                                </p><p>
+                                    Until Zenario 10.0, files were stored in its sub-directories using the naming convention
+                                     &ldquo;<code>filename_checksum/</code>&rdquo;.
+                                </p><p>
+                                    Starting in 10.1, Zenario uses a sub-directory that groups files according to how they are used,
+                                    their &ldquo;usage&rdquo;.
+                                    It now has an extra level of sub-directory, in the naming convention
+                                    &ldquo;<code>usage/filename-shortchecksum/</code>&rdquo;.
+                                </p><p>
+                                    This migration script will attempt to change the docstore at
+                                    <code>[[docstore_dir]]</code> to the new naming convention.
+                                    (It will first perform a check to ensure it is writable).
+                                </p><p>
+                                    Any sub-directories that do not have corresponding &ldquo;usage&rdquo; entries in the database will be moved
+                                    into a new subdirectory called &ldquo;<code>_uncategorised/</code>&rdquo;.
+                                </p>
+
                 why:
                     pre_field_html: "What's being updated?"
                     type: toggle

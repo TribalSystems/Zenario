@@ -20,10 +20,12 @@ use Twig\Token;
  * Extends a template by another one.
  *
  *  {% extends "base.html" %}
+ *
+ * @internal
  */
 final class ExtendsTokenParser extends AbstractTokenParser
 {
-    public function parse(Token $token)
+    public function parse(Token $token): Node
     {
         $stream = $this->parser->getStream();
 
@@ -33,20 +35,15 @@ final class ExtendsTokenParser extends AbstractTokenParser
             throw new SyntaxError('Cannot use "extend" in a macro.', $token->getLine(), $stream->getSourceContext());
         }
 
-        if (null !== $this->parser->getParent()) {
-            throw new SyntaxError('Multiple extends tags are forbidden.', $token->getLine(), $stream->getSourceContext());
-        }
         $this->parser->setParent($this->parser->getExpressionParser()->parseExpression());
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new Node();
+        return new Node([], [], $token->getLine());
     }
 
-    public function getTag()
+    public function getTag(): string
     {
         return 'extends';
     }
 }
-
-class_alias('Twig\TokenParser\ExtendsTokenParser', 'Twig_TokenParser_Extends');

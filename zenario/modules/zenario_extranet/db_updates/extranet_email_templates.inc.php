@@ -175,6 +175,17 @@ ze\dbAdm::revision(127,
 "
 );
 
+$emailVerificationExpiryPeriod = (int) ze::setting('verification_email_expiry_period');
+if (!$emailVerificationExpiryPeriod) {
+	$emailVerificationExpiryPeriod = 6;
+}
+
+if ($emailVerificationExpiryPeriod == 1) {
+	$hourSingularOrPluralPhrase = 'hour';
+} else {
+	$hourSingularOrPluralPhrase = 'hours';
+}
+
 ze\dbAdm::revision(128,
 	"UPDATE [[DB_PREFIX]]email_templates
 	SET `body` = '<p>Dear [[first_name]] [[last_name]],</p>
@@ -182,9 +193,76 @@ ze\dbAdm::revision(128,
 		<p>&nbsp;</p>
 		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[email_confirmation_link]]\">CONFIRM EMAIL</a></p>
 		<p>&nbsp;</p>
+		<p>The link will expire in " . $emailVerificationExpiryPeriod . " " . $hourSingularOrPluralPhrase . ".</p>
 		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
 		<p><a href=\"[[email_confirmation_link]]\">[[email_confirmation_link]]</a></p></p>'
 	WHERE `code` = 'zenario_extranet__to_user_email_verification_admin'
 	AND `template_name` = 'To User: Email verification by admin'
+"
+);
+
+unset($emailVerificationExpiryPeriod);
+unset($hourSingularOrPluralPhrase);
+
+ze\dbAdm::revision(131,
+	"INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`,
+		`use_standard_email_template`,
+		`module_class_name`
+	) VALUES 
+		(
+		 'zenario_users__to_user_account_created',
+		 'To User: Account created by admin',
+		 'Your account on [[cms_url]] has been created',
+		 '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Your account has been created and you can now log in using the following details:</p>
+		<p>[[login_instructions]]</p>
+		<p>Please click the button below to go to <a href=\"[[cms_url]]\">[[cms_url]]</a> and log in.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[login_page_link]]\">LOG IN</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[login_page_link]]\">[[login_page_link]]</a></p>',
+		 NOW(),
+		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
+		 0,
+		 1,
+		 'zenario_extranet'
+		)
+"
+);
+
+ze\dbAdm::revision(132,
+	"UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Your account has been activated and you can now log in using your email address and password.</p>
+		<p>Please click the button below to go to <a href=\"[[cms_url]]\">[[cms_url]]</a> and log in.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[login_page_link]]\">LOG IN</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[login_page_link]]\">[[login_page_link]]</a></p>'
+	WHERE `code` = 'zenario_users__to_user_account_activated'
+"
+);
+
+ze\dbAdm::revision(133,
+	"UPDATE [[DB_PREFIX]]email_templates
+	SET `body` = '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Your account has been created and you can now log in using the following details:</p>
+		<p>[[login_details]]</p>
+		<p>Please click the button below to go to <a href=\"[[cms_url]]\">[[cms_url]]</a> and log in.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[login_page_link]]\">LOG IN</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[login_page_link]]\">[[login_page_link]]</a></p>'
+	WHERE `code` = 'zenario_users__to_user_account_created'
 "
 );

@@ -389,7 +389,7 @@ class zenario_user_profile_search extends ze\moduleBaseClass {
 		$width = $this->setting($img_prefix . '_width');
 		$height = $this->setting($img_prefix . '_height');
 		$file_id = $image_id;
-		ze\file::imageLink($width, $height, $url, $file_id, $width, $height, $this->setting($img_prefix . '_canvas'));
+		ze\image::link($width, $height, $url, $file_id, $width, $height, $this->setting($img_prefix . '_canvas'));
 		return $url;
 	}
 	

@@ -30,7 +30,6 @@ content_types:
         content_type_name_en: Event
         content_type_plural_en: Events
         default_template_name: Event Layout
-        enable_summary_auto_update: false
         description_field: optional
         tooltip_text: Events, to show a calendar of up-coming and past events
         keywords_field: hidden

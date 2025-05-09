@@ -1,3 +1,690 @@
+/* General
+--------------------------------------------------------------------------------------------------*/
+
+.zfea {
+	position:relative;
+}
+
+.zfea .section {
+	margin-top:10px;
+	padding-top:20px;
+}
+
+.zenario_plugin_nest .zfea {
+	margin-bottom:30px;
+}
+
+.zenario_plugin_nest .nest_plugins:before,
+.zenario_plugin_nest .nest_plugins:after {
+  content: ".";    
+  display: block;    
+  height: 0;    
+  overflow: hidden;	
+}
+.zenario_plugin_nest .nest_plugins:after {clear: both;}
+
+::-webkit-input-placeholder {
+   opacity:0.4;
+   color:#777;
+}
+:-moz-placeholder {
+   opacity:0.4; 
+   color:#777; 
+}
+::-moz-placeholder {
+   opacity:0.4; 
+   color:#777; 
+}
+:-ms-input-placeholder {  
+   opacity:0.4; 
+   color:#777;
+}
+
+
+table.table_list.zfea_group_by {
+	margin-left:30px;
+	width:calc(100% - 30px);
+}
+
+table.table_list.zfea_group_by tr.zfea_list_grouping td {
+	padding-top:10px;
+	padding-left:0;
+}
+
+table.table_list.zfea_group_by tr.zfea_list_grouping td h5 {
+	position:relative;
+	margin-left:-28px;
+}
+
+table.table_list.zfea_group_by tr.zfea_list_outer_grouping td h4 {
+	position:relative;
+	margin-left:-38px;
+}
+
+/* Form
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_skin .zenario_textbox_with_autocomplete {
+	display:inline-block;
+	overflow:hidden;
+}
+
+.zenario_skin .zenario_textbox_with_autocomplete input[type="text"] {
+	-webkit-border-top-right-radius: 0;
+	-webkit-border-bottom-right-radius: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.zenario_skin .zenario_textbox_with_autocomplete input[type="button"] {
+	font-size:16px;
+	border-left:0 !important;
+	padding:0 10px;
+	-webkit-border-top-left-radius: 0;
+	-webkit-border-bottom-left-radius: 0;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.zenario_skin .zenario_textbox_with_autocomplete input[type="text"],
+.zenario_skin .zenario_textbox_with_autocomplete input[type="button"] {
+	float:left;
+}
+
+.zfea_form_row .zenario_textbox_with_autocomplete ul.ui-menu {
+	max-height:40vh;
+	overflow-y: auto;
+}
+
+/* Tables
+--------------------------------------------------------------------------------------------------*/
+
+.zfea table {
+	width:100%;
+	margin-top:20px;
+}
+
+table.table_list tr th,
+table.table_list tr td,
+.zfea_form_grouping table tr th,
+.zfea_form_grouping table tr td {
+	padding:10px;
+}
+
+table.table_list tr th, 
+.zfea_form_grouping table tr th {
+	line-height:18px;
+}
+
+table.table_list tr td,
+.zfea_form_grouping table tr td {
+	vertical-align:top;
+}
+
+table.table_list tr th:first-child {
+	border-radius:4px 0 0 4px;
+	-webkit-border-radius:4px 0 0 4px;
+}
+
+table.table_list tr th:last-child {
+	border-radius:0 4px 4px 0;
+	-webkit-border-radius:0 4px 4px 0;
+}
+
+.zfea_form_grouping table tr th:first-child {
+	border-radius:4px 0 0 0;
+	-webkit-border-radius:4px 0 0 0;
+}
+
+.zfea_form_grouping table tr th:last-child {
+	border-radius:0 4px 0 0;
+	-webkit-border-radius:0 4px 0 0;
+}
+
+.zfea table th.sorted_buttons a {
+	white-space:nowrap;
+}
+
+table tr td[colspan="100%"],
+table tr td.no_items_message:last-child {
+	text-align:center !important;
+}
+
+.zfea_form_grouping table tr th label + button {
+	margin-left: 15px;
+}
+
+/* Other tables styles color
+--------------------------------------------------------------------------------------------------*/
+
+.zfea table.table_grid tr th,
+.zfea table.table_grid tr td,
+.zenario_users_fea .zfea .zfea_form_row tr th,
+.zenario_users_fea .zfea .zfea_form_row tr td {
+	border:2px solid #FFF;
+}
+
+.zfea table.table_grid tr th,
+.zenario_users_fea .zfea .zfea_form_row tr th {
+	background:#777b90;
+	color:#FFF;
+}
+
+.zfea table.table_grid tr td,
+.zenario_users_fea .zfea .zfea_form_row tr td {
+	background:#d2d3da;
+}
+
+.zenario_company_locations_fea table tr td,
+.zenario_company_listing_fea table tr td,
+.zenario_company_location_listing_fea table tr td,
+.zenario_location_fea table tr td,
+.zenario_company_users_fea table tr td {
+	background:#d9dadb;
+}
+
+table tr td div.col_child_value label {
+	color:#333;
+}
+
+/* Tables rows
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_company_locations_fea table,
+.zenario_company_listing_fea table,
+.zenario_company_location_listing_fea table,
+.zenario_location_fea table {
+	border-collapse: separate;
+	border-spacing: 0 15px;
+}
+
+.zenario_company_locations_fea table tr td,
+.zenario_company_listing_fea table tr td,
+.zenario_company_location_listing_fea table tr td,
+.zenario_location_fea table tr td,
+.zenario_company_users_fea table tr td {
+	padding:9px;
+}
+
+.zenario_company_locations_fea table tr td:first-child,
+.zenario_company_listing_fea table tr td:first-child,
+.zenario_company_location_listing_fea table tr td:first-child,
+.zenario_location_fea table tr td:first-child,
+.zenario_company_users_fea table tr td:first-child {
+	border-radius:4px 0 0 4px;
+	-webkit-border-radius:4px 0 0 4px;
+}
+
+.zenario_company_locations_fea table tr td:last-child,
+.zenario_company_listing_fea table tr td:last-child,
+.zenario_company_location_listing_fea table tr td:last-child,
+.zenario_location_fea table tr td:last-child,
+.zenario_company_users_fea table tr td:last-child {
+	border-radius:0 4px 4px 0;
+	-webkit-border-radius:0 4px 4px 0;
+}
+
+.zfea .zfea_form_row table {
+	margin-top:0
+}
+
+.zfea table.table_grid tr th,
+.zfea table.table_grid tr td,
+.zenario_users_fea .zfea .zfea_form_row tr th,
+.zenario_users_fea .zfea .zfea_form_row tr td {
+	padding:10px;
+}
+
+.zfea table.table_grid tr th:first-child {
+	border-radius:0;
+	-webkit-border-radius:0;
+}
+
+table tr td div.col_value,
+table tr td div.col_child_value {
+	width:100%;
+	padding-right:0;
+	float:none;
+}
+
+table tr td div.col_child_value {
+	padding-top:5px;
+	font-size:0.938em;
+}
+
+table tr td div.col_value.col_value_for__most_recent_value,
+table tr td div.col_child_value.col_value_for__as_of {
+	width:auto;
+	padding-right:0;
+	float:none;
+}
+
+table tr td div.col_child_value.col_value_for__as_of {
+	margin-top:3px;
+}
+
+/* Common styles Zfea Search form and table position
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_company_locations_fea .zfea_zenario_list_companies form,
+.zenario_company_location_listing_fea .zfea_zenario_list_locations form,
+.zenario_company_location_listing_fea .zfea_zenario_edit_user form,
+.zenario_company_listing_fea .zfea_zenario_list_companies form,
+.zenario_location_fea .zfea_zenario_list_locations form,
+.zenario_location_fea .zfea_zenario_edit_user form {
+	position:absolute;
+	z-index:2;
+	display:inline;
+}
+
+.zenario_company_location_listing_fea form {
+	width:calc(100% - 145px);
+}
+
+.zenario_company_locations_fea .zfea_zenario_list_companies table,
+.zenario_company_location_listing_fea .zfea_zenario_list_locations table,
+.zenario_company_location_listing_fea .zfea_zenario_edit_user table,
+.zenario_location_fea .zfea_zenario_list_locations table,
+.zenario_location_fea .zfea_zenario_edit_user table,
+.zenario_company_listing_fea .zfea_zenario_list_companies table {
+	position:relative;
+	z-index:1;
+	top:-14px;
+	margin-top:0;
+}
+
+.zenario_company_listing_fea .zfea_zenario_list_companies table {
+	top:0;
+}
+
+.panel_reset_position .zfea_zenario_list_companies form,
+.panel_reset_position .zfea_zenario_list_locations form {
+	position:static;
+	top:0;
+}
+
+.zfea_zenario_list_companies .zfea_table_list_wrap {
+	margin-top:20px;
+}
+
+.zenario_company_location_listing_fea .company_details {
+	padding-bottom:10px;
+}
+
+.zenario_company_location_listing_fea .company_details p {
+	margin-bottom:0;
+}
+
+
+
+/* Locations
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_location_fea h2,
+.zenario_location_fea form,
+.zenario_location_fea table {
+	padding-left:10px;
+	padding-right:10px;
+}
+
+.zenario_location_fea .zfea_zenario_list_locations,
+.zenario_location_fea .zfea_zenario_map_locations {
+	position:relative;
+}
+
+.zenario_location_fea .search_form input[type="text"] {
+	width:280px;
+}
+
+.no_locations_message {
+	position:absolute;
+	top:45%;
+	right:0;
+	left:0;
+	z-index:99;
+	text-align:center;
+}
+
+.no_locations_message p {
+	display:inline-block;
+	width:auto;
+}
+
+/* Company locations listings
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_company_listing_fea .company .top_buttons,
+.zenario_company_location_listing_fea .company .top_buttons {
+	right:0;
+}
+
+.zenario_company_locations_fea table tr td:nth-child(1),
+.zenario_company_listing_fea table tr td:nth-child(1) {
+	padding-left:15px;
+}
+
+.zenario_company_locations_fea table tr th:nth-child(1),
+.zenario_company_locations_fea table tr th:nth-child(2) {
+	font-size:0;
+	line-height:0;
+	text-indent:-999;
+}
+
+.zenario_company_locations_fea .company_section {
+	overflow:hidden;
+	padding-bottom:10px;
+}
+
+.zenario_company_locations_fea .company_section .label {
+	width:75px;
+	float:left;
+}
+
+.zenario_company_locations_fea .company_section .details {
+	overflow:hidden;
+}
+
+.zenario_company_locations_fea .company_section .details p {
+	margin-bottom:2px;
+}
+
+.Slot_Side_1 .zenario_company_listing_fea .company {
+	padding-bottom:10px;
+	margin-bottom:10px;
+	border-bottom:1px solid #FFF;
+}
+
+/* Company users
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_company_users_fea table {
+	border-collapse: separate;
+	border-spacing: 0 10px;
+	margin-top:0;
+}
+
+.zenario_company_users_fea table tr th:nth-child(1) {
+	font-size:1.250em;
+}
+
+.zenario_company_users_fea table tr td:nth-child(1) {
+	padding-left:40px;
+	background-repeat:no-repeat;
+	background-position:10px center;
+	background-size:17px 18px
+}
+
+.zenario_company_users_fea .zfea_zenario_list_users table.table_list tr th {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+/* Common styles, forms
+--------------------------------------------------------------------------------------------------*/
+
+.zfea_form_row {
+	padding-bottom:10px;
+	position:relative;
+}
+
+.zfea_form_row > div {
+	padding-bottom:5px;
+}
+
+.zfea_form_row label {
+	display:inline-block;
+	padding-bottom:3px;
+}
+
+.zfea_form_row__submit {
+	text-align:center;
+}
+
+.zfea textarea {
+	width:80%;
+}
+
+.title_with_icons {
+	position:relative;
+}
+
+.zenario_skin .title_with_icons h1 {
+	min-height:20px;
+	border:0;
+	margin-bottom:0;
+	padding-bottom:10px;
+}
+
+.title_main_icons {
+	position:relative;
+	padding-left:30px;
+	border-bottom-width:5px;
+	border-bottom-style:solid;
+	padding-bottom:10px;
+}
+
+.title_main_icons .asset_icon,
+.title_main_icons .data_pool_icon,
+.title_main_icons .location_icon {
+	width:25px;
+	height:25px;
+}
+
+.title_main_icons .asset_icon,
+.title_main_icons .data_pool_icon,
+.title_main_icons .location_icon,
+.title_main_icons .thumbnail {
+	position:absolute;
+	left:0;
+	top:2px;
+}
+
+.title_main_icons .thumbnail img {
+	max-width:24px !important;
+	height:auto !important;
+}
+
+.zfea .indent_form {
+	padding-left:10%;
+}
+
+.zfea .form .form_field {
+	padding:10px 0;
+}
+
+.zfea .form .form_field_date {
+	overflow:hidden;
+}
+
+.zfea .form .form_field_date label,
+.zfea .form .form_field_date input,
+.zfea .form .form_field_date img {
+	display:inline-block;
+	float:left;
+}
+
+.zfea .form .form_field_date label {
+	line-height:30px;
+	margin-right:8px;
+}
+
+.zfea .form .form_field_date input {
+	margin-right:10px;
+}
+
+.zfea .form .form_field_date input.small_field {
+	width:110px;
+}
+
+.zfea_form_note_below {
+	clear:both;
+	display:block;
+	margin-bottom:8px;
+	padding:3px 8px;
+	font-size:0.813em;
+	line-height:18px;
+	font-style:italic;
+}
+
+.zfea_form_row__submit .zfea_form_note_below {
+	margin-top:10px;
+}
+
+/* Common styles, date picker
+--------------------------------------------------------------------------------------------------*/
+
+.form_date_picker {
+	overflow:hidden;
+}
+
+.form_date_picker label,
+.form_date_picker span,
+.form_date_picker .label {
+	display:inline-block;
+	height:34px;
+	line-height:34px;
+}
+
+.form_date_picker select {
+	height:32px;
+}
+
+.form_date_picker label,
+.form_date_picker select,
+.form_date_picker div,
+.form_date_picker input,
+.form_date_picker span {
+	clear:none !important;
+	margin-bottom:10px;
+}
+
+.form_date_picker div input,
+.form_date_picker div span {
+	margin-bottom:0;
+}
+
+.form_date_picker label,
+.form_date_picker select,
+.form_date_picker div,
+.form_date_picker input,
+.form_date_picker span {
+	float:left;
+	margin-right:5px;
+}
+
+.form_date_picker span.title {
+	font-weight:600;
+}
+
+.form_date_picker select[name="ts_format"] {
+	max-width:325px;
+}
+
+.form_date_picker select[name="format"] {
+	max-width:100px;
+}
+
+.form_date_picker .form_date_picker_button {
+	float:none;
+	clear:both !important;
+	overflow:hidden;
+	padding-top:10px;
+	text-align:center;
+}
+
+.form_date_picker .form_date_picker_button input {
+	float:none;
+}
+
+/* Common styles Zfea, new  row
+--------------------------------------------------------------------------------------------------*/
+
+.fea_just_loaded .zfea_new_row {
+	animation: zfea_new_row 3s;
+	-webkit-animation: zfea_new_row 3s;
+}
+
+/* Common styles Zfea, various
+--------------------------------------------------------------------------------------------------*/
+
+.no_locations {
+	padding-left:22px;
+}
+
+.button_panel {
+	text-align:right;
+}
+
+.zenario_skin .warning_icon,
+.no_locations {
+	display:inline-block;
+	background:url('images/aw/icon-warning-triangle.svg') no-repeat left center / 17px 15px;
+}
+
+.zenario_skin .warning_icon {
+	width:17px;
+	height:17px;
+	margin-right:3px;
+}
+
+/* Form grouping
+--------------------------------------------------------------------------------------------------*/
+
+.zfea_form_grouping,
+.zfea_form_row__add_action {
+	position:relative;
+	padding:15px;
+}
+
+.zfea_form_grouping {
+	margin-bottom:15px;
+}
+
+.zfea_form_row__add_action {
+	margin-left:0;
+	margin-right:0;
+}
+
+.zfea_form_grouping .zfea_form_row {
+	position:unset;
+	padding-top:10px;
+	padding-bottom:0;
+}
+
+.zfea_form_grouping .zfea_form_row.zfea_form_indent_level {
+	padding-top:2px;
+}
+
+.zfea_form_grouping table tr td input,
+.zfea_form_grouping table tr td select {
+	margin-bottom:8px;
+}
+
+.zfea_form_grouping label.label_num {
+	position:absolute;
+	left:0;
+	top:15px;
+	font-size:12px;
+	height:24px;
+	line-height:24px;
+	padding:0 0 0 8px;
+}
+
+.zfea_form_grouping label.label_num:after {
+	left: 100%;
+	top: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+	border-width: 12px;
+	margin-top: -12px;
+}
+
+/****************************************************************************************/
+
 .zenario_plugin_nest.nest_zfea .zenario_slot {
 	padding-bottom:20px;
 	position:relative;
@@ -168,7 +855,7 @@
 }
 
 .zenario_skin .zenario_field_widget_wrap .zenario_datepicker,
-.zenario_skin .zenario_field_widget_wrap .zenario_remove_date {
+.zenario_skin .zenario_field_widget_wrap .zenario_remove_val {
 	float:left;
 }
 
@@ -176,7 +863,7 @@
 	margin-right:4px;
 }
 
-.zenario_skin .zenario_field_widget_wrap .zenario_remove_date {
+.zenario_skin .zenario_field_widget_wrap .zenario_remove_val {
 	margin-top:4px;
 	border:0 !important;
 	background:#ccc !important;
@@ -576,10 +1263,17 @@ table.table_list tr th.zfea_col_sorted {
 table.table_list tr th.zfea_col_sorted.zfea_col_sorted_desc {
 	background-image:url('../../admin/images/icon-arrow-triangle-down-green.svg');
 	background-size:17px 10px;
+	background-repeat:no-repeat;
+	background-position: right center;
+	padding-right:25px;
 }
 
 table.table_list tr th.zfea_col_sorted {
 	color:#FFFFBF;
+}
+
+.zenario_skin select.zfea_list_sort {
+	width:auto;
 }
 
 
@@ -621,10 +1315,10 @@ table.table_list tr th.zfea_col_sorted {
 	border-radius: 0;
 }
 
-.zenario_skin .zfea .search_form input[type="search"] {
+.zenario_skin .zfea .search_form input[type="search"],
+.zenario_skin .zfea .search_form input.search_term {
 	max-width:800px;
 	padding:0 0 0 15px;
-	height:41px;
 	line-height:36px;
 	outline: none;
 	-webkit-border-top-left-radius: 4px;
@@ -658,11 +1352,13 @@ table.table_list tr th.zfea_col_sorted {
 }
 
 .zenario_skin .zfea .search_form input[type="search"],
+.zenario_skin .zfea .search_form input.search_term,
 .zenario_skin .zfea .search_form input[type="submit"] {
 	border:2px #ccc solid;
 }
 
-.zenario_skin .zfea .search_form input[type="search"] {
+.zenario_skin .zfea .search_form input[type="search"],
+.zenario_skin .zfea .search_form input.search_term {
 	border-right:0;
 }
 
@@ -698,22 +1394,6 @@ table.table_list tr th.zfea_col_sorted {
 	overflow:hidden;
 	padding:20px;
 	border:2px solid #ccc;
-}
-
-.zfea_edit_box h1,
-.zfea_zenario_edit_company h1 {
-	padding-left:40px;
-}
-
-.zfea_edit_box h1,
-.zfea_zenario_edit_company h1,
-.edit_title {
-	background:url('images/icon-pencil-dark-grey.svg') no-repeat 10px 10px / 16px 15px;
-}
-
-.edit_title {
-	padding-left:25px;
-	background-position:left center;
 }
 
 /* View user
@@ -1699,10 +2379,6 @@ body.mobile .zfea_search_buttons {
 	color:#555 !important;
 }
 
-.zenario_skin .zfea_assetwolf_edit_options table tr td div.Tokenize {
-	float:left;
-}
-
 .zenario_skin .Tokenize.zenario_reorder_items .TokensContainer .Token {
 	width:calc(100% - 47px);
 }
@@ -1870,10 +2546,6 @@ body.mobile .zfea_search_buttons {
 	background-image:url('images/icon-delete.svg');
 }
 
-.zenario_skin form .zfea_form_row input[type="button"].icon_button.delete {
-	background-color:#B20000;
-}
-
 .icon_button.query_data_icon {
 	background-image:url('images/icon-white-inspector-placeholder.svg');
 	background-repeat:no-repeat;
@@ -1917,9 +2589,18 @@ body.mobile .zfea_search_buttons {
 }
 
 .zfea_button.delete,
+.zenario_skin form .zfea_form_row input[type="button"].icon_button.delete,
 #colorbox.zfea_colorbox_content input[type="button"].delete_button {
-	background:#B20000;
+	background-color:#B20000;
 	color:#FFF;
+}
+
+.zfea_button.delete:hover,
+.zenario_skin form .zfea_form_row input[type="button"].icon_button.delete:hover,
+#colorbox.zfea_colorbox_content input[type="button"].delete_button:hover {
+	background-color:#e23535;
+	color:#FFF;
+	opacity:1;
 }
 
 .zfea_button.cancel,
@@ -2088,7 +2769,6 @@ input[type="button"].zfea_cancel,
 .manual_input span.label,
 .nest_buttons a,
 a.zfea_button,
-a.nest_show_embed,
 #colorbox .connection_tabbed_panel .content_links input,
 .fea_csvDownload > a {
 	display:inline-block;
@@ -2117,7 +2797,6 @@ a.nest_show_embed,
 .zenario_skin .fea_filter:hover,
 .zenario_skin .nest_buttons a:hover,
 .zenario_skin a.zfea_button:hover,
-.zenario_skin a.nest_show_embed:hover,
 .fea_csvDownload > a:hover {
 	text-decoration:none;
 }
@@ -2128,7 +2807,6 @@ a.nest_show_embed,
 .zenario_skin .fea_filter,
 .nest_buttons a,
 a.zfea_button,
-a.nest_show_embed,
 .fea_csvDownload > a {
 	height:27px;
 	font-size:13px;
@@ -2139,7 +2817,6 @@ a.nest_show_embed,
 .zenario_skin .fea_filter,
 .nest_buttons a,
 a.zfea_button,
-a.nest_show_embed,
 .fea_csvDownload > a {
 	line-height:26px;
 }
@@ -2413,10 +3090,6 @@ input[type="button"].not_pressed.disabled:hover,
 
 .zenario_company_users_fea .fea_preloader_circle {
   display: none !important;
-}
-
-.assetwolf_graph_base .graph_wrapper .fea_preloader_circle {
-	top:35%;
 }
 
 #hierarchy_chart .fea_preloader_circle {
@@ -3614,21 +4287,6 @@ body.mobile .zenario_skin .zenario_plugin_nest .zenario_breadcrumbs .breadcrumb 
 	background: url('images/close-cross-over.svg') no-repeat;
 }
 
-.zfea_assetwolf_schema table tr td .zfea_popout .zfea_popout_form {
-	text-align:center;
-}
-
-.zfea_assetwolf_schema table tr td .zfea_popout .zfea_popout_form h3,
-.zfea_assetwolf_schema table tr td .zfea_popout .zfea_popout_form .zfea_popout_threshold {
-	text-align:left;
-}
-
-.zfea_assetwolf_schema table tr td .zfea_popout span.zenario_field_widget_wrap {
-	display:block;
-	text-align:right;
-	margin-bottom:10px;
-}
-
 
 /*  Rows and columns for radio/checkboxes  */
 
@@ -3795,7 +4453,8 @@ body.mobile .zenario_videos_fea .zfea_zenario_list_videos .column_image .field_v
 
 @media all and (max-width: 631px) {
 
-	.zenario_skin .zfea .search_form input[type="search"] {
+	.zenario_skin .zfea .search_form input[type="search"],
+	.zenario_skin .zfea .search_form input.search_term {
 		max-width:none;
 		width:calc(100% - 41px);
 	}

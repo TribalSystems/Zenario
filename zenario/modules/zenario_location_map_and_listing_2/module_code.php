@@ -485,8 +485,8 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 
 				$defaultLayoutId = ze\row::get('content_types', 'default_layout_id', ['content_type_id' => 'html']);
 				$skinId = ze\content::layoutSkinId($defaultLayoutId, true);
-				$skin = ze\content::skinDetails($skinId);
-				$box['key']['default_html_layout_skin_path'] = ze\content::skinPath($skin['name']);
+				$skin = ze\skin::details($skinId);
+				$box['key']['default_html_layout_skin_path'] = ze\skin::path($skin['name']);
 
 				break;
 		}
@@ -528,11 +528,11 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			case 'zenario_location_manager__areas':
 				$mapEdit = 
 					"<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" 
-					. htmlspecialchars($this->showFileLink("&map_center_lat=" . ze\ray::value($values,'map_center_lat') . "&map_center_lng=" . ze\ray::value($values,'map_center_lng') 
-						. "&ne_lat=" . ze\ray::value($values,'ne_lat') . "&ne_lng=" . ze\ray::value($values,'ne_lng') 
-						. "&sw_lat=" . ze\ray::value($values,'sw_lat') . "&sw_lng=" . ze\ray::value($values,'sw_lng')
-						. "&marker_lat=" . ze\ray::value($values,'marker_lat') . "&marker_lng=" . ze\ray::value($values,'marker_lng') 
-						. "&zoom=" . ze\ray::value($values,'zoom') . "&polygon_colour=" . str_replace("#", '', ze\ray::value($values, 'polygon_colour'))) 
+					. htmlspecialchars($this->showFileLink("&map_center_lat=" . ($values['map_center_lat'] ?? '') . "&map_center_lng=" . ($values['map_center_lng'] ?? '') 
+						. "&ne_lat=" . ($values['ne_lat'] ?? '') . "&ne_lng=" . ($values['ne_lng'] ?? '') 
+						. "&sw_lat=" . ($values['sw_lat'] ?? '') . "&sw_lng=" . ($values['sw_lng'] ?? '')
+						. "&marker_lat=" . ($values['marker_lat'] ?? '') . "&marker_lng=" . ($values['marker_lng'] ?? '') 
+						. "&zoom=" . ($values['zoom'] ?? '') . "&polygon_colour=" . str_replace("#", '', $values['polygon_colour'] ?? '')) 
 						. "&editmode=1") 
 					. "\" style=\"width: 100%;height: 625px;border: none;\"></iframe>\n";
 
@@ -832,7 +832,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 				ze\content::langEquivalentItem($cID, $cType);
 			
 				if(ze\priv::check() || ze\content::isPublished($cID, $cType)){
-					$row['descriptive_page'] = ze\link::toItem($cID, $cType, false);
+					$row['descriptive_page'] = ze\link::toItemInVisitorsLanguage($cID, $cType, false);
 				}
 			}
 			
@@ -904,7 +904,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 			$heightImage = $this->setting('image_height');
 			$canvas = $this->setting('image_canvas'); 
 			
-			ze\file::imageLink($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas);
+			ze\image::link($width, $height, $url, $imageId, $widthImage, $heightImage, $canvas);
 			return ['url' => $url, 'width' => $width, 'height' => $height];
 		}
 		

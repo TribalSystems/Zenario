@@ -25,9 +25,10 @@ common_definitions:
             
             If not set, it defaults to the order the CMS finds them in.
             
-            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
-            you can use syntax of the form "name_of_other_element.001"
-            to place an element after the named element in the order.
+            From version 10.1 onwards, we have some logic where you can place a field or a button
+            immediately before or after an existing field or button using an offset.
+            To do this you need to use a pattern like this: "field_name + 0.1" (to put your field after)
+            or like this: "field_name - 0.1" (to put your field before).
     copy_of: &copy_of
         type: string
         description: >
@@ -157,6 +158,32 @@ properties:
                     type: string
                     description: >
                         Set this property to show a different label when the tab grouping is active.
+                
+                tab_link:
+                    type: object
+                    description: >
+                        Use this to set a link at the top right of the tab.
+                        The link will always open in a new window/tab.
+                        
+                        This works from version 10.1 onwards.
+                    properties:
+                        tooltip:
+                            type: string
+                            description: >
+                                A tooltip for the link.
+                        
+                        href:
+                            type: string
+                            description: >
+                                The href of the link.
+                
+                icon_class:
+                    type: string
+                    description: >
+                        If you set this property, an empty <span> will appear inside the label
+                        with the specified CSS class name.
+                        
+                        This works from version 10.1 onwards.
 
 
     sections:

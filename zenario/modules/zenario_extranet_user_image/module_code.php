@@ -91,7 +91,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 				if ($image[0] >= $minWidth && $image[1] >= $minHeight) {
 					//Remove the User's old image, if they had one
 					$this->removeUserImage();
-					if ($imageId = ze\file::addToDatabase('user', $location, rawurldecode($_FILES['extranet_upload_image']['name']), true)) {
+					if ($imageId = ze\fileAdm::addToDatabase('user', $location, rawurldecode($_FILES['extranet_upload_image']['name']), true)) {
 						ze\row::update('users', ['image_id' => $imageId], ($_SESSION['extranetUserID'] ?? false));
 					}
 				} else {
@@ -108,7 +108,7 @@ class zenario_extranet_user_image extends ze\moduleBaseClass {
 		
 		$url = $width = $height = false;
 		if (($imageId = ze\row::get('users', 'image_id', ($_SESSION['extranetUserID'] ?? false)))
-		 && ze\file::imageLink($width, $height, $url, $imageId, ze::ifNull((int) $this->setting('max_width'), 375), ze::ifNull((int) $this->setting('max_height'), 500))) {
+		 && ze\image::link($width, $height, $url, $imageId, ((int) $this->setting('max_width')) ?: 375, ((int) $this->setting('max_height')) ?: 500)) {
 			$this->sections['Existing_Image'] = true;
 		 	$this->mergeFields['Image_Src'] = htmlspecialchars($url);
 		 	$this->mergeFields['Image_Width'] = $width;

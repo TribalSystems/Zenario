@@ -5,7 +5,7 @@ zenario_export_vlp:
     title: Exporting phrases
     key:
         id: ""
-    max_height: "200"
+    max_height: "230"
     hide_tab_bar: true
     tabs:
         export:
@@ -16,6 +16,11 @@ zenario_export_vlp:
                     full_width: true
                     snippet:
                         html: ""
+                    notices_below:
+                        phrases_coming_from_missing_or_uninitialised_modules:
+                            hidden: true
+                            type: warning
+                            message: ''
                 option:
                     label: 'Include:'
                     type: select
@@ -29,13 +34,13 @@ zenario_export_vlp:
                     type: select
                     values:
                         xlsx:
-                            ord: "1"
+                            ord: 1
                             label: xlsx (Excel 2007 and later) (Recommended)
                         xls:
-                            ord: "2"
+                            ord: 2
                             label: xls (Excel 5)
                         csv:
-                            ord: "3"
+                            ord: 3
                             label: csv (comma-separated values)
                     value: xlsx
     download: true

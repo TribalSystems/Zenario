@@ -13,6 +13,6 @@
 		<span class="afb_tab_in_use_count zenario_item_record_count">{{m.children_used|e}}</span>
 	<% } %>
 	<% if (m.children) { %>
-		<ul>{{zenarioT.microTemplate('zenario_admin_box_tab_children', m.children)}}</ul>
+		<ul>{{m.lib.microTemplate('zenario_admin_box_tab_children', m.children)}}</ul>
 	<% } %>
 </div></div>

@@ -53,9 +53,12 @@ common_definitions:
             
             If not set, it defaults to the order the CMS finds them in.
             
-            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
-            you can use syntax of the form "name_of_other_element.001"
-            to place an element after the named element in the order.
+            From version 10.1 onwards, we have some logic where you can place a field or a button
+            immediately before or after an existing field or button using an offset.
+            To do this you need to use a pattern like this: "field_name + 0.1" (to put your field after)
+            or like this: "field_name - 0.1" (to put your field before).
+
+            
     copy_of: &copy_of
         type: string
         description: >
@@ -723,6 +726,16 @@ additionalProperties:
                                         You can also provide an array of values, or an object with values as keys.
                                         
                                         This works from version 7.5 onwards.
+                                hide_in_create_mode:
+                                    description: >
+                                        Hide this field when the "id" variable in the key is empty.
+                                        
+                                        This works from version 10.1 onwards.
+                                hide_in_edit_mode:
+                                    description: >
+                                        Hide this field when the "id" variable in the key has a value.
+                                        
+                                        This works from version 10.1 onwards.
                                 
                                 
                                 
@@ -779,6 +792,24 @@ additionalProperties:
                                         
                                         This works from version 8.0 onwards.
                                 
+                                show_values_as_text_when_readonly:
+                                    type: boolean
+                                    description: >
+                                        If a checkbox/checkboxes/radio/radios-type field is readonly, don't draw any form elements.
+                                        Instead just display as text.
+                                        
+                                        It's recommended you use this along with the hide_if_readonly_and_empty proprtey (for checkbox-type fields)
+                                        or the hide_unselected_values_when_readonly property (for checkboxes and radios-type fields).
+                                        
+                                        This works from version 10.1 onwards.
+                                
+                                hide_unselected_values_when_readonly:
+                                    type: boolean
+                                    description: >
+                                        If a "type: checkboxes" or "type: radios" field is readonly, don't draw any unselected values.
+                                        
+                                        This works from version 7.7 onwards.
+                                
                                 hide_when_readonly:
                                     type: boolean
                                     description: >
@@ -786,6 +817,13 @@ additionalProperties:
                                         if it is readonly.
                                         
                                         This works from version 8.0 onwards.
+                                
+                                hide_if_readonly_and_empty:
+                                    type: boolean
+                                    description: >
+                                        Causes a field to be hidden, if it is readonly and also the value is empty.
+                                        
+                                        This works from version 10.1 onwards.
                                 
                                 css_class:
                                     type: string
@@ -796,7 +834,12 @@ additionalProperties:
                                 label:
                                     type: string
                                     description: >
-                                        A label for the field. Won't be HTML escaped.
+                                        A label for the field.
+                                        
+                                        In Zenario 10 we made a breaking change where the text you enter for the label
+                                        is now considered plain text, and gets HTML escaped.
+                                        If you need to use HTML please consider using the pre_field_post_label_html
+                                        property instead.
                                 label_class:
                                     type: string
                                     description: >
@@ -819,6 +862,16 @@ additionalProperties:
                                         properties to add your own HTML.
                                         For example, you could place several fields in a table-layout using table, tr, th and td tags
                                         instead of the usual HTML from the microtemplate.
+                                
+                                in_table:
+                                    type: boolean
+                                    description: >
+                                        A shortcut to setting both the same_row and hide_with_previous_field properties.
+                                        This doesn't provide any extra functionality, it's simply included to try and make your
+                                        YAML files a little bit more readable.
+                                        
+                                        
+                                        This works from version 10.1 onwards.
                                 
                                 indent:
                                     type: number
@@ -870,6 +923,13 @@ additionalProperties:
                                         Does not work for checkbox or radio-type fields, where the label is after the field.
                                         
                                         This works from version 9.2 onwards.
+                                pre_field_label:
+                                    type: string
+                                    description: >
+                                        This property allows you to add a label specifically just before the field.
+                                        (As the regular label is usually placed on the line above for most fields.)
+                                        
+                                        This works from version 10.0 onwards.
                                 post_field_label:
                                     type: string
                                     description: >
@@ -971,6 +1031,15 @@ additionalProperties:
                                         When clicked, the value of the field will be placed into the
                                         user's clipboard.
                                         Only works on browsers that support copy/paste.
+                                
+                                show_clear_button:
+                                    type: boolean
+                                    description: >
+                                        When this field has something written in it, this option will show
+                                        a button next to this field.
+                                        When clicked, the value of the field will be blanked out/cleared.
+                                        
+                                        This works from 10.1 onwards.
                                 
                                 type:
                                     enum:
@@ -1141,6 +1210,11 @@ additionalProperties:
                                             default: 'Choose from Dropbox...'
                                             description: >
                                                 The text for the Choose from Dropbox button.
+                                        nothing_selected_phrase:
+                                            type: string
+                                            default: Nothing selected
+                                            description: >
+                                                Text to show in place of a name if nothing is selected.
                                         
                                         usage:
                                             type: string
@@ -1169,7 +1243,7 @@ additionalProperties:
                                                     The ID of the uploaded file
                                             description: >
                                                 If you create a file upload as a site setting or a plugin setting, the common features
-                                                module will automatically call the ze\file::getPathOfUploadInCacheDir() and ze\file::addToDatabase()
+                                                module will automatically call the ze\file::getPathOfUploadInCacheDir() and ze\fileAdm::addToDatabase()
                                                 functions to put the uploaded file(s) into the database and convert the filepath into a file ID.
                                                 The filepaths and their corresponding file IDs will be stored in this lookup array, just in case
                                                 you need to know what the old/new values are.
@@ -1345,22 +1419,6 @@ additionalProperties:
                                             description: >
                                                 A snippet of JavaScript code to be evaluated; if it's false for an item then that item is be pickable.
                                         
-                                        traits:
-                                            type: object
-                                            additionalProperties:
-                                                type: *variable
-                                            description: >
-                                                Only allow items with all the listed traits to be picked.
-                                                
-                                                Warning: this feature is deprecated!
-                                        without_traits:
-                                            type: object
-                                            additionalProperties:
-                                                type: *variable
-                                            description: >
-                                                Only allow items without any of the listed traits to be picked.
-                                                
-                                                Warning: this feature is deprecated!
                                         with_columns_set:
                                             type: object
                                             additionalProperties:
@@ -1380,6 +1438,14 @@ additionalProperties:
                                                 Setting this property will allow the administrator reorder the selected items by dragging/dropping.
                                                 
                                                 Otherwise items will be displayed in alphabetical order.
+                                        
+                                        use_preloaded_values:
+                                            type: boolean
+                                            description: >
+                                                A new option in Zenario 10.1 that's currently experiemental.
+                                                
+                                                Use this to have a pick-items field that uses pre-defined values that are pre-loaded,
+                                                rather than using an AJAX request to look things up.
                                 
                                 
                                 
@@ -1713,6 +1779,18 @@ additionalProperties:
                                         
                                         This works from version 7.5 onwards.
                                 
+                                redraw_microtemplates_onkeyup:
+                                    type: boolean
+                                    description: >
+                                        You can set this property on text or textarea fields.
+                                        If set, any time the user types in the field, any snippets that use the microtemplate property will have their
+                                        snippets redrawn.
+                                        
+                                        You should use this if the text you enter is used sopmewhere in an example, and you want it to live update
+                                        as the text is changed.
+                                        
+                                        This works from version 10.0 onwards.
+                                
                                 redraw_onchange:
                                     type: boolean
                                     description: >
@@ -1764,6 +1842,30 @@ additionalProperties:
                                         
                                         This works from version 7.7 onwards.
                                 
+                                send_signal_onchange:
+                                    type: string
+                                    description: >
+                                        This property is aimed at TUIX forms in FEA plugins, that need to send a
+                                        JavaScript signal when the user changes something on the form.
+                                        
+                                        A signal with the name you specify will be sent when this field is changed.
+                                        
+                                        This works from version 10.1 onwards.
+                                
+                                send_signal_after_redraw:
+                                    type: string
+                                    description: >
+                                        This property is aimed at TUIX forms in FEA plugins, that need to send a
+                                        JavaScript signal when the user changes something on the form.
+                                        
+                                        Just like the send_signal_onchange property, a signal with the name you
+                                        specify will be sent when this field is changed. However this is designed to
+                                        be used with a field that has the redraw_onchange, validate_onchange or
+                                        format_onchange property as well, and the signal will not be sent until
+                                        after the redraw is over.
+                                        
+                                        This works from version 10.1 onwards.
+                                
                                 validation:
                                     type: object
                                     description: >
@@ -1779,6 +1881,9 @@ additionalProperties:
                                             type: *booly
                                             description: >
                                                 A shortcut to setting both the required and only_validate_when_not_hidden properties.
+                                                
+                                                Note: <code>visible_if</code> is a client-side check; you should not rely on <code>required_if_not_hidden</code>
+                                                for security decisions as it can be manipulated by the client.
                                                 
                                                 From version 8 onwards, you can enter a value of true to highlight the field in red without a message.
                                         email:
@@ -2374,6 +2479,77 @@ additionalProperties:
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
                                 
+                                mirror_field:
+                                    type: object
+                                    description: >
+                                        Warning - at the time of writing this is currently very experimental!
+                                        
+                                        This property is used some FEA plugins, where the base plugin interacts with fields added
+                                        by another plugin.
+                                        
+                                        To use this, your module MUST make the following tables with these exact names:
+                                            - document_data (for saving the value of every field except for multiple checkboxes-type fields)
+                                            - document_checkbox_values (for saving multiple checkboxes-type fields)
+                                        
+                                        Depending on which plugin is accepting the custom fields, you can use this to show extra fields in
+                                        a list, show extra fields in a view, edit extra fields in a create or an edit mode, or search on
+                                        extra fields in a search plugin.
+                                        
+                                        This works from version 10.1 onwards.
+                                    properties:
+                                        name:
+                                            type: string
+                                            description: >
+                                                The code-name/column name of the field in the document_data table that you wish to add.
+                                                
+                                                Note that while multiple checkboxes-type fields won't actually have a column in the table,
+                                                they still need a code-name as if they had one.
+                                        value_when_searching:
+                                            type: string
+                                            description: >
+                                                You can use this option if you have a checkbox in your search box for an ENUM or VARCHAR column.
+                                                When checked, the checkbox will filter the search results by where the value of the  column
+                                                matches the value provided.
+                                        date_from_when_searching:
+                                            type: boolean
+                                            description: >
+                                                If you have a "type: date" field, by default the search plugin will only match rows
+                                                with dates exactly on that date.
+                                                
+                                                You can set the date_from_when_searching property to match dates on or after the date entered instead.
+                                        date_to_when_searching:
+                                            type: boolean
+                                            description: >
+                                                If you have a "type: date" field, by default the search plugin will only match rows
+                                                with dates exactly on that date.
+                                                
+                                                You can set the date_to_when_searching property to match dates on or before the date entered instead.
+                                        use_like_when_searching:
+                                            type: boolean
+                                            description: >
+                                                If you have a text field, by default the search plugin will an exact match when searching.
+                                                
+                                                You can set the use_like_when_searching property to use a "LIKE" search instead.
+                                        save_when_field_is_hidden:
+                                            type: boolean
+                                            description: >
+                                                When creating/editing, most values are not saved into the database if their fields were
+                                                hidden in the FEA form.
+                                                Set this option if you do want to save the value of a hidden field.
+                                        values_source:
+                                            type: string
+                                            description: >
+                                                Use this to load the list of values for a checkboxes/radios/select field, 
+                                                or a field with a typeahead.
+                                                The format used is the same as centeralised lists in datasets, i.e.:
+                                                    module_class_name::method_name
+                                        use_base64_when_searching:
+                                            type: boolean
+                                            description: >
+                                                We have the option to have the values on the search form be encoded if needed.
+                                                If you're going to do that and want a field to be searchable, you need to set this to true
+                                                so the documents search plugin knows to decode any values it receives.
+                                
                                 values:
                                     type:
                                         - string
@@ -2384,6 +2560,8 @@ additionalProperties:
                                         From 7.0.5 onwards, you can use this property for a text field to add a jQuery autocomplete.
                                         
                                         From 7.0.7 onwards, you can enter the code-name of lov.
+                                        
+                                        From 10.1 onwards, you can use this to provide a list of values for a pick_items field that uses the use_preloaded_values property.
                                     additionalProperties: &lovValues
                                         #This needs to be changed if using docson as it glitches out here
                                         type:
@@ -2454,23 +2632,6 @@ additionalProperties:
                                                     until it seems a snippet with the show_split_values_from property set to this field's code name.
                                                     
                                                     This works from version 7.4 onwards.
-                                            
-                                            hide_unselected_values_when_readonly:
-                                                type: boolean
-                                                description: >
-                                                    If a "type: checkboxes" or "type: radios" field is readonly, don't draw any unselected values.
-                                                    
-                                                    This works from version 7.7 onwards.
-                                            
-                                            display_as_text_when_readonly:
-                                                type: boolean
-                                                description: >
-                                                    If a "type: checkboxes" or "type: radios" field is readonly, don't draw any unselected values
-                                                    or the form elements. Instead just display as text.
-                                                    
-                                                    If nothing is selected then the field's empty_value property will be displayed.
-                                                    
-                                                    This works from version 8.0 onwards.
                                             
                                             label_class:
                                                 type: string
@@ -3037,6 +3198,12 @@ additionalProperties:
                                         Some HTML code to be placed just after the <fieldset> for this grouping is closed.
                                         
                                         This works from version 9.4 onwards.
+                                grouping_onclick:
+                                    type: string
+                                    description: >
+                                        This lets you write JavaScript code in an onclick attribute for the grouping.
+                                        
+                                        This works from version 10.0 onwards.
 
                                 
                                 

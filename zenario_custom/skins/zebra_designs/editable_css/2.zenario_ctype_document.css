@@ -6,13 +6,20 @@
 	font-size:2.8em;
 }
 
-.zenario_ctype_document .document_details_content_download h3 {
-	font-family:'robotolight',Arial, Helvetica, sans-serif;
-	font-size:1.2em;
+.zenario_ctype_document .document_details_content_panel {
+	overflow:hidden;
 }
 
-.zenario_ctype_document .document_details_content_download a,
-.zenario_ctype_document .document_details_content_download h3 {
+.zenario_ctype_document .document_details_content_download h3,
+.zenario_ctype_document .document_details_content_download p {
+	margin-bottom:10px;
+}
+
+.zenario_ctype_document .document_details_content_download p + h3 {
+	margin-top:1.2em;
+}
+
+.zenario_ctype_document .document_details_content_download a {
 	color:#2a98ce;
 }
 
@@ -28,11 +35,6 @@
 .zenario_ctype_document .document_details_content_panel .document_details_content_sticky_image img {
 	border:1px solid #333;
 }
-
-.zenario_ctype_document .document_details_content_download h3 {
-	color:#525151;
-}
-
 
 .zenario_ctype_document .document_details_content_download a,
 .zenario_ctype_document .document_details_content_download a:hover {

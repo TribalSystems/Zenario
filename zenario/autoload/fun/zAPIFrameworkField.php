@@ -67,8 +67,9 @@ $postValue = null;
 
 if ($name) {
 	if (isset($_POST[$name])
+	 && !is_array($_POST[$name])
 	 && $this->checkPostIsMine()) {
-		$postValue = $_POST[$name];
+		$postValue = (string) $_POST[$name];
 	}
 }
 

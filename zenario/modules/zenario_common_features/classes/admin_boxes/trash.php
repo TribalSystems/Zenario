@@ -101,15 +101,15 @@ class zenario_common_features__admin_boxes__trash extends ze\moduleBaseClass {
 				$parentMenuContentItem = ze\menu::getContentItem($menu['parent_id']);
 
 				if (!empty($parentMenuContentItem) && is_array($parentMenuContentItem)) {
-					$goToContentItem = ze\link::toItem(
+					$goToContentItem = ze\link::toItemWithAlias(
 						$parentMenuContentItem['content_id'], $parentMenuContentItem['content_type'],
-						$fullPath = true, '', false, false, $forceAliasInAdminMode = true
+						$fullPath = true
 					);
 				}
 			} else {
-				$goToContentItem = ze\link::toItem(
+				$goToContentItem = ze\link::toItemWithAlias(
 					ze::$homeEquivId, ze::$homeCType,
-					$fullPath = true, '', false, false, $forceAliasInAdminMode = true
+					$fullPath = true
 				);
 			}
 		}

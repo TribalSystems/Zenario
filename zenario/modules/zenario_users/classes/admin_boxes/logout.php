@@ -47,7 +47,7 @@ class zenario_users__admin_boxes__logout extends zenario_users {
 			switch ($option) {
 				case 'extranet_user':
 					ze\user::logOut();
-					ze\cookie::clear('LOG_ME_IN_COOKIE');
+					ze\cookie::clear('z_extranet_auto_login');
 					unset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE']);
 					break;
 					

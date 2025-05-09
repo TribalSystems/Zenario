@@ -124,7 +124,7 @@ for ($i = 1; true; ++$i) {
 		
 		$row = [];
 		for ($j = 0; $j < 5; ++$j) {
-			if (!($row[$j] = $sheet->getCellByColumnAndRow($j, $i)->getCalculatedValue())) {
+			if (!($row[$j] = $sheet->getCell([$j + 1, $i])->getCalculatedValue())) {
 				$row[$j] = '';
 			}
 		}

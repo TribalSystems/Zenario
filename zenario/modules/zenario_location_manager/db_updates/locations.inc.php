@@ -512,7 +512,7 @@ if (ze\dbAdm::needRevision(119)) {
 	$result = ze\sql::select($sql);
 	
 	while ($row = ze\sql::fetchAssoc($result)) {
-		$imageId = ze\file::addFromString('location', $row['data'], $row['filename'], true);
+		$imageId = ze\fileAdm::addFromString('location', $row['data'], $row['filename'], true);
 		if ($imageId)
 		{
 		$sql2 = "

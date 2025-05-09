@@ -40,12 +40,53 @@ empty_sitewide_slot:
                 layout: true
     actions:
         insert_reusable_on_layout_layer:
-            ord: 997
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
             label: Insert a plugin into the site-wide ~header~...
             page_modes:
                 layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 3, false);
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 3, false);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 3
+                is_nest: false
+        
+        insert_nest_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert nest into the site-wide ~header~...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 3, true);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 3
+                is_nest: true
+        
+        insert_slideshow_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert slideshow into the site-wide ~header~...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 3, 'slideshow');
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 3
+                is_nest: 'slideshow'
+        
+        insert_fab_layout_layer:
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            page_modes:
+                layout: true
+            visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'layout');
+            onclick: return zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'layout');
+            label: Insert a plugin/nest/slideshow into the site-wide ~header~...
     
     
     overridden_info:

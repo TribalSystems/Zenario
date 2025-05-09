@@ -553,6 +553,27 @@ body.mobile .zenario_user_forms .page_switcher ul li span:after{
 	margin-top:-40px;
 }
 
+/* Resume
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_user_forms .resume_box {
+	border:1px solid #ccc;
+	padding:2em;
+	text-align:center;
+}
+
+.zenario_user_forms .resume_box .resume_buttons {
+	display:flex;
+	flex-wrap: wrap;
+	gap:20px;
+	justify-content:center;
+}
+
+body.mobile .zenario_user_forms .resume_box .resume_buttons {
+	gap:10px;
+}
+
+
 /* User forms, Grouping_Contact
 ------------------------------------------------------------------------------------------------- */
 

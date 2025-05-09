@@ -10,19 +10,24 @@ zenario_menu:
                     type: checkbox
                     format_onchange: true
                     side_note: >
-                        If invisible, menu text will appear in breadcrumb trail
-                        only.
+                        If invisible, menu text will appear in breadcrumb trail only.
         advanced:
             fields:
-                descriptive_text:
-                    ord: accesskey.1
-                    type: grouping
-                    name: descriptive_text
+                description_additional_text:
+                    grouping: promo_menu_description_grouping
+                    snippet:
+                        html: |
+                          The <strong>Menu with promo images</strong> plugin (zenario_promo_menu) supports menu nodes with additional text. You may specify this text here. Note that other menu plugins may not support this.
+
+                #The promo_menu_descriptive_text_grouping goes here.
+                #It is defined in the Common Features module and will be populated using the custom fields below.
             
+            #Note that "custom_fields" elements are used as a TUIX template for modification in PHP.
+            #They will not be displayed in the output of a FAB (only "fields").
             custom_fields:
                 descriptive_text:
-                    grouping: descriptive_text
-                    label: 'Additional text:'
+                    grouping: promo_menu_descriptive_text_grouping
+                    label: 'Additional text for menu with promo images:'
                     type: textarea
                     rows: 2
                     cols: 80

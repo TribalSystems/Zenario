@@ -29,8 +29,6 @@
 
 namespace ze;
 
-use ZxcvbnPhp\Zxcvbn;
-
 class user {
 
 
@@ -59,28 +57,41 @@ class user {
 			\ze\row::set('users_custom_data', [$col => ($remove ? 0 : 1)], ['user_id' => $userId]);
 		}
 	}
+	
+	
+	
+
+
+	//Load information on the groups used for permissions
+	protected static $allPermissionGroups;
+	public static function permissionGroups() {
+		if (is_null(static::$allPermissionGroups)) {
+			static::$allPermissionGroups = \ze\row::getAssocs('custom_dataset_fields', ['id', 'label', 'db_column'], ['type' => 'group', 'is_system_field' => 0], 'db_column', 'db_column');
+		}
+		return static::$allPermissionGroups;
+	}
 
 
 	
 	public static function groups($userId = null, $flat = true, $getLabelWhenFlat = false) {
-		if ($userId === -1) {
-			$userId = $_SESSION['extranetUserID'] ?? false;
+		if (is_null($userId)) {
+			if (empty($_SESSION['extranetUserID'])) {
+				return [];
+			} else {
+				$userId = $_SESSION['extranetUserID'];
+			}
 		}
 		
 		$groups = [];
+		$permissionGroups = \ze\user::permissionGroups();
 	
-		//Look up a list of group names on the system
-		if (!is_array(\ze::$groups)) {
-			\ze::$groups = \ze\row::getAssocs('custom_dataset_fields', ['id', 'label', 'db_column'], ['type' => 'group', 'is_system_field' => 0], 'db_column', 'db_column');
-		}
-	
-		if (!empty(\ze::$groups)) {
+		if (!empty($permissionGroups)) {
 			//Get the row from the users_custom_data table for this user
-			//(Note that the group names stored in \ze::$groups are the column names)
-			$inGroups = \ze\row::get('users_custom_data', array_keys(\ze::$groups), $userId);
+			//(Note that the group names stored in static::$allPermissionGroups are the column names)
+			$inGroups = \ze\row::get('users_custom_data', array_keys($permissionGroups), $userId);
 		
 			//Come up with a subsection of the groups that this user is in
-			foreach (\ze::$groups as $groupCol => $group) {
+			foreach ($permissionGroups as $groupCol => $group) {
 				if (!empty($inGroups[$groupCol])) {
 					if ($flat) {
 						if ($getLabelWhenFlat) {
@@ -98,27 +109,40 @@ class user {
 		return $groups;
 	}
 
-	public static function isInGroup($groupId, $userId = 'session') {
+	protected static $currentUsersPermissionGroups;
+	const isInGroupFromTwig = true;
+	public static function isInGroup($groupId, $userId = null) {
+		
+		$currentUserId = $_SESSION['extranetUserID'] ?? 0;
+		if (is_null($userId)) {
+			$userId = $currentUserId;
+		}
 	
-		if ($userId === 'session') {
-			if (empty($_SESSION['extranetUserID'])) {
-				return false;
-			} else {
-				$userId = $_SESSION['extranetUserID'];
+		if (!$userId) {
+			return false;
+		}
+		
+		//Get the permission groups that this user is in.
+		//(But if the user is the currently logged in extranet user, cache this to save a query next time.)
+		$isCurrentUser = $userId == $currentUserId;
+		
+		if ($isCurrentUser && !is_null(static::$currentUsersPermissionGroups)) {
+			$groups = static::$currentUsersPermissionGroups;
+		} else {
+			
+			$groups = \ze\user::groups($userId);
+			
+			if ($isCurrentUser) {
+				static::$currentUsersPermissionGroups = $groups;
 			}
 		}
-	
-		if (!$userId || !((int) $groupId)) {
-			return false;
+		
+		//Make this function flexible, and allow it to be called using group ID or code name
+		if (is_numeric($groupId)) {
+			return isset($groups[$groupId]);
+		} else {
+			return in_array($groupId, $groups);
 		}
-	
-		$group_name = \ze\dataset::fieldDBColumn($groupId);
-	
-		if(!$group_name) {
-			return false;
-		}
-	
-		return (bool) \ze\row::get('users_custom_data', $group_name, $userId);
 	}
 
 	public static function getUserGroupsNames( $userId ) {
@@ -157,14 +181,18 @@ class user {
 		if (isset($_SESSION)) {
 			if (empty($_SESSION['extranetUserID'])) {
 			
-				if (isset($_COOKIE['LOG_ME_IN_COOKIE'])
-				 && ($idAndMD5 = explode('_', $_COOKIE['LOG_ME_IN_COOKIE'], 2))
+				if (isset($_COOKIE['z_extranet_auto_login'])
+				 && ($idAndMD5 = explode('_', $_COOKIE['z_extranet_auto_login'], 2))
 				 && (count($idAndMD5) == 2)
 				 && ($user = \ze\row::get('users', ['id', 'first_name', 'last_name', 'email', 'screen_name', 'password'], ['id' => (int) $idAndMD5[0], 'status' => 'active']))
 				 && ($idAndMD5[1] === md5(\ze\link::host(). $user['id']. $user['screen_name']. $user['email']. $user['password']))) {
 					\ze\user::logIn($user['id']);
-				
-					if (\ze\cookie::canSet('functionality')) {
+					
+					//On sites where we use cookie consent, if someone logs in as an extranet user,
+					//assume they've read the T&Cs and we can serve them cookies now.
+					//However make an exception if they specifically pressed the "reject" button previosuly.
+					if (\ze::setting('cookie_require_consent')
+					 && \ze\cookie::canSet('functionality')) {
 						\ze\cookie::setConsent();
 					}
 				}
@@ -217,8 +245,6 @@ class user {
 			$_SESSION['extranetUser_logged_into_site'],
 			$_SESSION['extranetUserImpersonated'],
 			$_SESSION['extranetUserID_pending'],
-			$_SESSION['extranetUser_firstname'],
-			$_SESSION['extranetUser_lastname'],
 			$_SESSION['extranetUserSteps'],
 			$_SESSION['zenario_loggingInUserID'],
 			$_SESSION['zenario_loggingInUserSite']
@@ -237,6 +263,7 @@ class user {
 		return \ze\dataset::fieldValue('users', $cfield, $userId ?? $_SESSION['extranetUserID'] ?? null, $returnCSV, false);
 	}
 
+	const idFromTwig = true;
 	public static function id() {
 		return $_SESSION['extranetUserID'] ?? null;
 	}
@@ -257,22 +284,22 @@ class user {
 
 	const salutationFromTwig = true;
 	public static function salutation($userId = null) {
-		return \ze\row::get('users', 'salutation', $userId ?? $_SESSION['extranetUserID']);
+		return \ze\row::get('users', 'salutation', $userId ?? $_SESSION['extranetUserID'] ?? null);
 	}
 
 	const firstNameFromTwig = true;
 	public static function firstName($userId = null) {
-		return \ze\row::get('users', 'first_name', $userId ?? $_SESSION['extranetUserID']);
+		return \ze\row::get('users', 'first_name', $userId ?? $_SESSION['extranetUserID'] ?? null);
 	}
 
 	const lastNameFromTwig = true;
 	public static function lastName($userId = null) {
-		return \ze\row::get('users', 'last_name', $userId ?? $_SESSION['extranetUserID']);
+		return \ze\row::get('users', 'last_name', $userId ?? $_SESSION['extranetUserID'] ?? null);
 	}
 
 	const nameFromTwig = true;
 	public static function name($userId = null) {
-		if ($row = \ze\row::get('users', ['first_name', 'last_name'], $userId ?? $_SESSION['extranetUserID'])) {
+		if ($row = \ze\row::get('users', ['first_name', 'last_name'], $userId ?? $_SESSION['extranetUserID'] ?? null)) {
 			return $row['first_name']. ' '. $row['last_name'];
 		}
 		return null;
@@ -323,8 +350,6 @@ class user {
 		}
 	
 		$_SESSION['extranetUserID'] = $userId;
-		$_SESSION['extranetUser_firstname'] = $user['first_name'];
-		$_SESSION['extranetUser_lastname'] = $user['last_name'];
 		$_SESSION['extranetUser_logged_into_site'] = COOKIE_DOMAIN. SUBDIRECTORY. \ze::setting('site_id');
 	
 		return $user;
@@ -468,6 +493,9 @@ class user {
 			//Permissions for ecommerce
 			case 'view.invoice':
 			case 'edit.order':
+			//Documents
+			case 'view.document':
+			case 'manage.document':
 			case 'manage.envelope':
 			case 'manage.video':
 				//Superusers only

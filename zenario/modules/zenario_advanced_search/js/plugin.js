@@ -44,10 +44,20 @@ zenario_advanced_search.onKeyUp = function(Container_Id, field, default_tab, mod
 					if (mode == 'search_entry_box_show_always') {
 						htmlEl = $('#' + containerId + '_results');
 						htmlEl.show(200);
+						
+						htmlEl = $('#' + containerId + '-search_entry_box_panel');
+						htmlEl.addClass('active');
 					}
 					
 					$searchResults.html($resultDom.find('.zenario_advanced_search_results').html());
 					$searchResults.stop(true, true).animate({opacity: 1}, 150);
+					
+					//After a form submission, make sure the image properties icons
+					//and content item status icons are restored.
+					zenario.addJQueryElements('#' + containerId + '_results ');
+					if (zenario.adminId) {
+						zenarioA.scanHyperlinksAndDisplayStatus(Container_Id);
+					}
 				});
 			
 			}, delay);
@@ -83,6 +93,9 @@ zenario_advanced_search.closeButtonOnClick = function(containerId, mode) {
 	} else if (mode == 'search_entry_box_show_always') {
 		htmlEl = $('#' + containerId + '_results');
 		htmlEl.hide(200);
+		
+		htmlEl = $('#' + containerId + '-search_entry_box_panel');
+		htmlEl.removeClass('active');
 		
 		$('#' + containerId + '-search_input_box').val('');
 	}

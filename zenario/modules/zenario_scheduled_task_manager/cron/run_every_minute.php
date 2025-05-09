@@ -78,7 +78,8 @@ require CMS_ROOT. 'zenario/shellheader.inc.php';
 
 
 if ($step == 1) {
-	if (!ze::setting('jobs_enabled')) {
+	if (!ze::setting('site_enabled')
+	 || !ze::setting('jobs_enabled')) {
 		exit;
 	}
 	$managerClassName = 'zenario_scheduled_task_manager';

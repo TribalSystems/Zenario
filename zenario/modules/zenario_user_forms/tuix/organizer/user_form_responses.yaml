@@ -14,11 +14,11 @@ zenario__user_forms:
             default_sort_desc: true
             notice:
                 show: false
-                type: information
+                type: ''
                 message: ''
             db_items:
                 table: |
-                    [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
+                    [[DB_PREFIX]]user_response AS ur
                     INNER JOIN [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS uf
                         ON uf.id = ur.form_id
                     LEFT JOIN [[DB_PREFIX]]users AS u
@@ -65,6 +65,15 @@ zenario__user_forms:
                     always_show: true
                     width: xlarge
                     html: true
+                sent_to_admins_or_users:
+                    hidden: true
+                    db_column: |
+                            (
+                                SELECT GROUP_CONCAT(DISTINCT(sending_log.email_address_to) SEPARATOR ", ")
+                                FROM [[DB_PREFIX]]email_template_sending_log AS sending_log
+                                WHERE form_response_id = ur.id
+                                ORDER BY sending_log.id
+                            ) AS sent_to_admins_or_users
                 processing_actions:
                     title: Processing actions
                     width: xxlarge
@@ -136,7 +145,7 @@ zenario__user_forms:
                         path: zenario_user_form_response
                 send_form_response_to_admin_by_email:
                     priv: _PRIV_VIEW_FORM_RESPONSES
-                    label: 'Send by email...'
+                    label: 'Re-send response...'
                     admin_box:
                         path: zenario_send_form_response_to_admin_by_email
                 delete:

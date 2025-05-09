@@ -330,15 +330,12 @@ if ($debugMode) {
 			
 			//Add custom fields
 			foreach ($customFields as $cfield) {
-				$cfield['label'] = htmlspecialchars($cfield['label']);
+				$cfield['label'] = $cfield['label'];
 				
 				$cFieldName = '__custom_field__'. ($cfield['db_column'] ?: $cfield['id']);
 			
 				if (!isset($tags['tabs'][$cfield['tab_name']])
-				 || !is_array($tags['tabs'][$cfield['tab_name']])
-				 //Drawing of repeating dataset fields not implemented
-				 || $cfield['type'] == 'repeat_start'
-				 || $cfield['type'] == 'repeat_end') {
+				 || !is_array($tags['tabs'][$cfield['tab_name']])) {
 					continue;
 				}
 				if (!isset($tags['tabs'][$cfield['tab_name']]['fields'])
@@ -531,7 +528,7 @@ if ($debugMode) {
 				$customisedField['ord'] = $cfield['ord'];
 			}
 			if ($cfield['label']) {
-				$customisedField['label'] = htmlspecialchars($cfield['label']);
+				$customisedField['label'] = $cfield['label'];
 			}
 			if ($cfield['note_below']) {
 				$customisedField['note_below'] = htmlspecialchars($cfield['note_below']);
@@ -711,8 +708,18 @@ if ($debugMode) {
 					}
 					
 					//If there are custom fields, attempt to save them
-					if (!empty($tags['key']['id'])) {
-						if ($dataset = ze\row::get('custom_datasets', true, ['extends_admin_box' => $requestedPath])) {
+					
+					if ($dataset = ze\row::get('custom_datasets', true, ['extends_admin_box' => $requestedPath])) {
+					
+						if (!$tags['key']['id'] && !$dataset['system_table']) {
+							//Catch the rare situation where there's a dataset with a custom table but not a core table.
+							//Insert a blank row and get its ID. Do not try to predict what the ID would be.
+							ze\sql::update('INSERT INTO ' . DB_PREFIX . $dataset['table'] . ' VALUES()');
+							
+							$tags['key']['id'] = ze\sql::insertId();
+						}
+					
+						if (!empty($tags['key']['id'])) {
 							
 							if (!$dataset['edit_priv'] || ze\priv::check($dataset['edit_priv'])) {
 							

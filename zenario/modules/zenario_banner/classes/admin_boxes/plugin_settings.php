@@ -109,6 +109,13 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
+		//If this is in the conductor, set up the slides_and_states LOV just in case the command option is chosen
+		//and it needs to be displayed.
+		if ($box['key']['usesConductor']) {
+			$box['key']['custom_command.prev_value'] = $values['first_tab/custom_command'];
+			ze\miscAdm::setupSlideDestinations($box, $fields, $values, 'first_tab/to_state.custom_command', $values['first_tab/custom_command']);
+		}
+		
 		//The banner plugin has some fiddly logic for the default value of the canvas.
 		//Outside of a nest, the default value should be "Crop and Zoom"
 		if ($values['first_tab/canvas'] == 'DEFAULT') {
@@ -120,11 +127,6 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 				$values['first_tab/canvas'] = 'unlimited';
 			}
 		}
-		
-		$fields['first_tab/image']['side_note'] =
-		$fields['first_tab/mobile_image']['side_note'] =
-		$fields['first_tab/rollover_image']['side_note'] = 
-			ze\admin::phrase('If a JPG or PNG image is selected, Zenario will create and display a WebP version of the image. Fallback logic will be used for browsers which do not support WebP.');
 		
 		//For Wireframe Plugins, pick images from this item's images, rather than 
 		if ($box['key']['isVersionControlled']/*
@@ -220,9 +222,61 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		 && ze\lang::count() >= 2) {
 			$values['first_tab/use_translation'] = 1;
 		}
+		
+		
+		//If in a conductor, try to pre-populate a sensible value for the "custom_command" option
+		if ($box['key']['usesConductor']
+		 && isset($fields['first_tab/custom_command'])
+		 && $values['first_tab/link_type'] != '_CONDUCTOR_COMMAND') {
+			
+			$sql = "
+				SELECT ps.value
+				FROM ". DB_PREFIX. "nested_plugins AS np
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+				   ON ps.instance_id = np.instance_id
+				  AND ps.egg_id = np.id
+				  AND ps.name = 'custom_command'
+				  AND ps.value LIKE 'banner_link%'
+				WHERE np.instance_id = ". (int) $box['key']['instanceId']. "
+				  AND np.is_slide = 0
+				  AND np.slide_num = ". (int) $box['key']['slideNum'];
+			
+			$maxN = -1;
+			foreach (ze\sql::fetchValues($sql) as $value) {
+				$value = (int) preg_replace('@\D@', '', $value);
+				
+				if ($maxN < $value) {
+					$maxN = $value;
+				}
+			}
+			
+			//If we've never used this before, suggest the command name be "banner_link".
+			if ($maxN === -1) {
+				$values['first_tab/custom_command'] = 'banner_link';
+			}
+			
+			//Catch the case where "banner_link" without a number was used (e.g. in the case above).
+			//We'd want the next suggestion to be "banner_link_2" and not "banner_link_1".
+			if ($maxN === 0) {
+				$maxN = 1;
+			}
+			
+			//If we've used this format before, the next suggesttion should be "banner_link_n", where "n" is the next integer.
+			if ($maxN > 0) {
+				$values['first_tab/custom_command'] = 'banner_link_'. (string) ($maxN + 1);
+			}
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		//If the admin changed the "custom_command" field, update the note next to it.
+		if ($box['key']['usesConductor']
+		 && $box['key']['custom_command.prev_value'] != $values['first_tab/custom_command']) {
+			$box['key']['custom_command.prev_value'] = $values['first_tab/custom_command'];
+			$values['first_tab/to_state.custom_command'] = '';
+			ze\miscAdm::setupSlideDestinations($box, $fields, $values, 'first_tab/to_state.custom_command', $values['first_tab/custom_command']);
+		}
 		
 		//The tag IDs in translation chain pickers have a slightly different format.
 		//This is needed for a technical reason, as meta-info about the selected items are stored by ID.
@@ -334,10 +388,6 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		
 		
 		
-		if (!ze\module::inc('zenario_ctype_picture')) {
-			unset($fields['first_tab/image_source']['values']['_PICTURE']);
-		}
-		
 		$retinaSideNote = "If the source image is large enough,
                             the resized image will be output at twice its displayed width &amp; height
                             to appear crisp on retina screens.
@@ -360,9 +410,6 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		$fields['first_tab/advanced_behaviour']['values']['use_rollover']['disabled'] =
 			!($values['first_tab/image_source'] == '_CUSTOM_IMAGE' || $values['first_tab/image_source'] == '_PRODUCT_IMAGE');
 		
-		$fields['first_tab/picture']['hidden'] =
-			$values['first_tab/image_source'] != '_PICTURE';
-		
 		//Check whether an image is picked
 		$cID = $cType = $pictureCID = $pictureCType = $imageId = $imagePicked = false;
 		
@@ -380,13 +427,9 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			(($values['first_tab/image_source'] == '_CUSTOM_IMAGE'
 			  && ($imageId = $values['first_tab/image']))
 		
-			 || ($values['first_tab/image_source'] == '_PICTURE'
-			  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
-			  && ($imageId = ze\row::get("versions", "file_id", ["id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)])))
-		 
 			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
 			  && (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
-			  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))
+			  && ($imageId = ze\content::featureImageId($cID, $cType)))
 			  
 			  || (isset($fields['first_tab/product_source'])
 			  && (
@@ -464,7 +507,7 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			}
 		}
 		
-		$fields['first_tab/mobile_behaviour']['hidden'] = !ze::in($values['first_tab/image_source'], '_CUSTOM_IMAGE', '_STICKY_IMAGE', '_PICTURE', '_PRODUCT_IMAGE');
+		$fields['first_tab/mobile_behaviour']['hidden'] = !ze::in($values['first_tab/image_source'], '_CUSTOM_IMAGE', '_STICKY_IMAGE', '_PRODUCT_IMAGE');
 		
 		$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['hidden'] = true;
 		$fields['first_tab/hyperlink_target']['notices_below']['featured_image_filename']['type'] = '';
@@ -503,12 +546,19 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		 || $box['key']['isVersionControlled']
 		 || ze\lang::count() < 2;
 
-		$fields['first_tab/more_link_text']['hidden'] = 
 		$fields['first_tab/target_blank']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 && $values['first_tab/link_type'] != '_DOCUMENT'
 		 && $values['first_tab/link_type'] != '_EXTERNAL_URL'
 		 && $values['first_tab/link_type'] != '_EMAIL'
+		 && $values['first_tab/link_type'] != '_PRODUCT_DESCRIPTION_PAGE'; //This value is for Storefront Banner
+
+		$fields['first_tab/more_link_text']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
+		 && $values['first_tab/link_type'] != '_DOCUMENT'
+		 && $values['first_tab/link_type'] != '_EXTERNAL_URL'
+		 && $values['first_tab/link_type'] != '_EMAIL'
+		 && $values['first_tab/link_type'] != '_CONDUCTOR_COMMAND'
 		 && $values['first_tab/link_type'] != '_PRODUCT_DESCRIPTION_PAGE'; //This value is for Storefront Banner
 		
 		//Don't show the option to pick a translation chain when not linking to a content item, on single-language sites,
@@ -582,12 +632,12 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		}
 		
 		//Don't show the translations checkbox if this can never be translated
-		$fields['first_tab/translate_text']['hidden'] =
+		$fields['title_and_description/translate_text']['hidden'] =
 			$box['key']['isVersionControlled']
 		 || !ze\row::exists('languages', ['translate_phrases' => 1]);
 		
 		//Don't show notes about translations if this won't be translated
-		if ($fields['first_tab/translate_text']['hidden'] || !$values['first_tab/translate_text']) {
+		if ($fields['title_and_description/translate_text']['hidden'] || !$values['title_and_description/translate_text']) {
 			$fields['title_and_description/text']['show_phrase_icon'] =
 			$fields['title_and_description/title']['show_phrase_icon'] =
 			$fields['first_tab/more_link_text']['show_phrase_icon'] = false;

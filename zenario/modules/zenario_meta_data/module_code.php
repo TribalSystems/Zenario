@@ -50,31 +50,45 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			$this->showSections['show_labels'] = true;
 		}
 		$this->getContentItemMetaData();
-		$this->framework('Outer',$this->mergeFields,$this->showSections);
+		$this->framework('Outer', $this->mergeFields, $this->showSections);
 	}
 	
 	
 	//Attempt to look up the release_date column from the database.
 	function getContentItemMetaData() {
+		$adminId = ze\admin::id();
+		
 		if ($this->setting('show_date') && $this->setting('date_format')){
 			$dates = ze\row::get('content_item_versions', ['release_date'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
-			if ($releaseDate = ze\date::format($dates['release_date'], $this->setting('date_format'))) {
-				$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
-				$this->showSections['show_date'] = true;
+			
+			$releaseDate = '';
+			if ($dates['release_date']) {
+				$releaseDate = ze\date::format($dates['release_date'], $this->setting('date_format'));
+			} elseif ($adminId) {
+				$releaseDateCTypeSetting = ze\row::get('content_types', ['release_date_field', 'auto_set_release_date'], ['content_type_id' => $this->cType]);
+				if ($releaseDateCTypeSetting['release_date_field'] == 'optional' && $releaseDateCTypeSetting['auto_set_release_date']) {
+					$releaseDate = $this->phrase('[ Will display release date when published ]');
+				}
 			}
+			
+			$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
+			$this->showSections['show_date'] = true;
 		}
+		
 		if ($this->setting('show_published_date') && $this->setting('published_date_format')){
 			$pDates = ze\row::get('content_item_versions', ['published_datetime'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
 			
+			$publishedDate = '';
 			if ($pDates['published_datetime']) {
 				$publishedDate = ze\date::format($pDates['published_datetime'], $this->setting('published_date_format'));
-			} else {
+			} elseif ($adminId) {
 				$publishedDate = $this->phrase('[ Will display date when published ]');
 			}
 			
 			$this->mergeFields['Published_date'] = ['value' => $publishedDate, 'html_tag' => $this->setting('published_date_html_tag'), 'label' => $this->phrase('Published date'), 'class' => 'published_date'];
 			$this->showSections['show_published_date'] = true;
 		}
+		
 		if ($this->setting('show_writer_name')) {
 			if ($writerId = ze\row::get('content_item_versions', 'writer_id', ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion])){
 				$writerArray = ze\row::get('writer_profiles', ['first_name', 'last_name', 'email', 'profile'], ['id' => (int) $writerId]);
@@ -114,7 +128,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 						$file = ze\sql::fetchAssoc($result);
 						if (!empty($file)) {
 							$width = $height = $url = false;
-							ze\file::imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
+							ze\image::link($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
 							if ($url) {
 								$this->mergeFields['Writer_image'] = ['Writer_Src' => $url, 'Writer_Alt' => $file['alt_tag'], 'html_tag' => $this->setting('writer_image_label_html_tag'), 'label' => $this->phrase('Writer image'), 'class' => 'writer_image'];
 								
@@ -122,6 +136,10 @@ class zenario_meta_data extends ze\moduleBaseClass {
 								//to let the admin access the "Crop and zoom" feature.
 								if (ze::isAdmin()) {
 									$this->mergeFields['Writer_image']['class'] .= ' zenario_image_properties zenario_image_id__'. $file['id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
+									
+									if ($this->setting('canvas') == 'crop_and_zoom') {
+										$this->mergeFields['Writer_image']['class'] .= ' zenario_crop_properties';
+									}
 								}
 								
 								$this->showSections['show_writer_image'] = true;
@@ -185,19 +203,19 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				
 				if ($featuredImageSource == 'current_content_item_feature_image') {
 					$this->mergeFields['Featured_image']['Featured_Image_HTML'] =
-						ze\file::featureImageHTML(
+						ze\content::featureImageHTML(
 							$this->cID, $this->cType, $this->cVersion,
 							$this->setting('fall_back_to_default_image'), $this->setting('default_image_id'),
 							$this->setting('image_2_width'), $this->setting('image_2_height'),
-							$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
+							$this->setting('image_2_canvas'), $this->setting('image_2_retina'),
 							$file['alt_tag']
 						);
 				} elseif ($featuredImageSource == 'menu_node_or_parent_feature_image') {
 					$cssRules = [];
 					$this->mergeFields['Featured_image']['Featured_Image_HTML'] =
-						ze\file::imageHTML(
+						ze\image::html(
 							$cssRules, true, $file['id'], $this->setting('image_2_width'), $this->setting('image_2_height'),
-							$this->setting('image_2_canvas'), $this->setting('image_2_retina'), $this->setting('image_2_webp'),
+							$this->setting('image_2_canvas'), $this->setting('image_2_retina'),
 							$file['alt_tag'], '', '', '', ''
 						);
 				}

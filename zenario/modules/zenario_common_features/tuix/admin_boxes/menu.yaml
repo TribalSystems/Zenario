@@ -198,6 +198,10 @@ zenario_menu:
                     side_note: >
                         If you have an anchor on the page, you can specify it here and you'll be
                         taken to its location on navigation.
+                #This grouping is empty by default and populated when the Menu Milticolumn module is running.
+                menu_multicolumn_top_of_column_grouping:
+                    type: grouping
+                    ord: 5000
         feature_image:
             label: 'Images'
             edit_mode:
@@ -307,13 +311,13 @@ zenario_menu:
                     type: radios
                     values:
                         no_link:
-                            ord: "1"
+                            ord: 1
                             label: No link
                         content_item:
-                            ord: "2"
+                            ord: 2
                             label: Link to a content item
                         external_url:
-                            ord: "3"
+                            ord: 3
                             label: Link to an external URL
                     value: no_link
                     format_onchange: Yes
@@ -340,16 +344,16 @@ zenario_menu:
                     value: always_show
                     values:
                         always_show:
-                            ord: "1"
+                            ord: 1
                             label: Show to visitors and extranet users, even if the target content item is private
                         private:
-                            ord: "2"
+                            ord: 2
                             label: Obey the privacy setting of the content item
                         logged_out:
-                            ord: "3"
+                            ord: 3
                             label: Show to visitors, hide from extranet users
                         logged_in:
-                            ord: "4"
+                            ord: 4
                             label: Only show to extranet users
                 promo__url:
                     indent: 2
@@ -428,22 +432,41 @@ zenario_menu:
                 enabled: ""
             fields:
                 
+                content_restriction_desc_grouping:
+                    type: grouping
+                    snippet:
+                        label: Preferential menu node for a content type
+                        label_class: subheading
+                
                 content_restriction_desc:
+                    grouping: content_restriction_desc_grouping
                     snippet:
                         html: |
-                            You can help keep [[content_types]] on your site tidy
-                            by limiting their creation to specific places in the menu.
-                            (This can either be enforced or just a suggestion, depending on the options chosen in
-                             the <a href="[[link]]" target="blank">Settings for content types</a> panel.)
+                          You can help keep [[content_types]] on your site tidy by only
+                          allowing them to be under specific menu nodes.
+                          This can either be enforced or just a suggestion, depending on the options chosen in
+                          the <a href="[[link]]" target="blank">Settings for content types</a> panel.
+
                 restrict_child_content_types:
+                    grouping: content_restriction_desc_grouping
                     type: select
                     values: {}
                     empty_value: ''
                 
-                description:
+                description_css_grouping:
+                    type: grouping
                     snippet:
-                        html: "Your site can have rich menu nodes, with additional text and custom CSS. You may specify these things here. Note that your menu plugin's framework must support these things otherwise they may not appear."
+                        label: CSS, SEO and access key
+                        label_class: subheading
+                        
+                description_css:
+                    grouping: description_css_grouping
+                    snippet:
+                        html: |
+                            You can add custom CSS rel-tags and access keys here for this menu node.
+
                 css_class:
+                    grouping: description_css_grouping
                     label: 'CSS class names:'
                     type: text
                     maxlength: 100
@@ -452,20 +475,41 @@ zenario_menu:
                             zenario_menu_node
                         </span>
                     side_note: |
-                        This menu node will appear as a &lt;li&gt; with these CSS class names.
+                        This menu node will appear within a &lt;li&gt; tag, and with whatever CSS class names are defined here.
                 
                 rel_tag:
+                    grouping: description_css_grouping
                     label: 'Rel-Tag:'
                     type: text
                     maxlength: 100
+
                 accesskey:
+                    grouping: description_css_grouping
                     label: 'Access key:'
                     size: 1
                     maxlength: 1
                     type: text
+                    style: "width: 1em;"
                 
+                #This grouping is empty by default and populated when the Pro Features module is running.
+                promo_menu_description_grouping:
+                    type: grouping
+                    snippet:
+                        label: Menus with promo images
+                        label_class: subheading
+                
+                #This grouping is empty by default and populated when the Pro Features module is running.
+                promo_menu_descriptive_text_grouping:
+                    type: grouping
+
+                description_other_advanced_grouping:
+                    type: grouping
+                    snippet:
+                        label: Other advanced options
+                        label_class: subheading
                 
                 add_registered_get_requests:
+                    grouping: description_other_advanced_grouping
                     visible_if: |
                         zenarioAB.value('target_loc', 'text') == 'int'
                     label: |
@@ -477,13 +521,16 @@ zenario_menu:
                         keep variables like <code>mode</code> or <code>page</code> in the URL.
                 
                 add_custom_get_requests:
+                    grouping: description_other_advanced_grouping
                     label: |
                         Add custom GET requests
                     type: checkbox
                     value: 0
                     redraw_onchange: true
                     side_note: "Only works for links to content items"
+
                 custom_get_requests:
+                    grouping: description_other_advanced_grouping
                     label: |
                         Custom GET requests:
                     visible_if: |
@@ -499,29 +546,34 @@ zenario_menu:
                     side_note: "Only works for links to content items"
                 
                 call_static_method:
+                    grouping: description_other_advanced_grouping
                     label: |
                         Call a module's static method to customise this menu node
                     type: checkbox
                     format_onchange: true
                 menu__module_class_name:
+                    grouping: description_other_advanced_grouping
                     indent: 1
                     hidden: true
                     label: 'Module class name:'
                     type: text
                     maxlength: 200
                 menu__method_name:
+                    grouping: description_other_advanced_grouping
                     indent: 1
                     hidden: true
                     label: 'Static method name:'
                     type: text
                     maxlength: 127
                 menu__param_1:
+                    grouping: description_other_advanced_grouping
                     indent: 1
                     hidden: true
                     label: 'Parameter 1:'
                     type: text
                     maxlength: 255
                 menu__param_2:
+                    grouping: description_other_advanced_grouping
                     indent: 1
                     hidden: true
                     label: 'Parameter 2:'

@@ -47,23 +47,23 @@ ze\cookie::startSession();
 if (!empty($_REQUEST['clear_admin_cookie'])) {
 	
 	//Clear the cookies that remember that an administrator previously logged into the site.
-	ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
-	ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
-	ze\cookie::clear('COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED');
+	ze\cookie::clear('z_admin_last_username');
+	ze\cookie::clear('z_admin_captcha_completed');
+	ze\cookie::clear('z_admin_login_shown');
 	
 	//Also clear every 2FA code stored on the machine
 	foreach (array_keys($_COOKIE) as $name) {
-		if (ze\ring::chopPrefix('COOKIE_ADMIN_SECURITY_CODE_', $name) !== false) {
+		if (ze\ring::chopPrefix('z_admin_2fa_', $name) !== false) {
 			ze\cookie::clear($name);
 		}
 	}
 
 } elseif (!empty($_REQUEST['accept_cookies']) || !empty($_REQUEST['cookie_accept_all'])) {
-	ze\cookie::clear('cookies_accepted');
+	ze\cookie::clear('z_cookies_accepted');
 	ze\cookie::setConsent();
 
 } elseif (!empty($_REQUEST['cookie_save_preferences'])) {
-	ze\cookie::clear('cookies_accepted');
+	ze\cookie::clear('z_cookies_accepted');
 
 	$cookieTypes = [];
 	if (isset($_REQUEST['functionality'])) {
@@ -87,8 +87,17 @@ if (!empty($_REQUEST['clear_admin_cookie'])) {
 }
 
 if (empty($_REQUEST['ajax'])) {
-	if (!empty($_SERVER['HTTP_REFERER'])) {
-		header('location: '. $_SERVER['HTTP_REFERER']);
+	//Try to send the visitor back to where they just came from using the referer.
+	//If the hash variable is in the request, then also try to restore the anchor they had in their URL too.
+	if ($returnLink = $_SERVER['HTTP_REFERER'] ?? null) {
+		
+		if ($hash = $_REQUEST['hash'] ?? null) {
+			if ($hash[0] == '#') {
+				$returnLink .= $hash;
+			}
+		}
+		
+		header('location: '. $returnLink);
 	} else {
 		header('location: ../');
 	}

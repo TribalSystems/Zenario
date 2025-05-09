@@ -7,7 +7,6 @@ zenario__modules:
             title: Modules
             disable_periodic_refresh: true
             enable_close_up_view: true
-            slidedown_view_microtemplate: zenario_slidedown_view_module
             
             db_items:
                 table: >
@@ -49,7 +48,7 @@ zenario__modules:
                 slotable_only:
                     sql: |
                         m.status = 'module_running' AND m.is_pluggable = 1
-                        AND m.class_name NOT IN ('zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')
+                        AND m.class_name NOT IN ('zenario_nest', 'zenario_ajax_nest', 'zenario_slideshow')
                 nestable_wireframes_only:
                     sql: |
                         m.status = 'module_running' AND m.is_pluggable = 1 AND m.nestable = 1 AND m.can_be_version_controlled = 1
@@ -203,6 +202,18 @@ zenario__modules:
                         path: zenario__modules/panels/plugins
                         refiner: album
             item_buttons:
+                run:
+                    priv: _PRIV_RUN_MODULE
+                    label: Start module
+                    visible_if: |
+                        item.status != 'module_running' && item.code_present
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_setup_module
+                    disabled_if: |
+                        !zenario.engToBoolean(item.in_edition)
+                    disabled_tooltip: |
+                        In order to start this module, your site needs to be upgraded to Zenario [[edition]]. This is determined in the zenario_custom/site_description.yaml file. Please contact your system adminstrator or hosting provider to request this change.
                 edit_ctype:
                     visible_if: |
                         item.category == 'content_type'
@@ -210,10 +221,74 @@ zenario__modules:
                     label: "Content type settings"
                     admin_box:
                         path: zenario_content_type_details
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                suspend:
+                    parent: action_dropdown
+                    priv: _PRIV_RUN_MODULE
+                    label: Suspend module
+                    visible_if: |
+                        item.status == 'module_running'
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            html: true
+                            message: |
+                                <p>
+                                    Are you sure that you wish to suspend the module &ldquo;[[display_name]]&rdquo;?
+                                </p><p>
+                                    Suspending a module will disable any functionality it provides in Organizer, and
+                                    stop any of its plugins from outputting content.
+                                </p><p>
+                                    When a module is suspended, you can then either:
+                                </p><ul>
+                                    <li>Start it up again to restore the functionality</li>
+                                    <li>Uninitialise it and delete all data associated with it</li>
+                                </ul>
+                            button_message: Suspend
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            suspend: "1"
+                uninstall:
+                    parent: action_dropdown
+                    priv: _PRIV_RESET_MODULE
+                    label: Uninitialise and delete data
+                    visible_if: |
+                        item.status != 'module_running' && item.status != 'module_not_initialized'
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            button_message: Delete data and Reset
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            uninstall: "1"
+                remove:
+                    priv: _PRIV_RESET_MODULE
+                    label: Remove
+                    visible_if: |
+                        !item.code_present
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            button_message: Delete data and remove
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove: "1"
                 view_dropdown:
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                view_module_info:
+                    label: Module info
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_module_info
                 view_instances:
                     label: "Module's plugins"
                     parent: view_dropdown
@@ -277,73 +352,3 @@ zenario__modules:
                     link:
                         path: zenario__content/panels/content
                         refiner: module_effective_usage
-                action_dropdown:
-                    label: Actions
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
-                suspend:
-                    parent: action_dropdown
-                    priv: _PRIV_RUN_MODULE
-                    label: Suspend module
-                    visible_if: |
-                        item.status == 'module_running'
-                    hide_in_select_mode: true
-                    ajax:
-                        confirm:
-                            html: true
-                            message: |
-                                <p>
-                                    Are you sure that you wish to suspend the module &ldquo;[[display_name]]&rdquo;?
-                                </p><p>
-                                    Suspending a module will disable any functionality it provides in Organizer, and
-                                    stop any of its plugins from outputting content.
-                                </p><p>
-                                    When a module is suspended, you can then either:
-                                </p><ul>
-                                    <li>Start it up again to restore the functionality</li>
-                                    <li>Uninitialise it and delete all data associated with it</li>
-                                </ul>
-                            button_message: Suspend
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            suspend: "1"
-                uninstall:
-                    parent: action_dropdown
-                    priv: _PRIV_RESET_MODULE
-                    label: Uninitialise and delete data
-                    visible_if: |
-                        item.status != 'module_running' && item.status != 'module_not_initialized'
-                    hide_in_select_mode: true
-                    ajax:
-                        confirm:
-                            button_message: Delete data and Reset
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            uninstall: "1"
-                remove:
-                    priv: _PRIV_RESET_MODULE
-                    label: Remove
-                    visible_if: |
-                        !item.code_present
-                    hide_in_select_mode: true
-                    ajax:
-                        confirm:
-                            button_message: Delete data and remove
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            remove: "1"
-                run:
-                    priv: _PRIV_RUN_MODULE
-                    label: Start module
-                    visible_if: |
-                        item.status != 'module_running' && item.code_present
-                    hide_in_select_mode: true
-                    admin_box:
-                        path: zenario_setup_module
-                    disabled_if: |
-                        !zenario.engToBoolean(item.in_edition)
-                    disabled_tooltip: |
-                        In order to start this module, your site needs to be upgraded to Zenario [[edition]]. This is determined in the zenario_custom/site_description.yaml file. Please contact your system adminstrator or hosting provider to request this change.

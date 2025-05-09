@@ -283,6 +283,7 @@ zenarioT.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack,
 };
 
 zenarioT.doHTML5Upload = function(files, path, request, callBack) {
+	
 	if (!path || !request || zenarioT.uploading) {
 		return;
 	}
@@ -724,7 +725,7 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			return;
 			
 		} else {
-			//For backwards compatability for browsers without flash, attempt to convert file upload tags into ajax->confirm->form tags
+			//For backwards compatability for browsers without HTML 5, attempt to convert file upload tags into ajax->confirm->form tags
 			object = zenario.clone(object);
 			requests._html5_backwards_compatibility_hack = 1;
 			
@@ -781,6 +782,9 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 		} else if (zenarioCallingLibrary.globalName == 'zenarioAT') {
 			zenario.goToURL(zenario.addBasePath(frontend_link));
+		
+		} else if (windowParent && !windowParent.zenarioO) {
+			window.parent.location = zenario.addBasePath(frontend_link);
 		
 		} else if (windowOpener && !windowOpener.zenarioO) {
 			window.opener.location = zenario.addBasePath(frontend_link);
@@ -1175,7 +1179,7 @@ zenarioT.newSimpleForm = function(containerId, globalName) {
 
 
 
-zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix) {
+zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName) {
 	
 	var functionDetails, libName, methodName, ev, andLogicIsBeingUsed = true;
 	
@@ -1192,7 +1196,7 @@ zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, f
 				//These should contain a list of conditions for OR type logic; if any one of the conditions returns true, show the object.
 				andLogicIsBeingUsed = false;
 				
-				if (zenarioT.eval(ev, lib, tuixObject, item, id, button, column, field, section, tab, tuix)) {
+				if (zenarioT.eval(ev, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName)) {
 					return true;
 				}
 			
@@ -1232,7 +1236,7 @@ zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, f
 	//Otherwise assume this is some code that we need to evaulate
 	} else {
 		try {
-			ev = zenarioT.doEval(condition + '', lib, tuixObject, item, id, button, column, field, section, tab, tuix);
+			ev = zenarioT.doEval(condition + '', lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName);
 		} catch (e) {
 			if (window.console && console.error) {
 				console.error('JavaScript error in evaluated expression:', condition);
@@ -1252,14 +1256,14 @@ zenarioT.eval = function(condition, lib, tuixObject, item, id, button, column, f
 
 
 
-zenarioT.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab, tuix) {
+zenarioT.hidden = function(tuixObject, lib, item, id, button, column, field, section, tab, tuix, slotName) {
 	tuixObject = tuixObject || button || column || field || item || section || tab;
 
 	return !tuixObject
 		|| engToBoolean(tuixObject.hidden)
 		|| (isBackend? tuixObject.hide_in_backend : tuixObject.hide_in_frontend)
-		|| (tuixObject.visible_if && !zenarioT.eval(tuixObject.visible_if, lib, tuixObject, item, id, button, column, field, section, tab, tuix))
-		|| (tuixObject.js_condition && !zenarioT.eval(tuixObject.js_condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix));
+		|| (tuixObject.visible_if && !zenarioT.eval(tuixObject.visible_if, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName))
+		|| (tuixObject.js_condition && !zenarioT.eval(tuixObject.js_condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix, slotName));
 	
 	//N.b. "visible_if" used to be called "js_condition", so the js_condition line above is left for backwards compatability.
 	//If you specify both on one field, then both are checked. (This is used in a couple of advanced cases where properties are merged together.)
@@ -1288,6 +1292,10 @@ zenarioT.sortArrayByOrd = function(a, b) {
 
 zenarioT.sortArrayByOrdinal = function(a, b) {
 	return zenarioT.sortLogic(a, b, 'ordinal');
+};
+
+zenarioT.sortArrayByText = function(a, b) {
+	return zenarioT.sortLogic(a, b, 'text');
 };
 
 zenarioT.sortArrayWithGrouping = function(a, b) {
@@ -1494,7 +1502,37 @@ zenarioT.tuixToArray = function(tuix) {
 };
 
 
+//A version of hypEscape()/unpackAndMerge() that looks nicer in URLs
+//Possible post-branch change for 10.2:
+	//Replace hypEscape() and unpackAndMerge() with this series of functions as this format also works in URLs
+zenarioT.swigEscape = function(string) {
+	return ('' + string).replace(/\~/g, "~s").replace(/\-/g, "~h");
+};
 
+zenarioT.swigDescape = function(string) {
+	return string.replace(/\~h/g, "-").replace(/\~s/g, "~");
+};
+
+zenarioT.flatten = function(json) {
+	var output = [], k, v;
+	foreach (json as k => v) {
+		output.push(zenarioT.swigEscape(k) + '-' + zenarioT.swigEscape(v));
+	}
+	return output.join('-');
+};
+
+zenarioT.inflate = function(string) {
+	var output = {},
+		i,
+		a = string.split('-'),
+		m = a.length - 1;
+	
+	for (i = 0; i < m; i += 2) {
+		output[zenarioT.swigDescape(a[i])] = zenarioT.swigDescape(a[i+1]);
+	}
+	
+	return output;
+};
 
 
 

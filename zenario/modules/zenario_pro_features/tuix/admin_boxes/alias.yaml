@@ -17,9 +17,10 @@ zenario_alias:
             fields:
                 alias:
                     redraw_immediately_onchange: true
+                    ord: 1
                 create_spare_alias:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    ord: alias.01
+                    ord: 2
                     same_row: true
                     visible_if: |
                         tuix.tabs.meta_data.fields.alias.current_value &&
@@ -29,6 +30,7 @@ zenario_alias:
                     format_onchange: true
                     value: Create a spare alias under the old name
                 spare_aliases:
+                    ord: 3
                     label: 'Spare aliases:'
                     pick_items:
                         path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases

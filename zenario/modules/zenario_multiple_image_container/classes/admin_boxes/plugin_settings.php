@@ -32,8 +32,6 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$fields['first_tab/image']['side_note'] =
-			ze\admin::phrase('If a JPG or PNG image is selected, Zenario will create and display a WebP version of the image. Fallback logic will be used for browsers which do not support WebP.');
 		
 		$box['css_class'] .= ' zenario_fab_multiple_image_container';
 
@@ -267,13 +265,49 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 		//The CMS will replace this with a file ID when saving. We need to watch out for this situation and
 		//also fix the plugin setting names saved into the database!
 		if (!empty($fields['first_tab/image']['upload']['uploaded_ids'])) {
+			$usedImages = [];
+			$duplicatesInPickedImages = false;
+			
 			foreach ($fields['first_tab/image']['upload']['uploaded_ids'] as $oldPathCodename => $fileId) {
+				if (isset($usedImages[$fileId])) {
+					$this->deleteDuplicateImageData($box['key']['instanceId'], $box['key']['eggId'], $oldPathCodename);
+					$duplicatesInPickedImages = true;
+				} else {
+					$usedImages[$fileId] = true;
+					
+					$sql = "
+						SELECT 1
+						FROM ". DB_PREFIX. "plugin_settings
+						WHERE instance_id = ". (int) $box['key']['instanceId']. "
+						  AND egg_id = ". (int) $box['key']['eggId']. "
+						  AND name LIKE '%_". ze\escape::like($fileId). "'";
+					$result = ze\sql::select($sql);
+					$dataAlreadyExists = ze\sql::fetchValue($result);
+					
+					if ($dataAlreadyExists) {
+						$this->deleteDuplicateImageData($box['key']['instanceId'], $box['key']['eggId'], $oldPathCodename);
+					} else {
+						$sql = "
+							UPDATE ". DB_PREFIX. "plugin_settings
+							  SET name = REPLACE(name, '_". ze\escape::sql($oldPathCodename). "', '_". ze\escape::sql($fileId). "')
+							WHERE instance_id = ". (int) $box['key']['instanceId']. "
+							  AND egg_id = ". (int) $box['key']['eggId']. "
+							  AND name LIKE '%_". ze\escape::like($oldPathCodename). "'";
+						
+						ze\sql::update($sql);
+					}
+				}
+			}
+			
+			if ($duplicatesInPickedImages) {
+				$pickedImagesArray = implode(array_keys($usedImages));
+				
 				$sql = "
 					UPDATE ". DB_PREFIX. "plugin_settings
-					  SET name = REPLACE(name, '_". ze\escape::sql($oldPathCodename). "', '_". ze\escape::sql($fileId). "')
+					  SET value = '" . ze\escape::sql($pickedImagesArray) . "'
 					WHERE instance_id = ". (int) $box['key']['instanceId']. "
 					  AND egg_id = ". (int) $box['key']['eggId']. "
-					  AND name LIKE '%_". ze\escape::like($oldPathCodename). "'";
+					  AND name = 'image'";
 				
 				ze\sql::update($sql);
 			}
@@ -397,7 +431,7 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 						if ($duplicateInMicLibrary) {
 							$newFileId = $duplicateInMicLibrary;
 						} else {
-							$newFileId = ze\file::copyInDatabase('mic', $file['id'], false, true, $addToDocstoreDirIfPossible = true);
+							$newFileId = ze\fileAdm::copyInDatabase('mic', $file['id'], false, true, $addToDocstoreDirIfPossible = true);
 						}
 	
 						foreach ($MICPluginsAndSettings as $pluginId => $plugin) {
@@ -433,13 +467,22 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 						}
 					} else {
 						//Alternatively, if the image is used only by MIC plugins, then just move it to docstore and update the "usage" column.
-						$pathDS = false;
-						ze\file::moveFileFromDBToDocstore($pathDS, $file['id'], $fileInfo['filename'], $fileInfo['checksum']);
+						ze\row::update('files', ['usage' => 'mic'], $file['id']);
+						ze\file::moveFileFromDBToDocstore($file['id']);
 	
-						ze\row::update('files', ['usage' => 'mic', 'data' => NULL, 'path' => $pathDS, 'location' => 'docstore'], ['id' => (int)$file['id']]);
 					}
 				}
 			}
 		}
+	}
+	
+	private function deleteDuplicateImageData($instanceId, $eggId, $oldPathCodename) {
+		$sql = "
+			DELETE FROM ". DB_PREFIX. "plugin_settings
+			WHERE instance_id = ". (int) $instanceId. "
+			  AND egg_id = ". (int) $eggId. "
+			  AND name LIKE '%_". ze\escape::like($oldPathCodename). "'";
+		
+		ze\sql::update($sql);
 	}
 }

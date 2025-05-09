@@ -409,14 +409,6 @@ properties:
                         
                         If your module has the <code>is_pluggable</code> property set, a library plugin
                         from your module will be placed on this layout.
-                enable_summary_auto_update:
-                    type: boolean
-                    description: >
-                        Whether to prompt an Admin to update a Content Item's Summary when they are
-                        editing a Content Item.
-            
-                        This will be the default value; it can be overwritten on a per site basis
-                        by changing it in the Content Type settings.
                 enable_categories:
                     type: boolean
                     description: >
@@ -656,14 +648,6 @@ properties:
                         type: string
                         description: >
                             A name of a request variable.
-                
-                hierarchical_var:
-                    type: string
-                    description: >
-                        If your command is hierarchical (i.e. it can be repeated through many levels of hierarchical),
-                        you should specify the variable that is used for this in this property (e.g. dataPoolId).
-            
-                        You will need to increment your plugin's revision number if you make a change to this property.
                 
                 able_to_generate_smart_breadcrumbs:
                     type: boolean

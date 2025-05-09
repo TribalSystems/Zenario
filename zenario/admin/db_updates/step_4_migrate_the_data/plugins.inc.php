@@ -34,34 +34,48 @@ ze\moduleAdm::addNew($skipIfFilesystemHasNotChanged = false);
 
 
 //Code for handling renaming Plugin directories
-function renameModuleDirectory($oldName, $newName, $uninstallOldModule = false, $moveEditableCSS = false) {
-	$oldId = ze\module::id($oldName);
+function renameModuleDirectory($oldName, $newName, $movePlugins, $moveEditableCSS, $movePhrases, $uninstallOldModule = false) {
 	
-	if ($newName && $oldId && ($newId = ze\module::id($newName))) {
-		foreach([
-			'content_types', 'jobs', 'signals',
-			'module_dependencies', 'plugin_setting_defs',
-			'nested_plugins', 'plugin_instances',
-			'plugin_item_link', 'plugin_layout_link'
-		] as $table) {
-			$sql = "
-				UPDATE IGNORE ". DB_PREFIX. $table. " SET
-					module_id = ". (int) $newId. "
-				WHERE module_id = ". (int) $oldId;
-			ze\sql::update($sql);
+	$oldId = ze\module::id($oldName);
+	$newId = ze\module::id($newName);
+	
+	if ($newName) {
+		
+		if ($movePlugins && $oldId && $newId) {
+			foreach([
+				'content_types', 'jobs', 'signals',
+				'module_dependencies', 'plugin_setting_defs',
+				'nested_plugins', 'plugin_instances',
+				'plugin_item_link', 'plugin_layout_link', 'plugin_sitewide_link'
+			] as $table) {
+				$sql = "
+					UPDATE IGNORE ". DB_PREFIX. $table. " SET
+						module_id = ". (int) $newId. "
+					WHERE module_id = ". (int) $oldId;
+				ze\sql::update($sql);
+			}
+			
+			$oldStatus = ze\row::get('modules', 'status', $oldId);
+			$newStatus = ze\row::get('modules', 'status', $newId);
+			
+			if (ze::in($newStatus, 'module_not_initialized', 'module_suspended')) {
+				ze\row::set('modules', ['status' => $oldStatus], $newId);
+			}
 		}
 		
-		$oldStatus = ze\row::get('modules', 'status', $oldId);
-		$newStatus = ze\row::get('modules', 'status', $newId);
-		
-		if (ze::in($newStatus, 'module_not_initialized', 'module_suspended')) {
-			ze\row::set('modules', ['status' => $oldStatus], $newId);
+		if ($movePhrases) {
+			$sql = "
+				UPDATE IGNORE ". DB_PREFIX. "visitor_phrases SET
+					module_class_name = '". ze\escape::sql($newName). "'
+				WHERE module_class_name = '". ze\escape::sql($oldName). "'";
+			ze\sql::update($sql);
 		}
 		
 		if ($moveEditableCSS
 		 && is_dir($gtDir = CMS_ROOT. 'zenario_custom/skins/')) {
 			
 			foreach (scandir($gtDir) as $skin) {
+				
 				if ($skin[0] != '.'
 				 && is_dir($cssDir = $gtDir. $skin. '/editable_css/')
 				 && is_writable($cssDir = $gtDir. $skin. '/editable_css/')) {
@@ -241,6 +255,14 @@ function renamePluginSetting(
 			WHERE m.class_name IN (". ze\escape::in($moduleNames, 'asciiInSQL'). ")
 			". $extraWhereSQL;
 		ze\sql::update($sql);
+	}
+}
+
+
+function uninstalledRemovedModule($moduleName) {
+	if (ze\module::isRunning($moduleName)) {
+		$moduleId = ze\module::id($moduleName);
+		ze\moduleAdm::uninstall($moduleId, $uninstallRunningModules = true, $checkForDependenciesBeforeUninstalling = false);
 	}
 }
 
@@ -502,9 +524,236 @@ if (ze\dbAdm::needRevision(60113)) {
 	
 	foreach ($instances as $instance) {
 		if (!empty($instance['settings']['canvas']) && $instance['settings']['canvas'] == 'resize_and_crop') {
-			ze\row::set('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'canvas']);
+			ze\row::set('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'canvas']);
 		}
 	}
 	
 	ze\dbAdm::revision(60113);
+}
+
+//In 10.0, Document content items plugins also had their settings updated:
+//"Resize and crop" was replaced with "Crop and zoom".
+//Also an unnecessary 2nd level checkbox was removed.
+if (ze\dbAdm::needRevision(60665)) {
+	$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_ctype_document');
+	
+	foreach ($instances as $instance) {
+		if (!empty($instance['settings']['image_canvas']) && $instance['settings']['image_canvas'] == 'resize_and_crop') {
+			ze\row::set('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'image_canvas']);
+		}
+		
+		if (!empty($instance['settings']['use_sticky_image'])) {
+			ze\row::delete('plugin_settings', ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'use_sticky_image']);
+		}
+	}
+	
+	ze\dbAdm::revision(60665);
+}
+
+if (ze\dbAdm::needRevision(60666)) {
+	if (ze\module::inc('zenario_ctype_document')) {
+		renamePluginSetting(['zenario_ctype_document'], 'show_default_stick_image', 'show_featured_image', true, true);
+	}
+	
+	ze\dbAdm::revision(60666);
+}
+
+if (ze\dbAdm::needRevision(60670)) {
+	if (ze\module::inc('zenario_advanced_search')) {
+		renamePluginSetting(['zenario_advanced_search'], 'html_show_feature_image', 'html_show_featured_image', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'html_feature_image_canvas', 'html_canvas', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'html_feature_image_width', 'html_width', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'html_feature_image_height', 'html_height', true, true);
+		
+		renamePluginSetting(['zenario_advanced_search'], 'document_show_feature_image', 'document_show_featured_image', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'document_feature_image_canvas', 'document_canvas', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'document_feature_image_width', 'document_width', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'document_feature_image_height', 'document_height', true, true);
+		
+		renamePluginSetting(['zenario_advanced_search'], 'news_show_feature_image', 'news_show_featured_image', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'news_feature_image_canvas', 'news_canvas', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'news_feature_image_width', 'news_width', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'news_feature_image_height', 'news_height', true, true);
+		
+		renamePluginSetting(['zenario_advanced_search'], 'blog_show_feature_image', 'blog_show_featured_image', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'blog_feature_image_canvas', 'blog_canvas', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'blog_feature_image_width', 'blog_width', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'blog_feature_image_height', 'blog_height', true, true);
+		
+		renamePluginSetting(['zenario_advanced_search'], 'other_module_image_canvas', 'canvas', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'other_module_retina', 'retina', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'other_module_image_width', 'width', true, true);
+		renamePluginSetting(['zenario_advanced_search'], 'other_module_image_height', 'height', true, true);
+	}
+	
+	ze\dbAdm::revision(60670);
+}
+
+if (ze\dbAdm::needRevision(60671)) {
+	if (ze\module::inc('zenario_ai_qdrant_search')) {
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_show_feature_image', 'html_show_featured_image', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_feature_image_canvas', 'html_canvas', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_feature_image_width', 'html_width', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'html_feature_image_height', 'html_height', true, true);
+		
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_show_feature_image', 'document_show_featured_image', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_feature_image_canvas', 'document_canvas', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_feature_image_width', 'document_width', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'document_feature_image_height', 'document_height', true, true);
+		
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_show_feature_image', 'news_show_featured_image', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_feature_image_canvas', 'news_canvas', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_feature_image_width', 'news_width', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'news_feature_image_height', 'news_height', true, true);
+		
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_show_feature_image', 'blog_show_featured_image', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_canvas', 'blog_canvas', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_width', 'blog_width', true, true);
+		renamePluginSetting(['zenario_ai_qdrant_search'], 'blog_feature_image_height', 'blog_height', true, true);
+	}
+	
+	ze\dbAdm::revision(60671);
+}
+
+
+
+
+
+
+//
+//	Zenario 10.1
+//
+
+
+
+//In 10.1, we implemented a new plugin setting for searching in other modules.
+//A module may now advertise what data type it might search in.
+//As of writing this DB update, there are 5 modules which allow Advanced Search to search in them.
+//Each of these modules supports exactly 1 data type.
+//Set a value for existing plugins.
+
+if (ze\dbAdm::needRevision(61220)) {
+	if (ze\module::inc('zenario_advanced_search')) {
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_advanced_search');
+		
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['search_in_other_modules']) && !empty($instance['settings']['module_to_search'])) {
+				if (empty($instance['settings']['searchable_data_type'])) {
+					
+					switch ($instance['settings']['module_to_search']) {
+						case 'zenario_conference_manager':
+							$searchableDataType = 'abstracts';
+							break;
+						case 'zenario_ecommerce_document':
+							$searchableDataType = 'documents';
+							break;
+						case 'zenario_ecommerce_physical_products':
+							$searchableDataType = 'physical_products';
+							break;
+						case 'zenario_location_manager':
+							$searchableDataType = 'locations';
+							break;
+						case 'zenario_videos_manager':
+							$searchableDataType = 'videos';
+							break;
+					}
+					
+					ze\row::set('plugin_settings', ['value' => $searchableDataType], ['instance_id' => (int)$instance['instance_id'], 'egg_id' => (int)$instance['egg_id'], 'name' => 'searchable_data_type']);
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(61220);
+}
+
+//In 10.1, the Email Template Manager module was moved into Common Features.
+//Uninitialise ETM if it was running before.
+if (ze\dbAdm::needRevision(61240)) {
+	uninstalledRemovedModule('zenario_email_template_manager');
+	
+	ze\dbAdm::revision(61240);
+}
+
+
+//Also in 10.1, the ctype picture module has been scrapped and should be uninstalled
+if (ze\dbAdm::needRevision(61400)) {
+	uninstalledRemovedModule('zenario_ctype_picture');
+	
+	ze\dbAdm::revision(61400);
+}
+
+
+//In 10.1, we've renamed/restructured the various nest and slideshow plugins.
+//We now have:
+	//zenario_nest (formerly the advanced slideshow), which is now more focused on outputting the plugins on the page and less on animating them
+	//zenario_slideshow (formerly the simple slideshow), no change in functionality, just making it clear that this is the one that's focused on slideshows
+	//zenario_ajax_nest (formerly just the plguin nest), no change in functionality, just making it clear that this uses AJAX reloads.
+if (ze\dbAdm::needRevision(61450)) {
+	
+	//Skip this step for a fresh install. Only run this for sites that have had the old modules before.
+	if (ze\module::id('zenario_plugin_nest')
+	 || ze\module::id('zenario_slideshow_simple')) {
+		
+		renameModuleDirectory('zenario_slideshow', 'zenario_nest', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = false);
+		renameModuleDirectory('zenario_slideshow_simple', 'zenario_slideshow', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = true);
+		renameModuleDirectory('zenario_plugin_nest', 'zenario_ajax_nest', $movePlugins = true, $moveEditableCSS = false, $movePhrases = true, $uninstallOldModule = true);
+		
+		//What was the old advanced slideshow plugin is now classed as a nest not a slideshow.
+		//Update any cached flags for its plugins.
+		$nestModuleId = ze\module::id('zenario_nest');
+		ze\row::update('plugin_instances',
+			['is_nest' => 1, 'is_slideshow' => 0],
+			['module_id' => $nestModuleId]
+		);
+	}
+	
+	ze\dbAdm::revision(61450);
+}
+
+//In 10.1, the document envelope thumbnails were moved to their own pot.
+//Migrate the data for existing thumbnails.
+if (ze\dbAdm::needRevision(61610)) {
+	if (ze\module::inc('zenario_document_envelopes_fea')) {
+		$sql = "
+			SELECT GROUP_CONCAT(DISTINCT de.thumbnail_id SEPARATOR ',')
+			FROM " . DB_PREFIX . ZENARIO_DOCUMENT_ENVELOPES_FEA_PREFIX . "document_envelopes de
+			WHERE de.thumbnail_id > 0";
+		$result = ze\sql::select($sql);
+		$thumbnailIds = ze\sql::fetchValue($result);
+		
+		if ($thumbnailIds) {
+			$sql2 = "
+				UPDATE " . DB_PREFIX . "files
+				SET `usage` = 'document_envelope_thumbnail'
+				WHERE id IN(" . ze\escape::in($thumbnailIds) . ")";
+			ze\sql::update($sql2);
+		}
+	}
+	
+	ze\dbAdm::revision(61610);
+}
+
+//Also tidy up an old pot name.
+if (ze\dbAdm::needRevision(61615)) {
+	if (ze\module::inc('zenario_document_envelopes_fea')) {
+		$sql = "
+			UPDATE " . DB_PREFIX . "files
+			SET `usage` = 'document_envelope_thumbnail'
+			WHERE `usage` = 'document_in_envelope_thumbnail'";
+		ze\sql::update($sql);
+	}
+	
+	ze\dbAdm::revision(61615);
+}
+
+if (ze\dbAdm::needRevision(61940)) {
+	
+	if (ze\module::inc('zenario_user_timers_list')) {
+		
+		renamePluginSetting(['zenario_user_timers_list'], 'allow_renew', 'show_warning_about_expiring_timer');
+		renamePluginSetting(['zenario_user_timers_list'], 'allow_renew_when', 'show_expiring_timer_warning_when');
+	}
+	
+	ze\dbAdm::revision(61940);
 }

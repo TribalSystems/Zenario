@@ -35,7 +35,8 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 		$filename = false;
 		$format = $values['details/format'];
 		$filename = str_replace('/', ' ', $box['key']['filename']);
-		// Export accesses for content item
+		
+		// Export access log for a specific content item
 		if ($tagId = $box['key']['tag_id']) {
 			$headers = [
 				'Time accessed',
@@ -44,8 +45,10 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 				'Last name',
 				'Email'
 			];
+			
 			$cID = $cType = false;
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+			
 			$sql = '
 				SELECT l.hit_datetime, u.id AS user_id, u.first_name, u.last_name, u.email
 				FROM '. DB_PREFIX. 'user_content_accesslog AS l
@@ -55,27 +58,54 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 				  AND l.content_type = \''. \ze\escape::asciiInSQL($cType). '\'
 				ORDER BY l.hit_datetime DESC';
 			$result = ze\sql::select($sql);
+			
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$rows[] = $row;
 			}
-		// Export accesses for user
+		
+		//Export access log for a specific user
 		} elseif ($userId = $box['key']['user_id']) {
 			$headers = [
 				'Time accessed',
 				'Content item'
 			];
+			
 			$sql = '
 				SELECT l.hit_datetime, l.content_id, l.content_type, l.content_version
 				FROM ' . DB_PREFIX . 'user_content_accesslog l
 				WHERE l.user_id = ' . (int)$userId . '
 				ORDER BY l.hit_datetime DESC';
 			$result = ze\sql::select($sql);
+			
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$contentAccess = [
 					$row['hit_datetime'],
 					ze\content::formatTag($row['content_id'], $row['content_type'])
 				];
+				
 				$rows[] = $contentAccess;
+			}
+		
+		//Export the whole access log
+		} else {
+			$headers = [
+				'Time accessed',
+				'User ID',
+				'First name',
+				'Last name',
+				'Email'
+			];
+			
+			$sql = '
+				SELECT l.hit_datetime, u.id AS user_id, u.first_name, u.last_name, u.email
+				FROM '. DB_PREFIX. 'user_content_accesslog AS l
+				INNER JOIN '. DB_PREFIX. 'users AS u
+					ON l.user_id = u.id
+				ORDER BY l.hit_datetime DESC';
+			$result = ze\sql::select($sql);
+			
+			while ($row = ze\sql::fetchAssoc($result)) {
+				$rows[] = $row;
 			}
 		}
 		
@@ -83,5 +113,4 @@ class zenario_users__admin_boxes__export_access_log extends zenario_users {
 			ze\miscAdm::exportPanelItems($headers, $rows, $format, $filename);
 		}
 	}
-	
 }

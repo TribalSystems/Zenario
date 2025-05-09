@@ -1,3 +1,5 @@
-<div class="content_list_more">
-	<a {{item.Link}}{{item.Target_Blank}}>{{More_Phrase}}</a>
-</div>
+{% if not item.Disabled %}
+	<div class="content_list_more">
+		<a {{item.Link}}{{item.Target_Blank}}>{{More_Phrase}}</a>
+	</div>
+{% endif %}

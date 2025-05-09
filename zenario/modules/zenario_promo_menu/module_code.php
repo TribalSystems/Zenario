@@ -130,7 +130,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			
 			//Featured image...
 			$url = $width = $height = false;
-			ze\file::imageLink($width, $height, $url, $row['feature_image_id'], $widthSetting, $heightSetting, $canvasSetting, $offset = 0, $retinaSetting);
+			ze\image::link($width, $height, $url, $row['feature_image_id'], $widthSetting, $heightSetting, $canvasSetting, $offset = 0, $retinaSetting);
 			if ($retinaSetting) {
 				$row['Image_Srcset'] = $url. ' 2x';
 			}
@@ -141,7 +141,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			//Featured image rollover...
 			if ($row['use_rollover_image'] && $row['feature_rollover_image_id']) {
 				$url = $width = $height = false;
-				ze\file::imageLink($width, $height, $url, $row['feature_rollover_image_id'], $widthSetting, $heightSetting, $canvasSetting, $offset = 0, $retinaSetting);
+				ze\image::link($width, $height, $url, $row['feature_rollover_image_id'], $widthSetting, $heightSetting, $canvasSetting, $offset = 0, $retinaSetting);
 				if ($retinaSetting) {
 					$row['Rollover_Image_Srcset'] = $url. ' 2x';
 				}
@@ -156,7 +156,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				$thumbnailWidthSetting = $this->setting('thumbnail_menu_node_icon_width');
 				$thumbnailHeightSetting = $this->setting('thumbnail_menu_node_icon_height');
 				
-				ze\file::imageLink($width, $height, $url, $row['image_id'], $thumbnailWidthSetting, $thumbnailHeightSetting, $thumbnailCanvasSetting, $offset = 0, $thumbnailRetinaSetting);
+				ze\image::link($width, $height, $url, $row['image_id'], $thumbnailWidthSetting, $thumbnailHeightSetting, $thumbnailCanvasSetting, $offset = 0, $thumbnailRetinaSetting);
 				$row['node_image_width'] = $width;
 				$row['node_image_height'] = $height;
 				$row['image_link'] = $url;
@@ -168,7 +168,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				//and Node image rollover.
 				if ($row['rollover_image_id']) {
 					$url = $width = $height = false;
-					ze\file::imageLink($width, $height, $url, $row['rollover_image_id']);
+					ze\image::link($width, $height, $url, $row['rollover_image_id']);
 					$row['rollover_image_link'] = $url;
 				}
 			}
@@ -203,6 +203,8 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 			}
 			$this->menuArray['nodeExtraProperties'][$row['id']] = $row;
 		}
+		
+		$this->menuArray['imagePosition'] = $this->setting('image_position');
 		
 		return true;
 	}

@@ -43,12 +43,12 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
 	//    }
     //}
 
-    public function getCacheKey($name) {
+    public function getCacheKey(string $name): string {
     	return $name;
     }
     
 
-    public function getSourceContext($name) {
+    public function getSourceContext(string $name): Twig\Source {
     	if (substr($name, 0, 1) === "\n") {
 	        return new Twig\Source($name, $name);
     	
@@ -64,7 +64,7 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
 	    }
     }
 
-    public function isFresh($name, $time) {
+    public function isFresh(string $name, int $time): bool {
     	if (substr($name, 0, 1) === "\n") {
     		return true;
     	
@@ -74,7 +74,7 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
     }
     
 
-    public function exists($name) {
+    public function exists(string $name) {
     	if (substr($name, 0, 1) === "\n") {
     		return true;
     	
@@ -91,21 +91,21 @@ class Zenario_Twig_Loader implements Twig\Loader\LoaderInterface {
 //A copy of the above that always only works with raw source code
 class Zenario_Twig_String_Loader implements Twig\Loader\LoaderInterface {
     
-    public function getCacheKey($name) {
+    public function getCacheKey(string $name): string {
     	return $name;
     }
     
 
-    public function getSourceContext($name) {
+    public function getSourceContext(string $name): Twig\Source {
         //return new Twig\Source($name, sha1($name));
         return new Twig\Source($name, $name);
     }
 
-    public function isFresh($name, $time) {
+    public function isFresh(string $name, int $time): bool {
    		return true;
     }
 
-    public function exists($name) {
+    public function exists(string $name) {
    		return true;
     }
 }
@@ -116,27 +116,27 @@ class Zenario_Twig_String_Loader implements Twig\Loader\LoaderInterface {
 //(Twig doesn't do any garbage collection so old frameworks can clog up the cache/ directory!)
 class Zenario_Twig_Cache implements Twig\Cache\CacheInterface {
 	
-	public function generateKey($name, $className) {
+	public function generateKey(string $name, string $className): string {
 		$hash = ze::base16To64(str_replace('__TwigTemplate_', '', $className));
 		
 		return CMS_ROOT. 'cache/frameworks/'. $hash .'/class.php';
 	}
 
-    public function load($key) {
+    public function load(string $key): void {
         if (file_exists($key)) {
 			touch(dirname($key). '/accessed');
 			@include_once $key;
 		}
     }
 
-    public function write($key, $content) {
+    public function write(string $key, string $content): void {
         $dir = basename(dirname($key));
         ze\cache::createDir($dir, 'cache/frameworks', false);
         file_put_contents($key, $content);
         \ze\cache::chmod($key, 0664);
     }
 
-    public function getTimestamp($key) {
+    public function getTimestamp(string $key): int {
         if (!file_exists($key)) {
             return 0;
         }
@@ -153,7 +153,7 @@ class Zenario_Twig_Cache implements Twig\Cache\CacheInterface {
 //Note that if you use this class, you can no longer pass objects as inputs as the preg_replace()s break support for this
 class Zenario_Phi_Twig_Cache extends Zenario_Twig_Cache {
 	
-    public function write($key, $content) {
+    public function write(string $key, string $content): void {
     	
 		//Replace calls to twig_get_attribute() with the ?? operator for better efficiency
     	do {
@@ -175,7 +175,7 @@ class Zenario_Phi_Twig_Cache extends Zenario_Twig_Cache {
 		//If you divide by zero in PHP, and you don't catch the error very close to the source, there is a bug where
 		//some random class instances have their variables all set to null.
 		//We'll solve this by putting a try/catch around the doDisplay() function to catch them in the function they occur.
-	    $startFrag = 'protected function doDisplay(array $context, array $blocks = [])';
+	    $startFrag = 'protected function doDisplay(array $context, array $blocks = []): iterable';
 	    $endFrag = 'public function getTemplateName()';
 	    
 	    $content = str_replace($startFrag, $startFrag. ' {'. "\n      ". 'try ', $content);
@@ -216,14 +216,14 @@ function zenario_callLibFromTwig($lib, $fun, ...$args) {
 
 //Define the phrase() and the nPhrase() functions for use in Twig frameworks.
 //These should map to the phrase/nphrase functions of whatever plugin is currently running
-function zenario_nphrase($text, $replace = []) {
+function zenario_phrase($text, $replace = []) {
 	if (\ze::$plugin) {
-		return \ze::$plugin->nPhraseInHTML($text, $replace);
+		return \ze::$plugin->phraseInHTML($text, $replace);
 	}
 }
 
-function zenario_phrase($text, $pluralText = false, $n = 1, $replace = []) {
+function zenario_nphrase($text, $pluralText = false, $n = 1, $replace = []) {
 	if (\ze::$plugin) {
-		return \ze::$plugin->phraseInHTML($text, $pluralText, $n, $replace);
+		return \ze::$plugin->nPhraseInHTML($text, $pluralText, $n, $replace);
 	}
 }

@@ -17,7 +17,6 @@ content_types:
         content_type_id: html
         content_type_name_en: HTML page
         content_type_plural_en: HTML pages
-        enable_summary_auto_update: false
         description_field: optional
         tooltip_text: Flat view of all HTML page content items
         keywords_field: hidden
@@ -65,6 +64,7 @@ special_pages:
         allow_hide: false
         must_be_unlisted: true
     zenario_example_page:
+        #This is initially created in the same way that special pages are, but will NOT be treated as a special page later on.
         page_type: zenario_example_page
         default_alias: second-page
         default_title: Second page
@@ -187,6 +187,9 @@ jobs:
 signals:
     - 
         name: deleteUserDataGetInfo
+        static: true
+    - 
+        name: eventUserDeleted
         static: true
 
 centralised_lists:

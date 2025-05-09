@@ -6,8 +6,14 @@
 	{% set LINKS_IN_INCLUDES = false %}
 	
 	{% if Rows %}
+		{# Please note: this framework is not intended to be used for document content items. #}
+		{# This is because if there is a doc content item with an S3 file, but no local file, #}
+		{# then the item will be a bad link. #}
+		
 		{% for item in Row %}
-			<a {{item.Link}}{{item.Target_Blank}}>
+			{% if not item.Disabled %}
+				<a {{item.Link}}{{item.Target_Blank}}>
+			{% endif %}
 				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %} {% if item.Item_Is_Recent %} recent {% endif %}">
 					{% include this.frameworkBaseDir() ~ 'includes/feature_image.twig.html' %}
 					
@@ -17,7 +23,9 @@
 						{% include this.frameworkBaseDir() ~ 'includes/excerpt.twig.html' %}
 					</div>
 				</div>
-			</a>
+			{% if not item.Disabled %}
+				</a>
+			{% endif %}
 		{% endfor %}
 	{% endif %}
 	

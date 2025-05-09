@@ -1,0 +1,77 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_video_categories:
+    #This admin box can only be accessed if exactly 1 video is selected.
+    #The button for it will not be visible if more than 1 video is selected.
+    key:
+        id: ""
+    hide_tab_bar: false
+    tabs:
+        categories:
+            label: Categories
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""    
+                categories:
+                    label: 'Categories:'
+                    type: checkboxes
+                    values: {}
+                    readonly: false
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: ''
+
+zenario_video_categories_add:
+    #This admin box can only be accessed if multiple videos are selected.
+    #The button for it will not be visible if only 1 video item is selected.
+    key:
+        id: ""
+    hide_tab_bar: false
+    tabs:
+        categories_add:
+            label: Add to categories
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""
+                categories_add:
+                    label: 'Add to categories:'
+                    type: checkboxes
+                    values: {}
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: No categories have been created.
+        
+zenario_video_categories_remove:
+    #This admin box can only be accessed if multiple videos are selected.
+    #The button for it will not be visible if only 1 video item is selected.
+    key:
+        id: ""
+    hide_tab_bar: false
+    tabs:
+        categories_remove:
+            label: Remove from categories
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""
+                categories_remove:
+                    label: 'Remove from categories:'
+                    type: checkboxes
+                    values: {}
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: ''

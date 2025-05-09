@@ -31,3 +31,12 @@ zenario__administration:
                     title: Type
                     searchable: false
                     always_show: true
+                system_or_custom_field:
+                    title: System or custom field
+                    format: enum
+                    empty_value: ''
+                    values:
+                        system: system field
+                        custom: custom field
+                    searchable: false
+                    always_show: true

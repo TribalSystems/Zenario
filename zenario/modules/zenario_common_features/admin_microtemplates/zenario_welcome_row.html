@@ -68,7 +68,29 @@
 			<% if (m.grouping.pre_grouping_html) { %>
 				{{m.grouping.pre_grouping_html}}
 			<% } %>
-			<fieldset class="zenario_grouping zenario_grouping__{{ff.grouping|escape}} {{m.grouping.grouping_css_class|escape}}" style="{{m.grouping.grouping_style|escape}}">
+			<fieldset
+				class="
+					zenario_grouping zenario_grouping__{{ff.grouping|escape}}
+					{{m.grouping.grouping_css_class|escape}}
+					
+					<% if (ff.type == 'radio') { %>
+						zenario_grouping_with_input zenario_grouping_with_radio
+						
+						<% if (!_.isEmpty(m.lib.value(ff.id))) { %>
+							zenario_grouping_with_input_selected zenario_grouping_with_radio_selected
+						<% } %>
+					<% } %>
+					<% if (ff.type == 'checkbox') { %>
+						zenario_grouping_with_input zenario_grouping_with_checkbox
+						
+						<% if (!_.isEmpty(m.lib.value(ff.id))) { %>
+							zenario_grouping_with_input_selected zenario_grouping_with_checkbox_selected
+						<% } %>
+					<% } %>
+				"
+				style="{{m.grouping.grouping_style|escape}}"
+				onclick="{{m.grouping.grouping_onclick|escape}}"
+			>
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
@@ -97,6 +119,8 @@
 		<% if (ff.pre_field_html || ff.post_field_html) { %>
 			zfab_row_with_pre_or_post_field_html
 		<% } %>
+		
+		{{m.lib.classesForRowContents('zfab_row_with_', m.fields)}}
 	">
 		<% if (zenario.engToBoolean(ff.full_width)) { %>
 			<div >
@@ -104,7 +128,7 @@
 			<div class="title" {{zenario.browserIsIE(8)? ' style="width: 25%"' : ''}}>
 				<% if (ff.label && !zenario.IN(ff.type, 'checkbox', 'radio')) { %>
 					<div class="{{ff._hideOnOpen? 'zenario_hide_on_open' : ''}} {{ff._showOnOpen? 'zenario_show_on_open' : ''}}">
-						<label for="{{ff._id|escape}}">{{ff.label}}</label>
+						<label for="{{ff._id|escape}}">{{ff.label|escape}}</label>
 					</div>
 				<% } %>
 			</div><div>
@@ -115,7 +139,7 @@
 					{{ff._showOnOpen? 'zenario_show_on_open' : ''}}
 					{{ff.type=='checkbox'? 'zenario_input_checkbox' : ''}}
 				">
-					{{zenarioT.microTemplate('zenario_welcome_field', m.fields)}}
+					{{m.lib.microTemplate('zenario_welcome_field', m.fields)}}
 				</div>
 			</div>
 	</div>

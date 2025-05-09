@@ -92,9 +92,9 @@ zenario_head_foot_slot:
                             label: 'Social media cookies'
                     validation:
                         required_if_not_hidden: 'Please select the cookie type. The output will be withheld until the visitor accepts this type of cookie or all cookies.'
-                output_in_admin_mode:
+                hide_in_admin_mode:
                     type: checkbox
-                    label: Output in Admin Mode
+                    label: "Don't send HTML/JS when in admin mode"
     confirm:
         show: false
         message: >

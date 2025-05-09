@@ -107,6 +107,26 @@
 	box-shadow:none;
 }
 
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 1em;
+  width: 1em;
+  border-radius: 50em;
+  background: url('../images/icon-clear-search.svg') no-repeat 50% 50%;
+  background-size: contain;
+  opacity: 0;
+  pointer-events: none;
+}
+
+input[type="search"]:focus::-webkit-search-cancel-button {
+  opacity: .8;
+  pointer-events: all;
+}
+
+input:-webkit-autofill {
+	-webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+}
+
 .form_field.mandatory .field_title {
 	font-weight:600;
 }

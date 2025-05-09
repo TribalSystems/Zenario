@@ -51,9 +51,10 @@ common_definitions:
             
             If not set, it defaults to the order the CMS finds them in.
             
-            If you are inserting elements into another module's TUIX and wish to place
-            an element after another element, append ".1" to the name of another element,
-            e.g. "title.1".
+            From version 10.1 onwards, we have some logic where you can place a field or a button
+            immediately before or after an existing field or button using an offset.
+            To do this you need to use a pattern like this: "field_name + 0.1" (to put your field after)
+            or like this: "field_name - 0.1" (to put your field before).
     copy_of: &copy_of
         type: string
         description: >
@@ -2183,22 +2184,6 @@ additionalProperties:
                                         At least one item must match for the button to be shown.
                                         
                                         See https://zenar.io/visibility-in-tuix for examples.
-                                traits:
-                                    type: object
-                                    additionalProperties:
-                                        type: *variable
-                                    description: >
-                                        Only show this button for items with all the listed traits.
-                                        
-                                        Warning: this feature is deprecated!
-                                without_traits:
-                                    type: object
-                                    additionalProperties:
-                                        type: *variable
-                                    description: >
-                                        Only show this button for items without any of the listed traits.
-                                        
-                                        Warning: this feature is deprecated!
                                 with_columns_set:
                                     type: object
                                     additionalProperties:
@@ -2386,22 +2371,6 @@ additionalProperties:
                                 hidden: *hidden
                                 visible_if: *visible_if
                                 
-                                traits:
-                                    type: object
-                                    additionalProperties:
-                                        type: *variable
-                                    description: >
-                                        Only show this button for items with all the listed traits.
-                                        
-                                        Warning: this feature is deprecated!
-                                without_traits:
-                                    type: object
-                                    additionalProperties:
-                                        type: *variable
-                                    description: >
-                                        Only show this button for items without any of the listed traits.
-                                        
-                                        Warning: this feature is deprecated!
                                 with_columns_set:
                                     type: object
                                     additionalProperties:

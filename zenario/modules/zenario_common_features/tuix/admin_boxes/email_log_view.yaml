@@ -1,0 +1,62 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_email_log_view:
+    title: "Email log view"
+    key:
+        id: ""
+    identifier: 
+        css_class: log email_log
+        label: Email log ID
+    tabs:
+        email:
+            label: Email
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+            fields:
+                email_debug_was_on_at_the_time_of_sending:
+                    hidden: true
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">
+                                Email debug mode was on at the time of sending
+                            </div>
+                sent_form_text:
+                    snippet:
+                        html: ''
+                email_address_from:
+                    pre_field_html: |
+                        <strong>From: </strong>
+                    type: text
+                    show_as_a_span: true
+                email_name_from:
+                    pre_field_html: |
+                        <strong>Name from: </strong>
+                    type: text
+                    show_as_a_span: true
+                email_subject:
+                    pre_field_html: |
+                        <strong>Subject: </strong>
+                    type: text
+                    show_as_a_span: true
+                email_address_to:
+                    pre_field_html: |
+                        <strong>To: </strong>
+                    type: text
+                    show_as_a_span: true
+                email_ccs:
+                    pre_field_html: |
+                        <strong>Cc: </strong>
+                    type: text
+                    show_as_a_span: true
+                    hide_if_empty: true
+                email_address_replyto:
+                    pre_field_html: |
+                        <strong>Reply to: </strong>
+                    type: text
+                    show_as_a_span: true
+                    hide_if_empty: true
+                email_body_non_escaped:
+                    label: |
+                        Body:
+                    snippet: 
+                        html: ''

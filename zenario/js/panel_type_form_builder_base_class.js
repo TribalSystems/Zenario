@@ -342,6 +342,12 @@ methods.getTUIXFieldsHTML = function(tags, tuixTabId, item, itemType) {
 			continue;
 		}
 		
+		//The logic is shared between the form editor and the dataset editor.
+		//The "if" statement below should only run in the form editor, and only when editing an archived form.
+		if (thus.tuix.form && thus.tuix.form.status && thus.tuix.form.status == 'archived') {
+			field.readonly = true;
+		}
+		
 		field.id = fieldId;
 		field.itemType = itemType;
 		field.itemId = item.id;
@@ -651,8 +657,16 @@ methods.tuixFieldDetailsChanged = function(itemType, itemId, tuixTabId, tuixFiel
 
 //Draw (or hide) the button toolbar
 //This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
-methods.showButtons = function($buttons) {	
-	if (thus.changeMadeOnPanel) {
+methods.showButtons = function($buttons) {
+	var editingDataset = !thus.tuix.form || !thus.tuix.form.status;
+	var editingForm = thus.tuix.form && thus.tuix.form.status;
+	if (
+		(
+			editingDataset
+			|| (editingForm && thus.tuix.form.status == 'active')
+		)
+		&& thus.changeMadeOnPanel
+	) {
 		//Change the buttons to apply/cancel buttons
 		var mergeFields = {
 			confirm_text: 'Save changes',

@@ -59,7 +59,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 		
 		// Scheduled publishing options
 		if (ze\module::inc('zenario_scheduled_task_manager')) {
-			$allJobsEnabled = ze::setting('jobs_enabled');
+			$allJobsEnabled = ze::setting('site_enabled') && ze::setting('jobs_enabled');
 			$scheduledSendingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobSendNewsletters', 'module_class_name' => 'zenario_newsletter']);
 			if (!($allJobsEnabled && $scheduledSendingEnabled)) {
 				$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';

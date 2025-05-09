@@ -98,6 +98,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					';
 				}
 				
+				if (!ze::setting('zenario_location_manager__enable_external_id')) {
+					unset($panel['columns']['external_id']);
+				}
+				
 				break;
 		}
 	}
@@ -229,6 +233,14 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					
 					$item['navigation_path'] = "zenario__locations/panel/hierarchy/item//hierarchy" . $deeplinkFrag;
 					
+					//Create the location full name. It will be used in certain confirmation buttons.
+					$locationFullName = [];
+					if (!empty($item['parent_customer'])) {
+						$locationFullName[] = $item['parent_customer'];
+					}
+					$locationFullName[] = $item['description'];
+					
+					$item['location_full_name'] = implode(', ', $locationFullName);
 				}
 				
 				if (ze::setting("zenario_location_manager__sector_management")!="2") {
@@ -457,10 +469,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
     
     public static function getMapPinPlacementMethods() {
         return [
-			'postcode_country' => 'Postcode and Country',
-			'street_postcode_country' => 'Address Line 1, Postcode and Country',
-			'street_city_country' => 'Address Line 1, City and Country',
-			'locality_postcode_country' => 'Locality, Postcode and Country'
+			'postcode_country' => 'Postcode and country',
+			'street_postcode_country' => 'Address line 1, postcode and country',
+			'street_city_country' => 'Address line 1, city and country',
+			'locality_postcode_country' => 'Locality, postcode and country'
         ];
     }
     
@@ -790,16 +802,12 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			case "zenario_content":
 				if (isset($_GET['refiner__zenario__locations__create_content']) || (($_GET["refinerName"] ?? false)=="refiner__zenario__locations__create_content")) {
 					$fields['meta_data/content_summary']['hidden'] = true;
-					$fields['meta_data/lock_summary_view_mode']['hidden'] = true;
-					$fields['meta_data/lock_summary_edit_mode']['hidden'] = true;
 					$fields['meta_data/desc_location_specific']['hidden'] = false;
 				} else {
 					if ($box['key']['cID']) {
 						if ($locationId = ze\row::get(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", 'id',
 									["equiv_id" => $box['key']['cID'], "content_type" => $box['key']['cType']])) {
 							$fields['meta_data/content_summary']['hidden'] = true;
-							$fields['meta_data/lock_summary_view_mode']['hidden'] = true;
-							$fields['meta_data/lock_summary_edit_mode']['hidden'] = true;
 							$fields['meta_data/desc_location_specific']['hidden'] = false;
 							if ($locationDetails = self::getLocationDetails($locationId)) {
 								$fields['meta_data/desc_location_specific']['snippet']['html'] = 
@@ -1107,7 +1115,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 									['image_id' => $imageId, 'location_id' => $box['key']['id']]
 								);
 							} else {
-								$newImageId = ze\file::copyInDatabase('location', $imageId, $imageFilenameAndUsage['filename']);
+								$newImageId = ze\fileAdm::copyInDatabase('location', $imageId, $imageFilenameAndUsage['filename']);
 								$usedImages[$newImageId] = true;
 									ze\row::set(
 									ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
@@ -2297,10 +2305,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		
 			if (!count($error)) {
 				$mimeType = ze\file::mimeType($_FILES[$fileVar]['name']);
-				if ($mimeType == 'image/jpeg' || $mimeType == 'image/png') {
+				if ($mimeType == 'image/jpeg' || $mimeType == 'image/webp' || $mimeType == 'image/png') {
 					return self::addImage($locationId, $_FILES[$fileVar]['tmp_name'], $_FILES[$fileVar]['name']);
 				} else {
-					$error['document'] = ze\lang::phrase('The file format must be a .jpg, .jpeg or .png.');
+					$error['document'] = ze\lang::phrase('The file format must be a .jpg, .jpeg, .png or .webp.');
 					return $error;
 				}
 			} else {
@@ -2518,8 +2526,13 @@ class zenario_location_manager extends ze\moduleBaseClass {
     public static function locationsImages($locationId) {
         return ze\row::getValues(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 'image_id', ['location_id' => $locationId], 'ordinal');
     }
+    
     public static function addImage($locationId, $location, $filename = false) {
-        $imageId = ze\file::addToDatabase('location', $location, $filename, true);
+        $imageId = ze\fileAdm::addToDatabase(
+        	'location', $location, $filename, $mustBeAnImage = true,
+			$deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+			$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '', $setPrivacy = 'public'
+        );
         
         if (!$filename) {
         	$filename = basename($location);
@@ -2577,11 +2590,17 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		return $tz;
 	}
 	
-	public static function signalAdvancedSearchPopulateValuesSearchInOtherModules() {
-		return 'zenario_location_manager';
+	public static function signalAdvancedSearchGetSearchableModules() {
+		return [
+			'module_class_name' => 'zenario_location_manager',
+			'searchable_data_types' => [
+				'locations' => 'Locations'
+			],
+			'images_are_supported' => true
+		];
 	}
 	
-	public static function searchFromModule($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
+	public static function searchFromModule($searchString, $searchableDataType, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
 		$recordCount = 0;
 		$resultsFromModule = [];
 
@@ -2609,97 +2628,122 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			unset($searchTermsWithoutStopWords);
 
 			if ($searchTerms && !$searchTermsAreAllStopWords && count($searchTerms) > 0) {
-				$firstRow = true;
-
-				$sqlFields = "
-					SELECT l.id AS item_id, l.description AS title, li.image_id, f.filename";
-				
-				$sqlFrom = "
-					FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations l";
-				
-				$sqlJoin = "
-					LEFT JOIN " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images li
-						ON li.location_id = l.id
-					LEFT JOIN " . DB_PREFIX . "files f
-						ON f.id = li.image_id
-						AND li.sticky_flag = 1";
-				
-				$sqlWhere = "
-					WHERE l.status = 'active'
-					AND (";
-				
-				$sqlMatch = '';
-				$sqlCount = '';
-
-				$sqlFields .= ", (";
-
-				$scoreStatementFirstLine = true;
-				foreach ($searchTerms as $searchTerm => $searchTermType) {
-					$wildcard = "*";
-
-					//The location name column is called description.
-					//Treat it as a title.
-					foreach (['l.description'] as $column) {
-						if ($firstRow) {
-							$or = '';
-							$firstRow = false;
+				if ($searchableDataType == 'locations') {
+					$firstRow = true;
+	
+					$sqlFields = "
+						SELECT l.id AS item_id, l.description AS title, li.image_id, f.filename";
+					
+					$sqlFrom = "
+						FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations l";
+					
+					$sqlJoin = "
+						LEFT JOIN " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images li
+							ON li.location_id = l.id
+						LEFT JOIN " . DB_PREFIX . "files f
+							ON f.id = li.image_id
+							AND li.sticky_flag = 1";
+					
+					$sqlWhere = "
+						WHERE l.status = 'active'
+						AND (";
+					
+					$sqlMatch = '';
+					$sqlCount = '';
+	
+					$sqlFields .= ", (";
+	
+					$scoreStatementFirstLine = $whereStatementFirstLine = true;
+					foreach ($searchTerms as $searchTerm => $searchTermType) {
+						$wildcard = "*";
+						
+						$searchTermIsAStopWord = in_array($searchTerm, $stopWords);
+						
+						if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+							if ($whereStatementFirstLine) {
+								$sqlMatch .= "
+									(";
+								$sqlCount .= "
+									(";
+							} else {
+								$sqlMatch .= "
+									) AND (";
+								$sqlCount .= "
+									) AND (";
+							}
+							
+							$firstRow = true;
 						} else {
-							$or = " OR";
-						}
-
-						if (!$scoreStatementFirstLine) {
-							$sqlFields .= " + ";
+							continue;
 						}
 	
-						$scoreStatementFirstLine = false;
-
-						if ($column == 'l.description') {
-							$weighting = $weightings['title'];
+						$whereStatementFirstLine = false;
+	
+						//The location name column is called description.
+						//Treat it as a title.
+						foreach (['l.description'] as $column) {
+							if ($firstRow) {
+								$or = '';
+								$firstRow = false;
+							} else {
+								$or = " OR";
+							}
+	
+							if (!$scoreStatementFirstLine) {
+								$sqlFields .= " + ";
+							}
+		
+							$scoreStatementFirstLine = false;
+	
+							if ($column == 'l.description') {
+								$weighting = $weightings['title'];
+							}
+							
+							$sqlFields .= "
+								(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
+							
+							$sqlMatch .= $or . "
+								(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+							
+							$sqlCount .= $or . "
+								(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
 						}
-						
-						$sqlFields .= "(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
-						
-						$sqlMatch .= $or . "
-							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
-						
-						$sqlCount .= $or . "
-							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
 					}
-				}
-
-				$sqlFields .= "
-					) AS score";
-				
-				$sqlMatch .= ")";
-				$sqlCount .= ")";
-
-				//Get the record count now...
-				$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sqlFrom . $sqlWhere . $sqlCount);
-				$row = ze\sql::fetchRow($result);
-				$recordCount = $row[0];
-
-				//... and then the results.
-				$sqlMatch .= "
-					ORDER BY score DESC, l.description ASC";
-
-				$sqlMatch .= ze\sql::limit($page, $pageSize);
-
-				$result = ze\sql::select($sqlFields . $sqlFrom . $sqlJoin . $sqlWhere . $sqlMatch);
-
-				while ($row = ze\sql::fetchAssoc($result)) {
-					$item = [
-						'item_id' => $row['item_id'],
-						'title' => $row['title'],
-						'filename' => $row['filename'],
-						'score' => $row['score']
-					];
-
-					if ($row['image_id']) {
-						$item['thumbnail_Id'] = $row['image_id'];
-					} else {
-						$item['thumbnail_Id'] = '';
+	
+					$sqlFields .= "
+						) AS score";
+					
+					$sqlMatch .= "))";
+					$sqlCount .= "))";
+	
+					//Get the record count now...
+					$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sqlFrom . $sqlWhere . $sqlCount);
+					$row = ze\sql::fetchRow($result);
+					$recordCount = $row[0];
+	
+					//... and then the results.
+					$sqlMatch .= "
+						ORDER BY score DESC, l.description ASC";
+	
+					$sqlMatch .= ze\sql::limit($page, $pageSize);
+	
+					$result = ze\sql::select($sqlFields . $sqlFrom . $sqlJoin . $sqlWhere . $sqlMatch);
+	
+					while ($row = ze\sql::fetchAssoc($result)) {
+						$item = [
+							'item_id' => $row['item_id'],
+							'title' => $row['title'],
+							'filename' => $row['filename'],
+							'score' => $row['score']
+						];
+	
+						if ($row['image_id']) {
+							$item['thumbnail_Id'] = $row['image_id'];
+						} else {
+							$item['thumbnail_Id'] = '';
+						}
+						$resultsFromModule[$row['item_id']] = $item;
 					}
-					$resultsFromModule[$row['item_id']] = $item;
 				}
 			}
 		}

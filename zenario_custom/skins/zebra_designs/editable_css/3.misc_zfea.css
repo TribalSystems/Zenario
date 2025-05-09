@@ -16,10 +16,16 @@
 .zenario_skin div[class*="fea"] input[type="text"], 
 .zenario_skin div[class*="fea"] input[type="password"], 
 .zenario_skin div[class*="fea"] input[type="email"], 
-.zenario_skin div[class*="fea"] input[type="search"], 
+.zenario_skin div[class*="fea"] input[type="search"],  
+.zenario_skin div[class*="fea"] input.search_term,
 .zenario_skin div[class*="fea"] textarea, 
 .zenario_skin div[class*="fea"] select {
 	max-width:450px;
+}
+
+.zenario_skin .icon_button,
+.zenario_skin .zfea_button.delete {
+	background-color:#B20000;
 }
 
 .zenario_skin .zfea .search_form input[type="submit"] {
@@ -50,6 +56,44 @@
     padding-right: 2px;
 }
 
+.zenario_skin .zfea .search_form input.search_term {
+  height: 37px;
+}
+
+.zenario_skin .zfea .search_form input[type="submit"] {
+	color:#2a98ce;
+	background:#FFF;
+	border-color:#ccc;
+}
+
+.zenario_skin .zfea .search_form input.search_term:focus {
+	box-shadow: none;
+}
+
+.zenario_skin .zfea .search_form input[type="button"].clear_search {
+	height: 30px;
+  	top: 5px;
+}
+
+.zenario_skin .zfea .search_form input[type="button"].clear_search:hover {
+	color:#333;
+	background:#FFF;
+}
+
+.zenario_skin .zenario_field_widget_wrap .zenario_remove_val,
+.zenario_slot:not(.zenario_comments) input[type="button"].zenario_remove_val  {
+	min-width:auto;
+	padding:0;
+}
+
+.zenario_skin div[class*="fea"] input[type="text"].zenario_datepicker {
+	width:120px;
+}
+
+.zenario_skin .zenario_field_widget_wrap .zenario_remove_val {
+	margin-top:10px;
+}
+
 /* Videos ZFEA
 --------------------------------------------------------------------------------------------------*/
 
@@ -64,4 +108,8 @@
 .zfea_block_list_like_table .zfea_block_list_wrap .zfea_block,
 .zenario_videos_fea .zfea_block_like_block .zfea_block {
 	background:#eaf0f4;
+}
+
+.zenario_videos_fea .zfea_list_search_sort_wrapper {
+	margin-bottom:20px;
 }

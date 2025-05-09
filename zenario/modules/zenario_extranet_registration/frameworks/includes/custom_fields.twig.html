@@ -1,0 +1,56 @@
+{% if Custom_Fields %}
+	{% for Custom_Field in Custom_Fields_Values %}
+		
+		{% if Custom_Field.type == "text" %}
+			<div class="extranet_field">
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+				<input id="{{Custom_Field.name|e}}" type="{{Custom_Field.type|e}}" name="{{Custom_Field.name|e}}" value="{{Custom_Field.value}}" {% if Custom_Field.required %} required {% endif %} /><br/>
+			</div>
+		{% elseif Custom_Field.type == "textarea" %}
+			<div class="extranet_field">
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+				<textarea id="{{Custom_Field.name|e}}" name="{{Custom_Field.name|e}}" {% if Custom_Field.required %} required {% endif %} >{{Custom_Field.value}}</textarea>
+			</div>
+		{% elseif Custom_Field.type == "select" or Custom_Field.type == "centralised_select" or Custom_Field.type == "dataset_select"%}
+			<div class="extranet_field">
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+				<select id="{{Custom_Field.name|e}}" name="{{Custom_Field.name|e}}">
+					{% for key, opt in Custom_Field.values %}
+						<option value="{{key|e}}" {% if key == Custom_Field.value %} selected {% endif %} >{{opt.label|e}}</option>
+					{% endfor %}
+				</select>
+			</div>
+		{% elseif Custom_Field.type == "checkbox"%}
+			<div class="extranet_field">
+				<input id="{{Custom_Field.name|e}}" type="{{Custom_Field.type|e}}" name="{{Custom_Field.name|e}}" {% if Custom_Field.value %} checked {% endif %} {% if Custom_Field.required %} required {% endif %} />
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+			</div>
+		{% elseif Custom_Field.type == "consent" or  Custom_Field.type == "group"%}
+			<div class="extranet_field">
+				<input id="{{Custom_Field.name|e}}" type="checkbox" id="{{key|e}}" name="{{Custom_Field.name|e}}" {% if Custom_Field.value %} checked {% endif %} {% if Custom_Field.required %} required {% endif %} />
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+			</div>
+		{% elseif Custom_Field.type == "radios" or Custom_Field.type == "centralised_radios"%}
+			<div class="extranet_field">
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+				{% for key, opt in Custom_Field.values %}
+					<input type="radio" id="{{key|e}}" name="{{Custom_Field.name|e}}" value="{{key|e}}" {% if key == Custom_Field.value %} checked {% endif %} />
+					<label for="{{key|e}}">{{opt.label|e}}</label>
+				{% endfor %}
+			</div>
+	
+		{% elseif Custom_Field.type == "url"%}
+			<div class="extranet_field">
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+				<input id="{{Custom_Field.name|e}}" type="url" name="{{Custom_Field.name|e}}" value="{{Custom_Field.value}}" {% if Custom_Field.required %} required {% endif %} />
+			</div>
+		{% elseif Custom_Field.type == "date" %}
+			<div class="extranet_field">
+				<div class="label"><label for="{{Custom_Field.name|e}}">{{Custom_Field.label|e}}</label></div>
+				<input id="{{Custom_Field.name|e}}" type="date" name="{{Custom_Field.name|e}}" value="{{Custom_Field.value}}" {% if Custom_Field.required %} required {% endif %} />
+			</div>                  
+		
+		{% endif %}
+		
+	{% endfor %}
+{% endif %}

@@ -1,0 +1,22 @@
+{#
+	This Twig Snippet needs these variables set:
+		group: The code name of the group
+		msgNotLoggedIn: A message to display when the visitor is not logged in.
+		msgNotInGroup: A message to display when the visitor is logged in but not in the group.
+		msgInGroup: A message to display when the visitor is in the group.
+#}
+
+
+{% if not userId %}
+	{% if msgNotLoggedIn %}
+		<div class="zenario_group_membership_message zenario_group_membership_not_logged_in">{{msgNotLoggedIn|trans|escape}}</div>
+	{% endif %}
+{% elseif not ze('user', 'isInGroup', group) %}
+	{% if msgNotInGroup %}
+		<div class="zenario_group_membership_message zenario_group_membership_not_in_group">{{msgNotInGroup|trans|escape}}</div>
+	{% endif %}
+{% else %}
+	{% if msgInGroup %}
+		<div class="zenario_group_membership_message zenario_group_membership_not_in_group">{{msgInGroup|trans|escape}}</div>
+	{% endif %}
+{% endif %}

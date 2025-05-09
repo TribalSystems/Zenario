@@ -54,6 +54,47 @@ email_templates:
         </tr>
         </tbody>
         </table>
+    installed_cms_multisite:
+        subject: "Zenario has been successfully installed"
+        from: Zenario Installer
+        body: |
+            <table style="table-layout: auto; width: 860px; height: 656px;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr>
+                        <td style="vertical-align: top; width: 860px;>
+                            <table style="table-layout: auto; margin: 30px auto;" border="0" width="620" cellspacing="0" cellpadding="0" align="center">
+                                <tbody>
+                                    <tr>
+                                        <td style="vertical-align: top;">
+                                            <table style="table-layout: auto;" border="0" width="100%" cellspacing="0" cellpadding="0">
+                                                <tbody>
+                                                    
+            <tr>
+            <td style="font-family: Arial, Helvetica; padding: 0px 20px 0px; font-size: 14px; line-height: 22px;">
+            <p>&nbsp;</p>                                                    
+                <h1>Zenario installation successful</h1>
+
+                <p>Zenario has been successfully installed at <a href = "[[URL]][[SUBDIRECTORY]]">[[URL]][[SUBDIRECTORY]]</a>.</p>
+
+                <h2>Logging in as an administrator</h2>
+                
+                <p>The site's administator access is at <a href = "[[URL]][[SUBDIRECTORY]]zenario/admin">[[URL]][[SUBDIRECTORY]]admin</a>.</p> The site has been configured to connect to the global database [[DBNAME_GLOBAL]] for administrator authentication. If you have a multisite account you may log in using your multisite administrator username and password.</p>
+                
+                <p> &nbsp;-- The team at Tribal Systems</p>
+            <p>&nbsp;</p>
+                                                                    
+            </td>
+            </tr>
+            </tbody>
+            </table>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        </td>
+        </tr>
+        </tbody>
+        </table>
     reset_password_local_admin:
         subject: Your Zenario Admin Username and Password
         from: false
@@ -179,7 +220,7 @@ email_templates:
             
             <p style="text-align: center;"><a style="background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;" href="[[VERIFICATION_LINK]]">AUTHENTICATE</a></p>
             
-            If the above link doesn't work, copy the following code (all UPPER CASE letters) and paste it into your browser:
+            If the above link doesn't work, copy the following code (all numbers) and paste it into your browser:
             
             <p style="text-align: center;"><strong>[[CODE]]</strong></p>
             

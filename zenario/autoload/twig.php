@@ -34,10 +34,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Include Zenario's custom logic for Twig
 require_once CMS_ROOT. 'zenario/includes/twig.inc.php';
 
-//Include the Twig-Extensions library for phrase/translation functionality
-require CMS_ROOT. 'zenario/libs/manually_maintained/mit/twig-extensions/lib/Twig/Extensions/Autoloader.php';
-\Twig_Extensions_Autoloader::register();
-
 //Run the garbage collector and create the cache/frameworks/ directory if it wasn't already created
 \ze\cache::cleanDirs();
 
@@ -48,6 +44,11 @@ class twig {
 	//A dummy filter, just used as a work-around to block other filters from working
 	public static function dummyFilter() {
 		return '';
+	}
+	
+	protected static function addFilter($name, $function) {
+		$filter = new \Twig\TwigFilter($name, $function);
+		self::$twig->addFilter($filter);
 	}
 	
 	protected static function blockFilter($name) {
@@ -63,9 +64,6 @@ class twig {
 			'auto_reload' => true
 		]);
 
-		//Add the I18n extension to add support for translating text
-		self::$twig->addExtension(new \Twig_Extensions_Extension_I18n());
-		
 		//Remove the "filter", "map" and "reduce" filters, as these have a very bad security vulnerability
 		//involving executing arbitrary functions/making arbitrary CLI calls, and I don't think we
 		//use them anywhere anyway.
@@ -75,6 +73,8 @@ class twig {
 		self::blockFilter('map');
 		self::blockFilter('reduce');
 		self::blockFilter('sort');
+		
+		self::addFilter('trans', 'zenario_phrase');
 
 
 		//Create instances of any modules that say they are usable in Twig Frameworks
@@ -91,7 +91,6 @@ class twig {
 
 		//Add references to some commonly used functions from Twig frameworks in Zenario 7,
 		//just to cut down the ammount of rewriting we need to do!
-		self::$twig->addFunction(new \Twig\TwigFunction('imageLinkArray', '\\ze\\file::imageLinkArray'));
 		self::$twig->addFunction(new \Twig\TwigFunction('trackFileDownload', '\\ze\\file::trackDownload'));
 		self::$twig->addFunction(new \Twig\TwigFunction('get', '\\ze::get'));
 		self::$twig->addFunction(new \Twig\TwigFunction('post', '\\ze::post'));

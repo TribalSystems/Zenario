@@ -6,7 +6,7 @@ Options -Indexes -MultiViews
 
 <ifModule mod_headers.c>
 	Header setifempty Content-Security-Policy "default-src *; font-src * data:; img-src * data:; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'"
-	Header setifempty Permissions-Policy "sync-xhr=(self), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=()"
+	Header setifempty Permissions-Policy "sync-xhr=(self), camera=(), geolocation=(), gyroscope=(), magnetometer=(), midi=(), payment=()"
 	Header setifempty Referrer-Policy strict-origin-when-cross-origin
 	Header setifempty X-Content-Type-Options nosniff
 	Header setifempty X-Frame-Options SAMEORIGIN
@@ -96,18 +96,10 @@ Options -Indexes -MultiViews
 	RewriteRule ^backup/.*$ - [F,NC]
 	RewriteRule ^docstore/.*$ - [F,NC]
 	
-	# Remove yaml files, phrases and custom frameworks from public view:
+	# Remove yaml files and frameworks from public view:
 	RewriteRule ^zenario.*\.yaml$ - [F,NC]
-	RewriteRule ^zenario.*/phrases/.*$ - [F,NC]
-	RewriteRule ^zenario.*/admin_phrase_codes/.*$ - [F,NC]
 	RewriteRule ^zenario_custom/frameworks/.*\.html$ - [F,NC]
 	
 	# Remove any svn directories from public view:
 	RewriteRule \.svn/.*$ - [F,NC]
-	
-	# A rule for testing whether the htaccess file is working
-	RewriteRule ^zenario/includes/test_files/is_htaccess_working\.txt$ zenario/includes/test_files/htaccess_is_working.txt [L]
-	
-	# A rule to catch anything pointing to the old "libraries" directory from version 7.
-	RewriteRule ^zenario/libraries/(.*)$ zenario/libs/manually_maintained/$1 [L]
 </IfModule>

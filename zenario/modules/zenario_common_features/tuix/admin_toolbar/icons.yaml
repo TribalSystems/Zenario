@@ -4,37 +4,47 @@ sections:
     icons:
         buttons:
             tag_id:
+                ord: 1
                 css_class: zenario_at_icon_tag_id
                 label: ""
             version_1:
+                ord: 2
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
             version_2:
+                ord: 3
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
             version_3:
+                ord: 4
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
             staging_mode:
+                ord: 5
                 css_class: zenario_at_icon_staging_mode
                 admin_box:
                     path: zenario_content_staging_mode
             alias_dropdown:
+                ord: 6
                 css_class: zenario_at_icon_alias
             copy_url:
+                ord: 7
                 visible_if: zenario.canCopy()
                 parent: alias_dropdown
                 label: Copy URL/alias to clipboard
             go_to_alias:
+                ord: 8
                 parent: alias_dropdown
                 label: Go to content item via its alias
             no_alias:
+                ord: 9
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
             alias:
+                ord: 10
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
@@ -44,31 +54,40 @@ sections:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_alias
             language_id:
+                ord: 11
                 css_class: zenario_at_icon_language
                 label: ""
-            layout_id: 
+            layout_id:
+                ord: 12
                 css_class: zenario_at_icon_layout
                 tooptip: Content Item Layout
                 admin_box:
                     path: zenario_content_layout
+            
+            #If the Users module is running, it will insert the permissions icon with ord 13.
+            
             item_categories_some:
+                ord: 14
                 css_class: zenario_at_icon_categories_some
                 tooltip: Content Item Categories|
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_content_categories
             item_categories_none:
+                ord: 15
                 css_class: zenario_at_icon_categories_none
                 tooltip: Content Item Categories|None
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_content_categories
             pinned:
+                ord: 16
                 css_class: pinned
                 tooltip: "This content item is pinned"
                 admin_box:
                     path: zenario_content
             not_pinned:
+                ord: 17
                 css_class: not_pinned
                 tooltip: "This content item is not pinned"
                 admin_box:

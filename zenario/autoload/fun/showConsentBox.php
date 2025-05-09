@@ -27,91 +27,11 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-//This function does one of three mutually exclusive things.
+//This function does one of two mutually exclusive things.
 
 
-//1. Add the login link for admins if this looks like a logged out admin
-if ($includeAdminLinks
-  && !$isAdmin
-  && isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
-  && !\ze\priv::check()
-  && !\ze\link::adminDomainIsPrivate()) {
-	
-	$url =
-		\ze\link::protocol().
-		\ze\link::adminDomain(). SUBDIRECTORY.
-		'admin.php?';
-	$importantGetRequests = \ze\link::importantGetRequests(true);
-
-	//If this is a 401/403/404 page, include the requested cID and cType,
-	//not the actual cID/cType of the 401/403/404 page
-	switch (\ze\content::isSpecialPage(ze::$cID, ze::$cType)) {
-		case 'zenario_login':
-		case 'zenario_no_access':
-		case 'zenario_not_found':
-			$importantGetRequests['cID'] = $_REQUEST['cID'] ?? false;
-			if (!($importantGetRequests['cType'] = $_REQUEST['cType'] ?? false)) {
-				unset($importantGetRequests['cType']);
-			}
-	}
-
-	//Add the logo
-	$logoURL = $logoWidth = $logoHeight = false;
-	if (ze::setting('admin_link_logo') == 'custom'
-	 && (ze\file::imageLink($logoWidth, $logoHeight, $logoURL, ze::setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
-
-		if (strpos($logoURL, '://') === false) {
-			$logoURL = \ze\link::absolute(). $logoURL;
-		}
-	} else {
-		$logoURL = \ze\link::absolute(). 'zenario/admin/images/zenario-logo-diamond.svg';
-		$logoWidth = 25;
-		$logoHeight = 19;
-	}
-	
-	$offset = (int) ze::setting('admin_link_logo_offset', $useCache = true, $default = 30);
-	$pos = ze::setting('admin_link_logo_pos', $useCache = true, $default = 'allt allr');
-	
-	if (substr($pos, 0, 4) == 'allb') {
-		$style = 'bottom:'. $offset. 'px';
-	} else {
-		$style = 'top:'. $offset. 'px';
-	}
-
-	echo '
-		<div class="admin_login_link ', htmlspecialchars($pos), '" style="', htmlspecialchars($style), '">
-			<a
-				class="clear_admin_cookie"
-				href="zenario/cookies.php?clear_admin_cookie=1"
-				onclick="
-					return confirm(\'', (\ze\admin::phrase('Remove your admin login link?\n\nThis will delete your admin cookie.\n\nGo to /admin to sign in next time!')), '\');
-				"
-			></a>
-			<a
-				class="admin_login_link"
-				href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '"
-				target="_top"
-				onclick="
-					var requests,
-						conductorSlot = zenario_conductor.getSlot();
-					if (conductorSlot && conductorSlot.exists) {
-						requests = zenario_conductor.request(conductorSlot, \'refresh\');
-						zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests, true));
-						return false;
-					}
-					return true;
-				"
-			>
-				<img src="', htmlspecialchars($logoURL), '" width="', (int) $logoWidth, '" height="', (int) $logoHeight, '" alt="', \ze\admin::phrase('Admin login logo'), '"/><br/>
-				', \ze\admin::phrase('Login'), '
-			</a>
-		</div>';
-
-	//Never allow a page with an "Admin" link to be cached...
-	ze::$canCache = false;
-
-//2. If the admin has hidden the admin toolbar, add a button to get it back.
-} elseif ($includeAdminLinks && $isAdmin && !$includeAdminToolbar) {
+//1. If the admin has hidden the admin toolbar, add a button to get it back.
+if ($includeAdminLinks && $isAdmin && !$includeAdminToolbar) {
 	
 	$offset = (int) ze::setting('admin_link_logo_offset', $useCache = true, $default = 30);
 	$pos = ze::setting('admin_link_logo_pos', $useCache = true, $default = 'allt allr');
@@ -131,14 +51,14 @@ if ($includeAdminLinks
 		></div>';
 
 
-//3. Show the cookie consent box
+//2. Show the cookie consent box
 //(Note that this should never been shown to admins, logged in or logged out, no matter the settings.)
 } else {
 
 	switch (ze::setting('cookie_require_consent')) {
 		case 'implied':
 			//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
-			if (!empty($_COOKIE['cookies_accepted']) || ($_SESSION['cookies_accepted'] ?? false)) {
+			if (!empty($_COOKIE['z_cookies_accepted']) || ($_SESSION['z_cookies_accepted'] ?? false)) {
 				return;
 			} else {
 				echo '
@@ -147,7 +67,7 @@ if ($includeAdminLinks
 <script type="text/javascript" src="zenario/cookie_message.php?type=implied"></script>
 <!--googleon: all-->';
 	
-				$_SESSION['cookies_accepted'] = true;
+				$_SESSION['z_cookies_accepted'] = true;
 			}
 			break;
 	

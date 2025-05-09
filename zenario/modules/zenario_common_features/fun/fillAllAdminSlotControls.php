@@ -154,12 +154,18 @@ if (!$moduleId) {
 		//that is flagged as uses wireframe.
 		if (empty($controls['meta_info']['is_sitewide']) && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			$i = 0;
-			foreach (ze\row::getAssocs(
-				'modules',
-				['id', 'display_name'],
-				['status' => ['module_running', 'module_is_abstract'], 'is_pluggable' => 1, 'can_be_version_controlled' => 1],
-				'display_name'
-			) as $module) {
+			
+			$sql = "
+				SELECT id, display_name
+				FROM ". DB_PREFIX. "modules
+				WHERE `status` IN ('module_running', 'module_is_abstract')
+				  AND is_pluggable = 1
+				  AND can_be_version_controlled = 1
+				ORDER BY
+					class_name = 'zenario_wysiwyg_editor' DESC,
+					display_name";
+			
+			foreach (ze\sql::fetchAssocs($sql) as $module) {
 				$controls['actions'][] = [
 					'ord' => ++$i,
 					'label' => ze\admin::phrase('Insert a version-controlled [[display_name]]', $module),
@@ -232,28 +238,27 @@ if (!$moduleId) {
 	
 	//Show options to switch to the correct level to change the settings
 	if (!$canChange) {
-		unset($controls['actions']['switch_to_edit']);
-		unset($controls['actions']['switch_to_edit_settings']);
-		unset($controls['actions']['switch_to_layout']);
+		unset($controls['switch_to']['switch_to_edit']);
+		unset($controls['switch_to']['switch_to_edit_settings']);
+		unset($controls['switch_to']['switch_to_layout']);
 	
 	} elseif ($isVersionControlled && $level > 1) {
-		unset($controls['actions']['switch_to_edit_settings']);
-		unset($controls['actions']['switch_to_layout']);
+		unset($controls['switch_to']['switch_to_edit_settings']);
+		unset($controls['switch_to']['switch_to_layout']);
 	
 	} elseif ($level > 1) {
-		unset($controls['actions']['switch_to_edit']);
-		unset($controls['actions']['switch_to_edit_settings']);
+		unset($controls['switch_to']['switch_to_edit']);
+		unset($controls['switch_to']['switch_to_edit_settings']);
 	
 	} elseif ($level == 1) {
-		unset($controls['actions']['switch_to_edit']);
-		unset($controls['actions']['switch_to_layout']);
+		unset($controls['switch_to']['switch_to_edit']);
+		unset($controls['switch_to']['switch_to_layout']);
 	
 	} else {
-		unset($controls['actions']['switch_to_edit']);
-		unset($controls['actions']['switch_to_edit_settings']);
-		unset($controls['actions']['switch_to_layout']);
+		unset($controls['switch_to']['switch_to_edit']);
+		unset($controls['switch_to']['switch_to_edit_settings']);
+		unset($controls['switch_to']['switch_to_layout']);
 	}
-	
 	
 	if (!$couldChange || $level == 2) {
 		unset($controls['re_move_place']['move_on_item_layer']);
@@ -276,10 +281,25 @@ if (!$moduleId) {
 	if (!$couldChange || ($level == 1 && !$overriddenSlot) || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
 		unset($controls['re_move_place']['hide_plugin']);
 	}
+	
+	//The "copy placement" button only works on library plugins on the item layer
+	if ($isVersionControlled || !$couldChange || $level != 1) {
+		unset($controls['re_move_place']['copy_plugin_placement_on_item_layer']);
+	}
 
 	
 	//Set the right CSS class around the slot and control box
 	$controls['css_class'] .= ' zenario_level'. $level;
+	
+	if ($isSlideshow) {
+		$controls['css_class'] .= ' zenario_slotWithSlideshow';
+	
+	} elseif ($isNest) {
+		$controls['css_class'] .= ' zenario_slotWithNest';
+	
+	} else {
+		$controls['css_class'] .= ' zenario_slotWithPlugin';
+	}
 	
 	//Flag where a plugin is overriding another plugin on the layout level
 	if ($overriddenSlot) {
@@ -293,10 +313,10 @@ if (!$moduleId) {
 	
 	if ($slot->class()) {
 		
-		$status = $slot->init();
+		$initStatus = $slot->initStatus();
 		
-		if (!$status) {
-			if (!empty($slot->error()) || $status === ZENARIO_401_NOT_LOGGED_IN || $status === ZENARIO_403_NO_PERMISSION) {
+		if (!$initStatus) {
+			if (!empty($slot->error()) || $initStatus === ZENARIO_401_NOT_LOGGED_IN || $initStatus === ZENARIO_403_NO_PERMISSION) {
 				$controls['css_class'] .= ' zenario_slotWithNoPermission';
 		
 			} else {

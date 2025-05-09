@@ -37,8 +37,11 @@ zenario__administration:
                     keywords: key keys api dropbox captcha recaptcha google map maps translate translation tools
                 aws_s3_and_vector_data_processing:
                     name: AWS S3 and Vector data processing
-                    desc: Settings for Amazon Web Services (text extract and storage), and Qdrant vector database storage.
-                    keywords: aws, amazon, s3, textract, extract, text, pdf, jpg, jpeg, png, scan, document, vector, ai, artificial, intelligence, qdrant, sentences
+                    desc: Settings for Amazon Web Services (text extract and storage)
+                    keywords: aws, amazon, s3, textract, extract, text, pdf, jpg, jpeg, png, scan, document
+                    #N.b. if the prototype vector search plugin makes it to live/prod we'd want to tweak the description here at some point:
+                    #desc: Settings for Amazon Web Services (text extract and storage), and Qdrant vector database storage.
+                    #keywords: aws, amazon, s3, textract, extract, text, pdf, jpg, jpeg, png, scan, document, vector, ai, artificial, intelligence, qdrant, sentences
                 cookies:
                     name: Cookie control
                     desc: "Settings that control when cookies are placed on a visitor's computer."
@@ -117,7 +120,7 @@ zenario__administration:
                 search_engine_optimisation:
                     name: Search engine optimisation
                     desc: Settings that affect how URLs for your site are generated, and to manage an XML sitemap and robots.txt file.
-                    keywords: mod_rewrite suffix default behaviour for translations alias language code links sitemap xml robots.txt robots robot friendly url urls
+                    keywords: seo mod_rewrite suffix sitemap xml robots.txt robots robot friendly url urls
                 users:
                     name: Users
                     desc: Settings that affect extranet users & contacts.
@@ -128,21 +131,16 @@ zenario__administration:
                     name: Cache
                     desc: Settings that affect or speed up web pages.
                     keywords: >
-                        compress web pages quickly
-                        CSS file bundles wrappers
-                        caching of SQL queries
-                        query cache size
-                        show SQL errors to visitors
-                        show run-time notices
-                        show strict errors
-                        show all other errors
+                        compress
+                        quickly
+                        speed
+                        pagespeed
                         caching
-                        cache web pages
-                        cache plugins
-                        cache AJAX and RSS
-                        show debug info
-                        cache stats refresh statistics
-                        clear cache clear the cache
+                        cache
+                        cache
+                        debug
+                        stats
+                        statistics
             
             # These controls don't use the usual Site Settings Admin Box,
             # but we put them here anyway as this is the logical place to look for them

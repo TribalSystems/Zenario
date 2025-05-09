@@ -87,7 +87,7 @@ if (ze\dbAdm::needRevision(31200)) {
 		$sql = "
 			SELECT id, location, path, filename, data, mime_type, width, height
 			FROM ". DB_PREFIX. "files
-			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp')
 			  AND width != 0
 			  AND height != 0
 			  AND (`". ze\escape::sql($c[0]). "` IS NULL
@@ -109,7 +109,7 @@ if (ze\dbAdm::needRevision(31200)) {
 				}
 			}
 	
-			ze\file::resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $c[3], $c[4]);
+			ze\image::resize($img['data'], $img['mime_type'], $img['width'], $img['height'], $c[3], $c[4]);
 			$img['data'] = "
 				UPDATE ". DB_PREFIX. "files SET
 					`". ze\escape::sql($c[0]). "` = '". ze\escape::sql($img['data']). "',
@@ -279,7 +279,7 @@ if (ze\dbAdm::needRevision(52205)) {
 					//and create the correct entry in the "inline_images" table.
 					//Also move the file to docstore.
 					$oldFileInfo = ze\row::get('files', ['filename', 'short_checksum'], ['id' => $file['id']]);
-					$newFileId = ze\file::copyInDatabase('mic', $file['id'], false, true, $addToDocstoreDirIfPossible = true);
+					$newFileId = ze\fileAdm::copyInDatabase('mic', $file['id'], false, true, $addToDocstoreDirIfPossible = true);
 
 					foreach ($MICPluginsAndSettings as $pluginId => $plugin) {
 						$oldImageSettings = $plugin['value'];
@@ -333,10 +333,9 @@ if (ze\dbAdm::needRevision(52205)) {
 					//Alternatively, if the image is used only by MIC plugins, then just move it to docstore and update the "usage" column.
 					$fileInfo = ze\row::get('files', ['filename', 'checksum', 'short_checksum'], ['id' => $file['id']]);
 					
-					$pathDS = false;
-					ze\file::moveFileFromDBToDocstore($pathDS, $file['id'], $fileInfo['filename'], $fileInfo['checksum']);
+					ze\row::update('files', ['usage' => 'mic'], $file['id']);
+					ze\file::moveFileFromDBToDocstore($file['id']);
 
-					ze\row::update('files', ['usage' => 'mic', 'data' => NULL, 'path' => $pathDS, 'location' => 'docstore'], ['id' => (int)$file['id']]);
 					$imageCount ++;
 					$imagesMovedToDocstore[$file['id']] = $fileInfo;
 					$imagesMovedToDocstore[$file['id']]['docstore_path'] = $pathDS;
@@ -991,7 +990,7 @@ if (ze\dbAdm::needRevision(57200)) {
 		]) as $imageId) {
 			$file = ze\row::get('files', ['width', 'height', 'data'], $imageId);
 			
-			if (ze\file::getWidthAndHeightOfSVG($file, $file['data'])) {
+			if (ze\fileAdm::getWidthAndHeightOfSVG($file, $file['data'])) {
 				unset($file['data']);
 				ze\row::update('files', $file, $imageId);
 			}
@@ -1271,6 +1270,21 @@ if (ze\dbAdm::needRevision(58730)) {
 	ze\dbAdm::revision(58730);
 }
 
+//In 9.6, we're changing the required/read only checkboxes of the dataset editor
+//to be in line with User Forms: there will now be a selector with the values
+//mandatory/read only/mandatory on condition/mandatory if visible.
+//This was already done in step 2, and step 4 addresses cases where a field was mandatory and read only
+//at the same time. They will now be marked as read only.
+ze\dbAdm::revision(58750
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]custom_dataset_fields`
+	SET
+		`required` = 0,
+		`required_message` = NULL
+	WHERE `required` = 1 AND `readonly` = 1
+_sql
+);
+
 //We no longer want to encrypt the SMTP password in 9.6.
 //We've changed the flag on it so it would be automatically decrypted the next time it was
 //saved, but we don't want to wait for someone to manually open and save the FAB, so we'll
@@ -1339,7 +1353,7 @@ if (ze\dbAdm::needRevision(58922)) {
 			$file = ze\row::get('files', ['filename', 'usage'], $selectedImage);
 		
 			if (!empty($file) && $file['usage'] != 'site_setting') {
-				$newFileId = ze\file::copyInDatabase('site_setting', $selectedImage, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+				$newFileId = ze\fileAdm::copyInDatabase('site_setting', $selectedImage, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
 				
 				ze\site::setSetting($settingToMigrate, $newFileId);
 			}
@@ -1426,7 +1440,7 @@ if (ze\dbAdm::needRevision(59600)) {
 	$printFiles = [];
 	
 	foreach (\ze\row::getValues('skins', ['id', 'name', 'display_name'], ['missing' => 0]) as $skin) {
-		$printFile = \ze\content::skinPath($skin['name']). 'editable_css/print.css';
+		$printFile = \ze\skin::path($skin['name']). 'editable_css/print.css';
 		
 		if (file_exists(CMS_ROOT. $printFile)) {
 			if ($css = file_get_contents(CMS_ROOT. $printFile)) {
@@ -1491,4 +1505,395 @@ if (ze\dbAdm::needRevision(60020)) {
 	}
 	
 	ze\dbAdm::revision(60020);
+}
+
+
+
+
+//
+//	Zenario 9.0
+//
+
+//Update Advanced Search module: replace "Resize and crop" with "Crop and zoom".
+if (ze\dbAdm::needRevision(60620)) {
+	if (ze\module::isRunning('zenario_advanced_search')) {
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_advanced_search');
+		
+		foreach ($instances as $instance) {
+			if (
+				!empty($instance['settings']['search_html'])
+				&& !empty($instance['settings']['html_show_feature_image'])
+				&& !empty($instance['settings']['html_feature_image_canvas'])
+				&& $instance['settings']['html_feature_image_canvas'] == 'resize_and_crop'
+			) {
+				ze\row::update('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'html_feature_image_canvas']);
+			}
+			
+			if (
+				!empty($instance['settings']['search_document'])
+				&& !empty($instance['settings']['document_show_feature_image'])
+				&& !empty($instance['settings']['document_feature_image_canvas'])
+				&& $instance['settings']['document_feature_image_canvas'] == 'resize_and_crop'
+			) {
+				ze\row::update('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'document_feature_image_canvas']);
+			}
+			
+			if (
+				!empty($instance['settings']['search_news'])
+				&& !empty($instance['settings']['news_show_feature_image'])
+				&& !empty($instance['settings']['news_feature_image_canvas'])
+				&& $instance['settings']['news_feature_image_canvas'] == 'resize_and_crop'
+			) {
+				ze\row::update('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'news_feature_image_canvas']);
+			}
+			
+			if (
+				!empty($instance['settings']['search_blog'])
+				&& !empty($instance['settings']['blog_show_feature_image'])
+				&& !empty($instance['settings']['blog_feature_image_canvas'])
+				&& $instance['settings']['blog_feature_image_canvas'] == 'resize_and_crop'
+			) {
+				ze\row::update('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'blog_feature_image_canvas']);
+			}
+			
+			if (
+				!empty($instance['settings']['search_in_other_modules'])
+				&& !empty($instance['settings']['other_module_show_image'])
+				&& !empty($instance['settings']['other_module_image_canvas'])
+				&& $instance['settings']['other_module_image_canvas'] == 'resize_and_crop'
+			) {
+				ze\row::update('plugin_settings', ['value' => 'crop_and_zoom'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'other_module_image_canvas']);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(60620);
+}
+
+//In 10.0, we fixed a bug where if an image was used in a non-version controlled WYSIWYG editor,
+//it would not be displayed as "In use by plugin X".
+//This logic will update the usage info for existing plugins.
+//It is adapted from ze\welcome::postInstallTasks().
+if (ze\dbAdm::needRevision(60650)) {
+	foreach (\ze\sql::select('
+		SELECT id, content_id, `content_type`, content_version, is_nest, is_slideshow
+		FROM '. DB_PREFIX. 'plugin_instances
+		WHERE content_id = 0'
+	) as $instance) {
+		\ze\contentAdm::resyncLibraryPluginFiles($instance['id'], $instance);
+	}
+	
+	ze\dbAdm::revision(60650);
+}
+
+//In 10.0, we changed the way the Feed Reader caches data
+//and how often it tries to get the live data.
+//This logic will clear up old data.
+if (ze\dbAdm::needRevision(60662)) {
+	if (ze\module::isRunning('zenario_feed_reader')) {
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_feed_reader');
+		
+		foreach ($instances as $instance) {
+			if ($instance['settings']['feed_source']) {
+				$sql = "
+					DELETE FROM " . DB_PREFIX . "plugin_instance_store
+					WHERE instance_id = " . (int) $instance['instance_id'] . "
+					AND use_by_time IS NULL";
+				ze\sql::update($sql);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(60662);
+}
+
+if (ze\dbAdm::needRevision(61087)) {
+	if (ze\module::isRunning('zenario_ecommerce_manager')) {
+		if ($sitemapContentItem = ze::setting('zenario_ecommerce_manager__xmp_sitemap_content_item')) {
+			ze\site::setSetting('zenario_ecommerce_manager__xml_sitemap_content_item', $sitemapContentItem);
+		}
+		ze\row::delete('site_settings', ['name' => 'zenario_ecommerce_manager__xmp_sitemap_content_item']);
+		
+		if ($sitemapConductorState = ze::setting('zenario_ecommerce_manager__xmp_sitemap_conductor_state')) {
+			ze\site::setSetting('zenario_ecommerce_manager__xml_sitemap_conductor_state', $sitemapConductorState);
+		}
+		ze\row::delete('site_settings', ['name' => 'zenario_ecommerce_manager__xmp_sitemap_conductor_state']);
+	}
+	
+	ze\dbAdm::revision(61087);
+}
+
+
+
+
+//
+//	Zenario 10.1
+//
+
+
+//In Zenario 10.1, we're trying to use WebP images rather than PNG or JPEG.
+//Try to go through any WYSIWYG Editor content and switch any links to public images from using 
+//PNG or JPEG to using WebP if possible.
+if (ze\dbAdm::needRevision(61230)) {
+	set_time_limit(60 * 10);
+	\ze\fileAdm::updateAllImagePublicLinks();
+	
+	ze\dbAdm::revision(61230);
+}
+
+//In Zenario 10.1, we moved the Email Template Manager into Common Features.
+//The update below used to be revision 120 of ETM, but now the code is moved here.
+//It is safe to run this update again even if it did run in the past as part of ETM.
+
+//What this update does:
+//Convert the format of any inline image URLs in Email Templates to use the new email pool.
+//Also resync all of the images used in them.
+if (ze\dbAdm::needRevision(61236)) {
+	//Get the body text from the newsletters
+	$sql = "
+		SELECT id, code, body
+		FROM ". DB_PREFIX. "email_templates
+		WHERE body LIKE '%file.php%'";
+	$result = ze\sql::select($sql);
+	
+	while ($row = ze\sql::fetchAssoc($result)) {
+		$files = [];
+		$htmlChanged = false;
+		ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged);
+		
+		if ($htmlChanged) {
+			ze\row::update('email_templates', ['body' => $row['body']], ['id' => $row['id']]);
+		}
+		
+		ze\contentAdm::syncInlineFiles(
+			$files,
+			['foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']],
+			$keepOldImagesThatAreNotInUse = false);
+	}
+
+	ze\dbAdm::revision(61236);
+}
+
+
+//In 10.1 we've changed the format of the directory structure in the docstore directory.
+//Previously files were stored in directories the format "filename_checksum/"
+//Now we want to start using subdirectories in the format "usage/filename-shortchecksum/".
+//Technically it would be posible not to move the files, but for neatness we'll try and migrate them.
+//Oh, and while we're at it, we're also going to combine this update with some changes for how hierarchical files are handled.
+if (ze\dbAdm::needRevision(61616)) {
+	
+	$docStoreDir = \ze::setting('docstore_dir'). '/';
+	$junkDir = \ze::setting('docstore_dir'). '/_uncategorised/';
+	$delMeDir = \ze::setting('docstore_dir'). '/_delete_me/';
+	
+	//Only run this step if the docstore directory is defined and writable.
+	if (is_dir($docStoreDir)
+	 && is_writable($docStoreDir)) {
+		
+		//Look through all of the files in the files table that are stored in the docstore.
+		$sql = "
+			SELECT f.id, f.filename, f.short_checksum, f.path, f.usage, GROUP_CONCAT(g.id) AS `identical_ids`
+			FROM ". DB_PREFIX. "files AS f
+			LEFT JOIN ". DB_PREFIX. "files AS g
+			   ON f.checksum = g.checksum AND f.id != g.id
+			WHERE f.location = 'docstore'
+			GROUP BY f.id, f.filename, f.path, f.`usage`";
+		
+		//N.b. the logic below won't work unless this query is run and then the results stored in memory,
+		//but thankfully that's the default option!
+		foreach (ze\sql::select($sql) as $file) {
+			
+			$copyFile = false;
+			$moveFileIntoDB = false;
+			
+			//We'll want to move the file into the database if it is a hierarchical_file_thumbnail. We don't want these in the docstore any more.
+			if ($file['usage'] == 'hierarchical_file_thumbnail') {
+				$moveFileIntoDB = true;
+			
+			//Anything in the "hierarchial_file" directory will need to be moved to fix that spelling mistake!
+			} elseif (false !== ze\ring::chopPrefix('hierarchial_file/', $file['path'])) {
+			
+			//Anything that's already in the correct format can be skipped.
+			//Note: This line is here because we want to write this script to be safe if called multiple times.
+			} elseif (false !== ze\ring::chopPrefix($file['usage']. '/', $file['path'])) {
+				continue;
+			}
+			
+			//See if the file is actually there.
+			$oldFilePath = ze\file::docstorePath($file['path'], false);
+			
+			//If it's not, write a paranoia check to see if it was accidentally moved to the "_uncategorised/" subdirectory
+			//by a previous run of this script. Fish it out of there in that case!
+			if ($oldFilePath === false) {
+				$oldFilePath = ze\file::docstorePath($file['path'], false, $junkDir);
+			}
+			
+			//Still can't find the file?
+			//If an identicle file was uploaded in two different buckets, the old system only kept one copy.
+			//So it might have already been moved
+			if ($oldFilePath === false) {
+				if (!empty($file['identical_ids'])) {
+					foreach (ze\ray::explodeAndTrim($file['identical_ids'], true) as $otherFileId) {
+						$otherFilePath = ze\file::docstorePath($otherFileId, false);
+						
+						if ($otherFilePath !== false) {
+							$oldFilePath = $otherFilePath;
+							$copyFile = true;
+							break;
+						}
+					}
+				}
+			}
+			
+			//Catch the case where someone is restoring an old backup but we've already run
+			//this script before.
+			if ($oldFilePath === false) {
+				$path = ze\fileAdm::docstoreDirPath($file);
+				$newFilePath = ze\file::docstorePath($path, false);
+				
+				if ($newFilePath !== false) {
+					ze\row::update('files', ['path' => $path], $file['id']);
+					continue;
+				}
+			}
+			
+			//Catch a similar case, where someone is restoring an old backup where the file was
+			//previously moved to the "_delete_me/" subdirectory.
+			if ($oldFilePath === false && $moveFileIntoDB) {
+				$oldFilePath = ze\file::docstorePath($file['path'], false, $delMeDir);
+				
+				//N.b. no need to move the file into the "_delete_me/" subdirectory if it's already in there.
+				if ($oldFilePath !== false) {
+					$copyFile = true;
+				}
+			}
+			
+			//If we couldn't find it we'll just have to give up on it and abandon it as missing
+			if ($oldFilePath === false) {
+				continue;
+			}
+			
+			
+			if ($moveFileIntoDB) {
+				//Move the file into the database if needed
+				\ze\row::update('files', [
+					'location' => 'db',
+					'path' => '',
+					'data' => file_get_contents($oldFilePath)
+				], $file['id']);
+				
+				//Move the old directory into a "delete me" directory
+				if (!$copyFile) {
+					//Create the "_delete_me/" subdirectory if it's not there already
+					if (!is_dir($delMeDir)) {
+						if (!(mkdir($delMeDir) && \ze\cache::chmod($delMeDir, 0777))) {
+							break;
+						}
+					}
+					if (!is_writable($delMeDir)) {
+						break;
+					}
+					
+					$existingDir = dirname($oldFilePath);
+					$subDir = basename($existingDir);
+					rename($existingDir, $delMeDir. '/'. $subDir);
+				}
+				
+			} else {
+				//Try and make a new directory for the file in the new format
+				$path = $newFilePath = false;
+				if (ze\fileAdm::createDocstoreDir($file, $path, $newFilePath)) {
+					if ($copyFile) {
+						copy($oldFilePath, $newFilePath);
+					} else {
+						rename($oldFilePath, $newFilePath);
+					}
+					\ze\cache::chmod($newFilePath, 0666);
+					
+					ze\row::update('files', ['path' => $path], $file['id']);
+					
+					
+					//Remove the old directory when we're done.
+					if (!$copyFile) {
+						ze\cache::deleteDir(dirname($oldFilePath));
+					}
+				}
+			}
+		}
+		
+		//Scan the docstore directory and add any lose file that's not been claimed into the
+		//"_uncategorised/" subdirectory
+		foreach (scandir($docStoreDir) as $subDir) { 
+			if ($subDir == '.'
+			 || $subDir == '..') {
+				continue;
+			}
+			
+			$existingDir = $docStoreDir. '/'. $subDir;
+			if (!is_writable($existingDir)) {
+				continue;
+			}
+			
+			//Look for any subdirectory that's in the old format
+			if (is_numeric($subDir)
+			 || preg_match('@_\w*_[a-zA-Z0-9_-]{20,25}$@', $subDir)) {
+				
+				//Create the "_uncategorised/" subdirectory if it's not there already
+				if (!is_dir($junkDir)) {
+					if (!(mkdir($junkDir) && \ze\cache::chmod($junkDir, 0777))) {
+						break;
+					}
+				}
+				if (!is_writable($junkDir)) {
+					break;
+				}
+				
+				rename($existingDir, $junkDir. '/'. $subDir);
+			}
+		}
+		
+		//Clear out the "public/downloads/" directory as the symlinks may be out of date now.
+		$publicDownloadsDir = CMS_ROOT. 'public/downloads/';
+		if (is_dir($publicDownloadsDir)
+		 && is_writable($publicDownloadsDir)) {
+			
+			ze\cache::deleteDir($publicDownloadsDir, 1, $deleteSymlinks = true);
+			
+			//...then try and regenerate it if we can
+			$errors = $exampleFile = false;
+			ze\document::checkAllPublicLinks($forceRemake = true, $errors, $exampleFile);
+		}
+		
+		//If the "document_thumbnail" or "hierarchial_file" directories were ever created, try to remove them.
+		//But only if they don't have directories inside them.
+		foreach ([$docStoreDir. 'document_thumbnail/', $docStoreDir. 'hierarchial_file/'] as $unwantedDir) {
+			if (is_dir($unwantedDir)
+			 && is_writable($unwantedDir)) {
+				ze\cache::deleteDir($unwantedDir);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(61616);
+}
+
+//In 10.1, we changed the E-Commerce system and as a result, a site setting is no longer needed.
+//Remove it now.
+if (ze\dbAdm::needRevision(61625)) {
+	if (ze\module::isRunning('zenario_ecommerce_manager')) {
+		ze\row::delete('site_settings', ['name' => 'zenario_ecommerce_manager__dataset_field_use_separate_address_for_delivery']);
+	}
+	
+	ze\dbAdm::revision(61625);
+}
+
+
+//In Zenario 10.1, we're trying to use WebP images rather than PNG or JPEG.
+//Try to go through any email templates and switch any links to public images from using 
+//PNG or JPEG to using WebP if possible.
+if (ze\dbAdm::needRevision(61942)) {
+	set_time_limit(60 * 10);
+	\ze\fileAdm::updateAllImagePublicLinksInEmailTemplates();
+	
+	ze\dbAdm::revision(61942);
 }

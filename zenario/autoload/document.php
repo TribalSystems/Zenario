@@ -35,7 +35,7 @@ class document {
 
 
 	public static function upload($filepath, $filename, $folderId = false, $privacy = 'offline') {
-		if ($fileId = \ze\file::addToDatabase('hierarchial_file', $filepath, $filename, false,false,true)) {
+		if ($fileId = \ze\fileAdm::addToDatabase('hierarchical_file', $filepath, $filename, false,false,true)) {
 			return \ze\document::create($fileId, $filename, $folderId, $privacy);
 		}
 	}
@@ -246,8 +246,20 @@ class document {
 					}
 				}
 			}
+			
+			\ze\document::removeMetadata($documentId);
+			
 			\ze\row::delete('documents', ['id' => $documentId]);
 		}
+	}
+	
+	public static function removeMetadata($documentId, $dataset = []) {
+		if (!$dataset) {
+			$dataset = \ze\dataset::details('documents');
+		}
+		
+		\ze\row::delete('documents_custom_data', $documentId);
+		\ze\row::delete('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'linking_id' => $documentId]);
 	}
 	
 	public static function isDirEmpty($dir) {
@@ -267,7 +279,7 @@ class document {
 		$documentProperties = [];
 		$extract = [];
 		$thumbnailId = false;
-		\ze\file::updateHierarchicalDocumentExtract($fileId, $extract, $thumbnailId, $reScan);
+		\ze\fileAdm::updateHierarchicalDocumentExtract($fileId, $extract, $thumbnailId, $reScan);
 		
 		if ($extract['extract']) {
 			$documentProperties['extract'] = $extract['extract'];

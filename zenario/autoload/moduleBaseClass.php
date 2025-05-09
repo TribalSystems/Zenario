@@ -267,9 +267,15 @@ class moduleAPI {
 	}
 	
 	private $twigEnvVars = null;
-	
-	//New Twig version of zenario frameworks
-	protected final function twigFramework($vars = [], $return = false, $fromString = false, $fromFile = false, $addThisVar = null) {
+
+	protected final function runTwigFramework($vars = []) {
+		return $this->twigFramework($vars, true);
+	}
+	protected final function runTwigFromFile($vars, $file) {
+		return $this->twigFramework($vars, true, $file);
+	}
+
+	protected final function twigFramework($vars = [], $return = false, $fromFile = false, $addThisVar = null) {
 		
 		$output = null;
 		
@@ -310,7 +316,7 @@ class moduleAPI {
 		//Should we add the "this" variable?
 		//By default, allow it in frameworks, but not in things like twig snippets
 		if ($addThisVar === null) {
-			$addThisVar = !$fromString && !$fromFile;
+			$addThisVar = !$fromFile;
 		}
 		if ($addThisVar) {
 			if (!isset($vars['this'])) {
@@ -331,28 +337,24 @@ class moduleAPI {
 		
 		\ze::ignoreErrors();
 			try {
-				if ($fromString === false) {
-					if ($fromFile === false) {
-						if ($this->frameworkPath) {
-							$output = \ze\twig::render($this->frameworkPath, $vars);
-						} elseif ($this->framework) {
-							$output = \ze\admin::phrase(
-								'[[htmlRedClassStart]]Cannot display; the file [[moduleClassDir]]frameworks/[[framework]]/framework.twig.html is missing.[[htmlRedClassEnd]]',
-								[
-									'framework' => $this->framework,
-									'moduleClassDir' => \ze::moduleDir($this->moduleClassName),
-									'htmlRedClassStart' => '<span class="red">',
-									'htmlRedClassEnd' => '</span>'
-								]
-							);
-						} else {
-							$output = \ze\admin::phrase("Cannot display; no framework was selected.");
-						}
+				if ($fromFile === false) {
+					if ($this->frameworkPath) {
+						$output = \ze\twig::render($this->frameworkPath, $vars);
+					} elseif ($this->framework) {
+						$output = \ze\admin::phrase(
+							'[[htmlRedClassStart]]Cannot display; the file [[moduleClassDir]]frameworks/[[framework]]/framework.twig.html is missing.[[htmlRedClassEnd]]',
+							[
+								'framework' => $this->framework,
+								'moduleClassDir' => \ze::moduleDir($this->moduleClassName),
+								'htmlRedClassStart' => '<span class="red">',
+								'htmlRedClassEnd' => '</span>'
+							]
+						);
 					} else {
-						$output = \ze\twig::render($fromFile, $vars);
+						$output = \ze\admin::phrase("Cannot display; no framework was selected.");
 					}
 				} else {
-					$output = \ze\twig::render("\n". $fromString, $vars);
+					$output = \ze\twig::render($fromFile, $vars);
 				}
 
 				if (!$return) {
@@ -527,6 +529,16 @@ class moduleAPI {
 	public final function nzPhrase($zeroText, $text, $pluralText = false, $n = 1, $replace = []) {
 		$this->checkPhraseOverride($text);
 		return \ze\lang::nzPhrase($zeroText, $text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, \ze::$visLang);
+	}
+	
+	public final function phraseFromSetting($name, $translate = true, $replace = []) {
+		$phrase = $this->setting($name);
+		
+		if (!$this->isVersionControlled && $translate) {
+			$phrase = $this->phrase($phrase, $replace);
+		}
+		
+		return $phrase;
 	}
 	
 	public final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
@@ -1224,25 +1236,29 @@ class moduleAPI {
 			
 			} else {
 				//Check whether the plugin's init function returned true
-				$status = false;
-				if ($slot->init()) {
-					$status = $slot->init();
-				}
+				$initStatus = $slot->initStatus();
 				
-				if ($status) {
+				if ($initStatus) {
 					
 					if (!$this->eggId) {
 						\ze\plugin::preSlot($this->slotName, $showPlaceholderMethod);
 					}
 					
-					$this->$showPlaceholderMethod();
+					
+					$keepLastVal = \ze::$currentSlot;
+					\ze::$currentSlot = $this->slotName;
+						
+						$this->$showPlaceholderMethod();
+						
+					\ze::$currentSlot = $keepLastVal;
+					
 					
 					if (!$this->eggId) {
 						\ze\plugin::postSlot($this->slotName, $showPlaceholderMethod);
 					}
 				
 				} elseif ($checkPriv) {
-					\ze\pluginAdm::showInitialisationError($slot, $status);
+					\ze\pluginAdm::showInitialisationError($slot, $initStatus);
 				}
 			}
 		echo $this->endInner();
@@ -1259,7 +1275,7 @@ class moduleAPI {
 		if ($slot->isSuspended()) {
 			return \ze\admin::phrase('This module is suspended');
 		
-		} elseif (!$slot->init()) {
+		} elseif (!$slot->initStatus()) {
 			if ($slot->overriddenSlot()) {
 				return \ze\admin::phrase('This slot is set to show nothing on this content item');
 			} else {
@@ -1354,6 +1370,25 @@ class moduleAPI {
 			echo
 				'<p class="zenario_inactive_mode">'.
 					\ze\admin::phrase('This plugin is inactive. Please edit its settings to make it active.').
+				'</p>';
+		}
+	}
+	
+	protected final function pluginCannotBeDisplayed() {
+		if (\ze::isAdmin()) {
+			$href = 'organizer.php#zenario__administration/panels/site_settings//perms';
+			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+			$linkEnd = '</a>';
+	
+			echo
+				'<p class="zenario_inactive_mode">'.
+					\ze\admin::phrase(
+						'This plugin cannot be displayed. Please check [[link_start]]user permissions[[link_end]].',
+						[
+							'link_start' => $linkStart,
+							'link_end' => $linkEnd
+						]
+					).
 				'</p>';
 		}
 	}

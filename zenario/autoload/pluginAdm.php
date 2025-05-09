@@ -74,12 +74,20 @@ class pluginAdm {
 		$instance = [
 			'module_id' => $moduleId,
 			'name' => $instanceName,
-			'is_nest' => $moduleId == \ze\module::id('zenario_plugin_nest'),
-			'is_slideshow' => $moduleId == \ze\module::id('zenario_slideshow') || $moduleId == \ze\module::id('zenario_slideshow_simple')
+			'is_nest' => $moduleId == \ze\module::id('zenario_nest') || $moduleId == \ze\module::id('zenario_ajax_nest'),
+			'is_slideshow' => $moduleId == \ze\module::id('zenario_slideshow')
 		];
 		$instanceId = \ze\row::insert('plugin_instances', $instance);
 	
 		return true;
+	}
+
+
+	public static function setSetting($name, $value, $instanceId, $eggId = 0, $format = 'text', $content = 'synchronized_setting') {
+		\ze\row::set(
+			'plugin_settings',
+			['is_content' => $content, 'format' => $format, 'value' => $value],
+			['name' => $name, 'instance_id' => $instanceId, 'egg_id' => $eggId]);
 	}
 
 
@@ -133,14 +141,20 @@ class pluginAdm {
 				$button['label_replace_like4like']
 			);
 	
-			if ($pluginType === $buttonPluginType) {
-				$preselectCurrentChoice = 'true';
-			} else {
-				$preselectCurrentChoice = 'false';
-			}
-			
 			if (isset($button['onclick'])) {
+				if ($pluginType === $buttonPluginType) {
+					$preselectCurrentChoice = 'true';
+				} else {
+					$preselectCurrentChoice = 'false';
+				}
 				$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
+			}
+			if (isset($button['pick_new_plugin'])) {
+				if ($pluginType === $buttonPluginType) {
+					$button['pick_new_plugin']['preselect'] = true;
+				} else {
+					$button['pick_new_plugin']['preselect'] = false;
+				}
 			}
 		}
 		
@@ -266,11 +280,11 @@ class pluginAdm {
 	
 		//Look through this module's framework directories
 		foreach ([
-			'zenario/modules/',
-			'zenario_extra_modules/',
-			'zenario_custom/modules/',
-			'zenario_custom/frameworks/'
-		] as $moduleDir) {
+			'zenario/modules/' => false,
+			'zenario_extra_modules/' => false,
+			'zenario_custom/modules/' => true,
+			'zenario_custom/frameworks/' => true
+		] as $moduleDir => $isCustom) {
 			if (is_dir($path = CMS_ROOT. $moduleDir. $className. '/frameworks/')) {
 				foreach(scandir($path) as $themeName) {
 					if (substr($themeName, 0, 1) != '.') {
@@ -281,14 +295,16 @@ class pluginAdm {
 								'label' => $themeName,
 								'path' => $path. $themeName. '/framework.html',
 								'filename' => 'framework.html',
-								'module_class_name' => $className];
+								'module_class_name' => $className,
+								'is_custom_framework' => $isCustom];
 						} elseif (is_file($path. $themeName. '/framework.twig.html')) {
 							$frameworks[$themeName] = [
 								'name' => $themeName,
 								'label' => $themeName,
 								'path' => $path. $themeName. '/framework.twig.html',
 								'filename' => 'framework.twig.html',
-								'module_class_name' => $className];
+								'module_class_name' => $className,
+								'is_custom_framework' => $isCustom];
 						}
 					}
 				}
@@ -302,6 +318,55 @@ class pluginAdm {
 		}
 	
 		return $frameworks;
+	}
+
+	//List all of the Twig Snippets available on a site
+	public static function listTwigSnippets($currentValue = null, $headSnippet = false) {
+		
+		$snippets = [];
+		
+		$subdir = '';
+		if ($headSnippet) {
+			$subdir = 'head/';
+		}
+		
+		foreach ([
+			'zenario/twig/'. $subdir => false,
+			'zenario_custom/twig/'. $subdir => true
+		] as $path => $isCustom) {
+			if (is_dir(CMS_ROOT. $path)) {
+				foreach(scandir(CMS_ROOT. $path) as $fileName) {
+					if (substr($fileName, 0, 1) != '.'
+					 && substr($fileName, -10) == '.twig.html'
+					 && $fileName == \ze\file::safeName($fileName)) {
+						
+						if ($isCustom) {
+							$label = $fileName. ' '. \ze\admin::phrase('(custom)');
+						} else {
+							$label = $fileName;
+						}
+						
+						$snippets[$fileName] = [
+							'fileName' => $fileName,
+							'label' => $label,
+							'path' => $path. $fileName
+						];
+					}
+				}
+			}
+		}
+	
+		ksort($snippets);
+		\ze\tuix::addOrdinalsToTUIX($snippets);
+		
+		if (!empty($currentValue) && empty($snippets[$currentValue])) {
+			$snippets[$currentValue] = [
+				'ord' => 0,
+				'label' => \ze\admin::phrase('[[twig_snippet]] (missing from filesystem)', ['twig_snippet' => $currentValue])
+			];
+		}
+	
+		return $snippets;
 	}
 
 	//Gets a list of pagination options for modules
@@ -386,8 +451,8 @@ class pluginAdm {
 				$values['content_version'] = $cVersion;
 				$values['slot_name'] = $slotName;
 			}
-			$values['is_nest'] = $instance['module_id'] == \ze\module::id('zenario_plugin_nest');
-			$values['is_slideshow'] = $instance['module_id'] == \ze\module::id('zenario_slideshow') || $instance['module_id'] == \ze\module::id('zenario_slideshow_simple');
+			$values['is_nest'] = $instance['module_id'] == \ze\module::id('zenario_nest') || $instance['module_id'] == \ze\module::id('zenario_ajax_nest');
+			$values['is_slideshow'] = $instance['module_id'] == \ze\module::id('zenario_slideshow');
 	
 			$oldInstanceId = $instanceId;
 			$instanceId = \ze\row::insert('plugin_instances', $values);
@@ -408,15 +473,14 @@ class pluginAdm {
 					is_slide,
 					show_back,
 					no_choice_no_going_back,
-					show_embed,
 					show_refresh,
 					show_auto_refresh,
 					auto_refresh_interval,
 					request_vars,
-					hierarchical_var,
 					global_command,
 					states,
 					slide_label,
+					slide_link_image_id,
 					set_page_title_with_conductor,
 					privacy,
 					smart_group_id,
@@ -438,15 +502,14 @@ class pluginAdm {
 					is_slide,
 					show_back,
 					no_choice_no_going_back,
-					show_embed,
 					show_refresh,
 					show_auto_refresh,
 					auto_refresh_interval,
 					request_vars,
-					hierarchical_var,
 					global_command,
 					states,
 					slide_label,
+					slide_link_image_id,
 					set_page_title_with_conductor,
 					privacy,
 					smart_group_id,
@@ -473,7 +536,6 @@ class pluginAdm {
 					command,
 					is_custom,
 					request_vars,
-					hierarchical_var,
 					descendants,
 					is_forwards
 				) SELECT
@@ -486,7 +548,6 @@ class pluginAdm {
 					command,
 					is_custom,
 					request_vars,
-					hierarchical_var,
 					descendants,
 					is_forwards
 				FROM ". DB_PREFIX. "nested_paths
@@ -621,6 +682,36 @@ class pluginAdm {
 		
 				//Copy any plugin CSS files
 				\ze\pluginAdm::manageCSSFile('copy', $oldInstanceId, $row['old_id'], $instanceId, $row['new_id']);
+			}
+			
+			
+			//For library plugins, copy the record of which images are used where
+			if (!$cID) {
+				$sql = "
+					INSERT IGNORE INTO ". DB_PREFIX. "inline_images (
+						image_id,
+						foreign_key_to,
+						foreign_key_id,
+						foreign_key_char,
+						foreign_key_version,
+						in_use,
+						archived,
+						is_nest,
+						is_slideshow
+					) SELECT
+						image_id,
+						'library_plugin',
+						". (int) $instanceId. ",
+						'',
+						0,
+						in_use,
+						archived,
+						is_nest,
+						is_slideshow
+					FROM ". DB_PREFIX. "inline_images
+					WHERE foreign_key_to = 'library_plugin'
+					  AND foreign_key_id = ". (int) $oldInstanceId;
+				\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 			}
 	
 	
@@ -1221,8 +1312,8 @@ class pluginAdm {
 		$slideRequestVars = [];
 		
 		$knownCommands = [
-			'back' => ['hVar' => '', 'rVars' => ''],
-			'submit' => ['hVar' => '', 'rVars' => '']
+			'back' => ['rVars' => ''],
+			'submit' => ['rVars' => '']
 		];
 		
 		$sql = '
@@ -1285,7 +1376,6 @@ class pluginAdm {
 					foreach ($tags['path_commands'] as $command => $commandDetails) {
 						
 						$knownCommands[$command] = [
-							'hVar' => $commandDetails['hierarchical_var'] ?? '',
 							'rVars' => implode(',', $commandDetails['request_vars'] ?? [])
 						];
 					}
@@ -1310,14 +1400,14 @@ class pluginAdm {
 		}
 	}
 
-	//Remove all of the variables such as dataPoolId1 and dataPoolId2, if they've been previously added
+	//This function used to filter out any hierarchical request variables from a slide, for breadcrumb links.
+	//However these were removed as part of a maintenance update, so this function currently
+	//just outputs the request variables on a slide.
 	private static function cchTrimReqVars($slide) {
 		$out = [];
 		
 		foreach (\ze\ray::explodeAndTrim($slide['request_vars']) as $var) {
-			if (!preg_match('@\d@', substr($var, -1, 1))) {
-				$out[] = $var;
-			}
+			$out[] = $var;
 		}
 		
 		return $out;
@@ -1331,8 +1421,7 @@ class pluginAdm {
 		if (!is_null($knownCommands)) {
 			\ze\sql::update('
 				UPDATE '. DB_PREFIX. 'nested_paths
-				SET is_custom = 1,
-					hierarchical_var = \'\'
+				SET is_custom = 1
 				WHERE instance_id = '. (int) $instanceId. '
 			');
 			
@@ -1340,8 +1429,7 @@ class pluginAdm {
 				\ze\sql::update('
 					UPDATE '. DB_PREFIX. 'nested_paths
 					SET is_custom = 0,
-						request_vars = \''. \ze\escape::sql($details['rVars']). '\',
-						hierarchical_var = \''. \ze\escape::sql($details['hVar']). '\'
+						request_vars = \''. \ze\escape::sql($details['rVars']). '\'
 					WHERE command = \''. \ze\escape::sql($command). '\'
 					  AND instance_id = '. (int) $instanceId. '
 				');
@@ -1377,7 +1465,6 @@ class pluginAdm {
 			$slide['descendants'] = [];
 			$slide['level'] = $level;
 			$slide['parents'] = '';
-			$slide['hierarchical_var'] = '';
 			
 			foreach (\ze\ray::explodeAndTrim($slide['states']) as $state) {
 				$state = $slide['states'];
@@ -1401,7 +1488,7 @@ class pluginAdm {
 				foreach ($states as $fromState => $fromSlide) {
 				
 					$sql = '
-						SELECT slide.id, slide.slide_num, slide.slide_label, slide.states, path.request_vars, path.hierarchical_var, path.to_state
+						SELECT slide.id, slide.slide_num, slide.slide_label, slide.states, path.request_vars, path.to_state
 						FROM '. DB_PREFIX. 'nested_paths AS path
 						INNER JOIN '. DB_PREFIX. 'nested_plugins AS slide
 						   ON path.instance_id = slide.instance_id
@@ -1441,42 +1528,15 @@ class pluginAdm {
 						}
 					
 						//Get info on the slides above this one in the hierarchy
-						$hVarCounts = [];
-					
-						if ($hVar = $slide['hierarchical_var']) {
-							$hVarCounts[$hVar] = 1;
-						}
-					
 						foreach (\ze\ray::explodeAndTrim($slide['parents']) as $parent) {
 							$states[$parent]['descendants'][] = $toState;
 							$states[$parent]['depth'] = $level;
-						
-							//Work out information on hierarchical variables, e.g. dataPoolId1 and so on
-							if (!empty($states[$parent]['hierarchical_var'])) {
-								$hVar = $states[$parent]['hierarchical_var'];
-							
-								if (isset($hVarCounts[$hVar])) {
-									++$hVarCounts[$hVar];
-								} else {
-									$hVarCounts[$hVar] = 1;
-								}
-							}
 						
 							//Add any variable defined on the parents to the children as well,
 							//just in case those plugins missed defining them.
 							$slide['request_vars'] = array_merge($slide['request_vars'], $states[$parent]['untouched_request_vars']);
 						}
 						$slide['request_vars'] = array_unique($slide['request_vars']);
-					
-						//Add the correct hierarchical variable to each slide's request variables
-						foreach ($hVarCounts as $hVar => $count) {
-							$slide['request_vars'][] = $hVar. $count;
-						
-							//Also remove the base variable
-							$slide['request_vars'] = array_diff($slide['request_vars'], [$hVar]);
-						}
-						
-						$slide['hierarchical_var'] = $hVar;
 					
 					
 					
@@ -1513,8 +1573,7 @@ class pluginAdm {
 		foreach ($slides as $slideId => $slide) {
 			\ze\sql::update('
 				UPDATE '. DB_PREFIX. 'nested_plugins
-				SET request_vars = \''. \ze\escape::sql(implode(',', $slide['request_vars'])). '\',
-					hierarchical_var = \''. \ze\escape::sql($slide['hierarchical_var']). '\'
+				SET request_vars = \''. \ze\escape::sql(implode(',', $slide['request_vars'])). '\'
 				WHERE id = '. (int) $slideId
 			);
 		}

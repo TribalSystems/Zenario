@@ -40,6 +40,12 @@ zenario_user_form_response:
                     readonly: true
                     style: "width:10em"
                     #The value is created in the PHP class.
+                sent_to_admins_or_users:
+                    grouping: form_response_grouping
+                    label: 'Processing actions:'
+                    snippet:
+                        html: ''
+                    hidden: true
                 crm_response:
                     grouping: form_response_grouping
                     label: 'CRM response:'

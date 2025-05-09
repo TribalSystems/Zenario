@@ -63,7 +63,14 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 			$box['key']['id'] = implode(',', $tagIds);
 		}
 		
+		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__library/panels/categories';
+		$linkStart = '<a href="' . htmlspecialchars($categoriesPanelHref) . '" target="_blank">';
+		$linkEnd = "</a>";
 		
+		$fields['categories_add/no_categories']['snippet']['html'] = ze\admin::phrase(
+			'No content item categories have been created. [[Link_start]]Create categories...[[Link_end]]',
+			['Link_start' => $linkStart, 'Link_end' => $linkEnd]
+		);
 		
 		//Setup category boxes for adding categories
 		ze\categoryAdm::setupFABCheckboxes($fields['categories_add/categories_add'], true);
@@ -76,9 +83,8 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 			$fields['categories_add/no_categories']['hidden'] = true;
 			
 			$box['tabs']['categories_add']['fields']['desc']['snippet']['html'] = 
-				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/categories'). '" target="_blank"']);
-			
+				ze\admin::phrase('You can put content item(s) into one or more categories. ([[Link_start]]Define categories[[Link_end]].)',
+					['Link_start' => $linkStart, 'Link_end' => $linkEnd]);
 			
 			$inCats = [];
 			$sql = "

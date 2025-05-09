@@ -19,10 +19,6 @@
 	visibility:hidden;
 }
 
-#colorbox:not(.zenario_admin_cb) #cboxMiddleLeft {
-	display:none;
-}
-
 body #colorbox:not(.zenario_admin_cb) #cboxOverlay,
 body > #cboxOverlay {
 	opacity:1 !important;
@@ -60,7 +56,6 @@ body > #cboxOverlay {
 	width:100%; 
 	padding:0;
 	width:calc(100% - 20px);
-	padding:3px 10px;
 	background:rgba(0,0,0,0.6);
 	text-align:left;
 }

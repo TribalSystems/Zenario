@@ -37,7 +37,10 @@ switch ($path) {
 			unset($panel['collection_buttons']['master_switch_on']);
 		}
 		
-		if (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
+		if (!ze::setting('site_enabled')) {
+			$panel['notice'] = $panel['notice_site_disabled'];
+		
+		} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
 			$panel['notice'] = $panel['notice_master_switch_off'];
 		
 		} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
@@ -46,7 +49,7 @@ switch ($path) {
 		} else {
 			$panel['notice'] = $panel['notice_master_switch_on'];
 		}
-		unset($panel['notice_master_switch_off'], $panel['notice_master_switch_on'], $panel['notice_crontab']);
+		unset($panel['notice_site_disabled'], $panel['notice_master_switch_off'], $panel['notice_master_switch_on'], $panel['notice_crontab']);
 		
 		$panel['collection_buttons']['copy_code']['onclick'] =
 			//Attempt to copy the cannonical URL to the clipboard when the visitor presses this button
@@ -63,7 +66,8 @@ switch ($path) {
 			
 			$item['traits'] = [];
 			
-			if (ze::setting('jobs_enabled')) {
+			if (ze::setting('site_enabled')
+			 && ze::setting('jobs_enabled')) {
 				if ($item['enabled']) {
 					if ($item['status'] != 'rerun_scheduled') {
 						$item['traits']['can_rerun'] = true;
@@ -125,8 +129,8 @@ switch ($path) {
 			}
 			
 			$item['module'] = ze\module::getModuleDisplayNameByClassName($item['module']);
-			$item['first_n_days_of_month'] = ze\admin::phrase(ze\ray::value(zenario_scheduled_task_manager::$firstNOptions, $item['first_n_days_of_month']));
-			$item['status'] = ze\admin::phrase(ze\ray::value(zenario_scheduled_task_manager::$lastRunStatuses, $item['status']));
+			$item['first_n_days_of_month'] = ze\admin::phrase(zenario_scheduled_task_manager::$firstNOptions[$item['first_n_days_of_month']] ?? '');
+			$item['status'] = ze\admin::phrase(zenario_scheduled_task_manager::$lastRunStatuses[$item['status']] ?? '');
 			
 			if ($item['months'] == 'jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec') {
 				$item['months'] = ze\admin::phrase('No Filter');
@@ -143,7 +147,7 @@ switch ($path) {
 		
 		foreach ($panel['items'] as &$item) {
 			$item['summary'] = nl2br(str_replace("\n\n", "\n", htmlspecialchars($item['summary'])));
-			$item['status'] = ze\admin::phrase(ze\ray::value(zenario_scheduled_task_manager::$lastRunStatuses, $item['status']));
+			$item['status'] = ze\admin::phrase(zenario_scheduled_task_manager::$lastRunStatuses[$item['status']] ?? '');
 		}
 		
 		break;

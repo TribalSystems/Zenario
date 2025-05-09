@@ -469,7 +469,13 @@ class menu {
 				m.image_id,
 				m.rollover_image_id,
 				m.css_class,
-				tc.privacy";
+				tc.privacy,
+				(
+					SELECT tc2.privacy
+					FROM " . DB_PREFIX . "translation_chains AS tc2
+					WHERE tc2.equiv_id = m.equiv_id
+					AND tc2.type = m.content_type
+				) AS translation_chain_privacy";
 	
 		if ($getFullMenu
 		 && $language != \ze::$defaultLang) {
@@ -835,6 +841,109 @@ class menu {
 
 		if ($row['open_in_new_window']) {
 			$row['target'] = '_blank';
+		}
+	}
+	
+	
+	
+	public static function pathArray($menuId, $langId = false, $addHome = true) {
+		return \ze\menu::path($menuId, $langId, '', $addHome, true);
+	}
+	
+	const pathFromTwig = true;
+	public static function path($menuId, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false) {
+		if ($langId === false) {
+			$langId = \ze\content::visitorLangId();
+	
+		} elseif ($langId === true) {
+			$langId = \ze::$defaultLang;
+		}
+	
+		$sql = "
+			SELECT m.id, m.section_id, m.redundancy, m.target_loc, m.equiv_id, m.content_type, m.ordinal, (
+				SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))
+				FROM ". DB_PREFIX. "menu_text AS mt
+				WHERE mt.menu_id = m.id
+				ORDER BY
+					mt.language_id = '". \ze\escape::asciiInSQL($langId). "' DESC,
+					mt.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC
+				LIMIT 1
+			) AS text
+			FROM ". DB_PREFIX. "menu_hierarchy AS mh
+			INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+			   ON m.id = mh.ancestor_id
+			WHERE mh.child_id = ". (int) $menuId. "
+			ORDER BY mh.separation DESC";
+		
+		$rows = \ze\sql::fetchAssocs($sql);
+		
+		
+		$first = true;
+		$output = [];
+		
+		foreach ($rows as $row) {
+			
+			if ($first) {
+				$first = false;
+				
+				\ze\menu::addPrefixToMenuPath($output, $row['section_id'], $addHome, $returnArray, $row['equiv_id'], $row['content_type']);
+			}
+			
+			if ($returnArray) {
+				$output[] = $row;
+			} else {
+				$output[] = $row['text'];
+			}
+		}
+		
+		if ($returnArray) {
+			return $output;
+		} else {
+			return implode($separator, $output);
+		}
+	}
+	
+	//Cache some things so we don't need to keep repeatedly looking them up
+	private static $homePageCID = null;
+	private static $homePageCType = null;
+	private static $homePageMenuText = null;
+	
+	public static function addPrefixToMenuPath(&$output, $sectionId, $addHome = true, $returnArray = true, $currentEquivId = 0, $currentContentType = '') {
+
+		//If in the "Main" section, have an option to add the home page on to the breadcrumb trail.
+		if ($sectionId == 1 && $addHome) {
+			
+			if (self::$homePageCID === null) {
+				if (\ze\content::langSpecialPage('zenario_home',
+					self::$homePageCID, self::$homePageCType,
+					\ze::$defaultLang, $languageMustMatch = true, $skipPermsCheck = true
+				)) {
+					if ($menu = \ze\menu::getFromContentItem(self::$homePageCID, self::$homePageCType, $fetchSecondaries = false, $sectionId = 1)) {
+						self::$homePageMenuText = $menu['name'];
+					}
+				}
+			}
+			
+			if (!is_null(self::$homePageMenuText)
+			 && (self::$homePageCID != $currentEquivId
+			  || self::$homePageCType != $currentContentType)) {
+		
+				if ($returnArray) {
+					$output[] = ['text' => self::$homePageMenuText, 'section_id' => $sectionId];
+				} else {
+					$output[] = self::$homePageMenuText;
+				}
+			}
+			
+		} else {
+			//If not in the "Main" section, add the section name.
+			$text = \ze\menu::sectionName($sectionId);
+			
+			if ($returnArray) {
+				$output[] = ['text' => $text, 'section_id' => $sectionId];
+			} else {
+				$output[] = $text;
+			}
 		}
 	}
 }

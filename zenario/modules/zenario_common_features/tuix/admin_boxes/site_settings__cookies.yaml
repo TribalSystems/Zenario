@@ -28,10 +28,10 @@ site_settings:
                     empty_value: "Don't inform visitor or require consent when setting cookies"
                     values:
                         implied:
-                            ord: "1"
+                            ord: 1
                             label: 'Implied consent: inform visitor that cookies are being set'
                         explicit:
-                            ord: "2"
+                            ord: 2
                             label: "Explicit consent: require visitor's consent before setting cookies (recommended)"
                     format_onchange: true
                 
@@ -86,7 +86,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'implied'
                     label: "Initial message:"
                     type: editor
-                    editor_type: phrase_editor
+                    editor_type: description_editor
                     validation:
                         required_if_not_hidden: Please enter a message
                     note_below: 'The CSS class will be "cookies_implied".'
@@ -116,7 +116,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit'
                     label: "Initial popup message:"
                     type: editor
-                    editor_type: phrase_editor
+                    editor_type: description_editor
                     validation:
                         required_if_not_hidden: Please enter a message
                     note_below: 'The CSS class will be "cookies_explicit".'
@@ -162,7 +162,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit'
                     label: '"Manage cookies" popup message:'
                     type: editor
-                    editor_type: phrase_editor
+                    editor_type: description_editor
                     validation:
                         required_if_not_hidden: Please enter a message.
                 cookie_show_image:
@@ -284,7 +284,7 @@ site_settings:
                         zenarioAB.value('cookie_require_consent') == 'explicit'
                     label: 'In popup message, cookie-type switches should appear to new visitors in an initial state of:'
                     type: radios
-                    value: off
+                    value: 'off'
                     values:
                         off:
                             ord: 1
@@ -295,6 +295,7 @@ site_settings:
                     validation:
                         required_if_not_hidden: "Please select a value."
                 extranet_info:
+                    grouping: cookie_box_2
                     snippet:
                         html: |
                             <div class="zenario_fbInfo">

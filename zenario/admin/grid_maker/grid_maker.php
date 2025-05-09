@@ -84,7 +84,7 @@ echo '
 			$layoutId = 0;
 			if (ze::request('loadTemplateFile')
 			 && ((is_numeric(ze::request('id'))
-			   && ($layout = ze\content::layoutDetails(ze::request('id')))
+			   && ($layout = ze\layout::details(ze::request('id')))
 			   && ($layoutId = $layout['layout_id'])
 			   )
 			  )

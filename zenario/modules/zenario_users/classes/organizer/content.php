@@ -30,11 +30,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__organizer__content extends zenario_users {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		$periodToDeleteTheUserContentAccessLog = ze::setting('period_to_delete_the_user_content_access_log');
+		
 		foreach ($panel['items'] as $id => &$item) {
-			if (ze::setting('period_to_delete_the_user_content_access_log') != 0 && !ze::in($item['privacy'], 'public', 'logged_out')) {
+			if ($periodToDeleteTheUserContentAccessLog != 0 && !ze::in($item['privacy'], 'public', 'logged_out')) {
 				$item['traits']['log_access'] = true;
 			}
 		}
+		
 		if ($refinerName == 'group_members') {
 			$group = ze\user::getGroupLabel($refinerId);
 			$panel['title'] = ze\admin::phrase('Content items protected by the Group "[[group]]"', ['group' => $group]);

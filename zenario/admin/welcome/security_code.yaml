@@ -52,7 +52,7 @@ security_code:
                     oninput: |
                         codeEl = document.getElementById("code");
                         codeValue = codeEl.value;
-                        if (codeValue.length == 5) {
+                        if (codeValue.length == 6) {
                             submitEl = document.getElementById("submit");
                             submitEl.click();
                         }

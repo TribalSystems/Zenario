@@ -39,8 +39,6 @@ zenario.lib(function(
 
 
 
-zenario_wysiwyg_editor.summaries = {};
-
 zenario_wysiwyg_editor.animationsHiddenInEditors = false;
 zenario_wysiwyg_editor.hideAnimationsInEditors = function() {
 	zenario_wysiwyg_editor.animationsHiddenInEditors = true;
@@ -51,12 +49,12 @@ zenario_wysiwyg_editor.hideImagesInEditors = function() {
 	zenario_wysiwyg_editor.imagesHiddenInEditors = true;
 };
 
-zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocked, summaryEmpty, summaryMatches, delayed) {
+zenario_wysiwyg_editor.open = function(slotName, containerId, editorId, html, delayed) {
 	
 	//If the Admin Toolbar has not loaded yet, save this code until it has loaded
 	if (!zenarioAT.loaded && !delayed) {
 		zenarioAT.runOnInit.push(function() {
-			zenario_wysiwyg_editor.open(containerId, editorId, html, summaryLocked, summaryEmpty, summaryMatches, true);
+			zenario_wysiwyg_editor.open(slotName, containerId, editorId, html, true);
 		});
 		return;
 	}
@@ -95,6 +93,7 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 		},
 		
 		options = {
+			text_patterns: false,
 			promotion: false,
 
 			plugins: [
@@ -163,7 +162,19 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 				{title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
 			],*/
 		
-			file_picker_callback: zenarioA.fileBrowser,
+			file_picker_callback: function(tinyCallback, value, meta) {
+				
+				//When picking an image to place in a slot, try to work out how wide the slot is.
+				//If we can do that, we'll set a limit to not display the image at a width that's larger than this.
+				var gsDetails = zenarioA.getGridSlotDetails(slotName),
+					maxImageWidth;
+				
+				if (gsDetails && gsDetails.pxWidth) {
+					maxImageWidth = Math.floor(gsDetails.pxWidth);
+				}
+				
+				zenarioA.fileBrowser(tinyCallback, value, meta, maxImageWidth);
+			},
 		
 			init_instance_callback: function(instance) {
 				//zenario.removeLinkStatus($editor);
@@ -259,9 +270,6 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, html, summaryLocke
 	$editor.tinymce(options);
 	
 	
-	zenario_wysiwyg_editor.summaries[containerId] = {locked: summaryLocked, empty: summaryEmpty, matches: summaryMatches};
-	
-	
 	window.zenarioEditorSave = function(editor) {
 		zenario_wysiwyg_editor.saveViaAJAX(get(editor.id), true);
 	};
@@ -292,32 +300,6 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	var slotName = zenario.getSlotnameFromEl(el);
 	
 	
-	if (!confirm && zenario_wysiwyg_editor.summaries[containerId] && !zenario_wysiwyg_editor.summaries[containerId].locked) {
-		
-		if (zenario_wysiwyg_editor.summaries[containerId].empty) {
-			zenario_wysiwyg_editor.floatingMessage(
-				phrase.saveSyncSummaryPrompt,
-				'<input type="button" class="zenario_submit_button" value="' + phrase.saveSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
-				'<input type="button" class="zenario_submit_button" value="' + phrase.saveDontSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
-				'<input type="button" class="zenario_gp_button" value="' + phrase.cancel + '"/>',
-				true);
-			return;
-		
-		} else if (zenario_wysiwyg_editor.summaries[containerId].matches) {
-			zenario_wysiwyg_editor.floatingMessage(
-				phrase.saveUpdateSummaryPrompt,
-				'<input type="button" class="zenario_submit_button" value="' + phrase.saveUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
-				'<input type="button" class="zenario_submit_button" value="' + phrase.saveDontUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
-				'<input type="button" class="zenario_gp_button" value="' + phrase.cancel + '"/>',
-				true);
-			return;
-		}
-		
-	} else if (confirm && !confirmChoice) {
-		zenario_wysiwyg_editor.summaries[containerId] = false;
-	}
-	
-	
 	var saveLink = get(containerId + '_save_link').value;
 	var content = zenario.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
@@ -325,7 +307,6 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 		saveLink,
 		{
 			_zenario_save_content_: 1,
-			_sync_summary: engToBoolean(confirm && confirmChoice),
 			content__content: zenario.encodeItemIdForOrganizer(content)
 		},
 		true);

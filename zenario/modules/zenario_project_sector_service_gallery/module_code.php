@@ -281,7 +281,7 @@ class zenario_project_sector_service_gallery extends ze\moduleBaseClass {
 			
 			$img_tag = '';
 			
-			ze\file::imageLink($width, $height, $url, $row['image_id'], $width, $height, $imageCanvas);
+			ze\image::link($width, $height, $url, $row['image_id'], $width, $height, $imageCanvas);
 			if ($url) {
 				$img_tag =  '<img src="' . $url . '" />';
 			}

@@ -146,7 +146,7 @@ class zenario_extranet_user_profile_view extends ze\moduleBaseClass {
 
 			$url = $width = $height = false;
 			if (($imageId = ze\row::get('users', 'image_id', $userId))
-			 && ze\file::imageLink($width, $height, $url, $imageId, (int) $this->setting('max_user_image_width') ?: 120, (int) $this->setting('max_user_image_height') ?: 120)) {
+			 && ze\image::link($width, $height, $url, $imageId, (int) $this->setting('max_user_image_width') ?: 120, (int) $this->setting('max_user_image_height') ?: 120)) {
 				$this->subSections['User_Image'] = true;
 				$this->mergeFields['Image_Src'] = htmlspecialchars($url);
 				$this->mergeFields['Image_Width'] = $width;

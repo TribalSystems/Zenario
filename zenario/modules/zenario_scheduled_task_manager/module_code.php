@@ -622,7 +622,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 		$class->logEmail(
 			$subject, $body,
 			$serverTime, $jobName, $jobId,
-			ze\ray::value(zenario_scheduled_task_manager::$lastRunStatuses, $status), $note);
+			zenario_scheduled_task_manager::$lastRunStatuses[$status] ?? '',
+			$note
+		);
 		
 		$emails = ze\ray::valuesToKeys(ze\ray::explodeAndTrim($emailList));
 		
@@ -771,8 +773,9 @@ class zenario_scheduled_task_manager extends ze\moduleBaseClass {
 	
 	public static function checkScheduledTaskRunning($jobName = false, $checkPulse = false, $managerClassName = 'zenario_scheduled_task_manager') {
 		
-		if (!ze::setting('jobs_enabled')
-		|| !ze::$dbL->checkTableDef(DB_PREFIX. 'jobs', true)) {
+		if (!ze::setting('site_enabled')
+		 || !ze::setting('jobs_enabled')
+		 || !ze::$dbL->checkTableDef(DB_PREFIX. 'jobs', true)) {
 			return false;
 		}
 		

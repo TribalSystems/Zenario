@@ -1,6 +1,12 @@
-.zenario_plugin_nest .nest_wrap {
-	position:relative;
+.zenario_plugin_nest {
+	/* This class will be applied to all nests. */
 }
+
+.zenario_plugin_nest__default_style {
+	/* This class will be applied to all nests,
+	   unless overridden or removed for a specific nest. */
+}
+
 
 .zenario_plugin_nest .nest_wrap:before,
 .zenario_plugin_nest .nest_wrap:after {
@@ -110,18 +116,20 @@
 }
 
 .zenario_plugin_nest .prev,
-.zenario_plugin_nest .prev_disabled,
-.zenario_plugin_nest .next,
-.zenario_plugin_nest .next_disabled {
+.zenario_plugin_nest .next {
 	margin:0 5px;
 	font-size:30px;
 	line-height:1.3em;
 	font-family: 'FontAwesome';
-	opacity:0.5;
    	-webkit-transition: all 0.2s ease-in-out;
     -moz-transition: all 0.2s ease-in-out;
     transition: all 0.2s ease-in-out;
     cursor:pointer;
+}
+
+.zenario_plugin_nest .prev_disabled,
+.zenario_plugin_nest .next_disabled {
+	opacity:0.5;
 }
 
 .zenario_plugin_nest .prev,
@@ -407,7 +415,65 @@
 	padding-top:8px;
 }
 
-/* Accordion (note: make sure you have the JS file)
+/* Accordion
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab,
+.zenario_plugin_nest .accordion_wrap .accordion_slide {
+	background:#eee;
+	padding:1em 20px;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_slide {
+	overflow:hidden;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab {
+	margin-top:1px;
+	position:relative;
+	cursor:pointer;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab span.accordion_image {
+	float:left;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab span.accordion_label {
+	font-family:'robotolight',Arial, Helvetica, sans-serif;
+	font-size:1.2em;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab span.accordion_image + span.accordion_label {
+	padding-left:10px;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab.accordion_tab_open,
+.zenario_plugin_nest .accordion_wrap .accordion_tab.accordion_tab_open > .accordion_slide {
+	background:#d5e4ec;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab:after {
+	font-family:"FontAwesome";
+	content:"\f107";
+	position:absolute;
+	right:20px;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab.accordion_tab_open:after {
+	content:"\f106";
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab,
+.zenario_plugin_nest .accordion_wrap .accordion_tab:after {
+  	transition: all 0.2s ease-in-out;
+}
+
+.zenario_plugin_nest .accordion_wrap .accordion_tab:hover *,
+.zenario_plugin_nest .accordion_wrap .accordion_tab:hover > *:after {
+	color:#2a98ce;
+}
+
+/* Accordion Ajax (note: make sure you have the JS file)
 --------------------------------------------------------------------------------------------------*/
 
 .nest_accordion.zenario_plugin_nest .zenario_banner,

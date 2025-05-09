@@ -6,6 +6,9 @@ INSERT INTO `[[DB_PREFIX]]menu_sections` VALUES
 ALTER TABLE `[[DB_PREFIX]]menu_sections` ENABLE KEYS;
 
 
+/*	Note: The build plugin in zenario_extra_modules/zenario_build/module_code.php has a list of modules
+	that needs to be manually kept up to date with the modules listed below.	*/
+
 ALTER TABLE `[[DB_PREFIX]]modules` DISABLE KEYS;
 INSERT INTO `[[DB_PREFIX]]modules` VALUES
  (1,'zenario_common_features','zenario_common_features','Common Features','Community','core','','zenario_common_features',0,'',1,0,0,0,'module_is_abstract',0),
@@ -20,12 +23,12 @@ INSERT INTO `[[DB_PREFIX]]modules` VALUES
  (10,'zenario_menu_vertical','zenario_menu_vertical','Menu (Vertical)','Community','pluggable','standard','zenario_menu_vertical',1,'',0,0,0,1,'module_running',0),
  (11,'zenario_language_picker','zenario_language_picker','Language Picker','Community','pluggable','select_list','zenario_language_picker',1,'',0,0,0,1,'module_running',0),
  (12,'zenario_menu_responsive_push_pull','zenario_menu_responsive_push_pull','Menu for Mobile with Push-Pull','Community','pluggable','standard','zenario_menu_responsive_push_pull',1,'',0,0,0,1,'module_running',0),
- (13,'zenario_slideshow_simple','zenario_plugin_nest','Slideshow (simple)','Community','pluggable','standard','zenario_slideshow',1,'',0,0,0,0,'module_running',0),
- (14,'zenario_plugin_nest','zenario_plugin_nest','Nest','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
+ (13,'zenario_slideshow','zenario_plugin_nest','Slideshow','Community','pluggable','standard','zenario_slideshow',1,'',0,0,0,0,'module_running',0),
+ (14,'zenario_ajax_nest','zenario_plugin_nest','Ajax Nest','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
  (15,'zenario_copyright','zenario_copyright','Copyright','Community','pluggable','standard','zenario_copyright',1,'',0,0,0,1,'module_running',0),
  (16,'zenario_document_container','zenario_document_container','Document Container','Community','pluggable','standard','zenario_document_container',1,'',0,0,0,1,'module_running',0),
  (17,'zenario_user_forms','zenario_user_forms','Form Container','Pro','management','standard','zenario_user_forms',1,'',0,0,0,1,'module_running',0),
- (18,'zenario_slideshow','zenario_plugin_nest','Slideshow (advanced)','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
+ (18,'zenario_nest','zenario_plugin_nest','Nest','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
  (19,'zenario_ctype_news','zenario_ctype_news','Content Type News','Community','content_type','','zenario_ctype_news',0,'',0,0,0,0,'module_running',0),
  (20,'zenario_advanced_search','zenario_advanced_search','Advanced Search','Community','content_type','standard','zenario_advanced_search',1,'',0,0,0,1,'module_running',0);
 ALTER TABLE `[[DB_PREFIX]]modules` ENABLE KEYS;
@@ -37,7 +40,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_instances` VALUES
  (2,'Top Menu',6,0,'',0,'','standard','',0,0),
  (3,'Responsive Multilevel Menu',12,0,'',0,'','standard','',0,0),
  (4,'Language picker',14,0,'',0,'','standard','nest_top_bar',1,0),
- (5,'Slideshow (simple) home page',13,0,'',0,'','standard','',0,1),
+ (5,'Home page slideshow',13,0,'',0,'','standard','',0,1),
  (7,'Home, call-out banner',2,0,'',0,'','image_then_title_then_text','banner_animation_parent',0,0),
  (8,'Home, services',14,0,'',0,'','standard','container_12 nest_animation_parent nest_full_boxes',1,0),
  (9,'Home, services',14,0,'',0,'','standard','nest_portfolio nest_animation_parent',1,0),

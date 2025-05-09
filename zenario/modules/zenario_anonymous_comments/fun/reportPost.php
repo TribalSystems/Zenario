@@ -53,7 +53,7 @@ $mergeFields['report_message'] = zenario_anonymous_comments::sanitiseHTML($_POST
 $mergeFields['cms_url'] = ze\link::absolute();
 
 
-zenario_email_template_manager::sendEmailsUsingTemplate(
+zenario_common_features::sendEmailsUsingTemplate(
 	$this->setting('email_address_for_reports'),
 	$this->setting('email_template_for_reports'),
 	$mergeFields,

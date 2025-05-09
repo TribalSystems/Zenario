@@ -129,7 +129,7 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 						if (ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
 							$sqlCode = "
 								Select value FROM ". DB_PREFIX. "admin_settings
-								WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
+								WHERE name LIKE 'z_admin_2fa_%'
 								AND admin_id = ". (int) $id;
 							
 							$sqlCodeResult = ze\sql::select($sqlCode);
@@ -146,6 +146,10 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 						
 					}
 				}
+			}
+			
+			if (!$item['last_login']) {
+				$item['last_login'] = ze\admin::phrase('Never logged in');
 			}
 			
 			unset($item['session_id']);
@@ -208,6 +212,8 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 			if ($currentlyLoggedInAdmin == $id) {
 				$item['currently_logged_in_admin'] = true;
 			}
+			
+			$item['full_name_for_pickers'] = self::formatNameIncludeEmailAddress($item['id']);
 		}
 		
 		if ($refinerName == 'trashed') {
@@ -281,5 +287,26 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		
+	}
+	
+	private function formatNameIncludeEmailAddress($adminDetails = false) {
+	
+		if (!$adminDetails) {
+			$adminDetails = $_SESSION['admin_userid'] ?? false;
+		}
+	
+		if (!is_array($adminDetails)) {
+			$adminDetails = \ze\row::get('admins', ['first_name', 'last_name', 'username', 'email', 'authtype'], $adminDetails);
+		}
+	
+		if (!empty($adminDetails)) {
+			if ($adminDetails['authtype'] == 'super') {
+				return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ', multi-site admin, ' . $adminDetails['email'] . ')';
+			} else {
+				return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ', local admin, ' . $adminDetails['email'] . ')';
+			}
+		} else {
+			return '';
+		}
 	}
 }

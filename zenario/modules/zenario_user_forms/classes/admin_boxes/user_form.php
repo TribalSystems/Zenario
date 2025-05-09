@@ -61,7 +61,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		//Hide profanity settings checkbox if site setting is not checked
 		$profanityFilterSetting = ze::setting('zenario_user_forms_set_profanity_filter');
 		
-		if(!$profanityFilterSetting) {
+		if (!$profanityFilterSetting) {
 			$fields['details/profanity_filter_text_fields']['hidden'] = true;
 		}
 		
@@ -88,12 +88,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 					$fields['data/active_timers']['values'] = $timerTemplates;
 			}
 		
-		if (ze::get('refinerName') == 'archived') {
-			foreach($box['tabs'] as &$tab) {
-				$tab['edit_mode']['enabled'] = false;
-			}
-		}
-		
 		// Get default language english name
 		$defaultLanguageName = false;
 		$languages = ze\lang::getLanguages(false, true, true);
@@ -111,6 +105,12 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 			// Fill form fields
 			$record = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $id);
+			
+			if ($record && $record['status'] == 'archived') {
+				foreach($box['tabs'] as &$tab) {
+					$tab['edit_mode']['enabled'] = false;
+				}
+			}
 			
 			if (!$record['partial_completion_message']) {
 				$record['partial_completion_message'] = $values['partial_completion_message'];
@@ -137,16 +137,15 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		
 			//	Added new radio button for visible fields 
-			if ($record['admin_email_use_template'] == 1){
+			if ($record['admin_email_use_template'] == 1) {
 				$values['data/admin_email_options'] = 'use_template';
-				
-			}elseif ($record['admin_email_use_template'] == 2){
+			} elseif ($record['admin_email_use_template'] == 2) {
 			 	$values['data/admin_email_options'] = 'visible_fields';
-			 	
-			}else {
+			} else {
 			 	$values['data/admin_email_options'] = 'send_data';
-			 	
 			}
+			
+			$values['details/admin_email_attachments'] = $record['admin_email_attachments'];
 			
 			
 			
@@ -310,7 +309,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			if (!empty($instanceIds)) {
 				$pluginIds = zenario_user_forms::getFormPlugins($id, 'plugins');
 				$nestIds = zenario_user_forms::getFormPlugins($id, 'nests');
-				$slideshowIds = zenario_user_forms::getFormPlugins($id, 'slideshows');
 				
 				$instanceId = $instanceIds[0];
 				
@@ -324,10 +322,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 					$usage['nests'] = count($nestIds);
 					$usage['nest'] = $nestIds[0];
 				}
-				if (!empty($slideshowIds)) {
-					$usage['slideshows'] = count($slideshowIds);
-					$usage['slideshow'] = $slideshowIds[0];
-				}
 				
 				if (!empty($usage['content_items']) || !empty($usage['layouts'])) {
 					$item['plugin_is_used'] = true;
@@ -337,7 +331,6 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$usageLinks = [
 				'plugins' => 'zenario__user_forms/panels/user_forms/hidden_nav/plugins_using_form//'. (int) $id. '//', 
 				'nests' => 'zenario__user_forms/panels/user_forms/hidden_nav/nests_using_form//'. (int) $id. '//', 
-				'slideshows' => 'zenario__user_forms/panels/user_forms/hidden_nav/slideshows_using_form//'. (int) $id. '//', 
 				'content_items' => 'zenario__user_forms/panels/user_forms/hidden_nav/content_items_using_form//'. (int) $id. '//', 
 				'layouts' => 'zenario__user_forms/panels/user_forms/hidden_nav/layouts_using_form//'. (int) $id. '//'
 			];
@@ -444,15 +437,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		    //Send to admin conditions: get a list of checkboxes and consent fields
 		    $formCheckboxes = [];
 		    
-		    $formFields = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['id', 'name', 'field_type'], ['user_form_id' => (int)$box['key']['id']]);
+		    $formFields = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['id', 'name', 'field_type'], ['user_form_id' => (int)$box['key']['id'], 'field_type' => 'checkbox']);
 			
 			while ($row = ze\sql::fetchAssoc($formFields)) {
-				if ($row['field_type'] == 'checkbox') {
-					if (in_array($row['id'], $consentFields)) {
-						continue;
-					} else {
-						$formCheckboxes[$row['id']] = $row['name'];//, ['parent' => 'checkboxes']];
-					}
+				if (in_array($row['id'], $consentFields)) {
+					continue;
+				} else {
+					$formCheckboxes[$row['id']] = $row['name'];//, ['parent' => 'checkboxes']];
 				}
 			}
 			
@@ -631,10 +622,12 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$fields['data/user_email_template_from_field']['hidden'] = 
 			!$values['data/send_email_to_user'] || !$values['data/send_email_to_email_from_field'] || ($values['data/user_email_options_from_field'] != 'use_template');
 		
-		$fields['data/admin_email_addresses']['hidden'] = 
 		$fields['data/admin_email_options']['hidden'] = 
+		$fields['data/admin_email_attachments']['hidden'] = 
 		$fields['data/reply_to']['hidden'] = 
-			!$values['data/send_email_to_admin'];  
+			!$values['data/send_email_to_admin'];
+		
+		$fields['data/admin_email_addresses']['hidden'] = !$values['data/send_email_to_admin'] || ($values['data/send_email_to_admin_destination_for_form_response'] != 'enter_address_manually');
 		
 		$fields['data/admin_email_template']['hidden'] = 
 			!($values['data/send_email_to_admin'] && ($values['data/admin_email_options'] == 'use_template'));
@@ -691,57 +684,73 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		}
 		
+		$profanityFilterSetting = ze::setting('zenario_user_forms_set_profanity_filter');
+		
+		$fields['details/profanity_filter_text_fields']['notices_below']['profanities_csv_file_is_missing']['hidden'] = true;
+		if ($profanityFilterSetting && $values['details/profanity_filter_text_fields']) {
+			$profanityCsvFilePath = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
+			
+			if (!file_exists($profanityCsvFilePath)) {
+				$fields['details/profanity_filter_text_fields']['notices_below']['profanities_csv_file_is_missing']['hidden'] = false;
+			}
+		}
+		
 		
 		//Fields to hide if this is a registration form...
 		if ($box['key']['type'] == 'registration') {
-			$fields['data/success_message_type']['hidden'] = true;
-			$fields['data/redirect_location']['hidden'] = true;
-			$fields['data/success_message']['hidden'] = true;
-			$fields['details/profanity_filter_text_fields']['hidden'] = true;
-			$fields['details/allow_partial_completion']['hidden'] = true;
-			$fields['details/partial_completion_message']['hidden'] = true;
-			$fields['details/allow_clear_partial_data']['hidden'] = true;
-			$fields['details/clear_partial_data_message']['hidden'] = true;
-			$fields['details/enable_summary_page']['hidden'] = true;
+			$fields['data/success_message_type']['hidden'] =
+			$fields['data/redirect_location']['hidden'] =
+			$fields['data/success_message']['hidden'] =
+			$fields['details/profanity_filter_text_fields']['hidden'] =
+			$fields['details/profanity_filter_text_fields']['notices_below']['profanities_csv_file_is_missing']['hidden'] =
+			$fields['details/allow_partial_completion']['hidden'] =
+			$fields['details/partial_completion_message']['hidden'] =
+			$fields['details/clear_partial_data_message']['hidden'] =
+			$fields['details/enable_summary_page']['hidden'] =
 			
 			//Always create a user...
-			$values['data/save_data'] = true;
-			$fields['data/save_data']['readonly'] = true;
-			$fields['data/user_status']['hidden'] = true;
-			$fields['data/log_user_in']['hidden'] = true;
-			$fields['data/log_user_in_cookie']['hidden'] = true;
-			$fields['data/duplicate_submission_html']['hidden'] = true;
-			$fields['data/user_duplicate_email_action']['hidden'] = true;
-			$fields['data/duplicate_email_address_error_message']['hidden'] = true;
+			$values['data/save_data'] =
+			$fields['data/save_data']['readonly'] =
+			$fields['data/user_status']['hidden'] =
+			$fields['data/log_user_in']['hidden'] =
+			$fields['data/log_user_in_cookie']['hidden'] =
+			$fields['data/duplicate_submission_html']['hidden'] =
+			$fields['data/user_duplicate_email_action']['hidden'] =
+			$fields['data/duplicate_email_address_error_message']['hidden'] =
 			
-			$fields['data/logged_in_user_section_start']['hidden'] = true;
-			$fields['data/update_linked_fields']['hidden'] = true;
-			$fields['data/no_duplicate_submissions']['hidden'] = true;
-			$fields['data/duplicate_submission_message']['hidden'] = true;
-			$fields['data/add_logged_in_user_to_group']['hidden'] = true;
+			$fields['data/logged_in_user_section_start']['hidden'] =
+			$fields['data/update_linked_fields']['hidden'] =
+			$fields['data/no_duplicate_submissions']['hidden'] =
+			$fields['data/duplicate_submission_message']['hidden'] =
+			$fields['data/add_logged_in_user_to_group']['hidden'] =
 			
-			$fields['data/line_br_2']['hidden'] = true;
+			$fields['data/line_br_2']['hidden'] =
 			
-			$fields['data/send_email_to_user']['hidden'] = true;
-			$fields['data/user_email_options_logged_in_user']['hidden'] = true;
-			$fields['data/user_email_template_logged_in_user']['hidden'] = true;
-			$fields['data/send_email_to_email_from_field']['hidden'] = true;
-			$fields['data/user_email_field']['hidden'] = true;
-			$fields['data/user_email_options_from_field']['hidden'] = true;
-			$fields['data/user_email_template_from_field']['hidden'] = true;
+			$fields['data/send_email_to_user']['hidden'] =
+			$fields['data/user_email_options_logged_in_user']['hidden'] =
+			$fields['data/user_email_template_logged_in_user']['hidden'] =
+			$fields['data/send_email_to_email_from_field']['hidden'] =
+			$fields['data/user_email_field']['hidden'] =
+			$fields['data/user_email_options_from_field']['hidden'] =
+			$fields['data/user_email_template_from_field']['hidden'] =
 			
-			$fields['data/line_br_3']['hidden'] = true;
+			$fields['data/line_br_3']['hidden'] =
 			
-			$fields['data/send_email_to_admin']['hidden'] = true;
-			$fields['data/admin_email_addresses']['hidden'] = true;
-			$fields['data/admin_email_options']['hidden'] = true;
-			$fields['data/admin_email_template']['hidden'] = true;
-			$fields['data/reply_to']['hidden'] = true;
-			$fields['data/reply_to_email_field']['hidden'] = true;
-			$fields['data/reply_to_first_name']['hidden'] = true;
-			$fields['data/reply_to_last_name']['hidden'] = true;
+			$fields['data/send_email_to_admin']['hidden'] =
+			$fields['data/admin_email_addresses']['hidden'] =
+			$fields['data/send_email_to_admin_destination_for_form_response']['hidden'] =
+			$fields['data/admin_email_destination_module_class_name']['hidden'] =
+			$fields['data/admin_email_destination_method_name']['hidden'] =
+			$fields['data/admin_email_options']['hidden'] =
+			$fields['data/admin_email_template']['hidden'] =
+			$fields['data/reply_to']['hidden'] =
+			$fields['data/reply_to_email_field']['hidden'] =
+			$fields['data/reply_to_first_name']['hidden'] =
+			$fields['data/reply_to_last_name']['hidden'] =
 			
 			$fields['anti_spam/extranet_users_use_captcha']['hidden'] = true;
+		} else {
+			$fields['details/enable_summary_page']['notices_below']['info']['hidden'] = !$values['details/enable_summary_page'];
 		}
         
         
@@ -877,6 +886,26 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				$fields['details/handle_referrer_content_item_tag']['error'] = true;
 			}
 		}
+		
+		if ($values['data/send_email_to_admin'] && $values['data/send_email_to_admin_destination_for_form_response'] == 'call_static_method') {
+			if (!$values['data/admin_email_destination_module_class_name']) {
+				$fields['data/admin_email_destination_module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module.');
+
+			} elseif (!ze\module::inc($values['data/admin_email_destination_module_class_name'])) {
+				$fields['data/admin_email_destination_module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module that you have running on this site.');
+
+			} elseif ($values['data/admin_email_destination_method_name']
+				&& !method_exists(
+					$values['data/admin_email_destination_module_class_name'],
+					$values['data/admin_email_destination_method_name'])
+			) {
+				$fields['data/admin_email_destination_method_name']['error'] = ze\admin::phrase('Please enter the name of an existing public static method.');
+			}
+
+			if (!$values['data/admin_email_destination_method_name']) {
+				$fields['data/admin_email_destination_method_name']['error'] = ze\admin::phrase('Please enter the name of a public static method.');
+			}
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -925,15 +954,11 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		if ($values['data/send_email_to_user']) {
 			
 			if ($record['send_email_to_logged_in_user'] = $values['data/send_email_to_logged_in_user']) {
-				if($values['data/user_email_options_logged_in_user'] == 'use_template')
-				{
-					$record['user_email_use_template_for_logged_in_user']=1;
+				if ($values['data/user_email_options_logged_in_user'] == 'use_template') {
+					$record['user_email_use_template_for_logged_in_user'] = 1;
 					$record['user_email_template_logged_in_user'] = $values['data/user_email_template_logged_in_user'];
-				}
-				elseif($values['data/user_email_options_logged_in_user'] == 'visible_fields')
-				{
-					$record['user_email_use_template_for_logged_in_user']=2;
-					$record['user_email_template_logged_in_user']=null;
+				} elseif ($values['data/user_email_options_logged_in_user'] == 'visible_fields') {
+					$record['user_email_use_template_for_logged_in_user'] = 2;
 				}
 				
 			}
@@ -954,13 +979,34 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		
 		$record['send_email_to_admin'] = (empty($values['send_email_to_admin']) ? 0 : 1);
-		$record['admin_email_addresses'] = (empty($values['send_email_to_admin']) ? null : $values['admin_email_addresses']);
-		$record['admin_email_template'] = (empty($values['send_email_to_admin']) ? null : $values['admin_email_template']);
+		
+		$record['admin_email_addresses'] = null;
+		if (!empty($values['send_email_to_admin']) && $values['send_email_to_admin_destination_for_form_response'] == 'enter_address_manually' && $values['admin_email_addresses']) {
+			$record['admin_email_addresses'] = $values['admin_email_addresses'];
+		}
+		
+		$record['send_email_to_admin_destination_for_form_response'] = null;
+		if (!empty($values['send_email_to_admin']) && ze::in($values['send_email_to_admin_destination_for_form_response'], 'enter_address_manually', 'call_static_method')) {
+			$record['send_email_to_admin_destination_for_form_response'] = $values['send_email_to_admin_destination_for_form_response'];
+		}
+		
+		$record['admin_email_destination_module_class_name'] = $record['admin_email_destination_method_name'] = '';
+		if (!empty($values['send_email_to_admin']) && $values['send_email_to_admin_destination_for_form_response'] == 'call_static_method') {
+			$record['admin_email_destination_module_class_name'] = $values['admin_email_destination_module_class_name'];
+			$record['admin_email_destination_method_name'] = $values['admin_email_destination_method_name'];
+		}
+		
+		$record['admin_email_template'] = null;
+		if ($values['send_email_to_admin'] && $values['admin_email_options'] == 'use_template') {
+			$record['admin_email_template'] = $values['admin_email_template'];
+		}
+		
 		$removeReplyToFields = empty($values['reply_to']) || empty($values['send_email_to_admin']);
 		$record['reply_to'] = ($removeReplyToFields ? 0 : 1);
 		$record['reply_to_email_field'] = ($removeReplyToFields ? 0 : $values['reply_to_email_field']);
 		$record['reply_to_first_name'] = ($removeReplyToFields ? 0 : $values['reply_to_first_name']);
 		$record['reply_to_last_name'] = ($removeReplyToFields ? 0 : $values['reply_to_last_name']);
+		$record['admin_email_attachments'] = (!empty($values['send_email_to_admin']) && !empty($values['admin_email_attachments']));
 		$record['save_data'] = $values['save_data'];
 		$record['save_record'] = $values['save_record'];
 		$record['add_user_to_group'] = (empty($values['save_data']) ? null : $values['add_user_to_group']);
@@ -1020,15 +1066,11 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		
 		
 		$record['partial_completion_message'] = null;
-		$record['allow_clear_partial_data'] = 0;
 		$record['clear_partial_data_message'] = null;
 		$record['partial_completion_get_request'] = null;
 		if (!empty($values['allow_partial_completion'])) {
 			$record['partial_completion_message'] = $values['partial_completion_message'];
-			
-			if ($record['allow_clear_partial_data'] = !empty($values['allow_clear_partial_data'])) {
-				$record['clear_partial_data_message'] = $values['clear_partial_data_message'];
-			}
+			$record['clear_partial_data_message'] = $values['clear_partial_data_message'];
 			
 			if (!empty($values['enable_partial_completion_get_request'])) {
 				$record['partial_completion_get_request'] = $values['partial_completion_get_request'];
@@ -1251,7 +1293,11 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				}
 			}
 			$box['key']['id'] = $formId;
+			
+			$box['toast'] = [
+				'message' => ze\admin::phrase("Form successfully created. You should now add some fields."),
+				'message_type' => 'success'
+			];
 		}
 	}
-	
 }

@@ -1,4 +1,5 @@
 
+/*	Reminder: every table you create here should also be listed in the local-admin-DROP.sql file	*/ 
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]action_admin_link`;

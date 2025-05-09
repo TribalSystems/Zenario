@@ -29,7 +29,7 @@ site_settings:
                 email_address_from:
                     site_setting:
                         name: email_address_from
-                    label: '&quot;From&quot; email address:'
+                    label: '"From" email address:'
                     type: text
                     value: yourname@example.com
                     note_below: |
@@ -41,7 +41,7 @@ site_settings:
                 email_name_from:
                     site_setting:
                         name: email_name_from
-                    label: '&quot;From&quot; name:'
+                    label: '"From" name:'
                     type: text
                     value: Zenario website
                     note_below: |
@@ -201,14 +201,26 @@ site_settings:
                     site_setting:
                         name: smtp_port
                     label: 'Port number:'
-                    type: text
-                    value: "25"
-                    style: 'width: 5em;'
+                    type: select
+                    value: 587
+                    values:
+                        587:
+                            label: '587 (recommended)'
+                        25:
+                            label: '25'
+                        1025:
+                            label: '1025'
+                        2587:
+                            label: '2587'
+                        465:
+                            label: '465'
+                        2465:
+                            label: '2465'
                     visible_if: "zenarioAB.value('smtp_specify_server')"
                     indent: 1
-                    side_note: Normally 25, 465 or 587. Get this information from your SMTP service provider.
+                    side_note: Get this information from your SMTP service provider.
                     validation:
-                        numeric: The SMTP port number must be numeric, and is normally set to 25, 465 or 587.
+                        numeric: The SMTP port number must be numeric.
                 smtp_security:
                     site_setting:
                         name: smtp_security
@@ -217,8 +229,12 @@ site_settings:
                     value: ""
                     empty_value: None
                     values:
-                        tls: Transport Layer Security (TLS)
-                        ssl: Secure Sockets Layer (SSL)
+                        tls:
+                            ord: 1
+                            label: Transport Layer Security (TLS) (recommended)
+                        ssl:
+                            ord: 2
+                            label: Secure Sockets Layer (SSL)
                     side_note: TLS is recommended as this is the latest secure standard.
                     visible_if: "zenarioAB.value('smtp_specify_server')"
                     indent: 1
@@ -261,7 +277,7 @@ site_settings:
                             
                             If you do not receive the test email, you may need to change the settings on the Sending tab.
                 test_send_from_address:
-                    label: "&quot;From&quot; email address:"
+                    label: '"From" email address:'
                     type: text
                     readonly: true
                 test_send_subject:

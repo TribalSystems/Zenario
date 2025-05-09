@@ -27,3 +27,6 @@ zenario_trash_admin:
                     #This field exists to prevent a bug where the admin box does not load correctly, because there are no fields.
                     snippet:
                         html: ''
+    hide_tab_bar: true
+    save_button_message: Trash
+    cancel_button_message: Cancel

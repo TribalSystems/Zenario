@@ -5,6 +5,9 @@ zenario__administration:
         custom_tabs_and_fields_gui:
             panel_type: admin_box_builder
             
+            #This property will be populated in the PHP class.
+            dataset: ''
+            
             dataset_page_details:
                 hide_tab_bar: true
                 tabs:
@@ -15,6 +18,16 @@ zenario__administration:
                                 label: 'Label:'
                                 type: text
                                 maxlength: 255
+                            tab_type:
+                                label: 'Type:'
+                                type: text
+                                readonly: true
+                                show_as_a_span: true
+                            tab_code_name:
+                                label: 'Code name:'
+                                type: text
+                                readonly: true
+                                show_as_a_span: true
                             parent_field_id:
                                 label: 'Conditional display on field:'
                                 type: select
@@ -22,6 +35,14 @@ zenario__administration:
                                 empty_value: -- No conditional display --
                                 visible_if: |
                                     !item.is_system_field 
+                            sectors_site_setting_disabled:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Warning: the Sectors tab will not appear, as sector management for locations is not set to "Quick sector management" in <a href='organizer.php#zenario__administration/panels/site_settings//zenario_location_manager__site_settings_group~.site_settings~tzenario_location_manager__site_settings~k{"id"%3A"zenario_location_manager__site_settings_group"}' target="_blank">site settings for Locations</a>.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.dataset == 'locations' && item.id == 'sectors' && item.tab_dependent_on_a_site_setting && !item.site_setting_enabled
             
             dataset_field_details:
                 tabs:
@@ -60,6 +81,14 @@ zenario__administration:
                                 post_field_html: </div>
                                 visible_if: |
                                     item.dataset == 'users' && item.field_name == 'linked_countries' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
+                            external_number_for_locations_site_setting_disabled:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Warning: external number for locations is not enabled in site settings. Please go to the <a href='organizer.php#zenario__administration/panels/site_settings//zenario_location_manager__site_settings_group~.site_settings~tzenario_location_manager__site_settings~k{"id"%3A"zenario_location_manager__site_settings_group"}' target="_blank">Locations</a> site setting to enable it.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.dataset == 'locations' && item.field_name == 'external_id' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
                             label:
                                 label: 'Label:'
                                 type: text
@@ -73,7 +102,7 @@ zenario__administration:
                                 maxlength: 64
                                 note_below: This will be used for the name of the column in the database.
                                 visible_if: |
-                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (!item.is_system_field || item.db_column)
+                                    item.type != 'other_system_field' && (!item.is_system_field || item.db_column)
                             values_source:
                                 label: 'Source:'
                                 type: select
@@ -102,7 +131,7 @@ zenario__administration:
                                 format_onchange: true
                                 note_below: Fields critical to the working of user/admin interfaces should be protected.
                                 visible_if: |
-                                    item.type != 'other_system_field' && item.type != 'repeat_start'
+                                    item.type != 'other_system_field'
                                 format_onchange: true
                             
                             protected_warning:
@@ -115,7 +144,7 @@ zenario__administration:
                                 label: Include in export
                                 type: checkbox
                                 visible_if: |
-                                    lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && item.type != 'repeat_start' && (item.db_column || item._just_added)) || item.allow_admin_to_change_export)
+                                    lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && (item.db_column || item._just_added)) || item.allow_admin_to_change_export)
                             export_disabled:
                                 label: Exporting country-based permissions is not available
                                 type: checkbox
@@ -212,35 +241,18 @@ zenario__administration:
                                 maxlength: 255
                                 note_below: A message to administrators below the field.
                                 visible_if: |
-                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
+                                    item.type != 'other_system_field' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
                             side_note:
                                 label: 'Side note:'
                                 type: text
                                 maxlength: 255
                                 note_below: A message to administrators that appears to the side when hovering over the field.
                                 visible_if: |
-                                    item.type != 'other_system_field' && item.type != 'repeat_start' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
-                            
-                            min_rows:
-                                label: 'Minimum rows:'
-                                type: text
-                                value: 1
-                                maxlength: 250
-                                note_below: The number of rows that are always shown and cannot be deleted.
-                                visible_if: |
-                                    item.type == 'repeat_start'
-                            max_rows:
-                                label: 'Maximum rows:'
-                                type: text
-                                value: 5
-                                maxlength: 250
-                                note_below: The maximum number of rows that can be added.
-                                visible_if: |
-                                    item.type == 'repeat_start'
+                                    item.type != 'other_system_field' && (item.is_system_field || (item.admin_box_visibility != 'hide'))
                     validation:
                         label: Validation
                         visible_if: |
-                            item.type != 'other_system_field' && item.type != 'repeat_start'
+                            item.type != 'other_system_field'
                         fields:
                             message:
                                 pre_field_html: <div class="info_message">
@@ -273,11 +285,18 @@ zenario__administration:
                                         label: Mandatory if visible
                                 format_onchange: true
                                 note_below: Choose whether this field is mandatory or read-only.
+                            mandatory_setting_is_not_recommended_for_documents_dataset:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Not recommended: mandatory validation cannot be applied when creating a document, only when editing.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    lib.tuix.dataset.system_table == 'documents' && (item.readonly_or_mandatory == 'mandatory' || item.readonly_or_mandatory == 'conditional_mandatory' || item.readonly_or_mandatory == 'mandatory_if_visible')
                             mandatory_condition_field_id:
                                 indent: 1
-                                hide_with_previous_outdented_field: true
                                 visible_if: |
-                                   item.readonly_or_mandatory == 'conditional_mandatory'
+                                   !item.is_system_field && item.readonly_or_mandatory == 'conditional_mandatory'
                                 label: 'Mandatory on condition field:'
                                 type: select
                                 empty_value: -- Select --
@@ -327,7 +346,6 @@ zenario__administration:
                                 values: field_lov
                             required_message:
                                 indent: 1
-                                hide_with_previous_outdented_field: true
                                 visible_if: |
                                     !item.is_system_field && ['mandatory', 'conditional_mandatory', 'mandatory_if_visible'].indexOf(item.readonly_or_mandatory) != -1
                                 label: 'Error message when field is incomplete:'
@@ -364,6 +382,14 @@ zenario__administration:
                                 note_below: An administrator will not be able to save a record if this field does not match the validation rule chosen.
                                 visible_if: |
                                      !item.is_system_field && item.type == 'text'
+                            field_validation_is_not_recommended_for_documents_dataset:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Not recommended: field validation cannot be applied when creating a document, only when editing.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    lib.tuix.dataset.system_table == 'documents' && (item.validation != 'none')
                             validation_message:
                                 label: 'Message if not valid:'
                                 type: text
@@ -374,7 +400,7 @@ zenario__administration:
                     organizer:
                         label: Organizer
                         visible_if: |
-                            item.type != 'other_system_field' && item.type != 'repeat_start'
+                            item.type != 'other_system_field'
                         fields:
                             show_in_organizer:
                                 label: Show in Organizer panel
@@ -392,7 +418,7 @@ zenario__administration:
                                 value: index
                                 format_onchange: true
                                 visible_if: |
-                                    !item.is_system_field && item.show_in_organizer 
+                                    !item.is_system_field && item.show_in_organizer && (['editor', 'file_picker', 'checkboxes'].indexOf(item.type) == -1)
                                 indent: 1
                             searchable:
                                 label: Allow quick-searching in Organizer
@@ -404,13 +430,13 @@ zenario__administration:
                                 label: Allow filtering in Organizer
                                 type: checkbox
                                 visible_if: |
-                                    !item.is_system_field && ((['date', 'editor', 'text', 'textarea', 'url'].indexOf(item.type) != -1) ? item.show_in_organizer : (item.show_in_organizer && item.create_index == 'index'))
+                                    !item.is_system_field && ((['date', 'text', 'textarea', 'url'].indexOf(item.type) != -1) ? item.show_in_organizer : (item.show_in_organizer && item.create_index == 'index'))
                                 indent: 2
                             sortable:
                                 label: Allow sorting in Organizer
                                 type: checkbox
                                 visible_if: |
-                                    !item.is_system_field && item.show_in_organizer && (item.create_index == 'index') && (['checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) == -1)
+                                    !item.is_system_field && item.show_in_organizer && (item.create_index == 'index') && (['editor', 'checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) == -1)
                                 indent: 2
                             organizer_visibility:
                                 label: 'Visibility:'
@@ -422,9 +448,8 @@ zenario__administration:
                                         label: 'Show by default'
                                     always_show:
                                         label: 'Always show'
-                                note_below: Administrators will not be able to hide this field in Organizer if it is set to "Always show".
                                 visible_if: |
-                                    !item.is_system_field && item.show_in_organizer
+                                    !item.is_system_field && item.show_in_organizer && (['editor', 'file_picker'].indexOf(item.type) == -1)
                                 indent: 1
                             hide_in_organizer:
                                 label: Hide in Organizer panel

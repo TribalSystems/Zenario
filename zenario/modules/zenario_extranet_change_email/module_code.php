@@ -32,8 +32,6 @@ class zenario_extranet_change_email extends zenario_extranet {
 	
 	
 	public function init() {
-		$this->registerPluginPage();
-		
 		$this->requireJsLib('zenario/js/password_functions.min.js');
 
 		//Be mean and reset Captcha status on every plugin reload.
@@ -100,7 +98,8 @@ class zenario_extranet_change_email extends zenario_extranet {
 						"users",
 						[
 							'last_profile_update_in_frontend' => ze\date::now(),
-							'email' => $row['new_email']
+							'email' => $row['new_email'],
+							'email_domain' => ze\userAdm::extractEmailDomainFromEmailAddress($row['new_email'])
 						],
 						['id' => (int) $row['user_id']]
 					);
@@ -122,9 +121,9 @@ class zenario_extranet_change_email extends zenario_extranet {
 						];
 				
 						//Old
-						zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'], $emailTemplate, $mergeFields);
+						zenario_common_features::sendEmailsUsingTemplate($userDetails['email'], $emailTemplate, $mergeFields);
 						//New
-						zenario_email_template_manager::sendEmailsUsingTemplate($row['new_email'], $emailTemplate, $mergeFields);
+						zenario_common_features::sendEmailsUsingTemplate($row['new_email'], $emailTemplate, $mergeFields);
 					}
 				
 					$this->blankOutEmailChangeRequest($userId, ze::get('hash'));
@@ -209,7 +208,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 			}
 
 			if (!$this->errors) {
-				if ($this->setting('confirmation_email_template') && ze\module::inc('zenario_email_template_manager')){
+				if ($this->setting('confirmation_email_template')){
 					$newEmail = ze::post('extranet_email');
 					$hash = ze\userAdm::createHash((int) ze\user::id(), $newEmail);
 					
@@ -231,7 +230,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 					$userDetails['cms_url'] = ze\link::absolute();
 					$userDetails['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&action=confirm_email&hash='. $hash);
 					
-					if (!zenario_email_template_manager::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,[])){
+					if (!zenario_common_features::sendEmailsUsingTemplate($_POST['extranet_email'] ?? false,$this->setting('confirmation_email_template'),$userDetails,[])){
 						$this->errors[] = ['Error' => $this->phrase('Sorry, a system error occurred. Our website has been unable to send you a verification email. Please contact the site administrator.')];
 						return false;
 					}

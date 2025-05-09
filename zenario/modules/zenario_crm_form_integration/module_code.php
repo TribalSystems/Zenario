@@ -240,7 +240,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$result = @file_get_contents($link['url'], false, $context);
 		
 		if ($responseId && ($result !== false)) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($result, 0, 65535, 'UTF-8')], $responseId);
+			ze\row::update('user_response', ['crm_response' => mb_substr($result, 0, 65535, 'UTF-8')], $responseId);
 		}
 	}
 	
@@ -319,7 +319,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		$logId = ze\row::set(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'salesforce_response_log', ['salesforce_status' => $status, 'salesforce_response' => $resultJSON], $logId);
 		
 		if ($responseId) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
+			ze\row::update('user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
 		}
 		
 		$result = json_decode($resultJSON, true);
@@ -523,7 +523,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		curl_close($curl);
 		
 		if ($responseId) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
+			ze\row::update('user_response', ['crm_response' => mb_substr($resultJSON, 0, 65535, 'UTF-8')], $responseId);
 		}
 
 		//If sending data to Mailchimp, and tags have been defined, send them now.
@@ -645,7 +645,7 @@ class zenario_crm_form_integration extends ze\moduleBaseClass {
 		}
 		
 		if ($responseId) {
-			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['crm_response' => mb_substr($crmResponse, 0, 65535, 'UTF-8')], $responseId);
+			ze\row::update('user_response', ['crm_response' => mb_substr($crmResponse, 0, 65535, 'UTF-8')], $responseId);
 		}
 	}
 	

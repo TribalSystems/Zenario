@@ -49,6 +49,25 @@ plugin_settings:
                             label: Public and private content items
                         private:
                             label: Private content items only
+                hide_private_items:
+                    plugin_setting:
+                        name: hide_private_items
+                    grouping: content_item_filters
+                    label: 'When linking to content items that are private:'
+                    type: select
+                    format_onchange: true
+                    value: 1
+                    empty_value: |
+                        List the item and show the link to everyone (someone following the link may be asked to log in or register)
+                    values:
+                        1:
+                            label: List the item only when the user is authorized to access the item, otherwise hide it
+                        2:
+                            label: List the item always, but only show the link if user is authorized to access the item
+                        3:
+                            label: Call a module's static method to decide (advanced)
+                    note_below: |
+                        Content items that are public are always shown, with a link. Items that are private on a smart group basis are always hidden.
                 language_selection:
                     plugin_setting:
                         name: language_selection
@@ -850,14 +869,6 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                webp:
-                    indent: 2
-                    hide_with_previous_outdented_field: true
-                    plugin_setting:
-                        name: webp
-                    type: checkbox
-                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
-                    value: 1
                 
                 mobile_behaviour:
                     indent: 1
@@ -937,18 +948,6 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                mobile_webp:
-                    indent: 3
-                    plugin_setting:
-                        name: mobile_webp
-                    hide_with_previous_outdented_field: true
-                    visible_if: |
-                        !zenarioAB.svgSelected('mobile_image') &&
-                        !zenarioAB.svgSelected('image') &&
-                        !zenarioAB.svgSelected('images')
-                    type: checkbox
-                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
-                    value: 1
                 
                 fall_back_to_default_image:
                     plugin_setting:
@@ -998,13 +997,12 @@ plugin_settings:
                     visible_if: |
                         zenarioAB.value('content_type', 'first_tab') == 'document' || zenarioAB.value('content_type', 'first_tab') == 'picture' || zenarioAB.value('content_type', 'first_tab') == 'all'
                     label: |
-                        Show file size where content item has a file attachment
+                        Show file size
                     side_note: |
                         Applies to Document and Picture content items only.
                     type: checkbox
                     plugin_setting:
                         name: show_file_size
-                    redraw_onchange: true
                 use_download_page:
                     plugin_setting:
                         name: use_download_page
@@ -1064,24 +1062,6 @@ plugin_settings:
                     side_note: |
                         Will display the writer name. Usually only for Blog or News content items, but depends on settings for each content type.
                 
-                hide_private_items:
-                    plugin_setting:
-                        name: hide_private_items
-                    label: 'When linking to content items that are private:'
-                    type: select
-                    format_onchange: true
-                    value: 1
-                    empty_value: |
-                        List the item and show the link to everyone (someone following the link may be asked to log in or register)
-                    values:
-                        1:
-                            label: List the item only when the user is authorized to access the item, otherwise hide it
-                        2:
-                            label: List the item always, but only show the link if user is authorized to access the item
-                        3:
-                            label: Call a module's static method to decide (advanced)
-                    note_below: |
-                        Content items that are public are always shown, with a link.
                 hide_private_items_class_name:
                     plugin_setting:
                         name: hide_private_items_class_name
@@ -1113,7 +1093,7 @@ plugin_settings:
                 simple_access_cookie_required:
                     plugin_setting:
                         name: simple_access_cookie_required
-                    label: Only link to content item directly if "SIMPLE_ACCESS" cookie is set; otherwise link to gated content form page
+                    label: Only link to content item directly if "z_gated_content_control_satisfied" cookie is set; otherwise link to gated content form page
                     type: checkbox
                     value: ""
                     format_onchange: true

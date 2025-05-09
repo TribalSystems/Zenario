@@ -16,13 +16,15 @@ zenario_delete_draft:
                 delete_item:
                     type: warning
                     message: ||
-                        When this draft is deleted, it will no longer be available to visitors or admins, and will be removed from the menu if no published versions exist.
-                        Deleting this draft will not affect the published version of this item, if it exists. This cannot be undone.
+                        Delete this content item's draft version?
+
+                        If the content item is already published, that version will not be affected.
                 delete_items:
                     type: warning
                     message: |
-                        When these drafts are deleted, they will no longer be available to visitors or admins, and will be removed from the menu if no published versions exist.
-                        Deleting a draft will not affect any published versions of these items, if they exist. This cannot be undone.
+                        Delete the selected content items' draft versions?
+
+                        Where a content item is already published, that version will not be affected.
             fields:
                 access_codes_warning:
                     snippet: {}
@@ -33,12 +35,8 @@ zenario_delete_draft:
                             message: ''
                 links_warning:
                     snippet:
-                        html:
+                        html: ''
                     hidden: true
-                links_warning_part_2:
-                    ord: 9999999999
-                    snippet:
-                        html:
                 delete_options:
                     type: radios
                     values:

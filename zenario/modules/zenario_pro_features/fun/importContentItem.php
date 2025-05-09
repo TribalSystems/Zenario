@@ -68,9 +68,9 @@ if ($isXML) {
 			$xml .= $thing;
 		
 		} else {
-			$lastThingWasSecondLevel = ze\ray::value($ndLevels, ceil($i/6) - 1);
-			$thisThingIsSecondLevel = ze\ray::value($ndLevels, ceil($i/6));
-			$nextThingWillBeSecondLevel = ze\ray::value($ndLevels, ceil($i/6) + 1);
+			$lastThingWasSecondLevel = $ndLevels[ceil($i/6 - 1)] ?? false;
+			$thisThingIsSecondLevel = $ndLevels[ceil($i/6)] ?? false;
+			$nextThingWillBeSecondLevel = $ndLevels[ceil($i/6 + 1)] ?? false;
 			
 			switch ($i % 6) {
 				case 1:

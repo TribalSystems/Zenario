@@ -63,7 +63,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 					exit;
 				}
 		
-				$box['title'] = ze\admin::phrase('Starting the module "[[class_name]]" ([[display_name]])', $module);
+				$box['title'] = ze\admin::phrase('Starting module "[[display_name]]"', $module);
 				$box['save_button_message'] = ze\admin::phrase('Start module');
 		
 				//$box['tabs']['confirm']['notices']['are_you_sure']['show'] = true;
@@ -71,7 +71,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 
 		$box['tabs']['confirm']['hidden'] = false;
 		$box['tabs']['confirm']['fields']['module_start_desc']['hidden'] = false;
-		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['p'] = ze\admin::phrase('Start the module "[[class_name]]" ([[display_name]])?', $module);
+		$box['tabs']['confirm']['fields']['module_start_desc']['snippet']['p'] = ze\admin::phrase('Start module "[[display_name]]" ([[class_name]])?', $module);
 
 		$desc = false;
 		if (ze\moduleAdm::loadDescription($module['class_name'], $desc)) {
@@ -186,11 +186,14 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 	
 			if (!empty($contentItems)) {
 				if (count($contentItems) < 2) {
+					$contentItemTag = $contentItems[0]['type'] . '_' . $contentItems[0]['id'];
+					$tagFormatted = ze\content::formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $contentItems[0]['language_id']);
 					$toastMessage =
-						ze\admin::phrase('&quot;[[tag]]&quot; was created by the [[name]] module. You should review and publish this content item.',
+						ze\admin::phrase('<a href="[[org_link]]" target="_blank">[[tag]]</a> was created by the [[name]] module. You should review and publish this content item.',
 							[
+								'org_link' => 'organizer.php#zenario__content/panels/content/refiners/content_type//' . htmlspecialchars($contentItems[0]['type']) . '//' . htmlspecialchars($contentItemTag),
 								'name' => htmlspecialchars($module['display_name']),
-								'tag' => htmlspecialchars(ze\content::formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $contentItems[0]['language_id']))]);
+								'tag' => htmlspecialchars($tagFormatted)]);
 		
 				} else {
 					$toastMessage =

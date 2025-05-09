@@ -14,7 +14,7 @@ class Break_Node extends \Twig\Node\Node
 	/**
 	 * Compiles a Break_Node into PHP.
 	 */
-	public function compile(\Twig_Compiler $compiler)
+	public function compile(\Twig\Compiler $compiler)
 	{
 		$compiler->addDebugInfo($this);
 

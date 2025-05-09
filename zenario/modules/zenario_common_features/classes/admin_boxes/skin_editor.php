@@ -175,7 +175,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 
 		//... then add skin editable CSS files (names starting with 2)...
 		$editableCssFiles = [];
-		$skinPath = CMS_ROOT . ze\content::skinPath($skin['name']) . 'editable_css/';
+		$skinPath = CMS_ROOT . ze\skin::path($skin['name']) . 'editable_css/';
 		if ($handle = opendir($skinPath)) {
 			while (($entry = readdir($handle)) !== false) {
 				if ($entry != "." && $entry != ".." && strpos($entry, '2.') === 0) {

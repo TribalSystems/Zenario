@@ -234,7 +234,7 @@ class layoutAdm {
 		//Get information on the templates we're using
 		foreach (['old', 'new'] as $oon) {
 			//Loop through the slots on the templates, seeing what Modules are placed where
-			$layout[$oon] = \ze\content::layoutDetails($layoutId[$oon]);
+			$layout[$oon] = \ze\layout::details($layoutId[$oon]);
 			\ze\plugin::checkSlotContents(
 				$slotContents[$oon],
 				$cID, $cType, $cVersion,

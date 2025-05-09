@@ -33,39 +33,12 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	protected $editing = false;
 	protected $editorId = '';
 	
-	public static function generateSummary($body) {
-		$body = str_replace("\n", "~n", str_replace('~', '~s', $body));
-	
-		if ((preg_match('@(<p.*?)<h\d\b@', $body, $matches)) && ($summary = trim($matches[1]))) {
-	
-		} elseif ((preg_match('@(<p.*)@', $body, $matches)) && ($summary = trim($matches[1]))) {
-	
-		} else {
-			$summary = '';
-		}
-		
-		return str_replace('~s', '~', str_replace("~n", "\n", $summary));
-	}
-	
 	protected function openEditor() {
 		$html = $this->setting('html');
-		$contentItemSummary = ze\row::get('content_item_versions', 'content_summary', ['id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion]);
-		if ($contentItemSummary) {
-			$summary = trim(strip_tags($contentItemSummary));
-		} else {
-			$summary = '';
-		}
-
-		$summaryMatches =
-			$summary == trim(strip_tags($html))
-		 || $summary == trim(strip_tags(zenario_wysiwyg_editor::generateSummary($html)));
 		
 		$this->callScript(
-			'zenario_wysiwyg_editor', 'open', $this->containerId, $this->editorId,
-			$html,
-			$this->summaryLocked($this->cID, $this->cType, $this->cVersion),
-			!$summary,
-			$summaryMatches);
+			'zenario_wysiwyg_editor', 'open', $this->slotName, $this->containerId, $this->editorId,
+			$html);
 	}
 	
 	protected function displayEditor() {
@@ -120,17 +93,6 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				
 				break;
 		}
-	}
-	
-	
-	protected function summaryLocked($cID, $cType, $cVersion) {
-		return
-			!ze\row::get('content_types', 'enable_summary_auto_update', $cType)
-		 || ze\row::get('content_item_versions', 'lock_summary', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-	}
-	
-	protected function syncSummary($cID, $cType, $cVersion, $html) {
-		ze\row::set('content_item_versions', ['content_summary' => $html], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
 	
 	

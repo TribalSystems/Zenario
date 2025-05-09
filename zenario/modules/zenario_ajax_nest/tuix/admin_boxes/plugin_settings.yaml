@@ -1,0 +1,592 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_ajax_nest
+    tabs:
+        first_tab:
+            label: Display
+            fields:
+                show_heading:
+                    plugin_setting:
+                        name: show_heading
+                    label: 'Show a heading for the nest'
+                    type: checkbox
+                    redraw_onchange: true
+                heading_text:
+                    plugin_setting:
+                        name: heading_text
+                    indent: 1
+                    visible_if: zenarioAB.value('show_heading')
+                    label: |
+                        Heading:
+                    type: text
+                    placeholder: 'Type your heading here'
+                    side_note: 'Note that this will only appear if the nest contains visible plugins.'
+                heading_tag: 
+                    plugin_setting: 
+                        name: heading_tag
+                    label: "Heading tag:"
+                    same_row: true
+                    indent: 1
+                    visible_if: zenarioAB.value('show_heading')
+                    type: select
+                    values: 
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h2
+                nest_heading_is_a_link:
+                    indent: 1
+                    plugin_setting:
+                        name: nest_heading_is_a_link
+                    label: Heading is a link
+                    type: checkbox
+                    visible_if: zenarioAB.value('show_heading')
+                    redraw_onchange: true
+                nest_heading_link_type:
+                    indent: 2
+                    plugin_setting:
+                        name: nest_heading_link_type
+                    label: 'Link destination:'
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link')
+                    type: select
+                    value: content_item
+                    values:
+                        content_item:
+                            label: Link to a content item
+                        external_url:
+                            label: Link to an external URL
+                    redraw_onchange: true
+                nest_heading_link_content_item:
+                    indent: 3
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link') && (zenarioAB.value('nest_heading_link_type') == 'content_item')
+                    plugin_setting:
+                        name: nest_heading_link_content_item
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Target:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item.
+                nest_heading_link_url:
+                    indent: 3
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link') && (zenarioAB.value('nest_heading_link_type') == 'external_url')
+                    plugin_setting:
+                        name: nest_heading_link_url
+                    label: 'External URL:'
+                    type: url
+                    maxlength: 255
+                    value: ""
+                    validation:
+                        required_if_not_hidden: "Please enter a URL."
+                nest_heading_target_blank:
+                    indent: 2
+                    plugin_setting:
+                        name: nest_heading_target_blank
+                    type: select
+                    visible_if: zenarioAB.value('show_heading') && zenarioAB.value('nest_heading_is_a_link')
+                    empty_value: 'Open in the same window'
+                    values:
+                        1:
+                            label: Open in a new window
+                
+                nest_type:
+                    plugin_setting:
+                        name: nest_type
+                    label: 'Navigation between slides:'
+                    type: radios
+                    format_onchange: true
+                    value: permission
+                    values:
+                        tabs:
+                            label: Show slides' tabs and editable labels
+                            split_values_if_selected: true
+                        tabs_and_buttons:
+                            label: Show slides' tabs with editable labels, and "Next" and "Previous" buttons
+                            split_values_if_selected: true
+                        buttons:
+                            label: Show "Next" and "Previous" buttons
+                            split_values_if_selected: true
+                        permission:
+                            label: Single slide with no controls, or has user permissions applied to slides
+                            split_values_if_selected: true
+                        conductor:
+                            label: Conductor-driven (advanced)
+                            split_values_if_selected: true
+                
+                buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            "Next" and "Previous" buttons will be shown, which can be used to navigate between slides.
+                tabs_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the nest that the visitor can see will have a tab with a label.
+                            Clicking on a tab will switch to that slide.
+                tabs_and_buttons_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        tabs_and_buttons: true
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Every slide in the nest that the visitor can see will have a tab with a label.
+                            Clicking on a tab will switch to that slide.
+                            Next and Previous buttons will also be shown, which can be used to navigate between slides.
+                permission_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: permission
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            Only one slide, the first slide, will be shown.
+                            
+                            If you define multiple slides, visitors will be shown the first slide in the
+                            list that they have permissions to see.
+                            
+                            You can use this to show different plugins to different people, based on
+                            their permissions.
+                conductor_desc:
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: |
+                            When the visitor first visits the page, the first slide will be shown.
+                            
+                            From there on, conductor will be used to control the navigation.
+                
+                next_prev_buttons_loop:
+                    plugin_setting:
+                        name: next_prev_buttons_loop
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt:
+                        buttons: true
+                        tabs_and_buttons: true
+                    label: 'Loop Next/Previous buttons'
+                    type: checkbox
+                    side_note: |
+                        I.e. pressing the next button on the last slide goes to the first slide.
+                
+                
+                bc_add:
+                    plugin_setting:
+                        name: bc_add
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    type: checkbox
+                    label: Show breadcrumbs
+                    redraw_onchange: true
+                bc_cols:
+                    plugin_setting:
+                        name: bc_cols
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    title: Columns
+                    type: select
+                    label: Columns
+                    empty_value: Full-width
+                    values: grid_cols
+                
+                bc_menu_section:
+                    plugin_setting:
+                        name: bc_menu_section
+                        foreign_key_to: menu_section
+                        dangling_cross_references: delete_instance
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Menu Section:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/sections
+                        max_path: zenario__menu/panels/sections
+                        target_path: zenario__menu/panels/sections
+                        select_phrase: Select menu section...
+                        hide_remove_button: true
+                        hide_info_button: true
+                    value: 1
+                    validation:
+                        required_if_not_hidden: Please select a menu section
+                        
+                bc_breadcrumb_trail:
+                    plugin_setting:
+                        name: bc_breadcrumb_trail
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: "First breadcrumb:"
+                    type: radios
+                    values:
+                        do_not_prefix:
+                            label: "Use the top level menu node"
+                        site_home_page:
+                            label: "Use the home page"
+                        other_menu_node:
+                            label: "Use a specific menu node"
+                    value: site_home_page
+                    format_onchange: true
+                    side_note: On multi-lingual sites, the link will always point to the page in the current visitor language, if it exists.
+                    
+                bc_breadcrumb_prefix_menu:
+                    plugin_setting:
+                        name: bc_breadcrumb_prefix_menu
+                        foreign_key_to: content
+                        dangling_cross_references: delete_instance
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    visible_if: >
+                        zenarioAB.value('bc_breadcrumb_trail') == 'other_menu_node'
+                    label: 'Menu node:'
+                    pick_items:
+                        path: zenario__menu/panels/menu_position/refiners/existing////
+                        min_path: zenario__menu/panels/menu_position
+                        select_phrase: Select menu node...
+                        disallow_refiners_looping_on_min_path: true
+                        hide_remove_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.menu_id)
+                    validation:
+                        required_if_not_hidden: Please select a menu node
+                        
+                bc_breadcrumb_trail_separator:
+                    plugin_setting:
+                        name: bc_breadcrumb_trail_separator
+                    indent: 2
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    label: 'Breadcrumb trail separator:'
+                    type: text
+                    value: ''
+                    style: 'width: 5em;'
+                
+                show_global_tabs:
+                    plugin_setting:
+                        name: show_global_tabs
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    type: checkbox
+                    format_onchange: true
+                    label: |
+                        Enable "key slides" to have tabs
+                    note_below: |
+                        In order for a visitor/user to navigate from some slide A to slide B, there should be:
+                        <ul><li>
+                            Slide A must contain a plugin that issues a &quot;command&quot;
+                        </li><li>
+                            On the conductor state diagram, there must be a &quot;path&quot; with this command from slide A to slide B
+                        </li><li>
+                            Freqiently the conductor state diagram will also contain a &quot;Back&quot; path from slide B to slide A.
+                        </li></ul>
+                        Key slides can be navigated to from any point in the conductor.
+                        The navigation path will not be preserved in this case.
+                
+                show_images_on_slide_links:
+                    plugin_setting:
+                        name: show_images_on_slide_links
+                    label: |
+                        Enable tabs to have images
+                    type: checkbox
+                    format_onchange: true
+                image_canvas:
+                    indent: 1
+                    plugin_setting:
+                        name: image_canvas
+                    label: 'Image canvas:'
+                    type: select
+                    format_onchange: true
+                    values:
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                        unlimited:
+                            ord: 99
+                            label: Unlimited size
+                    value: fixed_width_and_height
+                image_retina:
+                    indent: 2
+                    plugin_setting:
+                        name: image_retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    side_note: |
+                        Display image at double density.
+                image_width:
+                    indent: 2
+                    plugin_setting:
+                        name: image_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    value: 300
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                image_height:
+                    indent: 2
+                    plugin_setting:
+                        name: image_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    value: 200
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                
+                restore_scroll_pos:
+                    plugin_setting:
+                        name: restore_scroll_pos
+                    indent: 1
+                    hide_if_previous_outdented_value_isnt: conductor
+                    type: checkbox
+                    label: Restore previous scroll position when navigating backwards
+                    note_below: |
+                        If the visitor navigates away from a slide and then back again using
+                        Conductor's back button, restore their previous scroll position.
+                        Only works if the navigation was triggered using AJAX/JavaScript.
+                    
+                end_of_radio:
+                    snippet:
+                        show_split_values_from: nest_type
+        
+        
+        size:
+            label: Banners
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            The following settings let you set default values to apply to Banner plugins that have an image.
+                            The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
+                banner_canvas:
+                    plugin_setting:
+                        name: banner_canvas
+                    label: 'Default size constraint:'
+                    type: select
+                    value: crop_and_zoom
+                    values:
+                        unlimited:
+                            label: Let each banner decide
+                        crop_and_zoom:
+                            label: Crop and zoom
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                    format_onchange: true
+                banner_width:
+                    plugin_setting:
+                        name: banner_width
+                    indent: 1
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: 600
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                banner_height:
+                    plugin_setting:
+                        name: banner_height
+                    indent: 1
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: 400
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                
+                advanced_behaviour:
+                    plugin_setting:
+                        name: advanced_behaviour
+                    label: 'Default additional behaviour:'
+                    type: select
+                    format_onchange: true
+                    value: none
+                    values:
+                        none:
+                            label: Let each banner decide
+                        background_image:
+                            label: 'Show as a background image'
+                        lazy_load:
+                            label: 'Lazy load image'
+
+                mobile_behaviour:
+                    plugin_setting:
+                        name: mobile_behaviour
+                    label: 'Default mobile behaviour:'
+                    type: select
+                    format_onchange: true
+                    values:
+                        mobile_same_image:
+                            label: Let each banner decide
+                        mobile_same_image_different_size:
+                            label: 'Same image, different size'
+                        mobile_hide_image:
+                            label: 'Hide image on mobile browsers'
+                    value: mobile_same_image              
+                mobile_canvas:
+                    indent: 1
+                    plugin_setting:
+                        name: mobile_canvas
+                    label: 'Size constraint:'
+                    type: select
+                    format_onchange: true
+                    value: crop_and_zoom
+                    values:
+                        crop_and_zoom:
+                            label: Crop and zoom
+                        fixed_width:
+                            label: Constrain by width
+                        fixed_height:
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            label: Constrain by width and height
+                mobile_width:
+                    plugin_setting:
+                        name: mobile_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: 360
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
+                mobile_height:
+                    plugin_setting:
+                        name: mobile_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: 240
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2  
+                
+                
+                
+                link_type:
+                    plugin_setting:
+                        name: link_type
+                    label: 'Default type of link:'
+                    type: select
+                    value: _NO_LINK
+                    values:
+                        _NO_LINK:
+                            label: Let each banner decide
+                        _ENLARGE_IMAGE:
+                            label: Enlarge image in floating box
+                    format_onchange: true
+                enlarge_canvas:
+                    plugin_setting:
+                        name: enlarge_canvas
+                    indent: 1
+                    label: 'Enlarged image size constraint:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: 1
+                            label: Let each banner decide
+                        fixed_width:
+                            ord: 2
+                            label: Constrain by width
+                        fixed_height:
+                            ord: 3
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: 4
+                            label: Constrain by width and height
+                    format_onchange: true
+                enlarge_width:
+                    plugin_setting:
+                        name: enlarge_width
+                    indent: 2
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged width.
+                        numeric: The enlarged width must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                enlarge_height:
+                    plugin_setting:
+                        name: enlarge_height
+                    indent: 2
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged height.
+                        numeric: The enlarged height must be a number.
+                    value: ""
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+        eggs_size:
+            label: All plugins size
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            The following settings let you set default values to apply to all plugins in this nest.
+                eggs_equal_height:
+                    label: 'Make all plugins in nest equal height'
+                    plugin_setting:
+                        name: eggs_equal_height
+                    type: checkbox
+                    value: 0
+    lovs:
+        grid_cols:
+            1:
+                label: 1 col

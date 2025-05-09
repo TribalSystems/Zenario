@@ -9,7 +9,7 @@ plugin_settings:
                 show_heading:
                     plugin_setting:
                         name: show_heading
-                    label: 'Show a heading'
+                    label: 'Show a heading for the nest'
                     type: checkbox
                     redraw_onchange: true
                 heading_text:
@@ -43,14 +43,12 @@ plugin_settings:
                     plugin_setting:
                         name: animation_library
                     label:  'Animation library for slide transitions:'
-                    type: radios
+                    type: select
                     value: cycle2
                     values:
                         cycle2:
                             label: 'jQuery Cycle (recommended)'
                         swiper:
-                            visible_if: |
-                                tuix.key.moduleClassName == 'zenario_slideshow_simple'
                             label: 'Swiper'
                     redraw_onchange: true
                 
@@ -84,15 +82,15 @@ plugin_settings:
                     plugin_setting:
                         name: nest_type
                     type: radios
-                    label:  'Animation library controls:'
+                    label:  'Navigation between slides:'
                     value: indicator_and_buttons
                     values:
                         buttons:
-                            label: Show Next and Previous
-                        indicator:
-                            label: Show sequence indicator
+                            label: Show "Next" and "Previous" buttons
                         indicator_and_buttons:
-                            label: Show sequence indicator, Next and Previous
+                            label: Show "Next" and "Previous" buttons, with sequence indicator
+                        indicator:
+                            label: Show sequence indicator only
                         tabs:
                             visible_if: |
                                 zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
@@ -100,7 +98,7 @@ plugin_settings:
                         tabs_and_buttons:
                             visible_if: |
                                 zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
-                            label: Show tabs with labels, Next and Previous
+                            label: Show tabs with labels, "Next" and "Previous" buttons
                         permission:
                             label: Don't show any controls
                     redraw_onchange: true
@@ -161,17 +159,18 @@ plugin_settings:
                     full_width: true
                     snippet:
                         html: |
-                            The following settings let you set default values to apply to Banner plugins that have an image.
-                            The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
+                            Slideshows consist of one or more slides, with each slide having one image,
+                            plus additional properties in the same way as a Banner plugin.
+                            The values you choose here will apply to all slides in this slideshow.
                 banner_canvas:
                     plugin_setting:
                         name: banner_canvas
-                    label: 'Size constraint:'
+                    label: 'Default size constraint:'
                     type: select
                     value: crop_and_zoom
                     values:
                         unlimited:
-                            label: Set individually
+                            label: Let each banner decide
                         crop_and_zoom:
                             label: Crop and zoom
                         fixed_width:
@@ -181,8 +180,6 @@ plugin_settings:
                         fixed_width_and_height:
                             label: Constrain by width and height
                     format_onchange: true
-                    note_below: |
-                        Use the <em style="font-style: italic;">Set individually</em> option if you will set the size on each image separately.
                 banner_width:
                     plugin_setting:
                         name: banner_width
@@ -213,36 +210,30 @@ plugin_settings:
                 advanced_behaviour:
                     plugin_setting:
                         name: advanced_behaviour
-                    label: 'Additional behaviour:'
+                    label: 'Default additional behaviour:'
                     type: select
                     format_onchange: true
                     value: none
                     values:
                         none:
-                            label: None
+                            label: Let each banner decide
                         background_image:
                             label: 'Show as a background image'
-                        lazy_load:
-                            label: 'Lazy load image'
-                    note_below: |
-                        Use the <em style="font-style: italic;">None</em> option if you will set the behaviour on each image separately.
 
                 mobile_behaviour:
                     plugin_setting:
                         name: mobile_behaviour
-                    label: 'Image settings for mobile browsers:'
+                    label: 'Default mobile behaviour:'
                     type: select
                     format_onchange: true
                     values:
                         mobile_same_image:
-                            label: Same image
+                            label: Let each banner decide
                         mobile_same_image_different_size:
                             label: 'Same image, different size'
                         mobile_hide_image:
                             label: 'Hide image on mobile browsers'
                     value: mobile_same_image              
-                    note_below: |
-                        Use the <em style="font-style: italic;">Same image</em> option if you will set the setting on each image separately.
                 mobile_canvas:
                     indent: 1
                     plugin_setting:
@@ -292,17 +283,15 @@ plugin_settings:
                 link_type:
                     plugin_setting:
                         name: link_type
-                    label: 'Link destination:'
+                    label: 'Default type of link:'
                     type: select
                     value: _NO_LINK
                     values:
                         _NO_LINK:
-                            label: Don't link
+                            label: Let each banner decide
                         _ENLARGE_IMAGE:
                             label: Enlarge image in floating box
                     format_onchange: true
-                    note_below: |
-                        Use the <em style="font-style: italic;">Don't link</em> option if you will set the destination on each image separately.
                 enlarge_canvas:
                     plugin_setting:
                         name: enlarge_canvas
@@ -313,7 +302,7 @@ plugin_settings:
                     values:
                         unlimited:
                             ord: 1
-                            label: Set individually
+                            label: Let each banner decide
                         fixed_width:
                             ord: 2
                             label: Constrain by width
@@ -324,8 +313,6 @@ plugin_settings:
                             ord: 4
                             label: Constrain by width and height
                     format_onchange: true
-                    note_below: |
-                        Use the <em style="font-style: italic;">Set individually</em> option if you will set the size on each image separately.
                 enlarge_width:
                     plugin_setting:
                         name: enlarge_width

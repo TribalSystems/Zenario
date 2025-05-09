@@ -3,7 +3,7 @@
 site_settings:
     setting_group: domains
     title: Editing the domain used by your site
-    max_height: 400
+    max_height: 450
     tabs:
         primary_domain:
             label: Primary domain
@@ -96,8 +96,10 @@ site_settings:
                     label: 'Is public'
                     type: checkbox
                     value: 1
-                    side_note: |
-                        Auto-redirect when user types /admin in browser address bar.
+                    note_below: |
+                        <p>If checked, when someone types /admin after any domain name pointing to this site, redirect to the admin domain. (Easier to use).</p>
+
+                        <p>If not checked, don't redirect to the admin domain. The administrator must type the full admin domain in order to reach it. (More secure).</p>
                     indent: 1
         cookie_domain:
             label: Cookie domain

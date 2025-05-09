@@ -30,16 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (ze::$canCache) {
 	
-	function zenarioPageCacheDir(&$requests, $type) {
-		$type = str_replace(['.', ' '], '-', $type. '-');
-		
-		$text = json_encode($requests);
-		return $type. substr(preg_replace('/[^\w_]+/', '-', $text), 1, 33). ze::hash64($text, 16). '-';
-	}
-	
-	
 	$type = str_replace(['.bundle', '.php'], '', basename($_SERVER['PHP_SELF']));
-	$chFile = zenarioPageCacheDir($_GET, $type);
+	$chFile = ze\cache::bundleRequestHash($_GET, $type);
 	
 	if (file_exists(($chPath = 'cache/bundles/'. $chFile. '/'). $type)) {
 		touch($chPath. 'accessed');

@@ -373,10 +373,10 @@ class admin {
 
 		if (!\ze::setting('site_enabled') && \ze\row::exists('languages', [])) {
 			$logoutMsg =
-				\ze\admin::phrase('Are you sure you want to logout? Visitors will not be able to see your site as it is not enabled.');
+				\ze\admin::phrase('Logout as site administrator? Visitors will not be able to see your site as it is not enabled.');
 		} else {
 			$logoutMsg =
-				\ze\admin::phrase('Are you sure you want to logout?');
+				\ze\admin::phrase('Logout as site administrator?');
 		}
 	
 		$url = 'admin.php?task=logout&'. http_build_query(\ze\link::importantGetRequests(true));
@@ -494,14 +494,21 @@ class admin {
 			\ze\admin::setSession($adminId);
 		}
 		
-		\ze\cookie::setConsent();
+		//On sites where we use cookie consent, if someone logs in as an administrator user,
+		//treat this as accepting cookies.
+		if (\ze::setting('cookie_require_consent')) {
+			\ze\cookie::setConsent();
+		}
 		
 		if ($rememberMe) {
-			\ze\cookie::set('COOKIE_LAST_ADMIN_USER', $admin['username']);
-			\ze\cookie::clear('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
+			\ze\cookie::set('z_admin_last_username', $admin['username']);
+			
+			if (!\ze\link::adminDomainIsPrivate()) {
+				\ze\cookie::setJS('z_admin_login_shown', 1);
+			}
 		} else {
-			\ze\cookie::set('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
-			\ze\cookie::clear('COOKIE_LAST_ADMIN_USER');
+			\ze\cookie::clear('z_admin_last_username');
+			\ze\cookie::clear('z_admin_login_shown');
 		}
 		//Set admin last login datetime in session variable to access in diagnostic screen
 		$_SESSION['admin_last_login'] = $admin['last_login'];

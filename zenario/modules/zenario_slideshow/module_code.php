@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-class zenario_slideshow extends zenario_plugin_nest {
+class zenario_slideshow extends zenario_abstract_nest {
 	
 	protected $aLib;
 	
@@ -60,37 +60,6 @@ class zenario_slideshow extends zenario_plugin_nest {
 		return false;
 	}
 	
-	public function initAnimationLibrarySubClass() {
-		
-		//When a Nest is first inserted, it will be empty.
-		//If the Nest is empty, call the resyncNest function just in case being empty is not a valid state.
-		if (ze\priv::check() && !ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId])) {
-			self::resyncNest($this->instanceId);
-		}
-		
-		$this->loadTabs();
-		
-		//Don't show anything if not slides have been created
-		if (empty($this->slides)) {
-			return false;
-		}
-		
-		foreach ($this->slides as &$slide) {
-			if ($this->loadSlide($slide['slide_num'])) {
-				$this->show = true;
-				$this->slideNum = $slide['slide_num'];
-			}
-		}
-		
-		if (!$this->show) {
-			return false;
-		}
-		
-		$this->showInFloatingBox(false);
-		
-		return $this->initAnimationLibrary();
-	}
-	
 	public function showSlot() {
 		if (ze::$isTwig) return;
 			
@@ -100,15 +69,6 @@ class zenario_slideshow extends zenario_plugin_nest {
 		}
 		return false;
 	}
-	
-	
-	
-	public function fillAdminSlotControls(&$controls) {
-		zenario_plugin_nest::fillAdminSlotControls($controls);
-	}
-
-
-
 
 
 
@@ -129,6 +89,33 @@ class zenario_slideshow extends zenario_plugin_nest {
 		
 		} else {
 			return \ze\admin::phrase('This is a slideshow on the content item');
+		}
+	}
+	
+	
+	
+	
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				
+				//When changing the mobile canvas option for the whole slideshow, update the local setting on all banners.
+				$instanceId = $box['key']['instanceId'];
+				$result = ze\row::query('nested_plugins', ['id'], ['instance_id' => $instanceId, 'is_slide' => 0]);
+				while ($row = ze\sql::fetchAssoc($result)) {
+					ze\row::set('plugin_settings', 
+						['value' => $values['size/mobile_canvas']], 
+						['name' => 'mobile_canvas', 'instance_id' => $instanceId, 'egg_id' => $row['id']]);
+					ze\row::set('plugin_settings', 
+						['value' => $values['size/mobile_width']], 
+						['name' => 'mobile_width', 'instance_id' => $instanceId, 'egg_id' => $row['id']]);
+					ze\row::set('plugin_settings', 
+						['value' => $values['size/mobile_height']], 
+						['name' => 'mobile_height', 'instance_id' => $instanceId, 'egg_id' => $row['id']]);
+				}
+				
+				break;
 		}
 	}
 }

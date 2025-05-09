@@ -7,6 +7,7 @@
 .banner_more_button .banner_more a,
 .extranet_wrap input[type='submit'],
 a.nice_button,
+a.link_like_button,
 .zenario_user_forms .repeat_block_buttons .add,
 .zenario_ctype_event .event_more_info a,
 .zenario_ctype_document_search .search_results .result .result_info a,
@@ -47,6 +48,7 @@ a.nice_button,
 .extranet_wrap .extranet_view_profile .extranet_links a:hover,
 .extranet_wrap .extranet_close_account_button:hover,
 a.nice_button:hover,
+a.link_like_button:hover,
 .zenario_user_forms .repeat_block_buttons .add:hover,
 .zenario_ctype_event .event_more_info a:hover,
 .zenario_ctype_document_search .search_results .result .result_info a:hover,
@@ -61,14 +63,40 @@ a.nice_button:hover,
 	opacity:1;
 }
 
+.zenario_slot:not(.zenario_comments) input[type='submit'].cancel,
+.zenario_slot:not(.zenario_comments) input[type='button'].cancel,
+.zenario_slot:not(.zenario_comments) button.cancel,
 .zenario_skin input.cancel,
-.zenario_skin a.nice_button.cancel {
+.zenario_skin a.nice_button.cancel,
+.zenario_skin a.link_like_button.cancel {
 	background:#717b88;
 }
 
+.zenario_slot:not(.zenario_comments) input[type='submit'].cancel:hover,
+.zenario_slot:not(.zenario_comments) input[type='button'].cancel:hover,
+.zenario_slot:not(.zenario_comments) button.cancel:hover,
 .zenario_skin input.cancel:hover,
-.zenario_skin a.nice_button.cancel:hover {
+.zenario_skin a.nice_button.cancel:hover,
+.zenario_skin a.link_like_button.cancel:hover {
 	background:#8491a2;
+}
+
+.zenario_slot:not(.zenario_comments) input[type='submit'].clear,
+.zenario_slot:not(.zenario_comments) input[type='button'].clear,
+.zenario_slot:not(.zenario_comments) button.clear,
+.zenario_skin input.clear,
+.zenario_skin a.nice_button.clear,
+.zenario_skin a.link_like_button.clear {
+	background:#384454;
+}
+
+.zenario_slot:not(.zenario_comments) input[type='submit'].clear:hover,
+.zenario_slot:not(.zenario_comments) input[type='button'].clear:hover,
+.zenario_slot:not(.zenario_comments) button.clear:hover,
+.zenario_skin input.clear:hover,
+.zenario_skin a.nice_button.clear:hover,
+.zenario_skin a.link_like_button.clear:hover {
+	background:#617187;
 }
 
 .light.banner_more_button .banner_more a {
@@ -83,11 +111,15 @@ a.nice_button:hover,
 
 /* Small buttons */
 
+.zenario_slot:not(.zenario_comments) input[type='submit'].small,
+.zenario_slot:not(.zenario_comments) input[type='button'].small,
+.zenario_slot:not(.zenario_comments) button.small,
 .zenario_user_forms .repeat_block_buttons .add,
 .zenario_ctype_document_search .search_results .result .result_info a,
 .zenario_document_container .view_button a,
 .zenario_document_container .download_link a,
-.zenario_document_container #archive_download_link > a {
+.zenario_document_container #archive_download_link > a,
+.zenario_skin a.link_like_button.small {
 	min-width:auto;
 	height: 30px;
 	line-height: 28px;
@@ -205,7 +237,7 @@ p.phone:before {
 /* Node external links
 --------------------------------------------------------------------------------------------------*/
 
-.link_external a:after,
+.link_external > a:after,
 a.link_external:after,
 .has_child.link_external > a:before,
 a.has_child.link_external:before {
@@ -213,16 +245,20 @@ a.has_child.link_external:before {
   content: "\f08e";
 }
 
-.link_external a:after,
+.link_external > a:after,
 a.link_external:after {
   padding-left: 8px;
   font-size: 14px;
   display: inline-block;
 }
 
-.link_external a:hover::after,
+.link_external > a:hover::after,
 a.link_external:hover::after {
 	text-decoration:none !important;
+}
+
+.zenario_menu_responsive_multilevel_2 .has_child.link_external > a::before {
+	content:"";
 }
 
 /* Enlarge icon

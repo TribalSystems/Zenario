@@ -48,27 +48,4 @@
 		});
 	}
 	
-	zenario_videos_fea.changeView = function(button, containerId, view) {
-		$('#video_view_toggle_wrap div').removeClass('on');
-		$(button).addClass('on');
-		
-		$('#' + containerId + ' .zfea.zfea_blocks').toggleClass("zfea_block_list_like_table", view == 'list');
-		$('#' + containerId + ' .zfea.zfea_blocks').toggleClass("zfea_block_like_block", view == 'grid');
-		
-		//Update height of blocks like in the microtemplate
-		zenario_videos_fea.updateBlockSizes(containerId);
-	};
-	
-	zenario_videos_fea.updateBlockSizes = function(containerId) {
-		var maxHeight = 0;
-		$('#' + containerId + ' .zfea_block_list_wrap .zfea_block')
-			.height("")
-			.each(function() { maxHeight = Math.max(maxHeight, $(this).height()); })
-			.height(maxHeight);
-	};
-	
-	$(window).on('load', function() {
-		zenario_videos_fea.updateBlockSizes(zenario_videos_fea.containerId);
-	});
-	
 })();

@@ -258,7 +258,7 @@ class zenario_forum extends zenario_comments {
 				$this->sections['Post_Message']['Post_Title'] = htmlspecialchars($_POST['comm_title']);
 			
 			} else {
-				$this->sections['Post_Message']['Post_Title'] =  htmlspecialchars(ze\ray::value($this->thread, 'title'));
+				$this->sections['Post_Message']['Post_Title'] =  htmlspecialchars($this->thread['title'] ?? '');
 			}
 			
 			$this->sections['Post_Message']['Post_Title'] = '<input type="text" id="comm_title" name="comm_title" maxlength="255" value="'. $this->sections['Post_Message']['Post_Title']. '"/>';
@@ -430,7 +430,7 @@ class zenario_forum extends zenario_comments {
 				return;
 			}
 			
-			if ($fileId = ze\file::addToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
+			if ($fileId = ze\fileAdm::addToDatabase(self::$forum_post_upload_dbkey, $location, $file_name, false, false, true)) {
 				$using_ids = ['file_id' => (int)$fileId, 'post_id' => (int)$postId];
 				$using_values = $using_ids;
 				$using_values['caption'] = ze\escape::sql($file_name);
@@ -498,7 +498,7 @@ class zenario_forum extends zenario_comments {
 	protected function deleteOneUploadFile($file_id){
 		if($this->allow_uploads){
 			if(!ze\row::get(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', ['file_id' => (int)$file_id])){
-				ze\file::delete($file_id);
+				ze\fileAdm::delete($file_id);
 			}
 		}
 	}
@@ -538,7 +538,7 @@ class zenario_forum extends zenario_comments {
 				$height = $this->setting('image_thumbnail_height');
 				$file_id = $rec['file_id'];
 				$caption = $rec['caption'];
-				ze\file::imageLink($width, $height, $url, $file_id, $width, $height);
+				ze\image::link($width, $height, $url, $file_id, $width, $height);
 				
 				$file_link = ze\file::link($file_id);
 				
@@ -1146,7 +1146,7 @@ class zenario_forum extends zenario_comments {
 			$this->sections['Forum_Profile_Link'] = true;
 			
 			$profileLink = '<a';
-			if ($link = ze\link::toPluginPage('zenario_extranet_profile_edit')) {
+			if ($link = ze\link::toSpecialPage('zenario_profile')) {
 				$profileLink .= ' href="'. htmlspecialchars($link). '"';
 			}
 			$profileLink .= '>'. $this->phrase('your profile'). '</a>';

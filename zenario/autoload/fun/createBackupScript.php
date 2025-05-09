@@ -235,7 +235,7 @@ foreach(\ze\dbAdm::lookupExistingCMSTables() as $table) {
 
 	//Attempt to get a list of the existing primary keys in each table.
 	\ze::$dbL->checkTableDef($table['actual_name']);
-	if ($pkCol = \ze\ray::value(\ze::$dbL->pks, $table['actual_name'])) {
+	if ($pkCol = \ze::$dbL->pks[$table['actual_name']] ?? false) {
 		$pkColIsInt = \ze::$dbL->cols[$table['actual_name']][$pkCol]->isInt;
 	
 		$sql = "

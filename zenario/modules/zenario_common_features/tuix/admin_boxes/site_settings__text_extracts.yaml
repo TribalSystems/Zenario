@@ -1,0 +1,70 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: files_and_images
+    tabs:
+        text_extracts:
+            label: Text extracts
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        p: |
+                            These settings affect how text extracts are created.
+                            They control the rules for how text is grouped together into chunks.
+                            Using sensible values here will help improve the performance of
+                            semantic searches.
+                extract_min_chunk_size:
+                    site_setting:
+                        name: extract_min_chunk_size
+                    label: 'Smallest desired chunk size:'
+                    type: text
+                    value: 5
+                    style: |
+                        width: 3em;
+                    post_field_label: 'words'
+                    validation:
+                        integer_number: true
+                        positive_number: true
+                    note_below: |
+                        Any chunk of text smaller than this will be combined with the following chunk.
+                extract_chunk_size_soft_cap:
+                    site_setting:
+                        name: extract_chunk_size_soft_cap
+                    label: 'Largest desired chunk size (soft cap):'
+                    type: text
+                    value: 25
+                    style: |
+                        width: 3em;
+                    post_field_label: 'words'
+                    validation:
+                        integer_number: true
+                        positive_number: true
+                    note_below: |
+                        Any chunk of text larger than this will be split up into multiple chunks,
+                        if this is possible to do without splitting a sentence in two.
+                extract_chunk_size_hard_cap:
+                    site_setting:
+                        name: extract_chunk_size_hard_cap
+                    label: 'Largest allowed chunk size (hard cap):'
+                    type: text
+                    value: 35
+                    style: |
+                        width: 3em;
+                    post_field_label: 'words'
+                    validation:
+                        integer_number: true
+                        positive_number: true
+                    note_below: |
+                        Any chunk of text larger than this will be split up into multiple chunks,
+                        even if a sentence has to be split in two.
+                desc2:
+                    full_width: true
+                    snippet:
+                        p: |
+                            Changes to these settings will not be retroactive.
+                            They will apply the next time a plain text extract is updated.
+                    

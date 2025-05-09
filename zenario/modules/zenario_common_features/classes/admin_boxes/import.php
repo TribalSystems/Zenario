@@ -1301,7 +1301,7 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 						if ($sendWelcomeEmail && !empty($data['email'])) {
 							$mergeFields = $data;
 							$mergeFields['cms_url'] = ze\link::absolute();
-							zenario_email_template_manager::sendEmailsUsingTemplate($data['email'], $values['actions/email_to_send'], $mergeFields);
+							zenario_common_features::sendEmailsUsingTemplate($data['email'], $values['actions/email_to_send'], $mergeFields);
 						}
 					
 						//If site uses screen names and no screen name is imported, use the identifier as a screen name

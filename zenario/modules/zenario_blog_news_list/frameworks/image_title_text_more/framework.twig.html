@@ -69,11 +69,17 @@
 				<div class="content_list_data_row{% if Content_Items_Equal_Height %} tothesameheight{% endif %} data_row_{{this.oddOrEven()}}{% if item.Disabled %} disabled_link{% endif %} {% if item.Content_item_is_private %} private {% endif %} {% if item.Item_Is_Recent %} recent {% endif %}">
 					{% if Show_Featured_Image %}
 						<div class="sticky_image">
-							<a {{item.Link}}{{item.Target_Blank}}>
-								{% if item.Featured_Image_HTML %}
-									{{item.Featured_Image_HTML}}
+							{% if item.Featured_Image_HTML %}
+								{% if not item.Disabled %}
+									<a {{item.Link}}{{item.Target_Blank}}>
 								{% endif %}
-							</a>
+								
+									{{item.Featured_Image_HTML}}
+								
+								{% if not item.Disabled %}
+									</a>
+								{% endif %}
+							{% endif %}
 						</div>
 					{% endif %}
 					<div class="content_list_text">
@@ -82,7 +88,16 @@
 								<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
 							{% endif %}
 							<{{Item_Title_Tags|e}} class="content_list_title {{item.Content_Type|e}}">
-								<a {{item.Link}}{{item.Target_Blank}}>{{item.Title|e}}</a> 
+								{% if not item.Disabled %}
+									<a {{item.Link}}{{item.Target_Blank}}>
+								{% endif %}
+								
+								{{item.Title|e}}
+								
+								{% if not item.Disabled %}
+								</a>
+								{% endif %}
+								
 								{% if item.Language %}<span>({{item.Language|e}})</span>{% endif %}
 							</{{Item_Title_Tags|e}}>
 						{% endif %}

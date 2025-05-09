@@ -66,7 +66,29 @@
 			<% if (m.grouping.pre_grouping_html) { %>
 				{{m.grouping.pre_grouping_html}}
 			<% } %>
-			<fieldset class="zfea_form_grouping zfea_form_grouping__{{ff.grouping|escape}} {{m.grouping.grouping_css_class|escape}}" style="{{m.grouping.grouping_style|escape}}">
+			<fieldset
+				class="
+					zfea_form_grouping zfea_form_grouping__{{ff.grouping|escape}}
+					{{m.grouping.grouping_css_class|escape}}
+					
+					<% if (ff.type == 'radio') { %>
+						zfea_form_grouping_with_input zfea_form_grouping_with_radio
+						
+						<% if (!_.isEmpty(ff.value)) { %>
+							zfea_form_grouping_with_input_selected zfea_form_grouping_with_radio_selected
+						<% } %>
+					<% } %>
+					<% if (ff.type == 'checkbox') { %>
+						zfea_form_grouping_with_input zfea_form_grouping_with_checkbox
+						
+						<% if (!_.isEmpty(ff.value)) { %>
+							zfea_form_grouping_with_input_selected zfea_form_grouping_with_checkbox_selected
+						<% } %>
+					<% } %>
+				"
+				style="{{m.grouping.grouping_style|escape}}"
+				onclick="{{m.grouping.grouping_onclick|escape}}"
+			>
 		<% } %>
 	<% } %>
 	<% if (ff.legend) { %>
@@ -100,6 +122,8 @@
 		<% if (ff.pre_field_html || ff.post_field_html) { %>
 			zfea_row_with_pre_or_post_field_html
 		<% } %>
+		
+		{{m.lib.classesForRowContents('zfea_row_with_', m.fields)}}
 	">
 		<div class="
 			zfea_row_fields
@@ -108,7 +132,7 @@
 		">	
 			<% if (ff.label !== undefined && !(ff.type == 'checkbox' || ff.type == 'radio')) { %>
 				<div class="title">
-					<label for="{{ff._id|escape}}">{{ff.label}}</label>
+					<label for="{{ff._id|escape}}">{{ff.label|escape}}</label>
 					
 					<% if (ff.pre_field_post_label_html) { %>
 						{{ff.pre_field_post_label_html}}

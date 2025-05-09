@@ -10,6 +10,7 @@ zenario_videos_manager__video:
     key:
         id: ""
         from_video_upload: ""
+        thumbnail_id_on_load: 0
     title: Add a video by URL
     tabs:
         details:
@@ -32,25 +33,41 @@ zenario_videos_manager__video:
                     type: button
                     css_class: zenario_gp_button
                     value: Test
+                    dataset_label: '[URL test button]'
                     onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"
                 fetch_youtube_details:
                     type: button
                     css_class: zenario_gp_button
                     value: Fetch YouTube details
+                    dataset_label: '[Fetch YouTube details button]'
                     format_onchange: true
                     hidden: true
                 fetch_vimeo_details:
                     type: button
                     css_class: zenario_gp_button
                     value: Fetch Vimeo details
+                    dataset_label: '[Fetch Vimeo details button]'
                     format_onchange: true
                     hidden: true
+                start_time:
+                    label: 'Start time (optional):'
+                    type: text
+                    maxlength: 30
+                    style: "width: 20em;"
+                    notices_below:
+                        start_time_info:
+                            type: information
+                            show: true
+                            message: |
+                                You may enter an additional start time argument.
+                                For example, for YouTube, enter "t=120" to start the video 2 minutes in.
+                                For Vimeo, enter "t=2m" to start the video 2 minutes in.
                 video_privacy:
                     label: "Privacy (applies to Vimeo only):"
                     snippet:
                         html: ""
                 image:
-                    label: 'Image:'
+                    label: 'Image (public):'
                     upload:
                         accept: 'image/*'
                         extensions:
@@ -79,6 +96,9 @@ zenario_videos_manager__video:
                 date:
                     label: 'Date:'
                     type: date
+                    change_month_and_year: true
+                    allow_typing_in_date_field: true
+                    show_date_format_as_placeholder: true
                 language_id:
                     label: "Language:"
                     type: select

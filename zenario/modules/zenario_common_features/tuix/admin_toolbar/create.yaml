@@ -14,5 +14,6 @@ sections:
                     path: zenario_content
                     key:
                         duplicate: 1
+                        create_from_toolbar: 1
             dummy_button:
                 hidden: true

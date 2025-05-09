@@ -156,7 +156,8 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 									
 									foreach ($slotContents as $slot) {
 										if ($slot->instanceId()
-										 && ($slot->moduleClassName() == 'zenario_plugin_nest'
+										 && ($slot->moduleClassName() == 'zenario_nest'
+										  || $slot->moduleClassName() == 'zenario_abstract_nest'
 										  || $slot->moduleClassName() == 'zenario_slideshow')) {
 											$data[$tagId][$slotCode] = $slot->instanceId();
 											break;

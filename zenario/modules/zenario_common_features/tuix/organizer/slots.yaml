@@ -86,27 +86,6 @@ zenario__content:
                     label: Insert into slot...
                     hide_when_children_are_not_visible: true
                 
-                insert_reusable_on_layout_layer:
-                    parent: insert_dropdown
-                    ord: 99
-                    priv: _PRIV_MANAGE_TEMPLATE_SLOT
-                    label: Insert plugin...
-                    combine_items:
-                        path: zenario__modules/panels/modules/refiners/slotable_only////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/modules
-                        max_path: zenario__modules/panels/plugins
-                        one_to_one_choose_phrase: Insert plugin
-                        request:
-                            level: 2
-                            addPluginInstance: 1
-                    with_columns_set:
-                        empty: true
-                    without_columns_set:
-                        is_sitewide: true
-                    visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'layout'
-                
                 insert_reusable_on_item_layer:
                     parent: insert_dropdown
                     label: Insert plugin...
@@ -125,7 +104,115 @@ zenario__content:
                         is_sitewide: true
                     visible_if: >
                         zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
+                
+                insert_nest_on_item_layer:
+                    hidden: true    # N.b. this will be unhidden if a nest module is running
+                    parent: insert_dropdown
+                    label: Insert nest...
+                    combine_items:
+                        class_name: zenario_common_features
+                        path: zenario__modules/panels/plugins/refiners/nests////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/plugins
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert nest
+                        request:
+                            level: 1
+                            addPluginInstance: 1
+                    with_columns_set:
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
+                    visible_if: >
+                        zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
+                
+                insert_slideshow_on_item_layer:
+                    hidden: true    # N.b. this will be unhidden if a slideshow module is running
+                    parent: insert_dropdown
+                    label: Insert slideshow...
+                    combine_items:
+                        class_name: zenario_common_features
+                        path: zenario__modules/panels/plugins/refiners/slideshows////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/plugins
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert slideshow
+                        request:
+                            level: 1
+                            addPluginInstance: 1
+                    with_columns_set:
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
+                    visible_if: >
+                        zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
+                
+                
+                insert_reusable_on_layout_layer:
+                    parent: insert_dropdown
+                    priv: _PRIV_MANAGE_TEMPLATE_SLOT
+                    label: Insert plugin...
+                    combine_items:
+                        path: zenario__modules/panels/modules/refiners/slotable_only////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/modules
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert plugin
+                        request:
+                            level: 2
+                            addPluginInstance: 1
+                    with_columns_set:
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
+                    visible_if: >
+                        zenarioO.refiner && zenarioO.refiner.name == 'layout'
+                
+                insert_nest_on_layout_layer:
+                    hidden: true    # N.b. this will be unhidden if a nest module is running
+                    parent: insert_dropdown
+                    priv: _PRIV_MANAGE_TEMPLATE_SLOT
+                    label: Insert nest...
+                    combine_items:
+                        class_name: zenario_common_features
+                        path: zenario__modules/panels/plugins/refiners/nests////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/plugins
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert nest
+                        request:
+                            level: 2
+                            addPluginInstance: 1
+                    with_columns_set:
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
+                    visible_if: >
+                        zenarioO.refiner && zenarioO.refiner.name == 'layout'
+                
+                insert_slideshow_on_layout_layer:
+                    hidden: true    # N.b. this will be unhidden if a slideshow module is running
+                    parent: insert_dropdown
+                    priv: _PRIV_MANAGE_TEMPLATE_SLOT
+                    label: Insert slideshow...
+                    combine_items:
+                        class_name: zenario_common_features
+                        path: zenario__modules/panels/plugins/refiners/slideshows////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/plugins
+                        max_path: zenario__modules/panels/plugins
+                        one_to_one_choose_phrase: Insert slideshow
+                        request:
+                            level: 2
+                            addPluginInstance: 1
+                    with_columns_set:
+                        empty: true
+                    without_columns_set:
+                        is_sitewide: true
+                    visible_if: >
+                        zenarioO.refiner && zenarioO.refiner.name == 'layout'
                         
+                
                 remove_dropdown:
                     label: Remove slot contents...
                     hide_when_children_are_not_visible: true

@@ -222,7 +222,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 									//email address still needs to be verified
 									$errorMessage = $this->setting('account_not_verified_message');
 									
-									$link = ze\link::toPluginPage('zenario_extranet_registration', '', false, $fullPath = true, '&extranet_resend=1');
+									$link = ze\link::toSpecialPage('zenario_registration', false, false, $fullPath = true, '&extranet_resend=1');
 									$this->errors[] = ['Error' => $this->phrase($errorMessage, ['resend_verification_email' => 'href="'. htmlspecialchars($link). '"'])];
 								}
 							}
@@ -276,9 +276,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 		}
 		
 		if ($this->signInUsingEmailAddress()) {
-			$this->objects['extranet_email'] = $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'] ?? false;
+			$this->objects['extranet_email'] = $_COOKIE['z_extranet_last_email'] ?? false;
 		} else {
-			$this->objects['extranet_screen_name'] = $_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME'] ?? false;
+			$this->objects['extranet_screen_name'] = $_COOKIE['z_extranet_last_screen_name'] ?? false;
 		}
 		
 		if ($this->enableCaptcha(true)) {
@@ -533,14 +533,28 @@ class zenario_extranet extends ze\moduleBaseClass {
 	}
 	
 	protected function processEmailVerificationRequestIfNeeded() {
-		$userDetails = ze\row::get('users', ['id', 'email_verified'], ['hash_verify_email' => ze::get('hash')]);
+		$userDetails = ze\row::get('users', ['id', 'email_verified', 'hash_verify_email_expiry'], ['hash_verify_email' => ze::get('hash')]);
 		
 		if (!empty($userDetails)) {
 			if ($userDetails['email_verified'] != 'verified') {
-				ze\row::set('users', ['email_verified' => 'verified'], ['hash_verify_email' => ze::get('hash')]);
-				$this->subSections['Email_Verified'] = true;
 				
-				ze\row::set('users', ['hash_verify_email' => ''], ['id' => $userDetails['id']]);
+				//If an admin has sent a verification email to a user, it will have an expiry date.
+				//For all other cases, there will be no expiry date.
+				$emailVerificationTimerExpired = false;
+				
+				if ($userDetails['hash_verify_email_expiry']) {
+					if (ze\userAdm::hasVerificationExpired($userDetails['id'])) {
+						$this->subSections['Email_Verification_Link_Expired'] = true;
+						$emailVerificationTimerExpired = true;
+					}
+				}
+				
+				if (!$emailVerificationTimerExpired) {
+					ze\row::set('users', ['email_verified' => 'verified'], ['hash_verify_email' => ze::get('hash')]);
+					$this->subSections['Email_Verified'] = true;
+					
+					ze\row::set('users', ['hash_verify_email' => '', 'hash_verify_email_expiry' => null], ['id' => $userDetails['id']]);
+				}
 			}
 		} else {
 			$this->subSections['Email_Could_Not_Be_Verified'] = true;
@@ -609,16 +623,16 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->objects['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
 		
-		if ($link = ze\link::toPluginPage('zenario_extranet_password_reset')) {
+		if ($link = ze\link::toSpecialPage('zenario_password_reset')) {
 			$this->subSections['Reset_Password_Link_Section'] = true;
 			$this->objects['Reset_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
-		if ($link = ze\link::toPluginPage('zenario_extranet_registration')) {
+		if ($link = ze\link::toSpecialPage('zenario_registration')) {
 			$this->subSections['Registration_Link_Section'] = true;
 			$this->objects['Registration_Link'] = 'href="'. htmlspecialchars($link). '"';
 			
-			$link = ze\link::toPluginPage('zenario_extranet_registration', '', false, false, '&extranet_resend=1');
+			$link = ze\link::toSpecialPage('zenario_registration', false, false, false, '&extranet_resend=1');
 			$this->subSections['Resend_Link_Section'] = true;
 			$this->objects['Resend_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
@@ -656,12 +670,12 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		$this->objects['Welcome_Message'] = $this->getWelcomeUserString();
 		
-		if ($link = ze\link::toPluginPage('zenario_extranet_change_password')) {
+		if ($link = ze\link::toSpecialPage('zenario_change_password')) {
 			$this->subSections['Change_Password_Link_Section'] = true;
 			$this->objects['Change_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
-		if ($link = ze\link::toPluginPage('zenario_extranet_logout')) {
+		if ($link = ze\link::toSpecialPage('zenario_logout')) {
 			$this->subSections['Logout_Link_Section'] = true;
 			$this->objects['Logout_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
@@ -696,9 +710,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if (isset($_SESSION['SET_EXTRANET_LOGIN_COOKIE'])) {
 			if (ze\cookie::canSet('functionality')) {
 				if ($this->signInUsingEmailAddress()) {
-					ze\cookie::set('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
+					ze\cookie::set('z_extranet_last_email', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 				} else {
-					ze\cookie::set('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
+					ze\cookie::set('z_extranet_last_screen_name', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 				}
 			}
 			unset($_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
@@ -706,9 +720,9 @@ class zenario_extranet extends ze\moduleBaseClass {
 		//Remove the User's email/screenname cookie on their local machine if requested
 		} elseif (isset($_SESSION['FORGET_EXTRANET_LOGIN_COOKIE'])) {
 			if ($this->signInUsingEmailAddress()) {
-				ze\cookie::clear('COOKIE_LAST_EXTRANET_EMAIL');
+				ze\cookie::clear('z_extranet_last_email');
 			} else {
-				ze\cookie::clear('COOKIE_LAST_EXTRANET_SCREEN_NAME');
+				ze\cookie::clear('z_extranet_last_screen_name');
 			}
 			unset($_SESSION['FORGET_EXTRANET_LOGIN_COOKIE']);
 		}
@@ -716,13 +730,13 @@ class zenario_extranet extends ze\moduleBaseClass {
 		//Set a hash of the User's details in a cookie on their local machine if requested, so they can be logged in automatically
 		if (isset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'])) {
 			if (ze\cookie::canSet('functionality')) {
-				ze\cookie::set('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
+				ze\cookie::set('z_extranet_auto_login', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
 			}
 			unset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
 		
 		//Remove the hash of the User's details if requested
 		} elseif (isset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'])) {
-			ze\cookie::clear('LOG_ME_IN_COOKIE');
+			ze\cookie::clear('z_extranet_auto_login');
 			unset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE']);
 		}
 	}
@@ -734,13 +748,13 @@ class zenario_extranet extends ze\moduleBaseClass {
 	
 	protected final function checkRequiredField(&$field) {
 		$name = $field['name'] ?? false;
-		if (ze\ring::engToBoolean($field['required'] ?? false) && !($_POST[$name] ?? false) ) {
-			if (($field['type'] ?? false) == 'checkbox'){
+		if (ze\ring::engToBoolean($field['required'] ?? false) && !($_POST[$name] ?? false)) {
+			if (($field['type'] ?? false) == 'checkbox') {
 				
 				$sub = $name . '__';
 				$len = strlen($sub);
 				$match = false;
-				foreach ($_POST as $K=>$var){
+				foreach ($_POST as $K => $var) {
 					if (substr($K, 0, $len) == $sub && is_numeric(substr($K, $len))) {
 						$match = true;
 						break;
@@ -1050,9 +1064,35 @@ class zenario_extranet extends ze\moduleBaseClass {
 				}
 				
 				//Select the home page as the default redirect page.
+				//Also show links to other possible special pages.
 				$fields['action_after_login/welcome_page']['value'] = ze::$specialPages['zenario_home'] ?? '';
-
+				$fields['first_tab/change_password_page']['value'] = ze::$specialPages['zenario_change_password'] ?? '';
 				$fields['first_tab/password_reset_page']['value'] = ze::$specialPages['zenario_password_reset'] ?? '';
+				$fields['first_tab/logout_page']['value'] = ze::$specialPages['zenario_logout'] ?? '';
+				
+				if (!ze\module::isRunning('zenario_extranet_change_password') || !$fields['first_tab/change_password_page']['value']) {
+					$fields['first_tab/change_password_page']['notices_below']['module_not_running'] = [
+						'show' => true,
+						'type' => 'warning',
+						'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Change Password module to show.')
+					];
+				}
+				
+				if (!ze\module::isRunning('zenario_extranet_password_reset') || !$fields['first_tab/password_reset_page']['value']) {
+					$fields['first_tab/password_reset_page']['notices_below']['module_not_running'] = [
+						'show' => true,
+						'type' => 'warning',
+						'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Password Reset module to show.')
+					];
+				}
+				
+				if (!ze\module::isRunning('zenario_extranet_logout') || !$fields['first_tab/logout_page']['value']) {
+					$fields['first_tab/logout_page']['notices_below']['module_not_running'] = [
+						'show' => true,
+						'type' => 'warning',
+						'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Logout module to show.')
+					];
+				}
 
 				//Disable Captcha feature if not set up in the API keys
 				if (ze::setting('captcha_status_and_version') != 'enabled_v2' || !ze::setting('google_recaptcha_site_key') || !ze::setting('google_recaptcha_secret_key')) {

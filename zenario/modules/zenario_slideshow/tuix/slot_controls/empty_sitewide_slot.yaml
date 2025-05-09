@@ -3,9 +3,4 @@
 empty_sitewide_slot:
     actions:
         insert_slideshow_on_layout_layer:
-            ord: 999
-            priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert slideshow into the site-wide ~header~...
-            page_modes:
-                layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 3, 'slideshow');
+            hidden: false    # Show this option if a slideshow module is running

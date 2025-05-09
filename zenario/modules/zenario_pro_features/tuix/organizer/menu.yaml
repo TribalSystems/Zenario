@@ -16,7 +16,7 @@ zenario__menu:
         sections:
             collection_buttons:
                 create:
-                    priv: _PRIV_ADD_MENU_SECTION
+                    priv: _PRIV_CREATE_DELETE_MENU_SECTION
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     label: Create a menu section
@@ -25,14 +25,14 @@ zenario__menu:
                         path: zenario_menu_section
             item_buttons:
                 rename:
-                    priv: _PRIV_ADD_MENU_SECTION
+                    priv: _PRIV_CREATE_DELETE_MENU_SECTION
                     label: Rename section
                     ord: 5
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_menu_section
                 delete:
-                    priv: _PRIV_DELETE_MENU_SECTION
+                    priv: _PRIV_CREATE_DELETE_MENU_SECTION
                     label: Delete section
                     ord: 10
                     hide_in_select_mode: true
@@ -44,8 +44,8 @@ zenario__menu:
                             message_type: warning
                         request:
                             delete_menu_section: 1
-                    with_columns_set:
-                        traits.empty: true
+                    disabled_if: !item.empty
+                    disabled_tooltip: "A menu section may only be deleted if there are no menu nodes in it."
         menu_nodes:
             columns:
                 zenario_pro_features__invisible:

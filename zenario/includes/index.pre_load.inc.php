@@ -28,57 +28,14 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-function zenarioPageCacheDir(&$requests) {
-	
-	if (empty($requests)) {
-		$text = '-index-';
-	} else {
-		$text = json_encode($requests);
-	}
-	
-	return
-		substr(preg_replace('/[^\w_]+/', '-', $text), 1, 33).
-		ze::hash64($text. ($_SERVER['HTTP_HOST'] ?? ''), 16). '-'.
-		(empty($_COOKIE['cookies_accepted'])? (empty($_SESSION['unnecessary_cookies_rejected'])? '' : 'r') : 'a');
-}
 
-
-function zenarioPageCacheLogStats($stats) {
-	
-	if (is_dir($dir = 'cache/stats/page_caching/') && is_writeable($dir)) {
-	} elseif ($dir = ze\cache::createDir('page_caching', 'cache/stats', true, false)) {
-	} else {
-		return false;
-	}
-	
-	touch($dir. 'to');
-	touch($dir. 'accessed');
-	if (!file_exists($dir. 'from')) {
-		touch($dir. 'from');
-		ze\cache::chmod($dir. 'to', 0666);
-		ze\cache::chmod($dir. 'accessed', 0666);
-		ze\cache::chmod($dir. 'from', 0666);
-	}
-	
-	foreach ($stats as $stat) {
-		if (file_exists($dir. $stat)) {
-			$hits = (int) trim(file_get_contents($dir. $stat));
-			file_put_contents($dir. $stat, ++$hits);
-		} else {
-			file_put_contents($dir. $stat, 1);
-			ze\cache::chmod($dir. $stat, 0666);
-		}
-	}
-	
-	return true;
-}
 
 
 //Check cookie acceptence.
 //Caching supports the simple options; i.e. undecided (""), accepted ("a") and rejected ("r").
 //If someone accepts some but not others, we don't support caching like this and should turn caching off.
 $simpleCookieOptions = true;
-$cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '';
+$cookiesAccepted = $_COOKIE['z_cookies_accepted'] ?? '';
 if ($cookiesAccepted && $cookiesAccepted != '1') {
 	$cookiesAccepted = array_flip(explode(',', $cookiesAccepted));
 	
@@ -93,11 +50,11 @@ if ($cookiesAccepted && $cookiesAccepted != '1') {
 
 //A couple more checks for whether caching should be on or off.
 //Don't allow page caching if an Admin is logged in.
-//Don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set,
+//Don't allow it if a Visitor is not logged in as an Extranet User, but has the z_extranet_auto_login Cookie set,
 //as they're probably about to be automatically logged in.
 if ($simpleCookieOptions
  && !isset($_SESSION['admin_logged_into_site'])
- && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['LOG_ME_IN_COOKIE']))) {
+ && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['z_extranet_auto_login']))) {
 	
 	//Work out what cache-flags to use:
 		//u = extranet user logged in
@@ -118,7 +75,7 @@ if ($simpleCookieOptions
 	ze::$cacheEnv['g'] = '';
 	ze::$cacheEnv['s'] = '';
 	
-	if (!empty($_SESSION['extranetUserID']) || isset($_COOKIE['LOG_ME_IN_COOKIE'])) {
+	if (!empty($_SESSION['extranetUserID']) || isset($_COOKIE['z_extranet_auto_login'])) {
 		ze::$cacheEnv['u'] = 'u';
 	}
 	if (!empty($_POST)) {
@@ -158,14 +115,14 @@ if ($simpleCookieOptions
 	
 	
 	foreach ($_COOKIE as $request => &$value) {
-		if (!ze::cacheFriendlyCookieVar($request)) {
+		if (!ze\cache::friendlyCookieVar($request)) {
 			ze::$cacheEnv['s'] = 's';
 			break;
 		}
 	}
 	
 	foreach ($_SESSION as $request => &$value) {
-		if (!ze::cacheFriendlySessionVar($request)) {
+		if (!ze\cache::friendlySessionVar($request)) {
 			ze::$cacheEnv['s'] = 's';
 			break;
 		}
@@ -176,95 +133,95 @@ if ($simpleCookieOptions
 	//Get two checksums from the GET requests.
 	//$chDirAllRequests is a checksum of every GET request
 	//$chDirKnownRequests is a checksum of just the CMS variable, e.g. cID, cType...
-	$chDirAllRequests = zenarioPageCacheDir(ze::$allReq);
-	$chDirKnownRequests = zenarioPageCacheDir(ze::$knownReq);
-
-	//Don't allow a page to be served from the cache if an Admin has
-	//set the "remember me" option to show the admin login link
-	if (!isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
-		
-		//Loop through every possible combination of cache-flag
-		//(I've tried to order this by the most common settings first,
-		//to minimise the number of loops when we have a hit.)
-		for ($chS = 's';; $chS = ze::$cacheEnv['s']) {
-				for ($chG = 'g';; $chG = ze::$cacheEnv['g']) {
-						for ($chU = 'u';; $chU = ze::$cacheEnv['u']) {
+	$chDirAllRequests = ze\cache::pageRequestHash(ze::$allReq);
+	$chDirKnownRequests = ze\cache::pageRequestHash(ze::$knownReq);
+	
+	//Loop through every possible combination of cache-flag
+	//(I've tried to order this by the most common settings first,
+	//to minimise the number of loops when we have a hit.)
+	for ($chS = 's';; $chS = ze::$cacheEnv['s']) {
+			for ($chG = 'g';; $chG = ze::$cacheEnv['g']) {
+					for ($chU = 'u';; $chU = ze::$cacheEnv['u']) {
+							
+							
+							//Plugins can opt out of caching if there are any unrecognised or
+							//unregistered $_GET requests.
+							//If this is the case, then we must insist that the $_GET requests
+							//of the cached page match the current $_GET request - i.e. we
+							//must use $chDirAllRequests.
+							//If this is not the case then we must check both $chDirAllRequests
+							//and $chDirKnownRequests as we weren't exactly sure of the value of "g"
+							//as mentioned above.
+							if ((file_exists(($chPath = 'cache/pages/'. $chDirAllRequests. $chU. $chG. $chS. '/'). 'page.html'))
+							 || ($chG && (file_exists(($chPath = 'cache/pages/'. $chDirKnownRequests. $chU. $chG. $chS. '/'). 'page.html')))) {
+								
+								ze\cache::logStats(['hits', 'total']);
+								touch($chPath. 'accessed');
 								
 								
-								//Plugins can opt out of caching if there are any unrecognised or
-								//unregistered $_GET requests.
-								//If this is the case, then we must insist that the $_GET requests
-								//of the cached page match the current $_GET request - i.e. we
-								//must use $chDirAllRequests.
-								//If this is not the case then we must check both $chDirAllRequests
-								//and $chDirKnownRequests as we weren't exactly sure of the value of "g"
-								//as mentioned above.
-								if ((file_exists(($chPath = 'cache/pages/'. $chDirAllRequests. $chU. $chG. $chS. '/'). 'page.html'))
-								 || ($chG && (file_exists(($chPath = 'cache/pages/'. $chDirKnownRequests. $chU. $chG. $chS. '/'). 'page.html')))) {
-									
-									zenarioPageCacheLogStats(['hits', 'total']);
-									touch($chPath. 'accessed');
-									
-									
-									//Try and record the destCID and destCType as we would a normal page view
-									if ($tagId = file_get_contents($chPath. 'tag_id')) {
-										$tag = explode('_', $tagId, 2);
-										if (isset($tag[1])) {
-											if ($cID = (int) $tag[1]) {
-												$_SESSION['destCID'] = $cID;
-												$_SESSION['destCType'] = $tag[0];
-											}
+								//Try and record the destCID and destCType as we would a normal page view
+								if ($tagId = file_get_contents($chPath. 'tag_id')) {
+									$tag = explode('_', $tagId, 2);
+									if (isset($tag[1])) {
+										if ($cID = (int) $tag[1]) {
+											$_SESSION['destCID'] = $cID;
+											$_SESSION['destCType'] = $tag[0];
 										}
 									}
-								
-								
-									//If there are cached images on this page, mark that they've been accessed
-									if (file_exists($chPath. 'cached_files')) {
-										foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
-											if (is_dir($cachedImage)) {
-												touch($cachedImage. 'accessed');
-											} else {
-												//Delete the cached copy as its images are missing
-												ze\cache::deleteDir($chPath);
-											
-												//Continue the loop looking for any more cached copies of this page.
-												//Most likely if any exist they will need deleting because their images will be missing too,
-												//and it's a good idea to clean up.
-												continue 2;
-											}
-										}
-									}
-									
-									//When using implied consent, watch out for the flag to set the $_SESSION['cookies_accepted'] variable
-									if (empty($_COOKIE['cookies_accepted']) && file_exists($chPath. 'consent_implied')) {
-										$_SESSION['cookies_accepted'] = true;
-									}
-									
-									//Output the contents of the page, being careful to replace the [[%browser%]] string with the actual browser class
-									$page = file_get_contents($chPath. 'page.html');
-									if (false !== $pos = strpos($page, '<body class="desktop no_js [[%browser%]]')) {
-										echo substr($page, 0, $pos), '<body class="desktop no_js '. ze\cache::browserBodyClass(), substr($page, $pos + 40);
-									} else {
-										echo $page;
-									}
-									
-									if (file_exists($chPath. 'show_cache_info')) {
-										$limit_caching_debug_info_by_ip = file_get_contents($chPath. 'show_cache_info');
-										
-										if (ze\cache::shouldSeeDebugInfo($limit_caching_debug_info_by_ip)) {
-											ze\cache::showDebugInfo(true);
-										}
-									}
-									
-									echo "\n</body>\n</html>";
-									exit;
 								}
 							
-							if ($chU == ze::$cacheEnv['u']) break;
-						}
-					if ($chG == ze::$cacheEnv['g']) break;
-				}
-			if ($chS == ze::$cacheEnv['s']) break;
-		}
+							
+								//If there are cached images on this page, mark that they've been accessed
+								if (file_exists($chPath. 'cached_files')) {
+									foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
+										if (is_dir($cachedImage)) {
+											touch($cachedImage. 'accessed');
+										} else {
+											//Delete the cached copy as its images are missing
+											ze\cache::deleteDir($chPath);
+										
+											//Continue the loop looking for any more cached copies of this page.
+											//Most likely if any exist they will need deleting because their images will be missing too,
+											//and it's a good idea to clean up.
+											continue 2;
+										}
+									}
+								}
+								
+								//When using implied consent, watch out for the flag to set the $_SESSION['z_cookies_accepted'] variable
+								if (empty($_COOKIE['z_cookies_accepted']) && file_exists($chPath. 'consent_implied')) {
+									$_SESSION['z_cookies_accepted'] = true;
+								}
+								
+								//Output the contents of the page, being careful to replace the [[%browser%]] string with the actual browser class
+								$page = file_get_contents($chPath. 'page.html');
+								if (false !== $pos = strpos($page, '<body class="desktop no_js [[%browser%]]')) {
+									echo substr($page, 0, $pos), '<body class="desktop no_js '. ze\cache::browserBodyClass(), substr($page, $pos + 40);
+								} else {
+									echo $page;
+								}
+								
+								//Check to see if the "caching_debug_info" and "limit_caching_debug_info_by_ip"
+								//site settings were set. We can't check the database, but we'll write some info
+								//in a file to remember what the settings were. We'll get away with doing this
+								//as the cache directory is cleared when these settings are changed.
+								if (file_exists($chPath. 'show_cache_info')) {
+									$limit_caching_debug_info_by_ip = file_get_contents($chPath. 'show_cache_info');
+									
+									//Show the debug info to this visitor if they should see it.
+									if (ze\cache::shouldSeeDebugInfo($limit_caching_debug_info_by_ip)) {
+										ze\cache::showDebugInfo(true);
+									}
+								}
+								
+								echo "\n</body>\n</html>";
+								exit;
+							}
+						
+						if ($chU == ze::$cacheEnv['u']) break;
+					}
+				if ($chG == ze::$cacheEnv['g']) break;
+			}
+		if ($chS == ze::$cacheEnv['s']) break;
 	}
 }

@@ -8,9 +8,9 @@
 			<div class="outer">
 				<div class="inner">
 					<div class="document_details_content_panel {{Icon_Class}}">
-						{% if Sticky_image %}
+						{% if Featured_image %}
 							<div class="document_details_content_sticky_image">
-								<img src="{{Sticky_image_url}}"/>
+								<img src="{{Featured_image_url}}" {% if Featured_image_srcset %} srcset="{{Featured_image_srcset}}" {% endif %} {% if Featured_image_class %} class="{{Featured_image_class|e}}" {% endif %}/>
 							</div>
 						{% endif %}
 						
@@ -83,20 +83,22 @@
 									{% endif %}	
 								>
 
+									<span>
 									<a
 										href="{{Link}}"
 										onclick="{{Google_Analytics_Link}}"
 										class="document_download"
 										{% if Links_should == 'open_file_in_browser_window' %} target = "_blank" {% else %} download {% endif %}
 									>{{Download_Local_File|trans}}</a>
+									</span>
 
 									{% if Show_Local_File_Type_And_Size %}
-										({{Type}}, {{File_Size}})
+										<span>({{Type}}, {{File_Size}})</span>
 									{% endif %}
 
 									{% if Show_Permalink %}
-										<div class="shareable_link">
-											<div class="shareable_link_input" >
+										<span class="shareable_link">
+											<span class="shareable_link_input" >
 												<span
 													class="zenario_copy" style="display: none;"
 													id="copyLinkButton_{{itemElId}}"
@@ -117,12 +119,12 @@
 													<i class="fa fa-copy"></i>
 												</span>
 					
-												<div id="noteCopyLink_{{itemElId}}" class="zenario_copy_link zenario_visitor_tooltip tooltip_top_center" style="display: none;">
+												<span id="noteCopyLink_{{itemElId}}" class="zenario_copy_link zenario_visitor_tooltip tooltip_top_center" style="display: none;">
 													<span class="ui-tooltip-content">{{"Copy to clipboard"|trans}}</span>
 													<span class="tooltip_arrow"></span>
-												</div>
-											</div>
-										</div>
+												</span>
+											</span>
+										</span>
 									{% endif %}
 								</p>
 							{% endif %}
@@ -137,10 +139,12 @@
 										{% endif %}
 
 										<p>
-											<a href="{{S3_Link}}" class="document_download" download>{{S3_File_Download_Phrase|trans}}</a>
+											<span>
+												<a href="{{S3_Link}}" class="document_download" download>{{S3_File_Download_Phrase|trans}}</a>
+											</span>
 
 											{% if Show_S3_File_Type_And_Size %}
-												({{S3Type}}, {{S3_Size}})
+												<span>({{S3Type}}, {{S3_Size}})</span>
 											{% endif %}
 										</p>
 									{% else %}

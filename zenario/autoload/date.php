@@ -104,15 +104,13 @@ class date {
 		$returnDate = $formattedDate;
 		if ($rss) {
 			if ($time_format) {
-				$sql = "SELECT TIME_FORMAT(NOW() - UTC_TIMESTAMP(), '%H%i') ";
-				$result = \ze\sql::select($sql);
-				list($timezone) = \ze\sql::fetchRow($result);
-			
-				if (substr($timezone, 0, 1) != '-') {
-					$timezone = '+'. $timezone;
+				if (is_object($date)) {
+					$dateObject = $date;
+				} else {
+					$dateObject = \ze\date::new($date);
 				}
 			
-				$returnDate .= $timezone;
+				$returnDate .= \ze\date::formatTimeZoneOffset($dateObject);
 			}
 		
 		} elseif ($adminPhrase) {

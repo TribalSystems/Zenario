@@ -112,50 +112,6 @@ _sql
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
-); ze\dbAdm::revision( 10
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-_sql
-
-,<<<_sql
-	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`(
-		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-		`user_id` int(10) unsigned NOT NULL,
-		`form_id` int(10) unsigned NOT NULL,
-		`response_datetime` datetime NOT NULL,
-		PRIMARY KEY (`id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
-_sql
-
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
-_sql
-
-,<<<_sql
-	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`(
-		`user_response_id` int(10) unsigned NOT NULL,
-		`form_field_id` int(10) unsigned NOT NULL,
-		`value` text NOT NULL,
-		PRIMARY KEY (`user_response_id`, `form_field_id`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
-_sql
-
-); ze\dbAdm::revision (11
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	ADD COLUMN `internal_value` varchar(255) DEFAULT NULL 
-_sql
-
-); ze\dbAdm::revision (12
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	DROP COLUMN `internal_value`
-_sql
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
-	ADD COLUMN `internal_value` varchar(255) DEFAULT NULL 
-_sql
-
 ); ze\dbAdm::revision (17
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
@@ -255,14 +211,7 @@ if (ze\dbAdm::needRevision(19)) {
 	ze\dbAdm::revision(19);
 }
 
-ze\dbAdm::revision (22
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	ADD COLUMN `crm_response` text DEFAULT NULL
-_sql
-
-
-); ze\dbAdm::revision (25
+ze\dbAdm::revision (25
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
 _sql
@@ -275,22 +224,7 @@ _sql
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
 _sql
 
-); ze\dbAdm::revision( 26
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	ADD COLUMN blocked_by_profanity_filter BOOLEAN NOT NULL DEFAULT 0
-_sql
-
-); ze\dbAdm::revision( 27
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	ADD COLUMN profanity_filter_score INT NOT NULL DEFAULT 0,
-	ADD COLUMN profanity_tolerance_limit INT NOT NULL DEFAULT 0
-_sql
-
-);
-
-ze\dbAdm::revision(33
+); ze\dbAdm::revision(33
 // Create tables for partial form responses
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
@@ -319,14 +253,6 @@ _sql
 		`value` text NOT NULL,
 		PRIMARY KEY (`user_partial_response_id`, `form_field_id`)
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
-_sql
-
-); ze\dbAdm::revision(36
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
-	ADD COLUMN `field_row` int(10) unsigned NOT NULL DEFAULT 0 AFTER `form_field_id`,
-	DROP PRIMARY KEY,
-	ADD PRIMARY KEY (`user_response_id`, `form_field_id`, `field_row`)
 _sql
 
 ); ze\dbAdm::revision(37
@@ -964,18 +890,6 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_data` MODIFY COLUMN `value` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
 _sql
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response` MODIFY COLUMN `crm_response` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
-_sql
-, <<<_sql
-	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` SET `internal_value` = SUBSTR(`internal_value`, 1, 250) WHERE CHAR_LENGTH(`internal_value`) > 250
-_sql
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `internal_value` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
-_sql
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data` MODIFY COLUMN `value` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL
-_sql
 
 //Rename pdf_upload to document_upload
 ); ze\dbAdm::revision(102
@@ -1406,14 +1320,6 @@ _sql
 	ADD COLUMN `period_to_delete_response_content` varchar(255) NOT NULL DEFAULT ''
 _sql
 
-//Add a column to user responces to note whether data has been deleted from it
-); ze\dbAdm::revision(184
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	ADD COLUMN `user_deleted` tinyint(1) NOT NULL DEFAULT '0',
-	ADD COLUMN `data_deleted` tinyint(1) NOT NULL DEFAULT '0'
-_sql
-
 //Remove word type captchas (Google recaptcha 1.0) because it has been discontinued
 ); ze\dbAdm::revision(201
 , <<<_sql
@@ -1686,20 +1592,6 @@ ze\dbAdm::revision(282
 _sql
 
 , <<<_sql
-	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_referrer_info`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_referrer_info` (
-		`user_response_id` int(10) unsigned NOT NULL,
-		`referrer_content_item` varchar(255) DEFAULT '',
-		`referrer_field` varchar(255) DEFAULT '',
-		`value` text NOT NULL,
-		PRIMARY KEY (`user_response_id`, `referrer_content_item`, `referrer_field`)
-	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
-_sql
-
-, <<<_sql
 	DROP TABLE IF EXISTS `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response_referrer_info`
 _sql
 
@@ -1778,13 +1670,56 @@ ze\dbAdm::revision(286
 	ADD COLUMN `form_responses_allocate_checkbox_label` varchar(25) DEFAULT ''
 _sql
 
-);
-
-ze\dbAdm::revision(287
+); ze\dbAdm::revision(288
 , <<<_sql
-	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
-	ADD COLUMN `allocated_to_admin_id` int(10) unsigned NOT NULL DEFAULT 0,
-	ADD COLUMN `allocated_to_admin_datetime` datetime DEFAULT NULL
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	CHANGE `validation` `validation` enum('name', 'email', 'URL', 'integer', 'number', 'phone_number', 'floating_point') DEFAULT NULL
 _sql
 
+
+
+//In 10.0, we removed the setting to enable or disable clearing partial responses if "Save and complete later" is enabled.
+//It is now always possible to clear a partial response.
+); ze\dbAdm::revision(289
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP COLUMN `allow_clear_partial_data`
+_sql
+
+); ze\dbAdm::revision(290
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
+	CHANGE COLUMN `max_page_reached` `last_step_reached` int(10) unsigned NOT NULL DEFAULT 1
+_sql
+
+); ze\dbAdm::revision(292
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `subheading_tag` enum('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p') DEFAULT NULL AFTER `label`
+_sql
+); ze\dbAdm::revision(293
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `send_email_to_admin_destination_for_form_response` enum('enter_address_manually', 'call_static_method') DEFAULT NULL AFTER `send_email_to_admin_condition_field`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	SET `send_email_to_admin_destination_for_form_response` = 'enter_address_manually'
+	WHERE `send_email_to_admin` = 1 AND `admin_email_addresses` IS NOT NULL AND `admin_email_addresses` <> ''
+_sql
+); ze\dbAdm::revision(294
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `admin_email_destination_module_class_name` varchar(255) DEFAULT '' AFTER `send_email_to_admin_destination_for_form_response`,
+	ADD COLUMN `admin_email_destination_method_name` varchar(255) DEFAULT '' AFTER `admin_email_destination_module_class_name`
+_sql
+);
+
+//In 10.1, we removed an unused site setting and instead moved the feature to individual forms.
+ze\dbAdm::revision(295
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `admin_email_attachments` tinyint(1) NOT NULL DEFAULT 0 AFTER `admin_email_template`
+_sql
 );

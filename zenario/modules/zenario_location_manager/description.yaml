@@ -27,5 +27,5 @@ signals:
         name: eventSectorDeleted
         static: true
     signal4:
-        name: signalAdvancedSearchPopulateValuesSearchInOtherModules
+        name: signalAdvancedSearchGetSearchableModules
         static: true

@@ -104,7 +104,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					//Edit an existing Content Item based on its Menu Node
 					$box['key']['cID'] = $menuContentItem['equiv_id'];
 					$box['key']['cType'] = $menuContentItem['content_type'];
-					ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], ze::ifNull($box['key']['target_language_id'], ze::get('languageId'), ze::$defaultLang));
+					ze\content::langEquivalentItem($box['key']['cID'], $box['key']['cType'], $box['key']['target_language_id'] ?: (ze::get('languageId') ?: ze::$defaultLang));
 					$box['key']['source_cID'] = $box['key']['cID'];
 			
 					$box['key']['target_menu_section'] = ze\row::get('menu_nodes', 'section_id', $box['key']['id']);
@@ -117,7 +117,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				}
 
 			} else {
-				$box['key']['target_menu_section'] = ze::ifNull($box['key']['target_menu_section'], ze::request('sectionId'), ze::request('refiner__section'));
+				$box['key']['target_menu_section'] = $box['key']['target_menu_section'] ?: (ze::request('sectionId') ?: ze::request('refiner__section'));
 			}
 			$box['key']['id'] = false;
 		}
@@ -372,52 +372,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				
 				$numPlugins = 0;
 				foreach ($slots as $slotName => $slot) {
-					
 					if (!$slot->isVersionControlled()
 					 && $slot->instanceId()
 					 && $slot->level() == 1) {
-						
-						$instance = ze\plugin::details($slot->instanceId());
-						
 						++$numPlugins;
-						$suffix = '__'. $numPlugins;
-						$values['plugins/slotname'. $suffix] = $slotName;
-						$values['plugins/module'. $suffix] = ze\module::displayName($slot->moduleId());
-						$values['plugins/instance_id'. $suffix] = $slot->instanceId();
-						$values['plugins/plugin'. $suffix] = $instance['instance_name'] . ' (' . $instance['name'] . ')';
-						$values['plugins/new_name'. $suffix] =  ze\admin::phrase('[[name]] (copy)', $instance);
-						
-						$className = ze\module::className($slot->moduleId());
-						
-						switch ($className) {
-							case 'zenario_plugin_nest':
-								$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this nest - ');
-								$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same nest');
-								break;
-								
-							case 'zenario_slideshow':
-							case 'zenario_slideshow_simple':
-								$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this slideshow - ');
-								$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same slideshow');
-								break;
-							
-							default:
-								$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this plugin - ');
-								$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same plugin');
-								break;
-						}
-						
-						$fields['plugins/action'. $suffix]['values']['duplicate']['label'] = ze\admin::phrase('Make a copy');
-						$fields['plugins/action'. $suffix]['values']['empty']['label'] = ze\admin::phrase('Leave the slot empty');
-						
-						$fields['plugins/action'. $suffix]['values']['original']['ord'] = 1;
-						$fields['plugins/action'. $suffix]['values']['duplicate']['ord'] = 1.1;
-						$fields['plugins/action'. $suffix]['values']['empty']['ord'] = 1.2;
-						
-						
 					}
-					
-					
 				}
 				
 				//If there are, show the plugins tab, with options for each one
@@ -439,20 +398,77 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$minNumRows = 0,
 						$tabName = 'plugins'
 					);
+					
+					
+					$numPlugins = 0;
+					foreach ($slots as $slotName => $slot) {
+						
+						if (!$slot->isVersionControlled()
+						 && $slot->instanceId()
+						 && $slot->level() == 1) {
+							
+							$instance = ze\plugin::details($slot->instanceId());
+							
+							++$numPlugins;
+							$suffix = '__'. $numPlugins;
+							$values['plugins/slotname'. $suffix] = $slotName;
+							$values['plugins/module'. $suffix] = ze\module::displayName($slot->moduleId());
+							$values['plugins/instance_id'. $suffix] = $slot->instanceId();
+							$values['plugins/plugin_instance_id'. $suffix] = $instance['instance_name'];
+							$values['plugins/plugin_name'. $suffix] = $instance['name'];
+							$values['plugins/new_name'. $suffix] =  ze\admin::phrase('[[name]] (copy)', $instance);
+							
+							$className = ze\module::className($slot->moduleId());
+							
+							switch ($className) {
+								case 'zenario_nest':
+								case 'zenario_ajax_nest':
+									$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this nest - ');
+									$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same nest');
+									break;
+									
+								case 'zenario_slideshow':
+									$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this slideshow - ');
+									$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same slideshow');
+									break;
+								
+								default:
+									$fields['plugins/action'. $suffix]['empty_value'] = ze\admin::phrase(' - Select what to do with this plugin - ');
+									$fields['plugins/action'. $suffix]['values']['original']['label'] = ze\admin::phrase('Use same plugin');
+									break;
+							}
+						}
+					}
 				}
 				
 	
 			} else {
 				//When editing an existing content item, make the example in the SEO preview box a little more accurate
 				$values['meta_data/url_format'] =
-					ze\link::toItem($content['id'], $content['type'], false, '', $content['alias'],
-						false, $forceAliasInAdminMode = true,
+					ze\link::toItemWithAlias($content['id'], $content['type'], false, '', $content['alias'],
 						$content['equiv_id'], $content['language_id']
 					);
 
-				//The options to set the alias, categories or privacy (if it is there!) should be hidden when not creating something
+				//The option to set the alias should be hidden when not creating something.
 				$box['tabs']['categories']['hidden'] = true;
-				$box['tabs']['privacy']['hidden'] = true;
+				
+				//The option to set the privacy will be visible when not creating something,
+				//but with a note saying the whole translation chain will be affected immediately.
+				$fields['privacy/content_item_privacy_info_warning']['hidden'] = false;
+				if (ze\lang::count() > 1) {
+					$translationTagIds = ze\row::getArray('content_items', 'tag_id', ['equiv_id' => $content['equiv_id'], 'type' => $content['type']]);
+					
+					if ($translationTagIds && count($translationTagIds) > 1) {
+						$string = 'Permissions are applied to the entire content item (not just this version), and all content items in its translation chain.
+							Any change to permissions will go live immediately and affect all translations equally.';
+					} else {
+						$string = 'Permissions are applied to the entire content item and not just this version. Any change to permissions will go live immediately.';
+					}
+				} else {
+					$string = 'Permissions are applied to the entire content item and not just this version. Any change to permissions will go live immediately.';
+				}
+				
+				ze\lang::applyMergeFields($fields['privacy/content_item_privacy_info_warning']['snippet']['html'], ['content_item_privacy_changed_warning' => $string]);
 
 				//Alias should be displayed but as a span.
 				$fields['meta_data/alias']['read_only'] = true;
@@ -594,13 +610,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					}
 				}
 				
-				if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
-					$values['meta_data/lock_summary_view_mode'] =
-					$values['meta_data/lock_summary_edit_mode'] = $version['lock_summary'];
-					$fields['meta_data/lock_summary_view_mode']['hidden'] =
-					$fields['meta_data/lock_summary_edit_mode']['hidden'] = false;
-				}
-		
 				if (isset($box['tabs']['categories']['fields']['categories'])) {
 					ze\categoryAdm::setupFABCheckboxes(
 						$fields['categories/categories'], true,
@@ -667,11 +676,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$values['meta_data/writer_id'] = $writerProfile['id'];
 					}
 				}
-
-				if ($contentTypeDetails['release_date_field'] != 'hidden'
-				 && isset($fields['meta_data/release_date'])) {
-					$values['meta_data/release_date'] = ze\date::ymd();
-				}
 			}
 		}
 
@@ -697,15 +701,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//Set default values
 		if ($content) {
 			if ($box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']) {
-				$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::ifNull($_GET['languageId'] ?? false, ze::get('language'), $content['language_id']));
+				$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ($box['key']['target_language_id'] ?: ze::get('languageId')) ?: (ze::get('language') ?: $content['language_id']);
 			}
 		} else {
-			$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = ze::ifNull($box['key']['target_language_id'], ze::get('languageId'), ze::$defaultLang);
+			$values['meta_data/language_id'] = $values['meta_data/language_id_on_load'] = $box['key']['target_language_id'] ?: (ze::get('languageId') ?: ze::$defaultLang);
 		}
 		
 		if (!$version) {
 			//Attempt to work out the default template and Content Type for a new Content Item
-			if (($layoutId = ze::ifNull($box['key']['target_template_id'], ze::get('refiner__template')))
+			if (($layoutId = $box['key']['target_template_id'] ?: ze::get('refiner__template'))
 			 && ($box['key']['cType'] = ze\row::get('layouts', 'content_type', $layoutId))) {
 		
 	
@@ -1024,6 +1028,15 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				$box['tabs']['meta_data']['notices']['scheduled_warning']['message'] =
 					ze\admin::phrase("This item is scheduled to be published at [[publication_time]].", $row);
 			}
+			
+			
+			//Show the plain text extract from the content cache table
+			if (ze::in($box['key']['cType'], 'html', 'news', 'blog')) {
+				if ($contentCache = \ze\row::get('content_cache', ['text', 'text_wordcount'], ['content_id' => $box['key']['cID'], 'content_type' => $box['key']['cType'], 'content_version' => $box['key']['cVersion']])) {
+					$values['plain_text/text'] = $contentCache['text'];
+					$values['plain_text/text_wordcount'] = $contentCache['text_wordcount'];
+				}
+			}
 		}
 		
 		if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3') && ze\module::inc('zenario_ctype_document')) {
@@ -1103,7 +1116,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$fields['css/bg_repeat']['side_note'] = '';
 
 		if ($values['meta_data/layout_id']
-		 && ($layout = ze\content::layoutDetails($values['meta_data/layout_id']))) {
+		 && ($layout = ze\layout::details($values['meta_data/layout_id']))) {
 	
 			if ($layout['status'] != 'active') {
 				$fields['meta_data/archived_template_notice']['hidden'] = false;
@@ -1145,6 +1158,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			if ($details['release_date_field'] == 'hidden') {
 				$fields['meta_data/release_date']['hidden'] = true;
+			} else {
+				if ($details['auto_set_release_date'] && !$values['meta_data/release_date']) {
+					$fields['meta_data/release_date']['note_below'] = ze\admin::phrase('Release date will be set automatically when the item is published.');
+				} else {
+					unset($fields['meta_data/release_date']['note_below']);
+				}
 			}
 			
 			if ($details['writer_field'] == 'hidden') {
@@ -1663,8 +1682,9 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			} else {
 				$errors = ze\contentAdm::validateAlias($values['meta_data/alias']);
 			}
+			
 			if (!empty($errors) && is_array($errors)) {
-				$box['tabs']['meta_data']['errors'] = array_merge($box['tabs']['meta_data']['errors'], $errors);
+				$fields['meta_data/alias']['error'] = implode('<br />', $errors);
 			}
 		}
 
@@ -1676,10 +1696,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			if ($details['keywords_field'] == 'mandatory' && !$values['meta_data/keywords']) {
 				$fields['meta_data/keywords']['error'] = ze\admin::phrase('Please enter keywords.');
-			}
-			
-			if ($details['release_date_field'] == 'mandatory' && !$values['meta_data/release_date']) {
-				$fields['meta_data/release_date']['error'] = ze\admin::phrase('Please enter a release date.');
 			}
 			
 			if ($details['writer_field'] == 'mandatory' && !$values['meta_data/writer_id']) {
@@ -1737,7 +1753,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (
 			(!$box['key']['cID'] || $box['key']['cID'] != $box['key']['source_cID'])
 			&& $values['meta_data/layout_id']
-		 	&& ($layout = ze\content::layoutDetails($values['meta_data/layout_id']))
+		 	&& ($layout = ze\layout::details($values['meta_data/layout_id']))
 		 	&& $layout['status'] != 'active'
 		) {
 			if ($box['key']['translate']) {
@@ -1841,10 +1857,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			
 			
 			$version['content_summary'] = $values['meta_data/content_summary'];
-	
-			if (isset($fields['meta_data/lock_summary_edit_mode']) && !$fields['meta_data/lock_summary_edit_mode']['hidden']) {
-				$version['lock_summary'] = (int) $values['meta_data/lock_summary_edit_mode'];
-			}
 		}
 
 		//Set the Layout
@@ -1886,7 +1898,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//Only save background if "customise background" checkbox is ticked.
 			if ($values['css/customise_background']) {
 				if (($filepath = ze\file::getPathOfUploadInCacheDir($values['css/background_image']))
-				 && ($imageId = ze\file::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+				 && ($imageId = ze\fileAdm::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
 					$version['bg_image_id'] = $imageId;
 				} else {
 					$version['bg_image_id'] = $values['css/background_image'];
@@ -1908,7 +1920,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			if ($values['file/file']
 			 && ($path = ze\file::getPathOfUploadInCacheDir($values['file/file']))
 			 && ($filename = preg_replace('/([^.a-z0-9_\(\)\[\]]+)/i', '-', basename($path)))
-			 && ($fileId = ze\file::addToDocstoreDir('content', $path, $filename))) {
+			 && ($fileId = ze\fileAdm::addToDocstoreDir('content', $path, $filename))) {
 				$version['file_id'] = $fileId;
 				$version['filename'] = $filename;
 			} else {
@@ -1928,7 +1940,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						$currentDraftFileId = ze\row::get('content_item_versions', 'file_id', ['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']]);
 
 						if ($currentDraftFileId != $currentPublishedFileId && $currentDraftFileId != $version['file_id']) {
-								ze\file::deleteMediaContentItemFileIfUnused($box['key']['cID'], $box['key']['cType'], $currentDraftFileId);
+								ze\fileAdm::deleteMediaContentItemFileIfUnused($box['key']['cID'], $box['key']['cType'], $currentDraftFileId);
 						}
 					}
 
@@ -2045,7 +2057,29 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		if ($version['file_id']) {
 			if ($box['key']['cType'] && $box['key']['cType'] == 'document') {
-				ze\file::updateDocumentContentItemExtract($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version['file_id']);
+				ze\fileAdm::updateDocumentContentItemExtract($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version['file_id']);
+			}
+			
+			if ($box['key']['cType'] && ($box['key']['cType'] == 'document' || $box['key']['cType'] == 'picture')) {
+				$file = ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $version['file_id']]);
+				
+				if (!empty($file) && $file['location'] == 'docstore' && ze\file::isImage(ze\file::mimeType($file['filename']))) {
+					$location = ze\file::docstorePath($file['path']);
+					$thumbnailId = ze\fileAdm::addToDatabase(
+						'image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+						false, false, false, false, $file['image_credit']
+					);
+					
+					ze\row::set('inline_images', [], [
+						'image_id' => $thumbnailId,
+						'foreign_key_to' => 'content',
+						'foreign_key_id' => $box['key']['cID'],
+						'foreign_key_char' => $box['key']['cType'],
+						'foreign_key_version' => $box['key']['cVersion']
+					]);
+					ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], ['feature_image_id' => $thumbnailId]);
+					ze\contentAdm::syncInlineFileContentLink($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
+				}
 			}
 		}
 		
@@ -2081,7 +2115,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		//If we're creating a new content item from the admin toolbar, navigate to that content item
 		//after the FAB closes.
 		if (!empty($box['key']['create_from_toolbar'])) {
-			$contentItemLink = ze\link::toItem($box['key']['cID'], $box['key']['cType']);
+			$contentItemLink = ze\link::toItemWithAlias($box['key']['cID'], $box['key']['cType']);
 			if ($contentItemLink) {
 				$flags = [];
 				$flags['GO_TO_URL'] = $contentItemLink;
@@ -2211,7 +2245,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//...or if an Admin does not have the permissions to create a menu node...
 				//(Though allow this through for restricted admins if they are forced to create a content item in one of the suggested places.)
 			 ($box['key']['translate'] && !ze\priv::check('_PRIV_EDIT_MENU_TEXT'))
-			 || (!$box['key']['translate'] && !$suggestionsForced && !ze\priv::check('_PRIV_ADD_MENU_ITEM'))
+			 || (!$box['key']['translate'] && !$suggestionsForced && !ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM'))
 		
 			//...or when translating a content item without a menu node.
 			 || ($box['key']['translate'] && !$menu)
@@ -2374,7 +2408,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			//If creating a new content item, add a new menu node at the specified position
 			} else {
 				if ($values['meta_data/create_menu_node']
-				 && ($values['meta_data/menu_pos'] == 'suggested' || ze\priv::check('_PRIV_ADD_MENU_ITEM'))) {
+				 && ($values['meta_data/menu_pos'] == 'suggested' || ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM'))) {
 					
 					if ($menuPos = $this->getSelectedMenuPosition($values)) {
 						$menuIds = ze\menuAdm::addContentItems($box['key']['id'], $menuPos);

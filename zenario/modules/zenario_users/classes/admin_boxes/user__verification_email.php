@@ -57,13 +57,33 @@ class zenario_users__admin_boxes__user__verification_email extends zenario_users
 		$fields['details/non_plain_text_info']['snippet']['html'] = ze\admin::phrase($infoNote, ['count' => $userIdsCount]);
 		
 		$fields['details/email_to_send']['value'] = ze::setting('default_verification_email_template');
+		
+		//Populate the merge fields in the note about verification email expiry
+		$emailVerificationExpiryPeriod = (int) ze::setting('verification_email_expiry_period');
+		if (!$emailVerificationExpiryPeriod) {
+			$emailVerificationExpiryPeriod = 6;
+		}
+		
+		if ($emailVerificationExpiryPeriod == 1) {
+			$hourSingularOrPluralPhrase = 'hour';
+		} else {
+			$hourSingularOrPluralPhrase = 'hours';
+		}
+		
+		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>";
+		$linkEnd = "</a>";
+		
+		ze\lang::applyMergeFields(
+			$fields['details/email_to_send_body']['notices_below']['verification_email_expiry_period_note']['message'],
+			['hours_number' => $emailVerificationExpiryPeriod, 'hours_unit_singular_or_plural' => $hourSingularOrPluralPhrase, 'link_start' => $linkStart, 'link_end' => $linkEnd]
+		);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($values['details/email_to_send'] && ze\module::inc('zenario_email_template_manager')) {
+		if ($values['details/email_to_send']) {
 			$userIds = explode(',', $box['key']['id']);
 			
-			$template = zenario_email_template_manager::getTemplateByCode($values['details/email_to_send']);
+			$template = zenario_common_features::getTemplateByCode($values['details/email_to_send']);
 			
 			if (!empty($template) && is_array($template)) {
 				if (count($userIds) == 1) {
@@ -96,9 +116,11 @@ class zenario_users__admin_boxes__user__verification_email extends zenario_users
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$userIds = explode(',', $box['key']['id']);
 		if ($userIds) {
-			if ($values['details/email_to_send'] && (ze\module::inc('zenario_email_template_manager'))) {
+			if ($values['details/email_to_send']) {
 				foreach ($userIds as $userId) {
 					ze\userAdm::updateHash($userId);
+					ze\userAdm::setVerificationExpiryDate($userId);
+					
 					$hash = ze\row::get('users', 'hash_verify_email', $userId);
 					
 					$mergeFields = ze\user::userDetailsForEmails($userId);
@@ -108,9 +130,9 @@ class zenario_users__admin_boxes__user__verification_email extends zenario_users
 					$loginSpecialPage = ze\row::get('special_pages', ["equiv_id", "content_type"], ["page_type" => "zenario_login"]);
 					$mergeFields['email_confirmation_link'] = ze\link::toItem($loginSpecialPage['equiv_id'], $loginSpecialPage['content_type'], $fullPath = true, $request = '&action=confirm_email&hash='. $hash);
 					
-					zenario_email_template_manager::sendEmailsUsingTemplate(
+					zenario_common_features::sendEmailsUsingTemplate(
 						$mergeFields['email'], $values['details/email_to_send'], $mergeFields,
-						[], [], false, false, false, false, false, $customBody = $values['details/email_to_send_body']
+						[], [], false, false, false, false, $customBody = $values['details/email_to_send_body']
 					);
 				}
 			}

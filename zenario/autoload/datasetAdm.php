@@ -129,7 +129,7 @@ class datasetAdm {
 					WHERE fv.field_id = ". (int) $field['id'];
 				\ze\sql::update($sql);
 		
-			} elseif ($field['type'] != 'repeat_end') {
+			} else {
 				//If PDE is in use, make sure the encrypted and/or hashed columns
 				//are removed along with the original.
 				//The function below will run all the necessary checks
@@ -139,13 +139,6 @@ class datasetAdm {
 				$sql = "
 					ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`
 					DROP COLUMN `". \ze\escape::sql($field['db_column']). "`";
-				if ($field['repeat_start_id']) {
-					$rows = \ze\row::get('custom_dataset_fields', 'max_rows', $field['repeat_start_id']);
-					for ($i = 2; $i <= $rows; $i++) {
-						$sql .= ",
-							DROP COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`";
-					}
-				}
 				\ze\sql::update($sql);
 			}
 		
@@ -181,10 +174,8 @@ class datasetAdm {
 		switch ($field['type']) {
 			case 'checkboxes':
 			case 'file_picker':
-			case 'repeat_end':
 				return '';
 		
-			case 'repeat_start':
 			case 'checkbox':
 			case 'group':
 			case 'consent':
@@ -309,9 +300,9 @@ class datasetAdm {
 		
 		
 		if ($flat) {
-			$columns = ['id', 'is_system_field', 'label', 'default_label'];
+			$columns = ['id', 'is_system_field', 'label', 'default_label', 'required', 'required_message'];
 		} else {
-			$columns = ['id', 'tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord'];
+			$columns = ['id', 'tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord', 'required', 'required_message', 'values_source'];
 		}
 	
 		$fields = \ze\row::getAssocs('custom_dataset_fields', $columns, $key, 'ord');
@@ -408,10 +399,6 @@ class datasetAdm {
 				return 'Dataset picker';
 			case 'file_picker':
 				return 'File picker';
-			case 'repeat_start':
-				return 'Start of repeating section';
-			case 'repeat_end':
-				return 'End of repeating section';
 			default:
 				return 'Unknown';
 		}
@@ -679,85 +666,6 @@ class datasetAdm {
 			
 				$sql .= ")";
 				\ze\sql::update($sql);
-			}
-		}
-	}
-	
-	public static function createFieldMultiRowsInDB($fieldId, $oldName = false, $newRows = false, $oldRows = false) {
-		//Update extra columns for repeating fields
-		if (($field = \ze\dataset::fieldDetails($fieldId))
-			&& ($dataset = \ze\dataset::details($field['dataset_id']))
-			&& ($newRows || $oldRows)
-		) {
-			$start = false;
-			$stop = false;
-			$deleting = false;
-			
-			//Only create
-			if (!$oldRows) {
-				$start = 2;
-				$stop = $newRows;
-			//Only delete
-			} elseif (!$newRows) {
-				$start = 2;
-				$stop = $oldRows;
-				$deleting = true;
-			//Update existing and create some new
-			} elseif ($newRows > $oldRows) {
-				$start = $oldRows + 1;
-				$stop = $newRows;
-			//Update existing and delete some old
-			} elseif ($newRows < $oldRows) {
-				$start = $newRows + 1;
-				$stop = $oldRows;
-				$deleting = true;
-			//Just renaming
-			} elseif ($newRows == $oldRows) {
-				$start = $newRows + 1;
-				$stop = $newRows;
-			}
-			
-			if ($start !== false && $stop !== false) {
-				
-				$exists = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], \ze\dataset::repeatRowColumnName($field['db_column'], 2));
-				$oldColType = false;
-				if (!$exists && $oldName && $oldName != $field['db_column']) {
-					$oldColType = \ze\datasetAdm::checkColumnExistsInDB($dataset['table'], \ze\dataset::repeatRowColumnName($oldName, 2));
-				}
-				
-				//Get the column definition
-				$def = \ze\datasetAdm::fieldDefinition($field);
-				if ($def === false) {
-					echo \ze\admin::phrase('Error: bad field type!');
-					exit;
-				}
-				
-				$sql = '';
-				for ($i = 2; $i <= $stop; $i++) {
-					if ($i >= $start) {
-						if ($deleting) {
-							$sql .= ",
-								DROP COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`";
-						} else {
-							$sql .= ",
-								ADD COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
-						}
-					} else {
-						if ($oldColType) {
-							$sql .= ",
-								CHANGE COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($oldName, $i)) . "` `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
-						} elseif ($exists) {
-							$sql .= ",
-								MODIFY COLUMN `" . \ze\escape::sql(\ze\dataset::repeatRowColumnName($field['db_column'], $i)) . "`" . $def;
-						}
-					}
-				}
-				
-				if ($sql) {
-					$sql = "
-						ALTER TABLE `". DB_PREFIX. \ze\escape::sql($dataset['table']). "`" . trim($sql, ',');
-						\ze\sql::update($sql);
-				}
 			}
 		}
 	}

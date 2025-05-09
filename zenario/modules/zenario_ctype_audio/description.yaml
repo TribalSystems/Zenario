@@ -28,7 +28,6 @@ content_types:
         content_type_name_en: Audio file
         content_type_plural_en: Audio files
         default_template_name: Audio layout
-        enable_summary_auto_update: false
         description_field: optional
         tooltip_text: Audio files, so you can put podcasts and other audio material on your site
         keywords_field: hidden

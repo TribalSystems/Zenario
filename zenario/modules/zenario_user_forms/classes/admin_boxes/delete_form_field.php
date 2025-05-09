@@ -43,7 +43,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 				$fields['details/warning_message']['snippet']['html'] = 
 					'<p>' . ze\admin::phrase('Are you sure you want to delete this spacer?') . '</p>';
 			} else {
-				$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
+				$responseCount = (int)ze\row::count('user_response_data', ['form_field_id' => $fieldId]);
 				
 				// If no responses delete field normally
 				if ($responseCount <= 0) {
@@ -90,7 +90,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$fieldId = $box['key']['id'];
 		$fields['details/migration_field']['hidden'] = $values['details/delete_field_options'] != 'delete_field_but_migrate_data';
-		$responseCount = (int)ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
+		$responseCount = (int)ze\row::count('user_response_data', ['form_field_id' => $fieldId]);
 		
 		// If migrating data show warning if selected field has existing responses
 		if ($values['details/delete_field_options'] == 'delete_field_but_migrate_data') {
@@ -101,7 +101,7 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 			if ($values['details/migration_field'] && is_numeric($values['details/migration_field'])) {
 			
 				$otherFieldResponseCount = (int)ze\row::count(
-					ZENARIO_USER_FORMS_PREFIX . 'user_response_data', 
+					'user_response_data', 
 					['form_field_id' => $values['details/migration_field']]
 				);
 				

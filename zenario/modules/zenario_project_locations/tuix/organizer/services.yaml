@@ -56,7 +56,7 @@ zenario__projects:
                     delete: 
                         hide_in_select_mode: Yes
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS
-                        ord: "99"
+                        ord: 99
                         label: Delete
                         multiple_select: Yes
                         multiple_select_tooltip: Delete these project service

@@ -142,8 +142,6 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				$summary .= ze\admin::phrase('/ [[cols]] columns', $item);
 			}
 			
-			$summary .= ' <br/>' . ze\admin::phrase('[[skin_name]] skin', ['skin_name' => htmlspecialchars($item['skin_name'])]);
-			
 			$item['summary'] = $summary;
 			
 			if (!ze\row::exists('content_types', ['default_layout_id' => $id]) && !ze\row::exists('content_item_versions', ['layout_id' => $id])) {
@@ -172,9 +170,9 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 				foreach (ze\content::getContentTypes(false, false) as $cType) {
 					if($cType['content_type_id'] == $item['content_type']) {
 						if(count($usageContentItems)==1) {
-							$contentTypeEnname = $cType['content_type_name_en'].' content item';
+							$contentTypeEnname = $cType['content_type_name_en'];
 						} else {
-							$contentTypeEnname = $cType['content_type_name_en'].' content items';
+							$contentTypeEnname = $cType['content_type_plural_en'];
 						}
 					}
 				}

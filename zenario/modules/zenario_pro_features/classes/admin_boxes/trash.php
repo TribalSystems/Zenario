@@ -88,7 +88,7 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
                     if ($targetTagId) {
                         $cID = $cType = false;
                         ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-                        $values['trash/redirect_target_url__' . $i] = ze\link::toItem($targetTagId, $cType, true, '', false, false, $forceAliasInAdminMode = true);
+                        $values['trash/redirect_target_url__' . $i] = ze\link::toItemWithAlias($targetTagId, $cType, true);
                     }
                 } elseif ($values['trash/target_loc__' . $i] == 'ext') {
                     $target = $values['trash/ext_url__' . $i];

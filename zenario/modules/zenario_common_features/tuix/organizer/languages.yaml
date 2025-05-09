@@ -25,7 +25,7 @@ zenario__languages:
             
             columns:
                 name:
-                    title: Language Name
+                    title: Language name
                     searchable: true
                     db_column: vp.local_text
                     show_by_default: true
@@ -34,9 +34,11 @@ zenario__languages:
                     title: Code
                     searchable: true
                     db_column: vp.language_id
-                    width: small
+                    show_by_default: false
+                    width: xsmall
+                    disallow_sorting: true
                 english_name:
-                    title: English Name
+                    title: English name
                     searchable: true
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]visitor_phrases AS en
@@ -45,8 +47,9 @@ zenario__languages:
                           AND en.code = '__LANGUAGE_ENGLISH_NAME__'
                     db_column: en.local_text
                     width: medium
+                    disallow_sorting: true
                 language_local_name:
-                    title: Local Name
+                    title: Local name
                     searchable: true
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]visitor_phrases AS lo
@@ -56,6 +59,7 @@ zenario__languages:
                     db_column: lo.local_text
                     show_by_default: true
                     width: medium
+                    disallow_sorting: true
                 enabled:
                     db_column: l.id
                 default:
@@ -68,30 +72,38 @@ zenario__languages:
                     format: yes_or_no
                     show_by_default: true
                     width: small
+                    disallow_sorting: true
                 phrase_count:
                     title: Phrases
                     db_column: COUNT(DISTINCT vp.code, vp.module_class_name)
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                    disallow_sorting: true
                 domain:
-                    title: Domain
+                    title: Language-specific doomain
                     searchable: true
                     db_column: l.domain
+                    width: medium
+                    disallow_sorting: true
                 homepage_id:
-                    title: Homepage
+                    title: Home page
                     item_link: content_item
+                    show_by_default: true
                     width: large
+                    disallow_sorting: true
                 search_type:
                     title: Search type
                     db_column: |
                         IF(search_type='simple','MySQL "LIKE"', 'MySQL full-text')
                     width: medium
+                    disallow_sorting: true
                 translate_phrases:
                     title: Translate phrases
                     format: yes_or_no
                     db_column: l.translate_phrases
                     value: 1
+                    disallow_sorting: true
             label_format_for_grid_view: '[[english_name]] ([[code]])'
             item:
                 name: Language

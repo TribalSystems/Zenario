@@ -38,9 +38,9 @@ $fileMetaCols = ['id', 'checksum', 'short_checksum', 'usage', 'privacy', 'filena
 
 //Parse the html, looking for links to images in the public directory.
 //URLs to these might look like:
-	//public/images/YZVPl/boat-image.jpg
+	//public/images/YZVPl/boat-image.webp
 //(for full images) or:
-	//public/images/YZVPl/resize_100_185_0/boat-image.jpg
+	//public/images/YZVPl/resize_100_185_0/boat-image.webp
 //(for resizes)
 if ($usage == 'image'
  && strpos($html, 'public/images/') !== false) {
@@ -103,7 +103,7 @@ if ($usage == 'image'
 					if ($checksum
 					 && $checksumCol
 					 && ($existingFile = \ze\row::get('files', $fileMetaCols, [$checksumCol => $checksum]))
-					 && ($newId = ze\file::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
+					 && ($newId = ze\fileAdm::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
 					
@@ -221,7 +221,7 @@ if ($usage == 'image'
 				
 				$url = '';
 				$dummyWidth = $dummyHeight = 0;
-				if (ze\file::imageLink(
+				if (ze\image::link(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
 					$mode = 'adjust', $offset = 0, $retina = true,
 					$fullPath = false, $privacy = 'public'
@@ -308,7 +308,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 		//If we can get the checksum from the url, look up this file and process it
 		$needsChanging = false;
 		$changed = false;
-		if ($checksum = ze::ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
+		if ($checksum = ($params['c'] ?? false) ?: ($params['checksum'] ?? false)) {
 		
 			//Catch old checksums in base 16. Convert these to base 64 so the links will be shorter.
 			if (strlen($checksum) == 32
@@ -329,7 +329,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 
 		
 			//Get the preferred filename from the URL string, if it is set
-			$filename = ze::ifNull(trim(rawurldecode($params['filename'] ?? false)), null, null);
+			$filename = trim(rawurldecode($params['filename'] ?? '')) ?: null;
 		
 		
 			//Check to see if this is the checksum of an image, with the correct usage set
@@ -341,15 +341,21 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			}
 			$file = $foundChecksums[$checksum];
 			
+			if (isset($params['usage'])) {
+				$thisUsage = trim(rawurldecode($params['usage']));
+			} else {
+				$thisUsage = 'image';
+			}
+			
 			//If it is, we've found it and we can continue without any changes
-			if ($file && ze::ifNull(trim(rawurldecode($params['usage'] ?? false)), 'image') == $usage) {
+			if ($file && $thisUsage == $usage) {
 		
 			//If not, check to see if it is the checksum of an image that exists somewhere on the filesystem,
 			//and try to copy it over.
 			} else {
 				if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
 					if (($existingFile = \ze\row::get('files', $fileMetaCols, [$checksumCol => $checksum]))
-					 && ($newId = ze\file::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
+					 && ($newId = ze\fileAdm::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
 					
@@ -466,7 +472,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				
 				$rememberWhatThisWas = ze::$mustUseFullPath;
 				ze::$mustUseFullPath = false;
-				if (ze\file::imageLink(
+				if (ze\image::link(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
 					$mode = 'adjust', $offset = 0, $retina = true,
 					$fullPath = false, $privacy = 'public',

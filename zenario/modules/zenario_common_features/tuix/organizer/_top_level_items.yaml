@@ -69,12 +69,18 @@ zenario__content:
             tooltip: All content items of all types in a flat view
             link:
                 path: zenario__content/panels/content
-        trash:
+        trashed_content_items:
             ord: 24
             css_class: content_trashed
             label: Trashed content items
             link:
-                path: zenario__content/panels/content/refiners/trash////
+                path: zenario__content/panels/trashed_content_items
+        hidden_content_items:
+            ord: 25
+            css_class: content_hidden
+            label: Hidden content items
+            link:
+                path: zenario__content/panels/hidden_content_items
         access_codes:
             ord: 30
             visible_if: >
@@ -169,6 +175,51 @@ zenario__library:
             link:
                 path: zenario__library/panels/document_tags
 
+zenario__email_template_manager:
+    ord: -760
+    visible_if: >
+        zenarioA.siteSettings.default_language
+    css_class: zenario_email_template_top_level
+    label: Email
+    tooltip: >
+            Define how emails are sent from the site and view sent mail
+    nav:
+        email_templates: 
+            ord: 1
+            label: Email templates
+            tooltip: "Email templates that your site can send"
+            link:
+                path: zenario__email_template_manager/panels/email_templates
+        email_log:
+            ord: 2
+            priv: _PRIV_VIEW_USER
+            label: Sent email log
+            tooltip: "Log of emails sent from your site"
+            link:
+                path: zenario__email_template_manager/panels/email_log
+        plugin_email_addresses:
+            css_class: plugin_album_instance
+            ord: 5
+            priv: _PRIV_VIEW_USER
+            label: Plugin recipients
+            tooltip: "View plugins that have an email address in a setting"
+            link:
+                path: zenario__modules/panels/plugins
+                refiner: email_address_setting
+        other_email_addresses:
+            ord: 6
+            priv: _PRIV_VIEW_USER
+            label: Other emails
+            tooltip: "View other modules that have an email address"
+            link:
+                path: zenario__email_template_manager/panels/other_email_addresses
+        site_setting_email_addresses:
+            ord: 7
+            priv: _PRIV_VIEW_USER
+            label: Site-wide recipients
+            tooltip: "View site settings that have an email address"
+            link:
+                path: zenario__email_template_manager/panels/site_setting_email_addresses
 zenario__layouts:
     ord: 9100
     visible_if: >
@@ -222,6 +273,24 @@ zenario__modules:
                 Plugins that may be used on visitor-facing pages
             link:
                 path: zenario__modules/panels/plugins
+        
+        nests:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            css_class: nest_library
+            label: Nest library
+            tooltip: |
+                View nests - collections of plugins that may be used on visitor-facing pages
+            link:
+                path: zenario__modules/panels/plugins/refiners/nests////
+        slideshows:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            css_class: slideshow_library
+            label: Slideshow library
+            tooltip: >
+                View slideshows - animated collections of plugins that may be used on visitor-facing pages
+            link:
+                path: zenario__modules/panels/plugins/refiners/slideshows////
+
         tuix_snippets:
             ord: 99
             priv: _PRIV_EDIT_SITE_SETTING
@@ -308,13 +377,6 @@ zenario__administration:
                 caching cache stats statistics clear
             link:
                 path: zenario__administration/panels/site_settings
-        administrators:
-            priv: _PRIV_VIEW_ADMIN
-            label: Administrators
-            tooltip: |
-                Manage Zenario admins, who can edit this site
-            link:
-                path: zenario__administration/panels/administrators
         content_types:
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
@@ -324,13 +386,6 @@ zenario__administration:
                 Manage content types (HTML pages, news etc.)
             link:
                 path: zenario__content/panels/content_types
-        backups:
-            priv: _PRIV_BACKUP_SITE
-            #css_class: backups
-            label: Backups
-            tooltip: Create and restore backups
-            link:
-                path: zenario__administration/panels/backups
         custom_datasets:
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
@@ -341,18 +396,23 @@ zenario__administration:
             keywords: "Database, record, lookup, data, file, spreadsheet, field, column"
             link:
                 path: zenario__administration/panels/custom_datasets
-        file_types:
-            ord: 10001
-            priv: _PRIV_VIEW_SITE_SETTING
-            visible_if: >
-                zenarioA.siteSettings.default_language
-            css_class: zenario_separator_before_this dropbox_file
-            label: File/MIME Types
-            tooltip: >
-                Manage which types of files/file extensions are allowed in a document upload,
-                and set the MIME type for each extension.
+        
+        administrators:
+            priv: _PRIV_VIEW_ADMIN
+            label: Administrators
+            css_class: zenario_separator_before_this admin_item
+            tooltip: |
+                Manage Zenario admins, who can edit this site
             link:
-                path: zenario__administration/panels/file_types
+                path: zenario__administration/panels/administrators
+        
+        backups:
+            priv: _PRIV_BACKUP_SITE
+            #css_class: backups
+            label: Backups
+            tooltip: Create and restore backups
+            link:
+                path: zenario__administration/panels/backups
         error_log:
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
@@ -361,6 +421,18 @@ zenario__administration:
             tooltip: Manage logged errors
             link:
                 path: zenario__administration/panels/error_log
+        
+        file_types:
+            ord: 10001
+            priv: _PRIV_VIEW_SITE_SETTING
+            visible_if: >
+                zenarioA.siteSettings.default_language
+            label: File/MIME Types
+            tooltip: >
+                Manage which types of files/file extensions are allowed in a document upload,
+                and set the MIME type for each extension.
+            link:
+                path: zenario__administration/panels/file_types
 
 
     data-step: 14

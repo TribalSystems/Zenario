@@ -5,45 +5,7 @@ zenario__content:
         slots:
             item_buttons:
                 insert_slideshow_on_layout_layer:
-                    class_name: zenario_common_features
-                    parent: insert_dropdown
-                    ord: 99
-                    priv: _PRIV_MANAGE_TEMPLATE_SLOT
-                    label: Insert slideshow...
-                    combine_items:
-                        class_name: zenario_common_features
-                        path: zenario__modules/panels/plugins/refiners/slideshows////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/plugins
-                        max_path: zenario__modules/panels/plugins
-                        one_to_one_choose_phrase: Insert slideshow
-                        request:
-                            level: 2
-                            addPluginInstance: 1
-                    with_columns_set:
-                        empty: true
-                    without_columns_set:
-                        is_sitewide: true
-                    visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'layout'
+                    hidden: false    # Show this option if a slideshow module is running
                 
                 insert_slideshow_on_item_layer:
-                    class_name: zenario_common_features
-                    parent: insert_dropdown
-                    label: Insert slideshow...
-                    combine_items:
-                        class_name: zenario_common_features
-                        path: zenario__modules/panels/plugins/refiners/slideshows////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/plugins
-                        max_path: zenario__modules/panels/plugins
-                        one_to_one_choose_phrase: Insert slideshow
-                        request:
-                            level: 1
-                            addPluginInstance: 1
-                    with_columns_set:
-                        empty: true
-                    without_columns_set:
-                        is_sitewide: true
-                    visible_if: >
-                        zenarioO.refiner && zenarioO.refiner.name == 'content_item'
+                    hidden: false    # Show this option if a slideshow module is running

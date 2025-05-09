@@ -473,12 +473,20 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					switch ($cfield['type']) {
 						case 'editor':
 						case 'file_picker':
-							//Never show editor or file picker fields in Organizer
+							//Never show editor or file picker fields in Organizer.
+							//Please note: as of 18 Jan 2024, the Organizer visibility setting
+							//in the dataset editor is disabled for editors and file pickers.
 							continue 2;
 			
 						case 'group':
 						case 'checkbox':
+						case 'consent':
 							$cCol['format'] = 'yes_or_no';
+							
+							if ($cfield['type'] == 'consent') {
+								$cCol['yes_phrase'] = ze\admin::phrase('Consents');
+								$cCol['no_phrase'] = ze\admin::phrase('No consent');
+							}
 							break;
 			
 						case 'date':

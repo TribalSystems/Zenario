@@ -92,7 +92,7 @@ if (!ze\priv::check()) {
 	}
 	
 	foreach (ze\row::getAssocs('admin_settings', ['name', 'value'], ['admin_id' => ze\admin::id()]) as $adminSetting) {
-		if (ze\ring::chopPrefix('COOKIE_ADMIN_SECURITY_CODE_', $adminSetting['name']) === false) {
+		if (ze\ring::chopPrefix('z_admin_2fa_', $adminSetting['name']) === false) {
 			ze::$adminSettings[$adminSetting['name']] = $adminSetting['value'];
 		}
 	}

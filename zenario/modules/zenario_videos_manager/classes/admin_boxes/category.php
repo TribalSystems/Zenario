@@ -30,6 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_videos_manager__admin_boxes__videos_manager__category extends zenario_videos_manager {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\priv::check('_PRIV_MANAGE_VIDEOS')) {
+			$box['tabs']['details']['edit_mode']['enabled'] = false;
+			$box['tabs']['details']['edit_mode']['on'] = false;
+		}
+		
 		if ($box['key']['id']) {
 			$category = ze\row::get(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', ['name'], $box['key']['id']);
 			$box['title'] = ze\admin::phrase('Editing the category "[[name]]"', $category);
@@ -46,6 +51,8 @@ class zenario_videos_manager__admin_boxes__videos_manager__category extends zena
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		ze\priv::exitIfNot('_PRIV_MANAGE_VIDEOS');
+		
 		$box['key']['id'] = ze\row::set(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', ['name' => mb_substr($values['details/name'], 0, 250, 'UTF-8')], $box['key']['id']);
 	}
 	

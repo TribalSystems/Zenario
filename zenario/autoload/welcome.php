@@ -555,9 +555,10 @@ class welcome {
 			
 			} else {
 				//Check the MySQL version on the PHP the client.
-				$mysqlVersion = \ze::ifNull(
-					\ze\ray::value($phpinfo, 'mysql', 'Client API version'),
-					\ze\ray::value($phpinfo, 'mysqli', 'Client API library version'));
+				$mysqlVersion =
+					($phpinfo['mysql']['Client API version'] ?? '')
+					?:
+					($phpinfo['mysqli']['Client API library version'] ?? '');
 		
 				//Try and check the MySQL version on this server
 				if (\ze\server::programPathForExec('/usr/bin/', 'mysql', $checkExecutable = true)) {
@@ -687,21 +688,21 @@ class welcome {
 			}
 			
 			$extract = '';
-			if (!\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract)) {
+			if (!\ze\fileAdm::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract)) {
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tantiword~k{"id"%3A"external_programs"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 				$otherServerProgramsString = 'Antiword<br><small>The program antiword is not correctly set up. This is needed to read a text extract from Word documents that you upload.';
 				
 				$osWarning = true;
-				$fields['0/os_1']['row_class'] = $warning;
-				$fields['0/os_1']['snippet']['html'] = \ze\admin::phrase(
+				$fields['0/os_word2text']['row_class'] = $warning;
+				$fields['0/os_word2text']['snippet']['html'] = \ze\admin::phrase(
 					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
 					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
 	
 			} else {
-				$fields['0/os_1']['row_class'] = $valid;
+				$fields['0/os_word2text']['row_class'] = $valid;
 			}
 
 			if (!\ze\file::createPdfFirstPageScreenshotPng(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
@@ -711,76 +712,20 @@ class welcome {
 				$otherServerProgramsString = 'Ghostscript<br><small>The program ghostscript is not correctly set up. This is needed to extract an image from PDFs that you upload.';
 				
 				$osWarning = true;
-				$fields['0/os_2']['row_class'] = $warning;
-				$fields['0/os_2']['snippet']['html'] = \ze\admin::phrase(
+				$fields['0/os_pdf2image']['row_class'] = $warning;
+				$fields['0/os_pdf2image']['snippet']['html'] = \ze\admin::phrase(
 					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
 					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
 			} else {
-				$fields['0/os_2']['row_class'] = $valid;
+				$fields['0/os_pdf2image']['row_class'] = $valid;
 			}
 
-			$jpegtran=\ze\server::programPathForExec(\ze::setting('jpegtran_path'), 'jpegtran', true);
-			$jpegoptim= \ze\server::programPathForExec(\ze::setting('jpegoptim_path'), 'jpegoptim', true);
-			if ($jpegtran==NULL || $jpegoptim==NULL) {
-				
-				$fields['0/os_3']['row_class'] = $warning;
-				if (\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegtran== NULL && $jpegoptim!= NULL) {
-					$osWarning = true;
-					$jpegtranMsg = 'jpegtran is not correctly set up.';
-					$jpegoptimMsg = 'jpegoptim is correctly set up.';
-				} elseif (\ze::setting('jpegtran_path') && \ze::setting('jpegoptim_path') && $jpegoptim== NULL && $jpegtran!= NULL) {
-					$osWarning = true;
-					$jpegtranMsg = 'jpegtran is correctly set up.';
-					$jpegoptimMsg = 'jpegoptim is not correctly set up.';
-				} else {
-					if (\ze::setting('jpegtran_path') && $jpegtran == NULL) {
-						$warningFlag = true;
-						$jpegtranMsg = 'jpegtran is not correctly set up.';
-					} elseif (!\ze::setting('jpegtran_path')) {
-						$warningFlag = false;
-						$jpegtranMsg = 'jpegtran is not enabled.';
-					} else {
-						$warningFlag = false;
-						$jpegtranMsg = 'jpegtran is correctly set up.';
-					}
-					
-					if (\ze::setting('jpegoptim_path') && $jpegoptim == NULL) {
-						$warningoptionFlag = true;
-						$jpegoptimMsg = 'jpegoptim is not correctly set up.';
-					} elseif (!\ze::setting('jpegoptim_path')) {
-						$warningoptionFlag = false;
-						$jpegoptimMsg = 'jpegoptim is not enabled.';
-					} else {
-						$warningoptionFlag = false;
-						$jpegoptimMsg = 'jpegoptim is correctly set up.';
-					}
-					
-					if ($warningFlag || $warningoptionFlag) {
-						$osWarning = true;
-						$fields['0/os_3']['row_class'] = $warning;
-					}else{
-						$fields['0/os_3']['row_class'] = $valid;
-					}
-				}
-
-				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tjpeg~k{"id"%3A"external_programs"}';
-				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
-				$linkEnd = '</a>';
-				$otherServerProgramsString = 'Compress JPEGs<br><small>' . $jpegtranMsg . '</small><br><small>' . $jpegoptimMsg;
-
-				$fields['0/os_3']['snippet']['html'] = \ze\admin::phrase(
-					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
-					['link_start' => $linkStart, 'link_end' => $linkEnd]
-				);
-			} else {
-				$fields['0/os_3']['row_class'] = $valid;
-			}
 			$mysqlPath = \ze\dbAdm::testMySQL(false);
 			$mysqldumpPath = \ze\dbAdm::testMySQL(true);
 			if ($mysqlPath == false || $mysqldumpPath == false ) {
 				$osWarning = true;
-				$fields['0/os_4']['row_class'] = $warning;
+				$fields['0/os_backups']['row_class'] = $warning;
 				if ($mysqlPath== false && $mysqldumpPath!= false) {
 					$MysqlMsg = 'mysql is not correctly set up.';
 					$MysqlDumpMsg = 'mysqldump is working successfully.';
@@ -790,7 +735,7 @@ class welcome {
 				} else {
 					$MysqlMsg = 'mysql is not correctly set up.';
 					$MysqlDumpMsg = 'mysqldump is not correctly set up.';
-					$fields['0/os_4']['row_class'] = $warning;
+					$fields['0/os_backups']['row_class'] = $warning;
 				}
 
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tmysql~k{"id"%3A"external_programs"}';
@@ -798,105 +743,48 @@ class welcome {
 				$linkEnd = '</a>';
 				$otherServerProgramsString = 'Backup/restore<br><small>' . $MysqlMsg . '</small><br><small>' . $MysqlDumpMsg;
 
-				$fields['0/os_4']['snippet']['html'] = \ze\admin::phrase(
+				$fields['0/os_backups']['snippet']['html'] = \ze\admin::phrase(
 					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
 					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
 			} else {
-				$fields['0/os_4']['row_class'] = $valid;
+				$fields['0/os_backups']['row_class'] = $valid;
 			}	
 		
 			$extract = '';
 			//If AWS Textract is enabled, do not attempt to check if pdftotext is working.
 			$awsTextractIsEnabled = (\ze::setting('enable_aws_support') && \ze::setting('enable_aws_textract') && \ze::setting('aws_textract_extract_from_pdf'));
 			if ($awsTextractIsEnabled) {
-				$fields['0/os_5']['row_class'] = $valid;
-				$fields['0/os_5']['hidden'] = true;
+				$fields['0/os_pdf2text']['row_class'] = $valid;
+				$fields['0/os_pdf2text']['hidden'] = true;
 			} elseif (!\ze::setting('pdftotext_path')) {
 				//Pdftotext is not in use, do not display a warning
-				$fields['0/os_5']['row_class'] = $valid;
+				$fields['0/os_pdf2text']['row_class'] = $valid;
 				
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpdftotext~k{"id"%3A"external_programs"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 				$otherServerProgramsString = 'PDF-To-Text<br><small>The program pdftotext is not in use.';
 				$pdfToTextOtherServerProgramsSiteSettingLink = '<br />Please go to [[link_start]]<em>Other server programs</em>[[link_end]] in Configuration->Site Settings to enable text scanning from PDFs.</small>';
-				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase(
+				$fields['0/os_pdf2text']['snippet']['html'] = \ze\admin::phrase(
 					$otherServerProgramsString . $pdfToTextOtherServerProgramsSiteSettingLink,
 					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
-			} elseif (!(\ze\file::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
+			} elseif (!(\ze\fileAdm::plainTextExtract(\ze::moduleDir('zenario_common_features', 'fun/test_files/test.pdf'), $extract))) {
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpdftotext~k{"id"%3A"external_programs"}';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 				$otherServerProgramsString = 'PDF-To-Text<br><small>The program pdftotext is not correctly set up. This is needed to read a text extract from PDFs that you upload.';
 				
 				$osWarning = true;
-				$fields['0/os_5']['row_class'] = $warning;
-				$fields['0/os_5']['snippet']['html'] = \ze\admin::phrase(
+				$fields['0/os_pdf2text']['row_class'] = $warning;
+				$fields['0/os_pdf2text']['snippet']['html'] = \ze\admin::phrase(
 					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
 					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
 
 			} else {
-				$fields['0/os_5']['row_class'] = $valid;
-			}
-			
-			$optipng = \ze\server::programPathForExec(\ze::setting('optipng_path'), 'optipng', true);
-			$advpng = \ze\server::programPathForExec(\ze::setting('advpng_path'), 'advpng', true);
-			if ($optipng == NULL || $advpng ==NULL) {
-				
-				$fields['0/os_6']['row_class'] = $warning;
-				if (\ze::setting('optipng_path') && \ze::setting('advpng_path') && $optipng== NULL && $advpng!= NULL) {
-					$osWarning = true;
-					$optipngMsg = 'optipng is not correctly set up.';
-					$advpngMsg = 'advpng is correctly set up.';
-				} elseif (\ze::setting('optipng_path') && \ze::setting('advpng_path') && $advpng== NULL && $optipng!= NULL) {
-					$osWarning = true;
-					$optipngMsg = 'optipng is correctly set up.';
-					$advpngMsg = 'advpng is not correctly set up.';
-				} else {
-					if (\ze::setting('optipng_path') && $optipng == NULL) {
-						$warningFlag = true;
-						$optipngMsg = 'optipng is not correctly set up.';
-					} elseif (!\ze::setting('optipng_path')) {
-						$warningFlag = false;
-						$optipngMsg = 'optipng is not enabled.';
-					} else {
-						$warningFlag = false;
-						$optipngMsg = 'optipng is correctly set up.';
-					}
-					
-					if (\ze::setting('advpng_path') && $advpng == NULL) {
-						$warningoptionFlag = true;
-						$advpngMsg = 'advpng is not correctly set up.';
-					} elseif (!\ze::setting('advpng_path')) {
-						$warningoptionFlag = false;
-						$advpngMsg = 'advpng is not enabled.';
-					} else {
-						$warningoptionFlag = false;
-						$advpngMsg = 'advpng is correctly set up.';
-					}
-							
-					if ($warningFlag || $warningoptionFlag) {
-						$osWarning = true;
-						$fields['0/os_6']['row_class'] = $warning;
-					} else {
-						$fields['0/os_6']['row_class'] = $valid;
-					}
-				}
-
-				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~tpng~k{"id"%3A"external_programs"}';
-				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
-				$linkEnd = '</a>';
-				$otherServerProgramsString = 'Compress PNGs<br><small>' . $optipngMsg . '</small><br><small>' . $advpngMsg;
-
-				$fields['0/os_6']['snippet']['html'] = \ze\admin::phrase(
-					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
-					['link_start' => $linkStart, 'link_end' => $linkEnd]
-				);
-			} else {
-				$fields['0/os_6']['row_class'] = $valid;
+				$fields['0/os_pdf2text']['row_class'] = $valid;
 			}
 		
 		
@@ -904,7 +792,7 @@ class welcome {
 			//Enabled and set up correctly:
 			if (($programPath = \ze\server::programPathForExec(\ze::setting('wkhtmltopdf_path'), 'wkhtmltopdf'))
 					 && ($rv = exec(escapeshellarg($programPath) .' --version'))) {
-				$fields['0/os_7']['row_class'] = $valid;
+				$fields['0/os_pdf2html']['row_class'] = $valid;
 			// Enabled but set up incorrectly:
 			} elseif ($programPath && isset($rv) && !$rv) {
 				$href = 'organizer.php#zenario__administration/panels/site_settings//external_programs~.site_settings~twkhtmltopdf~k{"id"%3A"external_programs"}';
@@ -913,19 +801,19 @@ class welcome {
 				$otherServerProgramsString = 'wkhtmltopdf<br><small>wkhtmltopdf is not correctly set up.';
 				
 				$osWarning = true;
-				$fields['0/os_7']['row_class'] = $warning;
-				$fields['0/os_7']['snippet']['html'] = \ze\admin::phrase(
+				$fields['0/os_pdf2html']['row_class'] = $warning;
+				$fields['0/os_pdf2html']['snippet']['html'] = \ze\admin::phrase(
 					$otherServerProgramsString . $otherServerProgramsSiteSettingLink,
 					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
 			//Disabled:
 			} else {
-				$fields['0/os_7']['hidden'] = true;
+				$fields['0/os_pdf2html']['hidden'] = true;
 			}
 		}
 		
 		$gdRequirementsMet = true;
-		if (\ze\ray::value($phpinfo, 'gd', 'GD Support') != 'enabled') {
+		if (($phpinfo['gd']['GD Support'] ?? '') != 'enabled') {
 			$gdRequirementsMet = false;
 			$fields['0/gd_1']['row_class'] = $invalid;
 			$fields['0/gd_2']['row_class'] = $invalid;
@@ -940,7 +828,7 @@ class welcome {
 			$fields['0/gd_1']['row_class'] = $valid;
 			\ze\lang::applyMergeFields($fields['0/gd_1']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 		
-			if (\ze\ray::value($phpinfo, 'gd', 'GIF Read Support') != 'enabled') {
+			if (($phpinfo['gd']['GIF Read Support'] ?? '') != 'enabled') {
 				$gdRequirementsMet = false;
 				$fields['0/gd_2']['row_class'] = $invalid;
 				\ze\lang::applyMergeFields($fields['0/gd_2']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
@@ -949,7 +837,7 @@ class welcome {
 				\ze\lang::applyMergeFields($fields['0/gd_2']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 			}
 		
-			if (\ze\ray::value($phpinfo, 'gd', 'JPG Support') != 'enabled' && \ze\ray::value($phpinfo, 'gd', 'JPEG Support') != 'enabled') {
+			if (($phpinfo['gd']['JPG Support'] ?? '') != 'enabled' && ($phpinfo['gd']['JPEG Support'] ?? '') != 'enabled') {
 				$gdRequirementsMet = false;
 				$fields['0/gd_3']['row_class'] = $invalid;
 				\ze\lang::applyMergeFields($fields['0/gd_3']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
@@ -958,7 +846,7 @@ class welcome {
 				\ze\lang::applyMergeFields($fields['0/gd_3']['snippet']['html'], ['ok_or_failed' => $okPhrase]);
 			}
 		
-			if (\ze\ray::value($phpinfo, 'gd', 'PNG Support') != 'enabled') {
+			if (($phpinfo['gd']['PNG Support'] ?? '') != 'enabled') {
 				$gdRequirementsMet = false;
 				$fields['0/gd_4']['row_class'] = $invalid;
 				\ze\lang::applyMergeFields($fields['0/gd_4']['snippet']['html'], ['ok_or_failed' => $failedPhrase]);
@@ -1314,10 +1202,13 @@ class welcome {
 			}
 			
 		}
+		
+		//If installing a fresh copy, step 3 will be validated as of 10.1
+		//(the site name field is now mandatory). The code is below the code to handle step 4.
+		
 		// To set default timezone
 		$fields['4/vis_timezone_settings']['values'] = \ze\dataset::getTimezonesLOV();
-		
-		//No validation for Step 4, but remember the theme and language chosen
+		//No validation for step 4, but remember the theme and language chosen
 		if ($tags['tab'] > 4 || ($tags['tab'] == 4 && !empty($fields['4/next']['pressed']))) {
 			$merge['LANGUAGE_ID'] = $values['4/language_id'];
 			$merge['VIS_DATE_FORMAT_SHORT'] = $values['4/vis_date_format_short'];
@@ -1328,8 +1219,23 @@ class welcome {
 		}
 	
 		if (empty($fields['1/restore']['pressed'])) {
+			//Validation for step 3: as of 10.1, the site name field is mandatory.
+			if (
+				$tags['tab'] > 4
+				|| ($tags['tab'] == 4 && !empty($fields['4/next']['pressed']))
+			) {
+				if (!$values['4/organisation_name']) {
+					$tags['tabs'][4]['errors'][] = \ze\admin::phrase("Please enter your site's name.");
+				}
+			}
+			
 			//Validation for Step 5: Validate new Admin's details
-			if (($tags['tab'] > 5 || ($tags['tab'] == 5 && !empty($fields['5/next']['pressed'])))) {
+			if ($values['3/multi_db'] == 'zenario_standalone'
+				&& (
+					$tags['tab'] > 5
+					|| ($tags['tab'] == 5 && !empty($fields['5/next']['pressed']))
+				)
+			) {
 				$tags['tabs'][5]['errors'] = [];
 			
 				if (!$merge['admin_first_name'] = $values['5/first_name']) {
@@ -1365,11 +1271,33 @@ class welcome {
 				} elseif ($merge['PASSWORD'] != $values['5/re_password']) {
 					$tags['tabs'][5]['errors'][] = \ze\admin::phrase('The password fields do not match.');
 				}
+			} elseif (
+				$values['3/multi_db'] == 'zenario_multisite'
+				&& (
+					($tags['tab'] != 7 && $tags['tab'] > 6)
+				|| ($tags['tab'] == 7 && !empty($fields['7/next']['pressed']))
+				)
+			) {
+				$tags['tabs'][7]['errors'] = [];
+			
+				$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'] = $values['7/email'];
+				
+				if (!$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT']) {
+					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('Please enter a support email address.');
+			
+				} elseif (!\ze\ring::validateEmailAddress($merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'])) {
+					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('Please enter a valid email address.');
+				}
 			}
 		} else {
+			
 			//Validation for Step 4/5: Check a backup file exists
-			if ((($tags['tab'] != 6 && $tags['tab'] > 5)
-			  || ($tags['tab'] == 6 && !empty($fields['6/next']['pressed'])))) {
+			if (
+				(
+					($tags['tab'] != 6 && $tags['tab'] > 5)
+				|| ($tags['tab'] == 6 && !empty($fields['6/next']['pressed']))
+				)
+			) {
 				$tags['tabs'][6]['errors'] = [];
 			
 				if (!is_file($values['6/path'])) {
@@ -1386,7 +1314,9 @@ class welcome {
 					$tags['tabs'][6]['errors'][] = \ze\admin::phrase('Please enter a path to a file with read-access set.');
 				}
 	
-				if (!$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'] = $values['6/email']) {
+				$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'] = $values['6/email'];
+				
+				if (!$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT']) {
 					$tags['tabs'][6]['errors'][] = \ze\admin::phrase('Please enter a support email address.');
 			
 				} elseif (!\ze\ring::validateEmailAddress($merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'])) {
@@ -1396,53 +1326,53 @@ class welcome {
 		}
 	
 		//Validation for Step 6: Attempt to create (if requested) and then validate the siteconfig files
-		if ($tags['tab'] == 7 && (!empty($fields['7/ive_done_it']['pressed']) || !empty($fields['7/do_it_for_me']['pressed']))) {
-			$tags['tabs'][7]['errors'] = [];
+		if ($tags['tab'] == 8 && (!empty($fields['8/ive_done_it']['pressed']) || !empty($fields['8/do_it_for_me']['pressed']))) {
+			$tags['tabs'][8]['errors'] = [];
 		
 			$checkConfigFileExists = \ze\site::checkConfigFileExists();
-			if (!empty($fields['7/do_it_for_me']['pressed'])) {
+			if (!empty($fields['8/do_it_for_me']['pressed'])) {
 				$permErrors = false;
 				if (!$checkConfigFileExists) {
 					if (!file_exists(CMS_ROOT. 'zenario_siteconfig.php')) {
-						$tags['tabs'][7]['errors'][] =
+						$tags['tabs'][8]['errors'][] =
 							\ze\admin::phrase('Please create a file called zenario_siteconfig.php. If you want this installer to populate it, it can be empty but writable.');
 				
 					} elseif (!@file_put_contents(CMS_ROOT. 'zenario_siteconfig.php', \ze\welcome::readSampleConfigFile($merge,$values['3/multi_db']))) {
-						$tags['tabs'][7]['errors'][] =
+						$tags['tabs'][8]['errors'][] =
 							\ze\admin::phrase('Could not write to file zenario_siteconfig.php');
 						$permErrors = true;
 					}
 				}
 			
 				if ($permErrors && !stristr(php_uname('s'), 'win')) {
-					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('To correct the file permissions: chmod 666 zenario_siteconfig.php');
+					$tags['tabs'][8]['errors'][] = \ze\admin::phrase('To correct the file permissions: chmod 666 zenario_siteconfig.php');
 				}
 		
 			} else {
 				if ($checkConfigFileExists === false) {
-					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('Please create a file named zenario_siteconfig.php in the location shown below.');
+					$tags['tabs'][8]['errors'][] = \ze\admin::phrase('Please create a file named zenario_siteconfig.php in the location shown below.');
 			
 				} elseif ($checkConfigFileExists === 0) {
-					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('Please please enter the text as shown into your zenario_siteconfig.php file.');
+					$tags['tabs'][8]['errors'][] = \ze\admin::phrase('Please please enter the text as shown into your zenario_siteconfig.php file.');
 				}
 			}
 		
 			if ($checkConfigFileExists) {
 				if (!@include_once CMS_ROOT. 'zenario_siteconfig.php') {
-					$tags['tabs'][7]['errors'][] = \ze\admin::phrase('There is a syntax error in zenario_siteconfig.php');
+					$tags['tabs'][8]['errors'][] = \ze\admin::phrase('There is a syntax error in zenario_siteconfig.php');
 				} else {
 					foreach (['DBHOST', 'DBNAME', 'DBUSER', 'DBPASS', 'DBPORT', 'DB_PREFIX'] as $constant) {
 						if (!defined($constant) || constant($constant) !== $merge[$constant]) {
-							$tags['tabs'][7]['errors'][] = \ze\admin::phrase('The constants in zenario_siteconfig.php are not set as below.');
+							$tags['tabs'][8]['errors'][] = \ze\admin::phrase('The constants in zenario_siteconfig.php are not set as below.');
 							break;
 						}
 					}
 				}
 			}
 		
-			if (!empty($tags['tabs'][7]['errors'])) {
-				$fields['7/ive_done_it']['pressed'] = false;
-				$fields['7/do_it_for_me']['pressed'] = false;
+			if (!empty($tags['tabs'][8]['errors'])) {
+				$fields['8/ive_done_it']['pressed'] = false;
+				$fields['8/do_it_for_me']['pressed'] = false;
 			}
 		}
 	
@@ -1483,7 +1413,11 @@ class welcome {
 					$tags['tab'] = 3;
 			
 				} elseif (!empty($fields['4/next']['pressed'])) {
-					$tags['tab'] = 5;
+					if ($values['3/multi_db'] == 'zenario_multisite') {
+						$tags['tab'] = 7;
+					} else {
+						$tags['tab'] = 5;
+					}
 				}
 			
 				break;
@@ -1494,7 +1428,7 @@ class welcome {
 					$tags['tab'] = 4;
 			
 				} elseif (!empty($fields['5/next']['pressed'])) {
-					$tags['tab'] = 7;
+					$tags['tab'] = 8;
 				}
 			
 				break;
@@ -1505,31 +1439,46 @@ class welcome {
 					$tags['tab'] = 3;
 			
 				} elseif (!empty($fields['6/next']['pressed'])) {
-					$tags['tab'] = 7;
-				}
-			
-				break;
-		
-			case 7:
-				if (!empty($fields['7/previous']['pressed'])) {
-					unset($tags['tabs'][7]['errors']);
-				
-					if (!empty($fields['1/restore']['pressed'])) {
-						$tags['tab'] = 6;
-					} else {
-						$tags['tab'] = 5;
-					}
-			
-				} elseif (!empty($fields['7/do_it_for_me']['pressed']) || !empty($fields['7/ive_done_it']['pressed'])) {
 					$tags['tab'] = 8;
 				}
 			
 				break;
 			
+			case 7:
+				if (!empty($fields['7/previous']['pressed'])) {
+					unset($tags['tabs'][7]['errors']);
+					$tags['tab'] = 4;
+			
+				} elseif (!empty($fields['7/next']['pressed'])) {
+					$tags['tab'] = 8;
+				}
+			
+				break;
+		
 			case 8:
 				if (!empty($fields['8/previous']['pressed'])) {
 					unset($tags['tabs'][8]['errors']);
-					$tags['tab'] = 7;
+				
+					if (!empty($fields['1/restore']['pressed'])) {
+						$tags['tab'] = 6;
+					} else {
+						if ($values['3/multi_db'] == 'zenario_multisite') {
+							$tags['tab'] = 7;
+						} else {
+							$tags['tab'] = 5;
+						}
+					}
+			
+				} elseif (!empty($fields['8/do_it_for_me']['pressed']) || !empty($fields['8/ive_done_it']['pressed'])) {
+					$tags['tab'] = 9;
+				}
+			
+				break;
+			
+			case 9:
+				if (!empty($fields['8/previous']['pressed'])) {
+					unset($tags['tabs'][9]['errors']);
+					$tags['tab'] = 8;
 				}
 			
 				break;
@@ -1543,6 +1492,10 @@ class welcome {
 		//Don't let the Admin proceed from Step 3 without a valid database connection
 		if ($tags['tab'] > 3 && !empty($tags['tabs'][3]['errors'])) {
 			$tags['tab'] = 3;
+		}
+		
+		if ($tags['tab'] > 4 && !empty($tags['tabs'][4]['errors'])) {
+			$tags['tab'] = 4;
 		}
 	
 		if (empty($fields['1/restore']['pressed'])) {
@@ -1558,8 +1511,8 @@ class welcome {
 		}
 	
 		//Don't let the Admin proceed from Step 6 without setting the siteconfig up correctly
-		if ($tags['tab'] > 7 && !empty($tags['tabs'][7]['errors'])) {
-			$tags['tab'] = 7;
+		if ($tags['tab'] > 8 && !empty($tags['tabs'][8]['errors'])) {
+			$tags['tab'] = 8;
 		}
 	
 		//Display the current step
@@ -1665,17 +1618,17 @@ class welcome {
 			
 				break;
 		
-			case 7:
-				$fields['7/zenario_siteconfig']['pre_field_html'] =
+			case 8:
+				$fields['8/zenario_siteconfig']['pre_field_html'] =
 					'<pre>'. CMS_ROOT. 'zenario_siteconfig.php'. ':</pre>';
-				$fields['7/zenario_siteconfig']['value'] = \ze\welcome::readSampleConfigFile($merge,$values['3/multi_db']);
-				unset($values['7/zenario_siteconfig']);
+				$fields['8/zenario_siteconfig']['value'] = \ze\welcome::readSampleConfigFile($merge,$values['3/multi_db']);
+				unset($values['8/zenario_siteconfig']);
 			
 			
 				break;
 		
-			case 8:
-				$tags['tabs'][8]['errors'] = [];
+			case 9:
+				$tags['tabs'][9]['errors'] = [];
 			
 				if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
 					define('SHOW_SQL_ERRORS_TO_VISITORS', true);
@@ -1761,13 +1714,13 @@ class welcome {
 						//If the restore was unsuccessful:
 							//Show any error messages we got.
 						foreach ($failures as $text) {
-							$tags['tabs'][8]['errors'][] = $text;
+							$tags['tabs'][9]['errors'][] = $text;
 						}
 					}
 				}
 			
 				//Set up tables in a fresh installation
-				if ($doFreshInstall && empty($tags['tabs'][8]['errors'])) {
+				if ($doFreshInstall && empty($tags['tabs'][9]['errors'])) {
 					//Old code for sample sites, commented out as we don't currently use them
 					//if ($installSampleSite) {
 					//	$files = ['local-admin-CREATE.sql', 'local-sample-INSERT.sql'];
@@ -1779,7 +1732,7 @@ class welcome {
 					$error = false;
 					foreach ($files as $file) {
 						if (!\ze\welcome::runSQL('zenario/admin/db_install/', $file, $error, $merge)) {
-							$tags['tabs'][8]['errors'][] = $error;
+							$tags['tabs'][9]['errors'][] = $error;
 							break;
 						}
 					}
@@ -1789,7 +1742,7 @@ class welcome {
 					
 					
 					//Was the install successful?
-					if (empty($tags['tabs'][8]['errors'])) {
+					if (empty($tags['tabs'][9]['errors'])) {
 					
 						//Define the main email address for the remaining run of this script
 						//(This is just needed this once; the next time a script run this should
@@ -1856,49 +1809,55 @@ class welcome {
 					
 						//Create an Admin, and give them all of the core permissions.
 						//Also set the login IP address and browser information.
-						
-						require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
-						$browser = new \Browser();
-						
-						$details = [
-							'username' => $merge['USERNAME'],
-							'first_name' => $merge['admin_first_name'],
-							'last_name' => $merge['admin_last_name'],
-							'email' => $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'],
-							'created_date' => \ze\date::now(),
-							'status' => 'active',
-							'last_login' => \ze\date::now(),
-							'last_login_ip' => \ze\escape::sql(\ze\user::ip()),
-							'last_browser' => \ze\escape::sql($browser->getBrowser()),
-							'last_browser_version' => \ze\escape::sql($browser->getVersion()),
-							'last_platform' => \ze\escape::sql($browser->getPlatform())
+						if ($values['3/multi_db'] == 'zenario_standalone') {
 							
-						];
-					
-						$adminId = \ze\row::insert('admins', $details);
-						\ze\adminAdm::setPassword($adminId, $merge['PASSWORD']);
-						\ze\adminAdm::savePerms($adminId, 'all_permissions');
+							require_once CMS_ROOT. 'zenario/libs/manually_maintained/mit/browser/lib/browser.php';
+							$browser = new \Browser();
+							
+							$details = [
+								'username' => $merge['USERNAME'],
+								'first_name' => $merge['admin_first_name'],
+								'last_name' => $merge['admin_last_name'],
+								'email' => $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'],
+								'created_date' => \ze\date::now(),
+								'status' => 'active',
+								'last_login' => \ze\date::now(),
+								'last_login_ip' => \ze\escape::sql(\ze\user::ip()),
+								'last_browser' => \ze\escape::sql($browser->getBrowser()),
+								'last_browser_version' => \ze\escape::sql($browser->getVersion()),
+								'last_platform' => \ze\escape::sql($browser->getPlatform())
+								
+							];
 						
-						\ze\admin::setSession($adminId);
-						$_SESSION['admin_ip_at_login'] = \ze\user::ip();
-					
-						//Prepare email to the installing person
-						$message = $source['email_templates']['installed_cms']['body'];
-					
-						$subject = $source['email_templates']['installed_cms']['subject'];
-					
-						foreach ($merge as $pattern => $replacement) {
-							$message = str_replace('[['. $pattern. ']]', $replacement, $message);
+							$adminId = \ze\row::insert('admins', $details);
+							\ze\adminAdm::setPassword($adminId, $merge['PASSWORD']);
+							\ze\adminAdm::savePerms($adminId, 'all_permissions');
+							
+							\ze\admin::logIn($adminId, $rememberMe = true);
+							
+							$templateName = 'installed_cms';
+						} elseif ($values['3/multi_db'] == 'zenario_multisite') {
+							$templateName = 'installed_cms_multisite';
+							$details['DBNAME_GLOBAL'] = $merge['DBNAME_GLOBAL'];
 						}
 						
-						\ze\server::sendEmailSimple(
-							$subject, $message, $isHTML = true,
-							//CMS welcome emails should always be sent to the intended recipient even if debug mode is on.
-							$ignoreDebugMode = true,
-							$addressTo = $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'], $nameTo = false,
-							$addressFrom = false, $nameFrom = $source['email_templates']['installed_cms']['from']
-						);
-					
+						if (!empty($templateName)) {
+							//Prepare email to the installing person
+							$message = $source['email_templates'][$templateName]['body'];
+							$subject = $source['email_templates'][$templateName]['subject'];
+							
+							foreach ($merge as $pattern => $replacement) {
+								$message = str_replace('[['. $pattern. ']]', $replacement, $message);
+							}
+							
+							\ze\server::sendEmailSimple(
+								$subject, $message, $isHTML = true,
+								//CMS welcome emails should always be sent to the intended recipient even if debug mode is on.
+								$ignoreDebugMode = true,
+								$addressTo = $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'], $nameTo = false,
+								$addressFrom = false, $nameFrom = $source['email_templates'][$templateName]['from']
+							);
+						}
 					
 						//Apply database updates
 						$moduleErrors = '';
@@ -1912,13 +1871,12 @@ class welcome {
 							\ze\site::setSetting('default_language', \ze::$defaultLang = $langId);
 						}
 						
-						//Set the "Email from" and "Organizer title" setting from the Organisation name field, if that was provided
-						if ($values['4/organisation_name']) {
-							\ze\site::setSetting('email_name_from', (string)$values['4/organisation_name']);
-							\ze\site::setSetting('organizer_title', \ze\admin::phrase('Organizer for [[organisation_name]]', $values));
-						}
+						//Set the "Email from" and "Organizer title" setting from the Organisation name field.
+						//Please note: before 10.1, this was optional. Now the field is mandatory.
+						\ze\site::setSetting('email_name_from', (string)$values['4/organisation_name']);
+						\ze\site::setSetting('organizer_title', \ze\admin::phrase('Organizer for [[organisation_name]]', $values));
 
-						if ($values['7/site_enabled'] == 'enabled') {
+						if ($values['8/site_enabled'] == 'enabled') {
 							\ze\site::setSetting('site_enabled', 1);
 						} else {
 							\ze\site::setSetting('site_enabled', '');
@@ -1928,7 +1886,7 @@ class welcome {
 					}
 				}
 			
-				if (!empty($tags['tabs'][8]['errors'])) {
+				if (!empty($tags['tabs'][9]['errors'])) {
 					//Did something go wrong? Remove any tables that were created.
 					\ze\welcome::runSQL('zenario/admin/db_install/', 'local-DROP.sql', $error, $merge);
 					\ze\welcome::runSQL('zenario/admin/db_install/', 'local-admin-DROP.sql', $error, $merge);
@@ -1986,7 +1944,7 @@ class welcome {
 				#//For the starter images, we'll make sure they're initially public images, not auto or private.
 				#if ($imageId) {
 				#	\ze\row::update('files', ['privacy' => 'public'], $imageId);
-				#	\ze\file::addPublicImage($imageId);
+				#	\ze\image::addToPublicDir($imageId);
 				#}
 				
 				//N.b. the above code was taking a long time to run and caused "Maximum execution time" timeouts in the installer.
@@ -1997,7 +1955,7 @@ class welcome {
 	
 	//
 	public static function addImageToDatabase($usage, $imagePath, $imageName = false, $imageAltTag = false, $imageMimeType = false) {
-		return \ze\file::addToDatabase($usage, $imagePath, $imageName, true, false, false, $imageAltTag, false, false, $imageMimeType);
+		return \ze\fileAdm::addToDatabase($usage, $imagePath, $imageName, true, false, false, $imageAltTag, false, false, $imageMimeType);
 	}
 	
 	//Some tasks that should be run immediately after a fresh install or site reset.
@@ -2117,7 +2075,7 @@ class welcome {
 			&& \ze::setting('google_recaptcha_secret_key')
 			&& \ze\site::description('enable_captcha_for_admin_logins')
 			&& (
-				(empty($_COOKIE['COOKIE_LAST_ADMIN_USER']))
+				(empty($_COOKIE['z_admin_last_username']))
 				|| (empty($_COOKIE[\ze\welcome::adminCaptchaCookieName()]))
 				|| (!empty($acsn)
 					&& !empty($time = \ze\admin::setting($acsn))
@@ -2125,9 +2083,9 @@ class welcome {
 					//but can be used for CAPTCHA time calculations without any modifications.
 			 		&& $time > \ze\welcome::securityCodeTime($cookieTimeout)
 				)
-				|| (!empty($_COOKIE['COOKIE_LAST_ADMIN_USER'])
+				|| (!empty($_COOKIE['z_admin_last_username'])
 					&& !empty($_COOKIE[\ze\welcome::adminCaptchaCookieName()])
-					&& !empty($lastAdminUserValue = preg_replace('@[^-_=\w]@', '', $_COOKIE['COOKIE_LAST_ADMIN_USER']))
+					&& !empty($lastAdminUserValue = preg_replace('@[^-_=\w]@', '', $_COOKIE['z_admin_last_username']))
 					&& !empty($acsn)
 					//Can't use ze\admin::setting because there is no admin ID set in the session yet.
 					&& !\ze\row::exists('admin_settings', ['name' => $acsn])
@@ -2226,12 +2184,12 @@ class welcome {
 				} else {
 					\ze\admin::logIn($adminIdL, $values['login/remember_me']);
 					
-					if (\ze\welcome::enableCaptchaForAdminLogins() && !empty($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
+					if (\ze\welcome::enableCaptchaForAdminLogins() && !empty($_COOKIE['z_admin_last_username'])) {
 						
 						//If the CAPTCHA is correct, save a cookie...
 						\ze\cookie::set(
 							\ze\welcome::adminCaptchaCookieName(),
-							hash('sha256', $_COOKIE['COOKIE_LAST_ADMIN_USER'] . \ze::setting('site_id'))
+							hash('sha256', $_COOKIE['z_admin_last_username'] . \ze::setting('site_id'))
 						);
 				
 						//...and an admin setting to remember it next time!
@@ -2282,7 +2240,7 @@ class welcome {
 			
 					//Prepare email to the mail with the reset password
 					$merge = [];
-					$merge['NAME'] = \ze::ifNull(trim($admin['first_name']. ' '. $admin['last_name']), $admin['username']);
+					$merge['NAME'] = trim($admin['first_name']. ' '. $admin['last_name']) ?: $admin['username'];
 					$merge['USERNAME'] = $admin['username'];
 					$merge['URL'] = \ze\link::protocol(). $_SERVER['HTTP_HOST'];
 					$merge['SUBDIRECTORY'] = SUBDIRECTORY;
@@ -2299,8 +2257,8 @@ class welcome {
 					$message = $source['email_templates'][$emailTemplate]['body'];
 					$message = nl2br($message);
 				
-					if (\ze\module::inc('zenario_email_template_manager')) {
-						\zenario_email_template_manager::putBodyInTemplate($message);
+					if (\ze\module::inc('zenario_common_features')) {
+						\zenario_common_features::putBodyInTemplate($message);
 					}
 			
 					$subject = $source['email_templates'][$emailTemplate]['subject'];
@@ -2325,13 +2283,10 @@ class welcome {
 	
 		//Format the login screen
 		if ($tags['tab'] == 'login') {
-			if (!empty($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
-				$fields['login/username']['value'] = $_COOKIE['COOKIE_LAST_ADMIN_USER'];
+			if (!empty($_COOKIE['z_admin_last_username'])) {
+				$fields['login/username']['value'] = $_COOKIE['z_admin_last_username'];
 			}
 
-			//As of 10 Jun 2021, the "remember me" default value will always be true.
-			//Commented out the old logic.
-			//$fields['login/remember_me']['value'] = empty($_COOKIE['COOKIE_DONT_REMEMBER_LAST_ADMIN_USER']);
 			$fields['login/remember_me']['value'] = true;
 		
 			//Don't show the note about the admin login link if it is turned off in Site Settings
@@ -2428,8 +2383,19 @@ class welcome {
 				'DBNAME' => htmlspecialchars(DBNAME),
 				'DBHOST' => htmlspecialchars(DBHOST)
 			]);
-	
-	
+		
+		
+		//Load a few revision numbers specific patchfiles that might have noteworthy revisions in them
+		//that we may need to warn the admin about.
+		//(Just one for now but I've written this with the intention of adding more warnings...)
+		$tags['key']['contentMigrationRevision'] = \ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'admin/db_updates/step_4_migrate_the_data', 'patchfile' => 'content_tables.inc.php']);
+		
+		//Add a mergefield we need in one of the messages.
+		$docStoreDir = \ze::setting('docstore_dir'). '/';
+		$fields['1/docstore_move_warning']['notices_above']['notice']['message'] = 
+			str_replace('[[docstore_dir]]', htmlspecialchars($docStoreDir), $fields['1/docstore_move_warning']['notices_above']['notice']['message']);
+		
+		
 		if ($tags['tab'] == 1 && !empty($fields['1/why']['pressed'])) {
 			$modules = [];
 			$revisions = [];
@@ -2524,9 +2490,9 @@ class welcome {
 	}
 
 	//This returns the name that the cookie for the security code should have.
-	//This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[ADMIN_ID]]"
+	//This is in the form "z_admin_2fa_[[ADMIN_ID]]"
 	public static function securityCodeCookieName() {
-		return 'COOKIE_ADMIN_SECURITY_CODE_'. \ze::session('admin_userid');
+		return 'z_admin_2fa_'. \ze::session('admin_userid');
 	}
 
 	//Get the value of the cookie above
@@ -2540,8 +2506,8 @@ class welcome {
 
 	//Looks for a security code cookie with the above name,
 	//then returns the corresponding name that a site setting should have.
-	//This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]", or
-	//"COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]_[[IP_ADDRESS]]", depending on
+	//This is in the form "z_admin_2fa_[[COOKIE_VALUE]]", or
+	//"z_admin_2fa_[[COOKIE_VALUE]]_[[IP_ADDRESS]]", depending on
 	//whether the apply_two_factor_authentication_by_ip option is set in the site_description.yaml file.
 	public static function securityCodeSettingName() {
 	
@@ -2549,10 +2515,10 @@ class welcome {
 			 return false;
 	
 		} elseif (\ze\site::description('apply_two_factor_authentication_by_ip')) {
-			return 'COOKIE_ADMIN_SECURITY_CODE_'. $sccn. '_'. \ze\user::ip();
+			return 'z_admin_2fa_'. $sccn. '_'. \ze\user::ip();
 
 		} else {
-			return 'COOKIE_ADMIN_SECURITY_CODE_'. $sccn;
+			return 'z_admin_2fa_'. $sccn;
 		}
 	}
 
@@ -2561,7 +2527,7 @@ class welcome {
 	public static function tidySecurityCodes() {
 		$sql = "
 			DELETE FROM ". DB_PREFIX. "admin_settings
-			WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
+			WHERE name LIKE 'z_admin_2fa_%'
 			  AND value < '". \ze\escape::sql(\ze\welcome::securityCodeTime(2 * \ze\site::description('two_factor_authentication_timeout'))). "'";
 		\ze\sql::update($sql, false, false);
 	}
@@ -2592,8 +2558,8 @@ class welcome {
 		} elseif ($firstTimeHere || $resend) {
 		
 			if ($firstTimeHere) {
-				//Make sure the generated code does not end up being a swear word.
-				$code = \ze\ring::randomFromSetNoProfanities();
+				//Generate a 6 digit code.
+				$code = \ze\ring::randomMultiDigitCode();
 				$_SESSION['COOKIE_ADMIN_SECURITY_CODE'] = $code;
 			}
 		
@@ -2613,7 +2579,7 @@ class welcome {
 				$merge['SUBDIRECTORY'] = substr($merge['SUBDIRECTORY'], 0, $lastCharacter);
 			}
 			
-			$merge['NAME'] = \ze::ifNull(trim($admin['first_name']. ' '. $admin['last_name']), $admin['username']);
+			$merge['NAME'] = trim($admin['first_name']. ' '. $admin['last_name']) ?: $admin['username'];
 			$merge['USERNAME'] = $admin['username'];
 			
 			$merge['IP'] = preg_replace('[^W\.\:]', '', \ze\user::ip());
@@ -2651,8 +2617,8 @@ class welcome {
 			
 			$message = nl2br($message);
 			
-			if (\ze\module::inc('zenario_email_template_manager')) {
-				\zenario_email_template_manager::putBodyInTemplate($message);
+			if (\ze\module::inc('zenario_common_features')) {
+				\zenario_common_features::putBodyInTemplate($message);
 			}
 			
 			$addressToOverriddenBy = false;
@@ -2662,7 +2628,7 @@ class welcome {
 				$merge['NAME'], $addressFrom = false, $source['email_templates'][$emailTemplate]['from'], 
 				$attachments = [], $attachmentFilenameMappings = [],
 				$precedence = 'bulk', $isHTML = true, $exceptions = false,
-				$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+				$addressReplyTo = false, $nameReplyTo = false,
 				$ccs = '', $bccs = '', $action = 'To', $ignoreDebugMode = true,
 				$showErrorMessage = true
 			);
@@ -2728,9 +2694,9 @@ class welcome {
 	}
 	
 	//This returns the name that the cookie for the CAPTCHA should have.
-	//This is in the form "COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED"
+	//This is in the form "z_admin_captcha_completed"
 	public static function adminCaptchaCookieName() {
-		return 'COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED';
+		return 'z_admin_captcha_completed';
 	}
 
 	//Get the value of the cookie above
@@ -2816,7 +2782,7 @@ class welcome {
 				//Prepare password change email confirmation
 				$admin = \ze\row::get('admins', ['username', 'email', 'first_name', 'last_name'], $_SESSION['admin_userid'] ?? false);
 				$merge = [];
-				$merge['NAME'] = \ze::ifNull(trim($admin['first_name']. ' '. $admin['last_name']), $admin['username']);
+				$merge['NAME'] = trim($admin['first_name']. ' '. $admin['last_name']) ?: $admin['username'];
 				$merge['URL'] = \ze\link::protocol(). $_SERVER['HTTP_HOST'];
 				$merge['SUBDIRECTORY'] = SUBDIRECTORY;
 			
@@ -2825,8 +2791,8 @@ class welcome {
 				$message = $source['email_templates'][$emailTemplate]['body'];
 				$message = nl2br($message);
 			
-				if (\ze\module::inc('zenario_email_template_manager')) {
-					\zenario_email_template_manager::putBodyInTemplate($message);
+				if (\ze\module::inc('zenario_common_features')) {
+					\zenario_common_features::putBodyInTemplate($message);
 				}
 		
 				$subject = $source['email_templates'][$emailTemplate]['subject'];
@@ -2995,8 +2961,7 @@ class welcome {
 						\ze\admin::phrase(
 							'Your last login from [[last_ip]] differs from your current IP address [[current_ip]].',
 							['last_ip' => htmlspecialchars($lastIpString), 'current_ip' => htmlspecialchars($currentIpString)]
-						) .
-						'</p>';
+						);
 				}
 			}
 
@@ -3013,8 +2978,6 @@ class welcome {
 				} elseif (!empty($_SESSION['admin_last_login'])) {
 					$adminhtml .= '<h2>Your last login</h2>';
 				}	
-			} else {
-				$adminhtml .= '</p>';
 			}
 			
 			$adminhtml .= '<p class="warning">' .
@@ -3061,7 +3024,7 @@ class welcome {
 			$fields['0/docstore_dir_status']['row_class'] = 'sub_invalid';
 			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> does not exist.', $mrg);
 	
-		} elseif (false !== \ze\ring::chopPrefix(realpath(CMS_ROOT), realpath($dir))) {
+		} elseif (false !== \ze\ring::chopPrefix(realpath(CMS_ROOT). '/', realpath($dir). '/')) {
 			$fields['0/docstore_dir_status']['row_class'] = 'sub_invalid';
 			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
 	
@@ -3088,7 +3051,7 @@ class welcome {
 			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
 			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> does not exist.', $mrg);
 	
-		} elseif (false !== \ze\ring::chopPrefix(realpath(CMS_ROOT), realpath($dir))) {
+		} elseif (false !== \ze\ring::chopPrefix(realpath(CMS_ROOT). '/', realpath($dir). '/')) {
 			$fields['0/backup_dir_status']['row_class'] = 'sub_invalid';
 			$fields['0/backup_dir_status']['snippet']['html'] = \ze\admin::phrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
 	
@@ -3117,7 +3080,7 @@ class welcome {
 				++$i;
 			}
 		
-			$skinWritableDir = CMS_ROOT. \ze\content::skinPath($skin['name']). 'editable_css/';
+			$skinWritableDir = CMS_ROOT. \ze\skin::path($skin['name']). 'editable_css/';
 		
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['value'] =
 			$tags['tabs'][0]['fields']['skin_dir_'. $i]['current_value'] = $skinWritableDir;
@@ -3446,7 +3409,7 @@ class welcome {
 							);
 					}
 					
-					$printFile = \ze\content::skinPath($skin['name']). 'editable_css/print.css';
+					$printFile = \ze\skin::path($skin['name']). 'editable_css/print.css';
 					
 					if (file_exists(CMS_ROOT. $printFile)) {
 						if ($css = file_get_contents(CMS_ROOT. $printFile)) {
@@ -3847,8 +3810,8 @@ class welcome {
 				$fields['0/plugin_must_be_on_private_page_error']['row_class'] = 'warning';
 				$fields['0/plugin_must_be_on_private_page_error']['snippet']['html'] = 
 						\ze\admin::nPhrase(
-							'This content item is public, but contains one or more plugins which must be on a private page:[[listOfContentItems]]',
-							'These content items are public, but contain one or more plugins which must be on a private page:[[listOfContentItems]]',
+							'The following content item is public, but it should be made private (for all extranet users), as it contains a plugin that can only be used on a private page:[[listOfContentItems]]',
+							'The following content items are public, but they should be made private (for all extranet users), as they contain plugins that can only be used on a private page:[[listOfContentItems]]',
 							count($privatePagesWithPluginsThatMustBeOnPublicPage),
 							['listOfContentItems' => implode('<br>', $privatePagesWithPluginsThatMustBeOnPublicPage)]);
 			} else {
@@ -4354,7 +4317,7 @@ class welcome {
 			$fields['0/content_nothing_unpublished']['hidden'] = false;
 		
 			$sql = "
-				SELECT c.id, c.type, c.alias, c.language_id, c.status, v.creating_author_id AS creator, v.last_author_id AS last_author, v.created_datetime, v.last_modified_datetime
+				SELECT c.id, c.type, c.alias, c.language_id, c.status, v.creating_author_id AS creator, v.last_author_id AS last_author, v.created_datetime, v.last_modified_datetime, v.scheduled_publish_datetime
 				FROM ". DB_PREFIX. "content_items AS c
 				INNER JOIN ". DB_PREFIX. "content_item_versions AS v
 				   ON c.id = v.id
@@ -4374,6 +4337,13 @@ class welcome {
 					$row['tag'] = htmlspecialchars(\ze\content::formatTag($row['id'], $row['type'], $row['alias'], $row['language_id']));
 					$row['link'] = htmlspecialchars(\ze\link::toItem($row['id'], $row['type'], true));
 					$row['class'] = 'organizer_item_image '. \ze\contentAdm::getItemIconClass($row['id'], $row['type'], true, $row['status']);
+					
+					//THIS MIGHT BE CHANGED AFTER BRANCH TO ROLL THE SCHEDULED RELEASE ICON INTO THE ze\contentAdm::getItemIconClass() FUNCTION.
+					if ($row['scheduled_publish_datetime']) {
+						$row['class'] = 'organizer_item_image scheduled_tasks_on_icon';
+						$row['scheduled_publish_datetime_formatted'] = \ze\admin::formatDateTime($row['scheduled_publish_datetime'], 'vis_date_format_med');
+						$row['scheduled_for_publishing_note'] = \ze\admin::phrase('Scheduled to be published on [[scheduled_publish_datetime_formatted]].', $row);
+					}
 		
 					//If a content item has ever been edited, show last modified date and admin who modified it, but not created date...
 					if ($row['last_modified_datetime']) {
@@ -4396,7 +4366,7 @@ class welcome {
 					$fields['0/content_unpublished']['row_class'] = 'content_unpublished_wrap'; //Don't display warning triangle icons for unpublished items anymore. Deleting this line will show a green tick icon.
 					$fields['0/content_unpublished']['snippet']['html'] .=
 						'<div id="row__content_unpublished_'. $i.'" style="" class=" zenario_ab_row__content_unpublished_'. $i.'    zenario_row_for_snippet ">'.
-							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode. ', $row).
+							\ze\admin::phrase('<a target="blank" href="[[link]]"><span class="[[class]]"></span>[[tag]]</a> is in draft mode. [[scheduled_for_publishing_note]]', $row).
 							$specialPageUnpublishedMessage.
 							'<br/>'.
 							htmlspecialchars($item['unpublished_content_info']).
@@ -4676,7 +4646,7 @@ class welcome {
 			
 			# T12576, Admin login page should have explicit buttons for where it will send you after login
 			$initialValue = '';
-				
+			
 			$cID = $cType = false;
 			$destStatus = \ze\welcome::redirectAdmin($getRequest, false, 'default', $returnChoice = true);
 			
@@ -4722,8 +4692,8 @@ class welcome {
 					//If the content item has a featured image, show that as an icon in the select list.
 					$width = $height = $url = false;
 					$widthLimit = $heightLimit = 80;
-					if (($featuredImageId = \ze\file::itemStickyImageId($cID, $cType))
-					 && (\ze\file::imageLink($width, $height, $url, $featuredImageId, $widthLimit, $heightLimit, 'resize_and_crop', 0, false, $fullPath = true))) {
+					if (($featuredImageId = \ze\content::featureImageId($cID, $cType))
+					 && (\ze\image::link($width, $height, $url, $featuredImageId, $widthLimit, $heightLimit, 'resize_and_crop', 0, false, $fullPath = true))) {
 						
 						$destThumbnails['citem'] = $url;
 					}

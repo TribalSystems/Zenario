@@ -41,11 +41,11 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 		} else {
 			
 			//This code would auto-populate the picker, however this logic is done elsewhere
-			//if (!empty($_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'])) {
-			//	$values['impersonate/user_id'] = ze\row::get('users', 'id', ['email' => $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL']]);
+			//if (!empty($_COOKIE['z_extranet_last_email'])) {
+			//	$values['impersonate/user_id'] = ze\row::get('users', 'id', ['email' => $_COOKIE['z_extranet_last_email']]);
 			//
-			//} elseif (!empty($_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME'])) {
-			//	$values['impersonate/user_id'] = ze\row::get('users', 'id', ['screen_name' => $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL']]);
+			//} elseif (!empty($_COOKIE['z_extranet_last_screen_name'])) {
+			//	$values['impersonate/user_id'] = ze\row::get('users', 'id', ['screen_name' => $_COOKIE['z_extranet_last_email']]);
 			//}
 			
 			$box['max_height'] += 150;

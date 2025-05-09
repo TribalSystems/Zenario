@@ -135,8 +135,8 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			$menuParent = ze\menu::details(ze::get('refiner__children'));
 		}
 
-		$panel['key']['languageId'] = ze::ifNull($_GET['refiner__language'] ?? false, ze::ifNull($_GET['languageId'] ?? false, ze::get('language'), ze::$defaultLang));
-		$panel['key']['sectionId'] = ze\menu::sectionId(ze::ifNull($menuItem['section_id'] ?? false, $menuParent['section_id'] ?? false, ze::get('refiner__section')));
+		$panel['key']['languageId'] = (ze::get('refiner__language') ?: ze::get('languageId')) ?: (ze::get('language') ?: ze::$defaultLang);
+		$panel['key']['sectionId'] = ze\menu::sectionId(($menuItem['section_id'] ?? false) ?: (($menuParent['section_id'] ?? false) ?: ze::get('refiner__section')));
 		$panel['key']['parentId'] =
 		$panel['key']['parentMenuID'] = $menuParent['id'] ?? false;
 		
@@ -301,7 +301,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				
 				if (!empty($contentTypeDetails) && is_array($contentTypeDetails)) {
 					$item['tooltip'] .= '<br /><br />' . ze\admin::phrase(
-						'By default, [[suggested_content_type]] content items will be created under this node.',
+						'Preferential menu node for [[suggested_content_type]] content items.',
 						['suggested_content_type' => $contentTypeDetails['content_type_name_en']]
 					);
 				}
@@ -542,7 +542,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 
             $j++;
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Level 1 menu node with ".$content['content_type_name_en'];
-            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM';
+            $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_CREATE_DELETE_MENU_ITEM';
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true;
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_dropdown';
             $panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['path'] = 'zenario_content';
@@ -551,7 +551,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			$panel['collection_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['key']['id'] = $panel['key']['sectionId'];
 
 			$panel['item_buttons']['create_menu_node_and_content_item_'.$j]['label'] = "Menu node with ".$content['content_type_name_en'];
-            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_ADD_MENU_ITEM';
+            $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['priv'] = '_PRIV_CREATE_DELETE_MENU_ITEM';
             $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['hide_in_select_mode'] = $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['hide_on_filter'] = true;
             $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['parent'] = 'create_child_dropdown';
             $panel['item_buttons']['create_menu_node_and_content_item_'.$j]['admin_box']['path'] = 'zenario_content';
@@ -565,7 +565,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		if ($path != 'zenario__menu/panels/menu_nodes') return;
 		
 		// mass_add_to_menu used in both content and menu nodes
-		if (ze::post('mass_add_to_menu') && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
+		if (ze::post('mass_add_to_menu') && ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM')) {
 			// Get tag ID from menu node ID
 			$menuNodeDetails = ze\menu::details($ids);
 			$ids = $menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'];
@@ -626,7 +626,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$languageId);
 	
 
-		} elseif (ze::post('remove') && ze\priv::check('_PRIV_DELETE_MENU_ITEM') && ze::request('languageId') != ze::$defaultLang) {
+		} elseif (ze::post('remove') && ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM') && ze::request('languageId') != ze::$defaultLang) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
 				//Only remove translation if another translation still exists
 				if (($result = ze\row::query('menu_text', 'menu_id', ['menu_id' => $id]))
@@ -636,9 +636,8 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				}
 			}
 
-		} elseif (ze::post('delete') && ze\priv::check('_PRIV_DELETE_MENU_ITEM')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM')) {
 			foreach (ze\ray::explodeAndTrim($ids) as $id) {
-				ze\row::delete('inline_images', ['foreign_key_to' => 'menu_node', 'foreign_key_id' => $id]);
 				ze\menuAdm::delete($id);
 			}
 
@@ -696,7 +695,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			ze\menuAdm::save($submission, $ids);
 			
 		//Duplicate menu node under iteself
-		} elseif (ze::post('duplicate_as_child') && ze\priv::check('_PRIV_ADD_MENU_ITEM')) {
+		} elseif (ze::post('duplicate_as_child') && ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM')) {
 			$menuNodeDetails = ze\menu::details($ids);
 			
 			//We want this to be in the first position under the menu node, so we need to work out the $position to pass.

@@ -57,9 +57,9 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				];
 				
 				$cssRules = [];
-				$imageMF['Image_HTML'] = ze\file::imageHTML(
+				$imageMF['Image_HTML'] = ze\image::html(
 					$cssRules, $preferInlineStypes = true,
-					$imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('retina'), $this->setting('webp'),
+					$imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('retina'),
 					$image['alt_tag'], $htmlID = '', $cssClass = '', $styles = '', 'title="'. htmlspecialchars($this->phrase($image['title'])). '"',
 					$showAsBackgroundImage = false, $this->setting('lazy_load')
 				);
@@ -88,17 +88,13 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				
 				if ($this->setting('link_type_'. $imageId) == '_ENLARGE_IMAGE') {
 					
-					$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
-					if (ze\file::imageAndWebPLink($width, $height, $url, $this->setting('enlarge_webp'), $webPURL, false, $isRetina, $mimeType, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas'))) {
+					$width = $height = $url = false;
+					if (ze\image::link($width, $height, $url, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas'))) {
 						
 						$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 						
 						$imageMF['Enlarge_Image'] = true;
 						$imageMF['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box" ';
-					
-						if ($webPURL) {
-							$imageMF['Image_Link_Href'] .= ' data-webp-href="'. htmlspecialchars($webPURL). '"';
-						}
 						
 						if ($this->setting('show_image_credit_on_enlarged_image') && !empty($image['image_credit'])) {
 							$icText = $this->phrase('Credit: [[image_credit]]', $image);

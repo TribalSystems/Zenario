@@ -74,9 +74,10 @@ class dataset {
 		if (is_numeric($field)) {
 			return \ze\row::get('custom_dataset_fields', $cols, $field);
 		} else {
-			if (!is_numeric($dataset)) {
-				$dataset = \ze\dataset::details($dataset, ['id']);
+			if (is_array($dataset)) {
 				$dataset = $dataset['id'];
+			} elseif (!is_numeric($dataset)) {
+				$dataset = \ze\dataset::details($dataset, 'id');
 			}
 			return \ze\row::get('custom_dataset_fields', $cols, ['dataset_id' => $dataset, 'db_column' => $field]);
 		}
@@ -280,7 +281,7 @@ class dataset {
 			if ($id) {
 			
 				if ($location = \ze\file::getPathOfUploadInCacheDir($id)) {
-					$id = \ze\file::addToDatabase(
+					$id = \ze\fileAdm::addToDatabase(
 						'dataset_file', $location,
 						$filename = false, $mustBeAnImage = false, $deleteWhenDone = false,
 						$addToDocstoreDirIfPossible = $cField['store_file'] == 'in_docstore'
@@ -336,7 +337,7 @@ class dataset {
 	
 		$result = \ze\sql::select($sql);
 		while ($file = \ze\sql::fetchAssoc($result)) {
-			\ze\file::delete($file['id']);
+			\ze\fileAdm::delete($file['id']);
 		}
 	}
 
@@ -371,17 +372,27 @@ class dataset {
 	
 	private static $ord;
 
-	public static function fieldLOV($field, $flat = true, $filter = false) {
+	public static function fieldLOV($field, $flat = true, $filter = false, $addEmptyValueToSelectLists = false) {
 		if (!is_array($field)) {
 			$field = \ze\dataset::fieldDetails($field);
 		}
 	
 		$lov = [];
-		if (\ze\ring::chopPrefix('centralised_', $field['type'])) {
+		
+		if (empty($field)) {
+			return $lov;
+		}
+		
+		if ($centralisedFieldType = \ze\ring::chopPrefix('centralised_', $field['type'])) {
 			if (!empty($field['values_source_filter'])) {
 				$filter = $field['values_source_filter'];
 			}
+			
 			if ($lov = \ze\dataset::centralisedListValues($field['values_source'], $filter)) {
+				if ($centralisedFieldType == 'select' && $addEmptyValueToSelectLists) {
+					$lov = array_merge(['' => \ze\lang::phrase(' -- Select -- ')], $lov);
+				}
+				
 				if (!$flat) {
 					self::$ord = 0;
 					array_walk($lov, 'ze\\dataset::fieldLOVFlatArrayToLabeled');
@@ -389,10 +400,13 @@ class dataset {
 				}
 			}
 	
-		} elseif (\ze\ring::chopPrefix('dataset_', $field['type'])) {
+		} elseif ($datasetFieldType = \ze\ring::chopPrefix('dataset_', $field['type'])) {
 			if ($labelDetails = \ze\dataset::labelFieldDetails($field['dataset_foreign_key_id'])) {
 			
 				$lov = \ze\row::getAssocs($labelDetails['table'], $labelDetails['db_column'], [], $labelDetails['db_column']);
+				if ($datasetFieldType == 'select' && $addEmptyValueToSelectLists) {
+					$lov = array_merge(['' => \ze\lang::phrase(' -- Select -- ')], $lov);
+				}
 			
 				if (!$flat) {
 					$ord = 0;
@@ -575,10 +589,6 @@ class dataset {
 				return 'Dataset picker';
 			case 'file_picker': 
 				return 'File picker';
-			case 'repeat_start': 
-				return 'Start of repeating section`';
-			case 'repeat_end': 
-				return 'End of repeating section';
 			default: 
 				return 'Unknown';
 		}
@@ -613,7 +623,7 @@ class dataset {
 			case \ze\dataset::LIST_MODE_INFO:
 				return ['can_filter' => false];
 			case \ze\dataset::LIST_MODE_VALUE:
-				return \ze\ray::value(self::$timezones, $value);
+				return self::$timezones[$value] ?? false;
 			case \ze\dataset::LIST_MODE_LIST:
 				// Get timezone offset from 0 and save against timezone code in array
 				$timezones = self::$timezones;

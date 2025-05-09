@@ -1,0 +1,299 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_email_template:
+    title: Creating an email template
+    title_for_existing_records: 'Editing the email template "[[meta_data/template_name]]"'
+    key:
+        id: ""
+        numeric_id: ""
+        duplicate: ""
+        lastFormatOption: ''
+    identifier:
+        css_class: zenario_email_template_panel
+        label: 'ID:'
+    tabs:
+        meta_data:
+            label: Sending details
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                enabled: true
+            notices:
+                debug_mode:
+                    show: ""
+                    type: warning
+                    message: ""
+                test_send_sucesses:
+                    show: ""
+                    type: success
+                    message: ""
+                test_send_error:
+                    show: ""
+                    type: error
+                    message: ""
+                test_send_attachment_not_sent:
+                    show: ""
+                    type: warning
+                    message: ""
+            fields:
+                template_name:
+                    label: 'Email template name:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required: Please enter a name for this email template.
+                    side_note: For admin use only.
+                mode:
+                    label: 'Mode:'
+                    type: select
+                    values:
+                        enabled:
+                            label: Enabled
+                        debug:
+                            label: Debug mode
+                    redraw_onchange: true
+                debug_email_address:
+                    label: 'Debug email address:'
+                    indent: 1
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('mode') == 'debug'
+                    validation:
+                        required_if_not_hidden: Please enter a debug email address.
+                    side_note: |
+                        Use this if you don't want the email template to be live. It will cause all email to be sent to a debug email address rather than to the usual recipients.
+                subject:
+                    label: 'Email subject line:'
+                    type: text
+                    maxlength: 1000
+                    validation:
+                        required: Please enter a subject line.
+                    side_note: The recipient will see this as the subject line.
+                from_details:
+                    label: '"From" sender email address and name:'
+                    type: text
+                    show_as_a_span: true
+                
+                send_cc:
+                    label: 'Send a CC email'
+                    type: checkbox
+                    redraw_onchange: true
+                cc_email_address:
+                    label: 'CC email address:'
+                    indent: 1
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('send_cc')
+                    validation:
+                        required_if_not_hidden: Please enter a Cc email address.
+                        emails: Please enter a valid Cc email address.
+                    side_note: |
+                        Tip: You can enter multiple email addresses separated by a comma.
+                
+                send_bcc:
+                    label: 'Send a Bcc email'
+                    type: checkbox
+                    redraw_onchange: true
+                bcc_email_address:
+                    label: 'Bcc email address:'
+                    indent: 1
+                    type: text
+                    visible_if: |
+                        zenarioAB.value('send_bcc')
+                    validation:
+                        required_if_not_hidden: Please enter a Bcc email address.
+                        emails: Please enter a valid Bcc email address.
+                    side_note: |
+                        Tip: You can enter multiple email addresses separated by commas.
+                
+                use_standard_email_template:
+                    label: 'Format:'
+                    type: select
+                    values:
+                        yes:
+                            label: Use standard email template; edit email body using WYSIWYG-type editor (recommended)
+                        twig:
+                            label: Use standard email template; edit email body using raw HTML and Twig code (advanced)
+                        no:
+                            label: Don't use standard email template; edit ENTIRE email using rich text (advanced)
+                    note_below: "Using the standard email template is recommended as it provides the top and bottom of emails. [[standard_email_template_link]]"
+                    format_onchange: true
+                body_label:
+                    label: 'Email body:'
+                body:
+                    type: editor
+                    editor_type: email_editor
+                    dont_trim: true
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
+                        height: 400px
+                    style: |
+                        width: 98%;
+                    language: twig
+                    insert_image_button:
+                        pick_items:
+                            path: 'zenario__library/panels/image_library/refiners/from_email_template_admin_box////'
+                            target_path: 'zenario__library/panels/image_library'
+                            min_path: 'zenario__library/panels/image_library'
+                            max_path: 'zenario__library/panels/image_library'
+                            disallow_refiners_looping_on_min_path: true
+                include_a_fixed_attachment:
+                    label: Attach a file
+                    type: checkbox
+                    value: false
+                    redraw_onchange: true
+                selected_attachment:
+                    pick_items:
+                        path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
+                        select_phrase: Select hierarchical document...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an attachment.
+                    visible_if: zenarioAB.value('include_a_fixed_attachment')
+                    indent: 1
+                    format_onchange: true
+                    notices_below:
+                        attachment_is_deleted_or_offline:
+                            hidden: true
+                            type: warning
+                            message: ''
+                allow_visitor_uploaded_attachments:
+                    label: Include visitor-uploaded attachments when emailing form data
+                    type: checkbox
+                    value: false
+                when_sending_attachments:
+                    label: "When sending attachments:"
+                    type: radios
+                    values:
+                        send_organizer_link:
+                                    label: "Send Organizer link for attachments"
+                        send_actual_file:
+                                    label: "Send actual file"
+                    value: send_organizer_link
+                    note_below: "Attachments uploaded by visitors are never sent by email to visitors."
+                
+                apply_css_rules:
+                    label: Apply
+                    type: checkbox
+                    format_onchange: true
+                    post_field_html: |
+                        &nbsp;[[link_start]]CSS rules[[link_end]]
+                
+                test_send_email_address:
+                    type: text
+                    maxlength: "100"
+                    label: 'Send a sample email:'
+                    side_note: |
+                        You can enter your email address here, or perhaps that of a colleage, to send a sample or test email. You'll need to enter at least a subject line and some content.
+                test_send_button_dummy:
+                    same_row: true
+                    type: submit
+                    value: Send sample
+                    visible_if: '!zenarioAB.tuix.key.id'
+                    class: 'zenario_disabled_button'
+                    onclick: 'return false;'
+                test_send_button:
+                    same_row: true
+                    type: submit
+                    format_onchange: true
+                    can_be_pressed_in_view_mode: true
+                    value: Test Send
+                    visible_if: 'zenarioAB.tuix.key.id'
+                    class: 'zenario_submit_button'
+
+        preview:
+            label: Preview
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                enabled: true
+            fields:
+                body:
+                    type: editor
+                    editor_type: readonly
+                    tall_as_possible: true
+                    dont_trim: true
+        data_deletion:
+            label: Data deletion
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                on: false
+            notices:
+                scheduled_task_not_running:
+                    type: warning
+                    message: | 
+                        The scheduled task "jobDataProtectionCleanup" is not running. Data will be deleted when there is activity in the appropriate type of data handling (e.g. when an email is sent, a user logs in, or a form is submitted).
+                    show: false
+                scheduled_task_running:
+                    type: success
+                    message: |
+                        The scheduled task "jobDataProtectionCleanup" is running. Data will be deleted according to these rules on a daily basis.
+                    show: false
+            fields:
+                period_to_delete_log_headers:
+                    label: 'How long should emails sent with this template be saved?'
+                    type: select
+                    empty_value: Use site-wide setting
+                    values:
+                        0:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                        never_delete:
+                            label: Save forever  
+                    format_onchange: true
+                
+                delete_log_content_sooner:
+                    visible_if: |
+                        ['0', ''].indexOf(zenarioAB.value('period_to_delete_log_headers')) === -1
+                    indent: 1
+                    label: Delete email body sooner (just save headers)
+                    type: checkbox
+                    redraw_onchange: true
+                
+                period_to_delete_log_content:
+                    visible_if: zenarioAB.value('delete_log_content_sooner')
+                    hide_with_previous_field: true
+                    indent: 2
+                    type: select
+                    values:
+                        0:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+        protection:
+            label: Protection
+            fields:
+                created_by:
+                    pre_field_html: '<div class="zenario_fbInfo">'
+                    snippet:
+                        html: ""
+                    post_field_html: '</div>'
+                template_protection_note:
+                    pre_field_html: '<div class="zenario_fbInfo">'
+                    snippet:
+                        html: ""
+                    post_field_html: '</div>'

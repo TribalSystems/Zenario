@@ -13,29 +13,29 @@
 	"license": "BSD-3-Clause",
 	"dependencies": {
 		"@fortawesome\/fontawesome-free": "6.*",
-		"@tinymce\/tinymce-jquery": "^2.1.0",
+		"@tinymce\/tinymce-jquery": "2.*",
 		"SVG-Sanitizer": "TribalSystems\/SVG-Sanitizer",
 		"ace-builds": "1.*",
 		"animate.css": "3.*",
 		"bez": "*",
-		"blueimp-file-upload": "^10.32.0",
+		"blueimp-file-upload": "10.*",
 		"cytoscape": "*",
 		"jquery": "*",
 		"jquery-cycle2": "malsup\/cycle2",
-		"jquery-doubletaptogo": "^3.0.2",
+		"jquery-doubletaptogo": "3.*",
 		"jquery-lazy": "*",
 		"jquery-multiselect": "*",
 		"js-crc": "emn178\/js-crc",
-		"moment": "^2.29.4",
-		"moment-timezone": "^0.5.34",
+		"moment": "2.*",
+		"moment-timezone": "0.*",
 		"rcrop": "aewebsolutions\/rcrop",
 		"spectrum-colorpicker": "*",
 		"swiper": "11.*",
-		"tinymce": "^6.4.2",
+		"tinymce": "6.*",
 		"toastr": "*",
 		"underscore.string": "*",
-		"wow.js": "^1.2.2",
-		"zxcvbn": "^4.4.2"
+		"wow.js": "1.*",
+		"zxcvbn": "4.*"
 	},
-	"version": "9.7.63394"
+	"version": "10.1.63392"
 }

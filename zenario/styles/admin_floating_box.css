@@ -183,14 +183,30 @@
 	height: 16px;
 	text-indent: -99999px;
 	background: url('../admin/images/icon-question-outline-circle-dark-grey.svg') no-repeat 0 0 / 16px 16px;
+	font-size:0;
+	position:relative;
+	top:-5px;
 }
 
 .zenario_fbAdmin.zenario_fab_plugin .zenario_field_tooltip {
 	background: url('../admin/images/icon-question-outline-circle-white.svg') no-repeat 0 0 / 16px 16px;
 }
 
-#zenario_fbAdminInner .zenario_field_widget_wrap input.zenario_remove_date + .zenario_field_tooltip {
+#zenario_fbAdminInner .zenario_field_widget_wrap input.zenario_remove_val + .zenario_field_tooltip {
 	margin-top:6px;
+	top:0;
+}
+
+
+.zenario_field_tooltip_top_right {
+	height: 0;
+	line-height: 0;
+	float: right;
+}
+.zenario_field_tooltip_top_right .zenario_field_tooltip {
+	float: right;
+	position: relative;
+	bottom: 20px;
 }
 
 /*  Admin Floating Boxes  */
@@ -637,6 +653,10 @@ body.zenario_fabIsPeeking #zenario_fbAdminFloatingBox #zenario_fabPreview {
 	color:#333;
 	font-size:12px;
 	font-family:Arial,Verdana,Helvetica,sans-serif;
+	max-width:90% !important;
+	right:0;
+	left:0 !important;
+	margin:auto;
 }
 
 #zenario_fbAdminInfoBox a {
@@ -682,20 +702,24 @@ body.zenario_fabIsPeeking #zenario_fbAdminFloatingBox #zenario_fabPreview {
 }
 
 #zenario_fbAdminInfoBox .zenario_infoBox .zenario_infoSection {
-	border-bottom: 1px solid #c3c3c3;
-	margin-top:2px;
 	padding:6px 8px;
+	margin-top:2px;
+}
+
+#zenario_fbAdminInfoBox .zenario_infoBox > .zenario_infoSection:first-child {
+	border-bottom: 1px solid #c3c3c3;
 }
 
 #zenario_fbAdminInfoBox .zenario_infoBox div span {
 	display:block;
 	padding-bottom:2px;
-	font-weight: bold;
+	font-weight: 700;
 	font-size: 13px;
 }
 
 #zenario_fbAdminInfoBox .zenario_infoBox div div {
 	padding:3px 0;
+	overflow:hidden;
 	border-top: none;
 }
 
@@ -714,15 +738,19 @@ body.zenario_fabIsPeeking #zenario_fbAdminFloatingBox #zenario_fabPreview {
 }
 
 #zenario_fbAdminInfoBox .zenario_infoBox .zenario_infoSection div > div textarea {
-	width: calc(100% - 10px);
+	width: calc(100% - 12px);
 	padding:5px;
 	color:#676767;
 	background:#efefef;
 	border:1px solid #aaa;
 	font-family: Arial,Verdana,Helvetica,sans-serif;
 	font-size: 12px;
+	resize:vertical;
 }
 
+#zenario_fbAdminInfoBox .zenario_infoBox div span.zenario_info_box_value {
+	font-weight:normal;
+}
 
 
 #zenario_fbAdminMessage {
@@ -1538,6 +1566,14 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	font-family: 'Verdana';
 }
 
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch input[readonly] + .onoffswitch-label {
+	cursor:default;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row.zenario_onoffswitch_admin .onoffswitch input[readonly] + .onoffswitch-label .onoffswitch-inner::before {
+	opacity:0.6;
+}
+
 /* End - Toggles checkboxes for FABs */
 
 #zenario_fbAdminInner .div_table .zfab_row.zenario_row_for_radios .zfab_row_fields .zenario_radio_or_checkbox {
@@ -1558,6 +1594,30 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 	font-weight:bold;
 	background:#888;
 	color:#fff;
+}
+
+#zenario_fbAdminInner table.zfab_grey_table tr td {
+	vertical-align:top;
+}
+
+#zenario_fbAdminFloatingBox .zfab_row_with_multiple_fields table.zfab_grey_table .input_text {
+	width:calc(100% - 22px);
+}
+
+#zenario_fbAdminFloatingBox .zfab_row_with_multiple_fields table.zfab_grey_table .input_text.zenario_indent_level_1 {
+	width:calc(100% - 22px - 25px);
+}
+
+#zenario_fbAdminInner .zenario_ab_row__th_slotname table.zfab_grey_table tr th:last-child {
+	width:35%;
+}
+
+#zenario_fbAdminInner .zenario_ab_row__th_slotname table.zfab_grey_table tr td {
+	height:60px;
+}
+
+#zenario_fbAdminInner .zenario_ab_row__th_slotname  br + .input_text.zenario_indent_level_1 {
+	margin-top:5px;
 }
 
 #zenario_fbAdminInner .thickbox_table .zenario_single_line {
@@ -1886,7 +1946,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #zenario_fbAdminInner .input_textarea,
 #zenario_fbAdminInner .input_date,
 #zenario_fbAdminInner .input_datetime,
-#zenario_fbAdminInner .zenario_remove_date {
+#zenario_fbAdminInner .zenario_remove_val {
 	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
 	font-size:1em;
 	color:#424242;
@@ -2078,7 +2138,7 @@ body.zenario_fbog__isOpen .zenario_fbAdmin .zenario_fbButtons input.zenario_fabE
 #zenario_fbAdminInner .zfab_row input:not([readonly]):focus,
 #zenario_fbAdminInner .zfab_row a:focus,
 #zenario_fbAdminFloatingBox select:not([readonly]):focus,
-#zenario_fbAdminFloatingBox .zenario_remove_date:not([readonly]):focus,
+#zenario_fbAdminFloatingBox .zenario_remove_val:not([readonly]):focus,
 #zenario_fbAdminFloatingBox input[type="radio"]:not([readonly]):focus {
 	-webkit-box-shadow: inset 0px 0 0 2px #01d102;
 	box-shadow: inset 0px 0 0 2px #01d102;
@@ -2736,13 +2796,13 @@ form.thickbox input.input_date {
 	border: 1px dotted #888888;
 }
 
-form.thickbox input.zenario_remove_date {
+form.thickbox input.zenario_remove_val {
 	background: white;
 	border: 1px dotted #888888;
 	cursor: pointer;
 }
 
-#zenario_fbAdminInner input.zenario_remove_date {
+#zenario_fbAdminInner input.zenario_remove_val {
 	border:0;
 	background:#ccc;
 	width:20px;
@@ -2761,17 +2821,21 @@ form.thickbox input.zenario_remove_date {
 	background:#777 url('../admin/images/icon-close-off-state-light-grey.svg') no-repeat center / 8px;
 }
 
-#zenario_fbAdminInner input.zenario_remove_date:hover {
+#zenario_fbAdminInner input.zenario_remove_val:hover {
 	opacity:0.85;
 }
 
 #zenario_fbAdminInner .zenario_field_widget_wrap .zenario_datepicker,
-#zenario_fbAdminInner .zenario_field_widget_wrap input.zenario_remove_date {
+#zenario_fbAdminInner .zenario_field_widget_wrap input.zenario_remove_val {
 	float:left;
 }
 
-#zenario_fbAdminInner .zenario_field_widget_wrap input.zenario_remove_date {
+#zenario_fbAdminInner .zenario_field_widget_wrap input.zenario_remove_val {
 	margin-top:4px;
+}
+
+#zenario_fbAdminInner .zenario_ab_row__start .zenario_field_widget_wrap .zenario_datepicker {
+	float:none;
 }
 
 #zenario_fbAdminInner .zenario_ab_row__start_date .zenario_field_widget_wrap {
@@ -2781,11 +2845,11 @@ form.thickbox input.zenario_remove_date {
 
 #zenario_fbAdminInner .zenario_ab_row__start_date.zenario_row_for_date .zenario_field_widget_wrap,
 #zenario_fbAdminInner .zenario_ab_row__start_date .zenario_field_widget_wrap .zenario_datepicker,
-#zenario_fbAdminInner .zenario_ab_row__start_date .zenario_field_widget_wrap .zenario_remove_date  {
+#zenario_fbAdminInner .zenario_ab_row__start_date .zenario_field_widget_wrap .zenario_remove_val  {
 	float:none;
 }
 
-#zenario_fbAdminInner .zenario_ab_row__start_date .zenario_field_widget_wrap .zenario_remove_date  {
+#zenario_fbAdminInner .zenario_ab_row__start_date .zenario_field_widget_wrap .zenario_remove_val  {
 	position:relative;
 	top:-6px;
 }
@@ -2822,6 +2886,8 @@ form.thickbox input.zenario_remove_date {
 
 #zenario_fbAdminInner .zenario_note_below,
 #zenario_fbAdminInner .zenario_note_below li,
+#zenario_fbAdminInner .zenario_note_below ul li,
+#zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario_fbMain #zenario_fbAdminInner .zenario_note_below ul li,
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap .zenario_side_note,
 #zenario_fbAdminInner .zenario_note_below_plain  { 
 	font-size:10px;
@@ -2845,7 +2911,7 @@ form.thickbox input.zenario_remove_date {
 	clear: both;
 	width:auto;
 	max-width: 90%;
-	padding:3px 5px 5px 24px;
+	padding:4px 5px 6px 24px;
 	position:relative;
 	z-index:1;
 	top:8px;
@@ -3066,12 +3132,13 @@ form.thickbox input.zenario_remove_date {
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap .zenario_side_note .zenario_note_content ul {
 	padding-left:0;
 	margin:3px 0;
+	list-style:disc;
 }
 
 #zenario_fbAdminInner .zenario_note_below .zenario_note_content ul li,
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap .zenario_side_note .zenario_note_content ul li {
 	margin-left:15px;
-	margin-bottom:4px;
+	margin-bottom:1px;
 }
 
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap .zenario_side_note .zenario_note_content ul li.fail,
@@ -3672,10 +3739,10 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 .zenario_item_record_count.afb_tab_not_in_use {
 	border: solid 3px #919191;
 	position: absolute;
-    display: inline-block;
+	display: inline-block;
 	top: 8px;
-    right: -7px;
-    left:auto;
+	right: -7px;
+	left:auto;
 	width: 5px;
 	height: 5px;
 }
@@ -3739,13 +3806,12 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu-item {
 	background-size:8px 8px;
 }
 
-#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab > div > a {
-	background-image:url('../zenario/admin/images/icon-arrow-down-grey-light.svg');
-}
-
-#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab:hover > div > a,
-#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab.zenario_fab_child_tab_is_current > div > a {
-	background-image:url('../zenario/admin/images/icon-arrow-down-white.svg');  
+#zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div.zenario_fab_dummy_parent_tab > div > a:after {
+	font-family:"FontAwesome";
+	content:"\f0d7";
+	position:absolute;
+	right:6px;
+	top:0;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin #zenario_fabTabs > div > div > a {
@@ -5006,6 +5072,31 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	position:relative;
 }
 
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_1.zenario_fbInfo_small.zenario_fbInfo,
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_1.zenario_fbInfo_small.zenario_fbWarning {
+	width:calc(100% - 25px - 32px) !important;
+}
+
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_2.zenario_fbInfo_small.zenario_fbInfo,
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_2.zenario_fbInfo_small.zenario_fbWarning {
+	width:calc(100% - 50px - 32px) !important;
+}
+
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_3.zenario_fbInfo_small.zenario_fbInfo,
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_3.zenario_fbInfo_small.zenario_fbWarning {
+	width:calc(100% - 75px - 32px) !important;
+}
+
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_4.zenario_fbInfo_small.zenario_fbInfo,
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_4.zenario_fbInfo_small.zenario_fbWarning {
+	width:calc(100% - 100px - 32px) !important;
+}
+
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_5.zenario_fbInfo_small.zenario_fbInfo,
+#zenario_fbAdminInner .zfab_row.zenario_indent_level_5.zenario_fbInfo_small.zenario_fbWarning {
+	width:calc(100% - 120px - 32px) !important;
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_zenario_trash fieldset.zenario_grouping.zenario_grouping__top {
 	clear:both;
 }
@@ -5112,6 +5203,10 @@ body.ff #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabMain #zenario
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
 	background: #b9f0b7;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_zenario_convert_nest .zenario_fabHead .zenario_fabId {
+	background: #f0d9b7;
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_plugin .zenario_fabHead .zenario_fabId {
@@ -5363,6 +5458,16 @@ div#zenario_calculation_display br {
 	border-radius:4px;
 }
 
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload.zenario_indent_level_1 {
+	width:calc(100% - 25px - 40px) !important;
+	margin-left:25px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload.zenario_indent_level_2 {
+	width:calc(100% - 50px - 40px) !important;
+	margin-left:50px;
+}
+
 #zenario_fbAdminFloatingBox.zenario_fab_default_style #zenario_fbAdminInner.upload_enabled .zenario_row_for_upload::after {
 	content: "";
 	clear: both;
@@ -5461,6 +5566,35 @@ div#zenario_calculation_display br {
 
 #zenario_fbAdminFloatingBox fieldset.zenario_grouping__menu {
 	clear:both;
+}
+
+#zenario_fbAdminFloatingBox .zenario_grouping.zenario_vertical_radio {
+	background:#F9FAFC;
+	border:1px solid #F3F4F6;
+	border-radius:8px;
+	padding:0px 15px 15px;
+}
+
+#zenario_fbAdminFloatingBox .zenario_grouping.zenario_vertical_radio.zenario_grouping_with_radio_selected {
+	background:#E8F6E5;
+	border-color:#66CD3D;
+}
+
+#zenario_fbAdminFloatingBox .zenario_grouping.zenario_vertical_radio .zenario_field_widget_wrap {
+	display:flex;
+	gap:5px;
+}
+
+#zenario_fbAdminFloatingBox .zenario_grouping.zenario_vertical_radio .zenario_field_widget_wrap label {
+	flex-grow:1;
+}
+
+#zenario_fbAdminInner .div_table.zenario_ab_tab__publish .zenario_grouping.zenario_vertical_radio .zfab_row.zenario_ab_row__publish_date select {
+	margin-top:0;
+}
+
+#zenario_fbAdminFloatingBox .zenario_grouping.zenario_vertical_radio .zenario_field_widget_wrap input.disabled + label {
+	color:#aeaeae;
 }
 
 /*  Add the ability to have two columns, by having two groupings, one float left and the other float right  */
@@ -5955,11 +6089,31 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 
 .zenario_fab_plugin #zenario_fbAdminInner .Tokenize.zenario_reorder_items .TokensContainer li.Token {
 	position:relative;
-	padding-right:40px;
-	background-image:url('../admin/images/icon-drag-vertical.svg');
-	background-repeat:no-repeat;
-	background-position:right center;
-	background-size:auto 14px;
+	width:calc(100% - 22px);
+	padding-left:20px;
+}
+
+.zenario_fab_plugin #zenario_fbAdminInner .Tokenize.zenario_reorder_items .TokensContainer li.Token:before {
+	content:"";
+	position:absolute;
+	top:0;
+	left:0;
+	width:20px;
+	height:calc(100% - 4px);
+	margin:2px;
+	background:url('../admin/images/icon-drag-handle-white.svg') no-repeat left center / auto 24px;
+}
+
+.zenario_fab_plugin #zenario_fbAdminInner .Tokenize.zenario_reorder_items .TokensContainer li.Token:hover:before {
+	content:"";
+	position:absolute;
+	top:0;
+	left:0;
+	width:16px;
+	height:calc(100% - 4px);
+	margin:2px;
+	border-radius:4px;
+	background-color:#0093FA;
 }
 
 .zenario_fab_plugin #zenario_fbAdminInner .Tokenize.zenario_reorder_items .TokensContainer li.Token a.Close {
@@ -6080,6 +6234,70 @@ div.Tokenize ul.TokensContainer li.Token a.Close {
 .zenario_fbAdmin.zenario_fab_zenario_content_privacy #row__role_ids .zenario_radio_or_checkbox label:before {
 	background:url('../modules/zenario_organization_manager/adminstyles/images/icon-roles.svg') no-repeat center center / 16px;
 }
+
+/* Styles for email template FAB
+------------------------------------------------------------------------------------------------- */
+
+.zenario_fbAdmin.zenario_fab_zenario_email_template .zfab_merge_fields_wrap {
+	float:none;
+}
+
+.zenario_fbAdmin.zenario_fab_zenario_email_template .zfab_merge_fields_wrap .zfab_merge_fields {
+	bottom:0;
+	text-align:left;
+}
+
+.zenario_fbAdmin.zenario_fab_zenario_email_template .zfab_merge_fields_wrap fieldset.zenario_grouping .zfab_row_fields .zenario_field_tooltip {
+	position:absolute;
+	right:5px;
+	top:8px;
+}
+
+#zenario_fbAdminFloatingBox.zenario_fbAdmin.zenario_fab_zenario_email_template .zfab_merge_fields_wrap fieldset.zenario_grouping {
+	margin-top:0;
+}
+
+.zenario_fbAdmin.zenario_fab_zenario_email_template #zenario_fbAdminInner .div_table .zfab_merge_fields_wrap fieldset.zenario_grouping .zfab_row {
+	padding-top:0;
+	width: calc(100% - 30px);
+  	padding-right: 30px;
+  	float: right;
+}
+
+.zenario_fbAdmin.zenario_fab_zenario_email_template .zenario_ab_row__user_form span.ui-button {
+	border:2px solid #efefef;
+	border-radius:0;
+	background:#fff;
+	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
+	font-size:1em;
+}
+
+.zenario_fbAdmin.zenario_fab_zenario_email_template .zenario_ab_row__user_form span.ui-button.ui-selectmenu-button-open {
+	background-color:#cce2fa;
+}
+
+#user_form-menu,
+#user_form_field-menu {
+	padding:0 4px;
+	box-shadow:0 0 2px 0 rgba(34,47,62,.2),0 4px 8px 0 rgba(34,47,62,.15);
+	border:1px solid #e9e9e9;
+	border-radius:6px;
+	height:150px !important;
+	overflow-y:auto !important;
+}
+
+#user_form-menu .ui-menu-item-wrapper,
+#user_form_field-menu .ui-menu-item-wrapper {
+	padding:4px 8px;
+}
+
+#user_form-menu .ui-menu-item-wrapper.ui-state-active,
+#user_form_field-menu .ui-menu-item-wrapper.ui-state-active {
+	background-color:#cce2fa;
+	border-color:#cce2fa;
+	color:#333;
+}
+
 
 /* Some specific styles for the "Links" tab in the Multiple Image Container's plugin settings
 ------------------------------------------------------------------------------------------------- */
@@ -6542,6 +6760,22 @@ body.zenario_fbAdminFloatingBox__isOpen > div.ui-selectmenu-menu .ui-menu .ui-se
 #zenario_fbAdminInner .div_table .zfab_row.zenario_ab_row__slide_label_notices {
 	padding-top:0;
 }
+
+
+/* A bit of code for the merge fields for user forms. Added by Chris but will likely need Liz to finish this. */
+.zfab_merge_fields_wrap {
+	float: right;
+	height: 0;
+}
+
+.zfab_merge_fields {
+	position: relative;
+	z-index: 99;
+	bottom: 40px;
+	text-align: right;
+	white-space: nowrap;
+}
+
 
 /* Adjusting Tokenize for focus */
 

@@ -14,7 +14,7 @@ class Continue_Node extends \Twig\Node\Node
     /**
      * Compiles a Continue_Node into PHP.
      */
-    public function compile(\Twig_Compiler $compiler)
+    public function compile(\Twig\Compiler $compiler)
     {
         $compiler
             ->addDebugInfo($this)

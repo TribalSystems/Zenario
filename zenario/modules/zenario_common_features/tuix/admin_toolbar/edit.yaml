@@ -52,7 +52,7 @@ sections:
                 featured_image_container: true
                 featured_image_src: ''
                 featured_image_alt: ''
-                label: Attached images
+                label: Images
                 organizer_quick:
                     target_path: zenario__library/panels/image_library
                     min_path: zenario__library/panels/image_library

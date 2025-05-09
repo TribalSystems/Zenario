@@ -31,13 +31,12 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 	protected $customFormErrors = [];
 	protected $customFormExtraErrors = [];
+	protected $selectedCustomFields = [];
 	
 	public function init() {
 		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 		$this->requireJsLib('zenario/js/password_functions.min.js');
 		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
-		
-		$this->registerPluginPage();
 		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
@@ -100,18 +99,28 @@ class zenario_extranet_registration extends zenario_extranet {
 		        if (isset($allCustomFields)) {
 		            foreach ($allCustomFields as $k => $value) {
 		                if (in_array($k, $chosenCustomFields)) {
-				            $customDBColumns[$k]['label'] = $value['label'];
-				            $customDBColumns[$k]['name'] = $value['db_column'];
-				            $customDBColumns[$k]['type'] = $value['type'];
+		                	$this->selectedCustomFields[$k]['dataset_field_id'] = $k;
+				            $this->selectedCustomFields[$k]['label'] = $value['label'];
+				            $this->selectedCustomFields[$k]['name'] = $value['db_column'];
+				            $this->selectedCustomFields[$k]['type'] = $value['type'];
+				            $this->selectedCustomFields[$k]['value'] = ze::post($value['db_column']);
+				            $this->selectedCustomFields[$k]['required'] = $value['required'];
+				            $this->selectedCustomFields[$k]['required_message'] = $value['required_message'];
+				            
+				            if (ze::in($value['type'], 'select', 'centralised_select', 'dataset_select')) {
+				            	if ($this->selectedCustomFields[$k]['value'] === false) {
+				            		$this->selectedCustomFields[$k]['value'] = '';
+				            	}
+				            }
 				            
 				            if (!empty($_POST[$value['db_column']])) {
 				            	//This line allows to preserve the value of a custom field
 				            	//if a form error occured.
-				            	$customDBColumns[$k]['value'] = ze\escape::sql($_POST[$value['db_column']]);
+				            	$this->selectedCustomFields[$k]['value'] = ze\escape::sql($_POST[$value['db_column']]);
 				            }
 				            
-				            if ( $customDBColumns[$k]['type'] == 'select' || $customDBColumns[$k]['type'] == 'centralised_radios' || $customDBColumns[$k]['type'] == 'radios' || $customDBColumns[$k]['type'] == 'dataset_select' || $customDBColumns[$k]['type'] == 'centralised_select') {
-				                $customDBColumns[$k]['values'] = ze\dataset::fieldLOV($k, false);
+				            if (ze::in($this->selectedCustomFields[$k]['type'], 'select', 'centralised_radios', 'radios', 'dataset_select', 'centralised_select')) {
+				                $this->selectedCustomFields[$k]['values'] = ze\dataset::fieldLOV($k, $flat = false, $filter = false, $addEmptyValueToSelectLists = true);
 				            }
 				        }
 				    }
@@ -122,14 +131,14 @@ class zenario_extranet_registration extends zenario_extranet {
 				for ($i = 0; $i < count($chosenCustomFields); $i++) {
 					//Catch the case where a custom field was removed from the dataset editor,
 					//but is still selected in the plugin settings.
-					if (!empty($customDBColumns[$chosenCustomFields[$i]])) {
-						$sortedArray[$chosenCustomFields[$i]] = $customDBColumns[$chosenCustomFields[$i]];
+					if (!empty($this->selectedCustomFields[$chosenCustomFields[$i]])) {
+						$sortedArray[$chosenCustomFields[$i]] = $this->selectedCustomFields[$chosenCustomFields[$i]];
 					}
 				}
-				$customDBColumns = $sortedArray;
+				$this->selectedCustomFields = $sortedArray;
 				
-				$this->objects['Custom_Fields_Values'] = $customDBColumns;
 		        $this->subSections['Custom_Fields'] = true;
+		        $this->subSections['Custom_Fields_Values'] = $this->selectedCustomFields;
 		    }
 		    
 		    if ($this->setting('show_resend_verification_link')) {
@@ -275,7 +284,9 @@ class zenario_extranet_registration extends zenario_extranet {
 				$fields['custom_fields/user_custom_fields']['pick_items']['info_button_path'] =
 					'zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'. $dataset['id']. '//';
                 
-                $fields['custom_fields/desc']['snippet']['html'] = ze\admin::phrase($fields['custom_fields/desc']['snippet']['html'], $dataset);;
+                $fields['custom_fields/desc']['snippet']['html'] = ze\admin::phrase($fields['custom_fields/desc']['snippet']['html'], $dataset);
+                
+                $fields['custom_fields/user_custom_fields']['pick_items']['path'] = 'zenario__administration/panels/custom_fields_hierarchy/refiners/dataset_id//' . (int) $dataset['id'] . '//';
 
 				break;
 			case 'site_settings':
@@ -642,7 +653,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 			}
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('verification_email_template'), $emailMergeFields,[]);
+			zenario_common_features::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('verification_email_template'), $emailMergeFields,[]);
 		}
 	}
 
@@ -667,7 +678,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 			}
 	
-			zenario_email_template_manager::sendEmailsUsingTemplate($this->setting('user_signup_notification_email_address'), $this->setting('user_signup_notification_email_template'), $emailMergeFields,[]);
+			zenario_common_features::sendEmailsUsingTemplate($this->setting('user_signup_notification_email_address'), $this->setting('user_signup_notification_email_template'), $emailMergeFields,[]);
 		}
 	}
 
@@ -735,6 +746,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		if (!empty($emailMergeFields['email']) && $this->setting('welcome_email_template')) {
 			
 			$emailMergeFields['cms_url'] = ze\link::absolute();
+			$emailMergeFields['login_page_link'] = ze\link::toSpecialPage('zenario_login', false, false, $fullPath = true);
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
 			
 			if (ze\module::inc('zenario_users')) {
@@ -771,7 +783,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 			}
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('welcome_email_template'),$emailMergeFields,$attachments);
+			zenario_common_features::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false,$this->setting('welcome_email_template'),$emailMergeFields,$attachments);
 		}
 	}
 
@@ -790,7 +802,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 			}
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($this->setting('user_activation_notification_email_address'),$this->setting('user_activation_notification_email_template'),$emailMergeFields,[]);
+			zenario_common_features::sendEmailsUsingTemplate($this->setting('user_activation_notification_email_address'),$this->setting('user_activation_notification_email_template'),$emailMergeFields,[]);
 		}
 	}
 	
@@ -1017,7 +1029,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				$mergeFields = $user;
 				$mergeFields['cms_url'] = ze\link::absolute();
 				
-				zenario_email_template_manager::sendEmailsUsingTemplate($user['email'], $template, $mergeFields);
+				zenario_common_features::sendEmailsUsingTemplate($user['email'], $template, $mergeFields);
 				ze\row::update('users', ['send_delayed_registration_email' => 0], $user['id']);
 				
 				echo "Sent delayed registration email to user " . $user['identifier'] . "\n";

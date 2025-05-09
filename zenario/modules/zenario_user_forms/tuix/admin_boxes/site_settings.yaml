@@ -19,14 +19,6 @@ site_settings:
                     grouping: site_settings
                     snippet:
                         html: ''
-                zenario_user_forms_admin_email_attachments:
-                    grouping: site_settings
-                    site_setting:
-                        name: zenario_user_forms_admin_email_attachments
-                    label: 'When sending response emails to administrators, attach uploaded files'
-                    type: checkbox
-                    side_note: |
-                        Emails sent to administrators will include attachments. If not set, administrators will need to log in to Zenario to retrieve uploads.
                 zenario_user_forms_enable_predefined_text:
                     grouping: site_settings
                     site_setting:
@@ -88,6 +80,14 @@ site_settings:
             edit_mode:
                 enabled: Yes
             fields:
+                zenario_user_forms_profanity_filter_info:
+                    snippet:
+                        html: |
+                            <p>
+                                Zenario can scan text and textarea fields on forms for swear words and prevent emailing form responses if a form response exceeds the tolerance level.
+                                The feature requires a .csv file with a list of profanities to be present on the server.
+                            </p>
+                            <p>The file must be called <code>profanities.csv</code> and must be in the directory <code>zenario/libs/not_to_redistribute/profanity-filter/</code>.</p>
                 zenario_user_forms_set_profanity_filter:
                     site_setting:
                         name: zenario_user_forms_set_profanity_filter
@@ -95,10 +95,17 @@ site_settings:
                     row_class: sub_field
                     type: checkbox
                     note_below: |
-                        Scan text and textarea fields for swear words. Must be enabled on each specific form using the "Filter for profanities" option. Blocked forms will be logged, but not emailed.
-                    redraw_onchange: true
-                    disabled: false
+                        Must be enabled on each specific form using the "Filter for profanities" option. Blocked forms will be logged, but not emailed.
+                    format_onchange: true
+                    notices_below:
+                        profanities_csv_file_is_missing:
+                            hidden: true
+                            type: warning
+                            html: true
+                            message: 'The file <code>zenario/libs/not_to_redistribute/profanity-filter/profanities.csv</code> could not be found. Zenario will not scan for swear words without this file.'
+                            
                 zenario_user_forms_set_profanity_tolerence:
+                    indent: 1
                     site_setting:
                         name: zenario_user_forms_set_profanity_tolerence
                     label: 'Tolerance level:'
@@ -116,4 +123,3 @@ site_settings:
                     value: 5
                     visible_if: |
                         zenarioAB.value('zenario_user_forms_set_profanity_filter')
-                    disabled: false

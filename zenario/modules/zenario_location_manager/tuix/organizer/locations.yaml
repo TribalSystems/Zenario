@@ -64,6 +64,8 @@ zenario__locations:
                 hidden: false
             parent_customer:
                 hidden: false
+            location_full_name:
+                hidden: false
             description:
                 title: Name
                 db_column: l.description
@@ -260,7 +262,7 @@ zenario__locations:
                 show_by_default: true
                 format: yes_or_no
                 width: xsmall
-                ord: "999"
+                ord: 999
                 hidden: false
         quick_filter_buttons:
                     all:
@@ -288,7 +290,7 @@ zenario__locations:
         collection_buttons:
             create_location:
                 priv: _PRIV_MANAGE_LOCATIONS
-                ord: "1"
+                ord: 1
                 label: Create a location
                 css_class: zenario_create_a_new
                 hide_in_select_mode: true
@@ -297,7 +299,7 @@ zenario__locations:
                     create_another: true
             add_location:
                 priv: _PRIV_MANAGE_LOCATIONS
-                ord: "1"
+                ord: 1
                 label: Add a location to this sector
                 pick_items:
                     path: zenario__locations/panel
@@ -312,7 +314,7 @@ zenario__locations:
             add_child_location:
                 priv: _PRIV_MANAGE_LOCATIONS
                 css_class: add
-                ord: "0"
+                ord: 0
                 label: Add child location here
                 multiple_select: false
                 only_show_on_refiner: children_of_location
@@ -369,14 +371,14 @@ zenario__locations:
         item_buttons:
             rename_location:
                 priv: _PRIV_MANAGE_LOCATIONS
-                ord: "1"
+                ord: 1
                 label: Edit location
                 hide_in_select_mode: true
                 admin_box:
                     path: zenario_location_manager__location
             edit_multiple_locations:
                 priv: _PRIV_MANAGE_LOCATIONS
-                ord: "1"
+                ord: 1
                 label: Edit multiple...
                 hide_in_select_mode: true
                 multiple_select: true
@@ -575,7 +577,7 @@ zenario__locations:
                     refiner: location_images
             remove_location:
                 priv: _PRIV_MANAGE_LOCATIONS
-                ord: "9999"
+                ord: 9999
                 label: Remove selected location from sector
                 only_show_on_refiner: sector_locations
                 ajax:

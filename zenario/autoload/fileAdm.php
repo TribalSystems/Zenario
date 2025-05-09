@@ -31,6 +31,474 @@ namespace ze;
 class fileAdm {
 
 
+	
+	public static function addToDocstoreDir($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = true) {
+		return \ze\fileAdm::addToDatabase($usage, $location, $filename, $mustBeAnImage, $deleteWhenDone, true);
+	}
+
+	public static function addFromString($usage, &$contents, $filename, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false, $imageCredit = '') {
+	
+		if ($temp_file = tempnam(sys_get_temp_dir(), 'cpy')) {
+			if (file_put_contents($temp_file, $contents)) {
+				return \ze\fileAdm::addToDatabase($usage, $temp_file, $filename, $mustBeAnImage, true, $addToDocstoreDirIfPossible, false, false, false, false, $imageCredit);
+			}
+		}
+	
+		return false;
+	}
+
+	public static function addToDatabase(
+		$usage, $location, $filename = false,
+		$mustBeAnImage = false, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+		$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '', $setPrivacy = null
+	) {
+		//$overrideMimeType should only be specified when running the installer, because we don't yet have the proper handling for mime types
+		
+		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+		if ($usage == 'email'
+		 || $usage == 'inline'
+		 || $usage == 'menu') {
+			$usage = 'image';
+		}
+
+
+		$file = [];
+
+		if (!is_readable($location)
+		 || !is_file($location)
+		 || !($file['size'] = filesize($location))
+		 || !($file['checksum'] = md5_file($location))
+		 || !($file['checksum'] = \ze::base16To64($file['checksum']))) {
+			return false;
+		}
+		
+		if ($filename === false) {
+			$filename = \ze\file::safeName(basename($location));
+		} else {
+			$filename = \ze\file::safeName($filename);
+		}
+
+		$file['filename'] = $filename;
+		
+		if ($imageMimeType) {
+			$file['mime_type'] = $imageMimeType;
+		} else {
+			$file['mime_type'] = \ze\file::mimeType($filename);
+		}
+
+		$file['usage'] = $usage;
+
+		//The image credit column was added in Zenario 9.3, rev 55901.
+		//The code below will ensure that the Installer isn't trying to use it
+		//before the relevant DB update adds the new column.
+		if (!is_null(\ze::$dbL) && \ze::$dbL->checkTableDef(DB_PREFIX. 'files', 'image_credit')) {
+			$file['image_credit'] = $imageCredit;
+		}
+
+		if ($mustBeAnImage && !\ze\file::isImageOrSVG($file['mime_type'])) {
+			return false;
+		}
+
+		//Check if this file exists in the system already
+		$key = ['checksum' => $file['checksum'], 'usage' => $file['usage']];
+		if ($existingFile = \ze\row::get('files', ['id', 'filename', 'location', 'path'], $key)) {
+			if($existingFile['location'] != 's3'){
+				$key = $existingFile['id'];
+		
+				//If this file is stored in the database, continue running this function to move it to the docstore dir
+				if (!($addToDocstoreDirIfPossible && $existingFile['location'] == 'db')) {
+			
+					//If this file is already stored, just update the name and remove the 'archived' flag if it was set
+					$path = false;
+					if ($existingFile['location'] == 'db' || ($path = \ze\file::docstorePath($existingFile['path']))) {
+						//If the name has changed, attempt to rename the file in the filesystem
+						/*if ($path && $file['filename'] != $existingFile['filename']) {
+							@rename($path, \ze::setting('docstore_dir'). '/'. $existingFile['path']. '/'. $file['filename']);
+						}
+				
+						*/
+						\ze\row::update('files', ['filename' => $filename, 'archived' => 0], $key);
+						if ($deleteWhenDone) {
+							unlink($location);
+						}
+				
+						return $existingFile['id'];
+					}
+				}
+			}
+		
+		//Otherwise we must insert the new file
+		} else {
+			if (!is_null($setPrivacy)) {
+				$file['privacy'] = $setPrivacy;
+			} else {
+				$file['privacy'] = \ze::oneOf(\ze::setting('default_image_privacy'), 'auto', 'public', 'private');
+			}
+		}
+		
+		if ($usage == 'site_setting') {
+			$file['privacy'] = 'public';
+		}
+
+
+
+		//Check if the file is an image and get its meta info
+		//(Note this logic is the same as in \ze\fileAdm::check(), except it also saves the meta info.)
+		if (\ze\file::isImageOrSVG($file['mime_type'])) {
+	
+			if (\ze\file::isImage($file['mime_type'])) {
+				
+				\ze::ignoreErrors();
+					$image = getimagesize($location);
+				\ze::noteErrors();
+				
+				if ($image === false) {
+					return false;
+				}	
+				$file['width'] = $image[0];
+				$file['height'] = $image[1];
+				$file['mime_type'] = $image['mime'];
+		
+				//Create resizes for the image as needed.
+				//Working copies should only be created if they are enabled, and the image is big enough to need them.
+				//Organizer thumbnails should always be created, even if the image needs to be scaled up
+				foreach ([
+					['custom_thumbnail_1_data', 'custom_thumbnail_1_width', 'custom_thumbnail_1_height', \ze::setting('custom_thumbnail_1_width'), \ze::setting('custom_thumbnail_1_height'), false],
+					['custom_thumbnail_2_data', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height', \ze::setting('custom_thumbnail_2_width'), \ze::setting('custom_thumbnail_2_height'), false],
+					['thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true]
+				] as $c) {
+					if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
+						$file[$c[1]] = $image[0];
+						$file[$c[2]] = $image[1];
+						$file[$c[0]] = file_get_contents($location);
+						\ze\image::resize($file[$c[0]], $file['mime_type'], $file[$c[1]], $file[$c[2]], $c[3], $c[4]);
+					}
+				}
+	
+			} else {
+				if (function_exists('simplexml_load_string')) {
+					//Try and get the width and height of the SVG from its metadata.
+					$rtn = \ze\fileAdm::getWidthAndHeightOfSVG($file, file_get_contents($location));
+				
+					//If PHP's simplexml_load_string function isn't callable allow this and continue.
+					//However if the funciton was callable and couldn't parse the file, don't allow this
+					//and reject the file.
+					if (!$rtn) {
+						return false;
+					}
+				}
+			}
+	
+			if ($imageAltTag) {
+				$altTag = $imageAltTag;
+			} else {
+				$filenameArray = explode('.', $filename);
+				$altTag = self::generateAltTagFromFilename($filename);
+			}
+			
+			if (strlen($altTag) > 125) {
+				$altTag = substr($altTag, 0, 124);
+			}
+			
+			$file['alt_tag'] = $altTag;
+		}
+
+
+		$file['archived'] = 0;
+		$file['created_datetime'] = \ze\date::now();
+		
+		//Assume we're storing this file in the database to start with, but change these settings later if needed.
+		$file['location'] = 'db';
+		$file['path'] = '';
+		$file['data'] = null;
+		
+		//Save the file in the database so we can generate a short checksum for it
+		$fileId = \ze\row::set('files', $file, $key);
+		\ze\fileAdm::updateShortChecksums();
+		
+		$path = $filePath = false;
+		if ($addToDocstoreDirIfPossible
+		 && ($file['short_checksum'] = \ze\row::get('files', 'short_checksum', $fileId))
+		 && (\ze\fileAdm::createDocstoreDir($file, $path, $filePath))) {
+	
+			if ($deleteWhenDone) {
+				rename($location, $filePath);
+				\ze\cache::chmod($filePath, 0666);
+			} else {
+				copy($location, $filePath);
+				\ze\cache::chmod($filePath, 0666);
+			}
+			
+			\ze\row::update('files', ['location' => 'docstore', 'path' => $path], $fileId);
+
+		} else {
+			\ze\row::update('files', ['data' => file_get_contents($location)], $fileId);
+
+			if ($deleteWhenDone) {
+				unlink($location);
+			}
+		}
+
+		return $fileId;
+	}
+
+	public static function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'image') {
+	
+		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+		if ($usage == 'email'
+		 || $usage == 'inline'
+		 || $usage == 'menu') {
+			$usage = 'image';
+		}
+	
+		foreach (preg_split('@(["\'])data:image/(\w*);base64,([^"\']*)(["\'])@s', $content, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $data) {
+		
+			if ($i == 0) {
+				$content = '';
+			}
+		
+			switch ($i % 5) {
+				case 2:
+					$ext = $data;
+					break;
+			
+				case 3:
+					$sql = "SELECT IFNULL(MAX(id), 0) + 1 FROM ". DB_PREFIX. "files";
+					$result = \ze\sql::select($sql);
+					$row = \ze\sql::fetchRow($result);
+					$filename = 'image_'. $row[0]. '.'. $ext;
+				
+					$data = base64_decode($data);
+				
+					if ($fileId = \ze\fileAdm::addFromString($usage, $data, $filename, $mustBeAnImage = true)) {
+						if ($checksum = \ze\row::get('files', 'checksum', $fileId)) {
+							$content .= htmlspecialchars($prefix. 'zenario/file.php?c='. $checksum);
+						
+							if ($usage != 'image') {
+								$content .= htmlspecialchars('&usage='. rawurlencode($usage));
+							}
+						
+							$content .= htmlspecialchars('&filename='. rawurlencode($filename));
+						}
+					}
+					break;
+				
+				default:
+					$content .= $data;
+					break;
+			}
+		}
+	}
+
+	public static function copyInDatabase($usage, $existingFileId, $filename = false, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false) {
+	
+		//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+		if ($usage == 'email'
+		 || $usage == 'inline'
+		 || $usage == 'menu') {
+			$usage = 'image';
+		}
+	
+		if ($file = \ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $existingFileId])) {
+			if ($file['usage'] == $usage) {
+				return $existingFileId;
+		
+			} elseif ($file['location'] == 'db') {
+				$data = \ze\row::get('files', 'data', ['id' => $existingFileId]);
+				return \ze\fileAdm::addFromString($usage, $data, ($filename ?: $file['filename']), $mustBeAnImage, $addToDocstoreDirIfPossible, $file['image_credit']);
+		
+			} elseif ($file['location'] == 'docstore' && ($location = \ze\file::docstorePath($file['path']))) {
+				return \ze\fileAdm::addToDatabase($usage, $location, ($filename ?: $file['filename']), $mustBeAnImage, $deleteWhenDone = false, $addToDocstoreDirIfPossible = true, false, false, false, false, $file['image_credit']);
+			}
+		}
+	
+		return false;
+	}
+
+
+	//Delete a file from the database, and anywhere it was stored on the disk
+	public static function delete($fileId) {
+	
+		if ($file = \ze\row::get('files', ['path', 'mime_type', 'short_checksum'], $fileId)) {
+	
+			//If the file was being stored in the docstore and nothing else uses it...
+			if ($file['path']
+			 && !\ze\row::exists('files', ['id' => ['!' => $fileId], 'path' => $file['path']])) {
+				//...then delete that directory from the docstore
+				\ze\cache::deleteDir(\ze::setting('docstore_dir'). '/'. $file['path']);
+			}
+		
+			//If the file was an image and there's no other copies with a different usage
+			if (\ze\file::isImageOrSVG($file['mime_type'])
+			 && !\ze\row::exists('files', ['id' => ['!' => $fileId], 'short_checksum' => $file['short_checksum']])) {
+				//...then delete it from the public/images/ directory
+				\ze\file::deletePublicImage($file);
+			}
+		
+			\ze\row::delete('files', $fileId);
+			
+			//Delete the linked row from the file_extracts table as well if it exists
+			\ze\row::delete('file_extracts', ['file_id' => $fileId]);
+		}
+	}
+
+	public static function deleteMediaContentItemFileIfUnused($cID, $cType, $fileId) {
+		if ($cID && $cType && $fileId) {
+			//Check if the file is used by other content items...
+			$tagId = $cType . '_' . $cID;
+			$sql = '
+				SELECT GROUP_CONCAT(ci.id) AS content_items
+				FROM ' . DB_PREFIX . 'content_items ci
+				LEFT JOIN ' . DB_PREFIX . 'content_item_versions civ
+					ON civ.tag_id = ci.tag_id
+				WHERE civ.file_id = ' . (int) $fileId . '
+				AND ci.tag_id <> "' . \ze\escape::asciiInSQL($tagId) . '"
+				AND ci.status NOT IN ("deleted", "trashed", "hidden")';
+			$result = \ze\sql::select($sql);
+			$usage = \ze\sql::fetchValue($result);
+			
+			//... and check if any hierarchical document uses the same file (search by checksum).
+			$fileChecksum = \ze\row::get('files', 'checksum', $fileId);
+			
+			$otherFiles = \ze\row::getValues('files', 'id', ['checksum' => $fileChecksum]);
+			$hierarchicalDocumentsUsage = [];
+			if (!empty($otherFiles)) {
+				$hierarchicalDocumentsSql = '
+					SELECT id
+					FROM ' . DB_PREFIX . 'documents
+					WHERE file_id IN(' . \ze\escape::in($otherFiles) . ')';
+				$result = \ze\sql::select($hierarchicalDocumentsSql);
+				$hierarchicalDocumentsUsage = \ze\sql::fetchValues($result);
+			}
+			
+			if (!$usage && !$hierarchicalDocumentsUsage) {
+				\ze\fileAdm::delete($fileId);
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
+	
+	//Try and get the width and height of a SVG from its metadata.
+	public static function getWidthAndHeightOfSVG(&$file, $data) {
+			
+		//For SVGs, try to read the metadata from the image and get the width and height from it.
+		\ze::ignoreErrors();
+			$svg = simplexml_load_string($data);
+		\ze::noteErrors();
+		
+		if ($svg) {
+			//There are lots of possible formats for this to watch out for.
+			//I've tried to be very flexible and code support for as many as I know.
+			//This code has support for setting the width and height in the following formats:
+				// width="123" height="456"
+				// width="123px" height="456px"
+				// width="100%" height="100%" viewbox="0 0 123 456"
+			//...and also any variation of those should work!
+			$vars = [];
+			foreach ($svg->attributes() as $name => $value) {
+				switch (strtolower($name)) {
+					case 'width':
+					case 'height':
+						$value = (string) $value;
+						if (is_numeric($value)) {
+							$vars[$name] = (int) $value;
+						} else {
+							$value2 = str_replace('px', '', $value);
+							if (is_numeric($value2)) {
+								$vars[$name] = (int) $value2;
+							} else {
+								$value2 = str_replace('%', '', $value);
+								if (is_numeric($value2)) {
+									$vars[$name. '%'] = (int) $value2;
+								}
+							}
+						}
+						break;
+					case 'viewbox':
+						$vb = explode(' ', (string) $value);
+						for ($i = 0; $i < 4; ++$i) {
+							if (isset($vb[$i]) && is_numeric($vb[$i])) {
+								$vars['vb'. $i] = (int) $vb[$i];
+							}
+							
+						}
+						break;
+				}
+			}
+			
+			//Set the width and height from the variables we just extracted.
+			//If we failed to do this, default to 100x100.
+			if (isset($vars['width'])) {
+				$file['width'] = $vars['width'];
+			
+			} elseif (isset($vars['vb0'], $vars['vb2'])) {
+				$file['width'] = (int) (($vars['vb2'] - $vars['vb0']) * ($vars['width%'] ?? 100) / 100);
+			
+			} else {
+				$file['width'] = 100;
+			}
+			
+			if (isset($vars['height'])) {
+				$file['height'] = $vars['height'];
+			
+			} elseif (isset($vars['vb1'], $vars['vb3'])) {
+				$file['height'] = (int) (($vars['vb3'] - $vars['vb1']) * ($vars['height%'] ?? 100) / 100);
+			
+			} else {
+				$file['height'] = 100;
+			}
+			
+			return true;
+			
+		} else {
+			return false;
+		}
+	}
+	
+
+	public static function docstoreDirPath($file) {
+		return $file['usage']. '/'. preg_replace('@[^\w\.-]+@', '_', $file['filename']). '-'. $file['short_checksum'];
+	}
+
+	public static function createDocstoreDir($file, &$path, &$filePath) {
+		
+		$docStoreDir = \ze::setting('docstore_dir'). '/';
+		
+		if (!is_dir($docStoreDir)
+		 || !is_writable($docStoreDir)) {
+			return false;
+		}
+		
+		$usageDir = $docStoreDir. $file['usage']. '/';
+		
+		if (!is_dir($usageDir)) {
+			if (!(mkdir($usageDir) && \ze\cache::chmod($usageDir, 0777))) {
+				return false;
+			}
+		}
+		
+		$path = \ze\fileAdm::docstoreDirPath($file);
+		$pathInDocstoreDir = $docStoreDir. $path. '/';
+		
+		if (!is_dir($pathInDocstoreDir)) {
+			if (!(mkdir($pathInDocstoreDir) && \ze\cache::chmod($pathInDocstoreDir, 0777))) {
+				return false;
+			}
+		}
+		
+		$filePath = $pathInDocstoreDir. \ze\file::safeName($file['filename']);
+		
+		if (file_exists($filePath)) {
+			unlink($filePath);
+		}
+		
+		return true;
+	}
+
+
 
 	//Generic handler for misc. AJAX requests from admin boxes
 	public static function handleAdminBoxAJAX() {
@@ -437,9 +905,9 @@ To correct this, please ask your system administrator to perform a
 			exit;
 		}
 		
-		//For file-types supported by the ze\file::check function, run a check to see if the extension looks correct
+		//For file-types supported by the ze\fileAdm::check function, run a check to see if the extension looks correct
 		//(I.e. try to check that this isn't a different type of file where the extension has been altered.)
-		$fileCheck = \ze\file::check($path, $mimeType = \ze\file::mimeType($name));
+		$fileCheck = \ze\fileAdm::check($path, $mimeType = \ze\file::mimeType($name));
 		if (\ze::isError($fileCheck)) {
 			
 			if (isset($fileCheck->errors['PASSWORD_PROTECTED'])) {
@@ -464,6 +932,9 @@ To correct this, please ask your system administrator to perform a
 				} elseif (isset($fileCheck->errors['MISSNAMED_JPG'])) {
 					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a JPEG, so its extension must be .jpg or .jpeg (upper or lower case).', $mrg, $moduleClass);
 				
+				} elseif (isset($fileCheck->errors['MISSNAMED_WEBP'])) {
+					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a WebP, so its extension must be .webp (upper or lower case).', $mrg, $moduleClass);
+				
 				} elseif (isset($fileCheck->errors['MISSNAMED_PNG'])) {
 					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a PNG, so its extension must be .png (upper or lower case).', $mrg, $moduleClass);
 				
@@ -482,6 +953,155 @@ To correct this, please ask your system administrator to perform a
 			}
 			
 			exit;
+		}
+	}
+	
+	
+	//Attempt to check if the contents of a file match the file
+	public static function check($filepath, $mimeType = null, $allowPasswordProtectedOfficeDocs = false) {
+		
+		if ($mimeType === null) {
+			$mimeType = \ze\file::mimeType($filepath);
+		}
+		
+		//Check to see if we have access to the file utility in UN*X
+		if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
+			
+			//Attempt to call the file program to check what mime-type it thinks this file should be.
+			//Note that our check using \ze\file::mimeType() just checks the file extension and nothing else.
+			//The file program is a little more sophisticated and does some basic checks on the file's contents as well.
+			if (!$scannedMimeType = exec('file --mime-type --brief '. escapeshellarg($filepath))) {
+				return \ze\file::genericCheckError($filepath);
+			}
+			
+			//Ignore the "x-" prefix as this is inconsistently applied in different versions of file.
+			$mimeType = str_replace('/x-', '/', $mimeType);
+			$scannedMimeType = str_replace('/x-', '/', $scannedMimeType);
+			
+			//Sometimes the fine details might differ between the registered mime-type and the scanned mime-type.
+			//Try to work out the basic type and compare off of that to prevent lots of false positives
+			//from slightly different classifications
+			$basicType = \ze\file::basicType($mimeType);
+			$scannedBasicType = \ze\file::basicType($scannedMimeType);
+			
+			//Check the basic types match, and reject the file if not.
+			if ($basicType !== $scannedBasicType) {
+				if (substr($mimeType, 0, 22) == 'application/postscript' && $scannedMimeType == 'image/eps') {
+					//Special case for EPS files: do nothing, allow these files
+				} elseif ($mimeType == "text/csv" && \ze::in($scannedMimeType, 'text/csv', 'application/csv')) {
+					//Special case for CSV files: allow certain mime types
+				} else {
+					return \ze\file::genericCheckError($filepath);
+				}
+			}
+			
+			//For images, enforce that the exact format of the image's contents matches what the file
+			//extension says it should be. E.g. don't allow .PNGs renamed to .JPGs
+			if ($basicType == 'image'
+			 && $scannedBasicType == 'image'
+			 && $mimeType !== $scannedMimeType) {
+				
+				if (\ze::in($mimeType, "image/x-icon", "image/icon") && \ze::in($scannedMimeType, 'image/x-icon', 'image/icon', 'image/ico', 'image/vnd.microsoft.icon')) {
+					//Special case for ICO files: allow certain mime types
+				} else {
+					switch ($scannedMimeType) {
+						case 'image/gif':
+							return new \ze\error('MISSNAMED_GIF', \ze\admin::phrase('The file "[[filename]]" is a GIF, so its extension must be .gif (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/jpeg':
+							return new \ze\error('MISSNAMED_JPG', \ze\admin::phrase('The file "[[filename]]" is a JPG, so its extension must be .jpg or .jpeg (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/webp':
+							return new \ze\error('MISSNAMED_WEBP', \ze\admin::phrase('The file "[[filename]]" is a WebP, so its extension must be .webp (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/png':
+							return new \ze\error('MISSNAMED_PNG', \ze\admin::phrase('The file "[[filename]]" is a PNG, so its extension must be .png (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						case 'image/svg+xml':
+							return new \ze\error('MISSNAMED_SVG', \ze\admin::phrase('The file "[[filename]]" is a SVG, so its extension must be .svg (upper or lower case).', ['filename' => basename($filepath)]));
+							break;
+						default:
+							return new \ze\error('INVALID', \ze\admin::phrase('The file "[[filename]]" has been saved with the wrong extension and cannot be accepted.', ['filename' => basename($filepath)]));
+					}
+				}
+			}
+			
+			//If this is an Office document, check both checks agree that it's an Office document
+			$exIsOffice = substr($mimeType, 0, 15) == 'application/vnd';
+			$scanIsOffice = substr($scannedMimeType, 0, 15) == 'application/vnd';
+			
+			if ($exIsOffice
+			 && !$scanIsOffice
+			 && substr($scannedMimeType, 0, 15) != 'application/vnd') {
+				
+				if ($scannedMimeType == 'application/encrypted') {
+					if ($allowPasswordProtectedOfficeDocs) {
+						//Do nothing, allow these files
+					} else {
+						$filename = basename($filepath);
+						return new \ze\error('PASSWORD_PROTECTED', \ze\admin::phrase('The file "[[filename]]" is password-protected. Password protection needs to be removed before you can upload it to Zenario.', ['filename' => $filename]));
+					}
+				} else {
+					return \ze\file::genericCheckError($filepath);
+				}
+			}
+			
+			//...and vice versa, don't let other files mascerade as Office docs
+			if ($scanIsOffice && !$exIsOffice) {
+				return \ze\file::genericCheckError($filepath);
+			}
+			
+			switch ($mimeType) {
+				//For a short list of files, check we have an exact match of mime-types
+				//(Everywhere else I'm being a little more flexiable as there is often disagreement about exactly what
+				// the mime-type for a file should be.)
+				case 'application/msword':
+				case 'application/pdf':
+				case 'application/zip':
+				case 'application/gzip':
+				case 'application/7z-compressed':
+					if ($mimeType !== $scannedMimeType) {
+						return \ze\file::genericCheckError($filepath);
+					}
+					break;
+				
+				//Always block executable files
+				case 'application/dosexec':
+				case 'application/executable':
+				case 'application/mach-binary':
+					return \ze\file::genericCheckError($filepath);
+			}
+		}
+		
+		//Note none of the code below is affected by the "x-" prefix, so I don't need to 
+		//worry about whether I've changed that or not above.
+		
+		
+		$check = true;
+		\ze::ignoreErrors();
+		
+			if (\ze\file::isImageOrSVG($mimeType)) {
+				if (\ze\file::isImage($mimeType)) {
+					$check = (bool) getimagesize($filepath);
+			
+				} else {
+					if (function_exists('simplexml_load_string')) {
+						$check = (bool) simplexml_load_string(file_get_contents($filepath));
+					}
+				}
+			
+			} elseif ($mimeType == 'application/zip'  || substr($mimeType, 0, 45) == 'application/vnd.openxmlformats-officedocument') {
+				if (class_exists('ZipArchive')) {
+					$zip = new \ZipArchive;
+					$check = ($zip->open($filepath)) && ($zip->numFiles);
+				}
+			}
+		\ze::noteErrors();
+		
+		if ($check) {
+			return true;
+		} else {
+			return \ze\file::genericCheckError($filepath);
 		}
 	}
 
@@ -606,22 +1226,31 @@ To correct this, please ask your system administrator to perform a
 		}
 	}
 
+	public static function rerenderWorkingCopyImages($recreateCustomThumbnailOnes, $recreateCustomThumbnailTwos, $removeOldCopies) {
+		require \ze::funIncPath(__FILE__, __FUNCTION__);
+	}
+
+	//Look through all images in the database that are flagged as public, add them if they're not there, and update their names.
+	public static function updateAllImagePublicLinks() {
+		\ze\fileAdm::checkAllImagePublicLinks(false, true);
+	}
+
 	//Look through all images in the database that are flagged as public, check if they're all there, and add them if not
-	public static function checkAllImagePublicLinks($check) {
+	public static function checkAllImagePublicLinks($check, $updateHTML = false) {
 		
 		if ($check) {
 			$report = ['numMissing' => 0];
 		}
 		
 		$sql = "
-			SELECT id, short_checksum, filename
+			SELECT id, short_checksum, filename, mime_type, width, height
 			FROM ". DB_PREFIX. "files
 			WHERE `usage` = 'image'
-			  AND mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+			  AND mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
 			  AND `privacy` = 'public'";
 		
 		foreach (\ze\sql::select($sql) as $image) {
-			$filepath = CMS_ROOT. 'public/images/'. $image['short_checksum']. '/'. \ze\file::safeName($image['filename']);
+			$filepath = CMS_ROOT. \ze\image::publicPath($image);
 			
 			if (!is_file($filepath)) {
 				//In "check" mode, we're just quickly checking if all of the directories look like they are there,
@@ -632,7 +1261,14 @@ To correct this, please ask your system administrator to perform a
 				
 				//In "fix" mode, add any missing directories.
 				} else {
-					\ze\file::addPublicImage($image['id']);
+					//During development we often saw trying to make WebP versions of some images generate a crash on the server.
+					//We've added some simplistic logging information just to help see where this script is getting stuck.
+					//Note: This log file will be auto-deleted after one week of not being written to by the ze\cache::cleanDirs() function.
+					\ze\miscAdm::debugLog('images', 'adding_to_public_dir.log', \ze\admin::phrase('Adding [[filename]] into the public directory. (#[[id]], [[short_checksum]], [[mime_type]])', $image));
+					
+					\ze\image::addToPublicDir($image['id']);
+
+					\ze\miscAdm::debugLog('images', 'adding_to_public_dir.log', \ze\admin::phrase('Done!', $image));
 				}
 			}
 		}
@@ -649,7 +1285,7 @@ To correct this, please ask your system administrator to perform a
 			//Get every content area on a WYSIWYG Editor that's on the current version
 			//or a draft version of a content item.
 			$sql = "
-				SELECT ps.value
+				SELECT ps.instance_id, ps.name, ps.egg_id, ps.value
 				FROM ". DB_PREFIX. "content_items AS c
 				INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 				   ON pi.content_id = c.id
@@ -666,27 +1302,455 @@ To correct this, please ask your system administrator to perform a
 				$files = [];
 				$htmlChanged = false;
 				\ze\contentAdm::syncInlineFileLinks($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage, $fixWhereLinksGo, $fixPublicDir);
+				
+				//The syncInlineFileLinks() function will suggest changes to the HTML. If we're just
+				//checking for missing images that we need to add back to the public directories, we can ignore this.
+				//However include the option to automatically apply its suggestions, e.g. during a migration from
+				//a previous version of Zenario where the link format may have changed.
+				if ($htmlChanged && $updateHTML) {
+					\ze\row::update('plugin_settings', ['value' => $row['value']], [
+						'instance_id' => $row['instance_id'],
+						'egg_id' => $row['egg_id'],
+						'name' => $row['name']
+					]);
+				}
+			}
+
+			//Same logic as above, but checking library plugins this time.
+			$sql = "
+				SELECT ps.instance_id, ps.name, ps.egg_id, ps.value
+				FROM ". DB_PREFIX. "plugin_instances AS pi
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+				   ON ps.instance_id = pi.id
+				  AND ps.format IN ('html', 'translatable_html')
+				WHERE pi.content_id = 0";
+			$result = \ze\sql::select($sql);
+
+			while ($row = \ze\sql::fetchAssoc($result)) {
+				//Scan the HTML for images, with the "$fixPublicDir" option set.
+				$files = [];
+				$htmlChanged = false;
+				\ze\contentAdm::syncInlineFileLinks($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage, $fixWhereLinksGo, $fixPublicDir);
+				
+				if ($htmlChanged && $updateHTML) {
+					\ze\row::update('plugin_settings', ['value' => $row['value']], [
+						'instance_id' => $row['instance_id'],
+						'egg_id' => $row['egg_id'],
+						'name' => $row['name']
+					]);
+				}
 			}
 		}
 	}
 	
+	//Similar logic to the above, but check email templates
+	public static function updateAllImagePublicLinksInEmailTemplates() {
+		
+		$sql = "
+			SELECT id, body
+			FROM ". DB_PREFIX. "email_templates
+			WHERE body IS NOT NULL";
+		$result = \ze\sql::select($sql);
+
+		while ($row = \ze\sql::fetchAssoc($result)) {
+			$files = [];
+			$htmlChanged = false;
+			\ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+			
+			if ($htmlChanged) {
+				\ze\row::update('email_templates', ['body' => $row['body']], $row['id']);
+			}
+		}
+		
+		$sql = "
+			SELECT name, `value`
+			FROM ". DB_PREFIX. "site_settings
+			WHERE name IN ('standard_email_template')
+			  AND `value` IS NOT NULL";
+		$result = \ze\sql::select($sql);
+
+		while ($row = \ze\sql::fetchAssoc($result)) {
+			$files = [];
+			$htmlChanged = false;
+			\ze\contentAdm::syncInlineFileLinks($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+			
+			if ($htmlChanged) {
+				\ze\row::update('site_settings', ['value' => $row['value']], $row['name']);
+			}
+		}
+	}	
 	
-	//A drop-in replacement for PHP's readfile() function,
-	//without some of the bugs!
+	public static function generateAltTagFromFilename($filename) {
+		// Find the position of the last dot in the filename
+		$lastDotPosition = strrpos($filename, '.');
 	
-	//Inspired by
-	//https://serverfault.com/questions/115906/is-there-some-limit-on-a-size-of-a-file-when-force-downloading-it-with-php-on-ap
+		// Extract the filename without the extension
+		if ($lastDotPosition !== false) {
+			$nameWithoutExtension = substr($filename, 0, $lastDotPosition);
+		} else {
+			// If no dot is found, use the whole filename
+			$nameWithoutExtension = $filename;
+		}
 	
-	//Note: was added for testing purposes, but didn't fix the problems I was trying to solve,
-	//so I've commented it back out!
-	#public static function readFile($path, $chunkSize = 0x1000000) {
-	#	if ($fh = fopen($path, 'rb')) {
-	#		while (!feof($fh)) { 
-	#			echo fread($fh, $chunkSize); 
-	#			flush();
-	#		}
-	#		$fh = fclose($fh);
-	#	}
-	#	return $fh;
-	#}
+		// Replace underscores and hyphens with spaces
+		$nameWithSpaces = str_replace(['_', '-'], ' ', $nameWithoutExtension);
+	
+		// Remove any special characters except alphanumeric and spaces
+		$nameSanitised = self::sanitiseAltTag($nameWithSpaces);
+	
+		// Capitalize the first letter of each word
+		$altTag = ucwords($nameSanitised);
+	
+		return $altTag;
+	}
+	
+	public static function sanitiseAltTag($altTag) {
+		$nameSanitised = preg_replace('/[^a-zA-Z0-9\s]/', '', $altTag);
+		
+		return $nameSanitised;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+
+	public static function plainTextExtract($filePath, &$extract, $mimeType = null) {
+		$extract = '';
+		
+		if (file_exists($filePath) && is_readable($filePath)) {
+			
+			if (is_null($mimeType)) {
+				$mimeType = \ze\file::mimeType($filePath);
+			}
+			
+			switch ($mimeType) {
+				//.doc
+				case 'application/msword':
+					if ($programPath = \ze\server::programPathForExec(\ze::setting('antiword_path'), 'antiword')) {
+						$return_var = false;
+						exec(
+							escapeshellarg($programPath).
+							' '.
+							escapeshellarg($filePath),
+						$extract, $return_var);
+					
+						if ($return_var == 0) {
+							$extract = \ze\ring::encodeToUtf8(implode("\n", $extract));
+							
+							//PLEASE NOTE: as of 28 Jan 2025, there appears to be a bug when processing Word documents
+							//and it could possibly be related to undocumented changes in PHP 8.1 and above.
+							//If the text encoding could not be found, treat this as if there was no extract, so the upload does not fail.
+							if ($extract) {
+								$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
+							}
+							return 'antiword';
+						}
+					}
+				
+					break;
+			
+			
+				//.docx
+				case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+					if (class_exists('ZipArchive')) {
+						$zip = new \ZipArchive;
+						if ($zip->open($filePath) === true) {
+							if ($extract = html_entity_decode(strip_tags($zip->getFromName('word/document.xml')), ENT_QUOTES, 'UTF-8')) {
+								$zip->close();
+							
+								$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
+								return 'ZipArchive';
+							}
+							$zip->close();
+						}
+					}
+				
+					break;
+			
+			
+				//.pdf
+				case 'application/pdf':
+					if ($programPath = \ze\server::programPathForExec(\ze::setting('pdftotext_path'), 'pdftotext')) {
+						if ($temp_file = tempnam(sys_get_temp_dir(), 'p2t')) {
+							$return_var = $output = false;
+							exec(
+								escapeshellarg($programPath).
+								' -enc UTF-8 -raw -eol unix '.
+								escapeshellarg($filePath).
+								' '.
+								escapeshellarg($temp_file),
+							$output, $return_var);
+						
+						
+							//pdftotext has a bug where it can't read certain filenames (maybe there's some missed escaping in its code?)
+							//If pdftotext couldn't read the file, try copying the file to a sensible name
+							if ($return_var == 1) {
+								if ($temp_pdf_file = tempnam(sys_get_temp_dir(), 'pdf')) {
+									copy($filePath, $temp_pdf_file);
+								
+									$return_var = $output = false;
+									exec(
+										escapeshellarg($programPath).
+										' -enc UTF-8 -raw -eol unix '.
+										escapeshellarg($temp_pdf_file).
+										' '.
+										escapeshellarg($temp_file),
+									$output, $return_var);
+								}
+							}
+						
+						
+							if ($return_var == 0) {
+								$extract = file_get_contents($temp_file);
+								unlink($temp_file);
+								
+								// Get rid of hyphens where words break across a newline
+								$extract = mb_ereg_replace('\xC2\xAD\n', '', $extract);
+								
+								//Comment from Chris:
+								//This line of code is suspicous.
+								//It looks like it was intended to remove corrupted characters caused due to
+								//an incorrect character set being applied, but I disagree with the logic.
+								//It has also started generating PHP errors after a OS upgrade, so we've decided to remove it.
+								#// Get rid of other characters which may show as Â or â
+								#$extract = mb_ereg_replace('[\xC2\xE2]', '', $extract);
+							
+								$extract = trim(\ze\ring::encodeToUtf8($extract));
+
+								return 'pdftotext';
+							}
+						}
+					}
+				
+					break;
+			}
+		}
+	
+		$extract = '';
+		return false;
+	}
+
+	public static function updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId = false, $forceRescan = false) {
+		if ($fileId === false) {
+			$fileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		}
+	
+		if ($fileId && $file = \ze\file::docstorePath($fileId)) {
+			\ze\file::addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file, true);
+		}
+		
+		//Get the file's extract
+		$extract = \ze\fileAdm::textExtract($fileId, $allowAsync = true, $forceRescan);
+	
+		\ze\row::set('content_cache', [
+			'extract' => $extract['extract'],
+			'extract_wordcount' => $extract['extract_wordcount'],
+			'extract_pagecount' => $extract['extract_pagecount']
+		], [
+			'content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion
+		]);
+	
+		return $extract;
+	}
+
+	public static function updateHierarchicalDocumentExtract($fileId, &$extract, &$imgFileId, $forceRescan = false) {
+		
+		//Get the file's extract
+		$extract = \ze\fileAdm::textExtract($fileId, $allowAsync = false, $forceRescan);
+		
+		//Trim down to just the columns we use in the documents table
+		$extract = [
+			'extract' => $extract['extract'],
+			'extract_wordcount' => $extract['extract_wordcount'],
+			'extract_pagecount' => $extract['extract_pagecount']
+		];
+	
+		$filePath = \ze\file::docstorePath($fileId);
+		
+		$mime = \ze\row::get('files', 'mime_type', $fileId);
+		switch ($mime) {
+			case 'application/pdf':
+				if ($imgFile = \ze\file::createPdfFirstPageScreenshotPng($filePath)) {
+					$imgBaseName = basename($filePath) . '.png';
+					$imgFileId = \ze\fileAdm::addToDatabase('hierarchical_file_thumbnail', $imgFile, $imgBaseName, true, true);
+				}
+				break;
+			case 'image/jpeg':
+			case 'image/webp':
+			case 'image/png':
+			case 'image/gif':
+				$imageThumbnailWidth = 300;
+				$imageThumbnailHeight = 300;
+				$size = getimagesize($filePath);
+			
+				if ($size && $size[0] > $imageThumbnailWidth && $size[1] > $imageThumbnailHeight) {
+					$width = $height = $url = false;
+					\ze\image::link($width, $height, $url, $fileId, $imageThumbnailWidth, $imageThumbnailHeight, 'resize', 0, false, false, 'auto', true, $internalFilePath = true);
+					$imgFileId = \ze\fileAdm::addToDatabase('hierarchical_file_thumbnail', $url);
+				} 
+				break;
+		}
+	}
+	
+	public static function textExtract($fileId, $allowAsync, $forceRescan = false) {
+		
+		$key = ['file_id' => $fileId];
+		
+		//If we're already scanned a file, we'd not normally rescan it.
+		if (!$forceRescan && ($extract = \ze\row::get('file_extracts', true, $key))) {
+			return $extract;
+		}
+		
+		$extract = [
+			'extract' => null,
+			'extract_wordcount' => 0,
+			'extract_pagecount' => null,
+			'extract_status' => 'failed'
+		];
+		
+		//Currently this will only work for files stored in the docstore, and not files stored in the database.
+		//If we wanted to overcome this limitation, we'd need to clopy the file data into a temporary file.
+		if ($fileId
+		 && ($file = \ze\row::get('files', ['usage', 'short_checksum', 'filename', 'mime_type'], $fileId))
+		 && ($filePath = \ze\file::docstorePath($fileId))
+		 && (file_exists($filePath))
+		 && (is_readable($filePath))) {
+			
+			$useTextract = false;
+			$imageFormatNotSupported = false;
+			
+			switch ($file['mime_type']) {
+				case 'application/pdf':
+					$useTextract = \ze::setting('enable_aws_support') && \ze::setting('enable_aws_textract') && \ze::setting('aws_textract_extract_from_pdf');
+					break;
+				
+				case 'image/webp':
+					$imageFormatNotSupported = true;
+				case 'image/jpeg':
+				case 'image/png':
+					$useTextract = \ze::setting('enable_aws_support') && \ze::setting('enable_aws_textract') && \ze::setting('aws_textract_extract_from_jpg_and_png');
+					break;
+			}
+			
+			if ($useTextract) {
+				
+				
+				//When scanning multiple files in batch, we should wait a little bit
+				//between sending each one.
+				//(N.b. these are likely done in multiple requests, so I need to have some logic that
+				// stores the last time this was done.)
+				$time = time();
+				$prevTime = (int) \ze::setting('aws_textract_last_called');
+				
+				if ($prevTime && $prevTime >= ($time - 1)) {
+					usleep(max(68000, min(999999, (int) \ze::setting('aws_textract_throttle'))));
+				}
+				
+				\ze\site::setSetting('aws_textract_last_called', $time);
+				
+				
+				
+				//Work around image formats not supported by Textract. Convert them to PNGs as a workaround.
+				if ($imageFormatNotSupported) {
+					$imageDriver = new \Imagine\Gd\Imagine();
+					$image = $imageDriver->open($filePath);
+					$filePath = tempnam(sys_get_temp_dir(), 'img');
+					$image->save($filePath, ['format' => 'png']);
+					
+					//Make a filename out of the id, usage, checksum and extension
+					$remoteFileName = 'textract-target-'. $file['usage']. '-'. $fileId. '-'. $file['short_checksum']. '.png';
+				
+				} else {
+					//Get the file's extension
+					$parts = explode('.', $file['filename']);
+					$type = $parts[count($parts) - 1];
+					
+					//Make a filename out of the id, usage, checksum and extension
+					$remoteFileName = 'textract-target-'. $file['usage']. '-'. $fileId. '-'. $file['short_checksum']. '.'. $type;
+				}
+				
+				//Upload the file to AWS S3
+				$cS3 = $cTextract = $s3BucketName = null;
+				try {
+					\ze\fileAdm::textractConnection($cS3, $cTextract, $s3BucketName);
+					
+					$result = $cS3->putObject([
+						'Bucket' => $s3BucketName,
+						'Key' => $remoteFileName,
+						'SourceFile' => $filePath,
+					]);
+
+				} catch (AwsException $e) {
+					if ($imageFormatNotSupported) {
+						unlink($filePath);
+					}
+					
+					echo 'Error sending file to AWS S3: ' . $e->getMessage();
+					exit;
+				}
+				if ($imageFormatNotSupported) {
+					unlink($filePath);
+				}
+
+				// Start the Textract job
+				$result = $cTextract->startDocumentTextDetection([
+					'DocumentLocation' => [
+						'S3Object' => [
+							'Bucket' => $s3BucketName,
+							'Name' => $remoteFileName,
+						],
+					],
+				]);
+				
+				$extract['extract_source'] = 'Textract';
+				$extract['extract_status'] = 'processing';
+				$extract['requested_on'] = \ze\date::now();
+				$extract['extract_job_id'] = $result['JobId'];
+				
+				\ze\row::set('file_extracts', $extract, $key);
+				return $extract;
+			
+			} elseif ($extract['extract_source'] = \ze\fileAdm::plainTextExtract($filePath, $extract['extract'], $file['mime_type'])) {
+				$extract['extract_wordcount'] = str_word_count($extract['extract']);
+				$extract['extract_status'] = 'completed';
+				
+				\ze\row::set('file_extracts', $extract, $key);
+				return $extract;
+			}
+		}
+		
+		//If anything failed, remove the row from the extracts table
+		\ze\row::delete('file_extracts', $key);
+		return $extract;
+	}
+
+	public static function textractConnection(&$cS3, &$cTextract, &$s3BucketName) {
+		$credentials = [
+			'key'    => \ze::setting('aws_s3_key_id'),
+			'secret' => \ze::setting('aws_s3_secret_key'),
+			// 'token' => 'your_session_token', // Uncomment and provide a session token if you're using temporary credentials
+		];
+		$region = \ze::setting('aws_s3_region');
+
+		// Document details
+		$s3BucketName = \ze::setting('aws_textract_temporary_storage_bucket');
+
+		// Create an S3 client
+		$cS3 = new \Aws\S3\S3Client([
+			'version' => 'latest',
+			'region' => $region,
+			'credentials' => $credentials,
+		]);
+
+		// Create AWS Textract client
+		$cTextract = new \Aws\Textract\TextractClient([
+			'region' => $region,
+			'version' => 'latest',
+			'credentials' => $credentials,
+		]);
+	}
 }

@@ -3,6 +3,7 @@
 zenario_user__welcome_email:
     key:
         id: ""
+    save_button_message: Send
     tabs:
         details:
             label: Activation email

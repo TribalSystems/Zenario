@@ -39,13 +39,13 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 		} elseif (!empty($box['key']['skinId'])) {
 			$skin = ze\row::get('skins', ['id', 'name'], $box['key']['skinId']);
-			$this->skinWritableDir = ze\content::skinPath($skin['name']). 'editable_css/';
+			$this->skinWritableDir = ze\skin::path($skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		
 		//If we possibly can, try to get the Skin that this plugin is being shown on
 		} elseif (ze::$skinId) {
 			$box['key']['skinId'] = ze::$skinId;
-			$this->skinWritableDir = ze\content::skinPath(). 'editable_css/';
+			$this->skinWritableDir = ze\skin::path(). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		
 		} else
@@ -55,7 +55,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		 && ($version = ze\row::get('content_item_versions', true, ['id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']]))) {
 			ze\content::setShowableContent($content, $chain, $version, false);
 			$box['key']['skinId'] = ze::$skinId;
-			$this->skinWritableDir = ze\content::skinPath(). 'editable_css/';
+			$this->skinWritableDir = ze\skin::path(). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		}
 		
@@ -67,7 +67,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		if (count($skins) == 1) {
 			$skin = array_pop($skins);
 			$box['key']['skinId'] = $skin['id'];
-			$this->skinWritableDir = ze\content::skinPath($skin['name']). 'editable_css/';
+			$this->skinWritableDir = ze\skin::path($skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		}
 		
@@ -85,7 +85,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		 && ($skinId = ze\sql::fetchValue($result))
 		 && ($skin = $skins[$skinId] ?? false)) {
 			$box['key']['skinId'] = $skin['id'];
-			$this->skinWritableDir = ze\content::skinPath($skin['name']). 'editable_css/';
+			$this->skinWritableDir = ze\skin::path($skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
 		}
 		
@@ -133,23 +133,23 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 
 		$box['key']['isVersionControlled'] = !empty($instance['content_id']);
-		$box['key']['cID'] = ze::ifNull($instance['content_id'] ?? false, ze::get('cID'), ze::get('parent__cID'));
-		$box['key']['cType'] = ze::ifNull($instance['content_type'] ?? false, ze::get('cType'), ze::get('parent__cType'));
-		$box['key']['cVersion'] = ze::ifNull($instance['content_version'] ?? false, ze::get('cVersion'));
-		$box['key']['slotName'] = ze::ifNull($instance['slot_name'] ?? false, ze::get('slotName'));
-		$box['key']['languageId'] = ze::ifNull(ze\content::langId($box['key']['cID'], $box['key']['cType']), ze::$defaultLang);
+		$box['key']['cID'] = ($instance['content_id'] ?? false) ?: (ze::get('cID') ?: ze::get('parent__cID'));
+		$box['key']['cType'] = ($instance['content_type'] ?? false) ?: (ze::get('cType') ?: ze::get('parent__cType'));
+		$box['key']['cVersion'] = ($instance['content_version'] ?? false) ?: ze::get('cVersion');
+		$box['key']['slotName'] = ($instance['slot_name'] ?? false) ?: ze::get('slotName');
+		$box['key']['languageId'] = ze\content::langId($box['key']['cID'], $box['key']['cType']) ?: ze::$defaultLang;
 		
 		$isAdvancedPlugin = false;
 		
 		switch ($box['key']['moduleClassName']) {
-			case 'zenario_plugin_nest':
+			case 'zenario_nest':
+			case 'zenario_ajax_nest':
 				$module['pluginAdminName'] = $pluginAdminName = \ze\admin::phrase('nest');
 				$module['ucPluginAdminName'] = $ucPluginAdminName = \ze\admin::phrase('Nest');
 				$module['pPluginAdminName'] =
 				$module['pluginsOfThisType'] = \ze\admin::phrase('nests');
 				break;
 			case 'zenario_slideshow':
-			case 'zenario_slideshow_simple':
 				$module['pluginAdminName'] = $pluginAdminName = \ze\admin::phrase('slideshow');
 				$module['ucPluginAdminName'] = $ucPluginAdminName = \ze\admin::phrase('Slideshow');
 				$module['pPluginAdminName'] =
@@ -207,20 +207,17 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			//Show different identifier for nested plugins, depending on whether they're in a nest
 			//or a slideshow, and whether the nested plugin is a banner.
 			switch ($instance['class_name']) {
-				case 'zenario_slideshow_simple':
-					if ($module['class_name'] == 'zenario_banner') {
-						
-						$imageId = ze\plugin::setting('image', $box['key']['instanceId'], $box['key']['eggId']);
-						
-						if ($imageId) {
-							if ($details = ze\row::get('files', ['id', 'short_checksum'], $imageId)) {
-								$box['identifier']['value'] = ze\admin::phrase('Image ID [[id]], checksum "[[short_checksum]]"', $details);
-								$box['identifier']['label'] = '';
-								break;
-							}
+				case 'zenario_slideshow':
+					$imageId = ze\plugin::setting('image', $box['key']['instanceId'], $box['key']['eggId']);
+					
+					if ($imageId) {
+						if ($details = ze\row::get('files', ['id', 'short_checksum'], $imageId)) {
+							$box['identifier']['value'] = ze\admin::phrase('Image ID [[id]], checksum "[[short_checksum]]"', $details);
+							$box['identifier']['label'] = '';
+							break;
 						}
 					}
-				case 'zenario_slideshow':
+					
 					$box['identifier']['label'] = ze\admin::phrase('Plugin in slideshow');
 					$box['identifier']['value'] = ' ';
 					break;
@@ -410,14 +407,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 							$fields['first_tab/instance_name']['redraw_onchange'] =
 							$fields['first_tab/instance_name']['redraw_immediately_onchange'] = false;
 							
-							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this [[pluginAdminName]].', $module);
+							$fields['first_tab/instance_name']['note_below'] = ze\admin::phrase('Type here to rename this [[pluginAdminName]].', $module);
 						
 						} else {
-							$fields['first_tab/instance_name']['side_note'] = ze\admin::phrase('Type here to rename this [[pluginAdminName]] or save as a new [[pluginAdminName]].', $module);
+							$fields['first_tab/instance_name']['note_below'] = ze\admin::phrase('Type here to rename this [[pluginAdminName]], or save as a new [[pluginAdminName]].', $module);
 							
 							$fields['first_tab/duplicate_or_rename']['pre_field_html'] =
 								'<div class="zfab_plugin_rename_warning warning_icon">'.
-									ze\admin::phrase("You've changed this [[pluginAdminName]]'s name; please select whether you want to:", $module).
+									ze\admin::phrase("You are changing this [[pluginAdminName]]'s name; please select whether you want to:", $module).
 								'</div>';
 							
 							//The above could be rewritten using TUIX properties if desired
@@ -451,7 +448,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 				} elseif ($box['key']['instanceId']) {
 					switch ($module['class_name']) {
-						case 'zenario_plugin_nest':
+						case 'zenario_nest':
+						case 'zenario_ajax_nest':
 							$title = ze\admin::phrase('Nest ([[class_name]])', $titleMrg);
 							break;
 						default:
@@ -460,7 +458,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 				} else {
 					switch ($module['class_name']) {
-						case 'zenario_plugin_nest':
+						case 'zenario_nest':
+						case 'zenario_ajax_nest':
 							$title = ze\admin::phrase('New nest ([[class_name]])', $titleMrg);
 							break;
 						default:
@@ -547,11 +546,20 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$fields['framework_tab/framework']['values'] = ze\pluginAdm::listFrameworks($module['class_name']);
 
 				if (!empty($fields['framework_tab/framework']['values'])) {
+					foreach ($fields['framework_tab/framework']['values'] as $frameworkName => &$frameworkValues) {
+						if (!empty($frameworkValues['is_custom_framework'])) {
+							if (!empty($frameworkValues['label'])) {
+								$frameworkValues['label'] .= ze\admin::phrase(' (custom)');
+							}
+						}
+					}
+					
 					if ($module['default_framework']
 					 && isset($fields['framework_tab/framework']['values'][$module['default_framework']])) {
 						$fields['framework_tab/framework']['values'][$module['default_framework']]['label'] .=
 							ze\admin::phrase(' (default)');
 					}
+					
 					if (!isset($fields['framework_tab/framework']['values'][$framework])) {
 						$fields['framework_tab/framework']['values'][$framework] =
 							['ord' => 0, 'label' => ze\admin::phrase('[[framework]] (missing from filesystem)', ['framework' => $framework])];
@@ -755,8 +763,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			//case 'plugin_css_and_framework':
 			
 			
+				$fields['framework_tab/custom_framework_info']['hidden'] = true;
 				if (!empty($values['framework_tab/framework'])) {
-					$fields['framework_tab/custom_framework_info']['hidden'] = true;
 
 					$module = ze\module::details($box['key']['moduleId']);
 
@@ -1166,9 +1174,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 														$usage = $field['upload']['usage'] ?? 'image';
 
 														if (!empty($field['upload']['location']) && $field['upload']['location'] == 'docstore') {
-															$fileId = ze\file::addToDocstoreDir($usage, $location);
+															$fileId = ze\fileAdm::addToDocstoreDir($usage, $location);
 														} else {
-															$fileId = ze\file::addToDatabase($usage, $location);
+															$fileId = ze\fileAdm::addToDatabase($usage, $location);
 														}
 								
 														if (!isset($field['upload']['uploaded_ids'])) {
@@ -1484,15 +1492,8 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			if ($php) {
 				//Use token_get_all() to parse the file.
 				//This is a lot more reliable than trying to use a regular expression.
-				$tokens = token_get_all($php);
-			
-				foreach ($tokens as &$token) {
-					if (!is_string($token)) {
-						$token = $token[1];
-					}
-				}
-				unset($token);
-			
+				$tokens = ze\ring::tokenise($php);
+				
 				//Remove any whitespaces
 				$tokens = array_values(array_filter(array_map('trim', $tokens)));
 			
@@ -1532,10 +1533,12 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 		
 		
-		
-		
+		//Show or hide the "phrases" tab depending on whether any phrases were actually found.
+		//Also, we have the issue where some plugins can also have tabs called "phrases".
+		//We want to avoid having two tabs with the same name, so we'll change this to something a bit more
+		//specific in some situations
 		if ($pInCode) {
-			if ($pInTwig) {
+			if ($pInTwig && !isset($box['tabs']['phrases'])) {
 				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases');
 			} else {
 				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases (PHP code)');
@@ -1585,7 +1588,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			}
 		}
 		unset($defaultText);
-		asort($phrases);	
+		asort($phrases, SORT_FLAG_CASE | SORT_NATURAL);	
 		
 		foreach ($phrases as $code => $defaultText) {
 			$ppath = 'phrase.framework.'. $code;

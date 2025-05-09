@@ -6,8 +6,9 @@ zenario_menu_text:
     hide_tab_bar: true
     max_height: 300
     key:
-        id: ""
-        languageId: ""
+        id: ''
+        mID: ''
+        languageId: ''
     identifier: 
         css_class: menu_node
         label: Menu node ID
@@ -47,6 +48,11 @@ zenario_menu_text:
                     type: text
                     show_as_a_span: true
                     css_class: zenario_textbox_noborder zfab_menuPathPreviewNode zfab_menuPathPreviewUpdatingNode
+                
+                #This grouping is empty by default and populated when the Menu Milticolumn module is running.
+                menu_multicolumn_top_of_column_grouping:
+                    type: grouping
+                    ord: 5000
     
     extra_button_html: |
         <input

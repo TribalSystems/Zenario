@@ -84,6 +84,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 				$fields['spare_alias/ext_url']['value'] = $details['ext_url'];
 			}
 			
+			$box['last_updated'] = ze\admin::phrase('Created [[date_time]]', ['date_time' => ze\date::formatDateTime($details['created_datetime'])]);
 		}
 		
 		//Show suffix if settings enabled
@@ -104,7 +105,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		if ($values['spare_alias/target_loc'] == 'int') {
 			$tagId = $values['spare_alias/hyperlink_target'];
 			if ($tagId) {
-				$values['spare_alias/redirect_target_url'] = ze\link::toItem($tagId, 'html', true, '', false, false, $forceAliasInAdminMode = true);
+				$values['spare_alias/redirect_target_url'] = ze\link::toItemWithAlias($tagId, 'html', true);
 			}
 		} elseif ($values['spare_alias/target_loc'] == 'ext') {
 			$target = $values['spare_alias/ext_url'];
@@ -146,7 +147,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 				$box['tabs']['spare_alias']['errors'][] = ze\admin::phrase('The spare alias "[[alias]]" is already in use.', ['alias' => $values['spare_alias/alias']]);
 		
 			} elseif ($mistakesInAlias = ze\contentAdm::validateAlias($values['spare_alias/alias'], false, false, false, $isSpareAlias = true)) {
-				$box['tabs']['spare_alias']['errors'] = $mistakesInAlias;
+				$fields['spare_alias/alias']['error'] = implode('<br />', $mistakesInAlias);
 			}
 		}
 		

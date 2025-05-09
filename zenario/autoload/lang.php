@@ -66,8 +66,8 @@ class lang {
 	
 	
 	//Shortcut function to calling the phrase() function with the $isHTML option set
-	public static function htmlPhrase($code, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false) {
-		return \ze\lang::phrase($code, $replace, $moduleClass, $languageId, true);
+	public static function htmlPhrase($html, $replace = false, $moduleClass = 'zenario_common_features', $languageId = false) {
+		return \ze\lang::phrase($html, $replace, $moduleClass, $languageId, true);
 	}
 
 
@@ -84,6 +84,8 @@ class lang {
 		if ($moduleClass === false) {
 			return \ze\admin::phrase($code, $replace);
 		}
+		
+		
 	
 	
 		//Use $languageId === true as a shortcut to the site default language
@@ -105,6 +107,14 @@ class lang {
 		$neverSeenOnContentItemBefore = false;
 		$seenAtCID = null;
 		$seenAtCType = null;
+		
+		
+		
+		// Functionality for a "phase debug mode" prototype.
+		// Currently not in use/implemented.
+		#if (...) {
+		#	$phrase = \ze\phraseAdm::debugText($phrase, $isHTML);
+		#} else
 	
 		//Phrase codes (which start with an underscore) always need to be looked up
 		//Otherwise we only need to look up phrases on multi-lingual sites
@@ -465,6 +475,16 @@ class lang {
 	public static function nzPhraseInHTML($zeroText, $text, $pluralText = false, $n = 1, $replace = [], $moduleClass = 'zenario_common_features', $languageId = false) {
 		return \ze\lang::nPhraseInHTML($text, $pluralText, $n, $replace, $moduleClass, $languageId, $zeroText);
 	}
+	
+	const monthPhraseFromTwig = true;
+	public static function monthPhrase($code, $i, $languageId = false) {
+		return \ze\lang::phrase($code. str_pad($i, 2, '0', STR_PAD_LEFT), false, 'zenario_common_features', $languageId);
+	}
+
+	const dayPhraseFromTwig = true;
+	public static function dayPhrase($code, $i, $languageId = false) {
+		return \ze\lang::phrase($code. $i, false, 'zenario_common_features', $languageId);
+	}
 
 
 	public static function formatFilesizeNicely($size, $precision = 0, $adminMode = false, $vlpClass = '') {
@@ -503,6 +523,13 @@ class lang {
 
 	public static function formatFileTypeNicely($type, $vlpClass = '') {
 		switch($type) {
+			case 'image/webp': 
+				//Note by Chris:
+				//This seems to be a rare function where we still use phrase codes, not English base-phrases.
+				//No plans to change any existing phrases/break any existing translations, but I don't want to
+				//create any new phrase codes, so the new addition I've added here uses an English base-phrase.
+				$new_type = \ze\lang::phrase('WebP file', false, $vlpClass);
+				break;
 			case 'image/jpeg': 
 				$new_type = \ze\lang::phrase('_JPEG_file', false, $vlpClass);
 				break;
@@ -631,6 +658,19 @@ class lang {
 
 	public static function localName($languageId = false) {
 		return \ze\lang::name($languageId, false, false, true);
+	}
+	
+	//If the current visitor speaks English, return a language name in English.
+	//Otherwise return a language name in its local tongue.
+	const appropriateNameFromTwig = true;
+	public static function appropriateName($languageId) {
+		if (\ze::$visLang
+		 && \ze::$visLang != 'en'
+		 && substr(\ze::$visLang, 0, 3) != 'en-') {
+			return \ze\lang::name($languageId, false, true, true);
+		} else {
+			return \ze\lang::name($languageId, false, true, false);
+		}
 	}
 
 	public static function sanitiseLanguageId($languageId) {

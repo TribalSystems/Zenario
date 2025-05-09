@@ -12,6 +12,8 @@
 		
 		{% if Email_Verified %}
 			<div class="extranet_message">{{"Your email address has been successfully verified."|trans}}</div>
+		{% elseif Email_Verification_Link_Expired %}
+			<div class="extranet_error">{{"Your email address verification link has expired."|trans}}</div>
 		{% elseif Email_Could_Not_Be_Verified %}
 			<div class="extranet_error">{{"The link provided is not valid or the email address has already been verified."|trans}}</div>
 		{% endif %}

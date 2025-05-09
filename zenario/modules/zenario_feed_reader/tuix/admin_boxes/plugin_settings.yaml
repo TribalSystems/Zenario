@@ -71,17 +71,17 @@ plugin_settings:
                     type: radios
                     values:
                         use_feed_title:
-                            ord: "1"
+                            ord: 1
                             label: |
                                 Use feed's title
                         dont_show:
-                            ord: "2"
+                            ord: 2
                             label: "Don't show a title"
                         use_custom_title:
-                            ord: "3"
+                            ord: 3
                             label: 'Use a custom title...'
                     value: use_feed_title
-                    format_onchange: Yes
+                    redraw_onchange: true
                 feed_title:
                     label: 'Custom title:'
                     indent: 1
@@ -90,7 +90,8 @@ plugin_settings:
                         name: feed_title
                     value: 
                     validation:
-                        required_if_not_hidden: Please enter a custom title
+                        required_if_not_hidden: Please enter a custom title.
+                    visible_if: lib.value('title') == 'use_custom_title'
                 title_tags:
                     indent: 1
                     plugin_setting:
@@ -124,6 +125,7 @@ plugin_settings:
                         p:
                             label: p
                             ord: 8
+                    visible_if: lib.value('title') != 'dont_show'
                 number_feeds_to_show:
                     label: 'Number of feed items to show:'
                     type: select
@@ -183,7 +185,7 @@ plugin_settings:
                         show_original_from_feed:
                             label: Show original from feed
                     value: dont_show
-                    format_onchange: Yes
+                    redraw_onchange: true
                 date_format:
                     indent: 1
                     label: 'Date format:'
@@ -198,6 +200,7 @@ plugin_settings:
                         _LONG:
                             label: Long
                     value: _SHORT
+                    visible_if: lib.value('show_date_time') != 'dont_show'
                 size:
                     label: 'Number of characters from description/summary field to be displayed:'
                     plugin_setting:
@@ -252,11 +255,12 @@ plugin_settings:
                         do_no_filter:
                             label: Do not filter
                     value: do_no_filter
-                    format_onchange: Yes
+                    redraw_onchange: true
                 regexp:
                     indent: 1
                     label: 'Use this regular expression:'
                     plugin_setting:
                         name: regexp
                     type: text
+                    visible_if: lib.value('regexp_field') != 'do_no_filter'
     module_class_name: zenario_feed_reader

@@ -81,10 +81,13 @@
 	visibility:visible;
 }
 
+.zenario_promo_menu__default_style ul .columns_wrap .columns_wrap_inner {
+	display:flex;
+}
+
 .zenario_promo_menu__default_style ul .columns_wrap .column,
 .zenario_promo_menu__default_style .feature_wrap {
-	float:left;
-	width:calc(33.33% - 40px);
+	flex:1;
 	padding:10px 20px;
 }
 
@@ -139,6 +142,7 @@
 .zenario_promo_menu__default_style .columns_wrap .level2:before,
 .zenario_promo_menu__default_style ul > li.has_child > em > a:after {
 	font-family: 'FontAwesome';
+	font-size:12px;
 }
 
 .zenario_promo_menu__default_style ul > li.has_child > a:after,
@@ -161,8 +165,8 @@
 
 .zenario_promo_menu__default_style .columns_wrap .level2:before {
 	position:absolute;
-	top:3px;
-	left:0;
+	top:5px;
+	left:3px;
 }
 
 .zenario_promo_menu__default_style ul > li.has_child > a:after,

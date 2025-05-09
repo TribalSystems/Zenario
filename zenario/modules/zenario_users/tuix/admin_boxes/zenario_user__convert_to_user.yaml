@@ -36,8 +36,6 @@ zenario_user__convert_to_user:
                     label: "Screen Name:"
                     type: text
                     maxlength: 50
-                    validation:
-                        required: "Please enter a screen name."
                 suggest_screen_name:
                     same_row: true
                     dataset_label: '[Suggest screen name button]'
@@ -99,9 +97,8 @@ zenario_user__convert_to_user:
 
                     type: checkbox
                 send_activation_email_to_user:
-                    label: 'Send activation email to User'
+                    label: 'Send email to user with login details'
                     type: checkbox
-                    side_note: "Send an activation email to the user with there login details on."
                     format_onchange: Yes
                     hidden: false
                 email_to_send:

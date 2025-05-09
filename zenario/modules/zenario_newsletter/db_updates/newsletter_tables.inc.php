@@ -269,7 +269,7 @@ if (ze\dbAdm::needRevision(46)) {
 			$doneSomething = false;
 			if ($links[$i+1] == 'image' || $links[$i+1] == 'movie') {
 				//If this file is already linked by checksum/filename
-				if ($checksum = ze::ifNull($params['c'] ?? false, $params['checksum'] ?? false)) {
+				if ($checksum = ($params['c'] ?? false) ?: ($params['checksum'] ?? false)) {
 					//Change the path of the link
 					$html .= 'zenario/file.php?c='. (($checksums[$checksum] ?? false) ?: $checksum);
 					
@@ -1130,3 +1130,28 @@ _sql
 _sql
 
 );
+
+
+//In Zenario 10.1, we're trying to use WebP images rather than PNG or JPEG.
+//Try to go through any newsletter templates and switch any links to public images from using 
+//PNG or JPEG to using WebP if possible.
+if (ze\dbAdm::needRevision(189)) {
+	$sql = "
+		SELECT id, body
+		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
+		WHERE body IS NOT NULL";
+	$result = \ze\sql::select($sql);
+
+	while ($row = \ze\sql::fetchAssoc($result)) {
+		$files = [];
+		$htmlChanged = false;
+		\ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+		
+		if ($htmlChanged) {
+			\ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['body' => $row['body']], $row['id']);
+		}
+	}
+	
+	ze\dbAdm::revision(189);
+}
+

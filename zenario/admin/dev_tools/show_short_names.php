@@ -43,9 +43,9 @@ ze\content::pageFoot($prefix, false, $includeOrganizer = true, $includeAdminTool
 
 echo '
 <script type="text/javascript">
-	zenario.enc(-1, \'zenario_plugin_nest\', 1);
+	zenario.enc(-1, \'zenario_ajax_nest\', 1);
 </script>
-<script type="text/javascript" src="../../modules/zenario_plugin_nest/js/plugin.min.js?v=', $v, '"></script>
+<script type="text/javascript" src="../../modules/zenario_ajax_nest/js/plugin.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/admin_grid_maker.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/dev_short_name_tools.min.js?v=', $v, '"></script>';
 ?>

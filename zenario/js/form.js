@@ -79,6 +79,7 @@ methods.init = function(globalName, microtemplatePrefix, containerId) {
 	thus.toggleLevelsPressed = {};
 	thus.lastFocus = false;
 	thus.fieldThatTriggeredRedraw = false;
+	thus.signalAfterRedraw = false;
 	thus.editingPositions = {};
 	//this.editingHistory = {};
 };
@@ -144,6 +145,10 @@ methods.dateFormatToPlaceholder = function(dateFormat) {
 	}
 	
 	return dateFormat;
+};
+
+methods.defaultDatePickerFormat = function() {
+	return zenario.dpf;
 };
 
 //zenario.microTemplate = function(template, data, filter, microTemplates, i, preMicroTemplate, postMicroTemplate) {
@@ -215,6 +220,13 @@ methods.getConductorVars = function(slotNameIn) {
 	return zenario_conductor && zenario_conductor.getVars && zenario_conductor.getVars(slotName);
 };
 
+methods.conductor = function(methodName, a, b, c, d, e, f) {
+	var slotName = thus.slotName,
+		zenario_conductor = window.zenario_conductor;
+	
+	return zenario_conductor && zenario_conductor[methodName] && zenario_conductor[methodName](slotName, a, b, c, d, e, f);
+};
+
 
 methods.getTitle = function() {
 	
@@ -234,24 +246,34 @@ methods.getTitle = function() {
 
 
 methods.field = function(id, tab) {
-	var tabs;
 	if (_.isObject(id)) {
 		return id;
 	} else {
-		return (tabs = thus.tuix && thus.tuix.tabs)
-			&& (tab = tab || thus.tuix.tab)
-			&& (tabs[tab]
-			 && tabs[tab].fields
-			 && tabs[tab].fields[id]);
+		var tuix = thus.tuix || {},
+			tabs = tuix.tabs;
+		
+		if (!defined(tab)) {
+			tab = tuix.tab;
+		}
+		
+		return tabs
+			&& tabs[tab]
+			&& tabs[tab].fields
+			&& tabs[tab].fields[id];
 	}
 };
 
 methods.fields = function(tab) {
-	var tabs;
-	return (tabs = thus.tuix && thus.tuix.tabs)
-		&& (tab = tab || thus.tuix.tab)
-		&& (tabs[tab]
-		 && tabs[tab].fields);
+	var tuix = thus.tuix || {},
+		tabs = tuix.tabs;
+	
+	if (!defined(tab)) {
+		tab = tuix.tab;
+	}
+	
+	return tabs
+		&& tabs[tab]
+		&& tabs[tab].fields;
 };
 
 
@@ -502,6 +524,18 @@ methods.togglePressed = function(field, toggleLevel) {
 	return show;
 };
 
+
+methods.clickingGroupingChecksBox = function(htmlID, e) {
+
+	var el = thus.get(htmlID);
+	if (!el.checked && !el.disabled) {
+		$(el).click();
+		zenario.stop(e);
+	}
+};
+
+
+
 //A wrapper for zenario.ajax(), this sets the retry and continueAnyway options,
 //and also sets the "now loading" message.
 methods.retryAJAX = function(url, post, json, done, nowDoingSomething, onCancel) {
@@ -542,7 +576,6 @@ methods.switchToATabWithErrors = function() {
 
 
 methods.checkTabHidden = function(tab) {
-	//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 	return zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, thus.tuix.tabs[tab]);
 };
 
@@ -660,7 +693,6 @@ methods.drawTabs = function(microTemplate) {
 	
 	foreach (thus.sortedTabs as i => tab) {
 		if (tabTUIX = thus.tuix.tabs[tab]) {
-											 //zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 			if (!(tabTUIX._was_hidden_before = zenarioT.hidden(undefined, thus, undefined, tab, undefined, undefined, undefined, undefined, tabTUIX))) {
 			
 				//Only allow this tab to be clicked if it looks like there's something on it
@@ -698,6 +730,32 @@ methods.drawTabs = function(microTemplate) {
 	return thus.microTemplate(microTemplate, data);
 };
 
+const props = [
+	'snippet', 'upload', 'pick_items', 'title', 'tooltip',
+	'note_below', 'side_note', 'notices_above', 'notices_below',
+	'image', 'onoff', 'slider', 'spinner',
+	'show_phrase_icon', 'show_copy_text_button', 'show_clear_button'
+];
+methods.classesForRowContents = function(prefix, fields) {
+	var f, field,
+		p, prop,
+		classes = [];
+	
+	propLoop:
+	for (p in props) {
+		prop = props[p];
+		
+		foreach (fields as f => field) {
+			if (field[prop]) {
+				classes.push(prefix + prop);
+				continue propLoop;
+			}
+		}
+	}
+	
+	return classes.join(' ');
+};
+
 
 methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawingThem) {
 	
@@ -733,6 +791,9 @@ methods.drawFields = function(cb, microTemplate, scanForHiddenFieldsWithoutDrawi
 	
 	thus.drawingFields = true;
 	thus.drawnSortedFields = [];
+	thus.fieldsWithMicrotemplates = {};
+	
+	zenario.clearAllDelays(thus.globalName + '-redrawMicrotemplates');
 	
 	if (!scanForHiddenFieldsWithoutDrawingThem) {
 		thus.ffoving = 0;
@@ -963,6 +1024,8 @@ methods.insertHTML = function(html, cb, isNewTab) {
 		thus.focusField(field, lastFocus.ss, lastFocus.se);
 	}
 	
+	thus.sendSignalAfterRedraw();
+	
 	thus.fieldThatTriggeredRedraw = false;
 	
 	if (zenarioT.showDevTools()) {
@@ -970,26 +1033,61 @@ methods.insertHTML = function(html, cb, isNewTab) {
 	}
 };
 
+methods.sendSignalAfterRedraw = function() {
+	var signalName = thus.signalAfterRedraw;
+	if (signalName !== false) {
+		zenario.sendSignal(signalName, thus.getFieldValues(true));
+	}
+	thus.signalAfterRedraw = false;
+};
+
+//Open/close newly hidden sections with a blind animation
 methods.hideShowFields = function(onShowFunction) {
-	//Open/close newly hidden sections with a blind animation
 	var hideDivsOnOpen = $('.zenario_hide_on_open'),
 		hideRowsOnOpen = $('.zenario_hide_row_on_open'),
 		showDivsOnOpen = $('.zenario_show_on_open'),
 		hiderFun = function(i, e) {e.style.display = 'none'};
 	
-	if (showDivsOnOpen.length && !hideDivsOnOpen.length) {
-		showDivsOnOpen.show('blind', 200, onShowFunction);
+	//Catch the case where we have both items to show and items to hide at the same time.
+	//There are lots of animation glitches if we try these at the time time, so we'll run the "hide"
+	//animations first, then the "show" animations second.
+	if (hideDivsOnOpen.length && showDivsOnOpen.length) {
+		hideDivsOnOpen.hide('blind', 200, function() {
+			hideRowsOnOpen.each(hiderFun);
+			showDivsOnOpen.show('blind', 200, onShowFunction);
+		});
+		
+		return;
+	}
 	
-	} else if (!showDivsOnOpen.length && hideDivsOnOpen.length) {
+	//The case where there are only "hide" animations
+	if (hideDivsOnOpen.length) {
 		hideDivsOnOpen.hide('blind', 200, function() {
 			hideRowsOnOpen.each(hiderFun);
 		});
-	
-	} else if (showDivsOnOpen.length && hideDivsOnOpen.length) {
-		hideDivsOnOpen.each(hiderFun);
-		hideRowsOnOpen.each(hiderFun);
-		showDivsOnOpen.show();
 	}
+	
+	//The case where there are only "show" animations
+	if (showDivsOnOpen.length) {
+		showDivsOnOpen.show('blind', 200, onShowFunction);
+	}
+	
+	
+	//The pre-10.0 version of this function.
+	//If things were being both hidden and shown, no animations played.
+	//if (showDivsOnOpen.length && !hideDivsOnOpen.length) {
+	//	showDivsOnOpen.show('blind', 200, onShowFunction);
+	//
+	//} else if (!showDivsOnOpen.length && hideDivsOnOpen.length) {
+	//	hideDivsOnOpen.hide('blind', 200, function() {
+	//		hideRowsOnOpen.each(hiderFun);
+	//	});
+	//
+	//} else if (showDivsOnOpen.length && hideDivsOnOpen.length) {
+	//	hideDivsOnOpen.each(hiderFun);
+	//	hideRowsOnOpen.each(hiderFun);
+	//	showDivsOnOpen.show();
+	//}
 };
 
 methods.isAdminFacing = function() {
@@ -1044,7 +1142,6 @@ methods.fieldIsReadonly = function(id, field, tab) {
 		|| (defined(tab) && !thus.editModeOn(tab))
 		|| (defined(field.readonly_if)
 		 && zenarioT.eval(field.readonly_if, thus, field, undefined, id, undefined, undefined, field));
-		  //zenarioT.eval(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
 };
 
 
@@ -1074,7 +1171,7 @@ methods.focusFirstField = function() {
 				type: field.type,
 				empty: domField.value == '',
 				focusable:
-					(isPickerField || zenario.IN(field.type, 'password', 'checkbox', 'currency', 'select', 'text', 'textarea'))
+					(isPickerField || zenario.IN(field.type, 'password', 'checkbox', 'currency', 'select', 'text', 'textarea', 'code_editor'))
 				 && !engToBoolean(domField.disabled)
 				 && !engToBoolean(domField.readonly)
 				 && !thus.fieldIsReadonly(fieldId, field)
@@ -1113,11 +1210,17 @@ methods.focusField = function(field, selectionStart, selectionEnd) {
 	
 	if (field.type) {
 		
-		//Don't attempt to focus a date picker as that will just cause it to re-open,
-		//which isn't what we intend
-		if (field.type == 'date'
-		 || field.type == 'datetime') {
-			return;
+		//Some special logic for specific fields
+		switch (field.type) {
+			//Don't attempt to focus a date picker as that will just cause it to re-open,
+			//which isn't what we intend
+			case 'date':
+			case 'datetime':
+				return;
+			case 'code_editor':
+				var editor = ace.edit(field.id);
+				editor.focus();
+				return;
 		}
 		
 		domField = thus.get(field.id);
@@ -1330,6 +1433,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		isDatePicker = fieldType == 'date' || fieldType == 'datetime',
 		isFormattedNumber = isCurrency || !!validation.numeric,
 		dps = field.decimal_places,
+		inPopout = field.in_table,
+		usePreloadedValues = pick_items && pick_items.use_preloaded_values,
 		hidden,
 		hideOnOpen,
 		indent,
@@ -1340,6 +1445,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		html = '',
 		i, si, v, val, displayVal,
 		splitValues,
+		dateFormat = undefined,
 		picked_items = {},
 		isMultiSelectList = fieldType == 'multiselect',
 		hasSlider = false,
@@ -1360,7 +1466,8 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		hasPostFieldTags = false,
 		preFieldTags,
 		postFieldTags,
-		tabTUIX = thus.tuix.tabs[tab];
+		tabTUIX = thus.tuix.tabs[tab],
+		keyTUIX = thus.tuix.key || {};
 	
 	
 	if (!defined(readOnly)) {
@@ -1379,7 +1486,6 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	
 	if (lovField) {
 		if (defined(lovField.disabled_if)
-			//zenarioT.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
 		 && zenarioT.eval(lovField.disabled_if, thus, lovField, undefined, lov, undefined, undefined, field)) {
 			readOnly = true;
 		}
@@ -1434,7 +1540,6 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			//Catch the case where an option was visible, but is now hidden.
 			//In this case it shouldn't count as selected.
 			if (_.isObject(selected_option)
-				//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 			 && zenarioT.hidden(selected_option, thus, undefined, value, undefined, undefined, field, undefined, tabTUIX)) {
 				selected_option = false;
 			}
@@ -1527,7 +1632,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		//Either check the same_row property to work this out, or if same_row was not set,
 		//try to set it automatically if someone is using a table-layout.
 		if (!defined(field.same_row))  {
-			newRow = !hasBR && (startOfTable || !middleOfTable);
+			newRow = !inPopout && !hasBR && (startOfTable || !middleOfTable);
 		} else {
 			newRow = !engToBoolean(field.same_row);
 		}
@@ -1541,8 +1646,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			  
 			  || field.hide_if_empty && !value
 			  || readOnly && field.hide_when_readonly
+			  || readOnly && field.hide_if_readonly_and_empty && !value
 			
-			  || (engToBoolean(hiddenFieldsByIndent && hiddenFieldsByIndent.last? field.hide_with_previous_field : field.hide_if_previous_field_is_not_hidden))
+			  || field.hide_in_create_mode && !zenario.isEmpty(keyTUIX.id)
+			  || field.hide_in_edit_mode && zenario.isEmpty(keyTUIX.id)
+			  
+			  || (engToBoolean(hiddenFieldsByIndent && hiddenFieldsByIndent.last? inPopout || field.hide_with_previous_field : field.hide_if_previous_field_is_not_hidden))
 			  || (engToBoolean(hiddenFieldsByIndent && hiddenFieldsByIndent.beforeLast? field.hide_with_previous_previous_field : field.hide_if_previous_previous_field_is_not_hidden))
 		
 			  || (engToBoolean(field.hide_with_previous_indented_field)
@@ -1722,7 +1831,6 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						existingParents[val.parent] = true;
 					}
 					
-					//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 					if (zenarioT.hidden(val, thus, undefined, v, undefined, undefined, field, undefined, tabTUIX)) {
 						continue;
 					
@@ -1838,6 +1946,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		
 		if (snippet.microtemplate) {
 			html += _$div('id', 'microtemplate__' + id, thus.microTemplate(snippet.microtemplate, field));
+			thus.fieldsWithMicrotemplates[id] = true;
 		}
 		
 		if (snippet.url) {
@@ -1856,7 +1965,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	//Draw multiple checkboxes/radiogroups
 	} else if ((fieldType == 'checkboxes' || fieldType == 'radios') && !defined(lov)) {
 		
-		if (readOnly && field.display_as_text_when_readonly) {
+		if (readOnly && field.show_values_as_text_when_readonly) {
 			html += htmlspecialchars(thus.displaySelectedItems(id, field, value, tab));
 			
 		} else if (field.values) {
@@ -1928,8 +2037,15 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	
 		mergeFields.pickerHTML += _$select('id', id, 'multiple', multiple_select, 'class', field.css_class, 'style', field.style, '>');
 		
-		//If there are selected values, draw them in so this the tokenize library initialises correctly
-		if (field.values && (!_.isEmpty(picked_items) || isMultiSelectList)) {
+		//If there are preloaded or selected values, draw them in so this the tokenize library initialises correctly
+		if (field.values && (usePreloadedValues || !_.isEmpty(picked_items) || isMultiSelectList)) {
+			
+			//This line is a work-around to fix bug with the tokenize library.
+			//If there is no empty value, tokenize will forcibly select the first item on the list and refuse to unselect it.
+			if (usePreloadedValues) {
+				mergeFields.pickerHTML += _$option('value', '', 'selected', !value, '');
+			}
+			
 			mergeFields.pickerHTML += thus.hierarchicalSelect(picked_items, id, field, tabTUIX, sortOrder, parentsValuesExist, existingParents);
 		}
 		
@@ -2067,6 +2183,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					"$('#" + htmlspecialchars(field.return_key_presses_button) + "').click();" +
 					"return false;" +
 				"}";
+		}
+		
+		if (field.redraw_microtemplates_onkeyup && !readOnly) {
+			extraAtt.onkeyup =
+				(extraAtt.onkeyup || '') +
+				"lib.redrawMicrotemplates();";
 		}
 		
 		if (engToBoolean(field.multiple_edit) && !readOnly) {
@@ -2272,21 +2394,33 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					},
 					
 					initInstanceCallback = function(instance) {
-						zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
-						
-						var el;
-						if ((el = instance.editorContainer)
-						 && (el = $(instance.editorContainer).find('iframe'))
-						 && (el = el[0])
-						 && (el = el.contentWindow)) {
-							zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
-						}
-						
 						if (field.tall_as_possible) {
-							zenarioAB.makeFieldAsTallAsPossible();
+							if (thus.isAdminFacing()) {
+								zenarioAB.makeFieldAsTallAsPossible();
+							} else {
+								thus.makeFieldAsTallAsPossible();
+							}
 						}
 						
 						clearTitleAttributesOn();
+					},
+					
+					initInstanceCallbackWithImageSupport = function(instance) {
+						if (thus.isAdminFacing()) {
+							//Drag-and-dropping images is not supported on front-end interfaces.
+							//It is supported in the admin back-end as long as the editor type allows for that.
+							zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, thus.get('row__' + (instance.editorId || instance.id)));
+							
+							var el;
+							if ((el = instance.editorContainer)
+							 && (el = $(instance.editorContainer).find('iframe'))
+							 && (el = el[0])
+							 && (el = el.contentWindow)) {
+								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
+							}
+						}
+						
+						initInstanceCallback(instance);
 					};
 				
 				switch (field.editor_type) {
@@ -2314,7 +2448,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							relative_urls: false,
 							removed_menuitems: 'file newdocument restoredraft print',
 							file_picker_callback: zenarioA.fileBrowser,
-							init_instance_callback: initInstanceCallback
+							init_instance_callback: initInstanceCallbackWithImageSupport
 						};
 						
 						extraAtt['class'] = ' tinymce_full_featured';
@@ -2329,14 +2463,14 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							menubar: "edit insert adjust tools",
 							menu: {
 								edit: {title: 'Edit', items: 'cut copy paste pastetext | selectall'},
-								insert: {title: "Insert", items: "link | anchor hr charmap"},
+								insert: {title: "Insert", items: "link | anchor hr charmap emoticons"},
 								adjust: {title: 'Adjust', items: 'bold italic underline strikethrough superscript subscript | removeformat'},
 								tools: {title: "Tools", items: "fullscreen | searchreplace | code"}
 							},
 							
 							relative_urls: !zenario.slashesInURL,
 							content_css: content_css,
-							toolbar: "fullscreen | link unlink | styles | blocks | fontsize | bold italic underline strikethrough | removeformat | charmap emoticons | code",
+							toolbar: "fullscreen | link unlink | styles | blocks | fontsize | bold italic underline strikethrough | removeformat | bullist numlist | code",
 							oninit: undefined,
 							
 							removed_menuitems: 'file newdocument restoredraft print',
@@ -2404,7 +2538,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							relative_urls: false,
 							removed_menuitems: 'file newdocument restoredraft print',
 							file_picker_callback: zenarioA.fileBrowser,
-							init_instance_callback: initInstanceCallback
+							init_instance_callback: initInstanceCallbackWithImageSupport
 						};
 						
 						extraAtt['class'] = ' tinymce_email_editor';
@@ -2431,6 +2565,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				}
 				
 				// Here are the options that are common to all of the above editor types
+				options.text_patterns = false;
 				options.promotion = false;
 				options.document_base_url = URLBasePath;
 				options.paste_preprocess = zenarioA.editorPastePreprocess;
@@ -2445,6 +2580,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				options.browser_spellcheck = true;
 				options.font_size_formats = fontSizes;
 				options.image_advtab = true;
+				options.base_url = URLBasePath + 'zenario/libs/yarn/tinymce';
 
 				
 				//Only display the "Styles" dropdown if styles formats were passed (e.g. from a module), otherwise hide it.
@@ -2487,16 +2623,6 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 						domTab.style.display = 'block';
 					}
 					
-					//At some point, TinyMCE seems to have changed the format of its inputs.
-					//I've added some logic here to fix & convert a couple of known issues we've seen so far.
-					//Will need to come back to this and hopefully find a better fix after our next branch.
-					if (defined(options.convert_urls)) {
-						options.convert_urls = !!options.convert_urls;
-					}
-					if (defined(options.relative_urls)) {
-						options.relative_urls = !!options.relative_urls;
-					}
-				
 					$field.tinymce(options);
 				
 					//Hide the tab again if it was hidden
@@ -2543,9 +2669,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					html += '<input';
 					extraAtt.type = 'text';
 					extraAtt['class'] += ' zenario_datepicker';
+					
+					dateFormat = thus.defaultDatePickerFormat();
 
 					var allowTypingInDateField = !!engToBoolean(field.allow_typing_in_date_field),
-						dateFormat = (zenarioA.siteSettings && zenarioA.siteSettings.organizer_date_format) || zenario.dpf,
 						yearRange;
 					
 					if (field.year_range) {
@@ -2567,6 +2694,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 							(extraAtt.onkeyup || '') +
 							"zenario.dateFieldKeyUp(this, event, '" + htmlspecialchars(id) + "');";
 					}
+					
 
 					cb.after(function() {
 						var $field = $(thus.get(id)),
@@ -2640,10 +2768,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				} else if (fieldType == 'url') {
 					html += '<input';
 					extraAtt.type = 'url';
-					extraAtt.placeholder = 'http://example.com';
+					extraAtt.placeholder = 'https://example.com';
 					extraAtt.onblur =
 						(extraAtt.onblur || '') +
-						"if(this.value && !this.value.match('://') && $.trim(this.value)[0] != '#') this.value = 'http://' + this.value;";
+						"if(this.value && !this.value.match('://') && $.trim(this.value)[0] != '#') this.value = 'https://' + this.value;";
 		
 				} else if (isCurrency) {
 					html += '<input';
@@ -2718,7 +2846,11 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			//Most browsers still let you change checkboxes/radiogroups if they are flagged as "readonly"
 			//So set the "disabled" flag as well
 			if (readOnly) {
-				extraAtt.disabled = true;
+				if (field.show_values_as_text_when_readonly) {
+					extraAtt.hidden = true;
+				} else {
+					extraAtt.disabled = true;
+				}
 			}
 			
 	
@@ -2741,6 +2873,23 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				'$("#zenario_slider_for__' + jsEscape(id) + '").slider("value", $(this).val());';
 		}
 		
+		//Have the option to show a "clear" button that will blank a field's value if clicked.
+		//The visibility should be updated as the user types, as it should only be shown if the field has a value.
+		if (!readOnly && field.show_clear_button) {
+			if (!field.redraw_onchange
+			 && !field.validate_onchange
+			 && !field.format_onchange) {
+				extraAtt.onchange =
+					(extraAtt.onchange || '') +
+					"$('#zenario_clear_for__' + fieldCodeName)[lib.readField(fieldCodeName)? 'show' : 'hide']();";
+			}
+			if (fieldType == 'text' || fieldType == 'textarea') {
+				extraAtt.onkeyup =
+					(extraAtt.onkeyup || '') +
+					"$('#zenario_clear_for__' + fieldCodeName)[this.value? 'show' : 'hide']();";
+			}
+		}
+		
 		//Add set the name and id
 		if (!defined(lov)) {
 			atts = field;
@@ -2759,7 +2908,6 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		if (readOnly) {
 			overrides.placeholder = '';
 		}
-		
 		
 		html += thus.outputAtts(id, atts, extraAtt, extraAttAfter, overrides);
 		
@@ -2791,11 +2939,14 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			html += '>' + valAttribute + '</div>';
 		
 		} else if (isDatePicker) {
-			html += ' value="' + htmlspecialchars(zenario.formatDate(value, fieldType == 'datetime')) + '"/>';
+			html += ' value="' + htmlspecialchars(zenario.formatDate(value, fieldType == 'datetime', dateFormat)) + '"/>';
 			html += _$input('type', 'hidden', 'id', '_value_for__' + id, 'value', value);
 			
-			if (!readOnly && !field.hide_clear_button) {
-				html += _$input('type', 'button', 'class', 'zenario_remove_date', 'value', 'x', 'onclick', thus.globalName + '.blankField("' + jsEscape(id) + '"); $(' + thus.globalName + '.get("' + jsEscape(id) + '")).change();');
+			//Show a clear button to remove the date from the date picker.
+			//(Though don't show this if the dev has turned it off using the hide_clear_button property,
+			// or the dev is using the new show_clear_button option.)
+			if (!readOnly && !field.hide_clear_button && !field.show_clear_button) {
+				html += _$input('type', 'button', 'class', 'zenario_remove_val zenario_remove_date', 'value', 'x', 'onclick', thus.globalName + '.blankField("' + jsEscape(id) + '"); $(' + thus.globalName + '.get("' + jsEscape(id) + '")).change();');
 			}
 		
 		} else if (isCurrency) {
@@ -2952,6 +3103,20 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			addWidgetWrap = true;
 		}
 		
+		//Have the option to show a "clear" button that will blank a field's value if clicked.
+		//Will only be shown if the field has a value.
+		if (!readOnly && field.show_clear_button) {
+			html += ' ' + _$input('type', 'button',
+				'id', 'zenario_clear_for__' + id,
+				'class', 'zenario_remove_val',
+				'value', 'x',
+				'onclick', thus.globalName + ".blankAndChangeField('" + jsEscape(id) + "');",
+				'style', 'display: ' + (value? 'block' : 'none')
+			);
+			addWidgetWrap = true;
+		}
+
+		
 		
 		if (field.show_copy_text_button && zenario.canCopy()) {
 			
@@ -2964,8 +3129,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 		}
 		
 		if (field.tooltip) {
-			html += thus.postFieldTooltip(field);
-			addWidgetWrap = true;
+			if (fieldType == 'editor' || fieldType == 'code_editor') {
+				html = _$div("class", "zenario_field_tooltip_top_right", thus.postFieldTooltip(field)) + html;
+			} else {
+				html += thus.postFieldTooltip(field);
+				addWidgetWrap = true;
+			}
 		}
 		
 		if (addWidgetWrap) {
@@ -2982,6 +3151,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 					thus.updateProgressBar(id);
 				})
 			});
+		}
+		
+		if (defined(field.pre_field_label)) {
+			html = _$label('class', field.label_class, 'for', id, 'id', 'pre_label_for__' + id, htmlspecialchars(field.pre_field_label)) + ' ' + html;
 		}
 		
 		if (defined(field.pre_field_text)) {
@@ -3022,6 +3195,21 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 	}
 	
 	return html;
+};
+
+methods.redrawMicrotemplates = function() {
+	zenario.actAfterDelayIfNotSuperseded(thus.globalName + '-redrawMicrotemplates', function() {
+		var fieldsWithMicrotemplates = thus.fieldsWithMicrotemplates,
+			id, field;
+	
+		if (!_.isEmpty(fieldsWithMicrotemplates)) {
+			foreach (fieldsWithMicrotemplates as id) {
+				if (field = thus.field(id)) {
+					thus.get('microtemplate__' + id).innerHTML = thus.microTemplate(field.snippet.microtemplate, field);
+				}
+			}
+		}
+	}, 125);
 };
 
 methods.drawNotices = function(notices) {
@@ -3270,15 +3458,22 @@ var allowedAtt = {
 		'span'
 	];
 
+//Given an object containing attributes to add to a HTML field, output them.
 methods.outputAtts = function(fieldCodeName, atts, extraAtt, extraAttAfter, overrides, allowEverything) {
 	
 	var att,
 		definitions,
 		html = '';
 	
+	//Loop through the attributes we've been given.
 	foreach (atts as att) {
+		//We have a list of overrides. Anything on the override list should not be outputted.
+		//Also check the attribute is a valid/allowed attribute.
 		if ((!overrides || !defined(overrides[att]))
 		 && (allowEverything || allowedAtt[att] || att.substr(0, 5) == 'data-')) {
+			
+			//The disabled/readonly/selected attributes are special cases and need special handling.
+			//E.g. per the HTML spec it should be readonly="readonly", not readonly="true".
 			if (att == 'disabled' || att == 'readonly' || att == 'selected') {
 				if (engToBoolean(atts[att]) 
 				 || (extraAtt && engToBoolean(extraAtt[att]) && (delete extraAtt[att]))) {
@@ -3286,14 +3481,18 @@ methods.outputAtts = function(fieldCodeName, atts, extraAtt, extraAttAfter, over
 				}
 			
 			} else {
+				//Declare some variables for any JavaScript-based attribute, so the code has some context to work with.
 				definitions = thus.defineLibVarBeforeCode(att);
 				
 				if (definitions !== '') {
 					definitions += "var fieldCodeName = '" + htmlspecialchars(fieldCodeName) + "', field = lib.field(fieldCodeName); ";
 				}
 				
+				//Write down the attribute.
 				html += ' ' + att + '="' + definitions;
 				
+				//Check if there are any core attributes to also add, and remove them from the list
+				//after we've added them.
 				if (extraAtt && extraAtt[att]) {
 					html += extraAtt[att] + ' ';
 					delete extraAtt[att];
@@ -3311,14 +3510,29 @@ methods.outputAtts = function(fieldCodeName, atts, extraAtt, extraAttAfter, over
 		}
 	}
 	
-	if (overrides) {
-		html += thus.outputAtts(fieldCodeName, overrides, false, false, false, true);
-	}
-	if (extraAtt) {
-		html += thus.outputAtts(fieldCodeName, extraAtt, false, false, false, true);
-	}
-	if (extraAttAfter) {
-		html += thus.outputAtts(fieldCodeName, extraAttAfter, false, false, false, true);
+	
+	//If the plugin developer didn't specify an attribute but we need to add that attribute for the
+	//core code, we'll need to add that now.
+	//(I've written it this way as HTML elements can only have their attributes written once, and
+	// if an attribute is mentioned in more than one list the entries need to be merged and output
+	// at the same time.)
+	//The core has multiple different lists of attributes, some of which will mention the same
+	//attribute and again need to be merged. Handle this by repeatedly calling the same function,
+	//but with the lists shuffled into different paramater positions, until they are all empty.
+	if (!_.isEmpty(overrides)) {
+		atts = overrides;
+		overrides = false;
+		html += thus.outputAtts(fieldCodeName, atts, extraAtt, extraAttAfter, overrides, true);
+	
+	} else if (!_.isEmpty(extraAtt)) {
+		atts = extraAtt;
+		extraAtt = false;
+		html += thus.outputAtts(fieldCodeName, atts, extraAtt, extraAttAfter, overrides, true);
+	
+	} else if (!_.isEmpty(extraAttAfter)) {
+		atts = extraAttAfter;
+		extraAttAfter = false;
+		html += thus.outputAtts(fieldCodeName, atts, extraAtt, extraAttAfter, overrides, true);
 	}
 	
 	return html;
@@ -3441,7 +3655,6 @@ methods.hierarchicalSelect = function(picked_items, fieldCodeName, field, tabTUI
 		  && zenarioT.eval(val.disabled_if, thus, val, undefined, v, undefined, undefined, field, undefined, tabTUIX))
 		 || (field.values_disabled_if
 		  && zenarioT.eval(field.values_disabled_if, thus, val, undefined, v, undefined, undefined, field, undefined, tabTUIX))) {
-			//zenarioT.eval(c, lib, tuixObject, item, id, button, column, field, section, tab, tuix)
 			disabled = true;
 		}
 		
@@ -3530,7 +3743,10 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		allow_typing_anything = engToBoolean(pick_items.allow_typing_anything),
 		reorder_items = engToBoolean(upload.reorder_items || pick_items.reorder_items);
 	
-	if (thus.typeaheadSearchEnabled(field, id, tab)) {
+	if (pick_items.use_preloaded_values) {
+		searchURL = 'select';
+	
+	} else if (thus.typeaheadSearchEnabled(field, id, tab)) {
 		if (searchURL = thus.typeaheadSearchAJAXURL(field, id, tab)) {
 			searchParam = '_search';
 		}
@@ -4354,6 +4570,12 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 			if (mi.usage) {
 				thumbnail.src += '&usage=' + encodeURIComponent(mi.usage);
 			}
+			
+			//If the current visitor is not an admin, we will need an access code for the image
+			//so the visitor will be able to view its thumbnail using file.php.
+			if (mi.access_code) {
+				thumbnail.src += '&access_code=' + encodeURIComponent(mi.access_code);
+			}
 		
 		} else if (mi.link) {
 			thumbnail.src = zenario.addBasePath(mi.link);
@@ -4480,7 +4702,8 @@ methods.addToPickedItems = function(values, id, tab, remove) {
 	
 		var field = thus.field(id, tab),
 			current_value = thus.readField(id),	//(!defined(field.current_value)? field.value : field.current_value),
-			multiple_select = (field.pick_items && engToBoolean(field.pick_items.multiple_select)) || (field.upload && engToBoolean(field.upload.multi)),
+			pick_items = field.pick_items || {},
+			multiple_select = engToBoolean(pick_items.multiple_select) || (field.upload && engToBoolean(field.upload.multi)),
 			i, value, display, arrayOfValues, picked_items,
 			reselectedItems = {};
 	
@@ -4498,7 +4721,9 @@ methods.addToPickedItems = function(values, id, tab, remove) {
 				field.values = {};
 			}
 			if (remove) {
-				delete field.values[value];
+				if (!pick_items.use_preloaded_values) {
+					delete field.values[value];
+				}
 			} else {
 				if (!field.values[value]) {
 					field.values[value] = display;
@@ -4663,10 +4888,18 @@ methods.validateFormatOrRedrawForField = function(field, isToggleButton) {
 	
 	var validate = engToBoolean(field.validate_onchange),
 		format = engToBoolean(field.format_onchange) || isToggleButton && (field.pressed? field.format_on_toggle_on : field.format_on_toggle_off),
-		redraw = engToBoolean(field.redraw_onchange);
-	validate = validate;
-
-		
+		redraw = engToBoolean(field.redraw_onchange),
+		signalName;
+	
+	if (signalName = field.send_signal_onchange) {
+		zenario.sendSignal(signalName, thus.getFieldValues(true));
+	}
+	
+	if (signalName = field.send_signal_after_redraw) {
+		thus.signalAfterRedraw = signalName;
+	}
+	
+	
 	if (validate) {
 		if (thus.ffoving < 3) {
 			thus.ffoving = 3;
@@ -5255,17 +5488,30 @@ methods.blankField = function(f) {
 	thus.setFieldValue(f, '');
 };
 
+methods.blankAndChangeField = function(f) {
+	setTimeout(function() {
+		thus.blankField(f);
+		thus.fieldChange(f);
+	}, 1);
+};
+
 methods.setFieldValue = function(f, val, savedVal) {
 	
 	var tab = thus.tuix.tab
 		field = thus.field(f, tab);
 	
-	if (thus.get(f)) {
-		$(thus.get(f)).val(val);
-	}
+	//Special case for blanking the values of a radios-type field
+	if (field.type == 'radios' && val === '') {
+		$('[name="' + f + '"]').prop('checked', false);
 	
-	if (thus.get('_value_for__' + f)) {
-		thus.get('_value_for__' + f).value = defined (savedVal) ? savedVal : val;
+	} else {
+		if (thus.get(f)) {
+			$(thus.get(f)).val(val);
+		}
+		
+		if (thus.get('_value_for__' + f)) {
+			thus.get('_value_for__' + f).value = defined (savedVal) ? savedVal : val;
+		}
 	}
 	
 	field.current_value = val;

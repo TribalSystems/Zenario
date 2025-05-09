@@ -230,7 +230,7 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		ze\priv::exitIfNot('_PRIV_EDIT_USER');
 		
-		if (!empty($fields['details/send_password_reset_email_upon_save']['pressed']) && $values['details/password_reset_email'] && ze\module::inc('zenario_email_template_manager')) {
+		if (!empty($fields['details/send_password_reset_email_upon_save']['pressed']) && $values['details/password_reset_email']) {
 			$mergeFields = ze\user::userDetailsForEmails($box['key']['id']);
 			$mergeFields['cms_url'] = ze\link::absolute();
 			
@@ -260,7 +260,7 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 			}
 			
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/password_reset_email'], $mergeFields, [], [], $disableHTMLEscaping = true);
+			zenario_common_features::sendEmailsUsingTemplate($mergeFields['email'], $values['details/password_reset_email'], $mergeFields, [], [], $disableHTMLEscaping = true);
 		}
 	}
 }

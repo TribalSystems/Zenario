@@ -5,12 +5,23 @@ copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
-display_name: Videos FEA
+display_name: Videos Front End & Admin
 category: pluggable
 description: |
-    <p>Allows you to present a library of videos, which are stored on Youtube or Vimeo, but managed in Organizer by the Zenario Videos Manager module (zenario_videos_manager).</p>
-    <p>For a simple video gallery, create a nest, choosing Conductor-type, and place it in a slot on a page. Such a nest will have one or more slides. Insert a Videos FEA plugin onto the first slide, choosing List mode for the plugin. Edit the plugin and make sure the "View video" item-specific checkbox is checked. Make a second slide with a Videos FEA plugin in View mode. Finally use Conductor to set up a path from slide 1 to slide 2 selecting "view_video" as the command, and from slide 2 to slide 1 with "back" as the command.</p>
-    <p>This should allow visitors to then view a gallery-style list or grid of videos, and click on one of them to play it on the second slide. For larger libraries, the first plugin can be edited to filter by a given category.</p>
+    <p>Allows you to present a library of videos, which are stored on YouTube or Vimeo, but managed in Organizer by the Zenario Videos Manager module (zenario_videos_manager).</p>
+    <h3>How to set up a video gallery</h3>
+
+    <ol><li>For a simple video gallery, you should start this module and navigate to the HTML content item on which you want to display videos. Create a new one if you need to.</li>
+    <li>Locate the slot where you want the videos to be shown. A wide slot is best. In Content item view, use the slot inspector to add a nest.</li>
+    <li>Create a nest, choosing Conductor-type. Place it in a slot on a content item.</li>
+    <li>Use the slot inspector to view the nest's plugins and settings. Initially the nest will have one slide. Select this slide and add a Videos FEA plugin. In the plugin settings choose the "List videos" mode. Under "Item-specific buttons", make sure the "View video" checkbox is checked, so that is makes a link to the viewing mode.</li>
+    <li>Add a second slide, and on the slide settings choose "Show a Back button".</li>
+    <li>Select the second slide and add a Videos FEA plugin to it. This time choose "View video" mode in its plugin settings.</li>
+    <li>Open the Conductor state diagram, and set up a path from slide 1 to slide 2. Select "view_video" as the command. Then create a path back from slide 2 to slide 1 with "back" as the command.</li>
+    <li>Close the nest editor and return to the page. You should now find that your videos are displayed there, and that you can click a video on the list or grid and go to a larger view of that video so as to play it.
+    </ol>
+    <p>The above procedure should allow you to create a setup whereby visitors can see a list or grid of the site's videos, and play them one at a time. If you have a large library, you may want to improve the setup by adding a filiter to the first slide's plugin so as to restrict videos by a given category.</p>
+    <h3>Further possibilities: editing</h3>
     <p>This plugin is powerful enough to support editing of a list of videos by extranet users, such as in a "superuser" group. This way, privileged users can edit the library without needing Organizer access as an administrator.</p>
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
@@ -40,12 +51,13 @@ inheritance:
 # You should define the command that your plugin uses below. For each command, you should give it a
 # label, and list which modes it's used in (no list means every mode), and the request_vars it uses.
 # Note that you will need to increment the LATEST_REVISION_NO in this module's latest_revision_no.inc.php file
-# every time you add or change the request_vars or hierarchical_var properties, to have them re-read by the CMS.
+# every time you add or change the request_vars properties, to have them re-read by the CMS.
 path_commands:
     view_video:
         label: View video
         modes:
             - list_videos
+            - search_videos
         request_vars:
             - videoId
     

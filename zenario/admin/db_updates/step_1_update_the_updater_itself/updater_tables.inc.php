@@ -82,10 +82,32 @@ if (ze\dbAdm::needRevision(55151)) {
 
 
 
+//Catch a case from early in the development of the 10.0 branch, where we go a load of database revision numbers wrong
+if (ze\dbAdm::needRevision(60750)
+ && !ze\dbAdm::needRevision(60115)
+ && !ze::$dbL->checkTableDef(DB_PREFIX. 'custom_dataset_fields', 'min_rows', false)) {
+	
+	//The numbers were supposed to roughly match the svn revision they were made on,
+	//and there was supposed to be a gap between the numbers from 9.7 and the numbers from 10.0.
+	//Add 500 to all of these numbers to bring them into line.
+	ze\dbAdm::revision(60750
+		, <<<_sql
+			UPDATE `[[DB_NAME_PREFIX]]local_revision_numbers`
+			SET revision_no = revision_no + 500
+			WHERE revision_no < 60750
+			  AND revision_no >= 60115
+			  AND `path` LIKE 'admin/db_updates/%';
+		_sql
+	);
+}
+
+
+
+
 
 //Automatically convert any table that's not using our preferred engine to that engine.
 //(This is a reissue of "T11400, Change all tables to InnoDB (if MySQL 5.6)" - however this time there's no exception, as we don't support 5.6 any more.)
-if (ze\dbAdm::needRevision(60114)) {
+if (ze\dbAdm::needRevision(60760)) {
 	
 	foreach (ze\sql::fetchValues("
 		SELECT `TABLE_NAME`
@@ -100,6 +122,6 @@ if (ze\dbAdm::needRevision(60114)) {
 		);
 	}
 	
-	ze\dbAdm::revision(60114);
+	ze\dbAdm::revision(60760);
 }
 

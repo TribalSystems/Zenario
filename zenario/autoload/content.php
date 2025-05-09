@@ -190,7 +190,6 @@ class content {
 	}
 
 	//Automatically generate SQL to search through Content, for example for a content list
-	//A bit of a techy function so we've included the full code here, so you can see exactly what it does
 	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false, $displayHiddenContentItemsForAdmins = true) {
 		$adminMode = \ze::isAdmin();
 
@@ -305,6 +304,9 @@ class content {
 					tc.privacy IN ('public', 'logged_in')
 				)
 			)";
+			
+			//Content items that are private and only available to users in or not in a smart group
+			//are always excluded by this function. There is no need to process smart groups.
 		}
 	
 		if ($onlyShow == 'public') {
@@ -509,6 +511,64 @@ class content {
 	public static function langId($cID, $cType = false) {
 		return \ze\row::get('content_items', 'language_id', ['id' => $cID, 'type' => ($cType ?: 'html')]);
 	}
+	
+	
+
+	
+	//Try to get the feature image (aka sticky image) for a link to a content item in the framework
+	public static function featureImageId($cID, $cType, $cVersion = false, $useFallbackImage = false, $fallbackImageId = false) {
+		if (!$cVersion) {
+			$cVersion = \ze\content::appropriateVersion($cID, $cType);
+		}
+		
+		if ($cType == 'picture') {
+			//Picture content items always ignore the set featured image and show a thumbnail of themselves!
+			$imageId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		} else {
+			$imageId = \ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		} 
+		
+		if (!$imageId && $useFallbackImage) {
+			$imageId = $fallbackImageId;
+		}
+		
+		return $imageId;
+	}
+
+	public static function featureImageLink(
+		&$width, &$height, &$url, $cID, $cType, $cVersion = false,
+		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$retina = false, $fullPath = false, $privacy = 'auto', $useCacheDir = true
+	) {
+		if ($imageId = \ze\content::featureImageId($cID, $cType, $cVersion)) {
+			return \ze\image::link($width, $height, $url, $imageId, $maxWidth, $maxHeight, $canvas, $offset, $retina, $fullPath, $privacy, $useCacheDir);
+		}
+		return false;
+	}
+	
+	//Deprecated function for calling the featureImageId() and imageHTML() functions.
+	//Used mainly for migrating old plugins to the new image system.
+	public static function featureImageHTML(
+		$cID, $cType, $cVersion, $useFallbackImage, $fallbackImageId,
+		$maxWidth, $maxHeight, $canvas, $retina,
+		$altTag, $htmlID = '', $cssClass = '', $styles = '', $attributes = ''
+	) {
+		$imageId = \ze\content::featureImageId($cID, $cType, $cVersion, $useFallbackImage, $fallbackImageId);
+		
+		if ($imageId) {
+			$cssRules = [];
+			return \ze\image::html(
+				$cssRules, true,
+				$imageId, $maxWidth, $maxHeight, $canvas, $retina,
+				$altTag, $htmlID, $cssClass, $styles, $attributes
+			);
+		}
+		
+		return '';
+	}
+	
+	
+	
 
 	//Try to work out what content item is being accessed
 	//n.b. \ze\link::toItem() and \ze\content::resolveFromRequest() are essentially opposites of each other...
@@ -870,10 +930,15 @@ class content {
 		 && \ze::$visLang === null) {
 			$visLang = $_GET['visLang'];
 		
-			//Don't allow this if the language requested is not used on the site,
-			//or if there's a real translation for the page in the language requested that's now visible.
+			//Make sure this only works if either of these is true:
+			//1) the language requested is enabled on the site,
+			//2) if there is an existing, visible translation for the content item in the language requested.
+			
+			//A content item is considered visible if:
+			//a) for an admin: it is NOT trashed or deleted,
+			//b) for a visitor: it is either published (with or without a draft) or unlisted (with or without a draft).
 			if (!isset(\ze::$langs[$visLang])
-			 || \ze\content::langEquivalentItem($cID, $cType, $visLang, true)) {
+			 || (\ze\content::langEquivalentItem($cID, $cType, $visLang, true))) {
 				unset($_GET['visLang']);
 				$redirectNeeded = 301;
 		
@@ -1247,7 +1312,7 @@ class content {
 		\ze::$templateCSS = $template['css_class'];
 	
 		if ((\ze::$skinId = \ze\content::layoutSkinId($template, true))
-		 && ($skin = \ze\content::skinDetails(\ze::$skinId))) {
+		 && ($skin = \ze\skin::details(\ze::$skinId))) {
 			\ze::$skinName = $skin['name'];
 			\ze::$skinCSS = $skin['css_class'];
 		}
@@ -1411,6 +1476,15 @@ class content {
 		return \ze::$menuTitle;
 	}
 
+	const menuPathFromTwig = true;
+	public static function menuPath($cID, $cType, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false) {
+		if ($menu = \ze\menu::getFromContentItem($cID, $cType)) {
+			return \ze\menu::path($menu['mID'], $langId, $separator, $addHome, $returnArray);
+		} else {
+			return false;
+		}
+	}
+
 	public static function formatTagFromTagId($tagId, $neverAddLanguage = false) {
 		$cID = $cType = false;
 		if (\ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
@@ -1480,30 +1554,41 @@ class content {
 
 
 
-
-	public static function searchtermParts($searchString, $allowMultilingualChars = true) {
+	const word = 'word';
+	const phrase = 'phrase';
+	const wholePhrase = 'wp';
+	
+	public static function searchtermParts($searchString, $allowMultilingualChars = true, $removeStopWords = false, $includeWholePhrase = false) {
 		//Remove everything from the search terms except for word characters, single quotes (which can be part of words) and double quotes
 		//Attempt to validate allowing UTF-8 characters through
-		if (!function_exists('mb_ereg_replace')
-		 || !$searchString = mb_ereg_replace('[^\w\s_\'"]', ' ', $searchString)) {
+		if (
+			function_exists('mb_ereg_replace')
+			&& $searchStringProcessed = mb_ereg_replace('[^\w\s_\'"]', ' ', $searchString)
+		) {
+			$searchString = $searchStringProcessed;
+		} else {
 			//Fall back to traditional pattern matching if that fails
 			$searchString = preg_replace('/[^\w\s_\'"]/', ' ', $searchString);
+		}
+		
+		if (is_null($searchString) || $searchString === '') {
+			return [];
 		}
 	
 		//Limit the search results to 100 chars
 		$searchString = substr($searchString, 0, 100);
-	
+		
 		//Break the search string up into tokens.
 		//Normally we break by spaces, but you can use a pattern in double quotes to override this.
 
 		//Attempt to validate allowing UTF-8 characters through
-		$invalid = 0;
+		$result = false;
 		if ($allowMultilingualChars) {
-			$invalid = preg_match_all('/"([^"]*[\p{L}\p{M}\d\_][^"]*)"|(\S*[\p{L}\p{M}\d\_]\S*)/u', trim($searchString), $searchStrings, PREG_SET_ORDER);
+			$result = preg_match_all('/"([^"]*[\p{L}\p{M}\d\_][^"]*)"|(\S*[\p{L}\p{M}\d\_]\S*)/u', trim($searchString), $searchStrings, PREG_SET_ORDER);
 		}
 		
 		//Fall back to traditional pattern matching if that fails
-		if ($invalid !== 0 && $invalid !== 1) {
+		if ($result === false) {
 			preg_match_all('/"([^"]*\w[^"]*)"|(\S*\w\S*)/', trim($searchString), $searchStrings, PREG_SET_ORDER);
 		}
 
@@ -1521,24 +1606,44 @@ class content {
 			$string = str_replace('"', '', $string);
 		
 			if (isset($string[2])) {
-				$searchWordsAndPhrases[$string[2]] = 'word';
+				$searchWordsAndPhrases[$string[2]] = \ze\content::word;
 			} else {
-				$searchWordsAndPhrases[$string[1]] = 'phrase';
+				$searchWordsAndPhrases[$string[1]] = \ze\content::phrase;
 				$quotesUsed = true;
 			}
 		}
-	
-		//Just in case the user doesn't know about the "using quotes to group words together" feature,
-		//add the whole phrase in as a search term.
-		//Also do this as a fallback in case nothing was matched
-
-		//As of 13 Jan 2020, this feature is disabled. --Marcin
 		
-		// if (empty($searchWordsAndPhrases)
-		//  || (!$quotesUsed && count($searchStrings) > 1)) {
-		// 	$searchWordsAndPhrases[$searchString] = 'whole phrase';
-		// }
-	
+		//If there's only one word of phrase being searched for, automatically turn the $includeWholePhrase option off.
+		if ($includeWholePhrase && count($searchWordsAndPhrases) < 2) {
+			$includeWholePhrase = false;
+		}
+		
+		//MySQL will ignore some words when searching.
+		//However it can make sense for us to manually remove them beforehand, so our logic will work as we expect
+		//based on the number of search terms we think we have.
+		if ($removeStopWords) {
+			$stopWords = array_flip(\ze\sql::fetchValues("SELECT value FROM INFORMATION_SCHEMA.INNODB_FT_DEFAULT_STOPWORD"));
+			
+			$withoutStopWords = [];
+			foreach ($searchWordsAndPhrases as $text => $type) {
+				if (!isset($stopWords[$text])) {
+					$withoutStopWords[$text] = $type;
+				}
+			}
+			$searchWordsAndPhrases = $withoutStopWords;
+			unset($withoutStopWords);
+		}
+		
+		//Include the option to include the entire phrase as a search term itself.
+		if ($includeWholePhrase) {
+			$searchWordsAndPhrases[$searchString] = \ze\content::wholePhrase;
+		}
+		
+		//Note: The $removeStopWords and $includeWholePhrase options are included here to help reduce
+		//code duplication, however many plugins in Zenario still manually apply this logic and I don't want to
+		//break compatibility, so these steps are optional.
+		
+		
 		return $searchWordsAndPhrases;
 	}
 
@@ -1558,69 +1663,6 @@ class content {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-
-
-
-	//	Layouts  //
-
-	public static function layoutDetails($layoutId, $showUsage = true, $checkIfDefault = false) {
-		$sql = "
-			SELECT
-				l.layout_id,
-				CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR))) AS code_name,
-				l.name,
-				l.content_type,
-				l.status,
-				l.header_and_footer,
-				l.skin_id,
-				l.css_class,
-				l.bg_image_id,
-				l.bg_color,
-				l.bg_position,
-				l.bg_repeat,
-				l.json_data_hash";
-		
-		if ($checkIfDefault) {
-			$sql .= ",
-				ct.content_type_name_en AS default_layout_for_ctype";
-		}
-		
-		if ($showUsage) {
-			$sql .= ",
-				(	SELECT
-						count( DISTINCT id)
-					FROM " . DB_PREFIX . "content_item_versions
-					WHERE layout_id = " . (int) $layoutId . "
-				) AS content_item_count
-			";
-		}
-		
-		$sql .= "
-			FROM ". DB_PREFIX. "layouts l";
-		
-		if ($checkIfDefault) {
-			$sql .= "
-			LEFT JOIN " . DB_PREFIX . "content_types ct
-			   ON ct.default_layout_id = l.layout_id";
-		}
-		
-		$sql .= "
-			WHERE l.layout_id = ". (int) $layoutId;
-		
-		if ($layout = \ze\sql::fetchAssoc($sql)) {
-			$layout['id_and_name'] = $layout['code_name']. ' '. $layout['name'];
-		}
-		
-		return $layout;
-	}
-
 
 	//Allow access to some of the layout parameters from Twig
 	const layoutIsResponsiveFromTwig = true;
@@ -1634,164 +1676,6 @@ class content {
 	const layoutMaxWidthFromTwig = true;
 	public static function layoutMaxWidth() {
 		return \ze::$maxWidth;
-	}
-	
-	public static function layoutHtmlPath($layoutId, $reportErrors = false) {
-		return self::generateLayoutFiles($layoutId, true, false, $reportErrors);
-	}
-	public static function layoutCssPath($layoutId, $reportErrors = false) {
-		return self::generateLayoutFiles($layoutId, false, true, $reportErrors);
-	}
-	
-	private static function generateLayoutFiles($layoutId, $generateHTML, $generateCSS, $reportErrors = false) {
-		if ($layout = \ze\content::layoutDetails($layoutId, $showUsage = false, $checkIfDefault = false)) {
-			$codeName = $layout['code_name'];
-			if ($layoutDir = \ze\cache::createDir($codeName. '_'. $layout['json_data_hash'], 'cache/layouts')) {
-				
-				$data = null;
-				$tplFile = $layoutDir. $codeName. '.tpl.php';
-				$cssFile = $layoutDir. $codeName. '.css';
-				$minFile = $layoutDir. $codeName. '.min.css';
-				
-				if ($generateHTML && !file_exists(CMS_ROOT. $tplFile)) {
-					if (is_writable(CMS_ROOT. $layoutDir)) {
-						$html = '';
-						$slots = [];
-						$data = \ze\row::get('layouts', 'json_data', $layoutId);
-						\ze\gridAdm::checkData($data);
-					
-						\ze\gridAdm::generateHTML($html, $data, $slots);
-					
-						if (file_put_contents(CMS_ROOT. $tplFile, $html)) {
-							\ze\cache::chmod(CMS_ROOT. $tplFile);
-						} elseif ($reportErrors) {
-							\ze\contentAdm::debugAndReportLayoutError($tplFile);
-						} else {
-							return false;
-						}
-					} elseif ($reportErrors) {
-						\ze\contentAdm::debugAndReportLayoutError($tplFile);
-					} else {
-						return false;
-					}
-				}
-				
-				if ($generateCSS && !file_exists(CMS_ROOT. $minFile)) {
-					if (is_writable(CMS_ROOT. $layoutDir)) {
-						$html = '';
-						if ($data === null) {
-							$data = \ze\row::get('layouts', 'json_data', $layoutId);
-							\ze\gridAdm::checkData($data);
-						}
-					
-						\ze\gridAdm::generateCSS($css, $data);
-					
-						if (file_put_contents(CMS_ROOT. $cssFile, $css)) {
-							\ze\cache::chmod(CMS_ROOT. $cssFile);
-							
-							$minifier = new \MatthiasMullie\Minify\CSS($css);
-							$minifier->minify(CMS_ROOT. $minFile);
-							\ze\cache::chmod(CMS_ROOT. $minFile);
-							
-						} elseif ($reportErrors) {
-							\ze\contentAdm::debugAndReportLayoutError($cssFile);
-						} else {
-							return false;
-						}
-					} elseif ($reportErrors) {
-						\ze\contentAdm::debugAndReportLayoutError($cssFile);
-					} else {
-						return false;
-					}
-				}
-				
-				if ($generateHTML) {
-					if ($generateCSS) {
-						return [$tplFile, $cssFile];
-					} else {
-						return $tplFile;
-					}
-				} else {
-					if ($generateCSS) {
-						return $minFile;
-					}
-				}
-			
-			} elseif ($reportErrors) {
-				\ze\contentAdm::debugAndReportLayoutError();
-			}
-		}
-		
-		return false;
-	}
-	
-	
-	//	Output site-wide HTML  //
-	
-	public static function sitewideHTML($setting) {
-		
-		$string = \ze::setting($setting);
-		
-		if (\ze::setting($setting. '.is_twig')) {
-			//Add the CMS' environment variables
-			$vars = [
-				'equivId' => \ze::$equivId,
-				'cID' => \ze::$cID,
-				'cType' => \ze::$cType,
-				'cVersion' => \ze::$cVersion,
-				'isDraft' => \ze::$isDraft,
-				'alias' => \ze::$alias,
-				'langId' => \ze::$langId,
-				'adminId' => \ze::$adminId,
-				'userId' => \ze::$userId,
-				'vars' => \ze::$vars
-			];
-		
-			$string = \ze\twig::render("\n". $string, $vars);
-		}
-		
-		echo "\n", $string, "\n";
-	}
-	
-	
-	
-	
-	
-	//	Skins  //
-
-	public static function skinDetails($skinId) {
-		return \ze\row::get('skins', ['id', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['id' => $skinId]);
-	}
-
-	public static function skinName($familyName, $skinName) {
-		return \ze\row::get('skins', ['id', 'name', 'display_name', 'extension_of_skin', 'import', 'css_class', 'missing'], ['name' => $skinName]);
-	}
-
-	public static function skinPath($skinName = false) {
-		return 'zenario_custom/skins/'. ($skinName ?: \ze::$skinName). '/';
-	}
-
-	public static function skinURL($skinName = false) {
-		return 'zenario_custom/skins/'. rawurlencode(($skinName ?: \ze::$skinName)). '/';
-	}
-	
-
-	//Find the lowest common denominator of two numbers
-	public static function rationalNumber(&$a, &$b) {
-	  for ($i = min($a, $b); $i > 1; --$i) {
-		  if (($a % $i == 0)
-		   && ($b % $i == 0)) {
-			  $a = (int) ($a / $i);
-			  $b = (int) ($b / $i);
-		  }
-	  }
-	}
-
-	//Give a grid's cell a class-name based on how many columns it takes up, and the ratio out of the total width that it takes up
-	public static function rationalNumberGridClass($a, $b) {
-		$w = $a;
-		\ze\content::rationalNumber($a, $b);
-		return 'span span'. $w. ' span'. $a. '_'. $b;
 	}
 	
 

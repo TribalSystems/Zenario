@@ -9,12 +9,12 @@ plugin_settings:
                     plugin_setting:
                         name: container_mode
                     label: 'Scope:'
-                    type: radios
+                    type: select
                     value: documents
                     values: 
                         documents: 
                             ord: 1
-                            label: "Show a specific document, or select a folder to show documents inside"
+                            label: "Automatically show documents in a given folder, or show a specific document"
                         user_documents: 
                             ord: 2
                             label: "Automatically show confidential documents for the logged-in user"
@@ -24,13 +24,13 @@ plugin_settings:
                     plugin_setting:
                         name: document_source
                     label: 'Select document or folder:'
-                    side_note: 'Select either a specific document, or a folder containing one or more documents.'
+                    note_below: 'Select a folder, or a specific document, from the hierarchical documents area in the Libary.'
                     pick_items:
                         path: zenario__library/panels/documents
                         min_path: zenario__library/panels/documents
                         max_path: zenario__library/panels/documents
                         target_path: zenario__library/panels/documents
-                        select_phrase: Select...
+                        select_phrase: Select folder or document...
                     format_onchange: true
                     indent: 1
                 privacy_warning:
@@ -54,13 +54,13 @@ plugin_settings:
                         all:
                             label: 'Descend all levels of sub-folder'
                     format_onchange: true
-                    indent: 1
+                    indent: 2
                 show_folders_in_results:
                     plugin_setting:
                         name: show_folders_in_results
                     label: "Show sub-folder names in results"
                     type: checkbox
-                    indent: 2
+                    indent: 3
                 
                 order_by:
                     visible_if: zenarioAB.value('show_files_in_folders') == 'folder'
@@ -70,7 +70,7 @@ plugin_settings:
                     type: select
                     values:
                         manual_order:
-                            label: Manual order
+                            label: Order as shown in folder
                         filename:
                             label: Filename
                         title:
@@ -80,7 +80,7 @@ plugin_settings:
                         created_date:
                             label: Created date
                     value: manual_order
-                    indent: 2
+                    indent: 3
                     redraw_onchange: true
                 
                 order_by_sort:
@@ -89,7 +89,7 @@ plugin_settings:
                     plugin_setting:
                         name: order_by_sort
                     same_row: true
-                    indent: 2
+                    indent: 3
                     type: select
                     values:
                         ascending:
@@ -103,7 +103,7 @@ plugin_settings:
                     label: "Show a heading"
                     type: checkbox
                     redraw_onchange: true
-                    indent: 1
+                    indent: 2
                 title_tags:
                     hide_with_previous_field: true
                     visible_if: zenarioAB.value('show_a_heading')
@@ -122,21 +122,21 @@ plugin_settings:
                     value: h1
                     side_note: |
                         Choose which HTML tags the title will be displayed in.
-                    indent: 2
+                    indent: 3
                 show_folder_name_as_title:
                     plugin_setting:
                         name: show_folder_name_as_title
                     label: "Show selected folder name as title"
                     type: checkbox
                     redraw_onchange: true
-                    indent: 2
+                    indent: 3
                     visible_if: zenarioAB.value('show_a_heading')
                 heading:
                     plugin_setting:
                         name: heading
                     label: "Heading:"
                     type: text
-                    indent: 2
+                    indent: 3
                     value: "Heading"
                     visible_if: (zenarioAB.value('show_a_heading') && !zenarioAB.value('show_folder_name_as_title'))
                     validation:
@@ -151,7 +151,7 @@ plugin_settings:
                     empty_value: -- Don't filter --
                     side_note: Choose a dataset field to filter the results by.
                     format_onchange: true
-                    indent: 1
+                    indent: 2
                 filter_values:
                     hide_with_previous_field: true
                     visible_if: zenarioAB.value('filter')
@@ -159,7 +159,7 @@ plugin_settings:
                         name: filter_values
                     type: checkboxes
                     values: {}
-                    indent: 2
+                    indent: 3
                     validation:
                         required_if_not_hidden: Choose at least one filter value.
                 
@@ -172,7 +172,7 @@ plugin_settings:
                     empty_value: -- Don't filter --
                     side_note: Choose a dataset field to filter the results by.
                     redraw_onchange: true
-                    indent: 1
+                    indent: 2
                 date_filter_type:
                     hide_with_previous_field: true
                     visible_if: zenarioAB.value('date_filter')
@@ -192,7 +192,7 @@ plugin_settings:
                             label: Later than...
                     value: date_range
                     redraw_onchange: true
-                    indent: 2
+                    indent: 3
                 date_range_start:
                     hide_with_previous_outdented_field: true
                     visible_if: zenarioAB.value('date_filter_type') == 'date_range'
@@ -201,7 +201,7 @@ plugin_settings:
                     label: "Date range start:"
                     type: date
                     change_month_and_year: true
-                    indent: 3
+                    indent: 4
                     validation:
                         required_if_not_hidden: Please choose a date.
                 date_range_end:
@@ -212,7 +212,7 @@ plugin_settings:
                     label: "Date range end:"
                     type: date
                     change_month_and_year: true
-                    indent: 3
+                    indent: 4
                     validation:
                         required_if_not_hidden: Please choose a date.
                 relative_date_range_operator:
@@ -230,7 +230,7 @@ plugin_settings:
                     value: newer
                     validation:
                         required_if_not_hidden: Please specify a relative date range.
-                    indent: 3
+                    indent: 4
                 relative_date_range_value:
                     hide_with_previous_outdented_field: true
                     visible_if: zenarioAB.value('date_filter_type') == 'relative_date_range'
@@ -267,7 +267,7 @@ plugin_settings:
                     label: "Prior to the date:"
                     type: date
                     change_month_and_year: true
-                    indent: 3
+                    indent: 4
                     validation:
                         required_if_not_hidden: Please choose a date.
                 on_date:
@@ -278,7 +278,7 @@ plugin_settings:
                     label: "On the date:"
                     type: date
                     change_month_and_year: true
-                    indent: 3
+                    indent: 4
                     validation:
                         required_if_not_hidden: Please choose a date.
                 after_date:
@@ -289,16 +289,10 @@ plugin_settings:
                     label: "Later than the date:"
                     type: date
                     change_month_and_year: true
-                    indent: 3
+                    indent: 4
                     validation:
                         required_if_not_hidden: Please choose a date.
                 
-                show_filename:
-                    plugin_setting:
-                        name: show_filename
-                    label: 'Show document filename'
-                    type: checkbox
-                    value: 1
                 show_title:
                     plugin_setting:
                         name: show_title
@@ -310,8 +304,31 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: show_filename_if_no_title
-                    label: "Show document filename if no title exists"
+                    label: "If no title, show filename"
                     type: checkbox
+                make_title_a_hyperlilnk:
+                    visible_if: zenarioAB.value('show_title');
+                    indent: 1
+                    plugin_setting:
+                        name: make_title_a_hyperlilnk
+                    label: "Make this a hyperlink"
+                    type: checkbox
+                    value: 1
+                show_filename:
+                    plugin_setting:
+                        name: show_filename
+                    label: "Show filename if not already shown"
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                make_filename_a_hyperlilnk:
+                    visible_if: zenarioAB.value('show_filename');
+                    indent: 1
+                    plugin_setting:
+                        name: make_filename_a_hyperlilnk
+                    label: "Make this a hyperlink"
+                    type: checkbox
+                    value: 1
                 show_file_size:
                     plugin_setting:
                         name: show_file_size
@@ -354,6 +371,16 @@ plugin_settings:
                             label: Unlimited size
                     format_onchange: true
                     indent: 1
+                retina:
+                    indent: 1
+                    plugin_setting:
+                        name: retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    value: false
+                    side_note: |
+                        Display image at double density.
                 width:
                     plugin_setting:
                         name: width

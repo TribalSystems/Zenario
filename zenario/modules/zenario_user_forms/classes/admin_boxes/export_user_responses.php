@@ -58,7 +58,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 				$errors[] = ze\admin::phrase('Please enter a response ID.');
 			} elseif (
 				!ze\row::exists(
-					ZENARIO_USER_FORMS_PREFIX . 'user_response', 
+					'user_response', 
 					['id' => $values['details/response_id']]
 				)
 			) {
@@ -102,8 +102,8 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		$responsesData = [];
 		$sql = '
 			SELECT urd.value, urd.form_field_id, ur.id
-			FROM '.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
-			LEFT JOIN '.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
+			FROM '.DB_PREFIX. 'user_response AS ur
+			LEFT JOIN '.DB_PREFIX. 'user_response_data AS urd
 				ON ur.id = urd.user_response_id
 			LEFT JOIN '.DB_PREFIX. ZENARIO_USER_FORMS_PREFIX . 'user_form_fields AS uff
 				ON urd.form_field_id = uff.id
@@ -154,7 +154,7 @@ class zenario_user_forms__admin_boxes__export_user_responses extends ze\moduleBa
 		}
 		
 		$responseDates = ze\row::getAssocs(
-			ZENARIO_USER_FORMS_PREFIX. 'user_response', 
+			'user_response', 
 			'response_datetime', 
 			['form_id' => $formId], 'response_datetime'
 		);

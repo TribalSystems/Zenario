@@ -95,7 +95,7 @@ class zenario_common_features__admin_boxes__help_line extends ze\moduleBaseClass
 						$attachmentFilenameMappings = [],
 						$precedence = 'bulk',
 						$isHTML = true,
-						false, false, false, false, '', '', 'To',
+						false, false, false, '', '', 'To',
 						$ignoreDebugMode = true		//Help line requests should always be sent to the intended recipient,
 													//even if debug mode is on.
 					);

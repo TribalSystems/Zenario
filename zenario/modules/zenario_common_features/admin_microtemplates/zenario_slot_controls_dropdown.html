@@ -1,0 +1,124 @@
+
+<!-- HTML for the sections/options/controls in the slot drop-down menus -->
+
+<%
+	var css = m.tuix.css_class,
+		showSlotInEditMode = false,
+		showSlotInLayoutMode = false,
+		slot = zenario.slots[m.slotName],
+		cName, control,
+		sName, si, section,
+		sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms', 'switch_to'];
+%>
+
+
+<% foreach (sections as si => sName) { %>
+	<% if (!_.isEmpty(section = m.tuix[sName])) { %>
+		<div
+			class="zenario_slotControlsSection zenario_slotControlsWrap_{{sName|escape}}"
+			
+			<% switch (sName) { %>
+				<% case 'actions': %>
+				<% case 're_move_place': %>
+				<% case 'overridden_actions': %>
+				<% case 'no_perms': %>
+				<% case 'switch_to': %>
+					onclick="zenarioA.closeSlotControls();"
+			<% } %>
+		>
+			<% foreach (section as cName => control) { %>
+				
+				<% if (zenarioA.slotControlVisible(control, m)) { %>
+					<% var page_modes = control.page_modes || {}; %>
+					
+					<div
+						id="zenario_slot_control__{{m.slotName|escape}}__{{sName|escape}}__{{cName|escape}}"
+						class="
+							zenario_sc
+							
+							<% if (page_modes.edit) { %>
+								<% showSlotInEditMode = true; %>
+								
+								zenario_showInEditMode
+							<% } else { %>
+								zenario_hideInEditMode
+							<% } %>
+							
+							<% if (page_modes.layout) { %>
+								<% showSlotInLayoutMode = true; %>
+								
+								zenario_showInLayoutMode
+							<% } else { %>
+								zenario_hideInLayoutMode
+							<% } %>
+							
+							{{control.css_class|escape}}
+						"
+							
+						data-slotname="{{m.slotName|escape}}"
+						
+						<% if (control.onclick) { %>
+							href="#"
+							onclick="
+								var slotName = '{{m.slotName|escape}}',
+									slot = zenario.slots[slotName],
+									instanceId = slot.instanceId,
+									moduleId = slot.moduleId;
+								
+								{{control.onclick|escape}}
+							"
+						<% } %>
+					>
+						{{control.label}}
+						
+						<% if (control.link_to_new_tab) { %>
+							<a
+								target="_blank"
+								class="zenario_linkToNewTab"
+								href="{{control.link_to_new_tab|escape}}"
+								onclick="zenarioA.closeSlotControls(); zenario.stop(event);"
+							></a>
+						<% } %>
+					</div>
+				<% } %>
+			<% } %>
+		</div>
+	<% } %>
+<% } %>
+
+
+
+<!-- Set the CSS class for the slot's admin wrapper/slot controls -->
+
+<% if (slot.beingEdited) { %>
+	<% css += ' zenario_slot_being_edited'; %>
+<% } %>
+
+<% if (showSlotInEditMode) { %>
+	<% css += ' zenario_showSlotInEditMode'; %>
+<% } else { %>
+	<% css += ' zenario_hideSlotInEditMode'; %>
+<% } %>
+
+<% if (showSlotInLayoutMode) { %>
+	<% css += ' zenario_showSlotInLayoutMode'; %>
+<% } else { %>
+	<% css += ' zenario_hideSlotInLayoutMode'; %>
+<% } %>
+
+<% if (slot.isSitewide) { %>
+	<% css += ' zenario_sitewideSlotWrap'; %>
+<% } else { %>
+	<% css += ' zenario_bodySlotWrap'; %>
+<% } %>
+
+<% if (slot.isHeader) { %>
+	<% css += ' zenario_headerSlotWrap'; %>
+<% } %>
+
+<% if (slot.isFooter) { %>
+	<% css += ' zenario_footerSlotWrap'; %>
+<% } %>
+
+<% zenario.get(m.containerId + '-wrap').className = css; %>
+

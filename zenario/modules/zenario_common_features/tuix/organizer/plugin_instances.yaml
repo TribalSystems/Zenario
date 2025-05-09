@@ -10,6 +10,10 @@ zenario__modules:
             title: Plugin library
             select_mode_title: Select a plugin
             
+            panel_type: multi_line_list_or_grid
+            css_class: three_line_list_panels
+            use_tall_rows: true
+            
             notice:
                 #This notice will be shown if there are any instances of that module
                 #which are in a nest and/or slideshow.
@@ -32,7 +36,7 @@ zenario__modules:
                     AND pi.module_id NOT IN (
                         SELECT id
                         FROM [[DB_PREFIX]]modules
-                        WHERE class_name IN ('zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple')
+                        WHERE class_name IN ('zenario_nest', 'zenario_ajax_nest', 'zenario_slideshow')
                     )
             refiners:
                 plugin:
@@ -41,12 +45,12 @@ zenario__modules:
                     title: Nest library
                     select_mode_title: Select a nest
                     sql: |
-                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_plugin_nest')
+                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name IN ('zenario_nest', 'zenario_ajax_nest'))
                 slideshows:
                     title: Slideshow library
                     select_mode_title: Select a slideshow
                     sql: |
-                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name IN ('zenario_slideshow', 'zenario_slideshow_simple'))
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
                 view_nests_containing:
                     #The necessary table join and WHERE statement is added in the PHP class.
                     exists: true
@@ -62,17 +66,7 @@ zenario__modules:
                         )
                 nests_using_form:
                     sql: |
-                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_plugin_nest')
-                        AND pi.id IN (
-                            SELECT instance_id
-                            FROM [[DB_PREFIX]]plugin_settings
-                            WHERE foreign_key_to = 'user_form'
-                              AND foreign_key_id = [[REFINER_ID]]
-                              AND egg_id != 0
-                        )
-                slideshows_using_form:
-                    sql: |
-                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
+                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name IN ('zenario_nest', 'zenario_ajax_nest'))
                         AND pi.id IN (
                             SELECT instance_id
                             FROM [[DB_PREFIX]]plugin_settings
@@ -91,7 +85,7 @@ zenario__modules:
                         )
                 nests_using_image:
                     sql: |
-                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_plugin_nest')
+                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name IN ('zenario_nest', 'zenario_ajax_nest'))
                         AND pi.id IN (
                             SELECT foreign_key_id
                             FROM [[DB_PREFIX]]inline_images AS iiu
@@ -100,13 +94,31 @@ zenario__modules:
                         )
                 slideshows_using_image:
                     sql: |
-                        pi.module_id IN (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name IN ('zenario_slideshow', 'zenario_slideshow_simple'))
+                        pi.module_id = (SELECT id FROM [[DB_PREFIX]]modules WHERE class_name = 'zenario_slideshow')
                         AND pi.id IN (
                             SELECT foreign_key_id
                             FROM [[DB_PREFIX]]inline_images AS iiu
                             WHERE foreign_key_to = 'library_plugin'
                               AND image_id = [[REFINER_ID]]
                         )
+                email_address_setting:
+                    table_join: |
+                        [[DB_PREFIX]]plugin_settings ps
+                        ON pi.id = ps.instance_id
+                    sql: |
+                        (
+                            ps.is_email_address = 1 
+                            OR 
+                            (
+                                (ps.is_email_address IS NULL) AND (ps.name LIKE '%email%')
+                            )
+                        )
+                        AND 
+                            ps.value != ''
+                        AND 
+                            ps.is_content = 'synchronized_setting'
+                        AND
+                            ps.value REGEXP '[^@ ]+@[^. ]+(\\.[^.]+)+'
                     
             #quick_filter_buttons:
             #    module:
@@ -143,6 +155,7 @@ zenario__modules:
                     db_column: pi.name
                     searchable: true
                     always_show: true
+                    width: xxlarge
                 module_id:
                     title: Module ID
                     hidden: true
@@ -150,6 +163,7 @@ zenario__modules:
                     format: enum
                     values: {}
                 module_name:
+                    parent: name
                     title: Module
                     always_show: true
                     visible_if: |
@@ -161,14 +175,13 @@ zenario__modules:
                     db_column: m.class_name
                 nestable:
                     db_column: m.nestable
-                framework:
-                    title: Framework
-                    db_column: pi.framework
                 where_used:
+                    parent: name
                     title: Usage
                     show_by_default: true
                     width: xlarge
                     html: true
+                    css_class: 'organizer_cell_line otherline no_italics'
                 filename:
                     db_column: img_f.filename
                     table_join: |
@@ -178,7 +191,7 @@ zenario__modules:
                         LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
                 checksum:
                     db_column: img_f.checksum
                     table_join: |
@@ -188,7 +201,7 @@ zenario__modules:
                         LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
                 mime_type:
                     server_side_only: true
                     db_column: img_f.mime_type
@@ -199,7 +212,36 @@ zenario__modules:
                         LEFT JOIN [[DB_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
+                plugin_email_address:
+                    title: Email
+                    db_column: |
+                        (
+                           SELECT GROUP_CONCAT(DISTINCT ps1.value SEPARATOR ', ')
+                           FROM [[DB_PREFIX]]plugin_settings ps1
+                           WHERE ps1.instance_id = pi.id
+                           AND
+                           (
+                                ps1.is_email_address = 1 
+                                OR 
+                                (
+                                    (ps1.is_email_address IS NULL) AND (ps1.name LIKE '%email%')
+                                )
+                            )
+                            AND 
+                                ps1.value != ''
+                            AND 
+                                ps1.is_content = 'synchronized_setting'
+                            AND
+                                ps1.value REGEXP '[^@ ]+@[^. ]+(\\.[^.]+)+'
+                            
+                        )
+                    width: xxlarge
+                    ord: 100
+                    show_by_default: true
+                framework:
+                    title: Framework
+                    db_column: pi.framework
             item:
                 name: Plugin
                 names: Plugins
@@ -258,9 +300,9 @@ zenario__modules:
                     with_columns_set:
                         has_image: true
                     visible_if: |
-                        item.module_class_name != 'zenario_plugin_nest' &&
-                        item.module_class_name != 'zenario_slideshow' &&
-                        item.module_class_name != 'zenario_slideshow_simple'
+                        item.module_class_name != 'zenario_nest' &&
+                        item.module_class_name != 'zenario_ajax_nest' &&
+                        item.module_class_name != 'zenario_slideshow'
                 usage_layouts:
                     parent: view_dropdown
                     label: "Layouts using this ~plugin~"
@@ -304,7 +346,7 @@ zenario__modules:
                         path: zenario_duplicate_plugin
                 delete:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
-                    ord: "99"
+                    ord: 99
                     label: Delete
                     multiple_select: true
                     hide_in_select_mode: false
@@ -323,7 +365,7 @@ zenario__modules:
                             delete: "1"
                 delete_used:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
-                    ord: "99"
+                    ord: 99
                     label: Delete
                     hide_in_select_mode: true
                     visible_if_for_all_selected_items: item.usage_item > 0 || item.usage_layouts > 0

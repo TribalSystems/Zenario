@@ -234,31 +234,21 @@ class zenario_blog_news_list extends zenario_content_list {
 		//if needed
 		$titleWithContent = '';
 		if ($this->setting('show_headings')) {
+			$titleWithContent = htmlspecialchars($this->phraseFromSetting('heading_if_items', $this->setting('translate_text')));
 			
-			$titleWithContent = htmlspecialchars($this->setting('heading_if_items'));
-			
-			if (!$this->isVersionControlled && $this->setting('translate_text')) {
-				if ($selectedCategoryName == $allCategoriesPhrase) {
-					$selectedCategoryName = $this->phrase($selectedCategoryName);
-				}
-				
-				$titleWithContent = $this->phrase($titleWithContent, ['category' => $selectedCategoryName]);
+			if ($selectedCategoryName == $allCategoriesPhrase) {
+				$selectedCategoryName = $this->phrase($selectedCategoryName);
 			}
-		}
-		$titleWithNoContent = '';
-		$titleWithNoContent = htmlspecialchars($this->setting('heading_if_no_items'));
 			
-		if (!$this->isVersionControlled && $this->setting('translate_text')) {
-			$titleWithNoContent = $this->phrase($titleWithNoContent);
+			$titleWithContent = $this->phrase($titleWithContent, ['category' => $selectedCategoryName]);
 		}
+		
+		$titleWithNoContent = '';
+		$titleWithNoContent = htmlspecialchars($this->phraseFromSetting('heading_if_no_items', $this->setting('translate_text')));
 		
 		$moreLinkText = '';
 		if ($moreLink) {
-			$moreLinkText = htmlspecialchars($this->setting('more_link_text'));
-			
-			if (!$this->isVersionControlled && $this->setting('translate_text')) {
-				$moreLinkText = $this->phrase($moreLinkText);
-			}
+			$moreLinkText = htmlspecialchars($this->phraseFromSetting('more_link_text', $this->setting('translate_text')));
 		}
 		
 		foreach($this->items as &$item) {

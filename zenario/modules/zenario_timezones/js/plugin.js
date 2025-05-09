@@ -28,9 +28,9 @@
 (function(zenario, zenario_timezones) {
 	"use strict";
 
-	zenario_timezones.init = function(containerId, locationId, dataPoolId1) {
+	zenario_timezones.init = function(containerId, locationId, dataPoolId) {
 	
-		zenario.ajax(zenario_timezones.AJAXLink(), {locationId: locationId, dataPoolId1: dataPoolId1}).after(function(data) {
+		zenario.ajax(zenario_timezones.AJAXLink(), {locationId: locationId, dataPoolId: dataPoolId}).after(function(data) {
 		
 			if (data) {
 				var now = new Date(),

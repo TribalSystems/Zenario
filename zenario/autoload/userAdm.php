@@ -110,6 +110,9 @@ class userAdm {
 		}
 		
 		if (strlen($baseIdentifier) > 50) {
+			//Please note: while this logic limits the identifier to 50 characters,
+			//the actual column size is 55. That accounts for up to a 3 digit number
+			//being added if the identifier is not unique.
 			$baseIdentifier = mb_strcut($baseIdentifier, 0, 50, 'UTF-8');
 		}
 	
@@ -216,7 +219,7 @@ class userAdm {
 	
 		//Validate the email field if it is not empty.
 		if (!empty($values['email'])) {
-			if (!\ze\ring::validateEmailAddress($values['email'])) {
+			if (strlen($values['email']) > 100 || !\ze\ring::validateEmailAddress($values['email'])) {
 				$e->add('email', 'Please enter a valid email address.');
 		
 			//...and is not already taken by a different row.
@@ -244,7 +247,12 @@ class userAdm {
 			return false;
 	
 		} else {
-		
+			if (isset($values['email'])) {
+				$values['email_domain'] = '';
+				if (!empty($values['email'])) {
+					$values['email_domain'] = self::extractEmailDomainFromEmailAddress($values['email']);
+				}
+			}
 			$password = false;
 			if (isset($values['password'])) {
 				$password = $values['password'];
@@ -294,7 +302,18 @@ class userAdm {
 		}
 	}
 
-
+	public static function convertToContact($userId) {
+		$values = [
+			'screen_name' => '',
+			'password' => false,
+			'password_salt' => null,
+			'password_needs_changing' => 0,
+			'reset_password_time' => null,
+			'status' => 'contact'
+		];
+		
+		\ze\row::update('users', $values, $userId);
+	}
 
 	public static function createPassword() {
 		$numbers = "0,1,2,3,4,5,6,7,8,9";
@@ -443,6 +462,37 @@ class userAdm {
 	}
 	
 	public static function createHash() {
-		return \ze\ring::randomFromSetNoProfanities(15) . time();
+		return \ze\ring::randomMultiDigitCode() . time();
+	}
+	
+	public static function setVerificationExpiryDate($userId) {
+		$verificationEmailExpiryPeriod = (int) \ze::setting('verification_email_expiry_period');
+		$dateTimeNow = \ze\date::new(\ze\date::now());
+		$expiryDate = $dateTimeNow->modify('+' . $verificationEmailExpiryPeriod . ' hours')->format('Y-m-d H::i::s');
+		\ze\row::update('users', ['hash_verify_email_expiry' => \ze\escape::sql($expiryDate)], ['id' => $userId]);
+	}
+	
+	public static function hasVerificationExpired($userId) {
+		$user = \ze\row::get('users', ['hash_verify_email_expiry'], ['id' => $userId]);
+		
+		if ($user) {
+			$timestampNow = \ze\date::new(\ze\date::now())->getTimestamp();
+			$expiryTimestamp = \ze\date::new($user['hash_verify_email_expiry'])->getTimestamp();
+			
+			if ($timestampNow <= $expiryTimestamp) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public static function extractEmailDomainFromEmailAddress($emailAddress) {
+		$emailAddressParts = explode('@', $emailAddress, 2);
+		if (!empty($emailAddressParts) && !empty($emailAddressParts[1])) {
+			return '@' . $emailAddressParts[1];
+		}
+		
+		return '';
 	}
 }

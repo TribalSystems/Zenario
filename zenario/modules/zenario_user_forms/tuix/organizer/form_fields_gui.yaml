@@ -22,7 +22,7 @@ zenario__user_forms:
                                     hidden:
                                         label: Hidden
                                     visible_on_condition:
-                                        label: Visible on condition
+                                        label: Visible on condition...
                                 format_onchange: true
                             visible_condition_field_id: &visible_condition_field_id
                                 indent: 1
@@ -103,15 +103,36 @@ zenario__user_forms:
                                 label: 'Label:'
                                 type: text
                                 maxlength: 250
-                                note_below: This will be the field label as seen by the user.
+                                note_below: The field label shown to the user/visitor.
                                 is_phrase: true
+                            subheading_tag:
+                                visible_if: |
+                                    item.type == 'section_description'
+                                label: 'Subheading tag:'
+                                type: select
+                                values:
+                                    h1:
+                                        label: <h1>
+                                    h2:
+                                        label: <h2>
+                                    h3:
+                                        label: <h3>
+                                    h4:
+                                        label: <h4>
+                                    h5:
+                                        label: <h5>
+                                    h6:
+                                        label: <h6>
+                                    p:
+                                        label: <p>
+                                value: p
                             text_above_left_group:
                                 visible_if: |
                                     item.type == 'sortable_selection'
                                 label: 'Text above left group:'
                                 type: text
                                 maxlength: 250
-                                note_below: This will be the text above the left group as seen by the user.
+                                note_below: Text above the left group as seen by the user/visitor.
                                 is_phrase: true
                             text_above_right_group:
                                 visible_if: |
@@ -119,14 +140,14 @@ zenario__user_forms:
                                 label: 'Text above right group:'
                                 type: text
                                 maxlength: 250
-                                note_below: This will be the text above the right group as seen by the user.
+                                note_below: Text above the right group as seen by the user/visitor.
                                 is_phrase: true
                             description:
                                 visible_if: |
                                     item.type == 'section_description'
                                 label: 'Description (HTML):'
                                 type: textarea
-                                note_below: This is a description of the section placed under the label.
+                                note_below: Description of the section placed under the label.
                                 is_phrase: true
                             values_source:
                                 visible_if: |
@@ -149,14 +170,39 @@ zenario__user_forms:
                             filter_on_field:
                                 visible_if: |
                                     item.type == 'centralised_radios' || item.type == 'centralised_select'
-                                label: 'Filter on field:'
+                                label: 'Filter on field (advanced):'
                                 type: select
                                 empty_value: -- Select --
                                 values: centralised_list_filter_fields
-                                note_below: Filter a centralised select list based on the value of another field. 
+                                note_below: Filter the possible choices based on the value of another field. (See field source module code for details.)
                             
                             visibility: *visibility
                             visible_condition_field_id: *visible_condition_field_id
+                            #Possible error messages
+                            visible_condition_field_is_not_in_the_same_repeating_section:
+                                indent: 2
+                                hidden: true
+                                pre_field_html: <div class="form_warning">
+                                snippet:
+                                    html: |
+                                        <p>Visibility should only be conditional on another field in this repeating section.</p>
+                                post_field_html: </div>
+                            visible_condition_field_is_at_a_different_step:
+                                indent: 2
+                                hidden: true
+                                pre_field_html: <div class="form_warning">
+                                snippet:
+                                    html: |
+                                        <p>Visibility should only be conditional on another field on this step.</p>
+                                post_field_html: </div>
+                            visible_condition_field_is_after_the_current_field:
+                                indent: 2
+                                hidden: true
+                                pre_field_html: <div class="form_warning">
+                                snippet:
+                                    html: |
+                                        <p>Visibility should only be conditional on a previous field.</p>
+                                post_field_html: </div>
                             visible_condition_field_type: *visible_condition_field_type
                             visible_condition_field_value: *visible_condition_field_value
                             visible_condition_checkboxes_operator: *visible_condition_checkboxes_operator
@@ -199,11 +245,11 @@ zenario__user_forms:
                                     readonly:
                                         label: Read-only
                                     conditional_mandatory:
-                                        label: Mandatory on condition
+                                        label: Mandatory on condition...
                                     mandatory_if_visible:
                                         label: Mandatory if visible
                                 format_onchange: true
-                                note_below: Choose whether this field is mandatory or read-only.
+                                note_below: Whether the field is mandatory or read-only.
                             mandatory_condition_field_id:
                                 indent: 1
                                 hide_with_previous_outdented_field: true
@@ -215,7 +261,7 @@ zenario__user_forms:
                                 values: conditional_fields
                                 format_onchange: true
                                 note_below: |
-                                    Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, checkboxes, radios, select, centralised radios and centralised select)
+                                    Select a field that this field will depend on (field types supported: checkbox, checkboxes, radios, select, centralised radios, centralised select)
                             mandatory_condition_field_type:
                                 indent: 2
                                 hide_with_previous_outdented_field: true
@@ -246,9 +292,9 @@ zenario__user_forms:
                                 type: select
                                 values:
                                     AND:
-                                        label: All options below are checked
+                                        label: ALL options are checked...
                                     OR:
-                                        label: Any option below is checked
+                                        label: ANY options are checked...
                             mandatory_condition_checkboxes_field_value:
                                 indent: 2
                                 hide_with_previous_outdented_field: true
@@ -261,11 +307,11 @@ zenario__user_forms:
                                 hide_with_previous_outdented_field: true
                                 visible_if: |
                                     ['mandatory', 'conditional_mandatory', 'mandatory_if_visible'].indexOf(item.readonly_or_mandatory) != -1
-                                label: 'Error message when field is incomplete:'
+                                label: 'Error message if not completed:'
                                 type: text
                                 maxlength: 250
                                 value: This field is required.
-                                note_below: Enter an error message when this field is incomplete.
+                                note_below: Error message when the mandatory field is not completed.
                                 is_phrase: true
                                 
                             field_validation:
@@ -277,6 +323,10 @@ zenario__user_forms:
                                 values:
                                     none:
                                         label: None
+                                    name:
+                                        label: Name
+                                        visible_if: |
+                                            item.type == 'text' 
                                     email: 
                                         label: Email
                                         visible_if: |
@@ -305,10 +355,10 @@ zenario__user_forms:
                                 hide_with_previous_outdented_field: true
                                 visible_if: |
                                     item.field_validation && item.field_validation != 'none'
-                                label: 'Error message when validation fails:'
+                                label: 'Validation error message:'
                                 type: text
                                 maxlength: 250
-                                note_below: Enter an error message when validation fails. 
+                                note_below: Error message to be shown when validation fails. 
                                 is_phrase: true
                                 db_column: validation_error_message
                             placeholder:
@@ -317,7 +367,7 @@ zenario__user_forms:
                                 label: 'Placeholder:'
                                 type: text
                                 maxlength: 250
-                                note_below: Enter a value to be displayed as a placeholder until the user enters something.
+                                note_below: Value to be shown in the field initially.
                                 is_phrase: true
                             show_month_year_selectors:
                                 visible_if: |
@@ -385,7 +435,7 @@ zenario__user_forms:
                                 label: 'Note below field (HTML):'
                                 type: textarea
                                 maxlength: 250
-                                note_below: Enter a note to the user that will be displayed below this field.
+                                note_below: Note to be shown below the field.
                                 is_phrase: true
                     
                     values:
@@ -466,6 +516,13 @@ zenario__user_forms:
                                     item.type != 'section_description' && item.type != 'section_spacer' && item.type != 'restatement' && item.type != 'repeat_start'
                                 snippet:
                                     html: ''
+                            custom_code_name:
+                                visible_if: |
+                                    item.type != 'section_description' && item.type != 'section_spacer'
+                                label: 'Custom field code name:'
+                                type: text
+                                maxlength: 250
+                                note_below: This is used so a developer can reference the field in a module without having to know the ID. It may also be used in email templates. Unique per form.
                             preload_dataset_field_user_data:
                                 visible_if: |
                                     item.dataset_field_id
@@ -508,7 +565,7 @@ zenario__user_forms:
                                         label: Checked
                                     unchecked:
                                         label: Unchecked
-                                note_below: Select a value to pre-populate this field.
+                                note_below: Select a value to pre-populate the field.
                             default_value_text:
                                 indent: 1
                                 hide_with_previous_outdented_field: true
@@ -517,7 +574,7 @@ zenario__user_forms:
                                 label: 'Default value:'
                                 type: text
                                 maxlength: 250
-                                note_below: Enter a value to pre-populate this field.
+                                note_below: Value that should pre-populate the field.
                                 
                             default_value_class_name:
                                 indent: 1
@@ -588,19 +645,12 @@ zenario__user_forms:
                                 label: 'CSS classes:'
                                 type: text
                                 maxlength: 250
-                                note_below: CSS classes to apply to this field, separated by spaces.
+                                note_below: CSS classes to apply to the field, separated by spaces.
                             div_wrap_class:
                                 label: 'Wrapper div CSS class:'
                                 type: text
                                 maxlength: 250
-                                note_below: CSS class for a wrapper div around this field. Fields above/below this one with the same wrapper div class will be put within the same div.
-                            custom_code_name:
-                                visible_if: |
-                                    item.type != 'section_description' && item.type != 'section_spacer'
-                                label: 'Custom field code name:'
-                                type: text
-                                maxlength: 250
-                                note_below: This is used so a developer can reference this field in a module without having to know the ID. Unique per form.
+                                note_below: CSS class for a wrapper div around the field. Fields above/below this one with the same wrapper div class will be put within the same div.
                                                                 
                             invalid_responses:
                                 visible_if: |

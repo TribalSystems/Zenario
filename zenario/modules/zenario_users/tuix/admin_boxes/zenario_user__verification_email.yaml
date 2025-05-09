@@ -3,6 +3,7 @@
 zenario_user__verification_email:
     key:
         id: ""
+    save_button_message: Send
     tab: details
     hide_tab_bar: true
     tabs:
@@ -49,3 +50,9 @@ zenario_user__verification_email:
                         relative_urls: false
                     style: |
                         width: 98%;
+                    notices_below:
+                        verification_email_expiry_period_note:
+                            type: information
+                            hidden: false
+                            message: "The link will expire in [[hours_number]] [[hours_unit_singular_or_plural]]. See [[link_start]]User and Contact data[[link_end]] site setting."
+                            html: true

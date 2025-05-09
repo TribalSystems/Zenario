@@ -53,13 +53,14 @@ site_settings:
                         Look out for one of these icons:
                         <br/>
                         <span class="zenario_cache_info_icon_example zenario_cache_disabled"></span>
+                        <span class="zenario_cache_info_icon_example zenario_cache_blocked"></span>
                         <span class="zenario_cache_info_icon_example zenario_from_cache"></span>
                         <span class="zenario_cache_info_icon_example zenario_cache_in_use"></span>
                         <span class="zenario_cache_info_icon_example zenario_not_cached"></span>
                         
                         <br/><br/>
                         
-                        To see this, you will need to log out of admin mode and clear your cookies.
+                        To see this, you will need to log out of admin mode.
                         (Tip: to save time, use an incognito window instead.)
                 caching_email_on_clear:
                     site_setting:
@@ -88,7 +89,7 @@ site_settings:
                     
                 
         zenario_pro_features__cache_stats:
-            ord: caching.01
+            ord: 1.01
             priv: _PRIV_EDIT_SITE_SETTING
             label: Cache Stats
             visible_if: |

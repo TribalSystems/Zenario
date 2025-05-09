@@ -54,7 +54,7 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		ze\priv::exitIfNot('_PRIV_ADD_MENU_SECTION');
+		ze\priv::exitIfNot('_PRIV_CREATE_DELETE_MENU_SECTION');
 		
 		$box['key']['id'] = ze\row::set('menu_sections', ['section_name' => $values['menu_section/section_name']], $box['key']['id']);
 		

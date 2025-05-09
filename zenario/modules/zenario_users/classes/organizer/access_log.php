@@ -29,14 +29,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_users__organizer__access_log extends zenario_users {
 	
-	
-	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 
 		//If it looks like a site is supposed to be using encryption, but it's not set up properly,
 		//show an error message.
 		ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
-		
 		
 		ze\tuix::flagEncryptedColumns($panel, 'u', 'users');
 	
@@ -82,11 +79,20 @@ class zenario_users__organizer__access_log extends zenario_users {
 				case 7:
 					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 week.');
 					break;
+				case 14:
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 2 weeks.');
+					break;
 				case 30:
 					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 month.');
 					break;
 				case 90:
 					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 3 months.');
+					break;
+				case 180:
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 6 months.');
+					break;
+				case 270:
+					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 9 months.');
 					break;
 				case 365:
 					$accessLogDuration = ze\admin::phrase('Entries in the private content item access log are deleted after 1 year.');
@@ -102,12 +108,31 @@ class zenario_users__organizer__access_log extends zenario_users {
 			$panel['notice']['message'] = $accessLogDuration.".";
 			$panel['notice']['html'] = true;
 		}
-		/*if($path == 'zenario__users/panels/access_log')
-			{
-				$panel['notice']['show'] = true;
-				$panel['notice']['message'] = $accessLogDuration;
-			}
-		*/
+		
 		$panel['collection_buttons']['export']['admin_box']['key']['filename'] = $panel['title'];
+	}
+	
+	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		switch ($path) {
+			case 'zenario__users/panels/access_log':
+				foreach ($panel['items'] as $id => &$item) {
+					$fullName = '';
+					
+					if (!empty($item['First_Name'])) {
+						$fullName .= $item['First_Name'];
+					}
+					
+					if (!empty($item['Last_Name'])) {
+						if (!empty($item['First_Name'])) {
+							$fullName .= ' ';
+						}
+						
+						$fullName .= $item['Last_Name'];
+					}
+					
+					$item['User_Name'] = $fullName;
+				}
+			break;
+		}
 	}
 }

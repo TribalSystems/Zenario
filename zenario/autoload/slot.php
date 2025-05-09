@@ -161,6 +161,11 @@ abstract class slot {
 		$this->jsLibs[$lib] = $stylesheet;
 	}
 	
+	protected $cacheMsg;
+	public final function setCacheMessage($msg) {
+		$this->cacheMsg = $msg;
+	}
+	
 	
 	protected $instanceId;
 	protected $moduleId;
@@ -216,21 +221,27 @@ abstract class slot {
 	}
 	
 	protected $class;
-	protected $init;
+	protected $initStatus;
 	
 	//Work out whether we are displaying the Plugin in this slot.
 	//Run the plugin's own initalisation routine. If it returns true, then display the plugin.
 	//(But note that modules are always displayed in admin mode.)
 	public function initInstance() {
 		
-		$status = $this->class->init();
+		$keepLastVal = \ze::$currentSlot;
+		\ze::$currentSlot = $this->slotName;
+			
+			$status = $this->class->init();
+			
+		\ze::$currentSlot = $keepLastVal;
+		
 		
 		if (\ze::isError($status)) {
 			$this->error = $status->__toString();
 			$status = false;
 		}
 		
-		if (!($this->init = $status) && !(\ze\priv::check())) {
+		if (!($this->initStatus = $status) && !(\ze\priv::check())) {
 			$this->class = null;
 			return false;
 		} else {
@@ -381,7 +392,7 @@ abstract class slot {
 		
 		
 		//If a Plugin refused to show itself, cache this refusal as well
-		if (!$this->init) {
+		if (!$this->initStatus) {
 			self::postSlot($slotName, 'showSlot', $useOb = false);
 		}
 	}

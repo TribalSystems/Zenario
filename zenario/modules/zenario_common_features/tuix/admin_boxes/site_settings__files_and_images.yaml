@@ -1,11 +1,11 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    title: Editing settings for documents, files and images
+    title: Editing settings for documents, images and file handling
     setting_group: files_and_images
     tabs:
-        docstore_dir:
-            label: Docstore
+        file_storage:
+            label: File storage
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -17,8 +17,7 @@ site_settings:
                             <p>
                                 You should create a directory on your server where Zenario can store documents.
                             </p><p>
-                                Please create a directory on your server in which to keep these backups.
-                                Enter an absolute path starting with a slash, but do not add a trailing slash.
+                                Please enter an absolute path starting with a slash, but do not add a trailing slash.
                             </p>
                 docstore_dir:
                     site_setting:
@@ -30,6 +29,49 @@ site_settings:
                 #docstore_dir_status:
                 #    snippet:
                 #        html: '&nbsp;'
+                
+                content_max_filesize:
+                    site_setting:
+                        name: content_max_filesize
+                    label: 'Zenario maximum uploadable file size:'
+                    type: text
+                    value: 8
+                    note_below: >
+                        Zenario will not accept files greater than this size. Set this to less than or equal to the server's maximum uploadable file size (see below).
+                    validation:
+                        required: Please enter a maximum uploadable file size.
+                        numeric: Must be numeric.
+                    decimal_places: ""
+                    maxlength: 10
+                    style: "width: 7em;"
+                content_max_filesize_unit:
+                    site_setting:
+                        name: content_max_filesize_unit
+                    label: 'Unit:'
+                    same_row: true
+                    type: select
+                    values:
+                        KB:
+                            label: KB
+                        MB:
+                            label: MB
+                        GB:
+                            label: GB
+                    value: MB
+                    redraw_onchange: true
+                apache_max_filesize:
+                    label: 'Server maximum uploadable file size:'
+                    type: text
+                    show_as_a_span: true
+                    note_below: |
+                        The size of the largest file allowed by your web server's configuration. Your server administrator may be able to change this by changing the server configuration (e.g. in Apache web server, it is the lesser of upload_max_filesize and post_max_size as set in the php.ini file, which is usually in /etc/php/[version]/apache/php.ini).
+                max_allowed_packet:
+                    label: 'MySQL max_packet_size:'
+                    type: text
+                    show_as_a_span: true
+                    note_below: |
+                        This is the size of the largest possible file, image or query that can be sent to your MySQL database.
+                        Your server administrator may change this by changing the <code>max_allowed_packet</code> setting in the server's MySQL configuration.
 
         image_privacy:
             label: Images
@@ -248,30 +290,6 @@ site_settings:
                         It's usually safe to leave this set to the default value (66%).
                         However if you see artifacts on your thumbnail then try making it smaller.
                 
-                description2:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <br/>
-                            <br/>
-                            When Zenario resizes a JPEG image to create a thumbnail, the new image is then recompressed.
-                            This compresson algorithm can use a quality of between 0 and 100.
-                
-                jpeg_quality_limit:
-                    site_setting:
-                        name: jpeg_quality_limit
-                    label: 'JPEG image quality used when resizing images:'
-                    type: text
-                    value: 99
-                    style: 'width: 50px;'
-                    slider:
-                        range: min
-                        min: 80
-                        max: 100
-                        before_field: true
-                    note_below: |
-                        The lower this number the smaller the filesize of the thumbnail will be, however if you set setting it
-                        too low then you may see artifacts on your thumbnails for JPEG images.
         webp_images:
             label: WebP images
             edit_mode:
@@ -282,83 +300,53 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            Zenario makes WebP images from JPG and PNGs that have been uploaded, and saves them in the 'public' cache directory.
-                            WebP images are normally smaller in size than the JPG/PNG from which they are made.
-                            <br/>
-                            <br/>
-
-                            Use the slider to set the quality. 90 is recommended, 100 is better but images that have already been optimised
-                            while JPG/PNG may become larger when converted to WebP.
-                            <br/>
-                            <br/>
-
-                            If changing the setting, this will only have effect on newly created WebP images in the 'public' directory, and will not change existing ones.
+                            <p>
+                                When you upload an image, Zenario will use the WebP
+                                image format to display the image to visitors. Use this tab to control
+                                the quality of the encoding. Higher quality means slightly better images
+                                but a much larger filesize and slower page loads.
+                            </p><p>
+                                Changing this setting will only have effect on newly created WebP
+                                images. Existing images in the <code>public/images/</code> directory will not be regenerated.
+                            </p>
                 webp_quality:
                     site_setting:
                         name: webp_quality
                     label: 'WebP image quality:'
-                    type: text
-                    value: 90
-                    style: 'width: 50px;'
-                    slider:
-                        range: min
-                        min: 80
-                        max: 100
-                        before_field: true
-                    validation:
-                        numeric: 'The value must be an integer between 80 and 100.'
-        filesizes:
-            label: File upload size
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-            fields:
-                description:
+                    type: select
+                    value: 80
+                    values:
+                        90:
+                            label: Slower page loads, high image quality (90)
+                        80:
+                            label: Balance quality and page loads (80, recommended)
+                        70:
+                            label: Faster page loads, lower image quality (70)
+                
+                desc2:
                     full_width: true
                     snippet:
-                        html: This tab contains settings for file uploads.
-                content_max_filesize:
-                    site_setting:
-                        name: content_max_filesize
-                    label: 'Zenario maximum uploadable file size:'
+                        p: |
+                            WebP encoding is not suitable for extremely large images.
+                            When an image is larger than the following size, the image will not
+                            be WebP encoded when it is displayed at its full size.
+                            
+                webp_max_width: 
+                    label: "Maximum size (width × height):"
                     type: text
-                    value: 8
-                    note_below: >
-                        Zenario will not accept files greater than this size. Set this to less than or equal to the server's maximum uploadable file size (see below).
-                    validation:
-                        required: Please enter a maximum uploadable file size.
-                        numeric: Must be numeric.
-                    decimal_places: ""
-                    maxlength: 10
-                    style: "width: 7em;"
-                content_max_filesize_unit:
-                    site_setting:
-                        name: content_max_filesize_unit
-                    label: 'Unit:'
+                    show_as_a_span: true
+                    value: 4096
+                    maxlength: 5
+                    style: "width: 5em;"
+                    post_field_html: "&nbsp;&nbsp;×&nbsp;"
+                webp_max_height: 
                     same_row: true
-                    type: select
-                    values:
-                        KB:
-                            label: KB
-                        MB:
-                            label: MB
-                        GB:
-                            label: GB
-                    value: MB
-                    redraw_onchange: true
-                apache_max_filesize:
-                    label: 'Server maximum uploadable file size:'
                     type: text
                     show_as_a_span: true
-                    note_below: |
-                        The size of the largest file allowed by your web server's configuration. Your server administrator may be able to change this by changing the server configuration (e.g. in Apache web server, it is the lesser of upload_max_filesize and post_max_size as set in the php.ini file, which is usually in /etc/php/[version]/apache/php.ini).
-                max_allowed_packet:
-                    label: 'MySQL max_packet_size:'
-                    type: text
-                    show_as_a_span: true
-                    note_below: |
-                        This is the size of the largest possible file, image or query that can be sent to your MySQL database.
-                        Your server administrator may change this by changing the <code>max_allowed_packet</code> setting in the server's MySQL configuration.
+                    value: 2160
+                    maxlength: 5
+                    style: "width: 5em;"
+                    post_field_html: "&nbsp;pixels"
         file_downloads:
             label: File downloads
             edit_mode:

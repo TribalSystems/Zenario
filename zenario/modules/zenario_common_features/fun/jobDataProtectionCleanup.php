@@ -33,7 +33,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		//Modules that want to clear some kind of data have a clearOldData public static method that deletes it
 		//based on some site-setting.
 		$modulesWithDataToClear = [
-			'zenario_email_template_manager',
+			'zenario_common_features',
 			'zenario_scheduled_task_manager',
 			'zenario_incoming_email_manager',
 			'zenario_users',

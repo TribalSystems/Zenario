@@ -153,11 +153,17 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 		return $vimeoPrivacySettingsFormattedNicely;
 	}
 	
-	public static function signalAdvancedSearchPopulateValuesSearchInOtherModules() {
-		return 'zenario_videos_manager';
+	public static function signalAdvancedSearchGetSearchableModules() {
+		return [
+			'module_class_name' => 'zenario_videos_manager',
+			'searchable_data_types' => [
+				'videos' => 'Videos'
+			],
+			'images_are_supported' => true
+		];
 	}
 	
-	public static function searchFromModule($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
+	public static function searchFromModule($searchString, $searchableDataType, $weightings, $usePagination = false, $page = 0, $pageSize = 999999) {
 		$recordCount = 0;
 		$resultsFromModule = [];
 
@@ -185,97 +191,120 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 			unset($searchTermsWithoutStopWords);
 
 			if ($searchTerms && !$searchTermsAreAllStopWords && count($searchTerms) > 0) {
-				$firstRow = true;
-
-				$sqlFields = "
-					SELECT v.id AS item_id, v.title, v.image_id, f.filename, v.short_description, v.date";
-				
-				$sqlFrom = "
-					FROM " . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos v";
-				
-				$sqlJoin = "
-					LEFT JOIN " . DB_PREFIX . "files f
-						ON f.id = v.image_id";
-				
-				$sqlWhere = "
-					WHERE (";
-				
-				$sqlMatch = '';
-				$sqlCount = '';
-
-				$sqlFields .= ", (";
-
-				$scoreStatementFirstLine = true;
-				foreach ($searchTerms as $searchTerm => $searchTermType) {
-					$wildcard = "*";
-
-					//The location name column is called description.
-					//Treat it as a title.
-					foreach (['v.title', 'v.short_description', 'v.description'] as $column) {
-						if ($firstRow) {
-							$or = '';
-							$firstRow = false;
-						} else {
-							$or = " OR";
-						}
-
-						if (!$scoreStatementFirstLine) {
-							$sqlFields .= " + ";
-						}
+				if ($searchableDataType == 'videos') {
+					$firstRow = true;
 	
-						$scoreStatementFirstLine = false;
-
-						if ($column == 'v.title') {
-							$weighting = $weightings['title'];
-						} elseif (ze::in($column, 'v.short_description', 'v.description')) {
-							$weighting = $weightings['description'];
+					$sqlFields = "
+						SELECT v.id AS item_id, v.title, v.image_id, f.filename, v.short_description, v.date";
+					
+					$sqlFrom = "
+						FROM " . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos v";
+					
+					$sqlJoin = "
+						LEFT JOIN " . DB_PREFIX . "files f
+							ON f.id = v.image_id";
+					
+					$sqlWhere = "
+						WHERE (";
+					
+					$sqlMatch = '';
+					$sqlCount = '';
+	
+					$sqlFields .= ", (";
+	
+					$scoreStatementFirstLine = $whereStatementFirstLine = true;
+					foreach ($searchTerms as $searchTerm => $searchTermType) {
+						$wildcard = "*";
+						
+						$searchTermIsAStopWord = in_array($searchTerm, $stopWords);
+						
+						if (!$searchTermsAreAllStopWords && !$searchTermIsAStopWord) {
+							if ($whereStatementFirstLine) {
+								$sqlMatch .= "
+									(";
+								$sqlCount .= "
+									(";
+							} else {
+								$sqlMatch .= "
+									) AND (";
+								$sqlCount .= "
+									) AND (";
+							}
+							
+							$firstRow = true;
+						} else {
+							continue;
 						}
 						
-						$sqlFields .= "(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
-						
-						$sqlMatch .= $or . "
-							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
-						
-						$sqlCount .= $or . "
-							(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+						$whereStatementFirstLine = false;
+	
+						foreach (['v.title', 'v.short_description', 'v.description'] as $column) {
+							if ($firstRow) {
+								$or = '';
+								$firstRow = false;
+							} else {
+								$or = " OR";
+							}
+	
+							if (!$scoreStatementFirstLine) {
+								$sqlFields .= " + ";
+							}
+		
+							$scoreStatementFirstLine = false;
+	
+							if ($column == 'v.title') {
+								$weighting = $weightings['title'];
+							} elseif (ze::in($column, 'v.short_description', 'v.description')) {
+								$weighting = $weightings['description'];
+							}
+							
+							$sqlFields .= "
+								(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE) * " . $weighting . ")";
+							
+							$sqlMatch .= $or . "
+								(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+							
+							$sqlCount .= $or . "
+								(MATCH (". $column. ") AGAINST (\"" . ze\escape::sql($searchTerm) . $wildcard . "\" IN BOOLEAN MODE))";
+						}
 					}
-				}
-
-				$sqlFields .= "
-					) AS score";
-				
-				$sqlMatch .= ")";
-				$sqlCount .= ")";
-
-				//Get the record count now...
-				$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sqlFrom . $sqlWhere . $sqlCount);
-				$row = ze\sql::fetchRow($result);
-				$recordCount = $row[0];
-
-				//... and then the results.
-				$sqlMatch .= "
-					ORDER BY score DESC, v.title ASC";
-
-				$sqlMatch .= ze\sql::limit($page, $pageSize);
-
-				$result = ze\sql::select($sqlFields . $sqlFrom . $sqlJoin . $sqlWhere . $sqlMatch);
-
-				while ($row = ze\sql::fetchAssoc($result)) {
-					$item = [
-						'item_id' => $row['item_id'],
-						'title' => $row['title'],
-						'short_description' => $row['short_description'],
-						'date' => ze\date::format($row['date']),
-						'filename' => $row['filename'],
-						'score' => $row['score']
-					];
-
-					if ($row['image_id']) {
-						$item['thumbnail_Id'] = $row['image_id'];
-					} else {
-						$item['thumbnail_Id'] = '';
+	
+					$sqlFields .= "
+						) AS score";
+					
+					$sqlMatch .= "))";
+					$sqlCount .= "))";
+	
+					//Get the record count now...
+					$result = ze\sql::select("SELECT DISTINCT COUNT(*) " . $sqlFrom . $sqlWhere . $sqlCount);
+					$row = ze\sql::fetchRow($result);
+					$recordCount = $row[0];
+	
+					//... and then the results.
+					$sqlMatch .= "
+						ORDER BY score DESC, v.title ASC";
+	
+					$sqlMatch .= ze\sql::limit($page, $pageSize);
+	
+					$result = ze\sql::select($sqlFields . $sqlFrom . $sqlJoin . $sqlWhere . $sqlMatch);
+	
+					while ($row = ze\sql::fetchAssoc($result)) {
+						$item = [
+							'item_id' => $row['item_id'],
+							'title' => $row['title'],
+							'short_description' => $row['short_description'],
+							'date' => ze\date::format($row['date']),
+							'filename' => $row['filename'],
+							'score' => $row['score']
+						];
+	
+						if ($row['image_id']) {
+							$item['thumbnail_Id'] = $row['image_id'];
+						} else {
+							$item['thumbnail_Id'] = '';
+						}
+						$resultsFromModule[$row['item_id']] = $item;
 					}
-					$resultsFromModule[$row['item_id']] = $item;
 				}
 			}
 		}

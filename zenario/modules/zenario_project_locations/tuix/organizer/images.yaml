@@ -12,7 +12,7 @@ zenario__projects:
                 db_items:
                     table: '[[DB_PREFIX]]files AS f'
                     where_statement: |
-                        WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                        WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
                         AND f.`usage` = 'project_locations'
                     id_column: f.id
                 columns:

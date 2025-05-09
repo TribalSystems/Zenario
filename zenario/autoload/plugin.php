@@ -45,11 +45,11 @@ class plugin {
 		}
 		
 		switch ($className) {
-			case 'zenario_plugin_nest':
+			case 'zenario_nest':
+			case 'zenario_ajax_nest':
 				$p = 'N';
 				break;
 			case 'zenario_slideshow':
-			case 'zenario_slideshow_simple':
 				$p = 'S';
 				break;
 			default:
@@ -295,11 +295,11 @@ class plugin {
 						);
 						
 						switch ($slot->moduleClassName()) {
-							case 'zenario_plugin_nest':
+							case 'zenario_nest':
+							case 'zenario_ajax_nest':
 								$slot->flagAsNest();
 								break;
 							case 'zenario_slideshow':
-							case 'zenario_slideshow_simple':
 								$slot->flagAsNest();
 								$slot->flagAsSlideshow();
 								break;
@@ -362,7 +362,7 @@ class plugin {
 				
 				if ($runPlugins) {
 					switch ($module['class_name']) {
-						case 'zenario_plugin_nest':
+						case 'zenario_ajax_nest':
 							if ($singleSlot && $specificInstanceId && $specificEggId) {
 								$loadPlugin = $runNestWhenRunningSpecificEgg;
 								$loadOneEgg =
@@ -373,8 +373,8 @@ class plugin {
 								$loadNestedThings = true;
 							}
 							break;
+						case 'zenario_nest':
 						case 'zenario_slideshow':
-						case 'zenario_slideshow_simple':
 							$loadSlide =
 							$loadAllSlides =
 							$loadNestedThings = true;
@@ -420,8 +420,8 @@ class plugin {
 						SELECT 
 							id, id AS slide_id,
 							slide_num, css_class, slide_label, set_page_title_with_conductor,
-							states, show_back, no_choice_no_going_back, show_embed, show_refresh, show_auto_refresh, auto_refresh_interval,
-							request_vars, hierarchical_var, global_command,
+							states, show_back, no_choice_no_going_back, show_refresh, show_auto_refresh, auto_refresh_interval,
+							request_vars, global_command,
 							privacy, at_location, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 						FROM ". DB_PREFIX. "nested_plugins AS np
 						WHERE np.instance_id = ". (int) $instanceId. "
@@ -436,15 +436,23 @@ class plugin {
 					}
 					
 					if ($specificSlideId) {
-						$sql .= $comma. "
-							np.id = ". (int) $specificSlideId. " DESC";
-						$comma = ',';
-					}
+						if ($specificSlideNum) {
+							$sql .= $comma. "
+								np.id = ". (int) $specificSlideId. " AND
+								np.slide_num = ". (int) $specificSlideNum. " DESC";
+							$comma = ',';
+						} else {
+							$sql .= $comma. "
+								np.id = ". (int) $specificSlideId. " DESC";
+							$comma = ',';
+						}
 					
-					if ($specificSlideNum) {
-						$sql .= $comma. "
-							np.slide_num = ". (int) $specificSlideNum. " DESC";
-						$comma = ',';
+					} else {
+						if ($specificSlideNum) {
+							$sql .= $comma. "
+								np.slide_num = ". (int) $specificSlideNum. " DESC";
+							$comma = ',';
+						}
 					}
 					
 					$sql .= $comma. "
@@ -564,7 +572,8 @@ class plugin {
 							}
 							
 							if ($overrideFrameworkAndCSS !== false
-							 && !empty($overrideFrameworkAndCSS['this_css_tab/css_class'])) {
+							 && !empty($overrideFrameworkAndCSS['this_css_tab/css_class'])
+							 && $slotName == \ze::request('slotName') && $eggId == \ze::request('eggId')) {
 								$cssClass = $overrideFrameworkAndCSS['this_css_tab/css_class'];
 							} else {
 								$cssClass = $egg['css_class'];
@@ -742,8 +751,8 @@ class plugin {
 			$knownReq['I'] = \ze::$slotContents[$slotName]->instanceId();
 
 
-			$chDirAllRequests = zenarioPageCacheDir($allReq);
-			$chDirKnownRequests = zenarioPageCacheDir($knownReq);
+			$chDirAllRequests = \ze\cache::pageRequestHash($allReq);
+			$chDirKnownRequests = \ze\cache::pageRequestHash($knownReq);
 
 			//Loop through every possible combination of cache-flag
 			//(I've tried to order this by the most common settings first,
@@ -987,7 +996,7 @@ class plugin {
 				if ($canCache) {
 					$cacheStatusText = implode('', $saveEnv);
 						
-					if (\ze\cache::cleanDirs() && ($path = \ze\cache::createDir(zenarioPageCacheDir($knownReq). $cacheStatusText, 'cache/plugins', false))) {						
+					if (\ze\cache::cleanDirs() && ($path = \ze\cache::createDir(\ze\cache::pageRequestHash($knownReq). $cacheStatusText, 'cache/plugins', false))) {						
 						
 						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
 						$temps = [];
@@ -1041,7 +1050,7 @@ class plugin {
 						//If this Plugin is displayed and not hidden, cache its HTML
 						$html = '';
 						$images = '';
-						if ($useOb && !empty(\ze::$slotContents[$slotName]->class()) && !empty(\ze::$slotContents[$slotName]->init())) {
+						if ($useOb && !empty(\ze::$slotContents[$slotName]->class()) && !empty(\ze::$slotContents[$slotName]->initStatus())) {
 							$html = ob_get_contents();
 								
 							//Note down any images from the cache directory that are in the page
@@ -1242,5 +1251,31 @@ class plugin {
 		} else {
 			return false;
 		}
+	}
+	
+	//Attempt to find the path to a Twig Snippet.
+	//Note that the zenario_custom/twig/ directory takes priority if two snippets have the same name.
+	public static function twigSnippetPath($twigSnippet, $headSnippet = false) {
+		
+		if (empty($twigSnippet)) {
+			return false;
+		}
+		
+		$subdir = '';
+		if ($headSnippet) {
+			$subdir = 'head/';
+		}
+		
+		foreach ([
+			'zenario_custom/twig/'. $subdir,
+			'zenario/twig/'. $subdir
+		] as $path) {
+			$twigPath = $path. \ze\file::safeName($twigSnippet);
+			if (file_exists(CMS_ROOT. $twigPath)) {
+				return $twigPath;
+			}
+		}
+		
+		return false;
 	}
 }

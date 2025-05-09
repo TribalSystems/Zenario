@@ -1,0 +1,116 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_module_info:
+    priv: _PRIV_RUN_MODULE
+    title: ""
+    key:
+        id: ""
+    hide_tab_bar: true
+    tab: module_info
+    tabs:
+        module_info:
+            edit_mode:
+                enabled: false
+            fields:
+                name:
+                    label: 'Name:'
+                    type: text
+                    show_as_a_span: true
+                class_name:
+                    label: 'Class name:'
+                    type: text
+                    show_as_a_span: true
+                    notices_below:
+                        core_extra_or_custom_module:
+                            show: true
+                            type: information
+                            message: ''
+                status:
+                    label: 'Status:'
+                    type: text
+                    show_as_a_span: true
+                module_description_or_help:
+                    hidden: true
+                    snippet:
+                        html: ''
+                path:
+                    label: 'Path:'
+                    type: text
+                    show_as_a_span: true
+                included_in_editions:
+                    hidden: true
+                    label: 'Inicluded in editions:'
+                    type: text
+                    show_as_a_span: true
+                dependencies:
+                    hidden: true
+                    label: 'Dependencies:'
+                    snippet:
+                        html: ''
+                running_dependents:
+                    hidden: true
+                    label: 'Running dependents:'
+                    snippet:
+                        html: ''
+                revision:
+                    label: 'Revision:'
+                    type: text
+                    show_as_a_span: true
+                licence:
+                    label: 'Licence info:'
+                    type: text
+                    show_as_a_span: true
+                copyright_info:
+                    label: 'Copyright info:'
+                    type: text
+                    show_as_a_span: true
+                author_name:
+                    label: 'Author name:'
+                    type: text
+                    show_as_a_span: true
+                category:
+                    label: 'Category:'
+                    type: text
+                    show_as_a_span: true
+                keywords:
+                    label: 'Keywords:'
+                    type: text
+                    show_as_a_span: true
+                special_page:
+                    hidden: true
+                    label: 'Linked special page:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                    readonly: true
+                has_plugins:
+                    label: 'Has plugins:'
+                    type: text
+                    show_as_a_span: true
+                nestable:
+                    hidden: true
+                    label: 'Nestable:'
+                    type: text
+                    show_as_a_span: true
+                fea_info:
+                    hidden: true
+                    snippet:
+                        html: |
+                            This module makes FEA-type plugins
+                            (i.e. module contains a <code>tuix/visitor/</code> directory).
+                listens_for:
+                    hidden: true
+                    label: 'Signal listeners:'
+                    type: text
+                    show_as_a_span: true
+                table_prefix:
+                    label: 'Table prefix:'
+                    type: text
+                    show_as_a_span: true
+                db_tables_created_by_this_module:
+                    hidden: true
+                    label: 'DB tables created by this module:'
+                    snippet:
+                        html: ''

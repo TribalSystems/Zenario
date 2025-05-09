@@ -34,49 +34,89 @@ zenario_publish:
                             hidden: false
                             type: information
                             message: ''
-                publish_options:
-                    type: radios
-                    values:
-                        immediately:
-                            label: 'Publish'
-                        cancel:
-                            label: 'Cancel scheduled publishing'
-                        schedule:
-                            label: 'Schedule publishing at...'
-                        unlisted:
-                            label: 'Publish as an unlisted content item'
-                    value: immediately
-                    hidden: false
+                
+                immediately:
+                    type: grouping
+                    name: immediately
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('publish_options__immediately');
+                publish_options__immediately:
+                    grouping: immediately
+                    type: radio
+                    name: publish_options
+                    value: 1
+                    label: 'Publish'
+                    format_onchange: true
+                
+                cancel:
+                    type: grouping
+                    name: cancel
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('publish_options__cancel');
+                publish_options__cancel:
+                    grouping: cancel
+                    type: radio
+                    name: publish_options
+                    label: 'Cancel scheduled publishing'
+                    format_onchange: true
+                
+                schedule:
+                    type: grouping
+                    name: schedule
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('publish_options__schedule');
+                publish_options__schedule:
+                    grouping: schedule
+                    type: radio
+                    name: publish_options
+                    label: 'Schedule publishing at...'
+                    format_onchange: true
+                
+                unlisted:
+                    type: grouping
+                    name: unlisted
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('publish_options__unlisted');
+                publish_options__unlisted:
+                    grouping: unlisted
+                    type: radio
+                    name: publish_options
+                    label: 'Publish as an unlisted content item'
                     format_onchange: true
                 
                 unlisted_note:
                     indent: 1
+                    grouping: unlisted
                     visible_if:
-                        lib.valueIs: publish_options,unlisted
+                        lib.value: publish_options__unlisted
                     notices_below:
                         unlisted_note:
                             type: information
                             html: true
                             message: |
-                                <p>Unlisted content items:</p>
-                                <ul><li>
-                                    Are not shown in menus
-                                </li><li>
-                                    Are not shown in content summary lists
-                                </li><li>
-                                    Are not displayed in search plugins
-                                </li><li>
-                                    Are not displayed in site-maps
-                                </li><li>
-                                    Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
-                                </li></ul>
+                                <p>Unlisted content items aren't shown in menus, content summary lists or site maps, and won't appear in searches.</p>
+                                <p>They can still be reached by links from Banner plugins, WYSIWYG areas or Raw HTML/JavaScript Snippets.</p>
                     
                 publish_date:
+                    grouping: schedule
+                    visible_if:
+                        lib.value: publish_options__schedule
                     label: 'Date & Time'
                     type: date
                     indent: 1
                     no_past_dates: true
                 publish_hours:
+                    grouping: schedule
+                    visible_if:
+                        lib.value: publish_options__schedule
                     type: select
                     values:
                         0:
@@ -130,6 +170,9 @@ zenario_publish:
                     value: 1
                     same_row: true
                 publish_mins:
+                    grouping: schedule
+                    visible_if:
+                        lib.value: publish_options__schedule
                     type: select
                     values:
                         00:

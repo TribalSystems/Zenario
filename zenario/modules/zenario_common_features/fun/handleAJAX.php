@@ -621,6 +621,21 @@ if (ze\priv::check()) {
 		} elseif (ze::post('removePlugin') && $level == 3 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			ze\pluginAdm::updateSitewideSlot($slotName, false);
 	
+		//Copy a plugin's placement.
+		//N.b. only works on the item layer, and the target slot must be empty.
+		} elseif (ze::post('copyPluginPlacement') && $level == 1 && ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion)) {
+			
+			$from = ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion];
+			$to = $from;
+			$from['slot_name'] = ze::post('slotNameSource');
+			$to['slot_name'] = ze::post('slotNameDestination');
+			
+			if (($placement = ze\row::get('plugin_item_link', ['module_id', 'instance_id'], $from))
+			 && !ze\row::exists('plugin_item_link', $to)) {
+				ze\row::set('plugin_item_link', $placement, $to);
+			}
+			
+	
 		//Handle moving modules
 		//Move a Plugin from one slot to another, at a specific level.
 		//Swapping two modules around is allowed, so we'll need logic that completely switches the Contents of two slots around.

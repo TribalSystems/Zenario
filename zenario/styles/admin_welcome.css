@@ -762,6 +762,16 @@ input:-webkit-autofill.password:active {
 	cursor: default;
 }
 
+.welcome div.thickbox_table input.input_submit#check_again {
+	background:#0398C3 url('../admin/images/icon-refresh-white.svg') no-repeat 10px center / auto 18px;
+	padding-left:35px;
+}
+
+.welcome div.thickbox_table input.input_submit#continue {
+	background:#0398C3 url('../admin/images/icon-arrow-next-white.svg') no-repeat 90% center / auto 18px;
+	padding-right:32px;
+}
+
 /* Plain buttons, Forgotten password, Return front-end */
 
 .welcome div.thickbox_table tr#row__forgot div {
@@ -783,11 +793,24 @@ input:-webkit-autofill.password:active {
 	margin-top:15px;
 }
 
-.welcome div.thickbox_table input.return_front_end {
+.welcome div.thickbox_table.zenario_ab_tab__login .zenario_ab_row__previous.zenario_row_for_submit .zfab_row_fields {
+	position:relative;
+	overflow:hidden;
+	padding-left:12px;
+}
+
+.welcome div.thickbox_table.zenario_ab_tab__login .zenario_ab_row__previous.zenario_row_for_submit .zfab_row_fields:before {
+	font-family:"FontAwesome";
+	content:"\f0d9";
+	position:absolute;
+	left:0;
+	top:2px;
+}
+
+.welcome div.thickbox_table input.return_front_end,
+.welcome div.thickbox_table .zenario_ab_row__previous.zenario_row_for_submit .zfab_row_fields:before {
 	color:#333;
 	font-size:13px;
-	background:url('../admin/images/welcome/icon-arrow-back-grey.svg') no-repeat 0 center / 8px auto;
-	padding-left:12px;
 }
 
 .welcome div.thickbox_table .zenario_ab_row__submit {
@@ -998,6 +1021,10 @@ input:-webkit-autofill.password:active {
 .welcome textarea,
 .welcome div.thickbox_table input {
 	color:#333;
+}
+
+.welcome div.thickbox_table input.zenario_gp_button {
+	color:#FFF;
 }
 
 .welcome div.thickbox_table input.username,
@@ -1546,6 +1573,10 @@ input:-webkit-autofill.password:active {
 }
 .organizer_item_image.content_trashed {
 	background:url("../admin/images/icon-trashed-content.svg") no-repeat center center / 20px 23px;
+}
+
+.organizer_item_image.scheduled_tasks_on_icon {
+	background:url('../modules/zenario_pro_features/adminstyles/images/icon-footer-scheduled-tasks-orange.svg') no-repeat center center / 18px auto;
 }
 
 

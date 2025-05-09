@@ -1,14 +1,14 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_menu_section:
-    priv: _PRIV_ADD_MENU_SECTION
+    priv: _PRIV_CREATE_DELETE_MENU_SECTION
     key:
         id: ""
     identifier:
         css_class: menu_section
         label: Menu Section ID
     title: Creating a menu section
-    max_height: 280
+    max_height: 320
     hide_tab_bar: Yes
     tabs:
         menu_section:

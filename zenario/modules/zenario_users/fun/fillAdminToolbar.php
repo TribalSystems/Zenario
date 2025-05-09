@@ -126,10 +126,10 @@ if (ze\module::isRunning('zenario_extranet')) {
 		}
 		
 		if (isset($adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous'])) {
-			if ((!empty($_COOKIE['COOKIE_LAST_EXTRANET_EMAIL'])
-			&& ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'email' => $_COOKIE['COOKIE_LAST_EXTRANET_EMAIL']])))
-			|| (!empty($_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME'])
-			&& ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'screen_name' => $_COOKIE['COOKIE_LAST_EXTRANET_SCREEN_NAME']])))) {
+			if ((!empty($_COOKIE['z_extranet_last_email'])
+			&& ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'email' => $_COOKIE['z_extranet_last_email']])))
+			|| (!empty($_COOKIE['z_extranet_last_screen_name'])
+			&& ($user = ze\row::get('users', ['id', 'identifier'], ['status' => 'active', 'screen_name' => $_COOKIE['z_extranet_last_screen_name']])))) {
 			
 				$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['admin_box']['key']['id'] = $user['id'];
 				$adminToolbar['sections']['extranet_user']['buttons']['impersonate_previous']['label'] = ze\admin::phrase('Login as [[identifier]]', $user);

@@ -78,12 +78,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		
 		//Show a resized version of the image front-and-center in the properties tab
-		$width = $height = $url = $isRetina = $mimeType = false;
-		
-		\ze\file::adminImageLink(
-			$width, $height, $url, true, $isRetina, $mimeType,
-			$box['key']['id'], $widthLimit = 700, $heightLimit = 200
-		);
+		$width = $height = $url = false;
+		\ze\image::adminRetinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 700, $heightLimit = 200);
 		
 		$fields['details/image']['image'] = [
 			'width' => $width,
@@ -101,7 +97,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		} else {
 			//We'll want a slightly bigger version of the image for use when defining crops and zooms
 			$width = $height = $url = false;
-			\ze\file::retinaImageLink($width, $height, $url, $box['key']['id'], $widthLimit = 900, $heightLimit = 400);
+			\ze\image::retinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 900, $heightLimit = 400);
 			$cropImageBG = [
 				'width' => $width,
 				'height' => $height,
@@ -123,20 +119,77 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			//If opened from a plugin, look through the plugin settings, looking for settings named width/height/canvas.
 			//Load all of the values of these settings.
 			if ($box['key']['instanceId']) {
+				/* Module-specific canvas names:
+					Banner:
+					banner_canvas
+					
+					Banner, Nest, Slideshow, CSL:
+					mobile_canvas
+					
+					User profile search, Ctype Document, Videos FEA, Location map and listing:
+					image_canvas
+					
+					CSL, Meta Data and User profile search:
+					image_2_canvas
+					
+					Advanced Search:
+					html_canvas, document_canvas, blog_canvas, news_canvas
+					
+					Advanced Search can also get results from another module,
+					but just uses the regular name 'canvas' in that case.
+					
+					Advanced Search also uses the following width/height setting names:
+					html_width, html_height
+					document_width, document_height
+					blog_width, blog_height
+					news_width, news_height
+				*/
+				
 				$sql = "
 					SELECT psW.value AS width, psH.value AS height, psC.name AS name
 					FROM ". DB_PREFIX. "plugin_settings AS psC
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psW
 					   ON psW.instance_id = psC.instance_id
 					  AND psW.egg_id = psC.egg_id
-					  AND psW.name IN ('width', 'banner_width', 'mobile_width', 'image_width', 'image_2_width')
-					  AND (psC.name, psW.name) IN (('canvas', 'width'), ('banner_canvas', 'banner_width'), ('mobile_canvas', 'mobile_width'), ('image_canvas', 'image_width'), ('image_2_canvas', 'image_2_width'))
+					  AND psW.name IN (
+					  	'width', 'banner_width', 'mobile_width', 'image_width', 'image_2_width',
+					  	'html_width', 'document_width', 'blog_width', 'news_width'
+					  )
+					  AND (psC.name, psW.name) IN (
+					  	('canvas', 'width'),
+					  	('banner_canvas', 'banner_width'),
+					  	('mobile_canvas', 'mobile_width'),
+					  	('image_canvas', 'image_width'),
+					  	('image_2_canvas', 'image_2_width'),
+					  	('html_canvas', 'html_width'),
+					  	('document_canvas', 'document_width'),
+					  	('blog_canvas', 'blog_width'),
+					  	('news_canvas', 'news_width')
+					  )
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psH
 					   ON psH.instance_id = psC.instance_id
 					  AND psH.egg_id = psC.egg_id
-					  AND psH.name IN ('height', 'banner_height', 'mobile_height', 'image_height', 'image_2_height')
-					  AND (psC.name, psH.name) IN (('canvas', 'height'), ('banner_canvas', 'banner_height'), ('mobile_canvas', 'mobile_height'), ('image_canvas', 'image_height'), ('image_2_canvas', 'image_2_height'))
-					WHERE psC.name IN ('canvas', 'banner_canvas', 'mobile_canvas', 'image_canvas', 'image_2_canvas')
+					  AND psH.name IN (
+					  	'height', 'banner_height', 'mobile_height', 'image_height', 'image_2_height',
+					  	'html_height', 'document_height', 'blog_height', 'news_height'
+					  )
+					  AND (psC.name, psH.name) IN (
+					  	('canvas', 'height'),
+					  	('banner_canvas', 'banner_height'),
+					  	('mobile_canvas', 'mobile_height'),
+					  	('image_canvas', 'image_height'),
+					  	('image_2_canvas', 'image_2_height'),
+					  	('html_canvas', 'html_height'),
+					  	('document_canvas', 'document_height'),
+					  	('blog_canvas', 'blog_height'),
+					  	('news_canvas', 'news_height')
+					  )
+					WHERE psC.name IN (
+						'canvas',
+						'banner_canvas', 'mobile_canvas',
+						'image_canvas', 'image_2_canvas',
+						'html_canvas', 'document_canvas', 'blog_canvas', 'news_canvas'
+					)
 					  AND psC.value = 'crop_and_zoom'
 					  AND psC.instance_id = ". (int) $box['key']['instanceId']. "
 					  AND psC.egg_id IN (0, ". (int) $box['key']['eggId']. ")
@@ -230,6 +283,31 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 			//Don't show the crop and zoom options if nothing was found above
 			if (!empty($aspectRatios)) {
+				/* Module-specific canvas names:
+					Banner:
+					banner_canvas
+					
+					Banner, Nest, Slideshow, CSL:
+					mobile_canvas
+					
+					User profile search, Ctype Document, Videos FEA, Location map and listing:
+					image_canvas
+					
+					CSL, Meta Data and User profile search:
+					image_2_canvas
+					
+					Advanced Search:
+					html_canvas, document_canvas, blog_canvas, news_canvas
+					
+					Advanced Search can also get results from another module,
+					but just uses the regular name 'canvas' in that case.
+					
+					Advanced Search also uses the following width/height setting names:
+					html_width, html_height
+					document_width, document_height
+					blog_width, blog_height
+					news_width, news_height
+				*/
 			
 				//Collect some stats on every aspect ratio used on this site
 				$arUsage = [];
@@ -240,17 +318,42 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					   ON psW.instance_id = psC.instance_id
 					  AND psW.egg_id = psC.egg_id
 					  AND psW.name IN ('width', 'banner_width', 'mobile_width', 'image_width', 'image_2_width')
-					  AND (psC.name, psW.name) IN (('canvas', 'width'), ('banner_canvas', 'banner_width'), ('mobile_canvas', 'mobile_width'), ('image_canvas', 'image_width'), ('image_2_canvas', 'image_2_width'))
+					  AND (psC.name, psW.name) IN (
+					  	('canvas', 'width'),
+					  	('banner_canvas', 'banner_width'),
+					  	('mobile_canvas', 'mobile_width'),
+					  	('image_canvas', 'image_width'),
+					  	('image_2_canvas', 'image_2_width'),
+					  	('html_canvas', 'html_width'),
+					  	('document_canvas', 'document_width'),
+					  	('blog_canvas', 'blog_width'),
+					  	('news_canvas', 'news_width')
+					  )
 					INNER JOIN ". DB_PREFIX. "plugin_settings AS psH
 					   ON psH.instance_id = psC.instance_id
 					  AND psH.egg_id = psC.egg_id
 					  AND psH.name IN ('height', 'banner_height', 'mobile_height', 'image_height', 'image_2_height')
-					  AND (psC.name, psH.name) IN (('canvas', 'height'), ('banner_canvas', 'banner_height'), ('mobile_canvas', 'mobile_height'), ('image_canvas', 'image_height'), ('image_2_canvas', 'image_2_height'))
+					  AND (psC.name, psH.name) IN (
+					  	('canvas', 'height'),
+					  	('banner_canvas', 'banner_height'),
+					  	('mobile_canvas', 'mobile_height'),
+					  	('image_canvas', 'image_height'),
+					  	('image_2_canvas', 'image_2_height'),
+					  	('html_canvas', 'html_height'),
+					  	('document_canvas', 'document_height'),
+					  	('blog_canvas', 'blog_height'),
+					  	('news_canvas', 'news_height')
+					  )
 					INNER JOIN ". DB_PREFIX. "plugin_instances AS pi
 					   ON pi.id = psC.instance_id
 					INNER JOIN ". DB_PREFIX. "modules AS m
 					   ON m.id = pi.module_id
-					WHERE psC.name IN ('canvas', 'banner_canvas', 'mobile_canvas', 'image_canvas', 'image_2_canvas')
+					WHERE psC.name IN (
+						'canvas',
+						'banner_canvas', 'mobile_canvas',
+						'image_canvas', 'image_2_canvas',
+						'html_canvas', 'document_canvas', 'blog_canvas', 'news_canvas'
+					)
 					  AND psC.value = 'crop_and_zoom'";
 
 				foreach (ze\sql::select($sql) as $setting) {
@@ -288,7 +391,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 							}
 							break;
 						
-						case 'zenario_plugin_nest':
+						case 'zenario_nest':
+						case 'zenario_ajax_nest':
 							++$arUsage[$key]['nests'];
 						
 							if (!isset($arUsage[$key]['nest'])) {
@@ -297,7 +401,6 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 							break;
 						
 						case 'zenario_slideshow':
-						case 'zenario_slideshow_simple':
 							++$arUsage[$key]['slideshows'];
 						
 							if (!isset($arUsage[$key]['slideshow'])) {
@@ -345,7 +448,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					//If we didn't load any values earlier, attempt to set default values for the aspect ratio.
 					if (!isset($ratio['value'])) {
 						//I'd like it as large as possible, and centred in the middle.
-						//(I.e. the displayed defaults should be the same logic as the ze\file::scaleImageDimensionsByMode()
+						//(I.e. the displayed defaults should be the same logic as the ze\image::scaleByMode()
 						// function uses when there are no presets defined.)
 						if (($cropImageBG['width'] / $ratio['width']) > ($cropImageBG['height'] / $ratio['height'])) {
 							$cropWidth = (int) ($ratio['width'] * $cropImageBG['height'] / $ratio['height']);
@@ -377,16 +480,16 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 						$tab['label'] = ze\admin::phrase('[[width]]:[[height]]', $ratio);
 				
 						if (!$ratio['usedHere'] && !$box['key']['instanceId']) {
-							$box['tabs'][$parent]['label'] = ze\admin::phrase('Created crop and zooms');
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Created crop and zoom ratios');
 						
 						} elseif (!$ratio['usedHere']) {
-							$box['tabs'][$parent]['label'] = ze\admin::phrase('Other saved crop and zooms');
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zoom ratios (used elsewhere)');
 						
 						} elseif ($box['key']['eggId']) {
-							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zooms for nested plugin');
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zoom ratios for nested plugin');
 						
 						} elseif ($box['key']['instanceId']) {
-							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zooms for [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
+							$box['tabs'][$parent]['label'] = ze\admin::phrase('Crop and zoom ratios for [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
 						}
 				
 					} else {
@@ -397,16 +500,16 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 						}
 						
 						if (!$ratio['usedHere'] && !$box['key']['instanceId']) {
-							$tab['label'] = ze\admin::phrase('Created crop and zoom');
+							$tab['label'] = ze\admin::phrase('Created crop and zoom ratio');
 						
 						} elseif (!$ratio['usedHere']) {
-							$tab['label'] = ze\admin::phrase('Other saved crop and zoom');
+							$tab['label'] = ze\admin::phrase('Crop and zoom ratio (used elsewhere)');
 						
 						} elseif ($box['key']['eggId']) {
-							$tab['label'] = ze\admin::phrase('Crop and zoom for nested plugin');
+							$tab['label'] = ze\admin::phrase('Crop and zoom ratio for nested plugin');
 						
 						} elseif ($box['key']['instanceId']) {
-							$tab['label'] = ze\admin::phrase('Crop and zoom for [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
+							$tab['label'] = ze\admin::phrase('Crop and zoom ratio for [[plugin]]', ['plugin' => ze\plugin::codeName($box['key']['instanceId'])]);
 						}
 					}
 				
@@ -434,10 +537,12 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
 			unset($box['tabs']['details']['fields']['floating_box_title']);
 			
-			$box['tabs']['details']['fields']['filename']['note_below'] = ze\admin::phrase(
-				'Stored in the docstore, folder name [[folder_name]]. Actual filename in the docstore may differ.',
-				['folder_name' => $details['path']]
-			);
+			if ($box['key']['mic_image']) {
+				$box['tabs']['details']['fields']['filename']['note_below'] = ze\admin::phrase(
+					'Stored in the docstore, folder name [[folder_name]]. Actual filename in the docstore may differ.',
+					['folder_name' => $details['path']]
+				);
+			}
 		} elseif ($box['key']['site_setting_image']) {
 			unset($box['tabs']['details']['fields']['tags']);
 			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
@@ -493,7 +598,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				$fields['details/privacy_public']['hidden'] = false;
 				
 				$mrg = [];
-				$mrg['path'] = 'public/images/'. $details['short_checksum']. '/'. ze\file::safeName($details['filename']);
+				$mrg['path'] = ze\image::publicPath($details);
 				$mrg['link'] = ze\link::absolute(). $mrg['path'];
 				
 				$fields['details/privacy_public']['note_below'] =
@@ -515,10 +620,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			ze::$mustUseFullPath = false;
 			
 			$width = $height = $url = $internalPath = false;
-			$webPURL = $mimeType = $isRetina = $internalWebPPath = null;
-			ze\file::imageAndWebPLink($width, $height, $url, true, $webPURL, false, $isRetina, $mimeType, $box['key']['id']);
-			ze\file::internalImageAndWebPPath($width, $height, $internalPath, true, $internalWebPPath, false, $isRetina, $mimeType, $box['key']['id']);
-			
+			ze\image::link($width, $height, $url, $box['key']['id']);
+			ze\image::internalPath($width, $height, $internalPath, $box['key']['id']);
 			
 			$originalImageSize = ze\file::formatSizeUnits(filesize($internalPath));
 			
@@ -529,25 +632,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			ze\lang::applyMergeFields($fields['link/external_original_image_link']['label'], ['size' => $originalImageSize]);
 			
 			
-			if (!$isSVG && $internalWebPPath) {
-				$webPSize = ze\file::formatSizeUnits(filesize($internalWebPPath));
-				
-				$values['link/internal_webp_link'] = htmlspecialchars($webPURL);
-				$values['link/external_webp_link'] = htmlspecialchars(ze\link::absolute(). $webPURL);
-				
-				ze\lang::applyMergeFields($fields['link/internal_webp_link']['label'], ['size' => $webPSize]);
-				ze\lang::applyMergeFields($fields['link/external_webp_link']['label'], ['size' => $webPSize]);
-				
-				//Code for embedding
-				$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($webPURL) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
-			
-			} else {
-				$fields['link/internal_webp_link']['hidden'] = true;
-				$fields['link/external_webp_link']['hidden'] = true;
-				
-				//Code for embedding
-				$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($url) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
-			}
+			//Code for embedding
+			$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($url) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
 			
 			ze::$mustUseFullPath = $rememberWhatThisWas;
 		} else {
@@ -589,6 +675,9 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					break;
 				case 'image/jpeg':
 					$errorMessage = "This file is a JPG, so its extension must be .jpg or .jpeg (upper or lower case).";
+					break;
+				case 'image/webp':
+					$errorMessage = "This file is a WebP, so its extension must be .webp (upper or lower case).";
 					break;
 				case 'image/png':
 					$errorMessage = "This file is a PNG, so its extension must be .png (upper or lower case).";
@@ -653,7 +742,16 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				}
 			}
 		}
-
+		
+		if ($values['details/alt_tag']) {
+			$altTag = trim(preg_replace('/[^a-zA-Z0-9\.\,\-\'\s]/', ' ', $values['details/alt_tag']));
+			
+			if ($values['details/alt_tag'] != $altTag) {
+				$fields['details/alt_tag']['error'] = ze\admin::phrase('An alt tag may not contain any HTML or special characters other than commas, dots, hyphens or single quotes.');
+			} elseif (strlen($values['details/alt_tag']) > 125) {
+				$fields['details/alt_tag']['error'] = ze\admin::phrase('An alt tag may not exceed 125 characters.');
+			}
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -758,7 +856,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		//If the filename has been changed, run the public link checker
 		//to generate the new public file (if needed).
 		if ($box['key']['filename_on_load'] != $values['details/filename']) {
-			ze\fileAdm::checkAllImagePublicLinks($check = false);
+			ze\fileAdm::updateAllImagePublicLinks();
 		}
 	}
 

@@ -319,7 +319,7 @@ zenario__email_template_manager:
                     only_show_on_refiner: outbox
                     hide_in_select_mode: true
                 duplicate:
-                    ord: "88"
+                    ord: 88
                     priv: _PRIV_EDIT_NEWSLETTER
                     parent: actions_dropdown
                     label: Duplicate
@@ -329,7 +329,7 @@ zenario__email_template_manager:
                             duplicate: 1
                     hide_in_select_mode: true
                 delete:
-                    ord: "99"
+                    ord: 99
                     priv: _PRIV_EDIT_NEWSLETTER
                     css_class: delete
                     parent: actions_dropdown

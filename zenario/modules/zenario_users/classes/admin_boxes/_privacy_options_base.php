@@ -59,6 +59,18 @@ class zenario_users__privacy_options_base extends zenario_users {
 			$fields['privacy/role_ids']['hidden'] =
 			$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
 		}
+		
+		
+		# The Users and AI and machine learning modules have an optional dependency on each other.
+		# If both are running, mention which group are enabled to work with the semantic search plugin
+		if (ze\module::inc('zenario_ai_qdrant')) {
+			foreach ($fields['privacy/group_ids']['values'] as $groupId => &$val) {
+				if (zenario_ai_qdrant::isPermissionGroup($groupId)) {
+					$val['label'] .= ' '. ze\admin::phrase('(semantic search enabled)');
+				}
+			}
+			unset($val);
+		}
 	}
 		
 	protected function loadPrivacySettings($tagIdsCSV, $path, $settingGroup, &$box, &$fields, &$values) {
@@ -137,6 +149,28 @@ class zenario_users__privacy_options_base extends zenario_users {
 			$values['privacy/method_name'] = $combinedValues['method_name'];
 			$values['privacy/param_1'] = $combinedValues['param_1'];
 			$values['privacy/param_2'] = $combinedValues['param_2'];
+			
+			$box['key']['privacy_settings_on_load']['privacy_setting_value'] = $values['privacy/privacy'];
+			
+			switch ($values['privacy/privacy']) {
+				case 'group_members':
+					$box['key']['privacy_settings_on_load']['group_ids'] = $values['privacy/group_ids'];
+					break;
+				case 'in_smart_group':
+				case 'logged_in_not_in_smart_group':
+					$box['key']['privacy_settings_on_load']['smart_group_id'] = $values['privacy/smart_group_id'];
+					break;
+				case 'with_role':
+					$box['key']['privacy_settings_on_load']['role_ids'] = $values['privacy/role_ids'];
+					$box['key']['privacy_settings_on_load']['at_location'] = $values['privacy/at_location'];
+					break;
+				case 'call_static_method':
+					$box['key']['privacy_settings_on_load']['module_class_name'] = $values['privacy/module_class_name'];
+					$box['key']['privacy_settings_on_load']['method_name'] = $values['privacy/method_name'];
+					$box['key']['privacy_settings_on_load']['param_1'] = $values['privacy/param_1'];
+					$box['key']['privacy_settings_on_load']['param_2'] = $values['privacy/param_2'];
+					break;
+			}
 		}
 		
 		return $tagIds;
@@ -216,6 +250,8 @@ class zenario_users__privacy_options_base extends zenario_users {
 					'translation_chains',
 					$chain,
 					['equiv_id' => $equivId, 'type' => $cType]);
+				
+				\ze\module::sendSignal('eventContentPrivacyUpdated', ['equivId' => $equivId,'cType' => $cType]);
 			}
 		}
 	}

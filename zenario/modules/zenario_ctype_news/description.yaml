@@ -22,11 +22,11 @@ content_types:
         content_type_name_en: News article
         content_type_plural_en: News articles
         default_template_name: News Layout
-        enable_summary_auto_update: false
         enable_categories: true
         description_field: optional
         tooltip_text: News content items, to show latest news on your site, and keep an archive of older articles
         keywords_field: hidden
         summary_field: optional
-        release_date_field: mandatory
+        release_date_field: optional
+        auto_set_release_date: true
         writer_field: hidden

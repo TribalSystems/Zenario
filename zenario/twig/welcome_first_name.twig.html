@@ -1,0 +1,4 @@
+{% set firstName = ze('user', 'firstName') %}
+{% if firstName %}
+	<h1>{{"Welcome"|trans}}, {{ firstName |escape}}</h1>
+{% endif %}

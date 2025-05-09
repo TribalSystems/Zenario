@@ -36,6 +36,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $pages = [];
 	protected $fields = [];
 	protected $errors = [];
+	protected $formCannotBeLoaded = false;
 	protected $datasetFieldsLink = [];
 	protected $datasetFieldsColumnLink = [];
 	protected $formPageHash = false;
@@ -43,6 +44,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $reloaded = false;
 	protected $userId = false;
 	protected $referrerContentItemTag = false;
+	protected $formUsesMultipleSteps = false;
+	protected $formUsesFileUploaders = false;
+	protected $formHasSimpleFieldVisibilityLogic = true;
+	protected $formCanBeSavedAndCompletedLater = false;
 	
 	public function init() {
 		$this->requireJsLib('zenario/js/fileupload.bundle.js.php');
@@ -61,6 +66,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (ze\admin::id()) {
 				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("No form has been selected, please edit plugin settings to select a form.")) . '</p>';
 			}
+			$this->formCannotBeLoaded = true;
 			return true;
 		}
 		
@@ -73,7 +79,36 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (ze\admin::id()) {
 				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("The selected form could not be found, please edit plugin settings to select a different form.")) . '</p>';
 			}
+			$this->formCannotBeLoaded = true;
 			return true;
+		} else {
+			if ($this->moduleClassName == 'zenario_extranet_profile_edit') {
+				$usersDataset = ze\dataset::details('users');
+				$formFields = self::getFormFieldsStatic($this->form['id']);
+				
+				//...check if it has fields...
+				if (!empty($formFields)) {
+					//... and check if it contains any of the following field tyypes:
+					//editor, file picker, dataset select, dataset picker.
+					$formHasIllegalFields = false;
+					foreach ($formFields as $formField) {
+						if ($formField['dataset_id'] && $formField['dataset_id'] == $usersDataset['id'] && ($formField['db_column'])) {
+							if (ze::in($formField['type'], 'editor', 'dataset_select', 'dataset_picker')) {
+								$formHasIllegalFields = true;
+								break;
+							}
+						}
+					}
+					
+					if ($formHasIllegalFields) {
+						if (ze\admin::id()) {
+							$this->data['form_HTML'] = '<div class="error">' . ze\admin::phrase('Cannot display form, please open the plugin settings for details.') . '</div>';
+						}
+						$this->formCannotBeLoaded = true;
+						return true;
+					}
+				}
+			}
 		}
 		
 		$t = $this->form['translate_text'];
@@ -103,6 +138,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					
 
 					$this->data['form_HTML'] = $html;
+					$this->formCannotBeLoaded = true;
 					return true;
 				}
 			}
@@ -197,23 +233,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 		
-		//Partial completion forms must be placed on a private page and have a user logged in
 		if ($this->form['allow_partial_completion']) {
-			$equivId = ze\content::equivId($this->cID, $this->cType);
-			$privacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $equivId, 'type' => $this->cType]);
-			if ($privacy == 'public') {
-				//As of 11 Oct 2023, a form with "Save and complete later" enabled
-				//may be placed on a public page. The restriction code is commented out in case we need to restore it.
-				// if (ze\admin::id()) {
-// 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('This form has the "save and complete later" feature enabled and so must be placed on a password-protected page.')) . '</p>';
-// 				}
-// 				return true;
-			}
+			$this->formCanBeSavedAndCompletedLater = true;
+			
+			$this->registerPluginPage('form_' . $formId, 'zenario_user_forms');
 			
 			if (!ze\module::inc('zenario_extranet')) {
 				if (ze\admin::id()) {
 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Extranet Base Module must be running if the "Save and complete later" feature is enabled.')) . '</p>';
 				}
+				$this->formCannotBeLoaded = true;
 				return true;
 			}
 			
@@ -223,17 +252,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					if (ze\admin::id()) {
 						$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Scheduled Task Manager master switch is not on. The form will not be displayed to visitors.')) . '</p>';
 					}
+					$this->formCannotBeLoaded = true;
 					return true;
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
 					if (ze\admin::id()) {
 						$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Scheduled Task Manager is running, but the crontab is not invoking it. The form will not be displayed to visitors.')) . '</p>';
 					}
+					$this->formCannotBeLoaded = true;
 					return true;
 				} else {
 					if (!ze\row::get('jobs', 'status', ['job_name' => 'jobDataProtectionCleanup', 'enabled' => true])) {
 						if (ze\admin::id()) {
 							$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The scheduled task jobDataProtectionCleanup is not running. Without this the form will not be displayed. You must enable this scheduled task for data protection around saved responses.')) . '</p>';
 						}
+						$this->formCannotBeLoaded = true;
 						return true;
 					}
 				}
@@ -241,6 +273,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if (ze\admin::id()) {
 					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The Scheduled Task Manager is not running. The form will not be displayed to visitors.')) . '</p>';
 				}
+				$this->formCannotBeLoaded = true;
 				return true;
 			}
 		}
@@ -285,7 +318,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Logged in user duplicate submission check
 		if ($this->userId && $this->form['no_duplicate_submissions']) {
-			if (ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['user_id' => $this->userId, 'form_id' => $formId])) {
+			if (ze\row::exists('user_response', ['user_id' => $this->userId, 'form_id' => $formId])) {
 				$html = '<p class="info">' . htmlspecialchars(static::fPhrase($this->form['duplicate_submission_message'], [], $t)) . '</p>';
 				$html .= $this->getCloseButtonHTML();
 				$this->cssClass .= ' no_title';
@@ -314,9 +347,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($this->userId) {
 					$partialSaveFound = ze\row::exists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['user_id' => $this->userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
 					if ($partialSaveFound) {
-						if (!$this->form['allow_clear_partial_data'] || ze::post('resume')) {
-							$this->loadPartialSaveData($this->userId, $formId, $getRequestValue);
-						} elseif ($this->form['allow_clear_partial_data'] && ze::post('clear')) {
+						$resumeFromFirstStep = ze::post('resume_from_first_step');
+						$resumeFromWhereILeftOff = ze::post('resume_from_where_i_left_off');
+						if ($resumeFromFirstStep || $resumeFromWhereILeftOff) {
+							$this->loadPartialSaveData($this->userId, $formId, $getRequestValue, $resumeFromWhereILeftOff);
+						} elseif (ze::post('clear')) {
 							static::deleteOldPartialResponse($formId, $this->userId, $getRequestValue);
 						
 							if ($this->form['handle_referrer_content_item']) {
@@ -336,7 +371,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$this->formPageHash = $_POST['formPageHash'];
 		}
 		
-		if (!isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash])) {
+		if (!isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]) && ($this->formCanBeSavedAndCompletedLater || $this->formUsesMultipleSteps)) {
 			$ord = isset($_SESSION['custom_form_data'][$this->instanceId]) ? count($_SESSION['custom_form_data'][$this->instanceId]) : 0;
 			$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash] = ['date_created' => date('Y-m-d H:i:s'), 'ord' => $ord];
 			//Limit stored form sessions
@@ -346,7 +381,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					return (isset($a['ord']) && isset($b['ord']) && $a['ord'] < $b['ord']) ? 1 : -1;
 				});
 				foreach ($_SESSION['custom_form_data'][$this->instanceId] as $hash => $data) {
-					unset($_SESSION['custom_form_data'][$this->instanceId][$hash]);
+					$this->unsetCustomFormData($this->instanceId, $hash);
 					if (count($_SESSION['custom_form_data'][$this->instanceId]) <= $limit) {
 						break;
 					}
@@ -372,7 +407,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 		}
 		
-		$pageId = (!empty($this->pages) ? reset($this->pages)['id'] : 0);
+		if (count($this->pages) > 1) {
+			$this->formUsesMultipleSteps = true;
+		}
+		
+		if (!empty($resumeFromWhereILeftOff)) {
+			$pageId = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', 'last_step_reached', ['user_id' => $this->userId, 'form_id' => $this->form['id']]);
+		} else {
+			$pageId = (!empty($this->pages) ? reset($this->pages)['id'] : 0);
+		}
+		
 		$currentPageId = $_POST['current_page'] ?? $pageId;
 		$firstPageId = (!empty($this->pages) ? array_key_first($this->pages) : 0);
 		
@@ -385,11 +429,22 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 				$this->datasetFieldsLink[$fieldId] = $field['dataset_field_id'];
 			}
+			
+			if (!$this->formUsesMultipleSteps && $this->formHasSimpleFieldVisibilityLogic) {
+				if ($field['visibility'] == 'visible_on_condition') {
+					$this->formHasSimpleFieldVisibilityLogic = false;
+				}
+				
+				if (ze::in($field['type'], 'attachment', 'document_upload')) {
+					$this->formUsesFileUploaders = true;
+				}
+			}
+			
 			$this->pages[$field['page_id']]['fields'][] = $fieldId;
 		}
 		
 		//Save data from previous page if changing
-		if ($this->reloaded) {
+		if ($this->reloaded && ($this->formCanBeSavedAndCompletedLater || $this->formUsesMultipleSteps || !$this->formHasSimpleFieldVisibilityLogic || $this->formUsesFileUploaders)) {
 			$this->savePageData($currentPageId, $_POST);
 		}
 		
@@ -452,10 +507,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					
 					unset($_SESSION['captcha_passed__' . $this->instanceId]);
 					
-					//After submitting form redirect to SIMPLE_ACCESS request page
+					//After submitting form redirect to z_gated_content_control_satisfied request page
+					//(previously named SIMPLE_ACCESS, renamed in 10.0)
 					if ($this->form['simple_access_cookie_override_redirect']) {
 						//check if we can set cookies
-						if(!empty($_COOKIE['SIMPLE_ACCESS']) && isset($_REQUEST['rci'])) {
+						if(!empty($_COOKIE['z_gated_content_control_satisfied']) && isset($_REQUEST['rci'])) {
 							$cID = $cType = false;
 							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $_REQUEST['rci']);
 							ze\content::langEquivalentItem($cID, $cType);
@@ -464,6 +520,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							return true;
 						}
 					}
+					
+					$this->callScript('zenario', 'scrollToSlotTop', $this->slotName, $neverScrollDown = false);
 					
 					//After submitting the form, show a success message.
 					//Check the settings to determine whether to keep showing the form HTML too.
@@ -491,6 +549,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 						
 						$this->data['form_HTML'] = $html;
+						$this->unsetCustomFormData($this->instanceId, $this->formPageHash);
 						return true;
 					//Or redirect to another page
 					} elseif ($this->form['redirect_after_submission'] && $this->form['redirect_location']) {
@@ -499,11 +558,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						ze\content::langEquivalentItem($cID, $cType);
 						$redirectURL = ze\link::toItem($cID, $cType);
 						$this->headerRedirect($redirectURL);
+						$this->unsetCustomFormData($this->instanceId, $this->formPageHash);
 						return true;
 					}
 					//Or stay on the form
 					$pageId = reset($this->pages)['id'];
-					unset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]);
+					$this->unsetCustomFormData($this->instanceId, $this->formPageHash);
 				}
 			}
 		}
@@ -530,7 +590,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Init form JS
 		$allowProgressBarNavigation = $this->form['show_page_switcher'] && ($this->form['page_switcher_navigation'] == 'only_visited_pages');
 		$isErrors = (bool)$this->errors;
-		$maxPageReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] ?? false;
+		$lastStepReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'] ?? false;
 		
 		$extraPhrases = [
 			'delete' => static::fPhrase('Delete', [], $t),
@@ -552,7 +612,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$this->inFullScreen,
 			$allowProgressBarNavigation,
 			$pageId,
-			$maxPageReached,
+			$lastStepReached,
 			$showLeavingPageMessage = true,
 			$isErrors,
 			json_encode($extraPhrases),
@@ -573,7 +633,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '<div class="extranet_link_desc">' . htmlspecialchars(static::fPhrase('Use this if you have previously registered but not received your verification email.', [], $t)) . '</div>';
 			}
 			if (!empty($links['register'])) {
-				if ($link = ze\link::toPluginPage('zenario_extranet_registration')) {
+				if ($link = ze\link::toSpecialPage('zenario_registration')) {
 					$html .= '<div><a href="'. htmlspecialchars($link). '">' . htmlspecialchars(static::fPhrase('Register', [], $t)) . '</a></div>';
 				}
 			}
@@ -583,12 +643,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 			if (!empty($links['change_password'])) {
-				if ($link = ze\link::toPluginPage('zenario_extranet_change_password')) {
+				if ($link = ze\link::toSpecialPage('zenario_change_password')) {
 					$html .= '<div><a href="'. htmlspecialchars($link). '">' . htmlspecialchars(static::fPhrase('Change your password', [], $t)) . '</a></div>';
 				}
 			}
 			if (!empty($links['logout'])) {
-				if ($link = ze\link::toPluginPage('zenario_extranet_logout')) {
+				if ($link = ze\link::toSpecialPage('zenario_logout')) {
 					$html .= '<div><a href="'. htmlspecialchars($link). '">' . htmlspecialchars(static::fPhrase('Logout', [], $t)) . '</a></div>';
 				}
 			}
@@ -637,7 +697,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 									$widthLimit = 64;
 									$heightLimit = 64;
 									
-									ze\file::resizeImageString($imageString, $imageMimeType, $imageWidth, $imageHeight, $widthLimit, $heightLimit);
+									ze\image::resize($imageString, $imageMimeType, $imageWidth, $imageHeight, $widthLimit, $heightLimit);
 									
 									$privateCacheDir = ze\cache::createRandomDir(15, 'private/images', $onlyForCurrentVisitor = true);
 									$thumbnailPath = $privateCacheDir . 'thumbnail-' . $file['name'][$j];
@@ -897,11 +957,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	//Get visible form field data in email
-	public static function sendVisibleFieldsFormEmail($form, $startLine, $email, $mergeFields, $responseId, $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false, $commentBy = '', $commentForAdmin = '') {
+	public static function sendVisibleFieldsFormEmail(
+		$form, $sendTo, $startLine, $emailAddress, $mergeFields,
+		$attachments = [], $replyToEmail = false, $replyToName = false,
+		$adminDownloadLinks = false, $makeURLsNotClickable = false,
+		$commentBy = '', $commentForAdmin = '', $responseId = 0
+	) {
 		$formName = $form['name'] ? trim($form['name']) : '[blank name]';
 		$formId = $form['id'];
 		
-		$subject = 'New form submission for: ' . $formName;
+		if ($commentBy) {
+			$subject = 'Re-sent form response for: ' . $formName;
+		} else {
+			$subject = 'New form response for: ' . $formName;
+		}
+		
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
 		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
@@ -910,10 +980,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		
-		$body = static::getFormSummaryHTML($responseId);
-		
-		if ($makeURLsNotClickable) {
-			$body = ze\escape::makeURLsNotClickable($body);
+		if ($sendTo == 'admin' || $commentBy) {
+			$body = static::getFormResponseHTML($responseId, $makeURLsNotClickable);
+		} else {
+			$body = static::getFormSummaryHTML($responseId, $checkIfStepVisibleInSummary = false, false, false, [], 'admin', '', $makeURLsNotClickable);
 		}
 		
 		//Only add the start line once the links in the body have been made non-clickable.
@@ -921,7 +991,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
 		
-		zenario_email_template_manager::putBodyInTemplate($body);
+		zenario_common_features::putBodyInTemplate($body);
 		
 		$ignoreDebugMode = false;
 		if ($commentBy || $commentForAdmin) {
@@ -929,20 +999,28 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$ignoreDebugMode = true;
 		}
 		
-		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName, '', '', '', false, $ignoreDebugMode);
+		zenario_common_features::sendEmails(
+			$emailAddress, $subject, $addressFrom, $nameFrom, $body,
+			[], $attachments, [], 0, false, $replyToEmail, $replyToName,
+			'', '', '', $ignoreDebugMode, $responseId
+		);
 	}
 	
-	public static function getFormSummaryHTML($responseId, $formId = false, $data = false, $repeatRows = [], $includeDownloadLinks = 'admin', $referrerContentItemTag = '') {
+	public static function getFormSummaryHTML(
+		$responseId, $checkIfStepVisibleInSummary, $formId = false, $data = false, $repeatRows = [],
+		$includeDownloadLinks = 'admin', $referrerContentItemTag = '', $makeURLsNotClickable = false
+	) {
 		$html = '<table>';
 		
 		//Get form if loading from a responseId
 		if ($responseId) {
-			$response = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['form_id'], $responseId);
+			$response = ze\row::get('user_response', ['form_id'], $responseId);
 			$formId = $response['form_id'];
 		}
 		
 		//Get pages on form
 		$pages = static::getFormPages($formId);
+		$pageCount = count($pages);
 		$currentPageId = false;
 		$pageIsHidden = false;
 		
@@ -962,7 +1040,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($responseId) {
 				$formReferrerDetails = [];
 				
-				$formReferrerDetailsArray = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info', true, ['user_response_id' => $responseId], [], 'referrer_field');
+				$formReferrerDetailsArray = ze\row::getAssocs('user_response_referrer_info', true, ['user_response_id' => $responseId], [], 'referrer_field');
 				
 				foreach ($referrerFields as $key => $value) {
 					if (isset($formReferrerDetailsArray[$key])) {
@@ -1020,27 +1098,37 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 		
+		$visibleFieldsCount = 0;
 		foreach ($fields as $fieldId => $field) {
 			//Do not display these field types
-			if ($field['type'] == 'repeat_start' 
-				|| $field['type'] == 'repeat_end' 
-				|| (ze::in($field['type'], 'section_description', 'section_spacer') && !$field['show_in_summary'])
-			) {
+			if ($field['type'] == 'repeat_start' || $field['type'] == 'repeat_end') {
 				continue;
-			}
-			
-			//Show page as header if visible
-			if (count($pages) > 1 && (!$currentPageId || $currentPageId != $field['page_id'])) {
-				$currentPageId = $field['page_id'];
-				$page = $pages[$field['page_id']];
-				$pageIsHidden = static::isPageHiddenStatic($page, $fields);
-				if (!$pageIsHidden && $page['show_in_summary']) {
-					$html .= '<tr><th colspan="2" class="header">' . htmlspecialchars($pages[$currentPageId]['name']) . '</th></tr>';
+			} elseif (ze::in($field['type'], 'section_description', 'section_spacer')) {
+				if ($checkIfStepVisibleInSummary && !$field['show_in_summary']) {
+					continue;
 				}
 			}
 			
+			//Show page as header if visible
+			if ($pageCount > 1 && (!$currentPageId || $currentPageId != $field['page_id'])) {
+				$currentPageId = $field['page_id'];
+				$page = $pages[$field['page_id']];
+				$pageIsHidden = static::isPageHiddenStatic($page, $fields);
+				if (!$pageIsHidden && (!$checkIfStepVisibleInSummary || $page['show_in_summary'])) {
+					$html .= '<tr><th colspan="2" class="header">' . htmlspecialchars($pages[$currentPageId]['name']) . '</th></tr>';
+				}
+			} elseif ($pageCount == 1) {
+				//If a single-step form is supposed to have a summary step,
+				//treat the single step as always visible.
+				$pageIsHidden = false;
+				$page['show_in_summary'] = true;
+				$page = $pages[$field['page_id']];
+			}
+			
 			//Show field if not hidden
-			if (!$pageIsHidden && !static::isFieldHiddenStatic($field, $fields)) {
+			$fieldIsHidden = static::isFieldHiddenStatic($field, $fields);
+			if (!$pageIsHidden && (!$checkIfStepVisibleInSummary || $page['show_in_summary']) && (!$checkIfStepVisibleInSummary || !$fieldIsHidden)) {
+				$visibleFieldsCount++;
 				if ($field['type'] == 'section_spacer') {
 					$label = '';
 				} else {
@@ -1062,6 +1150,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				} else {
 					$displayHTML = '';
 					if (isset($field['value'])) {
+						if ($makeURLsNotClickable && ze::in($field['type'], 'text', 'textarea', 'url') && $field['value']) {
+							$field['value'] = ze\escape::makeURLsNotClickable($field['value']);
+						}
+						
 						$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks);
 					}
 					
@@ -1095,6 +1187,210 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 		}
+		
+		if (!$visibleFieldsCount && ze::isAdmin()) {
+			$html .= '<p class="error">' . ze\admin::phrase('The form is set to display a summary step, but no steps have been selected to appear on it.') . '</p>';
+		}
+		
+		$html .= '</table>';
+		return $html;
+	}
+	
+	public static function getFormResponseHTML($responseId, $makeURLsNotClickable = false) {
+		//This function is similar to getFormSummaryHTML(), but this one is called
+		//when viewing a form response. As this is an admin interface, all fields and steps will be visible.
+		$html = '<table>';
+		
+		//Get form if loading from a responseId
+		if ($responseId) {
+			$response = ze\row::get('user_response', ['form_id'], $responseId);
+			$formId = $response['form_id'];
+		}
+		
+		//Get pages on form
+		$pages = static::getFormPages($formId);
+		$currentPageId = false;
+		$pageIsHidden = false;
+		
+		//Get fields and either load data from a response or use passed data
+		$fields = static::getFormFieldsStatic($formId, $repeatRows = [], $loadFromResponseId = $responseId);
+		//If a form uses content item referrers, display the details.
+		$formDetails = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $formId);
+		if ($formDetails && $formDetails['handle_referrer_content_item']) {
+			$referrerFields = self::getReferrerFieldsArray();
+			
+			$formReferrerDetails = [];
+			
+			$formReferrerDetailsArray = ze\row::getAssocs('user_response_referrer_info', true, ['user_response_id' => $responseId], [], 'referrer_field');
+			
+			foreach ($referrerFields as $key => $value) {
+				if (isset($formReferrerDetailsArray[$key])) {
+					$formReferrerDetails[$key] = $formReferrerDetailsArray[$key];
+				}
+			}
+			
+			if (!empty($formReferrerDetails)) {
+				$html .= '<tr><th colspan="2" class="header">' . $formDetails['referrer_content_item_summary_block_title'] . '</th></tr>';
+				
+				foreach ($formReferrerDetails as $referrerDataRow) {
+					switch ($referrerDataRow['referrer_field']) {
+						case 'handle_referrer_content_item_title':
+							$label = $formDetails['referrer_content_item_title_label'];
+							break;
+						case 'handle_referrer_content_item_description':
+							$label = $formDetails['referrer_content_item_description_label'];
+							break;
+						case 'handle_referrer_content_item_release_date':
+							$label = $formDetails['referrer_content_item_release_date_label'];
+							break;
+						case 'handle_referrer_content_item_reference':
+							$label = $formDetails['referrer_content_item_reference_label'];
+							break;
+						case 'handle_referrer_content_item_deadline':
+							$label = $formDetails['referrer_content_item_deadline_label'];
+							break;
+						case 'handle_referrer_content_item_alias':
+							$label = $formDetails['referrer_content_item_alias_label'];
+							break;
+						case 'handle_referrer_content_item_tag':
+							$label = $formDetails['referrer_content_item_tag_label'];
+							break;
+						default:
+							$label = '';
+							break;
+					}
+				
+					$html .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . htmlspecialchars($referrerDataRow['value']) . '</td></tr>';
+				}
+			
+				$html .= '</table><br />';
+			
+				$html .= '<table>';
+			}
+		}
+		
+		$stepAndFieldHtml = [];
+		$pageCount = count($pages);
+		
+		foreach ($fields as $fieldId => $field) {
+			//Do not display these field types
+			if ($field['type'] == 'repeat_start' || $field['type'] == 'repeat_end'
+			) {
+				continue;
+			}
+			
+			//Show page as header if visible
+			$stepWasHidden = false;
+			if ($pageCount > 1 && (!$currentPageId || $currentPageId != $field['page_id'])) {
+				$currentPageId = $field['page_id'];
+				$page = $pages[$field['page_id']];
+				$stepWasHidden = static::isPageHiddenStatic($page, $fields);
+				
+				$stepAndFieldHtml[$currentPageId] = [
+					'step_was_hidden' => $stepWasHidden,
+					'all_fields_have_no_value' => true,
+					'label' => $pages[$currentPageId]['name'] ?: '',
+					'fields' => []
+				];
+			}
+			
+			$fieldHtml = '';
+			
+			//Show field
+			$fieldWasHidden = static::isFieldHiddenStatic($field, $fields);
+			
+			if ($field['type'] == 'section_spacer') {
+				$label = '';
+			} else {
+				$label = $field['name'] ? $field['name'] : $field['label'];
+			}
+			
+			$fieldHasValue = true;
+			
+			if (ze::in($field['type'], 'section_description', 'section_spacer')) {
+				if ($field['type'] == 'section_description') {
+					$class = 'subheader';
+				} elseif ($field['type'] == 'section_spacer') {
+					$class = 'spacer';
+				}
+				
+				$fieldHtml .= '<tr><th colspan="2" class="' . $class . '">' . htmlspecialchars($label) . '</th></tr>';
+				
+				if ($field['type'] == 'section_description' && $field['description']) {
+					$fieldHtml .= '<tr><td colspan="2" class="subheader_description">' . $field['description'] . '</td></tr>';
+				}
+			} else {
+				$displayHTML = '';
+				if (isset($field['value'])) {
+					if ($makeURLsNotClickable && ze::in($field['type'], 'text', 'textarea', 'url') && $field['value']) {
+						$field['value'] = ze\escape::makeURLsNotClickable($field['value']);
+					}
+					
+					$displayHTML = static::getFieldDisplayValue($field, $field['value'], true, $includeDownloadLinks = 'admin');
+				}
+				
+				if (isset($field['row']) && !empty($field['firstRepeatBlockField'])) {
+					$rows = count($fields[$field['repeat_start_id']]['rows']);
+					
+					//If this is a field in a repeating section, look up the section's label and use it.
+					//Otherwise, fall back on just "Repeating section".
+					if ($fields[$field['repeat_start_id']]['label']) {
+						$repeatSectionLabel = $fields[$field['repeat_start_id']]['label'] . ' (' . (int)$field['row'] . ' of ' . (int)$rows . ')';
+					} elseif ($fields[$field['repeat_start_id']]['name']) {
+						$repeatSectionLabel = $fields[$field['repeat_start_id']]['name'] . ' (' . (int)$field['row'] . ' of ' . (int)$rows . ')';
+					} else {
+						$repeatSectionLabel = 'Repeating section ' . (int)$field['row'] . ' of ' . (int)$rows;
+					}
+
+					$fieldHtml .= '<tr><th colspan="2" class="subheader">' . $repeatSectionLabel . '</th></tr>';
+				}
+				
+				if ($displayHTML) {
+					$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . ':</td><td>' . $displayHTML . '</td></tr>';
+				} else {
+					//Catch the case where the value is a 0 rather than "empty".
+					if (isset($field['value']) && is_numeric($field['value'])) {
+						$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . ':</td><td>0</td></tr>';
+					} else {
+						if ($stepWasHidden || $fieldWasHidden) {
+							$phraseString = '(' . ze\admin::phrase('was not shown') . ')';
+						} else {
+							$phraseString = '(' . ze\admin::phrase('no data recorded') . ')';
+						}
+						$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . ':</td><td>' . ze\admin::phrase($phraseString) . '</td></tr>';
+						$fieldHasValue = false;
+					}
+				}
+					
+			}
+			
+			if ($fieldHasValue) {
+				$stepAndFieldHtml[$currentPageId]['all_fields_have_no_value'] = false;
+				$stepAndFieldHtml[$currentPageId]['step_was_hidden'] = false;
+			}
+			
+			$stepAndFieldHtml[$currentPageId]['fields'][$fieldId] = $fieldHtml;
+		}
+		
+		foreach ($stepAndFieldHtml as $stepId => $step) {
+			
+			if (!empty($step['label'])) {
+				if (!empty($step['step_was_hidden'])) {
+					$step['label'] .= ' (' . ze\admin::phrase('was not shown') . ')';
+				} elseif (!empty($step['all_fields_have_no_value'])) {
+					$step['label'] .= ' (' . ze\admin::phrase('no data recorded') . ')';
+				}
+				
+				$html .= '<tr><th colspan="2" class="header">' . htmlspecialchars($step['label']) . '</th></tr>';
+			}
+			
+			if (!$step['step_was_hidden'] && !$step['all_fields_have_no_value']) {
+				foreach ($step['fields'] as $fieldHtml) {
+					$html .= $fieldHtml;
+				}
+			}
+		}
+		
 		$html .= '</table>';
 		return $html;
 	}
@@ -1107,8 +1403,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Get a list of files in this response
 		$sql = "
 			SELECT urd.value
-			FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+			FROM " . DB_PREFIX . "user_response ur
+			INNER JOIN " . DB_PREFIX . "user_response_data urd
 				ON urd.user_response_id = ur.id
 			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 				ON urd.form_field_id = uff.id 
@@ -1127,8 +1423,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Full responses...
 			$sql = "
 				SELECT urd.value
-				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+				FROM " . DB_PREFIX . "user_response ur
+				INNER JOIN " . DB_PREFIX . "user_response_data urd
 					ON urd.user_response_id = ur.id
 				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 					ON urd.form_field_id = uff.id 
@@ -1175,9 +1471,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 
 		if (!$onlyDeleteFiles) {
-			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info', ['user_response_id' => $responseId]);
-			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId]);
-			ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
+			ze\row::delete('user_response_referrer_info', ['user_response_id' => $responseId]);
+			ze\row::delete('user_response_data', ['user_response_id' => $responseId]);
+			ze\row::delete('user_response', $responseId);
 		}
 	}
 
@@ -1229,8 +1525,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//... and full responses.
 			$sql = "
 				SELECT urd.value
-				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+				FROM " . DB_PREFIX . "user_response ur
+				INNER JOIN " . DB_PREFIX . "user_response_data urd
 					ON urd.user_response_id = ur.id
 				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 					ON urd.form_field_id = uff.id 
@@ -1298,8 +1594,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Get a list of files in full responses to this field
 			$sql = "
 			SELECT urd.value
-			FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+			FROM " . DB_PREFIX . "user_response ur
+			INNER JOIN " . DB_PREFIX . "user_response_data urd
 				ON urd.user_response_id = ur.id
 			INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 				ON urd.form_field_id = uff.id 
@@ -1345,8 +1641,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				//Full responses...
 				$sql = "
 					SELECT urd.value
-					FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-					INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+					FROM " . DB_PREFIX . "user_response ur
+					INNER JOIN " . DB_PREFIX . "user_response_data urd
 						ON urd.user_response_id = ur.id
 					INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 						ON urd.form_field_id = uff.id 
@@ -1410,7 +1706,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', ['form_field_id' => $fieldId]);
 		
 		//Delete any response data
-		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id' => $fieldId]);
+		ze\row::delete('user_response_data', ['form_field_id' => $fieldId]);
 
 		//Delete any partial response data
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['form_field_id' => $fieldId]);
@@ -1449,7 +1745,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Delete responses
-		$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['id'], ['form_id' => $formId]);
+		$result = ze\row::query('user_response', ['id'], ['form_id' => $formId]);
 		while ($row = ze\sql::fetchAssoc($result)) {
 			static::deleteFormResponse($row['id']);
 		}
@@ -1490,7 +1786,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($responseId) {
 				$sql = '
 					SELECT d.form_field_id, d.field_row, d.value, f.field_type, c.type
-					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data d
+					FROM ' . DB_PREFIX . 'user_response_data d
 					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields f
 						ON d.form_field_id = f.id
 					LEFT JOIN ' . DB_PREFIX . 'custom_dataset_fields c
@@ -1526,7 +1822,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	public static function loadFormFieldValuesFromSource(&$fields, $responseId = false, $partialResponseId = false) {
 		$data = [];
 		if ($responseId) {
-			$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['form_field_id', 'field_row', 'value'], ['user_response_id' => $responseId]);
+			$result = ze\row::query('user_response_data', ['form_field_id', 'field_row', 'value'], ['user_response_id' => $responseId]);
 			while ($row = ze\sql::fetchAssoc($result)) {
 				$fieldId = static::getRepeatFieldId($row['form_field_id'], $row['field_row']);
 				if (isset($fields[$fieldId])) {
@@ -1582,6 +1878,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.visible_condition_checkboxes_operator,
 				uff.visible_condition_field_value,
 				uff.label,
+				uff.subheading_tag,
 				uff.text_above_left_group,
 				uff.text_above_right_group,
 				uff.name,
@@ -1642,9 +1939,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				cdf.store_file,
 				cdf.extensions,
 				cdf.values_source AS dataset_values_source,
-				cdf.min_rows AS dataset_min_rows,
-				cdf.max_rows AS dataset_max_rows,
-				cdf.repeat_start_id AS dataset_repeat_start_id,
 				ptt.form_field_id AS predefined_text_target_id,
 				ptt.button_label AS predefined_text_button_label
 			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms AS uf
@@ -1685,10 +1979,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($field['type'] == 'repeat_start') {
 				$repeatBlockFields = [];
 				$field['rows'] = $repeatRows[$field['id']] ?? [1];
-				if ($field['dataset_field_id']) {
-					$field['min_rows'] = $field['dataset_min_rows'];
-					$field['max_rows'] = $field['dataset_max_rows'];
-				}
 				$repeatStartField = $field;
 			} elseif ($field['type'] == 'repeat_end') {
 				//Add repeat fields
@@ -1726,9 +2016,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					}
 				}
 			//Copy how unlinked repeats work for dataset repeats
-			} elseif ($field['dataset_repeat_start_id']) {
-				$field['repeat_start_id'] = $repeatStartField['id'];
-				$repeatBlockFields[$field['id']] = $field;
 			} elseif ($field['repeat_start_id']) {
 				$repeatBlockFields[$field['id']] = $field;
 			}
@@ -1816,7 +2103,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$switcherHTML .= '<div class="page_switcher"><ul class="progress_bar">';
 			$page = ((!empty($this->pages) && $pageId) ? $this->pages[$pageId] : 0);
 			
-			$maxPageReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] ?? $pageId;
+			$lastStepReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'] ?? $pageId;
 			
 			$step = 1;
 			$pagesCount = count($this->pages);
@@ -1866,7 +2153,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				
 				$isComplete = false;
 				//Available if we are not on this section and its less than the max page we reached
-				if (!$isCurrent && $this->pages[$maxPageReached]['ord'] >= $tPage['ord']) {
+				if (!$isCurrent && $this->pages[$lastStepReached]['ord'] >= $tPage['ord']) {
 					$isComplete = true;
 					$extraClasses .= ' available';
 				}
@@ -1884,14 +2171,21 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		$html .= '<div id="' . htmlspecialchars($this->containerId) . '_user_form" class="user_form">';
+		
+		$extraAttributes = 'enctype="multipart/form-data"';
+		if ($this->setting('display_mode') == 'inline_in_page' && $this->setting('output_form_id_in_the_form_element')) {
+			$extraAttributes .= ' id="form_' . $this->form['id'] . '"';
+		} 
+		
 		$html .= $this->openForm(
 			$onSubmit = '', 
-			$extraAttributes = 'enctype="multipart/form-data"', 
+			$extraAttributes, 
 			$action = ze\link::toItem(ze::$cID, ze::$cType, false, ['formPageHash' => $this->formPageHash], ze::$alias, true), 
 			$scrollToTopOfSlot = true
 		);
 		
-		//Hidden input for SIMPLE_ACCESS cookie rediection
+		//Hidden input for z_gated_content_control_satisfied cookie rediection
+		//(previously named SIMPLE_ACCESS, renamed in 10.0)
 		if ($this->form['simple_access_cookie_override_redirect'] && isset($_REQUEST['rci'])) {
 			$html .= '<input type="hidden" name="rci" value="' . htmlspecialchars($_REQUEST['rci']) . '"/>';
 		}
@@ -1913,7 +2207,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Global errors and messages
 		if (isset($this->errors['global_top'])) {
-			$html .= '<div class="form_error global top">' . htmlspecialchars(static::fPhrase($this->errors['global_top'], [], $t)) . '</div>';
+			$html .= '<div class="form_error global top">' . htmlspecialchars($this->errors['global_top']) . '</div>';
 		} elseif (isset($this->messages['global_top'])) {
 			$html .= '<div class="success global top">' . htmlspecialchars(static::fPhrase($this->messages['global_top'], [], $t)) . '</div>';
 		}
@@ -1971,7 +2265,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			
 			$repeatRows = static::getFormRepeatRows($this->form['id'], $this->instanceId, $this->formPageHash);
-			$html .= static::getFormSummaryHTML(false, $this->form['id'], $data, $repeatRows, 'admin', $referrerContentItemTag);
+			$html .= static::getFormSummaryHTML(false, $checkIfStepVisibleInSummary = true, $this->form['id'], $data, $repeatRows, 'admin', $referrerContentItemTag);
 			
 			if ($this->form['summary_page_lower_text']) {
 				$html .= '<p>' . nl2br(static::fPhrase($this->form['summary_page_lower_text'], [], $t)) . '</p>';
@@ -2399,13 +2693,23 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($value) {
 			$extraClasses .= ' has_value';
 		}
-		if ($field['is_required']) {
+		if ($field['is_required'] || $field['mandatory_if_visible']) {
 			$extraClasses .= ' mandatory';
 		}
 		
 		//Label
 		if (!ze::in($field['type'], 'group', 'checkbox', 'section_spacer')) {
-			$html .= '<div class="field_title">' . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . '</div>';
+			$openingTag = $closingTag = '';
+			
+			if ($field['type'] == 'section_description') {
+				if (empty($field['subheading_tag']) || !ze::in($field['subheading_tag'], 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p')) {
+					$field['subheading_tag'] = 'p';
+				}
+				
+				$openingTag = '<' . $field['subheading_tag'] . '>';
+				$closingTag = '</' . $field['subheading_tag'] . '</>';
+			}
+			$html .= '<div class="field_title">' . $openingTag . htmlspecialchars(static::fPhrase($field['label'], [], $t)) . $closingTag . '</div>';
 			if (!$this->form['show_errors_below_fields']) {
 				$html .= $errorHTML;
 			}
@@ -2494,10 +2798,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$linkStart = '<a href="' . htmlspecialchars($changePasswordPageLink) . '" target="_blank">';
 						$linkEnd = '</a>';
 						
-						$field['extranet_profile_edit_note'] = 'To update your email, please [[link_start]]click here[[link_end]].';
+						$field['extranet_profile_edit_note'] = $this->setting('change_email_text');
 						$extranetProfileEditNoteReplace = ['link_start' => $linkStart, 'link_end' => $linkEnd];
 					} else {
-						$field['extranet_profile_edit_note'] = 'This field may not be edited.';
+						$field['extranet_profile_edit_note'] = $this->setting('email_address_cannot_be_changed_text');
 						$extranetProfileEditNoteReplace = [];
 					}
 				}
@@ -3220,6 +3524,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		$value = false;
 		$field = $this->fields[$fieldId];
+		$submitted = !empty($_POST['submitForm']);
 		
 		if ($field['type'] == 'calculated') {
 			return $this->getCalculatedFieldCurrentValue($fieldId, $recursionCount);
@@ -3232,17 +3537,32 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (!empty($_POST[$fieldName . '_right_values'])) {
 				$value = explode(',', $_POST[$fieldName . '_right_values']);
 			}
+		} elseif ($field['type'] == 'checkboxes') {
+			if ($submitted) {
+				$value = [];
+				$lov = $this->getFieldCurrentLOV($fieldId);
+				if (!empty($lov)) {
+					foreach ($lov as $lovKey => $lovValue) {
+						if (!empty($_POST['field_' . $fieldId . '_' . $lovKey])) {
+							$value[] = $lovKey;
+						}
+					}
+				}
+			}
 		}
 		
-		//Check if value has been saved before
+		//Check if value has been saved before...
 		if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
 			if ($field['type'] == 'sortable_selection') {
 				$value = explode(',', $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values']);
 			} else {
 				$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
 			}
-		//..Otherwise see if we can load from the  dataset
-		} elseif ($field['preload_dataset_field_user_data'] && $this->userId && $field['db_column']) {
+		//... otherwise see if it was submitted right now...
+		} elseif ($valueInpost = ze::post(static::getFieldName($fieldId, $field['custom_code_name']))) {
+			$value = $valueInpost;
+		//... otherwise see if we can load from the  dataset (only on a fresh load - NOT after a submission!)...
+		} elseif ($field['preload_dataset_field_user_data'] && $this->userId && $field['db_column'] && !$submitted) {
 			$this->allowCaching(false);
 			
 			$row = false;
@@ -3272,9 +3592,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$value = !$value;
 			}
 			
-		//..Otherwise look for a default value
+		//... otherwise look for a default value.
 		} elseif ($field['default_value'] !== null) {
-			$value = $field['default_value'];
+			if ($field['type'] == 'date') {
+				if (strtotime($field['default_value']) !== false) {
+					$value = $field['default_value'];
+				} else {
+					$value = '';
+				}
+			} else {
+				$value = $field['default_value'];
+			}
 		} elseif ($field['default_value_class_name'] !== null && $field['default_value_method_name'] !== null) {
 			$this->allowCaching(false);
 			
@@ -3300,6 +3628,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		$value = is_null($value) ? false : $value;
+		if ($field['type'] == 'checkboxes' && !$value) {
+			$value = [];
+		}
 		return $value;
 	}
 	
@@ -3339,42 +3670,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 								break 2;
 							} else {
 								$fieldValue = sprintf('%f', (float)$fieldValue);
-								if (!empty($this->fields[$step['value']]['repeat_start_id'])) {
-									$repeatFieldValues = [$fieldValue];
-									$rows = $this->fields[$this->fields[$step['value']]['repeat_start_id']]['rows'];
-								
-									//Target field and calculated field are in the same repeat block
-									if (!empty($field['repeat_start_id']) && $field['repeat_start_id'] == $this->fields[$step['value']]['repeat_start_id']) {
-										if ($field['row'] > 1) {
-											$repeatFieldValues = [];
-											$rows = [$field['row']];
-										} else {
-											$rows = [];
-										}
-									}
-								
-									foreach ($rows as $row) {
-										if ($row != 1) {
-											$repeatFieldId = static::getRepeatFieldId($step['value'], $row);
-											$repeatFieldValue = $this->getFieldCurrentValue($repeatFieldId, ++$recursionCount);
-											if (!$repeatFieldValue) {
-												$repeatFieldValue = 0;
-											}
-											if (!static::validateNumericInput($repeatFieldValue)) {
-												$isNaN = true;
-												break 3;
-											} else {
-												$repeatFieldValue = sprintf('%f', (float)$repeatFieldValue);
-											}
-											$repeatFieldValues[] = $repeatFieldValue;
-										}
-									}
-								
-									$fieldValue = '(0+' . implode('+', $repeatFieldValues) . ')';
-								}
 								$equation .= $fieldValue;
 							}
-							$equation = '0+(' . $equation . ')';
 							break;
 						case 'parentheses_open':
 							$equation .= '(';
@@ -3502,12 +3799,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if (!empty($field['values_source_filter'])) {
 					$filter = $field['values_source_filter'];
 				}
-				return ze\dataset::centralisedListValues($field['values_source'], $filter);
+				return ze\dataset::centralisedListValues($field['values_source'], $filter) ?: [];
 			case 'select':
 			case 'radios':
 			case 'checkboxes':
 			case 'sortable_selection':
-				return ze\row::getValues(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'label', ['form_field_id' => $field['id']], 'ord');
+				return ze\row::getValues(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'label', ['form_field_id' => $field['id']], 'ord') ?: [];
 		}
 		return $values;
 	}
@@ -3773,19 +4070,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Remember max page reached
-		$maxPageReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] ?? false;
-		if ($pageId != 'summary' && (!$maxPageReached || !isset($this->pages[$maxPageReached]) || (isset($this->pages[$pageId]) && ($this->pages[$pageId]['ord'] > $this->pages[$maxPageReached]['ord'])))) {
-			$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] = $pageId;
+		$lastStepReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'] ?? false;
+		if ($pageId != 'summary' && (!$lastStepReached || !isset($this->pages[$lastStepReached]) || (isset($this->pages[$pageId]) && ($this->pages[$pageId]['ord'] > $this->pages[$lastStepReached]['ord'])))) {
+			$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'] = $pageId;
 		}
 		
 		return $pageId;
 	}
 	
-	private function loadPartialSaveData($userId, $formId, $getRequestValue = null) {
-		//Load max_page_reached
-		$partialSave = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id', 'max_page_reached', 'form_id'], ['user_id' => $userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
+	private function loadPartialSaveData($userId, $formId, $getRequestValue = null, $resumeFromWhereILeftOff = false) {
+		//Load last step reached
+		$partialSave = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', ['id', 'last_step_reached', 'form_id'], ['user_id' => $userId, 'form_id' => $formId, 'get_request_value' => $getRequestValue]);
 		$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'] = [];
-		$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'] = $partialSave['max_page_reached'];
+		$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'] = $partialSave['last_step_reached'];
 		
 		//Load field values
 		$fields = static::getFormFieldsStatic($partialSave['form_id'], [], false, $loadFromPartialResponseId = $partialSave['id']);
@@ -3997,7 +4294,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$userId = ze\row::get('users', 'id', ['email' => $value]);
 			if ($userId) {
 				$responseExists = ze\row::exists(
-					ZENARIO_USER_FORMS_PREFIX. 'user_response', 
+					'user_response', 
 					['user_id' => $userId, 'form_id' => $this->form['id']]
 				);
 				if ($responseExists) {
@@ -4009,6 +4306,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Text/URL field validation
 		if (($field['type'] == 'text' || $field['type'] == 'url') && $field['field_validation'] && $value !== '' && $value !== false) {
 			switch ($field['field_validation']) {
+				case 'name':
+					if (strpos($value, '<') !== false || strpos($value, '>') !== false) {
+						return static::fPhrase($field['field_validation_error_message'], [], $t);
+					}
+					break;
 				case 'email':
 					if (!ze\ring::validateEmailAddress($value)) {
 						return static::fPhrase($field['field_validation_error_message'], [], $t);
@@ -4153,6 +4455,73 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 		
+		//Record consent if the terms and conditions checkbox was present and checked or there was a consent field on the form
+		if (!empty($consentFields)) {
+			$email = $firstName = $lastName = false;
+			
+			//Get information about the user consenting (look for details in database if none found on form submission)
+			if ($fieldId = ($this->datasetFieldsColumnLink['email'] ?? false)) {
+				$email = $this->fields[$fieldId]['value'];
+			} else {
+			    $email = ze\row::get('users', 'email', $userId);
+			}
+
+			if ($fieldId = ($this->datasetFieldsColumnLink['first_name'] ?? false)) {
+				$firstName = $this->fields[$fieldId]['value'];
+				if ($this->fields[$fieldId]['split_first_name_last_name']) {
+					$lastName = trim(mb_substr($firstName, mb_strpos($firstName, ' ', 0, 'UTF-8'), null, 'UTF-8'));
+					$firstName = trim(mb_substr($firstName, 0, mb_strpos($firstName, ' ', 0, 'UTF-8'), 'UTF-8'));
+				}
+			} else {
+			    $firstName = ze\row::get('users', 'first_name', $userId);
+			}
+			
+			if ($fieldId = ($this->datasetFieldsColumnLink['last_name'] ?? false)) {
+				$lastName = $this->fields[$fieldId]['value'];
+				if ($this->fields[$fieldId]['split_first_name_last_name']) {
+					$firstName = trim(mb_substr($lastName, 0, mb_strpos($lastName, ' ', 0, 'UTF-8'), 'UTF-8'));
+					$lastName = trim(mb_substr($lastName, mb_strpos($lastName, ' ', 0, 'UTF-8'), null, 'UTF-8'));
+				}
+			} else {
+			    $lastName = ze\row::get('users', 'last_name', $userId);
+			}
+			
+			if (!$email) {
+				$email = '';
+			}
+			
+			if (!$firstName) {
+				$firstName = '';
+			}
+			
+			if (!$lastName) {
+				$lastName = '';
+			}
+			
+			foreach ($consentFields as $fieldId) {
+				if ($this->fields[$fieldId]['value']) {
+					$label = $this->fields[$fieldId]['label'];
+					ze\user::recordConsent('form', $this->form['id'], $userId, $email, $firstName, $lastName, $label);
+				}
+			}
+		}
+		
+		//Profanity levels check
+		$canSendEmails = true;
+		$rating = 0;
+		$tolerence = 0;
+		if (ze::setting('zenario_user_forms_set_profanity_filter') && $this->form['profanity_filter_text']) {
+			$rating = $this->scanTextForProfanities();
+			$tolerence = (int)ze::setting('zenario_user_forms_set_profanity_tolerence');
+			$canSendEmails = $rating < $tolerence;
+		}
+		
+		//Save form response
+		$responseId = false;
+		if ($this->form['save_record']) {
+			$responseId = $this->createFormResponse($userId, $rating, $tolerence, !$canSendEmails);
+		}
+		
 		//Updating users
 		if ($userId) {
 			if ($this->form['update_linked_fields']) {
@@ -4229,73 +4598,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		    }
 		}
 		
-		//Record consent if the terms and conditions checkbox was present and checked or there was a consent field on the form
-		if (!empty($consentFields)) {
-			$email = $firstName = $lastName = false;
-			
-			//Get information about the user consenting (look for details in database if none found on form submission)
-			if ($fieldId = ($this->datasetFieldsColumnLink['email'] ?? false)) {
-				$email = $this->fields[$fieldId]['value'];
-			} else {
-			    $email = ze\row::get('users', 'email', $userId);
-			}
-
-			if ($fieldId = ($this->datasetFieldsColumnLink['first_name'] ?? false)) {
-				$firstName = $this->fields[$fieldId]['value'];
-				if ($this->fields[$fieldId]['split_first_name_last_name']) {
-					$lastName = trim(mb_substr($firstName, mb_strpos($firstName, ' ', 0, 'UTF-8'), null, 'UTF-8'));
-					$firstName = trim(mb_substr($firstName, 0, mb_strpos($firstName, ' ', 0, 'UTF-8'), 'UTF-8'));
-				}
-			} else {
-			    $firstName = ze\row::get('users', 'first_name', $userId);
-			}
-			
-			if ($fieldId = ($this->datasetFieldsColumnLink['last_name'] ?? false)) {
-				$lastName = $this->fields[$fieldId]['value'];
-				if ($this->fields[$fieldId]['split_first_name_last_name']) {
-					$firstName = trim(mb_substr($lastName, 0, mb_strpos($lastName, ' ', 0, 'UTF-8'), 'UTF-8'));
-					$lastName = trim(mb_substr($lastName, mb_strpos($lastName, ' ', 0, 'UTF-8'), null, 'UTF-8'));
-				}
-			} else {
-			    $lastName = ze\row::get('users', 'last_name', $userId);
-			}
-			
-			if (!$email) {
-				$email = '';
-			}
-			
-			if (!$firstName) {
-				$firstName = '';
-			}
-			
-			if (!$lastName) {
-				$lastName = '';
-			}
-			
-			foreach ($consentFields as $fieldId) {
-				if ($this->fields[$fieldId]['value']) {
-					$label = $this->fields[$fieldId]['label'];
-					ze\user::recordConsent('form', $this->form['id'], $userId, $email, $firstName, $lastName, $label);
-				}
-			}
-		}
-		
-		//Profanity levels check
-		$canSendEmails = true;
-		$rating = 0;
-		$tolerence = 0;
-		if (ze::setting('zenario_user_forms_set_profanity_filter') && $this->form['profanity_filter_text']) {
-			$rating = $this->scanTextForProfanities();
-			$tolerence = (int)ze::setting('zenario_user_forms_set_profanity_tolerence');
-			$canSendEmails = $rating < $tolerence;
-		}
-		
-		//Save form response
-		$responseId = false;
-		if ($this->form['save_record']) {
-			$responseId = $this->createFormResponse($userId, $rating, $tolerence, !$canSendEmails);
-		}
-		
 		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
 		if (!$url) {
 			$url = ze\link::absolute();
@@ -4304,7 +4606,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		//Emails
 		if ($canSendEmails) {
 			$sendEmailToUser = ($this->form['send_email_to_logged_in_user'] || $this->form['send_email_to_email_from_field']);
-			$sendEmailToAdmin = ($this->form['send_email_to_admin'] && $this->form['admin_email_addresses']);
+			$sendEmailToAdmin =
+				$this->form['send_email_to_admin']
+				&& (
+					($this->form['send_email_to_admin_destination_for_form_response'] == 'enter_address_manually' && $this->form['admin_email_addresses'])
+					|| ($this->form['send_email_to_admin_destination_for_form_response'] == 'call_static_method' && $this->form['admin_email_destination_module_class_name'] && $this->form['admin_email_destination_method_name'])
+				);
+			
 			$userEmailMergeFields = false;
 			$adminEmailMergeFields = false;
 			$makeURLsNotClickableUser = $sendEmailToUser && $this->form['make_urls_non_clickable_user'];
@@ -4313,40 +4621,75 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Send an email to the user
 			if ($sendEmailToUser) {
 				$startLine = '<p>Dear user,</p>';
-				$startLine .= '<p>The form was submitted from '.$url.' with the following data:</p>';
-				$userEmailMergeFields = static::getTemplateEmailMergeFields($userId, $this->fields);
+				$startLine .= '<p>A form was submitted from ' . $url . '.</p>';
+				
+				$userEmailMergeFields = static::getTemplateEmailMergeFields($userId, $this->fields, $parentNest = false, $toAdmin = false, $sendOrganizerLink = false, $makeURLsNotClickableUser);
+				
+				$startLine .= '<p>Response details:</p>';
+				
 				$emails = [];
 				if ($this->form['send_email_to_logged_in_user'] && $userId) {
-					$email = ze\row::get('users', 'email', $userId);
-					if ($email) {
+					$emailAddress = ze\row::get('users', 'email', $userId);
+					if ($emailAddress) {
 						if ($this->form['user_email_use_template_for_logged_in_user'] == 1) {
 							if ($this->form['user_email_template_logged_in_user']) {
-								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_logged_in_user'], $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, false, false, $makeURLsNotClickableUser);
+								zenario_common_features::sendEmailsUsingTemplate(
+									$emailAddress,
+									$this->form['user_email_template_logged_in_user'],
+									$userEmailMergeFields,
+									$attachments = [],
+									$attachmentFilenameMappings = [],
+									$disableHTMLEscaping = true,
+									false, false,
+									false, null, '', '', $responseId
+								);
 							}
-						}
-						elseif($this->form['user_email_use_template_for_logged_in_user'] == 2) {
-							static::sendVisibleFieldsFormEmail($this->form, $startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
-						}
-						else {
-							static::sendUnformattedFormEmail($this->form, $this->fields, $startLine, $email, $userEmailMergeFields, [], false, false, false, $makeURLsNotClickableUser, $this->referrerContentItemTag);
+						} elseif ($this->form['user_email_use_template_for_logged_in_user'] == 2) {
+							static::sendVisibleFieldsFormEmail(
+								$this->form, $sendTo = 'user', $startLine, $emailAddress, $userEmailMergeFields,
+								$attachments = [], false, false, false, $makeURLsNotClickableUser,
+								'', '', $responseId
+							);
+						} else {
+							static::sendUnformattedFormEmail(
+								$this->form, $this->fields, $startLine, $emailAddress,
+								$userEmailMergeFields, $attachments = [],
+								false, false, false, $makeURLsNotClickableUser,
+								$this->referrerContentItemTag, '', '', $responseId
+							);
 						}
 					}
 				}
 				if ($this->form['send_email_to_email_from_field'] && $this->form['user_email_field'] && isset($this->fields[$this->form['user_email_field']])) {
-					$email = $this->fields[$this->form['user_email_field']]['value'];
+					$emailAddress = $this->fields[$this->form['user_email_field']]['value'];
 					
-					if ($email) {
+					if ($emailAddress) {
 						if ($this->form['user_email_use_template_for_email_from_field'] == 1) {
 							if ($this->form['user_email_template_from_field']) {
-								zenario_email_template_manager::sendEmailsUsingTemplate($email, $this->form['user_email_template_from_field'], $userEmailMergeFields, [], [], $disableHTMLEscaping = true, false, false, $makeURLsNotClickableUser);
+								zenario_common_features::sendEmailsUsingTemplate(
+									$emailAddress,
+									$this->form['user_email_template_from_field'],
+									$userEmailMergeFields,
+									[], [],
+									$disableHTMLEscaping = true,
+									false, false,
+									false, null, '', '', $responseId
+								);
 								
 							}
-						}
-						elseif($this->form['user_email_use_template_for_email_from_field'] == 2) {
-							static::sendVisibleFieldsFormEmail($this->form, $startLine, $email, $userEmailMergeFields,$responseId,[],false,false,false,$makeURLsNotClickableUser);
-						}
-						else {
-							static::sendUnformattedFormEmail($this->form, $this->fields, $startLine, $email, $userEmailMergeFields, $attachments = [], $attachmentFilenameMappings = [], $disableHTMLEscaping = true, $makeURLsNotClickableUser, $this->referrerContentItemTag);
+						} elseif ($this->form['user_email_use_template_for_email_from_field'] == 2) {
+							static::sendVisibleFieldsFormEmail(
+								$this->form, $sendTo = 'user', $startLine, $emailAddress, $userEmailMergeFields,
+								$attachments = [], false, false, false, $makeURLsNotClickableUser,
+								'', '', $responseId
+							);
+						} else {
+							static::sendUnformattedFormEmail(
+								$this->form, $this->fields, $startLine, $emailAddress,
+								$userEmailMergeFields, $attachments = [],
+								false, false, false, $makeURLsNotClickableUser,
+								$this->referrerContentItemTag, '', '', $responseId
+							);
 						}
 						
 					}
@@ -4365,7 +4708,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($this->form['set_simple_access_cookie']) {
 			//check if we can set cookies
 			if (ze\cookie::canSet('functionality')) {
-				ze\cookie::set('SIMPLE_ACCESS', '1');
+				ze\cookie::set('z_gated_content_control_satisfied', '1');
 			}
 		}
 		
@@ -4387,7 +4730,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	private function logUserIn($userId) {
 		$user = ze\user::logIn($userId);
 		if ($this->form['log_user_in_cookie'] && ze\cookie::canSet('functionality')) {
-			ze\cookie::set('LOG_ME_IN_COOKIE', $user['login_hash']);
+			ze\cookie::set('z_extranet_auto_login', $user['login_hash']);
 		}
 	}
 	
@@ -4399,7 +4742,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$emailMergeFields['cms_url'] = ze\link::absolute();
 			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
 			$emailMergeFields['user_groups'] = ze\user::getUserGroupsNames($userId);
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false, $this->form['verification_email_template'], $emailMergeFields, [], [], false, false, false, $makeURLsNotClickableAdmin = false);
+			zenario_common_features::sendEmailsUsingTemplate(
+				$emailMergeFields['email'] ?? false,
+				$this->form['verification_email_template'],
+				$emailMergeFields
+			);
 		}
 	}
 	
@@ -4415,19 +4762,24 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$emailMergeFields['password'] = $password;
 			ze\userAdm::setPassword($userId, $password);
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($emailMergeFields['email'] ?? false, $this->form['welcome_email_template'], $emailMergeFields ,[]);
+			zenario_common_features::sendEmailsUsingTemplate(
+				$emailMergeFields['email'] ?? false,
+				$this->form['welcome_email_template'],
+				$emailMergeFields
+			);
 		}
 	}
 	
 	public static function sendEmailResponseToAdmin($responseId, $form, $userId, $formFields, $url, $makeURLsNotClickableAdmin, $commentForAdmin = '', $commentAuthorAdminId = 0, $recipientEmailAddress = '', $referrerContentItemTag = '', $ignoreConditionsAndAlwaysSend = false, $parentNest = false) {
 		$conditionFieldId = $form['send_email_to_admin_condition_field'];
-		print($conditionFieldId);
+		
 		if ($form['send_email_to_admin_condition'] == 'always_send'
-			|| ($form['send_email_to_admin_condition'] == 'send_on_condition'
+			|| (
+				$form['send_email_to_admin_condition'] == 'send_on_condition'
 				&& $conditionFieldId
 				&& isset($formFields[$conditionFieldId]['value'])
-				&& $formFields[$conditionFieldId]['value'] === true
-				)
+				&& $formFields[$conditionFieldId]['value'] == 'on'
+			)
 			|| $ignoreConditionsAndAlwaysSend
 		) {
 			$sendOrganizerLink = $allowVisitorUploadedAttachments = true;
@@ -4445,7 +4797,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 			
-			$adminEmailMergeFields = static::getTemplateEmailMergeFields($userId, $formFields, $parentNest, true, $sendOrganizerLink);
+			$adminEmailMergeFields = static::getTemplateEmailMergeFields($userId, $formFields, $parentNest, true, $sendOrganizerLink, $makeURLsNotClickableAdmin);
 		
 			//Set reply to address and name
 			$replyToEmail = false;
@@ -4465,8 +4817,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		
 			//If the form uses an email template, and the template is set to send form attachments to admins...
-			$allowVisitorUploadedAttachments = true;
-			if ($form['admin_email_use_template']) {
+			$allowVisitorUploadedAttachments = !empty($form['admin_email_attachments']);
+			if ($allowVisitorUploadedAttachments && $form['admin_email_use_template'] == 1) {
 				$allowVisitorUploadedAttachments = ze\row::get('email_templates', 'allow_visitor_uploaded_attachments', ['code' => $form['admin_email_template']]);
 			}
 			
@@ -4482,6 +4834,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							break;
 						case 'file_picker':
 						case 'document_upload':
+							if (!is_array($field['value'])) {
+								$field['value'] = json_decode($field['value'], $associative = true);
+							}
+							
 							foreach ($field['value'] as $fileId => $file) {
 								$attachments[] = $file['path'];
 							}
@@ -4494,37 +4850,74 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$commentBy = '';
 			if ($commentAuthorAdminId) {
 				$adminName = ze\admin::formatName($commentAuthorAdminId);
+				$formResponseDate = ze\date::formatDateTime(ze\row::get('user_response', 'response_datetime', $responseId));
 				
 				if ($commentForAdmin) {
-					$commentBy = ze\lang::phrase('Comment by [[admin]]:', ['admin' => $adminName]);
+					$commentBy = ze\admin::phrase('Comment by [[admin]]:', ['admin' => $adminName]);
 				} else {
-					$commentBy = ze\lang::phrase('Sent by [[admin]]', ['admin' => $adminName]);
+					$commentBy = ze\admin::phrase('Re-sent by [[admin]]', ['admin' => $adminName]);
 				}
+				
+				$commentBy .= '<p>' . ze\admin::phrase('Original response: [[original_response_date]]', ['original_response_date' => $formResponseDate]);
 				$ignoreDebugMode = true;
 			}
 			
 			if ($recipientEmailAddress) {
 				$adminEmailAddresses = $recipientEmailAddress;
 			} else {
-				$adminEmailAddresses = $form['admin_email_addresses'];
+				if ($form['send_email_to_admin_destination_for_form_response'] == 'enter_address_manually' && $form['admin_email_addresses']) {
+					$adminEmailAddresses = $form['admin_email_addresses'];
+				} elseif (
+					$form['send_email_to_admin_destination_for_form_response'] == 'call_static_method'
+					&& $form['admin_email_destination_module_class_name']
+					&& $form['admin_email_destination_method_name']
+				) {
+					ze\module::inc($form['admin_email_destination_module_class_name']);
+					$adminEmailAddresses = call_user_func(
+						[
+							$form['admin_email_destination_module_class_name'], 
+							$form['admin_email_destination_method_name']
+						]
+					);
+				}
 			}
 			
-			if ($form['admin_email_use_template'] == 1 && $form['admin_email_template']) {
-				zenario_email_template_manager::sendEmailsUsingTemplate($adminEmailAddresses, $form['admin_email_template'], $adminEmailMergeFields, $attachments, [], $disableHTMLEscaping = true, $replyToEmail, $replyToName, $makeURLsNotClickableAdmin, $ignoreDebugMode, null, $commentBy, $commentForAdmin);
-			
-			} elseif ($form['admin_email_use_template'] == 2) {
-				$startLine = '';
+			if ($adminEmailAddresses) {
+				if ($form['admin_email_use_template'] == 1 && $form['admin_email_template']) {
+					zenario_common_features::sendEmailsUsingTemplate(
+						$adminEmailAddresses, $form['admin_email_template'], $adminEmailMergeFields, $attachments, [],
+						$disableHTMLEscaping = true, $replyToEmail, $replyToName, $ignoreDebugMode, null,
+						$commentBy, $commentForAdmin, $responseId
+					);
 				
-				$startLine .= '<p>Dear admin,<p>';
-				$startLine .= '<p>The form "' . htmlspecialchars($form['name']) . '" (form ID ' . htmlspecialchars($form['id']) . ') was submitted from ' . $url . ' with the following data:</p>';
-				
-				static::sendVisibleFieldsFormEmail($form, $startLine, $adminEmailAddresses, $adminEmailMergeFields,$responseId, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin, $commentBy, $commentForAdmin);
-			} else {
-				$startLine = '';
-				
-				$startLine .= 'Dear admin,';
-				$startLine .= '<p>The form "' . htmlspecialchars($form['name']) . '" (form ID '.htmlspecialchars($form['id']) . ') was submitted from ' . $url . ' with the following data:</p>';
-				static::sendUnformattedFormEmail($form, $formFields, $startLine, $adminEmailAddresses, $adminEmailMergeFields, $attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin, $referrerContentItemTag, $commentBy, $commentForAdmin);
+				} elseif ($form['admin_email_use_template'] == 2) {
+					$startLine = '';
+					
+					$startLine .= '<p>Dear admin,<p>';
+					$startLine .= '<p>The form "' . htmlspecialchars($form['name']) . '" (form ID ' . htmlspecialchars($form['id']) . ') was submitted from ' . $url . '.</p>';
+					
+					$startLine .= '<p>Response details:</p>';
+					
+					static::sendVisibleFieldsFormEmail(
+						$form, $sendTo = 'admin', $startLine, $adminEmailAddresses, $adminEmailMergeFields,
+						$attachments, $replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin,
+						$commentBy, $commentForAdmin, $responseId
+					);
+				} else {
+					$startLine = '';
+					
+					$startLine .= 'Dear admin,';
+					$startLine .= '<p>The form "' . htmlspecialchars($form['name']) . '" (form ID ' . htmlspecialchars($form['id']) . ') was submitted from ' . $url . '.</p>';
+					
+					$startLine .= '<p>Response details:</p>';
+					
+					static::sendUnformattedFormEmail(
+						$form, $formFields, $startLine, $adminEmailAddresses,
+						$adminEmailMergeFields, $attachments,
+						$replyToEmail, $replyToName, $adminDownloadLinks = true, $makeURLsNotClickableAdmin,
+						$referrerContentItemTag, $commentBy, $commentForAdmin, $responseId
+					);
+				}
 			}
 		}
 	}
@@ -4533,7 +4926,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return $field['db_column'] ? $field['db_column'] : 'unlinked_' . $field['type'] . '_' . $field['id'];
 	}
 	
-	public static function getTemplateEmailMergeFields($userId, $formFields, $parentNest = false, $toAdmin = false, $sendOrganizerLink = false) {
+	public static function getTemplateEmailMergeFields($userId, $formFields, $parentNest = false, $toAdmin = false, $sendOrganizerLink = false, $makeURLsNotClickable = false) {
 		$mergeFields = [];
 		//User merge fields
 		if ($userId) {
@@ -4551,6 +4944,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (!isset($field['value'])) {
 				//Account for spacers and subheading fields (they have no value)
 				$field['value'] = '';
+			}
+			
+			if ($makeURLsNotClickable && ze::in($field['type'], 'text', 'textarea', 'url') && $field['value']) {
+				$field['value'] = ze\escape::makeURLsNotClickable($field['value']);
 			}
 			
 			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $sendOrganizerLink);
@@ -4572,43 +4969,27 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$mergeFields['users_datetime'] = ze\admin::formatDateTime(time(), '_MEDIUM');
 		$mergeFields['datetime'] = ze\admin::formatDateTime(date('Y-m-d H:i:s'), '_MEDIUM');
 		
-		$menuNodes = [];
-		$currentMenuNode = ze\menu::getFromContentItem(ze::$cID, ze::$cType);
-		if ($currentMenuNode && isset($currentMenuNode['mID']) && !empty($currentMenuNode['mID'])) {
-			$menuNodes = static::drawMenu($currentMenuNode['mID'], ze::$cID, ze::$cType);
-			if ($parentNest) {
-				$backs = $parentNest->getBackLinks();
-				foreach ($backs as $state => $back) {
-					$menuNodes[] = $parentNest->formatTitleText(ze\lang::phrase($back['slide']['slide_label'], [], 'zenario_breadcrumbs'));
-				}
-			}
-		}
-		
-		$url = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, false, true);
-		if (!$url) {
-			$url = ze\link::absolute();
-		}
-		
-		$mergeFields['breadcrumbs'] = implode(' » ', $menuNodes);
-		
-		$mergeFields['breadcrumbs'] .= ' (' . htmlspecialchars($url) . ')';
-		
 		return $mergeFields;
 	}
 	
-	public static function sendUnformattedFormEmail($form, $fields, $startLine, $email, $mergeFields = [], $attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false, $makeURLsNotClickable = false, $referrerContentItemTag = '', $commentBy = '', $commentForAdmin = '') {
+	public static function sendUnformattedFormEmail(
+		$form, $fields, $startLine, $emailAddress, $mergeFields = [],
+		$attachments = [], $replyToEmail = false, $replyToName = false, $adminDownloadLinks = false,
+		$makeURLsNotClickable = false, $referrerContentItemTag = '',
+		$commentBy = '', $commentForAdmin = '', $responseId = 0
+	) {
 		$formName = $form['name'] ? trim($form['name']) : '[blank name]';
-		$subject = 'New form submission for: ' . $formName;
+		
+		if ($commentBy) {
+			$subject = 'Re-sent form response for: ' . $formName;
+		} else {
+			$subject = 'New form response for: ' . $formName;
+		}
+		
 		$addressFrom = ze::setting('email_address_from');
 		$nameFrom = ze::setting('email_name_from');
 		
 		$body = '';
-		
-		if ($form['send_email_to_admin'] && !$form['admin_email_use_template']) {
-			if (!empty($mergeFields['breadcrumbs'])) {
-				$body .= '<p>Page submitted from: ' . htmlspecialchars($mergeFields['breadcrumbs']) . '</p>';
-			}
-		}
 		
 		if ($form['handle_referrer_content_item']) {
 			$referrerFields = self::getReferrerFieldsArray();
@@ -4677,6 +5058,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (!isset($field['value'])) {
 				$field['value'] = '';
 			}
+			
+			if ($makeURLsNotClickable && ze::in($field['type'], 'text', 'textarea', 'url') && $field['value']) {
+				$field['value'] = ze\escape::makeURLsNotClickable($field['value']);
+			}
+			
 			$displayHTML = static::getFieldDisplayValue($field, $field['value'], $html = true, $includeDownloadLinks);
 			if ($field['type'] != 'attachment') {
 				if ($field['type'] == 'textarea' && $displayHTML) {
@@ -4690,17 +5076,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (!$url) {
 			$url = ze\link::absolute();
 		}
-
-		if ($makeURLsNotClickable) {
-			$body = ze\escape::makeURLsNotClickable($body);
-		}
 		
 		//Only add the start line once the links in the body have been made non-clickable.
 		$body = $startLine . $body;
 		
 		$body .= '<p>This is an auto-generated email from ' . htmlspecialchars($url) . '</p>';
 		
-		zenario_email_template_manager::putBodyInTemplate($body);
+		zenario_common_features::putBodyInTemplate($body);
 		
 		$ignoreDebugMode = false;
 		if ($commentBy || $commentForAdmin) {
@@ -4708,7 +5090,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$ignoreDebugMode = true;
 		}
 		
-		zenario_email_template_manager::sendEmails($email, $subject, $addressFrom, $nameFrom, $body, [], $attachments, [], 0, false, $replyToEmail, $replyToName, '', '', '', false, $ignoreDebugMode);
+		zenario_common_features::sendEmails(
+			$emailAddress, $subject, $addressFrom, $nameFrom, $body,
+			[], $attachments, [], 0, false, $replyToEmail, $replyToName,
+			'', '', '', $ignoreDebugMode, $responseId
+		);
 	}
 	
 	
@@ -4735,27 +5121,31 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	private function scanTextForProfanities() {
-		$path = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
-		$file = fopen($path,"r");
-		
-		$text = '';
-		foreach ($this->fields as $fieldId => $field) {
-			if (($field['type'] == 'text' || $field['type'] == 'textarea') && $field['value']) {
-				$text .= $field['value'] . ' ';
-			}
-		}
-		
 		$rating = 0;
-		while(!feof($file)) {
-			$line = fgetcsv($file);
-			$word = str_replace('-', '\\W*', $line[0]);
-			$level = $line[1];
+		
+		$path = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
+		if (file_exists($path)) {
+			$file = fopen($path, "r");
 			
-			preg_match_all("#\b". $word ."(?:es|s)?\b#si", $text, $matches, PREG_SET_ORDER);
-			$rating += count($matches) * $level;
+			$text = '';
+			foreach ($this->fields as $fieldId => $field) {
+				if (($field['type'] == 'text' || $field['type'] == 'textarea') && $field['value']) {
+					$text .= $field['value'] . ' ';
+				}
+			}
+			
+			while (!feof($file)) {
+				$line = fgetcsv($file);
+				$word = str_replace('-', '\\W*', $line[0]);
+				$level = $line[1];
+				
+				preg_match_all("#\b" . $word . "(?:es|s)?\b#si", $text, $matches, PREG_SET_ORDER);
+				$rating += count($matches) * $level;
+			}
+			
+			fclose($file);
 		}
 		
-		fclose($file);
 		return $rating;
 	}
 	
@@ -4834,9 +5224,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						
 						//All other fields
 						} else {
+							if (ze::in($field['type'], 'checkbox', 'group', 'consent')) {
+								$value = (bool) $value;
+							}
+							
 							$userData[$dbColumn] = $value;
 						}
 					} else {
+						if (ze::in($field['type'], 'checkbox', 'group', 'consent')) {
+							$value = (bool) $value;
+						}
+						
 						$userCustomData[$dbColumn] = $value;
 					}
 				}
@@ -4892,7 +5290,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			return false;
 		}
 		
-		$responseId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX. 'user_response', ['user_id' => (int) $userId, 'form_id' => $this->form['id'], 'response_datetime' => ze\date::now(), 'profanity_filter_score' => $rating, 'profanity_tolerance_limit' => $tolerence, 'blocked_by_profanity_filter' => $blocked]);
+		$responseId = ze\row::insert('user_response', ['user_id' => (int) $userId, 'form_id' => $this->form['id'], 'response_datetime' => ze\date::now(), 'profanity_filter_score' => $rating, 'profanity_tolerance_limit' => $tolerence, 'blocked_by_profanity_filter' => $blocked]);
 		
 		if ($this->form['period_to_delete_response_content'] === '0'
 			|| ($this->form['period_to_delete_response_content'] === '' && ze::setting('period_to_delete_the_form_response_log_content') === '0')
@@ -4918,7 +5316,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			
 				$value = static::getFieldStorableValue($field, $field['value']);
-				ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', ['user_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
+				ze\row::insert('user_response_data', ['user_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
 			}
 		}
 		
@@ -4932,7 +5330,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				foreach ($referrerFields as $referrerFieldDbName => $fererrerFieldName) {
 					if ($this->form[$referrerFieldDbName]) {
 						ze\row::insert(
-							ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info',
+							'user_response_referrer_info',
 							[
 								'user_response_id' => $responseId,
 								'referrer_content_item' => ze\escape::sql($this->referrerContentItemTag),
@@ -4956,7 +5354,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$sql = '
 				SELECT uff.id
 				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
-				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				INNER JOIN ' . DB_PREFIX . 'user_response ur
 					ON ur.form_id = uff.user_form_id
 				WHERE ur.id = ' . (int)$responseId . '
 				AND uff.custom_code_name = "' . ze\escape::sql($codeName) . '"';
@@ -4966,14 +5364,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		//Get value from response
 		if ($fieldId) {
-			$value = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', 'value', ['user_response_id' => $responseId, 'field_row' => $row, 'form_field_id' => $fieldId]);
+			$value = ze\row::get('user_response_data', 'value', ['user_response_id' => $responseId, 'field_row' => $row, 'form_field_id' => $fieldId]);
 		}
 		return $value;
 	}
 	
 	//A shortcut function to get a fields display value from a response
 	public static function getResponseFieldDisplayValue($fieldId, $responseId, $row = 0, $codeName = false) {
-		$formId = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_response', 'form_id', $responseId);
+		$formId = ze\row::get('user_response', 'form_id', $responseId);
 		$field = static::getFormFieldsStatic($formId, [], false, false, $fieldId, $codeName);
 		$storedValue = static::getResponseFieldValue($field['id'], $responseId);
 		$loadedValue = static::getFieldValueFromStored($field, $storedValue);
@@ -4995,7 +5393,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				return $value ? implode(',', $value) : '';
 			case 'attachment':
 				if ($value && file_exists(CMS_ROOT . $value)) {
-					$fileId = ze\file::addToDatabase('forms', CMS_ROOT . $value);
+					$fileId = ze\fileAdm::addToDatabase('forms', CMS_ROOT . $value);
 					return $fileId;
 				}
 				return false;
@@ -5003,9 +5401,16 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			case 'document_upload':
 				$fileIds = [];
 				if ($value) {
+					if (!is_array($value)) {
+						$value = json_decode($value, $associative = true);
+					}
 					usort($value, 'ze\ray::sortByOrd');
 					foreach ($value as $i => $file) {
-						$fileId = ze\file::addToDatabase('forms', CMS_ROOT . $file['path']);
+						if (!empty($field['store_file']) && $field['store_file'] == 'in_docstore') {
+							$fileId = ze\fileAdm::addToDocstoreDir('forms', CMS_ROOT . $file['path'], $filename = false, $mustBeAnImage = false, $deleteWhenDone = false);
+						} else {
+							$fileId = ze\fileAdm::addToDatabase('forms', CMS_ROOT . $file['path']);
+						}
 						$fileIds[] = $fileId;
 					}
 				}
@@ -5162,11 +5567,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		static::deleteOldPartialResponse($this->form['id'], $userId, $getRequestValue);
 		
-		$maxPageReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['max_page_reached'];
+		$lastStepReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'];
 		
 		$responseId = ze\row::insert(
 			ZENARIO_USER_FORMS_PREFIX . 'user_partial_response',
-			['user_id' => $userId, 'form_id' => $this->form['id'], 'response_datetime' => ze\date::now(), 'max_page_reached' => $maxPageReached, 'get_request_value' => $getRequestValue]
+			['user_id' => $userId, 'form_id' => $this->form['id'], 'response_datetime' => ze\date::now(), 'last_step_reached' => $lastStepReached, 'get_request_value' => $getRequestValue]
 		); 
 		
 		foreach ($this->fields as $fieldId => $field) {
@@ -5379,13 +5784,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	protected function getPartialSaveResumeFormHTML() {
-		if (ze\user::id()) {
+		if ($userId = ze\user::id()) {
 			$t = $this->form['translate_text'];
 		
 			$html  = '<div class="resume_box">';
 			$html .= $this->openForm('if (this.submited && !confirm("' . htmlspecialchars($this->phrase("Are you sure you want to clear all your data?")) . '")) { return false; }');
-			$html .= '<p>' . static::fPhrase(($this->form['clear_partial_data_message'] ?: ''), [], $t) . '</p>';
-		
+			
+			
+			//Before 10.0, it was possible to disallow clearing a partial response.
+			//The downside is that the "Clear partial data message" setting was tied to the button,
+			//and now it always appears whenever "Save and complete later" is enabled.
+			//Use a fallback message for clients that did not have it enabled before.
+			$fallbackResumeMessage = 'Would you like to resume editing this form or clear your existing data?';
+			$html .= '<p>' . static::fPhrase(($this->form['clear_partial_data_message'] ?: $fallbackResumeMessage), [], $t) . '</p>';
+			$html .= '<div class="resume_buttons">';
 			if ($this->form['handle_referrer_content_item']) {
 				if (!$this->referrerContentItemTag) {
 					$this->referrerContentItemTag = ze::get('referrer');
@@ -5394,12 +5806,23 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$html .= '<input type="hidden" name="referrer" value="' . htmlspecialchars($this->referrerContentItemTag) . '"/>';
 			}
 		
-			$html .= '<input type="submit" onclick="this.form.submited = false" name="resume" value="' . htmlspecialchars(static::fPhrase('Resume', [], $t)) . '">';
+			$lastStepReached = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', 'last_step_reached', ['user_id' => $userId, 'form_id' => $this->form['id']]);
+			$ordinalOfLastStepReached = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'pages', 'ord', ['id' => $lastStepReached, 'form_id' => $this->form['id']]);
 			
-			if ($this->form['allow_clear_partial_data']) {
-				$html .= '<input type="submit" onclick="this.form.submited = true" name="clear" value="' . htmlspecialchars(static::fPhrase('Clear', [], $t)) . '">';
+			if ($ordinalOfLastStepReached != 1) {
+				$resumeFromFirstStepButtonLabel = 'Resume from first step of form';
+			} else {
+				$resumeFromFirstStepButtonLabel = 'Resume editing form';
 			}
 			
+			$html .= '<input type="submit" onclick="this.form.submited = false" name="resume_from_first_step" value="' . htmlspecialchars(static::fPhrase($resumeFromFirstStepButtonLabel, [], $t)) . '">';
+			
+			if ($ordinalOfLastStepReached != 1) {
+				$html .= '<input type="submit" onclick="this.form.submited = false" name="resume_from_where_i_left_off" value="' . htmlspecialchars(static::fPhrase('Resume from where I left off', [], $t)) . '">';
+			}
+			
+			$html .= '<input type="submit" class="clear" onclick="this.form.submited = true" name="clear" value="' . htmlspecialchars(static::fPhrase('Clear', [], $t)) . '">';
+			$html .= '</div>';
 			$html .= $this->closeForm();
 			$html .= '</div>';
 			return $html;
@@ -5642,17 +6065,12 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		switch ($pns) {
 			case 'nests':
 				$sql .= "
-			  AND pi.module_id = ". (int) ze\module::id('zenario_plugin_nest');
-				break;
-			
-			case 'slideshows':
-				$sql .= "
-			  AND pi.module_id = ". (int) ze\module::id('zenario_slideshow');
+			  AND pi.module_id IN (". (int) ze\module::id('zenario_nest'). ", ". (int) ze\module::id('zenario_ajax_nest'). ")";
 				break;
 			
 			case 'plugins':
 				$sql .= "
-			  AND pi.module_id NOT IN (". (int) ze\module::id('zenario_slideshow'). ", ". (int) ze\module::id('zenario_plugin_nest'). ")";
+			  AND pi.module_id NOT IN (". (int) ze\module::id('zenario_slideshow'). ", ". (int) ze\module::id('zenario_nest'). ", ". (int) ze\module::id('zenario_ajax_nest'). ")";
 		}
 		
 		return ze\sql::fetchValues($sql);
@@ -5809,7 +6227,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				if ($field['user_field_id']) {
 					if (!empty($field['_db_column']) 
 						&& !empty($field['_type'])
-						&& ($datasetField = ze\row::get('custom_dataset_fields', ['id'], ['dataset_id' => $dataset['id'], 'db_column' => $field['_db_column'], 'type' => $field['_type'], 'repeat_start_id' => 0]))
+						&& ($datasetField = ze\row::get('custom_dataset_fields', ['id'], ['dataset_id' => $dataset['id'], 'db_column' => $field['_db_column'], 'type' => $field['_type']]))
 					) {
 						unset($field['_db_column']);
 						unset($field['_type']);
@@ -6159,7 +6577,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if (is_numeric($days)) {
 				$sql = '
 					SELECT id
-					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+					FROM ' . DB_PREFIX . 'user_response
 					WHERE form_id = ' . (int)$form['id'];
 				
 				if ($days && ($date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d')))))) {
@@ -6200,7 +6618,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if (is_numeric($days)) {
 			$sql = '
 				SELECT ur.id
-				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				FROM ' . DB_PREFIX . 'user_response ur
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON ur.form_id = uf.id
 				WHERE uf.period_to_delete_response_headers = ""';
@@ -6253,8 +6671,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$date = date('Y-m-d', strtotime('-'.$days.' day', strtotime(date('Y-m-d'))));
 				$sql = '
 					DELETE urd.*
-					FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-					INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+					FROM ' . DB_PREFIX . 'user_response_data urd
+					INNER JOIN ' . DB_PREFIX . 'user_response ur
 						ON urd.user_response_id = ur.id
 					WHERE ur.form_id = ' . (int)$form['id'];
 				if ($days && $date) {
@@ -6264,7 +6682,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				ze\sql::update($sql);
 				
 				$sql = '
-					UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+					UPDATE ' . DB_PREFIX . 'user_response
 					SET data_deleted = 1
 					WHERE form_id = ' . (int)$form['id'];
 				if ($days && $date) {
@@ -6301,8 +6719,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			$sql = '
 				DELETE urd.*
-				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				FROM ' . DB_PREFIX . 'user_response_data urd
+				INNER JOIN ' . DB_PREFIX . 'user_response ur
 					ON urd.user_response_id = ur.id
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON ur.form_id = uf.id
@@ -6314,7 +6732,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			ze\sql::update($sql);
 			
 			$sql = '
-				UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				UPDATE ' . DB_PREFIX . 'user_response ur
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON ur.form_id = uf.id
 				SET ur.data_deleted = 1
@@ -6397,8 +6815,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Get files used in full responses...
 			$sql = "
 				SELECT urd.value
-				FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response ur
-				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_response_data urd
+				FROM " . DB_PREFIX . "user_response ur
+				INNER JOIN " . DB_PREFIX . "user_response_data urd
 					ON urd.user_response_id = ur.id
 				INNER JOIN " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "user_form_fields uff
 					ON urd.form_field_id = uff.id 
@@ -6486,7 +6904,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Get the user's form responses...
 			$sql = '
 				SELECT id
-				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+				FROM ' . DB_PREFIX . 'user_response
 				WHERE user_id = ' . (int)$userId;
 			$result = ze\sql::select($sql);
 			
@@ -6498,14 +6916,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			$sql = '
 				DELETE urd.*
-				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
-				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response ur
+				FROM ' . DB_PREFIX . 'user_response_data urd
+				INNER JOIN ' . DB_PREFIX . 'user_response ur
 					ON urd.user_response_id = ur.id
 				WHERE ur.user_id = ' . (int)$userId;
 			ze\sql::update($sql);
 			
 			$sql = '
-				UPDATE ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+				UPDATE ' . DB_PREFIX . 'user_response
 				SET user_id = 0, user_deleted = 1, data_deleted = 1
 				WHERE user_id = ' . (int)$userId;
 			ze\sql::update($sql);
@@ -6532,7 +6950,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		$sql = '
 			SELECT COUNT(id)
-			FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response
+			FROM ' . DB_PREFIX . 'user_response
 			WHERE user_id IN (' . ze\escape::in($userIds) . ')';
 		$result = ze\sql::select($sql);
 		$count = ze\sql::fetchValue($result);
@@ -6661,4 +7079,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return true;
 	}
 	
+	private function unsetCustomFormData($instanceId = 0, $formPageHash = '') {
+		if (!empty($instanceId) && !empty($formPageHash)) {
+			unset($_SESSION['custom_form_data'][$instanceId][$formPageHash]);
+			
+			if (empty($_SESSION['custom_form_data'][$instanceId])) {
+				unset($_SESSION['custom_form_data'][$instanceId]);
+			}
+			
+			if (empty($_SESSION['custom_form_data'])) {
+				unset($_SESSION['custom_form_data']);
+			}
+		}
+	}
 }

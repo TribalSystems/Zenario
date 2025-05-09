@@ -17,17 +17,18 @@ use Twig\Node\Expression\Test\DefinedTest;
 use Twig\Node\Expression\Test\NullTest;
 use Twig\Node\Expression\Unary\NotUnary;
 use Twig\Node\Node;
+use Twig\TwigTest;
 
 class NullCoalesceExpression extends ConditionalExpression
 {
     public function __construct(Node $left, Node $right, int $lineno)
     {
-        $test = new DefinedTest(clone $left, 'defined', new Node(), $left->getTemplateLine());
+        $test = new DefinedTest(clone $left, new TwigTest('defined'), new Node(), $left->getTemplateLine());
         // for "block()", we don't need the null test as the return value is always a string
         if (!$left instanceof BlockReferenceExpression) {
             $test = new AndBinary(
                 $test,
-                new NotUnary(new NullTest($left, 'null', new Node(), $left->getTemplateLine()), $left->getTemplateLine()),
+                new NotUnary(new NullTest($left, new TwigTest('null'), new Node(), $left->getTemplateLine()), $left->getTemplateLine()),
                 $left->getTemplateLine()
             );
         }
@@ -35,7 +36,7 @@ class NullCoalesceExpression extends ConditionalExpression
         parent::__construct($test, $left, $right, $lineno);
     }
 
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         /*
          * This optimizes only one case. PHP 7 also supports more complex expressions
@@ -58,5 +59,3 @@ class NullCoalesceExpression extends ConditionalExpression
         }
     }
 }
-
-class_alias('Twig\Node\Expression\NullCoalesceExpression', 'Twig_Node_Expression_NullCoalesce');

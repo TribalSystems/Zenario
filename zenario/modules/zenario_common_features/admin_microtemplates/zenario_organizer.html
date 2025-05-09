@@ -36,14 +36,24 @@
 
 								<div id="organizer_search" class="viewMode toolbar" style="visibility: hidden;" data-step="9" data-position="right" data-intro="{{'<p><strong>Search this panel</strong></p><p>Search here for any content in the panel.<p>'|escape}}">
 									<form id="organizer_searchForm" onsubmit="return false;">
-										<input type="search" id="organizer_search_term" value="" placeholder="{{zenarioA.phrase.skQuickSearch}}"
-										 onclick="zenarioO.searchOnClick(this);"
-										 onkeyup="zenarioO.searchOnKeyUp(this);"
-										 onchange="zenarioO.searchOnChange(this);"
-										 onsearch="zenarioO.doSearch(this);"
-										 onfocus="zenarioO.searchFocused = true;"
-										 onblur="zenarioO.searchFocused = false;"
+										<input
+											type="text" id="organizer_search_term" value="" placeholder="{{zenarioA.phrase.skQuickSearch}}"
+											 onclick="zenarioO.searchOnClick(this);"
+											 onkeyup="zenarioO.searchOnKeyUp(this);"
+											 onchange="zenarioO.searchOnChange(this);"
+											 onsearch="zenarioO.doSearch(this);"
+											 onfocus="zenarioO.searchFocused = true;"
+											 onblur="zenarioO.searchFocused = false;"
+											 oninput="zenarioO.changeClearSearchButtonVisibility();"
 										/>
+										
+										<input id="organizer_clear_search" type="button" class="clear_search" value="&#xf057;" onclick="
+											var searchBox = zenario.get('organizer_search_term');
+											searchBox.value = '';
+											zenarioO.doSearch(searchBox);
+											return false;
+										"/>
+
 									</form>
 								</div>
 

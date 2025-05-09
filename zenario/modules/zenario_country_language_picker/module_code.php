@@ -35,7 +35,7 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 	public function init() {
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 		
-		if (empty($_COOKIE['country_id']) && empty($_COOKIE['user_lang'])) {
+		if (empty($_COOKIE['z_country_id']) && empty($_COOKIE['z_user_lang'])) {
 			if (empty($_SESSION['country_id']) || empty($_SESSION['user_lang'])) {
 				$showPicker = true;
 			} elseif (!empty($_SESSION['country_id']) && !empty($_SESSION['user_lang'])) {
@@ -98,9 +98,9 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 			$requests = 'showInFloatingBox=1';
 			$buttonJS = $this->refreshPluginSlotAnchor($requests, false, false);
 		
-			if (!empty($_COOKIE['country_id']) && !empty($_COOKIE['user_lang'])) {
-				$country_name = ze\row::get('visitor_phrases', 'local_text', ['code' => '_COUNTRY_NAME_' . $_COOKIE['country_id'], 'language_id' => ['LIKE' => $_COOKIE['user_lang'] . '%']]);
-				$country_id = $_COOKIE['country_id'];
+			if (!empty($_COOKIE['z_country_id']) && !empty($_COOKIE['z_user_lang'])) {
+				$country_name = ze\row::get('visitor_phrases', 'local_text', ['code' => '_COUNTRY_NAME_' . $_COOKIE['z_country_id'], 'language_id' => ['LIKE' => $_COOKIE['z_user_lang'] . '%']]);
+				$country_id = $_COOKIE['z_country_id'];
 			} elseif (!empty($_SESSION['country_id']) && !empty($_SESSION['user_lang'])) {
 				$country_name = ze\row::get('visitor_phrases', 'local_text', ['code' => '_COUNTRY_NAME_' . $_SESSION['country_id'], 'language_id' => ['LIKE' => $_SESSION['user_lang'] . '%']]);
 				$country_id = $_SESSION['country_id'];
@@ -126,8 +126,8 @@ class zenario_country_language_picker extends ze\moduleBaseClass {
 	}
 	
 	public static function clearCountryIdAndLanguage() {
-		ze\cookie::clear('country_id');
-		ze\cookie::clear('user_lang');
+		ze\cookie::clear('z_country_id');
+		ze\cookie::clear('z_user_lang');
 		unset($_SESSION['country_id']);
 		unset($_SESSION['user_lang']);
 	}

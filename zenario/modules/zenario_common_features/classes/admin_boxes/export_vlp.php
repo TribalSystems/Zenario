@@ -53,6 +53,28 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		$phrases['lang'] = ze\lang::name($box['key']['id']);
 		$phrases['def_lang'] = ze\lang::name(ze::$defaultLang);
 		
+		//Display a warning if any of the phrases some from modules that cannot be found.
+		$count = ze\sql::fetchValue("
+			SELECT COUNT(DISTINCT ph.code, ph.module_class_name)
+			FROM ". DB_PREFIX. "visitor_phrases ph
+			LEFT JOIN " . DB_PREFIX . "modules m
+				ON m.class_name = ph.module_class_name
+			WHERE ph.module_class_name IS NOT NULL
+			AND ph.module_class_name <> ''
+			AND m.status IS NULL OR m.status = 'module_not_initialized'"
+		);
+		
+		if ($count) {
+			$fields['export/desc']['notices_below']['phrases_coming_from_missing_or_uninitialised_modules']['hidden'] = false;
+			$fields['export/desc']['notices_below']['phrases_coming_from_missing_or_uninitialised_modules']['message'] =
+				ze\admin::nPhrase(
+					'1 phrase belongs to modules that are missing and will not be exported.',
+					'[[count]] phrases belong to modules that are missing and will not be exported.',
+					$count,
+					['count' => $count]
+				);
+		}
+		
 		
 		$box['tabs']['export']['fields']['desc']['snippet']['html'] =
 			ze\admin::phrase('Use this to download a spreadsheet of "[[lang]]" phrases.',$phrases);
@@ -176,9 +198,9 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			//Print the columns headers in the first line
 			if (!$columnNamesPrinted) {
 				++$i;
-				$j = -1;
+				$j = 0;
 				foreach ($row as $key => &$value) {
-					$activeWorksheet->setCellValueByColumnAndRow(++$j, $i, $key);
+					$activeWorksheet->setCellValue([++$j, $i], $key);
 				}
 				
 				$columnNamesPrinted = true;
@@ -192,9 +214,16 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			
 			//Print each row
 			++$i;
-			$j = -1;
+			$j = 0;
 			foreach ($row as $key => &$value) {
-				$activeWorksheet->setCellValueByColumnAndRow(++$j, $i, $value);
+				if ($key == 'Module') {
+					if ($value) {
+						$value .= ' (' . ze\module::getModuleDisplayNameByClassName($value) . ')';
+					} else {
+						$value = ze\admin::phrase('Core Features');
+					}
+				}
+				$activeWorksheet->setCellValue([++$j, $i], $value);
 			}
 		}
 		

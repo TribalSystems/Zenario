@@ -19,7 +19,7 @@
 	<div class="zfea_back_button">
 		{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'back')}}
 	</div>
-	<div class="zfea_top_buttons">
+	<div class="zfea_buttons zfea_top_buttons">
 		{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'top')}}
 	</div>
 	
@@ -32,8 +32,10 @@
 	<% } %>
 	
 	<form onsubmit="return false;">
-		<div>{{m.lib.pMicroTemplate('row', m.rows)}}</div>
-		<div>
+		<div class="zfea_form">
+			{{m.lib.pMicroTemplate('row', m.rows)}}
+		</div>
+		<div class="zfea_buttons zfea_bottom_buttons zfea_form_buttons">
 			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
 		</div>
 	</form>

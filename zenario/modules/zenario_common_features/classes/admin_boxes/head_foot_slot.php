@@ -106,7 +106,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 				$box['key']['layoutId'] = ($box['key']['layoutId'] ?: $box['key']['id']);
 			}
 			
-			if (!$layout = ze\content::layoutDetails($box['key']['layoutId'])) {
+			if (!$layout = ze\layout::details($box['key']['layoutId'])) {
 				exit;
 			}
 		
@@ -152,7 +152,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 		$values['slot/html'] = $settings[$t['html']];
 		$values['slot/cc'] = $settings[$t['cc']];
 		$values['slot/cc_specific_cookie_types'] = $settings[$t['cc_specific_cookie_types']];
-		$values['slot/output_in_admin_mode'] = !$settings[$t['vis']];
+		$values['slot/hide_in_admin_mode'] = $settings[$t['vis']];
 		
 		if ($t['overwrite']) {
 			$values['slot/overwrite'] = $settings[$t['overwrite']];
@@ -204,7 +204,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends ze\moduleBase
 		$cols = [
 			$t['html'] => $html,
 			$t['cc'] => $values['slot/cc'],
-			$t['vis'] => !$values['slot/output_in_admin_mode']
+			$t['vis'] => $values['slot/hide_in_admin_mode']
 		];
 
 		if ($values['slot/cc'] == 'specific_types' && ze::in($values['slot/cc_specific_cookie_types'], 'functionality', 'analytics', 'social_media')) {

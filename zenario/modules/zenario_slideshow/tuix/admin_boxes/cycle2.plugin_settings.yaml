@@ -58,28 +58,26 @@ plugin_settings:
                 use_tab_hover:
                     plugin_setting:
                         name: use_tab_hover
-                    label: 'Hover to change'
+                    label: 'Hover over a tab to change to its slide'
                     type: checkbox
                     value: 1
                     side_note: |
-                        Hovering over a tab changes to that tab's slide.
-                        Only applies with Frameworks with Tabs.
+                        Only applies when tabs are shown.
                 use_tab_clicks:
                     plugin_setting:
                         name: use_tab_clicks
-                    label: 'Click to change'
+                    label: 'Click a tab to change to its slide'
                     type: checkbox
                     value: ""
                     side_note: |
-                        Clicking on a tab changes to that tab's slide.
-                        Only applies with Frameworks with Tabs.
+                        Only applies when tabs are shown.
                 
                 
                 
                 fx:
                     plugin_setting:
                         name: cycle2_fx
-                    label: 'Effect for Transitions:'
+                    label: 'Effect for transitions:'
                     type: select
                     values:
                         none:

@@ -183,6 +183,18 @@ site_settings:
                             <p>
                                 (Where a user signs up or resets their own password, the choice of email template is determined by the relevant extranet-related plugin.)
                             </p>
+                default_creation_email_template:
+                    site_setting:
+                        name: default_creation_email_template
+                    label: 'Creation email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: Yes
+                    value: zenario_users__to_user_account_created
                 default_activation_email_template:
                     site_setting:
                         name: default_activation_email_template
@@ -207,6 +219,18 @@ site_settings:
                         select_phrase: Select email template...
                         hide_remove_button: Yes
                     value: zenario_extranet__to_user_email_verification_admin
+                verification_email_expiry_period:
+                    site_setting:
+                        name: verification_email_expiry_period
+                    label: 'If an admin sends a verification email to a user, the link should expire in:'
+                    type: text
+                    post_field_html: '&nbsp;hour(s)'
+                    maxlength: 2
+                    style: "width: 2em;"
+                    value: 6
+                    validation:
+                        numeric: 'Please enter a whole number between 1 and 48.'
+                        integer_number: 'Please enter a whole number between 1 and 48.'
                 default_password_reset_email_template:
                     site_setting:
                         name: default_password_reset_email_template
@@ -245,7 +269,7 @@ site_settings:
                         name: default_groups_dataset_tab
                     label: 'Default Groups tab in the User/Contact admin box:'
                     type: select
-                    value: details
+                    value: groups
                     side_note: |
                         This defines which tab of User/Contact admin box contains the Groups checboxes. If creating a group, it will appear on this tab. Go to Datasets->Users to re-arrange.
                 max_user_image_filesize_override:

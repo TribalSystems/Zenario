@@ -55,10 +55,9 @@ if (ze::setting('user_use_screen_name')) {
 if ($this->setting('send_notification_email')
  && $this->setting('notification_email_address')
  && (($newThreadTitle === false && $this->setting('post_notification_email_template'))
-  || ($newThreadTitle !== false && $this->setting('new_thread_notification_email_template')))
- && ze\module::inc('zenario_email_template_manager')) {
+  || ($newThreadTitle !== false && $this->setting('new_thread_notification_email_template')))) {
 	
-	zenario_email_template_manager::sendEmailsUsingTemplate(
+	zenario_common_features::sendEmailsUsingTemplate(
 		$this->setting('notification_email_address'),
 		$newThreadTitle === false?
 			$this->setting('post_notification_email_template')
@@ -75,8 +74,7 @@ if ($this->setting('send_notification_email')
 
 if ($newPost
  && (($newThreadTitle === false && $this->setting('enable_thread_subs') && $this->setting('post_subs_email_template'))
-  || ($newThreadTitle !== false && $this->setting('enable_forum_subs') && $this->setting('new_thread_subs_email_template')))
- && ze\module::inc('zenario_email_template_manager')) {
+  || ($newThreadTitle !== false && $this->setting('enable_forum_subs') && $this->setting('new_thread_subs_email_template')))) {
 	
 	$sql = "
 		SELECT u.id, u.salutation, u.first_name, u.last_name, u.screen_name, u.email
@@ -103,7 +101,7 @@ if ($newPost
 				$formFields['subscriber_screen_name'] = '';
 			}
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate(
+			zenario_common_features::sendEmailsUsingTemplate(
 				$row['email'],
 				$newThreadTitle === false?
 					$this->setting('post_subs_email_template')

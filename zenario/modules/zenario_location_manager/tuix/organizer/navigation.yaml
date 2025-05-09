@@ -5,16 +5,10 @@ zenario__locations:
     css_class: locations_top_level
     label: Locations
     tooltip: Define real-world places and organisations
-    priv:
-        - _PRIV_MANAGE_LOCATIONS
-        - _PRIV_EXPORT_LOCATIONS
     nav:
         locations: 
             label: Locations
             keywords: "geo, places, place, map"
-            priv:
-                - _PRIV_MANAGE_LOCATIONS
-                - _PRIV_EXPORT_LOCATIONS
             link:
                 path: zenario__locations/panel
         hierarchy:

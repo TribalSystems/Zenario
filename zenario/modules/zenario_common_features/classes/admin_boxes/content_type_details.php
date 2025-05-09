@@ -57,7 +57,6 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/content_type_name_en'] = $details['content_type_name_en'];
 		$values['details/content_type_plural_en'] = $details['content_type_plural_en'];
 		$values['details/tooltip_text'] = $details['tooltip_text'];
-		$values['details/enable_summary_auto_update'] = $details['enable_summary_auto_update'];
 		$values['details/default_layout_id'] = $details['default_layout_id'];
 		$values['details/default_permissions'] = $details['default_permissions'];
 		$values['details/hide_private_item'] = $details['hide_private_item'];
@@ -81,7 +80,6 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/description_field_mandatory'] = $details['description_field'] == 'mandatory';
 		$values['details/keywords_field_mandatory'] = $details['keywords_field'] == 'mandatory';
 		$values['details/summary_field_mandatory'] = $details['summary_field'] == 'mandatory';
-		$values['details/release_date_field_mandatory'] = $details['release_date_field'] == 'mandatory';
 		
 		$values['details/prompt_to_create_a_menu_node'] = $details['prompt_to_create_a_menu_node']? 'prompt' : 'dont_prompt';
 		$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
@@ -113,22 +111,18 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 				$fields['details/description_field_mandatory']['hidden'] =
 				$fields['details/keywords_field_mandatory']['hidden'] =
 				$fields['details/summary_field_mandatory']['hidden'] =
-				$fields['details/release_date_field_mandatory']['hidden'] =
 				$fields['details/description_field_mandatory']['hidden'] =
 				$fields['details/description_field_mandatory']['readonly'] =
 				$fields['details/keywords_field_mandatory']['readonly'] =
 				$fields['details/summary_field_mandatory']['readonly'] =
-				$fields['details/release_date_field_mandatory']['readonly'] =
 				$fields['details/description_field_mandatory']['readonly'] = true;
 				break;
 				
 			
 			case 'event':
 				//Event release dates must be hidden as it is overridden by another field
-				$fields['details/release_date_field']['hidden'] =
-				$fields['details/release_date_field_mandatory']['hidden'] = true;
-				$values['details/release_date_field'] =
-				$values['details/release_date_field_mandatory'] = '';
+				$fields['details/release_date_field']['hidden'] = true;
+				$values['details/release_date_field'] = '';
 		}
 		
 		
@@ -154,11 +148,11 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 					ze\admin::phrase('No positions in the menu have been set for [[content_type_plural_en]]. You can set a position by editing a menu node and going to the <em style="font-style: italic;">Advanced</em> tab.', $details);
 			} else {
 				$fields['details/menu_node_position_edit']['note_below'] =
-					ze\admin::nPhrase('The following position in the menu has been set for [[content_type_plural_en]]:',
+					ze\admin::nPhrase('Preferential menu node/s are defined for [[content_type_plural_en]]:',
 						'The following positions in the menu have been set for [[content_type_plural_en]]:',
 						count($suggestedPositions), $details).
 					'<ul><li>'. implode('</li><li>', $suggestedPositions). '</li></ul>'.
-					ze\admin::phrase('You can set a position by editing a menu node and going to the <em style="font-style: italic;">Advanced</em> tab.', $details);
+					ze\admin::phrase('You can make a menu node be <em style="font-style: italic;">preferential</em> by editing the menu node and going to the <em style="font-style: italic;">Advanced</em> tab.', $details);
 			}
 		}
 
@@ -171,7 +165,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if (!$values['details/default_layout_id'] || !($template = ze\content::layoutDetails($values['details/default_layout_id']))) {
+		if (!$values['details/default_layout_id'] || !($template = ze\layout::details($values['details/default_layout_id']))) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase('Please select a default layout.');
 		
 		} elseif ($template['status'] != 'active') {
@@ -205,16 +199,14 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			$vals['enable_css_tab'] = $values['details/enable_css_tab'];
 			$vals['allow_pinned_content'] = $values['details/allow_pinned_content'];
 			$vals['when_creating_put_title_in_body'] = $values['details/when_creating_put_title_in_body'];
-			$vals['auto_set_release_date'] = ($values['details/auto_set_release_date'] && !$values['details/release_date_field_mandatory'] && $values['details/release_date_field']);
+			$vals['auto_set_release_date'] = ($values['details/auto_set_release_date'] && $values['details/release_date_field']);
 		
 			//Three-way options that are displayed as two booleans
-			$vals['writer_field'] = $values['details/writer_field']? ($values['details/writer_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
-			$vals['description_field'] = $values['details/description_field']? ($values['details/description_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
-			$vals['keywords_field'] = $values['details/keywords_field']? ($values['details/keywords_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
-			$vals['summary_field'] = $values['details/summary_field']? ($values['details/summary_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
-			$vals['release_date_field'] = $values['details/release_date_field']? ($values['details/release_date_field_mandatory']? 'mandatory' : 'optional') : 'hidden';
-			
-			$vals['enable_summary_auto_update'] = $values['details/summary_field'] && $values['details/enable_summary_auto_update'];
+			$vals['writer_field'] = $values['details/writer_field'] ? ($values['details/writer_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
+			$vals['description_field'] = $values['details/description_field'] ? ($values['details/description_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
+			$vals['keywords_field'] = $values['details/keywords_field'] ? ($values['details/keywords_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
+			$vals['summary_field'] = $values['details/summary_field'] ? ($values['details/summary_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
+			$vals['release_date_field'] = $values['details/release_date_field'] ? 'optional' : 'hidden';
 			
 			ze\row::update('content_types', $vals, $box['key']['id']);
 		}

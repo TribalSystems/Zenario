@@ -181,27 +181,30 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 
 			foreach ($slotContents as $slotName => $slot) {
 				if (isset($panel['items'][$slotName])) {
+					$item = &$panel['items'][$slotName];
+					
 					if ($layer == $refinerName || ($refinerName == 'content_item_from_menu_node' && $layer == 'content_item')) {
 					
 						$usageLinks = [
 							'content_items' => 'zenario__layouts/panels/layouts/item_buttons/view_content//'. (int) $layout['layout_id']. '//'
 						];
-						unset($panel['items'][$slotName]['empty']);
+						unset($item['empty']);
 			
 						if (!$slot->moduleId()) {
-							$panel['items'][$slotName]['opaque'] = true;
+							$item['opaque'] = true;
 			
 						} else {
-							$panel['items'][$slotName]['module_id'] = $slot->moduleId();
-							$panel['items'][$slotName]['full'] = true;
-							$panel['items'][$slotName]['instance_id'] = $slot->instanceId();
+							$item['module_id'] = $slot->moduleId();
+							$item['full'] = true;
+							$item['instance_id'] = $slot->instanceId();
 						
 				
 							if (!$slot->isVersionControlled() && ($instance = ze\plugin::details($instanceId = $slot->instanceId()))) {
 							
 								$usage = [];
 								switch ($instance['class_name']) {
-									case 'zenario_plugin_nest':
+									case 'zenario_nest':
+									case 'zenario_ajax_nest':
 										$usage = [
 											'nests' => 1,
 											'nest' => $instanceId
@@ -209,7 +212,6 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 										break;
 									
 									case 'zenario_slideshow':
-									case 'zenario_slideshow_simple':
 										$usage = [
 											'slideshows' => 1,
 											'slideshow' => $instanceId
@@ -224,18 +226,18 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 										break;
 								}
 							
-								$panel['items'][$slotName]['visitor_sees'] =
+								$item['visitor_sees'] =
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 							
-								$panel['items'][$slotName]['reusable'] = true;
+								$item['reusable'] = true;
 							} else {
 								$usage = [
 									'modules' => 1,
 									'module' => $slot->moduleId()
 								];
-								$panel['items'][$slotName]['visitor_sees'] =
+								$item['visitor_sees'] =
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
-								$panel['items'][$slotName]['wireframe'] = true;
+								$item['wireframe'] = true;
 							
 								//Show how many items use a specific to slotName, and display links if possible.
 								$usageContentItems = ze\layoutAdm::slotUsage($layout['layout_id'], $slotName);
@@ -245,14 +247,14 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 								];
 							
 								if (!empty($usageContentItems[0])) {
-									$panel['items'][$slotName]['visitor_sees'] .=
+									$item['visitor_sees'] .=
 										' ('.
 										ze\admin::phrase('with content on').
 										' '.
 										implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks)).
 										')';
 								} else {
-									$panel['items'][$slotName]['visitor_sees'] .=
+									$item['visitor_sees'] .=
 										' ('.
 										ze\admin::phrase('with no content').
 										')';
@@ -263,21 +265,22 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 					
 					
 					if ($slot->level() == $level) {
-						$panel['items'][$slotName][$layer. '_filled'] = true;
+						$item[$layer. '_filled'] = true;
 						
 						if ($level > 1) {
-							$panel['items'][$slotName]['layout_or_sitewide_filled'] = true;
+							$item['layout_or_sitewide_filled'] = true;
 						}
 			
 						if (!$slot->moduleId()) {
-							$panel['items'][$slotName][$layer] = ze\admin::phrase('Opaque');
+							$item[$layer] = ze\admin::phrase('Opaque');
 			
 						} else {
 							if (!$slot->isVersionControlled() && ($instance = ze\plugin::details($instanceId = $slot->instanceId()))) {
 							
 								$usage = [];
 								switch ($instance['class_name']) {
-									case 'zenario_plugin_nest':
+									case 'zenario_nest':
+									case 'zenario_abstract_nest':
 										$usage = [
 											'nests' => 1,
 											'nest' => $instanceId
@@ -285,7 +288,6 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 										break;
 									
 									case 'zenario_slideshow':
-									case 'zenario_slideshow_simple':
 										$usage = [
 											'slideshows' => 1,
 											'slideshow' => $instanceId
@@ -300,21 +302,23 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 										break;
 								}
 							
-								$panel['items'][$slotName][$layer] = 
+								$item[$layer] = 
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 							} else {
 								$usage = [
 									'modules' => 1,
 									'module' => $slot->moduleId()
 								];
-								$panel['items'][$slotName][$layer] =
+								$item[$layer] =
 									implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 							}
 						}
 						
-						$panel['items'][$slotName][$layer. '_plain_text'] = htmlspecialchars_decode(strip_tags($panel['items'][$slotName][$layer]));
+						$item[$layer. '_plain_text'] = htmlspecialchars_decode(strip_tags($item[$layer]));
 					}
 				}
+				
+				unset($item);
 			}
 		}
 

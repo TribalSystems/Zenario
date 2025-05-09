@@ -308,6 +308,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 					
 					if ($item['privacy'] == 'public') {
 						$item['tooltip'] = ze\admin::phrase('[[name]] is public. (Accessible by any visitor via a friendly URL. Can be used in WYSIWYG editors and may be indexed by search engines.)', $mrg);
+						$item['public_link'] = ze\image::publicPath($item);
 					
 					} elseif ($item['privacy'] == 'private') {
 						$item['tooltip'] = ze\admin::phrase('[[name]] is private. (The URL for the image will change every time it is viewed. Generated URLs will be taken down after roughly two hours. They cannot be used in WYSIWYG editors and will not be indexed by search engines.)', $mrg);
@@ -360,12 +361,29 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			}
 		}
 		
-		if ($mode == 'select'
-		 && !$allImagesArePublic
-		 && ze::in($refinerName, 'images_for_content_item', 'images_for_newsletter', 'from_email_template_admin_box', 'images_for_misc_picker')) {
-			$panel['notice']['type'] = 'warning';
-			$panel['notice']['message'] = ze\admin::phrase('Only images with the privacy "Public" may be selected. Use the "Make image public" button to change image privacy.');
-			$panel['notice']['show'] = true;
+		if ($mode == 'select' && !$allImagesArePublic) {
+			
+			switch ($refinerName) {
+				case 'images_for_content_item':
+				case 'images_for_misc_picker':
+					$panel['notice']['type'] = 'warning';
+					$panel['notice']['message'] = ze\admin::phrase('Only images with the privacy "Public" may be selected in a WYSIWYG editor. Use the "Make image public" button to change image privacy.');
+					$panel['notice']['show'] = true;
+					break;
+				
+				case 'images_for_newsletter':
+				case 'from_email_template_admin_box':
+					$panel['notice']['type'] = 'warning';
+					$panel['notice']['message'] = ze\admin::phrase('Only images with the privacy "Public" may be selected in an email. Use the "Make image public" button to change image privacy.');
+					$panel['notice']['show'] = true;
+					break;
+				
+				case 'only_pick_public_images':
+					$panel['notice']['type'] = 'warning';
+					$panel['notice']['message'] = ze\admin::phrase('Only images with the privacy "Public" may be selected. Use the "Make image public" button to change image privacy.');
+					$panel['notice']['show'] = true;
+					break;
+			}
 		}
 		
 	}
@@ -465,7 +483,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			}
 
 			//Try to add the uploaded image to the database
-			$fileId = ze\file::addToDatabase(
+			$fileId = ze\fileAdm::addToDatabase(
 				'image', $_FILES['Filedata']['tmp_name'], $filename = $_FILES['Filedata']['name'],
 				$mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
 				$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '', $setPrivacy
@@ -476,7 +494,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				//If the initial state of the image is public, add it to the public/images/ directory straight away
 				if ($setPrivacy === 'public'
 				 || (is_null($setPrivacy) && \ze::setting('default_image_privacy') == 'public')) {
-					ze\file::addPublicImage($fileId);
+					ze\image::addToPublicDir($fileId);
 				}
 
 				//If this was a content item or newsletter, attach the uploaded image to the content item/newsletter
@@ -543,7 +561,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		} elseif (ze::post('mark_as_public') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\row::update('files', ['privacy' => 'public'], $id);
-				ze\file::addPublicImage($id);
+				ze\image::addToPublicDir($id);
 			}
 
 		//Mark images as private
@@ -623,7 +641,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			
 				if ($file['location'] == 'db') {
 				
-					if ($fileId = \ze\file::addFromString(
+					if ($fileId = \ze\fileAdm::addFromString(
 						'documents',
 						$file['data'], $file['filename'],
 						$mustBeAnImage = true, $addToDocstoreDirIfPossible = true
@@ -641,13 +659,13 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		} elseif (ze::post('copy_to_special_images_library')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
-					ze\file::copyInDatabase('site_setting', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+					ze\fileAdm::copyInDatabase('site_setting', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
 				}
 			}
 		} elseif (ze::post('copy_to_mic_images')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = \ze\row::get('files', ['filename', 'location', 'data', 'privacy'], $id)) {
-					\ze\file::copyInDatabase('mic', $id, false, false, $addToDocstoreDirIfPossible = true);
+					\ze\fileAdm::copyInDatabase('mic', $id, false, false, $addToDocstoreDirIfPossible = true);
 				}
 			}
 			

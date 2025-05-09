@@ -1,0 +1,9 @@
+plugin_settings:
+    module_class_name: zenario_user_forms_list_part_completed
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                selected_mode_has_no_settings:
+                    snippet: 
+                        html: 'This plugin has no settings.'

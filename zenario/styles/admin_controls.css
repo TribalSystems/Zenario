@@ -41,6 +41,7 @@ x-zenario-admin-slot-wrapper {
 
 .zenario_moveSource,
 .zenario_moveDestination,
+.zenario_copyDestination,
 .zenario_slotParent .zenario_slotPluginControlBox,
 .zenario_nestSlot:hover .zenario_slotEggControlBox {
 	display: inline;
@@ -249,7 +250,7 @@ body.zenario_being_edited .zenario_slotOuter .zenario_slot {
 	outline-width: 0;
 }
 
-/*  When you are on edit mode, hide the library plugins (purple lines). :not the red lines  */
+/*  When you are on Content item view, hide the library plugins (purple lines). :not the red lines  */
 body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1) .zenario_slot,
 body.zenario_pageMode_edit .zenario_libraryPlugin:not(.zenario_slotWithContents.zenario_level1) > .zenario_slot.zenario_plugin_nest {
 	outline-width: 0;
@@ -350,7 +351,7 @@ body.zenario_pageModeIsnt_edit.zenario_pageModeIsnt_edit_disabled .only_show_in_
 
 
 /*
-	Hide the slot contents tooltips when in preview mode, menu mode, or when editing something on the page
+	Hide the slot contents tooltips when in preview view, menu mode, or when editing something on the page
 */
 
 body.zenario_being_edited .zenario_whatsInSlotTooltip,
@@ -498,6 +499,10 @@ div.zenario_slotAdminControlBox a.zenario_slotButton {
 	border: 0;
 	border-top:4px solid #333;
 	background-color:#333;
+	-webkit-border-top-left-radius: 4px;
+	-webkit-border-top-right-radius: 4px;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
 }
 
 div.zenario_adminSlotControlsOpen a.zenario_slotButton {
@@ -505,7 +510,8 @@ div.zenario_adminSlotControlsOpen a.zenario_slotButton {
 }
 
 div.zenario_slotAdminControlBox a.zenario_movePlugin,
-div.zenario_slotAdminControlBox a.zenario_swapPlugin {
+div.zenario_slotAdminControlBox a.zenario_swapPlugin,
+div.zenario_slotAdminControlBox a.zenario_copyPluginPlacement {
 	margin-top: 0px;
 	margin-left: 0px;
 	background: center top no-repeat #333 url(../admin/images/slots/move_plugin.png);
@@ -523,36 +529,36 @@ div.zenario_slotEggControlBox a.zenario_nestedPluginOptions {
 	background: none;
 	border-top: none;
 	margin-top: -1px;
-	height:21px;
+	height:23px;
 }
 
 div.zenario_slotEggControlBox a.zenario_editNestedPlugin span,
 div.zenario_slotEggControlBox a.zenario_nestedPluginOptions span {
 	display: inline-block;
-	height: 20px;
+	height: 22px;
 	border-top: orange dashed 1px;
 }
 
 div.zenario_slotEggControlBox a.zenario_nestedPluginOptions {
 	right: 46px;
-	width: 20px;
+	width: 22px;
 }
 
 div.zenario_slotEggControlBox a.zenario_nestedPluginOptions span {
-	background: url("../admin/images/icon-nest-more-options.svg") no-repeat;
-	background-size: 20px;
-	width: 75px;
+	background: url("../admin/images/icon-nest-more-options-v02.svg") no-repeat;
+	background-size: 22px;
+	width: 22px;
 }
 
 div.zenario_slotEggControlBox a.zenario_editNestedPlugin {
-	right: 68px;
-	width: 20px;
+	right: 70px;
+	width: 22px;
 }
 
 div.zenario_slotEggControlBox a.zenario_editNestedPlugin span {
 	background: url("../admin/images/icon-nest-edit.svg") no-repeat;
-	background-size: 20px;
-	width: 20px;
+	background-size: 22px;
+	width: 22px;
 }
 
 div.zenario_slotAdminControlBox a.zenario_openSlotControls {
@@ -562,7 +568,17 @@ div.zenario_slotAdminControlBox a.zenario_openSlotControls {
 }
 
 div.zenario_slotAdminControlBox a.zenario_openSlotControls {
-	background:#333 url('../admin/images/icon-arrow-down-white.svg') no-repeat 32px center / 7px auto;
+	background:#333;
+}
+
+div.zenario_slotAdminControlBox a.zenario_openSlotControls:after {
+	font-family:"FontAwesome";
+	content:"\f0d7";
+	position:absolute;
+	right: 5px;
+  	top: 10px;
+  	color: #fff;
+  	font-size: 10px;
 }
 
 div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
@@ -587,6 +603,14 @@ body.zenario_pageMode_edit .zenario_slotWithNoContents div.zenario_slotAdminCont
 	background: url('../admin/images/slots/icon-plugin.svg') no-repeat center 4px / 16px auto;
 }
 
+.zenario_reusable.zenario_slotWithNest div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
+	background: url('../admin/images/slots/icon-plugin-nest.svg') no-repeat center 2px / 24px auto;
+}
+
+.zenario_reusable.zenario_slotWithSlideshow div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
+	background: url('../admin/images/slots/icon-plugin-slideshow.svg') no-repeat center 4px / auto 14px;
+}
+
 .zenario_wireframe div.zenario_slotAdminControlBox a.zenario_openSlotControls span {
 	background: url('../admin/images/slots/icon-modules-version-controlled-black-arrows.svg') no-repeat center 4px / 17px auto;
 }
@@ -601,10 +625,12 @@ body.zenario_pageMode_edit .zenario_showDoubleClickInEditMode div.zenario_slotAd
 }
 
 .zenario_moveSource a.zenario_slotButton,
-.zenario_moveDestination a.zenario_slotButton {
+.zenario_moveDestination a.zenario_slotButton,
+.zenario_copyDestination a.zenario_slotButton {
 	display: none;
 }
 
+.zenario_slotWithNoContents .zenario_copyDestination a.zenario_copyPluginPlacement,
 .zenario_slotWithNoContents .zenario_moveDestination a.zenario_movePlugin,
 .zenario_slotWithContents .zenario_moveDestination a.zenario_swapPlugin,
 .zenario_moveSource a.zenario_cancelMovePlugin {
@@ -736,6 +762,7 @@ body.zenario_pageMode_edit .zenario_versionControlledPlugin div.zenario_slotCont
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_no_perms,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_switch_to,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions {
 	background:#4D4D4D;
@@ -743,6 +770,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions {
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_switch_to .zenario_sc,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place .zenario_sc,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenario_sc {
 	cursor: pointer;
@@ -761,6 +789,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_no_perms .zenario_sc {
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc:before,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_switch_to .zenario_sc:before,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place .zenario_sc:before,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenario_sc:before {
 	font-family:"FontAwesome";
@@ -772,6 +801,7 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions .zenario_sc:hover,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_switch_to .zenario_sc:hover,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_re_move_place .zenario_sc:hover,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenario_sc:hover {
 	background-color:#6F6F6F;
@@ -794,7 +824,8 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
 }
 
 .zenario_sc a.zenario_linkToNewTab {
-	background: url('../admin/images/icon-link-to-new-tab-placeholder.svg') no-repeat center center;
+	margin-left:1px;
+	background: url('../admin/images/icon-open-in-new-window-bright-blue.svg') no-repeat center center / auto 100%;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControl_slotName,
@@ -1052,9 +1083,9 @@ body.zenario_pageMode_edit.zenario_pageLocked div.zenario_slotAdminControlBox a.
 	background-color:#888;
 }
 
-/* Control button and dropdown background colors depending on modes */
+/* Control button and dropdown background colors depending on view */
 
-/* Layout mode / purple-indigo */
+/* Layout view / purple-indigo */
 
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap,
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotAdminControlBox a.zenario_slotButton,

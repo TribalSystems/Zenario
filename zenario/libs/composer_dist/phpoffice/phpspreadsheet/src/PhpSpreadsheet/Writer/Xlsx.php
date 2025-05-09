@@ -134,6 +134,12 @@ class Xlsx extends BaseWriter
 
     private Worksheet $writerPartWorksheet;
 
+    private bool $explicitStyle0 = false;
+
+    private bool $useCSEArrays = false;
+
+    private bool $useDynamicArray = false;
+
     /**
      * Create a new Xlsx Writer.
      */
@@ -158,20 +164,14 @@ class Xlsx extends BaseWriter
         $this->writerPartWorksheet = new Worksheet($this);
 
         // Set HashTable variables
-        // @phpstan-ignore-next-line
         $this->bordersHashTable = new HashTable();
-        // @phpstan-ignore-next-line
         $this->drawingHashTable = new HashTable();
-        // @phpstan-ignore-next-line
         $this->fillHashTable = new HashTable();
-        // @phpstan-ignore-next-line
         $this->fontHashTable = new HashTable();
-        // @phpstan-ignore-next-line
         $this->numFmtHashTable = new HashTable();
-        // @phpstan-ignore-next-line
         $this->styleHashTable = new HashTable();
-        // @phpstan-ignore-next-line
         $this->stylesConditionalHashTable = new HashTable();
+        $this->determineUseDynamicArrays();
     }
 
     public function getWriterPartChart(): Chart
@@ -252,6 +252,7 @@ class Xlsx extends BaseWriter
     public function save($filename, int $flags = 0): void
     {
         $this->processFlags($flags);
+        $this->determineUseDynamicArrays();
 
         // garbage collect
         $this->pathNames = [];
@@ -282,6 +283,10 @@ class Xlsx extends BaseWriter
         $zipContent = [];
         // Add [Content_Types].xml to ZIP file
         $zipContent['[Content_Types].xml'] = $this->getWriterPartContentTypes()->writeContentTypes($this->spreadSheet, $this->includeCharts);
+        $metadataData = (new Xlsx\Metadata($this))->writeMetadata();
+        if ($metadataData !== '') {
+            $zipContent['xl/metadata.xml'] = $metadataData;
+        }
 
         //if hasMacros, add the vbaProject.bin file, Certificate file(if exists)
         if ($this->spreadSheet->hasMacros()) {
@@ -450,7 +455,9 @@ class Xlsx extends BaseWriter
 
                 // Media
                 foreach ($this->spreadSheet->getSheet($i)->getHeaderFooter()->getImages() as $image) {
-                    $zipContent['xl/media/' . $image->getIndexedFilename()] = file_get_contents($image->getPath());
+                    if ($image->getPath() !== '') {
+                        $zipContent['xl/media/' . $image->getIndexedFilename()] = file_get_contents($image->getPath());
+                    }
                 }
             }
 
@@ -466,6 +473,9 @@ class Xlsx extends BaseWriter
             if ($this->getDrawingHashTable()->getByIndex($i) instanceof WorksheetDrawing) {
                 $imageContents = null;
                 $imagePath = $this->getDrawingHashTable()->getByIndex($i)->getPath();
+                if ($imagePath === '') {
+                    continue;
+                }
                 if (str_contains($imagePath, 'zip://')) {
                     $imagePath = substr($imagePath, 6);
                     $imagePathSplitted = explode('#', $imagePath);
@@ -659,6 +669,9 @@ class Xlsx extends BaseWriter
     {
         $data = null;
         $filename = $drawing->getPath();
+        if ($filename === '') {
+            return null;
+        }
         $imageData = getimagesize($filename);
 
         if (!empty($imageData)) {
@@ -698,5 +711,40 @@ class Xlsx extends BaseWriter
         }
 
         return $data;
+    }
+
+    public function getExplicitStyle0(): bool
+    {
+        return $this->explicitStyle0;
+    }
+
+    /**
+     * This may be useful if non-default Alignment is part of default style
+     * and you think you might want to open the spreadsheet
+     * with LibreOffice or Gnumeric.
+     */
+    public function setExplicitStyle0(bool $explicitStyle0): self
+    {
+        $this->explicitStyle0 = $explicitStyle0;
+
+        return $this;
+    }
+
+    public function setUseCSEArrays(?bool $useCSEArrays): void
+    {
+        if ($useCSEArrays !== null) {
+            $this->useCSEArrays = $useCSEArrays;
+        }
+        $this->determineUseDynamicArrays();
+    }
+
+    public function useDynamicArrays(): bool
+    {
+        return $this->useDynamicArray;
+    }
+
+    private function determineUseDynamicArrays(): void
+    {
+        $this->useDynamicArray = $this->preCalculateFormulas && Calculation::getInstance($this->spreadSheet)->getInstanceArrayReturnType() === Calculation::RETURN_ARRAY_AS_ARRAY && !$this->useCSEArrays;
     }
 }

@@ -9,6 +9,7 @@ zenario_content_privacy:
         equivId: ""
         cType: ""
         id_is_menu_node_id: false
+        privacy_settings_on_load: {}
         menu_node_id: ''
     identifier:
         css_class: content_draft
@@ -83,6 +84,7 @@ zenario_content_privacy:
                     no_values_message: No groups defined
                     validation:
                         required_if_not_hidden: Please select a group.
+                    format_onchange: true
                 smart_group_id:
                     #If no smart groups are defined, this field will not be displayed.
                     #It will be hidden in the PHP class, and its visible_if logic will be removed.
@@ -93,6 +95,7 @@ zenario_content_privacy:
                     empty_value: ' -- Select -- '
                     validation:
                         required_if_not_hidden: Please select a smart group.
+                    format_onchange: true
                 no_smart_groups_defined:
                     #If there are smart groups defined, this field will not be displayed.
                     #It will be unset in the PHP class.
@@ -101,6 +104,8 @@ zenario_content_privacy:
                         html: 'No smart groups defined'
                     visible_if:
                         zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
+                    validation:
+                        required_if_not_hidden: Please select a smart group.
                 role_ids:
                     indent: 1
                     visible_if:
@@ -109,6 +114,7 @@ zenario_content_privacy:
                     no_values_message: No roles defined
                     validation:
                         required_if_not_hidden: Please select a role.
+                    format_onchange: true
                 at_location:
                     indent: 1
                     hide_with_previous_field: true
@@ -121,6 +127,7 @@ zenario_content_privacy:
                             label: at the location in the URL
                         detect:
                             label: at the location in the URL, or at ANY location when there is no location in the URL
+                    format_onchange: true
                 module_class_name:
                     indent: 1
                     visible_if:
@@ -128,6 +135,15 @@ zenario_content_privacy:
                     label: 'Module class name:'
                     type: text
                     maxlength: 200
+                    oninput: |
+                        var $warningRow = $('#row__content_item_privacy_info_warning');
+                        
+                        var moduleClassNameOnLoad = zenarioAB.tuix.key.privacy_settings_on_load.module_class_name;
+                        if (moduleClassNameOnLoad != this.value) {
+                            $warningRow.removeClass('zfab_inline_warning_hidden');
+                        } else {
+                            $warningRow.addClass('zfab_inline_warning_hidden');
+                        }
                 method_name:
                     indent: 1
                     hide_with_previous_field: true
@@ -168,14 +184,21 @@ zenario_content_privacy:
                         zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
                     snippet:
                         html: |
-                            Content items with this permission
-                            will never appear in Content Summary Lists.
+                            <div class="zenario_fbWarning">
+                                Content items with this permission  will never appear in Content Summary Lists.
+                            </div>
                 
                 privacy_part_2:
                     snippet:
                         show_split_values_from: privacy
                     note_below: |
                         Content items are always visible to logged-in administrators.
+                
+                content_item_privacy_info_warning:
+                    row_class: zfab_inline_warning_hidden
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">[[content_item_privacy_changed_warning]]</div>
 
     confirm:
         message: ''

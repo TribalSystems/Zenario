@@ -48,7 +48,7 @@ class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 		}
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = ['empty' => !ze\row::exists('menu_nodes', ['section_id' => $id])];
+			$item['empty'] = !ze\row::exists('menu_nodes', ['section_id' => $id]);
 		}
 		
 		//In Organizer full mode, if this is the default language,

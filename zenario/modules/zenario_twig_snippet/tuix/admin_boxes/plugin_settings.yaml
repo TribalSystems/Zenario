@@ -5,40 +5,63 @@ plugin_settings:
     tabs:
         first_tab:
             label: 'Twig code'
+            notices:
+                no_snippets_found:
+                    type: error
+                    show: true
+                    visible_if: |
+                        _.isEmpty(lib.field('twig_snippet').values)
+                    html: true
+                    message: >
+                        No Twig snippets were found.
+                        To make a Twig snippet, create a file with an extension <code>.twig.html</code>,
+                        and place it in the directory <code>zenario_custom/twig/</code>.
+                        (You should create this directory if it doesn't exist.)
             fields:
+                twig_snippet:
+                    ord: html - 0.02
+                    plugin_setting:
+                        name: twig_snippet
+                    label: 'Twig snippet:'
+                    type: select
+                    empty_value: " -- Select -- "
+                    validation:
+                        required: Please select a Twig snippet
+                    format_onchange: true
+                    side_note: "Select a snippet to view file contents in the box below."
+                twig_path:
+                    ord: html - 0.01
+                    indent: 1
+                    #row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: ''
                 html:
+                    plugin_setting: {}
                     label: 'Twig code:'
                     type: code_editor
+                    readonly: true
                     tall_as_possible: true
                     style: |
                         width: 99%;
                     value: ""
                     dont_trim: true
                     language: twig
-        javascript:
-            label: 'JavaScript'
-            fields:
-                desc:
-                    snippet:
-                        html: |
-                            Use this if you need to add JavaScript to the bottom of the page.
-                            The
-                            <a href="https://zenar.io/ref-var-slotname" target="_blank"><code>slotName</code></a>
-                            and
-                            <a href="https://zenar.io/ref-var-containerid" target="_blank"><code>containerId</code></a>
-                            variables are avilable to use in your code if you need them.
-                            
-                javascript:
+                vars:
+                    ord: html + 0.01
                     plugin_setting:
-                        name: javascript
-                    label: 'JavaScript code:'
+                        name: vars
+                    label: 'Variables:'
+                    tooltip: |
+                        Declare any variables that should be passed to the Twig script.
+                        Must use valid YAML syntax and have a space after each colon, e.g. "key: value".
                     type: code_editor
-                    tall_as_possible: true
-                    value: ""
-                    dont_trim: true
-                    language: javascript
+                    value: |
+                        variableName1: value1
+                        variableName2: value2
+                    language: yaml
                     style: >
-                        height: 25em;
+                        height: 5em;
+                        width: 99%;
         caching:
             label: Plugin caching
             fields:

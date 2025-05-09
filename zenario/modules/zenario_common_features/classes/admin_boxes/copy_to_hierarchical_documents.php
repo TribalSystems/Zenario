@@ -45,7 +45,13 @@ class zenario_common_features__admin_boxes__copy_to_hierarchical_documents exten
 				if ($details = ze\dataset::details('documents')) {
 					$link = ze\link::absolute(). 'organizer.php?#zenario__administration/panels/custom_datasets//'.$details['id'];
 				}
-				$textDocumentDatasetFields = ze\row::getValues('custom_dataset_fields', ['label', 'default_label', 'field_name'], ['type' => 'text', 'dataset_id' => $datasetDetails['id'], 'field_name' => ['!' => ['extract', 'extract_wordcount']]], 'ord');
+				$textDocumentDatasetFields = ze\row::getValues(
+					'custom_dataset_fields',
+					['label', 'default_label', 'field_name'],
+					['type' => 'text', 'dataset_id' => $datasetDetails['id'], 'field_name' => ['!' => ['extract', 'extract_wordcount']]],
+					'ord'
+				);
+				
 				if (empty($textDocumentDatasetFields)) {
 					$fields['details/title_warning']['hidden'] = $fields['details/language_id_warning']['hidden'] = false;
 					$fields['details/title_warning']['snippet']['html'] = 

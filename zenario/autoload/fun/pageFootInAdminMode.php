@@ -152,6 +152,20 @@ $importantGetRequests = \ze\link::importantGetRequests();
 if (empty($importantGetRequests)) {
 	$importantGetRequests = '{}';
 } else {
+	
+	//Fix a rare bug that can occurr when two nests are on the same page, and the admin
+	//follows a link to a slide on one nest but then tries to edit something on a slide
+	//in the other nest.
+	//We never want to add the nest variables when dealing with the current request
+	//in the logic in the admin-facing JavaScript.
+	unset(
+		$importantGetRequests['instanceId'],
+		$importantGetRequests['eggId'],
+		$importantGetRequests['slideId'],
+		$importantGetRequests['slideNum'],
+		$importantGetRequests['state']
+	);
+	
 	$importantGetRequests = json_encode($importantGetRequests);
 	
 	if (empty($importantGetRequests)) {
@@ -249,11 +263,13 @@ if (!empty(\ze\content::$piWarnings)) {
 if (ze::$cID) {
 	if (!empty($_SESSION['zenario_draft_callback'])) {
 		echo '
-			$(document).ready(function() {
-				zenarioA.draftDoCallback(
-					"', \ze\escape::js($_SESSION['zenario_draft_callback']), '",
-					', (int) ($_SESSION['zenario_draft_callback_scroll_pos'] ?? 0), '
-				);
+			zOnLoad(function() {
+				setTimeout(function() {
+					zenarioA.draftDoCallback(
+						"', \ze\escape::js($_SESSION['zenario_draft_callback']), '",
+						', (int) ($_SESSION['zenario_draft_callback_scroll_pos'] ?? 0), '
+					);
+				}, 1);
 			});';
 		
 		unset($_SESSION['zenario_draft_callback']);

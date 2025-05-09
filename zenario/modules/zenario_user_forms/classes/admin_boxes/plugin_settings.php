@@ -36,6 +36,10 @@ class zenario_user_forms__admin_boxes__plugin_settings extends ze\moduleBaseClas
 				ze\admin::phrase('If you use the modal window mode, then any other plugins in the nest on this slide will appear in the popup as well.');
 		}
 		
+		if (!ze\priv::check('_PRIV_VIEW_FORMS')) {
+			$fields['first_tab/user_form']['readonly'] = true;
+			$fields['first_tab/user_form']['pick_items']['hide_info_button'] = true;
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

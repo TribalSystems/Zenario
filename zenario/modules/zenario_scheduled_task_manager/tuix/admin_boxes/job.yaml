@@ -10,7 +10,7 @@ zenario_job:
         label: Scheduled Task ID
     tabs:
         time_and_day:
-            ord: "20"
+            ord: 20
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK
@@ -68,7 +68,7 @@ zenario_job:
                     type: checkbox
             show_errors_after_field: desc
         month:
-            ord: "30"
+            ord: 30
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK
@@ -122,7 +122,7 @@ zenario_job:
                         Combine this with time and days on the previous tab; for example you can run a task on the first Monday of every month.
             show_errors_after_field: desc
         reporting:
-            ord: "10"
+            ord: 10
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK
@@ -168,7 +168,7 @@ zenario_job:
                     type: checkbox
             show_errors_after_field: desc
         last_run:
-            ord: "40"
+            ord: 40
             edit_mode:
                 enabled: true
                 priv: _PRIV_MANAGE_SCHEDULED_TASK

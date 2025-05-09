@@ -38,7 +38,7 @@ plugin_settings:
                     same_row: true
                     pre_field_html: ' - goes to&nbsp; '
                     type: select
-                    empty_value: 'No path defined in conductor'
+                    empty_value: 'No path defined in conductor state diagram'
                     values: slides_and_states
                     readonly: true
                     show_as_a_label_when_readonly: true

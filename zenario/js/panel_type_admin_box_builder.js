@@ -134,6 +134,9 @@ methods.openEdit = function(itemType, itemId, tuixTabId, stopAnimation) {
 		mergeFields.mode = 'edit_page';
 		mergeFields.label = thus.formatPageLabel(item.label);
 		
+		//If a page was clicked for editing, and the last edited item was a field,
+		//make sure the field is no longer highlighted.
+		thus.loadFieldsList(thus.currentPageId);
 	} else if (itemType == 'field') {
 		mergeFields.mode = 'edit_field';
 		mergeFields.label = item.label;
@@ -409,10 +412,6 @@ methods.getFieldReadableType = function(type, tuixType, getOtherSystemFieldTUIXT
 			return 'Dataset picker';
 		case 'file_picker':
 			return 'File picker';
-		case 'repeat_start':
-			return 'Start of repeating section';
-		case 'repeat_end':
-			return 'End of repeating section';
 		default:
 			return 'Unknown';
 	}
@@ -466,50 +465,8 @@ methods.displayPageFieldOrderErrors = function() {
 	
 	var errors = [];
 	var fields = thus.getOrderedFields(thus.currentPageId);
-	var fieldsAllowedInRepeatBlock = [
-		'checkbox', 
-		'group',
-		'date', 
-		'radios', 
-		'select', 
-		'text', 
-		'textarea', 
-		'url'
-	];
-	
-	var inRepeatBlock = false;
-	var repeatStartFieldId = false;
 	for (var i = 0; i < fields.length; i++) {
 		var field = fields[i];
-		if (field.type == 'repeat_start' && !inRepeatBlock) {
-			repeatStartFieldId = field.id;
-			inRepeatBlock = true;
-		} else if (field.type == 'repeat_end') {
-			//Validate repeat end positioning
-			if (inRepeatBlock) {
-				repeatStartFieldId = false;
-				inRepeatBlock = false;
-			} else {
-				errors.push('Repeat ends must be placed after repeat starts.');
-			}
-		} else {
-			//Validate field types in repeat block
-			if (inRepeatBlock && fieldsAllowedInRepeatBlock.indexOf(field.type) == -1) {
-				errors.push('Field type "' + thus.getFieldReadableType(field.type).toLowerCase() + '" is not allowed in a repeat block.');
-			}
-			
-			//Validate repeat fields used on forms, they cannot be removed without first removing from the form
-			if (thus.tuix.dataset_fields_in_forms[field.id] && !inRepeatBlock && field.repeat_start_id && field.repeat_start_id != repeatStartFieldId) {
-				var formIds = thus.tuix.dataset_fields_in_forms[field.id];
-				var formNames = [];
-				for (var j = 0; j < formIds.length; j++) {
-					if (thus.tuix.forms_with_dataset_fields[formIds[j]]) {
-						formNames.push(thus.tuix.forms_with_dataset_fields[formIds[j]]);
-					}
-				}
-				errors.push('The field "' + field.label + '" is used on ' + formIds.length + ' form' + (formIds.length == 1 ? '' : 's') + ' (' + formNames.join(', ') + ') in a dataset repeat block. You must remove this repeat block from forms before this field can be moved out.');
-			}
-		}
 	}
 	
 	//Display errors
@@ -615,7 +572,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 			}
 		
 			if (['editor', 'textarea', 'file_picker'].indexOf(item.type) != -1) {
-				tags.tabs[tab].fields.include_in_export.note_below = 'You cannot export this kind of field';
+				tags.tabs[tab].fields.include_in_export.note_below = 'You cannot export this kind of field.';
 				tags.tabs[tab].fields.include_in_export.readonly = true;
 				tags.tabs[tab].fields.include_in_export.value = false;
 			}
@@ -623,11 +580,6 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 			if (item.is_system_field && !item.allow_admin_to_change_visibility) {
 				tags.tabs[tab].fields.admin_box_visibility.note_below = 'Only specific system fields marked with a special property can have their visibility changed.';
 				tags.tabs[tab].fields.admin_box_visibility.hidden = true;
-			}
-			
-			if (item.type == 'repeat_start') {
-				tags.tabs[tab].fields.label.label = 'Section heading:';
-				tags.tabs[tab].fields.label.note_below = 'This will be the heading at the start of the repeating section.';
 			}
 			
 		    thus.loadFieldsList(thus.currentPageId);
@@ -642,6 +594,23 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 			if (['checkbox', 'group', 'radios', 'select', 'dataset_select', 'dataset_picker', 'file_picker', 'centralised_radios', 'centralised_select'].indexOf(item.type) != -1) {
 				tags.tabs[tab].fields.create_index.value = 'index';
 				tags.tabs[tab].fields.create_index.readonly = true;
+			}
+			
+			if (['editor', 'file_picker'].indexOf(item.type) != -1) {
+				tags.tabs[tab].fields.show_in_organizer.value = false;
+				tags.tabs[tab].fields.show_in_organizer.readonly = true;
+				tags.tabs[tab].fields.show_in_organizer.note_below = 'You cannot show this kind of field in Organizer.';
+				
+				tags.tabs[tab].fields.create_index.value = 'no_index';
+				
+				tags.tabs[tab].fields.sortable.value = false;
+				tags.tabs[tab].fields.sortable.hidden = true;
+				
+				tags.tabs[tab].fields.searchable.value = false;
+				tags.tabs[tab].fields.searchable.hidden = true;
+				
+				tags.tabs[tab].fields.filterable.value = false;
+				tags.tabs[tab].fields.filterable.hidden = true;
 			}
 			
 		} else if (tab == 'values') {
@@ -676,6 +645,13 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 			}
 		}
 	}
+	
+	//Commented out by Chris, as a work-around to fix the problem where you could not create an index
+	//if (tab == 'organizer' && thus.tuix.dataset.system_table == 'documents') {
+	//	tags.tabs[tab].fields.show_in_organizer.value = false;
+	//	tags.tabs[tab].fields.show_in_organizer.readonly = true;
+	//	tags.tabs[tab].fields.show_in_organizer.note_below = 'Cannot be enabled as documents use a hierarchical view.';
+	//}
 };
 
 //Similar to PHP method validateAdminBox
@@ -689,25 +665,23 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 	} else if (itemType == 'field') {
 		if (tab == 'details') {
 			if (!item.is_system_field) {
-				if (item.type != 'repeat_start') {
-					if (!item.db_column) {
-						tags.tabs[tab].fields.db_column.error = 'Please enter a code name.';
-					} else if (item.db_column.match(/[^a-z0-9_-]/)) {
-						tags.tabs[tab].fields.db_column.error = 'Code name can only use characters a-z 0-9 _-.';
-					} else {
-						var isUnique = true;
-						var fields = thus.getOrderedFields();
-						for (var i = 0; i < fields.length; i++) {
-							if (fields[i].id != item.id && fields[i].db_column == item.db_column) {
-								isUnique = false;
-								break;
-							}
+				if (!item.db_column) {
+					tags.tabs[tab].fields.db_column.error = 'Please enter a code name.';
+				} else if (item.db_column.match(/[^a-z0-9_-]/)) {
+					tags.tabs[tab].fields.db_column.error = 'Code name can only use characters a-z 0-9 _-.';
+				} else {
+					var isUnique = true;
+					var fields = thus.getOrderedFields();
+					for (var i = 0; i < fields.length; i++) {
+						if (fields[i].id != item.id && fields[i].db_column == item.db_column) {
+							isUnique = false;
+							break;
 						}
-						if (!isUnique) {
-							tags.tabs[tab].fields.db_column.error = 'The code name "' + item.db_column + '" is already in use.';
-						} else if (item.db_column.match(/\_\_(\d+|rows)$/)) {
-							tags.tabs[tab].fields.db_column.error = 'That code name is invalid.';
-						}
+					}
+					if (!isUnique) {
+						tags.tabs[tab].fields.db_column.error = 'The code name "' + item.db_column + '" is already in use.';
+					} else if (item.db_column.match(/\_\_(\d+|rows)$/)) {
+						tags.tabs[tab].fields.db_column.error = 'That code name is invalid.';
 					}
 				}
 			
@@ -722,26 +696,6 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 				if ((item.type == 'centralised_radios' || item.type == 'centralised_select') && !item.values_source) {
 					
 					tags.tabs[tab].fields.values_source.error = 'Please select a source for this list.';
-				}
-				
-				if (item.type == 'repeat_start') {
-					if (!item.min_rows) {
-						tags.tabs[tab].fields.min_rows.error = 'Please enter the minimum rows.';
-					} else if (+item.min_rows != item.min_rows) {
-						tags.tabs[tab].fields.min_rows.error = 'Please a valid number for mininum rows.';
-					} else if (item.min_rows < 1 || item.min_rows > 10) {
-						tags.tabs[tab].fields.min_rows.error = 'Mininum rows must be between 1 and 10.';
-					} else if (+item.min_rows > +item.max_rows) {
-						tags.tabs[tab].fields.min_rows.error = 'Minimum rows cannot be greater than maximum rows.';
-					}
-				
-					if (!item.max_rows) {
-						tags.tabs[tab].fields.max_rows.error = 'Please enter the maximum rows.';
-					} else if (+item.max_rows != item.max_rows) {
-						tags.tabs[tab].fields.max_rows.error = 'Please a valid number for maximum rows.';
-					} else if (item.max_rows < 2 || item.max_rows > 20) {
-						tags.tabs[tab].fields.max_rows.error = 'Maximum rows must be between 2 and 20.';
-					}
 				}
 			}
 		} else if (tab == 'validation') {
@@ -991,6 +945,8 @@ methods.createPage = function() {
 	page._just_added = true;
 	page.fields = {};
 	page.label = 'Untitled tab';
+	page.tab_type = 'Custom tab';
+	page.tab_code_name = '(will be set upon saving)';
 	
 	//Load default values for fields
 	foreach (thus.tuix.dataset_page_details.tabs as var tuixTabName => var tuixTab) {
@@ -1062,7 +1018,7 @@ methods.clickPage = function(pageId, isNewPage) {
 };
 
 methods.clickField = function(fieldId, justAdded) {
-	if ((thus.editingThing == 'field' && thus.editingThingId == fieldId) || thus.tuix.items[fieldId].type == 'repeat_end') {
+	if ((thus.editingThing == 'field' && thus.editingThingId == fieldId)) {
 		return;
 	}
 	
@@ -1245,26 +1201,54 @@ methods.getOrderedMergeFieldsForFields = function(pageId) {
 	
 	mergeFields.sort(thus.sortByOrd);
 	
-	//Remember which fields have a repeat above them for indenting
-	var inRepeat = false;
-	for (var i = 0; i < mergeFields.length; i++) {
-		if (mergeFields[i].type == 'repeat_start') {
-			inRepeat = true;
-		} else if (mergeFields[i].type == 'repeat_end') {
-			inRepeat = false;
-		} else if (inRepeat) {
-			mergeFields[i]._is_repeat_field = true;
-		}
-	}
-	
 	return mergeFields;
 };
 
-methods.updateFieldOrds = function() {	
+methods.updateFieldOrds = function() {
+	var arrayIndex = 0;
+	var newFieldOrderArray = [];
 	$('#organizer_form_fields div.form_field').each(function(i) {
+		
 		var fieldId = $(this).data('id');
-		thus.tuix.items[fieldId].ord = (i + 1);
+		
+		//Work out what the new field order should be.
+		//Grouping type fields will be processed later, in a different loop.
+		newFieldOrderArray[arrayIndex] = fieldId;
+		arrayIndex++;
+		
 	});
+	
+	var newOrdinal = 0;
+	
+	var groupingOrdinals = [];
+	var groupingsAlreadyProcessed = [];
+	
+	//Now set the field ordinals to match what the new order should be.
+	newFieldOrderArray.forEach(function(fieldId) {
+		newOrdinal++;
+		
+		//Leave a 1 number gap for grouping type fields. Their ordinals will be fixed later.
+		if (thus.tuix.items[fieldId].grouping) {
+			groupingHasAlreadyBeenProcessed = groupingsAlreadyProcessed.includes(thus.tuix.items[fieldId].grouping);
+			
+			if (!groupingHasAlreadyBeenProcessed) {
+				groupingsAlreadyProcessed.push(thus.tuix.items[fieldId].grouping);
+				
+				groupingOrdinals[thus.tuix.items[fieldId].grouping] = newOrdinal;
+				
+				newOrdinal++;
+			}
+		}
+		thus.tuix.items[fieldId].ord = (newOrdinal);
+	});
+	
+	//Apply the correct ordinals for groupings.
+	for (fieldId in thus.tuix.items) {
+		if (thus.tuix.items[fieldId].tuix_type == 'grouping' && groupingOrdinals[thus.tuix.items[fieldId].grouping_name]) {
+			thus.tuix.items[fieldId].ord = groupingOrdinals[thus.tuix.items[fieldId].grouping_name];
+		}
+	}
+	
 	thus.changeMadeToPanel();
 };
 
@@ -1307,17 +1291,6 @@ methods.deleteField = function(fieldId, selectNextField) {
 	
 	var fields = thus.getOrderedFields(field.page_id);
 	
-	//Delete a repeat start's matching repeat end
-	if (field.type == 'repeat_start') {
-		var repeatEndId = thus.getMatchingRepeatEnd(fieldId);
-		if (repeatEndId) {
-			var repeatEndField = thus.tuix.items[repeatEndId];
-			thus.deletedFields.push(repeatEndId);
-			delete(thus.tuix.pages[repeatEndField.page_id].fields[repeatEndId]);
-			delete(thus.tuix.items[repeatEndId]);
-		}
-	}
-	
 	//Select the next field if one exists
 	var deletedFieldIndex = false;
 	var nextFieldId = false;
@@ -1335,9 +1308,6 @@ methods.deleteField = function(fieldId, selectNextField) {
 				break;
 			}
 		}
-	}
-	if (nextFieldId && thus.tuix.items[nextFieldId].type == 'repeat_end') {
-		nextFieldId = false;
 	}
 	
 	thus.deletedFields.push(fieldId);
@@ -1375,8 +1345,6 @@ methods.createField = function(type, ord) {
 		for (var i = 1; i <= 3; i++) {
 			thus.addFieldValue(field, 'Option ' + i);
 		}
-	} else if (type == 'repeat_start') {
-		thus.createField('repeat_end', ord + 0.01);
 	}
 	
 	thus.tuix.pages[thus.currentPageId].fields[fieldId] = 1;
@@ -1399,6 +1367,8 @@ methods.changeMadeToPanel = function() {
 };
 
 methods.saveChanges = function() {	
+	thus.updateFieldOrds();
+	
 	var actionRequests = {
 		mode: 'save',
 		pages: JSON.stringify(thus.tuix.pages),

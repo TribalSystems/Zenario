@@ -21,7 +21,7 @@ plugin_settings:
                         name: html
                         is_searchable_content: Yes
                     label: 'Raw HTML:'
-                    side_note: 'Enter JavaScript on the next tab'
+                    note_below: 'Enter raw HTML code here. Enter JavaScript on the JavaScript tab.'
                     type: code_editor
                     tall_as_possible: true
                     value: ""

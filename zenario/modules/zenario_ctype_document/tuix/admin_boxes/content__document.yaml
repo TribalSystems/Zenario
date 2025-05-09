@@ -23,18 +23,25 @@ zenario_content:
                     note_below: ''
                     value: ""
                     read_only: true
-                text_extract_word_count:
+                extract_wordcount:
                     ord: 31
                     label: |
                         Extract word count:
                     value: ""
                     read_only: true
                     show_as_a_span: true
-                
-                text_extract_processing:
+                extract_pagecount:
                     ord: 32
+                    label: |
+                        Extract page count:
+                    value: ""
+                    read_only: true
+                    show_as_a_span: true
+                
+                extract_processing:
+                    ord: 33
                     notices_below:
-                        text_extract_processing:
+                        extract_processing:
                             show: true
                             type: information
                             message: ''

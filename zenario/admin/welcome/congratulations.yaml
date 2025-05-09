@@ -14,7 +14,7 @@ congratulations:
                             <p>We've sent you an email with your admin login details.</p>
                             <p><em>Make sure you received the email!</em></p>
                             <p>It's important you can receive email from this site, so make sure you received it without it going into spam.</p>
-                            <p>If the email didn't arrive, it's possible your server has a problem sending email. Ask your server administrator to ensure the &quot;PHP Mail Extension&quot; is installed, enabled, and correctly configured. If that fails, Zenario can be configured to send email through an SMTP gateway.</p>
+                            <p>If the email didn't arrive, your server may have a problem sending email. Ask your server administrator to ensure the &quot;PHP Mail Extension&quot; is installed correctly. Zenario should be configured to send email through an SMTP gateway, although it is possible to use PHP mail() function instead (not recommended).</p>
                             <p>Configure email in <a href="organizer.php#zenario__administration/panels/site_settings//email" target="_blank">Organizer</a>.</p>
                             <h2>Now, to access your site...</h2>
                             <p class="align_center"><a class="link_like_button" href="[[site_url]]">Click here</a></p>

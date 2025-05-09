@@ -9,10 +9,14 @@
 			<% if (m.type == 'text') { %>
 				<div class="title">{{m.label|e}}</div>
 				<div class="value">
-					<input id="field__{{m.id|e}}" name="{{m.id|e}}" type="text" value="{{m.value|e}}" onkeyup="zenarioO.pi.tuixFieldDetailsChanged('{{m.itemType|e}}', '{{m.itemId|e}}', '{{m.tuixTabId|e}}', '{{m.id|e}}');"
-						<% if (m.maxlength) { %> maxlength="{{m.maxlength|e}}"<% } %>
-						<% if (m.readonly) { %> readonly="readonly" <% } %>
-					/>
+					<% if (m.show_as_a_span) { %>
+						<span id="field__{{m.id|e}}" name="{{m.id|e}}">{{m.value|e}}</span>
+					<% } else { %>
+						<input id="field__{{m.id|e}}" name="{{m.id|e}}" type="text" value="{{m.value|e}}" onkeyup="zenarioO.pi.tuixFieldDetailsChanged('{{m.itemType|e}}', '{{m.itemId|e}}', '{{m.tuixTabId|e}}', '{{m.id|e}}');"
+							<% if (m.maxlength) { %> maxlength="{{m.maxlength|e}}"<% } %>
+							<% if (m.readonly) { %> readonly="readonly" <% } %>
+						/>
+					<% } %>
 				</div>
 			<% } else if (m.type == 'select') { %>
 				<div class="title">{{m.label|e}}</div>
@@ -42,7 +46,9 @@
 			<% } else if (m.type == 'textarea') { %>
 				<div class="title">{{m.label|e}}</div>
 				<div class="value">
-					<textarea id="field__{{m.id|e}}" name="{{m.id|e}}" onkeyup="zenarioO.pi.tuixFieldDetailsChanged('{{m.itemType|e}}', '{{m.itemId|e}}', '{{m.tuixTabId|e}}', '{{m.id|e}}');">{{m.value|e}}</textarea>
+					<textarea id="field__{{m.id|e}}" name="{{m.id|e}}" onkeyup="zenarioO.pi.tuixFieldDetailsChanged('{{m.itemType|e}}', '{{m.itemId|e}}', '{{m.tuixTabId|e}}', '{{m.id|e}}');"
+						<% if (m.readonly) { %> readonly="readonly" <% } %>
+					>{{m.value|e}}</textarea>
 				</div>
 			<% } else if (m.type == 'button') { %>
 				<input type="button" id="field__{{m.id|e}}" value="{{m.value|e}}">

@@ -461,7 +461,11 @@ class tuix {
 				$tags[$key] = (string) $child;
 			}
 		} else {
-			$tags = trim((string) $xml);
+			if (is_string($xml)) {
+				$tags = trim($xml);
+			} else {
+				$tags = $xml;
+			}
 		}
 	
 	}
@@ -776,7 +780,11 @@ class tuix {
 					//Do nothing
 				
 				} else {
-					$tags[$tag] = trim((string) $par);
+					if (is_string($par)) {
+						$tags[$tag] = trim($par);
+					} else {
+						$tags[$tag] = $par;
+					}
 				}
 		
 			//If this tag has an Organizer Panel...
@@ -847,6 +855,7 @@ class tuix {
 						|| $parentKey == 'notes'
 						|| $parentKey == 'actions'
 						|| $parentKey == 'no_perms'
+						|| $parentKey == 'switch_to'
 						|| $parentKey == 're_move_place'
 						|| $parentKey == 'overridden_info'
 						|| $parentKey == 'overridden_actions';
@@ -1034,44 +1043,42 @@ class tuix {
 			//Loop through an array of TUIX elements, checking to see if the "ord" property is there
 			foreach ($tuix as $key => &$tag) {
 				if (is_array($tag)) {
+					
+					//Automatically add an ordinal if not set, by counting tags in the order we find them
 					if (!isset($tag['ord']) || is_array($tag['ord'])) {
 						$tag['ord'] = ++$ord;
-				
-					//If the ordinal is a string, attempt to parse it
-					} elseif (!is_numeric($tag['ord'])) {
-						
-						//We have some logic where you can enter an ordinal such as "fieldName.001" to place a field
-						//immediately after another existing field (which needs to be defined above the field you are
-						//trying to add). Watch out for a dev trying to use this logic
-						$pos = strrpos($tag['ord'], '.');
-						if ($pos) {
-							$referencedCodeName = substr($tag['ord'], 0, $pos);
-							$offset = substr($tag['ord'], $pos + 1);
-							
-							//Check if the field they are referencing is defined
-							if (isset($tuix[$referencedCodeName]['ord'])) {
-								$referencedOrd = $tuix[$referencedCodeName]['ord'];
-								
-								//Attempt to come up with a numeric ordinal that's after the referenced field's ordinal
-								if (false === strpos($referencedOrd, '.')) {
-									$tag['ord'] = $referencedOrd. '.'. $offset;
-								} else {
-									$tag['ord'] = $referencedOrd. $offset;
-								}
-							}
-						}
-						
-						$bits = explode('.', $tag['ord']);
-						$referencedCodeName = array_shift($bits);
+					}
+				}
+			}
+			
+			//Note: We need to stop and restart the loop now, to prevent any race conditions where someone
+			//is trying to use an offset of an ordinal that might not have been calculated yet!
+			
+			foreach ($tuix as $key => &$tag) {
+				if (is_array($tag)) {
 					
-						//If possible, replace the referenced code name with that element's ordinal
-						if ($referencedCodeName && !empty($bits) && isset($tuix[$referencedCodeName]['ord'])) {
-							$bits = array_merge(explode('.', $tuix[$referencedCodeName]['ord']), $bits) ;
+					//If the ordinal is a string, attempt to parse it
+					if (!is_numeric($tag['ord'])) {
 						
-							//Add in the rest of the ordinal, but only add at most one decimal place
-							$tag['ord'] = array_shift($bits);
-							if (!empty($bits)) {
-								$tag['ord'] .= '.'. implode('', $bits);
+						//We have some logic where you can place a field or a button immediately before or after
+						//an existing field or button using an offset
+						//To do this you need to use a pattern like this: "field_name + 0.1" (to put your field after)
+						//or like this: "field_name - 0.1" (to put your field before).
+						$text = $tag['ord'];
+						$offset = strpbrk($text, '+-');
+						if ($offset !== false) {
+							$ol = strlen($offset);
+							$referencedCodeName = trim(substr($text, 0, -$ol));
+							$sign = $offset[0];
+							$amount = trim(substr($offset, 1));
+							
+							if ($referencedCodeName && !empty($offset) && isset($tuix[$referencedCodeName]['ord'])) {
+								
+								if ($sign === '+') {
+									$tag['ord'] = $tuix[$referencedCodeName]['ord'] + (float) $amount;
+								} else {
+									$tag['ord'] = $tuix[$referencedCodeName]['ord'] - (float) $amount;
+								}
 							}
 						}
 					}
@@ -1462,7 +1469,9 @@ class tuix {
 								} else {
 									$checkValues = [$field[$currentValue]];
 								}
-							
+								
+								$needToFixValues = false;
+								$existingCheckedValues = [];
 								foreach ($checkValues as $checkValue) {
 								
 									//For each selected value, see if the value is in the list of values
@@ -1471,20 +1480,26 @@ class tuix {
 										//in the LOVs section.
 										if (is_array($field['values'])) {
 											if (isset($field['values'][$checkValue])) {
+												$existingCheckedValues[] = $checkValue;
 												continue;
 											}
 									
 										} else {
 											if (isset($box['lovs'][$field['values']][$checkValue])) {
+												$existingCheckedValues[] = $checkValue;
 												continue;
 											}
 										}
 									}
 								
 									//If an option from the LOV wasn't picked, clear the selected value
-									$field[$currentValue] = '';
-									break;
+									$needToFixValues = true;
 								}
+								
+								if ($needToFixValues) {
+									$field[$currentValue] = implode(',', $existingCheckedValues);
+								}
+								unset($existingCheckedValues);
 							}
 						
 							//Logic for Multiple-Edit
@@ -1517,12 +1532,13 @@ class tuix {
 						}
 					
 						if ($isField) {
-							//Editor fields will need the \ze\file::addImageDataURIsToDatabase() run on them
+							//Editor fields will need the \ze\fileAdm::addImageDataURIsToDatabase() run on them
 							if (isset($field['current_value'])
-							 && \ze\ray::value($box, 'tabs', $tabName, 'fields', $fieldName, 'type')  == 'editor'
+							 && isset($box['tabs'][$tabName]['fields'][$fieldName]['type'])
+							 && $box['tabs'][$tabName]['fields'][$fieldName]['type'] == 'editor'
 							 && !empty($box['tabs'][$tabName]['fields'][$fieldName]['insert_image_button'])) {
 								//Convert image data urls to files in the database
-								\ze\file::addImageDataURIsToDatabase($field['current_value'], \ze\link::absolute());
+								\ze\fileAdm::addImageDataURIsToDatabase($field['current_value'], \ze\link::absolute());
 							}
 						}
 					}
@@ -1902,7 +1918,7 @@ class tuix {
 				$phrase = $overrides[$path];
 			}
 		
-			$phrase = \ze\lang::phrase($phrase, false, $moduleClass, $languageId, self::$yamlFilePath);
+			$phrase = \ze\lang::phrase($phrase, false, $moduleClass, $languageId, false);
 		}
 	}
 	
@@ -1928,6 +1944,7 @@ class tuix {
 						case 'subtitle':
 						case 'missing_items_warning':
 						case 'no_items_message':
+						case 'no_items_in_search_message':
 						case 'item_count_message':
 						case 'title_for_existing_records':
 						case 'search_bar_placeholder':
@@ -2057,8 +2074,11 @@ class tuix {
 								if (isset($t[$i][$j='span'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 							}
 				
+							if (isset($t[$i='pick_items'])) {
+								if (isset($t[$i][$j='nothing_selected_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							}
 							if (isset($t[$i='upload'])) {
-								if (isset($t[$i][$j='dropbox_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+								if (isset($t[$i][$j='nothing_selected_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 								if (isset($t[$i][$j='upload_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 							}
 		
@@ -2884,7 +2904,7 @@ class tuix {
 				$key['instanceId'] = 0;
 				$key['eggId'] = 0;
 				$key['isSlideshow'] = $module['class_name'] == 'zenario_slideshow';
-				$key['isNest'] = $key['isSlideshow'] || $module['class_name'] == 'zenario_plugin_nest';
+				$key['isNest'] = $key['isSlideshow'] || $module['class_name'] == 'zenario_nest' || $module['class_name'] == 'zenario_ajax_nest';
 				$key['framework'] = $module['default_framework'];
 			}
 		}
@@ -2988,19 +3008,17 @@ class tuix {
 			$staticTags = $tags;
 		
 		
-			if (!\ze\tuix::looksLikeFAB($tags)) {
-				//Logic for initialising an Admin Box
-				if (!empty($tags['key']) && is_array($tags['key'])) {
-					foreach ($tags['key'] as $key => &$value) {
-						if (!empty($_REQUEST[$key])) {
-							$value = $_REQUEST[$key];
-						}
+			//Logic for initialising an Admin Box
+			if (!empty($tags['key']) && is_array($tags['key'])) {
+				foreach ($tags['key'] as $key => &$value) {
+					if (!empty($_REQUEST[$key])) {
+						$value = $_REQUEST[$key];
 					}
 				}
-				\ze\tuix::$feaDebugMode = true;
-				foreach ($modules as $className => &$module) {
-					$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
-				}
+			}
+			\ze\tuix::$feaDebugMode = true;
+			foreach ($modules as $className => &$module) {
+				$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
 			}
 		
 		

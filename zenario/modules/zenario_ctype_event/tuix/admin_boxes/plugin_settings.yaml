@@ -39,10 +39,10 @@ plugin_settings:
                         name: show_details_and_link
                     values:
                         current_content_item:
-                            ord: "1"
+                            ord: 1
                             label: Current Event content item
                         another_content_item:
-                            ord: "2"
+                            ord: 2
                             label: A specifc Event content item
                     side_note: |
                         This plugin may be on the layout for Event content items; alternatively it may be on another type of content item (e.g. HTML, News) and then link to an Event content item.

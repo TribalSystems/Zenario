@@ -61,15 +61,16 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if ($values['details/email_to_send'] && ze\module::inc('zenario_email_template_manager')) {
+		if ($values['details/email_to_send']) {
 			$userIds = explode(',', $box['key']['id']);
 			
-			$template = zenario_email_template_manager::getTemplateByCode($values['details/email_to_send']);
+			$template = zenario_common_features::getTemplateByCode($values['details/email_to_send']);
 			
 			if (!empty($template) && is_array($template)) {
 				if (count($userIds) == 1) {
 					$userId = $userIds[0];
 					$mergeFields = ze\user::userDetailsForEmails($userId);
+					$mergeFields['login_page_link'] = ze\link::toSpecialPage('zenario_login');
 					$mergeFields['cms_url'] = ze\link::absolute();
 			
 					ze\lang::applyMergeFields($template['body'], $mergeFields);
@@ -93,14 +94,15 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$userIds = explode(',', $box['key']['id']);
 		if ($userIds) {
-			if ($values['details/email_to_send'] && (ze\module::inc('zenario_email_template_manager'))) {
+			if ($values['details/email_to_send']) {
 				foreach ($userIds as $userId) {
 					$mergeFields = ze\user::userDetailsForEmails($userId);
+					$mergeFields['login_page_link'] = ze\link::toSpecialPage('zenario_login');
 					$mergeFields['cms_url'] = ze\link::absolute();
 					
-					zenario_email_template_manager::sendEmailsUsingTemplate(
+					zenario_common_features::sendEmailsUsingTemplate(
 						$mergeFields['email'], $values['details/email_to_send'], $mergeFields,
-						[], [], false, false, false, false, false, $customBody = $values['details/email_to_send_body']
+						[], [], false, false, false, false, $customBody = $values['details/email_to_send_body']
 					);
 				}
 			}

@@ -170,7 +170,6 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 				$fields['dates/consents_log']['snippet']['html'] = $html;
 			}
 			
-			//
 			$changePasswordLinkStart =
 				"<a href='organizer.php#zenario__users/panels/users//" . $box['key']['id'] . "~.zenario_user__change_password~tdetails~k{\"id\"%3A\"" . $box['key']['id'] . "\"}' target='_blank'>";
 			$changePasswordLinkEnd = "</a>";
@@ -210,13 +209,23 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$fields['details/send_activation_email_to_user']['hidden'] = false;
 			$fields['details/email_to_send']['hidden'] = false;
 	
-			$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
+			$fields['details/email_to_send']['value'] = ze::setting('default_creation_email_template');
 
 			$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
 			$fields['details/email_to_send']['note_below'] = ze\admin::phrase(
 				'The default activation email template can be changed in the [[site_settings_link]].',
 				['site_settings_link' => $siteSettingsLink]
 			);
+		}
+		
+		$groupCountOnThisTab = ze\row::count('custom_dataset_fields', ['type' => 'group', 'tab_name' => 'groups', 'is_system_field' => 0]);
+		
+		if (!$groupCountOnThisTab) {
+			$linkStart =
+			"<a href='organizer.php#zenario__users/panels/groups' target='_blank'>";
+			$linkEnd = "</a>";
+			ze\lang::applyMergeFields($fields['groups/no_groups_created']['snippet']['html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			$fields['groups/no_groups_created']['hidden'] = false;
 		}
 		
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
@@ -539,13 +548,30 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		ze\priv::exitIfNot('_PRIV_EDIT_USER');
 		
 		if (isset($values['details/send_activation_email_to_user']) &&  $values['details/send_activation_email_to_user']
-			&& ze\ray::issetArrayKey($values,'details/email_to_send') && (ze\module::inc('zenario_email_template_manager'))) {
-			$mergeFields=ze\user::userDetailsForEmails($box['key']['id']);
-			$mergeFields['password'] = $values['password'];
+			&& ze\ray::issetArrayKey($values,'details/email_to_send')) {
+			$mergeFields = ze\user::userDetailsForEmails($box['key']['id']);
+			
+			$loginInstructions = '';
+			
+			if (ze::setting('user_use_screen_name')) {
+				$loginInstructions .= ze\admin::phrase("Screen name:") . " " . $values['screen_name'];
+				$loginInstructions .= "<br />";
+			}
+			
+			$loginInstructions .= ze\admin::phrase("Email:") . " " . $values['email'];
+			$loginInstructions .= "<br />";
+			$loginInstructions .= ze\admin::phrase("Password:") . " " . $values['password'];
+			
+			$mergeFields['login_details'] = $loginInstructions;
+			$mergeFields['login_page_link'] = ze\link::toSpecialPage('zenario_login');
 			
 			$mergeFields['cms_url'] = ze\link::absolute();
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/email_to_send'], $mergeFields);
+			zenario_common_features::sendEmailsUsingTemplate(
+				$mergeFields['email'], $values['details/email_to_send'], $mergeFields,
+				$attachments = [], $attachmentFilenameMappings = [],
+				$disableHTMLEscaping = true
+			);
 		}
 	}
 	

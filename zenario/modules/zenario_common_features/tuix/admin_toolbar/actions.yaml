@@ -48,9 +48,9 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            This content item is published. Zenario will make a draft version that can be edited.
+                            Create a draft that can be edited?
                                                        
-                            Proceed?
+                            The published version will not be affected until the new draft is published.
                         message__editing_published: |
                             You are editing a published content item.
                                 
@@ -79,16 +79,12 @@ sections:
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Re-draft
                 css_class: zenario_at_big_action_button zenario_at_action 
-                tooltip: >
-                    Re-draft this content item|This will create a new draft of
-                    this content item, which will be available to visitors if
-                    you publish it.
                 ajax:
                     confirm:
-                        message: >
-                            Do you wish to re-draft this content item? This will create
-                            a new draft of this content item, which will be available to
-                            visitors if you publish it.
+                        message: |
+                            Re-draft this content item?
+                            
+                            This action will create a new draft of this content item, which will be available to visitors when it's published.
                         button_message: Re-draft
                         cancel_button_message: Cancel
                         message_type: question
@@ -187,18 +183,17 @@ sections:
                         html: true
                         message: |
                             <p>Are you sure you want to make this content item unlisted?</p>
-                            <p>Unlisted content items:</p>
+                            <p>Unlisted content items are not shown in:</p>
                             <ul><li>
-                                Are not shown in menus
+                                Menus
                             </li><li>
-                                Are not shown in content summary lists
+                                Content summary lists
                             </li><li>
-                                Are not displayed in search plugins
+                                Site maps
                             </li><li>
-                                Are not displayed in site-maps
-                            </li><li>
-                                Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                                Search results
                             </li></ul>
+                            <p>They can still be reached by links from banners, WYSIWYG editors, Raw HTML/JavaScript snippets, and from external links to this site.</p>
                         button_message: Make unlisted
                         cancel_button_message: Cancel
                         message_type: warning
@@ -289,20 +284,15 @@ sections:
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Rollback
+                label: Re-draft archived version
                 css_class: zenario_rollback label_to_the_left
-                tooltip: >
-                    Rollback this content item|Rollback this content item by
-                    creating a new draft based on the current version in view.
                 ajax:
                     confirm:
                         message: |
-                            This action will create a new draft based on the current version in view.
+                            Create a new draft based on this archived version?
                             
-                            The Published version will not be affected until the newly created draft is published.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Rollback
+                            The published version will not be affected until the newly created draft is published.
+                        button_message: Re-draft
                         cancel_button_message: Cancel
                         message_type: question
                     request:
@@ -312,11 +302,10 @@ sections:
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: "Can't Rollback"
+                label: "Can't re-draft"
                 css_class: zenario_rollback_disabled label_to_the_left
                 tooltip: >
-                    Rollback this content item|You cannot rollback this item to
-                    this version because a draft exists.
+                    You can't re-draft the archived version in view because a draft already exists.
 
             delete_draft:
                 appears_in_toolbars: *publish_appears_in_toolbars
@@ -382,7 +371,9 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to delete any archived versions of this content item?
+                            Are you sure you wish to delete [[archived_versions_count]] archived version(s) of this content item?
+                            
+                            This will not affect any published versions or drafts, such as version [[version]] ([[admin_version_status]]).
                             
                             This cannot be undone.
                         button_message: Delete archived versions

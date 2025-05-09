@@ -12,15 +12,15 @@ body > x-zenario-cache-info.zenario_cache_info {
     font-size: 12px;
     background: #fafafa;
     border: #fafafa 0;
-    padding: 5px;
+    padding: 8px 5px;
     border-radius: 7px;
     border-top-right-radius: 7px;
     border-bottom-right-radius: 7px;
     box-shadow: 0 0 10px 0 gray;
     
-    width:45px;
+    width:40px;
     height:33px;
-    top:20%;
+    top:190px;
     right: 0;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
@@ -36,7 +36,7 @@ x-zenario-cache-info.zenario_cache_info x-zenario-cache-info {
 }
 
 body > x-zenario-cache-info.zenario_cache_info x-zenario-cache-info {
-	width:50px;
+	width:35px;
 	right:30px;
 	right:0;
 	left:0;
@@ -86,13 +86,26 @@ x-zenario-cache-info.zenario_cache_info x-zenario-cache-info:before {
 }
 
 body > x-zenario-cache-info.zenario_cache_info x-zenario-cache-info:before {
-	font-size:20px;
+	font-size:18px;
 }
 
 .zenario_cache_box h1.zenario_cache_disabled:before,
 x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_cache_disabled:before {
 	content:"\e069";
 	color:#555;
+}
+
+.zenario_cache_box h1.zenario_cache_blocked:before,
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_cache_blocked:before {
+	content:"\f5af";
+	color:#a50;
+}
+
+.zenario_cache_box h1.zenario_cache_reloaded:before,
+x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_cache_reloaded:before {
+	content:"\f2f9";
+	color:#999;
+	border-color:#555;
 }
 
 .zenario_cache_box h1.zenario_not_cached:before,
@@ -142,12 +155,25 @@ x-zenario-cache-info.zenario_cache_info x-zenario-cache-info.zenario_from_cache:
 	text-align: center;
 }
 
+.zenario_cache_box table td.zenario_cache_result,
 .zenario_cache_box table tr.zenario_cache_table_last_row th,
 .zenario_cache_box table tr.zenario_cache_table_last_row td {
-	background:#DAB847;
-	border-color:#DAB847;
 	color:#333;
 	font-weight:600;
+}
+
+.zenario_cache_box table tr.zenario_cache_met th,
+.zenario_cache_box table tr.zenario_cache_met td,
+.zenario_cache_box table td.zenario_cache_met {
+	background:#8f4;
+	border-color:#8f4;
+}
+
+.zenario_cache_box table tr.zenario_cache_not_met th,
+.zenario_cache_box table tr.zenario_cache_not_met td,
+.zenario_cache_box table td.zenario_cache_not_met {
+	background:#f33;
+	border-color:#f33;
 }
 
 .zenario_cache_box table tr td:nth-child(4) {

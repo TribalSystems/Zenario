@@ -48,7 +48,7 @@ foreach (ze\sql::select($sql) as $extract) {
 	
 	//Connect to Textract is we haven't already
 	if (is_null($cS3)) {
-		ze\file::textractConnection($cS3, $cTextract, $s3BucketName);
+		ze\fileAdm::textractConnection($cS3, $cTextract, $s3BucketName);
 	}
 	
 	//Get information on this job
@@ -57,15 +57,19 @@ foreach (ze\sql::select($sql) as $extract) {
 	])) {
 		//If it's finished, start loading in the extract
 		if ($textract['JobStatus'] == 'SUCCEEDED') {
-			$line = $lines = null;
-			ze\ring::parseExtractStart($lines, $line);
+			$chunk = $chunks = $pageCount = null;
+			ze\ring::parseExtractStart($chunks, $chunk);
+			
+			if (!empty($textract['DocumentMetadata']['Pages'])) {
+				$pageCount = (int) $textract['DocumentMetadata']['Pages'];
+			}
 			
 			do {
 				//Loop through the blocks, reading out just the text
 				foreach ($textract['Blocks'] as $block) {
 					if ($block['BlockType'] == 'LINE') {
 						$text = $block['Text'];
-						ze\ring::parseExtractBlock($lines, $line, $text);
+						ze\ring::parseExtractChunk($chunks, $chunk, $text);
 					}
 				}
 				
@@ -78,8 +82,8 @@ foreach (ze\sql::select($sql) as $extract) {
 				])
 			));
 			
-			ze\ring::parseExtractEnd($lines, $line);
-			$textExtract = implode("\n\n", $lines);
+			ze\ring::parseExtractEnd($chunks, $chunk);
+			$textExtract = implode("\n\n", $chunks);
 			
 			$wordCount = str_word_count($textExtract);
 			
@@ -89,7 +93,8 @@ foreach (ze\sql::select($sql) as $extract) {
 				'requested_on' => null,
 				'extract_job_id' => null,
 				'extract' => $textExtract,
-				'extract_wordcount' => $wordCount
+				'extract_wordcount' => $wordCount,
+				'extract_pagecount' => $pageCount
 			], $extract['file_id']);
 			
 			//Update the content_cache table, anywhere it was linked to.
@@ -100,15 +105,25 @@ foreach (ze\sql::select($sql) as $extract) {
 				  AND cc.content_type = v.type
 				  AND cc.content_version = v.version
 				SET cc.extract = '". ze\escape::sql($textExtract). "',
-					cc.extract_wordcount = ". (int) $wordCount. "
+					cc.extract_wordcount = ". (int) $wordCount;
+			
+			if (is_null($pageCount)) {
+				$sql .= ",
+					cc.extract_pagecount = NULL";
+			} else {
+				$sql .= ",
+					cc.extract_pagecount = ". (int) $pageCount;
+			}
+			
+			$sql .= "
 				WHERE v.file_id = ". (int) $extract['file_id'];
 			ze\sql::update($sql);
 			
-			\ze\module::sendSignal('eventDocumentExtractUpdated', ['fileId' => $extract['file_id'], 'lines' => $lines, 'textExtract' => $textExtract, 'wordCount' => $wordCount]);
+			\ze\module::sendSignal('eventDocumentExtractUpdated', ['fileId' => $extract['file_id'], 'chunks' => $chunks, 'textExtract' => $textExtract, 'wordCount' => $wordCount]);
 			
 			
 			//Hierarchical documents are not currently implemented, but if they were,
-			//we sholud have a similar query to update those here too.
+			//we should have a similar query to update those here too.
 			
 			
 			$file = \ze\row::get('files', ['usage', 'short_checksum', 'filename', 'mime_type'], $extract['file_id']);

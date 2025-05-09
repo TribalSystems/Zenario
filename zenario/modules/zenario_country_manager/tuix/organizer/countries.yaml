@@ -21,9 +21,9 @@ zenario__languages:
                     show_by_default: true
                     searchable: true
                     always_show: true
-                    width: xsmall
+                    width: small
                 country_name:
-                    title: Internal name
+                    title: Country name
                     db_column: c.english_name
                     show_by_default: true
                     searchable: true
@@ -79,7 +79,7 @@ zenario__languages:
             collection_buttons:
                 create_country:
                     priv: _PRIV_MANAGE_COUNTRY
-                    ord: "1"
+                    ord: 1
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     label: Create a country
@@ -98,8 +98,7 @@ zenario__languages:
                     hide_when_children_are_not_visible: true
                 edit_phrases:
                     parent: view_dropdown
-                    label: Phrases
-                    tooltip: Translated names for this country
+                    label: Translated phrases
                     hide_in_select_mode: true
                     with_columns_set:
                         traits.show_localizations: true
@@ -119,11 +118,11 @@ zenario__languages:
                         traits.suspended: true
                     hide_in_select_mode: true
                     multiple_select: true
-                    multiple_select_tooltip: Activate selected Countries
+                    multiple_select_tooltip: Activate selected countries
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to activate the country "[[country_name]]"?'
-                            multiple_select_message: Are you sure you wish to activate the selected countries?
+                            message: 'Activate the country "[[country_name]]"?'
+                            multiple_select_message: Activate the selected countries?
                             button_message: Activate
                             cancel_button_message: Cancel
                             message_type: warning
@@ -137,11 +136,11 @@ zenario__languages:
                         traits.active: true
                     hide_in_select_mode: true
                     multiple_select: true
-                    multiple_select_tooltip: Suspend selected Countries
+                    multiple_select_tooltip: Suspend selected countries
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to suspend the country "[[country_name]]"?'
-                            multiple_select_message: Are you sure you wish to suspend the selected countries?
+                            message: 'Suspend the country "[[country_name]]"?'
+                            multiple_select_message: Suspend the selected countries?
                             button_message: Suspend
                             cancel_button_message: Cancel
                             message_type: warning
@@ -149,16 +148,20 @@ zenario__languages:
                             action: suspend_country
                 remove_country:
                     priv: _PRIV_MANAGE_COUNTRY
-                    label: Delete
+                    label: Delete country
                     hide_in_select_mode: true
                     multiple_select: true
-                    multiple_select_tooltip: Delete selected Countries
+                    multiple_select_label: Delete selected countries
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to delete the Country "[[country_name]]" and all its visitor names (phrases)?'
-                            multiple_select_message: >
-                                Are you sure you wish to delete the selected countries and
-                                all their visitor names (phrases)?
+                            message: |
+                                Delete the country "[[country_name]]"?
+
+                                This will also delete its name (phrase) as seen by visitors.
+                            multiple_select_message: |
+                                Delete the selected countries?
+
+                                This will also delete their names (phrases) as seen by visitors.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -204,7 +207,7 @@ zenario__languages:
             collection_buttons:
                 create_region:
                     priv: _PRIV_MANAGE_COUNTRY
-                    ord: "1"
+                    ord: 1
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     label: Create a region

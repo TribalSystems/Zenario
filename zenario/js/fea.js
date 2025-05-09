@@ -279,6 +279,8 @@ methods.draw2 = function() {
 	 && (DOMlastFieldInFocus = thus.get(thus.lastFocus.id))) {
 		DOMlastFieldInFocus.focus();
 	}
+	
+	thus.sendSignalAfterRedraw();
 };
 
 methods.ajaxURL = function() {
@@ -607,7 +609,10 @@ methods.doAjaxLoadThenShowList = function(callWhenLoaded) {
 		thus.tuix = tuix;
 		
 		thus.drawList();
-		callWhenLoaded();
+		
+		if (callWhenLoaded) {
+			callWhenLoaded();
+		}
 		
 	});
 };
@@ -701,6 +706,8 @@ methods.feaAJAX = function(action, typeOfLogic) {
 methods.drawForm = function() {
 	thus.sortOutTUIX();
 	thus.draw();
+	
+	thus.registerSignalHandlers();
 };
 
 
@@ -746,12 +753,10 @@ methods.drawList = function() {
 			maxBtnLeft: paginationId + '_m_left', 
 			maxBtnRight: paginationId + '_m_right',
 			
-			//withSlider: true,
-			//minSlidesForSlider: 2,
-			//
-			//withAcceleration: true,
-			//speed: 2,
-			//coeffAcceleration: 2,
+			withSlider: true,
+			withAcceleration: true,
+			speed: 2,
+			coeffAcceleration: 2,
 			
 			onPageClicked: function(a,num) { 
 				thus.doSearch(undefined, undefined, undefined, num);
@@ -772,6 +777,8 @@ methods.drawList = function() {
 	}
 
 	thus.hideLoader();
+	
+	thus.registerSignalHandlers();
 };
 
 
@@ -958,13 +965,15 @@ methods.graphCustomSetup = function() {
 //Check the handle_signals property name, and see if any signal handlers need to be registered.
 methods.registerSignalHandlers = function() {
 	
-	//Only run this once per instance.
-	if (!thus._addedEvents) {
+	var si, signal, signals = zenarioT.tuixToArray(thus.tuix.handle_signals),
+		signalOnRegister;
+	
+	//Only run this if there are signals defined, and only run this once per instance.
+	if (defined(signals) && !thus._addedEvents) {
 		thus._addedEvents = true;
 		
 		//Don't be too picky with the format of the handle_signals property.
-		var si, signal, signals = zenarioT.tuixToArray(thus.tuix.handle_signals),
-			signalOnRegister;
+		signals = zenarioT.tuixToArray(thus.tuix.handle_signals);
 		
 		//Loop through each signal.
 		if (signals !== []) {
@@ -1205,11 +1214,13 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, contai
 	thus.prevPath = '';
 	thus.moduleClassName = moduleClassName;
 	thus.containerId = containerId;
+	thus.slotName = zenario.getSlotnameFromEl(containerId);
 	thus.noPlugin = noPlugin;
 	thus.parent = parent;
 	thus.inPopout = inPopout;
 	thus.popoutClass = popoutClass = popoutClass || '';
 	thus.specifiedIdVarName = idVarName;
+	
 	
 	
 	if (inPopout) {
@@ -1600,7 +1611,10 @@ methods.columnVisibleForItem = function(columnId, itemId) {
 		return false;
 	}
 	
-	//zenarioT.eval(condition, lib, tuixObject, item, id, button, column, field, section, tab, tuix);
+	if (column.hide_if_empty && !item[columnId]) {
+		return false;
+	}
+	
 	if (defined(column.visible_if_for_each_item) && zenarioT.eval(column.visible_if_for_each_item, thus, undefined, item, itemId, undefined, column)) {
 		return false;
 	}
@@ -1775,7 +1789,7 @@ methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 		
 	var j, itemButton,
 		k, childItemButton,
-		colId,
+		cols, colId, shownOnCol,
 		button, children, childButton, hasChildren,
 		sortedButtons = [],
 		columnButtons = {},
@@ -1826,14 +1840,27 @@ methods.getSortedItemButtons = function(itemIds, isCheckboxSelect) {
 		
 			if (!button.hide_when_children_are_not_visible || hasChildren) {
 				
-				
+				//Check the show_as_link_on_column option on a column.
+				//If it's set, and we can match the button up to that column, show the button as a link on
+				//the column instead of as a button.
+				shownOnCol = false;
 				if (!isCheckboxSelect
 				 && !hasChildren
 				 && !button.parent
-				 && (colId = button.show_as_link_on_column)
-				 && (thus.visibleColumns[colId])) {
-					columnButtons[colId] = button;
-				} else {
+				 && (cols = button.show_as_link_on_column)) {
+					
+					//Allow the dev to nominate multiple columns for the same link if they wish.
+					cols = zenarioT.csvToObject(cols);
+					foreach (cols as colId) {
+						if (thus.visibleColumns[colId]) {
+							columnButtons[colId] = button;
+							shownOnCol = true;
+						}
+					}
+				}
+				
+				//If not showing as a link on a column, show as a button as normal
+				if (!shownOnCol) {
 					thus.tuix.__itemHasItemButton = true;
 					sortedButtons.push(button);
 				}

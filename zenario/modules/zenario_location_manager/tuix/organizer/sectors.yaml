@@ -66,14 +66,14 @@ zenario__locations:
                 collection_buttons:
                     create_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
-                        ord: "1"
+                        ord: 1
                         label: Create a sector
                         css_class: zenario_create_a_new
                         admin_box:
                             path: zenario_location_manager__sector
                     add_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
-                        ord: "1"
+                        ord: 1
                         label: Add a sector
                         pick_items:
                             path: zenario__locations/nav/sectors/panel
@@ -85,7 +85,7 @@ zenario__locations:
                 item_buttons:
                     view_sector_locations:
                         priv: _PRIV_MANAGE_LOCATIONS
-                        ord: "1"
+                        ord: 1
                         label: View locations in this sector
                         link:
                             path: zenario__locations/panel
@@ -117,7 +117,7 @@ zenario__locations:
                                 action: delete_sector
                     remove_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
-                        ord: "2"
+                        ord: 2
                         css_class: delete
                         tooltip: Remove this sector
                         multiple_select: Yes
@@ -133,14 +133,14 @@ zenario__locations:
                             request:
                                 action: remove_sector
                     increase_score:
-                        ord: "2"
+                        ord: 2
                         css_class: add
                         tooltip: Increase Score
                         ajax:
                             request:
                                 action: increase_score
                     decrease_score:
-                        ord: "2"
+                        ord: 2
                         css_class: add
                         tooltip: Decrease Score
                         ajax:

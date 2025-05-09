@@ -124,7 +124,7 @@ zenario__social:
                         with_columns_set:
                             traits.locked: true
                     remove_thread_page:
-                        ord: "97"
+                        ord: 97
                         priv: _PRIV_MANAGE_ITEM_SLOT
                         hide_in_select_mode: Yes
                         name: Remove "View Thread" page
@@ -147,7 +147,7 @@ zenario__social:
                         with_columns_set:
                             traits.has_thread_page: true
                     remove_new_thread_page:
-                        ord: "98"
+                        ord: 98
                         priv: _PRIV_MANAGE_ITEM_SLOT
                         hide_in_select_mode: Yes
                         name: Remove "New Thread" page
@@ -168,7 +168,7 @@ zenario__social:
                         with_columns_set:
                             traits.has_new_thread_page: true
                     remove_forum:
-                        ord: "99"
+                        ord: 99
                         priv: _PRIV_MANAGE_ITEM_SLOT
                         hide_in_select_mode: Yes
                         name: Delete Forum

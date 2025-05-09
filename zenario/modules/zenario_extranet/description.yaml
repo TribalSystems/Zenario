@@ -43,6 +43,5 @@ special_pages:
 # database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
 # to fix it automatically for every site.
 dependencies:
-    zenario_email_template_manager: true
     zenario_users: true
 default_instance_name: Extranet Login

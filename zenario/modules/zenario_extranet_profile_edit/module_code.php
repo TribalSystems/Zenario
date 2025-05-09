@@ -32,123 +32,150 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 	protected $allowCloseAccount;
 	
 	public function init() {
-		$this->registerPluginPage();
+		$this->data['mode'] = $this->getMode();
 		
-		$userId = ze\user::id();
-		if (!$userId) {
-			$this->data['extranet_no_user'] = true;
-			return true;
-		}
-		
-		//This plugin must have a form selected
-		$formId = $this->setting('user_form');
-		if (!$formId) {
-			if (ze\admin::id()) {
-				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("No form has been selected, please edit plugin settings to select a form.")) . '</p>';
-			}
-			return true;
-		}
-		
-		$rv = parent::init();
-		
-		if (!$this->form) {
-			if (ze\admin::id()) {
-				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("The selected form could not be found, please edit plugin settings to select a different form.")) . '</p>';
-			}
-			return true;
-		}
-		
-		$this->allowCloseAccount = $this->setting('allow_user_to_delete_their_account');
-		
-		$editing = false;
-		if (!empty($_GET['extranet_edit_profile']) || !empty($this->errors)) {
-			$this->data['extranet_profile_mode_class'] = 'extranet_edit_profile';
-			$editing = true;
-		} else {
-			$this->data['extranet_profile_mode_class'] = 'extranet_view_profile';
-			if (!empty($_POST['submitForm'])) {
-				$editing = true;
+		if ($this->data['mode'] == 'view_and_edit_my_profile') {
+			$userId = ze\user::id();
+			if (!$userId) {
+				$this->data['extranet_no_user'] = true;
+				return true;
 			}
 			
-			if ($this->allowCloseAccount && ze::post('closeAccount')) {
-				if (ze::post('confirmCloseAccount')) {
-					$userId = ze\user::id();
-					$userDetails = ze\user::userDetailsForEmails($userId);
+			//This plugin must have a form selected
+			$formId = $this->setting('user_form');
+			if (!$formId) {
+				if (ze\admin::id()) {
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("No form has been selected, please edit plugin settings to select a form.")) . '</p>';
+				}
+				return true;
+			}
+			
+			$rv = parent::init();
+			
+			if (!$this->form) {
+				if (ze\admin::id()) {
+					$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase("The selected form could not be found, please edit plugin settings to select a different form.")) . '</p>';
+				}
+				return true;
+			}
+			
+			if ($this->formCannotBeLoaded) {
+				//The error message will come from the parent module, User Forms.
+				return true;
+			}
+			
+			$this->allowCloseAccount = $this->setting('allow_user_to_delete_their_account');
+			
+			$editing = false;
+			if (!empty($_GET['extranet_edit_profile']) || !empty($this->errors)) {
+				$this->data['extranet_profile_mode_class'] = 'extranet_edit_profile';
+				$editing = true;
+			} else {
+				$this->data['extranet_profile_mode_class'] = 'extranet_view_profile';
+				if (!empty($_POST['submitForm'])) {
+					$editing = true;
+				}
 				
-					//Log the user out and then delete
-					ze\user::logOut();
-					ze\userAdm::delete($userId, ($this->setting('delete_account_options') == 'delete_all_data'));
+				if ($this->allowCloseAccount && ze::post('closeAccount')) {
+					if (ze::post('confirmCloseAccount')) {
+						$userId = ze\user::id();
+						$userDetails = ze\user::userDetailsForEmails($userId);
 					
-					if ($this->setting('notify_admin_when_user_account_deleted')) {
-						$adminNotificationEmailAddresses = $this->setting('user_account_deleted_admin_notification_addresses');
+						//Log the user out and then delete
+						ze\user::logOut();
+						ze\userAdm::delete($userId, ($this->setting('delete_account_options') == 'delete_all_data'));
 						
-						$addressToOverriddenBy = false;
-						$subject = 'User closed their account';
-						$body = '
-							<p>Dear admin,</p>
-							<p>The user ' . $userDetails['first_name'] . ' ' . $userDetails['last_name'] . ' has closed their account.<p>
-							<p>&nbsp;</p>
-							<p>This is an auto-generated email from '.ze\link::absolute().'</p>';
-						
-						foreach (ze\ray::explodeAndTrim($adminNotificationEmailAddresses) as $adminEmail) {
-							ze\server::sendEmailAdvanced($subject, $body, $adminEmail, $addressToOverriddenBy);
+						if ($this->setting('notify_admin_when_user_account_deleted')) {
+							$adminNotificationEmailAddresses = $this->setting('user_account_deleted_admin_notification_addresses');
+							
+							$addressToOverriddenBy = false;
+							$subject = 'User closed their account';
+							$body = '
+								<p>Dear admin,</p>
+								<p>The user ' . $userDetails['first_name'] . ' ' . $userDetails['last_name'] . ' has closed their account.<p>
+								<p>&nbsp;</p>
+								<p>This is an auto-generated email from '.ze\link::absolute().'</p>';
+							
+							foreach (ze\ray::explodeAndTrim($adminNotificationEmailAddresses) as $adminEmail) {
+								ze\server::sendEmailAdvanced($subject, $body, $adminEmail, $addressToOverriddenBy);
+							}
 						}
-					}
-					
-					$userId = $this->userId = false;
-					
-					//Redirect the user to the logout page if one exists, or the home page otherwise.
-					if ($logoutPage = ze\row::get('special_pages', ['equiv_id', 'content_type'], ['page_type' => 'zenario_logout'])) {
-						$cID = $logoutPage['equiv_id'];
-						$cType = $logoutPage['content_type'];
+						
+						$userId = $this->userId = false;
+						
+						//Redirect the user to the logout page if one exists, or the home page otherwise.
+						if ($logoutPage = ze\row::get('special_pages', ['equiv_id', 'content_type'], ['page_type' => 'zenario_logout'])) {
+							$cID = $logoutPage['equiv_id'];
+							$cType = $logoutPage['content_type'];
+						} else {
+							$cID = ze::$homeEquivId;
+							$cType = ze::$homeCType;
+						}
+						
+						ze\content::langEquivalentItem($cID, $cType);
+						$redirectURL = ze\link::toItem($cID, $cType);
+						$this->headerRedirect($redirectURL);
+						
+						return true;
 					} else {
-						$cID = ze::$homeEquivId;
-						$cType = ze::$homeCType;
+						$this->data['confirm_close_account_error'] = $this->phrase('Please confirm that you wish to close your account.'); 
 					}
-					
-					ze\content::langEquivalentItem($cID, $cType);
-					$redirectURL = ze\link::toItem($cID, $cType);
-					$this->headerRedirect($redirectURL);
-					
-					return true;
-				} else {
-					$this->data['confirm_close_account_error'] = $this->phrase('Please confirm that you wish to close your account.'); 
+				}
+				
+				//Screen name confirmed
+				if (ze::setting('user_use_screen_name') && ze\row::exists('users', ['id' => $userId, 'screen_name_confirmed' => 0])) {
+					$screenName = ze\row::get('users', 'screen_name', $userId);
+					if (!empty($_POST['extranet_confirm_screen_name'])) {
+						ze\row::update('users', ['screen_name_confirmed' => 1], ['id' => $userId]);
+						$this->data['extranet_screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', ['screen_name' => $screenName]);
+					} else {
+						$this->data['extranet_openForm'] = $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
+						$this->data['extranet_closeForm'] = $this->closeForm();
+						$this->data['extranet_screen_name_unconfirmed'] = true;
+						$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', ['screen_name' => $screenName]);
+					}
 				}
 			}
 			
-			//Screen name confirmed
-			if (ze::setting('user_use_screen_name') && ze\row::exists('users', ['id' => $userId, 'screen_name_confirmed' => 0])) {
-				$screenName = ze\row::get('users', 'screen_name', $userId);
-				if (!empty($_POST['extranet_confirm_screen_name'])) {
-					ze\row::update('users', ['screen_name_confirmed' => 1], ['id' => $userId]);
-					$this->data['extranet_screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', ['screen_name' => $screenName]);
-				} else {
+			if ($this->allowCloseAccount && !$editing) {
+				$this->data['show_errors_below_fields'] = $this->form['show_errors_below_fields'];
+				
+				$this->data['allow_user_to_delete_their_account'] = true;
+				
+				if (ze::get('extranet_delete_user_account') || (ze::post('closeAccount') && !empty($this->data['confirm_close_account_error']))) {
+					$this->data['extranet_delete_user_account_confirmation_prompt'] = true;
+					$this->data['delete_account_button_href_and_onclick'] = $this->refreshPluginSlotAnchor('extranet_delete_user_account=1');
+					$this->data['cancel_delete_account_button_href_and_onclick'] = $this->refreshPluginSlotAnchor('');
+					
 					$this->data['extranet_openForm'] = $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 					$this->data['extranet_closeForm'] = $this->closeForm();
-					$this->data['extranet_screen_name_unconfirmed'] = true;
-					$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', ['screen_name' => $screenName]);
+				} else {
+					$this->data['delete_account_button_href_and_onclick'] = $this->refreshPluginSlotAnchor('extranet_delete_user_account=1');
 				}
 			}
-		}
-		
-		if ($this->allowCloseAccount && !$editing) {
-			$this->data['show_errors_below_fields'] = $this->form['show_errors_below_fields'];
 			
-			$this->data['allow_user_to_delete_their_account'] = true;
-			
-			if (ze::get('extranet_delete_user_account') || (ze::post('closeAccount') && !empty($this->data['confirm_close_account_error']))) {
-				$this->data['extranet_delete_user_account_confirmation_prompt'] = true;
-				$this->data['delete_account_button_href_and_onclick'] = $this->refreshPluginSlotAnchor('extranet_delete_user_account=1');
-				$this->data['cancel_delete_account_button_href_and_onclick'] = $this->refreshPluginSlotAnchor('');
-				
-				$this->data['extranet_openForm'] = $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
-				$this->data['extranet_closeForm'] = $this->closeForm();
-			} else {
-				$this->data['delete_account_button_href_and_onclick'] = $this->refreshPluginSlotAnchor('extranet_delete_user_account=1');
+			return $rv;
+		} elseif ($this->data['mode'] == 'view_my_personalised_welcome') {
+			$userId = ze\user::id();
+			if (!$userId || (!$userDetails = ze\row::get('users', ['salutation', 'first_name', 'last_name'], $userId))) {
+				return false;
 			}
+			
+			$this->data['welcome_text'] = $this->phrase($this->setting('welcome_user_text'), $userDetails);
+			$this->data['welcome_text_html_tags'] = $this->setting('welcome_text_html_tags');
+			
+			return true;
+		} elseif ($this->data['mode'] == 'view_my_user_groups') {
+			$userId = ze\user::id();
+			$group = $this->setting('check_if_user_is_a_member_of_group');
+			if (!$userId || !$group || !ze\user::isInGroup($group, $userId)) {
+				return false;
+			}
+			
+			$this->data['text_to_display_if_user_is_a_member_of_group'] = $this->phrase($this->setting('text_to_display_if_user_is_a_member_of_group'));
+			
+			return true;
 		}
-		
-		return $rv;
 	}
 	
 	protected function getFormTitle($overwrite = false, $fallback = '') {
@@ -208,11 +235,22 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 				['alias_string' => ze\admin::phrase('The Logout special page does not exist. After closing their account, the user will be redirected to the home page.')]
 			);
 		}
+		
+		$groups = ze\datasetAdm::listCustomFields('users', $flat = false, $filter = 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+		$fields['first_tab/check_if_user_is_a_member_of_group']['values'] = $groups;
+		if (empty($groups)) {
+			$fields['first_tab/check_if_user_is_a_member_of_group']['empty_value'] = ze\admin::phrase('-- No groups found --');
+		}
+		
+		$linkStart = '<a href="organizer.php#zenario__user_forms/panels/user_forms" target="_blank">';
+		$linkEnd = '</a>';
+		ze\lang::applyMergeFields($fields['first_tab/snippet_view_and_edit_my_profile']['snippet']['html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($path == 'plugin_settings') {
 			$fields['first_tab/fields_which_dont_prepopulate_user_data']['hidden'] = true;
+			$fields['first_tab/form_has_illegal_fields']['hidden'] = true;
 			
 			if ($values['first_tab/user_form']) {
 				//If a form is selected, check if every Users dataset field on it pre-populates the values
@@ -228,11 +266,16 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 					
 					//...check if it has fields...
 					if (!empty($formFields)) {
+						$formHasIllegalFields = false;
 						foreach ($formFields as $formField) {
 							if ($formField['dataset_id'] && $formField['dataset_id'] == $usersDataset['id'] && ($formField['db_column'])) {
-								if (!$formField['preload_dataset_field_user_data']) {
+								if (!$formField['preload_dataset_field_user_data'] && !ze::in($formField['type'], 'file_picker', 'editor', 'dataset_select', 'dataset_picker')) {
 									//...and note all fields that don't pre-populate data correctly.
 									$fieldsWhichDontPrepopulateUserData[] = $formField['name'];
+								}
+								
+								if (ze::in($formField['type'], 'editor', 'dataset_select', 'dataset_picker')) {
+									$formHasIllegalFields = true;
 								}
 							}
 						}
@@ -243,7 +286,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 							$fields['first_tab/fields_which_dont_prepopulate_user_data']['snippet']['html'] =
 								'<div class="zenario_fbWarning">' . 
 									ze\admin::phrase(
-										"The following fields do not pre-populate with the logged in user's data:"
+										"You should edit the following fields in the selected form; go to the Advanced tab for each field and select &quot;Pre-populate with logged-in user's data&quot;:"
 									)
 								. '<ul>';
 							
@@ -253,6 +296,22 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 							
 							$fields['first_tab/fields_which_dont_prepopulate_user_data']['snippet']['html'] .= '
 								</div>';
+						}
+						
+						if ($formHasIllegalFields) {
+							$phrase =
+								"<p>Your form contains at least one of the following field types:</p>
+								<ul>
+									<li>Editor</li>
+									<li>Dataset select</li>
+									<li>Dataset picker</li>
+								</ul>
+								<p>These field types are not currently support by the Profile system. Please remove them from the form before proceeding.</p>";
+							
+							$fields['first_tab/form_has_illegal_fields']['hidden'] = false;
+							
+							$fields['first_tab/form_has_illegal_fields']['snippet']['html'] =
+								'<div class="zenario_fbWarning">' . ze\admin::phrase($phrase) . '</div>';
 						}
 					}
 				}

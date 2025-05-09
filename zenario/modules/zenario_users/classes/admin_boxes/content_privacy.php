@@ -77,6 +77,35 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy
 		
 		$tagIds = $this->loadPrivacySettings($box['key']['id'], $path, $settingGroup, $box, $fields, $values);
 		
+		$unsetWarning = true;
+		if ($content && ze\lang::count() > 1) {
+			$fields['privacy/content_item_privacy_info_warning']['hidden'] = false;
+			$translationTagIds = ze\row::getArray('content_items', 'tag_id', ['equiv_id' => $content['equiv_id'], 'type' => $content['type']]);
+			
+			if ($translationTagIds && count($translationTagIds) > 1) {
+				$string = 'Permissions are applied to the entire content item (not just this version), and all content items in its translation chain.
+					Any change to permissions will go live immediately and affect all translations equally.';
+				
+				ze\lang::applyMergeFields($fields['privacy/content_item_privacy_info_warning']['snippet']['html'], ['content_item_privacy_changed_warning' => $string]);
+				
+				$unsetWarning = false;
+			}
+		}
+		
+		if ($unsetWarning) {
+			unset(
+				$box['tabs']['privacy']['fields']['group_ids']['format_onchange'],
+				$box['tabs']['privacy']['fields']['smart_group_id']['format_onchange'],
+				$box['tabs']['privacy']['fields']['role_ids']['format_onchange'],
+				$box['tabs']['privacy']['fields']['at_location']['format_onchange'],
+				$box['tabs']['privacy']['fields']['module_class_name']['oninput'],
+				$box['tabs']['privacy']['fields']['method_name']['oninput'],
+				$box['tabs']['privacy']['fields']['param_1']['oninput'],
+				$box['tabs']['privacy']['fields']['param_2']['oninput'],
+				$box['tabs']['privacy']['fields']['content_item_privacy_info_warning']
+			);
+		}
+		
 		if (empty($tagIds)) {
 			exit;
 		}
@@ -88,11 +117,11 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy
 			if ($total > 1) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
-					ze\admin::phrase('This will update the permissions of all content items in [[count]] translation chains.',
+					ze\admin::phrase('Update permissions of [[count]] selected content items?',
 						['count' => $total]);
 				
 				$box['title'] =
-					ze\admin::phrase('Changing permissions for [[count]] translation chains',
+					ze\admin::phrase('Changing permissions for [[count]] content items',
 						['count' => $total]);
 			} else {
 				$box['title'] =
@@ -120,10 +149,48 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy
 		if ($total > 1) {
 			$box['confirm']['message'] .=
 				"\n\n".
-				ze\admin::phrase('The content items in all selected translation chains will be set to the permissions you selected.');
+				ze\admin::phrase('Where content items are translated, permission changes affect the translation chain of each content item, i.e. across all languages.');
 		}
 	}
 	
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$cID = $box['key']['cID'];
+		if (isset($fields['privacy/content_item_privacy_info_warning'])) {
+			$showWarning = false;
+			if ($values['privacy/privacy'] != $box['key']['privacy_settings_on_load']['privacy_setting_value']) {
+				$showWarning = true;
+			} else {
+				switch ($box['key']['privacy_settings_on_load']['privacy_setting_value']) {
+					case 'group_members':
+						if ($values['privacy/group_ids'] != $box['key']['privacy_settings_on_load']['group_ids']) {
+							$showWarning = true;
+						}
+						break;
+					case 'in_smart_group':
+					case 'logged_in_not_in_smart_group':
+						if ($values['privacy/smart_group_id'] != $box['key']['privacy_settings_on_load']['smart_group_id']) {
+							$showWarning = true;
+						}
+						break;
+					case 'with_role':
+						if (
+							$values['privacy/role_ids'] != $box['key']['privacy_settings_on_load']['role_ids']
+							|| $values['privacy/at_location'] != $box['key']['privacy_settings_on_load']['at_location']
+						) {
+							$showWarning = true;
+						}
+						break;
+				}
+			}
+			
+			if ($showWarning) {
+				unset($fields['privacy/content_item_privacy_info_warning']['row_class']);
+			} else {
+				$fields['privacy/content_item_privacy_info_warning']['row_class'] = 'zfab_inline_warning_hidden';
+			}
+		}
+	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		

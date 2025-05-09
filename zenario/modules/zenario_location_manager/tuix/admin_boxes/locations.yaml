@@ -25,11 +25,27 @@ zenario_location_manager__location:
                     type: text
                     maxlength: "255"
                     allow_admin_to_change_visibility: true
+                name_grouping:
+                    type: grouping
+                    dataset_label: '[Name grouping]'
+                    name: name_grouping
                 name:
+                    grouping: name_grouping
                     label: 'Name:'
                     type: text
                     validation:
-                        required: You must enter a name.
+                        required: Please enter a name for this location.
+                copy_from_customer:
+                    grouping: name_grouping
+                    #This button will only appear if Organization-Location Manager module is running,
+                    #and the admin is creating/editing a location within an organization.
+                    hidden: true
+                    same_row: true
+                    value: 'Copy from [[organization_singular_en]]'
+                    type: button
+                    css_class: zenario_gp_button
+                    format_onchange: true
+                    dataset_label: '[Copy from [[organization_singular_en]] button]'
                 address_line_1:
                     label: 'Address line 1:'
                     type: text
@@ -81,14 +97,14 @@ zenario_location_manager__location:
                     same_row: Yes
                 map_lookup:
                     label: 'Place map pin using:'
-                    ord: "998"
+                    ord: 998
                     snippet:
                         html: ""
                     visible_if: zenarioAB.editModeOn()
                 map_edit:
                     dataset_label: '[Map (in edit mode)]'
                     label: 'Map:'
-                    ord: "999"
+                    ord: 999
                     snippet:
                         html: ""
                     visible_if: zenarioAB.editModeOn()
@@ -96,7 +112,7 @@ zenario_location_manager__location:
                 map_view:
                     dataset_label: '[Map (in readonly mode)]'
                     label: 'Map:'
-                    ord: "999"
+                    ord: 999
                     snippet:
                         html: ""
                     visible_if: '!zenarioAB.editModeOn()'
@@ -154,7 +170,7 @@ zenario_location_manager__location:
             fields:
                 desc:
                     dataset_label: '[Description]'
-                    ord: "1"
+                    ord: 1
                     full_width: Yes
                     snippet:
                         html: >
@@ -173,7 +189,7 @@ zenario_location_manager__location:
                     
                     
         sectors:
-            ord: "50"
+            ord: 50
             label: Sectors
             edit_mode:
                 enabled: Yes
@@ -195,15 +211,16 @@ zenario_location_manager__location:
                 enabled: Yes
             fields:
                 images:
-                    label: 'Images:'
+                    label: 'Images (public):'
                     pick_items:
-                        path: zenario__library/panels/image_library
+                        path: zenario__library/panels/image_library/refiners/only_pick_public_images////
                         min_path: zenario__library/panels/image_library
                         max_path: zenario__library/panels/image_library
                         target_path: zenario__library/panels/image_library
                         select_phrase: Select from image library...
                         multiple_select: true
                         hide_info_button: true
+                        disabled_if_for_any_selected_items: item.privacy != 'public'
                     upload:
                         multi: true
                         accept: 'image/*'
@@ -259,6 +276,6 @@ zenario_content:
             fields:
                 desc_location_specific:
                     label: 'Summary:'
-                    ord: "131"
+                    ord: 131
                     snippet:
                         html: "This content item is associated with a location. The location's summary will be used."

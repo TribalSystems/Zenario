@@ -475,7 +475,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 	
 	protected function escapeIfRSS($text) {
 		if ($this->isRSS) {
-			return ze\escape::xml($text);
+			return ze\escape::xml($text ?: '');
 		} else {
 			return $text;
 		}
@@ -524,16 +524,17 @@ class zenario_content_list extends ze\moduleBaseClass {
 		);
 		
 		
-		if ($this->setting('data_field') == 'description') {
-			$this->dataField = 'v.description';
-		} elseif ($this->setting('data_field') == 'content_summary'
-			&& ($this->setting('content_type') == 'all'
-				|| !ze\row::exists('content_types', ['content_type_id' => $this->setting('content_type'), 'summary_field' => 'hidden'])
-			)
-		) {
-			$this->dataField = 'v.content_summary';
-		} else {
-			$this->dataField = false;
+		$this->dataField = false;
+		if ($this->setting('show_text_preview')) {
+			if ($this->setting('data_field') == 'description') {
+				$this->dataField = 'v.description';
+			} elseif ($this->setting('data_field') == 'content_summary'
+				&& ($this->setting('content_type') == 'all'
+					|| !ze\row::exists('content_types', ['content_type_id' => $this->setting('content_type'), 'summary_field' => 'hidden'])
+				)
+			) {
+				$this->dataField = 'v.content_summary';
+			}
 		}
 		
 		$this->registerGetRequest('page', 1);
@@ -603,12 +604,31 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$item['Local_File_Id'] = $row['file_id'];
 				$item['s3_File_Id'] = $row['s3_file_id'];
 				$s3FileDetails = ze\row::get('files', ['size','filename','path'], $row['s3_file_id']);
-				$localFileDetails = ze\row::get('files', ['size'], $row['file_id']);
+				$localFileDetails = ze\row::get('files', ['filename', 'size'], $row['file_id']);
 				if ($s3FileDetails && $s3FileDetails['size']) {
 					$item['S3_File_Size'] = ze\file::formatSizeUnits($s3FileDetails['size']);
 				}
+				
+				if ($s3FileDetails && $s3FileDetails['filename']) {
+					$filenameArray = explode('.', $s3FileDetails['filename']);
+					if (count($filenameArray) > 0) {
+						$lastEl = array_key_last($filenameArray);
+						$extension = $filenameArray[$lastEl];
+						$item['S3_File_Format'] = strtoupper($extension);
+					}
+				}
+				
 				if ($localFileDetails && $localFileDetails['size'] && $item['cType'] == 'document') {
 					$item['Local_File_Size'] = ze\file::formatSizeUnits($localFileDetails['size']);
+				}
+				
+				if ($localFileDetails && $localFileDetails['filename'] && $item['cType'] == 'document') {
+					$filenameArray = explode('.', $localFileDetails['filename']);
+					if (count($filenameArray) > 0) {
+						$lastEl = array_key_last($filenameArray);
+						$extension = $filenameArray[$lastEl];
+						$item['Local_File_Format'] = strtoupper($extension);
+					}
 				}
 				
 				$item['Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, '', $row['alias'], false, false, $stayInCurrentLanguage = true);
@@ -651,7 +671,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				$item['Keywords'] = $this->escapeIfRSS($row['keywords']);
 				$item['Description'] = $this->escapeIfRSS($row['description']);
 				
-				if (($this->setting('show_dates') || ($this->isRSS && $this->setting('rss_include_item_author'))) && $row['release_date']) {
+				if (($this->setting('show_dates') || ($this->isRSS && $this->setting('rss_include_item_publication_date'))) && $row['release_date']) {
 					if (!$this->isRSS) {
 						if ($this->setting('date_format') == '_RELATIVE') {
 							if ($this->setting('show_times')) {
@@ -680,13 +700,13 @@ class zenario_content_list extends ze\moduleBaseClass {
 				//Try to set the feature image (aka sticky image) for this row
 				if ($this->setting('show_featured_image')) {
 					
-					$imageId = ze\file::featureImageId(
+					$imageId = ze\content::featureImageId(
 						$row['id'], $row['type'], $row['version'],
 						$this->setting('fall_back_to_default_image'), $this->setting('default_image_id')
 					);
 					
 					if ($imageId) {
-						//Start prepping some parameters for a call to the ze\file::imageHTML() function
+						//Start prepping some parameters for a call to the ze\image::html() function
 						$useRollover = $cssRollover = $jsRollover =
 						$showAsBackgroundImage = $lazyLoad = $hideOnMob = $changeOnMob =
 						$mobImageId = $mobMaxWidth = $mobMaxHeight = $mobCanvas = $mobRetina = false;
@@ -699,14 +719,12 @@ class zenario_content_list extends ze\moduleBaseClass {
 						$setWidth = $this->setting('width');
 						$setHeight = $this->setting('height');
 						$setRetina = $this->setting('retina');
-						$makeWebP = $this->setting('webp');
 						
 						$setMobBehaviour = $this->setting('mobile_behaviour');
 						$setMobWidth = $this->setting('mobile_width');
 						$setMobHeight = $this->setting('mobile_height');
 						$setMobCanvas = $this->setting('mobile_canvas');
 						$setMobRetina = $this->setting('mobile_retina');
-						$mobWebP = $this->setting('mobile_webp');
 						
 						$htmlID = $this->containerId. '_'. $item['Id']. '_img';
 
@@ -734,12 +752,12 @@ class zenario_content_list extends ze\moduleBaseClass {
 							}
 						}
 
-						$item['Featured_Image_HTML'] = ze\file::imageHTML(
+						$item['Featured_Image_HTML'] = ze\image::html(
 							$this->styles, $preferInlineStypes,
-							$imageId, $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+							$imageId, $setWidth, $setHeight, $setCanvas, $setRetina,
 							$altTag, $htmlID, $cssClass, $styles, $attributes,
 							$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
-							$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP
+							$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina
 						);
 						
 					} else {
@@ -845,7 +863,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				}
 				
 				if ($this->setting('simple_access_cookie_required') && $this->setting('simple_access_cookie_alternate_page')) {
-					if (empty($_COOKIE['SIMPLE_ACCESS'])) {
+					if (empty($_COOKIE['z_gated_content_control_satisfied'])) {
 						$this->registerGetRequest('rci');
 						
 						$this->getCIDAndCTypeFromSetting($cID, $cType, 'simple_access_cookie_alternate_page');
@@ -1071,27 +1089,15 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//if needed
 		$titleWithContent = '';
 		if ($this->setting('show_headings')) {
-			$titleWithContent = htmlspecialchars($this->setting('heading_if_items'));
-			
-			if (!$this->isVersionControlled && $this->setting('translate_text')) {
-				$titleWithContent = $this->phrase($titleWithContent);
-			}
+			$titleWithContent = htmlspecialchars($this->phraseFromSetting('heading_if_items', $this->setting('translate_text')));
 		}
 		$titleWithNoContent = '';
 		if ($this->setting('show_headings_if_no_items')) {
-			$titleWithNoContent = htmlspecialchars($this->setting('heading_if_no_items'));
-			
-			if (!$this->isVersionControlled && $this->setting('translate_text')) {
-				$titleWithNoContent = $this->phrase($titleWithNoContent);
-			}
+			$titleWithNoContent = htmlspecialchars($this->phraseFromSetting('heading_if_no_items', $this->setting('translate_text')));
 		}
 		$moreLinkText = '';
 		if ($moreLink) {
-			$moreLinkText = htmlspecialchars($this->setting('more_link_text'));
-			
-			if (!$this->isVersionControlled && $this->setting('translate_text')) {
-				$moreLinkText = $this->phrase($moreLinkText);
-			}
+			$moreLinkText = htmlspecialchars($this->phraseFromSetting('more_link_text', $this->setting('translate_text')));
 		}
 
 		//To add Zip download link
@@ -1276,6 +1282,12 @@ class zenario_content_list extends ze\moduleBaseClass {
 			'DownloadRequest' => '&build=1&slotName='.$this->slotName.'&ids=' . $allIdsValue,
 			'Recent_Item_Phrase' => $this->phrase('New')
 		];
+		
+		//This setting is specific for Job Vacancies Summary List, which extends this module.
+		if ($this->moduleClassName == 'zenario_job_vacancy_summary_list') {
+			$inner['More_Info_Link_For_Each_Item'] = $this->setting('show_more_info_link_for_each_item');
+			$inner['More_Info_Link_For_Each_Item_Text'] = $this->phrase($this->setting('more_info_link_for_each_item_text'));
+		}
 
 		switch ($this->setting('content_type')) {
 			case 'document':
@@ -1449,6 +1461,25 @@ class zenario_content_list extends ze\moduleBaseClass {
 						'max_unpacked_size' => ze::setting('max_unpacked_size')
 					]
 				);
+				
+				//Path to AWS S3 settings and Vector data processing site settings
+				$href = 'organizer.php#zenario__administration/panels/site_settings//aws_s3_and_vector_data_processing~.site_settings~tawss3_file_downloads~k{"id"%3A"aws_s3_and_vector_data_processing"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+				
+				if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
+					$fields['each_item/show_file_size']['label'] = ze\admin::phrase('Show local file size');
+					if (ze::setting('show_format_and_size')) {
+						$alwaysOrNever = 'always';
+					} else {
+						$alwaysOrNever = 'never';
+					}
+					
+					$fields['each_item/show_file_size']['note_below'] = ze\admin::phrase(
+						'If a document content item has an S3 file, the file format and size will [[always_or_never]] be shown. See [[link_start]]site setting[[link_end]].',
+						['always_or_never' => $alwaysOrNever, 'link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
+				}
 				
 				//Show a warning if "Choose categories to filter by" is selected but no categories have been picked
 				if (
@@ -1667,8 +1698,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 				//If a user has entered the value, validate it.
 				//If the user has not enterd anything then default value is 64, set in saveAdminBox.
 				if ($box['setting_group'] == 'external_programs') {
-					if(strlen($values['zip/max_unpacked_size']) > 0 && $values['zip/max_unpacked_size'] < 1 )
-					{
+					if (strlen($values['zip/max_unpacked_size']) > 0 && $values['zip/max_unpacked_size'] < 1 ) {
 						$fields['zip/max_unpacked_size']['error'] = ze\admin::phrase('Please enter an integer number, and a minimum of 1.');
 					}
 				}

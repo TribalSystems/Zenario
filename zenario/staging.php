@@ -220,6 +220,11 @@ echo '
 	
 }
 
+.zenario_staging_mode_warning a {
+	color: #fff;
+	font-weight: bold;
+}
+
 .zenario_staging_mode_warning:before {
 	content:"";
 	display:block;
@@ -235,10 +240,33 @@ echo '
 
 .zenario_staging_mode_warning_closed {
 	width: 1px;
-	height: 19px;
+	height: 24px;
 	padding: 5px 5px 5px 40px;
 	color: #eee;
 	font-size: 6px;
+}
+
+.zenario_staging_mode_warning_toggle {
+	float: right;
+	display:block;
+	width: 28px;
+  	height: 16px;
+    background:#a60 url(zenario/admin/images/icon-arrow-to-expand-2.svg) no-repeat center 4px / auto 6px;
+	position: relative;
+  	top: -10px;
+  	right: -6px;
+  	border-bottom-left-radius: 4px;
+  	border-bottom-right-radius: 4px;
+}
+
+.zenario_staging_mode_warning_closed .zenario_staging_mode_warning_toggle {
+	background-image: url(zenario/admin/images/icon-arrow-to-collapse.svg);
+    background-size: auto 4px;
+    background-position: center 1px;
+	width: 20px;
+  	height: 8px;
+  	top: -6px;
+  	right: -4px;
 }
 	
 </style>
@@ -246,8 +274,14 @@ echo '
 	class="zenario_staging_mode_warning"
 	onclick="if (window.$) $(this).toggleClass(\'zenario_staging_mode_warning_closed\');"
 >
+	<div class="zenario_staging_mode_warning_toggle"></div>
 	<div class="zenario_staging_mode_warning_heading">
-		<strong>', ze\admin::phrase('[[tag]] (v[[version]])', $mrg), '</strong>
+		<a
+			href="admin.php?cID=', (int) $cID, '&amp;cType=', htmlspecialchars($cType), '"
+			onclick="if (window.zenario) zenario.stop(); return true;"
+		>
+			<strong>', ze\admin::phrase('[[tag]] (v[[version]])', $mrg), '</strong>
+		</a>
 	</div>
 	<div class="zenario_staging_mode_warning_message">
 		', ze\admin::phrase('You are viewing this page in staging mode. Parts that link to other unpublished pages may not be visible.'), '
@@ -258,7 +292,7 @@ echo '
 echo $skinDiv, $templateDiv, $contentItemDiv;
 
 
-if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId, true)) {
+if ($tplFile = ze\layout::htmlPath(ze::$layoutId, true)) {
 	require CMS_ROOT. $tplFile;
 	ze\plugin::checkSlotsWereUsed();
 }

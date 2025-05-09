@@ -127,7 +127,7 @@ $skinDiv .= '">';
 ze\content::pageBody('zenario_layout_preview');
 echo $skinDiv, $templateDiv, $contentItemDiv;
 
-if ($tplFile = ze\content::layoutHtmlPath($layout['layout_id'])) {
+if ($tplFile = ze\layout::htmlPath($layout['layout_id'])) {
 	require CMS_ROOT. $tplFile;
 }
 

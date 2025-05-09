@@ -4,7 +4,8 @@ zenario__languages:
     panels:
         salutations:
             title: Salutations
-            no_items_message: No salutations have been defined
+            no_items_message: |
+                No salutations defined.
             panel_type: list
             db_items:
                 table: '[[DB_PREFIX]]lov_salutations AS l'
@@ -21,28 +22,27 @@ zenario__languages:
                 css_class: zenario_forum__forum
             collection_buttons:
                 create:
-                    tooltip: Define a new salutation
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create
+                    label: Create a salutation
                     admin_box:
                         path: zenario_salutation
                         create_another: true
             item_buttons:
                 edit:
-                    tooltip: Edit salutation
-                    label: Edit
+                    label: Edit salutation
                     admin_box:
                         path: zenario_salutation
                 delete:
                     multiple_select: true
                     label: Delete
+                    multiple_select_label: Delete selected salutations
                     ajax:
                         request:
                             delete: 1
                         confirm:
-                            message: 'Are you sure you wish to delete the salutation "[[name]]"?'
-                            multiple_select_message: Are you sure you wish to delete the selected salutations?
+                            message: 'Delete the salutation "[[name]]"?'
+                            multiple_select_message: Delete the selected salutations?
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

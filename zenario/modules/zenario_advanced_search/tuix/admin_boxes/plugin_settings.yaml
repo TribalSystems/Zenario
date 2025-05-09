@@ -14,14 +14,14 @@ plugin_settings:
                     format_onchange: true
                     values:
                         search_entry_box:
-                            label: "Inline search (hover to show)"
+                            label: "Inline search (click to show)"
                         search_entry_box_show_always:
-                            label: "Inline search (show always)"
+                            label: "Inline search (always show)"
                         search_page:
                             label: "Full page search and results"
                     value: search_entry_box
         first_tab:
-            ord: "1"
+            ord: 1
             label: Display
             fields:
                 search_entry_box_hover_to_show_info:
@@ -280,7 +280,7 @@ plugin_settings:
                         required_if_not_hidden: Please select a content item.
                     
         content_types:
-            ord: "2"
+            ord: 2
             label: Content to search
             fields:
                 #################
@@ -351,9 +351,9 @@ plugin_settings:
                     value: true
                     read_only: true
                     visible_if: lib.value('search_html')
-                html_show_feature_image:
+                html_show_featured_image:
                     plugin_setting:
-                        name: html_show_feature_image
+                        name: html_show_featured_image
                     label: 'Show featured image'
                     type: checkbox
                     value: "1"
@@ -361,33 +361,42 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
                     visible_if: lib.value('search_html')
-                html_feature_image_canvas:
+                html_canvas:
                     plugin_setting:
-                        name: html_feature_image_canvas
+                        name: html_canvas
                     label: 'Canvas for featured image:'
                     type: select
-                    values:
-                        unlimited:
-                            ord: "1"
-                            label: Unlimited size
+                    values: &canvas_values
+                        crop_and_zoom:
+                            ord: 1
+                            label: Crop and zoom
                         fixed_width:
-                            ord: "2"
+                            ord: 2
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
+                            ord: 3
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
+                            ord: 4
                             label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                        unlimited:
+                            ord: 5
+                            label: Unlimited size
                     value: fixed_width
                     format_onchange: Yes
                     indent: 2
-                html_feature_image_width:
+                html_retina:
                     plugin_setting:
-                        name: html_feature_image_width
+                        name: html_retina
+                    label: |
+                        Treat as a retina image (display at double density)
+                    type: checkbox
+                    enable_microtemplates_in_properties: true
+                    same_row: true
+                    visible_if: (lib.value('search_html') && lib.value('html_show_featured_image') && (lib.value('html_canvas') == 'unlimited'))
+                html_width:
+                    plugin_setting:
+                        name: html_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -398,9 +407,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                html_feature_image_height:
+                html_height:
                     plugin_setting:
-                        name: html_feature_image_height
+                        name: html_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -525,9 +534,9 @@ plugin_settings:
                     value: true
                     read_only: true
                     visible_if: lib.value('search_document')
-                document_show_feature_image:
+                document_show_featured_image:
                     plugin_setting:
-                        name: document_show_feature_image
+                        name: document_show_featured_image
                     label: 'Show featured image'
                     type: checkbox
                     value: "1"
@@ -535,33 +544,27 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
                     visible_if: lib.value('search_document')
-                document_feature_image_canvas:
+                document_canvas:
                     plugin_setting:
-                        name: document_feature_image_canvas
+                        name: document_canvas
                     label: 'Canvas for featured image:'
                     type: select
-                    values:
-                        unlimited:
-                            ord: "1"
-                            label: Unlimited size
-                        fixed_width:
-                            ord: "2"
-                            label: Constrain by width
-                        fixed_height:
-                            ord: "3"
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            ord: "4"
-                            label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                    values: *canvas_values
                     value: fixed_width
                     format_onchange: Yes
                     indent: 2
-                document_feature_image_width:
+                document_retina:
                     plugin_setting:
-                        name: document_feature_image_width
+                        name: document_retina
+                    label: |
+                        Treat as a retina image (display at double density)
+                    type: checkbox
+                    enable_microtemplates_in_properties: true
+                    same_row: true
+                    visible_if: (lib.value('search_document') && lib.value('document_show_featured_image') && (lib.value('document_canvas') == 'unlimited'))
+                document_width:
+                    plugin_setting:
+                        name: document_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -572,9 +575,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                document_feature_image_height:
+                document_height:
                     plugin_setting:
-                        name: document_feature_image_height
+                        name: document_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -708,9 +711,9 @@ plugin_settings:
                     value: true
                     read_only: true
                     visible_if: lib.value('search_news')
-                news_show_feature_image:
+                news_show_featured_image:
                     plugin_setting:
-                        name: news_show_feature_image
+                        name: news_show_featured_image
                     label: 'Show featured image'
                     type: checkbox
                     value: "1"
@@ -718,33 +721,27 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
                     visible_if: lib.value('search_news')
-                news_feature_image_canvas:
+                news_canvas:
                     plugin_setting:
-                        name: news_feature_image_canvas
+                        name: news_canvas
                     label: 'Canvas for featured image:'
                     type: select
-                    values:
-                        unlimited:
-                            ord: "1"
-                            label: Unlimited size
-                        fixed_width:
-                            ord: "2"
-                            label: Constrain by width
-                        fixed_height:
-                            ord: "3"
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            ord: "4"
-                            label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                    values: *canvas_values
                     value: fixed_width
                     format_onchange: Yes
                     indent: 2
-                news_feature_image_width:
+                news_retina:
                     plugin_setting:
-                        name: news_feature_image_width
+                        name: news_retina
+                    label: |
+                        Treat as a retina image (display at double density)
+                    type: checkbox
+                    enable_microtemplates_in_properties: true
+                    same_row: true
+                    visible_if: (lib.value('search_news') && lib.value('news_show_featured_image') && (lib.value('news_canvas') == 'unlimited'))
+                news_width:
+                    plugin_setting:
+                        name: news_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -755,9 +752,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                news_feature_image_height:
+                news_height:
                     plugin_setting:
-                        name: news_feature_image_height
+                        name: news_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -882,9 +879,9 @@ plugin_settings:
                     value: true
                     read_only: true
                     visible_if: lib.value('search_blog')
-                blog_show_feature_image:
+                blog_show_featured_image:
                     plugin_setting:
-                        name: blog_show_feature_image
+                        name: blog_show_featured_image
                     label: 'Show featured image'
                     type: checkbox
                     value: "1"
@@ -892,33 +889,27 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
                     visible_if: lib.value('search_blog')
-                blog_feature_image_canvas:
+                blog_canvas:
                     plugin_setting:
-                        name: blog_feature_image_canvas
+                        name: blog_canvas
                     label: 'Canvas for featured image:'
                     type: select
-                    values:
-                        unlimited:
-                            ord: "1"
-                            label: Unlimited size
-                        fixed_width:
-                            ord: "2"
-                            label: Constrain by width
-                        fixed_height:
-                            ord: "3"
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            ord: "4"
-                            label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                    values: *canvas_values
                     value: fixed_width
                     format_onchange: Yes
                     indent: 2
-                blog_feature_image_width:
+                blog_retina:
                     plugin_setting:
-                        name: blog_feature_image_width
+                        name: blog_retina
+                    label: |
+                        Treat as a retina image (display at double density)
+                    type: checkbox
+                    enable_microtemplates_in_properties: true
+                    same_row: true
+                    visible_if: (lib.value('search_blog') && lib.value('blog_show_featured_image') && (lib.value('blog_canvas') == 'unlimited'))
+                blog_width:
+                    plugin_setting:
+                        name: blog_width
                     label: 'Width:'
                     type: text
                     validation:
@@ -929,9 +920,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                blog_feature_image_height:
+                blog_height:
                     plugin_setting:
-                        name: blog_feature_image_height
+                        name: blog_height
                     label: 'Height:'
                     type: text
                     validation:
@@ -1004,6 +995,14 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: 'Please select a module.'
                     format_onchange: true
+                searchable_data_type:
+                    indent: 2
+                    plugin_setting:
+                        name: searchable_data_type
+                    label: 'Data type:'
+                    type: select
+                    values: {}
+                    visible_if: lib.value('search_in_other_modules') && lib.value('module_to_search')
                 other_module_column_heading_text:
                     plugin_setting:
                         name: other_module_column_heading_text
@@ -1025,33 +1024,30 @@ plugin_settings:
                     format_onchange: Yes
                     indent: 1
                     visible_if: lib.value('search_in_other_modules')
-                other_module_image_canvas:
+                modules_which_dont_support_images:
+                    hidden: true
+                    type: text
+                canvas:
                     plugin_setting:
-                        name: other_module_image_canvas
+                        name: canvas
                     label: 'Canvas for image:'
                     type: select
-                    values:
-                        unlimited:
-                            ord: "1"
-                            label: Unlimited size
-                        fixed_width:
-                            ord: "2"
-                            label: Constrain by width
-                        fixed_height:
-                            ord: "3"
-                            label: Constrain by height
-                        fixed_width_and_height:
-                            ord: "4"
-                            label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
+                    values: *canvas_values
                     value: fixed_width
                     format_onchange: Yes
                     indent: 2
-                other_module_image_width:
+                retina:
                     plugin_setting:
-                        name: other_module_image_width
+                        name: retina
+                    label: |
+                        Treat as a retina image (display at double density)
+                    type: checkbox
+                    enable_microtemplates_in_properties: true
+                    same_row: true
+                    visible_if: (lib.value('search_in_other_modules') && lib.value('module_to_search') && lib.value('other_module_show_image') && (lib.value('canvas') == 'unlimited'))
+                width:
+                    plugin_setting:
+                        name: width
                     label: 'Width:'
                     type: text
                     validation:
@@ -1062,9 +1058,9 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 3
-                other_module_image_height:
+                height:
                     plugin_setting:
-                        name: other_module_image_height
+                        name: height
                     label: 'Height:'
                     type: text
                     validation:
@@ -1143,7 +1139,7 @@ plugin_settings:
                     value: false
                     side_note: "Search result scores will be shown in admin mode; useful to debugging and adjusting weightings."
         weightings:
-            ord: "3"
+            ord: 3
             label: Weightings
             fields:
                 pinned_info:

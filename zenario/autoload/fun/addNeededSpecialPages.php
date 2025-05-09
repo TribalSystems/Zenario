@@ -249,13 +249,14 @@ if ($resultSp = \ze\sql::select($sql)) {
 							
 								//Update the wordcount and other stats
 								\ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+								
+								$shouldBeUnlisted = $sp['listing_policy'] == 'must_be_unlisted';
 							
 								//Publish the page straight away if requested
 								if ($sp['publish']) {
-									\ze\contentAdm::publishContent($cID, $cType);
-								}
+									\ze\contentAdm::publishContent($cID, $cType, false, $shouldBeUnlisted);
 								
-								if ($sp['listing_policy'] == 'must_be_unlisted') {
+								} elseif ($shouldBeUnlisted) {
 									ze\contentAdm::delistContent($cID, $cType);
 								}
 							}

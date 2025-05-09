@@ -59,15 +59,14 @@ site_settings:
                 show_sql_errors_to_visitors:
                     site_setting:
                         name: show_sql_errors_to_visitors
-                    label: 'Show SQL and Twig errors to visitors'
+                    label: 'Show SQL and Twig errors to visitors (always shown to administrators)'
                     type: checkbox
                     value: ""
                     note_below: |
-                        This should be turned <strong>on</strong> for <strong>development</strong> and <strong>staging</strong> sites,
-                        and turned <strong>off</strong> for <strong>live</strong> sites.
+                        Not recommended for production sites. Should be turned <strong>on</strong> for <strong>development</strong> and <strong>staging</strong> sites.
                         If enabled, the site will show errors from database (SQL) queries, and errors from
                         Twig Snippet and other Twig-based plugins, on visitor-facing pages. This can be helpful for development 
-                        work, but should usually be left off for security reasons.
+                        work, but should usually be left off for security reasons on production sites.
                 
 
         mysql:

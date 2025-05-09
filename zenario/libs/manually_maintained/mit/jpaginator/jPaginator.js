@@ -363,9 +363,7 @@
                     $this.find(".paginator_slider").hide();
                     $this.find(".paginator_slider").children().hide();
                 } else {
-                    totalSlides = Math.ceil(s.nbPages / s.nbVisible);
-                    bSlider = s.withSlider;
-                    if (totalSlides < s.minSlidesForSlider)
+                    if (s.nbPages <= s.nbVisible)
                         bSlider = false;
                     // hide slider when needed
                     else

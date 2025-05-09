@@ -65,8 +65,7 @@ $subscriptionsConfig =  ze\row::get(ZENARIO_ANONYMOUS_COMMENTS_PREFIX  . 'commen
 
 if ($newPost
  && $subscriptionsConfig['enable_subs']
- && $subscriptionsConfig['comment_subs_email_template']
- && ze\module::inc('zenario_email_template_manager')) {
+ && $subscriptionsConfig['comment_subs_email_template']) {
 	
 	$sql = "
 		SELECT u.id, salutation, first_name, last_name, screen_name, email
@@ -96,7 +95,7 @@ if ($newPost
 				$formFields['subscriber_screen_name'] = '';
 			}
 			
-			zenario_email_template_manager::sendEmailsUsingTemplate(
+			zenario_common_features::sendEmailsUsingTemplate(
 				$row['email'],
 				$subscriptionsConfig['comment_subs_email_template'],
 				$formFields,

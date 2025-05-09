@@ -222,13 +222,9 @@ class deprecated {
 		}
 	
 		//As of 2024, content_type is a reserved MySQL word. It needs to be in backticks if we want to use it as a column.
-		if ($field == 'content_type') {
-			$sql .= "
-				`". $field. "` = ";
-		} else {
-			$sql .= "
-				". $field. " = ";
-		}
+		//Before 10.1, only the content_type column would be wrapped in backticks. From 10.1 onwards, every column is.
+		$sql .= "
+			`". $field. "` = ";
 	
 		//Attempt to save empty dates correctly in strict mode
 		if ($details['Date'] && strlen((string) $values[$field] < 8)) {

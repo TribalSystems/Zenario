@@ -8,9 +8,13 @@
 	{% set LINKS_IN_INCLUDES = true %}
 	
 	{% if Rows %}
+		{# Please note: this framework is not intended to be used for document content items. #}
+		{# This is because if there is a doc content item with an S3 file, but no local file, #}
+		{# then the item will be a bad link. #}
+		
 		{% for item in Row %}
 			<div class="content_list_item">
-			{% if LINKS_IN_INCLUDES %}
+			{% if LINKS_IN_INCLUDES and not item.Disabled %}
 				<a {{item.Link}}{{item.Target_Blank}} class="content_list_data_row_link">
 			{% endif %}
 			
@@ -63,7 +67,7 @@
 				</div>
 			</div>
 
-			{% if LINKS_IN_INCLUDES %}
+			{% if LINKS_IN_INCLUDES and not item.Disabled %}
 				</a>
 			{% endif %}
 			</div>

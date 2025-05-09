@@ -215,7 +215,6 @@ class pageCache {
 					case 'email_template_sending_log':
 					case 'error_404_log':
 					case 'job_logs':
-					case 'last_sent_warning_emails':
 					case 'user_content_accesslog':
 					case 'user_signin_log':
 					
@@ -261,6 +260,11 @@ class pageCache {
 					//Anything that relies on group-membership or private items should never be cached, so we can ignore these tables too
 					case 'group_link':
 					case 'translation_chain_privacy':
+					
+					//Submitting a form response should not clear cache
+					case 'user_response':
+					case 'user_response_data':
+					case 'user_response_referrer_info':
 						return;
 					
 					//File
@@ -470,7 +474,7 @@ class pageCache {
 				//Send a debug email to help developers debug why the cache was cleared.
 				if (\ze::setting('caching_email_on_clear')) {
 					\ze\db::reportEvent(
-						$tableNameRecognised? 'Cache cleared on' : 'A changed to an unknown table cleared the cache on', 
+						$tableNameRecognised? 'Cache cleared on' : 'A change to an unknown table cleared the cache on', 
 						$sql,
 						$ids,
 						$values,

@@ -31,22 +31,6 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($settingGroup == 'zenario_user_forms__site_settings_group') {
-			$profanityCsvFilePath = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
-			if(!file_exists($profanityCsvFilePath)) {
-				ze\site::setSetting('zenario_user_forms_set_profanity_filter', '');
-				ze\site::setSetting('zenario_user_forms_set_profanity_tolerence', '');
-			
-				$values['zenario_user_forms_set_profanity_tolerence'] = "";
-				$values['zenario_user_forms_set_profanity_filter'] = "";
-			
-				$box['tabs']['zenario_user_forms_profanity_filter']['fields']['zenario_user_forms_set_profanity_filter']['disabled'] = true;
-				$box['tabs']['zenario_user_forms_profanity_filter']['fields']['zenario_user_forms_set_profanity_tolerence']['disabled'] = true;
-				$box['tabs']['zenario_user_forms_profanity_filter']['fields']['zenario_user_forms_set_profanity_filter']['side_note'] = "";
-				$box['tabs']['zenario_user_forms_profanity_filter']['fields']['zenario_user_forms_set_profanity_filter']['note_below'] 
-					= 'You must have a list of profanities on the server to enable this feature. The file must be called "profanities.csv" 
-					and must be in the directory "zenario/libs/not_to_redistribute/profanity-filter/".';
-			}
-			
 			$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$fields['zenario_user_forms_emails/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store form responses.', ['link' => htmlspecialchars($link)]);
 			
@@ -71,11 +55,11 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 		} elseif ($settingGroup == 'data_protection') {
 			
 			//Show the number of form responses currently stored
-			$count = ze\row::count(ZENARIO_USER_FORMS_PREFIX . 'user_response');
+			$count = ze\row::count('user_response');
 			$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
 						
 			if ($count) {
-				$min = ze\row::min(ZENARIO_USER_FORMS_PREFIX . 'user_response', 'response_datetime');
+				$min = ze\row::min('user_response', 'response_datetime');
 				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
 			}
 			
@@ -83,6 +67,17 @@ class zenario_user_forms__admin_boxes__site_settings extends ze\moduleBaseClass 
 			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 			$fields['data_protection/period_to_delete_the_form_response_log_headers']['note_below'] = $note;
 			
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($settingGroup == 'zenario_user_forms__site_settings_group') {
+			$fields['zenario_user_forms_profanity_filter/zenario_user_forms_set_profanity_filter']['notices_below']['profanities_csv_file_is_missing']['hidden'] = true;
+			
+			$profanityCsvFilePath = CMS_ROOT . 'zenario/libs/not_to_redistribute/profanity-filter/profanities.csv';
+			if ($values['zenario_user_forms_profanity_filter/zenario_user_forms_set_profanity_filter'] && !file_exists($profanityCsvFilePath)) {
+				$fields['zenario_user_forms_profanity_filter/zenario_user_forms_set_profanity_filter']['notices_below']['profanities_csv_file_is_missing']['hidden'] = false;
+			}
 		}
 	}
 	

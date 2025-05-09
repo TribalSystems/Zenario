@@ -22,7 +22,7 @@ description: |
         You can set the filter to display all Event content items, or limit the calendar to display just Events in a given category.
     </p>
 category: pluggable
-keywords: calendar, event, list
+keywords: calendar, event, events, list
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
@@ -30,7 +30,7 @@ vlp_class_name: zenario_event_listing
 css_class_name: zenario_event_listing
 default_framework: standard
 is_pluggable: true
-default_instance_name: Event Listing
+default_instance_name: Event listing
 nestable: true
 
 # Warning: adding a new dependency to an existing module will break any existing sites

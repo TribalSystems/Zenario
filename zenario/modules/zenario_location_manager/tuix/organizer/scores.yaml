@@ -26,7 +26,7 @@ zenario__locations:
                         width: medium
                 item_buttons:
                     rename_score:
-                        ord: "1"
+                        ord: 1
                         label: Rename
                         admin_box:
                             path: zenario_location_manager__score

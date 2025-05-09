@@ -554,7 +554,7 @@ class miscAdm {
 		
 		
 		//Check if this links to any email templates
-		if (!empty($usage['email_templates']) && \ze\module::inc('zenario_email_template_manager')) {
+		if (!empty($usage['email_templates']) && \ze\module::inc('zenario_common_features')) {
 			$etId = $usage['email_template'];
 			
 			if (!is_numeric($etId)) {
@@ -865,7 +865,7 @@ class miscAdm {
 		}
 	}
 
-	public static function setupSlideDestinations(&$box, &$fields, &$values) {
+	public static function setupSlideDestinations(&$box, &$fields, &$values, $specificField = null, $specificCommand = null) {
 		//Check if this plugin is in a slide in a conductor
 		$box['key']['conductorState'] = '';
 		if ($box['key']['usesConductor'] && $box['key']['slideNum']) {
@@ -881,7 +881,7 @@ class miscAdm {
 			if (!empty($currentStates[0])) {
 				$box['key']['conductorState'] = $currentStates[0];
 				
-				$incNest = \ze\module::inc('zenario_plugin_nest');
+				\ze\module::inc('zenario_abstract_nest');
 		
 				//Fill the list of slides
 				$result = \ze\sql::select("
@@ -894,9 +894,7 @@ class miscAdm {
 				$ord = 0;
 				while ($row = \ze\sql::fetchAssoc($result)) {
 					//Format the name so people aren't looking at the merge fields
-					if ($incNest) {
-						$row['slide_label'] = \zenario_plugin_nest::formatTitleTextAdmin($row['slide_label']);
-					}
+					$row['slide_label'] = \zenario_abstract_nest::formatTitleTextAdmin($row['slide_label']);
 		
 					$states = \ze\ray::explodeAndTrim($row['states']);
 		
@@ -940,18 +938,26 @@ class miscAdm {
 							continue;
 						}
 					}
+					
+					if (is_null($specificCommand)) {
+						$fieldName = 'to_state'. $i. '.'. $row['command'];
+						$setThisField = isset($fields[$fieldName]);
+					} else {
+						$fieldName = $specificField;
+						$setThisField = $row['command'] == $specificCommand;
+					}
 			
-					if (isset($fields['to_state'. $i. '.'. $row['command']])) {
-						$fields['to_state'. $i. '.'. $row['command']]['hidden'] = false;
+					if ($setThisField) {
+						$fields[$fieldName]['hidden'] = false;
 					
 						if ($row['equiv_id']) {
 							$codeName = $row['content_type']. '_'. $row['equiv_id']. '/'. $row['to_state'];
 						
 							$box['lovs']['slides_and_states'][$codeName] = \ze\content::formatTag($row['equiv_id'], $row['content_type'], -1, false, true);
 						
-							$values['to_state'. $i. '.'. $row['command']] = $codeName;
+							$values[$fieldName] = $codeName;
 						} else {
-							$values['to_state'. $i. '.'. $row['command']] = $row['to_state'];
+							$values[$fieldName] = $row['to_state'];
 						}
 					
 						$lastTo = $row['content_type']. $row['equiv_id']. $row['to_state'];
@@ -976,11 +982,14 @@ class miscAdm {
 					if (isset($field['values'])
 					 && $field['values'] === 'slides_and_states'
 					 && strpos($key, '/') === false //n.b. this line is because fields appear in the $fields shortcut-array twice
-					 && empty($values[$key])
 					 && empty($field['hidden'])
 					 && \ze\ring::chopPrefix('to_state', $key)
 					) {
-						$field['css_class'] .= ' zfab_warning';
+						if (empty($values[$key])) {
+							$field['css_class'] .= ' zfab_warning';
+						} else {
+							$field['css_class'] = str_replace(' zfab_warning', '', $field['css_class']);
+						}
 					}
 				}
 			}
@@ -1360,7 +1369,7 @@ class miscAdm {
 						$tabDetails = \ze\row::get('custom_dataset_tabs', true, ['dataset_id' => $datasetId, 'name' => $tabName]);
 						$values = [
 							'is_system_field' => 1,
-							'default_label' => \ze::ifNull($tab['dataset_label'] ?? false, ($tab['label'] ?? false), '')
+							'default_label' => ($tab['dataset_label'] ?? '') ?: ($tab['label'] ?? '')
 						];
 						if (!$tabDetails || !$tabDetails['ord']) {
 							$values['ord'] = (float)(($tab['ord'] ?? false) ?: $tabCount);
@@ -1379,7 +1388,7 @@ class miscAdm {
 								
 									$fieldDetails = \ze\row::get('custom_dataset_fields', true, ['dataset_id' => $datasetId, 'tab_name' => $tabName, 'is_system_field' => 1, 'field_name' => $fieldName]);
 									$values = [
-										'default_label' => \ze::ifNull($field['dataset_label'] ?? false, ($field['label'] ?? false), ''),
+										'default_label' => ($field['dataset_label'] ?? '') ?: ($field['label'] ?? ''),
 										'is_system_field' => 1,
 										'allow_admin_to_change_visibility' => !empty($field['allow_admin_to_change_visibility']),
 										'allow_admin_to_change_export' => !empty($field['allow_admin_to_change_export'])
@@ -1406,5 +1415,39 @@ class miscAdm {
 			}
 		}
 	}
+	
+	//Some debug functions for tracking how long a script takes to run
+	protected static $times = [];
+	public static function logPerformance() {
+		self::$times[] = hrtime(true);
+	}
+	public static function outputPerformance() {
+		for ($i = 1; $i < count(self::$times); ++$i) {
+			\ze::dump('Performance', $i, self::$times[$i] - self::$times[$i - 1]);
+		}
+		\ze\miscAdm::resetPerformance();
+	}
+	public static function varDumpPerformance() {
+		for ($i = 1; $i < count(self::$times); ++$i) {
+			var_dump('Performance', $i, self::$times[$i] - self::$times[$i - 1]);
+		}
+		\ze\miscAdm::resetPerformance();
+	}
+	public static function resetPerformance() {
+		self::$times[] = [];
+	}
+	
+	
+	
+	public static function debugLog($type, $filename, $message) {
+		$debugDir = \ze\cache::createDir($type, 'cache/debug_logs');
+		$debugLog = CMS_ROOT. $debugDir. $filename;
+		file_put_contents($debugLog, \ze\date::now(). ': '. $message. "\n", FILE_APPEND);
+		\ze\cache::chmod($debugLog, 0666);
+	}
+	
+	
+	
+	
 
 }

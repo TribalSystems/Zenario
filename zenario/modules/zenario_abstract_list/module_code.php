@@ -153,7 +153,7 @@ class zenario_abstract_list extends zenario_abstract_manager {
 				$this->pageSize = 10;
 			}
 			
-			$this->totalPages = (int) ceil($this->rows / $this->pageSize);
+			$this->totalPages = (int) ceil((int) $this->rows / (int) $this->pageSize);
 			for ($i = 1; $i <= $this->pageLimit && $i <= $this->totalPages; ++$i) {
 				$this->pages[$i] = '&page='. $i;
 				foreach ($importantGetRequests as $requestName => $requestValue) {

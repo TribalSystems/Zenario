@@ -1,9 +1,11 @@
 zenario_menu_responsive_push_pull.pageReady = function(containerId) {
-	$( document ).ready(function() {
+	$(document).ready(function() {
 		//Move the <nav> element to the top of the body.
 		currentPushPullEl = document.getElementById(containerId + '_push_pull_menu');
-		currentPushPullEl.remove();
-		document.body.prepend(currentPushPullEl);
+		if (currentPushPullEl) {
+			currentPushPullEl.remove();
+			document.body.prepend(currentPushPullEl);
+		}
 
 		//Also add some classes to zenario_citem div.
 		citemDiv = document.getElementById('zenario_citem');

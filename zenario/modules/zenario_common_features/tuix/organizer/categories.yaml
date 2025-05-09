@@ -137,21 +137,7 @@ zenario__library:
                         path: zenario__content/panels/content
                         refiner: category
                         branch: Yes
-                action_dropdown:
-                    label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
-                change_public_name:
-                    parent: action_dropdown
-                    priv: _PRIV_VIEW_LANGUAGE
-                    hide_in_select_mode: Yes
-                    label: Change public name(s)
-                    link:
-                        path: zenario__languages/panels/phrases
-                        branch: Yes
-                        refiner: category_public_name
-                    with_columns_set:
-                        traits.public: true
+                    record_count: item_count
                 delete:
                     priv: _PRIV_MANAGE_CATEGORY
                     label: Delete

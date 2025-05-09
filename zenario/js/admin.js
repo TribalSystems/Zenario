@@ -134,7 +134,7 @@ zenarioA.infoBox = function() {
 	zenarioA.showAJAXLoader();
 	zenario.ajax(url, false, true, false).after(function(data) {
 		zenarioA.hideAJAXLoader();
-		zenarioA.openBox(zenarioT.microTemplate('zenario_info_box', data), 'zenario_fbAdminInfoBox', 'AdminInfoBox', undefined, 405, undefined, undefined, false, true, '.zenario_infoBoxHead', false);
+		zenarioA.openBox(zenarioT.microTemplate('zenario_info_box', data), 'zenario_fbAdminInfoBox', 'AdminInfoBox', undefined, 765, undefined, undefined, false, true, '.zenario_infoBoxHead', false);
 	});
 };
 
@@ -188,7 +188,7 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 
 
 	//Commands
-		//N.b. a lot of these are deprecated and/or not used!
+		//N.B. a lot of these are deprecated and/or not used!
 
 	if (defined(flags.RELOAD_ORGANIZER)
 	 && zenarioO.init
@@ -559,6 +559,34 @@ zenarioA.lookupFileDetails = function(id) {
 };
 
 
+zenarioA.pluginDescBySlotname = function(slotName) {
+	var slot = zenario.slots[slotName],
+		moduleClassName = slot && slot.moduleClassName || '';
+	
+	return zenarioA.pluginDesc(moduleClassName);
+};
+
+
+zenarioA.pluginDesc = function(moduleClassName) {
+	
+	var text;
+
+	switch (moduleClassName) {
+		case 'zenario_nest':
+		case 'zenario_ajax_nest':
+			text = 'nest';
+			break;
+		case 'zenario_slideshow':
+			text = 'slideshow';
+			break;
+		default:
+			text = 'plugin';
+	}
+
+	return text;
+};
+
+
 zenarioA.pluginCodeName = function(instanceId, moduleClassName) {
 	
 	if (_.isObject(instanceId)) {
@@ -569,11 +597,11 @@ zenarioA.pluginCodeName = function(instanceId, moduleClassName) {
 	var text;
 
 	switch (moduleClassName) {
-		case 'zenario_plugin_nest':
+		case 'zenario_nest':
+		case 'zenario_ajax_nest':
 			text = 'N';
 			break;
 		case 'zenario_slideshow':
-		case 'zenario_slideshow_simple':
 			text = 'S';
 			break;
 		default:
@@ -596,11 +624,11 @@ zenarioA.toggleShowGrid = function() {
 	}
 };
 
-zenarioA.toggleShowEmptySlots = function(alwaysShow) {
+zenarioA.toggleShowEmptySlots = function(show, displayToastMessage) {
 	if (zenarioA.checkForEdits()) {
-		zenarioA.showEmptySlotsOn = !zenarioA.showEmptySlotsOn;
+		zenarioA.showEmptySlotsOn = show;
 
-		if (alwaysShow || zenarioA.showEmptySlotsOn) {
+		if (show) {
 			$(document.body).addClass('zenario_show_empty_slots_and_mobile_only_slots');
 		} else {
 			$(document.body).removeClass('zenario_show_empty_slots_and_mobile_only_slots');
@@ -657,7 +685,6 @@ var slotParentMouseOverLastId = false,
 	slotControlHoverInterval = 1500,
 	slotControlCloseInterval = 100,
 	openSlotControlsBox = false,
-	wasFromAdminToolbar = false,
 	slotControlClose;
 
 
@@ -693,9 +720,7 @@ zenarioA.slotParentMouseOut = function(a) {
 		clearTimeout(slotControlHide);
 	}
 	
-	if (!wasFromAdminToolbar) {
-		slotControlHide = setTimeout(zenarioA.slotParentMouseOver, slotControlHoverInterval);
-	}
+	slotControlHide = setTimeout(zenarioA.slotParentMouseOver, slotControlHoverInterval);
 };
 
 zenarioA.setSlotParents = function() {
@@ -900,7 +925,7 @@ zenarioA.adminSlotWrapperClick = function(slotName, e, isEgg) {
 	}
 	
 	//This line tries to open the drop-down menu near where the mouse cursor is
-	zenarioA.openSlotControls(slotControlsBox, e, slotName, false, true);
+	zenarioA.openSlotControls(slotControlsBox, e, slotName, true);
 	
 	//This (commented out) line would try to open the drop-down menu in its usual place
 	//at the top-right of the slot.
@@ -925,11 +950,13 @@ zenarioA.suspendStopWrapperClicks = function() {
 
 
 //Show the drop-down menu for the slot
-zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFromClickingOnSlot) {
+zenarioA.openSlotControls = function(el, e, slotName, isFromClickingOnSlot) {
+	
+	//Automatically try to close any previously open drop-down.
+	autoClose = true;
 	
 	var left, top, width,
 		thisSlotControlsBox = 'AdminSlotControls-' + slotName,
-		autoClose = !isFromAdminToolbar,
 		closeAsIsAlreadyOpen = autoClose && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible');
 	
 	el.blur();
@@ -940,25 +967,13 @@ zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar, isFrom
 	
 	if (!closeAsIsAlreadyOpen && zenarioA.checkForEdits()) {
 		
-		//If this was opened from the admin toolbar, keep the drop-down menu open for now
-		if (wasFromAdminToolbar = isFromAdminToolbar) {
-			$('#zenario_at_toolbars .zenario_at_slot_controls ul li#zenario_at_button__slot_control_dropdown ul').css('display', 'block');
-			slotParentMouseOverLastId = false;
-		}
-		
 		if (get('zenario_fbAdminSlotControls-' + slotName).innerHTML.indexOf('zenario_long_option') == -1) {
 			width = 300;
 		} else {
 			width = 280;
 		}
 		
-		if (isFromAdminToolbar) {
-			$('#zenario_at_button__slot_' + slotName).addClass('zenario_atSlotControlOpen');
-			
-			left = 200;
-			top = 0;
-		
-		} else if (isFromClickingOnSlot) {
+		if (isFromClickingOnSlot) {
 			left = 2;
 			top = 2;
 		
@@ -1009,7 +1024,7 @@ zenarioA.updateSlotControlsHTML = function(slotName) {
 		sections = {
 			info: false, notes: false, actions: false,
 			re_move_place: false, overridden_info: false, overridden_actions: false,
-			no_perms: false
+			no_perms: false, switch_to: false
 		},
 		instanceId = zenario.slots[slotName].instanceId,
 		grid = zenarioA.getGridSlotDetails(slotName);
@@ -1095,9 +1110,7 @@ zenarioA.dontCloseSlotControls = function() {
 zenarioA.closeSlotControlsAfterDelay = function() {
 	zenarioA.dontCloseSlotControls();
 	
-	if (!wasFromAdminToolbar) {
-		slotControlClose = setTimeout(zenarioA.closeSlotControls, slotControlCloseInterval);
-	}
+	slotControlClose = setTimeout(zenarioA.closeSlotControls, slotControlCloseInterval);
 };
 
 
@@ -1125,7 +1138,6 @@ zenarioA.closeSlotControls = function() {
 	if (openSlotControlsBox) {
 		zenarioA.closeBox(openSlotControlsBox, true, {effect: 'fade', duration: 200});
 		$('.zenario_slotPluginControlBox').removeClass('zenario_adminSlotControlsOpen');
-		$('.zenario_atSlotControl').removeClass('zenario_atSlotControlOpen');
 		
 		//Allow the slot controls on the admin toolbar to be closed once again
 		$('#zenario_at_toolbars .zenario_at_slot_controls ul li#zenario_at_button__slot_control_dropdown ul').css('display', '');
@@ -1133,7 +1145,7 @@ zenarioA.closeSlotControls = function() {
 };
 
 
-//This is used in the "Switch to Edit mode" and "Switch to Layout mode" buttons
+//This is used in the "Switch to Content item view" and "Switch to Layout view" buttons
 //to switch the page mode without actually closing the open slot control dropdown.
 zenarioA.switchToolbarWithSlotControlsOpen = function(el, e, slotName, toolbar) {
 	
@@ -1166,12 +1178,70 @@ zenarioA.refreshChangedPluginSlot = function(slotName, instanceId, additionalReq
 
 };
 
+//Zenario 10.1 we're experimenting with showing some options in a FAB
+//instead of directly in the slot drop-down, to reduce clutter.
+zenarioA.canShowSlotOptionsInFAB = function(slotName, sName, pageMode) {
+	return zenarioA.showSlotOptionsInFAB(slotName, sName, pageMode, true);
+};
 
+zenarioA.showSlotOptionsInFAB = function(slotName, sName, pageMode, check) {
+	
+	//When calling this function, we'll have a slot name, a name of a section in its the slot controls,
+	//and a page mode.
+	var key = {},
+		slot = zenario.slots[slotName],
+		slotControls = slot.slotControls,
+		section = slotControls[sName],
+		controlNames = [], controlName, control;
+	
+	//Loop through that section of the slot controls for that slot, looking for anything that's visible
+	//in that page mode, and has the "show_as_option_in_fab" property.
+	foreach (section as controlName => control) {
+		if (control.show_as_option_in_fab
+		 && control.page_modes
+		 && control.page_modes[pageMode]
+		 && !zenarioT.hidden(control, zenarioA)) {
+			key[controlName] = control.label;
+			controlNames.push(controlName);
+		}
+	}
+	
+	if (check) {
+		return controlNames.length > 0;
+	}
+	
+	//Open an FAB, with the visible labels that should be there in the key for the fillAdminBox() method to read.
+	zenarioAB.open('zenario_slot_insert_replace', key, undefined, undefined, function(key, values) {
+		
+		//When saving the FAB, see which radio was selected.
+		var ci, pick_new_plugin, optValues = values.details;
+		
+		//N.b. the way this is written here will make sure the selected option was one of the ones
+		//in the original list of options that should be there.
+		foreach (controlNames as ci => controlName) {
+			if (optValues[controlName]) {
+				control = section[controlName];
+				
+				//Call the zenarioA.pickNewPlugin() function for the control that has its option selected.
+				//N.b. I don't want to use an eval() here, so instead I'll need to put the parameters for the
+				//function call in another TUIX property.
+				if (pick_new_plugin = control.pick_new_plugin) {
+					zenarioA.pickNewPlugin(
+						undefined, slotName,
+						pick_new_plugin.level, pick_new_plugin.is_nest, pick_new_plugin.preselect
+					);
+				}
+			}
+		}
+	});
+};
 
 
 zenarioA.pickNewPluginSlotName = false;
 zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentChoice) {
-	el.blur();
+	if (el) {
+		el.blur();
+	}
 	
 	zenarioA.pickNewPluginSlotName = slotName;
 	zenarioA.pickNewPluginLevel = level;
@@ -1184,7 +1254,8 @@ zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentC
 	
 	if (isNest === undefined) {
 		switch (slot.moduleClassName) {
-			case 'zenario_plugin_nest':
+			case 'zenario_nest':
+			case 'zenario_ajax_nest':
 				isNest = true;
 				break;
 			case 'zenario_slideshow':
@@ -1308,21 +1379,57 @@ zenarioA.pluginSlotEditSettings = function(el, slotName, fabPath, requests, tab)
 	return false;
 };
 
-//Moving modules
-zenarioA.movePlugin = function(el, slotName, siteWide) {
+
+
+//Moving plugin placements
+var zMoveSource,
+	zMoveSitewide,
+	zMoveCopyPlacement;
+
+zenarioA.movePlugin = function(el, slotName, siteWide, copyPluginPlacement) {
 	el.blur();
 	
-	zenarioA.floatingBox(phrase.movePluginDesc, true, 'question', true, true, undefined, undefined, function() {
+	//N.B. the "copy placement" option only works on the item layer.
+	if (siteWide) {
+		copyPluginPlacement = false;
+	}
+	
+	var msg, mrg = {plugin: zenarioA.pluginDescBySlotname(slotName)};
+	if (copyPluginPlacement) {
+		msg = phrase.movePluginCopyPlacementDesc;
+	} else {
+		msg = phrase.movePluginDesc;
+	}
+	msg = zenario.applyMergeFields(msg, mrg);
+	
+	zenarioA.floatingBox(msg, true, 'question', true, true, undefined, undefined, function() {
 		
 		zenarioA.toggleShowEmptySlots(true);
 		
-		zenarioA.moveSource = slotName;
-		zenarioA.moveSitewide = siteWide;
+		zMoveSource = slotName;
+		zMoveSitewide = siteWide;
+		zMoveCopyPlacement = copyPluginPlacement;
 		
 		//Only suggest that slots in the body be moved to other slots in the body.
 		//And vice versa, only suggest that slots in the site-wide header/footer be moved to other site-wide slots.
-		$(siteWide? '.zenario_slot_in_header,.zenario_slot_in_footer' : '.zenario_slot_in_body').siblings('.zenario_slotPluginControlBox').addClass('zenario_moveDestination');
-		$pluginContainer(slotName + '-control_box').removeClass('zenario_moveDestination').addClass('zenario_moveSource');
+		//When copying, we can't use the "swap" feature, so only offer empty slots as a choice
+		var $targetSlots,
+			destClassName;
+		
+		if (siteWide) {
+			$targetSlots = $('.zenario_slot_in_header,.zenario_slot_in_footer');
+		} else {
+			$targetSlots = $('.zenario_slot_in_body');
+		}
+		
+		if (copyPluginPlacement) {
+			destClassName = 'zenario_copyDestination';
+		} else {
+			destClassName = 'zenario_moveDestination';
+		}
+		
+		$targetSlots.siblings('.zenario_slotPluginControlBox').addClass(destClassName);
+		$pluginContainer(slotName + '-control_box').removeClass(destClassName).addClass('zenario_moveSource');
 	});
 	
 	return false;
@@ -1331,14 +1438,15 @@ zenarioA.movePlugin = function(el, slotName, siteWide) {
 zenarioA.doMovePlugin = function(el, moveDestination) {
 	el.blur();
 	
-	var moveSource = zenarioA.moveSource,
-		siteWide = zenarioA.moveSitewide;
+	var moveSource = zMoveSource,
+		siteWide = zMoveSitewide,
+		copyPluginPlacement = zMoveCopyPlacement;
 	
 	zenarioA.cancelMovePlugin(el);
 	
 	if (moveSource && moveDestination) {
 		if (zenarioA.toolbar == 'edit') {
-			zenarioA.doMovePlugin2(moveSource, moveDestination, 1);
+			zenarioA.doMovePlugin2(moveSource, moveDestination, 1, copyPluginPlacement);
 		
 		} else if (zenarioA.toolbar == 'layout') {
 			zenario.moduleAJAX('zenario_common_features', {movePlugin: 1, level: siteWide? 3 : 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false).after(function(html) {
@@ -1346,9 +1454,12 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 				if (zenarioA.loggedOut(html)) {
 					return;
 				}
+				
+				var mrg = {plugin: zenarioA.pluginDescBySlotname(moveSource)},
+					buttonMsg = zenario.applyMergeFields(phrase.movePlugin, mrg);
 			
-				zenarioA.floatingBox(html, phrase.movePlugin, 'warning', false, false, undefined, undefined, function() {
-					zenarioA.doMovePlugin2(moveSource, moveDestination, siteWide? 3 : 2);
+				zenarioA.floatingBox(html, buttonMsg, 'warning', false, false, undefined, undefined, function() {
+					zenarioA.doMovePlugin2(moveSource, moveDestination, siteWide? 3 : 2, copyPluginPlacement);
 				});
 			});
 		}
@@ -1357,9 +1468,22 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 	return false;
 };
 
-zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
+zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level, copyPluginPlacement) {
 	
-	zenario.moduleAJAX('zenario_common_features', {movePlugin: 1, level: level, slotNameSource: moveSource, slotNameDestination: moveDestination, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true).after(function(error) {
+	//N.B. the "copy placement" option only works on the item layer.
+	if (level != 1) {
+		copyPluginPlacement = false;
+	}
+	
+	var requests = {level: level, slotNameSource: moveSource, slotNameDestination: moveDestination, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion};
+	
+	if (copyPluginPlacement) {
+		requests.copyPluginPlacement = 1;
+	} else {
+		requests.movePlugin = 1;
+	}
+	
+	zenario.moduleAJAX('zenario_common_features', requests, true).after(function(error) {
 	
 		if (error) {
 			zenarioA.showMessage(error);
@@ -1367,7 +1491,9 @@ zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
 		} else {
 			var cb = new zenario.callback;
 			
-			cb.add(zenarioA.refreshChangedPluginSlot(moveSource, '', zenarioA.importantGetRequests));
+			if (!copyPluginPlacement) {
+				cb.add(zenarioA.refreshChangedPluginSlot(moveSource, '', zenarioA.importantGetRequests));
+			}
 			cb.add(zenarioA.refreshChangedPluginSlot(moveDestination, '', zenarioA.importantGetRequests));
 			
 			cb.after(function(data1, data2, data3) {
@@ -1384,9 +1510,11 @@ zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
 zenarioA.cancelMovePlugin = function(el) {
 	if (el) el.blur();
 	
-	delete zenarioA.moveSource;
-	delete zenarioA.moveSitewide;
-	$('.zenario_slotPluginControlBox').removeClass('zenario_moveDestination').removeClass('zenario_moveSource');
+	zMoveSource =
+	zMoveSitewide =
+	zMoveCopyPlacement = undefined;
+	
+	$('.zenario_slotPluginControlBox').removeClass(['zenario_copyDestination', 'zenario_moveDestination', 'zenario_moveSource']);
 	
 	return false;
 };
@@ -1488,16 +1616,10 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		className = flags.NAMESPACE,
 		layoutPreview = flags.LAYOUT_PREVIEW,
 		slotControls = flags.SLOT_CONTROLS,
-		slotControlsCSSClass = flags.SLOT_CONTROLS_CSS_CLASS,
 		domLayoutPreview = get(containerId + '-layout_preview');
 	
 	if (!moduleId) {
 		instanceId = 0;
-	}
-	
-	//Add a css class around slots that are being edited using the WYSIWYG Editor
-	if (beingEdited) {
-		slotControlsCSSClass += ' zenario_slot_being_edited';
 	}
 	
 	if (layoutPreview) {
@@ -1516,9 +1638,6 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		}
 	}
 	
-	//Set the CSS class for the slot's admin wrapper/slot controls
-	get(containerId + '-wrap').className = slotControlsCSSClass;
-	
 	//If any slots are being edited, set a warning message for if an admin tries to leave the page 
 	window.onbeforeunload = zenarioT.onbeforeunload;
 	
@@ -1533,10 +1652,12 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 	
 	//Refresh the slot's innerHTML
 	get(plgslt_ + slotName).innerHTML = resp.responseText;
-	get('zenario_fbAdminSlotControlsContents-' + slotName).innerHTML = slotControls;
 	
 	//Set the current instance id
 	zenario.slot([[slotName, instanceId, moduleId, level, slideId, undefined, beingEdited, isVersionControlled, isMenu]]);
+	
+	//Set the slot controls
+	zenarioA.setSlotControls(slotName, JSON.parse(slotControls));
 	
 	
 	//Set tooltips for the area, if we are using tooltips
@@ -1551,6 +1672,37 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, slideId, resp
 		zenarioA.imagesWarning(flags.IMAGES_BLOCKED_TITLE, flags.IMAGES_BLOCKED_MSG);
 	}
 };
+
+
+zenarioA.setSlotControls = function(slotName, tuix) {
+	
+	zenario.slots[slotName].slotControls = tuix;
+	
+	//Don't try to render the slot controls if the admin toolbar and other widgets are currently hidden!
+	if (!zenarioA.adminToolbarOnPage) {
+		return;
+	}
+	
+	var containerId = plgslt_ + slotName,
+		m = {
+			slotName: slotName,
+			containerId: containerId,
+			tuix: tuix
+		};
+	
+	get('zenario_fbAdminSlotControlsContents-' + slotName).innerHTML = zenarioT.microTemplate('zenario_slot_controls_dropdown', m);
+};
+
+//Given the TUIX for a button in the slot control dropdown, return whether it should be shown.
+zenarioA.slotControlVisible = function(control, m) {
+	
+	return _.isObject(control)
+		&& control.label
+		&& !control.show_as_option_in_fab
+		&& !zenarioT.hidden(control, zenarioA, undefined, undefined, undefined, undefined, undefined, undefined, undefined, m.tuix, m.slotName);
+	
+};
+
 
 
 zenarioA.checkSlotsBeingEdited = function(dontUpdateBodyClass) {
@@ -1925,14 +2077,89 @@ zenarioA.loggedOutIframeCheck = function(message, messageType) {
 	return false;
 };
 
-zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay) {
+
+// Some testing code that turned out to be more complicated to implement than I thought.
+
+//var zenarioFF;
+//zenarioA.floatingForm = function(cssClass, fields, values, buttonsHTML, modal, addCancel, cancelPhrase, onOkay) {
+//	
+//	//Create an instance of the admin forms library for the view options box
+//	if (!defined(zenarioFF)) {
+//		zenarioFF = window.zenarioFF = new zenarioAF();
+//		zenarioFF.init('zenarioFF', 'zenario_admin_box');
+//		
+//		zenarioFF.redrawTab = function() {
+//			var cb = new zenario.callback;
+//			$('#zenario_popupForm').html(zenarioFF.drawTUIX(zenarioFF.tuix.tabs.details.fields, undefined, cb));
+//			
+//			zenario.addJQueryElements('#zenario_popupForm ', true);
+//			cb.done();
+//		}
+//	}
+//	
+//	var fields = zenario.clone(fields),
+//		cb = new zenario.callback,
+//		fieldName, val, html;
+//	
+//	if (!_.isEmpty(values)) {
+//		foreach (values as fieldName => val) {
+//			if (fields[fieldName]) {
+//				fields[fieldName].value = val;
+//			}
+//		}
+//	}
+//	
+//	html = zenarioFF.drawTUIX(fields, undefined, cb);
+//	zenarioA.floatingBox(html, buttonsHTML, '', modal, false, addCancel, cancelPhrase, onOkay, cssClass, 'zenario_popout_form');
+//	
+//	zenario.addJQueryElements('#zenario_popupForm ', true);
+//	cb.done();
+//};
+//
+//
+//	Example of this:
+//	
+//		var fields = {
+//				test1: {
+//					ord: 1,
+//					snippet: {
+//						p: 'Hello world!'
+//					}
+//				},
+//				test2: {
+//					ord: 2,
+//					type: 'text',
+//					value: 'Testing'
+//				}
+//			};
+//		zenarioA.floatingForm('zenario_fbAdmin zenario_prompt zenario_test_form', fields, [], 'Sure thing', true, true, undefined, function() { console.log('Pressed okay!'); });
+
+
+//More simple version of the experiment above
+zenarioA.floatingForm = function(cssClass, html, buttonsHTML, modal, addCancel, cancelPhrase, onOkay) {
+	
+	zenarioA.floatingBox(html, buttonsHTML, '', modal, false, addCancel, cancelPhrase, onOkay, cssClass, 'zenario_popout_form');
+	zenario.addJQueryElements('#zenario_popupForm ', true);
+};
+
+
+zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel, cancelPhrase, onOkay, cssClass, microTemplate) {
 	var defaultModalValue = false,
 		html,
 		m;
 	
-	
 	if (htmlEscapeMessage) {
 		message = htmlspecialchars(message, true);
+	}
+	
+	
+	//Add some shortcuts to trigger some of these options using a string from the bFlag() function
+	if (buttonsHTML === 'OK') {
+		addCancel = false;
+		buttonsHTML = true;
+	} else if (buttonsHTML === 'CANCEL') {
+		addCancel = true;
+		buttonsHTML = '';
 	}
 	
 	if (buttonsHTML === true) {
@@ -1986,10 +2213,11 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 		buttonsHTML: buttonsHTML
 	};
 	
-	html = zenarioT.microTemplate('zenario_popout_message', m);
+	cssClass = cssClass || 'zenario_fbAdmin zenario_prompt';
+	html = zenarioT.microTemplate(microTemplate || 'zenario_popout_message', m);
 	
 	delete zenarioA.onCancelFloatingBox;
-	zenarioA.openBox(html, 'zenario_fbAdmin zenario_prompt', 'AdminMessage', undefined, ADMIN_MESSAGE_BOX_WIDTH, 50, 17, modal, true, false, false);
+	zenarioA.openBox(html, cssClass, 'AdminMessage', undefined, ADMIN_MESSAGE_BOX_WIDTH, 50, 17, modal, true, false, false);
 	
 	//Add the command to close the floating box to each button in the box.
 	//Note that it must come *before* any other action.
@@ -2048,7 +2276,7 @@ zenarioA.tooltips = function(target, options) {
 	
 	if (!defined(options.tooltipClass)) {
 		options.tooltipClass = 'zenario_admin_tooltip';
-		//N.b. this is deprecated and will need to be changed to
+		//N.B. this is deprecated and will need to be changed to
 			//options.classes = {"ui-tooltip": "zenario_admin_tooltip"};
 		//at some point!
 	}
@@ -2075,6 +2303,7 @@ zenarioA.addImagePropertiesButtons = function(path) {
 				imageNum = el.className.match(/zenario_image_num__(\d+)__/),
 				mobImageId = el.className.match(/zenario_mob_image_id__(\d+)__/),
 				mobImageNum = el.className.match(/zenario_mob_image_num__(\d+)__/),
+				usesCropAndZoom = el.className.match(/\bzenario_crop_properties\b/),
 				slotName = zenario.getSlotnameFromEl(el),
 				eggId = zenario.getSlotnameFromEl(el, false, true),
 				slot = slotName && zenario.slots[slotName],
@@ -2117,7 +2346,7 @@ zenarioA.addImagePropertiesButtons = function(path) {
 				$el.before($imagePropertiesButton);
 			
 				$imagePropertiesButton.on('click', function() {
-					return zenarioA.imageProperties(imageId, slotName, instanceId, eggId);
+					return zenarioA.imageProperties(imageId, slotName, instanceId, eggId, usesCropAndZoom);
 				});
 				
 				if (mobImageId) {
@@ -2126,7 +2355,7 @@ zenarioA.addImagePropertiesButtons = function(path) {
 					$el.before($imagePropertiesButton);
 				
 					$imagePropertiesButton.on('click', function() {
-						return zenarioA.imageProperties(mobImageId, slotName, instanceId, eggId);
+						return zenarioA.imageProperties(mobImageId, slotName, instanceId, eggId, usesCropAndZoom);
 					});
 				}
 			}
@@ -2134,7 +2363,7 @@ zenarioA.addImagePropertiesButtons = function(path) {
 	}
 };
 
-zenarioA.imageProperties = function(imageId, slotName, instanceId, eggId) {
+zenarioA.imageProperties = function(imageId, slotName, instanceId, eggId, usesCropAndZoom) {
 	
 	if (zenarioA.checkForEdits()) {
 		zenarioAB.open('zenario_image', {
@@ -2142,7 +2371,7 @@ zenarioA.imageProperties = function(imageId, slotName, instanceId, eggId) {
 			slotName: slotName,
 			instanceId: instanceId,
 			eggId: eggId
-		}, 'crop_1');
+		}, usesCropAndZoom? 'crop_1' : undefined);
 	}
 	
 	return false;
@@ -2247,7 +2476,7 @@ zenarioA.addMediaToTinyMCE = function(prefix) {
 
 
 //This function will open Organizer if the user clicks on one of the "file browser" buttons in tinyMCE
-zenarioA.fileBrowser = function(tinyCallback, value, meta) {
+zenarioA.fileBrowser = function(tinyCallback, value, meta, maxImageWidth) {
 	
 	
 	//value, meta.filetype
@@ -2356,10 +2585,13 @@ zenarioA.fileBrowser = function(tinyCallback, value, meta) {
 				usage = key.usage,
 				isImage = !usage || usage == 'image',
 				shortChecksum = row.short_checksum,
-				filename = row.filename;
+				filename = row.filename,
+				width = row.width,
+				height = row.height,
+				publicLink = row.public_link;
 			
-			if (isImage && shortChecksum && filename) {
-				imageURL = 'public/images/' + shortChecksum + '/' + encodeURI(filename);
+			if (publicLink) {
+				imageURL = encodeURI(publicLink);
 			
 			} else {
 				imageURL = 'zenario/file.php?c=' + (shortChecksum || row.checksum);
@@ -2382,9 +2614,18 @@ zenarioA.fileBrowser = function(tinyCallback, value, meta) {
 			//and it puts garbage into the width and/or height boxes.
 			//If we know what the width and height should be, try to change them back to what we
 			//think they should be to prevent this issue.
-			if (row.width && row.height) {
-				extraFields.dimensions = row.width + ',' + row.height;
+			
+			//Also, if we know the max width of the slot, try to limit images to that size and
+			//scale them down automatically if they'd be too wide.
+			if (width && height) {
+				if (maxImageWidth && width > maxImageWidth) {
+					height = Math.floor(height * maxImageWidth / width);
+					width = maxImageWidth;
+				}
+				extraFields.width = '' + width;
+				extraFields.height = '' + height;
 			}
+			
 			extraFields.alt = row.alt_tag;
 			
 			tinyCallback(imageURL, extraFields);
@@ -2594,7 +2835,9 @@ zenarioA.formatSKItemField = function(value, column) {
 			if (!value) {
 				value = phrase.core;
 			} else if (zenarioA.module[value]) {
-				value = zenarioA.module[value].display_name;
+				value = zenarioA.module[value].class_name + ' (' + zenarioA.module[value].display_name + ')';
+			} else {
+				value = value + ' (' + phrase.module_not_found + ')';
 			}
 			
 		} else if (format == 'filesize' && value == 1*value) {
@@ -3157,7 +3400,6 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	 && (buttons = section.buttons)
 	 && (button = buttons[buttonId = 'start_editing'] || buttons[buttonId = 'redraft'])
 	 && (button.ajax
-		 //zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 	 && !zenarioT.hidden(undefined, zenarioAT, undefined, buttonId, button, undefined, undefined, section))) {
 		
 		//Create a copy of it
@@ -3433,12 +3675,16 @@ zenarioA.checkToastThisPageLoad = function() {
 	}
 };
 
-
-
-
-zenarioA.isHtaccessWorking = function() {
-	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/includes/test_files/is_htaccess_working.txt', true) == 'Yes';
+zenarioA.changeAdminSetting = function(request) {
+	zenario.ajax(
+		zenario.AJAXLink('zenario_common_features'),
+		request
+	).after(function() {
+		document.location.reload(true);
+	});
 };
+
+
 
 
 //Default error handler for lost AJAX requests
@@ -3578,7 +3824,7 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
         ajaxURL = URLBasePath + 'zenario/admin/quick_ajax.php?_get_link_statuses=1',
         links = [], $links = [],
         isAbsolutePath = new RegExp('^(?:[a-z]+:)?//', 'i'),
-        query = 'div' + (!defined(containerId)? '' : '#' + containerId) + '.zenario_slot a[href][href!="#"]';
+        query = 'x-zenario-admin-slot-wrapper:not(.zenario_slot_being_edited) div' + (!defined(containerId)? '' : '#' + containerId) + '.zenario_slot a[href][href!="#"]';
     
     $(query).each(function(ei, el) {
         
@@ -3703,7 +3949,7 @@ zenarioA.init = function(
 	zenarioA.adminSettings = adminSettings;
 	zenarioA.adminPrivs = adminPrivs;
 	
-	//N.b. we used to save the value of zenarioA.showEmptySlotsOn in the session
+	//N.B. we used to save the value of zenarioA.showEmptySlotsOn in the session
 	//so that it would stay as it was if you reloaded the same page.
 	//However this ability has since been removed and we now always start a page load
 	//with it in the "off" position.
@@ -3767,7 +4013,11 @@ zenarioA.init = function(
 		if (primaryDomainIsSet && !onAdminDomain && !onPrimaryDomain) {
 			zenarioA.toast({
 				message_type: 'error',
-				message: zenario.applyMergeFields(phrase.notOnPrimaryDomain, {primary_domain: primaryDomain, current_domain: currentDomain}),
+				message: zenario.applyMergeFieldsIntoHTML(phrase.notOnPrimaryDomain, {
+					primary_domain: primaryDomain,
+					current_domain: currentDomain,
+					org_link: URLBasePath + 'organizer.php#zenario__administration/panels/site_settings//domains'
+				}),
 				options: {
 					timeOut: 0,
 					disableTimeOut: true,

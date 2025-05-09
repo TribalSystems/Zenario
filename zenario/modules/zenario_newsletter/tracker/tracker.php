@@ -44,7 +44,7 @@ if (!empty($_GET['t'])
 			time_received = NOW()
 		WHERE tracker_hash = '". ze\escape::asciiInSQL($_GET['t']). "'
 		  AND time_received IS NULL";
-	ze\sql::update($sql);
+	ze\sql::cacheFriendlyUpdate($sql);
 }
 
 header('Content-type: image/gif');

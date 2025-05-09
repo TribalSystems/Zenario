@@ -4,7 +4,7 @@ zenario_videos_manager:
     panels:
         videos:
             title: Video library
-            no_items_message: No videos found
+            no_items_message: There are no videos.
             panel_type: multi_line_list_or_grid
             use_tall_rows: true
             item: 
@@ -109,7 +109,40 @@ zenario_videos_manager:
                     label: Edit video
                     admin_box:
                         path: zenario_videos_manager__video
+                category_dropdown:
+                    label: Categories
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                categories_add:
+                    #This button only appears if multiple videos are selected.
+                    priv: _PRIV_MANAGE_VIDEOS
+                    parent: category_dropdown
+                    label: Add to categories...
+                    multiple_select_only: true
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_video_categories_add
+                    disabled_tooltip: Categories are not enabled for this content type
+                categories:
+                    #This button only appears if exactly 1 video is selected.
+                    #It allows an admin to add/remove a video to/from
+                    #any number of categories all within 1 admin box.
+                    parent: category_dropdown
+                    label: Change categories...
+                    admin_box:
+                        path: zenario_video_categories
+                categories_remove:
+                    #This button only appears if multiple videos are selected.
+                    priv: _PRIV_MANAGE_VIDEOS
+                    parent: category_dropdown
+                    label: Remove from categories...
+                    multiple_select_only: true
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_video_categories_remove
+                    disabled_tooltip: Categories are not enabled for this content type
                 delete:
+                    priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     label: Delete
                     multiple_select_tooltip: Delete these videos?
@@ -140,12 +173,14 @@ zenario_videos_manager:
                 #         iframe: true
                 #         transition: "none"
                 add_embed_code:
+                    priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
                     label: Add a video by URL
                     admin_box:
                         path: zenario_videos_manager__video
                 update_vimeo_privacy:
+                    priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     label: "Update all videos' privacy from Vimeo"
                     ajax:

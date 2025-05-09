@@ -85,23 +85,19 @@ zenario_admin:
                             parent: _PRIV_EDIT_MENU_TEXT
                             label: Edit all of a menu node's details
                             label_class: zfab_core_perm
-                        _PRIV_ADD_MENU_ITEM:
+                        _PRIV_CREATE_DELETE_MENU_ITEM:
                             parent: _PRIV_EDIT_MENU_ITEM
-                            label: Create a menu node
-                            label_class: zfab_core_perm
-                        _PRIV_DELETE_MENU_ITEM:
-                            label: Delete a menu node
+                            label: Create/delete a menu node
                             label_class: zfab_core_perm
                         _PRIV_REORDER_MENU_ITEM:
+                            parent: _PRIV_EDIT_MENU_ITEM
                             label: Reorder menu nodes
                             label_class: zfab_core_perm
-                        _PRIV_ADD_MENU_SECTION:
-                            label: Create a menu section
+                        _PRIV_CREATE_DELETE_MENU_SECTION:
+                            parent: _PRIV_EDIT_MENU_ITEM
+                            label: Create/delete a menu section
                             label_class: zfab_core_perm zfab_scary_option
-                        _PRIV_DELETE_MENU_SECTION:
-                            label: Delete a menu section
-                            label_class: zfab_core_perm zfab_scary_option
-                    value: "_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_ADD_MENU_ITEM,_PRIV_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
+                    value: "_PRIV_EDIT_MENU_TEXT,_PRIV_EDIT_MENU_ITEM,_PRIV_CREATE_DELETE_MENU_ITEM,_PRIV_REORDER_MENU_ITEM"
                 
                 perm_publish_disabled:
                     is_admin_permission: false
@@ -168,10 +164,7 @@ zenario_admin:
                             label_class: zfab_core_perm
                         #_PRIV_MANAGE_DOCUMENTS:
                         #    label: Manage documents
-                        _PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST:
-                            label: May receive content notifications
-                            label_class: zfab_core_perm
-                    value: "_PRIV_PUBLISH_CONTENT_ITEM,_PRIV_CANCEL_CHECKOUT,_PRIV_DELETE_TRASHED_CONTENT_ITEMS,_PRIV_MANAGE_CATEGORY,_PRIV_MANAGE_EMAIL_TEMPLATE,_PRIV_VIEW_LANGUAGE,_PRIV_MANAGE_LANGUAGE_CONFIG,_PRIV_MANAGE_LANGUAGE_PHRASE,_PRIV_VIEW_REUSABLE_PLUGIN,_PRIV_MANAGE_REUSABLE_PLUGIN,_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST"
+                    value: "_PRIV_PUBLISH_CONTENT_ITEM,_PRIV_CANCEL_CHECKOUT,_PRIV_DELETE_TRASHED_CONTENT_ITEMS,_PRIV_MANAGE_CATEGORY,_PRIV_MANAGE_EMAIL_TEMPLATE,_PRIV_VIEW_LANGUAGE,_PRIV_MANAGE_LANGUAGE_CONFIG,_PRIV_MANAGE_LANGUAGE_PHRASE,_PRIV_VIEW_REUSABLE_PLUGIN,_PRIV_MANAGE_REUSABLE_PLUGIN"
                 
                 perm_designer_disabled:
                     is_admin_permission: false

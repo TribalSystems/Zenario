@@ -152,7 +152,7 @@ class zenario_common_features__admin_boxes__writer_profile extends ze\moduleBase
 			} else {
 				$thumbnailFilePath = ze\file::getPathOfUploadInCacheDir($values['details/photo']);
 				$thumbnailFileFilename = basename(ze\file::getPathOfUploadInCacheDir($values['details/photo']));
-				$details['photo'] = ze\file::addToDatabase('image', $thumbnailFilePath, $thumbnailFileFilename);
+				$details['photo'] = ze\fileAdm::addToDatabase('image', $thumbnailFilePath, $thumbnailFileFilename);
 			}
 		} else {
 			$details['photo'] = null;

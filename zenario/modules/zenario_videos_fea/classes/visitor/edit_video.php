@@ -115,7 +115,7 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 								$vimeoThumbnail = zenario_videos_manager::getVimeoVideoThumbnail($videoData['link']);
 								$vimeoThumbnailData = file_get_contents($vimeoThumbnail);
 						
-								$newVimeoThumbnailImageId = ze\file::addFromString('zenario_video_image', $vimeoThumbnailData, 'video_' . $vimeoVideoId . '_thumbnail.jpg');
+								$newVimeoThumbnailImageId = ze\fileAdm::addFromString('zenario_video_image', $vimeoThumbnailData, 'video_' . $vimeoVideoId . '_thumbnail.jpg');
 								$details['image_id'] = $newVimeoThumbnailImageId;
 							}
 						}
@@ -262,7 +262,7 @@ class zenario_videos_fea__visitor__edit_video extends zenario_videos_fea__visito
 					$currentVimeoThumnailId = $this->video['image_id'];
 					if ($currentVimeoThumnailId) {
 						$width = $height = $imageUrl = false;
-						ze\file::imageLink($width, $height, $imageUrl, $currentVimeoThumnailId);
+						ze\image::link($width, $height, $imageUrl, $currentVimeoThumnailId);
 						$this->data['videoThumbnailHref'] = $imageUrl;
 					} else {
 						$status = $videoData['status'];

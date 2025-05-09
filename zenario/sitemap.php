@@ -50,7 +50,15 @@ $sql = "
 	LEFT JOIN ". DB_PREFIX. "special_pages AS sp
 	   ON c.equiv_id = sp.equiv_id
 	  AND c.type = sp.content_type
-	  AND sp.page_type IN ('zenario_not_found', 'zenario_no_access')
+	  AND sp.page_type IN (
+	  	'zenario_not_found',
+	  	'zenario_no_access',
+	  	'zenario_logout',
+	  	'zenario_change_email',
+	  	'zenario_change_password',
+	  	'zenario_password_reset',
+	  	'zenario_profile'
+	  )
 	WHERE c.status IN ('published_with_draft','published')
 	  AND v.in_sitemap = 1
 	  AND tc.privacy = 'public'

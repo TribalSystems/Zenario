@@ -59,6 +59,16 @@ class zenario_users__organizer__groups extends zenario_users {
 			$result = ze\sql::select($sql);
 			$data = ze\sql::fetchRow($result);
 			$item['content_items'] = $data[0];
+			
+			$item['dataset_order'] = ze\admin::phrase(
+				'"[[dataset_tab_name]]" (field [[field_ord]])',
+				[
+					'dataset_tab_name' => $item['dataset_tab_name'],
+					'field_ord' => $item['field_ord']
+				]
+			);
+			
+			$item['group_label'] = $item['label'];
 		}
 	}
 	

@@ -263,10 +263,6 @@ class zenario_abstract_manager extends ze\moduleBaseClass {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($path != static::$dsInfo['adminBoxPath']) return;
-		
-		if (!$box['key']['id']) {
-			$box['key']['id'] = ze\sql::getNextAutoIncrementId(static::table());
-		}
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {

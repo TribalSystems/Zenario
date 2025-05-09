@@ -27,11 +27,11 @@ zenario_country_manager__region:
                     values:
                         region: 
                             label: 'Region'
-                            ord: '1'
+                            ord: 1
                         state: 
                             label: 'State'
-                            ord: '2'
+                            ord: 2
                         city: 
                             label: 'City'
-                            ord: '3'
+                            ord: 3
                     value: region

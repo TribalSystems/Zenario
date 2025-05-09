@@ -25,7 +25,7 @@ zenario__layouts:
                 code:
                     title: ID
                     format: id
-                    show_by_default: true
+                    always_show: true
                     db_column: l.layout_id
                     sort_column: l.layout_id
                     searchable: true
@@ -33,22 +33,29 @@ zenario__layouts:
                     width: xxsmall
                 name:
                     title: Details
-                    show_by_default: true
+                    always_show: true
                     db_column: l.name
                     searchable: true
                     width: xxlarge
                     html: true
                     css_class: label_column
+                default_used:
+                    title: Default usage
+                    always_show: true
+                    width: xlarge
+                    html: true
+                    parent: name
                 summary:
                     title: Summary
-                    show_by_default: true
+                    always_show: true
                     width: xlarge
                     html: true
                 skin_name:
+                    parent: summary
                     title: Skin
-                    db_column: s.display_name
+                    db_column: IF(s.display_name != '', CONCAT(s.display_name, ' ', 'skin'), '')
                     searchable: true
-                    hidden: true
+                    always_show: true
                 
                 default:
                     #title: Default layout for content type
@@ -85,24 +92,18 @@ zenario__layouts:
                 header_and_footer:
                     db_column: l.header_and_footer
                 content_type:
-                    title: Content Type
+                    title: Content type
                     db_column: l.content_type
-                    show_by_default: false
+                    always_show: true
                     format: enum
                     searchable: true
                     ascii_only: true
                     width: small
                 where_used:
                     title: Usage
-                    show_by_default: true
+                    always_show: true
                     width: xlarge
                     html: true
-                default_used:
-                    title: Default Usage
-                    show_by_default: true
-                    width: xlarge
-                    html: true
-                    parent: name
                 grid_name:
                     exists: true
                 usage_status:

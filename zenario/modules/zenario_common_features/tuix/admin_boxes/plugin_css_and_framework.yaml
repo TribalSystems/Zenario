@@ -131,7 +131,7 @@ plugin_settings:
                 custom_framework_info:
                     indent: 1
                     snippet:
-                        html: 'This is a custom framework and may not have compatibility with the plugin's settings.'
+                        html: "This is a custom framework and may not have compatibility with the plugin's settings."
                 framework_source:
                     indent: 1
                     full_width: true

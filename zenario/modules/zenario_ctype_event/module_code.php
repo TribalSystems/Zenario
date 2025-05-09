@@ -683,20 +683,30 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if (ze::get('refiner__content_type') != 'event') {
-			if ($panel['columns']['zenario_ctype_event__start_date'] ?? false) {
-				unset($panel['columns']['zenario_ctype_event__start_date']);
-			}
-
-			if ($panel['columns']['zenario_ctype_event__start_time'] ?? false) {
-				unset($panel['columns']['zenario_ctype_event__start_time']);
-			}
-
-			if ($panel['columns']['zenario_ctype_event__end_date'] ?? false) {
-				unset($panel['columns']['zenario_ctype_event__end_date']);
-			}
-
-			if ($panel['columns']['zenario_ctype_event__end_time'] ?? false) {
-				unset($panel['columns']['zenario_ctype_event__end_time']);
+			if ($path == 'zenario__content/panels/trashed_content_items' || $path == 'zenario__content/panels/hidden_content_items') {
+				if ($panel['columns']['zenario_ctype_event__start_date'] ?? false) {
+					$panel['columns']['zenario_ctype_event__start_date']['show_by_default'] = false;
+				}
+	
+				if ($panel['columns']['zenario_ctype_event__end_date'] ?? false) {
+					$panel['columns']['zenario_ctype_event__end_date']['show_by_default'] = false;
+				}
+			} else {
+				if ($panel['columns']['zenario_ctype_event__start_date'] ?? false) {
+					unset($panel['columns']['zenario_ctype_event__start_date']);
+				}
+	
+				if ($panel['columns']['zenario_ctype_event__start_time'] ?? false) {
+					unset($panel['columns']['zenario_ctype_event__start_time']);
+				}
+	
+				if ($panel['columns']['zenario_ctype_event__end_date'] ?? false) {
+					unset($panel['columns']['zenario_ctype_event__end_date']);
+				}
+	
+				if ($panel['columns']['zenario_ctype_event__end_time'] ?? false) {
+					unset($panel['columns']['zenario_ctype_event__end_time']);
+				}
 			}
 		}
 	}

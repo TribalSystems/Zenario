@@ -251,9 +251,9 @@ class zenario_location_listing extends ze\moduleBaseClass {
 
 				if ($row['image_id'] && $this->setting('show_featured_image')) {
 					$cssRules = [];
-					$mergeFields['Image_HTML'] = ze\file::imageHTML(
+					$mergeFields['Image_HTML'] = ze\image::html(
 						$cssRules, $preferInlineStypes = true,
-						$row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('retina'), $this->setting('webp')
+						$row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('retina')
 					);
 				}
 

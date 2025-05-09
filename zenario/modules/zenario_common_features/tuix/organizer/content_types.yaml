@@ -65,8 +65,6 @@ zenario__content:
                     db_column: ct.summary_field
                 release_date_field:
                     db_column: ct.release_date_field
-                enable_summary_auto_update:
-                    db_column: ct.enable_summary_auto_update
                 enable_categories:
                     db_column: ct.enable_categories
                 is_creatable:

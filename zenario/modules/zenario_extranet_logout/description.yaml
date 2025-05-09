@@ -8,7 +8,7 @@ license_info: 'Modified BSD License'
 display_name: Extranet Logout
 description: |
     <p>This module allows extranet users to log out of your site.</p>
-            <p>When installed, it will creates a Logout page on the site.</p>
+            <p>When installed, it creates a Logout content item on the site.</p>
 category: pluggable
 keywords: extranet, logout, user
 

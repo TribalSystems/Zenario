@@ -200,10 +200,10 @@ switch ($path) {
 		
 		
 		//Show a warning on the pagination tab if the "Call a module's static method to decide" option is selected
-		if (isset($fields['each_item/hide_private_items'])
+		if (isset($fields['first_tab/hide_private_items'])
 		 && isset($box['tabs']['pagination']['notices']['using_static_method'])) {
 			$box['tabs']['pagination']['notices']['using_static_method']['show'] = 
-				$values['each_item/hide_private_items'] == 3;
+				$values['first_tab/hide_private_items'] == 3;
 		}
 
 		//Zip archive placeholder

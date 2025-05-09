@@ -78,6 +78,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 	}
 	
 	options = {
+		text_patterns: false,
 		promotion: false,
 		browser_spellcheck: true,
 		height: 250,

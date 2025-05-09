@@ -333,7 +333,7 @@ class adminAdm {
 			
 					//Copy it to the local database and then use the copy
 					if ($image !== false) {
-						$adminG['image_id'] = \ze\file::addFromString('admin', $image['data'], $image['filename'], true);
+						$adminG['image_id'] = \ze\fileAdm::addFromString('admin', $image['data'], $image['filename'], true);
 					}
 				}
 			} else {

@@ -117,9 +117,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 					$fullPathLabel = $item['name'];
 				}
 				
-				$item['full_path_label'] = $fullPathLabel.$accessType;
-				
-				
+				$item['full_path_label'] = $fullPathLabel . $accessType;
 			}
 		}
 		

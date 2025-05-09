@@ -32,3 +32,16 @@ zenario_group:
                     validation:
                         required: Please enter a code name.
                     maxlength: 255
+                
+                # The Users and AI and machine learning modules have an optional dependency on each other.
+                # If both are running, show an option in the groups FAB to sync information abut the link between content items and this group into Qdrant payloads
+                is_qdrant_perm_group:
+                    visible_if: |
+                        window.zenario_ai_qdrant
+                    label: 'Use this group for permission checks in semantic searches'
+                    type: checkbox
+                    note_below: |
+                        You should check this option if you wish to use this group for managing access to content items.
+                        If the group is used for collecting users or orgainsing smart groups, you should leave this unchecked.
+                        This can be applied to a maximum of 5 groups.
+                

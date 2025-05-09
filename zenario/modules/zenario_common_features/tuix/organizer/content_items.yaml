@@ -2,7 +2,7 @@
 ---
 zenario__content:
     panels:
-        content:
+        content: &contentPanelDefinition
             key:
                 cType: ''
                 cId: ''
@@ -47,9 +47,13 @@ zenario__content:
                       AND v.type = cc.content_type
                       AND v.version = cc.content_version
                 id_column: c.tag_id
+                
                 custom_where_statement__not_trashed: |
                     WHERE c.status NOT IN ('trashed','deleted')
-                
+                custom_where_statement__trashed: |
+                    WHERE c.status = 'trashed'
+                custom_where_statement__hidden: |
+                    WHERE c.status = 'hidden'
             quick_filter_buttons:
                 language:
                     label: 'All languages'
@@ -232,9 +236,6 @@ zenario__content:
                            ON pitl.layout_id = l.layout_id
                           AND pitl.slot_name = lsl.slot_name
                     sql: 'IFNULL(piil.instance_id, pitl.instance_id) = ps.instance_id'
-                trash:
-                    sql: |
-                        c.status = 'trashed'
                 content_items_using_image:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]inline_images AS cii
@@ -290,37 +291,39 @@ zenario__content:
                     searchable: true
                     width: large
                     show_by_default: true
+                
+                #Ctype Document module inserts a column here with ord 7.
 
                 release_date:
-                    ord: 7
+                    ord: 8
                     title: Release date
                     db_column: v.release_date
                     format: date
 
                 number_of_categories:
-                    ord: 8
+                    ord: 9
                     title: Number of categories
                    # show_by_default: false
                     #hidden: true
                 menunodecounter:
-                    ord: 9
+                    ord: 10
                     title: menunodecounter
                     hidden: true
                 description:
-                    ord: 10
+                    ord: 11
                     title: Description
                     db_column: v.description
                     searchable: true
                     length_limit: 250
                 keywords:
-                    ord: 11
+                    ord: 12
                     title: Keywords
                     db_column: v.keywords
                     searchable: true
                     length_limit: 250
                 
                 file_id:
-                    ord: 12
+                    ord: 13
                     title: File ID
                     db_column: f.id
                     searchable: No
@@ -330,14 +333,14 @@ zenario__content:
                     #The logic is in the class file.
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 checksum:
-                    ord: 12.1
+                    ord: 13.1
                     title: Checksum (short)
                     db_column: f.short_checksum
                     #On "Find duplicates" panel, this column will always be shown.
                     #The logic is in the class file.
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 filename:
-                    ord: 12.2
+                    ord: 13.2
                     title: Filename
                     db_column: v.filename
                     searchable: true
@@ -345,7 +348,7 @@ zenario__content:
                     always_show: true
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 file_size:
-                    ord: 12.3
+                    ord: 13.3
                     title: File size
                     db_column: f.size
                     format: filesize
@@ -354,14 +357,14 @@ zenario__content:
                 file_path:
                     db_column: f.path
                 s3_filename:
-                    ord: 12.4
+                    ord: 13.4
                     title: S3 filename
                     db_column: v.s3_filename
                     searchable: No
                     width: large
                     visible_if: zenarioO.tuix.key && (zenarioO.tuix.key.cType == 'document' || zenarioO.tuix.key.cType == 'audio')
                 s3_file_id:
-                    ord: 12.5
+                    ord: 13.5
                     title: S3 File ID
                     db_column: v.s3_file_id
                     searchable: No
@@ -370,12 +373,12 @@ zenario__content:
                     db_column: f.mime_type
 
                 version:
-                    ord: 13
+                    ord: 14
                     title: Version
                     db_column: v.version
                     width: xsmall
                 status:
-                    ord: 14
+                    ord: 15
                     title: Status
                     db_column: c.status
                     format: enum
@@ -389,8 +392,16 @@ zenario__content:
                         unlisted: Published unlisted
                         hidden: Hidden
                         trashed: Trashed
+                permissions:
+                    ord: 16
+                    title: Permissions
+                    db_column: tc.privacy
+                    width: xlarge
+                permissions_smart_group_id:
+                    hidden: true
+                    db_column: tc.smart_group_id
                 admin_version_status:
-                    ord: 15
+                    ord: 17
                     db_column: c.status
                     format: enum
                     values:
@@ -400,11 +411,11 @@ zenario__content:
                         hidden_with_draft: Draft
                         trashed_with_draft: Draft
                         published: Published
-                        unlisted: Published
+                        unlisted: Published unlisted
                         hidden: Hidden
                         trashed: Trashed
                 visitor_version_status:
-                    ord: 16
+                    ord: 18
                     db_column: c.status
                     format: enum
                     values:
@@ -448,46 +459,52 @@ zenario__content:
                            ON lay.layout_id = v.layout_id
                     hidden: true
                 first_created_datetime:
-                    ord: 18
+                    ord: 19
                     title: First draft created
                     db_column: c.first_created_datetime
                     format: datetime
                 created_datetime:
-                    ord: 19
+                    ord: 20
                     title: Latest draft created
                     db_column: v.created_datetime
                     show_by_default: No
                     width: large
                 concealed_datetime:
-                    ord: 20
-                    title: Trashed
+                    ord: 21
+                    title: Hidden/Trashed
                     db_column: v.concealed_datetime
                     format: datetime
                     show_by_default: No
+                concealed_by:
+                    ord: 22
+                    title: Hidden/Trashed by
+                    db_column: v.concealer_id
+                    show_by_default: No
+                    width: xlarge
                 creating_author_id:
                     db_column: v.creating_author_id
                 last_modified_datetime:
-                    ord: 21
+                    ord: 23
                     title: Last edited
                     db_column: v.last_modified_datetime
                     show_by_default: Yes
                     width: large
                 last_modified_by_admin:
-                    ord: 22
+                    ord: 24
                     title: Last edited by
                     width: large
                     show_by_default: Yes
                 last_author_id:
                     db_column: v.last_author_id
                 published_datetime:
-                    ord: 23
+                    ord: 25
                     title: Published
                     db_column: v.published_datetime
                     format: datetime
                 publisher_id:
                     db_column: v.publisher_id
                 word_count:
-                    ord: 25
+                    ord: 26
                     title: Page word count
                     sortable: true
                     db_column: >
@@ -497,7 +514,7 @@ zenario__content:
                     show_by_default: true
                     tooltip: "Word count of version controlled plugins on the content item."
                 attachment_word_count:
-                    ord: 26
+                    ord: 27
                     title: Attachment word count
                     sortable: true
                     db_column: >
@@ -506,8 +523,19 @@ zenario__content:
                     width: xsmall
                     show_by_default: true
                     tooltip: "Word count of the attachment on the content item."
+                extract_pagecount:
+                    ord: 28
+                    title: Attachment page count
+                    sortable: true
+                    db_column: cc.extract_pagecount
+                    empty_value: 'n/a'
+                    align_right: true
+                    width: xsmall
+                    tooltip: |
+                        Page count of the attachment on the content item,
+                        as recorded by Amazon Textract.
                 accesses:
-                    ord: 27
+                    ord: 29
                     title: User accesses
                     sortable: true
                     table_join: |
@@ -524,7 +552,7 @@ zenario__content:
                     db_column: c.lock_owner_id
                 lock_owner_name:
                 writer_name:
-                    ord: 28
+                    ord: 30
                     title: Writer name
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]writer_profiles AS wp
@@ -532,7 +560,7 @@ zenario__content:
                     db_column: CONCAT(wp.first_name, " ", wp.last_name)
                     searchable: true
                 archives_exist:
-                    ord: 29
+                    ord: 31
                     hidden: true
                     width: medium
                     title: 'Archives exist?'
@@ -546,8 +574,19 @@ zenario__content:
                             LIMIT 1
                         )
                     format: yes_or_no
+                archived_versions_count:
+                    hidden: true
+                    db_column: |
+                        (
+                            SELECT COUNT(*)
+                            FROM [[DB_PREFIX]]content_item_versions AS pv
+                            WHERE pv.id = c.id
+                              AND pv.type = c.type
+                              AND pv.version NOT IN (c.visitor_version, c.admin_version)
+                              AND c.status != 'first_draft'
+                        )
                 zenario_trans__links:
-                    ord: 30
+                    ord: 32
                     title: Translations
                     align_right: true
                     show_by_default: true
@@ -561,14 +600,14 @@ zenario__content:
                               AND ci_sa.language_id IN ([[ZENARIO_SYNC_ASSIST_LANGS]])
                         )
                 layout:
-                    ord: 31
+                    ord: 33
                     title: Layout
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
                     show_by_default: true
                     width: xsmall
                     hidden: true
                 layout_id:
-                    ord: 32
+                    ord: 34
                     db_column: v.layout_id
                     filter_format: enum
                     values:
@@ -576,7 +615,7 @@ zenario__content:
                         - L02
                         #...
                 menu:
-                    ord: 33
+                    ord: 35
                     title: Menu node
                     db_column: mt.name
                     show_by_default: true
@@ -585,12 +624,12 @@ zenario__content:
                 menu_id:
                     db_column: mi.id
                 scheduled_publish_datetime:
-                    ord: 35
+                    ord: 36
                     title: 'Scheduled publish date/time'
                     db_column: v.scheduled_publish_datetime
                     format: datetime
                 pinned:
-                    ord: 36
+                    ord: 37
                     db_column: v.pinned
                     hidden: true
                 
@@ -602,7 +641,6 @@ zenario__content:
                     hidden: true
                 
                     
-            default_sort_column: tag
             default_sort_desc: true
             label_format_for_grid_view: |
                 [[tag]]
@@ -632,14 +670,11 @@ zenario__content:
                     priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
                     hide_in_select_mode: true
                     hide_when_no_search_results: true
-                    only_show_on_refiner: trash
+                    hidden: true
                     label: Empty trash
                     ajax:
                         confirm:
-                            message: >
-                                Empty the trash?
-                                
-                                This will permanently delete all content items in the trash. This cannot be undone.
+                            #The confirmation message is created in the PHP class file.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -724,22 +759,30 @@ zenario__content:
                         plugin_instance_usage: true
                         plugin_instance_effective_usage: true
                         content_items_using_form: true
-                        trash: true
+                        hidden: true
                         content_items_using_image: true
                         zenario__locations__create_content: true
                         group_members: true
                         form_id: true
+                        uses_access_code: true
                     label: Enable more content types
                     link:
                         path: zenario__modules/panels/modules~-zenario_ctype
                 
                 help_trash:
                     label: Help
-                    only_show_on_refiner: trash
+                    hidden: true
                     help:
                         message: >
                             This panel shows all of the content items that have been trashed.
                             To restore a content item, you need to re-draft and then publish it.
+                help_hidden:
+                    label: Help
+                    hidden: true
+                    help:
+                        message: >
+                            This panel shows all of the content items that have been hidden.
+                            To restore a content item, you need to re-draft and/or publish it.
                     
                     
             inline_buttons:
@@ -785,21 +828,18 @@ zenario__content:
                     admin_box:
                         path: zenario_content_privacy
                 pinned:
-                    ord: privacy.1
                     css_class: pinned
                     tooltip: "This content item is pinned"
                     admin_box:
                         path: zenario_content
                     visible_if: item.pinned == 1
                 not_pinned:
-                    ord: privacy.1
                     css_class: not_pinned
                     tooltip: "This content item is not pinned"
                     admin_box:
                         path: zenario_content
                     visible_if: item.pinned == 0
                 no_categories:
-                    ord: privacy.2
                     css_class: no_categories
                     tooltip: "Content item is not in any categories"
                     admin_box:
@@ -807,7 +847,6 @@ zenario__content:
                     visible_if: >
                         item.number_of_categories == 0
                 one_category:
-                    ord: privacy.2
                     css_class: one_or_more_categories
                     tooltip: "Content item is in one category"
                     admin_box:
@@ -815,7 +854,6 @@ zenario__content:
                     visible_if: >
                         item.number_of_categories == 1
                 multiple_categories:
-                    ord: privacy.2
                     css_class: one_or_more_categories
                     tooltip: "Content item is in [[number_of_categories]] categories"
                     admin_box:
@@ -837,6 +875,32 @@ zenario__content:
                         zenario.engToBoolean(item.frontend_link)
             
             item_buttons:
+                start_editing:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_DRAFT
+                    multiple_select: true
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id) && (item.status == 'published' || item.status == 'unlisted')
+                    label: Make a draft for editing
+                    multiple_select: true
+                    multiple_select_label: Make drafts for editing
+                    without_columns_set:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Create a draft that can be edited?
+                                                           
+                                The published version will not be affected until the new draft is published.
+                            multiple_select_message: |
+                                Create drafts that can be edited?
+                                                           
+                                The published versions will not be affected until the new drafts are published.
+                            button_message: Make a draft
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            create_draft: 1
                 settings:
                     priv: _PRIV_EDIT_DRAFT
                     multiple_select: true
@@ -1115,7 +1179,6 @@ zenario__content:
                 view_image:
                     parent: view_dropdown
                     label: View picture
-                    tooltip: View picture
                     popout:
                         href: 'zenario/file.php?usage=content&popout=1'
                         options:
@@ -1152,11 +1215,12 @@ zenario__content:
                         refiner: content_item
                 
                 categories_add:
+                    #This button only appears if multiple content items are selected.
                     priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
-                    label: Add to categories
+                    label: Add to categories...
                     multiple_select_only: true
                     multiple_select: true
                     admin_box:
@@ -1167,6 +1231,9 @@ zenario__content:
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
                 categories:
+                    #This button only appears if exactly 1 content item is selected.
+                    #It allows an admin to add/remove a content item to/from
+                    #any number of categories all within 1 admin box.
                     priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
@@ -1180,11 +1247,12 @@ zenario__content:
                         !zenarioO.tuix.custom__content_types_with_categories[item.type]
                     disabled_tooltip: Categories are not enabled for this content type
                 categories_remove:
+                    #This button only appears if multiple content items are selected.
                     priv: _PRIV_EDIT_DRAFT
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     parent: category_dropdown
-                    label: Remove from categories
+                    label: Remove from categories...
                     multiple_select_only: true
                     multiple_select: true
                     admin_box:
@@ -1207,7 +1275,7 @@ zenario__content:
                 
                 quick_add_to_menu:
                     parent: action_dropdown
-                    priv: _PRIV_ADD_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     hide_in_select_mode: true
                     label: Attach content item to menu
                     multiple_select: No
@@ -1228,7 +1296,7 @@ zenario__content:
                         hidden: true
                 mass_add_to_menu:
                     parent: action_dropdown
-                    priv: _PRIV_ADD_MENU_ITEM
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     hide_in_select_mode: true
                     label: Attach items to menu
                     multiple_select: true
@@ -1371,11 +1439,15 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete any archived versions of "[[tag]]"?
+                                Are you sure you wish to delete [[archived_versions_count]] archived version(s) of "[[tag]]"?
+                                
+                                This will not affect any published versions or drafts, such as version [[version]] ([[admin_version_status]]).
                                 
                                 This cannot be undone.
                             multiple_select_message: |
                                 Are you sure you wish to delete any archived versions of [[item_count]] content items?
+                                
+                                This will not affect any published versions or drafts.
                                 
                                 This cannot be undone.
                             button_message: Delete archived versions
@@ -1424,9 +1496,9 @@ zenario__content:
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
-                    label: Make unlisted
+                    label: De-list
                     multiple_select: true
-                    multiple_select_label: Make selected content items unlisted
+                    multiple_select_label: De-list selected content items
                     with_columns_set:
                         delistable: true
                     without_columns_set:
@@ -1435,33 +1507,31 @@ zenario__content:
                         confirm:
                             html: true
                             message: |
-                                <p>Are you sure you want to make this content item unlisted?</p>
-                                <p>Unlisted content items:</p>
+                                <p>Make this content item published but unlisted?</p>
+                                <p>Unlisted content items are not shown in:</p>
                                 <ul><li>
-                                    Are not shown in menus
+                                        Menus
                                 </li><li>
-                                    Are not shown in content summary lists
+                                        Content summary lists
                                 </li><li>
-                                    Are not displayed in search plugins
+                                        Site maps
                                 </li><li>
-                                    Are not displayed in site-maps
-                                </li><li>
-                                    Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                                        Search results
                                 </li></ul>
+                                <p>They can still be reached by links from banners, WYSIWYG editors, Raw HTML/JavaScript snippets, and from external links to this site.</p>
                             multiple_select_message: |
-                                <p>Are you sure you want to make [[item_count]] content items unlisted?</p>
-                                <p>Unlisted content items:</p>
+                                <p>Make [[item_count]] content items published but unlisted?</p>
+                                <p>Unlisted content items are not shown in:</p>
                                 <ul><li>
-                                    Are not shown in menus
+                                        Menus
                                 </li><li>
-                                    Are not shown in content summary lists
+                                        Content summary lists
                                 </li><li>
-                                    Are not displayed in search plugins
+                                        Site maps
                                 </li><li>
-                                    Are not displayed in site-maps
-                                </li><li>
-                                    Can still be reached by links from banners, WYSIWYG areas or Raw HTML snippets
+                                        Search results
                                 </li></ul>
+                                <p>They can still be reached by links from banners, WYSIWYG editors, Raw HTML/JavaScript snippets, and from external links to this site.</p>
                             button_message: Make unlisted
                             cancel_button_message: Cancel
                             message_type: warning
@@ -1533,20 +1603,24 @@ zenario__content:
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id)
                         && (item.status == 'hidden' || item.status == 'trashed')
-                    tooltip: >
-                        Re-draft this content item|This will create a new draft of
-                        this content item, which will be available to visitors if
-                        you Publish it.
                     ajax:
                         confirm:
                             message: |
-                                Do you wish to re-draft "[[tag]]"? This will create
-                                a new draft of this content item, which will be available to
-                                visitors if you publish it.
+                                Re-draft content item [[tag]]?
+
+                                This action will create a new draft of this content item, which will be available to visitors when it's published.
                             multiple_select_message: |
-                                Do you wish do re-draft these content items? This will create a new draft for each content item, which will be avaliable to visitors if you publish them.
+                                Re-draft these content items?
+                                
+                                This action will create a new draft for each content item, which will be avaliable to visitors when they are published.
                             button_message: Re-draft
                             cancel_button_message: Cancel
                             message_type: question
                         request:
                             create_draft: 1
+        
+        trashed_content_items: *contentPanelDefinition
+            default_sort_column: concealed_datetime
+        
+        hidden_content_items: *contentPanelDefinition
+            default_sort_column: concealed_datetime

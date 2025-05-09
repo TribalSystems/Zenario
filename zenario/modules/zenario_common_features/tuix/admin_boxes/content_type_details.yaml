@@ -82,7 +82,7 @@ zenario_content_type_details:
                             label: Show suggested menu positions
                         force:
                             disabled_if: tuix.key.id == 'html'
-                            label: Enforce menu positions - [[content_type_plural_en]] always go under the designated [[content_type_name_en]] menu node(s)
+                            label: Enforce menu positions - [[content_type_plural_en]] always go under the preferential menu node/s for [[content_type_name_en]]
                     value: suggest
                 
                 hide_private_item:
@@ -125,11 +125,6 @@ zenario_content_type_details:
                         When a content item has a featured image, that image can appear on a content summary list.
                         Check here to make the image first uploaded to a content item be made the featured image.
                 
-                enable_css_tab:
-                    label: 'Enable editing of CSS class and page background for content item'
-                    type: checkbox
-                    onoff: true
-
                 enable_categories:
                     label: 'Enable support for categories'
                     type: checkbox
@@ -178,20 +173,13 @@ zenario_content_type_details:
                         that lists the content item, subject to appropriate plugin settings.
                         Recommended for News and Blog articles.
                     redraw_onchange: true
-                release_date_field_mandatory:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    type: checkbox
-                    label: Mandatory
-                    #This setting is hidden for HTML, Event, Document, Picture, Video and Audio content types.
-                    redraw_onchange: true
                 auto_set_release_date:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
                     label: |
-                        If empty when publishing content item, auto-set to today's date
+                        Auto-set to date of publishing if date not entered manually
                     type: checkbox
-                    visible_if: (lib.value('release_date_field') && !lib.value('release_date_field_mandatory'))
+                    visible_if: lib.value('release_date_field')
                 writer_field:
                     label: 'Enable writer profile'
                     type: checkbox
@@ -217,11 +205,6 @@ zenario_content_type_details:
                     hide_if_previous_outdented_value_isnt: 1
                     type: checkbox
                     label: Mandatory
-                enable_summary_auto_update:
-                    indent: 1
-                    hide_if_previous_outdented_value_isnt: 1
-                    type: checkbox
-                    label: 'Enable auto-update of summaries'
                 allow_pinned_content:
                     label: |
                         Allow content items to be "pinned"
@@ -229,3 +212,8 @@ zenario_content_type_details:
                     onoff: true
                     side_note: |
                         Pinned content items appear first on Content Summary List plugins.
+                enable_css_tab:
+                    label: 'Allow a CSS class to be set per content item, and to add a page background'
+                    type: checkbox
+                    onoff: true
+

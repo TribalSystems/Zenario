@@ -1,21 +1,37 @@
+<% var tuix = m.tuix, tab_link = tuix.tab_link; %>
 <div class="
 	zenario_toolbar_tab
 	{{m.selected || m.childSelected? 'zenario_tabOrTabsChildSelected' : ''}}
 ">
 	<div class="
 		zenario_toolbar zenario_toolbar__{{m.id|escape}} {{m.css_class|escape}}
-		{{m.selected? 'zenario_toolbar_on' : ''}}
+		{{m.selected? 'zenario_toolbar_on' : 'zenario_toolbar_off'}}
 		{{m.highlight? 'zenario_toolbar_highlight_new_tab' : ''}}
 		{{m.groupingActive? 'zenario_toolbar_tab_grouping_active' : 'zenario_toolbar_tab_grouping_inactive'}}
+		{{tab_link? 'zenario_toolbar_tab_with_link' : ''}}
 	">
 		<div class="zenario_middle">
 			<div
 				class="zenario_middle_inner"
-				title="{{m.tooltip|escape}}"
+				title="{{tuix.tooltip|escape}}"
 				onclick="zenarioAT.clickTab('{{m.id|escape}}');"
-			>{{m.label|escape}}</div>
+			>
+				<% if (tuix.icon_class) { %>
+					<span class="zenario_toolbar_tab_label_icon {{tuix.icon_class|escape}}"></span>
+				<% } %>
+				
+				{{m.label|escape}}
+				
+				<% if (tab_link) { %>
+					<a
+						class="zenario_toolbar_tab_link"
+						href="{{tab_link.href|escape}}"
+						title="{{tab_link.tooltip|escape}}"
+						target="_blank"
+					></a>
+				<% } %>
+			</div>
 			
-	
 			<% if (m.children && (m.selected || m.childSelected)) { %>
 				<div class="zenario_toolbar_tab_children">
 					{{zenarioT.microTemplate('zenario_toolbar_tab_children', m.children)}}
@@ -23,8 +39,8 @@
 			<% } %>
 		</div> 
 	
-		<% if (m.warning_icon) { %>
-			<del class="{{m.warning_icon|escape}}"><del></del></del>
+		<% if (tuix.warning_icon) { %>
+			<del class="{{tuix.warning_icon|escape}}"><del></del></del>
 		<% } %>
 	</div>
 </div>

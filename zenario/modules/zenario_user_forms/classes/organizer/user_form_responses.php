@@ -38,11 +38,9 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			$panel['title'] = ze\admin::phrase('Responses for form "[[name]]" (ID: [[form_id]])', ['name' => $form['name'], 'form_id' => (int) $refinerId]);
 
 			//Information to view Data Protection settings
-			$siteSetting = ze::setting('period_to_delete_the_form_response_log_headers');
-
 			$phrase = '';
 			
-			self::formatDataProtectionValueNicely($siteSetting, $form['period_to_delete_response_headers'], $phrase);
+			self::formatDataProtectionValueNicely($individualFormSetting = $form['period_to_delete_response_headers'], $phrase, $noticeType);
 
 			$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$linkStart = "<a target='_blank' href='" . $href . "'>";
@@ -51,6 +49,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			$phrase .= " [[link_start]]View Data Protection settings[[link_end]].";
 			
 			$panel['notice']['show'] = true;
+			$panel['notice']['type'] = $noticeType;
 			$panel['notice']['message'] = ze\admin::phrase($phrase, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			$panel['notice']['html'] = true;
 
@@ -60,7 +59,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 				unset($panel['columns']['profanity_tolerance_limit']);
 			} else {
 				foreach($panel['items'] as $id => &$item) {
-					$profanityValues = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response',
+					$profanityValues = ze\row::get('user_response',
 						['blocked_by_profanity_filter', 'profanity_filter_score', 'profanity_tolerance_limit'],
 						['id' => $id]);
 					$profanityValueForPanel = ($profanityValues['blocked_by_profanity_filter'] == 1 ? "Yes" : "No");
@@ -92,7 +91,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			$setting = ze::setting('period_to_delete_the_form_response_log_headers');
 
 			$phrase = '';
-			self::formatDataProtectionValueNicely($setting, $formSetting = null, $phrase);
+			self::formatDataProtectionValueNicely($individualFormSetting = null, $phrase, $noticeType);
 
 			$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$linkStart = "<a target='_blank' href='" . $href . "'>";
@@ -101,6 +100,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			$phrase .= " [[link_start]]View Data Protection settings[[link_end]].";
 			
 			$panel['notice']['show'] = true;
+			$panel['notice']['type'] = $noticeType;
 			$panel['notice']['message'] = ze\admin::phrase($phrase, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			$panel['notice']['html'] = true;
 
@@ -122,8 +122,8 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		
 		$sql = '
 			SELECT urd.value, urd.form_field_id, ur.id
-			FROM '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
-			INNER JOIN '. DB_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
+			FROM '. DB_PREFIX. 'user_response_data AS urd
+			INNER JOIN '. DB_PREFIX. 'user_response AS ur
 				ON urd.user_response_id = ur.id' . 
 			$whereStatement;
 		$result = ze\sql::select($sql);
@@ -177,6 +177,10 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 						$response['allocated_to_admin'] = ze\admin::phrase($label, $labelMergeFields);
 					}
 				}
+				
+				if ($response['sent_to_admins_or_users']) {
+					$response['processing_actions'] = ze\admin::phrase('Sent to [[sent_to_admins_or_users]]', ['sent_to_admins_or_users' => $response['sent_to_admins_or_users']]);
+				}
 			}
 			
 			if (!$responsesCanBeAllocated) {
@@ -196,7 +200,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 				$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'profanity_filter_text', 'period_to_delete_response_headers'], $response['form_id']);
 
 				if ($formsProfanityFilterSiteSetting) {
-					$profanityValues = ze\row::get(ZENARIO_USER_FORMS_PREFIX. 'user_response',
+					$profanityValues = ze\row::get('user_response',
 						['blocked_by_profanity_filter', 'profanity_filter_score', 'profanity_tolerance_limit'],
 						['id' => $responseId]);
 					$profanityValueForPanel = ($profanityValues['blocked_by_profanity_filter'] == 1 ? "Yes" : "No");
@@ -220,13 +224,13 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		//Delete all responses
 		if (ze::post('delete_form_responses')) {
 			if ($refinerName == 'form_id' && ($formId = $refinerId)) {
-				$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['id'], ['form_id' => $formId]);
+				$result = ze\row::query('user_response', ['id'], ['form_id' => $formId]);
 
 				while ($row = ze\sql::fetchAssoc($result)) {
 					zenario_user_forms::deleteFormResponse($row['id']);
 				}
 			} elseif ($refinerName == 'user_id' && ($userId = $refinerId)) {
-				$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['id'], ['user_id' => $userId]);
+				$result = ze\row::query('user_response', ['id'], ['user_id' => $userId]);
 
 				while ($row = ze\sql::fetchAssoc($result)) {
 					zenario_user_forms::deleteFormResponse($row['id']);
@@ -238,10 +242,14 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 		}
 	}
 
-	private function formatDataProtectionValueNicely($siteSetting, $formSetting, &$phrase) {
-		if (!is_null($formSetting) && $formSetting !== "") {
+	private function formatDataProtectionValueNicely($individualFormSetting, &$phrase, &$noticeType) {
+		$noticeType = 'information';
+		
+		$siteSetting = ze::setting('period_to_delete_the_form_response_log_headers');
+		
+		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
 			$phrase = "Responses for this form ";
-			$settingToCheck = $formSetting;
+			$settingToCheck = $individualFormSetting;
 		} else {
 			$phrase = "Form responses ";
 			$settingToCheck = $siteSetting;
@@ -260,11 +268,20 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			case 7:
 				$phrase .= 'are deleted after 1 week';
 				break;
+			case 14:
+				$phrase .= 'are deleted after 2 weeks';
+				break;
 			case 30:
 				$phrase .= 'are deleted after 1 month';
 				break;
 			case 90:
 				$phrase .= 'are deleted after 3 months';
+				break;
+			case 180:
+				$phrase .= 'are deleted after 6 months';
+				break;
+			case 270:
+				$phrase .= 'are deleted after 9 months';
 				break;
 			case 365:
 				$phrase .= 'are deleted after 1 year';
@@ -274,12 +291,60 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 				break;
 		}
 		
-		if (!is_null($formSetting) && $formSetting !== "") {
+		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
 			//Please note: this phrase will appear even in silly situations where the individual form setting
 			//is not "Use site-wide setting" and its value is exactly the same as the site setting.
 			$phrase .= "; this overrides the global settings";
 		}
 		
 		$phrase .= ".";
+		
+		//As of Zenario 10.1, display a warning if the sent email log
+		//is cleared out before the form responses.
+		$emailLogSiteSetting = ze::setting('period_to_delete_the_email_template_sending_log_headers');
+		if (
+			($settingToCheck == 'never_delete' && $emailLogSiteSetting != 'never_delete')
+			|| ($settingToCheck > $emailLogSiteSetting)
+		) {
+			$noticeType = 'warning';
+			$phrase .= " ";
+			
+			switch ($emailLogSiteSetting) {
+				case 'never_delete':
+					$phrase .= 'Entries in the sent email log are stored forever.';
+					break;
+				case 0:
+					$phrase .= 'Entries in the sent email log are not stored.';
+					break;
+				case 1:
+					$phrase .= 'Entries in the sent email log are deleted after 1 day.';
+					break;
+				case 7:
+					$phrase .= 'Entries in the sent email log are deleted after 1 week.';
+					break;
+				case 14:
+					$phrase .= 'Entries in the sent email log are deleted after 2 weeks.';
+					break;
+				case 30:
+					$phrase .= 'Entries in the sent email log are deleted after 1 month.';
+					break;
+				case 90:
+					$phrase .= 'Entries in the sent email log are deleted after 3 months.';
+					break;
+				case 180:
+					$phrase .= 'Entries in the sent email log are deleted after 6 months.';
+					break;
+				case 270:
+					$phrase .= 'Entries in the sent email log are deleted after 9 months.';
+					break;
+				case 365:
+					$phrase .= 'Entries in the sent email log are deleted after 1 year.';
+					break;
+				case 730:
+					$phrase .= 'Entries in the sent email log are deleted after 2 years.';
+					break;
+				
+			}
+		}
 	}
 }

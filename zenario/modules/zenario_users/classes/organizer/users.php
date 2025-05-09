@@ -61,6 +61,19 @@ class zenario_users__organizer__users extends zenario_users {
 				ze\dataset::details('users', 'id').
 				'//';
 		}
+		
+		if (ze::setting('user_use_screen_name')) {
+			$convertToContactButtonConfirmationMessage =
+				"Are you sure you want to convert the user \"[[identifier]]\" to contact?
+                                
+            	The user's password and screen name will be cleared and they will no longer be able to log in to a password-protected area of your site.";
+		} else {
+			$convertToContactButtonConfirmationMessage =
+				"Are you sure you want to convert the user \"[[identifier]]\" to contact?
+                                
+            	The user's password will be cleared and they will no longer be able to log in to a password-protected area of your site.";
+		}
+		$panel['item_buttons']['convert_to_contact']['ajax']['confirm']['message'] = $convertToContactButtonConfirmationMessage;
 	}
 	
 	function getEncryptedColumns($table) {
@@ -150,13 +163,6 @@ class zenario_users__organizer__users extends zenario_users {
 				$item['user_type'] = 'contact';
 			} else {
 				$item['user_type'] = 'user';
-			}
-			
-			if ($item['last_login']) {
-				$lastLoginDate = ze\admin::formatDate($item['last_login'], ze::setting('vis_date_format_med'));
-				$item['last_login'] = ze\admin::phrase('[[last_login]]', ['last_login' => $lastLoginDate]);
-			} elseif ($item['status'] != 'contact') {
-				$item['last_login'] = ze\admin::phrase('Never logged in');
 			}
 			
 			// Get a users groups
@@ -316,6 +322,22 @@ class zenario_users__organizer__users extends zenario_users {
 		//Remove the image for each user
 		} elseif (ze::post('delete_image') && ze\priv::check('_PRIV_EDIT_USER')) {
 			zenario_users::deleteUserImage($ids);
+		} elseif (ze::post('convert_to_contact') && ze\priv::check('_PRIV_EDIT_USER')) {
+			foreach (explode(',', $ids) as $id) {
+				ze\userAdm::convertToContact($id);
+				
+				$cols = [
+					'last_edited_admin_id' => ze\admin::id(),
+					'modified_date' => ze\date::now(),
+					'last_edited_user_id' => null,
+					'last_edited_username' => null
+				];
+				
+				ze\userAdm::save($cols, $id);
+				
+				ze\module::sendSignal("eventUserStatusChange", ["userId" => $id, "status" => "contact"]);
+			}
+		
 		}
 	}
 }

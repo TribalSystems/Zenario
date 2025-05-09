@@ -1,13 +1,13 @@
 /**
- * Swiper 11.0.3
+ * Swiper 11.1.14
  * Most modern mobile touch slider and framework with hardware accelerated transitions
  * https://swiperjs.com
  *
- * Copyright 2014-2023 Vladimir Kharlampidi
+ * Copyright 2014-2024 Vladimir Kharlampidi
  *
  * Released under the MIT License
  *
- * Released on: October 26, 2023
+ * Released on: September 12, 2024
  */
 
 /* FONT_START */
@@ -630,7 +630,7 @@ button.swiper-pagination-bullet {
 .swiper-fade .swiper-slide-active .swiper-slide-active {
   pointer-events: auto;
 }
-.swiper-cube {
+.swiper.swiper-cube {
   overflow: visible;
 }
 .swiper-cube .swiper-slide {
@@ -692,7 +692,7 @@ button.swiper-pagination-bullet {
           backface-visibility: hidden;
 }
 /* Cube slide shadows end */
-.swiper-flip {
+.swiper.swiper-flip {
   overflow: visible;
 }
 .swiper-flip .swiper-slide {
@@ -724,7 +724,7 @@ button.swiper-pagination-bullet {
   overflow: hidden;
   transition-property: transform, opacity, height;
 }
-.swiper-cards {
+.swiper.swiper-cards {
   overflow: visible;
 }
 .swiper-cards .swiper-slide {

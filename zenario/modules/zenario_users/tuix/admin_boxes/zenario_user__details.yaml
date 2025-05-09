@@ -146,6 +146,11 @@ zenario_user__details:
                     type: grouping
                     name: password_grouping
                 
+                activation_grouping:
+                    dataset_label: '[Account creation grouping]'
+                    type: grouping
+                    name: activation_grouping
+                
                 password_when_editing:
                     grouping: password_grouping
                     label: "Password:"
@@ -251,6 +256,7 @@ zenario_user__details:
                             <span id="snippet_password_message" class="title_red">Password does not match the requirements</span>
                         </div>
                 password_needs_changing:
+                    grouping: password_grouping
                     priv: _PRIV_EDIT_USER
                     visible_if: |
                         !zenarioAB.tuix.key.id
@@ -266,16 +272,18 @@ zenario_user__details:
                     note_below: "This indicates if the user or contact has accepted the site's terms and conditions (recorded in the consent log when a user/contact signs up themself). If using Newsletters in Zenario, they will only be sent to recipients where this is checked."
                     type: checkbox
                 send_activation_email_to_user:
-                    label: 'Send activation email to user'
+                    grouping: activation_grouping
+                    label: 'Send "account created" email to user'
                     type: checkbox
-                    side_note: "Send an activation email to the user with their login details."
+                    side_note: "Send an email to the user with their login details and a link to the login page."
                     visible_if: |
                         zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     format_onchange: Yes
                     hidden: true
                 email_to_send:
-                    label: 'Email template:'
+                    grouping: activation_grouping
+                    label: 'Activation email template:'
                     indent: 1
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
@@ -293,6 +301,18 @@ zenario_user__details:
                         to the user.
                     hidden: true
                     #The note_below is added in PHP.
+        groups:
+            label: Groups
+            edit_mode:
+                priv: _PRIV_EDIT_USER
+                enabled: true
+            fields:
+                no_groups_created:
+                    hidden: true
+                    snippet:
+                        html: |
+                            No groups have been created on this tab. [[link_start]]Create groups...[[link_end]]
+                    dataset_label: '[Warning message about groups]'
         dates:
             visible_if: |
                 zenarioAB.tuix.key.id

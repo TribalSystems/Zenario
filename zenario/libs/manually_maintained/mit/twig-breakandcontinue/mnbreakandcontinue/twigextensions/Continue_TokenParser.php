@@ -14,12 +14,12 @@ require_once('Continue_Node.php');
 class Continue_TokenParser extends \Twig\TokenParser\AbstractTokenParser
 {
 
-	public function parse(\Twig_Token $token)
+	public function parse(\Twig\Token $token)
 	{
 		$lineno = $token->getLine();
 		$stream = $this->parser->getStream();
 
-		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
+		$stream->expect(\Twig\Token::BLOCK_END_TYPE);
 
 		return new Continue_Node(array(), array(), $lineno, $this->getTag());
 	}

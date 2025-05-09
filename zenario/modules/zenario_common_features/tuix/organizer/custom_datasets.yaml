@@ -13,19 +13,19 @@ zenario__administration:
                     title: Dataset
                     searchable: Yes
                     show_by_default: Yes
-                    width: medium
+                    width: large
                 system_table:
-                    title: System Database Table
+                    title: System database table
                     searchable: Yes
                     show_by_default: Yes
-                    width: medium
+                    width: xlarge
                 table:
-                    title: Database Table
+                    title: Database table
                     searchable: Yes
                     show_by_default: Yes
-                    width: medium
+                    width: xlarge
                 type:
-                    title: Type
+                    title: Comment
                     width: xxlarge
                     show_by_default: Yes
                 

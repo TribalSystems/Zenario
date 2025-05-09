@@ -24,15 +24,29 @@
 						<div class="pinned {% if item.Pinned %} pinned_icon {% endif %}">{% if item.Pinned_Text %}{{item.Pinned_Text|trans}}{% endif %}</div>
 					{% endif %}
 					{% if Show_Featured_Image %}
-						<div class="sticky_image">
-							<a {{item.Link}} class="{{item.Status_Class}}">
-								{% if item.Featured_Image_HTML %}
-									{{item.Featured_Image_HTML}}
+						{% if item.Featured_Image_HTML %}
+							<div class="sticky_image">
+								{% if not item.Disabled %}
+									<a {{item.Link}} class="{{item.Status_Class}}">
 								{% endif %}
-							</a>
-						</div>
+									{{item.Featured_Image_HTML}}
+								{% if not item.Disabled %}
+									</a>
+								{% endif %}
+							</div>
+						{% endif %}
 					{% endif %}
-					<h2><a {{item.Link}} class="{{item.Status_Class}}">{{item.Title}}</a></h2>
+					<h2>
+						{% if not item.Disabled %}
+							<a {{item.Link}} class="{{item.Status_Class}}">
+						{% endif %}
+						
+							{{item.Title}}
+						
+						{% if not item.Disabled %}
+							</a>
+						{% endif %}
+					</h2>
 					{% if Show_Excerpt %}
 						<div class="forum_excerpt">{{item.Excerpt_Text}}</div>
 					{% endif %}

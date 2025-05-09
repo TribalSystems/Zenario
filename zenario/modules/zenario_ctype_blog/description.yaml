@@ -20,10 +20,10 @@ content_types:
         content_type_name_en: Blog entry
         content_type_plural_en: Blog entries
         default_template_name: Blog Layout
-        enable_summary_auto_update: No
         description_field: optional
         tooltip_text: Blog articles, to show a blog on your site, and keep an archive of older articles
         keywords_field: hidden
         summary_field: optional
-        release_date_field: mandatory
+        release_date_field: optional
+        auto_set_release_date: true
         writer_field: optional

@@ -86,7 +86,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			 && ($file['checksum'] = ze::base16To64($file['checksum']))
 		) {
 			
-			$fileCheck = ze\file::check($location);
+			$fileCheck = ze\fileAdm::check($location);
 			if (ze::isError($fileCheck)) {
 				$fields['file/upload']['error'] = $fileCheck->__toString();
 				
@@ -118,7 +118,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 			$publicLink = is_link($oldFilePath . '/' . $document['filename']);
 			
 			//Upload new file
-			$newFileId = ze\file::addToDatabase('hierarchial_file', $replacementDocumentPath, false, false, false, true);
+			$newFileId = ze\fileAdm::addToDatabase('hierarchical_file', $replacementDocumentPath, false, false, false, true);
 			
 			if ($newFileId) {
 				$newFile = ze\row::get('files', ['filename', 'short_checksum'], $newFileId);

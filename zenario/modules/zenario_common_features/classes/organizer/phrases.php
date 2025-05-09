@@ -101,6 +101,7 @@ class zenario_common_features__organizer__phrases extends ze\moduleBaseClass {
 						'class_name' => 'zenario_common_features',
 						'title' => 'Protect '.$language['english_name'],
 						'show_by_default' => true,
+						'disallow_sorting' => true,
 						'format' => 'yes_or_no',
 						'ord' => $ord + 0.01,
 						'width' => 'xxsmall',

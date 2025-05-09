@@ -635,6 +635,39 @@
 		width:100%;
 	}
 	
+	div.responsive_table_wrap {
+		position:relative;
+		margin:1.5em 0;
+		border: 1px dotted #ccc;
+        padding: 30px 10px 10px;
+	}
+	
+	div.responsive_table_wrap:before {
+		font-family:FontAwesome;
+		content:"\f0ec";
+		position:absolute;
+		top:10px;
+		left:10px;
+	}
+	
+	div.responsive_table_wrap:after {
+		content:"Slide to see more";
+		font-size:13px;
+		position:absolute;
+		top:10px;
+		left:35px;
+        background: #eee;
+        padding: 2px 8px;
+	}
+	
+	div.responsive_table {
+		overflow-x:scroll;
+	}
+	
+	div.responsive_table table {
+		width:650px !important;
+	}
+	
 }
 
 /* Layout max-width: 480px

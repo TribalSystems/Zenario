@@ -30,13 +30,21 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__group extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($box['key']['id']) {
-			$groupDetails = ze\row::get('custom_dataset_fields', ['label', 'db_column'], $box['key']['id']);
+		if ($groupId = (int) $box['key']['id']) {
+			$groupDetails = ze\row::get('custom_dataset_fields', ['label', 'db_column'], $groupId);
 			
 			$box['title'] = ze\admin::phrase('Editing the group "[[label]]"', $groupDetails);
 			
 			$values['details/name'] = $groupDetails['label'];
 			$values['details/db_column'] = $groupDetails['db_column'];
+			
+			# The Users and AI and machine learning modules have an optional dependency on each other.
+			# If both are running, show an option in the groups FAB to sync information abut the link between content items and this group into Qdrant payloads
+			if (ze\module::inc('zenario_ai_qdrant')) {
+				if (zenario_ai_qdrant::isPermissionGroup($groupId)) {
+					$values['details/is_qdrant_perm_group'] = 1;
+				}
+			}
 		}
 	}
 	
@@ -55,6 +63,25 @@ class zenario_users__admin_boxes__group extends zenario_users {
 				$fields['details/db_column']['error'] =
 					ze\admin::phrase('The code name "[[db_column]]" is already in use.', 
 						['db_column' => $fields['details/db_column']['current_value']]);
+			}
+		}
+		
+		//Enforce that a maximum of 5 group-memberships can be enabled for syncing into qdrant.
+		if (ze\module::inc('zenario_ai_qdrant')) {
+			
+			$wasSelected = (bool) $fields['details/is_qdrant_perm_group']['value'];
+			$isSelected = (bool) $fields['details/is_qdrant_perm_group']['current_value'];
+			
+			if (!$wasSelected && $isSelected) {
+				$groupIds = zenario_ai_qdrant::permissionGroups();
+				
+				//Work out how many groups we already have.
+				$currentCount = count($groupIds);
+				$maxLimit = 5;
+				
+				if ($currentCount >= $maxLimit) {
+					$fields['details/is_qdrant_perm_group']['error'] = ze\admin::phrase('A maximum of 5 groups can be used.');
+				}
 			}
 		}
 	}
@@ -93,8 +120,20 @@ class zenario_users__admin_boxes__group extends zenario_users {
 			$groupDetails['ord'] = $ord;
 		}
 		
-		$box['key']['id'] = ze\row::set('custom_dataset_fields', $groupDetails, $box['key']['id']);
+		$groupId = $box['key']['id'] = ze\row::set('custom_dataset_fields', $groupDetails, $box['key']['id']);
 		
 		ze\datasetAdm::createFieldInDB($box['key']['id'], $oldName);
+		
+		
+		//Update which permission groups are stored in payloads in Qdrant
+		if (ze\module::inc('zenario_ai_qdrant')) {
+			
+			$wasSelected = (bool) $fields['details/is_qdrant_perm_group']['value'];
+			$isSelected = (bool) $fields['details/is_qdrant_perm_group']['current_value'];
+			
+			if ($wasSelected != $isSelected) {
+				zenario_ai_qdrant::addOrRemovePermissionGroup($isSelected, $groupId);
+			}
+		}
 	}
 }

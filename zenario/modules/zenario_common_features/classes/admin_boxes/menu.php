@@ -36,7 +36,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$box['key']['id'] = $_REQUEST['mID'];
 		}
 		
-		if (!$box['key']['languageId'] = ze::ifNull($box['key']['languageId'], ze::request('target_language_id'), ze::request('languageId'))) {
+		if (!$box['key']['languageId'] = $box['key']['languageId'] ?: (ze::request('target_language_id') ?: ze::request('languageId'))) {
 			$box['key']['languageId'] = ze::$defaultLang;
 		}
 		
@@ -124,13 +124,13 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			}
 
 		} else {
-			ze\priv::exitIfNot('_PRIV_ADD_MENU_ITEM');
+			ze\priv::exitIfNot('_PRIV_CREATE_DELETE_MENU_ITEM');
 			//Convert the location requests from the old format
 			if (!$box['key']['parentMenuID']) {
-				$box['key']['parentMenuID'] = ze::ifNull($_REQUEST['target_menu_parent'] ?? false, ze::request('parentMenuID'));
+				$box['key']['parentMenuID'] = ze::request('target_menu_parent') ?: ze::request('parentMenuID');
 			}
 	
-			if (!$box['key']['sectionId'] = ze::ifNull($box['key']['sectionId'], ze::request('target_menu_section'), ze::request('sectionId'))) {
+			if (!$box['key']['sectionId'] = $box['key']['sectionId'] ?: (ze::request('target_menu_section') ?: ze::request('sectionId'))) {
 				exit;
 			}
 			
@@ -271,10 +271,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		foreach (ze\row::getAssocs('content_types', ['content_type_plural_en'], [], 'content_type_plural_en') as $cType => $cTypeDetails) {
 			if ($cType == 'html') {
 				$fields['advanced/restrict_child_content_types']['empty_value'] = 
-					ze\admin::phrase("Don't suggest");
+					ze\admin::phrase("No preference for any content type");
 			} else {
 				$fields['advanced/restrict_child_content_types']['values'][$cType] = 
-					ze\admin::phrase('Suggest [[content_type_plural_en]] be created under this menu node', $cTypeDetails);
+					ze\admin::phrase('Preferential menu node for [[content_type_plural_en]]', $cTypeDetails);
 				
 				if ($i > 0) {
 					$cTypes[$i - 1] = ', ';
@@ -646,9 +646,9 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			}
 		} else {
 			if ($parent_menu_id) {
-				ze\priv::exitIfNot('_PRIV_ADD_MENU_ITEM');
+				ze\priv::exitIfNot('_PRIV_CREATE_DELETE_MENU_ITEM');
 			} else {
-				ze\priv::exitIfNot('_PRIV_ADD_MENU_ITEM');
+				ze\priv::exitIfNot('_PRIV_CREATE_DELETE_MENU_ITEM');
 			}
 		}
 
@@ -757,7 +757,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		
 		if ($imageId = $values['feature_image/image_id']) {
 			if ($path = ze\file::getPathOfUploadInCacheDir($imageId)) {
-				$imageId = ze\file::addToDatabase('image', $path);
+				$imageId = ze\fileAdm::addToDatabase('image', $path);
 			}
 		}
 		
@@ -778,7 +778,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			&& $rolloverImageId = $values['feature_image/rollover_image_id']
 			) {
 				if ($path = ze\file::getPathOfUploadInCacheDir($rolloverImageId)) {
-					$rolloverImageId = ze\file::addToDatabase('image', $path);
+					$rolloverImageId = ze\fileAdm::addToDatabase('image', $path);
 	
 				}
 				$submission['rollover_image_id'] = $rolloverImageId;
@@ -809,7 +809,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$featureImage['use_feature_image'] = 1;
 			$featureImage['image_id'] = $values['feature_image/promo__feature_image'];
 			if ($location = ze\file::getPathOfUploadInCacheDir($values['feature_image/promo__feature_image'])) {
-				$featureImage['image_id'] = ze\file::addToDatabase('image', $location);
+				$featureImage['image_id'] = ze\fileAdm::addToDatabase('image', $location);
 			}
 			
 			
@@ -817,7 +817,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$featureImage['use_rollover_image'] = 1;
 				$featureImage['rollover_image_id'] = $values['feature_image/promo__rollover_image'];
 				if ($location = ze\file::getPathOfUploadInCacheDir($values['feature_image/promo__rollover_image'])) {
-					$featureImage['rollover_image_id'] = ze\file::addToDatabase('image', $location);
+					$featureImage['rollover_image_id'] = ze\fileAdm::addToDatabase('image', $location);
 				}
 			}
 			

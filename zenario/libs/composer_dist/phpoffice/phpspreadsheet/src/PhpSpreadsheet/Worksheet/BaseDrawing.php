@@ -192,7 +192,7 @@ class BaseDrawing implements IComparable
     {
         if ($this->worksheet === null) {
             // Add drawing to \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet
-            if ($worksheet !== null) {
+            if ($worksheet !== null && !($this instanceof Drawing && $this->getPath() === '')) {
                 $this->worksheet = $worksheet;
                 $this->worksheet->getCell($this->coordinates);
                 $this->worksheet->getDrawingCollection()->append($this);
@@ -386,14 +386,14 @@ class BaseDrawing implements IComparable
         return $this;
     }
 
-    public function getShadow(): Drawing\Shadow
+    public function getShadow(): Shadow
     {
         return $this->shadow;
     }
 
-    public function setShadow(?Drawing\Shadow $shadow = null): self
+    public function setShadow(?Shadow $shadow = null): self
     {
-        $this->shadow = $shadow ?? new Drawing\Shadow();
+        $this->shadow = $shadow ?? new Shadow();
 
         return $this;
     }

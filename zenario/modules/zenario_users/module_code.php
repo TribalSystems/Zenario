@@ -229,7 +229,7 @@ class zenario_users extends ze\moduleBaseClass {
 		//log out as the previous user before attempting to impersonate a new one.
 		if ($currentlyImpersonatedUser = ze\user::id()) {
 			ze\user::logOut();
-			ze\cookie::clear('LOG_ME_IN_COOKIE');
+			ze\cookie::clear('z_extranet_auto_login');
 			unset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE']);
 		}
 		
@@ -239,11 +239,11 @@ class zenario_users extends ze\moduleBaseClass {
 		
 		if (ze\cookie::canSet('functionality')) {
 			if ($rememberMe) {
-				ze\cookie::set('COOKIE_LAST_EXTRANET_EMAIL', $user['email']);
-				ze\cookie::set('COOKIE_LAST_EXTRANET_SCREEN_NAME', $user['screen_name']);
+				ze\cookie::set('z_extranet_last_email', $user['email']);
+				ze\cookie::set('z_extranet_last_screen_name', $user['screen_name']);
 			}
 			if ($logMeIn) {
-				ze\cookie::set('LOG_ME_IN_COOKIE', $user['login_hash']);
+				ze\cookie::set('z_extranet_auto_login', $user['login_hash']);
 			}
 		}
 	}
@@ -314,7 +314,7 @@ class zenario_users extends ze\moduleBaseClass {
 	
 	
 	
-	public static function jobSendInactiveUserEmail(){
+	public static function jobSendInactiveUserEmail() {
 			$k=0;
 			$emailTemplate1 = ze::setting('inactive_user_email_template_1');
 			$emailTemplate2 = ze::setting('inactive_user_email_template_2');
@@ -331,11 +331,11 @@ class zenario_users extends ze\moduleBaseClass {
 				$emailSettings[]=['emailTemplate'=>$emailTemplate2,'period'=>$timeUserInactive2];
 			}
 			
-			if($emailSettings){
-				foreach($emailSettings as $setting){
+			if ($emailSettings) {
+				foreach($emailSettings as $setting) {
 					$userDetails=self::getInactiveUserDetails($setting['period']);
 					
-					if(is_array($userDetails) && $userDetails){
+					if (is_array($userDetails) && $userDetails) {
 						foreach($userDetails as $user) {
 							$emailMergeFields = [];
 							$emailMergeFields['salutation'] = $user['salutation'];
@@ -344,7 +344,7 @@ class zenario_users extends ze\moduleBaseClass {
 							$emailMergeFields['cms_url'] = ze\link::absolute();
 							$k++;
 							
-							zenario_email_template_manager::sendEmailsUsingTemplate(
+							zenario_common_features::sendEmailsUsingTemplate(
 								$user['email'],
 								$setting['emailTemplate'],
 								$emailMergeFields,
@@ -355,7 +355,7 @@ class zenario_users extends ze\moduleBaseClass {
 						}
 					}
 				}
-			}else{
+			} else {
 				echo "The email template and the user inactivity period are unset in the site settings. <br>";
 			}
 		
@@ -464,7 +464,7 @@ class zenario_users extends ze\moduleBaseClass {
 		
 		ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
 		
-		$imageId = ze\file::addToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+		$imageId = ze\fileAdm::addToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 		if ($imageId) {
 			foreach (explode(',', $userIds) as $userId) {
 				ze\row::update('users', ['image_id' => $imageId], $userId);

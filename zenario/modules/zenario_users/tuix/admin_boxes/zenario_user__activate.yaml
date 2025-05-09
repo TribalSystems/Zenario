@@ -16,12 +16,12 @@ zenario_user__activate:
                     snippet:
                         html: "You are about to change this user's account to be active; this means that the user will be able to log in to a password-protected area of your site."
                 send_email_to_user:
-                    ord: "30"
+                    ord: 30
                     label: 'Send email to user'
                     type: checkbox
                     format_onchange: Yes
                 email_to_send:
-                    ord: "40"
+                    ord: 40
                     label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates

@@ -44,6 +44,8 @@ class col {
 	public $isJSON = false;
 	public $isPK = false;
 	public $isASCII = false;
+	public $isEnum = false;
+	public $notNull = false;
 	
 	public function __construct($f) {
 		
@@ -152,8 +154,19 @@ class col {
 				break;
 		}
 		
-		$this->isSet = (bool) ($f->flags & 2048);
+		$this->notNull = (bool) ($f->flags & 1);
 		$this->isPK = (bool) ($f->flags & 2);
+		$this->isEnum = (bool) ($f->flags & 256);
+		$this->isSet = (bool) ($f->flags & 2048);
+		
+		//I've not added these, but here are some other possible useful flags
+		#$this->isBinary = (bool) ($f->flags & 128);
+		#$this->isBlob = (bool) ($f->flags & 16);
+		#$this->isSet = (bool) ($f->flags & 2048);
+		#$this->isTimestamp = (bool) ($f->flags & 1024);
+		#$this->isUnsigned = (bool) ($f->flags & 32);
+		#$this->hasAutoIncrement = (bool) ($f->flags & 512);
+		#$this->hasUniqueKey = (bool) ($f->flags & 4);
 	}
 }
 
@@ -617,6 +630,20 @@ class db {
 		return !empty($this->cols[$prefixAndTable]);
 	}
 	
+	public function tableDef($prefixAndTable, $useCache = false) {
+		if (!$this->checkTableDef($prefixAndTable, true, $useCache)) {
+			return null;
+		}
+		return $this->cols[$prefixAndTable];
+	}
+	
+	public function colDef($prefixAndTable, $col, $useCache = false) {
+		if (!$this->checkTableDef($prefixAndTable, $col, $useCache)) {
+			return null;
+		}
+		return $this->cols[$prefixAndTable][$col];
+	}
+	
 
 
 	public function columnIsEncrypted($table, $column) {
@@ -1043,7 +1070,8 @@ class db {
 		$body .= "\n".
 			'(REMOTE_ADDR: '. ($_SERVER['REMOTE_ADDR'] ?? 'NULL'). ','.
 			' HTTP_CLIENT_IP: '. ($_SERVER['HTTP_CLIENT_IP'] ?? 'NULL'). ','.
-			' HTTP_X_FORWARDED_FOR: '. ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'NULL'). ')';
+			' HTTP_X_FORWARDED_FOR: '. ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'NULL'). ','.
+			' HTTP_REFERER: '. ($_SERVER['HTTP_REFERER'] ?? 'NULL'). ')';
 		
 		
 		foreach ($errorInfo as $seg) {

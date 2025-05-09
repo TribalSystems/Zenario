@@ -184,7 +184,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 								$fileData = pathinfo($_FILES['Filedata']['name']);
 								$filenameForTitle = preg_replace('/([^.a-z0-9\-_\(\)\[\]\'\"]+)/i', ' ', $fileData['filename']);
 								
-								if ($fileId = ze\file::addToDocstoreDir(
+								if ($fileId = ze\fileAdm::addToDocstoreDir(
 									'content',
 									$_FILES['Filedata']['tmp_name'], $filename)
 								) {

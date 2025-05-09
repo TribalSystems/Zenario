@@ -86,7 +86,10 @@ document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js
 		<div class="zenario_cc_buttons">
 			' . $manageButtonHTML . '
 			<div class="zenario_cc_accept">
-				<a href="zenario/cookies.php?accept_cookies=1">'. htmlspecialchars(\ze::setting('cookie_box1_05_accept_btn')). '</a>
+				<a
+					href="zenario/cookies.php?accept_cookies=1"
+					onclick="return !(window.zenario && zenario.acceptCookies());"
+				>'. htmlspecialchars(\ze::setting('cookie_box1_05_accept_btn')). '</a>
 			</div>
 		</div>
 	</div>
@@ -141,7 +144,7 @@ if ($_GET['type'] == 'popup_only') {
 	$cookieImageHtml = '';
 	if (\ze::setting('cookie_show_image') && ($cookieImageId = \ze::setting('cookie_image'))) {
 		$width = $height = $url = false;
-		\ze\file::imageLink($width, $height, $url, $cookieImageId, \ze::setting('cookie_image_width'), \ze::setting('cookie_image_height'), \ze::setting('cookie_image_canvas'));
+		\ze\image::link($width, $height, $url, $cookieImageId, \ze::setting('cookie_image_width'), \ze::setting('cookie_image_height'), \ze::setting('cookie_image_canvas'));
 		
 		$cookieImageHtml = '
 		<div class="cookie_consent_image">
@@ -157,7 +160,7 @@ cookieConsentPopup.innerHTML = \'', ze\escape::js('
 			$cookieImageHtml . '
 			' . \ze::setting('cookie_box2_01_intro_msg') . '
 		</div>
-		<form method="post" action="zenario/cookies.php">
+		<form method="post" action="zenario/cookies.php" onsubmit="if (window.zenario) zenario.submitCookieChoice(this); return true;">
 			<button type="button" class="cancel"
 					onclick="
 						' . $cancelButtonOnclick . '

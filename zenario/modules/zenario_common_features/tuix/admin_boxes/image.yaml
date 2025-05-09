@@ -64,7 +64,7 @@ zenario_image:
                 alt_tag:
                     label: 'Alt tag:'
                     type: text
-                    side_note: |
+                    tooltip: |
                         Zenario sets this automatically when an image is first uploaded. Edit this for SEO.
                         If your site has multiple languages you can override this to translate the tag in the appropriate plugin.
 
@@ -134,33 +134,21 @@ zenario_image:
                         html: |
                             <div class="zenario_fbInfo">This image is private: its URL will change on every page load and so is not indexible by search engines.</div>
                 
-                internal_webp_link:
-                    grouping: links_grouping
-                    label: "Internal link to optimised WebP version for internal links ([[size]]) (most commonly used):"
-                    type: text
-                    readonly: true
-                    show_copy_text_button: true
                 internal_original_image_link:
                     grouping: links_grouping
-                    label: "Internal link to original image ([[size]]):"
+                    label: "Internal link to full image ([[size]]):"
                     type: text
                     readonly: true
                     show_copy_text_button: true
                 html_embed_link:
                     grouping: links_grouping
-                    label: "HTML for embedding in a Raw HTML Snippet plugin:"
-                    type: text
-                    readonly: true
-                    show_copy_text_button: true
-                external_webp_link:
-                    grouping: links_grouping
-                    label: "External link to optimised WebP ([[size]]):"
+                    label: "HTML for pasting into a Raw HTML Snippet plugin:"
                     type: text
                     readonly: true
                     show_copy_text_button: true
                 external_original_image_link:
                     grouping: links_grouping
-                    label: "External link to original image ([[size]]):"
+                    label: "External link to full image ([[size]]):"
                     type: text
                     readonly: true
                     show_copy_text_button: true
@@ -181,7 +169,7 @@ zenario_image:
                 description:
                     snippet:
                         p: |
-                            Crop and zoom is available for this image size (defined in plugin settings). Adjust the visible area using the handles, for this aspect ratio.
+                           You may adjust the crop and zoom positions for this image. To change its aspect ratio and size, please go to the settings for the plugin.
                 #This usage column is used for the cropping logic.
                 #It is separate to the "Where used" column.
                 usage:

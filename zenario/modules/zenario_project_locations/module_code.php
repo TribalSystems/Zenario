@@ -287,7 +287,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 			$img_tag = '';
 			if($row['alt_tag']) $alt_tag=" alt='" . $row['alt_tag'] . "'"; else $alt_tag=" alt='" . $row['client_name'] . "'";
 			
-			ze\file::imageLink($width, $height, $url, $row['image_id'], $width, $height);
+			ze\image::link($width, $height, $url, $row['image_id'], $width, $height);
 			if ($url) {
 				$img_tag =  '<img src="' . $url . '" ' . $alt_tag . ' />';
 			}
@@ -639,7 +639,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 	protected function getImageHtmlSnippet($image_id, &$snippet_field, $widthLimit = 700, $heightLimit = 200){
 		if ($image_id) {
 			$width = $height = $url = $widthR = $heightR = $urlR = false;
-			\ze\file::imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = true, $fullPath = false, $privacy = 'auto', $useCacheDir = false);
+			\ze\image::link($widthR, $heightR, $urlR, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = true, $fullPath = false, $privacy = 'auto', $useCacheDir = false);
 	
 			$snippet_field = '
 			<p style="text-align: center;">
@@ -829,7 +829,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 				//Upload a new image
 				if (ze::post('upload') && ze\priv::check('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
 					ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
-					$image_id = ze\file::addToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+					$image_id = ze\fileAdm::addToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 					return $image_id;
 				
 				//Delete an image

@@ -1,7 +1,9 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    title: Editing settings for AWS S3 and Vector data processing
+    title: Editing settings for AWS S3
+    #N.b. if the prototype vector search plugin makes it to live/prod we'd want to tweak the description here at some point:
+    #title: Editing settings for AWS S3 and Vector data processing
     setting_group: aws_s3_and_vector_data_processing
     tabs:
         awss3_file_downloads:
@@ -100,3 +102,22 @@ site_settings:
                         zenarioAB.value('enable_aws_support') && zenarioAB.value('enable_aws_textract')
                     validation:
                         required_if_not_hidden: 'Please enter the temporary storage bucket.'
+                aws_textract_throttle:
+                    indent: 2
+                    site_setting:
+                        name: aws_textract_throttle
+                    visible_if: |
+                        zenarioAB.value('enable_aws_support') && zenarioAB.value('enable_aws_textract')
+                    type: select
+                    label: 'Throttle speed when processing in bulk:'
+                    value: 201000
+                    values:
+                        1001000:
+                            label: '1 per second'
+                        201000:
+                            label: '5 per second'
+                        68000:
+                            label: '15 per second'
+                    validation:
+                        required_if_not_hidden: true
+                    

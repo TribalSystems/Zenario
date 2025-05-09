@@ -52,12 +52,10 @@ $mergeFields['cms_url'] = ze\link::absolute();
 
 
 
-if (ze\module::inc('zenario_email_template_manager')) {
-	zenario_email_template_manager::sendEmailsUsingTemplate(
-		$this->setting('email_address_for_reports'),
-		$this->setting('email_template_for_approve_requests'),
-		$mergeFields,
-		[],
-		[],
-		['message' => true, 'poster_screen_name' => true]);
-}
+zenario_common_features::sendEmailsUsingTemplate(
+	$this->setting('email_address_for_reports'),
+	$this->setting('email_template_for_approve_requests'),
+	$mergeFields,
+	[],
+	[],
+	['message' => true, 'poster_screen_name' => true]);

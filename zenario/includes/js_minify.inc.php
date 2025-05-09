@@ -139,6 +139,7 @@ class zenario_minify {
 		'_.values(',		//'_._1hc('
 		'_.without(',		//'_._3w('
 		'zenario.AJAXLink(',		//'zenario._1m('
+		'zenario.acceptCookies(',		//'zenario._tna('
 		'zenario.actAfterDelayIfNotSuperseded(',		//'zenario._9fm('
 		'zenario.addAmp(',		//'zenario._1vq('
 		'zenario.addBasePath(',		//'zenario._ozg('
@@ -150,6 +151,7 @@ class zenario_minify {
 		'zenario.addTabIdToURL(',		//'zenario._mfk('
 		'zenario.applyCompilationMacros(',		//'zenario._oxf('
 		'zenario.applyMergeFields(',		//'zenario._yqq('
+		'zenario.applyMergeFieldsIntoHTML(',		//'zenario._aat('
 		'zenario.applyMergeFieldsN(',		//'zenario._jnw('
 		'zenario.between(',		//'zenario._3s('
 		'zenario.browserIsChrome(',		//'zenario._lvr('
@@ -270,6 +272,7 @@ class zenario_minify {
 		'zenario.splitFlagsFromMessage(',		//'zenario._by8('
 		'zenario.startPoking(',		//'zenario._3fp('
 		'zenario.stopPoking(',		//'zenario._3pc('
+		'zenario.submitCookieChoice(',		//'zenario._5mf('
 		'zenario.submitFormReturningHtml(',		//'zenario._2l7('
 		'zenario.tidyLibPointers(',		//'zenario._zt('
 		'zenario.tinyMCEGetContent(',		//'zenario._9px('
@@ -339,7 +342,6 @@ class zenario_minify {
 		'zenarioA.imagesWarning(',		//'zenarioA._2lb('
 		'zenarioA.infoBox(',		//'zenarioA._28('
 		'zenarioA.initTutorialSlideshow(',		//'zenarioA._bw9('
-		'zenarioA.isHtaccessWorking(',		//'zenarioA._9u0('
 		'zenarioA.keepSlotControlsOpen(',		//'zenarioA._6ea('
 		'zenarioA.layoutCodeName(',		//'zenarioA._gfd('
 		'zenarioA.loggedOut(',		//'zenarioA._lnb('
@@ -430,7 +432,6 @@ class zenario_minify {
 		'zenarioAT.pickItems(',		//'zenarioAT._bmn('
 		'zenarioAT.setURL(',		//'zenarioAT._gn7('
 		'zenarioAT.showGridOnOff(',		//'zenarioAT._yiu('
-		'zenarioAT.slotDisabled(',		//'zenarioAT._5ib('
 		'zenarioAT.sortButtons(',		//'zenarioAT._ewv('
 		'zenarioAT.uploadComplete(',		//'zenarioAT._oja('
 		'zenarioGM.ajaxData(',		//'zenarioGM._n('
@@ -492,6 +493,7 @@ class zenario_minify {
 		'zenarioO.branch(',		//'zenarioO._13q('
 		'zenarioO.canFilterColumn(',		//'zenarioO._d2p('
 		'zenarioO.canSortColumn(',		//'zenarioO._p93('
+		'zenarioO.changeClearSearchButtonVisibility(',		//'zenarioO._ipc('
 		'zenarioO.changeFilters(',		//'zenarioO._dwh('
 		'zenarioO.changePageSize(',		//'zenarioO._aqg('
 		'zenarioO.changePassword(',		//'zenarioO._ofl('
@@ -724,6 +726,7 @@ class zenario_minify {
 		'zenario_conductor.confirmOnCloseMessage(',		//'zenario_conductor._apv('
 		'zenario_conductor.enabled(',		//'zenario_conductor._tn('
 		'zenario_conductor.getCommand(',		//'zenario_conductor._7ko('
+		'zenario_conductor.getMetadata(',		//'zenario_conductor._9o9('
 		'zenario_conductor.getSlot(',		//'zenario_conductor._cae('
 		'zenario_conductor.getToggle(',		//'zenario_conductor._h93('
 		'zenario_conductor.getToggles(',		//'zenario_conductor._8ai('
@@ -740,6 +743,7 @@ class zenario_minify {
 		'zenario_conductor.resetVarsOnBackNav(',		//'zenario_conductor._kla('
 		'zenario_conductor.resetVarsOnBrowserBackNav(',		//'zenario_conductor._l1('
 		'zenario_conductor.setCommands(',		//'zenario_conductor._f3b('
+		'zenario_conductor.setMetadata(',		//'zenario_conductor._nr('
 		'zenario_conductor.setToggle(',		//'zenario_conductor._88l('
 		'zenario_conductor.setVar(',		//'zenario_conductor._goe('
 		'zenario_conductor.setVars(',		//'zenario_conductor._th('
@@ -915,7 +919,6 @@ function applyCompilationMacros($code, $dir, $file) {
 		//Not actually standard JavaScript but looks nice
 		$patterns[] = '@\=\>\s*\{@';
 		$replacements[] = 'function () {';
-	
 	}
 	
 	

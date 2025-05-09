@@ -570,15 +570,6 @@ plugin_settings:
                     visible_if: lib.value('show_featured_image') && lib.value('fall_back_to_default_image')
                     validation:
                         required_if_not_hidden: Please select an image.
-                image_2_webp:
-                    indent: 1
-                    plugin_setting:
-                        name: image_2_webp
-                    type: checkbox
-                    grouping: filters
-                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
-                    value: 1
-                    visible_if: lib.value('show_featured_image')
                 show_image_credit:
                     indent: 1
                     plugin_setting:

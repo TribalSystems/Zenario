@@ -30,7 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_advanced_search {
 	
-	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
@@ -98,11 +97,30 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					}
 				}
 
-				$searchInOtherModules = ze\module::sendSignal("signalAdvancedSearchPopulateValuesSearchInOtherModules", []);
+				$searchInOtherModules = ze\module::sendSignal("signalAdvancedSearchGetSearchableModules", []);
 				if (!empty($searchInOtherModules) && is_array($searchInOtherModules)) {
 					$ord = 0;
+					$modulesWhichDontSupportThumbnails = [];
+					
 					foreach ($searchInOtherModules as $module) {
-						$fields['content_types/module_to_search']['values'][$module] = ['ord' => ++$ord, 'label' => ze\module::getModuleDisplayNameByClassName($module) . ' (' . $module . ')'];
+						$moduleClassName = $module['module_class_name'];
+						$fields['content_types/module_to_search']['values'][$moduleClassName] = ['ord' => ++$ord, 'label' => ze\module::getModuleDisplayNameByClassName($moduleClassName) . ' (' . $moduleClassName . ')'];
+						
+						foreach ($module['searchable_data_types'] as $searchableDataType => $searchableDataTypeLabel) {
+							$fields['content_types/searchable_data_type']['values'][$searchableDataType] = [
+								'label' => ze\admin::phrase($searchableDataTypeLabel),
+								'visible_if' => "lib.value('search_in_other_modules') && lib.value('module_to_search') == '" . htmlspecialchars($moduleClassName) . "'"
+							];
+						}
+						
+						if (!$module['images_are_supported']) {
+							$modulesWhichDontSupportThumbnails[] = $moduleClassName;
+						}
+					}
+					
+					if (count($modulesWhichDontSupportThumbnails) > 0) {
+						$fields['content_types/other_module_show_image']['disabled_if'] = "lib.valueIn('module_to_search', '" . implode("', '", $modulesWhichDontSupportThumbnails) . "')";
+						$values['content_types/modules_which_dont_support_images'] = implode(', ', $modulesWhichDontSupportThumbnails);
 					}
 				}
 
@@ -115,9 +133,16 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 			case 'plugin_settings':
 				$fields['first_tab/show_private_content_item_link_control']['hidden'] = !$values['first_tab/search_private_items'];
 				
+				$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
+				
 				foreach (['html', 'document', 'news', 'blog'] as $contentType) {
-					$hidden = !$values['content_types/search_' . $contentType] || !$values['content_types/' . $contentType . '_show_feature_image'];
-					$this->showHideImageOptions($fields, $values, 'content_types', $hidden, $contentType . '_feature_image_');
+					$hidden = !$values['content_types/search_' . $contentType] || !$values['content_types/' . $contentType . '_show_featured_image'];
+					$this->showHideImageOptions($fields, $values, 'content_types', $hidden, $contentType . '_');
 
 					//Default column heading text
 					$columnHeadingText = '';
@@ -160,6 +185,13 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					}
 
 					$fields['content_types/' . $contentType . '_no_results_text']['value'] = $noResultsText;
+					
+					//Side note for retina feature for content types
+					if ($values['content_types/' . $contentType . '_canvas'] != "unlimited") {
+						$fields['content_types/' . $contentType . '_canvas']['side_note'] = $retinaSideNote;
+					} else {
+						unset($fields['content_types/' . $contentType . '_canvas']['side_note']);
+					}
 				}
 
 				if (!$values['content_types/other_module_column_heading_text']) {
@@ -168,8 +200,17 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$fields['content_types/other_module_column_heading_text']['value'] = $values['content_types/other_module_column_heading_text'];
 				}
 
+				if ($values['content_types/search_in_other_modules']) {
+					unset($fields['content_types/other_module_show_image']['note_below']);
+					
+					if (!empty($values['content_types/modules_which_dont_support_images']) && in_array($values['content_types/module_to_search'], explode(',', $values['content_types/modules_which_dont_support_images']))) {
+						$values['content_types/other_module_show_image'] = false;
+						$fields['content_types/other_module_show_image']['note_below'] = ze\admin::phrase('The selected module does not support images.');
+					}
+				}
+				
 				$hidden = !$values['content_types/search_in_other_modules'] || !$values['content_types/other_module_show_image'];
-				$this->showHideImageOptions($fields, $values, 'content_types', $hidden, 'other_module_image_');
+				$this->showHideImageOptions($fields, $values, 'content_types', $hidden, '');
 
 				$fields['weightings/other_module_title_weighting']['hidden'] =
 				$fields['weightings/other_module_description_weighting']['hidden'] =
@@ -215,6 +256,13 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					} else {
 						$fields['content_types/other_module_view_item_content_item']['notices_below']['expected_module_on_results_page']['hidden'] = true;
 					}
+				}
+				
+				//Side note for retina feature for searching in other modules
+				if ($values['content_types/canvas'] != "unlimited") {
+					$fields['content_types/canvas']['side_note'] = $retinaSideNote;
+				} else {
+					unset($fields['content_types/canvas']['side_note']);
 				}
 
 				/**********************
@@ -300,6 +348,15 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				
 				$fields['content_types/search_result_types_order']['current_value'] 
 					= $fields['content_types/search_result_types_order']['value'] = implode(",", array_keys($fields['content_types/search_result_types_order']['values']));
+				
+				if ($values['content_types/search_in_other_modules']) {
+					unset($fields['content_types/other_module_show_image']['note_below']);
+					
+					if (!empty($values['content_types/modules_which_dont_support_images']) && in_array($values['content_types/module_to_search'], explode(',', $values['content_types/modules_which_dont_support_images']))) {
+						$values['content_types/other_module_show_image'] = false;
+						$fields['content_types/other_module_show_image']['note_below'] = ze\admin::phrase('The selected module does not support images.');
+					}
+				}
 				
 				break;
 		}

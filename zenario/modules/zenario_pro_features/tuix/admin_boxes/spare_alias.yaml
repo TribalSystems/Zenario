@@ -81,17 +81,17 @@ zenario_pro_features_spare_alias:
                     value: int
                     values:
                         int:
-                            ord: "2"
+                            ord: 2
                             label: A content item
                         ext:
-                            ord: "3"
+                            ord: 3
                             label: An external URL
                     format_onchange: Yes
                 hyperlink_target:
                     grouping: grouping_right
                     label: 'Content item:'
                     pick_items:
-                        path: zenario__content/panels/content
+                        path: zenario__content/panels/content/refiners/published_draft_and_unlisted_only////
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content

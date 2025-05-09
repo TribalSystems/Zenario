@@ -18,18 +18,9 @@ zenario__users:
                 On a site with an extranet, "Users" can access private areas. "Contacts" are other people whose details are stored.
             link:
                 path: zenario__users/panels/users
-        suspended_users:
-            ord: 2
-            priv: _PRIV_VIEW_USER
-            css_class: zenario_suspended_users
-            label: Suspended users
-            tooltip: People who were extranet users but whose accounts are suspended to prevent them logging in
-            link:
-                path: zenario__users/panels/users
-                refiner: suspended_users
-            visible_if: zenarioA.module.zenario_extranet && zenarioA.module.zenario_extranet.running
+        
         groups:
-            ord: 3
+            ord: 2
             priv: _PRIV_VIEW_USER
             label: Groups
             tooltip: >
@@ -37,7 +28,7 @@ zenario__users:
             link:
                 path: zenario__users/panels/groups
         smart_groups:
-            ord: 4
+            ord: 3
             priv: _PRIV_VIEW_USER
             label: Smart groups
             tooltip: >
@@ -45,8 +36,10 @@ zenario__users:
                 filters that you define. Use smart groups to define newsletter mailing lists.
             link:
                 path: zenario__users/panels/smart_groups
+        #If Organization-User Role Manager module is running, element 4 will be the Roles.
+        #If User Timers module is running, element 5 will be the Timer plans.
         consents:
-            ord: 5
+            ord: 6
             priv: _PRIV_VIEW_USER
             label: Consent log
             tooltip: >
@@ -54,12 +47,23 @@ zenario__users:
             css_class: "zenario_consent zenario_separator_before_this"
             link:
                 path: zenario__users/panels/consents
+        #If Extranet Base module is running, element 7 will be the User sign-in log.
         access_log:
-            #If Extranet Base module is running, element 6 will be the User sign-in log.
-            ord: 7
+            ord: 8
             priv: _PRIV_VIEW_USER
             label: User access log
             tooltip: Log of extranet users and the private content items they have accessed
             link:
                 path: zenario__users/panels/access_log
+            visible_if: zenarioA.module.zenario_extranet && zenarioA.module.zenario_extranet.running
+        
+        suspended_users:
+            ord: 9
+            priv: _PRIV_VIEW_USER
+            css_class: zenario_suspended_users
+            label: Suspended users
+            tooltip: People who were extranet users but whose accounts are suspended to prevent them logging in
+            link:
+                path: zenario__users/panels/users
+                refiner: suspended_users
             visible_if: zenarioA.module.zenario_extranet && zenarioA.module.zenario_extranet.running

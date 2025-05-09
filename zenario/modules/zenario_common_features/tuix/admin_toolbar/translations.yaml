@@ -3,38 +3,29 @@
 sections:
     translations:
         custom_template_buttons_current:
-            'znz_dropdown':
-                label: '[[id]]'
-                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__[[status]] zenario_at_trans_dropdown_current'
-            'znz_this':
-                label: 'This is the [[english_name]] translation'
-                label_og: 'This is the original (in [[english_name]])'
-                parent: 'znz_dropdown'
+           'znz_this':
+                label: 'This is the [[english_name]] ([[id]]) translation'
+                label_og: 'This is the original (in [[english_name]] ([[id]]))'
+                parent: 'current_language_button'
                 frontend_link: ''
         
         custom_template_buttons_exists:
-            'znz_dropdown':
-                label: '[[id]]'
-                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__[[status]]'
-            'znz_go':
-                label: 'Go to [[english_name]] translation'
-                label_og: 'Go to the original (in [[english_name]])'
-                parent: 'znz_dropdown'
+           'znz_go':
+                label: '[[english_name]] ([[id]])'
+                parent: 'existing_translations_dropdown'
                 frontend_link: ''
         
-        custom_template_buttons_missing_cant_create:
-            'znz_dropdown':
-                label: '[[id]]'
-                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__missing'
-            
+        custom_template_buttons_missing:
+           'znz_missing':
+                label: '[[english_name]] ([[id]])'
+                parent: 'existing_translations_dropdown'
+                css_class: 'zenario_at_trans_dropdown__missing'
+        
         custom_template_buttons_missing_can_create:
-            'znz_dropdown':
-                label: '[[id]]'
-                css_class: 'zenario_at_trans_dropdown zenario_at_trans_dropdown__missing'
-            
             'znz_create':
-                label: 'Create a translation in [[english_name]]'
-                parent: 'znz_dropdown'
+                #Create a translation in...
+                label: '[[english_name]] ([[id]])'
+                parent: 'create_translation_in_dropdown'
                 admin_box: 
                     path: zenario_content
                     key: 
@@ -42,8 +33,8 @@ sections:
                         translate: 1
             
             'znz_add_existing_translation_to_chain':
-                label: 'Add an existing content item in [[english_name]] to this chain'
-                parent: 'znz_dropdown'
+                label: '[[english_name]] ([[id]])'
+                parent: 'attach_translation_in_dropdown'
                 pick_items:
                     path: zenario__content/panels/content/refiners/add_translation_to_chain//zlangIdz//
                     min_path: zenario__content/panels/content
@@ -65,3 +56,15 @@ sections:
         
         
         buttons: {}
+            current_language_button:
+                css_class: current_language_button
+                label: 'This is the [[english_name]] translation'
+            existing_translations_dropdown:
+                css_class: existing_translations_dropdown
+                label: "Existing translations"
+            create_translation_in_dropdown:
+                css_class: create_translation_in_dropdown
+                label: "Create translation in..."
+            attach_translation_in_dropdown:
+                css_class: attach_translation_in_dropdown
+                label: "Attach to chain item in..."

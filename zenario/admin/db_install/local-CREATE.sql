@@ -1,4 +1,5 @@
 
+/*	Reminder: every table you create here should also be listed in the local-DROP.sql file	*/ 
 
 
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_setting_defaults`;
@@ -668,15 +669,6 @@ CREATE TABLE `[[DB_PREFIX]]languages` (
   KEY `sync_assist` (`sync_assist`),
   KEY `translate_phrases` (`translate_phrases`),
   KEY `domain` (`domain`)
-) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
-
-
-DROP TABLE IF EXISTS `[[DB_PREFIX]]last_sent_warning_emails`;
-CREATE TABLE `[[DB_PREFIX]]last_sent_warning_emails` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `timestamp` datetime NOT NULL,
-  `warning_code` enum('document_container__private_file_in_public_folder','module_missing') NOT NULL,
-  PRIMARY KEY (`id`)
 ) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]];
 
 

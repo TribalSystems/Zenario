@@ -32,14 +32,18 @@ class cookie {
 
 
 
-	public static function set($name, $value, $expire = COOKIE_TIMEOUT) {
+	public static function set($name, $value, $expire = COOKIE_TIMEOUT, $js = false) {
 	
 		if ($expire > 1) {
 			$expire += time();
 		}
 	
-		setcookie($name, $value ?? '', $expire, SUBDIRECTORY, COOKIE_DOMAIN, \ze\link::isHttps(), true);
+		setcookie($name, $value ?? '', $expire, SUBDIRECTORY, COOKIE_DOMAIN, \ze\link::isHttps(), !$js);
 		$_COOKIE[$name] = $value;
+	}
+	
+	public static function setJS($name, $value, $expire = COOKIE_TIMEOUT) {
+		\ze\cookie::set($name, $value, $expire, true);
 	}
 
 	public static function clear($name) {
@@ -57,13 +61,13 @@ class cookie {
 	}
 
 	public static function setConsent($types = false) {
-		\ze\cookie::set('cookies_accepted', $types ? $types : 1);
+		\ze\cookie::set('z_cookies_accepted', $types ? $types : 1);
 		unset($_SESSION['unnecessary_cookies_rejected']);
 	}
 
 	public static function setNoConsent() {
-		if (isset($_COOKIE['cookies_accepted'])) {
-			\ze\cookie::clear('cookies_accepted');
+		if (isset($_COOKIE['z_cookies_accepted'])) {
+			\ze\cookie::clear('z_cookies_accepted');
 		}
 		$_SESSION['unnecessary_cookies_rejected'] = true;
 	}
@@ -76,15 +80,15 @@ class cookie {
 	
 	public static function setSensitiveContentMessageConsent() {
 		//Set a 7 day cookie
-		\ze\cookie::set('sensitive_content_message_accepted', 1, 604800);
-		unset($_SESSION['sensitive_content_message_accepted']);
+		\ze\cookie::set('z_sensitive_content_message_accepted', 1, 604800);
+		unset($_SESSION['z_sensitive_content_message_accepted']);
 	}
 	
 	public static function setCountryAndLanguage($country_id, $user_lang) {
 		//Set a 7 day cookie
-		if (isset($_COOKIE['cookies_accepted'])) {
-			\ze\cookie::set('country_id', $country_id, 604800);
-			\ze\cookie::set('user_lang', $user_lang, 604800);
+		if (isset($_COOKIE['z_cookies_accepted'])) {
+			\ze\cookie::set('z_country_id', $country_id, 604800);
+			\ze\cookie::set('z_user_lang', $user_lang, 604800);
 		}
 		
 		$_SESSION['country_id'] = $country_id;
@@ -95,10 +99,10 @@ class cookie {
 	public static function canSetAll() {
 		//Always accept cookies on sites that only notify about cookies,
 		//for administrators who are logged in,
-		//or for visitors who have pressed the "Accept all" button (stored as a "1" in the "cookies_accepted" cookie).
+		//or for visitors who have pressed the "Accept all" button (stored as a "1" in the "z_cookies_accepted" cookie).
 		return \ze::setting('cookie_require_consent') != 'explicit'
 			|| \ze::isAdmin()
-			|| 1 == ($cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '');
+			|| 1 == ($_COOKIE['z_cookies_accepted'] ?? '');
 	}
 
 
@@ -108,10 +112,10 @@ class cookie {
 		
 		//Always accept cookies on sites that only notify about cookies,
 		//for administrators who are logged in,
-		//or for visitors who have pressed the "Accept all" button (stored as a "1" in the "cookies_accepted" cookie).
+		//or for visitors who have pressed the "Accept all" button (stored as a "1" in the "z_cookies_accepted" cookie).
 		if (\ze::setting('cookie_require_consent') != 'explicit'
 		 || \ze::isAdmin()
-		 || 1 == ($cookiesAccepted = $_COOKIE['cookies_accepted'] ?? '')) {
+		 || 1 == ($cookiesAccepted = $_COOKIE['z_cookies_accepted'] ?? '')) {
 			return true;
 		}
 		
@@ -143,7 +147,7 @@ class cookie {
 	
 	//This returns true if the visitor responded to the cookie prompt
 	public static function isDecided() {
-		return !empty($_COOKIE['cookies_accepted']) || !empty($_SESSION['unnecessary_cookies_rejected']);
+		return !empty($_COOKIE['z_cookies_accepted']) || !empty($_SESSION['unnecessary_cookies_rejected']);
 	}
 
 	public static function hideConsent() {
@@ -161,7 +165,7 @@ class cookie {
 	
 
 	public static function sessionName() {
-		return 'PHPSESSID'.
+		return 'z_session_id'.
 			(COOKIE_DOMAIN? ('-'. preg_replace('@\W@', '_', COOKIE_DOMAIN)) : '').
 			(SUBDIRECTORY && SUBDIRECTORY != '/'? ('-'. preg_replace('@\W@', '_', str_replace('/', '', SUBDIRECTORY))) : '');
 	}
@@ -177,20 +181,27 @@ class cookie {
 				session_set_cookie_params(SESSION_TIMEOUT, SUBDIRECTORY);
 			}
 			
-			//Make sure the session_id is valid, and if not create a new one. This stops people
-			//manually creating a bad session id on their client to cause a warning.
-			$sessionId = false;
+			//We sometimes get attacks on our servers where it looks like someone is trying to guess and
+			//hijack someone else's session ID.
+			//The session IDs they use are often not valid session IDs for PHP which will cause an error
+			//we need to catch, lest we be spammed with PHP error reports every time we're attacked.
+			$sessionId = null;
 			if (ini_get('session.use_cookies') && isset($_COOKIE[$sessionName])) {
 				$sessionId = $_COOKIE[$sessionName];
 			} elseif (!ini_get('session.use_only_cookies') && isset($_GET[$sessionName])) {
 				$sessionId = $_GET[$sessionName];
 			}
-			if ($sessionId && !preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $sessionId)) {
-				session_regenerate_id();
+			
+			if (!is_null($sessionId) && !preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $sessionId)) {
+				unset($_COOKIE[$sessionName], $_GET[$sessionName]);
+				
+				//Possible idea for a feature:
+				//If we wanted to make a log of these we could use this point in the
+				//code as a trigger for the log entry.
 			}
 			
 			session_start();
-		
+			
 			//Fix for a bug with the $lifetime option in session_set_cookie_params()
 			//as mentioned on http://php.net/manual/en/function.session-set-cookie-params.php
 			\ze\cookie::set(session_name(), session_id(), SESSION_TIMEOUT);

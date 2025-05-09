@@ -63,9 +63,9 @@ plugin_settings:
                         rename:
                             label: Rename
                         replace:
-                            label: Save as new ~plugin~ and place here
+                            label: Save as a new ~plugin~ and place it here
                         duplicate:
-                            label: Save as new ~plugin~ in library
+                            label: Save as a new ~plugin~
         
         'phrases.framework':
             hidden: true

@@ -129,7 +129,7 @@ if ($methodCall == 'refreshPlugin'
 	
 	} else
 	if (empty(ze::$slotContents[$slotNameNestId]->class())
-	 || (empty(ze::$slotContents[$slotNameNestId]->init())
+	 || (empty(ze::$slotContents[$slotNameNestId]->initStatus())
 	  && !($continueIfNoAccess = $methodCall == 'refreshPlugin' && ze::isAdmin()))) {
 	  	
 	  	if (ze::isAdmin()) {
@@ -595,11 +595,11 @@ if ($methodCall == 'showFile') {
 		$cssClass = $module->wrapperClass();
 		
 		$layoutPreview = null;
-		$slotControlHTML = null;
+		$slotControls = null;
 			
 		if (ze::isAdmin()) {
 			$slotContents = [$slotName => &$slot];
-			$slotControlHTML = ze\pluginAdm::setupSlotControls($slotContents, true);
+			$slotControls = ze\pluginAdm::setupSlotControls($slotContents, true);
 			
 			$moduleId = $slot->moduleId();
 			ze\escape::flag('MODULE_ID', $moduleId);
@@ -674,8 +674,8 @@ if ($methodCall == 'showFile') {
 				echo '<em>', htmlspecialchars($slot->error()), '</em>';
 			}
 		
-		} elseif (empty($slot->init())) {
-			\ze\pluginAdm::showInitialisationError($slot, $slot->init() ?? null);
+		} elseif (!$initStatus = $slot->initStatus()) {
+			\ze\pluginAdm::showInitialisationError($slot, $initStatus);
 		
 		} else {
 			$module->showSlot();
@@ -707,8 +707,8 @@ if ($methodCall == 'showFile') {
 		if ($layoutPreview !== null) {
 			ze\escape::flag('LAYOUT_PREVIEW', $layoutPreview, false);
 		}
-		if ($slotControlHTML !== null) {
-			ze\escape::flag('SLOT_CONTROLS', $slotControlHTML, false);
+		if ($slotControls !== null) {
+			ze\escape::flag('SLOT_CONTROLS', str_replace('":[]', '":{}', json_encode($slotControls, JSON_INVALID_UTF8_SUBSTITUTE)), false);
 		}
 		
 		ze\escape::flag('PAGE_TITLE', ze::$pageTitle, false);

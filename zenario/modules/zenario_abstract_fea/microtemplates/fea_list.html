@@ -76,7 +76,7 @@
 	<% } %>
 	
 	<% if (aboveListButtonHTML) { %>
-		<div class="zfea_buttons sorted_buttons zfea_buttons_above_list">
+		<div class="zfea_buttons zfea_buttons_above_list sorted_buttons">
 			{{aboveListButtonHTML}}
 		</div>
 	<% } %>
@@ -164,7 +164,7 @@
 									</div></th>
 								<% } %>
 								<% if (m.tuix.__itemHasItemButton || colHeadButtonHTML) { %>
-									<th class="sorted_buttons">
+									<th class="zfea_buttons zfea_buttons_in_column_header sorted_buttons">
 										{{colHeadButtonHTML}}
 									</th>
 								<% } %>
@@ -259,9 +259,13 @@
 							<% firstItem = false; %>
 						<% } %>
 						<% if (m.thus.sortedItems.length == 0) { %>
-								<% if (m.tuix.no_items_message) { %>
-									<tr class="zfea_no_items_message"><td colspan="100%">{{m.tuix.no_items_message}}</td></tr>
-								<% } %>
+							<% var msg; %>
+							<% if (lib.request.search && (msg = m.tuix.no_items_in_search_message)) { %>
+								<tr class="zfea_no_items_in_search_message"><td colspan="100%">{{msg}}</td></tr>
+							
+							<% } else if (msg = m.tuix.no_items_message) { %>
+								<tr class="zfea_no_items_message"><td colspan="100%">{{msg}}</td></tr>
+							<% } %>
 						<% } %>
 						
 						<% if (lg) { %>

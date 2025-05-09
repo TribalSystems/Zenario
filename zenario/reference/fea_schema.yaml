@@ -25,9 +25,10 @@ common_definitions:
             
             If not set, it defaults to the order the CMS finds them in.
             
-            If you are inserting elements into another module's TUIX,
-            you can use syntax of the form "name_of_other_element.001"
-            to place an element after the named element in the order.
+            From version 10.1 onwards, we have some logic where you can place a field or a button
+            immediately before or after an existing field or button using an offset.
+            To do this you need to use a pattern like this: "field_name + 0.1" (to put your field after)
+            or like this: "field_name - 0.1" (to put your field before).
     copy_of: &copy_of
         type: string
         description: >
@@ -488,7 +489,7 @@ additionalProperties:
                     values:
                         type: object
                         description: >
-                            If you use the enum format for a column, you should provide a list of values
+                            The FEA list has support for lists of values.
                             (with real values as keys and display values as values).
                         additionalProperties:
                             type: *variable
@@ -496,6 +497,12 @@ additionalProperties:
                         type: string
                         description: >
                             If a column is empty, show this text instead of a blank cell.
+                    
+                    show_multiple_values:
+                        type: boolean
+                        description: >
+                            Set this properly if you want to show multiple values, separated by a comma.
+                            This works from version 10.1 onwards.
                     
                     align_right:
                         type: boolean
@@ -559,8 +566,68 @@ additionalProperties:
                     visible_if_for_each_item:
                         type: string
                         description: >
-                            For columns that have parents, you can enter a snippet of JavaScript code to be evaluated for
-                            each item, to show the column conditionally for each row.
+                            If you're using the list-blocks microtemplate, columns can be hidden on a item-by-item basis.
+                            (This can also be used on the regular list microtemplate, but only for columns that have parents.)
+                            You can enter a snippet of JavaScript code to be evaluated for each item, to show the column conditionally for each row.
+                    
+                    hide_if_empty:
+                        type: boolean
+                        description: >
+                            If you're using the list-blocks microtemplate, columns can be hidden on a item-by-item basis.
+                            (This can also be used on the regular list microtemplate, but only for columns that have parents.)
+                            You can set this property to only show a column if it is not empty.
+                    
+                    mirror_field:
+                        type: object
+                        description: >
+                            Warning - at the time of writing this is currently very experimental!
+                            
+                            This property is used some FEA plugins, where the base plugin interacts with columns added
+                            by another plugin.
+                            
+                            To use this, your module MUST make the following tables with these exact names:
+                                - document_data (for saving the value of every field except for multiple checkboxes-type fields)
+                                - document_checkbox_values (for saving multiple checkboxes-type fields)
+                            
+                            Depending on which plugin is accepting the custom fields, you can use this to show extra fields in
+                            a list, show extra fields in a view, edit extra fields in a create or an edit mode, or search on
+                            extra fields in a search plugin.
+                            
+                            This works from version 10.1 onwards.
+                        properties:
+                            name:
+                                type: string
+                                description: >
+                                    The code-name/column name of the column in the document_data table that you wish to add.
+                                    
+                                    Note that while multiple checkboxes-type fields won't actually have a column in the table,
+                                    they still need a code-name as if they had one.
+                                    
+                                    Warning - if you wish to display your column value, the name needs to match the code name
+                                    of the column. If you just wish to include the column in the search without displaying it,
+                                    the name may be different to the code name.
+                            values_source:
+                                type: string
+                                description: >
+                                    Use this to load the list of values for a checkboxes/radios/select field, 
+                                    or a field with a typeahead.
+                                    The format used is the same as centeralised lists in datasets, i.e.:
+                                        module_class_name::method_name
+                            weighting_in_main_search:
+                                type: integer
+                                description: >
+                                    If you want to create a mirror column and have it searched, there are currently
+                                    two different supported ways to implement this.
+                                    
+                                    For a search that searchs on the specific column, you can add a field into the
+                                    search box plugin with the appropriate options.
+                                    
+                                    However if you want your column to be included in the search using the main search
+                                    box, then you can set this option.
+                                    Currently this only works on varchar fields.
+                                    
+                                    You should enter a positive integer weighting to give the field. The extract has
+                                    a weighting of 1, and you can adjust the weightings of the other fields relative to this.
         
         list_groupings:
             type: object
@@ -664,6 +731,24 @@ additionalProperties:
                             type: string
                             description: >
                                 A tooltip for the item in the column with this element's name.
+                    thumbnail:
+                        type: object
+                        description: >
+                            If you're using the list-blocks microtemplate, it can support items with a thumbnail set.
+                            You can use this object to set the src, width and height of the thumbnail for each item
+                        properties:
+                            src:
+                                type: string
+                                description: >
+                                    The src of the image.
+                            width:
+                                type: string
+                                description: >
+                                    The width of the image.
+                            height:
+                                type: string
+                                description: >
+                                    The height of the image.
         
         sort_by:
             type: string
@@ -906,66 +991,7 @@ additionalProperties:
                                 description: >
                                     Set the assetId variable to this value upon navigation.
                                     Enter an empty string to clear the value.
-                            dataPoolId1:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the dataPoolId1 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            assetId1:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the assetId1 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            dataPoolId2:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the dataPoolId2 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            assetId2:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the assetId2 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            dataPoolId3:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the dataPoolId3 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            assetId3:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the assetId3 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            dataPoolId4:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the dataPoolId4 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            assetId4:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the assetId4 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            dataPoolId5:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the dataPoolId5 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
-                            assetId5:
-                                type: *variable
-                                clear_only_in_editor: true
-                                description: >
-                                    Set the assetId5 variable to this value upon navigation.
-                                    Enter an empty string to clear the value.
+
                             
                             id_var_name:
                                 type: string
@@ -1047,7 +1073,9 @@ additionalProperties:
                             visible children.
                     
                     show_as_link_on_column:
-                        type: string
+                        type:
+                            - string
+                            - object
                         item_button_only: true
                         description: >
                             You can enter the name of a column to show this button as a link on that column
@@ -1055,6 +1083,9 @@ additionalProperties:
                             
                             This won't have any effect if the column is hidden, this button has a parent,
                             or this button has children.
+                            
+                            From Zenario 10.0 onwards you can also provide a lookup array, to list more than one columns
+                            to out the same link on.
                     
                     allow_bypass:
                         type: boolean
@@ -1453,6 +1484,9 @@ additionalProperties:
         send_signals_on_events:
             type: object
             description: >
+                Warning! This feature is deprecated and may be removed soon! Please use the send_signal_onchange and
+                send_signal_after_redraw properties instead!
+                
                 These are pre-defined JavaScript events in your FEA plugin that you can trigger signal to be sent on.
                 For each event, you can set the code-name for a signal to be sent when the event happens.
             properties:

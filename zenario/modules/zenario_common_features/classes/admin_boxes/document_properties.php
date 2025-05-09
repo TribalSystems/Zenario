@@ -73,7 +73,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 				
 				unset($fields['upload_image/thumbnail_image']['snippet']);
 				$width = $height = $url = false;
-				\ze\file::retinaImageLink($width, $height, $url, $documentDetails['thumbnail_id'], $widthLimit = 700, $heightLimit = 200);
+				\ze\image::retinaLink($width, $height, $url, $documentDetails['thumbnail_id'], $widthLimit = 700, $heightLimit = 200);
 				$fields['upload_image/thumbnail_image']['image'] = [
 					'width' => $width,
 					'height' => $height,
@@ -83,11 +83,11 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			} else {
 				$fields['upload_image/delete_thumbnail_image']['hidden'] = true;
 				$mimeType = $fileInfo['mime_type'];
-				if ($mimeType == 'image/gif' || $mimeType == 'image/png' || $mimeType == 'image/jpeg' || $mimeType == 'image/pjpeg') {
+				if ($mimeType == 'image/gif' || $mimeType == 'image/png' || $mimeType == 'image/jpeg' || $mimeType == 'image/webp' || $mimeType == 'image/pjpeg') {
 					
 					unset($fields['upload_image/thumbnail_image']['snippet']);
 					$width = $height = $url = false;
-					\ze\file::retinaImageLink($width, $height, $url, $documentDetails['file_id'], $widthLimit = 700, $heightLimit = 200);
+					\ze\image::retinaLink($width, $height, $url, $documentDetails['file_id'], $widthLimit = 700, $heightLimit = 200);
 					$fields['upload_image/thumbnail_image']['image'] = [
 						'width' => $width,
 						'height' => $height,
@@ -206,13 +206,20 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		}
 		
 		//Save document thumbnail image
-		$old_image = ze\row::getValues('documents', 'file_id', $documentId);
+		$old_image = ze\row::getValues('documents', 'thumbnail_id', $documentId);
 		$new_image = $values['zenario_common_feature__upload'];
 		
 		if ($new_image) {
 			if (!in_array($new_image, $old_image)) {
 				if ($path = ze\file::getPathOfUploadInCacheDir($new_image)) {
-					$fileId = ze\file::addToDocstoreDir('document_thumbnail', $path);
+					$fileId = ze\fileAdm::addToDatabase(
+						'hierarchical_file_thumbnail', $path, $filename = false,
+						$mustBeAnImage = false, $deleteWhenDone = true, $addToDocstoreDirIfPossible = true,
+						$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '',
+						//Hierarchical document thumbnails must always be public, regardless of the default privacy setting
+						$setPrivacy = 'public'
+						
+					);
 					$fileDetails = [];
 					$fileDetails['thumbnail_id'] = $fileId;
 					//update thumbnail
@@ -221,6 +228,23 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			}
 		} elseif ($box['key']['delete_thumbnail']) {
 			ze\row::update('documents', ['thumbnail_id' => 0], $documentId);
+		}
+		
+		//If the thumbnail was replaced with a different one, remove the old one if it is no longer used.
+		if ($old_image && ($new_image || $box['key']['delete_thumbnail'])) {
+			$oldImageId = $old_image[$box['key']['id']];
+			
+			$sql = "
+				SELECT COUNT(*)
+				FROM " . DB_PREFIX . "documents
+				WHERE id != " . (int) $box['key']['id'] . "
+				AND thumbnail_id = " . (int) $oldImageId;
+			$result = ze\sql::select($sql);
+			$count = ze\sql::fetchValue($result);
+			
+			if (!$count) {
+				ze\row::delete('files', ['id' => $oldImageId, 'usage' => 'hierarchical_file_thumbnail']);
+			}
 		}
 	
 		//Save document tags

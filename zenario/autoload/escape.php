@@ -84,6 +84,47 @@ class escape {
 			$text
 		);
 	}
+	
+	
+	
+	
+	//A version of hypEscape()/unpackAndMerge() that looks nicer in URLs
+	//Possible post-branch change for 10.2:
+		//Replace hypEscape() and unpackAndMerge() with this series of functions as this format also works in URLs
+	public static function swig($text) {
+		return str_replace(
+			['~',	'-'],
+			['~s',	'~h'],
+			$text
+		);
+	}
+	public static function swigDescape($text) {
+		return str_replace(
+			['~h',	'~s'],
+			['-',	'~'],
+			$text
+		);
+	}
+	public static function flatten($array) {
+		$output = [];
+		foreach ($array as $k => $v) {
+			$output[] = \ze\escape::swig($k). '-'. \ze\escape::swig($v);
+		}
+		return implode('-', $output);
+	}
+	public static function inflate($string) {
+		$output = [];
+		$array = explode('-', $string);
+		$count = count($array) - 1;
+		
+		for ($i = 0; $i < $count; $i += 2) {
+			$output[\ze\escape::swigDescape($array[$i])] = \ze\escape::swigDescape($array[$i + 1]);
+		}
+		
+		return $output;
+	}
+	
+	
 
 	const jsFromTwig = true;
 	public static function js($text) {
@@ -233,14 +274,12 @@ class escape {
 	}
 
 	public static function makeURLsNotClickable($text, $ignoreEmailAddresses = true) {
-		$pattern = '/[a-zA-Z0-9\-\.\@]+\.[a-zA-Z]{2,4}(\:[0-9]+)?(\/\S*)?/';
+		$pattern = '~\b(?:https?://)?[a-zA-Z0-9]+(?:[-\.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}(?:[^\s]*)~i';
 		
 		if (preg_match_all($pattern, $text, $out)) {
 			foreach ($out[0] as $url) {
-				if (!$ignoreEmailAddresses || strpos($url, '@') === false) {
-					$nonClickableUrl = str_replace('.', '[.]', $url);
-					$text = str_replace($url, $nonClickableUrl, $text);
-				}
+				$nonClickableUrl = str_replace('.', '[.]', $url);
+				$text = str_replace($url, $nonClickableUrl, $text);
 			}
 		}
 

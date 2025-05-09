@@ -97,7 +97,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     side_note: >
-                        Allow user to stay logged in using a LOG_ME_IN_COOKIE cookie until they
+                        Allow user to stay logged in using a z_extranet_auto_login cookie until they
                         manually log out.
                                 
                 show_link_to_registration_page:
@@ -125,6 +125,26 @@ plugin_settings:
                         required_if_not_hidden: Please select a registration page
                     indent: 1
                 
+                show_link_to_change_password_page:
+                    label: Show link to change password page
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                change_password_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Change password page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                
                 show_link_to_password_reset_page:
                     label: Show link to password reset page
                     type: checkbox
@@ -133,7 +153,27 @@ plugin_settings:
                 password_reset_page:
                     plugin_setting:
                         foreign_key_to: content
-                    label: 'Password reset page (optional):'
+                    label: 'Password reset page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                
+                show_link_to_logout_page:
+                    label: Show link to logout page
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                logout_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Logout page:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -238,15 +278,15 @@ plugin_settings:
                     value: _NEVER
                     values:
                         _NEVER:
-                            ord: "1"
+                            ord: 1
                             label: >
                                 Redirect to requested private content item, or else to the
                                 previous page viewed
                         _ALWAYS:
-                            ord: "2"
+                            ord: 2
                             label: Redirect based on rules below
                         _IF_NO_PREVIOUS_PAGE:
-                            ord: "3"
+                            ord: 3
                             label: >
                                 Redirect based on rules below (but if user requested a private content item other than home, this will take precedence)
                     format_onchange: Yes

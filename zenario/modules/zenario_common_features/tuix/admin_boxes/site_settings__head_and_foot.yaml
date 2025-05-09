@@ -25,6 +25,17 @@ site_settings:
                     html: true
                     message: |
                         If this code may set cookies, and if you wish to control this, you need to place it in the Cookie-creating HTML/JS tab.
+                no_snippets_found:
+                    type: error
+                    show: true
+                    visible_if: |
+                       lib.value('run_twig') && _.isEmpty(lib.field('twig_snippet').values)
+                    html: true
+                    message: >
+                        No Twig snippets were found.
+                        To make a Twig snippet, create a file with an extension <code>.twig.html</code>,
+                        and place it in the directory <code>zenario_custom/twig/head/</code>.
+                        (You should create this directory if it doesn't exist.)
             fields:
                 description:
                     full_width: true
@@ -39,7 +50,7 @@ site_settings:
                     type: code_editor
                     tall_as_possible: true
                     dont_trim: true
-                    language: twig
+                    language: html
                     value: ''
                     style: >
                         height: 25em;
@@ -49,16 +60,64 @@ site_settings:
                         HTML or JavaScript entered here will take effect across the entire site.
                         <br/>
                         Use the Layout tab in the admin toolbar to enter HTML/JS to be applied to all content items with that layout; or the Edit tab to enter additional HTML/JS for a specific content item.
-                        <br/>
-                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
-                sitewide_head.is_twig:
+                run_twig:
                     site_setting:
-                        name: sitewide_head.is_twig
-                    same_row: true
-                    <div class="zfab_is_twig">:
+                        name: sitewide_head.run_twig
                     type: checkbox
-                    label: Enable Twig code here
-                    </div>:
+                    label: Run Twig code
+                    redraw_onchange: true
+                twig_snippet:
+                    site_setting:
+                        name: sitewide_head.twig_snippet
+                    #indent: 1
+                    same_row: true
+                    visible_if:
+                        lib.value: run_twig
+                    type: select
+                    empty_value: " -- Select -- "
+                    validation:
+                        required_if_not_hidden: Please select a Twig snippet
+                    format_onchange: true
+                    side_note: "Select a snippet to view file contents in the box below."
+                twig_path:
+                    indent: 2
+                    visible_if:
+                        lib.value: run_twig
+                    #row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        label: ''
+                twig:
+                    indent: 1
+                    visible_if:
+                        lib.value: run_twig
+                    label: 'Twig code:'
+                    type: code_editor
+                    readonly: true
+                    #tall_as_possible: true
+                    style: |
+                        height: 150px
+                        width: 99%;
+                    dont_trim: true
+                    language: twig
+                twig_vars:
+                    indent: 1
+                    visible_if:
+                        lib.value: run_twig
+                    site_setting:
+                        name: sitewide_head.twig_vars
+                    label: 'Variables:'
+                    tooltip: |
+                        Declare any variables that should be passed to the Twig script.
+                        Must use valid YAML syntax and have a space after each colon, e.g. "key: value".
+                    type: code_editor
+                    value: |
+                        variableName1: value1
+                        variableName2: value2
+                    language: yaml
+                    style: >
+                        height: 5em;
+                        width: 99%;
+                    
         body:
             label: HTML/JS in start of <body>
             edit_mode:
@@ -94,21 +153,11 @@ site_settings:
                     type: code_editor
                     tall_as_possible: true
                     dont_trim: true
-                    language: twig
+                    language: html
                     value: ''
                     style: >
                         height: 25em;
                         width: 99%;
-                    note_below: >
-                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
-                sitewide_body.is_twig:
-                    site_setting:
-                        name: sitewide_body.is_twig
-                    same_row: true
-                    <div class="zfab_is_twig">:
-                    type: checkbox
-                    label: Enable Twig code here
-                    </div>:
         foot:
             label: HTML/JS before </body>
             edit_mode:
@@ -143,7 +192,7 @@ site_settings:
                     type: code_editor
                     tall_as_possible: true
                     dont_trim: true
-                    language: twig
+                    language: html
                     value: ''
                     style: >
                         height: 25em;
@@ -157,15 +206,6 @@ site_settings:
                             <li><a href="https://modernizr.com/" target="_blank">Modernizr</a></li>
                             <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a></li>
                         </ul>
-                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
-                sitewide_foot.is_twig:
-                    site_setting:
-                        name: sitewide_foot.is_twig
-                    same_row: true
-                    <div class="zfab_is_twig">:
-                    type: checkbox
-                    label: Enable Twig code here
-                    </div>:
         cookie_content:
             label: Cookie-creating HTML/JS
             edit_mode:
@@ -233,19 +273,11 @@ site_settings:
                         name: sitewide_analytics_html
                     type: code_editor
                     dont_trim: true
-                    language: twig
+                    language: html
                     value: ''
                     style: >
                         height: 20em;
                         width: 99%;
-                sitewide_analytics_html.is_twig:
-                    site_setting:
-                        name: sitewide_analytics_html.is_twig
-                    same_row: true
-                    <div class="zfab_is_twig">:
-                    type: checkbox
-                    label: Enable Twig code here
-                    </div>:
                 
                 sitewide_social_media_html_location:
                     site_setting:
@@ -266,21 +298,11 @@ site_settings:
                         name: sitewide_social_media_html
                     type: code_editor
                     dont_trim: true
-                    language: twig
+                    language: html
                     value: ''
                     style: >
                         height: 20em;
                         width: 99%;
-                    note_below: >
-                        See <a href="https://zenar.io/how-to-use-twig-code" target="_blank">zenar.io/how-to-use-twig-code</a> for information on using Twig code.
-                sitewide_social_media_html.is_twig:
-                    site_setting:
-                        name: sitewide_social_media_html.is_twig
-                    same_row: true
-                    <div class="zfab_is_twig">:
-                    type: checkbox
-                    label: Enable Twig code here
-                    </div>:
     confirm:
         show: true
         message: >

@@ -257,7 +257,7 @@ diagnostics:
                     visible_if: zenarioAW.togglePressed(field, 2)
                 show_os: *show_subsection
                 
-                os_5:
+                os_pdf2text:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -266,7 +266,7 @@ diagnostics:
                             PDF->text
                             <br/><small>pdftotext is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
-                os_2:
+                os_pdf2image:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -275,7 +275,7 @@ diagnostics:
                             PDF->image
                             <br/><small>ghostscript is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
-                os_7:
+                os_pdf2html:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -284,7 +284,7 @@ diagnostics:
                             HTML->PDF
                             <br/><small>wkhtmltopdf is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
-                os_1:
+                os_word2text:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -293,27 +293,7 @@ diagnostics:
                             Word->text
                             <br/><small>Antiword is correctly set up.</small>
                     visible_if: zenarioAW.togglePressed(field)
-                os_6:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: |
-                            Compress PNGs
-                            <br/><small>optipng is correctly set up.</small>
-                            <br/><small>advpng is correctly set up.</small>
-                    visible_if: zenarioAW.togglePressed(field)
-                os_3:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: | 
-                            Compress JPEGs
-                            <br/><small>jpegtran is correctly set up.</small>
-                            <br/><small>jpegoptim is correctly set up.</small>
-                    visible_if: zenarioAW.togglePressed(field)
-                os_4:
+                os_backups:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -860,16 +840,16 @@ diagnostics:
                     post_field_html: |
                         </div></div>
                 
-                check_again:
-                    value: Check again
-                    type: submit
-                    style: |
-                        float: left;
                 continue:
                     value: Continue
                     type: submit
-                    same_row: true
                     full_width: true
+                    style: |
+                        float: right;
+                check_again:
+                    value: Check again
+                    type: submit
+                    same_row: true
                     style: |
                         float: right;
                 

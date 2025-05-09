@@ -115,3 +115,8 @@ span.zenario_cache_info_icon_example.zenario_from_cache:before {
 	content:"\f072";
 	color:#29b519;
 }
+
+span.zenario_cache_info_icon_example.zenario_cache_blocked:before {
+	content:"\f5af";
+	color:#a50;
+}

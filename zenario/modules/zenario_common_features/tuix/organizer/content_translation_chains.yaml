@@ -128,7 +128,6 @@ zenario__content:
                         path: zenario_content_privacy
                 
                 no_categories:
-                    ord: privacy.2
                     css_class: no_categories
                     tooltip: "Chain is not in any categories"
                     admin_box:
@@ -136,7 +135,6 @@ zenario__content:
                     visible_if: >
                         item.number_of_categories == 0
                 one_category:
-                    ord: privacy.2
                     css_class: one_or_more_categories
                     tooltip: "Chain is in one category"
                     admin_box:
@@ -144,7 +142,6 @@ zenario__content:
                     visible_if: >
                         item.number_of_categories == 1
                 multiple_categories:
-                    ord: privacy.2
                     css_class: one_or_more_categories
                     tooltip: "Chain is in [[number_of_categories]] categories"
                     admin_box:

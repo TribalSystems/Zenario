@@ -110,7 +110,7 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			}
 			
 			//Try to add the uploaded image to the database
-			$fileId = ze\file::addToDatabase('site_setting', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false);
+			$fileId = ze\fileAdm::addToDatabase('site_setting', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false);
 
 			if ($fileId) {
 
@@ -133,7 +133,7 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 		} elseif (ze::post('copy_to_image_library') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
-					ze\file::copyInDatabase('image', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+					ze\fileAdm::copyInDatabase('image', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
 				}
 			}
 		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
@@ -146,7 +146,7 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			$newIds = [];
 			foreach (ze\ray::explodeAndTrim($ids, true) as $i => $id) {
 				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
-					$newIds[] = ze\file::copyInDatabase('site_setting', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+					$newIds[] = ze\fileAdm::copyInDatabase('site_setting', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
 				}
 			}
 			return $newIds;

@@ -102,7 +102,7 @@
             {% endif %}
             
             {% if Show_Clear_Search_Button %}
-                <input type="submit" class="search_entry_button" name="clearSearch" value="{{'Clear search'|trans}}" />
+                <input type="submit" class="search_entry_button" name="clearSearch" value="{{'Clear search'|trans}}" onclick="this.form.searchString.value = ''; this.form.searchString.onkeyup()" />
             {% endif %}
         </div>
     {{Close_Form}}

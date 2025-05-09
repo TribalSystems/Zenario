@@ -104,7 +104,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		if ($this->setting('show_user_avatars')) {
 			$width = $height = $url = false;
 			if ($coreDetails['image_id']
-			 && ze\file::imageLink($width, $height, $url, $coreDetails['image_id'], $this->setting('avatar_width'), $this->setting('avatar_height'))) {
+			 && ze\image::link($width, $height, $url, $coreDetails['image_id'], $this->setting('avatar_width'), $this->setting('avatar_height'))) {
 				$sections['Show_Avatar'] = $sections['Posting_Show_Avatar'] = true;
 				$mergeFields['Width'] = $width;
 				$mergeFields['Height'] = $height;
@@ -430,7 +430,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			$this->sections['Comments_Profile_Link'] = true;
 			
 			$profileLink = '<a';
-			if ($link = ze\link::toPluginPage('zenario_extranet_profile_edit')) {
+			if ($link = ze\link::toSpecialPage('zenario_profile')) {
 				$profileLink .= ' href="'. htmlspecialchars($link). '"';
 			}
 			$profileLink .= '>'. $this->phrase('your profile'). '</a>';

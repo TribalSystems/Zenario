@@ -175,7 +175,6 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 	protected function formatItemRow(&$item, $path, &$tags, &$fields, &$values) {
 		$item['date'] = ze\date::format($item['date']);
 		$item['description'] = nl2br(htmlspecialchars($item['description']));
-		$item['title'] = $this->rapInViewVideoAnchor($item['title'], $item['id']);
 		
 		$parsed = parse_url($item['url']);
 		
@@ -192,9 +191,8 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 			}
 		
 			if ($imageId) {
-				ze\file::imageLink($width, $height, $url, $imageId, $this->setting('image_width'), $this->setting('image_height'), $this->setting('image_canvas'));
+				ze\image::link($width, $height, $url, $imageId, $this->setting('image_width'), $this->setting('image_height'), $this->setting('image_canvas'));
 				$item['image'] = '<img src="' . htmlspecialchars($url) . '" width="' . $width . '" height="' . $height . '">';
-				$item['image'] = $this->rapInViewVideoAnchor($item['image'], $item['id']);
 			} else {
 				//...or display nothing.
 				$item['image'] = "";
@@ -212,6 +210,29 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 	}
 	
 	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
+		
+		$viewResultsAs = $this->setting('view_results_as');
+		if ($viewResultsAs == 'list') {
+			$tags['key']['view'] = 'list';
+			$tags['collection_buttons']['block_view']['hidden'] =
+			$tags['collection_buttons']['list_view']['hidden'] = true;
+		} elseif ($viewResultsAs == 'blocks') {
+			$tags['key']['view'] = 'blocks';
+			$tags['collection_buttons']['block_view']['hidden'] =
+			$tags['collection_buttons']['list_view']['hidden'] = true;
+		}
+		
+		if ($tags['key']['view'] == 'list') {
+			$tags['microtemplate'] = 'fea_list';
+			$tags['css_class'] = '';
+			$tags['collection_buttons']['list_view']['css_class'] .= ' selected';
+		} else {
+			$tags['microtemplate'] = 'fea_list_blocks';
+			$tags['css_class'] = 'zfea_block_like_block';
+			$tags['collection_buttons']['block_view']['css_class'] .= ' selected';
+		}
+		
+		
 		//If displaying custom fields, set up the tuix columns
 		if ($datasetFieldIds = $this->setting('show_dataset_fields')) {
 			$datasetFieldIds = explode(',', $datasetFieldIds);
@@ -245,14 +266,6 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 			$tags['columns']['date']['hidden'] = true;
 		}
 		
-		if ($this->scope == 'all') {
-			$tags['header_html'] = 
-				'<div id="video_view_toggle_wrap" class="view_toggle_wrap">
-					<div onclick="zenario_videos_fea.changeView(this, \'' . $this->containerId . '\', \'grid\')" class="on">Grid</div>
-					<div onclick="zenario_videos_fea.changeView(this, \'' . $this->containerId . '\', \'list\')">List</div>
-				</div>';
-		}
-		
 		$tags['perms'] = [
 			'manage' => ze\user::can('manage', 'video')
 		];
@@ -264,27 +277,5 @@ class zenario_videos_fea__visitor__list_videos extends zenario_videos_fea__visit
 			default:
 				echo 'Error, unrecognised command';
 		}
-	}
-	
-	public function rapInViewVideoAnchor($innerHTML, $itemId) {
-		
-		if ($this->conductorEnabled()) {
-			$url = $this->conductorLink('view_video', [$this->idVarName => $itemId]);
-			if ($this->setting('enable.view_video')) {
-				$anchor = '<a href="' . htmlspecialchars($url) . '"';
-				if ($this->setting('view_video_new_window')) {
-					$anchor .= ' target="_blank"';
-				} else {
-					$anchor .= " onclick='zenario_conductor.go(\"" . $this->slotName . "\", \"view_video\", " . json_encode([$this->idVarName => $itemId]) . "); return false;'";
-				}
-				$anchor .= '>';
-				$anchor .= $innerHTML . '</a>';
-			} else {
-				$anchor = $innerHTML;
-			}
-		} else {
-			$anchor = $innerHTML;
-		}
-		return $anchor;
 	}
 }

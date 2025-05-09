@@ -115,12 +115,12 @@ echo '
 if (!$showingPreview) {
 	//If this page is a normal webpage being displayed by index.php, output the "Start of body" slot
 	if (ze::$cID) {
-		ze\content::sitewideHTML('sitewide_body');
+		ze\layout::sitewideHTML('sitewide_body');
 		if (ze\cookie::canSet('analytics') && ze::setting('sitewide_analytics_html_location') == 'body') {
-			ze\content::sitewideHTML('sitewide_analytics_html');
+			ze\layout::sitewideHTML('sitewide_analytics_html');
 		}
 		if (ze\cookie::canSet('social_media') && ze::setting('sitewide_social_media_html_location') == 'body') {
-			ze\content::sitewideHTML('sitewide_social_media_html');
+			ze\layout::sitewideHTML('sitewide_social_media_html');
 		}
 	}
 }

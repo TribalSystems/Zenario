@@ -101,28 +101,36 @@ body.zenario_fbAdminFloatingBox__isOpen:not(.zenario_fbAdminOrganizer__isOpen) .
 /*	Icon for image source  */
 
 .tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="Source"],
-.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] {
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"],
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="links"],
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="files"] {
 	padding:4px;
 	height:34px;
 }
 
 .tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="Source"] span.tox-icon,
-.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] span.tox-icon {
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] span.tox-icon,
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="links"] span.tox-icon,
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="files"] span.tox-icon {
 	width: 24px;
   	height: 24px;
   	display: inline-block;
 }
 
-.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="Source"] span.tox-icon {
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="Source"] span.tox-icon,
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="files"] span.tox-icon {
   	background:url('../admin/images/icon-editor-source-dark-blue.svg') no-repeat center center / 100% auto;
 }
 
-.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] span.tox-icon {
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] span.tox-icon,
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="links"] span.tox-icon {
   	background:url('../admin/images/icon-editor-url-dark-blue.svg') no-repeat center center / 100% auto;
 }
 
 .tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="Source"] span.tox-icon svg,
-.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] span.tox-icon svg {
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title="URL"] span.tox-icon svg,
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="links"] span.tox-icon svg,
+.tox-dialog .tox-form__controls-h-stack button.tox-browse-url[title~="files"] span.tox-icon svg {
 	display:none !important;
 }
 
@@ -144,4 +152,28 @@ body.zenario_fbAdminFloatingBox__isOpen:not(.zenario_fbAdminOrganizer__isOpen) .
 .tox button.tox-tbtn[aria-label="More..."]:active svg,
 .tox button.tox-tbtn[aria-label="More..."]:hover svg {
 	fill:#FFF !important;
+}
+
+/*	More button  */
+
+.tox .tox-tbtn[aria-label="Reveal or hide additional toolbar items"] {
+	background:#e50707 !important;
+}
+
+.tox .tox-tbtn[aria-label="Reveal or hide additional toolbar items"]:hover,
+.tox .tox-tbtn.tox-tbtn--enabled[aria-label="Reveal or hide additional toolbar items"],
+.tox .tox-tbtn.tox-tbtn--enabled[aria-label="Reveal or hide additional toolbar items"]:hover {
+	background:#ba0505 !important;
+}
+
+.tox .tox-tbtn[aria-label="Reveal or hide additional toolbar items"] svg,
+.tox .tox-tbtn.tox-tbtn--enabled[aria-label="Reveal or hide additional toolbar items"] svg,
+.tox .tox-tbtn.tox-tbtn--enabled[aria-label="Reveal or hide additional toolbar items"]:hover svg {
+	fill:#ffffff !important;
+}
+
+/*	Dropdown lists space  */
+
+#zenario_at_wrap .tox .tox-collection__item-label {
+	line-height:1;
 }

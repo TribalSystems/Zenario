@@ -21,16 +21,19 @@
 	padding:5px 8px 5px 14px;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > a {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > a,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > em > a {
 	position:relative;
 	border-top:1px dotted #ccc;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_1 > a {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_1 > a,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_1 > em > a {
 	border-top:0;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > a:before {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > a:before,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > em > a:before {
 	font-family: 'FontAwesome';
 	content:'\f105';
 	position:absolute;
@@ -39,7 +42,8 @@
   	font-size: 13px;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_on > a:before {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_on > a:before,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li.level1_on > em > a:before {
 	content:'\f107';
 }
 
@@ -47,15 +51,18 @@
 	text-decoration:none;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > a {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > a,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > em > a {
 	padding-left:35px;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > ul > li > a {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > ul > li > a,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > ul > li > > em > a {
 	padding-left:55px;
 }
 
-.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > ul > li > ul > li > a {
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > ul > li > ul > li > a,
+.zenario_menu_vertical__default_style .wrap_menu_inner > ul > li > ul > li > ul > li > ul > li > em > a {
 	padding-left:75px;
 }
 
@@ -240,6 +247,10 @@
 }
 
 /* Private page */
+
+.zenario_menu_vertical ul li.private a {
+	position:relative;
+}
 
 .zenario_menu_vertical ul li.private a:after {
 	font-family: "FontAwesome";

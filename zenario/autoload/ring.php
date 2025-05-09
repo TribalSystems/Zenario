@@ -87,7 +87,16 @@ class ring {
 		//Original encoding detection logic:
 		//mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
 		
-		return mb_convert_encoding($text, "UTF-8", mb_detect_encoding($text, null, true));
+		$encoding = mb_detect_encoding($text, null, true);
+		
+		//PLEASE NOTE: as of 28 Jan 2025, there appears to be a bug when processing Word documents
+		//and it could possibly be related to undocumented changes in PHP 8.1 and above.
+		//If the text encoding could not be found, treat this as if there was no extract, so the upload does not fail.
+		if ($encoding) {
+			return mb_convert_encoding($text, "UTF-8", $encoding);
+		}
+		
+		return '';
 	}
 
 	public static function chopPrefix($prefix, $string, $returnStringOnFailure = false, $caseInsensitive = false) {
@@ -510,27 +519,58 @@ class ring {
 		return $rating > $toleranceLevelNumeric;
 	}
 	
-	public static function randomFromSetNoProfanities($requiredLength = 5, $set = 'ABCDEFGHIJKLMNPQRSTUVWXYZ', $toleranceLevel = 'none') {
-	
-		//Make sure the generated code does not end up being a swear word.
-		$code = '';
-		do {
-			//The letter O is omitted to avoid confusion with the number 0.
-			$code = \ze\ring::randomFromSet($requiredLength, $set);
-			$codeContainsProfanities = \ze\ring::stringContainsTooManyProfanities($code, $toleranceLevel);
-		} while ($codeContainsProfanities);
+	public static function randomMultiDigitCode($requiredLength = 6, $set = '0123456789') {
+		$code = \ze\ring::randomFromSet($requiredLength, $set);
 		
 		return $code;
 	}
 	
-	//Apply a basic rule for grouping text together into sentences.
-	//This is just to get the project going, but we may come back to this in the future and improve this,
-	//e.g. we think Amazon might have a better API we can use that will do this for us.
-	public static function parseExtractStart(&$lines, &$line) {
-		$line = '';
-		$lines = [];
+
+	//A slightly different version of the ze\escape::hyp() function, that works with ~s instead.
+	//Intended to be used with the tokenise() function below.
+	public static function squig($text) {
+		return str_replace(
+			['~',	"\n",	"\r",	"'",	'"'],
+			['~s',	'~n',	'~r',	'~q',	'~d'],
+			$text
+		);
 	}
-	public static function parseExtractBlock(&$lines, &$line, $text) {
+	
+	public static function unsquig($text) {
+		return str_replace(
+			['~n',	'~r',	'~q',	'~d',	'~s'],
+			["\n",	"\r",	"'",	'"',	'~'],
+			$text
+		);
+	}
+	
+	//Convert a string into tokens
+	public static function tokenise($string, $isPseudoCode = false) {
+		if ($isPseudoCode) {
+			$string = '<'. '?'. 'php '. $string;
+		}
+		$tokens = token_get_all($string);
+		if ($isPseudoCode) {
+			array_shift($tokens);
+		}
+		foreach ($tokens as &$token) {
+			if (is_array($token)) {
+				$token = $token[1];
+			}
+		}
+		return $tokens;
+	}
+	
+	//Apply some rules for grouping text together into chunks.
+	//These functions are not designed to start from a fresh state. They're written with
+	//the assumption that you've already got some chunking information from either Amazon Textract or
+	//TinyMCE, and they're intended to apply a little bit of extra logic just to improve things
+	//a bit!
+	public static function parseExtractStart(&$chunks, &$chunk) {
+		$chunk = '';
+		$chunks = [];
+	}
+	public static function parseExtractChunk(&$chunks, &$chunk, $text, $isHTML = false) {
 		
 		//Ignore certain patterns
 		if (is_numeric($text)) {
@@ -540,21 +580,164 @@ class ring {
 			return;
 		}
 		
-		if ($line !== '') {
-			$line .= ' ';
+		if ($chunk !== '') {
+			$chunk .= ' ';
 		}
-		$line .= $text;
+		$chunk .= $text;
 		
-		//Start a new sentence if we see this end in an obvious sentence ending character.
-		if (preg_match('@[\.\?\!]$@', $text)) {
-			$lines[] = $line;
-			$line = '';
+		
+		//Check if this chunk ends with an obvious sentence ending character
+		$endsWithStop = preg_match('@[\.\?\!]$@', $text);
+		
+		
+		//With HTML from TinyMCE, if you see a chunk without a full stop at the end then it's likely
+		//a heading or a label.
+		//For the most part, we'd want to trust the chunking from TinyMCE, so we'll add an artifical one.
+		//We'd not want to do this with Textract though, as it often accidentally splits sentences up
+		//into different chunks. Where the sentences end should be trusted more than the chunks for that!
+		if ($isHTML && !$endsWithStop) {
+			$chunk .= '.';
+			$endsWithStop = true;
+		}
+		
+		
+		//If the current chunk ends with the end of a sentence, finish it.
+		//Unless this chunk wound up being really small, 
+		if ($endsWithStop
+			//...except don't do this for extremely short blocks of text
+		 && str_word_count($chunk) >= (int) (\ze::setting('extract_min_chunk_size') ?: 5)
+		) {
+			$chunks[] = $chunk;
+			$chunk = '';
 		}
 	}
-	public static function parseExtractEnd(&$lines, &$line) {
-		if ($line !== '') {
-			$lines[] = $line;
+	public static function parseExtractEnd(&$chunks, &$lastChunk) {
+		if ($lastChunk !== '') {
+			$chunks[] = $lastChunk;
 		}
-		$line = '';
+		$lastChunk = '';
+		
+		
+		//Try to ensure that we have no chunks larger than the limit set in the site settings
+		$chunksOut = [];
+		$softCap = ((int) \ze::setting('extract_chunk_size_soft_cap') ?: 25);
+		$hardCap = ((int) \ze::setting('extract_chunk_size_hard_cap') ?: 35);
+		
+		//Loop through each chunk we have, and check how many words is has
+		foreach ($chunks as $chunk) {
+			$chunkWordCount = str_word_count($chunk);
+			
+			//If it's under the limit, we're fine to include it as-is.
+			if ($chunkWordCount <= $softCap) {
+				$chunksOut[] = $chunk;
+			
+			//Otherwise we'll need to try and split it up into multiple chunks
+			} else {
+				//Use a preg_splt() to try and split the chunk up into multiple sentences.
+				//(Splitting mid-sentence would likely mess up the embedding, so I don't want to
+				// do that, even if that means we would end up over count.)
+				$sentences = [];
+				$splits = preg_split('@([\.\?\!])@', $chunk, -1,  PREG_SPLIT_DELIM_CAPTURE);
+				$sc = count($splits);
+				
+				//Loop through the results of the preg_split, turning it into an array of sentences.
+				//Also count how many words are in each sentence.
+				for ($si = 0; $si < $sc; $si += 2) {
+					$sentence = $splits[$si];
+		
+					if ($si + 1 < $sc) {
+						$sentence .= $splits[$si + 1];
+					}
+		
+					if (trim($sentence) !== '') {
+						$sentenceWordCount = str_word_count($sentence);
+						$sentences[] = ['text' => $sentence, 'wordCount' => $sentenceWordCount];
+					}
+				}
+				
+				//Keep joining the sentences back together into chunks, moving on to the new chunk whenever
+				//we go over the limit.
+				$currentLine = '';
+				$currentCount = 0;
+				foreach ($sentences as $sentence) {
+					
+					//If joining this sentence to the previous sentence(s) to form a chunk would go over the soft-cap,
+					//put the previous sentence(s) in their own chunk and start a new one.
+					if ($currentCount !== 0
+					 && $currentCount + $sentence['wordCount'] > $softCap) {
+						$chunksOut[] = trim($currentLine);
+						$currentLine = '';
+						$currentCount = 0;
+					}
+					$currentCount += $sentence['wordCount'];
+					$currentLine .= $sentence['text'];
+					
+					//Watch our for very long sentences that would cause us to go over the hard-cap.
+					if ($currentCount > $hardCap) {
+						
+						//Split them up using a tokeniser. (I could have used a preg statement instead, but
+						// using a tokeniser should be a bit more intelligent/consistent with the results.)
+						//Note the call to the ze\ring::squig() function is needed so that any single/double quotes 
+						//in the text won't stop tokens from being created.
+						$tokenedText = '';
+						$tokenedWordCount = 0;
+						foreach (\ze\ring::tokenise(\ze\ring::squig($currentLine), true) as $token) {
+							
+							//Not all of the tokens will be words, some will be one character
+							//symbols like commas.
+							if (strlen($token) > 1) {
+								++$tokenedWordCount;
+							}
+							$tokenedText .= $token;
+							
+							//Break up a sentence as soon as we have enough words.
+							//However if we see something like hyphen, comma or colon, it's worth breaking a bit early for that!
+							if (($tokenedWordCount > $softCap)
+							 || (2*$tokenedWordCount > $softCap && ($token == '-' || $token == ',' || $token == ';' || $token == ':'))) {
+								
+								$chunksOut[] = trim(\ze\ring::unsquig($tokenedText));
+								$tokenedText = '';
+								$tokenedWordCount = 0;
+							}
+						}
+						
+						if ($tokenedWordCount !== 0) {
+							$chunksOut[] = trim(\ze\ring::unsquig($tokenedText));
+						} else {
+							//Fix a bug where a trailling full stop can sometimes get left off the end of the last chunk
+							$chunksOut[count($chunksOut) - 1] .= \ze\ring::unsquig($tokenedText);
+						}
+						
+						$currentLine = '';
+						$currentCount = 0;
+					}
+				}
+				if ($currentCount !== 0) {
+					$chunksOut[] = trim($currentLine);
+				}
+			}
+		}
+		
+		$chunks = $chunksOut;
+	}
+	
+	//Apply all of the above chunking functions to a string
+	public static function parseExtract($text, $isHTML = false) {
+		
+		//Convert the HTML to plain text.
+		if ($isHTML) {
+			$text = trim(html_entity_decode(strip_tags($text)));
+		}
+		
+		$chunk = $chunks = null;
+		\ze\ring::parseExtractStart($chunks, $chunk);
+
+		foreach (\ze\ray::explodeAndTrim($text, false, "\n") as $blockText) {
+			\ze\ring::parseExtractChunk($chunks, $chunk, $blockText, $isHTML);
+		}
+
+		\ze\ring::parseExtractEnd($chunks, $chunk);
+		
+		return $chunks;
 	}
 }

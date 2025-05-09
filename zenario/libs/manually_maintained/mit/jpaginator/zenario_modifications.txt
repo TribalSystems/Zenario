@@ -11,3 +11,14 @@ Rewrote some deprecated code:
         if (this.size() != 1)
 	With:
         if (this.length != 1)
+
+
+Rewrote what I assume is just a bug with the logic to decide whether the slider is visible:
+	Replaced:
+                    totalSlides = Math.ceil(s.nbPages / s.nbVisible);
+                    bSlider = s.withSlider;
+                    if (totalSlides < s.minSlidesForSlider)
+	With:
+                    if (s.nbPages <= s.nbVisible)
+
+

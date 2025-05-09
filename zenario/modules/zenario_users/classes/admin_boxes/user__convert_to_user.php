@@ -64,15 +64,40 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (!ze::setting('user_use_screen_name')) {
 			$fields['details/screen_name']['hidden'] = true;
-			$fields['details/screen_name']['validation'] = false;
 			$fields['details/suggest_screen_name']['hidden'] = true;
 		}
+		
 		if (!$values['details/email']) {
 			$fields['details/email']['readonly'] =  false;
 		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		//Check if the required columns are required:
+		//- only email if screen names are not in use,
+		//- either email or a screen name if screen names are in use.
+		$requiredFieldIsPopulated = false;
+		if (ze::setting('user_use_screen_name')) {
+			$requiredFields = ['email', 'screen_name'];
+		} else {
+			$requiredFields = ['email'];
+		}
+		
+		foreach ($requiredFields as $requiredField) {
+			if ($values['details/' . $requiredField]) {
+				$requiredFieldIsPopulated = true;
+				break;
+			}
+		}
+		
+		if (!$requiredFieldIsPopulated) {
+			if (count($requiredFields) > 1) {
+				$fields['details/email']['error'] = $fields['details/screen_name']['error'] = ze\admin::phrase('Please enter an email address, a screen name, or both.');
+			} else {
+				$fields['details/email']['error'] = ze\admin::phrase('Please enter an email address.');
+			}
+		}
+		
 		$cols = [
 			'email' => $values['details/email'],
 			'salutation' => $values['details/salutation'],
@@ -125,7 +150,9 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 			
 			$cols['password'] = $values['details/password'];
 			$cols['password_needs_changing'] = $values['details/password_needs_changing'];
-			$cols['reset_password_time'] = ze\date::now();
+			$cols['reset_password_time'] =
+			$cols['modified_date'] =
+				ze\date::now();
 			$cols['last_edited_admin_id'] = ze\admin::id();
 			$cols['last_edited_user_id'] = null;
 			$cols['last_edited_username'] = null;
@@ -139,13 +166,13 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
 			if (isset($values['details/send_activation_email_to_user']) &&  $values['details/send_activation_email_to_user']
-				&& ze\ray::issetArrayKey($values,'details/email_to_send') && (ze\module::inc('zenario_email_template_manager'))) {
+				&& ze\ray::issetArrayKey($values,'details/email_to_send')) {
 				$mergeFields=ze\user::userDetailsForEmails($box['key']['id']);
 				$mergeFields['username'] = $mergeFields['screen_name'];
 				$mergeFields['password'] = $values['password'];
 				$mergeFields['cms_url'] = ze\link::absolute();
 				
-				zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['details/email_to_send'] ?? false),$mergeFields);
+				zenario_common_features::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['details/email_to_send'] ?? false),$mergeFields);
 			}
 		}
 	}

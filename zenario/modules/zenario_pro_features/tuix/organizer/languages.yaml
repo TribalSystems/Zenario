@@ -9,7 +9,9 @@ zenario__languages:
                     db_column: l.detect
                     format: yes_or_no
                     width: small
+                    disallow_sorting: true
                 zenario_pro_features__detect_lang_codes:
                     title: Detected language codes
                     db_column: l.detect_lang_codes
                     width: small
+                    disallow_sorting: true

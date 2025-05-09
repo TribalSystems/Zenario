@@ -1,3 +1,3 @@
-<div id="organizer_form_tab_{{m.id|e}}" class="tab sort <% if (m._is_current_page) { %> on <% } %>" data-id="{{m.id|e}}">
+<div id="organizer_form_tab_{{m.id|e}}" class="tab sort <% if (m._is_current_page) { %> on <% } %> <% if (m.warning_on_tab) { %> dataset_warning <% } %>" data-id="{{m.id|e}}">
 	<span>{{m.label|e}}</span>
 </div>

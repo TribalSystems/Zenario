@@ -27,9 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$html = '';
-$slotWrapperClasses = [];
-
 //Don't try to add and slot controls if this is a layout preview
 if (ze::$cID === -1) {
 	return;
@@ -54,7 +51,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 	\ze\tuix::parse2($swTagsEmpty, $removedColumns, 'slot_controls', $path);
 	$swTagsEmpty = $swTagsEmpty[$path];
 	
-	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms'];
+	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms', 'switch_to'];
 	
 	//Loop through all of the slots
 	$activeModules = [];
@@ -112,7 +109,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 			} else {
 				$replace = 'footer';
 			}
-			foreach (['info', 'actions', 're_move_place', 'overridden_info', 'overridden_actions'] as $section) {
+			foreach (['info', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'switch_to'] as $section) {
 				if (!empty($tags[$section]) && is_array($tags[$section])) {
 					foreach ($tags[$section] as $id => &$control) {
 						if (is_array($control)) {
@@ -155,160 +152,30 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		}
 		
 		
-		$showSlotInEditMode = false;
-		$showSlotInLayoutMode = false;
-		$slotWrapperClass = $tags['css_class'];
-		
 		if (!$ajaxReload) {
-			$html .= '
+			echo '
 				<div id="zenario_fbAdminSlotControls-'. $slotName. '" style="display: none;" onmouseout="zenarioA.closeSlotControlsAfterDelay();" onmouseover="zenarioA.dontCloseSlotControls();" class="zenario_fbAdminSlotControls">
 					<div class="zenario_slotControlsWrap" id="zenario_fbAdminPluginOptionsWrap-'. $slotName. '">
 						<div id="zenario_fbAdminSlotControlsContents-'. $slotName. '">';
 		}
 		
 		
-		//Output the slot controls
-		foreach ($sections as $section) {
-			if (!empty($tags[$section]) && is_array($tags[$section])) {
-				$thisHtml = '
-					<div class="zenario_slotControlsWrap_'. $section. '"';
-				
-				if ($section == 'actions'
-				 || $section == 're_move_place'
-				 || $section == 'overridden_actions'
-				 || $section == 'no_perms') {
-					$thisHtml .= ' onclick="zenarioA.closeSlotControls();"';
-				}
-				$isInfoSection = $section == 'info';
-				
-				$thisHtml .= '>';
-				
-				$foundButton = false;
-				foreach ($tags[$section] as $id => &$control) {
-					if (is_array($control) && !empty($control['label']) && !\ze\ring::engToBoolean($control['hidden'] ?? false)) {
-						$foundButton = true;
-						
-						$thisHtml .= '<div id="'. htmlspecialchars('zenario_slot_control__'. $slotName. '__'. $section. '__'. $id). '" class="zenario_sc ';
-						
-						if (empty($control['page_modes']['edit'])) {
-							$thisHtml .= 'zenario_hideInEditMode ';
-						} else {
-							$thisHtml .= 'zenario_showInEditMode ';
-							
-							if (!$isInfoSection) {
-								$showSlotInEditMode = true;
-							}
-						}
-						
-						if (empty($control['page_modes']['layout'])) {
-							$thisHtml .= 'zenario_hideInLayoutMode ';
-						} else {
-							$thisHtml .= 'zenario_showInLayoutMode ';
-							
-							if (!$isInfoSection) {
-								$showSlotInLayoutMode = true;
-							}
-						}
-						
-						if (isset($control['css_class'])) {
-							$thisHtml .= htmlspecialchars($control['css_class']);
-						}
-						
-						$thisHtml .= '" data-slotname="'. htmlspecialchars($slotName). '"';
-						
-						if (isset($control['onclick'])) {
-							$thisHtml .= ' href="#" onclick="';
-							
-							if (strpos($control['onclick'], 'slotName') !== false) {
-								$thisHtml .= "var slotName = '". \ze\escape::jsOnClick($slotName). "'; ";
-							}
-							if (strpos($control['onclick'], 'instanceId') !== false) {
-								$thisHtml .= 'var instanceId = '. (int) $instanceId. '; ';
-							}
-							if (strpos($control['onclick'], 'moduleId') !== false) {
-								$thisHtml .= 'var moduleId = '. (int) $moduleId. '; ';
-							}
-								
-							$thisHtml .= htmlspecialchars($control['onclick']). '"';
-						}
-						$thisHtml .= '>'. $control['label'];
-						
-						
-						if (!empty($control['link_to_new_tab'])) {
-							$thisHtml .= ' <a href="'. htmlspecialchars($control['link_to_new_tab']). '" target="_blank" onclick="zenarioA.closeSlotControls(); zenario.stop(event);" class="zenario_linkToNewTab"></a>';
-						}
-						
-						
-						$thisHtml .= '</div>';
-					}
-				}
-				
-				$thisHtml .= '
-					</div>';
-				
-				if ($foundButton) {
-					$html .= $thisHtml;
-				}
-				unset($thisHtml);
-			}
-		}
-		
-		//Add a css class around slots that are being edited using the WYSIWYG Editor
-		if ($slotContents[$slotName]->beingEdited()) {
-			$slotWrapperClass .= ' zenario_slot_being_edited';
-			$showSlotInEditMode = true;
-		}
-		
-		if ($showSlotInEditMode) {
-			$slotWrapperClass .= ' zenario_showSlotInEditMode';
-		} else {
-			$slotWrapperClass .= ' zenario_hideSlotInEditMode';
-		}
-		if ($showSlotInLayoutMode) {
-			$slotWrapperClass .= ' zenario_showSlotInLayoutMode';
-		} else {
-			$slotWrapperClass .= ' zenario_hideSlotInLayoutMode';
-		}
-		
-		if ($isSitewide) {
-			$slotWrapperClass .= ' zenario_sitewideSlotWrap';
-		} else {
-			$slotWrapperClass .= ' zenario_bodySlotWrap';
-		}
-		if ($isHeader) {
-			$slotWrapperClass .= ' zenario_headerSlotWrap';
-		}
-		if ($isFooter) {
-			$slotWrapperClass .= ' zenario_footerSlotWrap';
-		}
-		
 		if ($ajaxReload) {
-			ze\escape::flag('SLOT_CONTROLS_CSS_CLASS', $slotWrapperClass);
-			return $html;
+			return $tags;
 		
 		} else {
-			$slotWrapperClasses[$slotName] = $slotWrapperClass;
-			
-			$html .= '
+			echo '
 						</div>
 					</div>
-				</div>';
+				</div>
+				<script type="text/javascript">
+					zOnLoad(function() { zenarioA.setSlotControls(\''. \ze\escape::js($slotName). '\', ';
+						
+						ze\ray::jsonDump($tags);
+			
+			echo '
+					); });
+				</script>';
 		}
 	}
-}
-	
-if (!$ajaxReload) {
-	if (!empty($slotWrapperClasses)) {
-		echo
-			"\n", '<script type="text/javascript">',
-			"\n\t", 'var a=function(s,c){s = document.getElementById(\'plgslt_\'+s+\'-wrap\'); if (s) s.className=c;};';
-		
-		foreach ($slotWrapperClasses as $slotName => $cssClass) {
-			echo "\n\t", 'a(\'', htmlspecialchars($slotName), '\', \'', htmlspecialchars($cssClass), '\');';
-		}
-		
-		echo "\n", '</script>';
-	}
-	
-	echo $html;
 }

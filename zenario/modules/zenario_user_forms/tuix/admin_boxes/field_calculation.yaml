@@ -6,6 +6,7 @@ zenario_field_calculation:
         title: ''
         numeric_fields: ''
         calculation_code: ''
+        form_status: ''
     tabs:
         details:
             edit_mode:
@@ -32,6 +33,7 @@ zenario_field_calculation:
                     value: ">"
                     same_row: true
                     onclick: zenarioO.pi.calculationAdminBoxAddSomthing('field', get('numeric_field').value);
+                    note_below: "You may select a text field (provided its validation is set to Number, Integer or Floating point), or to another calculated field."
                 
                 static_value:
                     grouping: left_column

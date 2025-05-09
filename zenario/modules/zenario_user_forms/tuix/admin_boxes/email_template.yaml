@@ -4,18 +4,24 @@ zenario_email_template:
     tabs:
         meta_data:
             fields:
+                user_form_merge_fields:
+                    grouping_wrapper_css_class: zfab_merge_fields_wrap
+                    grouping_css_class: zfab_merge_fields
+                    type: grouping
+                    ord: body - 0.1
                 user_form:
-                    ord: 12.1
-                    label: 'Insert merge fields from a form:'
+                    grouping: user_form_merge_fields
                     type: select
-                    empty_value: -- Select form --
+                    css_class: email_merge_fields iconselectmenu
+                    empty_value: ...
                     format_onchange: true
-                    side_note: |
+                    tooltip: |
                         Add forms fields and their merge fields onto the current email body by selecting a form and then choosing all or individual form fields
                 user_form_field:
-                    ord: 12.2
-                    same_row: 1
+                    grouping: user_form_merge_fields
+                    same_row: true
                     type: select
-                    empty_value: -- Select field --
+                    css_class: email_merge_fields iconselectmenu
+                    empty_value: ...
                     format_onchange: true
                     hidden: true

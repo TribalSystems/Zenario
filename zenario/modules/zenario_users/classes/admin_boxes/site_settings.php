@@ -39,6 +39,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				// Disable setting for deleting unconfirmed user accounts if scheduled task manager is not enabled
 				$scheduledTaskManagerRunning = ze\row::exists('modules', ['class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running']);
 				if (!$scheduledTaskManagerRunning 
+					|| !ze::setting('site_enabled')
 					|| !ze::setting('jobs_enabled') 
 					|| !ze\module::inc('zenario_scheduled_task_manager')
 					|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobRemoveInactivePendingUsers')
@@ -51,6 +52,7 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				}
 				
 				if (!$scheduledTaskManagerRunning 
+					|| !ze::setting('site_enabled')
 					|| !ze::setting('jobs_enabled') 
 					|| !ze\module::inc('zenario_scheduled_task_manager')
 					|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobSendInactiveUserEmail')
@@ -73,10 +75,20 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				// Please note: as of Zenario 9.4, task T12219, "Users and Contacts settings box, should not allow Groups tab to be on Dates",
 				// do not show the "Dates/History" tab.
 				$dataset = ze\dataset::details('users');
-				$result = ze\row::query('custom_dataset_tabs', ['label', 'default_label', 'ord', 'name'], ['dataset_id' => $dataset['id'], 'name' => ['!' => 'dates']], 'label');
+				$result = ze\row::query('custom_dataset_tabs', ['label', 'default_label', 'ord', 'name', 'is_system_field'], ['dataset_id' => $dataset['id'], 'name' => ['!' => 'dates']], 'label');
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$label = $row['label'] ? $row['label'] : $row['default_label'];
 					if ($label !== false && $label !== '') {
+						$label .= ' (';
+						
+						if ($row['is_system_field']) {
+							$label .= ze\admin::phrase('system tab');
+						} else {
+							$label .= ze\admin::phrase('custom tab');
+						}
+						
+						$label .= ', ' . ze\admin::phrase("code") . ' "' . $row['name'] . '")';
+						
 						$fields['groups/default_groups_dataset_tab']['values'][$row['name']] = [
 							'label' => $label,
 							'ord' => $row['ord']
@@ -112,12 +124,21 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				
 				if (ze\module::isRunning('zenario_extranet')) {
 					$fields['activation_email_template/extranet_not_running']['hidden'] = true;
-					
-					$fields['activation_email_template/default_activation_email_template']['hidden'] = false;
 				} else {
 					$fields['activation_email_template/extranet_not_running']['hidden'] = false;
 					
-					$fields['activation_email_template/default_activation_email_template']['hidden'] = true;
+					$fields['activation_email_template/default_creation_email_template']['hidden'] =
+					$fields['activation_email_template/default_activation_email_template']['hidden'] =
+					$fields['activation_email_template/default_verification_email_template']['hidden'] =
+					$fields['activation_email_template/default_password_reset_email_template']['hidden'] =
+					$fields['activation_email_template/verification_email_expiry_period']['hidden'] = true;
+					
+					unset(
+						$fields['activation_email_template/default_creation_email_template']['value'],
+						$fields['activation_email_template/default_activation_email_template']['value'],
+						$fields['activation_email_template/default_verification_email_template']['value'],
+						$fields['activation_email_template/default_password_reset_email_template']['value']
+					);
 				}
 				
 				break;
@@ -359,6 +380,12 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 								);
 							$fields['groups/max_user_image_filesize_unit']['error'] = true;
 						}
+					}
+				}
+				
+				if (isset($fields['activation_email_template/verification_email_expiry_period'])) {
+					if ($values['activation_email_template/verification_email_expiry_period'] < 1 || $values['activation_email_template/verification_email_expiry_period'] > 48) {
+						$fields['activation_email_template/verification_email_expiry_period']['error'] = ze\admin::phrase('Please enter a number between 1 and 48.');
 					}
 				}
 				

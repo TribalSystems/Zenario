@@ -44,15 +44,11 @@ if (ze\dbAdm::needRevision(50520)) {
 	if (!\ze\server::isWindows() && \ze\server::execEnabled()) {
 	
 		foreach ([
-			'advpng_path' => 'advpng',
 			'antiword_path' => 'antiword',
 			'clamscan_tool_path' => 'clamdscan',
 			'ghostscript_path' => 'gs',
-			'jpegoptim_path' => 'jpegoptim',
-			'jpegtran_path' => 'jpegtran',
 			'mysql_path' => 'mysql',
 			'mysqldump_path' => 'mysqldump',
-			'optipng_path' => 'optipng',
 			'pdftotext_path' => 'pdftotext',
 			'phantomjs_path' => 'phantomjs',
 			'wkhtmltopdf_path' => 'wkhtmltopdf'

@@ -47,20 +47,20 @@ if ($urlNLink
 	
 	if ($hyperlinkDetails = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ["id", "hyperlink", "link_ordinal", "clickthrough_count"], ['hyperlink_hash' => $urlNLink])) {
 		$hyperlinkDetails["clickthrough_count"] = $hyperlinkDetails["clickthrough_count"] + 1;
-		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
+		ze\row::cacheFriendlyUpdate(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
 		$sql = "
 			UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 				time_clicked_through = NOW(),
 				clicked_hyperlink_id = ". (int) $hyperlinkDetails['id']. "
 			WHERE tracker_hash = '". ze\escape::asciiInSQL($urlT). "'
 			  AND time_clicked_through IS NULL";
-		ze\sql::update($sql);
+		ze\sql::cacheFriendlyUpdate($sql);
 		
 		$sql = "
 			UPDATE ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
 				time_received = NOW()
 			WHERE tracker_hash = '". ze\escape::asciiInSQL($urlT). "'";
-		ze\sql::update($sql);
+		ze\sql::cacheFriendlyUpdate($sql);
 		
 	} else {
 		
@@ -75,7 +75,7 @@ if ($urlNLink
 	if ($hyperlinkDetails) {
 		$hyperlinkDetails["clickthrough_count"] = $hyperlinkDetails["clickthrough_count"] + 1;
 	
-		ze\row::update(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
+		ze\row::cacheFriendlyUpdate(ZENARIO_NEWSLETTER_PREFIX. "newsletters_hyperlinks", ['clickthrough_count' => $hyperlinkDetails["clickthrough_count"], 'last_clicked_date' => ze\date::now()], ['id' => $hyperlinkDetails["id"]]);
 	}
 
 }

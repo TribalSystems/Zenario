@@ -3,20 +3,6 @@
 empty_slot:
     actions:
         insert_slideshow_on_item_layer:
-            priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert slideshow...
-            page_modes:
-                edit: true
-            onclick: |
-                if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('edit');
-                    zenarioA.pickNewPlugin(this, slotName, 1, 'slideshow');
-                }
-                return false;
+            hidden: false    # Show this option if a slideshow module is running
         insert_slideshow_on_layout_layer:
-            ord: 999
-            priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert slideshow...
-            page_modes:
-                layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, 'slideshow');
+            hidden: false    # Show this option if a slideshow module is running

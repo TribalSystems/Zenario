@@ -13,5 +13,5 @@ description: |
 is_pluggable: false
 signals:
     signal1:
-        name: signalAdvancedSearchPopulateValuesSearchInOtherModules
+        name: signalAdvancedSearchGetSearchableModules
         static: true

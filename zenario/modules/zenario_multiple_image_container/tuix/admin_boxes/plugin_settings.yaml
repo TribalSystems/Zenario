@@ -110,7 +110,6 @@ plugin_settings:
                     redraw_onchange: true
                 show_caption_above_thumbnail:
                     indent: 1
-                    ord: show_caption_on_image.1
                     plugin_setting:
                         name: show_caption_above_thumbnail
                     label: "Show caption above thumbnail"
@@ -118,18 +117,10 @@ plugin_settings:
                     visible_if: lib.value('show_caption_on_image')
                     side_note: "Captions normally appear below the thumbnail; check here for captions to appear first."
                 show_image_credit_on_thumbnail:
-                    ord: show_caption_on_image.2
                     plugin_setting:
                         name: show_image_credit_on_thumbnail
                     label: 'Show image credit on thumbnail'
                     type: checkbox
-                webp:
-                    plugin_setting:
-                        name: webp
-                    type: checkbox
-                    label: 'Show WebP-format image where browser supports it'
-                    note_below: 'Recommended on publicly-accessible areas of a site as file download is smaller. Not recommended for private areas of a site.'
-                    value: 1
                 lazy_load:
                     plugin_setting:
                         name: lazy_load
@@ -411,14 +402,6 @@ plugin_settings:
                         name: show_image_credit_on_enlarged_image
                     label: 'Show image credit on enlarged image'
                     type: checkbox
-                enlarge_webp:
-                    grouping: options_for_all_images
-                    plugin_setting:
-                        name: enlarge_webp
-                    type: checkbox
-                    label: 'Link to WebP-format for enlarged image where browser supports it'
-                    note_below: 'Recommended on publicly-accessible areas of a site as file download is smaller. Not recommended for private areas of a site.'
-                    value: 1
                 show_link_to_download_original:
                     grouping: options_for_all_images
                     type: checkbox

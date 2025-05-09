@@ -63,40 +63,59 @@ class zenario_common_features__admin_boxes__content_categories_remove extends ze
 			$box['key']['id'] = implode(',', $tagIds);
 		}
 		
+		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__library/panels/categories';
+		$linkStart = '<a href="' . htmlspecialchars($categoriesPanelHref) . '" target="_blank">';
+		$linkEnd = "</a>";
 		
+		$fields['categories_remove/no_categories']['snippet']['html'] = ze\admin::phrase(
+			'No content item categories have been created. [[Link_start]]Create categories...[[Link_end]]',
+			['Link_start' => $linkStart, 'Link_end' => $linkEnd]
+		);
 		
 		//Setup category boxes for removing categories
 		ze\categoryAdm::setupFABCheckboxes($fields['categories_remove/categories_remove'], true);
+		
+		if (empty($fields['categories_remove/categories_remove']['values'])) {
+			unset($box['tabs']['categories_remove']['edit_mode']);
+			$fields['categories_remove/categories_remove']['hidden'] = true;
+		
+		} else {
+			$fields['categories_remove/no_categories']['hidden'] = true;
+			
+			$box['tabs']['categories_remove']['fields']['desc']['snippet']['html'] = 
+				ze\admin::phrase('You can put content item(s) into one or more categories. ([[Link_start]]Define categories[[Link_end]].)',
+					['Link_start' => $linkStart, 'Link_end' => $linkEnd]);
 				
-		$inCats = [];
-		$sql = "
-			SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-			FROM ". DB_PREFIX. "content_items AS c
-			INNER JOIN ". DB_PREFIX. "category_item_link AS l
-			   ON c.equiv_id = l.equiv_id
-			  AND c.type = l.content_type
-			WHERE c.tag_id IN (". ze\escape::in($tagIds, 'asciiInSQL'). ")
-			GROUP BY l.category_id";
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			if (isset($fields['categories_remove/categories_remove']['values'][$row['category_id']])) {
-				$inCats[] = $row['category_id'];
-				if ($total > 1) {
-					$row['total'] = $total;
-					if ($row['cnt'] == $total) {
-						$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
-						' '. ze\admin::phrase('(all [[total]] selected content items are in this category)', $row);
-					} else {
-						$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
-						' '. ze\admin::phrase('([[cnt]] of [[total]] selected content items are in this category)', $row);
+			$inCats = [];
+			$sql = "
+				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
+				FROM ". DB_PREFIX. "content_items AS c
+				INNER JOIN ". DB_PREFIX. "category_item_link AS l
+				   ON c.equiv_id = l.equiv_id
+				  AND c.type = l.content_type
+				WHERE c.tag_id IN (". ze\escape::in($tagIds, 'asciiInSQL'). ")
+				GROUP BY l.category_id";
+			$result = ze\sql::select($sql);
+			while ($row = ze\sql::fetchAssoc($result)) {
+				if (isset($fields['categories_remove/categories_remove']['values'][$row['category_id']])) {
+					$inCats[] = $row['category_id'];
+					if ($total > 1) {
+						$row['total'] = $total;
+						if ($row['cnt'] == $total) {
+							$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
+							' '. ze\admin::phrase('(all [[total]] selected content items are in this category)', $row);
+						} else {
+							$fields['categories_remove/categories_remove']['values'][$row['category_id']]['label'] .=
+							' '. ze\admin::phrase('([[cnt]] of [[total]] selected content items are in this category)', $row);
+						}
 					}
 				}
 			}
-		}
-		
-		foreach ($fields['categories_remove/categories_remove']['values'] as $key => $category) {
-			if (!in_array($key, $inCats)) {
-				$fields['categories_remove/categories_remove']['values'][$key]['hidden'] = true;
+			
+			foreach ($fields['categories_remove/categories_remove']['values'] as $key => $category) {
+				if (!in_array($key, $inCats)) {
+					$fields['categories_remove/categories_remove']['values'][$key]['hidden'] = true;
+				}
 			}
 		}
 		

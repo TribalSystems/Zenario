@@ -86,6 +86,13 @@ class sql {
 		}
 		return $result->q->num_rows;
 	}
+	
+	public static function exists($result) {
+		if (is_string($result)) {
+			$result = static::select($result);
+		}
+		return (bool) $result->q->num_rows;
+	}
 
 	//Fetch just one value from a SQL query
 	public static function fetchValue($result) {
@@ -187,14 +194,6 @@ class sql {
 	//Run an update that doesn't need to clear the cache or data revision numbers
 	public static function cacheFriendlyUpdate($sql) {
 		return static::update($sql, false, false);
-	}
-
-
-	public static function getNextAutoIncrementId($table) {
-		if ($row = static::fetchAssoc("SHOW TABLE STATUS LIKE '". \ze\escape::sql(static::$db->prefix. $table). "'")) {
-			return $row['Auto_increment'];
-		}
-		return false;
 	}
 	
 	

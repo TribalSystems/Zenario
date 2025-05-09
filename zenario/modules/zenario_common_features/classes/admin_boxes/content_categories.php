@@ -132,15 +132,15 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 			if ($total > 1) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
-					ze\admin::phrase('This will update the categories of [[count]] content items and their translations.',
+					ze\admin::phrase('This will update the categories of [[count]] content items (and any translations that they have).',
 						['count' => $total]);
 				
 				$box['title'] =
-					ze\admin::phrase('Changing categories for [[count]] content items and their translations',
+					ze\admin::phrase('Changing categories for [[count]] content items (and any translations)',
 						['count' => $total]);
 			} else {
 				$box['title'] =
-					ze\admin::phrase('Changing categories for the content item "[[tag]]" and its translations',
+					ze\admin::phrase('Changing categories for the content item "[[tag]]" (and translations)',
 						['tag' => ze\content::formatTag($equivId, $cType)]);
 			}
 			
@@ -164,7 +164,7 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 		if ($total > 1) {
 			$box['confirm']['message'] .=
 				"\n\n".
-				ze\admin::phrase('The selected content items will be set to the categories you selected. (If translated, the translations will be set those categories too.)');
+				ze\admin::phrase('The selected content items will be set to the categories you selected. (Any translations will be set those categories too.)');
 		}
 	}
 

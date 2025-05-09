@@ -4,11 +4,11 @@ plugin_settings:
     module_class_name: zenario_extranet_registration
     tabs:
         first_tab:
-            ord: "1"
+            ord: 1
             label: Initial signup
             fields:
                 desc:
-                    ord: "0"
+                    ord: 0
                     full_width: true
                     snippet:
                         html: Configure the registration form through which a user or contact can create an account.
@@ -49,15 +49,12 @@ plugin_settings:
                     indent: 1
             
                 show_resend_verification_link:
-                    label: 'Show resend verification link'
+                    label: 'Show link to resend verification email'
                     plugin_setting:
                         name: show_resend_verification_link
                     type: checkbox
                     indent: 1
                     value: "1"
-                    side_note: >
-                        Shows the resend verification link.
-            
             
                 enable_notifications_on_user_signup:
                     label: 'Notify an administrator when a user/contact signs up'
@@ -417,15 +414,15 @@ plugin_settings:
                     value: _NEVER
                     values:
                         _ALWAYS:
-                            ord: "1"
+                            ord: 1
                             label: Always redirect to a first visit welcome page
                         _IF_NO_PREVIOUS_PAGE:
-                            ord: "2"
+                            ord: 2
                             label: >
                                 As second priority; if another private content item was
                                 requested, redirect to that item
                         _NEVER:
-                            ord: "3"
+                            ord: 3
                             label: >
                                 Never (redirect to requested private content item, or else to the
                                 previous page viewed)
@@ -501,6 +498,18 @@ plugin_settings:
                         html: >
                             <div>Use this tab to add <a href='organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[id]]//' target='_blank'>user dataset fields</a>. 
                             If using the standard framework, all fields will appear after last name and will be optional.</div>
+                unsupported_fields_snippet:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                System fields may not be selected.<br />
+                                Custom fields may be selected except these types:
+                                <ul>
+                                    <li>Checkbox group</li>
+                                    <li>Editor</li>
+                                    <li>Dataset picker</li>
+                                    <li>File picker</li>
+                                </ul>
                 user_custom_fields:
                     plugin_setting:
                         name: user_custom_fields
@@ -510,10 +519,11 @@ plugin_settings:
                         reorder_items: true
                         multiple_select: true
                         enable_type_ahead_search: true
-                        path: zenario__administration/panels/custom_fields_hierarchy/refiners/user_custom_fields_only////
-                        visible_if_for_all_selected_items: item.is_field
+                        #The path is built in the PHP class.
+                        path: ''
+                        select_phrase: Select custom field...
+                        disabled_if_for_any_selected_items: (!item.is_field || item.is_system_field || (['checkboxes', 'editor', 'other_system_field', 'dataset_picker', 'file_picker'].includes(item.type)))
                         disallow_refiners_looping_on_min_path: true
-                        hide_select_button: true
                     
         text:
             label: Text

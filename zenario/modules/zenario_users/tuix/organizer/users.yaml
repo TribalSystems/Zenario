@@ -99,7 +99,7 @@ zenario__users:
                     searchable: true
                     width: large
                 email_verified:
-                    title: Email Verified
+                    title: Email verified
                     db_column: u.email_verified
                     always_show: true
                     searchable: 1
@@ -110,9 +110,17 @@ zenario__users:
                         email_not_set: ''
                     width: xsmall
                     parent: email
+                email_domain:
+                    title: Email domain
+                    db_column: u.email_domain
+                    searchable: true
+                    show_by_default: false
+                    width: large
                 terms_and_conditions_accepted:
                     title: Terms and conditions accepted
                     format: yes_or_no
+                    yes_phrase: Consents
+                    no_phrase: No consent
                     db_column: u.terms_and_conditions_accepted
                     show_by_default: false
                 groups:
@@ -134,6 +142,8 @@ zenario__users:
                     title: Last Login
                     db_column: u.last_login
                     width: xsmall
+                    format: date
+                    empty_value: Never logged in
                 checksum:
                     db_column: f.checksum
                     table_join: "LEFT JOIN [[DB_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
@@ -188,14 +198,14 @@ zenario__users:
                     priv: _PRIV_EDIT_USER
                     only_show_on_refiner: group_members
                     hide_in_select_mode: true
-                    label: Add users to this Group
+                    label: Add users to this group
                     pick_items:
                         path: zenario__users/panels/users
                         request:
                             add_user_to_this_group: "1"
-                        one_to_one_choose_phrase: Add user to Group
+                        one_to_one_choose_phrase: Add user to group
                         multiple_select: true
-                        one_to_many_choose_phrase: Add users to Group
+                        one_to_many_choose_phrase: Add users to group
                 
                 # User dataset import buttons
                 import_dropdown:
@@ -241,6 +251,7 @@ zenario__users:
                     label: Settings for Users/Contacts
                     parent: settings_dropdown
                     hide_in_select_mode: true
+                    hide_on_refiner: true
                     admin_box:
                         path: site_settings
                         key:
@@ -251,6 +262,7 @@ zenario__users:
                     label: Data Protection
                     parent: settings_dropdown
                     hide_in_select_mode: true
+                    hide_on_refiner: true
                     admin_box:
                         path: site_settings
                         key:
@@ -270,6 +282,7 @@ zenario__users:
                     label: Edit Users Dataset
                     parent: dataset_dropdown
                     hide_in_select_mode: true
+                    hide_on_refiner: true
                     link:
                         path: ''
                     
@@ -403,7 +416,7 @@ zenario__users:
                 view_image:
                     label: View image
                     parent: image_dropdown
-                    ord: "70"
+                    ord: 70
                     popout:
                         href: zenario/file.php?popout=1&usage=user
                     with_columns_set:
@@ -412,7 +425,7 @@ zenario__users:
                     label: Upload an image
                     hide_in_select_mode: true
                     parent: image_dropdown
-                    ord: "71"
+                    ord: 71
                     priv: _PRIV_EDIT_USER
                     tooltip: |
                         Upload an image|
@@ -432,7 +445,7 @@ zenario__users:
                     label: Upload a new image
                     hide_in_select_mode: true
                     parent: image_dropdown
-                    ord: "72"
+                    ord: 72
                     priv: _PRIV_EDIT_USER
                     tooltip: |
                         Upload a new image|
@@ -454,7 +467,7 @@ zenario__users:
                     label: Remove image
                     hide_in_select_mode: true
                     parent: image_dropdown
-                    ord: "73"
+                    ord: 73
                     priv: _PRIV_EDIT_USER
                     multiple_select: true
                     multiple_select_tooltip: Remove image
@@ -479,6 +492,21 @@ zenario__users:
                         path: zenario_user__convert_to_user
                     with_columns_set:
                         traits.is_contact: true
+                convert_to_contact:
+                    label: Convert to contact...
+                    hide_in_select_mode: true
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_USER
+                    without_columns_set:
+                        traits.is_contact: true
+                    ajax:
+                        confirm:
+                            message: ""
+                            button_message: Convert to contact
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            convert_to_contact: "1"
                 activate:
                     label: Activate user account
                     hide_in_select_mode: true

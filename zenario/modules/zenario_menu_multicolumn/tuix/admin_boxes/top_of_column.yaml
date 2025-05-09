@@ -22,7 +22,7 @@ zenario_menu:
         text:
             fields:
                 zenario_menu_multicolumn__top_of_column:
-                    ord: accesskey.2
+                    grouping: menu_multicolumn_top_of_column_grouping
                     label: 'Top of column'
                     side_note: |
                         For a level 2 menu node, when displaying in a menu with multi-column dropdown, make it appear at top of following column.
@@ -34,7 +34,7 @@ zenario_menu_text:
         text:
             fields:
                 zenario_menu_multicolumn__top_of_column:
-                    ord: accesskey.2
+                    grouping: menu_multicolumn_top_of_column_grouping
                     label: 'Top of column'
                     side_note: |
                         For a level 2 menu node, when displaying in a menu with multi-column dropdown, make it appear at top of following column.

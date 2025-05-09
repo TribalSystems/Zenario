@@ -65,7 +65,7 @@ zenario__layouts:
                                 designing a site then you should make most of your CSS changes in here.</p>
 
                             <p>While these files are not editable in Organizer, if you go to the front end of the
-                                site and use the Layout mode, you should be able to edit the CSS there using a
+                                site and use the Layout view, you should be able to edit the CSS there using a
                                 what-you-see-is-what-you-get type interface.</p>
 
                             <p>Most files are prefixed with a number, and they are included in numerical order:</p>

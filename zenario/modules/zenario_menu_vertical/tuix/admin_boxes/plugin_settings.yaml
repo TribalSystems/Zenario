@@ -9,10 +9,6 @@ plugin_settings:
             # we want the default values to be different.
             
             fields:
-                menu_start_from:
-                    plugin_setting:
-                        name: menu_start_from
-                    value: _MENU_LEVEL_2
                 menu_number_of_levels:
                     plugin_setting:
                         name: menu_number_of_levels
@@ -37,19 +33,21 @@ plugin_settings:
                     value: "Welcome, [[first_name]] [[last_name]]"
                     show_phrase_icon: true
                 show_group_name_when_user_is_in_groups:
+                    indent: 1
                     plugin_setting:
                         name: show_group_name_when_user_is_in_groups
                     type: checkbox
                     label: "Show group name when user is in a group..."
                     format_onchange: true
+                    visible_if: lib.value('change_welcome_message')
                 user_groups:
-                    indent: 1
+                    indent: 2
                     plugin_setting:
                         name: user_groups
                     type: checkboxes
                     values: {}
                     #The list of values is populated in the parent module, Zenario Menu (fillAdminBox).
-                    visible_if: lib.value('show_group_name_when_user_is_in_groups')
+                    visible_if: lib.value('change_welcome_message') && lib.value('show_group_name_when_user_is_in_groups')
                     validation:
                         required_if_not_hidden: 'Please select at least one group.'
     module_class_name: zenario_menu_vertical

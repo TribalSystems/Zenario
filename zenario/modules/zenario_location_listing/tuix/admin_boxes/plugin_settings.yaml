@@ -184,14 +184,6 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
-                webp:
-                    indent: 2
-                    hide_with_previous_outdented_field: true
-                    plugin_setting:
-                        name: webp
-                    type: checkbox
-                    label: 'Show WebP-format image, where browser supports it; recommended for smaller file size'
-                    value: 1
                 pagination:
                     plugin_setting:
                         name: pagination

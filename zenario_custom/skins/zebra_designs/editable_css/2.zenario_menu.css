@@ -341,3 +341,18 @@
 .zenario_menu__default_style .menu_with_more_button .wrap_menu_inner > ul li.zenario_menu_node_more .menu_more_div ul li a.unlinked_menu_item .link_error {
 	color:#ccc;
 }
+
+/* Private page */
+
+.zenario_menu ul li.private a {
+	position:relative;
+}
+
+.zenario_menu ul li.private a:after {
+	font-family: "FontAwesome";
+  	content: "\f023";
+  	padding-left:5px;
+  	font-size:12px;  
+  	position: absolute;
+  	top: 7px;
+}

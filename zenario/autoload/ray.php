@@ -214,20 +214,4 @@ class ray {
 		}
 	}
 
-	//This function is deprecated since php 7.0; please use the null coalescing operator (??) instead!
-	public static function value(&$a, $k) {
-		if (is_array($a) && isset($a[$k])) {
-			$result = &$a[$k];
-			$count = func_num_args();
-			for($i = 2; $i < $count; ++$i){
-				if(!is_array($result)) return false;
-				$arg = func_get_arg($i);
-				if(!isset($result[$arg])) return false;
-				$result = &$result[$arg];
-			}
-			return $result;
-		}
-		return false;
-	}
-
 }

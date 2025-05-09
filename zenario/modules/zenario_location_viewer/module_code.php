@@ -93,7 +93,7 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 			$this->data['show_details'] = true;
 			if (!empty($locationDetails['country_id']) && ze\module::inc('zenario_country_manager')) {
 				if ($country = zenario_country_manager::getCountryNamesInCurrentVisitorLanguage("active", $locationDetails['country_id'])) {
-					$locationDetails['country']= ze\ray::value($country,"COUNTRY_" . $locationDetails['country_id']);
+					$locationDetails['country'] = $country['COUNTRY_'. $locationDetails['country_id']] ?? false;
 				}
 				
 				if (!empty($locationDetails['region_id'])) {
@@ -113,7 +113,7 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 				$locationDetails['image_width'] = 
 				$locationDetails['image_height'] = 
 				$locationDetails['image_url'] = false;
-				ze\file::imageLink(
+				ze\image::link(
 					$locationDetails['image_width'], 
 					$locationDetails['image_height'], 
 					$locationDetails['image_url'], 
@@ -190,7 +190,7 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 				$country = false;
 				if (!empty($locationDetails['country_id']) && ze\module::inc('zenario_country_manager')) {
 					if ($country = zenario_country_manager::getCountryNamesInCurrentVisitorLanguage("active", $locationDetails['country_id'])) {
-						$country = ze\ray::value($country,"COUNTRY_" . $locationDetails['country_id']);
+						$country = $country['COUNTRY_'. $locationDetails['country_id']] ?? false;
 					}
 				}
 				$title = $locationDetails['description'];

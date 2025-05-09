@@ -138,6 +138,7 @@ class ze {
 	public static $siteConfig = [];
 	public static $specialPages = [];
 	public static $nonSearchablePages = [];
+	public static $currentSlot;
 	public static $slotContents = [];
 	public static $modulesLoaded = [];
 	public static $pluginsOnPage = 0;
@@ -145,7 +146,6 @@ class ze {
 	public static $homeCID = 0;
 	public static $homeEquivId = 0;
 	public static $homeCType = '';
-	public static $groups = '';
 	public static $signalsCurrentlyTriggered = [];
 	public static $googleRecaptchaElements = [];
 	public static $importantGetRequests = [];
@@ -469,9 +469,6 @@ class ze {
 	public static function session($n) {
 		return $_SESSION[$n] ?? false;
 	}
-	public static function ifNull($a, $b, $c = null) {
-		return $a ?: ($b ?: $c);
-	}
 	
 	public static function isVal($a) {
 		return $a !== null && $a !== false && $a !== '';
@@ -498,21 +495,6 @@ class ze {
 	//Limit a value to a specific list. The first value in the list is returned if the value does not match.
 	public static function oneOf($needle, ...$haystack) {
 		return in_array($needle, $haystack)? $needle : $haystack[0];
-	}
-	
-	//Returns true if a $_COOKIE variable does not affect caching (or is already covered by another existing category)
-	public static function cacheFriendlyCookieVar($var) {
-		return substr($var, 0, 2) == '__'
-			|| substr($var, 0, 4) == '_ga_'
-			|| substr($var, 0, 9) == 'PHPSESSID'
-			|| substr($var, 0, 11) == 'can_cache__'
-			|| in_array($var, ['cookies_accepted', '_ga', '_gat', '_fbp', '_clck', '_uetvid', 'is_returning', 'COOKIE_LAST_ADMIN_USER', 'COOKIE_LAST_ADMIN_CAPTCHA_COMPLETED', 'ZENARIO_ADMIN_LOGIN_LINK']);
-	}
-	
-	//Returns true if a $_SESSION variable does not affect caching (or is already covered by another existing category)
-	public static function cacheFriendlySessionVar($var) {
-		return substr($var, 0, 11) == 'can_cache__'
-			|| in_array($var, ['unnecessary_cookies_rejected', 'extranetUserID', 'extranetUser_firstname', 'extranetUser_lastname', 'user_lang', 'destCID', 'destCType', 'destURL', 'destTitle']);
 	}
 	
 	

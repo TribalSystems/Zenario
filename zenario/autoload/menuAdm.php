@@ -81,103 +81,16 @@ class menuAdm {
 
 	//Cache some things so we don't need to keep repeatedly looking them up
 	private static $maxOrdinal = null;
-	private static $homePageCID = null;
-	private static $homePageCType = null;
-	private static $homePageMenuText = null;
 	
+	//Menu path functions.
+	//These used to be in the "admin" library, thry were since moved to the "visitor" version
+	//but I'm leaving shortcuts for them so to not break anyone's code.
 	public static function pathArray($menuId, $langId = false, $addHome = true) {
-		return \ze\menuAdm::path($menuId, $langId, '', $addHome, true);
+		return \ze\menu::path($menuId, $langId, '', $addHome, true);
 	}
 	
 	public static function path($menuId, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false) {
-		if ($langId === false) {
-			$langId = \ze\content::visitorLangId();
-	
-		} elseif ($langId === true) {
-			$langId = \ze::$defaultLang;
-		}
-	
-		$sql = "
-			SELECT m.id, m.section_id, m.redundancy, m.target_loc, m.equiv_id, m.content_type, m.ordinal, (
-				SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))
-				FROM ". DB_PREFIX. "menu_text AS mt
-				WHERE mt.menu_id = m.id
-				ORDER BY
-					mt.language_id = '". \ze\escape::asciiInSQL($langId). "' DESC,
-					mt.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "' DESC
-				LIMIT 1
-			) AS text
-			FROM ". DB_PREFIX. "menu_hierarchy AS mh
-			INNER JOIN ". DB_PREFIX. "menu_nodes AS m
-			   ON m.id = mh.ancestor_id
-			WHERE mh.child_id = ". (int) $menuId. "
-			ORDER BY mh.separation DESC";
-		
-		$rows = \ze\sql::fetchAssocs($sql);
-		
-		
-		$first = true;
-		$output = [];
-		
-		foreach ($rows as $row) {
-			
-			if ($first) {
-				$first = false;
-				
-				\ze\menuAdm::addPrefixToMenuPath($output, $row['section_id'], $addHome, $returnArray, $row['equiv_id'], $row['content_type']);
-			}
-			
-			if ($returnArray) {
-				$output[] = $row;
-			} else {
-				$output[] = $row['text'];
-			}
-		}
-		
-		if ($returnArray) {
-			return $output;
-		} else {
-			return implode($separator, $output);
-		}
-	}
-	
-	private static function addPrefixToMenuPath(&$output, $sectionId, $addHome = true, $returnArray = true, $currentEquivId = 0, $currentContentType = '') {
-
-		//If in the "Main" section, have an option to add the home page on to the breadcrumb trail.
-		if ($sectionId == 1 && $addHome) {
-			
-			if (self::$homePageCID === null) {
-				if (\ze\content::langSpecialPage('zenario_home',
-					self::$homePageCID, self::$homePageCType,
-					\ze::$defaultLang, $languageMustMatch = true, $skipPermsCheck = true
-				)) {
-					if ($menu = \ze\menu::getFromContentItem(self::$homePageCID, self::$homePageCType, $fetchSecondaries = false, $sectionId = 1)) {
-						self::$homePageMenuText = $menu['name'];
-					}
-				}
-			}
-			
-			if (self::$homePageCID
-			 && (self::$homePageCID != $currentEquivId
-			  || self::$homePageCType != $currentContentType)) {
-		
-				if ($returnArray) {
-					$output[] = ['text' => self::$homePageMenuText, 'section_id' => $sectionId];
-				} else {
-					$output[] = self::$homePageMenuText;
-				}
-			}
-			
-		} else {
-			//If not in the "Main" section, add the section name.
-			$text = \ze\menu::sectionName($sectionId);
-			
-			if ($returnArray) {
-				$output[] = ['text' => $text, 'section_id' => $sectionId];
-			} else {
-				$output[] = $text;
-			}
-		}
+		return \ze\menu::path($menuId, $langId, $separator, $addHome, $returnArray);
 	}
 	
 	
@@ -270,7 +183,7 @@ class menuAdm {
 			//When creating a top-level node there'll be no parent ID set.
 			//Create a menu path using just the prefix.
 			} else {
-				\ze\menuAdm::addPrefixToMenuPath($output, $newSectionId, $addHome = false);
+				\ze\menu::addPrefixToMenuPath($output, $newSectionId, $addHome = false);
 					//N.b. we're handling an edge case here.
 					//When creating a menu node in the main section at the top level, we don't want to show
 					//it as being created under the Homepage like we would normally, as that would cause some confusion.

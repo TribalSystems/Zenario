@@ -175,3 +175,81 @@ if (ze\dbAdm::needRevision(58558)) {
 
 	ze\dbAdm::revision(58558);
 }
+
+
+//
+//	Zenario 10.0
+//
+
+//In 10.0, there were the following changes to admin permissions:
+//_PRIV_ADD_MENU_ITEM and _PRIV_DELETE_MENU_ITEM were merged together to become _PRIV_CREATE_DELETE_MENU_ITEM,
+//_PRIV_ADD_MENU_SECTION and _PRIV_DELETE_MENU_SECTION were merged together to become _PRIV_CREATE_DELETE_MENU_SECTION,
+//The existing perm _PRIV_REORDER_MENU_ITEM and the new perm _PRIV_CREATE_DELETE_MENU_SECTION now require _PRIV_EDIT_MENU_ITEM.
+//Make the necessary adjustments.
+if (ze\dbAdm::needRevision(61020)) {
+	$localAdmins = [];
+	
+	$sql = "
+		SELECT id
+		FROM " . DB_PREFIX . "admins
+		WHERE authtype = 'local'";
+	$result = ze\sql::select($sql);
+	while ($adminId = ze\sql::fetchValue($result)) {
+		$localAdmins[] = $adminId;
+	}
+	
+	if (count($localAdmins) > 0) {
+		foreach ($localAdmins as $adminId) {
+			$adminPerms = ze\admin::loadPerms($adminId);
+			if (!empty($adminPerms)) {
+				//Rename _PRIV_ADD_MENU_ITEM and _PRIV_DELETE_MENU_ITEM
+				//to _PRIV_CREATE_DELETE_MENU_ITEM
+				if (isset($adminPerms['_PRIV_ADD_MENU_ITEM']) || isset($adminPerms['_PRIV_DELETE_MENU_ITEM'])) {
+					$sql = "
+						DELETE FROM " . DB_PREFIX . "action_admin_link
+						WHERE admin_id = " . (int) $adminId . "
+						AND action_name IN ('_PRIV_ADD_MENU_ITEM', '_PRIV_DELETE_MENU_ITEM')";
+					ze\sql::update($sql);
+					
+					$sql = "
+						INSERT IGNORE INTO " . DB_PREFIX . "action_admin_link
+						SET admin_id = " . (int) $adminId . ", action_name = '_PRIV_CREATE_DELETE_MENU_ITEM'";
+					ze\sql::update($sql);
+				}
+				
+				//Rename _PRIV_ADD_MENU_SECTION and _PRIV_DELETE_MENU_SECTION
+				//to _PRIV_CREATE_DELETE_MENU_SECTION
+				if (isset($adminPerms['_PRIV_ADD_MENU_SECTION']) || isset($adminPerms['_PRIV_DELETE_MENU_SECTION'])) {
+					$sql = "
+						DELETE FROM " . DB_PREFIX . "action_admin_link
+						WHERE admin_id = " . (int) $adminId . "
+						AND action_name IN ('_PRIV_ADD_MENU_SECTION', '_PRIV_DELETE_MENU_SECTION')";
+					ze\sql::update($sql);
+					
+					$sql = "
+						INSERT IGNORE INTO " . DB_PREFIX . "action_admin_link
+						SET admin_id = " . (int) $adminId . ", action_name = '_PRIV_CREATE_DELETE_MENU_SECTION'";
+					ze\sql::update($sql);
+					
+					//If the admin has the new perm, but does not have _PRIV_EDIT_MENU_ITEM, add it now
+					if (!isset($adminPerms['_PRIV_EDIT_MENU_ITEM'])) {
+						$sql = "
+							INSERT IGNORE INTO " . DB_PREFIX . "action_admin_link
+							SET admin_id = " . (int) $adminId . ", action_name = '_PRIV_EDIT_MENU_ITEM'";
+						ze\sql::update($sql);
+					}
+				}
+				
+				//_PRIV_REORDER_MENU_ITEM now requires _PRIV_EDIT_MENU_ITEM. Add as required.
+				if (isset($adminPerms['_PRIV_REORDER_MENU_ITEM']) && !isset($adminPerms['_PRIV_EDIT_MENU_ITEM'])) {
+					$sql = "
+						INSERT IGNORE INTO " . DB_PREFIX . "action_admin_link
+						SET admin_id = " . (int) $adminId . ", action_name = '_PRIV_EDIT_MENU_ITEM'";
+					ze\sql::update($sql);
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(61020);
+}

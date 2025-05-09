@@ -515,12 +515,14 @@
 
             if(this.options.datas == 'select'){
 
-                var found = false, regexp = new RegExp(this.searchInput.val().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), 'i');
+                var found = false,
+                	escapedText = this.searchInput.val().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"),
+                	regexp = new RegExp('(\\b' + escapedText + '|[\-_ ]+' + escapedText + ')', 'i');
                 this.dropdownReset();
-
+                
                 $('option', this.select).not(':selected, :disabled').each(function(){
                     if(count <= $this.options.nbDropdownElements){
-                        if(regexp.test($(this).html())){
+                        if(regexp.test($(this).text())){
                             $this.dropdownAddItem($(this).attr('value'), $(this).html());
                             found = true;
                             count++;

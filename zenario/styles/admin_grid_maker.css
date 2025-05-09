@@ -16,7 +16,7 @@ body.iframe {
 
 .grid_maker_wrap {
 	background: #333;
-	font-family: 'Verdana',​Arial;
+	font-family: 'Verdana', Arial;
 	font-size: 12px;
 	color:#E2E2E2;
 	padding:6px;
@@ -120,7 +120,7 @@ body.webkit .zenario_grids a.zenario_grid_sortable_target {
 
 .ui-resizable-helper {
 	text-align: center;
-	font-family: 'Trebuchet MS',​Arial;
+	font-family: 'Trebuchet MS', Arial;
 	font-size: 12px;
 }
 
@@ -134,7 +134,7 @@ body.zenario_grid_resizing_cell .ui-resizable-helper div.zenario_resizing_border
 }
 
 .zenario_size_when_resizing {
-	font-family:'Verdana',​Arial;
+	font-family:'Verdana', Arial;
 	font-size:12px;
 	bottom:0;
 	right:0;
@@ -369,7 +369,7 @@ div.zenario_grid_border {
 	margin-bottom: 10px;
 	background: url('../admin/images/grid_maker/white-bg.png');
 	color:#333;
-	font-family: 'Verdana',​Arial;
+	font-family: 'Verdana', Arial;
 	font-size: 12px;
 }
 
@@ -1142,7 +1142,7 @@ div.wiggly_line.wiggly_line_for_header:before {
 	}
 
 	#colorbox.zenario_grid_box {
-		font-family: 'Verdana',​Arial;
+		font-family: 'Verdana', Arial;
 		font-size: 12px;
 		padding:6px;
 	}

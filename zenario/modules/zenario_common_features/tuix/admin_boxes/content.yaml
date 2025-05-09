@@ -121,7 +121,7 @@ zenario_content:
                     allow_typing_in_date_field: true
                     show_date_format_as_placeholder: true
                     tooltip: |
-                        The official, or publicly-displayed date, of this content item. It may be different from the date you publish the page.
+                        The official, or publicly-displayed date, of this content item; it may differ from the date when actually published.
                 menu:
                     ord: 33
                     type: grouping
@@ -146,7 +146,7 @@ zenario_content:
                     hide_if_previous_outdented_value_isnt: 1
                     snippet:
                         div_class: zenario_fbWarning
-                        div: 'The initial menu position for content items of this type has been locked.'
+                        div: 'A preferential menu node exists for this content type. The initial menu position for content items of this type has been locked.'
                 menu_pos:
                     grouping: menu
                     indent: 1
@@ -289,8 +289,12 @@ zenario_content:
                 content_item_is_public:
                     type: hidden
                     hidden: true
-                alias:
+                
+                alias_grouping:
+                    type: grouping
                     ord: 50
+                alias:
+                    grouping: alias_grouping
                     label: 'Alias:'
                     type: text
                     maxlength: 75
@@ -322,7 +326,7 @@ zenario_content:
                         zenarioAB.tuix.___alias_changed = true;
                         $('#alias_changed').val(1);
                 suggest_alias_from_title:
-                    ord: alias.01
+                    grouping: alias_grouping
                     type: button
                     css_class: zfab_text_link_button
                     same_row: true
@@ -334,7 +338,7 @@ zenario_content:
                         zenarioAB.contentTitleChange(); 
                         $('#suggest_alias_from_title').hide();
                 alias_warning_display_wrapper:
-                    ord: alias.02
+                    grouping: alias_grouping
                     row_class: zfab_inline_warning_hidden
                     snippet:
                         html: |
@@ -372,11 +376,14 @@ zenario_content:
                     
                         zenarioAB.updateSEP();
                 
-                sitemap:
+                sitemap_grouping:
+                    type: grouping
                     ord: 75
+                sitemap:
+                    grouping: sitemap_grouping
                     label: 'XML sitemap:'
                 sitemap_disabled:
-                    ord: sitemap.1
+                    grouping: sitemap_grouping
                     same_row: true
                     visible_if: |
                         !zenarioA.siteSettings.sitemap_enabled
@@ -393,7 +400,7 @@ zenario_content:
                             href="{{URLBasePath|e}}{{link|e}}"
                         >View XML sitemap settings</a>
                 excluded_from_sitemap:
-                    ord: sitemap.2
+                    grouping: sitemap_grouping
                     same_row: true
                     visible_if: |
                         zenarioA.siteSettings.sitemap_enabled
@@ -402,7 +409,7 @@ zenario_content:
                     readonly: true
                     show_as_a_span_when_readonly: true
                 included_in_sitemap:
-                    ord: sitemap.3
+                    grouping: sitemap_grouping
                     same_row: true
                     visible_if: |
                         zenarioA.siteSettings.sitemap_enabled
@@ -411,7 +418,7 @@ zenario_content:
                     readonly: true
                     show_as_a_span_when_readonly: true
                 exclude_from_sitemap:
-                    ord: sitemap.4
+                    grouping: sitemap_grouping
                     same_row: true
                     hide_with_previous_field: true
                     type: checkbox
@@ -420,7 +427,7 @@ zenario_content:
                     post_field_html: ')'
                     redraw_onchange: true
                 search_engine_preview:
-                    ord: sitemap.5
+                    grouping: sitemap_grouping
                     indent: 1
                     hide_with_previous_field: true
                     visible_if: |
@@ -429,7 +436,7 @@ zenario_content:
                     snippet:
                         microtemplate: zenario_admin_box_search_engine_preview
                 apply_noindex_meta_tag:
-                    ord: sitemap.5
+                    grouping: sitemap_grouping
                     indent: 1
                     type: checkbox
                     label: Apply a noindex meta tag
@@ -459,15 +466,19 @@ zenario_content:
                         select_phrase: Select a writer...
                         nothing_selected_phrase: Nobody selected
                     format_onchange: true
+                
+                pinned_grouping:
+                    type: grouping
+                    ord: 135
                 pinned:
                     label: 'Pin'
-                    ord: 135
+                    grouping: pinned_grouping
                     type: checkbox
                     tooltip: 'Pinned items appear first on content summary lists.'
                     redraw_onchange: true
                 pinned_duration:
                     indent: 1
-                    ord: pinned.1
+                    grouping: pinned_grouping
                     type: radios
                     value: until_unpinned
                     values:
@@ -487,14 +498,14 @@ zenario_content:
                     validation:
                         required_if_not_hidden: 'Please select the duration.'
                 unpin_date:
-                    ord: pinned.2
+                    grouping: pinned_grouping
                     indent: 2
                     label: 'Unpin date:'
                     type: date
                     change_month_and_year: true
                     visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_date'
                 pinned_fixed_duration_value:
-                    ord: pinned.3
+                    grouping: pinned_grouping
                     indent: 2
                     type: text
                     value: 1
@@ -505,7 +516,7 @@ zenario_content:
                         numeric: 'Please enter a number.'
                     visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_duration'
                 pinned_fixed_duration_unit:
-                    ord: pinned.4
+                    grouping: pinned_grouping
                     same_row: true
                     type: select
                     value: days
@@ -518,34 +529,34 @@ zenario_content:
                             label: 'Weeks'
                     visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_duration'
                 pinned_duration_part_2:
-                    ord: pinned.5
+                    grouping: pinned_grouping
                     indent: 1
                     snippet:
                         show_split_values_from: pinned_duration
                     visible_if: lib.value('pinned')
                 pinned_error_scheduled_task_manager_not_running:
-                    ord: pinned.6
+                    grouping: pinned_grouping
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is not installed. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 pinned_error_scheduled_task_master_switch_is_off:
-                    ord: pinned.7
+                    grouping: pinned_grouping
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is enabled, but the master switch is Off. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 pinned_error_scheduled_task_master_not_set_up_correctly:
-                    ord: pinned.8
+                    grouping: pinned_grouping
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is installed and the master switch is On, but the crontab is not set up correctly. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 pinned_error_scheduled_task_master_job_not_running:
-                    ord: pinned.9
+                    grouping: pinned_grouping
                     indent: 1
                     snippet:
                         html: |
@@ -562,24 +573,6 @@ zenario_content:
                     dont_trim: true
                     tooltip: >
                         Summary of the article or page. This may appear on this site in a content summary list. You may include simple HTML but not images.
-                lock_summary_view_mode:
-                    label: 'Protected'
-                    ord: 140
-                    hidden: true
-                    visible_if: '!zenarioAB.editModeOn()'
-                    type: checkbox
-                    note_below: >
-                        Protected Summaries will not be updated when you edit
-                        content using the WYSIWYG Editor Plugin.
-                lock_summary_edit_mode:
-                    label: 'Protect'
-                    ord: 150
-                    hidden: true
-                    visible_if: zenarioAB.editModeOn()
-                    type: checkbox
-                    note_below: >
-                        By protecting the Summary, changes made using the WYSIWYG
-                        Editor Plugin cannot be synced to the Summary.
                 archived_template_notice:
                     ord: 160
                     snippet:
@@ -974,6 +967,33 @@ zenario_content:
                     visible_if: |
                         zenarioAB.tuix.key.cType == 'document'
         
+        plain_text:
+            ord: 32
+            visible_if: |
+                tuix.key.id && 
+                zenario.IN(tuix.key.cType, 'html', 'news', 'blog')
+            label: Plain text
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        p: |
+                            Plain text extract of this content item, used for searching. Not editable.
+                            
+                text:
+                    label: |
+                        Plain text extract:
+                    type: textarea
+                    style: "height:300px"
+                    read_only: true
+                text_wordcount:
+                    label: |
+                        Word count:
+                    type: text
+                    read_only: true
+                    show_as_a_span: true
+        
         categories:
             ord: 33
             label: Categories
@@ -1048,12 +1068,17 @@ zenario_content:
                     show_as_a_span: true
                     readonly: true
                     </td>:
-                plugin__znz:
+                plugin_instance_id__znz:
                     <td>:
                     type: text
                     show_as_a_span: true
                     readonly: true
                     css_class: zfab_plugin_icon
+                plugin_name__znz:
+                    <br/>:
+                    type: text
+                    show_as_a_span: true
+                    readonly: true
                     </td>:
                 instance_id__znz:
                     type: hidden
@@ -1066,13 +1091,10 @@ zenario_content:
                     values: 
                         original:
                             label: ''
-                            ord: 
                         duplicate:
-                            label: ''
-                            ord: 
+                            label: Make a copy
                         empty:
-                            label: ''
-                            ord: 
+                            label: Leave the slot empty
                     validate_onchange: true
                     validation:
                         only_validate_when_saving: true

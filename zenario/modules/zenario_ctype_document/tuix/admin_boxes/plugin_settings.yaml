@@ -67,49 +67,52 @@ plugin_settings:
                     type: checkbox
                     value: true
                     hidden: true
-                show_default_stick_image:
+                show_featured_image:
                     plugin_setting:
-                        name: show_default_stick_image
-                    label: 'Show image'
+                        name: show_featured_image
+                    label: "Show thumbnail of each content item's featured image"
                     type: checkbox
                     value: ""
                     side_note: Show the featured image or default icon.
-                    format_onchange: Yes
+                    format_onchange: true
                     
-                use_sticky_image:
-                    plugin_setting:
-                        name: use_sticky_image
-                    label: 'Show featured image'
-                    type: checkbox
-                    value: ""
-                    side_note: Display the featured image of the content item if it exists.
-                    format_onchange: Yes
-                    indent: 1
                 image_canvas:
                     plugin_setting:
                         name: image_canvas
                     label: 'Featured image canvas:'
                     type: select
-                    value: fixed_width_and_height
+                    value: crop_and_zoom
                     values:
-                        unlimited:
-                            ord: "1"
-                            label: Unlimited size
+                        crop_and_zoom:
+                            ord: 1
+                            label: Crop and zoom
                         fixed_width:
-                            ord: "2"
+                            ord: 2
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
+                            ord: 3
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
+                            ord: 4
                             label: Constrain by width and height
-                        resize_and_crop:
-                            ord: "5"
-                            label: Resize and crop
-                    format_onchange: Yes
-                    indent: 2
+                        unlimited:
+                            ord: 5
+                            label: Unlimited size
+                    format_onchange: true
+                    indent: 1
 
+                image_retina:
+                    indent: 2
+                    plugin_setting:
+                        name: retina
+                    label: 'This is a retina image'
+                    type: checkbox
+                    same_row: true
+                    value: false
+                    visible_if: lib.value('show_featured_image') && (lib.value('image_canvas') == 'unlimited')
+                    side_note: |
+                        Display image at double density.
+                
                 image_width:
                     plugin_setting:
                         name: image_width
@@ -122,7 +125,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 3
+                    indent: 2
 
                 image_height:
                     plugin_setting:
@@ -136,7 +139,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 3
+                    indent: 2
                 show_permalink:
                     label: 'Show permalink'
                     plugin_setting:
@@ -169,7 +172,7 @@ plugin_settings:
                         name: show_release_datetime
                     type: checkbox
                     value: "1"
-                    format_onchange: Yes
+                    format_onchange: true
                 date_format:
                     label: 'Date format:'
                     plugin_setting:
@@ -177,13 +180,13 @@ plugin_settings:
                     type: radios
                     values:
                         _SHORT:
-                            ord: "1"
+                            ord: 1
                             label: Short
                         _MEDIUM:
-                            ord: "2"
+                            ord: 2
                             label: Medium
                         _LONG:
-                            ord: "3"
+                            ord: 3
                             label: Long
                     value: _MEDIUM
                     indent: 1
@@ -209,15 +212,15 @@ plugin_settings:
                         name: show_details_and_link
                     values:
                         current_content_item:
-                            ord: "1"
+                            ord: 1
                             label: Automatic
                             side_note: This plugin should be in a slot on the layout for the Document content type. Creates a web page with summary details, from which the file can be downloaded.
                         another_content_item:
-                            ord: "2"
+                            ord: 2
                             label: Specific document content item...
                             side_note: Use this to show a specific document content item to the visitor. The plugin can be placed on any content item or layout.
                     value: current_content_item
-                    format_onchange: Yes
+                    format_onchange: true
                 another_document:
                     label: 'Select document content item:'
                     plugin_setting:

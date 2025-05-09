@@ -61,7 +61,7 @@ class zenario_sensitive_content_message extends ze\moduleBaseClass {
 		if ($displayMessage) {
 			echo '
 <!--googleoff: all-->
-<script type="text/javascript" src="zenario/modules/zenario_sensitive_content_message/fun/sensitive_content_message.php"></script>
+<script type="text/javascript" src="zenario/modules/zenario_sensitive_content_message/messages/sensitive_content_message.php"></script>
 <!--googleon: all-->';
 		}
 	}

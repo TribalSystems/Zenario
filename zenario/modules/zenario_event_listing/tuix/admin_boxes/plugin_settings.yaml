@@ -69,43 +69,43 @@ plugin_settings:
                     values:
                         - 
                             label: this month
-                            ord: "1"
+                            ord: 1
                         - 
                             label: next month
-                            ord: "2"
+                            ord: 2
                         - 
                             label: current month + 2
-                            ord: "3"
+                            ord: 3
                         - 
                             label: current month + 3
-                            ord: "4"
+                            ord: 4
                         - 
                             label: current month + 4
-                            ord: "5"
+                            ord: 5
                         - 
                             label: current month + 5
-                            ord: "6"
+                            ord: 6
                         - 
                             label: current month + 6
-                            ord: "7"
+                            ord: 7
                         - 
                             label: current month + 7
-                            ord: "8"
+                            ord: 8
                         - 
                             label: current month + 8
-                            ord: "9"
+                            ord: 9
                         - 
                             label: current month + 9
-                            ord: "10"
+                            ord: 10
                         - 
                             label: current month + 10
-                            ord: "11"
+                            ord: 11
                         - 
                             label: current month + 11
-                            ord: "12"
+                            ord: 12
                         - 
                             label: current month + 12
-                            ord: "13"
+                            ord: 13
                 
                 
                 future:
@@ -157,13 +157,13 @@ plugin_settings:
                     value: visitor
                     values:
                         visitor:
-                            ord: "1"
+                            ord: 1
                             label: "Visitor's language"
                         all:
-                            ord: "2"
+                            ord: 2
                             label: All enabled languages
                         specific_languages:
-                            ord: "3"
+                            ord: 3
                             label: Specific languages
                     format_onchange: Yes
                 specific_languages:
@@ -205,10 +205,10 @@ plugin_settings:
                     type: radios
                     values:
                         start_date:
-                            ord: "1"
+                            ord: 1
                             label: Start date
                         end_date:
-                            ord: "2"
+                            ord: 2
                             label: End date
                     value: start_date
                     format_onchange: true
@@ -228,6 +228,47 @@ plugin_settings:
                     type: checkbox
                     value: false
                     format_onchange: true
+                
+                show_more_link:
+                    plugin_setting:
+                        name: show_more_link
+                    label: |
+                        For overall list, show a link to a "more info" content item
+                    type: checkbox
+                    value: false
+                    side_note: >
+                        Use this to link to another page with another list of events.
+                    format_onchange: true
+                more_link_text:
+                    plugin_setting:
+                        name: more_link_text
+                        is_searchable_content: true
+                        translate: true
+                    show_phrase_icon: true
+                    label: |
+                        "More info" link text:
+                    type: text
+                    width: 150
+                    maxlength: 255
+                    value: "More events..."
+                    indent: 1
+                more_hyperlink_target:
+                    plugin_setting:
+                        name: more_hyperlink_target
+                        foreign_key_to: content
+                    label: |
+                        "More info" link destination:
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                    indent: 1
         each_item:
             label: Each item
             fields:
@@ -312,19 +353,19 @@ plugin_settings:
                     type: select
                     values:
                         unlimited:
-                            ord: "1"
+                            ord: 1
                             label: Unlimited size
                         fixed_width:
-                            ord: "2"
+                            ord: 2
                             label: Constrain by width
                         fixed_height:
-                            ord: "3"
+                            ord: 3
                             label: Constrain by height
                         fixed_width_and_height:
-                            ord: "4"
+                            ord: 4
                             label: Constrain by width and height
                         resize_and_crop:
-                            ord: "5"
+                            ord: 5
                             label: Resize and crop
                     value: fixed_width
                     format_onchange: Yes
@@ -428,13 +469,13 @@ plugin_settings:
                     value: _MEDIUM
                     values:
                         _SHORT:
-                            ord: "1"
+                            ord: 1
                             label: Short
                         _MEDIUM:
-                            ord: "2"
+                            ord: 2
                             label: Medium
                         _LONG:
-                            ord: "3"
+                            ord: 3
                             label: Long
                     requires: show_dates
                     indent: 1

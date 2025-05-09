@@ -83,3 +83,17 @@ if (ze\dbAdm::needRevision(264)) {
 	
 	ze\dbAdm::revision(264);
 }
+
+if (ze\dbAdm::needRevision(322)) {
+	//In 10.1, we renamed the "Documents" dataset to "Hierarchical documents".
+	$datasetId = ze\datasetAdm::register(
+		'Hierarchical documents',
+		'documents_custom_data',
+		'documents',
+		'zenario_document_properties',
+		'zenario__library/panels/documents',
+		'',
+		'');
+	
+	ze\dbAdm::revision(322);
+}

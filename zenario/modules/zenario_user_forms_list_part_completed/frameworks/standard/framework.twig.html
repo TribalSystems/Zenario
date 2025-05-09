@@ -1,0 +1,29 @@
+<h1>{{"Resume part-complete form responses"|trans}}</h1>
+
+{% if User_Logged_In %}
+	{% if User_Part_Complete_Form_Responses %}
+		<div class="responsive_table_wrap">
+			<div class="responsive_table">
+				<table>
+					<tr>
+						<th class="title">{{"Page title"|trans}}</th>
+						<th class="date">{{"Date last saved"|trans}}</th>
+						<th class="action">{{"Action"|trans}}</th>
+					</tr>
+			
+					{% for User_Part_Complete_Form_Response in User_Part_Complete_Form_Responses %}
+						<tr>
+							<td>{{User_Part_Complete_Form_Response.Page_Title|e}}</td>
+							<td>{{User_Part_Complete_Form_Response.Date|e}}</td>
+							<td><a class="link_like_button small" href="{{User_Part_Complete_Form_Response.View_Link|e}}" target="_blank">{{"Resume"|trans}}</a></td>
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+	{% else %}
+		<p>{{"You have no part-complete form responses."|trans}}</p>
+	{% endif %}
+{% else %}
+	<p class="error">{{"You must be logged in to use this plugin."|trans}}</p>
+{% endif %}

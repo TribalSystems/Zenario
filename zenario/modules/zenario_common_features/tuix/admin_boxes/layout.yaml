@@ -17,7 +17,7 @@ zenario_layout:
                 enabled: true
             fields:
                 description:
-                    ord: "0"
+                    ord: 0
                     full_width: true
                     snippet:
                         html: |

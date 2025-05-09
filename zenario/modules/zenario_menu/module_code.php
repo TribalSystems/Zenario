@@ -161,89 +161,92 @@ class zenario_menu extends ze\moduleBaseClass {
 		//Work out where to start from
 		$this->parentMenuId = $this->getStartNode();
 		
-		$this->subSections['Title'] = true;
-		$this->subSections['User_Names'] = true;
-		
-		//Set default values for this->maxLevel1MenuItems and the this->language
-		if (!$this->maxLevel1MenuItems) {
-			$this->maxLevel1MenuItems = 9;
-		}
-		
-		if ($this->language === false) {
-			$this->language = ze::$visLang;
-		}
-		
-		
-		
-		
-		//Get the menu structure from the database.
-		$cachingRestrictions = 0;
-		$menuArray =
-			ze\menu::getStructure(
-				$cachingRestrictions,
-				$this->sectionId, $this->currentMenuId, $this->parentMenuId,
-				$this->numLevels, $this->maxLevel1MenuItems, $this->language,
-				$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-				$this->showInvisibleMenuItems,
-				$this->showMissingMenuNodes,
-				$this->requests,
-				ze\content::showUntranslatedContentItems()
-			);
-							 
-		switch ($cachingRestrictions) {
-			case ze\menu::privateItemsExist:
-				$this->allowCaching(
-					$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
-				break;
-			case ze\menu::staticFunctionCalled:
-				$this->allowCaching(false);
-				break;
-		}
-		
-		
-		//Draw the Menu Nodes we found
-		$this->mergeFields['nodes'] = $this->getMenuMergeFields($menuArray);
-
-		//The features below are currently only used in Menu (Vertical) module,
-		//which extends this one.
-		
-		//1) Custom title feature
-		$this->mergeFields['show_custom_title'] = $this->setting('show_custom_title');
-		$this->mergeFields['title_tags'] = $this->setting('title_tags');
-		$this->mergeFields['custom_title'] = $this->setting('custom_title');
-
-		//2) Open/close menu
-		if ($this->setting('enable_open_close')) {
-			$this->mergeFields['enable_open_close'] = true;
-			//Check if the menu is supposed to be open, or closed.
-			//Check the session variables, or fall back on the plugin setting.
+		if ($this->parentMenuId !== false) {
 			
-			//Check if the state has already been set before...
-            if (!isset($_SESSION['vertical_menu_open_closed_state']) || !ze::in($_SESSION['vertical_menu_open_closed_state'], 'open', 'closed')) {
-                $_SESSION['vertical_menu_open_closed_state'] = $this->setting('open_close_initial_state');
-            }
+			$this->subSections['Title'] = true;
+			$this->subSections['User_Names'] = true;
 			
-			$this->mergeFields['open_closed_state'] = $_SESSION['vertical_menu_open_closed_state'];
-			$this->mergeFields['ajax_link'] = $this->pluginAJAXLink();
+			//Set default values for this->maxLevel1MenuItems and the this->language
+			if (!$this->maxLevel1MenuItems) {
+				$this->maxLevel1MenuItems = 9;
+			}
+			
+			if ($this->language === false) {
+				$this->language = ze::$visLang;
+			}
+			
+			
+			
+			
+			//Get the menu structure from the database.
+			$cachingRestrictions = 0;
+			$menuArray =
+				ze\menu::getStructure(
+					$cachingRestrictions,
+					$this->sectionId, $this->currentMenuId, $this->parentMenuId,
+					$this->numLevels, $this->maxLevel1MenuItems, $this->language,
+					$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
+					$this->showInvisibleMenuItems,
+					$this->showMissingMenuNodes,
+					$this->requests,
+					ze\content::showUntranslatedContentItems()
+				);
+								 
+			switch ($cachingRestrictions) {
+				case ze\menu::privateItemsExist:
+					$this->allowCaching(
+						$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = true, $ifSessionVarOrCookieIsSet = true);
+					break;
+				case ze\menu::staticFunctionCalled:
+					$this->allowCaching(false);
+					break;
+			}
+			
+			
+			//Draw the Menu Nodes we found
+			$this->mergeFields['nodes'] = $this->getMenuMergeFields($menuArray);
+	
+			//The features below are currently only used in Menu (Vertical) module,
+			//which extends this one.
+			
+			//1) Custom title feature
+			$this->mergeFields['show_custom_title'] = $this->setting('show_custom_title');
+			$this->mergeFields['title_tags'] = $this->setting('title_tags');
+			$this->mergeFields['custom_title'] = $this->setting('custom_title');
+	
+			//2) Open/close menu
+			if ($this->setting('enable_open_close')) {
+				$this->mergeFields['enable_open_close'] = true;
+				//Check if the menu is supposed to be open, or closed.
+				//Check the session variables, or fall back on the plugin setting.
+				
+				//Check if the state has already been set before...
+				if (!isset($_SESSION['vertical_menu_open_closed_state']) || !ze::in($_SESSION['vertical_menu_open_closed_state'], 'open', 'closed')) {
+					$_SESSION['vertical_menu_open_closed_state'] = $this->setting('open_close_initial_state');
+				}
+				
+				$this->mergeFields['open_closed_state'] = $_SESSION['vertical_menu_open_closed_state'];
+				$this->mergeFields['ajax_link'] = $this->pluginAJAXLink();
+			}
+	
+			//3) Full width view with 1-5 columns
+			if ($this->setting('menu_number_of_levels') == '1_full_width') {
+				$this->mergeFields['full_width_view'] = true;
+				$this->mergeFields['num_columns'] = ($this->setting('number_of_columns_full_width') ?: 1);
+				$this->mergeFields['menu_node_count'] = count($this->mergeFields['nodes']);
+				$this->mergeFields['num_items_per_column'] = (int) ceil($this->mergeFields['menu_node_count'] / $this->mergeFields['num_columns']);
+			}
+	
+			$this->mergeFields['containerId'] = $this->containerId;
+	
+			if ((ze::in($this->setting('menu_number_of_levels'), '1', '2', '3')) && $this->setting('limit_initial_level_1_menu_nodes_checkbox')) {
+				$this->mergeFields['limit_initial_level_1_menu_nodes'] = $this->setting('limit_initial_level_1_menu_nodes');
+				$this->mergeFields['menu_max_number_of_levels'] = $this->setting('menu_number_of_levels');
+				$this->mergeFields['text_for_more_button'] = $this->setting('text_for_more_button');
+			}
+			
+			return $this->menuLoaded = true;
 		}
-
-		//3) Full width view with 1-5 columns
-		if ($this->setting('menu_number_of_levels') == '1_full_width') {
-			$this->mergeFields['full_width_view'] = true;
-			$this->mergeFields['num_columns'] = ($this->setting('number_of_columns_full_width') ?: 1);
-			$this->mergeFields['menu_node_count'] = count($this->mergeFields['nodes']);
-			$this->mergeFields['num_items_per_column'] = (int) ceil($this->mergeFields['menu_node_count'] / $this->mergeFields['num_columns']);
-		}
-
-		$this->mergeFields['containerId'] = $this->containerId;
-
-		if ((ze::in($this->setting('menu_number_of_levels'), '1', '2', '3')) && $this->setting('limit_initial_level_1_menu_nodes_checkbox')) {
-			$this->mergeFields['limit_initial_level_1_menu_nodes'] = $this->setting('limit_initial_level_1_menu_nodes');
-			$this->mergeFields['menu_max_number_of_levels'] = $this->setting('menu_number_of_levels');
-			$this->mergeFields['text_for_more_button'] = $this->setting('text_for_more_button');
-		}
-		
-		return $this->menuLoaded = true;
 	}
 	
 	//Main Display function for the slot
@@ -372,10 +375,12 @@ class zenario_menu extends ze\moduleBaseClass {
 
 		if (!empty($row['privacy'])) {
 			$objects['privacy'] = $row['privacy'];
-
-			if ($objects['privacy'] != 'public') {
-				$objects['Class'] .= ' private';
-			}
+		} elseif (!empty($row['translation_chain_privacy'])) {
+			$objects['privacy'] = $row['translation_chain_privacy'];
+		}
+		
+		if (isset($objects['privacy']) && $objects['privacy'] != 'public') {
+			$objects['Class'] .= ' private';
 		}
 
 		if (!empty($row['accesskey'])) {
@@ -402,7 +407,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		}
 		
 		$width = $height = $url = false;
-		if (!empty($row['image_id']) && ze\file::imageLink($width, $height, $url, $row['image_id'])) {
+		if (!empty($row['image_id']) && ze\image::link($width, $height, $url, $row['image_id'])) {
 			$menuItemImageLink = '';
 			if (!empty($row['url'])) {
 				$menuItemImageLink .= '<a';
@@ -427,7 +432,7 @@ class zenario_menu extends ze\moduleBaseClass {
 			
 			$width2 = $height2 = $url2 = false;
 			$onMouseOver = $onMouseOut = '';
-			if (!empty($row['rollover_image_id']) && ze\file::imageLink($width2, $height2, $url2, $row['rollover_image_id'])) {
+			if (!empty($row['rollover_image_id']) && ze\image::link($width2, $height2, $url2, $row['rollover_image_id'])) {
 				
 				$onMouseOver = ' onmouseover="{this.src=\''. htmlspecialchars($url2) .'\'};" ';
 				if ($row['on']) {

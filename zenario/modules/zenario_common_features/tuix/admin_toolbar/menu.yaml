@@ -11,7 +11,7 @@ sections:
                 hidden: true
                 label: '[Not in menu]'
             quick_add_to_menu:
-                priv: _PRIV_ADD_MENU_ITEM
+                priv: _PRIV_CREATE_DELETE_MENU_ITEM
                 label: Attach content item to menu
                 css_class: zenario_create_a_new
                 tooltip: >
@@ -70,7 +70,7 @@ sections:
                 label: More actions
                 hide_when_children_are_not_visible: true
             quick_add_to_menu:
-                priv: _PRIV_ADD_MENU_ITEM
+                priv: _PRIV_CREATE_DELETE_MENU_ITEM
                 label: Create secondary menu node for this item
                 parent: advanced_dropdown
                 pick_items:
@@ -190,7 +190,7 @@ sections:
                         menu_item: 1
                         detach: 1
             delete:
-                priv: _PRIV_DELETE_MENU_ITEM
+                priv: _PRIV_CREATE_DELETE_MENU_ITEM
                 parent: advanced_dropdown
                 label: Delete menu node
                 ajax:

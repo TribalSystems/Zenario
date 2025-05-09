@@ -3,6 +3,21 @@
 plugin_settings:
     module_class_name: zenario_promo_menu
     tabs:
+        first_tab:
+            fields:
+                image_position:
+                    plugin_setting:
+                        name: image_position
+                    label: 'Image position:'
+                    type: select
+                    value: right
+                    values:
+                        right:
+                            ord: 1
+                            label: 'Right'
+                        left:
+                            ord: 2
+                            label: 'Left'
         promo_images:
             edit_mode:
                 format_on_edit: true

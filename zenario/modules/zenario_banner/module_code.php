@@ -245,6 +245,14 @@ class zenario_banner extends ze\moduleBaseClass {
 				
 				$mergeFields['External_Url_Class'] = 'link_external';
 			
+			} elseif ($linkTo == '_CONDUCTOR_COMMAND'
+				   && ($command = $this->setting('custom_command'))
+				   && ($this->conductorCommandEnabled($command))) {
+				
+				$mergeFields['Image_Link_Href'] = '
+					href="'. htmlspecialchars($this->conductorLink($command)). '"
+					onclick="'. htmlspecialchars($this->conductorOnclick($command)). ' return false;"';
+			
 			} elseif ($linkTo == '_EMAIL') {
 				$url = 'email_address';
 				if ($link = $this->setting($url)) {
@@ -330,13 +338,9 @@ class zenario_banner extends ze\moduleBaseClass {
 		if (($this->setting('image_source') == '_CUSTOM_IMAGE'
 		  && ($imageId = $this->setting('image')))
 		
-		 || ($this->setting('image_source') == '_PICTURE' //TODO looks like a variable that was removed
-		  && (ze\content::getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $this->setting("picture")))
-		  && ($imageId = ze\row::get("versions", "file_id", ["id" => $pictureCID, 'type' => $pictureCType, "version" => ze\content::version($pictureCID, $pictureCType)])))
-		 
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID
-		  && ($imageId = ze\file::itemStickyImageId($cID, $cType)))
+		  && ($imageId = ze\content::featureImageId($cID, $cType)))
 		 
 		 //Special logic for Storefront Banner if set to display the product image
 		 || ($this->setting('image_source') == '_PRODUCT_IMAGE' && !empty($product) && is_array($product) && !empty($product['image_id']) && ($imageId = $product['image_id']))
@@ -456,14 +460,12 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			
-			//Start prepping some parameters for a call to the ze\file::imageHTML() function
+			//Start prepping some parameters for a call to the ze\image::html() function
 			$useRollover = $cssRollover = $jsRollover =
 			$showAsBackgroundImage = $lazyLoad = $hideOnMob = $changeOnMob =
 			$mobImageId = $mobMaxWidth = $mobMaxHeight = $mobCanvas = $mobRetina = false;
 			$cssClass = $rolloverClass = $styles = $attributes = $sourceIDPrefix = '';
 			$preferInlineStypes = true;
-			$makeWebP = $this->setting('webp');
-			$mobWebP = $this->setting('mobile_webp');
 			
 			$htmlID = $this->containerId. '_img';
 			
@@ -551,12 +553,12 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 			}
 			
-			$html = ze\file::imageHTML(
+			$html = ze\image::html(
 				$this->styles, $preferInlineStypes,
-				$this->noteImage($imageId), $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+				$this->noteImage($imageId), $setWidth, $setHeight, $setCanvas, $setRetina,
 				$altTag, $htmlID, $cssClass, $styles, $attributes,
 				$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
-				$this->noteImage($mobImageId), $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+				$this->noteImage($mobImageId), $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina,
 				$sourceIDPrefix
 			);
 			
@@ -606,12 +608,12 @@ class zenario_banner extends ze\moduleBaseClass {
 						$imageLinkNum = 2;
 					}
 					
-					$html .= ze\file::imageHTML(
+					$html .= ze\image::html(
 						$this->styles, $preferInlineStypes,
-						$this->noteImage($rolloImageId), $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+						$this->noteImage($rolloImageId), $setWidth, $setHeight, $setCanvas, $setRetina,
 						$altTag, $htmlID, $rolloverClass, $styles, $attributes,
 						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
-						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina,
 						$sourceIDPrefix,
 						$showImageLinkInAdminMode, $imageLinkNum, $alsoShowMobileLink
 					);
@@ -637,12 +639,12 @@ class zenario_banner extends ze\moduleBaseClass {
 						$imageLinkNum = 2;
 					}
 					
-					$html .= ze\file::imageHTML(
+					$html .= ze\image::html(
 						$ignoreStyles, $preferInlineStypes,
-						$this->noteImage($rolloImageId), $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+						$this->noteImage($rolloImageId), $setWidth, $setHeight, $setCanvas, $setRetina,
 						$altTag, $htmlID, $cssClass, $styles, $attributes,
 						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
-						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina,
 						$sourceIDPrefix,
 						$showImageLinkInAdminMode, $imageLinkNum, $alsoShowMobileLink
 					);
@@ -651,12 +653,12 @@ class zenario_banner extends ze\moduleBaseClass {
 					$sourceIDPrefix = $this->containerId. '_rollout_source_';
 					$showImageLinkInAdminMode = false;
 					
-					$html .= ze\file::imageHTML(
+					$html .= ze\image::html(
 						$ignoreStyles, $preferInlineStypes,
-						$imageId, $setWidth, $setHeight, $setCanvas, $setRetina, $makeWebP,
+						$imageId, $setWidth, $setHeight, $setCanvas, $setRetina,
 						$altTag, $htmlID, $cssClass, $styles, $attributes,
 						$showAsBackgroundImage, $lazyLoad, $hideOnMob, $changeOnMob,
-						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina, $mobWebP,
+						$mobImageId, $mobMaxWidth, $mobMaxHeight, $mobCanvas, $mobRetina,
 						$sourceIDPrefix,
 						$showImageLinkInAdminMode
 					);
@@ -681,16 +683,12 @@ class zenario_banner extends ze\moduleBaseClass {
 			
 			if ($setLinkType == '_ENLARGE_IMAGE') {
 				
-				$width = $height = $url = $webPURL = $isRetina = $mimeType = false;
-				if (ze\file::imageAndWebPLink($width, $height, $url, $makeWebP, $webPURL, false, $isRetina, $mimeType, $imageId, $setLargeWidth, $setLargeHeight, $setLargeCanvas)) {
+				$width = $height = $url = false;
+				if (ze\image::link($width, $height, $url, $imageId, $setLargeWidth, $setLargeHeight, $setLargeCanvas)) {
 					
 					$this->requireJsLib('zenario/libs/manually_maintained/mit/colorbox/jquery.colorbox.min.js');
 					
 					$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($url) . '" class="enlarge_in_fancy_box" ';
-					
-					if ($makeWebP && $webPURL) {
-						$this->mergeFields['Image_Link_Href'] .= ' data-webp-href="'. htmlspecialchars($webPURL). '"';
-					}
 					
 					//HTML 5 friendly version of the above code
 						//Would need support from colorbox, and ", a[data-colorbox-group]" added to the jQuery pattern that sets colorboxes up
@@ -748,16 +746,17 @@ class zenario_banner extends ze\moduleBaseClass {
 			//The text is html but may need parsing for merge fields.
 			if ($this->subSections['Title']) {
 				if ($this->setting("use_product_display_name") && !empty($product) && is_array($product) && !empty($product['product_display_name'])) {
-					$this->mergeFields['Title'] = htmlspecialchars($product['product_display_name']);
-				} else {
-					$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
-				}
-				
-				if (!$this->isVersionControlled) {
-					if ($this->setting('translate_text')) {
-						$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
+					
+					if (!$this->isVersionControlled && $this->setting('translate_text')) {
+						$this->mergeFields['Title'] = htmlspecialchars($this->phrase($product['product_display_name']));
+					} else {
+						$this->mergeFields['Title'] = htmlspecialchars($product['product_display_name']);
 					}
 				} else {
+					$this->mergeFields['Title'] = htmlspecialchars($this->phraseFromSetting('title', $this->setting('translate_text')));
+				}
+				
+				if ($this->isVersionControlled) {
 					if ($this->editing) {
 						// To display the title in edit mode if the title is blank, it's set to a space
 						if (!$this->mergeFields['Title']) {
@@ -792,13 +791,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			if ($this->subSections['More_Link_Text']) {
-				$this->mergeFields['More_Link_Text'] = htmlspecialchars($this->setting('more_link_text'));
-				
-				if (!$this->isVersionControlled) {
-					if ($this->setting('translate_text')) {
-						$this->mergeFields['More_Link_Text'] = $this->phrase($this->mergeFields['More_Link_Text']);
-					}
-				}
+				$this->mergeFields['More_Link_Text'] = htmlspecialchars($this->phraseFromSetting('more_link_text', $this->setting('translate_text')));
 			}
 			
 			//If we're reloading via AJAX, our addToPageHead() method won't be called, and the addStylesOnAJAXReload() function will add the styles.

@@ -7,11 +7,11 @@ zenario__users:
                 user_access_log:
                     ord: 0.2
                     parent: view_dropdown
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     label: This user's content item access log
                     link:
                         path: zenario__users/panels/access_log
-                        branch: Yes
+                        branch: true
                         refiner: user
 
         access_log:
@@ -43,57 +43,72 @@ zenario__users:
                     title: Time accessed
                     db_column: uca.hit_datetime
                     format: datetime
-                    show_by_default: Yes
+                    show_by_default: true
+                    width: large
                 User_Id:
                     title: User ID
                     db_column: uca.user_id
+                    align_right: true
+                    show_by_default: true
+                    width: small
+                User_Identifier:
+                    width: medium
+                    title: User Identifier
+                    db_column: "IFNULL(u.identifier, CONCAT(u.id, ' (account deleted)'))"
+                    table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
                     show_by_default: Yes
                 Screen_name:
                     title: Screen name
                     db_column: u.screen_name
                     table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
-                    searchable: Yes
+                    searchable: true
                 First_Name:
                     title: First name
                     db_column: u.first_name
-                    show_by_default: Yes
+                    hidden: true
                     table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
-                    searchable: Yes
+                    searchable: true
                 Last_Name:
                     title: Last name
                     db_column: u.last_name
-                    show_by_default: Yes
+                    hidden: true
                     table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
-                    searchable: Yes
+                    searchable: true
+                User_Name:
+                    width: small
+                    title: Name
+                    show_by_default: Yes
                 Email:
-                    title: Email
+                    title: Email address
                     db_column: u.email
-                    show_by_default: Yes
+                    show_by_default: true
                     table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
-                    searchable: Yes
+                    searchable: true
+                    width: large
                 Content_Item:
                     title: Content item
                     db_column: "CONCAT(uca.content_type, '_', uca.content_id)"
                     item_link: content_item
-                    show_by_default: Yes
+                    show_by_default: true
+                    width: xlarge
                 Content_Item_Id:
                     title: Content item id
                     db_column: uca.content_id
                     item_link: content_item
-                    show_by_default: Yes
-                    server_side_only: Yes
+                    show_by_default: true
+                    server_side_only: true
                 Content_Item_Type:
                     title: Content item type
                     db_column: uca.content_type
-                    show_by_default: Yes
-                    server_side_only: Yes
+                    show_by_default: true
+                    server_side_only: true
                 Content_Item_Version:
                     title: Content item version
                     db_column: uca.content_version
-                    show_by_default: Yes
-                    server_side_only: Yes
+                    show_by_default: true
+                    server_side_only: true
             default_sort_column: Time
-            default_sort_desc: Yes
+            default_sort_desc: true
             item:
                 name: Log
                 names: Logs

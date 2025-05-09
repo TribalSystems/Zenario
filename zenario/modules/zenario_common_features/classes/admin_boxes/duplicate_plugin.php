@@ -39,7 +39,8 @@ class zenario_common_features__admin_boxes__duplicate_plugin extends ze\moduleBa
 		$box['title'] = ze\admin::phrase('Duplicating the plugin "[[instance_name]]".', $instance);
 		
 		switch ($instance['class_name']) {
-			case 'zenario_plugin_nest':
+			case 'zenario_nest':
+			case 'zenario_ajax_nest':
 				$box['title'] = ze\admin::phrase('Duplicating the nest "[[instance_name]]".', $instance);
 				$fields['instance/name']['label'] = ze\admin::phrase('Nest name');
 				break;

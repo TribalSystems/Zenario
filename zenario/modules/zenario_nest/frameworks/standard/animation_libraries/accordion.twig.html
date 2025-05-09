@@ -1,0 +1,64 @@
+
+
+<div class="nest_wrap">
+	{% if this.setting('show_heading') %}
+		<div class="nest_title">
+			{% if this.setting('heading_tag') %}
+				<{{this.setting('heading_tag')}}>
+					{% if Nest_Heading_Href %}
+						<a href="{{Nest_Heading_Href|e}}" {% if Nest_Heading_Target_Blank %} target="_blank" {% endif %}</a>
+					{% endif %}
+						{{this.setting('heading_text')|trans}}
+					{% if Nest_Heading_Href %}
+						</a>
+					{% endif %}
+				</{{this.setting('heading_tag')}}>
+			{% else %}
+				<h1>{{this.setting('heading_text')|trans}}</h1>
+			{% endif %}
+		</div>
+	{% endif %}
+	
+	{% if Tabs %}
+		<div class="accordion_wrap">
+			{% for Tab in Tabs %}
+				{% if Tab.Plugins %}
+				
+				
+					<div
+						id="{{Tab.TabID|e}}"
+						class="
+							accordion_tab {{Tab.Class|e}}
+							{% if Tab.Visible %}
+								accordion_tab_open
+							{% else %}
+								accordion_tab_closed
+							{% endif %}
+						"
+					>
+						{% if Tab.Tab_Has_Image %}
+							<span class="accordion_image" id="{{Tab.Tab_Image_HTML_ID|e}}"></span>
+						{% endif %}
+						<span class="accordion_label">{{Tab.Tab_Name}}</span>
+					</div>
+					
+					<div
+						id="{{Tab.SlideID|e}}"
+						class="
+							accordion_slide
+							{{Tab.Slide_Class|escape}}
+						"
+						{% if not Tab.Visible %} style="display: none;" {% endif %}
+					>
+						{% set first = true %}
+						{% for Plugin in Tab.Plugins %}
+							{% do this.showPlugin(Plugin, true, first) %}
+							{% set first = false %}
+						{% endfor %}
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
+	{% endif %}
+	
+</div>

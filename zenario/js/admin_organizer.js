@@ -550,17 +550,16 @@ zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
 		var parent,
 			reload,
 			i, instanceIds, instanceId, instance, instances;
-	
-		if (windowOpener && windowOpener.zenario) {
-			parent = windowOpener;
-
-		} else if (windowParent && windowParent.zenario) {
+		
+		if (windowParent && windowParent.zenario) {
 			parent = windowParent;
+		
+		} else if (windowOpener && windowOpener.zenario) {
+			parent = windowOpener;
 		}
-	
+		
 		if (parent && !zenarioO.checkQueueLength()) {
-		
-		
+			
 			if (reload = window.zenarioOReloadOnChanges == 'zenarioO'
 			 && parent.zenarioO
 			 && parent.zenarioO.reload) {
@@ -989,7 +988,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	
 	if (!zenarioO.followPathOnMap(path)) {
 		//add some debug information here
-		zenarioA.showMessage('A script attempted to access the path "' + requestedPath + '" in Organizer, but this was not found. This may be because the current administrator does not have access to that panel, because the module for that panel is not running, or because the path does not exist. It may help to reload the page.', undefined, 'error', false, true);
+		zenarioA.showMessage('A script attempted to access the path "' + requestedPath + '" in Organizer, but it was not found. Your administrator account may not have access to that panel; or perhaps the module for that panel is not running, or the path does not exist. It may help to reload the page, but if that fails please contact the support team.', undefined, 'error', false, true);
 		return false;
 	}
 	
@@ -2526,6 +2525,8 @@ zenarioO.doSearch = function(el) {
 		}
 	}
 	
+	zenarioO.changeClearSearchButtonVisibility();
+	
 	//Don't launch a search if the search term has not changed
 	if (searchTerm === zenarioO.searchTerm) {
 		return;
@@ -2552,6 +2553,20 @@ zenarioO.runSearch = function() {
 		zenarioO.refreshAndShowPage();
 	} else {
 		zenarioO.searchAndSortItems(zenarioO.searchTerm);
+	}
+};
+
+zenarioO.changeClearSearchButtonVisibility = function() {
+	var clearSearchButton = zenario.get('organizer_clear_search');
+	if (clearSearchButton) {
+		var searchTermField = zenario.get('organizer_search_term');
+		if (searchTermField) {
+			if (searchTermField.value) {
+				clearSearchButton.style.display = "block";
+			} else {
+				clearSearchButton.style.display = "none";
+			}
+		}
 	}
 };
 
@@ -2684,6 +2699,8 @@ zenarioO.setSearch = function(searchTerm) {
 	} else {
 		get('organizer_search_term').value = zenarioO.searchTerm;
 	}
+	
+	zenarioO.changeClearSearchButtonVisibility();
 };
 
 zenarioO.clearSearch = function() {
@@ -4616,7 +4633,6 @@ zenarioO.isShowableColumn = function(c, shown) {
 	if (shown) {
 		return zenarioO.shownColumns[c] && zenarioO.isShowableColumn(c);
 	} else {
-		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 		return column
 			&& column.title
 			&& !engToBoolean(column.server_side_only)
@@ -4860,7 +4876,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 			
 					case 'menu_item':
 						var longName = htmlspecialchars(item.name);
-						var shortName = longName.replace(/.*?\-\&gt\; /g, '-&gt; ');
+						var shortName = longName.replace(/.*?\u203a /g, '\u203a ');
 					
 						if (shortName == longName) {
 							shortName = longName.replace(/.*?\: /g, '');
@@ -5255,7 +5271,6 @@ zenarioO.setNavigation = function(returnData) {
 		if (i == 'dummy_item'
 		 || i == '__source_files'
 		 || i == 'top_right_buttons'
-			//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 		 || zenarioT.hidden(undefined, zenarioO, undefined, i, undefined, undefined, undefined, topLevel)) {
 			continue;
 		}
@@ -5303,7 +5318,6 @@ zenarioO.setNavigation = function(returnData) {
 					}
 				}
 				
-				//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 				if (zenarioT.hidden(undefined, zenarioO, undefined, j, secondLevel, undefined, undefined, topLevel)) {
 					continue;
 				}
@@ -5919,7 +5933,6 @@ zenarioO.checkDisabled = function(button, buttonId, items) {
 	}
 	
 	if (defined(button.disabled_if)) {
-		//zenarioT.eval(c, lib, tuixObject, item, id, tuix, button, column, field, section, tab, tuix)
 		if (zenarioT.eval(button.disabled_if, zenarioO, undefined, singleItem, buttonId, button)) {
 			return true;
 		}
@@ -6021,7 +6034,6 @@ zenarioO.checkButtonHidden = function(button, items) {
 	}
 	
 	//Check if this button is hidden
-	//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 	if (zenarioT.hidden(undefined, zenarioO, singleItem, singleItemId, button)) {
 		return true;
 	}
@@ -6048,18 +6060,8 @@ zenarioO.checkButtonHidden = function(button, items) {
 };
 
 
-//Define some logic for checking columns and traits on item buttons
+//Define some logic for checking columns on item buttons
 var colCheckLogic = {
-	traits: {
-		condition: function(id, trait, item) {
-			return item.traits && engToBoolean(item.traits[trait]); 
-		}
-	},
-	without_traits: {
-		condition: function(id, trait, item) {
-			return !item.traits || !engToBoolean(item.traits[trait]);
-		}
-	},
 	with_columns_set: {
 		condition: function(id, column, item) {
 			return engToBoolean(zenarioT.prop(item, column));
@@ -6071,8 +6073,6 @@ var colCheckLogic = {
 		}
 	}
 };
-colCheckLogic.one_with_traits = zenario.clone(colCheckLogic.traits, {one: true});
-colCheckLogic.one_without_traits = zenario.clone(colCheckLogic.without_traits, {one: true});
 colCheckLogic.one_with_columns_set = zenario.clone(colCheckLogic.with_columns_set, {one: true});
 colCheckLogic.one_without_columns_set = zenario.clone(colCheckLogic.without_columns_set, {one: true});
 
@@ -6096,7 +6096,6 @@ zenarioO.checkItemButtonHidden = function(button, items) {
 	//properties should be visible
 	if (defined(button.visible_if_for_all_selected_items)) {
 		foreach (items as id) {
-			//zenarioT.eval(c, lib, tuixObject, item, id, tuix, button, column, field, section, tab, tuix)
 			if (!zenarioT.eval(button.visible_if_for_all_selected_items, zenarioO, undefined, tuix.items[id], id, button)) {
 				return false;
 			}
@@ -6117,9 +6116,9 @@ zenarioO.checkItemButtonHidden = function(button, items) {
 	}
 	
 	
-	//The "with column set" logic, and the deprecated traits logic
+	//The "with column set" logic
 	//Check if that button requires a trait or a column to be set, or not to be set, in order to be shown.
-	//Note that traits use an engToBoolean() check but columns just use a normal boolean check.
+	//Note that columns just use a normal boolean check.
 	//(i.e. 'No' or 'False' as strings would be true).
 	met = true;
 	

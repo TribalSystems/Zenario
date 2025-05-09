@@ -3,17 +3,55 @@
 plugin_settings:
     module_class_name: zenario_extranet_profile_edit
     tabs:
+        global_area:
+            fields:
+                mode: 
+                    plugin_setting: 
+                        name: mode
+                    label: Mode
+                    type: select
+                    css_class: iconselectmenu
+                    format_onchange: true
+                    value: view_and_edit_my_profile
+                    values:
+                        view_and_edit_my_profile:
+                            label: View and edit my profile
+                        view_my_personalised_welcome:
+                            label: View my personalised welcome
+                        view_my_user_groups:
+                            label: View my user groups
         first_tab:
             label: Editing
             fields:
+                snippet_view_and_edit_my_profile:
+                    snippet:
+                        html: |
+                            <p>A plugin in this mode allows the user to view their profile, and gives them the ability to edit it.</p>
+                            
+                            <p>
+                                It requires a form to be created (see [[link_start]]Forms panel[[link_end]]), and for that form to contain one or more fields that are linked to the Users & Contacts dataset
+                                (e.g. first name, last name).
+                            </p>
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
+                snippet_view_my_personalised_welcome:
+                    snippet:
+                        html: '<p>A plugin in this mode shows a personalised welcome message to the user, such as "Welcome [[first_name]]!".</p>'
+                    visible_if:
+                        lib.modeIs: view_my_personalised_welcome
+                snippet_view_my_user_groups:
+                    snippet:
+                        html: '<p>A plugin in this mode that outputs a certain message when the user is a member of a certain group.</p>'
+                    visible_if:
+                        lib.modeIs: view_my_user_groups
+                
                 user_form:
                     plugin_setting:
                         name: user_form
                         foreign_key_to: user_form
                     label: 'Form:'
                     note_below: |
-                        You will need to make a Form via Organizer.
-                        It must contain linked fields from the Users/Contacts Dataset, such as first name and last name.
+                        This plugin must reference a Form; a Form may need to be made in Organizer. It must contain linked fields from the Users & Contacts Dataset, typically First name and Last name.
                         <br /><br />These fields must have the "Pre-populate with logged-in user's data" option selected. It is available in the form field settings on the Advanced tab.
                         <br /><br />Note that Email cannot be edited via this plugin, so the Email linked field should be made read-only on the form.
                     pick_items:
@@ -26,22 +64,35 @@ plugin_settings:
                         select_phrase: Select a form...
                         hide_remove_button: Yes
                     format_onchange: true
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
                 fields_which_dont_prepopulate_user_data:
                     snippet:
                         html: ''
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
+                form_has_illegal_fields:
+                    snippet:
+                        html: ''
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
                 show_title_message:
                     plugin_setting:
                         name: show_title_message
                     label: 'Display a title'
                     type: checkbox
-                    value: "1"
+                    value: 1
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
                 enable_edit_profile:
                     plugin_setting:
                         name: enable_edit_profile
                     label: 'Allow user to edit their profile'
                     side_note: If not checked, just viewing is allowed.
                     type: checkbox
-                    value: "1"
+                    value: 1
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
                 allow_user_to_delete_their_account:
                     plugin_setting:
                         name: allow_user_to_delete_their_account
@@ -57,6 +108,8 @@ plugin_settings:
                             hidden: false
                             type: information
                             message: "[[alias_string]]"
+                    visible_if:
+                        lib.modeIs: view_and_edit_my_profile
                 delete_account_options:
                     indent: 1
                     plugin_setting:
@@ -70,7 +123,7 @@ plugin_settings:
                         delete_all_data:
                             ord: 2
                             label: 'Delete user account and all other data'
-                    visible_if: lib.value('allow_user_to_delete_their_account')
+                    visible_if: lib.modeIs('view_and_edit_my_profile') && lib.value('allow_user_to_delete_their_account')
                     validation:
                         required_if_not_hidden: 'Please select one of the options.'
                     redraw_onchange: true
@@ -81,14 +134,14 @@ plugin_settings:
                             <div class="zenario_fbInfo">
                                 [[all_data_explained]]
                             </div>
-                    visible_if: lib.value('allow_user_to_delete_their_account') && (lib.value('delete_account_options') == 'delete_all_data')
+                    visible_if: lib.modeIs('view_and_edit_my_profile') && lib.value('allow_user_to_delete_their_account') && (lib.value('delete_account_options') == 'delete_all_data')
                 notify_admin_when_user_account_deleted:
                     indent: 1
                     plugin_setting:
                         name: notify_admin_when_user_account_deleted
                     label: 'Notify administrator by email'
                     type: checkbox
-                    visible_if: lib.value('allow_user_to_delete_their_account')
+                    visible_if: lib.modeIs('view_and_edit_my_profile') && lib.value('allow_user_to_delete_their_account')
                     redraw_onchange: true
                 user_account_deleted_admin_notification_addresses:
                     indent: 2
@@ -97,11 +150,62 @@ plugin_settings:
                         is_email_address: true
                     label: 'Administrator email address(s):'
                     type: text
-                    visible_if: lib.value('allow_user_to_delete_their_account') && lib.value('notify_admin_when_user_account_deleted')
+                    visible_if: lib.modeIs('view_and_edit_my_profile') && lib.value('allow_user_to_delete_their_account') && lib.value('notify_admin_when_user_account_deleted')
                     validation:
                         required_if_not_hidden: 'Please enter one or more valid email addresses.'
+                
+                #Settings specific to mode #2: View my personalised welcome
+                welcome_user_text:
+                    plugin_setting:
+                        name: 'welcome_user_text'
+                    label: '"Welcome, user" text:'
+                    type: text
+                    value: "Welcome, [[first_name]]!"
+                    visible_if: lib.modeIs('view_my_personalised_welcome')
+                    validation:
+                        required_if_not_hidden: 'Please enter a message.'
+                    note_below: 'The following merge fields are supported: salutation, first_name, last_name.'
+                welcome_text_html_tags:
+                    plugin_setting:
+                        name: welcome_text_html_tags
+                    type: select
+                    values:
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: p
+                    same_row: true
+                    show_phrase_icon: true
+                    visible_if: lib.modeIs('view_my_personalised_welcome')
+                
+                #Settings specific to mode #3: View my user groups
+                check_if_user_is_a_member_of_group:
+                    plugin_setting:
+                        name: check_if_user_is_a_member_of_group
+                    label: 'Check if the user is a member of the following group:'
+                    type: select
+                    values: {}
+                    empty_value: ' -- Select -- '
+                    visible_if: lib.modeIs('view_my_user_groups')
+                    validation:
+                        required_if_not_hidden: 'Please select a group.'
+                    redraw_onchange: true
+                text_to_display_if_user_is_a_member_of_group:
+                    indent: 1
+                    plugin_setting:
+                        name: text_to_display_if_user_is_a_member_of_group
+                    label: 'Text to display if the user is a member of this group:'
+                    type: text
+                    value: 'You are a member of a group.'
+                    visible_if: lib.modeIs('view_my_user_groups') && lib.value('check_if_user_is_a_member_of_group')
+                    validation:
+                        required_if_not_hidden: 'Please enter a message.'
         phrases:
-            label: Phrases
+            label: Phrases (Form)
             fields:
                 view_profile_title:
                     plugin_setting:
@@ -140,3 +244,19 @@ plugin_settings:
                     type: text
                     value: 'Cancel'
                     show_phrase_icon: true
+                email_address_cannot_be_changed_text:
+                    plugin_setting:
+                        name: email_address_cannot_be_changed_text
+                    label: 'Email address cannot be changed text:'
+                    type: text
+                    value: 'Your email address cannot be changed at the moment, please contact a site administrator.'
+                    show_phrase_icon: true
+                    note_below: 'This text will appear below the "Email" field if the Extranet Change Email module is not running.'
+                change_email_text:
+                    plugin_setting:
+                        name: change_email_text
+                    label: 'Change email text:'
+                    type: text
+                    value: 'To update your email, please [[link_start]]click here[[link_end]].'
+                    show_phrase_icon: true
+                    note_below: 'This text will appear below the "Email" field if the Extranet Change Email module is running.'

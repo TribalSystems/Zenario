@@ -71,3 +71,24 @@ Added the ability to disable the typeahead but keep the field in edit mode
             return this;
 
         },
+
+
+Fixed an escaping bug with matching search results if they are stored on the client side:
+	Replaced:
+                        if(regexp.test($(this).html())){
+	With:
+                        if(regexp.test($(this).text())){
+
+
+
+
+
+Change the logic used when matching search results if they are stored on the client side:
+	Replaced:
+                var found = false, regexp = new RegExp(this.searchInput.val().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), 'i');
+	With:
+                var found = false,
+                	escapedText = this.searchInput.val().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"),
+                	regexp = new RegExp('(\\b' + escapedText + '|[\-_ ]+' + escapedText + ')', 'i');
+
+

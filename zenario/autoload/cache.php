@@ -30,6 +30,54 @@ namespace ze;
 
 class cache {
 
+
+
+	//Given the name of a cookie, this lets you know if it's safe to interact with plugins that use the $ifSessionVarOrCookieIsSet option.
+	//Implemented using a blacklist; anything not on the blacklist is safe.
+	//Note: Anything that would change the cache but is already covered by other logic in the caching system is also ignored.
+	public static function friendlyCookieVar($var) {
+		
+		//Because this is working using a blacklist, not a whitelist,
+		//every cookie that Zenario uses that might personalise content needs to be listed below,
+		//and return false to indicate that cookie should prevent the cache from being used with
+		//any plugin that says it can't be cached with cookies.
+		switch ($var) {
+			case 'z_sensitive_content_message_accepted':
+			case 'z_gated_content_control_satisfied':
+			case 'z_storefront_basket_id':
+			case 'z_storefront_currency_id':
+			case 'z_country_id':
+			case 'z_extranet_auto_login':
+			case 'z_extranet_last_email':
+			case 'z_extranet_last_screen_name':
+			case 'z_user_lang':
+			case 'z_location_shortlist':
+				return false;
+		}
+		
+		return true;
+	}
+	
+	//Given the name of a session variable, this lets you know if it's safe to interact with plugins that use the $ifSessionVarOrCookieIsSet option.
+	//Implemented using a whitelist; anything not on the whitelist is unsafe.
+	//Note: Anything that would change the cache but is already covered by other logic in the caching system is also ignored.
+	public static function friendlySessionVar($var) {
+		switch ($var) {
+			case 'unnecessary_cookies_rejected':
+			case 'extranetUserID':
+			case 'extranetUser_logged_into_site':
+			case 'user_lang':
+			case 'destCID':
+			case 'destCType':
+			case 'destURL':
+			case 'destTitle':
+				return true;
+		}
+		
+		return false;
+	}
+
+
 	public static function start() {
 	
 		//As of Zenario 7.2, we now rely on people enabling compression in their php.ini or .htaccess files
@@ -69,7 +117,7 @@ class cache {
 			} elseif (strpos($a, 'iPad')) {
 				$c .= ' ios ipad';
 			} elseif (strpos($a, 'Safari/')) {
-				$c .= ' safari no_webp';
+				$c .= ' safari';
 			}
 	
 		} elseif (strpos($a, 'Firefox/')) {
@@ -93,6 +141,60 @@ class cache {
 		
 		//If this browser looks like Internet Explorer, reject it.
 		return $c === '' && (strpos($a, 'MSIE ') || strpos($a, 'Trident/'));
+	}
+	
+	
+	//Given a GET request, turn it into a string to use as the start of a directory name in the cache/pages/ or cache/plugins directory
+	public static function pageRequestHash(&$requests) {
+		if (empty($requests)) {
+			$text = '-index-';
+		} else {
+			$text = json_encode($requests);
+		}
+		
+		return
+			substr(preg_replace('/[^\w_]+/', '-', $text), 1, 33).
+			\ze::hash64($text. ($_SERVER['HTTP_HOST'] ?? ''), 16). '-'.
+			(empty($_COOKIE['z_cookies_accepted'])? (empty($_SESSION['unnecessary_cookies_rejected'])? '' : 'r') : 'a');
+	}
+	
+	//Given a GET request, turn it into a string to use as the start of a directory name in the cache/bundles/ directory
+	public static function bundleRequestHash(&$requests, $type) {
+		$type = str_replace(['.', ' '], '-', $type. '-');
+		
+		$text = json_encode($requests);
+		return $type. substr(preg_replace('/[^\w_]+/', '-', $text), 1, 33). \ze::hash64($text, 16). '-';
+	}
+	
+	//Log what the cache is doing using files the cache/stats/page_caching/ directory
+	public static function logStats($stats) {
+		
+		if (is_dir($dir = 'cache/stats/page_caching/') && is_writeable($dir)) {
+		} elseif ($dir = \ze\cache::createDir('page_caching', 'cache/stats', true, false)) {
+		} else {
+			return false;
+		}
+		
+		touch($dir. 'to');
+		touch($dir. 'accessed');
+		if (!file_exists($dir. 'from')) {
+			touch($dir. 'from');
+			\ze\cache::chmod($dir. 'to', 0666);
+			\ze\cache::chmod($dir. 'accessed', 0666);
+			\ze\cache::chmod($dir. 'from', 0666);
+		}
+		
+		foreach ($stats as $stat) {
+			if (file_exists($dir. $stat)) {
+				$hits = (int) trim(file_get_contents($dir. $stat));
+				file_put_contents($dir. $stat, ++$hits);
+			} else {
+				file_put_contents($dir. $stat, 1);
+				\ze\cache::chmod($dir. $stat, 0666);
+			}
+		}
+		
+		return true;
 	}
 
 
@@ -219,7 +321,7 @@ class cache {
 		}
 	}
 
-	public static function deleteDir($dir, $subDirLimit = 0) { 
+	public static function deleteDir($dir, $subDirLimit = 0, $deleteSymlinks = false) { 
 	
 		$allGone = true;
 	
@@ -230,19 +332,22 @@ class cache {
 	
 		\ze::ignoreErrors();
 			foreach (scandir($dir) as $file) { 
+				
+				$filePath = $dir. '/'. $file;
+				
 				if ($file == '.'
 				 || $file == '..') {
 					continue;
 		
 				} else
-				if (is_file($dir. '/'. $file)) {
-					$allGone = @unlink($dir. '/'. $file) && $allGone;
+				if (is_file($filePath) || ($deleteSymlinks && is_link($filePath))) {
+					$allGone = @unlink($filePath) && $allGone;
 		
 				} else
 				if ($subDirLimit > 0
-				 && is_dir($dir. '/'. $file)
-				 && !is_link($dir. '/'. $file)) {
-					$allGone = \ze\cache::deleteDir($dir. '/'. $file, $subDirLimit - 1) && $allGone;
+				 && is_dir($filePath)
+				 && !is_link($filePath)) {
+					$allGone = \ze\cache::deleteDir($filePath, $subDirLimit - 1, $deleteSymlinks) && $allGone;
 		
 				} else {
 					$allGone = false;
@@ -365,7 +470,7 @@ class cache {
 		
 		$phrase = 'Click to see caching information for this page.';
 		
-		$v = '1';
+		$v = '7';
 		$stylesheet = SUBDIRECTORY. 'zenario/styles/cache_info.min.css?v='. $v;
 		$script = SUBDIRECTORY. 'zenario/js/cache_info.min.js?v='. $v;
 		
@@ -400,14 +505,30 @@ class cache {
 				<x-zenario-cache-info class="', $class, '" title="', $phrase, '" onclick="', $onclick, '"></x-zenario-cache-info>
 			</x-zenario-cache-info>
 			<script type="text/javascript">
-				window.zenarioCD.load = ', json_encode(\ze::$cacheEnv), ';';
+				zenarioCD.load = ', json_encode(\ze::$cacheEnv), ';';
 		
 		if ($fromCache) {
 			echo '
-				window.zenarioCD.served_from_cache = true;';
+				zenarioCD.served_from_cache = true;';
+		}
+		
+		$cookies = [];
+		foreach ($_COOKIE as $request => &$value) {
+			if (!\ze\cache::friendlyCookieVar($request)) {
+				$cookies[] = $request;
+			}
+		}
+		
+		$sessionVars = [];
+		foreach ($_SESSION as $request => &$value) {
+			if (!\ze\cache::friendlySessionVar($request)) {
+				$sessionVars[] = $request;
+			}
 		}
 		
 		echo '
+				zenarioCD.cookies = ', json_encode($cookies), ';
+				zenarioCD.sessionVars = ', json_encode($sessionVars), ';
 			</script>';
 	}
 	

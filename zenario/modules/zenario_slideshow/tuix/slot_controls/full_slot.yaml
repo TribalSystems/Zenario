@@ -3,26 +3,8 @@
 full_slot:
     re_move_place:
         replace_slideshow_on_item_layer:
-            ord: 85.2
-            priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Override with a slideshow on this content item...
-            label_like4like: Override with another slideshow on this content item...
-            label_replace: Replace with a slideshow on this content item...
-            label_replace_like4like: Replace with another slideshow on this content item...
-            page_modes:
-                edit: true
-            onclick: |
-                if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('edit');
-                    zenarioA.pickNewPlugin(this, slotName, 1, 'slideshow', [[preselectCurrentChoice]]);
-                }
-                return false;
+            hidden: false    # Show this option if a slideshow module is running
         
         replace_slideshow_on_layout_layer:
-            ord: 87.2
-            priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Replace with a slideshow on this layout...
-            label_like4like: Replace with a different slideshow on this layout...
-            page_modes:
-                layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, 'slideshow', [[preselectCurrentChoice]]);
+            hidden: false    # Show this option if a slideshow module is running
+            

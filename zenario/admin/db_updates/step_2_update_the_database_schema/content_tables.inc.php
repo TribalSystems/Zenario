@@ -29,15 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
+/*
+	Any content-related tables should be created in this script.
+	Reminder: every table you create here should also be listed in the local-DROP.sql file
+*/
 
 
 
-
-//General Patch File
-
-//Any updates that are not associated with a module
-//	(i.e. updates that should apply to every version of the CMS)
-//should be placed in here.
 
 //Updates are applied using the revision function, which takes inputs in the following format:
 	//The first input is the revision number
@@ -279,6 +277,14 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
 	ADD COLUMN `version_changed` enum('not_checked', 'no_changes_made', 'changes_made') DEFAULT 'not_checked'
 	AFTER `last_modified_datetime`
+_sql
+
+
+//Drop a column that was just there for debugging, it's not needed
+);	if (ze\dbAdm::needRevision(53900) && ze\sql::numRows('SHOW COLUMNS FROM '. DB_PREFIX. 'custom_dataset_fields LIKE "db_update_running"')) ze\dbAdm::revision(53900
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	DROP COLUMN `db_update_running`
 _sql
 
 
@@ -1002,48 +1008,6 @@ _sql
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
-
-//Fix some bad data where some nests/slideshows were not flagged as nests/slideshows in the database.
-//(N.b. this was added in an after-branch patch in 9.2 revision 55053, and 9.3 revision 56353, but is safe to repeat.)
-);	ze\dbAdm::revision( 57000
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
-		pi.is_nest = 0,
-		pi.is_slideshow = 0
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
-		pi.is_nest = 1,
-		pi.is_slideshow = 0
-	WHERE pi.module_id IN (
-		SELECT m.id
-		FROM `[[DB_PREFIX]]modules` AS m
-		WHERE m.class_name in ('zenario_plugin_nest')
-	)
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
-		pi.is_nest = 0,
-		pi.is_slideshow = 1
-	WHERE pi.module_id IN (
-		SELECT m.id
-		FROM `[[DB_PREFIX]]modules` AS m
-		WHERE m.class_name in ('zenario_slideshow', 'zenario_slideshow_simple')
-	)
-_sql
-
-, <<<_sql
-	UPDATE `[[DB_PREFIX]]inline_images` AS ii
-	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
-	   ON pi.id = ii.foreign_key_id
-	SET
-		ii.is_nest = pi.is_nest,
-		ii.is_slideshow = pi.is_slideshow
-	WHERE ii.foreign_key_to = 'library_plugin'
-_sql
-
 //Remove the "invisible in nav" option for slides
 );	ze\dbAdm::revision( 46050
 , <<<_sql
@@ -1473,6 +1437,25 @@ _sql
 _sql
 
 
+//In 9.6, we're changing the required/read only checkboxes of the dataset editor
+//to be in line with User Forms: there will now be a selector with the values
+//mandatory/read only/mandatory on condition/mandatory if visible.
+//There will also be a further update in step 4 which addresses cases where a field was mandatory and read only
+//at the same time. They will now be marked as read only.
+);	ze\dbAdm::revision(58750
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `mandatory_if_visible` tinyint(1) NOT NULL DEFAULT '0' AFTER `required`,
+	ADD COLUMN `mandatory_condition_field_id` int(10) unsigned DEFAULT '0' AFTER `mandatory_if_visible`,
+	ADD COLUMN `mandatory_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `mandatory_condition_field_id`,
+	ADD COLUMN `mandatory_condition_checkboxes_operator` enum('AND', 'OR') NOT NULL DEFAULT 'AND' AFTER `mandatory_condition_invert`,
+	ADD COLUMN `mandatory_condition_field_value` longtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL AFTER `mandatory_condition_checkboxes_operator`,
+	ADD COLUMN `visible_condition_field_id` int(10) unsigned DEFAULT '0',
+	ADD COLUMN `visible_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `visible_condition_field_id`,
+	ADD COLUMN `visible_condition_field_value` varchar(255) DEFAULT NULL AFTER `visible_condition_invert`
+_sql
+
+
 //Fix a bug where a column could be created with the wrong collation.
 //Note that this was also added in 9.5 as a post-branch patch, but is safe to reapply if a site already has it.
 );	ze\dbAdm::revision( 58800
@@ -1741,6 +1724,519 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]file_extracts`
 	ADD KEY (`extract_source`),
 	ADD KEY (`extract_status`)
+_sql
+
+);
+
+
+
+
+
+//
+//	Zenario 10.0
+//
+
+
+
+if (ze\dbAdm::needRevision(60615)) {
+	$cTypes = ze\row::getArray('content_types', 'release_date_field', []);
+	foreach ($cTypes as $cType => $releaseDateFieldValue) {
+		if ($releaseDateFieldValue == 'mandatory') {
+			ze\row::set('content_types', ['release_date_field' => 'optional', 'auto_set_release_date' => true], ['content_type_id' => ze\escape::sql($cType)]);
+		}
+	}
+	
+	ze\dbAdm::revision(60615
+	, <<<_sql
+		ALTER TABLE `[[DB_PREFIX]]content_types`
+		CHANGE COLUMN `release_date_field` `release_date_field` enum('optional', 'hidden') NOT NULL DEFAULT 'optional'
+	_sql
+	);
+}
+
+ze\dbAdm::revision(60635
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]custom_dataset_fields`
+	WHERE type IN ('repeat_start', 'repeat_end')
+_sql
+
+);
+
+ze\dbAdm::revision(60640
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	CHANGE COLUMN `type` `type` enum(
+		'group',
+		'checkbox',
+		'consent',
+		'checkboxes',
+		'date',
+		'editor',
+		'radios',
+		'centralised_radios',
+		'select',
+		'centralised_select',
+		'text',
+		'textarea',
+		'url',
+		'other_system_field',
+		'dataset_select',
+		'dataset_picker',
+		'file_picker'
+	)
+	NOT NULL DEFAULT 'other_system_field'
+_sql
+
+);
+
+ze\dbAdm::revision(60645
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	DROP COLUMN `min_rows`,
+	DROP COLUMN `max_rows`,
+	DROP COLUMN `repeat_start_id`
+_sql
+
+);
+
+ze\dbAdm::revision(60655
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]plugin_instance_store`
+	ADD COLUMN `use_by_time` datetime NULL default NULL after `last_updated`,
+	ADD COLUMN `last_tolerable_time` datetime NULL default NULL after `use_by_time`
+_sql
+
+);
+
+//In 10.0, we removed the option to customise the "From" address and "From" name
+//in email templates, as that could result in Amazon gateway not sending an email
+//if these details were different from the site settings.
+ze\dbAdm::revision(60660
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_templates`
+	DROP COLUMN `from_details`
+_sql
+
+);
+
+ze\dbAdm::revision(60661
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_templates`
+	DROP COLUMN `email_address_from`,
+	DROP COLUMN `email_name_from`
+_sql
+
+);
+
+//Very carefully handle adding the user_response table to the core.
+if (ze\dbAdm::needRevision(60676)) {
+	
+	$modulePrefix = ze\module::prefix('zenario_user_forms', true, true);
+	
+	//If someone was using the User Forms module at some point before Zenario 10,
+	//it will have created a module-version of this table. We can simply rename the table.
+	if ($modulePrefix && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_USER_FORMS_PREFIX. 'user_response', true))) {
+		ze\dbAdm::revision(60676
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]user_response`
+			_sql
+			
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+				RENAME TO `[[DB_PREFIX]]user_response`
+			_sql
+		);
+	
+	//Otherwise create the table from scratch.
+	} else {
+		ze\dbAdm::revision(60676
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]user_response`
+			_sql
+			
+			, <<<_sql
+				CREATE TABLE `[[DB_PREFIX]]user_response` (
+					`id` int unsigned NOT NULL AUTO_INCREMENT,
+					`user_id` int unsigned NOT NULL,
+					`form_id` int unsigned NOT NULL,
+					`response_datetime` datetime NOT NULL,
+					`crm_response` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
+					`blocked_by_profanity_filter` tinyint(1) NOT NULL DEFAULT '0',
+					`profanity_filter_score` int NOT NULL DEFAULT '0',
+					`profanity_tolerance_limit` int NOT NULL DEFAULT '0',
+					`user_deleted` tinyint(1) NOT NULL DEFAULT '0',
+					`data_deleted` tinyint(1) NOT NULL DEFAULT '0',
+					`allocated_to_admin_id` int unsigned NOT NULL DEFAULT '0',
+					`allocated_to_admin_datetime` datetime DEFAULT NULL,
+					PRIMARY KEY (`id`)
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+			_sql
+		);
+	}
+}
+
+//Very carefully handle adding the user_response_data table to the core.
+if (ze\dbAdm::needRevision(60677)) {
+	
+	$modulePrefix = ze\module::prefix('zenario_user_forms', true, true);
+	
+	//If someone was using the User Forms module at some point before Zenario 10,
+	//it will have created a module-version of this table. We can simply rename the table.
+	if ($modulePrefix && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_USER_FORMS_PREFIX. 'user_response_data', true))) {
+		ze\dbAdm::revision(60677
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]user_response_data`
+			_sql
+			
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_data`
+				RENAME TO `[[DB_PREFIX]]user_response_data`
+			_sql
+		);
+	
+	//Otherwise create the table from scratch.
+	} else {
+		ze\dbAdm::revision(60677
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]user_response_data`
+			_sql
+			
+			, <<<_sql
+				CREATE TABLE `[[DB_PREFIX]]user_response_data` (
+					`user_response_id` int unsigned NOT NULL,
+					`form_field_id` int unsigned NOT NULL,
+					`field_row` int unsigned NOT NULL DEFAULT '0',
+					`value` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+					`internal_value` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL,
+					PRIMARY KEY (`user_response_id`,`form_field_id`,`field_row`)
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+			_sql
+		);
+	}
+}
+
+//Very carefully handle adding the user_response_referrer_info table to the core.
+if (ze\dbAdm::needRevision(60678)) {
+	
+	$modulePrefix = ze\module::prefix('zenario_user_forms', true, true);
+	
+	//If someone was using the User Forms module at some point before Zenario 10,
+	//it will have created a module-version of this table. We can simply rename the table.
+	if ($modulePrefix && (ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_USER_FORMS_PREFIX. 'user_response_referrer_info', true))) {
+		ze\dbAdm::revision(60678
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]user_response_referrer_info`
+			_sql
+			
+			, <<<_sql
+				ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response_referrer_info`
+				RENAME TO `[[DB_PREFIX]]user_response_referrer_info`
+			_sql
+		);
+	
+	//Otherwise create the table from scratch.
+	} else {
+		ze\dbAdm::revision(60678
+			, <<<_sql
+				DROP TABLE IF EXISTS `[[DB_PREFIX]]user_response_referrer_info`
+			_sql
+			
+			, <<<_sql
+				CREATE TABLE `[[DB_PREFIX]]user_response_referrer_info` (
+					`user_response_id` int(10) unsigned NOT NULL,
+					`referrer_content_item` varchar(255) DEFAULT '',
+					`referrer_field` varchar(255) DEFAULT '',
+					`value` text NOT NULL,
+					PRIMARY KEY (`user_response_id`, `referrer_content_item`, `referrer_field`)
+				) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+			_sql
+		);
+	}
+}
+
+//In 10.0, we changed the SMTP Gateway port setting from a text box to a select list.
+//Migrate values that are not on the list.
+if (ze\dbAdm::needRevision(60679)) {
+	$serverUsesSMTPGateway = ze::setting('smtp_specify_server');
+	if ($serverUsesSMTPGateway) {
+		$port = ze::setting('smtp_port');
+		
+		if (!ze::in($port, 587, 25, 2587, 465, 2465)) {
+			ze\site::setSetting('smtp_port', 587);
+		}
+	}
+	
+	ze\dbAdm::revision(60679);
+}
+
+//In 10.0, we changed access codes to instead be 6 digit numbers.
+//Increase the column size for content staging mode to match.
+ze\dbAdm::revision(60680
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	MODIFY COLUMN `access_code` varchar(6) CHARACTER SET ascii COLLATE ascii_general_ci NULL default NULL
+_sql
+
+);
+
+//In 10.0, we moved 3 User Forms tables to the core: user_response, user_response_data and user_response_referrer_info.
+//Now also move the DB updates specific to these tables from User Forms module to the core.
+if (ze\dbAdm::needRevision(60800)) {
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'crm_response')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `crm_response` text DEFAULT NULL";
+		ze\sql::update($sql);
+	}
+	
+	$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` MODIFY COLUMN `crm_response` text CHARACTER SET " . ZENARIO_TABLE_CHARSET . " COLLATE " . ZENARIO_TABLE_COLLATION . " NULL";
+	ze\sql::update($sql);
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'blocked_by_profanity_filter')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `blocked_by_profanity_filter` BOOLEAN NOT NULL DEFAULT 0";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'profanity_filter_score')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `profanity_filter_score` INT NOT NULL DEFAULT 0";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'profanity_tolerance_limit')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `profanity_tolerance_limit` INT NOT NULL DEFAULT 0";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'user_deleted')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `user_deleted` tinyint(1) NOT NULL DEFAULT '0'";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'data_deleted')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `data_deleted` tinyint(1) NOT NULL DEFAULT '0'";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'allocated_to_admin_id')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `allocated_to_admin_id` int(10) unsigned NOT NULL DEFAULT 0";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response', 'allocated_to_admin_datetime')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response` ADD COLUMN `allocated_to_admin_datetime` datetime DEFAULT NULL";
+		ze\sql::update($sql);
+	}
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response_data', 'internal_value')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response_data` ADD COLUMN `internal_value` varchar(255) DEFAULT NULL";
+		ze\sql::update($sql);
+	}
+	
+	$sql = "ALTER TABLE `" . DB_PREFIX . "user_response_data` MODIFY COLUMN `internal_value` varchar(250) CHARACTER SET " . ZENARIO_TABLE_CHARSET . " COLLATE " . ZENARIO_TABLE_COLLATION . " NULL";
+	ze\sql::update($sql);
+	
+	if (!ze::$dbL->checkTableDef(DB_PREFIX. 'user_response_data', 'field_row')) {
+		$sql = "ALTER TABLE `" . DB_PREFIX . "user_response_data` ADD COLUMN `field_row` int(10) unsigned NOT NULL DEFAULT 0 AFTER `form_field_id`";
+		ze\sql::update($sql);
+	}
+	
+	$sql = "ALTER TABLE `" . DB_PREFIX . "user_response_data` MODIFY COLUMN `value` text CHARACTER SET " . ZENARIO_TABLE_CHARSET . " COLLATE " . ZENARIO_TABLE_COLLATION . " NOT NULL";
+	ze\sql::update($sql);
+	
+	ze\dbAdm::revision(60800);
+}
+
+
+
+//New feature in Zenario 10 - you can add an image to the tab link for a slide
+	ze\dbAdm::revision(60850
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `slide_link_image_id` int(10) unsigned NULL default NULL
+	AFTER `slide_label`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD KEY (`slide_link_image_id`)
+_sql
+
+
+//Start trying to record how many pages of data Amazon Textract records as being in an extract
+);	ze\dbAdm::revision(60900
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]file_extracts`
+	ADD COLUMN `extract_pagecount` int(10) unsigned NULL default NULL
+	AFTER `extract_wordcount`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_cache`
+	ADD COLUMN `extract_pagecount` int(10) unsigned NULL default NULL
+	AFTER `extract_wordcount`
+_sql
+);
+
+//When editing a user in Organizer, Zenario will keep track of what the email address was before saving.
+//If it's different, the "Verified" badge will be removed.
+//This used to be stored as an invisible field, but now is a TUIX key property. Remove the obsolete field.
+if (ze\dbAdm::needRevision(60955)) {
+	$usersDatasetId = ze\dataset::details('users', 'id');
+	
+	if ($usersDatasetId) {
+		$sql = "
+			DELETE FROM `" . DB_PREFIX . "custom_dataset_fields`
+			WHERE dataset_id = " . (int) $usersDatasetId . "
+			AND tab_name = 'details'
+			AND field_name = 'email_on_load'
+			AND type = 'other_system_field'";
+		ze\sql::update($sql);
+	}
+	ze\dbAdm::revision(60955);
+}
+
+ze\dbAdm::revision(61063
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	DROP COLUMN `enable_summary_auto_update`
+_sql
+
+
+//Remove an old unused table
+); 	ze\dbAdm::revision( 61150
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]last_sent_warning_emails`
+_sql
+
+
+
+
+
+
+
+//
+//	Zenario 10.1
+//
+
+
+
+//Add a missing index to the  custom_dataset_fields table.
+);	ze\dbAdm::revision(61235
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
+	ADD KEY (`type`)
+_sql
+
+
+//Remove the "hierarchical variable" functionality as a maintenance update to simplify the logic
+//used in the conductor system.
+);	ze\dbAdm::revision(61380
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_paths` 
+	DROP COLUMN `hierarchical_var`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins` 
+	DROP COLUMN `hierarchical_var`
+_sql
+
+);	ze\dbAdm::revision(61500
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]email_template_sending_log` 
+	ADD COLUMN `form_response_id` int(10) unsigned NULL default NULL
+_sql
+
+
+//Remove the option to show an embed link from the slide properties FAB
+);	ze\dbAdm::revision(61570
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins` 
+	DROP COLUMN `show_embed`
+_sql
+
+
+//Rename the "hierarchial_file" image usage (which had a spelling mistake in it) to "hierarchical_file".
+//Also rename "documents" and "document_thumbnail" to "hierarchical_file_thumbnail" to make it clear what they're used for,
+//and to fix a bug where they used two different names for the same thing.
+);	ze\dbAdm::revision(61616
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files` AS f
+	SET f.usage = 'hierarchical_file'
+	WHERE f.usage = 'hierarchial_file'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files` AS f
+	SET f.usage = 'hierarchical_file_thumbnail'
+	WHERE f.usage = 'documents'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files` AS f
+	SET f.usage = 'hierarchical_file_thumbnail'
+	WHERE f.usage = 'document_thumbnail'
+_sql
+
+
+//Add a full-text index to the document text extract, so we can search on it.
+);	ze\dbAdm::revision(61800
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]documents`
+	ADD FULLTEXT KEY (`extract`)
+_sql
+
+
+//Fix a bug where the module_id column on the plugin_sitewide_link table hadn't been updated properly.
+);	ze\dbAdm::revision(61941
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_sitewide_link` AS psl
+	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = psl.instance_id
+	SET psl.module_id = pi.module_id
+_sql
+
+
+//Fix some bad data where some nests/slideshows were not correctly flagged as nests/slideshows in the database.
+//Note: This has actually happened several times due to various uncaught mistakes in either the installer SQL and/or
+//various migration scripts.
+//However it is safe to run and rerun multiple times, so I've been re-issuing it and also adding it to post-branch patches
+//each time we make this mistake!
+);	ze\dbAdm::revision( 61945
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
+		pi.is_nest = 0,
+		pi.is_slideshow = 0
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
+		pi.is_nest = 1,
+		pi.is_slideshow = 0
+	WHERE pi.module_id IN (
+		SELECT m.id
+		FROM `[[DB_PREFIX]]modules` AS m
+		WHERE m.class_name in ('zenario_nest', 'zenario_ajax_nest', 'zenario_plugin_nest')
+	)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
+		pi.is_nest = 0,
+		pi.is_slideshow = 1
+	WHERE pi.module_id IN (
+		SELECT m.id
+		FROM `[[DB_PREFIX]]modules` AS m
+		WHERE m.class_name in ('zenario_slideshow', 'zenario_slideshow_simple')
+	)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]inline_images` AS ii
+	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ii.foreign_key_id
+	SET
+		ii.is_nest = pi.is_nest,
+		ii.is_slideshow = pi.is_slideshow
+	WHERE ii.foreign_key_to = 'library_plugin'
 _sql
 
 );

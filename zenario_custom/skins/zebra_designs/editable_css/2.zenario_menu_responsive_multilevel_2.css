@@ -91,6 +91,7 @@ ul.slimmenu li ul li li li li a {
 
 ul.slimmenu li {
 	background-color:#555;
+	padding-bottom:0;
 }
 
 ul.slimmenu li ul li {
@@ -109,10 +110,11 @@ ul.slimmenu li ul li a {
 }
 
 ul.slimmenu li.level1_on > a,
+ul.slimmenu li.level1_on ul li.level2_on a,
 ul.slimmenu li > ul li.level2_on > a,
 ul.slimmenu li > ul li > ul li.level3_on > a,
 ul.slimmenu li > ul li > ul li > ul li.level4_on > a {
-color:#FFF;
+	color:#FFF;
 }
 
 ul.slimmenu.collapsed li .sub-collapser {
@@ -130,6 +132,11 @@ ul.slimmenu span.sub-collapser.expanded i::before {
 
 ul.slimmenu.collapsed li a {
 	border-bottom:1px solid #FFF;
+}
+
+.zenario_menu_responsive_multilevel_2 {
+	position:relative;
+	min-height:50px;
 }
 
 .zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li .sub-collapser:before {
@@ -155,6 +162,21 @@ ul.slimmenu.collapsed li a {
 
 .zenario_menu_responsive_multilevel_2 ul.slimmenu.collapsed li.level1_on li.level2_on .sub-collapser:before {
 	color:#FFF;
+}
+
+/* Private page */
+
+.zenario_menu_responsive_multilevel_2 ul li.private a {
+	position:relative;
+}
+
+.zenario_menu_responsive_multilevel_2 ul li.private a:after {
+	font-family: "FontAwesome";
+  	content: "\f023";
+  	padding-left:5px;
+  	font-size:12px;  
+  	position: absolute;
+  	top: 7px;
 }
 
 /* ADMIN HACKS */

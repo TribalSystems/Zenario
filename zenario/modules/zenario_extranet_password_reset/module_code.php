@@ -34,8 +34,6 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 		$this->requireJsLib('zenario/js/password_functions.min.js');
 
-		$this->registerPluginPage();
-		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);
 		$this->clearCacheBy(
@@ -143,14 +141,9 @@ class zenario_extranet_password_reset extends zenario_extranet {
 					$userDetails = ze\user::userDetailsForEmails($userId);
 					$userDetails['cms_url'] = ze\link::absolute();
 					$userDetails['reset_url'] = static::getExtranetPasswordResetLink($userId, $this->cID, $this->cType);
-					
-					if (ze\module::inc('zenario_email_template_manager')) {
-						
-						if (zenario_email_template_manager::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,[])){
-							return true;
-						} else {
-							$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
-						}
+										
+					if (zenario_common_features::sendEmailsUsingTemplate($userDetails['email'],$this->setting('password_reset_email_template'),$userDetails,[])){
+						return true;
 					} else {
 						$this->errors[] = ['Error' => $this->phrase('There appears to be a problem with our email system. Please try to retrieve your password again later.')];
 					}
@@ -171,7 +164,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 		if ($cID && $cType) {
 			return ze\link::toItem($cID, $cType, $fullPath = true, $request);
 		} else {
-			return ze\link::toPluginPage('zenario_extranet_password_reset', '', false, $fullPath = true, $request);
+			return ze\link::toSpecialPage('zenario_password_reset', false, false, $fullPath = true, $request);
 		}
 	}
 	

@@ -166,7 +166,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if (!empty($values['meta_data/alias'])) {
 			if (is_array($errors = ze\contentAdm::validateAlias($values['meta_data/alias'], $box['key']['cID'], $box['key']['cType']))) {
-				$box['tabs']['meta_data']['errors'] = array_merge($box['tabs']['meta_data']['errors'], $errors);
+				$fields['meta_data/alias']['error'] = implode('<br />', $errors);
 			}
 		}
 	}

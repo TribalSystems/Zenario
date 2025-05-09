@@ -221,15 +221,22 @@ zenario_content:
                     visible_if: lib.value('at_location_checkbox') && lib.value('at_physical_location') == 'address_text'
                     validation:
                         required_if_not_hidden: 'Please enter an address.'
-                url:
+                
+                #If the Conference Manager module is running, an event may be linked to a conference.
+                #The relevant fields will be in this grouping.
+                conference_grouping:
                     ord: 105
+                    type: grouping
+                
+                url:
+                    ord: 106
                     label: 'URL for further info:'
                     type: text
                     side_note: >
                         To enter the URL of an external page, start the URL with http:// or https://
                     onclick: "if ($(this).val()=='') {$(this).val('http://')}"
                 url_test:
-                    ord: 106
+                    ord: 107
                     same_row: Yes
                     type: button
                     css_class: zenario_gp_button

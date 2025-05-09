@@ -42,9 +42,9 @@ class zenario_common_features__organizer__skin_files extends ze\moduleBaseClass 
 		if ($path != 'zenario__layouts/panels/skin_files') return;
 		
 		
-		if ($skin = ze\content::skinDetails(ze::get('refiner__skin'))) {
+		if ($skin = ze\skin::details(ze::get('refiner__skin'))) {
 			
-			$dir = ze\content::skinPath($skin['name']);
+			$dir = ze\skin::path($skin['name']);
 			$skin['subpath'] = '';
 			
 			if (($skin['subpath'] = $_GET['refiner__subpath'] ?? false) && ($skin['subpath'] = ze\ring::decodeIdForOrganizer($skin['subpath'])) && (strpos($skin['subpath'], '..') === false)) {

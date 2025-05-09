@@ -12,7 +12,7 @@ zenario_location_manager__locations_multiple_edit:
                 on: Yes
             fields:
                 desc:
-                    ord: "1"
+                    ord: 1
                     full_width: Yes
                     snippet:
                         html: '<p>Check the left-hand checkbox where you want to mass-change the field to the value specified. This will be applied to all selected Locations.</p>'
@@ -77,10 +77,10 @@ zenario_location_manager__locations_multiple_edit:
                     values:
                         keep:
                             label: Keep maps as-is
-                            ord: "1"
+                            ord: 1
                         clear:
                             label: Clear maps
-                            ord: "2"
+                            ord: 2
                     value: keep
                     multiple_edit:
                         exists: true
@@ -98,7 +98,7 @@ zenario_location_manager__locations_multiple_edit:
                 on: Yes
             fields:
                 desc:
-                    ord: "1"
+                    ord: 1
                     full_width: Yes
                     snippet:
                         html: '<p>Check the left-hand checkbox where you want to mass-change the field to the value specified. This will be applied to all selected Locations.</p>'
@@ -136,7 +136,7 @@ zenario_location_manager__locations_multiple_edit:
                     multiple_edit:
                         exists: true
         sectors:
-            ord: "50"
+            ord: 50
             label: Sectors
             edit_mode:
                 enabled: Yes

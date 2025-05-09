@@ -1,0 +1,87 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slot_insert_replace:
+    key:
+        id: ""
+        slotName: ''
+        insert_reusable_on_item_layer: false
+        insert_reusable_on_layout_layer: false
+        insert_nest_on_item_layer: false
+        insert_nest_on_layout_layer: false
+        insert_slideshow_on_item_layer: false
+        insert_slideshow_on_layout_layer: false
+        replace_reusable_on_item_layer: false
+        replace_reusable_on_layout_layer: false
+        replace_nest_on_item_layer: false
+        replace_nest_on_layout_layer: false
+        replace_slideshow_on_item_layer: false
+        replace_slideshow_on_layout_layer: false
+    max_height: 450
+    hide_tab_bar: true
+    save_button_message: Continue
+    cancel_button_message: Cancel
+    tabs:
+        details:
+            edit_mode:
+                enabled: true
+            custom_notes:
+                insert_reusable_on_item_layer: &plugin_note
+                    type: information
+                    #html: true
+                    message: >
+                        A plugin contains functionality or content, and can be used in one or many places.
+                insert_reusable_on_layout_layer: *plugin_note
+                insert_nest_on_item_layer: &nest_note
+                    type: information
+                    #html: true
+                    message: >
+                        A nest contains a number of slides, and those slides contain plugins.
+                        A nest can appear with one tab per slide, with navigation arrows, or as an accordion.
+                        Useful for creating visitor interaction.
+                insert_nest_on_layout_layer: *nest_note
+                insert_slideshow_on_item_layer: &slideshow_note
+                    type: information
+                    #html: true
+                    message: >
+                        A slideshow contains a number of slides and is designed to auto-advance.
+                        Useful for a collection of hero images on a landing page.
+                insert_nest_on_layout_layer: *nest_note
+                insert_slideshow_on_layout_layer: *slideshow_note
+                replace_reusable_on_item_layer: *plugin_note
+                replace_reusable_on_layout_layer: *plugin_note
+                replace_nest_on_item_layer: *nest_note
+                replace_nest_on_layout_layer: *nest_note
+                replace_slideshow_on_item_layer: *slideshow_note
+                replace_slideshow_on_layout_layer: *slideshow_note
+            fields:
+                #N.b. fields will be dynamically set in the fillAdminBox() method!
+                
+                module_warnings:
+                    ord: 9999
+                    notices_below:
+                        no_nests:
+                            visible_if: |
+                                !(zenarioA.running.zenario_nest || zenarioA.running.zenario_ajax_nest) &&
+                                zenarioA.running.zenario_slideshow
+                            type: warning
+                            message: >
+                                The nest modules are not running on this site,
+                                so you will not be able to use nests.
+                        no_slideshows:
+                            visible_if: |
+                                (zenarioA.running.zenario_nest || zenarioA.running.zenario_ajax_nest) &&
+                                !zenarioA.running.zenario_slideshow
+                            type: warning
+                            message: >
+                                The slideshow module is not running on this site,
+                                so you will not be able to use slideshows.
+                        no_nests_or_slideshows:
+                            visible_if: |
+                                !(zenarioA.running.zenario_nest || zenarioA.running.zenario_ajax_nest) &&
+                                !zenarioA.running.zenario_slideshow
+                            type: warning
+                            message: >
+                                The nest and slideshow modules are not running on this site,
+                                so you will not be able to use nests or slideshows.
+
+

@@ -410,17 +410,6 @@ zenarioAT.uploadComplete = function() {
 };
 
 
-zenarioAT.slotDisabled = function(slotName) {
-	
-	var $wrap = $('#plgslt_' + slotName + '-wrap');
-	
-	if (zenarioA.toolbar == 'layout') {
-		return $wrap.hasClass('zenario_hideSlotInLayoutMode') || $wrap.hasClass('zenario_level1');
-	} else {
-		return $wrap.hasClass('zenario_hideSlotInItemMode') || $wrap.hasClass('zenario_level2');
-	}
-};
-
 
 
 
@@ -453,7 +442,6 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 			selected = id == zenarioA.toolbar,
 			label, groupingActive;
 		
-		//zenarioT.hidden(tuixObject, lib, item, id, button, column, field, section, tab, tuix)
 		if (!zenarioT.hidden(undefined, zenarioAT, undefined, id, undefined, undefined, undefined, undefined, tab)) {
 			
 			groupingActive = (tab.toolbar_tab_grouping || 'edit') == currentToolbarTabGrouping;
@@ -466,11 +454,10 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 			
 			mrg.tabs[++ti] = {
 				id: id,
+				tuix: tab,
 				parent: tab.parent,
 				css_class: tab.css_class,
 				label: label,
-				warning_icon: tab.warning_icon,
-				tooltip: tab.tooltip,
 				toolbar_microtemplate: tab.toolbar_microtemplate,
 				selected: selected,
 				highlight: selected && flashNewTabToHighlightChange,
@@ -640,26 +627,31 @@ zenarioAT.customiseOrganizerLink = function(path, secondLevel) {
 		if (path.substr(0, 1) != '#') {
 			path = '#' + path;
 		}
+		
+		//This function used to customise the links into Organizer from drop-down on the admin toolbar, with respect
+		//to the content item/menu node you were currently looking at.
+		//Currently we've disabled this logic.
+		
 	
-		var zenario__content_panels_content_refiners_content_type =
-			'#zenario__content/panels/content/refiners/content_type//';
-	
-		if (secondLevel) {
-			//If someone clicks on the second-level nav for a content type, and it's the current content type, try and pre-selected the current content item in Organizer
-			if (path == zenario__content_panels_content_refiners_content_type + zenario.cType + '//') {
-				return zenario__content_panels_content_refiners_content_type + zenario.cType + '//' + zenario.cType + '_' + zenario.cID;
-			}
-		} else {
-			//If someone clicks on the top-level nav for content items, try and pre-selected the current content item in Organizer
-			if (path == zenario__content_panels_content_refiners_content_type + 'html//') {
-				return zenario__content_panels_content_refiners_content_type + zenario.cType + '//' + zenario.cType + '_' + zenario.cID;
-			}
-			//If someone clicks on the top-level nav for menu nodes, try and pre-selected the current menu node in Organizer
-			if (path == '#zenario__menu/panels/by_language/item//' + zenarioA.siteSettings.default_language + '//item//1//'
-			 && zenarioAT.tuix.meta_info.menu_organizer_path) {
-				return '#' + zenarioAT.tuix.meta_info.menu_organizer_path;
-			}
-		}
+		//var zenario__content_panels_content_refiners_content_type =
+		//	'#zenario__content/panels/content/refiners/content_type//';
+		//
+		//if (secondLevel) {
+		//	//If someone clicks on the second-level nav for a content type, and it's the current content type, try and pre-selected the current content item in Organizer
+		//	if (path == zenario__content_panels_content_refiners_content_type + zenario.cType + '//') {
+		//		return zenario__content_panels_content_refiners_content_type + zenario.cType + '//' + zenario.cType + '_' + zenario.cID;
+		//	}
+		//} else {
+		//	//If someone clicks on the top-level nav for content items, try and pre-selected the current content item in Organizer
+		//	if (path == zenario__content_panels_content_refiners_content_type + 'html//') {
+		//		return zenario__content_panels_content_refiners_content_type + zenario.cType + '//' + zenario.cType + '_' + zenario.cID;
+		//	}
+		//	//If someone clicks on the top-level nav for menu nodes, try and pre-selected the current menu node in Organizer
+		//	if (path == '#zenario__menu/panels/by_language/item//' + zenarioA.siteSettings.default_language + '//item//1//'
+		//	 && zenarioAT.tuix.meta_info.menu_organizer_path) {
+		//		return '#' + zenarioAT.tuix.meta_info.menu_organizer_path;
+		//	}
+		//}
 	}
 	
 	return path;

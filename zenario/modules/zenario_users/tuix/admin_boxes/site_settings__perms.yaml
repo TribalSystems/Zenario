@@ -9,6 +9,9 @@ site_settings:
     tabs:
         users: {}
             ord: 1
+        documents: {}
+            ord: 1.1
+            visible_if: zenarioA.running.zenario_documents_fea
         organisations:
             ord: 2
             label: Organisations

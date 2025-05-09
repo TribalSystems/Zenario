@@ -48,5 +48,4 @@ special_pages:
 # to fix it automatically for every site.
 dependencies:
     zenario_extranet: true
-    zenario_email_template_manager: true
 default_instance_name: Extranet Change Email

@@ -1,0 +1,711 @@
+<?php
+/*
+ * Copyright (c) 2025, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
+
+
+class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_nest {
+	
+	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		$instance = ze\plugin::details(ze::get('refiner__nest'));
+		
+		$panel['key']['skinId'] = ze::request('skinId');
+		$panel['key']['cID'] = $_REQUEST['parent__cID'] ?? ze::request('cID');
+		$panel['key']['cType'] = $_REQUEST['parent__cType'] ?? ze::request('cType');
+		$panel['key']['cVersion'] = $_REQUEST['parent__cVersion'] ?? ze::request('cVersion');
+		
+		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
+		
+		
+		//Get a list of types of plugins that can be put in this nest
+		$key = ['status' => 'module_running', 'is_pluggable' => 1, 'nestable' => [1, 2]];
+		if ($instance['content_id']) {
+			$key['can_be_version_controlled'] = 1;
+		}
+		$modules = ze\row::getValues('modules', 'display_name', $key, 'display_name');
+		$ord = 222;
+		
+		//$twigSnippets = [];
+		//if (ze\module::canActivate('zenario_twig_snippet')) {
+		//	foreach (ze::moduleDirs('twig/') as $moduleClassName => $dir) {
+		//		if (ze\module::canActivate($moduleClassName)) {
+		//			foreach (scandir(CMS_ROOT. $dir) as $file) {
+		//				if (substr($file, -10) == '.twig.html') {
+		//					$twigSnippets[] = [$moduleClassName, substr($file, 0, -10), $file];
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+
+		
+		foreach (['collection_buttons', 'item_buttons'] as $buttonType) {
+			if (!empty($panel[$buttonType])) {
+				foreach ($panel[$buttonType] as &$button) {
+					if (is_array($button)) {
+						//Fix a problem in 7.0.6 where the buttons were missing their class names
+						if (empty($button['class_name'])) {
+							$button['class_name'] = 'zenario_abstract_nest';
+						}
+					
+						//Plugin pickers need different paths for Wireframe modules
+						if ($instance['content_id']) {
+							if (isset($button['pick_items']['path_if_wireframe'])) {
+								$button['pick_items']['path'] = $button['pick_items']['path_if_wireframe'];
+							}
+						}
+					}
+				}
+				
+				//Automatically create drop-down menus for quickly adding plugins
+				if (!empty($panel[$buttonType]['add_plugin'])) {
+			
+					foreach ($modules as $moduleId => $name) {
+						$panel[$buttonType]['add_plugin_'. $moduleId] =
+							[
+								'ord' => ++$ord,
+								'parent' => 'add_plugin',
+								'label' => $name,
+								'ajax' => [
+									'class_name' => 'zenario_abstract_nest',
+									'request' => [
+										'add_plugin' => 1,
+										'moduleId' => $moduleId
+							]]];
+					}
+				}
+				
+				////Automatically create drop-down menus for quickly adding twig-snippets
+				//if (!empty($panel[$buttonType]['add_twig_snippet'])) {
+				//
+				//	foreach ($twigSnippets as $i => $twigSnippet) {
+				//		$panel[$buttonType]['add_twig_snippet_'. $i] =
+				//			[
+				//				'ord' => ++$ord,
+				//				'parent' => 'add_twig_snippet',
+				//				'label' => $twigSnippet[0]. '/twig/'. $twigSnippet[2],
+				//				'ajax' => [
+				//					'class_name' => 'zenario_abstract_nest',
+				//					'request' => [
+				//						'add_twig_snippet' => 1,
+				//						'moduleClassName' => $twigSnippet[0],
+				//						'snippetName' => $twigSnippet[1]
+				//			]]];
+				//	}
+				//}
+			}
+		}
+		
+		//Find out the largest number of columns used on a layout, or just guess at 12 if there are no layouts yet
+		$maxCols = (int) ze\row::max('layouts', 'cols') ?: 12;
+		
+		
+		
+		
+		//Check where this plugin is used, and if it's in a slot that's narrower than full width
+		$isVersionControlled = (bool) $instance['content_id'];
+		if (!$isVersionControlled) {
+			
+			if ($panel['key']['isSlideshow']) {
+				$thisPlugin = ze\admin::phrase('slideshow');
+			} else {
+				$thisPlugin = ze\admin::phrase('nest');
+			}
+		
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_item_link AS pil
+				INNER JOIN ". DB_PREFIX. "content_items AS c
+				   ON c.id = pil.content_id
+				  AND c.type = pil.content_type
+				  AND pil.content_version IN (c.visitor_version, c.admin_version)
+				INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+				   ON v.id = pil.content_id
+				  AND v.type = pil.content_type
+				  AND v.version = pil.content_version
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.layout_id = v.layout_id
+				  AND lsl.slot_name = pil.slot_name
+				WHERE pil.instance_id = ". (int) $instance['instance_id'];
+			$cItemWidths = ze\sql::fetchValues($sql);
+		
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_layout_link AS pll
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.layout_id = pll.layout_id
+				  AND lsl.slot_name = pll.slot_name
+				WHERE pll.instance_id = ". (int) $instance['instance_id'];
+			$layoutWidths = ze\sql::fetchValues($sql);
+		
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_sitewide_link AS psl
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.slot_name = psl.slot_name
+				  AND lsl.is_header = 1
+				WHERE psl.instance_id = ". (int) $instance['instance_id'];
+			$headerWidths = ze\sql::fetchValues($sql);
+			
+			$sql = "
+				SELECT DISTINCT lsl.cols
+				FROM ". DB_PREFIX. "plugin_sitewide_link AS psl
+				INNER JOIN ". DB_PREFIX. "layout_slot_link AS lsl
+				   ON lsl.slot_name = psl.slot_name
+				  AND lsl.is_footer = 1
+				WHERE psl.instance_id = ". (int) $instance['instance_id'];
+			$footerWidths = ze\sql::fetchValues($sql);
+			
+			$allWidths = array_unique(array_merge($cItemWidths, $layoutWidths, $headerWidths, $footerWidths));
+		
+			
+			$usedOn = [];
+			if (!empty($cItemWidths)) {
+				$usedOn[] = ze\admin::phrase('a content item');
+			}
+			if (!empty($layoutWidths)) {
+				$usedOn[] = ze\admin::phrase('a layout');
+			}
+			if (!empty($headerWidths)) {
+				$usedOn[] = ze\admin::phrase('the site-wide header');
+			}
+			if (!empty($footerWidths)) {
+				$usedOn[] = ze\admin::phrase('the site-wide footer');
+			}
+			
+			if (empty($allWidths)) {
+				$panel['notice'] = [
+					'show' => true,
+					'type' => 'warning',
+					'message' =>
+						ze\admin::phrase("This [[thisPlugin]] is not yet in a slot. Width options are shown for the largest slot on your site ([[maxCols]] columns), but some slots may be smaller so check the output once it’s in the desired slot.",
+							['thisPlugin' => $thisPlugin, 'maxCols' => $maxCols]
+						)
+				];
+				
+			} else {
+				$minWidth = min($allWidths);
+				$maxWidth = max($allWidths);
+				$maxCols = $maxWidth;
+				
+				if ($minWidth != $maxWidth) {
+					$panel['notice'] = [
+						'show' => true,
+						'type' => 'warning',
+						'message' =>
+							ze\admin::phrase("This [[thisPlugin]] is used on more than one slot, and/or is used on content items with more than one layout, which have different widths (between [[minWidth]] and [[maxWidth]] columns). You may need to check how it appears.",
+								['thisPlugin' => $thisPlugin, 'minWidth' => $minWidth, 'maxWidth' => $maxWidth]
+							)
+					];
+				
+				} else {
+					
+					if (count($usedOn) > 1) {
+						$panel['notice'] = [
+							'show' => true,
+							'type' => 'information',
+							'message' =>
+								ze\admin::phrase("This [[thisPlugin]] is in multiple slots, all of which are [[maxWidth]] columns wide. Plugin width selectors are shown accordingly.",
+									['thisPlugin' => $thisPlugin, 'maxWidth' => $maxWidth]
+								)
+						];
+					} else {
+						$panel['notice'] = [
+							'show' => true,
+							'type' => 'information',
+							'message' =>
+								ze\admin::phrase("This [[thisPlugin]] is in a slot on [[usedOn]] that is [[maxWidth]] columns wide. Plugin width selectors are shown accordingly.",
+									['thisPlugin' => $thisPlugin, 'usedOn' => implode('/', $usedOn), 'maxWidth' => $maxWidth]
+								)
+						];
+					}
+				}
+				
+			}
+		}
+		
+		
+		for ($i = 2; $i < $maxCols; ++$i) {
+			$label = ze\admin::phrase('[[cols]] cols', ['cols' => $i]);
+			
+			$panel['columns']['cols']['values'][$i] =
+				[
+					'ord' => ++$ord,
+					'label' => $label];
+			
+			$panel['item_buttons'][$i] =
+				[
+					'parent' => 'cols',
+					'ord' => ++$ord,
+					'label' => $label,
+					'multiple_select' => true,
+					'ajax' =>[
+						'class_name' => 'zenario_abstract_nest',
+						'request' =>
+							['set_cols' => 1, 'cols' => $i]]];
+		}
+		
+		//Don't show the "paste" button if there are no plugins flagged to copy
+		if (empty($_SESSION['zenario_copy_plugin']['ids'])) {
+			unset($panel['item_buttons']['paste']);
+			unset($panel['item_buttons']['insert']);
+		
+		} elseif (isset($panel['item_buttons']['insert'])) {
+			$panel['item_buttons']['paste']['label'] = ze\admin::nPhrase('Paste plugin', 'Paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
+			$panel['item_buttons']['insert']['label'] = ze\admin::nPhrase('Insert/paste plugin', 'Insert/paste [[count]] plugins', count($_SESSION['zenario_copy_plugin']['ids']));
+		}
+	}
+	
+	protected function setTitleAndCheckPermissions($path, &$panel, $refinerName, $refinerId, $mode, $instance) {
+		
+		
+		//Check permissions for Wireframe modules
+		if ($instance['content_id'] && !ze\content::isDraft($instance['content_id'], $instance['content_type'], $instance['content_version'])) {
+			$panel['collection_buttons'] = [];
+			$panel['collection_buttons']['help'] = [
+				'css_class' => 'help',
+				'help' => [
+					'message' =>
+						ze\admin::phrase('This nest is on a published, hidden or archived content item and cannot be edited.<br /><br />Create a Draft to make changes.')]];
+			
+			$panel['item_buttons'] = [
+				'view' => $panel['item_buttons']['view'],
+				'plugin_settings' => $panel['item_buttons']['plugin_settings']];
+			
+			unset($panel['reorder']);
+		
+		} elseif ($instance['content_id'] && !ze\priv::check('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type'], $instance['content_version'])) {
+			$panel['collection_buttons'] = [];
+			$panel['collection_buttons']['help'] = [
+				'css_class' => 'help',
+				'help' => [
+					'message' =>
+						ze\admin::phrase("This content item is locked by another administrator, or you don't have the permissions to modify it.")]];
+			
+			$panel['item_buttons'] = [
+				'view' => $panel['item_buttons']['view'],
+				'plugin_settings' => $panel['item_buttons']['plugin_settings']];
+			
+			unset($panel['reorder']);
+		
+		} elseif (!$instance['content_id'] && !ze\priv::check('_PRIV_VIEW_REUSABLE_PLUGIN')) {
+			exit;
+		}
+		
+		
+		//Check permissions for Reusable modules
+		if (!$instance['content_id'] && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+			$panel['collection_buttons'] = [];
+			$panel['item_buttons'] = [
+				'view' => $panel['collection_buttons']['view'],
+				'plugin_settings' => $panel['collection_buttons']['plugin_settings']];
+		
+		}
+		
+		if (!$instance['content_id'] && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+			unset($panel['reorder']);
+		}
+		
+		
+		if ($panel['key']['isSlideshow'] = (strpos($instance['class_name'], 'slide') !== false)) {
+			if ($instance['content_id']) {
+				$panel['title'] = ze\admin::phrase('Editing the slideshow on [[slot_name]]', $instance);
+			} else {
+				$panel['title'] = ze\admin::phrase('Editing the slideshow [[instance_name]] ([[name]])', $instance);
+			}
+		} else {
+			if ($instance['content_id']) {
+				$panel['title'] = ze\admin::phrase('Editing the nest on [[slot_name]]', $instance);
+			} else {
+				$panel['title'] = ze\admin::phrase('Editing the nest [[instance_name]] ([[name]])', $instance);
+				
+				
+				//For nests, come up with a slightly more descriptive title based on what was selected in the plugin settings
+				switch ($instance['class_name']) {
+					case 'zenario_ajax_nest':
+						$nest_type = ze\plugin::setting('nest_type', $instance['instance_id']);
+						switch ($nest_type) {
+							case 'permission':
+								$panel['title'] = ze\admin::phrase('Editing the single slide/permissions-based nest [[instance_name]] ([[name]])', $instance);
+								break;
+							case 'conductor':
+								$panel['title'] = ze\admin::phrase('Editing the conductor-based nest [[instance_name]] ([[name]])', $instance);
+								break;
+							default:
+								$panel['title'] = ze\admin::phrase('Editing the tabbed nest [[instance_name]] ([[name]])', $instance);
+						}
+						break;
+						
+					case 'zenario_nest':
+						$animation_library = ze\plugin::setting('animation_library', $instance['instance_id']);
+						switch ($animation_library) {
+							case 'cycle2':
+								$panel['title'] = ze\admin::phrase('Editing the tabbed nest [[instance_name]] ([[name]])', $instance);
+								break;
+							case 'accordion':
+								$panel['title'] = ze\admin::phrase('Editing the accordion-based nest [[instance_name]] ([[name]])', $instance);
+								break;
+						}
+						break;
+				}
+			}
+		}
+	}
+	
+	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		$instanceId = (int) ze::get('refiner__nest');
+		$usesConductor = $panel['key']['usesConductor'] = ze\pluginAdm::conductorEnabled($instanceId);
+		
+		//Do an initial loop through the slides and plugins, to count/track a couple of things
+		$statesToSlides = [];
+		$slideNumsWithPlugins = [];
+		foreach ($panel['items'] as $id => &$item) {
+			if ($item['is_slide']) {
+				if ($usesConductor && $item['states']) {
+					foreach (explode(',', $item['states']) as $state) {
+						$statesToSlides[$state] = $item['ordinal'];
+					}
+				}
+			} else {
+				$slideNumsWithPlugins[$item['slide_num']] = true;
+			}
+		}
+		
+		
+		require_once CMS_ROOT. 'zenario/libs/manually_maintained/public_domain/convert_to_roman/convert_to_roman.php';
+		
+		foreach ($panel['items'] as $id => &$item) {
+			
+			if ($item['is_slide']) {
+				$item['name_or_slide_label'] = zenario_abstract_nest::formatTitleTextAdmin($item['name_or_slide_label']);
+			} else {
+				$item['name_or_slide_label'] = ze\pluginAdm::nestedPluginName($id, $refinerId, null, $item['module_class_name']);
+			}
+			
+			if ($item['is_slide']) {
+				if ($usesConductor && $item['global_command']) {
+					$item['css_class'] = 'zenario_key_slide';
+				} else {
+					$item['css_class'] = 'zenario_nest_tab';
+				}
+				$item['cols'] = ' ';
+				$item['small_screens'] = ' ';
+				$item['prefix'] = $item['ordinal']. '. ';
+				
+				if ($item['slide_permissions'] != 'public') {
+					$panel['columns']['slide_permissions']['always_show'] = true;
+				}
+				
+				//This code would show a thumbnail instead of an icon when a slide has an image
+				#if ($item['slide_link_image_id']) {
+				#	//$img = '&c='. $item['checksum'];
+				#	$img = '&id='. $item['slide_link_image_id'];
+				#	$item['image'] = 'zenario/file.php?og=1'. $img;
+				#}
+				
+				//Get a list of slide numbers/states that this state can go to
+				if ($panel['key']['usesConductor'] && $item['states']) {
+					$toStates = ze\sql::fetchAssocs('
+						SELECT path.to_state, slide.states, path.equiv_id, path.content_type, path.command
+						FROM '. DB_PREFIX. 'nested_paths AS path
+						INNER JOIN '. DB_PREFIX. 'nested_plugins AS slide
+						   ON slide.is_slide = 1
+						  AND FIND_IN_SET(path.to_state, slide.states)
+						  AND slide.instance_id = '. (int) $refinerId. '
+						WHERE path.instance_id = '. (int) $refinerId. '
+						  AND path.from_state IN ('. ze\escape::in($item['states']). ')'
+					);
+					
+					$toText = [];
+					foreach ($toStates as $toState) {
+						$label = $toState['command']. ' → ';
+						
+						if ($toState['equiv_id']) {
+							$label = ze\content::formatTag($toState['equiv_id'], $toState['content_type'], -1, false, true). ', ';
+							
+							if (is_numeric($toState['to_state'])) {
+								$label .= ze\admin::phrase('slide [[to_state]]');
+							} else {
+								$label .= ze\admin::phrase('state [[to_state]]');
+							}
+						
+						} elseif (isset($statesToSlides[$toState['to_state']])) {
+							$label .= $statesToSlides[$toState['to_state']]. $toState['to_state'];
+						}
+						
+						$toText[] = $label;
+					}
+					
+					if (!empty($toText)) {
+						$item['name_or_slide_label'] .= ' | '. implode(', ', $toText);
+					}
+				}
+
+				//If a slide uses a static method, display the details.
+				if ($item['slide_perms_module_class_name'] && $item['slide_perms_method_name']) {
+					$item['uses_static_method'] = '[Static method used]';
+				}
+				
+				if (!isset($slideNumsWithPlugins[$item['slide_num']])) {
+					$item['no_plugins_warning'] = true;
+				}
+			
+			} else {
+				$item['prefix'] = strtolower(convertToRoman($item['ordinal'])). '. ';
+				
+				if ($item['checksum']) {
+					$img = '&c='. $item['checksum'];
+					$item['image'] = 'zenario/file.php?og=1'. $img;
+				}
+				
+				//Add a warning if a plugin is flagged as "makes breadcrumbs",
+				//but no breadcrumb links are set in the condcutor
+				if ($item['makes_breadcrumbs'] > 1
+				 && !ze\row::exists('nested_paths', ['instance_id' => $refinerId, 'slide_num' => $item['slide_num'], 'is_forwards' => 1])) {
+					$item['makes_breadcrumbs'] += 10;
+				}
+			}
+		}
+	}
+	
+	
+	//Check to see if the current Admin has the rights to change this nest, exit if not
+	public function exitIfNoEditPermsOnNest($instance) {
+		
+		if (!ze\module::inc($instance['class_name'])) {
+			exit;
+		
+		} elseif ($instance['content_id'] && !ze\content::isDraft($instance['content_id'], $instance['content_type'], $instance['content_version'])) {
+			exit;
+		
+		} elseif ($instance['content_id'] && !ze\priv::check('_PRIV_EDIT_DRAFT', $instance['content_id'], $instance['content_type'], $instance['content_version'])) {
+			exit;
+		
+		} elseif (!$instance['content_id'] && !(ze::post('reorder')) && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+			exit;
+		
+		} elseif (!$instance['content_id'] && (ze::post('reorder')) && !ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
+			exit;
+		}
+		
+		//If this is a Wireframe Plugin, and a submit is being made, update the latest modification date
+		if ($instance['content_id'] && !empty($_POST)) {
+			ze\contentAdm::updateVersion($instance['content_id'], $instance['content_type'], $instance['content_version']);
+		}
+	}
+	
+	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
+		
+		if (!($instanceId = (int) ze::request('refiner__nest'))
+		 || !($instance = ze\plugin::details($instanceId))) {
+			exit;
+		}
+		$this->exitIfNoEditPermsOnNest($instance);
+		
+		//Add a slide.
+		//Also, if we're adding a new plugin, ensure that at least one slide has been made.
+		if (ze::post('add_slide')
+		 || ze::post('upload_banner')
+		 || ze::post('add_plugin')
+		 || ze::post('add_twig_snippet')
+		 || ze::post('copy_plugin_instance')) {
+			if (ze::post('add_slide')
+			 || !ze\row::exists('nested_plugins', ['instance_id' => $instanceId, 'is_slide' => 1])) {
+				static::addSlide($instanceId);
+			}
+		}
+		
+		//Add a new plugin or banner
+		if (ze::post('add_plugin')) {
+			return static::addPlugin(ze::post('moduleId'), $instanceId, $ids, false, true);
+		
+		} elseif (ze::post('copy_plugin_instance')) {
+			if ($ids2) {
+				return static::addPluginInstance($ids2, $instanceId, $ids, true);
+			} else {
+				return static::addPluginInstance($ids, $instanceId);
+			}
+		
+		} elseif (ze::post('upload_banner')) {
+			ze\fileAdm::exitIfUploadError(true, false, true, 'Filedata');
+			
+			if ($imageId = ze\fileAdm::addToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
+				return static::addBanner($imageId, $instanceId, $ids, true);
+			} else {
+				return false;
+			}
+		
+		//} elseif (ze::post('add_twig_snippet')) {
+		//	return static::addTwigSnippet(ze::post('moduleClassName'), (ze::post('snippetName')), $instanceId, $ids, true);
+		
+		} elseif (ze::get('duplicate_plugin') || ze::get('duplicate_plugin_and_add_tab')) {
+			echo $this->duplicatePluginConfirm($ids);
+			
+		} elseif (ze::post('duplicate_plugin')) {
+			return static::duplicatePlugin($ids, $instanceId);
+		
+		} elseif (ze::post('duplicate_plugin_and_add_tab')) {
+			static::addSlide($instanceId);
+			return static::duplicatePlugin($ids, $instanceId);
+		
+		//Change the number of columns that a plugin takes up
+		} elseif (ze::post('set_cols')) {
+			
+			$cols = (int) (ze::post('cols'));
+			
+			foreach (explode(',', $ids) as $id) {
+				ze\row::update('nested_plugins',
+					['cols' => (ze::post('cols'))],
+					['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id]);
+				
+				//"only" is only a valid option for full width columns (0) or groupings (-1).
+				//If this isn't a full width or a grouping, then change any "only"s to "show"s.
+				if ($cols > 0) {
+					ze\row::update('nested_plugins',
+						['small_screens' => 'show'],
+						['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id, 'small_screens' => 'only']);
+				}
+			}
+		
+		//Set a plugin to either show or hide on mobile view.
+		} elseif (ze::in(ze::post('small_screens'), 'show', 'hide')) {
+			foreach (explode(',', $ids) as $id) {
+				ze\row::update('nested_plugins',
+					['small_screens' => (ze::post('small_screens'))],
+					['instance_id' => $instanceId, 'is_slide' => 0, 'id' => $id]);
+			}
+		
+		//Set a plugin to only be shown on mobile view.
+		//Note that this is only valid for full width columns (0) or groupings (-1).
+		} elseif (ze::post('small_screens') == 'only') {
+			foreach (explode(',', $ids) as $id) {
+				ze\row::update('nested_plugins',
+					['small_screens' => (ze::post('small_screens'))],
+					['instance_id' => $instanceId, 'is_slide' => 0, 'cols' => [-1, 0], 'id' => $id]);
+			}
+		
+		//Flag or unflag which plugin should be used for the breadcrumbs
+		} elseif (isset($_POST['use_for_breadcrumbs'])) {
+			if ($slideNum = ze\row::get('nested_plugins', 'slide_num', ['id' => $ids, 'instance_id' => $instanceId, 'is_slide' => 0])) {
+					
+				//Clear the flag from any other breadcrumb-enabled plugin on this slide
+				ze\row::update('nested_plugins',
+					['makes_breadcrumbs' => 1],
+					['instance_id' => $instanceId, 'slide_num' => $slideNum, 'makes_breadcrumbs' => ['>' => 0]]
+				);
+				
+				//Set the flag on this plugin
+				ze\row::update('nested_plugins',
+					['makes_breadcrumbs' => max(1, min(3, (int) $_POST['use_for_breadcrumbs']))],
+					['id' => $ids, 'instance_id' => $instanceId, 'is_slide' => 0, 'makes_breadcrumbs' => ['>' => 0]]
+				);
+			}
+		
+		} elseif (ze::get('remove_plugin')) {
+			echo $this->removePluginConfirm($ids, $instanceId);
+			
+		} elseif (ze::post('remove_plugin')) {
+			//Loop through each id and remove it. Make sure to also set the resync option on the last one!
+			foreach (array_reverse(ze\ray::explodeAndTrim($ids, true), true) as $notLast => $id) {
+				static::removePlugin($id, $instanceId, !$notLast);
+			}
+		
+		} elseif (ze::get('remove_tab')) {
+			echo $this->removeSlideConfirm($ids, $instanceId);
+			
+		} elseif (ze::post('remove_tab')) {
+			//Loop through each id and remove it. Make sure to also set the resync option on the last one!
+			foreach (array_reverse(ze\ray::explodeAndTrim($ids, true), true) as $notLast => $id) {
+				static::removeSlide($id, $instanceId, !$notLast);
+			}
+			
+		} elseif (ze::post('reorder')) {
+			//Each specific Nest may have it's own rules for ordering, so be sure to call the correct reorder method for this Nest
+			self::reorderNest(ze::post('refiner__nest'), explode(',', $ids), $_POST['ordinals'], $_POST['parent_ids'], $instance);
+			self::resyncNest($instanceId, $instance);
+		
+		
+		//If the admin selects one or more nested plugins to copy, put their IDs along with a
+		//little bit of info on what was copied into a session variable to remember it.
+		} elseif (ze::post('copy')) {
+			$eggIds = [];
+			$allBanners = true;
+			$bannerId = ze\module::id('zenario_banner');
+			foreach (ze\ray::explodeAndTrim($ids, true) as $eggId) {
+				if ($egg = ze\row::get('nested_plugins', ['module_id'], ['id' => $eggId, 'is_slide' => 0])) {
+					$eggIds[] = $eggId;
+					
+					if ($egg['module_id'] != $bannerId) {
+						$allBanners = false;
+					}
+				}
+			}
+			
+			if (!empty($eggIds)) {
+				$_SESSION['zenario_copy_plugin'] = [];
+				$_SESSION['zenario_copy_plugin']['ids'] = $eggIds;
+				$_SESSION['zenario_copy_plugin']['eggs'] = true;
+				$_SESSION['zenario_copy_plugin']['all_banners'] = $allBanners;
+				
+				ze\escape::bFlag('TOAST_TYPE', 'success');
+				ze\escape::bFlag('TOAST_MESSAGE', ze\admin::nPhrase('Plugin copied', '[[count]] plugins copied', count($eggIds)));
+			}
+			
+		
+		//Handle pasting what was just copied
+		} elseif (ze::post('paste')) {
+			$newEggIds = [];
+			
+			if (!empty($_SESSION['zenario_copy_plugin']['ids'])) {
+				foreach ($_SESSION['zenario_copy_plugin']['ids'] as $sourceId) {
+					if ($newEggId = static::copyPastePlugin(
+						$sourceId,
+						!empty($_SESSION['zenario_copy_plugin']['eggs']),
+						$instanceId,
+						$ids,
+						$mustBeBanner = false
+					)) {
+						$newEggIds[] = $newEggId;
+					}
+				}
+			}
+			
+			if (!empty($newEggIds)) {
+				ze\escape::bFlag('TOAST_TYPE', 'success');
+				ze\escape::bFlag('TOAST_MESSAGE', ze\admin::nPhrase('Plugin pasted', '[[count]] plugins pasted', count($newEggIds)));
+			}
+			
+			unset($_SESSION['zenario_copy_plugin']);
+			return implode(',', $newEggIds);
+		}
+	}
+	
+	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
+		
+	}
+}

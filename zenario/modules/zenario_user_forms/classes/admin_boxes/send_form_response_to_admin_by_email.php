@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__admin_boxes__send_form_response_to_admin_by_email extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$box['title'] = ze\admin::phrase('Sending form response [[id]] to administrators', ['id' => $box['key']['id']]);
+		$box['title'] = ze\admin::phrase('Re-sending form response [[id]] to administrators', ['id' => $box['key']['id']]);
 		
 		$adminId = ze\admin::id();
         $details = ze\row::get('admins', true, $adminId);
@@ -43,14 +43,14 @@ class zenario_user_forms__admin_boxes__send_form_response_to_admin_by_email exte
 		$adminIds = ze\ray::explodeAndTrim($values['send_form_response_to_admin_by_email/send_to_admin_ids']);
 		
 		$responseId = $box['key']['id'];
-		$formIdAndIserId = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_response', ['form_id', 'user_id'], ['id' => $responseId]);
+		$formIdAndIserId = ze\row::get('user_response', ['form_id', 'user_id'], ['id' => $responseId]);
 		
 		$form = zenario_user_forms::getForm($formIdAndIserId['form_id']);
 		$formFields = zenario_user_forms::getFormFields($formIdAndIserId['form_id'], $responseId);
 		
 		$referrerContentTag = '';
 		if ($form['handle_referrer_content_item']) {
-			$referrerContentTag = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_response_referrer_info', 'referrer_content_item', ['user_response_id' => $responseId]);
+			$referrerContentTag = ze\row::get('user_response_referrer_info', 'referrer_content_item', ['user_response_id' => $responseId]);
 		}
 		
 		if (!empty($adminIds) && is_array($adminIds)) {

@@ -104,6 +104,18 @@ class phraseAdm {
 		if (!$phraseCode || $localText === null || $localText === false || $localText === '') {
 			return;
 		}
+		
+		//As of 10.0, the export logic exports the class name as, for example:
+		//zenario_common_features (Common Features)
+		//so the import logic needs to discard everything after the class name.
+		$moduleClassArray = explode(' ', $moduleClass);
+		$moduleClass = $moduleClassArray[0];
+		
+		//Also check if the module class name provided
+		//is an existing module, and is running.
+		if (!\ze\module::isRunning($moduleClass)) {
+			return;
+		}
 	
 		//Check if the phrase is protected
 		if ($protected = \ze\phraseAdm::isProtected($languageId, $moduleClass, $phraseCode, $adding)) {
@@ -173,4 +185,70 @@ class phraseAdm {
 		$time36 = base_convert($time, 10, 36);
 		\ze\site::setSetting('phrases_version', $time36);
 	}
+	
+	
+	// Functionality for a "phase debug mode" prototype.
+	// Currently not in use/implemented.
+	#public static function debugPlainText($phrase) {
+	#	$phrase = strtr($phrase,
+	#		'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz',
+	#		'TTTTTTTTTTTTTTTTTTTTTTTTTT tttttttttttttttttttttttttt'
+	#	);
+	#	
+	#	return $phrase;
+	#}
+	#
+	#public static function debugTextWithMergeFields($phrase) {
+	#	
+	#	$iSplit = preg_split('@(\[\[.*?\]\])@s', $phrase, -1,  PREG_SPLIT_DELIM_CAPTURE);
+	#	
+	#	$phrase = '';
+	#	$iLast = count($iSplit) - 1;
+	#	for ($i = 0; $i <= $iLast; $i += 2) {
+	#		$phrase .= \ze\phraseAdm::debugPlainText($iSplit[$i]);
+	#		
+	#		if ($i != $iLast) {
+	#			$phrase .= $iSplit[$i + 1];
+	#		}
+	#	}
+	#	
+	#	return $phrase;
+	#}
+	#
+	#public static function debugText($phrase, $isHTML) {
+	#	
+	#	if (!$isHTML) {
+	#		return \ze\phraseAdm::debugTextWithMergeFields($phrase);
+	#	}
+	#	
+	#	
+	#	$iSplit = preg_split('@(\<[^\>]*\>)@s', $phrase, -1,  PREG_SPLIT_DELIM_CAPTURE);
+	#	
+	#	$phrase = '<x-zenario-translated-html>';
+	#	$iLast = count($iSplit) - 1;
+	#	for ($i = 0; $i <= $iLast; $i += 2) {
+	#		
+	#		
+	#		$jSplit = preg_split('@(\&[^\;]*\;)@s', $iSplit[$i], -1,  PREG_SPLIT_DELIM_CAPTURE);
+	#		//var_dump($jSplit);
+	#		
+	#		$jLast = count($jSplit) - 1;
+	#		for ($j = 0; $j <= $jLast; $j += 2) {
+	#	
+	#			$phrase .= \ze\phraseAdm::debugTextWithMergeFields($jSplit[$j]);
+	#			
+	#			if ($j != $jLast) {
+	#				$phrase .= $jSplit[$j + 1];
+	#			}
+	#		}
+	#		
+	#		if ($i != $iLast) {
+	#			$phrase .= $iSplit[$i + 1];
+	#		}
+	#	}
+	#	$phrase .= '</x-zenario-translated-html>';
+	#	
+	#	return $phrase;
+	#}
+	
 }

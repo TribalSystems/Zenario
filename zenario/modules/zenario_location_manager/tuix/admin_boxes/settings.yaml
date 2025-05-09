@@ -11,11 +11,20 @@ site_settings:
                 on: No
             label: Details
             fields:
+                external_id_grouping:
+                    type: grouping
+                
+                #If the Company Locations Manager module is running, it will insert a field here.
+                #This field will be in the external_id_grouping.
+                
                 zenario_location_manager__enable_external_id:
+                    grouping: external_id_grouping
+                    ord: external_id_grouping + 0.2
                     label: 'Enable external number for locations'
                     site_setting:
                         name: zenario_location_manager__enable_external_id
                     type: checkbox
+                
                 zenario_location_manager__enable_pending_status:
                     label: 'Enable pending status for locations'
                     site_setting:
@@ -32,37 +41,37 @@ site_settings:
                     values:
                         0:
                             label: No hierarchy
-                            ord: "0"
+                            ord: 0
                         2:
                             label: "2"
-                            ord: "2"
+                            ord: 2
                         3:
                             label: "3"
-                            ord: "3"
+                            ord: 3
                         4:
                             label: "4"
-                            ord: "4"
+                            ord: 4
                         5:
                             label: "5"
-                            ord: "5"
+                            ord: 5
                         6:
                             label: "6"
-                            ord: "6"
+                            ord: 6
                         7:
                             label: "7"
-                            ord: "7"
+                            ord: 7
                         8:
                             label: "8"
-                            ord: "8"
+                            ord: 8
                         9:
                             label: "9"
-                            ord: "9"
+                            ord: 9
                         10:
                             label: "10"
-                            ord: "10"
+                            ord: 10
                         999:
                             label: Unlimited
-                            ord: "999"
+                            ord: 999
                     validation:
                         numeric: Number of levels in the Location hierarchy must be a number.
                 zenario_location_manager__sector_management:
@@ -71,13 +80,13 @@ site_settings:
                     site_setting:
                         name: zenario_location_manager__sector_management
                     values:
-                        1: Do not use Sectors
-                        0: Quick Sector Management
-                        2: Sector Score Management
+                        1: Do not use sectors
+                        0: Quick sector management
+                        2: Sector score management
                     value: 1
                     side_note: |
-                        <p>Quick Sector Management adds a Sectors tab to the Locations admin box on which you can add/remove Sectors from a Location via a hierarchical list of checkboxes.</p>
-                                                    <p>Sector Score Management adds a button to a Location's selected toolbar that enables access to a panel where you can add/remove Sectors from the Location and administer the Sector Score.</p>
+                        <p>Quick sector management adds a Sectors tab to the locations admin box on which you can add/remove sectors from a location via a hierarchical list of checkboxes.</p>
+                        <p>Sector score management adds a button to a location's selected toolbar that enables access to a panel where you can add/remove sectors from the location and administer the sector score.</p>
                 
                 zenario_location_manager__default_pin_placement_method:
                     label: 'Default pin placement method for locations:'

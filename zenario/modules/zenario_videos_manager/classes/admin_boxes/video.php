@@ -30,6 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario_videos_manager {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (!ze\priv::check('_PRIV_MANAGE_VIDEOS')) {
+			$box['tabs']['details']['edit_mode']['enabled'] = false;
+			$box['tabs']['details']['edit_mode']['on'] = false;
+		}
+		
 		$videoCategories = ze\row::getAssocs(ZENARIO_VIDEOS_MANAGER_PREFIX . 'categories', 'name');
 		
 		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario_videos_manager/panels/categories';
@@ -68,8 +73,10 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 			
 			$box['title'] = ze\admin::phrase('Editing the video "[[title]]"', $video);
 			$box['identifier']['value'] = $box['key']['id'];
+			$box['key']['thumbnail_id_on_load'] = $values['details/image'] = (int) $video['image_id'];
+			
 			$values['details/url'] = $video['url'];
-			$values['details/image'] = $video['image_id'];
+			$values['details/start_time'] = $video['start_time'];
 			$values['details/title'] = $video['title'];
 			$values['details/short_description'] = $video['short_description'];
 			$values['details/description'] = $video['description'];
@@ -106,8 +113,6 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 				}
 			}
 		} else {
-			$values['details/date'] = date('Y-m-d');
-			
 			if ($box['key']['from_video_upload']) {
 				$box['title'] = ze\admin::phrase('Upload successful');
 				$fields['details/url']['readonly'] = true;
@@ -361,20 +366,31 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 				}
 			}
 		}
+		
+		if ($values['details/start_time']) {
+			if (strstr($values['details/start_time'], '=') === false || count(explode('=', $values['details/start_time'])) != 2) {
+				$fields['details/start_time']['error'] = ze\admin::phrase('The start time must have exactly one "=" symbol.');
+			}
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		ze\priv::exitIfNot('_PRIV_MANAGE_VIDEOS');
+		
 		$imageId = $values['details/image'];
 		if ($filepath = ze\file::getPathOfUploadInCacheDir($imageId)) {
-			$imageId = ze\file::addToDatabase('zenario_video_image', $filepath, false, $mustBeAnImage = true);
+			$imageId = ze\fileAdm::addToDatabase(
+				'zenario_video_image', $filepath, $filename = false, $mustBeAnImage = true,
+				$deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+				$imageAltTag = false, $imageTitle = false, $imagePopoutTitle = false, $imageMimeType = false, $imageCredit = '',
+				//Video thumbnails must always be public, regardless of the default privacy setting
+				$setPrivacy = 'public'
+			);
 		}
 		
-		if (!$values['details/date']) {
-			$values['details/date'] = date('Y-m-d');
-		}
-
 		$videoDetails = [
 			'url' => mb_substr($values['details/url'], 0, 255, 'UTF-8'),
+			'start_time' => mb_substr($values['details/start_time'], 0, 255, 'UTF-8'),
 			'image_id' => (int)$imageId,
 			'title' => mb_substr($values['details/title'], 0, 255, 'UTF-8'),
 			'short_description' => mb_substr($values['details/short_description'], 0, 65535, 'UTF-8'),
@@ -423,6 +439,21 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 		if ($categories = $values['details/categories']) {
 			foreach (ze\ray::explodeAndTrim($categories) as $categoryId) {
 				ze\row::insert(ZENARIO_VIDEOS_MANAGER_PREFIX . 'category_video_link', ['video_id' => $box['key']['id'], 'category_id' => $categoryId]);
+			}
+		}
+		
+		//If the thumbnail was replaced with a different one, remove the old one if it is no longer used.
+		if ($imageId && ($box['key']['thumbnail_id_on_load'] != $imageId)) {
+			$sql = "
+				SELECT COUNT(*)
+				FROM " . DB_PREFIX . ZENARIO_VIDEOS_MANAGER_PREFIX . "videos
+				WHERE id != " . (int) $box['key']['id'] . "
+				AND image_id = " . (int) $box['key']['thumbnail_id_on_load'];
+			$result = ze\sql::select($sql);
+			$count = ze\sql::fetchValue($result);
+			
+			if (!$count) {
+				ze\row::delete('files', ['id' => $box['key']['thumbnail_id_on_load'], 'usage' => 'zenario_video_image']);
 			}
 		}
 	}

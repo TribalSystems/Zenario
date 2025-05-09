@@ -145,7 +145,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 			}
 			
 			//Try to add the uploaded image to the database
-			$fileId = ze\file::addToDatabase('mic', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = true);
+			$fileId = ze\fileAdm::addToDatabase('mic', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = true);
 
 			if ($fileId) {
 
@@ -169,7 +169,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
 					$location = ze\file::docstorePath($file['path']);
-					ze\file::addToDatabase('image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, false, false, false, false, $file['image_credit']);
+					ze\fileAdm::addToDatabase('image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false, false, false, false, false, $file['image_credit']);
 				}
 			}
 
@@ -177,7 +177,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 		} elseif (ze::post('mark_as_public') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\row::update('files', ['privacy' => 'public'], $id);
-				ze\file::addPublicImage($id);
+				ze\image::addToPublicDir($id);
 			}
 
 		//Mark images as private

@@ -43,7 +43,7 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	//As of Zenario 9.5 we are using HTML Purifier as an extra precaution against admins trying to save XSS code or anything else that might be nasty.
 	$html = ze\ring::sanitiseWYSIWYGEditorHTML($html, false, $allowAdvancedInlineStyles = true);
 	
-	ze\file::addImageDataURIsToDatabase($html);
+	ze\fileAdm::addImageDataURIsToDatabase($html);
 	
 	//Save the field in the plugin_settings table.
 	ze\row::set(
@@ -54,9 +54,4 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 	ze\contentAdm::syncInlineFileContentLink($this->cID, $this->cType, $this->cVersion);
 	
 	ze\contentAdm::updateVersion(ze::$cID, ze::$cType, ze::$cVersion);
-
-	
-	if (ze::post('_sync_summary') && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {
-		$this->syncSummary($this->cID, $this->cType, $this->cVersion, zenario_wysiwyg_editor::generateSummary($html));
-	}
 }

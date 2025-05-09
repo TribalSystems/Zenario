@@ -53,7 +53,7 @@ class skinAdm {
 	
 		$tags = [];
 		if (!is_array($skin)) {
-			$skin = \ze\content::skinDetails($skin);
+			$skin = \ze\skin::details($skin);
 		}
 	
 		if ($skin) {

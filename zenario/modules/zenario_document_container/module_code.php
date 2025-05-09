@@ -135,8 +135,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 		if ($document['type'] == 'folder') {
 			$document['Document_Type'] = 'folder';
 			$document['Document_Mime'] = 'folder';
-			$document['Document_Title'] = $document['folder_name'];
-			$document['Document_Link_Text'] = htmlspecialchars($document['folder_name']);
+			$document['Document_Filename'] = htmlspecialchars($document['folder_name']);
 			if ($this->setting('offer_download_as_zip')) {
 				//Add mergefields for archive downloads folder by folder for custom frameworks
 				$document['Download_Archive'] = true;
@@ -151,31 +150,55 @@ class zenario_document_container extends ze\moduleBaseClass {
 			$file = ze\row::get('files', ['filename', 'created_datetime', 'size', 'mime_type', 'privacy'], $document['file_id']);
 			$document['Document_Created'] = $file['created_datetime'];
 			if (!$isUserDocument) {
-				$document['Document_Title'] = $document['filename'];
-				$document['Document_Link_Text'] = htmlspecialchars($document['filename']);
+				$document['Document_Filename'] = htmlspecialchars($document['filename']);
 				$document['Document_Link'] = ze\file::getDocumentFrontEndLink($document['id']);
 				//TODO should this be the same link as Document_Link?
 				$fileURL = static::getGoogleAnalyticsDocumentLink($document['file_id'], $this->privacy);
 				$document['Google_Analytics_Link'] = ze\file::trackDownload($fileURL);
 				$document['Document_Type'] = $document['type'];
 			} else {
-				$document['Document_Title'] = $document['filename'];
-				$document['Document_Link_Text'] = htmlspecialchars($document['filename']);
+				$document['Document_Filename'] = htmlspecialchars($document['filename']);
 				$document['Document_Link'] = ze\file::createPrivateLink($document['file_id'], $document['filename']);
 				$document['Document_Type'] = 'file';
 				$document['file_datetime'] = $document['document_datetime'];
 			}
 			$document['Document_Mime'] = str_replace('/', '_', ze\file::mimeType($document['Document_Link']));
 			
-			if ($this->setting('show_filename')) {
-				//Nothing to do...
-			} elseif ($this->setting('show_title')) {
-				if ($document['title']) {
-					$document['Document_Link_Text'] = htmlspecialchars($document['title']);
-				} elseif (!$this->setting('show_filename_if_no_title')) {
-					unset($document['Document_Link_Text']);
+			$showTitle = $this->setting('show_title');
+			$showFilenameIfNoTitle = ($showTitle && $this->setting('show_filename_if_no_title'));
+			$showFilename = $this->setting('show_filename');
+			
+			if ($showTitle && $document['title']) {
+				$document['Document_Title'] = htmlspecialchars($document['title']);
+				$document['Make_Title_A_Hyperlink'] = $this->setting('make_title_a_hyperlilnk');
+			}
+			
+			if (
+				!$showFilename
+				&& (
+					!$showFilenameIfNoTitle
+					|| ($showFilenameIfNoTitle && $document['title'])
+				)
+			) {
+				unset($document['Document_Filename']);
+			}
+			
+			$makeFilenameAHyperlink = false;
+			if (isset($document['Document_Filename'])) {
+				if ($showTitle) {
+					if (!$document['title']) {
+						if ($showFilenameIfNoTitle) {
+							$makeFilenameAHyperlink = $this->setting('make_title_a_hyperlilnk');
+						}
+					}
+				}
+				
+				if (!$makeFilenameAHyperlink && (!$showFilenameIfNoTitle || $document['title'])) {
+					$makeFilenameAHyperlink = $this->setting('make_filename_a_hyperlilnk');
 				}
 			}
+			
+			$document['Make_Filename_A_Hyperlink'] = $makeFilenameAHyperlink;
 			
 			if ($this->setting('show_file_size')) {
 				$document['File_Size'] = ze\file::fileSizeConvert($file['size']);
@@ -193,7 +216,11 @@ class zenario_document_container extends ze\moduleBaseClass {
 					$thumbnailId = $document['file_id'];
 				}
 				if ($thumbnailId) {
-					$document['Thumbnail'] = static::createThumbnailHtml($thumbnailId, $this->setting('width'),  $this->setting('height'), $this->setting('canvas'), $this->setting('lazy_load_images'));
+					$retina = (
+						($this->setting('canvas') == 'unlimited' && $this->setting('retina'))
+						|| $this->setting('canvas') != 'unlimited'
+					);
+					$document['Thumbnail'] = static::createThumbnailHtml($thumbnailId, $this->setting('width'),  $this->setting('height'), $this->setting('canvas'), $retina, $this->setting('lazy_load_images'));
 				}
 			}
 			
@@ -575,24 +602,45 @@ class zenario_document_container extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function createThumbnailHtml($thumbnailFileId, $widthIn, $heightIn, $canvas, $lazyload = false) {
+	public static function createThumbnailHtml($thumbnailFileId, $widthIn, $heightIn, $canvas, $retina, $lazyload = false) {
 		$thumbnail = ze\row::get('files', ['id', 'filename', 'path'], $thumbnailFileId);
 		$thumbnailLink = $width = $height = false;
-		ze\file::imageLink($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas);
-		$thumbnailHtml = '<img class="sticky_image ';
-		if ($lazyload) {
-			$thumbnailHtml .= 'lazy" data-src="'. htmlspecialchars($thumbnailLink);
+		$thumbnailHtml = '';
+		
+		if ($thumbnail) {
+			ze\image::link($width, $height, $thumbnailLink, $thumbnailFileId, $widthIn, $heightIn, $canvas, $offset = 0, $retina);
+			$thumbnailHtml = '<img class="sticky_image ';
+			if ($lazyload) {
+				$thumbnailHtml .= 'lazy';
+			}
+			
+			//If in admin mode, add a specific CSS class to images
+			//to let the admin access the "Crop and zoom" feature.
+			if (ze::isAdmin()) {
+				$thumbnailHtml .= ' zenario_image_properties zenario_image_id__'. $thumbnail['id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
+				
+				if ($canvas == 'crop_and_zoom') {
+					$thumbnailHtml .= ' zenario_crop_properties';
+				}
+			}
+			
+			$thumbnailHtml .= '"';
+			
+			if ($lazyload) {
+				$thumbnailHtml .= ' data-src="'. htmlspecialchars($thumbnailLink) . '"';
+			}
+			
+			if ($retina) {
+				$srcset = htmlspecialchars($thumbnailLink) . ' 2x';
+			} else {
+				$srcset = htmlspecialchars($thumbnailLink);
+			}
+			
+			$thumbnailHtml .= ' srcset="' . $srcset . '"';
+			
+			$thumbnailHtml .= ' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
 		}
 		
-		//If in admin mode, add a specific CSS class to images
-		//to let the admin access the "Crop and zoom" feature.
-		if (ze::isAdmin()) {
-			$thumbnailHtml .= ' zenario_image_properties zenario_image_id__'. $thumbnail['id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
-		}
-		
-		$thumbnailHtml .= '" src="'. htmlspecialchars($thumbnailLink) . '"';
-		
-		$thumbnailHtml .= ' style="width: '. $width. 'px; height: '. $height. 'px;"/>';
 		return $thumbnailHtml;
 	}
 	
@@ -624,7 +672,7 @@ class zenario_document_container extends ze\moduleBaseClass {
 		
 			//...check if there are Offline elements...
 			if (isset(array_count_values($documentsInFolderPrivacy)['offline'])) {
-				$offlineDocs = '<p>Warning: one or more selected documents are Offline. These documents will not appear to visitors. Offline documents can be published in the Organizer Documents section at any time.</p>';
+				$offlineDocs = '<p>Warning: one or more documents is offline, and will not appear to visitors. Go to Organizer->Library->Hierarchical Documents to make them available.</p>';
 			}
 		
 			//...and display a warning note if necessary. Put a line break if there are both types of privacy warning.
@@ -703,6 +751,12 @@ class zenario_document_container extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
+				$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
 				//Default value
 				if (!$values['first_tab/show_files_in_folders']) {
 					$values['first_tab/show_files_in_folders'] = 'folder';
@@ -731,6 +785,12 @@ class zenario_document_container extends ze\moduleBaseClass {
 				//Show/hide thumbnail image options
 				$hidden = !$values['first_tab/show_thumbnails'];
 				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
+				
+				if ($values['first_tab/canvas'] != "unlimited") {
+					$fields['first_tab/canvas']['side_note'] = $retinaSideNote;
+				} else {
+					$fields['first_tab/canvas']['side_note'] = "";
+				}
 				
 				//Autofill zip name
 				if (empty($values['first_tab/zip_file_name']) && !empty($values['first_tab/document_source'])) {

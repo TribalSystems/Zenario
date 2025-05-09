@@ -158,7 +158,7 @@ install:
                             You may either install Zenario as a standalone CMS, or enter details of an existing "global" site, so administrators of that global site may also administer this new site. (If this is to be the global site, choose "standalone".)
                     type: select
                     format_onchange: true
-                    value: zenario_stand
+                    value: zenario_standalone
                     values:
                         zenario_standalone:
                             label: "Install a standalone copy of Zenario"
@@ -203,7 +203,7 @@ install:
                     visible_if:
                         lib.value('multi_db') == "zenario_multisite"
                 multi_db_prefix:
-                    label: "Global table prefix:"
+                    label: "Global database table prefix:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
@@ -456,6 +456,10 @@ install:
                     style: |
                         float: right;
             show_errors_after_field: description
+        #Step 3 has 2 variants: one when restoring from a backup,
+        #and another when installing a fresh copy but with multisite admin support.
+        #In case 2, there is no local account created, so the current admin
+        #will need to enter the support email address.
         6:
             edit_mode:
                 enabled: true
@@ -514,6 +518,41 @@ install:
                     full_width: true
                     snippet:
                         html: |
+                            <h1>Step 3: Support email address</h1>
+                            <p>Please enter an email address for receiving notification of system errors and database errors.</p>
+                email:
+                    label: "Support email address:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 4: Your administrator account</h1>
+                            <p>You will be asked to log in as a multisite administrator after the installation completes.</p>
+                previous:
+                    value: Back
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                next:
+                    value: Next
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+            show_errors_after_field: description
+        8:
+            edit_mode:
+                enabled: true
+                on: true
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
                             <h1>Step 5: Great! Now let's save the configuration and database</h1>
                             <p>Zenario needs the settings to be written to a configuration file. Then the database will be populated, which takes a few moments. You can choose to have the site live immediately, or you can keep it only visible in administrator mode while you work on it.</p>
                             <p>This installer can populate the config file for you: to do this the file must be writeable by the web server. Alternatively, copy the text from the box below and paste it into the file manually.</p>
@@ -561,7 +600,7 @@ install:
                     onclick: |
                         zenarioAW._nextLoadIsAnInstall = true;
             show_errors_after_field: description
-        8:
+        9:
             edit_mode:
                 enabled: true
                 on: true

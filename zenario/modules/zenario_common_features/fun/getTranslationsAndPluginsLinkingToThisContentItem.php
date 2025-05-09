@@ -83,7 +83,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 						$linkToLibraryPlugin = $linkToVersionControlledPlugin = '';
 						
 						switch ($row['class_name']) {
-							case 'zenario_plugin_nest':
+							case 'zenario_nest':
+							case 'zenario_ajax_nest':
 								$pluginsLink = '#zenario__modules/panels/plugins/refiners/nests////';
 								break;
 								

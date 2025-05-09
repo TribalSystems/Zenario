@@ -60,8 +60,8 @@ zenario__user_forms:
                     title: Fields
                     db_column: |
                         (
-                        SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields
-                        WHERE user_form_id=f.id
+                            SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields
+                            WHERE user_form_id=f.id
                         )
                     show_by_default: true
                     searchable: false
@@ -74,7 +74,7 @@ zenario__user_forms:
                         CONCAT_WS(
                             ' ',
                             (
-                                SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                                SELECT COUNT(*) FROM [[DB_PREFIX]]user_response
                                 WHERE form_id = f.id
                             ),
                         'submitted'
@@ -85,7 +85,7 @@ zenario__user_forms:
                 response_count_internal:
                     db_column: |
                         (
-                            SELECT COUNT(*) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                            SELECT COUNT(*) FROM [[DB_PREFIX]]user_response
                             WHERE form_id = f.id
                         )
                     hidden: true
@@ -116,7 +116,7 @@ zenario__user_forms:
                     tooltip: Latest response date/time
                     db_column: |
                         (
-                        SELECT MAX(response_datetime) FROM [[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                        SELECT MAX(response_datetime) FROM [[DB_PREFIX]]user_response
                         WHERE form_id = f.id
                         )
                     #format: datetime
@@ -190,6 +190,13 @@ zenario__user_forms:
                     #As of Zenario 9.6, this button is hidden and the feature may be removed.
                     hidden: true
             
+            inline_buttons:
+                form_has_no_fields:
+                    css_class: zenario_user_forms_form_has_no_fields
+                    tooltip: "Form has no fields"
+                    visible_if: >
+                        (item.field_count == 0)
+            
             item_buttons:
                 edit_form_fields_gui:
                     ord: 1
@@ -221,13 +228,28 @@ zenario__user_forms:
                         request:
                             duplicate_form: "1"
                     hide_on_refiner: archived
-                view_dropdown:
+                copy_to_new_form:
                     ord: 4
+                    priv: _PRIV_MANAGE_FORMS
+                    hide_in_select_mode: true
+                    label: Copy to new form
+                    ajax:
+                        confirm:
+                            message: |
+                                Copy the archived form "[[name]]" to a new form?
+                            button_message: 'Copy'
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            copy_to_new_form: "1"
+                    only_show_on_refiner: archived
+                view_dropdown:
+                    ord: 5
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
                 view_responses:
-                    ord: 1
+                    ord: 5.1
                     label: Responses for this form
                     parent: view_dropdown
                     priv: _PRIV_VIEW_FORM_RESPONSES
@@ -282,7 +304,6 @@ zenario__user_forms:
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Delete
-                    multiple_select_tooltip: Delete these forms?
                     multiple_select: true
                     disabled_if_for_all_selected_items: |
                         item.plugin_is_used
@@ -291,21 +312,22 @@ zenario__user_forms:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you want to delete the form "[[name]]"?
-                                This action cannot be undone.
+                                Delete the form "[[name]]"?
                                 
-                                Recorded form responses will be deleted.
+                                All form responses from users or visitors will be deleted.
+
+                                This action cannot be undone.
                             multiple_select_message: |
-                                Are you sure you wish to delete these forms?
-                                This action cannot be undone.
+                                Delete the selected forms?
                                 
-                                Recorded form responses will be deleted.
+                                All form responses from users or visitors will be deleted.
+                                
+                                This action cannot be undone.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             delete_form: "1"
-                    hide_on_refiner: archived
                 archive:
                     ord: 99
                     priv: _PRIV_MANAGE_FORMS
@@ -313,7 +335,6 @@ zenario__user_forms:
                     label: Archive
                     multiple_select_tooltip: Archive these forms?
                     multiple_select: true
-                    visible_if_for_all_selected_items: item.response_count_internal > 0
                     disabled_if_for_all_selected_items: |
                         item.plugin_is_used
                     disabled_tooltip: |
@@ -341,10 +362,6 @@ zenario__user_forms:
                     link:
                         path: zenario__modules/panels/plugins
                         refiner: nests_using_form
-                slideshows_using_form:
-                    link:
-                        path: zenario__modules/panels/plugins
-                        refiner: slideshows_using_form
                 content_items_using_form:
                     link:
                         path: zenario__content/panels/content

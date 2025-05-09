@@ -367,8 +367,6 @@ methods.drawPagination = function($footer) {
 				overBtnRight:'#organizer_page_right', 
 		
 				withSlider: true,
-				minSlidesForSlider: 2,
-			
 				withAcceleration: true,
 				speed: 2,
 				coeffAcceleration: 2,

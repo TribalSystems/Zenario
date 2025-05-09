@@ -23,9 +23,9 @@
 				{% if item.privacy_warning %}
 					<div class="privacy_warning">
 						{% if item.privacy == 'private' %}
-							<p class="privacy_warning">{{ze('admin', 'phraseInHTML', 'Warning: this content item is public, the document \"[[Document_Link_Text]]\" is private, so it will not appear to visitors.', item)}}</p>
+							<p class="privacy_warning">{{ze('admin', 'phraseInHTML', 'Warning: this content item is public, the document \"[[Document_Filename]]\" is private, so it will not appear to visitors.', item)}}</p>
 						{% elseif item.privacy == 'offline' %}
-							<p class="privacy_warning">{{ze('admin', 'phraseInHTML', 'Warning: the document \"[[Document_Link_Text]]\" is offline, so it will not appear to visitors.', item)}}</p>
+							<p class="privacy_warning">{{ze('admin', 'phraseInHTML', 'Warning: the document \"[[Document_Filename]]\" is offline, so it will not appear to visitors.', item)}}</p>
 						{% endif %}
 					</div>
 				{% else %}
@@ -40,9 +40,30 @@
 					</a>
 					{% if item.Document_Type == 'file' %}
 						<div class="level_{{item.Document_Level}}">
-							{% if item.Document_Link_Text %}
-								<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{item.Document_Link_Text}}</a>
+							{% if item.Document_Title %}
+								{% if item.Make_Title_A_Hyperlink %}
+									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
+								{% endif %}
+									
+									{{item.Document_Title}}
+									
+								{% if item.Make_Title_A_Hyperlink %}
+									</a>
+								{% endif %}
 							{% endif %}
+							
+							{% if item.Document_Filename %}
+								{% if item.Make_Filename_A_Hyperlink %}
+									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
+								{% endif %}
+									
+									{{item.Document_Filename}}
+									
+								{% if item.Make_Filename_A_Hyperlink %}
+									</a>
+								{% endif %}
+							{% endif %}
+							
 							{% if item.File_Size %}
 								<span class="file_size">{{item.File_Size|e}}</span>
 							{% endif %}
@@ -63,7 +84,7 @@
 							{% endif %}
 						</div>
 					{% else %}
-						<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Link_Text}}</h3></div>
+						<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Filename}}</h3></div>
 					{% endif %}
 				{% endif %}
 			</div>

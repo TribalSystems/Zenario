@@ -15,7 +15,7 @@ site_settings:
                 scheduled_task_not_running:
                     type: warning
                     message: | 
-                        The scheduled task "jobDataProtectionCleanup" is not running. Data will be deleted when there is activity in the appropriate type of data handling (e.g. when an email is sent, a user logs in, or a form is submitted).
+                        The scheduled task "jobDataProtectionCleanup" is not running. Data will be deleted when there is activity in the appropriate type of data handling (e.g. when an email is sent, a user logs in, an error is logged, or a form is submitted).
                     show: false
                 scheduled_task_running:
                     type: success
@@ -28,6 +28,105 @@ site_settings:
                         html: |
                             <p>Zenario can log emails that it sends (to visitors, users or administrators). It can log when extranet users log in and access content, and it can log data submitted through forms.</p>
                             <p>Note that data will not be deleted immediately when you save this box, but according to the rules described below.</p>
+                
+                period_to_delete_the_email_template_sending_log_headers:
+                    label: 'How long should emails sent from this site be saved?'
+                    site_setting:
+                        name: period_to_delete_the_email_template_sending_log_headers
+                    type: select
+                    ord: 6
+                    values:
+                        0:
+                            label: Don't save
+                        1:
+                            label: Delete after 1 day
+                        7:
+                            label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                        never_delete:
+                            label: Save forever  
+                    value: never_delete
+                    redraw_onchange: true
+                
+                delete_email_template_sending_log_content_sooner:
+                    visible_if: zenarioAB.value('period_to_delete_the_email_template_sending_log_headers') != '0'
+                    indent: 1
+                    site_setting:
+                        name: delete_email_template_sending_log_content_sooner
+                    label: Delete email body sooner (just save headers)
+                    ord: 7
+                    type: checkbox
+                    redraw_onchange: true
+                
+                period_to_delete_the_email_template_sending_log_content:
+                    visible_if: zenarioAB.value('delete_email_template_sending_log_content_sooner')
+                    hide_with_previous_field: true
+                    indent: 2
+                    site_setting:
+                        name: period_to_delete_the_email_template_sending_log_content
+                    ord: 8
+                    type: select
+                    values:
+                        0:
+                            label: Don't save email body
+                        1:
+                            label: Delete after 1 day   
+                        7:
+                            label: Delete after 1 week
+                        14:
+                            label: Delete after 2 weeks
+                        30:
+                            label: Delete after 1 month
+                        90:
+                            label: Delete after 3 months
+                        180:
+                            label: Delete after 6 months
+                        270:
+                            label: Delete after 9 months
+                        365:
+                            label: Delete after 1 year
+                        730: 
+                            label: Delete after 2 years
+                
+                period_to_delete_error_log:
+                    ord: 100
+                    site_setting:
+                        name: period_to_delete_error_log
+                    label: "Delete data from error log:"
+                    type: select
+                    values:
+                        "never_delete":
+                            label: Never delete
+                            ord: 1
+                        "90":
+                            label: Delete data older than 3 months
+                            ord: 2
+                        "180":
+                            label: Delete data older than 6 months
+                            ord: 4
+                        "365":
+                            label: Delete data older than 1 year
+                            ord: 5
+                        "730":
+                            label: Delete data older than 2 years
+                            ord: 6
+                        "1095":
+                            label: Delete data older than 3 years
+                            ord: "7"
+                    value: "never_delete"
         security:
             ord: 15
             label: Security
@@ -114,38 +213,6 @@ site_settings:
                     snippet:
                         html: ''
                 
-        404_log:
-            label: 404 log
-            ord: 21
-            edit_mode:
-                enabled: Yes
-            fields:
-                period_to_delete_error_log: 
-                    site_setting:
-                        name: period_to_delete_error_log
-                    label: "Delete data from error log:"
-                    type: select
-                    values: 
-                        "never_delete": 
-                            label: Never delete
-                            ord: "1"
-                        "90": 
-                            label: Delete data older than 3 months
-                            ord: "2"
-                        "180": 
-                            label: Delete data older than 6 months
-                            ord: "4"
-                        "365": 
-                            label: Delete data older than 1 year
-                            ord: "5"
-                        "730": 
-                            label: Delete data older than 2 years
-                            ord: "6"
-                        "1095": 
-                            label: Delete data older than 3 years
-                            ord: "7"
-                    value: "never_delete"
-                    note_below: "Warning: Data older than specified period will be permanently deleted when a new error is logged."
         
         staging_mode:
             ord: 25

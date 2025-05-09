@@ -69,7 +69,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: The target user is assigned to ANY location at a company at which the current user has
+                    label: The target user is assigned to ANY location at an organization at which the current user has
                 perm.view.user.atLocationAtCompany.role:
                     site_setting:
                         name: perm.view.user.atLocationAtCompany.role
@@ -78,7 +78,7 @@ site_settings:
                     type: select
                     empty_value: ANY role
                     values: roles
-                    post_field_html: '&nbsp; at ANY location in that company'
+                    post_field_html: '&nbsp; at ANY location in that organization'
                 perm.view.oneself:
                     hide_with_previous_indented_field: true
                     indent: 1
@@ -174,7 +174,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: The location is in a company at which the current user has
+                    label: The location is in an organization at which the current user has
                 perm.create-user.location.atLocationAtCompany.role:
                     site_setting:
                         name: perm.create-user.location.atLocationAtCompany.role
@@ -183,7 +183,7 @@ site_settings:
                     type: select
                     empty_value: ANY role
                     values: roles
-                    post_field_html: '&nbsp; at ANY location in that company'
+                    post_field_html: '&nbsp; at ANY location in that organization'
                 
                 perm.edit.user:
                     snippet:
@@ -226,7 +226,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: The target user is assigned to ANY location at a company at which the current user has
+                    label: The target user is assigned to ANY location at an organization at which the current user has
                 perm.edit.user.atLocationAtCompany.role:
                     site_setting:
                         name: perm.edit.user.atLocationAtCompany.role
@@ -235,7 +235,7 @@ site_settings:
                     type: select
                     empty_value: ANY role
                     values: roles
-                    post_field_html: '&nbsp; at ANY location in that company'
+                    post_field_html: '&nbsp; at ANY location in that organization'
                 perm.edit.oneself:
                     site_setting:
                         name: perm.edit.oneself
@@ -286,7 +286,7 @@ site_settings:
                     indent: 1
                     row_class: zfab_or
                     type: checkbox
-                    label: The target user is ONLY assigned to a location at a company at which the current user has
+                    label: The target user is ONLY assigned to a location at an organization at which the current user has
                 perm.delete.user.atLocationAtCompany.role:
                     site_setting:
                         name: perm.delete.user.atLocationAtCompany.role
@@ -295,4 +295,4 @@ site_settings:
                     type: select
                     empty_value: ANY role
                     values: roles
-                    post_field_html: '&nbsp; at ANY location in that company'
+                    post_field_html: '&nbsp; at ANY location in that organization'

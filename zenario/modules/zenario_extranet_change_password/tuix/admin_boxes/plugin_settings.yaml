@@ -6,6 +6,26 @@ plugin_settings:
         first_tab:
             label: Send email confirmation
             fields:
+                show_link_to_logout_page:
+                    label: Show link to logout page
+                    type: checkbox
+                    value: 1
+                    readonly: true
+                logout_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Logout page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                
                 zenario_extranet_change_password__send_notification_email:
                     plugin_setting:
                         name: zenario_extranet_change_password__send_notification_email

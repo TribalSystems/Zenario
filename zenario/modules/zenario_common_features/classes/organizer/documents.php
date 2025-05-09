@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		$isFlatView = !isset($_REQUEST['_openToItemInHierarchy']) && !isset($_REQUEST['_openItemsInHierarchy']);
 		
 		if (!ze::setting('enable_document_tags')) {
 			unset($panel['collection_buttons']['document_tags']);
@@ -103,10 +104,20 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					$filePath = ze\file::link($fileId);
 					$item['frontend_link'] = $filePath;
 				}
+				
 				$filenameInfo = pathinfo($item['name']);
 				if(isset($filenameInfo['extension'])) {
 					$item['type'] = $filenameInfo['extension'];
 				}
+			}
+			
+			//In FAB pickers, show the full folder path (including the names of any parent folders)
+			if (($mode == 'get_item_name' || $mode == 'typeahead_search' || $mode == 'get_item_links' || $mode == 'select') && $item['id']) {
+				$item['full_path_label'] = self::getDocumentFullPath($item);
+			}
+			
+			if ($isFlatView) {
+				$item['path'] = self::getDocumentFullPath($item, $forOrganizerPanel = true);
 			}
 			
 			if (mb_strlen($item['name']) > 50) {
@@ -116,6 +127,10 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		
 		if (count($panel['items']) <= 0) {
 			unset($panel['collection_buttons']['reorder_root']);
+		}
+		
+		if (!$isFlatView) {
+			$panel['columns']['path']['hidden'] = true;
 		}
 	}
 	
@@ -210,9 +225,12 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 	
 					//Update the folder id if it is different, and remember that we've done this
 					if (isset($_POST['parent_ids'][$id]) && $_POST['parent_ids'][$id] != $file['folder_id']) {
+						$folderId =
 						$cols['folder_id'] = $_POST['parent_ids'][$id];
-						$folder = ze\row::get('documents', ['id', 'type'], $_POST['parent_ids'][$id]);
-						if ($folder['type'] == "file") {
+						
+						if ($folderId
+						 && ($folder = ze\row::get('documents', ['id', 'type'], $folderId))
+						 && ($folder['type'] == 'file')) {
 							if ($file['type'] == 'file') {
 								ze\escape::bFlag('MESSAGE_TYPE', 'error');
 								echo ze\admin::phrase('Files may not be moved under other files. They may only be placed under folders or at the top level.');
@@ -234,7 +252,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			
 			ze\fileAdm::exitIfUploadError(true, true, false, 'Filedata');
 			
-			$file_id = ze\file::addToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
+			$file_id = ze\fileAdm::addToDatabase('hierarchical_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
 			$existingFile = ze\row::get('documents', ['id'], ['file_id' => $file_id]);
 			if ($existingFile) {
 				echo "This file has already been uploaded to the files directory!";
@@ -272,7 +290,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			if (empty($documentProperties['extract'])) {
 				echo '<p>', ze\admin::phrase('Unable to update document text extract.'), '</p>';
 				
-				if (!((ze\file::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+				if (!((ze\fileAdm::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 					 && ($extract == 'Test'))) {
 					echo '<p>', ze\admin::phrase('<code>antiword</code> or <code>pdftotext</code> do not appear to be working.'), '</p>';
 					$externalProgramError = true;
@@ -299,7 +317,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			$documentProperties = [];
 			$extract = [];
 			$thumbnailId = false;
-			ze\file::updateHierarchicalDocumentExtract($file_id, $extract, $thumbnailId);
+			ze\fileAdm::updateHierarchicalDocumentExtract($file_id, $extract, $thumbnailId);
 			
 			if ($thumbnailId) {
 				$documentProperties['thumbnail_id'] = $thumbnailId;
@@ -317,7 +335,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			if (empty($documentProperties['extract'])) {
 				echo '<p>', ze\admin::phrase('Unable to update document text extract.'), '</p>';
 				
-				if (!((ze\file::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+				if (!((ze\fileAdm::plainTextExtract(ze::moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 					 && ($extract == 'Test'))) {
 					echo '<p>', ze\admin::phrase('<code>antiword</code> or <code>pdftotext</code> do not appear to be working.'), '</p>';
 					$externalProgramError = true;
@@ -332,14 +350,14 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			if ($dataset = ze\dataset::details('documents')) {
 				foreach (explode(',', $ids) as $id) {
-					ze\row::delete('documents_custom_data', $id);
-					ze\row::delete('custom_dataset_values_link', ['dataset_id' => $dataset['id'], 'linking_id' => $id]);
+					ze\document::removeMetadata($id, $dataset);
 				}
 			}
 			
 		} elseif (ze::post('delete')) {
 			ze\priv::exitIfNot('_PRIV_EDIT_DOCUMENTS');
 			foreach (explode(',', $ids) as $id) {
+				//This function will remove document metadata as well as the document itself.
 				ze\document::delete($id);
 			}
 		} elseif (ze::post('generate_public_link')) {
@@ -440,6 +458,75 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 					}
 				}
 			}
+		} elseif (ze::post('copy_to_document_content_items')) {
+			$newIds = [];
+			
+			$idsArray = explode(',', $ids);
+			$count = count($idsArray);
+			$succeeded = 0;
+			
+			foreach ($idsArray as $id) {
+				$languageId = ze::$defaultLang;
+				$cType = 'document';
+				$layoutId = ze\row::get('content_types', 'default_layout_id', ['content_type_id' => $cType]);
+				
+				$documentFileIdAndTitle = ze\row::get('documents', ['file_id', 'title'], ['id' => $id]);
+				$filename = ze\row::get('files', 'filename', ['id' => $documentFileIdAndTitle['file_id']]);
+
+				if (!empty($documentFileIdAndTitle['title'])) {
+					$browserTitle = $documentFileIdAndTitle['title'];
+				} else {
+					$browserTitle = preg_replace('/([^.a-z0-9\-_\(\)\[\]\'\"]+)/i', ' ', $filename);
+				}
+				
+				if ($fileId = ze\fileAdm::copyInDatabase('content', $documentFileIdAndTitle['file_id'], $filename, $mustBeAnImage = false, $addToDocstoreDirIfPossible = true)) {
+					$cID = $cVersion = false;
+					ze\contentAdm::createDraft($cID, false, $cType, $cVersion, false, $languageId);
+					ze\row::set(
+						'content_item_versions',
+						['layout_id' => $layoutId, 'title' => $browserTitle, 'filename' => $filename, 'file_id' => $fileId],
+						['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+					$newIds[] = $cType. '_'. $cID;
+					
+					ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId);
+					
+					//If this document has been created from an image, create a thumbnail.
+					$file = ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $fileId]);
+					
+					if (!empty($file) && $file['location'] == 'docstore' && ze\file::isImage(ze\file::mimeType($file['filename']))) {
+						$location = ze\file::docstorePath($file['path']);
+						$thumbnailId = ze\fileAdm::addToDatabase(
+							'image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+							false, false, false, false, $file['image_credit']
+						);
+						
+						ze\row::set('inline_images', [], [
+							'image_id' => $thumbnailId,
+							'foreign_key_to' => 'content',
+							'foreign_key_id' => $cID,
+							'foreign_key_char' => $cType,
+							'foreign_key_version' => $cVersion
+						]);
+						ze\contentAdm::updateVersion($cID, $cType, $cVersion, ['feature_image_id' => $thumbnailId]);
+						ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+					}
+					
+					$succeeded++;
+				}
+			}
+			
+			$popoutMessage = "
+				<p>" . 
+					ze\admin::nPhrase(
+						'[[succeeded]] document was successfully copied.',
+						'[[succeeded]] documents were successfully copied.',
+						$succeeded,
+						['succeeded' => $succeeded]
+					)
+				. "</p>";
+			
+			ze\escape::bFlag('MESSAGE_TYPE', 'Success');
+			echo $popoutMessage;
 		}
 		
 		if ($externalProgramError) {
@@ -457,4 +544,41 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 		exit;
 	}
 	
+	public function getDocumentFullPath($item, $forOrganizerPanel = false) {
+		$fullPathLabel = '';
+		
+		if (!empty($item)) {
+			if ($item['folder_id']) {
+				$currentParent = $item['folder_id'];
+				$fullPathLabel = [];
+				$iteration = 1;
+				while ($currentParent) {
+					$result = ze\row::get('documents', ['folder_id', 'folder_name'], ['id' => $currentParent]);
+					if ($result) {
+						$fullPathLabel[$iteration] = $result['folder_name'];
+						$currentParent = $result['folder_id'];
+					} else {
+						$currentParent = false;
+					}
+					$iteration++;
+					//Prevent infinite loops
+					if ($iteration >= 500) {
+						break;
+					}
+				}
+				
+				krsort($fullPathLabel);
+				$fullPathLabel[] = $item['name'];
+				$fullPathLabel = implode(' › ', $fullPathLabel);
+			} else {
+				if ($forOrganizerPanel) {
+					$fullPathLabel = ze\admin::phrase('[[item_name]] [top level]', ['item_name' => $item['name']]);
+				} else {
+					$fullPathLabel = $item['name'];
+				}
+			}
+		}
+		
+		return $fullPathLabel;
+	}
 }

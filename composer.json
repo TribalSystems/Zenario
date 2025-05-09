@@ -8,16 +8,18 @@
 	"require": {
 		"php": ">=8.1",
 		
-		"bjeavons/zxcvbn-php": "^1.0",
-		"ezyang/htmlpurifier": "^4.16",
-		"matthiasmullie/minify": "^1.3",
+		"bjeavons/zxcvbn-php": "1.*",
+		"ezyang/htmlpurifier": "*",
+		"guzzlehttp/guzzle": "7.*",
+		"imagine/imagine": "1.*",
+		"matthiasmullie/minify": "1.*",
 		"mustangostang/spyc": "*",
-		"phpmailer/phpmailer": "~6.0",
+		"phpmailer/phpmailer": "6.*",
 		"phpoffice/phpspreadsheet": "*",
+		"phpoffice/phpword": "*",
 		"powder96/numbers.php": "@dev",
-		"ps/image-optimizer": "*",
 		"smottt/wideimage": "*",
-		"twig/twig": "^2.0"
+		"twig/twig": "3.*"
 
 	},
 	"autoload": {
@@ -29,7 +31,10 @@
 		"classmap-authoritative": true,
         "platform": {
             "php": "8.1"
+		},
+		"allow-plugins": {
+			"php-http/discovery": false
 		}
 	},
-	"to-update": "mv composer_dist.json composer.json; composer update; mv composer.json composer_dist.json; rm composer.lock"
+	"to-update": "mv composer_dist.json composer.json; composer update --no-dev; mv composer.json composer_dist.json; rm composer.lock"
 }

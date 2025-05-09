@@ -1,6 +1,9 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_banner
+    key:
+        custom_command.prev_value: ''
     tabs:
         first_tab:
             edit_mode:
@@ -9,14 +12,6 @@ plugin_settings:
                 format_on_revert: true
             label: 'Image & link'
             fields:
-                translate_text:
-                    plugin_setting:
-                        name: translate_text
-                    label: 'Make this plugin multilingual using the phrases system'
-                    type: checkbox
-                    value: 1
-                    format_onchange: true
-                
                 #Previously, all the fields below were on the 2nd tab. As of 9.4, they are now on the first tab.
                 image_source:
                     plugin_setting:
@@ -28,9 +23,9 @@ plugin_settings:
                         _NO_IMAGE:
                             label: "Don't show an image"
                         _CUSTOM_IMAGE:
-                            label: "Show a fixed image"
+                            label: "Show an image"
                         _STICKY_IMAGE:
-                            label: "Show featured image from destination content item"
+                            label: "Show featured image from linked content item"
                     format_onchange: true
 
                 image:
@@ -140,17 +135,6 @@ plugin_settings:
                     snippet:
                         html: 'The image will be stretched, so quality will be degraded.'
                     post_field_html: "</div>"
-                webp:
-                    indent: 2
-                    hide_with_previous_outdented_field: true
-                    visible_if: |
-                        !zenarioAB.svgSelected('image') &&
-                        !zenarioAB.svgSelected('images')
-                    plugin_setting:
-                        name: webp
-                    type: checkbox
-                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
-                    value: 1
                 show_caption_on_image:
                     indent: 1
                     plugin_setting:
@@ -240,9 +224,10 @@ plugin_settings:
                 ######################################
                 
                 mobile_behaviour:
+                    indent: 1
                     plugin_setting:
                         name: mobile_behaviour
-                    label: 'Select image for mobile browsers:'
+                    label: 'Image for mobile browsers:'
                     type: select
                     format_onchange: true
                     values:
@@ -281,9 +266,9 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                         reorder_items: false
-                    indent: 1
+                    indent: 2
                 mobile_canvas:
-                    indent: 1
+                    indent: 2
                     plugin_setting:
                         name: mobile_canvas
                     label: 'Mobile image canvas:'
@@ -307,7 +292,7 @@ plugin_settings:
                             custom__label_svg: Use base width and height
                     
                 mobile_retina:
-                    indent: 2
+                    indent: 3
                     plugin_setting:
                         name: mobile_retina
                     label: 'This is a retina image'
@@ -332,7 +317,7 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 2
+                    indent: 3
                 mobile_height:
                     plugin_setting:
                         name: mobile_height
@@ -347,19 +332,7 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    indent: 2
-                mobile_webp:
-                    indent: 2
-                    plugin_setting:
-                        name: mobile_webp
-                    hide_with_previous_outdented_field: true
-                    visible_if: |
-                        !zenarioAB.svgSelected('mobile_image') &&
-                        !zenarioAB.svgSelected('image') &&
-                        !zenarioAB.svgSelected('images')
-                    type: checkbox
-                    label: 'Show WebP-format image where browser supports it; recommended for smaller file size'
-                    value: 1
+                    indent: 3
                 
                 ##########################
                 ###### Link options ######
@@ -389,10 +362,54 @@ plugin_settings:
                         _ENLARGE_IMAGE:
                             label: Enlarge image in floating box
                             disabled_if: |
-                                !zenario.IN(zenarioAB.value('image_source'), '_CUSTOM_IMAGE', '_PICTURE')
-                                || zenarioAB.svgSelected('image')
-                                || zenarioAB.svgSelected('images')
+                                zenarioAB.value('image_source') != '_CUSTOM_IMAGE' ||
+                                zenarioAB.svgSelected('image') || 
+                                zenarioAB.svgSelected('images')
+                        _CONDUCTOR_COMMAND:
+                            visible_if: |
+                                tuix.key.usesConductor
+                            label: Issue a Conductor command to link to a slide in this Ajax Nest (advanced)
                     format_onchange: true
+                
+                custom_command:
+                    visible_if: |
+                        zenarioAB.value('link_type') == '_CONDUCTOR_COMMAND'
+                    indent: 1
+                    plugin_setting:
+                        name: custom_command
+                    type: text
+                    format_onchange: true
+                    maxlength: 100
+                    label: 'Custom command name:'
+                    placeholder: e.g. banner_link
+                    validation:
+                        required_if_not_hidden: |
+                            Please enter a command name.
+                        no_spaces: |
+                            Please don't enter any spaces in the command's name.
+                        screen_name: |
+                            Please don't enter any special characters in the command's name.
+                    note_below: |
+                        <p>
+                            Use this to allow a user to click the link in this banner and navigate to a different slide in a Conductor-based Ajax Nest.
+                        </p><p>
+                            When making a return link, enter &quot;<code>back</code>&quot;.
+                        </p><p>
+                            (If there are multiple banners on the same slide linking to different destination slides, the names need to be distinct.)
+                        </p>
+                to_state.custom_command:
+                    indent: 1
+                    #group_with_previous_field: true
+                    hide_with_previous_field: true
+                    hide_if_previous_value_is: ''
+                    same_row: true
+                    pre_field_html: ' - goes to&nbsp; '
+                    type: select
+                    empty_value: 'No path defined in conductor'
+                    values: slides_and_states
+                    show_as_a_label: true
+                    css_class: zfab_conductor_button_destination
+                
                 floating_box_title_mode:
                     visible_if: "zenarioAB.value('link_type') == '_ENLARGE_IMAGE'"
                     indent: 1
@@ -741,4 +758,12 @@ plugin_settings:
                     cols: 80
                     rows: 10
                     value: ""
-    module_class_name: zenario_banner
+                
+                #Previously, translate_text was on the "Image & link" tab. As of 10.0, it is on the "Title & description" tab.
+                translate_text:
+                    plugin_setting:
+                        name: translate_text
+                    label: 'Make this plugin multilingual using the phrases system'
+                    type: checkbox
+                    value: 1
+                    format_onchange: true

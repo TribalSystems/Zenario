@@ -530,12 +530,19 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 			$contentPluginSettings[$cType] = [
 				'show_menu_path_if_available' => $this->setting($cType . '_show_menu_path_if_available'),
 				'show_language' => $this->setting($cType . '_show_language'),
-				'show_feature_image' => $this->setting($cType . '_show_feature_image'),
-				'feature_image_canvas' => $this->setting($cType . '_feature_image_canvas'),
-				'feature_image_width' => $this->setting($cType . '_feature_image_width'),
-				'feature_image_height' => $this->setting($cType . '_feature_image_height'),
+				'show_featured_image' => $this->setting($cType . '_show_featured_image'),
+				'canvas' => $this->setting($cType . '_canvas'),
+				'width' => $this->setting($cType . '_width'),
+				'height' => $this->setting($cType . '_height'),
 				'show_summary' => $this->setting($cType . '_show_summary')
 			];
+			
+			$contentPluginSettings[$cType]['retina'] =
+				$contentPluginSettings[$cType]['show_featured_image']
+				&& (
+					($contentPluginSettings[$cType]['canvas'] == 'unlimited' && $this->setting($cType . '_retina'))
+					|| $contentPluginSettings[$cType]['canvas'] != 'unlimited'
+				);
 		}
 		
 		//In "Search page" mode, we'll only be displaying the details on one content type at a time.
@@ -627,19 +634,43 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 						}
 						
 						$img_tag = '';
-						if ($contentPluginSettings[$result['type']]['show_feature_image']) {
+						if ($contentPluginSettings[$result['type']]['show_featured_image']) {
 							$url_img = '';
-							$width = (int)$contentPluginSettings[$result['type']]['feature_image_width'];
-							$height = (int)$contentPluginSettings[$result['type']]['feature_image_height'];
+							$width = (int)$contentPluginSettings[$result['type']]['width'];
+							$height = (int)$contentPluginSettings[$result['type']]['height'];
 								
-							ze\file::imageLink($width, $height, $url_img, $result['feature_image_id'], $width, $height, $contentPluginSettings[$result['type']]['feature_image_canvas']);
+							ze\image::link(
+								$width, $height, $url_img, $result['feature_image_id'],
+								$width, $height, $contentPluginSettings[$result['type']]['canvas'], $offset = 0, $contentPluginSettings[$result['type']]['retina']
+							);
+							
 							if ($url_img) {
-								$img_tag =  '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;" />';
+								$img_tag = '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;"';
+								
+								if ($contentPluginSettings[$result['type']]['retina']) {
+									$srcset = $url_img . ' 2x';
+								} else {
+									$srcset = $url_img;
+								}
+								
+								$img_tag .= ' srcset="' . $srcset . '"';
+								
+								if (ze::isAdmin()) {
+									$img_tag .= ' class="zenario_image_properties zenario_image_id__'. $result['feature_image_id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
+									
+									if ($contentPluginSettings[$result['type']]['canvas'] == 'crop_and_zoom') {
+										$img_tag .= ' zenario_crop_properties';
+									}
+									
+									$img_tag .= '"';
+								}
+								
+								$img_tag .= ' />';
 							}
 						}
 						
 						if ($img_tag) {
-							$result['Feature_image_HTML_tag'] = $img_tag;
+							$result['Featured_image_HTML_tag'] = $img_tag;
 						} else {
 							$this->getStyledExtensionIcon(pathinfo($result['filename'], PATHINFO_EXTENSION), $result);
 						}
@@ -672,20 +703,43 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				}
 
 				$showImage = $this->setting('other_module_show_image');
-				$otherModuleCanvas = $this->setting('other_module_image_canvas');
-				$otherModuleWidth = (int) $this->setting('other_module_image_width');
-				$otherModuleHeight = (int) $this->setting('other_module_image_height');
+				$otherModuleCanvas = $this->setting('canvas');
+				$otherModuleWidth = (int) $this->setting('width');
+				$otherModuleHeight = (int) $this->setting('height');
 				$contentItem = $this->setting('other_module_view_item_content_item');
 				$conductorState = $this->setting('other_module_view_item_conductor_state');
 				$pagination = [];
 
 				/* Spec for searching other modules:
-					1) There are 5 function parameters that the function definition needs to use: ($searchString, $weightings, $usePagination = false, $page = 0, $pageSize = 999999)
+					1) There are 6 function parameters that the function definition needs to use: ($searchString, $searchableDataType, $weightings, $usePagination = false, $page = 0, $pageSize = 999999)
 					2) The target module will need its own logic for returning results, including a DB key if appropriate
-					3) Expecting the module's function to return an array: ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => '(the module's variable id, e.g. id, locationId, etc)']
-					4) Expecting the following properties for each result: item_id, title, thumbnail_Id, filename, score
-					5) There may be additional properties: short_description, date. Please note that at the moment, only Videos Manager returns these
-					6) To view results from another module, Advanced Search uses a content item picker and a conductor state to generate "View" links
+					3) Expecting the module's function to return an array:
+						[
+							'Record_Count' => $recordCount,
+							'Results' => $resultsFromModule,
+							'Variable_name' => '(the module's variable id, e.g. id, locationId, etc)',
+							(optional) 'Additional_variables' => [
+								'(additionalPropertyName)' => '(the name of the column where the value will be for each item)'
+							]
+						]
+					4) Additional_variables is a sub-array, and may contain multiple variables. Each additional variable should have a name as it appears in the URL, and the item column name where the value will be.
+						Example:
+						[
+							'Record_Count' => 1,
+							'Results' => $resultsFromModule,
+							'Variable_name' => 'abstractId',
+							'Additional_variables' => [
+								'conferenceId' => 'conference_id'
+							]
+						]
+						
+						For the above, this module will add '&conferenceId=', followed by the value of the conference_id property of each item.
+						If an item has no value for that variable, then the whole string for this variable will be omitted entirely.
+						At the moment, only Conference Manager uses this to search in abstracts.
+					5) Expecting the following properties for each result: item_id, title, thumbnail_Id, filename, score
+					6) There may be additional properties:
+						short_description, date - only Videos Manager returns these
+					7) To view results from another module, Advanced Search uses a content item picker and a conductor state to generate "View" links.
 				*/
 				
 				/* Current list of searchable modules:
@@ -693,6 +747,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					Videos Manager
 					Ecommerce Physical Products
 					Ecommerce Document Products
+					Conference Manager
 				*/
 				
 				$weights = [
@@ -705,7 +760,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				//Get the weights values
 				$weightingsForModule = ['title' =>  $weights[$this->setting('other_module_title_weighting')], 'description' =>  $weights[$this->setting('other_module_description_weighting')]];
 
-				$resultsFromModule = $moduleToSearch::searchFromModule($this->searchString, $weightingsForModule, $usePagination, $this->page, $pageSize);
+				$resultsFromModule = $moduleToSearch::searchFromModule($this->searchString, $searchableDataType = $this->setting('searchable_data_type'), $weightingsForModule, $usePagination, $this->page, $pageSize);
 				$countResultsFromModule = $resultsFromModule['Record_Count'];
 				if ($countResultsFromModule > 0) {
 					$this->mergeFields['Search_Result_Rows'] = true;
@@ -719,22 +774,67 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 							$width = (int) $otherModuleWidth;
 							$height = (int) $otherModuleHeight;
 								
-							ze\file::imageLink($width, $height, $url_img, $resultFromModule['thumbnail_Id'], $otherModuleWidth, $otherModuleHeight, $otherModuleCanvas);
+							$otherModuleRetina = 
+								($otherModuleCanvas == 'unlimited' && $this->setting('retina'))
+								|| $otherModuleCanvas != 'unlimited';
+							
+							if (!empty($resultFromModule['thumbnail_Id'])) {
+								ze\image::link($width, $height, $url_img, $resultFromModule['thumbnail_Id'], $otherModuleWidth, $otherModuleHeight, $otherModuleCanvas, $offset = 0, $otherModuleRetina);
+							}
+							
 							if ($url_img) {
-								$img_tag =  '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;" />';
+								$img_tag = '<img src="' . $url_img . '" style="width: '. $width. 'px; height: '. $height. 'px;"';
+								
+								if ($otherModuleRetina) {
+									$srcset = $url_img . ' 2x';
+								} else {
+									$srcset = $url_img;
+								}
+								
+								$img_tag .= ' srcset="' . $srcset . '"';
+								
+								if (ze::isAdmin()) {
+									$img_tag .= ' class="zenario_image_properties zenario_image_id__'. $resultFromModule['thumbnail_Id']. '__ zenario_image_num__'. ($imageLinkNum = 1). '__';
+									
+									if ($otherModuleCanvas == 'crop_and_zoom') {
+										$img_tag .= ' zenario_crop_properties';
+									}
+									
+									$img_tag .= '"';
+								}
+								
+								$img_tag .= ' />';
 							}
 						}
 						
 						if ($img_tag) {
-							$resultFromModule['Feature_image_HTML_tag'] = $img_tag;
+							$resultFromModule['Featured_image_HTML_tag'] = $img_tag;
 						} else {
+							if (empty($resultFromModule['filename'])) {
+								$resultFromModule['filename'] = '';
+							}
 							$this->getStyledExtensionIcon(pathinfo(($resultFromModule['filename'] ?: ''), PATHINFO_EXTENSION), $resultFromModule);
 						}
 
 						if ($contentItem && $conductorState) {
 							$cID = $cType = false;
 							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $contentItem);
-							$resultFromModule['url'] = ze\link::toItem($cID, $cType, true, ($resultsFromModule['Variable_name'] . '=' . $resultFromModule['item_id'] . '&state=' . htmlspecialchars($conductorState)));
+							
+							//Build a list of variables for the item URL
+							$variables = '';
+							$variables .= htmlspecialchars($resultsFromModule['Variable_name'])  . '=' . (int)$resultFromModule['item_id'];
+							
+							if (!empty($resultsFromModule['Additional_variables'])) {
+								foreach ($resultsFromModule['Additional_variables'] as $variableName => $variableValue) {
+									if (!empty($resultFromModule[$variableValue])) {
+										$variables .= '&' . htmlspecialchars($variableName) . '=' . htmlspecialchars($resultFromModule[$variableValue]);
+									}
+								}
+							}
+							
+							$variables .= '&state=' . htmlspecialchars($conductorState);
+							
+							$resultFromModule['url'] = ze\link::toItem($cID, $cType, true, $variables);
 						}
 						
 						if ($this->setting('limit_num_of_chars_in_summary') && ($charLimit = $this->setting('summary_char_limit_value')) && !empty($resultFromModule['short_description'])) {
@@ -1515,11 +1615,12 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		switch (ze\plugin::setting('mode', $instanceId, $eggId)) {
 			case 'search_entry_box':
-				return ze\admin::phrase('Inline search (hover to show)');
+			default:
+				return ze\admin::phrase('Advanced search (click to show)');
 			case 'search_entry_box_show_always':
-				return ze\admin::phrase('Inline search (show always)');
+				return ze\admin::phrase('Advanced search (always show)');
 			case 'search_page':
-				return ze\admin::phrase('Advanced search: Full page search and results');
+				return ze\admin::phrase('Advanced search (full page search)');
 		}
 			
 		return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);

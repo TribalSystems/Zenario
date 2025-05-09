@@ -73,7 +73,7 @@ class bundle {
 	
 		//Look up the skin from the database
 		if (!$skinId
-		 || (!$skin = \ze\content::skinDetails($skinId))) {
+		 || (!$skin = \ze\skin::details($skinId))) {
 			return;
 		}
 		
@@ -92,7 +92,7 @@ class bundle {
 			$addedSkin = false;
 		
 			if (!empty($skin['extension_of_skin'])
-			 && ($skin = \ze\content::skinName(false, $skin['extension_of_skin']))
+			 && ($skin = \ze\skin::name(false, $skin['extension_of_skin']))
 			 && (!in_array($skin['name'], $skins))) {
 				array_unshift($skins, $skin['name']);
 				$addedSkin = true;
@@ -101,12 +101,16 @@ class bundle {
 		
 		
 		//Get an array of which modules are currently running
-		$runningModules = array_flip(\ze\row::getValues('modules', 'class_name', ['is_pluggable' => 1, 'status' => ['module_running', 'module_is_abstract']]));
+		$runningModules = [];
+		foreach (\ze\row::getValues('modules', ['class_name', 'css_class_name'], ['is_pluggable' => 1, 'status' => ['module_running', 'module_is_abstract']]) as $module) {
+			$runningModules[$module['class_name']] = true;
+			$runningModules[$module['css_class_name']] = true;
+		}
 	
 	
 		foreach ($skins as $skinName) {
-			$skinPath = \ze\content::skinPath($skinName);
-			$skinPathURL = \ze\content::skinURL($skinName);
+			$skinPath = \ze\skin::path($skinName);
+			$skinPathURL = \ze\skin::url($skinName);
 		
 			if (!is_dir(CMS_ROOT. $skinPath)) {
 				echo "\n\n". \ze\admin::phrase('This page cannot be displayed, skin not found: '). 'skins/'. $skinName;

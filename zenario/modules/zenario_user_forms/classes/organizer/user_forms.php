@@ -35,6 +35,8 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			$panel['no_items_message'] = ze\admin::phrase('No forms have been archived.');
 			$panel['title'] = ze\admin::phrase('Archived forms');
 			$panel['item']['css_class'] = 'zenario_user_forms_archive';
+			$panel['item_buttons']['edit_form_fields_gui']['label'] = ze\admin::phrase('View form fields');
+			$panel['item_buttons']['form_settings']['label'] = ze\admin::phrase('View form settings');
 		}
 
 		if (!ze\module::inc('zenario_extranet_profile_edit')) {
@@ -90,7 +92,6 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 				if (!empty($instanceIds)) {
 					$pluginIds = zenario_user_forms::getFormPlugins($id, 'plugins');
 					$nestIds = zenario_user_forms::getFormPlugins($id, 'nests');
-					$slideshowIds = zenario_user_forms::getFormPlugins($id, 'slideshows');
 					
 					$instanceId = $instanceIds[0];
 					
@@ -104,10 +105,6 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 						$usage['nests'] = count($nestIds);
 						$usage['nest'] = $nestIds[0];
 					}
-					if (!empty($slideshowIds)) {
-						$usage['slideshows'] = count($slideshowIds);
-						$usage['slideshow'] = $slideshowIds[0];
-					}
 					
 					if (!empty($usage['content_items']) || !empty($usage['layouts'])) {
 						$item['plugin_is_used'] = true;
@@ -118,7 +115,6 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 				$usageLinks = [
 					'plugins' => 'zenario__user_forms/panels/user_forms/hidden_nav/plugins_using_form//'. (int) $id. '//', 
 					'nests' => 'zenario__user_forms/panels/user_forms/hidden_nav/nests_using_form//'. (int) $id. '//', 
-					'slideshows' => 'zenario__user_forms/panels/user_forms/hidden_nav/slideshows_using_form//'. (int) $id. '//', 
 					'content_items' => 'zenario__user_forms/panels/user_forms/hidden_nav/content_items_using_form//'. (int) $id. '//', 
 					'layouts' => 'zenario__user_forms/panels/user_forms/hidden_nav/layouts_using_form//'. (int) $id. '//'
 				];
@@ -236,10 +232,12 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 			}
 		} elseif (ze::post('duplicate_form')) {
 			static::duplicateForm($ids);
+		} elseif (ze::post('copy_to_new_form')) {
+			static::duplicateForm($ids, $copyArchivedFormToNewForm = true);
 		}
 	}
 	
-	public static function duplicateForm($formId) {
+	public static function duplicateForm($formId, $copyArchivedFormToNewForm = false) {
 		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, $formId);
 		
 		//Add version number to form name
@@ -261,7 +259,18 @@ class zenario_user_forms__organizer__user_forms extends ze\moduleBaseClass {
 		$formsJSON = static::getFormsExportJSON($formId);
 		$formsJSON['forms'][0]['form']['name'] = $name;
 		
-		zenario_user_forms::importForms(json_encode($formsJSON));
+		$newFormId = zenario_user_forms::importForms(json_encode($formsJSON));
+		
+		if ($copyArchivedFormToNewForm) {
+			ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['status' => 'active'], ['id' => $newFormId]);
+			
+			$formsPanelLink = "organizer.php#zenario__user_forms/panels/user_forms//" . (int) $newFormId;
+			$linkStart = '<a href="' . $formsPanelLink . '" target="_blank">';
+			$linkEnd = '</a>';
+			
+			ze\escape::bFlag('TOAST_TYPE', 'success');
+			ze\escape::bFlag('TOAST_MESSAGE', ze\admin::phrase('Form successfully copied. [[link_start]]View new form[[link_end]]', ['link_start' => $linkStart, 'link_end' => $linkEnd]));
+		}
 	}
 	
 	public static function getFormsExportJSON($formIds) {

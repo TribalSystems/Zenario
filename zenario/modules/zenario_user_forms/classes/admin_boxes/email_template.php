@@ -30,8 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_user_forms__admin_boxes__email_template extends ze\moduleBaseClass {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$forms = ze\row::getValues(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'name', ['status' => 'active'], 'name');
-		$fields['meta_data/user_form']['values'] = $forms;
+		$forms = ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['id', 'name'], ['status' => 'active'], 'name');
+		
+		foreach ($forms as $form) {
+			$fields['meta_data/user_form']['values'][$form['id']] = ze\admin::phrase('[[form_name]] (form ID[[form_id]])', ['form_name' => $form['name'], 'form_id' => $form['id']]);
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

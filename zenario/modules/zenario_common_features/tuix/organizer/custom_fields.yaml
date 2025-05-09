@@ -37,7 +37,7 @@ zenario__administration:
                 exclude_image_pickers:
                     sql: |
                         cdf.dataset_id = [[REFINER_ID]]
-                        AND cdf.type NOT IN ('file_picker','repeat_start')
+                        AND cdf.type NOT IN ('file_picker')
                    
             columns:
                 label:

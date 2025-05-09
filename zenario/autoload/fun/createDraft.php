@@ -246,14 +246,16 @@ if ($newDraftCreated) {
 				content_version,
 				text,
 				extract,
-				extract_wordcount
+				extract_wordcount,
+				extract_pagecount
 			) SELECT
 				". (int) $cIDTo. ",
 				'". \ze\escape::sql($cTypeTo). "',
 				". (int) $cVersionTo. ",
 				text,
 				extract,
-				extract_wordcount
+				extract_wordcount,
+				extract_pagecount
 			FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cIDFrom. "
 			  AND `content_type` = '". \ze\escape::asciiInSQL($cTypeFrom). "'

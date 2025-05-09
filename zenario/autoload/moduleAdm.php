@@ -227,7 +227,7 @@ class moduleAdm {
 				foreach ($missingModules as $moduleClassName) {
 					$module['missing_modules'] .=
 						($module['missing_modules']? ', ' : '').
-						\ze::ifNull(\ze\module::getModuleDisplayNameByClassName($moduleClassName), $moduleClassName);
+						(\ze\module::getModuleDisplayNameByClassName($moduleClassName) ?: $moduleClassName);
 				}
 		
 				if (count($missingModules) > 1) {
@@ -447,7 +447,7 @@ class moduleAdm {
 	}
 
 	//Completely removes all traces of a module from a site.
-	public static function uninstall($moduleId, $uninstallRunningModules = false) {
+	public static function uninstall($moduleId, $uninstallRunningModules = false, $checkForDependenciesBeforeUninstalling = true) {
 
 		$module = \ze\module::details($moduleId);
 
@@ -459,7 +459,12 @@ class moduleAdm {
 			}
 		}
 
-		\ze\moduleAdm::checkForDependenciesBeforeUninstalling($module);
+		//The "$checkForDependenciesBeforeUninstalling" option should be used when forcibly removing
+		//a module using a database update, where the dependency information may not have been
+		//updated yet.
+		if ($checkForDependenciesBeforeUninstalling) {
+			\ze\moduleAdm::checkForDependenciesBeforeUninstalling($module);
+		}
 
 
 		//Remove all data about the module
@@ -483,7 +488,7 @@ class moduleAdm {
 		foreach([
 			'jobs', 'nested_plugins',
 			'module_dependencies', 'signals',
-			'plugin_item_link', 'plugin_layout_link',
+			'plugin_item_link', 'plugin_layout_link', 'plugin_sitewide_link',
 			'plugin_setting_defs', 'plugin_instances'
 		] as $table) {
 			\ze\row::delete($table, ['module_id' => $moduleId]);
@@ -594,7 +599,6 @@ class moduleAdm {
 			'zenario_ctype_event' => 'event',
 			'zenario_ctype_job_vacancies' => 'vacancy',
 			'zenario_ctype_news' => 'news',
-			'zenario_ctype_picture' => 'picture',
 			'zenario_ctype_testimonial' => 'testimonial',
 			'zenario_ctype_video' => 'video'
 		];
@@ -1114,7 +1118,7 @@ class moduleAdm {
 							keywords_field = '". \ze\escape::sql($type['keywords_field'] ?? 'optional'). "',
 							summary_field = '". \ze\escape::sql($type['summary_field'] ?? 'optional'). "',
 							release_date_field = '". \ze\escape::sql($type['release_date_field'] ?? 'optional'). "',
-							enable_summary_auto_update = ". \ze\ring::engToBoolean($type['enable_summary_auto_update'] ?? 0). ",
+							auto_set_release_date = ". (isset($type['auto_set_release_date']) ? \ze\ring::engToBoolean($type['auto_set_release_date'] ?? 0) : '1') . ",
 							enable_categories = ". \ze\ring::engToBoolean($type['enable_categories'] ?? 0). ",
 							is_creatable = ". (isset($type['is_creatable']) ? \ze\ring::engToBoolean($type['is_creatable'] ?? 0) : '1') . ",
 							hide_private_item = 1,
@@ -1285,12 +1289,12 @@ class moduleAdm {
 		];
 
 		$nestAndSlideshowModuleIds = [
-			'pluginNest' => \ze\module::id('zenario_plugin_nest'),
-			'slideshowSimple' => \ze\module::id('zenario_slideshow_simple'),
-			'slideshowAdvanced' => \ze\module::id('zenario_slideshow')
+			'zenario_nest' => \ze\module::id('zenario_nest'),
+			'zenario_ajax_nest' => \ze\module::id('zenario_ajax_nest'),
+			'zenario_slideshow' => \ze\module::id('zenario_slideshow')
 		];
 
-		foreach ($nestAndSlideshowModuleIds as $nestOrSlideshowKey => $nestOrSlideshowId) {
+		foreach ($nestAndSlideshowModuleIds as $moduleClassName => $nestOrSlideshowId) {
 			$sql = '
 				SELECT COUNT(DISTINCT pi.id)
 				FROM ' . DB_PREFIX . 'nested_plugins np
@@ -1301,10 +1305,10 @@ class moduleAdm {
 			$result = \ze\sql::select($sql);
 			$count = \ze\sql::fetchValue($result);
 
-			if ($nestOrSlideshowKey == 'pluginNest') {
-				$nestAndSlideshowModuleCount['nestCount'] += (int) $count;
-			} elseif (\ze::in($nestOrSlideshowKey, 'slideshowSimple', 'slideshowAdvanced')) {
+			if ($moduleClassName == 'zenario_slideshow') {
 				$nestAndSlideshowModuleCount['slideshowCount'] += (int) $count;
+			} else {
+				$nestAndSlideshowModuleCount['nestCount'] += (int) $count;
 			}
 		}
 		

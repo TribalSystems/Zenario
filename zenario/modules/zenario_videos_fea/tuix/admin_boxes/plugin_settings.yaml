@@ -12,21 +12,19 @@ plugin_settings:
                     type: select
                     css_class: iconselectmenu
                     format_onchange: true
-                    value: list_videos
+                    value: no_mode_selected
                     values:
-                        videos:
-                            label: Videos
+                        no_mode_selected:
+                            label: ' -- Inactive -- '
                         list_videos:
-                            parent: videos
                             label: List videos
+                        search_videos:
+                            label: Search videos
                         new_video:
-                            parent: videos
                             label: New video
                         view_video:
-                            parent: videos
                             label: View video
                         edit_video:
-                            parent: videos
                             label: Edit video
         first_tab:
             label: Options
@@ -38,7 +36,7 @@ plugin_settings:
                     same_row: true
                     pre_field_html: ' - goes to&nbsp; '
                     type: select
-                    empty_value: 'No path defined in conductor'
+                    empty_value: 'No path defined in conductor state diagram'
                     values: slides_and_states
                     readonly: true
                     show_as_a_label_when_readonly: true
@@ -55,11 +53,32 @@ plugin_settings:
                     show_as_a_label_when_readonly: true
                     css_class: zfab_conductor_button_destination
             fields:
+                desc_snippet:
+                    snippet:
+                        html: "This tab shows the settings available for the currently selected mode."
+                    visible_if:
+                        lib.modeNotIn: no_mode_selected
+                
+                inactive_message:
+                    visible_if:
+                        lib.modeIn: no_mode_selected
+                    snippet: 
+                        html: 'This plugin is inactive. Please select a mode to make the plugin active.'
+                
+                selected_mode_has_no_settings:
+                    visible_if:
+                        lib.modeIn:
+                            - new_video
+                            - edit_video
+                    snippet: 
+                        html: 'This mode has no settings.'
+                
                 scope:
                     plugin_setting:
                         name: scope
                     visible_if:
-                        lib.modeIn: list_videos
+                        lib.modeIn:
+                            - list_videos
                     label: Scope
                     type: select
                     format_onchange: true
@@ -103,6 +122,7 @@ plugin_settings:
                     visible_if:
                         lib.modeIn: 
                             - list_videos
+                            - search_videos
                     plugin_setting:
                         name: show_video_titles
                     value: 1
@@ -113,6 +133,7 @@ plugin_settings:
                     visible_if:
                         lib.modeIn: 
                             - list_videos
+                            - search_videos
                     plugin_setting:
                         name: show_images
                     value: 1
@@ -161,14 +182,14 @@ plugin_settings:
                     type: select
                     value: fixed_width_and_height
                     values:
-                        unlimited:
-                            label: Unlimited size
                         fixed_width:
                             label: Constrain by width
                         fixed_height:
                             label: Constrain by height
                         fixed_width_and_height:
                             label: Constrain by width and height
+                        unlimited:
+                            label: Unlimited size
                     format_onchange: true
                 image_width:
                     grouping: show_fields
@@ -207,6 +228,15 @@ plugin_settings:
                     label: Short description
                     type: checkbox
                     value: 1
+                search_videos__column__short_description:
+                    grouping: show_fields
+                    visible_if:
+                        lib.modeIs: search_videos
+                    plugin_setting:
+                        name: search_videos__column__short_description
+                    label: Short description
+                    type: checkbox
+                    value: 1
                 list_videos__column__date:
                     grouping: show_fields
                     visible_if:
@@ -216,10 +246,21 @@ plugin_settings:
                     label: Date
                     type: checkbox
                     value: 1
+                search_videos__column__date:
+                    grouping: show_fields
+                    visible_if:
+                        lib.modeIs: search_videos
+                    plugin_setting:
+                        name: search_videos__column__date
+                    label: Date
+                    type: checkbox
+                    value: 1
                 show_dataset_fields:
                     grouping: show_fields
                     visible_if:
-                        lib.modeIn: list_videos
+                        lib.modeIn:
+                            - list_videos
+                            - search_videos
                     plugin_setting:
                         name: show_dataset_fields
                     label: 'Show dataset fields:'
@@ -235,11 +276,14 @@ plugin_settings:
                     grouping: item_buttons
                     visible_if:
                         lib.key: usesConductor
-                        lib.modeIs: list_videos
+                        lib.modeIn:
+                            - list_videos
+                            - search_videos
                     plugin_setting:
                         name: enable.view_video
                     label: View video
                     type: checkbox
+                    value: true
                     redraw_onchange: true
                 to_state1.view_video: *to_state1
                 to_state2.view_video: *to_state2
@@ -249,7 +293,7 @@ plugin_settings:
                     visible_if:
                         lib.key: usesConductor
                         lib.modeIs: list_videos
-                    visible_if: zenarioAB.value('enable.view_video')
+                        lib.value: enable.view_video
                     indent: 1
                     plugin_setting:
                         name: view_video_new_window
@@ -284,6 +328,7 @@ plugin_settings:
                     visible_if:
                         lib.modeIn: 
                             - list_videos
+                            - search_videos
                     plugin_setting:
                         name: show_title
                     value: 1
@@ -291,13 +336,14 @@ plugin_settings:
                     redraw_onchange: true
                 title_tags:
                     indent: 1
+                    same_row: true
                     grouping: options
                     visible_if:
                         lib.value: show_title
                     hide_with_previous_field: true
                     plugin_setting:
                         name: title_tags
-                    label: Title tags
+                    label: "Title tag:"
                     value: h2
                     type: select
                     values: &tags
@@ -326,6 +372,28 @@ plugin_settings:
                             label: p
                             ord: 8
                 
+                view_results_as:
+                    grouping: options
+                    visible_if:
+                        lib.modeIn:
+                            - list_videos
+                            - search_videos
+                    plugin_setting:
+                        name: view_results_as
+                    label: 'View results as:'
+                    type: select
+                    value: blocks
+                    values:
+                        blocks:
+                            ord: 1
+                            label: 'Blocks'
+                        list:
+                            ord: 2
+                            label: 'List'
+                        let_user_decide:
+                            ord: 3
+                            label: 'Let user decide'
+                
                 enable.new_video:
                     grouping: options
                     visible_if:
@@ -352,13 +420,14 @@ plugin_settings:
                     redraw_onchange: true
                 video_title_tags:
                     indent: 1
+                    same_row: true
                     grouping: options
                     visible_if:
                         lib.value: show_video_title
                     hide_with_previous_field: true
                     plugin_setting:
                         name: video_title_tags
-                    label: Video title tags
+                    label: "Video title tag:"
                     value: h1
                     type: select
                     values: *tags
@@ -453,3 +522,61 @@ plugin_settings:
                         visible_if_for_all_selected_items: item.is_field
                         disallow_refiners_looping_on_min_path: true
                         select_phrase: Select dataset field...
+                
+                page_size:
+                    grouping: options
+                    visible_if:
+                        lib.modeIn: search_videos
+                    plugin_setting:
+                        name: page_size
+                    label: 'Number of items per page:'
+                    type: select
+                    empty_value: " -- Don't use pagination, show all rows -- "
+                    values:
+                        1: 1
+                        2: 2
+                        3: 3
+                        4: 4
+                        5: 5
+                        6: 6
+                        7: 7
+                        8: 8
+                        9: 9
+                        10: 10
+                        12: 12
+                        15: 15
+                        20: 20
+                        50: 50
+                
+                search_weightings:
+                    type: grouping
+                    snippet:
+                        label: Search weightings
+                        label_class: subheading
+                
+                title_weighting:
+                    grouping: search_weightings
+                    plugin_setting:
+                        name: title_weighting
+                    label: 'Title weighting:'
+                    type: select
+                    values: &weightings_values
+                        _NONE:
+                            label: None (score of 0)
+                        _LOW:
+                            label: Low (score of 1)
+                        _MEDIUM:
+                            label: Medium (score of 3)
+                        _HIGH:
+                            label: High (score of 12)
+                    value: _HIGH
+                    visible_if: lib.modeIn('search_videos')
+                description_weighting:
+                    grouping: search_weightings
+                    plugin_setting:
+                        name: description_weighting
+                    label: 'Description weighting:'
+                    type: select
+                    values: *weightings_values
+                    value: _LOW
+                    visible_if: lib.modeIn('search_videos')

@@ -69,7 +69,7 @@ full_slot:
                 edit: true
         vc_warning:
             css_class: zenario_slotControl_vc
-            label: 'Version-controlled; use Edit mode to edit content.'
+            label: 'Version-controlled; use Content item view to edit content.'
             page_modes:
                 layout: true
         reusable_plugin_details:
@@ -108,22 +108,6 @@ full_slot:
                 edit: true
                 layout: true
     actions:
-        switch_to_edit:
-            page_modes:
-                layout: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
-            label: Switch to Edit mode to edit content
-        switch_to_edit_settings:
-            page_modes:
-                layout: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
-            label: Switch to Edit mode to edit plugin settings
-        switch_to_layout:
-            page_modes:
-                edit: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
-            label: Switch to Layout mode to edit plugin settings
-        
         settings:
             label:
                 normal: Edit contents
@@ -144,7 +128,6 @@ full_slot:
     
     re_move_place:
         move_on_item_layer:
-            ord: 75
             page_modes:
                 edit: true
             onclick: |
@@ -154,15 +137,23 @@ full_slot:
                 return false;
             label: Move ~plugin~ on this content item
         move_on_layout_layer:
-            ord: 76
             page_modes:
                 layout: true
             onclick: return zenarioA.movePlugin(this, slotName);
             label: Move ~plugin~ on this layout
         
+        copy_plugin_placement_on_item_layer:
+            page_modes:
+                edit: true
+            onclick: |
+                if (zenarioA.draft(this.id)) {
+                    zenarioA.movePlugin(this, slotName, false, true);
+                }
+                return false;
+            label: Copy ~plugin~ on this content item
+        
         
         replace_reusable_on_item_layer:
-            ord: 85
             priv: _PRIV_MANAGE_ITEM_SLOT
             label: Override with a plugin on this content item...
             label_like4like: Override with a different plugin on this content item...
@@ -170,15 +161,64 @@ full_slot:
             label_replace_like4like: Replace with a different plugin on this content item...
             page_modes:
                 edit: true
-            onclick: |
-                if (zenarioA.draft(this.id)) {
-                    zenarioAT.clickTab('edit');
-                    zenarioA.pickNewPlugin(this, slotName, 1, false, [[preselectCurrentChoice]]);
-                }
-                return false;
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: |
+            #    if (zenarioA.draft(this.id)) {
+            #        zenarioAT.clickTab('edit');
+            #        zenarioA.pickNewPlugin(this, slotName, 1, false, [[preselectCurrentChoice]]);
+            #    }
+            #    return false;
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 1
+                is_nest: false
+        
+        replace_nest_on_item_layer:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Override with a nest on this content item...
+            label_like4like: Override with another nest on this content item...
+            label_replace: Replace with a nest on this content item...
+            label_replace_like4like: Replace with another nest on this content item...
+            page_modes:
+                edit: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: |
+            #    if (zenarioA.draft(this.id)) {
+            #        zenarioAT.clickTab('edit');
+            #        zenarioA.pickNewPlugin(this, slotName, 1, true, [[preselectCurrentChoice]]);
+            #    }
+            #    return false;
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 1
+                is_nest: true
+        
+        replace_slideshow_on_item_layer:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Override with a slideshow on this content item...
+            label_like4like: Override with another slideshow on this content item...
+            label_replace: Replace with a slideshow on this content item...
+            label_replace_like4like: Replace with another slideshow on this content item...
+            page_modes:
+                edit: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: |
+            #    if (zenarioA.draft(this.id)) {
+            #        zenarioAT.clickTab('edit');
+            #        zenarioA.pickNewPlugin(this, slotName, 1, 'slideshow', [[preselectCurrentChoice]]);
+            #    }
+            #    return false;
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 1
+                is_nest: 'slideshow'
         
         hide_plugin:
-            ord: 86
             page_modes:
                 edit: true
             onclick: >
@@ -189,16 +229,71 @@ full_slot:
             label: Show nothing on this content item
         
         replace_reusable_on_layout_layer:
-            ord: 87
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
             label: Replace with a plugin on this layout...
             label_like4like: Replace with a different plugin on this layout...
             page_modes:
                 layout: true
-            onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false, [[preselectCurrentChoice]]);
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 2, false, [[preselectCurrentChoice]]);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 2
+                is_nest: false
+        
+        replace_nest_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Replace with a nest on this layout...
+            label_like4like: Replace with a different nest on this layout...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 2, true, [[preselectCurrentChoice]]);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 2
+                is_nest: true
+        
+        replace_slideshow_on_layout_layer:
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Replace with a slideshow on this layout...
+            label_like4like: Replace with a different slideshow on this layout...
+            page_modes:
+                layout: true
+            # In Zenario 10.1 we're experimenting with showing some options in a FAB
+            # instead of directly in the slot drop-down, to reduce clutter
+            #onclick: return zenarioA.pickNewPlugin(this, slotName, 2, 'slideshow', [[preselectCurrentChoice]]);
+            show_as_option_in_fab: true
+            pick_new_plugin:
+                level: 2
+                is_nest: 'slideshow'
+        
+        replace_fab_item_layer:
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            page_modes:
+                edit: true
+            visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 're_move_place', 'edit');
+            onclick: |
+                if (zenarioA.draft(this.id)) {
+                    zenarioAT.clickTab('edit');
+                    zenarioA.showSlotOptionsInFAB(slotName, 're_move_place', 'edit');
+                }
+                return false;
+            label: Replace this ~plugin~ on this content item...
+        
+        replace_fab_layout_layer:
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            page_modes:
+                layout: true
+            visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 're_move_place', 'layout');
+            onclick: return zenarioA.showSlotOptionsInFAB(slotName, 're_move_place', 'layout');
+            label: Replace this ~plugin~ on this layout...
         
         remove_from_item_layer:
-            ord: 90
             page_modes:
                 edit: true
             onclick: >
@@ -208,7 +303,6 @@ full_slot:
                 return false;
             label: Remove ~plugin~ from this content item
         remove_from_layout_layer:
-            ord: 92
             page_modes:
                 layout: true
             onclick: return zenarioA.removePlugin(this, slotName, 2);
@@ -269,3 +363,19 @@ full_slot:
                 edit: true
             css_class: zenario_slotControl_no_perms
             label: 'Limited options: you lack Designer permission'
+    switch_to:
+        switch_to_edit:
+            page_modes:
+                layout: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
+            label: Switch to Content item view to edit content
+        switch_to_edit_settings:
+            page_modes:
+                layout: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
+            label: Switch to Content item view to edit plugin settings
+        switch_to_layout:
+            page_modes:
+                edit: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
+            label: Switch to Layout view to edit plugin settings

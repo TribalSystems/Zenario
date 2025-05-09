@@ -34,23 +34,23 @@ class contentAdm {
 	public static function statusPhrase($status) {
 		switch ($status) {
 			case 'first_draft':
-				return \ze\admin::phrase('First Draft');
+				return \ze\admin::phrase('First draft');
 			case 'hidden':
 				return \ze\admin::phrase('Hidden');
 			case 'hidden_with_draft':
-				return \ze\admin::phrase('Hidden with Draft');
+				return \ze\admin::phrase('Hidden with draft');
 			case 'published':
 				return \ze\admin::phrase('Published');
 			case 'published_with_draft':
-				return \ze\admin::phrase('Published with Draft');
+				return \ze\admin::phrase('Published with draft');
 			case 'unlisted':
 				return \ze\admin::phrase('Published unlisted');
 			case 'unlisted_with_draft':
-				return \ze\admin::phrase('Published unlisted with Draft');
+				return \ze\admin::phrase('Published unlisted with draft');
 			case 'trashed':
 				return \ze\admin::phrase('Trashed');
 			case 'trashed_with_draft':
-				return \ze\admin::phrase('Trashed with Draft');
+				return \ze\admin::phrase('Trashed with draft');
 		}
 	
 		return '';
@@ -262,7 +262,7 @@ class contentAdm {
 		}
 	}
 
-	public static function publishContent($cID, $cType, $adminId = false) {
+	public static function publishContent($cID, $cType, $adminId = false, $publishUnlisted = false) {
 		if (!$adminId) {
 			$adminId = $_SESSION['admin_userid'] ?? false;
 		}
@@ -301,7 +301,7 @@ class contentAdm {
 				//Only delete unused files if this is a published content item with an unpublished draft.
 				//The code below will not be executed for never published first drafts.
 				if ($currentPublishedFileId) {
-					\ze\file::deleteMediaContentItemFileIfUnused($cID, $cType, $currentPublishedFileId);
+					\ze\fileAdm::deleteMediaContentItemFileIfUnused($cID, $cType, $currentPublishedFileId);
 				}
 			}
 		}
@@ -326,6 +326,10 @@ class contentAdm {
 		\ze\contentAdm::hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'published');
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
+		
+		if ($publishUnlisted) {
+			\ze\contentAdm::delistContent($cID, $cType, true);
+		}
 
 		\ze\module::sendSignal("eventContentPublished",["cID" => $cID,"cType" => $cType, "cVersion" => $cVersion]);
 	}
@@ -635,10 +639,46 @@ class contentAdm {
 				}
 			}
 			
+			//For nests, add any images used on the slides
+			if ($instance['is_nest']) {
+				$sql = "
+					SELECT DISTINCT np.slide_link_image_id
+					FROM ". DB_PREFIX. "nested_plugins AS np
+					WHERE np.slide_link_image_id IS NOT NULL
+					  AND np.instance_id = ". (int) $instanceId;
+				$result = \ze\sql::select($sql);
+	
+				foreach (\ze\sql::fetchValues($sql) as $fileId) {
+					$fileIds[$fileId] = $fileId;
+				}
+			}
+			
 			if (empty($fileIds)) {
 				$files = [];
 			} else {
 				$files = \ze\row::getAssocs('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
+			}
+			
+			$sql = "
+				SELECT ps.instance_id, ps.name, ps.egg_id, ps.value
+				FROM ". DB_PREFIX. "plugin_instances AS pi
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+				   ON pi.id = ps.instance_id
+				WHERE ps.instance_id = " . (int) $instanceId . "
+				  AND ps.is_content = 'synchronized_setting'
+				  AND ps.format = 'translatable_html'";
+			$result = \ze\sql::select($sql);
+			
+			$pluginWisiwygImages = [];
+			while ($pluginInstance = \ze\sql::fetchAssoc($result)) {
+				$htmlChanged = false;
+				$publishingAPublicPage = false;
+				$fixWhereLinksGo = false;
+				\ze\contentAdm::syncInlineFileLinks($pluginWisiwygImages, $pluginInstance['value'], $htmlChanged, 'image', $publishingAPublicPage, $fixWhereLinksGo);
+			}
+			
+			if (!empty($pluginWisiwygImages)) {
+				$files = array_merge($files, $pluginWisiwygImages);
 			}
 	
 			\ze\contentAdm::syncInlineFiles(
@@ -678,7 +718,7 @@ class contentAdm {
 		
 			} else {
 				//Otherwise delete it straight away
-				\ze\file::delete($imageId);
+				\ze\fileAdm::delete($imageId);
 			}
 		
 			//Remove the image from the linking table anywhere it is unused
@@ -706,9 +746,12 @@ class contentAdm {
 		//Remove this image from any content items if it was picked as a feature image
 		\ze\row::update('content_item_versions', ['feature_image_id' => 0], ['feature_image_id' => $imageId]);
 		
+		//Remove this image from any tabs to slides
+		\ze\row::update('nested_plugins', ['slide_link_image_id' => NULL], ['slide_link_image_id' => $imageId]);
+		
 		\ze\row::delete('inline_images', ['image_id' => $imageId]);
 		\ze\file::deletePublicImage($imageId);
-		\ze\file::delete($imageId);
+		\ze\fileAdm::delete($imageId);
 	}
 
 	//Look for User/Group/Admin files that are not in use, and remove them
@@ -731,7 +774,7 @@ class contentAdm {
 		while ($file = \ze\sql::fetchAssoc($result)) {
 			if (!\ze\row::exists('admins', ['image_id' => $file['id']])
 			 && !\ze\row::exists('users', ['image_id' => $file['id']])) {
-				\ze\file::delete($file['id']);
+				\ze\fileAdm::delete($file['id']);
 			}
 		}
 	}
@@ -774,7 +817,7 @@ class contentAdm {
 			$visitorVersionFileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $content['visitor_version']]);
 
 			if ($content['admin_version'] != $content['visitor_version'] && $adminVersionFileId != $visitorVersionFileId) {
-				\ze\file::deleteMediaContentItemFileIfUnused($cID, $cType, $adminVersionFileId);
+				\ze\fileAdm::deleteMediaContentItemFileIfUnused($cID, $cType, $adminVersionFileId);
 			}
 		}
 	
@@ -826,6 +869,14 @@ class contentAdm {
 		\ze\row::delete('content_cache', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 	
 		\ze\pluginAdm::deleteVC($cID, $cType, $cVersion);
+		
+		if ($cType == 'vacancy' && \ze\module::inc('zenario_ctype_job_vacancies')) {
+			\ze\row::delete(ZENARIO_CTYPE_JOB_VACANCIES_PREFIX . 'job_vacancies', ['id' => $cID, 'version' => $cVersion]);
+		}
+		
+		if (\ze\module::inc('zenario_ctype_document') && \ze\module::inc('zenario_ctype_document_extra_data')) {
+			\ze\row::delete(ZENARIO_CTYPE_DOCUMENT_EXTRA_DATA_PREFIX. 'document_extra_data', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		}
 	}
 
 	//Delete all of the archived versions of a content item before a specificied version,
@@ -871,7 +922,7 @@ class contentAdm {
 		$result = \ze\row::query('content_item_versions', ['id', 'type', 'version', 'file_id'], $content);
 		while ($version = \ze\sql::fetchAssoc($result)) {
 			if (\ze::in($cType, 'audio', 'document', 'picture', 'video')) {
-				\ze\file::deleteMediaContentItemFileIfUnused($cID, $cType, $version['file_id']);
+				\ze\fileAdm::deleteMediaContentItemFileIfUnused($cID, $cType, $version['file_id']);
 			}
 			
 			\ze\contentAdm::deleteVersion($version['id'], $version['type'], $version['version']);
@@ -932,7 +983,7 @@ class contentAdm {
 		\ze\module::sendSignal("eventContentHidden",["cID" => $cID,"cType" => $cType]);
 	}
 
-	public static function delistContent($cID, $cType) {
+	public static function delistContent($cID, $cType, $skipSignal = false) {
 	
 		$content = \ze\row::get('content_items', ['status'], ['id' => $cID, 'type' => $cType]);
 		
@@ -950,8 +1001,10 @@ class contentAdm {
 		}
 		
 		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
-	
-		\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
+		
+		if (!$skipSignal) {
+			\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
+		}
 	}
 
 	public static function relistContent($cID, $cType) {
@@ -972,6 +1025,8 @@ class contentAdm {
 		}
 		
 		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
+		
+		\ze\contentAdm::updateContentItemCache($cID, $cType, $content['visitor_version'], $publishing = true);
 	
 		\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
 	}
@@ -1316,10 +1371,6 @@ class contentAdm {
 
 
 
-
-	public static function rerenderWorkingCopyImages($recreateCustomThumbnailOnes = true, $recreateCustomThumbnailTwos = true, $removeOldCopies = false, $jpegOnly = false) {
-		require \ze::funIncPath(__FILE__, __FUNCTION__);
-	}
 
 	public static function getImageTagColours($byId = true, $byName = true) {
 	
@@ -1739,6 +1790,12 @@ class contentAdm {
 							return \ze\admin::phrase('Private, only show to extranet users in the smart group: [[name]]', $smartGroup);
 						} else {
 							return \ze\admin::phrase('Private, only show to extranet users NOT in the smart group: [[name]]', $smartGroup);
+						}
+					} else {
+						if ($privacy == 'in_smart_group') {
+							return \ze\admin::phrase('Private, only show to extranet users in the smart group: (error: selected smart group not found)');
+						} else {
+							return \ze\admin::phrase('Private, only show to extranet users NOT in the smart group: (error: selected smart group not found)');
 						}
 					}
 					break;

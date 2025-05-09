@@ -60,6 +60,7 @@ class zenario_slideshow__animation_libraries__cycle2 extends zenario_slideshow {
 				'TAB_ORDINAL' => $tabOrd,
 				'Class' => 'tab_'. $tabOrd. ' tab',
 				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
+				'Visible' => true,
 				'Tab_Link' => $link,
 				'Tab_Name' => $this->formatTitleText($slide['slide_label'], true)
 			];

@@ -41,10 +41,10 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		// Populate panel with dataset fields
 		$sql = "
-			SELECT f.id, f.tab_name, f.dataset_id, f.label, f.default_label, f.field_name, f.db_column, f.type, f.parent_id
+			SELECT f.id, f.tab_name, f.dataset_id, f.label, f.default_label, f.field_name, f.db_column, f.type, f.parent_id, f.is_system_field
 			FROM " . DB_PREFIX . "custom_dataset_fields f
 			WHERE TRUE
-			AND f.type NOT IN ('other_system_field', 'repeat_start')
+			AND f.type NOT IN ('other_system_field')
 			AND f.db_column != ''";
 		
 		// Refiners...
@@ -117,6 +117,13 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 				}
 				$row["label"] = trim($row["label"], " :");
 				$row["is_field"] = true;
+				
+				if ($row["is_system_field"]) {
+					$row["system_or_custom_field"] = 'system';
+				} else {
+					$row["system_or_custom_field"] = 'custom';
+				}
+				
 				$row["parent_id"] = $row["parent_id"] ? $row["parent_id"] : $this->getDatasetTabPanelId($row["dataset_id"], $row["tab_name"]);
 				$row["css_class"] = "zenario_dataset_field_" . $row["type"];
 				$panel["items"][$row["id"]] = $row;
@@ -138,7 +145,8 @@ class zenario_common_features__organizer__custom_fields_hierarchy extends ze\mod
 					SELECT name, label, default_label
 					FROM " . DB_PREFIX . "custom_dataset_tabs
 					WHERE dataset_id = " . (int)$datasetId . "
-					AND name IN (" . ze\escape::in($tabs) . ")";
+					AND name IN (" . ze\escape::in($tabs) . ")
+					ORDER BY ord";
 				$result = ze\sql::select($sql);
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$label = $row["label"] ? $row["label"] : $row["default_label"];

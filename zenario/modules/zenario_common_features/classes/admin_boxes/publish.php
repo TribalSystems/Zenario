@@ -43,7 +43,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				ze\content::getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $tags[0]);
 			
 			} else {
-				$fields['publish/publish_options']['values']['unlisted']['label'] = ze\admin::phrase('Publish as unlisted content items');
+				$fields['publish/publish_options__unlisted']['label'] = ze\admin::phrase('Publish as unlisted content items');
 			}
 		}
 		
@@ -68,9 +68,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		$scheduledTaskManagerInc = ze\module::inc('zenario_scheduled_task_manager');
 		if ($scheduledTaskManagerInc) {
 			
-			$fields['publish/publish_options']['values']['immediately']['label'] = ze\admin::phrase('Publish immediately');
+			$fields['publish/publish_options__immediately']['label'] = ze\admin::phrase('Publish immediately');
 
-			$allJobsEnabled = ze::setting('jobs_enabled');
+			$allJobsEnabled = ze::setting('site_enabled') && ze::setting('jobs_enabled');
 			$scheduledPublishingEnabled = ze\row::get('jobs', 'enabled', ['job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features']);
 			if (!($allJobsEnabled && $scheduledPublishingEnabled)) {
 				$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
@@ -79,14 +79,14 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 
 				$string = "Scheduled publishing is not available. The Scheduled Task Manager is installed but the scheduled publishing task (jobPublishContent) is not enabled. [[link_start]]Click for more info.[[link_end]]";
 
-				$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
-				$fields['publish/publish_options']['values']['schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+				$fields['publish/publish_options__schedule']['disabled'] = true;
+				$fields['publish/publish_options__schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			} else {
 				$values['publish/publish_date'] = date('Y-m-d');
 			}
 		
 		} else {
-			$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
+			$fields['publish/publish_options__schedule']['disabled'] = true;
 			
 			$values['publish/publish_date'] = date('Y-m-d');
 			
@@ -98,8 +98,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 
 			$string = "Scheduled publishing is not available. To enable it, please install the Scheduled Task Manager module. [[link_start]]See available modules.[[link_end]]";
 
-			$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
-			$fields['publish/publish_options']['values']['schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			$fields['publish/publish_options__schedule']['disabled'] = true;
+			$fields['publish/publish_options__schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 		}
 		
 		if ($clash) {
@@ -131,17 +131,22 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			
 			if ($canUnlist && !ze\contentAdm::allowPublishUnlisted($cID, $cType)) {
 				$canUnlist = false;
-				$fields['publish/publish_options']['values']['unlisted']['disabled'] = true;
-				$fields['publish/publish_options']['values']['unlisted']['note_below'] =
+				$fields['publish/publish_options__unlisted']['disabled'] = true;
+				unset($box['tabs']['publish']['fields']['publish_options__unlisted']['value']);
+				
+				$fields['publish/publish_options__unlisted']['note_below'] =
 					ze\admin::nPhrase("You can't make this special page unlisted.", "One of the selected content items is a special page that cannot be unlisted.", $tagsCount);
 			}
 			
 			if ($canList && !ze\contentAdm::allowPublishListed($cID, $cType)) {
 				$canList = false;
-				$fields['publish/publish_options']['values']['schedule']['disabled'] =
-				$fields['publish/publish_options']['values']['immediately']['disabled'] = true;
-				$fields['publish/publish_options']['values']['schedule']['note_below'] =
-				$fields['publish/publish_options']['values']['immediately']['note_below'] =
+				$fields['publish/publish_options__schedule']['disabled'] =
+				$fields['publish/publish_options__immediately']['disabled'] = true;
+				
+				unset($box['tabs']['publish']['fields']['publish_options__immediately']['value'], $box['tabs']['publish']['fields']['publish_options__schedule']['value']);
+				
+				$fields['publish/publish_options__schedule']['note_below'] =
+				$fields['publish/publish_options__immediately']['note_below'] =
 					ze\admin::nPhrase("You can't make this special page listed.", "One of the selected content items is a special page that cannot be listed.", $tagsCount);
 			}
 		}
@@ -154,7 +159,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		if ($canUnlist) {
 			if (!$canList) {
 				//Default to "unlisted" if that's the only option available.
-				$values['publish/publish_options'] = 'unlisted';
+				$values['publish/publish_options__unlisted'] = 1;
 		
 			} else {
 				//Check if all of these content items are unlisted
@@ -166,7 +171,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		
 				if (!ze\sql::numRows($sql)) {
 					//If so, select the default option to still be "unlisted"
-					$values['publish/publish_options'] = 'unlisted';
+					$this->setPublishOption($values, 'unlisted');
 				}
 			}
 		}
@@ -212,7 +217,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 
 				$box['tabs']['publish']['notices']['scheduled_warning']['message'] = ze\admin::phrase($scheduledWarningPhrase, $row);
 				
-				$values['publish/publish_options'] = 'schedule';
+				$this->setPublishOption($values, 'schedule');
 				
 				$sdate = ze\date::new($row['scheduled_publish_datetime']);
 				$values['publish/publish_hours'] = $sdate->format('G');
@@ -220,7 +225,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 				$values['publish/publish_date'] = $sdate->format('Y-m-d');
 			}
 		} else {
-			unset($fields['publish/publish_options']['values']['cancel']);
+			$fields['publish/publish_options__cancel']['hidden'] = true;
 			
 			if ($scheduledTaskManagerInc && $allJobsEnabled && $scheduledPublishingEnabled) {
 				//Set the default date to be +5 min in the future. Round up to the nearest 5 mins.
@@ -245,24 +250,6 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 // 			}
 // 		} else {
 // 			unset($box['tabs']['publish']['fields']['notify_indexnow'], $box['tabs']['publish']['fields']['publish_multiple_indexnow_snippet']);
-// 		}
-	}
-
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$fields['publish/publish_date']['hidden'] = 
-		$fields['publish/publish_hours']['hidden'] = 
-		$fields['publish/publish_mins']['hidden'] = 
-			(!($values['publish/publish_options'] == 'schedule')
-			|| $fields['publish/publish_options']['hidden']);
-		
-// 		if (ze::setting('enable_indexnow') && ze::setting('indexnow_api_key') && ze\module::inc('zenario_user_timers')) {
-// 			if (isset($fields['publish/notify_indexnow'])) {
-// 				if ($values['publish/publish_options'] != 'immediately') {
-// 					$fields['publish/notify_indexnow']['hidden'] = true;
-// 				} else {
-// 					$fields['publish/notify_indexnow']['hidden'] = false;
-// 				}
-// 			}
 // 		}
 	}
 	
@@ -301,11 +288,34 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			return false;
 		}
 	}
+	
+	//In version 10.0 we rewrote code a bit, and turned the publish_options list
+	//from a radios field to multiple radio fields.
+	//These two functions are just to help convert old code.
+	protected function getPublishOption(&$values) {
+		foreach (['unlisted', 'immediately', 'schedule', 'cancel'] as $option) {
+			if (!empty($values['publish/publish_options__'. $option])) {
+				return $option;
+			}
+		}
+		return '';
+	}
+	protected function setPublishOption(&$values, $option) {
+		$values['publish/publish_options__unlisted'] =
+		$values['publish/publish_options__immediately'] =
+		$values['publish/publish_options__schedule'] =
+		$values['publish/publish_options__cancel'] = '';
+		
+		$values['publish/publish_options__'. $option] = 1;
+	}
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		
+		$option = $this->getPublishOption($values);
+		
 		// Make sure chosen time is not in the past
-		if ($values['publish/publish_options'] == 'schedule') {
+		if ($option == 'schedule') {
 			if (empty($values['publish/publish_date'])) {
 				$box['tabs']['publish']['errors'][] = ze\admin::phrase('Please enter a date.');
 			
@@ -320,6 +330,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		$option = $this->getPublishOption($values);
 		$ids = (($box['key']['id']) ? $box['key']['id'] : $box['key']['cID']);
 		
 		$ids = ze\ray::explodeAndTrim($ids);
@@ -330,7 +342,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 // 		$indexNowApiKey = '';
 // 		if (ze::setting('enable_indexnow') && ($indexNowApiKey = ze::setting('indexnow_api_key'))) {
 // 			if ($tagsCount == 1 && isset($fields['publish/notify_indexnow']) && $values['publish/notify_indexnow']) {
-// 				if (!(ze\module::inc('zenario_user_timers') && $values['publish/publish_options'] != 'immediately')) {
+// 				if (!(ze\module::inc('zenario_user_timers') && $option != 'immediately')) {
 // 					$notifyIndexNow = true;
 // 				}
 // 			}
@@ -347,8 +359,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			
 			if ($cID && $cType && ze\priv::check('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 				$adminId = $_SESSION['admin_userid'] ?? false;
-				if (($values['publish/publish_options'] == 'immediately' && ze\contentAdm::allowPublishListed($cID, $cType))
-				 || ($values['publish/publish_options'] == 'unlisted' && ze\contentAdm::allowPublishUnlisted($cID, $cType))) {
+				if (($option == 'immediately' && ze\contentAdm::allowPublishListed($cID, $cType))
+				 || ($option == 'unlisted' && ze\contentAdm::allowPublishUnlisted($cID, $cType))) {
 					// Publish now
 					if ($box['tabs']['publish']['notices']['scheduled_warning']['show']) {
 						//If this content item was scheduled for publishing, but now an admin immediately publishes it,
@@ -359,70 +371,67 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 						//Unlock content item
 						ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => NULL], ['id' => $cID, 'type' => $cType]);
 					}
-					ze\contentAdm::publishContent($cID, $cType);
+					
+					$shouldBeUnlisted = $option == 'unlisted';
+					ze\contentAdm::publishContent($cID, $cType, false, $shouldBeUnlisted);
+					
 					if (ze\ring::chopPrefix($cType. '_'. $cID. '.', ze::session('last_item'))) {
 						unset($_SESSION['last_item'], $_SESSION['page_mode'], $_SESSION['page_toolbar']);
-					}
-					
-					if ($values['publish/publish_options'] == 'unlisted') {
-						ze\contentAdm::delistContent($cID, $cType);
 					}
 					
 					//If a content item was previously scheduled, but an admin has published it immediately,
 					//send email notifications.
 					if ($box['tabs']['publish']['notices']['scheduled_warning']['show']) {
-						$emailTemplateManagerModuleRunning = ze\module::inc('zenario_email_template_manager');
-						if ($emailTemplateManagerModuleRunning) {
-							$addressFrom = ze::setting('email_address_from');
-							$nameFrom = ze::setting('email_name_from');
-							$subject = ze\admin::phrase('Content item publishing schedule cancelled, published immediately');
-							$text = self::getEmailTextContentItemScheduleCancelledButItemPublishedImmediately();
-							zenario_email_template_manager::putBodyInTemplate($text);
 						
-							$tag = ze\content::formatTag($cID, $cType);
-							$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
-							$contentItemTitle = ze\content::title($cID, $cType, $cVersion);
-							$currentStatus = ze\admin::phrase('Scheduled publishing cancelled, item published immediately');
-						
-							$lockingAdminDetails = ze\admin::details($adminId);
-						
+						$addressFrom = ze::setting('email_address_from');
+						$nameFrom = ze::setting('email_name_from');
+						$subject = ze\admin::phrase('Content item publishing schedule cancelled, published immediately');
+						$text = self::getEmailTextContentItemScheduleCancelledButItemPublishedImmediately();
+						zenario_common_features::putBodyInTemplate($text);
+					
+						$tag = ze\content::formatTag($cID, $cType);
+						$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
+						$contentItemTitle = ze\content::title($cID, $cType, $cVersion);
+						$currentStatus = ze\admin::phrase('Scheduled publishing cancelled, item published immediately');
+					
+						$lockingAdminDetails = ze\admin::details($adminId);
+					
+						$mergeFields = [
+							'admin_first_name' => $lockingAdminDetails['first_name'],
+							'admin_last_name' => $lockingAdminDetails['last_name'],
+							'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
+							'content_item_title' => $contentItemTitle,
+							'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
+							'content_item' => $tag,
+							'content_item_url' => ze\link::toItem($cID, $cType),
+							'current_status' => $currentStatus
+						];
+				
+						zenario_common_features::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+					
+						$citemLastAuthorAndCreatingAuthor = ze\row::get('content_item_versions', ['last_author_id', 'creating_author_id'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+						if ($citemLastAuthorAndCreatingAuthor['last_author_id'] != 0) {
+							$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['last_author_id'];
+						} else {
+							$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['creating_author_id'];
+						}
+			
+						$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
+					
+						if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
 							$mergeFields = [
-								'admin_first_name' => $lockingAdminDetails['first_name'],
-								'admin_last_name' => $lockingAdminDetails['last_name'],
+								'admin_first_name' => $lastEditingAdminDetails['first_name'],
+								'admin_last_name' => $lastEditingAdminDetails['last_name'],
 								'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
 								'content_item_title' => $contentItemTitle,
+								'date_and_time' => ze\date::formatDateTime($scheduled_publish_datetime),
 								'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
 								'content_item' => $tag,
 								'content_item_url' => ze\link::toItem($cID, $cType),
 								'current_status' => $currentStatus
 							];
-					
-							zenario_email_template_manager::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-						
-							$citemLastAuthorAndCreatingAuthor = ze\row::get('content_item_versions', ['last_author_id', 'creating_author_id'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-							if ($citemLastAuthorAndCreatingAuthor['last_author_id'] != 0) {
-								$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['last_author_id'];
-							} else {
-								$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['creating_author_id'];
-							}
 				
-							$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
-						
-							if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
-								$mergeFields = [
-									'admin_first_name' => $lastEditingAdminDetails['first_name'],
-									'admin_last_name' => $lastEditingAdminDetails['last_name'],
-									'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
-									'content_item_title' => $contentItemTitle,
-									'date_and_time' => ze\date::formatDateTime($scheduled_publish_datetime),
-									'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
-									'content_item' => $tag,
-									'content_item_url' => ze\link::toItem($cID, $cType),
-									'current_status' => $currentStatus
-								];
-					
-								zenario_email_template_manager::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-							}
+							zenario_common_features::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
 						}
 					}
 					
@@ -436,7 +445,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 // 						
 // 						$indexNowCallResult = ze\curl::fetch($indexNowUrl, $post = true);
 // 					}
-				} elseif ($values['publish/publish_options'] == 'schedule' && ze\contentAdm::allowPublishListed($cID, $cType)) {
+				} elseif ($option == 'schedule' && ze\contentAdm::allowPublishListed($cID, $cType)) {
 					// Publish on a later date
 					$scheduled_publish_datetime = $values['publish/publish_date'].' '.$values['publish/publish_hours'].':'.$values['publish/publish_mins'].':00';
 					$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
@@ -446,22 +455,44 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					ze\row::update('content_items', ['lock_owner_id' => $adminId, 'locked_datetime'=>date('Y-m-d H:i:s')], ['id' => $cID, 'type' => $cType]);
 					
 					//Inform the admins: the one who requested the scheduling, and the last editor (or creator if never edited).
-					$emailTemplateManagerModuleRunning = ze\module::inc('zenario_email_template_manager');
-					if ($emailTemplateManagerModuleRunning) {
-						$addressFrom = ze::setting('email_address_from');
-						$nameFrom = ze::setting('email_name_from');
-						$subject = ze\admin::phrase('Content item scheduled for publishing');
-						$text = self::getEmailTextContentItemScheduledForPublishing();
-						zenario_email_template_manager::putBodyInTemplate($text);
-						
-						$tag = ze\content::formatTag($cID, $cType);
-						$contentItemTitle = ze\content::title($cID, $cType, $cVersion);
-						
-						$lockingAdminDetails = ze\admin::details($adminId);
-						
+					
+					$addressFrom = ze::setting('email_address_from');
+					$nameFrom = ze::setting('email_name_from');
+					$subject = ze\admin::phrase('Content item scheduled for publishing');
+					$text = self::getEmailTextContentItemScheduledForPublishing();
+					zenario_common_features::putBodyInTemplate($text);
+					
+					$tag = ze\content::formatTag($cID, $cType);
+					$contentItemTitle = ze\content::title($cID, $cType, $cVersion);
+					
+					$lockingAdminDetails = ze\admin::details($adminId);
+					
+					$mergeFields = [
+						'admin_first_name' => $lockingAdminDetails['first_name'],
+						'admin_last_name' => $lockingAdminDetails['last_name'],
+						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
+						'content_item_title' => $contentItemTitle,
+						'date_and_time' => ze\date::formatDateTime($scheduled_publish_datetime),
+						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
+						'content_item' => $tag,
+						'content_item_url' => ze\link::toItem($cID, $cType)
+					];
+				
+					zenario_common_features::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+					
+					$citemLastAuthorAndCreatingAuthor = ze\row::get('content_item_versions', ['last_author_id', 'creating_author_id'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+					if ($citemLastAuthorAndCreatingAuthor['last_author_id'] != 0) {
+						$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['last_author_id'];
+					} else {
+						$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['creating_author_id'];
+					}
+			
+					$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
+					
+					if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
 						$mergeFields = [
-							'admin_first_name' => $lockingAdminDetails['first_name'],
-							'admin_last_name' => $lockingAdminDetails['last_name'],
+							'admin_first_name' => $lastEditingAdminDetails['first_name'],
+							'admin_last_name' => $lastEditingAdminDetails['last_name'],
 							'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
 							'content_item_title' => $contentItemTitle,
 							'date_and_time' => ze\date::formatDateTime($scheduled_publish_datetime),
@@ -469,34 +500,10 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 							'content_item' => $tag,
 							'content_item_url' => ze\link::toItem($cID, $cType)
 						];
-					
-						zenario_email_template_manager::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-						
-						$citemLastAuthorAndCreatingAuthor = ze\row::get('content_item_versions', ['last_author_id', 'creating_author_id'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-						if ($citemLastAuthorAndCreatingAuthor['last_author_id'] != 0) {
-							$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['last_author_id'];
-						} else {
-							$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['creating_author_id'];
-						}
 				
-						$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
-						
-						if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
-							$mergeFields = [
-								'admin_first_name' => $lastEditingAdminDetails['first_name'],
-								'admin_last_name' => $lastEditingAdminDetails['last_name'],
-								'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
-								'content_item_title' => $contentItemTitle,
-								'date_and_time' => ze\date::formatDateTime($scheduled_publish_datetime),
-								'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
-								'content_item' => $tag,
-								'content_item_url' => ze\link::toItem($cID, $cType)
-							];
-					
-							zenario_email_template_manager::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-						}
+						zenario_common_features::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
 					}
-				} elseif ($values['publish/publish_options'] == 'cancel') {
+				} elseif ($option == 'cancel') {
 					//Cancel publishing
 					$cVersion = ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
 					ze\row::update('content_item_versions', ['scheduled_publish_datetime' => NULL], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
@@ -505,23 +512,45 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => NULL], ['id' => $cID, 'type' => $cType]);
 					
 					//Inform the admins: the one who requested the scheduling, and the last editor (or creator if never edited).
-					$emailTemplateManagerModuleRunning = ze\module::inc('zenario_email_template_manager');
-					if ($emailTemplateManagerModuleRunning) {
-						$addressFrom = ze::setting('email_address_from');
-						$nameFrom = ze::setting('email_name_from');
-						$subject = ze\admin::phrase('Content item publishing schedule cancelled');
-						$text = self::getEmailTextContentItemScheduleCancelled();
-						zenario_email_template_manager::putBodyInTemplate($text);
-						
-						$tag = ze\content::formatTag($cID, $cType);
-						$contentItemTitle = ze\content::title($cID, $cType, $cVersion);
-						$currentStatus = ze\admin::phrase('Scheduled publishing cancelled');
-						
-						$lockingAdminDetails = ze\admin::details($adminId);
-						
+					
+					$addressFrom = ze::setting('email_address_from');
+					$nameFrom = ze::setting('email_name_from');
+					$subject = ze\admin::phrase('Content item publishing schedule cancelled');
+					$text = self::getEmailTextContentItemScheduleCancelled();
+					zenario_common_features::putBodyInTemplate($text);
+					
+					$tag = ze\content::formatTag($cID, $cType);
+					$contentItemTitle = ze\content::title($cID, $cType, $cVersion);
+					$currentStatus = ze\admin::phrase('Scheduled publishing cancelled');
+					
+					$lockingAdminDetails = ze\admin::details($adminId);
+					
+					$mergeFields = [
+						'admin_first_name' => $lockingAdminDetails['first_name'],
+						'admin_last_name' => $lockingAdminDetails['last_name'],
+						'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
+						'content_item_title' => $contentItemTitle,
+						'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
+						'content_item' => $tag,
+						'content_item_url' => ze\link::toItem($cID, $cType),
+						'current_status' => $currentStatus
+					];
+				
+					zenario_common_features::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
+					
+					$citemLastAuthorAndCreatingAuthor = ze\row::get('content_item_versions', ['last_author_id', 'creating_author_id'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+					if ($citemLastAuthorAndCreatingAuthor['last_author_id'] != 0) {
+						$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['last_author_id'];
+					} else {
+						$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['creating_author_id'];
+					}
+			
+					$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
+					
+					if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
 						$mergeFields = [
-							'admin_first_name' => $lockingAdminDetails['first_name'],
-							'admin_last_name' => $lockingAdminDetails['last_name'],
+							'admin_first_name' => $lastEditingAdminDetails['first_name'],
+							'admin_last_name' => $lastEditingAdminDetails['last_name'],
 							'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
 							'content_item_title' => $contentItemTitle,
 							'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
@@ -529,32 +558,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 							'content_item_url' => ze\link::toItem($cID, $cType),
 							'current_status' => $currentStatus
 						];
-					
-						zenario_email_template_manager::sendEmails($lockingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-						
-						$citemLastAuthorAndCreatingAuthor = ze\row::get('content_item_versions', ['last_author_id', 'creating_author_id'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
-						if ($citemLastAuthorAndCreatingAuthor['last_author_id'] != 0) {
-							$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['last_author_id'];
-						} else {
-							$lastEditAdminId = $citemLastAuthorAndCreatingAuthor['creating_author_id'];
-						}
 				
-						$lastEditingAdminDetails = ze\admin::details($lastEditAdminId);
-						
-						if ($lastEditingAdminDetails['email'] != $lockingAdminDetails['email']) {
-							$mergeFields = [
-								'admin_first_name' => $lastEditingAdminDetails['first_name'],
-								'admin_last_name' => $lastEditingAdminDetails['last_name'],
-								'content_type' => ze\row::get('content_types', 'content_type_name_en', ['content_type_id' => $cType]),
-								'content_item_title' => $contentItemTitle,
-								'requesting_admin' => ze\admin::formatName($lockingAdminDetails),
-								'content_item' => $tag,
-								'content_item_url' => ze\link::toItem($cID, $cType),
-								'current_status' => $currentStatus
-							];
-					
-							zenario_email_template_manager::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
-						}
+						zenario_common_features::sendEmails($lastEditingAdminDetails['email'], $subject, $addressFrom, $nameFrom, $text, $mergeFields);
 					}
 				}
 			}
@@ -570,10 +575,9 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		//then try to redirect the admin to whatever the visitor URL should be.
 		
 		if (!isset($_GET['refinerName']) && count($tags) == 1) {
-			$link = ze\link::toItem(
+			$link = ze\link::toItemWithAlias(
 				$box['key']['cID'], $box['key']['cType'],
-				$fullPath = true, '', false,
-				false, $forceAliasInAdminMode = true
+				$fullPath = true
 			);
 			
 			$flags = [];

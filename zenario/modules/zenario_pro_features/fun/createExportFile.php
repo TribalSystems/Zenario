@@ -56,6 +56,14 @@ if (($content = ze\row::get('content_items', true, ['id' => $cID, 'type' => $cTy
 	if ($version['apply_noindex_meta_tag']) {
 		zenario_pro_features::addAtt($isXML, $f, 'apply_noindex_meta_tag', '1');
 	}
+	if (!empty($version['file_id'])) {
+		if (!empty($version['filename'])) {
+			zenario_pro_features::addAtt($isXML, $f, 'filename', $version['filename']);
+		}
+		if ($checksum = ze\row::get('files', 'checksum', $version['file_id'])) {
+			zenario_pro_features::addAtt($isXML, $f, 'file_checksum', $checksum);
+		}
+	}
 	
 	zenario_pro_features::openTagEnd($isXML, $encodeHTMLAtt, $f);
 	zenario_pro_features::closeTag($isXML, $f, 'target');

@@ -1,9 +1,6 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
 zenario__modules:
     nav:
         slideshows:
-            css_class: slideshow_library
-            label: Slideshow library
-            tooltip: >
-                View slideshows - animated collections of plugins that may be used on visitor-facing pages
-            link:
-                path: zenario__modules/panels/plugins/refiners/slideshows////
+            hidden: false    # Show this nav option if a slideshow module is running

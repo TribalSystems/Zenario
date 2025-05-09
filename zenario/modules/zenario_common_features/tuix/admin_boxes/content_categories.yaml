@@ -1,6 +1,8 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content_categories:
+    #This admin box can only be accessed if exactly 1 content item is selected.
+    #The button for it will not be visible if more than 1 content item is selected.
     priv: _PRIV_EDIT_DRAFT
     key:
         id: ""
@@ -39,6 +41,8 @@ zenario_content_categories:
         cancel_button_message: Cancel
         
 zenario_content_categories_add:
+    #This admin box can only be accessed if multiple content items are selected.
+    #The button for it will not be visible if only 1 content item is selected.
     priv: _PRIV_EDIT_DRAFT
     key:
         id: ""
@@ -74,6 +78,8 @@ zenario_content_categories_add:
         cancel_button_message: Cancel
         
 zenario_content_categories_remove:
+    #This admin box can only be accessed if multiple content items are selected.
+    #The button for it will not be visible if only 1 content item is selected.
     priv: _PRIV_EDIT_DRAFT
     key:
         id: ""
@@ -97,6 +103,10 @@ zenario_content_categories_remove:
                     type: checkboxes
                     values: ""
                     checking_parent_checks_children: true
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: ''
         
     confirm:
         message: ''

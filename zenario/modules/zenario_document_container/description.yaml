@@ -11,7 +11,7 @@ description: |
     
     <p>The document can be displayed together with an thumbnail and or a description.</p>
 keywords: >
-    file, document, download, pdf, doc, docx, xls, xlsx
+    document, documents, file, files, download, pdf, doc, docx, xls, xlsx
 category: pluggable
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's

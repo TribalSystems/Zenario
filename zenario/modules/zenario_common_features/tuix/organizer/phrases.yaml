@@ -19,10 +19,6 @@ zenario__languages:
                         INNER JOIN [[DB_PREFIX]]modules AS m
                         ON m.id = [[REFINER__MODULES_PHRASES]]
                     sql: vp.module_class_name = m.class_name
-                category_public_name:
-                    sql: |
-                        vp.code = '_CATEGORY_[[REFINER__CATEGORY_PUBLIC_NAME]]'
-                        AND vp.module_class_name = 'zenario_common_features'
                 group_public_name:
                     sql: |
                         vp.code = '_GROUP_[[REFINER__GROUP_PUBLIC_NAME]]'
@@ -56,6 +52,8 @@ zenario__languages:
                     format: module_class_name
                     show_by_default: true
                     width: large
+                    searchable: true
+                    ascii_only: true
                 module_class_name:
                     db_column: vp.module_class_name
                 seen_in_visitor_mode:
@@ -65,6 +63,7 @@ zenario__languages:
                     yes_phrase: Seen
                     no_phrase: Unseen
                     show_by_default: false
+                    disallow_sorting: true
                     width: small
                 seen_at:
                     db_column: |
@@ -72,12 +71,14 @@ zenario__languages:
                     title: Seen at
                     show_by_default: true
                     width: large
+                    disallow_sorting: true
                     item_link: content_item_or_url
                 first_seen_by_visitor:
                     title: First seen in visitor mode
                     db_column: vp.first_seen_by_visitor
                     format: date
                     show_by_default: true
+                    disallow_sorting: true
                     values:
                         unknown: Unknown
                     #width: small

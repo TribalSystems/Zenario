@@ -36,6 +36,11 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$box['key']['id'] = ze\admin::id();
 		}
 		
+		$currentAdminId = ze\admin::id();
+		$adminDetails = ze\row::get('admins', ['authtype', 'is_client_account'], $currentAdminId);
+		$adminAuthType = $adminDetails['authtype'];
+		$adminIsClientAddount = $adminDetails['is_client_account'];
+		
 		
 		//Show the code names of permissions to developers
 		if (ze\admin::setting('show_dev_tools')) {
@@ -223,6 +228,84 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				
 			}
 			
+			$values['history/datetime_created'] = ze\admin::formatDate($details['created_date'], '_MEDIUM');
+			
+			if ($details['last_login']) {
+				$values['history/last_login'] = ze\admin::formatDateTime($details['last_login'], 'vis_date_format_med', $useDefaultLang = true);
+				
+				if ($sessionId = $details['session_id']) {
+	
+					if (file_exists(session_save_path(). "/sess_" . $sessionId)) {
+						clearstatcache(true, session_save_path(). "/sess_" . $sessionId);
+						$sessionInfo = stat(session_save_path(). "/sess_" . $sessionId);
+					
+						//Check how long ago the admin was active.
+						$lastActivityTimestamp = $sessionInfo['mtime'];
+			
+						//If the admin was active less than 10 mins ago, show "Logged in now" instead of a date.
+						$inactivityDuration = (time() - $lastActivityTimestamp);
+					
+						if ($inactivityDuration < 600) {
+							//When 2FA is enabled, show the login status of this admin.
+							if (ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
+								$sqlCode = "
+									Select value FROM ". DB_PREFIX. "admin_settings
+									WHERE name LIKE 'z_admin_2fa_%'
+									AND admin_id = ". (int) $box['key']['id'];
+								
+								$sqlCodeResult = ze\sql::select($sqlCode);
+								$sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
+								
+								if (!empty($sqlCodeRow) && is_array($sqlCodeRow) && !empty($sqlCodeRow['value'])) {
+									$values['history/last_login'] = ze\admin::phrase('Logged in now');
+								} else {
+									$values['history/last_login'] = ze\admin::phrase('Logged in now (pending 2FA)');
+								}
+							} else {
+								$values['history/last_login'] = ze\admin::phrase('Logged in now');
+							}
+							
+						}
+					}
+				}
+			}
+			
+			if (!$values['history/last_login']) {
+				$values['history/last_login'] = ze\admin::phrase('Never logged in');
+			}
+			
+			if ($details['last_platform'] && $details['last_platform'] && $details['last_platform'] && $details['last_platform']) {
+				$replace = [
+					'last_platform' => $details['last_platform'],
+					'last_browser' => $details['last_browser'],
+					'last_browser_version' => $details['last_browser_version'],
+					'last_login_ip' => $details['last_login_ip']
+				];
+				
+				if (ze\module::inc('zenario_geoip_lookup')) {
+					$countryCode = zenario_geoip_lookup::getCountryISOCodeForIp($details['last_login_ip'], $ignoreDebugCountry = true);
+					
+					if (ze\module::inc('zenario_country_manager')) {
+						$countryName = zenario_country_manager::getEnglishCountryName($countryCode);
+						$loginBrowserAndIpString = '[[last_platform]] [[last_browser]] v. [[last_browser_version]] from [[last_login_ip]] (country code [[country_code]], [[country_name]])';
+						$replace['country_code'] = $countryCode;
+						
+						//Fall back gracefully if a country had been deleted
+						if (!$countryName || substr($countryName, 0, 14) == '_COUNTRY_NAME_') {
+							$countryName = ze\admin::phrase('could not find country name');
+						}
+						$replace['country_name'] = $countryName;
+					} else {
+						$loginBrowserAndIpString = '[[last_platform]] [[last_browser]] v. [[last_browser_version]] from [[last_login_ip]] ([[country_code]])';
+						$replace['country_code'] = $countryCode;
+					}
+				} else {
+					$loginBrowserAndIpString = '[[last_platform]] [[last_browser]] v. [[last_browser_version]] from [[last_login_ip]]';
+				}
+				
+				$values['history/last_login_browser_and_ip'] = ze\admin::phrase($loginBrowserAndIpString, $replace);
+			}
+			
 		} else {
 			ze\priv::exitIfNot('_PRIV_CREATE_ADMIN');
 			
@@ -243,7 +326,15 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$box['tabs']['details']['edit_mode']['enable_revert'] =
 			$box['tabs']['password']['edit_mode']['enable_revert'] =
 			$box['tabs']['permissions']['edit_mode']['enable_revert'] = false;
-			$values['is_client_account'] = true;
+			
+			//As of 10.1, the logic is changed so that:
+			//1) If a global admin, or a local admin who IS NOT a client, is creating a new admin account, they can decide whether or not the new account is a client account,
+			//2) If a local admin who IS a client creates a new admin account, the new account will be a client account without any choice.
+			
+			
+			if ($adminAuthType == 'local' && $adminIsClientAddount) {
+				$values['is_client_account'] = true;
+			}
 			
 			//Show a notice that the admin will set their own password
 			$box['tabs']['password']['notices']['new_admin']['show'] = true;
@@ -251,8 +342,8 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 		
 		$fields['permissions/specific_content_types']['values'] = ze\row::getValues('content_types', 'content_type_name_en', [], 'content_type_name_en');
 		
-		$adminAuthType = ze\row::get('admins', 'authtype', ze\admin::id());
-		if ($adminAuthType == 'local') {
+		
+		if ($adminAuthType == 'local' && $adminIsClientAddount) {
 			$fields['is_client_account']['disabled'] = true;
 		}
 		$limit = ze\site::description('max_local_administrators');
@@ -463,7 +554,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			if ($values['permissions/permissions'] == 'specific_areas') {
 				if (!$values['permissions/specific_content_items']
 				 && !$values['permissions/specific_content_types']) {
-					$box['tabs']['permissions']['errors'][] = ze\admin::phrase('Please select at least one content item.');
+					$box['tabs']['permissions']['errors'][] = ze\admin::phrase('Please select at least one content type or one content item.');
 
 				}
 			}
@@ -537,9 +628,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			$message = $emailTemplate['body'];
 			$message = nl2br($message);
 		
-			if (ze\module::inc('zenario_email_template_manager')) {
-				zenario_email_template_manager::putBodyInTemplate($message);
-			}
+			zenario_common_features::putBodyInTemplate($message);
 
 			$subject = $emailTemplate['subject'];
 
@@ -553,7 +642,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				'new_admin_cms_url' => ze\link::absolute() . 'admin.php?task=new_admin&hash=' . $hash
 			];
 
-			$nameTo = ze::ifNull(trim($email_details['first_name'] . ' ' . $email_details['last_name']), $email_details['username']);
+			$nameTo = trim($email_details['first_name'] . ' ' . $email_details['last_name']) ?: $email_details['username'];
 			
 			foreach ($email_details as $pattern => $replacement) {
 				$message = str_replace('[['. $pattern. ']]', $replacement, $message);
@@ -658,7 +747,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 							 || ze\ring::engToBoolean($field['_was_hidden_before'] ?? false)) {
 								$value = '';
 							} else {
-								$value = ze\ray::value($values, $tabName. '/'. $fieldName);
+								$value = $values[$tabName. '/'. $fieldName] ?? '';
 							}
 							
 							ze\row::set('admin_settings', ['value' => $value], ['name' => $settingName, 'admin_id' => $box['key']['id']]);

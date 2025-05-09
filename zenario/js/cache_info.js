@@ -26,28 +26,57 @@
  */
 window.zenarioCI = function() {};
 
-(function(
-	zenario, zenarioCI,
-	undefined) {
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioT, zenarioAB, zenarioAT, zenarioO,
+	encodeURIComponent, defined, engToBoolean, get, htmlspecialchars, jsEscape, phrase,
+	extensionOf, methodsOf, has,
+	zenarioCI, zenarioCD
+) {
+	"use strict";
 
 
-zenarioCI.box = function(slotName, type, cantCache) {
+//Show a debug tooltip for either a plugin, a nested plugin, or the entire page
+zenarioCI.box = function(slotNameNestId, type, cantCache) {
 	var css = '',
 		html = '',
+		blocking = false,
 		cache_if = {u: true, g: true, s: true},
 		clear_cache_by = {},
 		lType = type.toLowerCase(),
 		pluginDesc = '',
-		si, slot,
-		i, slotNameNestId;
+		si, slot, thisSlotName,
+		i, thisSlotNameNestId,
+		slotName = slotNameNestId.split('-')[0];	//Remove the Nested Plugin id from the slotNameNestId if needed
 	
-	for (slotNameNestId in zenarioCD.slots) {
-		if (!slotName
-		 || slotNameNestId == slotName
-		 || slotNameNestId.substr(0, slotName.length + 1) == slotName + '-'
-		 || slotNameNestId == slotName.split('-')[0]) {
+	
+	//If showing info for a nest or a slideshow, don't call it a "Plugin"
+	if (slotNameNestId && (slot = zenario.slots[slotNameNestId])) {
+		switch (slot.moduleClassName) {
+			case 'zenario_nest':
+			case 'zenario_ajax_nest':
+				type = 'Nest';
+				break;
+			case 'zenario_slideshow':
+				type = 'Slideshow';
+		}
+	}
+	lType = type.toLowerCase();
+	
+	
+	//Work out what the rules are for whatever thing this is.
+	//Rules for normal plugins and nested plugins can be simply read off of their entry in the zenarioCD.slots object.
+	//Rules for nests, slideshows and the entire page need to be calculated by combining all of the rules from the plugins that make them up.
+	for (thisSlotNameNestId in zenarioCD.slots) {
+		
+		//Remove the Nested Plugin id from the slotNameNestId if needed
+		thisSlotName = thisSlotNameNestId.split('-')[0];
+		
+		if (!slotNameNestId || thisSlotName == slotName) {
 			
-			slot = zenarioCD.slots[slotNameNestId];
+			slot = zenarioCD.slots[thisSlotNameNestId];
 			
 			if (cantCache || !slot.cache_if || !slot.cache_if.a || slot.disallow_caching) {
 				cantCache = true;
@@ -70,8 +99,8 @@ zenarioCI.box = function(slotName, type, cantCache) {
 		}
 	}
 	
-	if (slotName) {
-		pluginDesc = zenarioCI.pluginDesc(slotName);
+	if (slotNameNestId) {
+		pluginDesc = zenarioCI.pluginDesc(slotNameNestId);
 		
 		if (pluginDesc) {
 			pluginDesc = ',' + pluginDesc + ',';
@@ -79,28 +108,51 @@ zenarioCI.box = function(slotName, type, cantCache) {
 	}
 	
 	
-	if (cantCache) {
-		css = 'zenario_cache_disabled';
-		html += '<h1 class="' + css + '">' + type + zenario.htmlspecialchars(pluginDesc) + ' caching info: does not support caching.</h1><h2>The developer did not enable support for caching for this ' + lType + '.</h2>';
+	if ($('#plgslt_' + slotName).hasClass('zenario_slot_reloaded')) {
+		css = 'zenario_cache_disabled zenario_cache_reloaded';
+		html += '<h1 class="' + css + '">' + type + htmlspecialchars(pluginDesc) + ' was reloaded via AJAX after the page was displayed, so the caching info for it is out of date.</h1>';
+	
+	} else if (cantCache) {
+		//Show a message if something doesn't support caching
 		
-		if (!slotName) {
-			html += '<ul>';
-			for (slotNameNestId in zenarioCD.slots) {
+		//It can be a bit confusing what's actually stopping a nest/slideshow/page from being cached.
+		//To try and fix this, we'll always specifically mention which plugin it actually is.
+		html += '<ul>';
+		foreach (zenarioCD.slots as thisSlotNameNestId => slot) {
 			
-				slot = zenarioCD.slots[slotNameNestId];
+			//Remove the Nested Plugin id from the slotNameNestId if needed
+			thisSlotName = thisSlotNameNestId.split('-')[0];
 			
-				if (!slot.cache_if || !slot.cache_if.a || slot.disallow_caching) {
-					var blockingPlugin = zenarioCI.pluginDesc(slotNameNestId);
+			if (!slot.cache_if || !slot.cache_if.a || slot.disallow_caching) {
+				if (slotNameNestId && slotNameNestId == thisSlotNameNestId) {
+					html += '<li>This ' + lType + ' is blocking caching.</li>';
+					blocking = true;
+				
+				} else if (!slotNameNestId || thisSlotName == slotName) {
+			
+					var blockingPlugin = zenarioCI.pluginDesc(thisSlotNameNestId);
 					
 					if (blockingPlugin) {
-						blockingPlugin = 'Blocked by ' + blockingPlugin + ' in slot ' + slotNameNestId;
+						blockingPlugin = 'Blocked by ' + blockingPlugin + ' in slot ' + thisSlotNameNestId;
 					} else {
-						blockingPlugin = 'Blocked by slot ' + slotNameNestId;
+						blockingPlugin = 'Blocked by slot ' + thisSlotNameNestId;
 					}
-					html += '<li>' + zenario.htmlspecialchars(blockingPlugin) + '.</li>';
+					html += '<li>' + htmlspecialchars(blockingPlugin) + '.</li>';
 				}
 			}
-			html += '</ul>';
+			
+			if (slot.cache_msg) {
+				html += '<li><em>' + htmlspecialchars(slot.cache_msg) + '</em></li>';
+			}
+		}
+		html += '</ul>';
+		
+		css = 'zenario_cache_disabled';
+		if (blocking) {
+			html = '<h1 class="' + css + '">' + type + htmlspecialchars(pluginDesc) + ' caching info: does not support caching.</h1>' + html;
+		} else {
+			css += ' zenario_cache_blocked';
+			html = '<h1 class="' + css + '">' + type + htmlspecialchars(pluginDesc) + ' caching info: caching is blocked.</h1>' + html;
 		}
 	
 	} else if (type == 'Page' && zenarioCD.load.l) {
@@ -110,11 +162,12 @@ zenarioCI.box = function(slotName, type, cantCache) {
 	} else {
 		
 		css = 'zenario_cache_in_use';
-		if (zenarioCD.served_from_cache || (slotName && zenarioCD.slots[slotName] && zenarioCD.slots[slotName].served_from_cache)) {
+		if (zenarioCD.served_from_cache || (slotNameNestId && zenarioCD.slots[slotNameNestId] && zenarioCD.slots[slotNameNestId].served_from_cache)) {
 			css = 'zenario_from_cache';
 		}
 		
 		var ruleNotMet = false,
+			aRuleNotMet = false,
 			conditions = {s: 's', g: 'g', u: 'u'},
 			by = {content: 'content', menu: 'menu', file: 'file', module: 'module'},
 			
@@ -134,51 +187,96 @@ zenarioCI.box = function(slotName, type, cantCache) {
 			ruleNotMet = zenarioCD.load[i] && !cache_if[i];
 			
 			if (ruleNotMet) {
+				aRuleNotMet = true;
 				css = 'zenario_not_cached';
 			}
 			
-			html += '<tr><th>' + zenario.htmlspecialchars(key[i]) + '</th>';
-			html += 	'<td class="zenario_cache_req">' + (cache_if[i]? 'Yes' : 'No') + '</td>';
+			html += '<tr><th>' + htmlspecialchars(key[i]) + '</th>';
+			html += 	'<td>' + (cache_if[i]? 'Yes' : 'No') + '</td>';
 			html += 	'<td>' + (zenarioCD.load[i]? 'Yes' : 'No') + '</td>';
-			html += 	'<td>' + (ruleNotMet? 'Can\'t cache' : 'OK to cache') + '</td></tr>';
+			
+			if (ruleNotMet) {
+				html +='<td class="zenario_cache_result zenario_cache_not_met">Can\'t cache</td></tr>';
+			} else {
+				html +='<td class="zenario_cache_result zenario_cache_met">OK to cache</td></tr>';
+			}
 		}
-		html += '<tr class="zenario_cache_table_last_row"><th>Result</th><td>&nbsp;</td><td>&nbsp;</td><td>' + (css == 'zenario_not_cached'? 'Can\'t cache' : 'OK to cache') +  '</td></tr>';
-		html += '</table>';
+		html += '<tr class="zenario_cache_table_last_row ';
+		
+		if (aRuleNotMet) {
+			html +='zenario_cache_not_met"><th>Result</th><td>&nbsp;</td><td>&nbsp;</td><td>Can\'t cache</td>';
+		} else {
+			html +='zenario_cache_met"><th>Result</th><td>&nbsp;</td><td>&nbsp;</td><td>OK to cache</td>';
+		}
+		
+		html += '</tr></table>';
 		
 		
-		var found = false;
+		var cookies, sessionVars, varName,
+			found = false;
+		
 		for (i in by) {
 			if (clear_cache_by[i]) {
 				if (!found) {
 					html += '<h2>' + type + '\ caching info: will be cleared from the cache when:</h2><ul>';
 					found = true;
 				}
-				html += '<li>' + zenario.htmlspecialchars(key[i]) + '</li>';
+				html += '<li>' + htmlspecialchars(key[i]) + '</li>';
 			}
 		}
 		if (found) {
 			html += '</ul>';
 		}
 		
-		
-		if (css == 'zenario_not_cached') {
-			html = '<h1 class="' + css + '">' + type + zenario.htmlspecialchars(pluginDesc) + ' caching info: can be cached, but not in the current situation due to a conflict.</h1>' + html;
-		
-		} else if (css == 'zenario_from_cache') {
-			html = '<h1 class="' + css + '">' + type + zenario.htmlspecialchars(pluginDesc) + ' caching info: can be cached and was just served from the cache.</h1>' + html;
-		
-		} else {
-			html = '<h1 class="' + css + '">' + type + zenario.htmlspecialchars(pluginDesc) + ' caching info: can be cached. It was served from the database but has now been written to the cache for further requests.</h1>' + html;
+		if (!_.isEmpty(cookies = zenarioCD.cookies)) {
+			html += '<h2>This request has the following cookies:</h2><ul>';
+			foreach (cookies as i => varName) {
+				html += '<li>' + htmlspecialchars(varName) + '</li>';
+			}
+			html += '</ul>';
+		}
+		if (!_.isEmpty(sessionVars = zenarioCD.sessionVars)) {
+			html += '<h2>This request has the following session variables:</h2><ul>';
+			foreach (sessionVars as i => varName) {
+				html += '<li>' + htmlspecialchars(varName) + '</li>';
+			}
+			html += '</ul>';
 		}
 		
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(*)</span> <em>Some session variables and cookies do not affect caching and are ignored in this check. Check the <code>ze::cacheFriendlySessionVar()</code> and <code>ze::cacheFriendlyCookieVar()</code> functions in <code>zenario/basicheader.inc.php</code> to see the logic used.</em></p>';
-		html += '<p class="zenario_cache_footnote"><span class="zenario_cache_footnote_character">(†)</span> <em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>). Some plugins also add additional parameters, for example a <code>page</code> number or a <code>search</code> string.</em></p>';
+		
+		if (css == 'zenario_not_cached') {
+			html = '<h1 class="' + css + '">' + type + htmlspecialchars(pluginDesc) + ' caching info: can be cached, but not in the current situation due to a conflict.</h1>' + html;
+		
+		} else if (css == 'zenario_from_cache') {
+			html = '<h1 class="' + css + '">' + type + htmlspecialchars(pluginDesc) + ' caching info: can be cached and was just served from the cache.</h1>' + html;
+		
+		} else {
+			html = '<h1 class="' + css + '">' + type + htmlspecialchars(pluginDesc) + ' caching info: can be cached. It was served from the database but has now been written to the cache for further requests.</h1>' + html;
+		}
+		
+		html +=
+			'<p class="zenario_cache_footnote">' +
+				'<span class="zenario_cache_footnote_character">(*)</span> ' +
+				'<em>Some session variables and cookies do not affect caching and are ignored in this check.<br/>' +
+					'(E.g. <code>z_cookies_accepted</code>, <code>z_user_lang</code>, <code>destCID</code>, <code>extranetUserID</code>.)<br/>' +
+					'Check the <code>ze\cache::friendlySessionVar()</code> and <code>ze\\cache::friendlyCookieVar()</code> functions ' +
+					'in <code>zenario/autoload/cache.php</code> to see the logic used.' +
+				'</em>' +
+			'</p>' +
+			'<p class="zenario_cache_footnote">' +
+				'<span class="zenario_cache_footnote_character">(†)</span> ' +
+				'<em>A page is considered unique for caching purposes according to its alias (or its <code>cID</code> and <code>cType</code>). ' +
+					'Some plugins also add additional parameters, for example a <code>page</code> number or a <code>search</code> string.' +
+				'</em>' +
+			'</p>';
 	}
 	
-	return '<x-zenario-cache-info class="' + css + '" title="' + zenario.htmlspecialchars('<div class="zenario_cache_box">' + html + '</div>') + '"></x-zenario-cache-info>';
+	html = '<div class="' + ('zenario ' + css).replace(/zenario/g, 'zenario_cache_box') + '">' + html + '</div>';
+	return '<x-zenario-cache-info class="' + css + '" title="' + htmlspecialchars(html) + '"></x-zenario-cache-info>';
 };
 
 
+//Return a brief name/description of a plugin/nested plugin to show on a tooltip
 zenarioCI.pluginDesc = function(slotName) {
 	
 	var slot, pluginDesc = '';
@@ -195,11 +293,11 @@ zenarioCI.pluginDesc = function(slotName) {
 		} else {
 			//N.b. this logic is a copy of the zenarioA.pluginCodeName() function!
 			switch (slot.moduleClassName) {
-				case 'zenario_plugin_nest':
+				case 'zenario_nest':
+				case 'zenario_ajax_nest':
 					pluginDesc += 'N';
 					break;
 				case 'zenario_slideshow':
-				case 'zenario_slideshow_simple':
 					pluginDesc += 'S';
 					break;
 				default:
@@ -215,7 +313,8 @@ zenarioCI.pluginDesc = function(slotName) {
 };
 
 
-
+//The first time the visitor clicks on the main caching debug icon, add debug icons to every slot/plugin
+//on the page.
 zenarioCI.init = function(canCache) {
 	if (!zenarioCI.inited) {
 		var slotName,
@@ -232,7 +331,7 @@ zenarioCI.init = function(canCache) {
 			}
 		});
 		
-		zenario.get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache);
+		get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache);
 		
 		zenario.tooltips('x-zenario-cache-info.zenario_cache_info *', options);
 		
@@ -242,5 +341,4 @@ zenarioCI.init = function(canCache) {
 
 
 
-})(
-	zenario, zenarioCI);
+}, zenarioCI, zenarioCD);

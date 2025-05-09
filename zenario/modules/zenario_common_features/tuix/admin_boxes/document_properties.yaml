@@ -26,6 +26,8 @@ zenario_document_properties:
                     label: 'Title:'
                     type: text
                     maxlength: "255"
+                    tooltip: |
+                        This can be shown to the visitor when the document is shown in a Document Container plugin.
                 document_name:
                     label: 'Filename:'
                     type: text
@@ -71,7 +73,7 @@ zenario_document_properties:
                     type: grouping
                 title:
                     grouping: thumbnail_grouping
-                    label: 'Current thumbnail image:'
+                    label: 'Current thumbnail image (public):'
                 thumbnail_image:
                     grouping: thumbnail_grouping
                     dataset_label: '[Thumbnail image]'
@@ -86,11 +88,11 @@ zenario_document_properties:
             
                 zenario_common_feature__upload:
                     grouping: thumbnail_grouping
-                    label: 'Upload new thumbnail image:'
+                    label: 'Upload new thumbnail image (public):'
                     upload:
                         multi: false
                         drag_and_drop: true
-                        accept: "image/png, image/gif, image/jpg, image/jpeg"
+                        accept: "image/png, image/gif, image/jpg, image/jpeg, image/webp"
                         #extensions: 
                         #	- .gif
                         #	- .png

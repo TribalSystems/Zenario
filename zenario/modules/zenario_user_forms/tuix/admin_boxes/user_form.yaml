@@ -75,7 +75,14 @@ zenario_user_form:
                     label: 'Filter for profanities'
                     type: checkbox
                     side_note: |
-                        Scan text and textarea fields for profanities. Offending forms will be logged, but not emailed.
+                        Scan text and textarea fields for profanities. Forms with offensive words will be logged, but not emailed.
+                    format_onchange: true
+                    notices_below:
+                        profanities_csv_file_is_missing:
+                            hidden: true
+                            type: warning
+                            html: true
+                            message: 'The file <code>zenario/libs/not_to_redistribute/profanity-filter/profanities.csv</code> could not be found. Zenario will not scan for swear words without this file.'
         
                 allow_partial_completion:
                     ord: 13
@@ -122,27 +129,21 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: 'Please enter a message.'
                     indent: 2  
-                allow_clear_partial_data:
-                    ord: 14.1
-                    label: 'Allow user to clear uncompleted form data'
-                    type: checkbox
-                    visible_if: zenarioAB.value('allow_partial_completion')
-                    redraw_onchange: true
-                    indent: 1
                 clear_partial_data_message:
-                    ord: 14.2
+                    ord: 14.1
                     label: |
-                        Message to show when user presses the Clear button:
+                        Message to show when user revisits a partially complete form:
                     type: text
                     value: |
                         Would you like to resume editing this form or clear your existing data?
                     maxlength: 255
-                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('allow_clear_partial_data')
+                    visible_if: zenarioAB.value('allow_partial_completion')
                     validation:
                         required_if_not_hidden: 'Please enter a message for users when loading an uncompleted form.'
                     indent: 2
+                #If the Form Deadline Reminders module is running, it will insert 3 fields here.
                 enable_partial_completion_get_request:
-                    ord: 14.3
+                    ord: 14.5
                     label: 'Enable GET request'
                     type: checkbox
                     visible_if: zenarioAB.value('allow_partial_completion')
@@ -151,7 +152,7 @@ zenario_user_form:
                     side_note: |
                         Allows a user to have more than one saved response per form. User will then return to the appropriate form, based on the value of a GET request.
                 partial_completion_get_request:
-                    ord: 14.4
+                    ord: 14.6
                     label: 'GET request (advanced):'
                     type: text
                     maxlength: 250
@@ -185,7 +186,13 @@ zenario_user_form:
                     label: 'Show a summary as the final step'
                     side_note: An additional step will be shown after the defined form steps, with a summary of all fields of the form.
                     type: checkbox
-                    redraw_onchange: true
+                    format_onchange: true
+                    notices_below:
+                        info:
+                            hidden: true
+                            type: information
+                            message: |
+                                For single-step forms, the whole form will be shown in summary. For multi-step forms, each individual step that is set to appear in summary will need to be selected. This can be done in the form editor on the step settings.
                 enable_summary_page_required_checkbox:
                     ord: 18
                     label: 'Show a mandatory checkbox on the summary step (e.g. a confirmation)'
@@ -367,7 +374,7 @@ zenario_user_form:
                         required_if_not_hidden: 'Please enter the content item tag label.'
             
         data:
-            label: Actions on response
+            label: Response handling
             edit_mode:
                 enabled: true
             ord: 2
@@ -375,7 +382,7 @@ zenario_user_form:
                 actions_desc: 
                     class_name: zenario_user_forms
                     snippet: 
-                        html: "When someone successfully submits this form, various actions can be performed."
+                        html: "When someone successfully submits a form response, various actions can be performed."
                     ord: 1
                     id: data_tab_description
                 line_br_0:
@@ -387,11 +394,260 @@ zenario_user_form:
                     label: 'Log the form response'
                     type: checkbox
                     format_onchange: true
+
+                line_br_2:
+                    snippet:
+                        html: | 
+                            <hr />
+                            <b>Emailing the response</b>
+
+                send_email_to_admin:
+                    label: 'Send email to administrator (or other recipients)'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN send_email_to_admin options
+                
+                send_email_to_admin_condition:
+                    indent: 1
+                    label: "When to send:"
+                    type: select
+                    values:
+                        always_send:
+                            label: "Always send"
+                        send_on_condition:
+                            label: "Send on condition"
+                    value: always_send
+                    visible_if: zenarioAB.value('send_email_to_admin');
+                    format_onchange: true
+                send_email_to_admin_condition_fields:
+                    indent: 2
+                    label: "Select a condition field:"
+                    type: select
+                    values: {}
+                    empty_value: -- Select --
+                    visible_if: (zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_condition') == 'send_on_condition'));
+                    note_below: "Checkbox and consent dataset type fields are supported."
+                send_email_to_admin_destination_for_form_response:
+                    indent: 1
+                    label: "Destination for form response:"
+                    type: radios
+                    value: enter_address_manually
+                    values:
+                        enter_address_manually:
+                            ord: 1
+                            label: "Enter address(es) manually"
+                        call_static_method:
+                            ord: 2
+                            label: "Call a static method (advanced)"
+                    format_onchange: true
+                    visible_if: zenarioAB.value('send_email_to_admin')
+                admin_email_addresses:
+                    label: 'Send to these email address(es):'
+                    type: text
+                    side_note: |
+                        Enter email address of an administrator or other recipient. If more than one, separate email addresses with commas.
+                    validation:
+                        required_if_not_hidden: Please enter one or more admin email addresses.
+                    is_email_address: true
+                    indent: 2
+                admin_email_destination_module_class_name:
+                    indent: 2
+                    visible_if: zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_destination_for_form_response') == 'call_static_method')
+                    label: 'Module class name:'
+                    type: text
+                    maxlength: 200
+                    oninput: |
+                        var $warningRow = $(lib.get('row__content_item_privacy_info_warning'));
+                        
+                        var moduleClassNameOnLoad = zenarioAB.tuix.key.privacy_settings_on_load.admin_email_destination_module_class_name;
+                        if (moduleClassNameOnLoad != this.value) {
+                            $warningRow.removeClass('zfab_inline_warning_hidden');
+                        } else {
+                            $warningRow.addClass('zfab_inline_warning_hidden');
+                        }
+                admin_email_destination_method_name:
+                    indent: 2
+                    visible_if: zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_destination_for_form_response') == 'call_static_method')
+                    label: 'Static method name:'
+                    type: text
+                    maxlength: 127
+                    notices_below:
+                        static_method_notice:
+                            type: information
+                            message: "No email will be sent if the static method does not return any email addresses."
+                admin_email_options:
+                    type: radios
+                    label: "Email options:"
+                    values:
+                        visible_fields:
+                            ord: 1
+                            label: 'Send all visible fields (recommended)'
+                        send_data:
+                            ord: 2
+                            label: 'Send all form data (unformatted)'
+                        use_template:
+                            ord: 3
+                            label: 'Send email using template'
+                    
+                    value: visible_fields
+                    format_onchange: true
+                    indent: 1
+                    
+                admin_email_template:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for admin emails.
+                    indent: 2
+                
+                admin_email_attachments:
+                    indent: 1
+                    label: 'Attach uploaded files to the email response'
+                    type: checkbox
+                    side_note: |
+                        Emails sent to administrators will include attachments. If not set, administrators will need to log in to Zenario to retrieve uploads.
+                
+                reply_to:
+                    label: 'Optional "reply-to"'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: When set, you can directly reply to the users email address in your email client
+                    indent: 1
+                # BEGIN reply_to options
+                reply_to_email_field:
+                    label: 'Reply-to email using:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required_if_not_hidden: Please select a reply-to email field
+                    side_note: Select the form field in which the user enters their email address
+                    indent: 2
+                reply_to_first_name:
+                    label: 'Reply-to first name using:'
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Select the form field in which the user enters their first name
+                    indent: 2
+                reply_to_last_name:
+                    label: 'Reply-to last name using:'
+                    type: select
+                    empty_value: -- Select --
+                    side_note: Select the form field in which the user enters their last name
+                    indent: 2
+                # END reply_to options
+                make_urls_non_clickable_admin:
+                    indent: 1
+                    label: 'Make URLs non-clickable'
+                    type: checkbox
+                    note_below: 'Sanitise: Convert all URLs or email addresses in any textarea, text or URL field to a safe, non-clickable form by putting square brackets around dots, i.e. [.]'
+                    visible_if: zenarioAB.value('send_email_to_admin');
+                # END send_email_to_admin options
+                
+                send_email_to_user:
+                    label: 'Send email to person submitting the form'
+                    type: checkbox
+                    format_onchange: true
+                
+                send_email_to_email_from_field:
+                    label: Send to email address specified in form...
+                    type: checkbox
+                    format_onchange: true
+                    indent: 1
+                user_email_field:
+                    label: |
+                        Form field specifying email address:
+                    type: select
+                    empty_value: -- Select field --
+                    validation:
+                        required_if_not_hidden: Please select a form field to send user email to.
+                    indent: 2
+                user_email_options_from_field:
+                    type: radios
+                    label: "Email options:"
+                    values:
+                        visible_fields:
+                            ord: 1
+                            label: 'Send all visible fields (recommended)'
+                            side_note: 'Attachments will be sent in this format.'
+                        send_data:
+                            ord: 2
+                            label: 'Send all form data (unformatted)'
+                            side_note: 'Attachments will not be sent in this format.'
+                        use_template:
+                            ord: 3
+                            label: 'Send email using template'
+                    value: visible_fields
+                    format_onchange: true
+                    indent: 2
+                user_email_template_from_field:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for user emails.
+                    indent: 3
+                
+                send_email_to_logged_in_user:
+                    label: Send to logged-in user's email (if user logged in or new account was created)
+                    type: checkbox
+                    format_onchange: true
+                    indent: 1
+                user_email_options_logged_in_user:
+                    type: radios
+                    label: "Email options:"
+                    values:
+                        visible_fields:
+                            ord: 1
+                            label: 'Send all visible fields (recommended)'
+                            side_note: 'Attachments will be sent in this format.'
+                        send_data:
+                            ord: 2
+                            label: 'Send all form data (unformatted)'
+                            side_note: 'Attachments will not be sent in this format.'
+                        use_template:
+                            ord: 3
+                            label: 'Send email using template'
+                    value: visible_fields
+                    format_onchange: true
+                    indent: 2
+                user_email_template_logged_in_user:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for user emails.
+                    indent: 3
+                
+                make_urls_non_clickable_user:
+                    indent: 1
+                    label: 'Make URLs non-clickable'
+                    type: checkbox
+                    note_below: 'Sanitise: Convert all URLs or email addresses in any textarea, text or URL field to a safe, non-clickable form by putting square brackets around dots, i.e. [.]'
+                    visible_if: zenarioAB.value('send_email_to_user') && (zenarioAB.value('send_email_to_email_from_field') || zenarioAB.value('send_email_to_logged_in_user'));
+                
+
+
                 line_br_1:
                     snippet:
                         html: |
                             <hr />
-                            <b>For anonymous visitors</b>
+                            <b>Creating user or contacts</b>
                 email_html:
                     pre_field_html: "<div class=\"zenario_fbWarning\">"
                     snippet:
@@ -399,7 +655,7 @@ zenario_user_form:
                     post_field_html: "</div>"
                     hidden: true  
                 save_data:
-                    label: 'Create user/contact record'
+                    label: 'When an anonymous visitor submits a form:'
                     type: radios
                     values:
                         0:
@@ -507,9 +763,9 @@ zenario_user_form:
                     snippet:
                         html: |
                             <hr />
-                            <b>For logged in users</b>
+                            <b>Handling for responses from logged-in users</b>
                 update_linked_fields:
-                    label: Update fields in an existing user's data
+                    label: Update fields of existing user record
                     type: checkbox
                     value: 1
                     side_note: Update the stored user record with the newly-submitted data. The "Email" field is used as a key and will not be updated.
@@ -538,201 +794,6 @@ zenario_user_form:
                     empty_value: ' -- Select -- '
                     side_note: |
                         Specify the user timer template that will be used to grant a user timer.
-                line_br_2:
-                    snippet:
-                        html: | 
-                            <hr />
-                            <b>Emailing the response</b>
-                send_email_to_user:
-                    label: 'Send email to person submitting the form'
-                    type: checkbox
-                    format_onchange: true
-                send_email_to_logged_in_user:
-                    label: Send to logged-in user's email (if user logged in or new account was created)
-                    type: checkbox
-                    format_onchange: true
-                    indent: 1
-                user_email_options_logged_in_user:
-                    type: radios
-                    values:
-                        visible_fields:
-                            ord: 1
-                            label: 'Send all visible fields (recommended)'
-                        send_data:
-                            ord: 2
-                            label: 'Send all form data (unformatted)'
-                            side_note: |
-                                Attachments will not be sent in this format.
-                        use_template:
-                            ord: 3
-                            label: 'Send email using template'
-                    value: visible_fields
-                    format_onchange: true
-                    indent: 2
-                    
-                user_email_template_logged_in_user:
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        max_path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select email template...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select an email template for user emails.
-                    indent: 3
-                send_email_to_email_from_field:
-                    label: Send to email address specified in form...
-                    type: checkbox
-                    format_onchange: true
-                    indent: 1
-                user_email_field:
-                    label: |
-                        Form field specifying email address:
-                    type: select
-                    empty_value: -- Select field --
-                    validation:
-                        required_if_not_hidden: Please select a form field to send user email to.
-                    indent: 2
-                user_email_options_from_field:
-                    type: radios
-                    values:
-                        visible_fields:
-                            ord: 1
-                            label: 'Send all visible fields (recommended)'
-                        send_data:
-                            ord: 2
-                            label: 'Send all form data (unformatted)'
-                            side_note: |
-                                Attachments will not be sent in this format.
-                        use_template:
-                            ord: 3
-                            label: 'Send email using template'
-                    value: visible_fields
-                    format_onchange: true
-                    indent: 2
-                    
-                    
-                user_email_template_from_field:
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        max_path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select email template...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select an email template for user emails.
-                    indent: 3
-                
-                make_urls_non_clickable_user:
-                    indent: 1
-                    label: 'Make URLs non-clickable'
-                    type: checkbox
-                    side_note: 'Converts URLs to a non-clickable pattern using [.] instead of dots.'
-                    visible_if: zenarioAB.value('send_email_to_user');
-                
-                send_email_to_admin:
-                    label: 'Send email to administrator'
-                    type: checkbox
-                    format_onchange: true
-                # BEGIN send_email_to_admin options
-                
-                send_email_to_admin_condition:
-                    indent: 1
-                    label: "Send email to administrator:"
-                    type: select
-                    values:
-                        always_send:
-                            label: "Always send"
-                        send_on_condition:
-                            label: "Send on condition"
-                    value: always_send
-                    visible_if: zenarioAB.value('send_email_to_admin');
-                    format_onchange: true
-                send_email_to_admin_condition_fields:
-                    indent: 2
-                    label: "Select a condition field"
-                    type: select
-                    values: {}
-                    empty_value: -- Select --
-                    visible_if: (zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_condition') == 'send_on_condition'));
-                admin_email_addresses:
-                    label: 'Administrator email address(s):'
-                    type: text
-                    side_note: |
-                        Enter a comma separated list of administrator emails to send this email to.
-                    validation:
-                        required_if_not_hidden: Please enter one or more admin email addresses.
-                    is_email_address: true
-                    indent: 1
-                admin_email_options:
-                    type: radios
-                    values:
-                        visible_fields:
-                            ord: 1
-                            label: 'Send all visible fields (recommended)'
-                        send_data:
-                            ord: 2
-                            label: 'Send all form data (unformatted)'
-                        use_template:
-                            ord: 3
-                            label: 'Send email using template'
-                    
-                    value: visible_fields
-                    format_onchange: true
-                    indent: 1
-                    
-                admin_email_template:
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        max_path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select email template...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select an email template for admin emails.
-                    indent: 2
-                reply_to:
-                    label: 'Optional "reply-to"'
-                    type: checkbox
-                    format_onchange: true
-                    side_note: When set, you can directly reply to the users email address in your email client
-                    indent: 1
-                # BEGIN reply_to options
-                reply_to_email_field:
-                    label: 'Reply-to email using:'
-                    type: select
-                    empty_value: -- Select --
-                    validation:
-                        required_if_not_hidden: Please select a reply-to email field
-                    side_note: Select the form field in which the user enters their email address
-                    indent: 2
-                reply_to_first_name:
-                    label: 'Reply-to first name using:'
-                    type: select
-                    empty_value: -- Select --
-                    side_note: Select the form field in which the user enters their first name
-                    indent: 2
-                reply_to_last_name:
-                    label: 'Reply-to last name using:'
-                    type: select
-                    empty_value: -- Select --
-                    side_note: Select the form field in which the user enters their last name
-                    indent: 2
-                # END reply_to options
-                make_urls_non_clickable_admin:
-                    indent: 1
-                    label: 'Make URLs non-clickable'
-                    type: checkbox
-                    side_note: 'Converts URLs to a non-clickable pattern using [.] instead of dots.'
-                    visible_if: zenarioAB.value('send_email_to_admin');
-                # END send_email_to_admin options
-                
                 # BEGIN actions after form submissions 
                 line_br_3:
                     snippet:
@@ -742,7 +803,7 @@ zenario_user_form:
                 action_after_submission_html:
                     pre_field_html: "<div class=\"zenario_fbWarning\">"
                     snippet:
-                        html: 'This is being overridden by the "SIMPLE_ACCESS" cookie (see Advanced section).'
+                        html: 'This is being overridden by the "z_gated_content_control_satisfied" cookie (see Advanced section).'
                     post_field_html: "</div>"
                     visible_if: zenarioAB.value('simple_access_cookie_override_redirect');
                 success_message_type:
@@ -817,9 +878,9 @@ zenario_user_form:
                     snippet:
                         html: | 
                             <hr />
-                            <b>Workflow</b>
+                            <b>Response processing by administrators</b>
                 show_checkbox_for_allocating_form_responses:
-                    label: "Show a checkbox for this form's responses"
+                    label: "On form responses in Organizer, show processing control checkbox"
                     type: checkbox
                     redraw_onchange: true
                 form_responses_allocate_checkbox_label:
@@ -838,13 +899,13 @@ zenario_user_form:
                             <hr />
                             <b>Advanced actions</b>
                 set_simple_access_cookie:
-                    label: 'Set SIMPLE_ACCESS cookie'
+                    label: 'Set the z_gated_content_control_satisfied cookie'
                     type: checkbox
                     side_note: |
-                        Sets the cookie "SIMPLE_ACCESS" which allows vistors (or users) to see links (in a content summary list) that are normally hidden. <br>Use this if setting up a content item leading to gated content.
+                        Sets the cookie "z_gated_content_control_satisfied" which allows vistors (or users) to see links (in a content summary list) that are normally hidden. <br>Use this if setting up a content item leading to gated content.
                     format_onchange: true
                 simple_access_cookie_override_redirect:
-                    label: 'Override Redirection and redirect to page that required the SIMPLE_ACCESS'
+                    label: 'Override redirection and redirect to page that required the z_gated_content_control_satisfied cookie'
                     type: checkbox
                     format_onchange: true
                     indent: 1

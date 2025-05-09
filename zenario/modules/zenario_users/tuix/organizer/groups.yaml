@@ -6,11 +6,17 @@ zenario__users:
             priv: _PRIV_VIEW_USER
             title: Groups
             db_items:
-                table: '[[DB_PREFIX]]custom_dataset_fields cdf'
+                table: |
+                    [[DB_PREFIX]]custom_dataset_fields cdf
+                    INNER JOIN [[DB_PREFIX]]custom_dataset_tabs cdtabs
+                        ON cdtabs.name = cdf.tab_name
+                        AND cdtabs.dataset_id = cdf.dataset_id
                 id_column: cdf.id
                 where_statement: WHERE cdf.type = 'group'
             no_items_message: No groups are defined.
             default_sort_column: label
+            label_format_for_picked_items: |
+                [[group_label]]
             item:
                 css_class: zenario_group
                 tooltip_when_link_is_active: 'View users in the group "[[label]]"'
@@ -25,12 +31,27 @@ zenario__users:
                     width: xxsmall
                     align_right: true
                     show_by_default: false
+                dataset_tab_name:
+                    hidden: true
+                    db_column: IF(cdtabs.label = '', cdtabs.default_label, cdtabs.label)
+                dataset_tab_ord:
+                    hidden: true
+                    db_column: cdtabs.ord
+                field_ord:
+                    hidden: true
+                    db_column: cdf.ord
+                dataset_order:
+                    title: Dataset order
+                    db_column: CONCAT(cdtabs.ord, '.', cdf.ord)
+                    sortable: true
+                    show_by_default: false
                 label:
                     title: Group name
                     db_column: cdf.label
                     searchable: true
                     width: large
                     always_show: true
+                    css_class: label_column
                 db_column:
                     title: Code name
                     db_column: cdf.db_column

@@ -28,7 +28,7 @@ zenario_send_form_response_to_admin_by_email:
                     validation:
                         required: 'Please select at least one administrator.'
                 comment:
-                    label: "Comment:"
+                    label: "Comment (optional):"
                     type: editor
                     editor_type: description_editor
                     editor_options:

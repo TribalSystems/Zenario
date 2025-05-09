@@ -83,26 +83,26 @@ ze\cookie::startSession();
 
 
 //Run pre-load actions
-//Set the cookie consent cookie if we see cookies_accepted in the visitor's session
-if (!empty($_SESSION['cookies_accepted'])) {
+//Set the cookie consent cookie if we see z_cookies_accepted in the visitor's session
+if (!empty($_SESSION['z_cookies_accepted'])) {
 	ze\cookie::setConsent();
-	unset($_SESSION['cookies_accepted']);
+	unset($_SESSION['z_cookies_accepted']);
 }
 
-if (!empty($_SESSION['sensitive_content_message_accepted'])) {
+if (!empty($_SESSION['z_sensitive_content_message_accepted'])) {
 	ze\cookie::setSensitiveContentMessageConsent();
-	unset($_SESSION['sensitive_content_message_accepted']);
+	unset($_SESSION['z_sensitive_content_message_accepted']);
 }
 
-if (!empty($_COOKIE['country_id']) && !empty($_COOKIE['user_lang'])) {
+if (!empty($_COOKIE['z_country_id']) && !empty($_COOKIE['z_user_lang'])) {
 	if (empty($_SESSION['country_id']) || empty($_SESSION['user_lang'])) {
-		$_SESSION['country_id'] = $_COOKIE['country_id'];
-		$_SESSION['user_lang'] = $_COOKIE['user_lang'];
+		$_SESSION['country_id'] = $_COOKIE['z_country_id'];
+		$_SESSION['user_lang'] = $_COOKIE['z_user_lang'];
 	}
 } elseif (!empty($_SESSION['country_id']) && !empty($_SESSION['user_lang'])) {
-	if (isset($_COOKIE['cookies_accepted']) && (empty($_COOKIE['country_id']) || empty($_COOKIE['user_lang']))) {
-		\ze\cookie::set('country_id', $_SESSION['country_id'], 604800);
-		\ze\cookie::set('user_lang', $_SESSION['user_lang'], 604800);
+	if (isset($_COOKIE['z_cookies_accepted']) && (empty($_COOKIE['z_country_id']) || empty($_COOKIE['z_user_lang']))) {
+		\ze\cookie::set('z_country_id', $_SESSION['country_id'], 604800);
+		\ze\cookie::set('z_user_lang', $_SESSION['user_lang'], 604800);
 	}
 }
 
@@ -401,8 +401,8 @@ $ogImageMaxWidth = ze::setting('og_image_max_width') ?: 1200;
 $ogImageMaxHeight = ze::setting('og_image_max_height') ?: 630;
 
 $imageWidth = $imageHeight = $imageURL = false;
-if (ze::$pageImage && ze\file::imageLink($imageWidth, $imageHeight, $imageURL, ze::$pageImage, $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true)) {
-	$mimeType = ze\row::get('files', 'mime_type', ze::$pageImage);
+if (ze::$pageImage && ze\image::link($imageWidth, $imageHeight, $imageURL, ze::$pageImage, $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true)) {
+	$mimeType = ze\file::mimeType($imageURL);
 	
 	echo '
 <meta property="og:image:type" content="' . htmlspecialchars($mimeType) . '" />
@@ -423,10 +423,12 @@ else {
 			$url = ze\file::link($icon['id']);
 		} else {
 			$imageWidth = $imageHeight = $url = false;
-			ze\file::imageLink($imageWidth, $imageHeight, $url, $icon['id'], $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true);
+			ze\image::link($imageWidth, $imageHeight, $url, $icon['id'], $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true);
 		}
+		
+		$mimeType = ze\file::mimeType($url);
     	echo '
-<meta property="og:image:type" content="' . htmlspecialchars($icon['mime_type']) . '" />
+<meta property="og:image:type" content="' . htmlspecialchars($mimeType) . '" />
 <meta property="og:image" content="', htmlspecialchars($url), '"/>
 <meta property="og:image:width" content="' . htmlspecialchars($imageWidth) . '" />
 <meta property="og:image:height" content="' . htmlspecialchars($imageHeight) . '" />';
@@ -619,7 +621,7 @@ if ($singleSlot) {
 	ze\content::pageBody('zenario_showing_preview', '', true);
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
-	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId, true)) {
+	if ($tplFile = ze\layout::htmlPath(ze::$layoutId, true)) {
 		require CMS_ROOT. $tplFile;
 	}
 	
@@ -653,7 +655,7 @@ if ($singleSlot) {
 	
 	if (ze\module::inc('zenario_sensitive_content_message')) {
 		
-		if (empty($_COOKIE['sensitive_content_message_accepted']) && empty($_SESSION['sensitive_content_message_accepted'])) {
+		if (empty($_COOKIE['z_sensitive_content_message_accepted']) && empty($_SESSION['z_sensitive_content_message_accepted'])) {
 			zenario_sensitive_content_message::showSensitiveContentMessage();
 		}
 	}
@@ -661,7 +663,7 @@ if ($singleSlot) {
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
 
-	if ($tplFile = ze\content::layoutHtmlPath(ze::$layoutId, true)) {
+	if ($tplFile = ze\layout::htmlPath(ze::$layoutId, true)) {
 		require CMS_ROOT. $tplFile;
 		ze\plugin::checkSlotsWereUsed();
 	}

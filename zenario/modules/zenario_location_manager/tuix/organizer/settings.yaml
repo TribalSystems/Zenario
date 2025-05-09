@@ -7,3 +7,4 @@ zenario__administration:
                 zenario_location_manager__site_settings_group:
                     name: Locations
                     desc: Settings for locations.
+                    keywords: location, locations, organisation, organization, organisations, organizations, role, roles

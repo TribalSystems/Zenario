@@ -34,8 +34,6 @@ class zenario_extranet_change_password extends zenario_extranet {
 		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 		$this->requireJsLib('zenario/js/password_functions.min.js');
 
-		$this->registerPluginPage();
-		
 		$this->mode = 'modeChangePassword';
 		
 		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
@@ -53,15 +51,14 @@ class zenario_extranet_change_password extends zenario_extranet {
 				$this->message = $this->phrase('Your password has been changed.');
 				$this->mode = 'modeLoggedIn';
 				//send change password notification
-				if ($this->setting('zenario_extranet_change_password__send_notification_email') && $this->setting('zenario_extranet_change_password__notification_email_template')
-		             && ze\module::inc('zenario_email_template_manager')) {
+				if ($this->setting('zenario_extranet_change_password__send_notification_email') && $this->setting('zenario_extranet_change_password__notification_email_template')) {
 			         
 			         $userId = ze\user::id();
 			         $userDetails = ze\row::get("users", ['email', 'first_name', 'last_name'], ['id'=> $userId]);
 			         $userDetails['cms_url'] = ze\link::absolute();
 
 			         //Send the chosen email template using the Email Template Manager
-			         zenario_email_template_manager::sendEmailsUsingTemplate(
+			         zenario_common_features::sendEmailsUsingTemplate(
 				        $userDetails['email'],
 				        $this->setting('zenario_extranet_change_password__notification_email_template'),
 				        $userDetails);
@@ -111,7 +108,19 @@ class zenario_extranet_change_password extends zenario_extranet {
 			return true;
 		}
 	}
+	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		$fields['first_tab/logout_page']['value'] = ze::$specialPages['zenario_logout'] ?? '';
+		if (!ze\module::isRunning('zenario_extranet_logout') || !$fields['first_tab/logout_page']['value']) {
+			$fields['first_tab/logout_page']['notices_below']['module_not_running'] = [
+				'show' => true,
+				'type' => 'warning',
+				'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Logout module to show.')
+			];
+		}
+	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
 	}	
 }

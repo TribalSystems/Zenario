@@ -1,0 +1,49 @@
+zenario_search_videos:
+    fea_type: list
+    key:
+        id: ''
+        view: blocks
+        search: ''
+        page: ''
+    microtemplate: fea_list_blocks
+    css_class: zfea_block_like_block
+    title: Search videos
+    no_items_message: No videos found
+    search_bar_placeholder: Type and press Enter
+    hide_search_bar: false
+    columns:
+        image:
+            tag: div
+            html: true
+        title:
+            title: Video title
+        description:
+            title: Description
+            html: true
+        date:
+            title: Date
+    item_buttons:
+        view:
+            visible_if: |
+                tuix.enable.view_video && lib.navigationEnabled('view_video')
+            label: View
+            go:
+                command: view_video
+            show_as_link_on_column:
+                image: true
+                title: true
+    collection_buttons:
+        block_view:
+            css_class: small_button block_view_button
+            icon_left: fa-solid fa-grip
+            location: top
+            label: View as blocks
+            go:
+                view: blocks
+        list_view:
+            css_class: small_button list_view_button
+            icon_left: fa-solid fa-bars
+            location: top
+            label: View as list
+            go:
+                view: list

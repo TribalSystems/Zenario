@@ -57,7 +57,7 @@ zenario_content_staging_mode:
                     style: |
                         width: 4em;
                         font-family: monospace;
-                    maxlength: 5
+                    maxlength: 6
                     validation:
                         required_if_not_hidden: Please enter an access code.
                         no_spaces: The access code may not contain spaces.

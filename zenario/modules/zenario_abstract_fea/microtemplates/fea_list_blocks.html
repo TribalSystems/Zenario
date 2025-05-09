@@ -46,11 +46,11 @@
 	<% } %>
 	
 	<% if (m.thus.sortedCollectionButtons.length) { %>
-		<div class="sorted_buttons">
-			<% if (zenarioT.find(m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined]) && !_.isEmpty(m.tuix.columns)) { %>
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined]) && !_.isEmpty(m.tuix.columns)) { %>
+			<div class="zfea_buttons zfea_buttons_above_list sorted_buttons">
 				{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined])}}
-			<% } %>
-		</div>
+			</div>
+		<% } %>
 	<% } %>
 	
 	<% if (!_.isEmpty(m.tuix.columns)) { %>
@@ -94,6 +94,26 @@
 						<% } %>
 				
 						<div class="zfea_block item_{{item.id|e}} {{item.row_class|e}}">
+							
+							<% if (item.thumbnail) { %>
+								<div class="zfea_block_item_thumbnail_wrap">
+									<div class="zfea_block_thumbnail_wrap">
+										<img
+											class="zfea_thumbnail"
+											src="{{item.thumbnail.src|e}}"
+									
+											<% if (item.thumbnail.width) { %>
+												width="{{item.thumbnail.width|e}}"
+											<% } %>
+											<% if (item.thumbnail.height) { %>
+												height="{{item.thumbnail.height|e}}"
+											<% } %>
+										/>
+									</div>
+									<div class="zfea_block_item_wrap">
+							<% } %>
+							
+							
 							
 							<% if (item.__sortedItemButtons.length && zenarioT.find(item.__sortedItemButtons, "top")) { %>
 								<div class="buttons block_buttons_top">
@@ -222,6 +242,12 @@
 									{{m.lib.pMicroTemplate("button", item.__sortedItemButtons, ["bottom", undefined])}}
 								</div>
 							<% } %>
+							
+							
+							<% if (item.thumbnail) { %>
+									</div>
+								</div>
+							<% } %>
 						</div>
 				
 					<% } %>
@@ -237,8 +263,12 @@
 						}
 					%>
 					<% if (m.thus.sortedItems.length == 0) { %>
-						<% if (m.tuix.no_items_message) { %>
-							<div class="zfea_no_items_message">{{m.tuix.no_items_message}}</div>
+						<% var msg; %>
+						<% if (lib.request.search && (msg = m.tuix.no_items_in_search_message)) { %>
+							<div class="zfea_no_items_in_search_message">{{msg}}</div>
+						
+						<% } else if (msg = m.tuix.no_items_message) { %>
+							<div class="zfea_no_items_message">{{msg}}</div>
 						<% } %>
 					<% } %>
 				</div>

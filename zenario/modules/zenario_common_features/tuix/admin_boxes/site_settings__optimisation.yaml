@@ -5,6 +5,7 @@ site_settings:
     title: Editing Zenario cache settings
     tabs:
         caching:
+            ord: 1
             label: Caching and bundling files
             edit_mode:
                 enabled: true

@@ -1,9 +1,0 @@
-zenario__modules:
-    nav:
-        nests:
-            css_class: nest_library
-            label: Nest library
-            tooltip: |
-                View nests - collections of plugins that may be used on visitor-facing pages
-            link:
-                path: zenario__modules/panels/plugins/refiners/nests////

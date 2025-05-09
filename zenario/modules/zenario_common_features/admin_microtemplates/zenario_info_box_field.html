@@ -2,7 +2,7 @@
 	<% if (m.value !== undefined) { %>
 		<% if (m.type !== undefined && m.type == 'textarea') { %>
 			<div>
-				<textarea rows="2" cols="40" class="zenario_info_box_value" readonly="readonly">{{m.value|escape}}</textarea>
+				<span class="zenario_info_box_value" readonly="readonly">{{m.value|escape}}</span>
 			</div>
 		<% } else if (m.type !== undefined && m.type == 'url') { %>
 			<div>

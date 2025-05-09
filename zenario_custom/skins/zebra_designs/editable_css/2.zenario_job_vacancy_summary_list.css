@@ -6,8 +6,6 @@
 }
 
 .zenario_job_vacancy_summary_list__default_style .content_list_data_row {
-	display:flex;
-	gap:30px;
   	padding: 20px 0;
   	border-top: 1px dotted #777;
   	text-align:left;
@@ -70,13 +68,36 @@
 
 .zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image {
 	padding-top:10px;
+	float:left;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.content_list_text {
+	overflow:hidden;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.sticky_image + .content_list_text {
+	padding-left:20px;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.content_list_more {
+	text-align:right;
+	font-size:95%;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.content_list_more a {
+	color:#00659b;
+}
+
+.zenario_job_vacancy_summary_list__default_style .content_list_listing .content_list_data_row div.content_list_more a:after {
+	font-family:"FontAwesome";
+	content:"\f105";
+	padding-left:5px;
 }
 
 .zenario_job_vacancy_summary_list__default_style .job_vacancy_online_text,
 .zenario_job_vacancy_summary_list__default_style .content_list_vacancy_location,
 .zenario_job_vacancy_summary_list__default_style .content_list_vacancy_reference,
 .zenario_job_vacancy_summary_list__default_style .content_list_vacancy_deadline {
-	color:#00659b;
 	position:relative;
 	padding-left:25px;
 	padding-bottom:5px;
@@ -109,6 +130,23 @@
 
 .zenario_job_vacancy_summary_list__default_style a.content_list_more_link {
 	margin-top:20px;
+}
+
+/* Recent */
+
+.zenario_job_vacancy_summary_list__default_style .content_list_new + .content_list_date {
+  	display:inline-block;
+  }
+
+.zenario_job_vacancy_summary_list__default_style .content_list_new {
+	display:inline-block;
+	background:#00659b;
+	color:#FFF;
+	padding:0 8px 2px 8px;
+	border-radius:2px;
+	margin-right:5px;
+	font-size: 0.857em;
+  	font-family: 'cardoregular','Times New Roman','Georgia',serif;
 }
 
 /* CSL Info icon

@@ -1,4 +1,19 @@
-<li>
+<!-- Show the "Configuration" section using two columns -->
+<% var showTwoColumns = m.id == 'zenario__administration'; %>
+
+<!-- Have a rule saying that we only show the top-level and don't decent into children for the start page -->
+<% var showChildren = m.id != 'zenario__organizer'; %>
+
+
+<li class="
+	<% if (showTwoColumns) { %>
+		zenario_attld_withChildren
+		zenario_attld_withChildrenInTwoCols
+	
+	<% } else if (showChildren) { %>
+		zenario_attld_withChildren
+	<% } %>
+">
 	<a
 		<% if (m.href) { %>
 			href="{{URLBasePath + (zenarioATLinks.organizer || 'organizer.php') + zenarioAT.customiseOrganizerLink(m.href, false)|escape}}"
@@ -13,8 +28,7 @@
 	</a>
 	<% if (m.items && m.items.length) { %>
 		
-		<!-- Show the "Configuration" section using two columns -->
-		<% if (m.id == 'zenario__administration') { %>
+		<% if (showTwoColumns) { %>
 			<% var hi, hBlock, vi, vBlock, vBlocks = zenarioO.splitCols(m.items); %>
 			<div class="
 				zenario_attld_vertical_blocks
@@ -44,8 +58,7 @@
 				<% } %>
 			</div>
 		
-		<!-- Have a rule saying that we only show the top-level and don't decent into children for the start page -->
-		<% } else if (m.id != 'zenario__organizer') { %>
+		<% } else if (showChildren) { %>
 		
 			<!-- Show all other sections using one column -->
 			<ul>{{zenarioT.microTemplate('zenario_toolbar_organizer_link_children', m.items)}}</ul>

@@ -32,16 +32,16 @@ zenario__menu:
             collection_buttons:
                 advanced_dropdown:
                     label: Advanced
-                    ord: "20"
+                    ord: 20
                     hide_when_children_are_not_visible: Yes
             item_buttons:
                 view_dropdown:
                     label: View
-                    ord: "10"
+                    ord: 10
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
                 advanced_dropdown:
                     label: Advanced
-                    ord: "20"
+                    ord: 20
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes

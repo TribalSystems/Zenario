@@ -55,6 +55,10 @@ zenario.lib(function(
 
 
 
+methods.defaultDatePickerFormat = function() {
+	return (zenarioA.siteSettings && zenarioA.siteSettings.organizer_date_format) || zenario.dpf;
+};
+
 methods.microTemplate = function(template, data, filter) {
 
 	var needsTidying = zenario.addLibPointers(data, thus),

@@ -1,0 +1,23 @@
+.zenario_document_envelopes_fea {
+	/* This class will be applied to all plugins of this type. */
+}
+
+.zenario_document_envelopes_fea__default_style {
+	/* This class will be applied to all plugins of this type,
+	   unless overridden or removed for a specific plugin. */
+}
+
+.zenario_document_envelopes_fea .search_panel_on_left {
+	display:flex;
+	gap:20px;
+}
+
+.zenario_document_envelopes_fea .search_form input[type="text"].search_term {
+	width:calc(100% - 59px);
+}
+
+.zenario_document_envelopes_fea .zfea_zenario_view_document_envelope .zfea_form_row__name {
+	font-weight:600;
+	font-size:1.2em;
+	color:#000;
+}

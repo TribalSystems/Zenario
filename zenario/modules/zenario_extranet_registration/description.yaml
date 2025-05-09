@@ -7,13 +7,17 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Registration
 description: |
-    <p>This module allows visitors to the site to register and become extranet users.</p>
-    <p>When you install this module it will automatically create a registration page on your site.</p>
-    <p>The default behaviour is to have just one registration page, but on a multi-language site you may create one page for each language on your site by creating translations of the original content item in each language.</p>
-    <p>To register, people must enter their email address (and choose a screen name, if you have enabled screen names in your site's settings).</p>
-    <p>The default setup for this plugin will make it send a verification email to the email address given by a new user, and that the user chooses their own password; but other configurations are possible.</p>
-    <p>It is possible for administrators to receive notification of each user who signs up, set this on the plugin's "User activation" tab.</p>
-    <p>You can create your own or customize existing email templates. The email template can contain various merge fields:</p>
+    <p>This module allows a visitor to register an account as an extranet user.</p>
+    <p>When you start this module, it automatically creates a registation plugin and puts it on a new content item. To make it live, you should navigate to that content item and publish it.</p>
+    <p>To register, a visitor must enter their email address, first and last name, and choose a password. The plugin settings have a range of options, and it is possible to let a user choose a public "screen name", to require them to accept terms and conditions, to fill in custom fields from the Users & Contacts dataset, and more.</p>
+    <p>By default, the plugin will create a new account in a Pending state and send a verification email to the email address given by a new user, and then change the account status to Active when the user verifies their email address by clicking the link in the email.</p>
+    <p>The plugin settings encompass a range of possible setups:<ol>
+        <li>The <strong>Initial signup</strong> tab defines the various options for the registration form itself</li>
+        <li>The <strong>Custom fields</strong> tab allows you to add custom fields to the registration form (they must first be defined in Organizer->Configuration->Datasets->Users</li>
+        <li>The <strong>Activation</strong> tab defines whether new accounts are made as Users (who may log in, once activated) or as Contacts (who may not log in), whether to send an email notification, whether to make a User account active automatically after the email address is verified (or whether to await administrator approval), and how to redirect the new user when they first log in.</li>
+        </ol>
+
+    <p>For email notification, the email template can contain various merge fields:</p>
             <ul>
                 <li>[[first_name]] - user's first name</li>
                 <li>[[last_name]] - user's last name</li>
@@ -26,8 +30,6 @@ description: |
                 <li>[[organizer_link]] - a link to the newly created user in Organizer (for use in admin notification templates only).</li>
                 <li>[[user_groups]] - comma separated list of groups to which user is signed up (can only be used after user's email address verification).</li>
             </ul>
-    <p>The user's status will remain pending until they have confirmed their email address. Once they have done this, they will be made 'active' and will be able to log in to your site.</p>
-    <p>If you prefer to avoid users activating themselves, you can choose that an administrator manually activates all new users.</p>
 category: management
 keywords: extranet, new, register, sign, signup, user
 

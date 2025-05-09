@@ -39,6 +39,10 @@
 	letter-spacing:0.04em;
 }
 
+.zenario_event_calendar .calendar_content .calendar_title + .error {
+	padding-top:1em;
+}
+
 /* Header */
 
 .zenario_event_calendar .calendar_content .calendar_header,
@@ -223,6 +227,7 @@ body.webkit .zenario_event_calendar .calendar_content .calendar_month_content ta
 	-webkit-transition: all 0.1s ease-in-out;
     -moz-transition: all 0.1s ease-in-out;
     transition: all 0.1s ease-in-out;
+    cursor:pointer;
 }
 
 .zenario_event_calendar .calendar_content .calendar_month_content table td.monthcell.has_events .content_cell .content_month a span.see_events:after,
@@ -399,6 +404,14 @@ body.webkit .zenario_event_calendar .calendar_content .calendar_month_content ta
 	color:#FFF;
 }
 
+#colorbox .zenario_event_calendar .calendar_content .calendar_title > * {
+	font-size:1em;
+	color: #FFF;
+  	margin: 0;
+  	line-height: 40px;
+  	font-family: 'robotolight',Arial, Helvetica, sans-serif;
+}
+
 #colorbox .zenario_event_calendar .day_view_title .event_count_in_window {
 	float:right;
 	line-height: 20px;
@@ -494,4 +507,9 @@ body.webkit .zenario_event_calendar .calendar_content .calendar_month_content ta
 #colorbox .zenario_event_calendar .day_view_events_list ul li .day_view_event .day_view_event_more a:hover {
 	text-decoration:none;
 	background:#225474;
+}
+
+#colorbox .zenario_event_calendar .calendar_content.error_view p.error {
+	clear:both;
+	padding:15px;
 }

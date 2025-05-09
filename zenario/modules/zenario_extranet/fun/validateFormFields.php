@@ -33,12 +33,15 @@ $fields = [];
 
 //We've lost the frameworkFields() function in version 8, as Twig doesn't support it.
 //So we'll have to generate the entire framework to see what fields were on it
-$this->twigFramework(array_merge([$section => true], $this->subSections), $return = true);
+$this->runTwigFramework(array_merge([$section => true], $this->subSections));
 
-//Code to validate custom fields
-$customFields = ze\module::sendSignal('extranetGetCustomFieldsAndErrorMessagesForValidation', []);
+//Code to validate custom framework fields
+$customFrameworkFields = ze\module::sendSignal('extranetGetCustomFieldsAndErrorMessagesForValidation', []);
 
-foreach($this->frameworkFields as $name => $field) {
+//Code to validate custom dataset fields
+$allCustomFields = ze\datasetAdm::listCustomFields('users', $flat = false, false, $customOnly = true);
+
+foreach ($this->frameworkFields as $name => $field) {
 	if (!$this->checkRequiredField($field)) {
 		$phrase = '';
 		switch ($name) {
@@ -63,8 +66,8 @@ foreach($this->frameworkFields as $name => $field) {
 				$phrase = "Please confirm that you accept the Terms and Conditions.";
 				break;
 			default:
-				if (!empty($customFields)) {
-					foreach ($customFields as $moduleCustomFields) {
+				if (!empty($customFrameworkFields)) {
+					foreach ($customFrameworkFields as $moduleCustomFields) {
 						if (array_key_exists ($name, $moduleCustomFields)) {
 							$phrase = $moduleCustomFields[$name];
 							break;
@@ -140,6 +143,26 @@ if ($this->moduleClassName == 'zenario_extranet') {
 		} else {
 			unset($_SESSION['captcha_passed__'. $this->instanceId]);
 			$this->errors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
+		}
+	}
+}
+
+//Extranet Registration module has a field picker to add fields from the Users dataset
+//to the registration form. Validate these fields if needed.
+if ($this->moduleClassName == 'zenario_extranet_registration') {
+	$selectedCustomDatasetFields = $this->selectedCustomFields;
+	
+	if (!empty($selectedCustomDatasetFields)) {
+		foreach ($selectedCustomDatasetFields as $field) {
+			$customFieldValue = ze::post($field['name']);
+			
+			if (!empty($field['required']) && !empty($field['dataset_field_id']) && !$customFieldValue) {
+				$customField = $allCustomFields[$field['dataset_field_id']];
+				
+				if (!empty($customField['required']) && !empty($customField['required_message'])) {
+					$this->errors[] = ['Error' => $this->phrase($customField['required_message'])];
+				}
+			}
 		}
 	}
 }

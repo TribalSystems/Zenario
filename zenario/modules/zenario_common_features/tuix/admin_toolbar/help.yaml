@@ -11,29 +11,29 @@ sections:
                     html: true
                     message: |
                         <p>
-                            <strong>Browse mode</strong>
+                            <strong>Browse view</strong>
                         </p>
                         <p>
-                            When you view a content item that's published, this mode shows you how this content item appears to site visitors.
+                            When you view a content item that's published, this view shows you how this content item appears to site visitors.
                         </p>
                         <p>
-                            When you view a draft, this mode shows you how the new version will appear when published.
+                            When you view a draft, this view shows you how the new version will appear when published.
                         </p>
                         <p>
-                            If your site has an extranet area, and a content item's permissions define it as private, this mode bypasses the permissions system and shows you how it will appear to an authorized user. Look out for coloured warning triangles over hyperlinks that indicate where something an administrator can see can't be seen by an anonymous visitor, or an extranet user.
+                            If your site has an extranet area, and a content item's permissions define it as private, this view bypasses the permissions system and shows you how it will appear to an authorized user. Look out for coloured warning triangles over hyperlinks that indicate where something an administrator can see can't be seen by an anonymous visitor, or an extranet user.
                         </p>
             
             
             edit:
                 appears_in_toolbars:
                     edit: true
-                #label: You're in Edit mode
-                label: Editing
+                #label: You're in Content item view
+                label: Content item view
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Edit mode</strong>
+                            <strong>Content item view</strong>
                         </p>
                         <p>
                             Pages are called "content items", and they are version-controlled. When you start editing, Zenario makes a draft that you can work on without your changes being seen by visitors.
@@ -67,12 +67,12 @@ sections:
                 appears_in_toolbars:
                     edit_disabled: true
                 parent: help_dropdown
-                label: Edit mode is disabled
+                label: Content item view is disabled
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Edit mode disabled</strong>
+                            <strong>Content item view disabled</strong>
                         </p>
                         <p>
                             You cannot make changes to this content item. This is either because do not have Author permissions, or because this content item is locked by another administrator.
@@ -81,25 +81,25 @@ sections:
                 appears_in_toolbars:
                     rollback: true
                 parent: help_dropdown
-                label: About History mode
+                label: About History view
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>History mode</strong>
+                            <strong>History view</strong>
                         </p>
                         <p>
-                            This mode allows you to view details of a previous version of this content item.
+                            This view allows you to view details of a previous version of this content item.
                         </p>
             #item:
             #    appears_in_toolbars:
             #        item: true
-            #    label: You're in Slot mode
+            #    label: You're in Slot view
             #    help:
             #        html: true
             #        message: |
             #            <p>
-            #                <strong>Slot mode</strong>
+            #                <strong>Slot view</strong>
             #            </p>
             #            <p>
             #                The rectangular areas of a page are called "slots". A slot can a contain a plugin, a nests or a slideshow, or it can be empty.
@@ -119,21 +119,21 @@ sections:
             layout:
                 appears_in_toolbars:
                     layout: true
-                label: Layout mode
+                label: Layout view
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Layout mode</strong>
+                            <strong>Layout view</strong>
                         </p>
                         <p>
-                            This powerful mode gives access to settings for the layout, so that you can control its design, CSS, and what plugins, nests are slideshows are in its slots.
+                            This powerful view gives access to settings for the layout, so that you can control its design, CSS, and what plugins, nests are slideshows are in its slots.
                         </p>
                         <p>
                             Any changes made here will have an effect on all items using the layout, so beware!
                         </p>
                         <p>
-                            Where there is a version-controlled WYSIWYG Editor or Raw HTML Snippet, use Edit mode to edit content on an individual content item.
+                            Where there is a version-controlled WYSIWYG Editor or Raw HTML Snippet, use Content item view to edit content on an individual content item.
                         </p>
             
             body_classes:
@@ -158,12 +158,12 @@ sections:
             menu1:
                 appears_in_toolbars:
                     menu1: true
-                label: Menu mode
+                label: Menu view
                 help:
                     html: true
                     message: |
                         <p>
-                            <strong>Menu mode</strong>
+                            <strong>Menu view</strong>
                         </p>
                         <p>
                             Zenario's menu navigation is arranged into "menu sections", with "Main" being the name of the main one. There can be a footer menu, and others.
@@ -172,7 +172,7 @@ sections:
                             On a simple site, each section may have a single "level", typically with a few menu nodes. But on larger sites each section can have a hierarchy with two or more levels of navigation.
                         </p>
                         <p>
-                            You can change the text of a menu node by just clicking on the text while in this mode. Changes take effect as soon as you save.
+                            You can change the text of a menu node by just clicking on the text while in this view. Changes take effect as soon as you save.
                         </p>
                         <p>
                     Menu nodes can have further properties: for example, they can link to external websites, they can have CSS classes and images, and on extranet sites they can have controls over when and to whom they appear.

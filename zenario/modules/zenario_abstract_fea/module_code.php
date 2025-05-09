@@ -409,10 +409,15 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 					$tags['_hiddenColumns'][$key][$id] = true;
 				
 				} elseif (!empty($col['twig_snippet'])) {
-					$item[$key] = $this->twigFramework(
-						['id' => $id, 'item' => $item, 'column' => $col, 'tuix' => $tags],
-						true, $col['twig_snippet']
-					);
+					if ($twigPath = \ze\plugin::twigSnippetPath($col['twig_snippet'])) {
+						$twigVars = ['id' => $id, 'item' => $item, 'column' => $col, 'tuix' => $tags];
+						
+						if (!empty($col['twig_vars']) && is_array($col['twig_vars'])) {
+							$twigVars = array_merge($twigVars, $col['twig_vars']);
+						}
+						
+						$item[$key] = $this->runTwigFromFile($twigVars, $twigPath);
+					}
 				
 				} else {
 					$this->setCustomColumnValue($key, $col, $item);
@@ -554,6 +559,9 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		$sql .= "
 			". $orderBy. "
 			". $limit;
+		
+		//Use this to put the full query into the console.log
+		//ze::dump($sql);
 		
 		$result = $this->sqlSelect($sql);
 		
@@ -712,6 +720,44 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			
 			return $modes[$mode]['label'] ?? null;
 		}
+	}
+	
+	//This function is for plugin modes that rely on another different mode being placed on the same slide.
+	//It will check if the other plugin has been placed properly and show an error if not.
+	protected function checkOtherModeIsOnSameSlide($mode, $optionalCheck = false) {
+		
+		if ($this->eggId) {
+			
+			//Get the slide number of this plugin.
+			$slotNameNestId = $this->slotName. '-'. $this->eggId;
+			$slideNum = ze::$slotContents[$slotNameNestId]->slideNum();
+			
+			$sql = "
+				SELECT ps.egg_id
+				FROM ". DB_PREFIX. "nested_plugins AS np
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+				   ON ps.instance_id = np.instance_id
+				  AND ps.egg_id = np.id
+				  AND ps.name = 'mode'
+				  AND ps.value = '". ze\escape::sql($mode). "'
+				WHERE np.module_id = ". (int) $this->moduleId. "
+				  AND np.instance_id = ". (int) $this->instanceId. "
+				  AND np.slide_num = ". (int) $slideNum. "
+				  AND np.id != ". (int) $this->eggId. "
+				LIMIT 1";
+		
+			if ($eggId = ze\sql::fetchValue($sql)) {
+				return $eggId;
+			}
+		}
+		
+		if (!$optionalCheck && ze::isAdmin()) {
+			$mrg = [
+				'modeDisplayName' => zenario_abstract_fea::pluginModeDisplayName($this->moduleClassName, $mode)
+			];
+			$this->setErrorMessage(ze\admin::phrase('This plugin needs to be placed in a nest, on the same slide as a [[modeDisplayName]] plugin', $mrg));
+		}
+		return false;
 	}
 	
 }

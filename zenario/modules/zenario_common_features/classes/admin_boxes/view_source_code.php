@@ -36,9 +36,9 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 		switch ($box['key']['type']) {
 			case 'layout':
 				
-				if ($layout = ze\content::layoutDetails($box['key']['id'])) {
+				if ($layout = ze\layout::details($box['key']['id'])) {
 					
-					if ($file = ze\content::layoutHtmlPath($box['key']['id'])) {
+					if ($file = ze\layout::htmlPath($box['key']['id'])) {
 						$file = CMS_ROOT. $file;
 					}
 					
@@ -49,8 +49,8 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 			
 			case 'framework':
 				
-				$moduleId = ze::ifNull($_REQUEST['refiner__module'] ?? false, ze::request('moduleId'));
-				$framework = ze\ring::decodeIdForOrganizer(ze::ifNull($_REQUEST['id'] ?? false, ze::request('framework')));
+				$moduleId = ze::request('refiner__module') ?: ze::request('moduleId');
+				$framework = ze\ring::decodeIdForOrganizer(ze::request('id') ?: ze::request('framework'));
 				
 				if ($module = ze\module::details($moduleId)) {
 					$file = ze\plugin::frameworkPath($framework, $module['class_name']);
@@ -70,8 +70,8 @@ class zenario_common_features__admin_boxes__view_source_code extends ze\moduleBa
 				
 				if (strpos($subpath, './') === false
 				 && strpos($subpath, '.\\') === false
-				 && ($skin = ze\content::skinDetails($skinId))) {
-					$file = CMS_ROOT. ze\content::skinPath($skin['name']). $subpath;
+				 && ($skin = ze\skin::details($skinId))) {
+					$file = CMS_ROOT. ze\skin::path($skin['name']). $subpath;
 					
 					$skin['filename'] = $filename;
 					$box['title'] = ze\admin::phrase('Viewing the "[[filename]]" file in the Skin "[[display_name]]"', $skin);

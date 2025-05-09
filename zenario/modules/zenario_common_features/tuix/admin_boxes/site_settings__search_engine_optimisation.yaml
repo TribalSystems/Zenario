@@ -187,7 +187,7 @@ site_settings:
             notices:
                 robots_txt_does_not_include_sitemap:
                     show: false
-                    message: XML sitemap is not being referred to; click "Default config" to use a default configuration and to add it.
+                    message: The XML sitemap is not being mentioned in the robots.txt file, so search engines may not be aware of it. Click "Default config" to apply the default robots.txt configuration, and thereby include it.
                     type: warning
                 robots_txt_refers_to_disabled_sitemap:
                     show: false
@@ -214,12 +214,12 @@ site_settings:
                             <div class="zenario_fbInfo">Using the default configuration</div>
                 robots_txt_file_contents:
                     indent: 1
-                    label: 'robots.txt file contents:'
+                    label: 'robots.txt contents:'
                     site_setting:
                         name: robots_txt_file_contents
                         protect_from_database_restore: true
                     type: textarea
-                    style: "height:300px"
+                    style: "height:400px"
                     value: |
                         User-agent: *
                         Disallow: /admin/

@@ -37,8 +37,21 @@
 <% } else if (m.col.is_icon) { %>
 	<span class="fea_icon {{val|escape}}"></span>
     
+<% } else if (val && m.col.values && m.col.show_multiple_values) { %>
+	<span class="fea_multiple_values">
+		<% foreach (('' + val).split(',') as var fi => var frag) { %>
+			<% frag = $.trim(frag); %>
+			
+			<% if (zenario.defined(m.col.values[frag])) { %>
+				<span class="fea_value fea_known_value">{{m.col.values[frag]|escape}}</span>
+			<% } else { %>
+				<span class="fea_value fea_unknown_value">{{frag|escape}}</span>
+			<% } %>
+		<% } %>
+	</span>
+    
 <% } else if (val && m.col.values && m.col.values[val]) { %>
-	{{m.col.values[val]|escape}}
+	<span class="fea_value fea_single_value">{{m.col.values[val]|escape}}</span>
 
 <% } else if (m.col.convert_to_percentage_of_total && m.thus.pcOfTotal[m.col.id] && zenario.defined(val) && val !== "") { %>
 	{{zenario.round(100 * val / m.thus.pcOfTotal[m.col.id], 1)}} %

@@ -28,21 +28,14 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//This file works like local.inc.php, but should contain any updates for user-related tables
+/*
+	Any user-related tables should be created in this script.
+	Reminder: every table you create here should also be listed in the local-DROP.sql file
+*/
 
 
 
 
-//
-//	Zenario 9.1
-//
-
-//Drop a column that was just there for debugging, it's not needed
-	ze\dbAdm::revision(53900
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
-	DROP COLUMN `db_update_running`
-_sql
 
 
 //
@@ -51,7 +44,7 @@ _sql
 
 //In 9.3, we're going through and fixing the character-set on several columns that should
 //have been using "ascii"
-);	ze\dbAdm::revision(55140
+	ze\dbAdm::revision(55140
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]user_country_link`
 	MODIFY COLUMN `country_id` varchar(5) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL
@@ -83,28 +76,11 @@ _sql
 _sql
 
 
+
+
 //
 //	Zenario 9.6
 //
-
-//In 9.6, we're changing the required/read only checkboxes of the dataset editor
-//to be in line with User Forms: there will now be a selector with the values
-//mandatory/read only/mandatory on condition/mandatory if visible.
-//There will also be a further update in step 4 which addresses cases where a field was mandatory and read only
-//at the same time. They will now be marked as read only.
-);	ze\dbAdm::revision(58750
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]custom_dataset_fields`
-	ADD COLUMN `mandatory_if_visible` tinyint(1) NOT NULL DEFAULT '0' AFTER `required`,
-	ADD COLUMN `mandatory_condition_field_id` int(10) unsigned DEFAULT '0' AFTER `mandatory_if_visible`,
-	ADD COLUMN `mandatory_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `mandatory_condition_field_id`,
-	ADD COLUMN `mandatory_condition_checkboxes_operator` enum('AND', 'OR') NOT NULL DEFAULT 'AND' AFTER `mandatory_condition_invert`,
-	ADD COLUMN `mandatory_condition_field_value` longtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] DEFAULT NULL AFTER `mandatory_condition_checkboxes_operator`,
-	ADD COLUMN `visible_condition_field_id` int(10) unsigned DEFAULT '0',
-	ADD COLUMN `visible_condition_invert` tinyint(1) NOT NULL DEFAULT 0 AFTER `visible_condition_field_id`,
-	ADD COLUMN `visible_condition_field_value` varchar(255) DEFAULT NULL AFTER `visible_condition_invert`
-_sql
-
 
 
 );	ze\dbAdm::revision(59460
@@ -146,6 +122,51 @@ _sql
 	 ALTER TABLE `[[DB_PREFIX]]users`
 	 ADD COLUMN `hash_change_email_expiry` datetime DEFAULT NULL AFTER `hash_change_email`,
 	 CHANGE COLUMN `hash` `hash_verify_email` varchar(28) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT ''
+_sql
+
+
+//
+//	Zenario 10.0
+//
+
+//Before 10.0, the users table salutation column would accept null and the default value would be null.
+//In 10.0, we changed the column definition to match that of first and last names:
+//do not accept null, and make the default value be an empty string.
+);	ze\dbAdm::revision(60663
+, <<<_sql
+	 UPDATE `[[DB_PREFIX]]users`
+	 SET salutation = ''
+	 WHERE salutation IS NULL
+_sql
+
+, <<<_sql
+	 ALTER TABLE `[[DB_PREFIX]]users`
+	 CHANGE COLUMN `salutation` `salutation` varchar(25) NOT NULL DEFAULT ''
+_sql
+
+);	ze\dbAdm::revision(60672
+, <<<_sql
+	 ALTER TABLE `[[DB_PREFIX]]users`
+	 ADD COLUMN `email_domain` varchar(100) NOT NULL DEFAULT '' AFTER `email`
+_sql
+
+);	ze\dbAdm::revision(60673
+, <<<_sql
+	 ALTER TABLE `[[DB_PREFIX]]users`
+	 ADD KEY (`email_domain`)
+_sql
+
+
+);	ze\dbAdm::revision(60675
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	MODIFY COLUMN `identifier` varchar(55) DEFAULT NULL
+_sql
+
+);	ze\dbAdm::revision(60940
+, <<<_sql
+	ALTER TABLE [[DB_PREFIX]]users 
+	ADD COLUMN `hash_verify_email_expiry` datetime DEFAULT NULL AFTER `hash_verify_email`
 _sql
 
 );

@@ -112,12 +112,13 @@
 	color:#2a98ce;
 }
 
-.zenario_content_list .content_list_listing .content_list_data_row div.sticky_image img:hover {
+.zenario_content_list .content_list_listing .content_list_data_row div.sticky_image a:hover img {
 	opacity:0.85;
 	border-color:#2a98ce;
 }
 
 .zenario_content_list .content_list_data_row .content_list_more {
+	padding-top:10px;
 	text-align:right;
 	font-family:'robotolight',Arial, Helvetica, sans-serif;
 	font-size:0.857em;

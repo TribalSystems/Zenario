@@ -30,12 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 set_time_limit(60 * 10);
 
-if ($jpegOnly) {
-	$mimeType = "('image/jpeg')";
-} else {
-	$mimeType = "('image/gif', 'image/png', 'image/jpeg')";
-}
-
 
 if ($recreateCustomThumbnailOnes) {
 	if ($removeOldCopies) {
@@ -44,7 +38,7 @@ if ($recreateCustomThumbnailOnes) {
 				custom_thumbnail_1_width = NULL,
 				custom_thumbnail_1_height = NULL,
 				custom_thumbnail_1_data = NULL
-			WHERE mime_type IN ". $mimeType . "
+			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp')
 			  AND custom_thumbnail_1_width IS NOT NULL";
 		\ze\sql::update($sql);
 	}
@@ -54,7 +48,7 @@ if ($recreateCustomThumbnailOnes) {
 		$sql = "
 			SELECT id
 			FROM ". DB_PREFIX. "files
-			WHERE mime_type IN ". $mimeType. "
+			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp')
 			  AND (width > ". (int) $custom_thumbnail_1_width. " OR height > ". (int) $custom_thumbnail_1_height. ")
 			  AND custom_thumbnail_1_width IS NULL";
 		$result = \ze\sql::select($sql);
@@ -82,7 +76,7 @@ if ($recreateCustomThumbnailOnes) {
 			unset($img['path']);
 			unset($img['filename']);
 			
-			\ze\file::resizeImageString($img['custom_thumbnail_1_data'], $img['mime_type'], $img['custom_thumbnail_1_width'], $img['custom_thumbnail_1_height'], $custom_thumbnail_1_width, $custom_thumbnail_1_height);
+			\ze\image::resize($img['custom_thumbnail_1_data'], $img['mime_type'], $img['custom_thumbnail_1_width'], $img['custom_thumbnail_1_height'], $custom_thumbnail_1_width, $custom_thumbnail_1_height);
 			
 			\ze\row::update('files', $img, $imageId);
 		}
@@ -97,7 +91,7 @@ if ($recreateCustomThumbnailTwos) {
 				custom_thumbnail_2_width = NULL,
 				custom_thumbnail_2_height = NULL,
 				custom_thumbnail_2_data = NULL
-			WHERE mime_type IN ". $mimeType . "
+			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp')
 			  AND custom_thumbnail_2_width IS NOT NULL";
 		\ze\sql::update($sql);
 	}
@@ -107,7 +101,7 @@ if ($recreateCustomThumbnailTwos) {
 		$sql = "
 			SELECT id
 			FROM ". DB_PREFIX. "files
-			WHERE mime_type IN ". $mimeType. "
+			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp')
 			  AND (width > ". (int) $custom_thumbnail_2_width. " OR height > ". (int) $custom_thumbnail_2_height. ")
 			  AND custom_thumbnail_2_width IS NULL";
 		$result = \ze\sql::select($sql);
@@ -135,7 +129,7 @@ if ($recreateCustomThumbnailTwos) {
 			unset($img['path']);
 			unset($img['filename']);
 			
-			\ze\file::resizeImageString($img['custom_thumbnail_2_data'], $img['mime_type'], $img['custom_thumbnail_2_width'], $img['custom_thumbnail_2_height'], $custom_thumbnail_2_width, $custom_thumbnail_2_height);
+			\ze\image::resize($img['custom_thumbnail_2_data'], $img['mime_type'], $img['custom_thumbnail_2_width'], $img['custom_thumbnail_2_height'], $custom_thumbnail_2_width, $custom_thumbnail_2_height);
 			
 			\ze\row::update('files', $img, $imageId);
 		}

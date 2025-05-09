@@ -33,9 +33,10 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
-		$nestModuleId = ze\module::id('zenario_plugin_nest');
+		$offerTheCreateAnotherOption = true;
+		$nestModuleId = ze\module::id('zenario_nest');
+		$ajaxNestModuleId = ze\module::id('zenario_ajax_nest');
 		$slideshowModuleId = ze\module::id('zenario_slideshow');
-		$slideshow2ModuleId = ze\module::id('zenario_slideshow_simple');
 		
 		switch ($refinerName) {
 			case 'nests':
@@ -45,23 +46,13 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$isSlideshow = false;
 				$pluginAdminName = \ze\admin::phrase('nest');
 				$ucPluginAdminName = \ze\admin::phrase('Nest');
-				$panel['key']['moduleId'] = $nestModuleId;
-                $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests match your search');
-				break;
-			
-			case 'slideshows':
-			case 'slideshows_using_form':
-			case 'slideshows_using_image':
-				$isNest = true;
-				$isSlideshow = true;
-				$pluginAdminName = \ze\admin::phrase('slideshow');
-				$ucPluginAdminName = \ze\admin::phrase('Slideshow');
+				$offerTheCreateAnotherOption = false;
 				
 				$moduleIds = [];
-				if ($moduleId = $slideshowModuleId) {
+				if ($moduleId = $nestModuleId) {
 					$moduleIds[] = $moduleId;
 				}
-				if ($moduleId = $slideshow2ModuleId) {
+				if ($moduleId = $ajaxNestModuleId) {
 					$moduleIds[] = $moduleId;
 				}
 				
@@ -70,6 +61,19 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				} elseif (count($moduleIds) == 1) {
 					$panel['key']['moduleId'] = $moduleIds[0];
 				}
+				
+                $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests match your search');
+				break;
+			
+			case 'slideshows':
+			case 'slideshows_using_image':
+				$isNest = true;
+				$isSlideshow = true;
+				$pluginAdminName = \ze\admin::phrase('slideshow');
+				$ucPluginAdminName = \ze\admin::phrase('Slideshow');
+				$offerTheCreateAnotherOption = false;
+				
+				$panel['key']['moduleId'] = $slideshowModuleId;
 				
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No slideshows match your search');
 				break;
@@ -99,7 +103,6 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		switch ($refinerName) {
 			case 'plugins_using_form':
 			case 'nests_using_form':
-			case 'slideshows_using_form':
 				if (ze\module::inc('zenario_user_forms')) {
 					$mrg['name'] = zenario_user_forms::getFormName($refinerId);
 				}
@@ -128,11 +131,6 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$panel['title'] = ze\admin::phrase('Nests using the form "[[name]]"', $mrg);
 				$panel['no_items_message'] = ze\admin::phrase('There are no nests using the form "[[name]]"', $mrg);
 				break;
-			case 'slideshows_using_form':
-				$panel['title'] = ze\admin::phrase('Slideshows using the form "[[name]]"', $mrg);
-				$panel['no_items_message'] = ze\admin::phrase('There are no slideshows using the form "[[name]]"', $mrg);
-				break;
-			
 			case 'plugins_using_image':
 				$panel['title'] = ze\admin::phrase('Plugins using the image "[[filename]]"', $mrg);
 				$panel['no_items_message'] = ze\admin::phrase('There are no plugins using the image "[[filename]]"', $mrg);
@@ -165,12 +163,12 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 
 		//Catch the case where the user is viewing nest/slideshow plugin instances
 		//(meaning that $refinerName is still 'plugin')
-		if ($panel['key']['moduleId'] == $nestModuleId) {
-			$pluginAdminName = \ze\admin::phrase('nest');
-			$ucPluginAdminName = \ze\admin::phrase('Nest');
-		} elseif ($panel['key']['moduleId'] == $slideshowModuleId || $panel['key']['moduleId'] == $slideshow2ModuleId) {
+		if ($panel['key']['moduleId'] == $slideshowModuleId) {
 			$pluginAdminName = \ze\admin::phrase('slideshow');
 			$ucPluginAdminName = \ze\admin::phrase('Slideshow');
+		} elseif ($panel['key']['moduleId'] == $nestModuleId || $panel['key']['moduleId'] == $ajaxNestModuleId) {
+			$pluginAdminName = \ze\admin::phrase('nest');
+			$ucPluginAdminName = \ze\admin::phrase('Nest');
 		}
 		
 		//Change everywhere we've written ~plugin~ to what this panel is actually for
@@ -178,14 +176,21 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		
 		
 		if (!$panel['key']['moduleId'] && isset($panel['collection_buttons']['create_dropdown'])) {
+			
 			//Get a list of modules that can be pluggable
-			if ($isSlideshow) {
+			if ($isNest) {
 				//Show the modules in reverse order for slideshows
 				$orderBy = ['display_name', 'DESC'];
-				$classNames = ['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple'];
+				$classNames = ['zenario_nest', 'zenario_ajax_nest'];
+			
+			} elseif ($isSlideshow) {
+				//Show the modules in reverse order for slideshows
+				$orderBy = ['display_name', 'DESC'];
+				$classNames = ['zenario_slideshow'];
+			
 			} else {
 				$orderBy = 'display_name';
-				$classNames = ['!' => ['zenario_plugin_nest', 'zenario_slideshow', 'zenario_slideshow_simple']];
+				$classNames = ['!' => ['zenario_nest', 'zenario_ajax_nest', 'zenario_slideshow']];
 			}
 			
 			$key = [
@@ -212,7 +217,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 						'admin_box' => [
 							//'class_name' => $c,
 							'path' => 'plugin_settings',
-							'create_another' => true,
+							'create_another' => $offerTheCreateAnotherOption,
 							'key' => [
 								'moduleId' => $moduleId
 					]]];
@@ -243,7 +248,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		#		  AND pi.content_id = 0
 		#		WHERE m.status = 'module_running'
 		#		  AND m.is_pluggable = 1
-		#		  AND m.class_name NOT IN ('zenario_plugin_nest', 'zenario_slideshow')
+		#		  AND m.class_name NOT IN ('zenario_nest', 'zenario_ajax_nest', 'zenario_slideshow')
 		#		GROUP BY m.id, m.display_name
 		#		ORDER BY m.display_name";
 		#	
@@ -292,6 +297,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			
 			switch ($panel['key']['moduleId']) {
 				case $nestModuleId:
+				case $ajaxNestModuleId:
 					$panel['select_mode_title'] = ze\admin::phrase('Nests', $mrg);
 
 					//Do not override the title when viewing nests using a form or image.
@@ -303,21 +309,10 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 					break;
 				
 				case $slideshowModuleId:
-					$panel['select_mode_title'] = ze\admin::phrase('Slideshows (advanced)', $mrg);
+					$panel['select_mode_title'] = ze\admin::phrase('Slideshows', $mrg);
 
-					//Do not override the title when viewing slideshows using a form or image.
-					if (!ze::in($refinerName, 'slideshows_using_form', 'slideshows_using_image')) {
-						$panel['title'] = $panel['select_mode_title'];
-					}
-
-					$panel['no_items_message'] = ze\admin::phrase('There are no advanced slideshows. Click the "Create" button to create one.', $mrg);
-					break;
-				
-				case $slideshow2ModuleId:
-					$panel['select_mode_title'] = ze\admin::phrase('Slideshows (simple)', $mrg);
-
-					//Do not override the title when viewing slideshows using a form or image.
-					if (!ze::in($refinerName, 'slideshows_using_form', 'slideshows_using_image')) {
+					//Do not override the title when viewing slideshows using an image.
+					if ($refinerName !== 'slideshows_using_image') {
 						$panel['title'] = $panel['select_mode_title'];
 					}
 
@@ -378,7 +373,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			$panel['db_items']['where_statement'] .= '
 				AND pi.module_id IN (
 					SELECT id FROM [[DB_PREFIX]]modules
-					WHERE class_name IN ("zenario_plugin_nest", "zenario_slideshow", "zenario_slideshow_simple")
+					WHERE class_name IN ("zenario_nest", "zenario_ajax_nest", "zenario_slideshow")
 				)
 				AND np.module_id = ' . (int) $panel['key']['containingModuleId'];
 
@@ -402,6 +397,12 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			//By default, don't show nests and slideshows with other library plugins
 			$panel['db_items']['where_statement'] .= ' '. $panel['db_items']['custom__exclude_nests_and_slideshows'];
 		}
+		
+		if ($panel['key']['moduleId']) {
+			$panel['columns']['name']['title'] = ze\admin::phrase('Plugin name, usage');
+		} else {
+			$panel['columns']['name']['title'] = ze\admin::phrase('Plugin name, module, usage');
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -422,7 +423,8 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$item['image'] = 'zenario/file.php?og=1'. $img;
 			}
 			
-			if ($item['module_class_name'] != 'zenario_plugin_nest'
+			if ($item['module_class_name'] != 'zenario_nest'
+			 && $item['module_class_name'] != 'zenario_ajax_nest'
 			 && $item['module_class_name'] != 'zenario_slideshow') {
 				$item['link'] = false;
 			}
@@ -456,21 +458,41 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		if ($mode == 'full' && $refinerName == 'plugin' && $refinerId) {
 			$usageInNestsAndSlideshows = ze\moduleAdm::usageInNestsAndSlideshows($refinerId);
 			$usageInNestsAndSlideshowsTotal = $usageInNestsAndSlideshows['nestCount'] + $usageInNestsAndSlideshows['slideshowCount'];
-			if ($usageInNestsAndSlideshowsTotal > 0) {
+			
+			//Only show this message if there are no other notices already being displayed.
+			if ($usageInNestsAndSlideshowsTotal > 0 && !$panel['notice']['message']) {
 				$panel['notice']['show'] = true;
 				$panel['collection_buttons']['view_nests_containing']['hidden'] = false;
 
+				$linkStart = '<a href="' . ze\link::absolute(). 'organizer.php#zenario__modules/panels/modules/item//' . (int) $refinerId . '//collection_buttons/view_nests_containing////">';
+				$linkEnd = '</a>';
+				
 				$panel['notice']['message'] = ze\admin::nPhrase(
 					"There is 1 plugin nest or slideshow which uses this module, [[link_start]]click to view[[link_end]].",
 					"There are [[count]] nests or slideshows which use this module, [[link_start]]click to view[[link_end]].",
 					$usageInNestsAndSlideshowsTotal,
-					[
-						'link_start' =>
-							'<a href="' . ze\link::absolute(). 'organizer.php#zenario__modules/panels/modules/item//' . (int) $refinerId . '//collection_buttons/view_nests_containing////">',
-						'link_end' => '</a>'
-					]
+					['link_start' => $linkStart, 'link_end' => $linkEnd]
 				);
 			}
+		}
+		
+		if ($refinerName == 'email_address_setting') {
+			$panel['title'] = ze\admin::phrase('Summary of email addresses used by plugins');
+			$panel['no_items_message'] = ze\admin::phrase('There are no plugins that send emails');
+			$panel['columns']['plugin']['show_by_default'] = true;
+			$panel['columns']['plugin']['ord'] = 0.5;
+			$panel['bold_columns_in_list_view'] = 'plugin';
+			$panel['columns']['code']['html'] = true;
+			$panel['columns']['where_used']['hidden'] = true;
+			$panel['columns']['framework']['hidden'] = true;
+			unset($panel['collection_buttons']);
+			unset($panel['item_buttons']);
+			
+			foreach ($panel['items'] as &$item) {
+				$item['code'] = '<a href="organizer.php#zenario__modules/panels/plugins//' . ze\ring::chopPrefix('P', $item['code']) . '" target="_blank">' . $item['code'] . '</a>';
+			}
+		} else {
+			unset($panel['columns']['plugin_email_address']);
 		}
 	}
 	

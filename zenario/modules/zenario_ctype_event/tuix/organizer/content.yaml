@@ -2,7 +2,7 @@
 ---
 zenario__content:
     panels:
-        content:
+        content: &contentPanelDefinition
             columns:
                 zenario_ctype_event__start_date:
                     php: Yes
@@ -46,3 +46,7 @@ zenario__content:
                                                 AND v.version = zenario_ctype_event__ce.version
                                                 AND v.type = 'event'
                     show_by_default: No
+        
+        trashed_content_items: *contentPanelDefinition
+        
+        hidden_content_items: *contentPanelDefinition

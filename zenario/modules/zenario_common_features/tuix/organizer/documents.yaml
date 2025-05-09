@@ -60,6 +60,11 @@ zenario__library:
                     db_column: d.folder_id
                     align_right: true
                     width: xxsmall
+                path:
+                    title: Path
+                    searchable: false
+                    always_show: true
+                    width: xlarge
                 name:
                     title: Name
                     db_column: "concat(ifNull(d.filename, \'\'), ifNull(d.folder_name, \'\'))"
@@ -140,6 +145,12 @@ zenario__library:
                 mime_type:
                     hidden: true
                     db_column: f.mime_type
+            
+            bold_columns_in_list_view: name
+            
+            label_format_for_picked_items: |
+                [[full_path_label]]
+            
             collection_buttons:
                 upload:
                     priv: _PRIV_EDIT_DOCUMENTS
@@ -203,6 +214,17 @@ zenario__library:
                         path: zenario_document_rename
                     with_columns_set:
                         traits.is_folder: true
+                open:
+                    parent: actions_dropdown
+                    label: Open file
+                    multiple_select: false
+                    hide_in_select_mode: true
+                    without_columns_set:
+                        traits.is_folder: true
+                    onclick: |
+                        var item = zenarioO.selectedItemDetails();
+                        window.open(URLBasePath + 'zenario/file.php?usage=documents&showInWindow=1&document_id=' + item.id);
+                        return false;
                 download:
                     parent: actions_dropdown
                     hide_in_select_mode: true
@@ -315,7 +337,7 @@ zenario__library:
                     parent: advanced_dropdown
                     hide_in_select_mode: true
                     visible_if: |
-                        ["image/jpeg", "image/png", "image/gif"].indexOf(item.mime_type) !== -1
+                        ["image/jpeg", "image/webp", "image/png", "image/gif"].indexOf(item.mime_type) !== -1
                     label: Rescan thumbnail
                     without_columns_set:
                         traits.is_folder: true
@@ -406,6 +428,29 @@ zenario__library:
                             message_type: question
                         request: 
                             make_offline: true
+                #The "Copy to document content items" button is disabled for now, as there is a bug
+                #where a document file might get permanently deleted. Awaiting a fix.
+                # copy_to_document_content_items:
+#                     parent: actions_dropdown
+#                     priv: _PRIV_EDIT_DOCUMENTS
+#                     hide_in_select_mode: true
+#                     multiple_select: true
+#                     label: Copy to document content items
+#                     ajax:
+#                         confirm:
+#                             message: |
+#                                 Copy this document to document content items?
+# 
+#                                 It will be created with "public" permission, but as a draft.
+#                             multiple_select_message: |
+#                                 Copy these documents to document content items?
+# 
+#                                 They will be created with "public" permission, but as a drafts.
+#                             button_message: Copy
+#                             cancel_button_message: Cancel
+#                             message_type: question
+#                         request:
+#                             copy_to_document_content_items: 1
                 delete_folder:
                     priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true

@@ -41,12 +41,13 @@ $menuItems = ze\menu::getFromContentItem($cID, $cType, true, false, true, true);
 
 $tagId = $cType. '_'. $cID;
 $isMultilingual = ze\lang::count() > 1;
+$orgLink = ze\link::absolute(). 'organizer.php?fromCID='. $cID. '&fromCType='. $cType;
 
 if (!$content || !$version) {
 	exit;
 } else {
 	ze\content::setShowableContent($content, $chain, $version, false);
-	$layout = ze\content::layoutDetails(ze::$layoutId);
+	$layout = ze\layout::details(ze::$layoutId);
 	$LayoutIdentifier = ze\layoutAdm::codeName(ze::$layoutId);
 	$layout['usage'] = ze\layoutAdm::usage(ze::$layoutId);
 	
@@ -123,7 +124,7 @@ if (!$content || !$version) {
 		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']['admin_box']);
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_not_available';
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-			ze\admin::phrase('To use staging mode, create a draft.');
+			ze\admin::phrase('To use staging mode, start editing to create a draft.');
 	
 	} else {
 		if ($stagingVersion = ze\row::get('content_item_versions',
@@ -145,7 +146,7 @@ if (!$content || !$version) {
 		} else {
 			$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_disabled';
 			$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-				ze\admin::phrase('Staging mode, not enabled. Click to enable.');
+				ze\admin::phrase('Click to enable staging mode for this content item.');
 		}
 	}
 	
@@ -155,7 +156,7 @@ if (!$content || !$version) {
 		$width = $height = $url = false;
 		$widthLimit = $heightLimit = 30;
 
-		ze\file::imageLink($width, $height, $url, $version['feature_image_id'], $widthLimit, $heightLimit, 'resize_and_crop', 0, false, $fullPath = true);
+		ze\image::link($width, $height, $url, $version['feature_image_id'], $widthLimit, $heightLimit, 'resize_and_crop', 0, false, $fullPath = true);
 		$adminToolbar['sections']['edit']['buttons']['view_items_images']['featured_image_src'] = htmlspecialchars($url);
 		$adminToolbar['sections']['edit']['buttons']['view_items_images']['featured_image_alt'] = ze\admin::phrase('Featured image');
 	} else {
@@ -194,7 +195,7 @@ if (ze::$status == 'trashed' || ($cVersion < ze::$adminVersion && (!ze::$visitor
 	unset($adminToolbar['sections']['actions']['buttons']['cant_start_editing']);
 }
 
-//Disable the "start editing"/"Rollback" buttons if a draft exists
+//Disable the "start editing"/"Redraft" buttons if a draft exists
 if (ze::$adminVersion > $cVersion
  && ze::$adminVersion > ze::$visitorVersion) {
 	unset($adminToolbar['sections']['actions']['buttons']['start_editing']);
@@ -273,6 +274,7 @@ if ($permsOnThisItem) {
 	unset($adminToolbar['toolbars']['rollback']);
 	unset($adminToolbar['sections']['create']['buttons']['duplicate_content']);
 }
+
 
 
 
@@ -391,6 +393,52 @@ if ($cVersion == ze::$adminVersion && ze::$isDraft) {
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_brown zenario_section_dark_text';
 		$adminToolbar['sections']['edit']['label'] = ze\admin::phrase('Bananas version');
 	}
+}
+
+if (isset($adminToolbar['sections']['actions']['buttons']['delete_archives'])) {
+	$sql = "
+		SELECT COUNT(*)
+		FROM " . DB_PREFIX . "content_items AS c
+		INNER JOIN " . DB_PREFIX . "translation_chains AS tc
+			ON c.equiv_id = tc.equiv_id
+			AND c.type = tc.type
+		INNER JOIN " . DB_PREFIX . "content_item_versions AS v
+			ON c.id = v.id
+			AND c.type = v.type
+		WHERE
+			v.id = " . (int) $cID . "
+			AND v.type = '" . ze\escape::sql($cType) . "'
+			AND v.version NOT IN (" . (int) ze::$visitorVersion . ", " . (int) ze::$adminVersion . ")";
+	$result = ze\sql::select($sql);
+	$archivedVersionsCount = ze\sql::fetchValue($result);
+	
+	$statusFormattedNicely = '';
+	switch (ze::$status) {
+		case 'first_draft':
+		case 'published_with_draft':
+		case 'unlisted_with_draft':
+		case 'hidden_with_draft':
+		case 'trashed_with_draft':
+			$statusFormattedNicely = "Draft";
+			break;
+		case 'published':
+			$statusFormattedNicely = "Published";
+			break;
+		case 'unlisted':
+			$statusFormattedNicely = "Published unlisted";
+			break;
+		case 'hidden':
+			$statusFormattedNicely = "Hidden";
+			break;
+		case 'trashed':
+			$statusFormattedNicely = "Trashed";
+			break;
+	}
+	
+	ze\lang::applyMergeFields(
+		$adminToolbar['sections']['actions']['buttons']['delete_archives']['ajax']['confirm']['message'],
+		['archived_versions_count' => (int) $archivedVersionsCount, 'version' => ze::$adminVersion, 'admin_version_status' => ze\admin::phrase($statusFormattedNicely)]
+	);
 }
 
 
@@ -616,8 +664,11 @@ if (isset($adminToolbar['sections']['translations'])) {
 		//Loop through every possible language, added a drop-down with options for that language
 		$n = 0;
 		$ord = 0;
-		foreach (ze\lang::getLanguages($includeAllLanguages = false, $orderByEnglishName = false, $defaultLangFirst = true) as $lang) {
-			
+		$counts = [
+			'can_create_translation' => 0,
+			'can_attach_existing_translation' => 0
+		];
+		foreach (ze\lang::getLanguages($includeAllLanguages = false, $orderByEnglishName = true, $defaultLangFirst = true) as $lang) {
 			//Check to see if there is already a translation
 			$translation = ze\row::get(
 				'content_items',
@@ -628,6 +679,7 @@ if (isset($adminToolbar['sections']['translations'])) {
 			$exists = (bool) $translation;
 			$isOG = $exists && $translation['id'] == ze::$equivId;
 			$isCurrent = $exists && $translation['id'] == ze::$cID;
+			$isDefault = $lang['id'] == ze::$defaultLang;
 			
 			//Select one of the different templates to copy, depending on what the status of the translation is
 			if ($exists) {
@@ -635,65 +687,54 @@ if (isset($adminToolbar['sections']['translations'])) {
 				
 				if ($isCurrent) {
 					$buttons = $adminToolbar['sections']['translations']['custom_template_buttons_current'];
-			
-				} else {
-					$buttons = $adminToolbar['sections']['translations']['custom_template_buttons_exists'];
 				}
 			} else {
+				//For admins with limited permissions, do not display any options to create or attach.
 				if (ze\priv::onLanguage('_PRIV_EDIT_DRAFT', $lang['id'])) {
 					$buttons = $adminToolbar['sections']['translations']['custom_template_buttons_missing_can_create'];
-			
-				} else {
-					$buttons = $adminToolbar['sections']['translations']['custom_template_buttons_missing_cant_create'];
+					$counts['can_create_translation']++;
 			
 				}
 			}
-			$buttons = json_decode(str_replace('znz', ++$n, str_replace('zlangIdz', preg_replace('/[^a-z0-9_-]/', '', $lang['id']), json_encode($buttons))), true);
-				//N.b. language codes can only contain the symbols "a-z0-9_-".
-				//The only reason this replacement is in any way safe is because they can't contain special characters.
 			
-			foreach ($buttons as &$button) {
-				$button['ord'] = ++$ord;
+			if (isset($buttons)) {
+				self::processAdminToolbarLanguage($buttons, $lang, $translation, $ord, $n, $isOG, $isDefault, $addWordDefaultToLabel = false, $exists, $importantGetRequests);
 				
-				//Have a slightly different message when talking about the original content item
-				if ($isOG && isset($button['label_og'])) {
-					$button['label'] = $button['label_og'];
-				}
-				unset($button['label_og']);
+				$adminToolbar['sections']['translations']['buttons'] = array_merge(
+					$adminToolbar['sections']['translations']['buttons'],
+					$buttons
+				);
 				
-				//Apply merge fields to the label
-				if (isset($button['label'])) {
-					ze\lang::applyMergeFields($button['label'], $lang);
-				}
-				if (isset($button['css_class'])) {
-					ze\lang::applyMergeFields($button['css_class'], $lang);
-				}
-				
-				if ($exists) {
-					//Set a link to the content item
-					if (isset($button['frontend_link'])) {
-						$button['frontend_link'] =
-							ze\link::toItem($translation['id'], $translation['type'], false, $importantGetRequests, $translation['alias']);
-							//Note: The ze\link::toItem() function has the option to automatically add the $importantGetRequests.
-							//However as we're actually handling an AJAX request, and are not on the page itself, this
-							//option won't work here so we need to manually pass in the $importantGetRequests.
-					}
-				
-				} else {
-				
-				
-				}
+				unset($buttons);
 			}
-			unset($button);
+			
+			if ($isCurrent) {
+				$adminToolbar['sections']['translations']['buttons']['current_language_button']['label'] = ze\admin::phrase(
+					"[[language_name]] ([[language_code]])",
+					['language_name' => $lang['english_name'], 'language_code' => $lang['id']]
+				);
+			}
 			
 			
-			
+			//Always display every enabled language on the list of "Existing languages",
+			//even if this language has already been added to the default/create/attach list.
+			if ($exists) {
+				$buttons2 = $adminToolbar['sections']['translations']['custom_template_buttons_exists'];
+			} else {
+				$buttons2 = $adminToolbar['sections']['translations']['custom_template_buttons_missing'];
+			}
+			self::processAdminToolbarLanguage($buttons2, $lang, $translation, $ord, $n, $isOG, $isDefault, $addWordDefaultToLabel = true, $exists, $importantGetRequests);
 			
 			$adminToolbar['sections']['translations']['buttons'] = array_merge(
 				$adminToolbar['sections']['translations']['buttons'],
-				$buttons
+				$buttons2
 			);
-
+			unset($buttons2);
+		}
+		
+		if ($counts['can_create_translation'] == 0) {
+			$adminToolbar['sections']['translations']['buttons']['create_translation_in_dropdown']['hidden'] =
+			$adminToolbar['sections']['translations']['buttons']['attach_translation_in_dropdown']['hidden'] = true;
 		}
 	}
 }
@@ -766,9 +807,10 @@ if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_head'])) {
 	} else {
 		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['css_class'] = 'head_slot_full';
 		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['tooltip'] = ze\admin::phrase('Populated');
-	}
-	if ($version['head_visitor_only']) {
-		$adminToolbar['sections']['slot_controls']['buttons']['item_head']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
+		
+		if ($version['head_visitor_only']) {
+			$adminToolbar['sections']['slot_controls']['buttons']['item_head']['tooltip'] .= '<br/>'. ze\admin::phrase("Don't send HTML/JS when in admin mode");
+		}
 	}
 }
 
@@ -780,9 +822,10 @@ if (isset($adminToolbar['sections']['slot_controls']['buttons']['item_foot'])) {
  	} else {
  		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['css_class'] = 'foot_slot_full';
  		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['tooltip'] = ze\admin::phrase('Populated');
- 	}
- 	if ($version['foot_visitor_only']) {
- 		$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['tooltip'] .= '<br/>'. ze\admin::phrase('Not output in admin mode');
+ 		
+ 		if ($version['foot_visitor_only']) {
+			$adminToolbar['sections']['slot_controls']['buttons']['item_foot']['tooltip'] .= '<br/>'. ze\admin::phrase("Don't send HTML/JS when in admin mode");
+		}
  	}
 }
 
@@ -799,6 +842,7 @@ if (isset($adminToolbar['sections']['layout'])) {
 			ze\admin::phrase('[[usage]] content items use this layout', $layout);
 	}
  	
+ 	$layoutLink =
  	$adminToolbar['sections']['layout']['buttons']['skq']['organizer_quick']['path'] =
  		$layout['status'] == 'active'?
  			'zenario__layouts/panels/layouts//'. ze::$layoutId
@@ -867,6 +911,13 @@ if (isset($adminToolbar['sections']['layout'])) {
 		$adminToolbar['sections']['slot_controls']['buttons']['global']['css_class'] = 'global_slot_empty';
 		$adminToolbar['sections']['slot_controls']['buttons']['global']['tooltip'] = ze\admin::phrase('Empty');
 	}
+	
+	//Add a tab-link to view the current layout in Organizer
+	if (isset($adminToolbar['toolbars']['layout'])) {
+		$adminToolbar['toolbars']['layout']['tab_link'] = [
+			'href' => $orgLink. '#'. $layoutLink
+		];
+	}
 }
 
 
@@ -893,6 +944,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 		
 		//For each Menu Node, create a copy of the Menu Section
 		$primary = true;
+		$unique = false;
 		$numberOfMenuItems = 0;
 		foreach ($menuItems as $i => &$menuItem) {
 			++$numberOfMenuItems;
@@ -933,6 +985,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			
 			if (ze\menu::isUnique($menuItem['redundancy'], $menuItem['equiv_id'], $menuItem['content_type'])) {
 				$menuItem['redundancy'] = 'unique';
+				$unique = true;
 			}
 
 			$adminToolbar['sections']['menu'. $i]['custom__menu_icon_css_class'] = ze\menuAdm::cssClass($menuItem);
@@ -982,9 +1035,11 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				if (isset($adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'])) {
 					$adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'] .=
 						'|'. 
-						($primary?
+						(	$unique ? ze\admin::phrase('Unique Menu Node') :
+							($primary ?
 								ze\admin::phrase('Primary Menu Node')
-							:	ze\admin::phrase('Secondary Menu Node')).
+							:	ze\admin::phrase('Secondary Menu Node'))
+							).
 						ze\admin::phrase('<br/>Section: [[section]]<br/>Path: [[path]] (Level [[level]])', $mrg);
 				}
 			}
@@ -993,8 +1048,12 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			if (isset($adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick'])) {
 				$adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick']['path'] = $menuLink;
 			}
-			if ($primary) {
-				$adminToolbar['meta_info']['menu_organizer_path'] = $menuLink;
+			
+			//If the primary menu node is being shown on the admin toolbar tabs, add a tab-link to view it in Organizer
+			if ($primary && isset($adminToolbar['toolbars']['menu'. $i])) {
+				$adminToolbar['toolbars']['menu'. $i]['tab_link'] = [
+					'href' => $orgLink. '#'. $menuLink
+				];
 			}
 			
 			//Check to see if this menu node has any images, and add info on each
@@ -1138,9 +1197,25 @@ if (ze\content::isSpecialPage(ze::$cID, ze::$cType)) {
 	$adminToolbar['sections']['icons']['buttons']['tag_id']['css_class'] .= ' zenario_at_icon_tag_id_special_page';
 }
 
+
+//Set some meta-info about this content item
+$versionClassName = ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $versionStatus);
 $adminToolbar['meta_info']['title'] = ze::$pageTitle;
-$adminToolbar['meta_info']['cversion_css_class'] =
-	ze\contentAdm::getItemIconClass($content['id'], $content['type'], true, $versionStatus);
+$adminToolbar['meta_info']['cversion_css_class'] = $versionClassName;
+
+//Add a tab-link to view the current content item in Organizer
+foreach (['edit', 'edit_disabled', 'rollback'] as $tabName) {
+	if (isset($adminToolbar['toolbars'][$tabName])) {
+		$adminToolbar['toolbars'][$tabName]['tab_link'] = [
+			'href' => $orgLink. '#zenario__content/panels/content/refiners/content_type//'. $cType. '//'. $tagId
+		];
+		
+		//Set the icon
+		$adminToolbar['toolbars'][$tabName]['icon_class'] =
+			'organizer_item_image '. $versionClassName;
+	}
+}
+
 
 // Language
 if (!$isMultilingual) {
@@ -1247,9 +1322,8 @@ if ($layoutItemCount) {
 	
 $adminToolbar['sections']['icons']['buttons']['layout_id']['css_class'] .= ' layout_status_' . $layoutDetails['status'];
 
-$visitorURL = ze\link::toItem(
-	$cID, $cType, $fullPath = true, $request = '', ze::$alias,
-	$autoAddImportantRequests = false, $forceAliasInAdminMode = true);
+$visitorURL = ze\link::toItemWithAlias(
+	$cID, $cType, $fullPath = true, $request = '', ze::$alias);
 
 if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
 	$adminToolbar['sections']['icons']['buttons']['copy_url']['onclick'] =
@@ -1306,6 +1380,7 @@ foreach ($showVersions as $showVersion => $dummy) {
 		
 		} elseif (!empty($v['last_modified_datetime']) && !empty($v['last_author_id'])) {
 			$lastAction = $v['last_modified_datetime'];
+			$lastActionBy = $v['last_author_id'];
 			$tooltipPhrase = 'Version [[version]], draft edited by [[name]], [[time]] [[date]]';
 		
 		} else {
@@ -1472,52 +1547,6 @@ if (ze\row::exists('content_types', ['enable_categories' => 0, 'content_type_id'
 	unset($adminToolbar['sections']['icons']['buttons']['item_categories_none']);
 }
 
-
-
-//Get the slots on this Layout, and add a button for each
-$ord = 2000;
-$first = true;
-$lastIsHeader = 0;
-$lastIsFooter = 0;
-$lookForSlots = ['layout_id' => ze::$layoutId];
-foreach(ze\row::getAssocs('layout_slot_link', ['ord', 'slot_name', 'is_header', 'is_footer'], $lookForSlots, ['ord', 'slot_name']) as $slot) {
-	
-	$cssClass = 'zenario_atSlotControl';
-	
-	if ($first) {
-		$first = false;
-	} else {
-		if ($lastIsHeader != $slot['is_header']
-		 || $lastIsFooter != $slot['is_footer']) {
-			$cssClass.= ' zenario_atSeparator';
-		}
-	}
-	$lastIsHeader = $slot['is_header'];
-	$lastIsFooter = $slot['is_footer'];
-	
-	if ($slot['is_header']) {
-		$cssClass.= ' zenario_atHeaderSlotControl';
-	} elseif ($slot['is_footer']) {
-		$cssClass.= ' zenario_atFooterSlotControl';
-	} else {
-		$cssClass.= ' zenario_atBodySlotControl';
-	}
-	
-	$adminToolbar['sections']['slot_controls']['buttons']['slot_'. $slot['slot_name']] =
-		[
-			'ord' => ++$ord,
-			'parent' => 'slot_control_dropdown',
-			'css_class' => $cssClass,
-			'label' => $slot['slot_name'],
-			
-			//Little hack - only show the slot control if the slot is visible and the opacity is over 0.3.
-			//(N.b. empty slots are 0.4, slots from other tabs are 0.2)
-			//'visible_if' => 'var plgslt = $("#plgslt_'. ze\escape::js($slot['slot_name']). '"); plgslt.is(":visible") && 1*plgslt.css("opacity") > .3;',
-			'disabled_if' => 'zenarioAT.slotDisabled("'. ze\escape::js($slot['slot_name']). '");',
-			'onmouseover' => 'return zenarioA.openSlotControls(this, this, "'. ze\escape::js($slot['slot_name']). '", true);',
-			'onclick' => 'return false;'
-		];
-}
 
 
 $linkStatus = false;        

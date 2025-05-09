@@ -15,10 +15,10 @@ plugin_settings:
                     value: _CURRENT
                     values:
                         _CURRENT:
-                            ord: "1"
+                            ord: 1
                             label: Auto
                         _SPECIFIC:
-                            ord: "1"
+                            ord: 2
                             label: Custom
                     format_onchange: true
                     side_note: >
@@ -68,25 +68,25 @@ plugin_settings:
                     value: _MENU_LEVEL_1
                     values:
                         _MENU_LEVEL_1:
-                            ord: "1"
+                            ord: 1
                             label: Level 1
                         _MENU_LEVEL_2:
-                            ord: "2"
+                            ord: 2
                             label: Level 2
                         _MENU_LEVEL_3:
-                            ord: "3"
+                            ord: 3
                             label: Level 3
                         _MENU_LEVEL_4:
-                            ord: "4"
+                            ord: 4
                             label: Level 4
                         _MENU_LEVEL_5:
-                            ord: "5"
+                            ord: 5
                             label: Level 5
                         _MENU_LEVEL_ABOVE:
-                            ord: "10"
+                            ord: 10
                             label: Menu level above current one
                         _MENU_CURRENT_LEVEL:
-                            ord: "11"
+                            ord: 11
                             label: Current menu level
                     side_note: >
                         To generate the main nav of the site from the top level, choose level 1 (recommended). Use other options to generate only deeper parts of the menu.
@@ -220,15 +220,15 @@ plugin_settings:
                 show_custom_title:
                     plugin_setting:
                         name: show_custom_title
-                    label: 'Show a custom title'
+                    label: 'Show a custom subtitle'
                     type: checkbox
                     value: false
                     redraw_onchange: true
-                    side_note: 'The title will appear above the menu.'
+                    side_note: 'The subtitle will appear between the parent menu node and its child nodes.'
                 title_tags:
                     plugin_setting:
                         name: title_tags
-                    label: 'Title heading tags:'
+                    label: 'Subtitle heading tags:'
                     type: select
                     values:
                         h1: Heading 1
@@ -238,19 +238,19 @@ plugin_settings:
                         h5: Heading 5
                         h6: Heading 6
                         p: Paragraph
-                    value: h2
+                    value: h3
                     same_row: true
                     visible_if: lib.value('show_custom_title')
                 custom_title:
                     indent: 1
                     plugin_setting:
                         name: custom_title
-                    label: 'Custom title:'
+                    label: 'Custom subtitle:'
                     type: text
                     value: 'In this section'
                     visible_if: lib.value('show_custom_title')
                     validation:
-                        required_if_not_hidden: 'Please enter a title.'
+                        required_if_not_hidden: 'Please enter a subtitle.'
                 show_parent_menu_node_text:
                     plugin_setting:
                         name: show_parent_menu_node_text

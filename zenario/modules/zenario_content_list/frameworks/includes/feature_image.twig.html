@@ -1,6 +1,6 @@
 {% if Show_Featured_Image %}
 	<div class="sticky_image">
-		{% if LINKS_IN_INCLUDES %}
+		{% if LINKS_IN_INCLUDES and item.Local_File_Id and not item.Disabled %}
 			<a {{item.Link}}{{item.Target_Blank}}>
 		{% endif %}
 		
@@ -8,7 +8,7 @@
 			{{item.Featured_Image_HTML}}
 		{% endif %}
 
-		{% if LINKS_IN_INCLUDES %}
+		{% if LINKS_IN_INCLUDES and item.Local_File_Id and not item.Disabled %}
 			</a>
 		{% endif %}
 	</div>

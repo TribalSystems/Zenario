@@ -96,13 +96,12 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			
 			$contentItemLanguageId = ze\row::get('content_items', 'language_id', ['id'=> $this->targetID, 'type'=> $this->targetType]);
 			$showInWhichLanguage = $this->setting('show_language_name_in_which_language');
-			if ($showInWhichLanguage == 'in_local_language') {
-				$localName = true;
-			} else {
-				$localName = false;
-			}
 			
-			$languageName = ze\lang::name($contentItemLanguageId, true, true, $localName);
+			if ($showInWhichLanguage == 'in_local_language') {
+				$languageName = ze\lang::name($contentItemLanguageId, false, true, true);
+			} else {
+				$languageName = ze\lang::name($contentItemLanguageId, false, true, false);
+			}
 			
 			$this->mergeFields['Language_Name'] = htmlspecialchars($languageName);
 		}
@@ -129,20 +128,40 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			}
 		}
 	
-		if($this->setting('show_default_stick_image')) {
+		if($this->setting('show_featured_image')) {
 			$has_img = false;
-			if($this->setting('use_sticky_image')) {
-				$width = (int)$this->setting('image_width');
-				$height = (int)$this->setting('image_height');
-				$url = false;
+			$maxWidth = (int) $this->setting('image_width');
+			$maxHeight = (int) $this->setting('image_height');
+			$canvas = $this->setting('image_canvas');
+			$retina = (
+				$this->setting('image_canvas') != 'unlimited'
+				|| ($this->setting('image_canvas') == 'unlimited' && $this->setting('image_retina'))
+			);
+			$width = $height = $url = false;
+			
+			if (ze\content::featureImageLink($width, $height, $url, $this->targetID, $this->targetType, $this->targetVersion, $maxWidth, $maxHeight, $canvas, $offset = 0, $retina)) {
+				$this->mergeFields['Featured_image'] = "background: url('" .  htmlspecialchars($url) . "') no-repeat scroll 0 0;";
+				$this->mergeFields['Featured_image_url'] = htmlspecialchars($url);
 				
-				if ($this->setting('use_sticky_image') && (ze\file::itemStickyImageLink($width, $height, $url, $this->targetID, $this->targetType, $this->targetVersion, $width, $height))) {
-					$this->mergeFields['Sticky_image'] = "background: url('" .  htmlspecialchars($url) . "') no-repeat scroll 0 0;";
-					$this->mergeFields['Sticky_image_url'] = htmlspecialchars($url) ;
-					$this->allowedChildSections['Sticky_image'] = $has_img = true;
+				if ($retina) {
+					$this->mergeFields['Featured_image_srcset'] = htmlspecialchars($url) . ' 2x';
+				} else {
+					$this->mergeFields['Featured_image_srcset'] = htmlspecialchars($url);
 				}
+				
+				if (ze::isAdmin()) {
+					$imageId = ze\content::featureImageId($this->targetID, $this->targetType, $this->targetVersion);
+					$this->mergeFields['Featured_image_class'] = 'zenario_image_properties zenario_image_id__' . $imageId . '__ zenario_image_num__' . ($imageLinkNum = 1) . '__';
+					
+					if ($canvas == 'crop_and_zoom') {
+						$this->mergeFields['Featured_image_class'] .= ' zenario_crop_properties';
+					}
+				}
+				
+				$this->allowedChildSections['Featured_image'] = $has_img = true;
 			}
-			if(!$has_img) {
+			
+			if (!$has_img) {
 				$this->getStyledExtensionIcon($type, $this->mergeFields);
 			}
 		}
@@ -376,8 +395,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		        $fields['first_tab/show_time']['hidden'] = 
 		        	!(($values['first_tab/show_release_datetime'] ?? false));
 		        
-		        $fields['first_tab/use_sticky_image']['hidden'] = !$values['first_tab/show_default_stick_image'];
-		        $hidden = !($values['first_tab/show_default_stick_image'] && $values['first_tab/use_sticky_image']);
+		        $hidden = !$values['first_tab/show_featured_image'];
 		        $this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_');
 				
 				if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
@@ -386,13 +404,27 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 					$fields['first_tab/s3_file']['hidden'] = false;
 				}
 				
+				$retinaSideNote = "If the source image is large enough,
+                            the resized image will be output at twice its displayed width &amp; height
+                            to appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.";
+                
+                if ($values['first_tab/image_canvas'] != "unlimited") {
+					$fields['first_tab/image_canvas']['side_note'] = $retinaSideNote;
+				} else {
+					$fields['first_tab/image_canvas']['side_note'] = "";
+				}
+				
 		        break;
 			
 			
 			case 'zenario_content':
-				$fields['file/text_extract_processing']['hidden'] =
 				$fields['file/text_extract']['hidden'] =
-				$fields['file/text_extract_word_count']['hidden'] = true;
+				$fields['file/extract_wordcount']['hidden'] = 
+				$fields['file/extract_pagecount']['hidden'] =
+				$fields['file/extract_processing']['hidden'] = true;
 				
 				if ($box['key']['cType'] == 'document') {
 					$box['tabs']['file']['hidden'] = false;
@@ -401,14 +433,22 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 					
 					if ($values['file/file']
 					 && is_numeric($values['file/file'])
-					 && ($extract = ze\row::get('file_extracts', ['extract', 'extract_wordcount', 'extract_source', 'extract_status', 'requested_on'], $values['file/file']))) {
+					 && ($extract = ze\row::get('file_extracts', ['extract', 'extract_wordcount', 'extract_pagecount', 'extract_source', 'extract_status', 'requested_on'], $values['file/file']))) {
 				
 						switch ($extract['extract_status']) {
 							case 'completed':
 								$fields['file/text_extract']['hidden'] =
-								$fields['file/text_extract_word_count']['hidden'] = false;
+								$fields['file/extract_wordcount']['hidden'] = false;
+								
 								$fields['file/text_extract']['value'] = $extract['extract'];
-								$fields['file/text_extract_word_count']['value'] = $extract['extract_wordcount'];
+								$fields['file/extract_wordcount']['value'] = $extract['extract_wordcount'];
+								
+								//Text extracts from Amazone Textract can have a page-count variable in the metadata that gets returned.
+								//Show this variable if we have the value for it.
+								if (!is_null($extract['extract_pagecount'])) {
+									$fields['file/extract_pagecount']['hidden'] = false;
+									$fields['file/extract_pagecount']['value'] = $extract['extract_pagecount'];
+								}
 								
 								switch ($extract['extract_source']) {
 									case 'antiword':
@@ -437,8 +477,8 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 							case 'processing':
 								$mrg = ['ago' => \ze\admin::formatRelativeDateTime($extract['requested_on'], 'day', false)];
 								
-								$fields['file/text_extract_processing']['hidden'] = false;
-								$fields['file/text_extract_processing']['notices_below']['text_extract_processing']['message'] =
+								$fields['file/extract_processing']['hidden'] = false;
+								$fields['file/extract_processing']['notices_below']['extract_processing']['message'] =
 									ze\admin::phrase('The text extract for this file is still processing. Scan requested from Textract [[ago]], the extract will appear here in a few minutes.', $mrg);
 								
 								break;
@@ -597,7 +637,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 								$fileData = pathinfo($_FILES['Filedata']['name']);
 								$filenameForTitle = preg_replace('/([^.a-z0-9\-_\(\)\[\]\'\"]+)/i', ' ', $fileData['filename']);
 								
-								if ($fileId = ze\file::addToDocstoreDir('content', $_FILES['Filedata']['tmp_name'], $filename)) {
+								if ($fileId = ze\fileAdm::addToDocstoreDir('content', $_FILES['Filedata']['tmp_name'], $filename)) {
 									$cID = $cVersion = false;
 									ze\contentAdm::createDraft($cID, false, $cType, $cVersion, false, $languageId);
 									ze\row::set(
@@ -606,7 +646,28 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 									$newIds[] = $cType. '_'. $cID;
 									
-									ze\file::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId);
+									ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId);
+									
+									//If this document has been created from an image, create a thumbnail.
+									$file = ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $fileId]);
+									
+									if (!empty($file) && $file['location'] == 'docstore' && ze\file::isImage(ze\file::mimeType($file['filename']))) {
+										$location = ze\file::docstorePath($file['path']);
+										$thumbnailId = ze\fileAdm::addToDatabase(
+											'image', $location, $file['filename'], $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false,
+											false, false, false, false, $file['image_credit']
+										);
+										
+										ze\row::set('inline_images', [], [
+											'image_id' => $thumbnailId,
+											'foreign_key_to' => 'content',
+											'foreign_key_id' => $cID,
+											'foreign_key_char' => $cType,
+											'foreign_key_version' => $cVersion
+										]);
+										ze\contentAdm::updateVersion($cID, $cType, $cVersion, ['feature_image_id' => $thumbnailId]);
+										ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+									}
 								}
 							}
 						}
@@ -814,14 +875,14 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 							//Plain text extracts for the latest published version and any drafts are stored separately,
 							//because a draft may use a different file. Update the extract for both if applicable.
 							if ($row['admin_version']) {
-								$extract = ze\file::updateDocumentContentItemExtract($row['id'], $row['type'], $row['admin_version'], false, $forceRescan);
+								$extract = ze\fileAdm::updateDocumentContentItemExtract($row['id'], $row['type'], $row['admin_version'], false, $forceRescan);
 								$extractOneStatus = $extract['extract_status'] ?? '';
 								$doneSomething = true;
 								$forceRescan = false;
 							}
 						
 							if ($row['visitor_version'] && $row['visitor_version'] != $row['admin_version']) {
-								$extract = ze\file::updateDocumentContentItemExtract($row['id'], $row['type'], $row['visitor_version'], false, $forceRescan);
+								$extract = ze\fileAdm::updateDocumentContentItemExtract($row['id'], $row['type'], $row['visitor_version'], false, $forceRescan);
 								$extractTwoStatus = $extract['extract_status'] ?? '';
 								$doneSomething = true;
 								$forceRescan = false;

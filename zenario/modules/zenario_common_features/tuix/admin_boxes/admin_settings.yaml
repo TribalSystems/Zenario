@@ -45,3 +45,29 @@ zenario_admin:
                     note_below: |
                         E.g. <code>sftp://username@server.com/</code>. Or leave this field blank to use localhost.
                         <br/>This is used when displaying help text, and is for reference only.
+        history:
+            visible_if: |
+                zenarioAB.tuix.key.id
+            ord: 999999
+            edit_mode:
+                priv: _PRIV_EDIT_ADMIN
+                enabled: true
+            label: History
+            fields:
+                datetime_created: 
+                    label: "Created:"
+                    type: datetime
+                    change_month_and_year: true
+                    readonly: true
+                    show_as_a_span: true
+                last_login: 
+                    label: "Last login:"
+                    type: datetime
+                    change_month_and_year: true
+                    readonly: true
+                    show_as_a_span: true
+                last_login_browser_and_ip:
+                    label: "Last login browser & IP address:"
+                    type: text
+                    readonly: true
+                    show_as_a_span: true

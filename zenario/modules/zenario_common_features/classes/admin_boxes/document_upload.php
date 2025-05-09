@@ -57,7 +57,7 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 				$location = ze\file::getPathOfUploadInCacheDir($document);
 				$filename = basename($location);
 				
-				$fileCheck = ze\file::check($location);
+				$fileCheck = ze\fileAdm::check($location);
 				if (ze::isError($fileCheck) && $document) {
 					$box['tabs']['upload_document']['errors'][] = $fileCheck->__toString();
 				}

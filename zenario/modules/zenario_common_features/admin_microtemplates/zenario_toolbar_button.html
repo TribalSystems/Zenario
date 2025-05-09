@@ -5,9 +5,7 @@
 			{{m.css_class|escape}}
 			{{m.disabled? 'zenario_at_button_disabled' : ''}}
 		"
-		<% if (m.id != 'slot_control_dropdown') { %>
-			onmouseover="zenarioA.closeSlotControls();"
-		<% } %>
+		onmouseover="zenarioA.closeSlotControls();"
 	>
 		<% if (m.featured_image_container) { %>
 			<span class="content_item_images <% if (m.record_count) { %> has_record_count <% } %>">

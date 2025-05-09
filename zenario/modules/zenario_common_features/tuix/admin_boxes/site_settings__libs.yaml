@@ -196,7 +196,7 @@ site_settings:
                     same_row: true
                     type: radios
                     cols: 2
-                    value: 0
+                    value: 1
                     values:
                         0:
                             ord: 2

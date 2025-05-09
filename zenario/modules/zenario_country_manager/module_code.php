@@ -298,6 +298,27 @@ class zenario_country_manager extends ze\moduleBaseClass {
 				return ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'english_name', ['id' => $value]);
 		}
 	}
+
+	public static function getActiveCountriesForVisitor($mode, $value = false) {
+		switch ($mode) {
+			case ze\dataset::LIST_MODE_INFO:
+				return ['can_filter' => false];
+			
+			case ze\dataset::LIST_MODE_LIST:
+				$countries = [];
+				foreach (ze\row::getValues(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'id', ['active' => 1]) as $countryId) {
+					$countries[$countryId] = zenario_country_manager::getCountryName($countryId);
+				}
+				
+				asort($countries, SORT_LOCALE_STRING);
+					//Note: If this sort doesn't work properly, we might need to investigate calling setlocale() first.
+				
+				return $countries;
+			
+			case ze\dataset::LIST_MODE_VALUE:
+				return zenario_country_manager::getCountryName($value);
+		}
+	}
 	
 	public static function getCountryDialingCodes($mode, $value = false) {
 		switch ($mode) {
@@ -353,7 +374,15 @@ class zenario_country_manager extends ze\moduleBaseClass {
 	
 	public static function getEnglishCountryName_framework($mergeFields, $attributes) {
 		$out = '';
-		if ($value = ze::ifNull($mergeFields[$attributes['name'] ?? false], $attributes['value'] ?? false)) {
+		
+		if (!empty($attributes['name'])
+		 && !empty($mergeFields[$attributes['name']])) {
+			$value = $mergeFields[$attributes['name']];
+		} else {
+			$value = $attributes['value'] ?? false;
+		}
+		
+		if ($value) {
 			$out = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 'english_name', ['id' => $value]);
 		}
 		

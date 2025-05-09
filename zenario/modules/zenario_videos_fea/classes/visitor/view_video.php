@@ -70,8 +70,19 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 				$url = false;
 				$fromYoutube = false;
 				if (strpos($parsed['host'], 'youtube.com') !== false || strpos($parsed['host'], 'youtu.be') !== false) {
-					$params = ['url' => $this->video['url'], 'autoplay' => 1, 'format' => 'json'];
+					$urlToPass = $this->video['url'];
+					
+					if ($this->video['start_time']) {
+						$urlToPass .= '&' . $this->video['start_time'];
+					}
+					
+					$params = ['url' => $urlToPass, 'autoplay' => 1, 'format' => 'json'];
 					$url = "https://www.youtube.com/oembed?" . http_build_query($params);
+					
+					if ($this->video['start_time']) {
+						$url .= '&' . $this->video['start_time'];
+					}
+					
 					$fromYoutube = true;
 				} elseif (strpos($parsed['host'], 'vimeo.com') !== false) {
 					//If a Vimeo video is unlisted, there is an additional string after the URL.
@@ -88,8 +99,29 @@ class zenario_videos_fea__visitor__view_video extends zenario_videos_fea__visito
 					//Get Vimeo data
 					$videoData = zenario_videos_manager::getVimeoVideoData($vimeoVideoId);
 
-					$params = ['url' => $videoData['link'], 'autoplay' => true];
-					$url = "https://vimeo.com/api/oembed.json?" . http_build_query($params);
+					if (!empty($videoData) && !empty($videoData['link'])) {
+						$urlToPass = $videoData['link'];
+						
+						$params = ['url' => $urlToPass, 'autoplay' => true];
+						
+						if ($this->video['start_time']) {
+							$startTimeArray = explode('=', $this->video['start_time']);
+							
+							if (!empty($startTimeArray[0]) && !empty($startTimeArray[1])) {
+								$params['start_time'] = $startTimeArray[1];
+							}
+						}
+						
+						$url = "https://vimeo.com/api/oembed.json?" . http_build_query($params);
+					}
+				} else {
+					$urlToPass = $this->video['url'];
+					
+					if ($this->video['start_time']) {
+						$urlToPass .= '&' . $this->video['start_time'];
+					}
+					
+					$url = $urlToPass;
 				}
 			
 				if ($url) {

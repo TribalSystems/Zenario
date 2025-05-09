@@ -41,7 +41,7 @@ class zenario_timezones extends ze\moduleBaseClass {
 	function showSlot() {
 		$this->twigFramework();
 		
-		$this->callScript('zenario_timezones', 'init', $this->containerId, ze::$vars['locationId'] ?? 0, ze::$vars['dataPoolId1'] ?? 0);
+		$this->callScript('zenario_timezones', 'init', $this->containerId, ze::$vars['locationId'] ?? 0, ze::$vars['dataPoolId'] ?? 0);
 	}
 	
 	function handleAJAX() {

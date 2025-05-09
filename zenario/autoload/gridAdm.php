@@ -510,7 +510,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 				$cell['width'] = 1;
 			}
 		
-			$cell['class'] = \ze\content::rationalNumberGridClass($cell['width'] = min($cols, $cell['width']), $cols);
+			$cell['class'] = \ze\skin::rationalNumberGridClass($cell['width'] = min($cols, $cell['width']), $cols);
 			if (isset($cell['css_class'])) {
 				$cell['class'] .= ' '. $cell['css_class'];
 			}
@@ -521,7 +521,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 		if ($widthSoFarThisLine + $cell['width'] > $cols) {
 			//Also add a space if needed, if the grids didn't quite match the line-length
 			if ($cols > $widthSoFarThisLine) {
-				$lines[$lineNum]['line'][] = ['space' => true, 'width' => $cols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($cols - $widthSoFarThisLine, $cols)];
+				$lines[$lineNum]['line'][] = ['space' => true, 'width' => $cols - $widthSoFarThisLine, 'class' => \ze\skin::rationalNumberGridClass($cols - $widthSoFarThisLine, $cols)];
 			}
 			$lines[++$lineNum] = ['height' => 1, 'line' => []];
 			$widthSoFarThisLine = 0;
@@ -535,7 +535,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 	
 	//Add an empty space onto the end if we didn't finish one line exactly
 	if ($cols > $widthSoFarThisLine) {
-		$lines[$lineNum]['line'][] = ['space' => true, 'width' => $cols - $widthSoFarThisLine, 'class' => \ze\content::rationalNumberGridClass($cols - $widthSoFarThisLine, $cols)];
+		$lines[$lineNum]['line'][] = ['space' => true, 'width' => $cols - $widthSoFarThisLine, 'class' => \ze\skin::rationalNumberGridClass($cols - $widthSoFarThisLine, $cols)];
 	}
 	
 	foreach ($lines as &$line) {
@@ -616,7 +616,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, &$slot
 				 && empty($line['line'][$i - 1]['space']['css_class'])) {
 					//Add the space on the second space to the first space 
 					$line['line'][$i - 1]['width'] += $line['line'][$i]['width'];
-					$line['line'][$i - 1]['class'] = \ze\content::rationalNumberGridClass($line['line'][$i - 1]['width'], $cols);
+					$line['line'][$i - 1]['class'] = \ze\skin::rationalNumberGridClass($line['line'][$i - 1]['width'], $cols);
 					//Then delete the second space
 					array_splice($line['line'], $i, 1);
 				}

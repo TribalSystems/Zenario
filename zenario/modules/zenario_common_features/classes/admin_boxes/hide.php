@@ -85,7 +85,7 @@ class zenario_common_features__admin_boxes__hide extends ze\moduleBaseClass {
 			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids[0]);
 			$menu = ze\menu::getFromContentItem($cID, $cType);
 
-			$goToContentItem = ze\link::toItem($cID, $cType, $fullPath = true, '', false, false, $forceAliasInAdminMode = true);
+			$goToContentItem = ze\link::toItemWithAlias($cID, $cType, $fullPath = true, '', false);
 		}
         
         foreach ($ids as $id) {

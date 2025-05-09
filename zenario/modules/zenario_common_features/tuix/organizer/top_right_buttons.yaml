@@ -51,12 +51,7 @@ top_right_buttons:
         css_class: dev_tools_option
         label: Enable developer tools
         onclick: |
-            zenario.ajax(
-                zenario.AJAXLink('zenario_common_features'),
-                {show_dev_tools: 1}
-            ).after(function() {
-                document.location.reload(true);
-            });
+            zenarioA.changeAdminSetting({show_dev_tools: 1});
     
     dev_tools_title:
         visible_if: zenarioT.showDevTools()
@@ -101,12 +96,7 @@ top_right_buttons:
         parent: admin_name
         label: Disable developer tools
         onclick: |
-            zenario.ajax(
-                zenario.AJAXLink('zenario_common_features'),
-                {show_dev_tools: 0}
-            ).after(function() {
-                document.location.reload(true);
-            });
+            zenarioA.changeAdminSetting({show_dev_tools: 0});
 
     
     #no_children:

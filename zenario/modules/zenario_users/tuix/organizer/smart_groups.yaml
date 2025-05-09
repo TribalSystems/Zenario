@@ -143,7 +143,7 @@ zenario__users:
                 delete:
                     priv: _PRIV_MANAGE_GROUP
                     hide_in_select_mode: true
-                    ord: "99"
+                    ord: 99
                     label: Delete
                     multiple_select: true
                     ajax:

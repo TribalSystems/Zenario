@@ -67,7 +67,7 @@ if ($fileId = \ze\row::get('content_item_versions', 'feature_image_id', ['id' =>
 
 //Do a quick check to see if all of those ids exist, only add the ones in the database!
 if (!empty($fileIds)) {
-	$files = \ze\row::getAssocs('files', ['id', 'usage', 'privacy'], ['id' => $fileIds]);
+	$files = \ze\row::getAssocs('files', ['id', 'usage', 'filename', 'mime_type', 'privacy', 'width', 'height', 'checksum', 'short_checksum'], ['id' => $fileIds]);
 }
 
 
@@ -128,8 +128,12 @@ if (!$featureImageId) {
 	}
 }
 
+//We'll want to go through the plain text extract, trying to balance the text on each line so that
+//it would work well in a semantic search.
+$chunks = ze\ring::parseExtract($content, true);
+$text = implode("\n\n", $chunks);
+
 //Update the Content in the cache table
-$text = trim(html_entity_decode(strip_tags($content)));
 \ze\row::set('content_cache', ['text' => $text, 'text_wordcount' => str_word_count($text)], ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 
 
@@ -151,7 +155,7 @@ if ($publishing && !empty($files)) {
 			\ze\row::update('files', ['privacy' => $privacy], $fileId);
 			
 			if ($citemPrivacy == 'public') {
-				\ze\file::addPublicImage($fileId);
+				\ze\image::addToPublicDir($fileId);
 			}
 		}
 	}

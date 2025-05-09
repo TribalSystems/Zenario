@@ -100,7 +100,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			if ($this->setting('show_featured_image') && $this->setting('fall_back_to_default_image')) {
                 $width = 0;
                 $height = 0;
-			    ze\file::imageLink($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
+			    ze\image::link($width, $height, $defaultImageURL, $this->setting('default_image_id'), $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
 			}
 			
 			if ($showCategory = $this->setting('show_content_items_category')) {
@@ -118,7 +118,7 @@ class zenario_event_listing extends ze\moduleBaseClass {
                     $url = '';
                     $width = 0;
                     $height = 0;
-                    ze\file::imageLink($width, $height, $url, $row['feature_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
+                    ze\image::link($width, $height, $url, $row['feature_image_id'], $this->setting("width"), $this->setting("height"), $this->setting('canvas'), 0, $this->setting('retina'));
                     
                     if ($url) {
                         $stickyImageURL = $url;
@@ -327,6 +327,20 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			$this->data['Events_List'] = true;
 			$this->data['Event_Row_On_List'] = $eventRows;
 			$this->data['Show_Category'] = (bool)$this->setting('show_content_items_category');
+			
+			$moreLink = false;
+			$moreLinkText = '';
+			if ($this->setting('show_more_link') && $this->getCIDAndCTypeFromSetting($cID, $cType, 'more_hyperlink_target')) {
+				ze\content::langEquivalentItem($cID, $cType);
+				$moreLink = $this->linkToItemAnchor($cID, $cType, false, '', false, false, false, $stayInCurrentLanguage = true);
+				
+				if ($moreLink) {
+					$moreLinkText = $this->phrase($this->setting('more_link_text'));
+				}
+			}
+			
+			$this->data['More_Link'] = $moreLink;
+			$this->data['More_Link_Title'] = $moreLinkText;
 		} else {
 		    $this->data['No_Events'] = true;
 		}
@@ -787,6 +801,10 @@ class zenario_event_listing extends ze\moduleBaseClass {
 					$fields['overall_list/group_events_by_year_and_month']['disabled'] = false;
 					unset($fields['overall_list/group_events_by_year_and_month']['side_note']);
 				}
+				
+				$fields['overall_list/more_link_text']['hidden'] =
+				$fields['overall_list/more_hyperlink_target']['hidden'] =
+					!$values['overall_list/show_more_link'];
                 
 				break;
 		}

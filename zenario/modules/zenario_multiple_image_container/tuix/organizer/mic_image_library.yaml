@@ -12,7 +12,7 @@ zenario__library:
                 id_column: f.id
                 where_statement: |
                     WHERE f.`usage` = 'mic'
-                    AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
+                    AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
             
             panel_type: multi_line_list_or_grid
             css_class: two_line_list_panels

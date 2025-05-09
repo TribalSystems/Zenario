@@ -194,7 +194,7 @@ zenario_admin: &admin
                         #one_to_one_choose_phrase:
                         multiple_select: true
                         #one_to_many_choose_phrase:
-                        select_phrase: Select a content item...
+                        select_phrase: Select content items...
                         #nothing_selected_phrase:
                         disallow_refiners_looping_on_min_path: true
                 

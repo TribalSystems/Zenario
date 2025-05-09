@@ -24,10 +24,6 @@
 		<% if (m.required) { %> required <% } %>
 		<% if (m.indent) { %> zenario_indent_level zenario_indent_level_{{m.indent}} <% } %>" 
 	data-id="{{m.id}}"
-	
-	<% if (m._is_repeat_field) { %>
-		style="padding-left:50px;"
-	<% } %>
 >
 	
 	<div id="organizer_form_field_side_note_{{m.id|e}}" class="zenario_side_note_wrap" <% if (!m.side_note) { %> style="display:none;" <% } %>>
@@ -116,13 +112,6 @@
 		<% } else if (m.display_type == 'url') { %>
 			<span class="label">{{m.display_label|e}}</span>
 			<input type="text" value="http://" readonly class="url"/>
-		
-		<% } else if (m.display_type == 'repeat_start') { %>
-			<div class="border"></div>
-			<span>Repeating section start</span>
-			
-		<% } else if (m.display_type == 'repeat_end') { %>
-			<div class="border"></div>
 		
 		<% } else { %>
 			<span class="label">{{m.display_label|e}}</span>

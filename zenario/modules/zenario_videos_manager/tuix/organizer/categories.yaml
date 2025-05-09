@@ -7,10 +7,6 @@ zenario_videos_manager:
             no_items_message: There are no video categories.
             item: 
                 css_class: zenario_category_icon
-                tooltip_when_link_is_active: 'View videos in category "[[name]]"'
-                link:
-                    path: zenario_videos_manager/panels/videos
-                    refiner: category
             db_items:
                 table: '[[DB_PREFIX]][[ZENARIO_VIDEOS_MANAGER_PREFIX]]categories AS c'
                 id_column: c.id
@@ -31,6 +27,7 @@ zenario_videos_manager:
                     align_right: true
             item_buttons:
                 edit:
+                     priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     label: Edit
                     admin_box:
@@ -41,7 +38,9 @@ zenario_videos_manager:
                         path: zenario_videos_manager/panels/videos
                         refiner: category
                         branch: Yes
+                    record_count: number_of_videos
                 delete:
+                    priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     label: Delete
                     multiple_select_tooltip: Delete these categories?
@@ -57,6 +56,7 @@ zenario_videos_manager:
                             delete_category: 1
             collection_buttons:
                 create:
+                    priv: _PRIV_MANAGE_VIDEOS
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
                     label: Create a category

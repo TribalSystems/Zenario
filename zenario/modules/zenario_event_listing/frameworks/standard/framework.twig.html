@@ -6,7 +6,9 @@
 	{% endif %}
 
 		{% if Title %}
-			<h2>{{Title}}</h2>
+			<div class="heading">
+				<h2>{{Title}}</h2>
+			</div>
 		{% endif %}
 		
 		{% for Event in Event_Row_On_List %}
@@ -63,15 +65,21 @@
 							</a>
 						{% endif %}
 					{% endif %}
-					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'more...'|trans}}</a>
+					<a class="single_event_more_link" href="{{Event.Link_To_Event}}" >{{'More details...'|trans}}</a>
 				</div>
 			</div>
 		{% endfor %}
+		
+		<div class="event_list_more_bottom">
+			<a class="event_list_more_link" {{More_Link}}>{{More_Link_Title}}</a>
+		</div>
 	</div>
 	{{Pagination}}
 {% elseif No_Events %}
 	{% if Title %}
-		<h2>{{Title}}</h2>
+		<div class="heading">
+			<h2>{{Title}}</h2>
+		</div>
 	{% endif %}
 	
     <div class="no_events_to_show" > 

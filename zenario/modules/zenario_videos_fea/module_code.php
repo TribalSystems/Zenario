@@ -79,5 +79,38 @@ class zenario_videos_fea extends zenario_abstract_fea {
 			return '';
 		}
 	}
+	
+	public static function nestedPluginName($eggId, $instanceId, $moduleClassName) {
+		
+		$modeNameString = '';
+		
+		switch (ze\plugin::setting('mode', $instanceId, $eggId)) {
+			case 'list_videos':
+				$modeNameString = 'list videos';
+				break;
+			case 'search_videos':
+				$modeNameString = 'search videos';
+				break;
+			case 'new_video':
+				$modeNameString = 'new video';
+				break;
+			case 'view_video':
+				$modeNameString = 'view video';
+				break;
+			case 'edit_video':
+				$modeNameString = 'edit video';
+				break;
+			default:
+			case 'no_mode_selected':
+				$modeNameString = 'inactive';
+				break;
+		}
+		
+		if ($modeNameString) {
+			return ze\admin::phrase('Videos FEA ([[mode_name]])', ['mode_name' => $modeNameString]);
+		} else {
+			return parent::nestedPluginName($eggId, $instanceId, $moduleClassName);
+		}
+	}
 }
 require_once CMS_ROOT. ze::moduleDir('zenario_videos_fea', 'classes/visitor/_base.php');

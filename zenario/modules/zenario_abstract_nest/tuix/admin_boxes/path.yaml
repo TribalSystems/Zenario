@@ -1,0 +1,148 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_path:
+    key:
+        id: ''
+        instanceId: ''
+        slideNum: ''
+        state: ''
+        to_state: ''
+        linkToOtherContentItem: false
+        equiv_id: 0
+        content_type: ''
+    hide_tab_bar: true
+    #identifier:
+    #    css_class: ''
+    #    label: 'Path:'
+    #    value: ''
+    tabs:
+        path:
+            label: Details
+            edit_mode:
+                enabled: true
+            fields:
+                command:
+                    type: radios
+                    #cols: 3
+                    values:
+                        submit:
+                            ord: 100001
+                            label: submit (Submit button)
+                        back:
+                            ord: 100002
+                            label: back (Back button)
+                        '#custom#':
+                            ord: 100003
+                            label: 'Custom...'
+                            split_values_if_selected: true
+                    redraw_onchange: true
+                    validation:
+                        required: |
+                            Please select a command
+                
+                # A warning for if this type of command should have a back-link
+                no_path_back_set:
+                    indent: 1
+                    row_style: |
+                        padding: 0 0 10px;
+                        margin-top: -10px;
+                    visible_if: |
+                        !lib.tuix.key.linkToOtherContentItem &&
+                        lib.value('command') &&
+                        !lib.valueIn('command', 'back', 'submit')
+                    notices_below:
+                        no_path_back_set:
+                            type: warning
+                            size: small
+                            message: >
+                                When a state has a path to another state, there must always be a "back" path going back the other way (or to another state). This path's target state doesn't have a "back" path. Don't forget to add a "back" path leading from it, or else the forward buttons won't appear.
+
+                
+                custom_command:
+                    indent: 1
+                    visible_if:
+                        lib.valueIs: 'command, #custom#'
+                    type: text
+                    maxlength: 100
+                    label: Custom command name
+                    placeholder: e.g. view_animal
+                    onkeydown: >
+                        if (this.value != ''
+                         && (event.keyCode == 13 || event.keyCode > 45)) {
+                            zenario.get('commands___#custom#').checked = true;
+                        }
+                    validation:
+                        no_spaces: |
+                            Please don't enter any spaces in the command's name.
+                        screen_name: |
+                            Please don't enter any special characters in the command's name.
+                custom_vars:
+                    indent: 1
+                    hide_with_previous_field: true
+                    type: text
+                    maxlength: 200
+                    label: Request variables (comma-separated)
+                    placeholder: e.g. animalId,barnId
+                
+                is_forwards:
+                    indent: 1
+                    visible_if: |
+                        !lib.tuix.key.linkToOtherContentItem &&
+                        lib.value('command') &&
+                        !lib.valueIn('command', 'back', 'submit')
+                    type: checkbox
+                    redraw_onchange: true
+                    label: 'Specify as forward link for smart breadcrumbs'
+                    maxlength: 2
+                    side_note: |
+                        Each slide can only have one forward link.
+                        
+                        Setting a path as a forward link will un-flag any other forward link
+                        from that slide.
+                        
+                        If no slides are set as forward links, then the conductor will try to
+                        automatically select one, based on which other slides use smart breadcrumbs.
+                    
+                    # A warning if no plugin exists on this slide that can generate the
+                    # smart breadcrumbs for the forwards links.
+                    notices_below:
+                        no_breadcrumb_plugin_set:
+                            hidden: false
+                            visible_if: |
+                                lib.value('is_forwards')
+                            type: warning
+                            size: small
+                            message: >
+                                No plugin on this slide is set to generate smart breadcrumbs.
+                                Edit the nest, select a suitable plugin, and click "Use for smart breadcrumbs".
+                                You should add one.
+                command_end:
+                    snippet:
+                        show_split_values_from: command
+                citem:
+                    visible_if: |
+                        lib.tuix.key.linkToOtherContentItem
+                    label: 'Content item'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                to_state:
+                    visible_if: |
+                        lib.tuix.key.linkToOtherContentItem
+                    label: 'Slide number or state letter'
+                    type: text
+                    maxlength: 2
+                    style: |
+                        width: 2em;
+                    validation:
+                        required_if_not_hidden: Please enter either a slide number or state letter
+                        no_spaces: Please enter either a number or a letter
+                        screen_name: Please enter either a number or a letter
+                    side_note: Enter the number of a slide, or the letter of a state, but not both.
+                    

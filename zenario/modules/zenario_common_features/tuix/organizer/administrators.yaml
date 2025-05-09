@@ -122,6 +122,9 @@ zenario__administration:
                         AND f.`usage` = 'admin'
                     width: xxsmall
                 
+            label_format_for_picked_items: |
+                [[full_name_for_pickers]]
+            
             quick_filter_buttons:
                 all:
                     label: 'All'

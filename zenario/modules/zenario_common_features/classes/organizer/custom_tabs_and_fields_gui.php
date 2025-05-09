@@ -61,7 +61,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$panel['dataset_repeat_fields_in_forms'] = [];
 		if (ze\module::inc('zenario_user_forms')) {
 			$sql = '
-				SELECT cdf.id, uf.name, uf.id AS form_id, cdf.type, cdf.repeat_start_id
+				SELECT cdf.id, uf.name, uf.id AS form_id, cdf.type
 				FROM ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_form_fields uff
 				INNER JOIN ' . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_forms uf
 					ON uff.user_form_id = uf.id
@@ -127,7 +127,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				}
 				$foundFieldsInTUIX[$tabId] = [
 					'ord' => ++$tabOrdinal,
-					'label' => ze::ifNull($tab['dataset_label'] ?? false, $tab['label'] ?? false)
+					'label' => ($tab['dataset_label'] ?? false) ?: ($tab['label'] ?? false)
 				];
 				if (!empty($tab['fields'])
 					&& is_array($tab['fields'])
@@ -138,6 +138,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					}
 				}
 			}
+		}
+		
+		$locationManagerPrefix = '';
+		if (ze\module::isRunning('zenario_location_manager')) {
+			$locationManagerPrefix = ze\module::prefix('zenario_location_manager');
 		}
 		
 		
@@ -158,6 +163,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				'label' => $tab['label'],
 				'is_system_field' => 0,
 				'parent_field_id' => (int)$tab['parent_field_id'],
+				'tab_type' => (!empty($tab['is_system_field']) ? ze\admin::phrase('System tab') : ze\admin::phrase('Custom tab')),
+				'tab_code_name' => $tab['name'],
 				'fields' => []
 			];
 			if ($tab['is_system_field'] && isset($foundFieldsInTUIX[$tab['name']])) {
@@ -171,6 +178,19 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 			if ($tabCount == 1) {
 				$tabProperties['record_counts_fetched'] = true;
 			}
+			
+			if ($locationManagerPrefix) {
+				if ($tab['name'] == 'sectors') {
+					$tabProperties['dataset'] = 'locations';
+					$tabProperties['tab_dependent_on_a_site_setting'] = true;
+					$tabProperties['site_setting_enabled'] = (bool) (ze::setting('zenario_location_manager__sector_management') == "0");
+					
+					if (!$tabProperties['site_setting_enabled']) {
+						$tabProperties['warning_on_tab'] = true;
+					}
+				}
+			}
+			
 			$panel['pages'][$tab['name']] = $tabProperties;
 			
 			
@@ -228,10 +248,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'organizer_visibility' => $field['organizer_visibility'],
 					'allow_admin_to_change_visibility' => (int)$field['allow_admin_to_change_visibility'],
 					'allow_admin_to_change_export' => (int)$field['allow_admin_to_change_export'],
-					'hide_in_organizer' => ($field['organizer_visibility'] == 'hide'),
-					'min_rows' => (int)$field['min_rows'],
-					'max_rows' => (int)$field['max_rows'],
-					'repeat_start_id' => (int)$field['repeat_start_id']
+					'hide_in_organizer' => ($field['organizer_visibility'] == 'hide')
 				];
 				
 				//Get readonly status
@@ -316,25 +333,38 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				
 				// Screen names and country-based permissions are tied to site settings.
 				// Display a warning if the relevant site setting is turned off.
-				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'screen_name') {
-					$fieldProperties['field_name'] = 'screen_name';
-					$fieldProperties['dataset'] = $dataset['system_table'];
-					$fieldProperties['field_dependent_on_a_site_setting'] = true;
-					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('user_use_screen_name');
+				if ($dataset['system_table'] == 'users') {
+					if ($field['field_name'] == 'screen_name') {
+						$fieldProperties['field_name'] = 'screen_name';
+						$fieldProperties['dataset'] = $dataset['system_table'];
+						$fieldProperties['field_dependent_on_a_site_setting'] = true;
+						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('user_use_screen_name');
+					}
+					
+					if ($field['field_name'] == 'linked_countries') {
+						$fieldProperties['field_name'] = 'linked_countries';
+						$fieldProperties['dataset'] = $dataset['system_table'];
+						$fieldProperties['field_dependent_on_a_site_setting'] = true;
+						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('users_use_linked_countries');
+					}
+					
+					if ($field['field_name'] == 'user_supervised_smart_groups') {
+						$fieldProperties['field_name'] = 'user_supervised_smart_groups';
+						$fieldProperties['dataset'] = $dataset['system_table'];
+						$fieldProperties['field_dependent_on_a_site_setting'] = true;
+						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('enable_supervised_smart_groups');
+					}
 				}
 				
-				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'linked_countries') {
-					$fieldProperties['field_name'] = 'linked_countries';
-					$fieldProperties['dataset'] = $dataset['system_table'];
-					$fieldProperties['field_dependent_on_a_site_setting'] = true;
-					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('users_use_linked_countries');
-				}
-				
-				if ($dataset['system_table'] == 'users' && $field['field_name'] == 'user_supervised_smart_groups') {
-					$fieldProperties['field_name'] = 'user_supervised_smart_groups';
-					$fieldProperties['dataset'] = $dataset['system_table'];
-					$fieldProperties['field_dependent_on_a_site_setting'] = true;
-					$fieldProperties['site_setting_enabled'] = (bool) ze::setting('enable_supervised_smart_groups');
+				if ($locationManagerPrefix) {
+					if ($dataset['system_table'] == $locationManagerPrefix . 'locations') {
+						if ($field['field_name'] == 'external_id') {
+							$fieldProperties['field_name'] = 'external_id';
+							$fieldProperties['dataset'] = 'locations';
+							$fieldProperties['field_dependent_on_a_site_setting'] = true;
+							$fieldProperties['site_setting_enabled'] = (bool) ze::setting('zenario_location_manager__enable_external_id');
+						}
+					}
 				}
 				
 				//Get record count for fields on first tab. Other tab fields are loaded as their tab is clicked
@@ -427,7 +457,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				
 				$existingCols = [];
 				$existingFields = [];
-				$result = ze\row::query('custom_dataset_fields', ['id', 'tab_name', 'is_system_field', 'db_column', 'type', 'allow_admin_to_change_visibility', 'allow_admin_to_change_export', 'protected', 'min_rows', 'max_rows', 'repeat_start_id', 'create_index'], ['dataset_id' => $datasetId]);
+				$result = ze\row::query('custom_dataset_fields', ['id', 'tab_name', 'is_system_field', 'db_column', 'type', 'allow_admin_to_change_visibility', 'allow_admin_to_change_export', 'protected', 'create_index'], ['dataset_id' => $datasetId]);
 				while ($row = ze\sql::fetchAssoc($result)) {
 					$existingFields[$row['id']] = $row;
 					
@@ -488,11 +518,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							}
 							$field['_new'] = true;
 							$fieldId = ze\row::insert('custom_dataset_fields', ['dataset_id' => $datasetId, 'tab_name' => $pageId, 'type' => $field['type']]);
-							if ($field['type'] == 'repeat_start') {
-								$columName = ze\dataset::repeatStartRowColumnName($fieldId);
-								$field['db_column'] = $columName;
-								ze\row::update('custom_dataset_fields', ['db_column' => $columName], $fieldId);
-							}
 						}
 						$tempFieldIdLink[$tempFieldId] = $field['id'] = $fieldId;
 						
@@ -538,7 +563,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					}
 					
 					$pageFieldOrderChanged = !$existingPage || !empty($page['fields_reordered']) || !empty($existingPage['field_created']) || !empty($existingPage['field_deleted']);
-					$repeatStartField = false;
 					$columnUpdates = [];
 					$columnIndex = 0;
 					foreach ($page['fields'] as $fieldIndex => $fieldId) {
@@ -552,32 +576,20 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$values['tab_name'] = $page['id'];
 						}
 						//Update field data
-						if ($repeatStartField || !empty($existingField['repeat_start_id'])) {
-							$values['repeat_start_id'] = $repeatStartField ? $repeatStartField['id'] : 0;
-						}
 						$values = array_merge($values, $this->getDatasetFieldOptions($field, $fields, $existingField, $tempFieldIdLink));
 						if ($values) {
 							ze\row::update('custom_dataset_fields', $values, $field['id']);
 						}
 						
 						$oldName = false;
-						$newRows = false;
-						$oldRows = false;
 						if ($existingField) {
 							$oldName = $existingField['db_column'];
-							if ($existingField['repeat_start_id']) {
-								$oldRows = $existingFields[$existingField['repeat_start_id']]['max_rows'];
-							}
-						}
-						if ($repeatStartField) {
-							$newRows = $repeatStartField['max_rows'];
 						}
 						
 						//Update dataset field db columns
 						if (empty($existingField['is_system_field'])
 							&& !empty($field['db_column'])
 							&& (($oldName !== $field['db_column'])
-								|| ($oldRows != $newRows)
 								|| ($existingField && isset($values['create_index']) && ($values['create_index'] != $existingField['create_index']))
 							)
 						) {
@@ -596,7 +608,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							ze\datasetAdm::createFieldInDB($field['id'], $oldName);
 							
 							//Note down each column we're updating, so we can finish the updates in a "part 2" later
-							$columnUpdates[] = [$field, $newRows, $oldRows];
+							$columnUpdates[] = [$field];
 						}
 						
 						//Update field values
@@ -614,19 +626,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 								ze\row::update('custom_dataset_field_values', $columns, $tempValueIdLink[$value['id']]);
 							}
 						}
-						
-						//Remember if we're in a repeat block or not
-						if ($field['type'] == 'repeat_start') {
-							$field['max_rows'] = $values['max_rows'];
-							$repeatStartField = $field;
-						} elseif ($field['type'] == 'repeat_end') {
-							$repeatStartField = false;
-						}
 					}
 					
 					//Continue with updating the columns, that we had to delay earlier
 					foreach ($columnUpdates as $columnUpdate) {
-						[$field, $newRows, $oldRows] = $columnUpdate;
+						[$field] = $columnUpdate;
 						
 						//Remove any temporary names we added earlier as a work-around for renaming columns
 						if ($field['final_db_column_we_want'] !== $field['db_column']) {
@@ -635,11 +639,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							
 							ze\row::update('custom_dataset_fields', ['db_column' => $field['db_column']], $field['id']);
 							ze\datasetAdm::createFieldInDB($field['id'], $oldName);
-						}
-						
-						//Create multiple columns for fields in a repeating section
-						if ($newRows || $oldRows) {
-							ze\datasetAdm::createFieldMultiRowsInDB($field['id'], $field['db_column'], $newRows, $oldRows);
 						}
 					}
 				}
@@ -792,25 +791,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 	
 	private function getDatasetFieldOptions($field, $fields, $existingField, $tempFieldIdLink) {
 		$values = [];
-		if ($field['type'] == 'repeat_start') {
-			$minRows = !empty($field['min_rows']) ? (int)$field['min_rows'] : 1;
-			if ($minRows < 1) {
-				$minRows = 1;
-			} elseif ($minRows > 10) {
-				$minRows = 10;
-			}
-			$maxRows = !empty($field['max_rows']) ? (int)$field['max_rows'] : 5;
-			if ($maxRows < 2) {
-				$maxRows = 2;
-			} elseif ($maxRows > 20) {
-				$maxRows = 20;
-			}
-			if ($minRows > $maxRows) {
-				$minRows = $maxRows;
-			}
-			$values['min_rows'] = $minRows;
-			$values['max_rows'] = $maxRows;
-		}
 	
 		//Do not allow other_system_fields to be edited other than ordinal
 		if ((isset($field['_changed']) || isset($field['_new'])) && (!$existingField || $existingField['type'] != 'other_system_field')) {
@@ -819,9 +799,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				if (ze\priv::check('_PRIV_PROTECT_UNPROTECT_DATASET_FIELD')) {
 					$values['protected'] = !empty($field['is_protected']);
 				}
-				if ($field['type'] != 'repeat_start') {
-					$values['db_column'] = empty($field['db_column']) ? '' : mb_substr(trim($field['db_column']), 0, 64);
-				}
+				
+				$values['db_column'] = empty($field['db_column']) ? '' : mb_substr(trim($field['db_column']), 0, 64);
 				$values['height'] = empty($field['height']) ? 0 : (int)$field['height'];
 				$values['width'] = empty($field['width']) ? 0 : $field['width'];
 				
@@ -986,6 +965,10 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		$values['admin_box_visibility'] = !empty($field['admin_box_visibility']) ? $field['admin_box_visibility'] : 'show';
 		if ($values['admin_box_visibility'] == 'show_on_condition' && !empty($field['parent_id'])) {
 			$values['parent_id'] = $tempFieldIdLink[$field['parent_id']] ?? 0;
+		}
+		
+		if (!empty($field['ord'])) {
+			$values['ord'] = $field['ord'];
 		}
 		
 		return $values;

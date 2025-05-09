@@ -1,20 +1,21 @@
+<% var tuix = m.tuix; %>
 <div class="zenario_toolbar_tab_child">
 	<div
 		class="
 			zenario_toolbar__{{m.id|escape}} {{m.css_class|escape}}
-			{{m.selected? 'zenario_toolbar_on' : ''}}
+			{{m.selected? 'zenario_toolbar_on' : 'zenario_toolbar_off'}}
 		"
 	>
 		<div class="zenario_middle_child">
 			<div
 				class="zenario_middle_inner"
-				title="{{m.tooltip|escape}}"
+				title="{{tuix.tooltip|escape}}"
 				onclick="zenarioAT.clickTab('{{m.id|escape}}');"
 			>{{m.label|escape}}</div>
 		</div> 
 	
-		<% if (m.warning_icon) { %>
-			<del class="{{m.warning_icon|escape}}"><del></del></del>
+		<% if (tuix.warning_icon) { %>
+			<del class="{{tuix.warning_icon|escape}}"><del></del></del>
 		<% } %>
 	</div>
 </div>
