@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -675,7 +675,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 
 
 					$sql = "SELECT DISTINCT 
-								CONCAT(content_type,'_',equiv_id) AS tag
+								CONCAT(`content_type`,'_',equiv_id) AS tag
 							FROM " 
 								. DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 							WHERE 
@@ -1195,10 +1195,10 @@ class zenario_location_manager extends ze\moduleBaseClass {
 								$contentItemArray = explode("_",$values['content_item/content_item']);
 
 								$fieldsToChangeSQL[] = "equiv_id = " . ($contentItemArray[1] ?? false);
-								$fieldsToChangeSQL[] = "content_type = '" . ze\escape::asciiInSQL($contentItemArray[0] ?? false) . "'";
+								$fieldsToChangeSQL[] = "`content_type` = '" . ze\escape::asciiInSQL($contentItemArray[0] ?? false) . "'";
 							} else {
 								$fieldsToChangeSQL[] = "equiv_id = null";
-								$fieldsToChangeSQL[] = "content_type = null";
+								$fieldsToChangeSQL[] = "`content_type` = null";
 							}
 						}
 						
@@ -1932,7 +1932,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		//$sql = "SELECT id
 		//		FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
 		//		WHERE equiv_id = " . (int) $cID . "
-		//			AND content_type = '" . ze\escape::asciiInSQL($cType) . "'";
+		//			AND `content_type` = '" . ze\escape::asciiInSQL($cType) . "'";
 
 		$sql = "SELECT l.id
 				FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l

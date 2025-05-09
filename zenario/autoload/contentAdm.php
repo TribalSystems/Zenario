@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -319,7 +319,7 @@ class contentAdm {
 		$sql = "
 			DELETE FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cID. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 			  AND content_version < ". (int) $cVersion;
 		\ze\sql::update($sql);
 
@@ -606,7 +606,7 @@ class contentAdm {
 	
 		if (is_null($instance)) {
 			$instance = \ze\sql::fetchAssoc('
-				SELECT content_id, content_type, content_version, is_nest, is_slideshow
+				SELECT content_id, `content_type`, content_version, is_nest, is_slideshow
 				FROM '. DB_PREFIX. 'plugin_instances
 				WHERE id = '. (int) $instanceId
 			);
@@ -1664,7 +1664,7 @@ class contentAdm {
 
 			//... as well as spare aliases.
 			$sql = "
-				SELECT content_id, content_type
+				SELECT content_id, `content_type`
 				FROM ". DB_PREFIX. "spare_aliases
 				WHERE alias = '". \ze\escape::sql($alias). "'
 				LIMIT 1";
@@ -2007,11 +2007,11 @@ class contentAdm {
 	
 		$sql = "
 			INSERT IGNORE INTO ". DB_PREFIX. "category_item_link (
-				equiv_id, content_type, category_id
-			) SELECT ". (int) $newEquivId. ", content_type, category_id
+				equiv_id, `content_type`, category_id
+			) SELECT ". (int) $newEquivId. ", `content_type`, category_id
 			FROM ". DB_PREFIX. "category_item_link
 			WHERE equiv_id = ". (int) $oldEquivId. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 			ORDER BY category_id";
 		\ze\sql::update($sql);
 	
@@ -2028,11 +2028,11 @@ class contentAdm {
 	
 		$sql = "
 			INSERT IGNORE INTO ". DB_PREFIX. "translation_chain_privacy (
-				equiv_id, content_type, module_class_name, method_name, param_1, param_2
-			) SELECT ". (int) $newEquivId. ", content_type, module_class_name, method_name, param_1, param_2
+				equiv_id, `content_type`, module_class_name, method_name, param_1, param_2
+			) SELECT ". (int) $newEquivId. ", `content_type`, module_class_name, method_name, param_1, param_2
 			FROM ". DB_PREFIX. "translation_chain_privacy
 			WHERE equiv_id = ". (int) $oldEquivId. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'";
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'";
 		\ze\sql::update($sql);
 	}
 

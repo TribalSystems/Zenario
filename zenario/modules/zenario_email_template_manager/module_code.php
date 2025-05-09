@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -237,7 +237,7 @@ class zenario_email_template_manager extends ze\moduleBaseClass {
 		if (!empty($senderCmsObjectArray['cID'])) {
 			$sql .= "
 				content_id = ". (int) $senderCmsObjectArray['cID']. ",
-				content_type = '". ze\escape::asciiInSQL($senderCmsObjectArray['cType'] ?? ''). "',
+				`content_type` = '". ze\escape::asciiInSQL($senderCmsObjectArray['cType'] ?? ''). "',
 				content_version = ". (int) ($senderCmsObjectArray['cVersion'] ?? 0). ",";
 		}
 		

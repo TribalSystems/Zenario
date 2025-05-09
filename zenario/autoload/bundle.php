@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -413,10 +413,20 @@ class bundle {
 			$exists = true;
 			$writable = false;
 		
-		//If the the bundle does not exist, or the code version is out of date, we'll need to generate a new one.
+		//If the bundle does not exist, or the code version is out of date, we'll need to generate a new one.
 		} elseif ($path = \ze\cache::createDir($dir, $type, false)) {
+			
+			//Delete any old files that existed.
 			\ze\cache::tidyDir($dir, $type);
 			
+			//Delete any pages in the page cache that might still have the old link on them
+			$cacheDir = CMS_ROOT. 'cache/pages/';
+			if (is_dir($cacheDir)) {
+				\ze\cache::deleteDir($cacheDir, 1);
+			}
+			
+			
+			//Create the new version of the script
 			$path .= $filename;
 			$fullpath = CMS_ROOT. $path;
 			

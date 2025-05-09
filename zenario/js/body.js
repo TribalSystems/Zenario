@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -99,6 +99,9 @@
 	
 	//Set a CSS class on the body, depending on whether JavaScript is enabled
 	lSet(true, 'js', 'no_js');
+	
+	//Set a CSS class on the body, depending on whether this is opened in an iframe
+	lSet(window !== window.parent, 'in_iframe');
 	
 	//Add a CSS class for whether this is retina or not.
 	//(Note that this won't work for IE 10 or earlier).

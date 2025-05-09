@@ -96,8 +96,7 @@ zenario_slide:
                     type: checkbox
                     redraw_onchange: true
                     note_below: |
-                        This will look for a path in the nest conductor called "back" or "close".
-                        If no path exists, a browser-back will be used.
+                        This will look for a conductor path from this slide called "back".
                 no_choice_no_going_back:
                     indent: 1
                     hide_with_previous_outdented_field: true

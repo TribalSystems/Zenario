@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1030,13 +1030,21 @@ class db {
 		} else {
 			$subject = $subjectPrefix. ' '. gethostname();
 		}
-	
-	
-		$body = \ze\user::ip();
+		
+		
+		$body = date_format(date_create(), 'D M d H:i:s Y P');
+		
+		$body .= "\n\n". \ze\user::ip();
 	
 		if (!empty($_SERVER['REQUEST_URI'])) {
 			$body .= ' accessing '. $_SERVER['REQUEST_URI'];
 		}
+		
+		$body .= "\n".
+			'(REMOTE_ADDR: '. ($_SERVER['REMOTE_ADDR'] ?? 'NULL'). ','.
+			' HTTP_CLIENT_IP: '. ($_SERVER['HTTP_CLIENT_IP'] ?? 'NULL'). ','.
+			' HTTP_X_FORWARDED_FOR: '. ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? 'NULL'). ')';
+		
 		
 		foreach ($errorInfo as $seg) {
 			$body .= "\n\n";

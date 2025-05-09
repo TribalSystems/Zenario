@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,4 +39,4 @@ define('ZENARIO_MAJOR_VERSION', '9');
 define('ZENARIO_MINOR_VERSION', '7');
 define('ZENARIO_CHANGELOG_URL', 'https://zenar.io/zenario-97');
 define('ZENARIO_IS_BUILD', true);
-define('ZENARIO_REVISION', '61188');
+define('ZENARIO_REVISION', '63394');

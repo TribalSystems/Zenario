@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -320,7 +320,7 @@ if (!$xml) {
 		$sql = "
 			SELECT layout_id
 			FROM ". DB_PREFIX. "layouts
-			WHERE content_type = '". ze\escape::asciiInSQL($cType). "'
+			WHERE `content_type` = '". ze\escape::asciiInSQL($cType). "'
 			ORDER BY
 				name = '". ze\escape::sql($xml->template->attributes()->name). "' DESC,
 				layout_id ASC

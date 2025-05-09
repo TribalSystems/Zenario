@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -352,7 +352,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		
 		if ($userId) {
 			$sql = "
-				SELECT content_id, content_type, date_posted, message_text
+				SELECT content_id, `content_type`, date_posted, message_text
 				FROM ". ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 				WHERE poster_id = ". (int) $userId. "
 				ORDER BY date_posted DESC

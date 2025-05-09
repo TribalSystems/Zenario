@@ -1,5 +1,5 @@
  /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2569,6 +2569,17 @@ div.zenario_grid_overlay_view .row {
 	-webkit-border-bottom-right-radius: 2px;
 	border-top-right-radius: 2px;
 	border-bottom-right-radius: 2px;
+}
+
+/* Hide admin toolbar in iframes */
+
+body.in_iframe {
+	margin-top:0 !important;
+}
+
+body.in_iframe #zenario_at_wrap,
+body.in_iframe div.admin_login_link.restore_admin_toolbar {
+	display:none;
 }
 
 /* RESPONSIVE STYLES

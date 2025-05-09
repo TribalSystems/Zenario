@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -645,26 +645,26 @@ class dataset {
 	private static $timezones = 
 		[
 			'Pacific/Midway'       => "Midway Island",
-			'US/Hawaii'            => "Hawaii",
-			'US/Alaska'            => "Alaska",
-			'US/Pacific'           => "Pacific Time (US & Canada)",
+			'Pacific/Honolulu'	   => "Hawaii",
+			'America/Anchorage'    => "Alaska",
+			'America/Los_Angeles'  => "Los Angeles",
 			'America/Tijuana'      => "Tijuana",
-			'US/Mountain'          => "Mountain Time (US & Canada)",
+			'America/Phoenix'      => "Phoenix",
 			'America/Chihuahua'    => "Chihuahua",
 			'America/Mazatlan'     => "Mazatlan",
 			'America/Mexico_City'  => "Mexico City",
 			'America/Monterrey'    => "Monterrey",
-			'Canada/Saskatchewan'  => "Saskatchewan",
-			'US/Central'           => "Central Time (US & Canada)",
-			'US/Eastern'           => "Eastern Time (US & Canada)",
+			'America/Regina'       => "Saskatchewan",
+			'America/Chicago'      => "Chicago",
+			'America/New_York'     => "New York",
 			'America/Bogota'       => "Bogota",
 			'America/Lima'         => "Lima",
 			'America/Caracas'      => "Caracas",
-			'Canada/Atlantic'      => "Atlantic Time (Canada)",
+			'America/Halifax'      => "Halifax",
 			'America/La_Paz'       => "La Paz",
 			'America/Santiago'     => "Santiago",
-			'Canada/Newfoundland'  => "Newfoundland",
-			'America/Buenos_Aires' => "Buenos Aires",
+			'America/St_Johns'     => "Newfoundland",
+			'America/Argentina/Buenos_Aires' => "Buenos Aires",
 			'Atlantic/Stanley'     => "Stanley",
 			'Atlantic/Azores'      => "Azores",
 			'Atlantic/Cape_Verde'  => "Cape Verde Is.",
@@ -698,7 +698,7 @@ class dataset {
 			'Europe/Helsinki'      => "Helsinki",
 			'Europe/Istanbul'      => "Istanbul",
 			'Asia/Jerusalem'       => "Jerusalem",
-			'Europe/Kiev'          => "Kyiv",
+			'Europe/Kyiv'          => "Kyiv",
 			'Europe/Minsk'         => "Minsk",
 			'Europe/Riga'          => "Riga",
 			'Europe/Sofia'         => "Sofia",

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -802,7 +802,7 @@ if (isset($adminToolbar['sections']['layout'])) {
  	$adminToolbar['sections']['layout']['buttons']['skq']['organizer_quick']['path'] =
  		$layout['status'] == 'active'?
  			'zenario__layouts/panels/layouts//'. ze::$layoutId
- 		:	'zenario__layouts/panels/layouts/trash////'. ze::$layoutId;
+ 		:	'zenario__layouts/panels/layouts/refiners/archived////'. ze::$layoutId;
  	
  	
  	if ($version['head_overwrite']) {

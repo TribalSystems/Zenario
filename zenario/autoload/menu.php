@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -120,7 +120,7 @@ class menu {
 			SELECT id
 			FROM ". DB_PREFIX. "menu_nodes
 			WHERE equiv_id = ". (int) $equivId. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 			  AND target_loc = 'int'";
 		
 		if ($sectionId) {
@@ -274,7 +274,7 @@ class menu {
 				SELECT COUNT(*)
 				FROM ' . DB_PREFIX . 'menu_nodes
 				WHERE equiv_id = ' . (int)$equiv_id . '
-				AND content_type = "'. \ze\escape::asciiInSQL($content_type) . '"';
+				AND `content_type` = "'. \ze\escape::asciiInSQL($content_type) . '"';
 			$result = \ze\sql::select($sql);
 			$row = \ze\sql::fetchRow($result);
 			if ($row[0] == 1) {

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -221,8 +221,14 @@ class deprecated {
 			REPLACE INTO ". $table. " SET";
 		}
 	
-		$sql .= "
+		//As of 2024, content_type is a reserved MySQL word. It needs to be in backticks if we want to use it as a column.
+		if ($field == 'content_type') {
+			$sql .= "
+				`". $field. "` = ";
+		} else {
+			$sql .= "
 				". $field. " = ";
+		}
 	
 		//Attempt to save empty dates correctly in strict mode
 		if ($details['Date'] && strlen((string) $values[$field] < 8)) {

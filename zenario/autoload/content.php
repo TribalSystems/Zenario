@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1224,7 +1224,7 @@ class content {
 				cols, min_width, max_width, fluid, responsive
 			FROM ". DB_PREFIX. "layouts
 			ORDER BY
-				content_type = '". \ze\escape::asciiInSQL(\ze::$cType). "' DESC";
+				`content_type` = '". \ze\escape::asciiInSQL(\ze::$cType). "' DESC";
 	
 		if (($layoutId = $version['layout_id']) || ($layoutId = \ze\row::get('content_types', 'default_layout_id', ['content_type_id' => \ze::$cType]))) {
 			$sql .= ",

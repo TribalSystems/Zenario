@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -50,5 +50,5 @@ echo ze::setting('css_js_version'), '___';
 echo ze::setting('yaml_version'), '___';
 echo ze\db::codeLastUpdated(), '___';
 
-//Echo the the current data revision number. (This is incremented every time data is changed in the database.)
+//Echo the current data revision number. (This is incremented every time data is changed in the database.)
 echo ze\row::get('local_revision_numbers', 'revision_no', ['path' => 'data_rev']);

@@ -778,7 +778,7 @@ additionalProperties:
                         description: >
                             Setting this properly lets you override the default location and put the button in a different position.
                             
-                            Note: there is some smart logic; if you choose the "column_header"location but the the column headers
+                            Note: there is some smart logic; if you choose the "column_header"location but the column headers
                             are not visible due to the "hide_column_headings" option being enabled, the "above_list" option will be
                             automatically used as a replacement.
                             

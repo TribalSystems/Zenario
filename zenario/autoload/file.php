@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1832,6 +1832,16 @@ class file {
 				
 				//Try to get a directory in the cache dir
 				$path = \ze\cache::createDir($hash, 'private/images', false);
+				
+				
+				//We shouldn't be using the page or plugin cache in this situation, as each visitor needs to see a unique link.
+				\ze::$canCache = false;
+				
+				//To do:
+				//This is a bit of a simple and blunt solution as it stops all other plugins using the plugin cache.
+				//If there are other plugins on the page that could be cached, it would be nice if they could still use it.
+				//For this to happen we'd need to do a bit of development work/change a few function inputs, to make it possible
+				//to trace this function call back to a specific plugin and disable caching for just that slot.
 			}
 		}
 		
@@ -1884,9 +1894,9 @@ class file {
 					$width = $finalImageWidth;
 					$height = $finalImageHeight;
 				}
-				
-				return true;
 			}
+			
+			return true;
 		}
 		
 		
@@ -2001,7 +2011,7 @@ class file {
 				
 					//Try to optimise the image, if the libraries are installed.
 					//Please note: private images will not be optimised, as they need to be re-generated periodically.
-					if ($privacy == 'public') {
+					if ($image['privacy'] == 'public') {
 						self::optimiseImage($filepath);
 					}
 				} elseif ($image['location'] == 'docstore') {
@@ -2543,7 +2553,7 @@ class file {
 		return atan2($width, $height) * 180 / M_PI;
 	}
 	
-	//Quick and dirty little function to remove the the common factors from two numbers.
+	//Quick and dirty little function to remove the common factors from two numbers.
 	//The numbers won't be very large so it needn't be super efficient
 	public static function aspectRatioRemoveFactors($a, $b, $sensibleLimit) {
 		

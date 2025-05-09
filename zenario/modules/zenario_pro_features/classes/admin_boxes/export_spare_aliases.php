@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ class zenario_pro_features__admin_boxes__export_spare_aliases extends ze\moduleB
 		
 		$rows = [];
 		$sql = "
-			SELECT alias, content_id, content_type, ext_url, created_datetime
+			SELECT alias, content_id, `content_type`, ext_url, created_datetime
 			FROM " . DB_PREFIX . "spare_aliases
 			ORDER BY alias";
 		$result = ze\sql::select($sql);

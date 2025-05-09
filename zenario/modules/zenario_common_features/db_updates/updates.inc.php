@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,7 @@ ze\dbAdm::revision(177,
 <<<_sql
 	UPDATE [[DB_PREFIX]]special_pages
 	SET equiv_id = NULL,
-		content_type = NULL
+		`content_type` = NULL
 	WHERE page_type IN ('zenario_example_page', 'zenario_second_page')
 _sql
 

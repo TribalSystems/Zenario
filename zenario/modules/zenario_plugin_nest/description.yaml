@@ -14,7 +14,7 @@ description: |
         Plugins in a nest are further sub-divided into different sections called &quot;slides&quot;,
         only one of which may be visible at any one time.
         The links to each slide can be invisible, appear visually as a tab, or in some other visual form,
-        depending on the CSS and framework.
+        depending on the CSS and settings.
     </p><p>
         You can set permissions on a slide-by-slide basis:
         <ul>

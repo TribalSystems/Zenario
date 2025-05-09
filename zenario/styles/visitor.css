@@ -906,3 +906,10 @@ input[type="password"].border_green {
     transform: rotate(360deg);
   }
 }
+
+/* Hide admin link in iframes */
+
+body.in_iframe .admin_login_link,
+body.in_iframe > x-zenario-cache-info.zenario_cache_info {
+	display:none;
+}

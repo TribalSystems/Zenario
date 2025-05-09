@@ -46,7 +46,7 @@ class zenario_slideshow__admin_boxes__plugin_settings extends ze\moduleBaseClass
 			}
 		}
 		
-		#//If the admin presses the "remove" button on the custom breakpoint row, un-press the the toggle that's showing the row.
+		#//If the admin presses the "remove" button on the custom breakpoint row, un-press the toggle that's showing the row.
 		#if (!empty($fields['swiper/swiper.custom_1.remove']['pressed'])) {
 		#	$fields['swiper/swiper.custom_1']['pressed'] = false;
 		#}

@@ -2605,7 +2605,7 @@ additionalProperties:
                                     This hides the drag-handles from any child items - i.e. you may only drag top level items.
                         
                         description: >
-                            This object lets you define a few options that are used the the hierarchy panel type,
+                            This object lets you define a few options that are used the hierarchy panel type,
                             and with the hierarchy_with_lazy_load panel type.
                     
                     key:

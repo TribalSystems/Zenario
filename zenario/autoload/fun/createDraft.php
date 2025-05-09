@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -222,7 +222,7 @@ if ($newDraftCreated) {
 				module_id,
 				instance_id,
 				content_id,
-				content_type,
+				`content_type`,
 				content_version,
 				slot_name
 			) SELECT
@@ -234,7 +234,7 @@ if ($newDraftCreated) {
 				slot_name
 			FROM ". DB_PREFIX. "plugin_item_link
 			WHERE content_id = ". (int) $cIDFrom. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cTypeFrom). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cTypeFrom). "'
 			  AND content_version = ". (int) $cVersionFrom;
 		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
@@ -242,7 +242,7 @@ if ($newDraftCreated) {
 		$sql = "
 			REPLACE INTO ". DB_PREFIX. "content_cache (
 				content_id,
-				content_type,
+				`content_type`,
 				content_version,
 				text,
 				extract,
@@ -256,7 +256,7 @@ if ($newDraftCreated) {
 				extract_wordcount
 			FROM ". DB_PREFIX. "content_cache
 			WHERE content_id = ". (int) $cIDFrom. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cTypeFrom). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cTypeFrom). "'
 			  AND content_version = ". (int) $cVersionFrom;
 		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		

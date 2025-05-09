@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -90,6 +90,7 @@ if ($includeAdminLinks
 			<a
 				class="admin_login_link"
 				href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '"
+				target="_top"
 				onclick="
 					var requests,
 						conductorSlot = zenario_conductor.getSlot();

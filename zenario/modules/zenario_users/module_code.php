@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -120,7 +120,7 @@ class zenario_users extends ze\moduleBaseClass {
 					user_id = ". (int) $_SESSION['extranetUserID']. ",
 					hit_datetime = NOW(),
 					content_id = ". (int) $cID. ",
-					content_type = '". ze\escape::asciiInSQL($cType). "',
+					`content_type` = '". ze\escape::asciiInSQL($cType). "',
 					content_version = ". (int) $cVersion;
 			ze\sql::update($sql);
 		}

@@ -44,7 +44,7 @@ zenario__content:
                 zenario_trans__chained_in_link__from_menu_node:
                     sql: >
                         lec.tag_id = (
-                            SELECT CONCAT(content_type, '_', equiv_id)
+                            SELECT CONCAT(`content_type`, '_', equiv_id)
                             FROM [[DB_PREFIX]]menu_nodes
                             WHERE id = [[REFINER__ZENARIO_TRANS__CHAINED_IN_LINK__FROM_MENU_NODE]]
                         )

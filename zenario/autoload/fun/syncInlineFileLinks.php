@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $foundChecksums = [];
 $foundChecksumsWithTheWrongUsage = [];
 $checksumCol = 'short_checksum';
+$fileMetaCols = ['id', 'checksum', 'short_checksum', 'usage', 'privacy', 'filename', 'mime_type', 'width', 'height'];
 
 
 
@@ -87,7 +88,7 @@ if ($usage == 'image'
 			if (!isset($foundChecksums[$checksum])) {
 				$foundChecksums[$checksum] =
 					\ze\row::get('files',
-						['id', 'usage', 'filename', 'mime_type', 'privacy', 'width', 'height', 'checksum', 'short_checksum'],
+						$fileMetaCols,
 						['usage' => $usage, 'short_checksum' => $checksum]);
 			}
 			$file = $foundChecksums[$checksum];
@@ -101,7 +102,7 @@ if ($usage == 'image'
 				if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
 					if ($checksum
 					 && $checksumCol
-					 && ($existingFile = \ze\row::get('files', ['id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename', 'mime_type'], [$checksumCol => $checksum]))
+					 && ($existingFile = \ze\row::get('files', $fileMetaCols, [$checksumCol => $checksum]))
 					 && ($newId = ze\file::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
@@ -335,7 +336,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			if (!isset($foundChecksums[$checksum])) {
 				$foundChecksums[$checksum] =
 					\ze\row::get('files',
-						['id', 'usage', 'filename', 'mime_type', 'privacy', 'width', 'height', 'checksum', 'short_checksum'],
+						$fileMetaCols,
 						['usage' => $usage, $checksumCol => $checksum]);
 			}
 			$file = $foundChecksums[$checksum];
@@ -347,7 +348,7 @@ if (strpos($html, 'zenario/file.php') !== false) {
 			//and try to copy it over.
 			} else {
 				if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
-					if (($existingFile = \ze\row::get('files', ['id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'], [$checksumCol => $checksum]))
+					if (($existingFile = \ze\row::get('files', $fileMetaCols, [$checksumCol => $checksum]))
 					 && ($newId = ze\file::copyInDatabase($usage, $existingFile['id'], ($filename ?: $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;

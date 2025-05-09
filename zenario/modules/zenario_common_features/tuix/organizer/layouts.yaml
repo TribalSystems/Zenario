@@ -118,7 +118,7 @@ zenario__layouts:
             bold_columns_in_list_view: '[[code]]'
             refiners:
                 content_type:
-                    sql: 'content_type = [[REFINER_ID]]'
+                    sql: '`content_type` = [[REFINER_ID]]'
                 module_usage:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]plugin_layout_link AS pitl

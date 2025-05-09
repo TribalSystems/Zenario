@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -2085,7 +2085,7 @@ class welcome {
 		
 		//And the same for plugins
 		foreach (\ze\sql::select('
-			SELECT id, content_id, content_type, content_version, is_nest, is_slideshow
+			SELECT id, content_id, `content_type`, content_version, is_nest, is_slideshow
 			FROM '. DB_PREFIX. 'plugin_instances
 			WHERE content_id = 0'
 		) as $instance) {

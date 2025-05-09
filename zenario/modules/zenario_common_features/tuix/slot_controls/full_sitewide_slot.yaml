@@ -105,7 +105,7 @@ full_sitewide_slot:
             page_modes:
                 layout: true
             onclick: return zenarioA.removePlugin(this, slotName, 3);
-            label: Remove ~plugin~ from the the site-wider ~header~
+            label: Remove ~plugin~ from the site-wider ~header~
     no_perms:
         cant_design:
             page_modes:

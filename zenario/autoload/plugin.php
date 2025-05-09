@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -181,7 +181,7 @@ class plugin {
 				SELECT slot_name, module_id, instance_id, 1 AS level
 				FROM ". DB_PREFIX. "plugin_item_link
 				WHERE content_id = ". (int) $cID. "
-				  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
+				  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 				  AND content_version = ". (int) $cVersion.
 				  $whereSlotName;
 		}
@@ -257,6 +257,20 @@ class plugin {
 			//Don't allow Opaque missing slots to count as missing slots
 			if (empty($moduleId) && !$row['exists']) {
 				continue;
+			}
+			
+			//For missing slots in the side-wide header, we might not know whether the plugin used to be 
+			//in the header or the footer. However those variables do need to be set to something otherwise
+			//other code will break later, so we need to set them to *something* valid, even if it might not
+			//have actually been where they were.
+			if ($isAdmin && $row['level'] === 3 && is_null($row['is_header'])) {
+				if (str_contains(strtolower($slotName), 'head')) {
+					$row['is_header'] = 1;
+					$row['is_footer'] = 0;
+				} else {
+					$row['is_header'] = 0;
+					$row['is_footer'] = 1;
+				}
 			}
 			
 		
@@ -1145,7 +1159,7 @@ class plugin {
 			FROM ". DB_PREFIX. "plugin_item_link
 			WHERE slot_name = '". \ze\escape::asciiInSQL($slotName). "'
 			  AND content_id = ". (int) $cID. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 			  AND content_version = ". (int) $cVersion;
 	
 		$result = \ze\sql::select($sql);

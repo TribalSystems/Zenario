@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -469,7 +469,7 @@ class pluginAdm {
 					from_state,
 					to_state,
 					equiv_id,
-					content_type,
+					`content_type`,
 					command,
 					is_custom,
 					request_vars,
@@ -482,7 +482,7 @@ class pluginAdm {
 					from_state,
 					to_state,
 					equiv_id,
-					content_type,
+					`content_type`,
 					command,
 					is_custom,
 					request_vars,

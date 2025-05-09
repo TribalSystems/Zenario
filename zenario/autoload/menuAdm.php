@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -471,7 +471,7 @@ class menuAdm {
 					UPDATE ". DB_PREFIX. "menu_nodes SET
 						redundancy = 'secondary'
 					WHERE equiv_id = ". (int) $submission['equiv_id']. "
-					  AND content_type = '". \ze\escape::asciiInSQL($submission['content_type']). "'
+					  AND `content_type` = '". \ze\escape::asciiInSQL($submission['content_type']). "'
 					  AND id != ". (int) $menuId;
 				\ze\sql::update($sql);
 			} else {
@@ -627,7 +627,7 @@ class menuAdm {
 				IF(v.title != '', v.title, IF(c.alias != '', c.alias, c.tag_id)) AS name,
 				'int' AS 'target_loc',
 				c.equiv_id,
-				c.type AS content_type,
+				c.type AS `content_type`,
 				'secondary' AS redundancy
 			FROM ". DB_PREFIX. "content_items AS c
 			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
@@ -887,7 +887,7 @@ class menuAdm {
 			UPDATE ". DB_PREFIX. "menu_nodes SET
 				redundancy = 'primary'
 			WHERE equiv_id = ". (int) $equivId. "
-			  AND content_type = '". \ze\escape::asciiInSQL($cType). "'
+			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 			ORDER BY redundancy = 'primary' DESC
 			LIMIT 1";
 		\ze\sql::update($sql);

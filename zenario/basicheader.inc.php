@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -561,7 +561,7 @@ if ($tz = @date_default_timezone_get()) {
 	date_default_timezone_set('UTC');
 }
 
-//Make sure the the cookie/session constants are set
+//Make sure the cookie/session constants are set
 ze::define('COOKIE_DOMAIN', '');
 ze::define('COOKIE_TIMEOUT', 8640000);
 ze::define('SESSION_TIMEOUT', 0);

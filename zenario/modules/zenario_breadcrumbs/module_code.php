@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -77,12 +77,14 @@ class zenario_breadcrumbs extends zenario_menu {
 					//I have no idea why. But I've tried it using Google's test tool and this
 					//does appear to be needed to get any HTML special characters to display properly...
 				
-				if (is_string($url)
-				 && isset($url[4])) {
+				if (is_string($url)) {
 					
-					//If the URL was a relative URL, turn it into an absolute link
-					if ($url[4] != ':'
-					 && $url[5] != ':') {
+					//If the URL was a relative URL, turn it into an absolute link.
+					//(N.b. this check works by looking for the ":" in "http:" or "https:", which should be
+					// in the 5th or 6th place.)
+					if ((strlen($url) < 6)
+					 || ($url[4] != ':'
+					  && $url[5] != ':')) {
 						$url = ze\link::absolute(). $url;
 					}
 					

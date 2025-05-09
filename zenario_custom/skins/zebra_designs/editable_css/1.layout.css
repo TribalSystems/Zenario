@@ -18,6 +18,11 @@ body.zenario_adminLoggedIn.zenario_adminToolbarHidden {
 	height:calc(100% - 10px);
 }
 
+body.in_iframe.zenario_adminLoggedIn,
+body.in_iframe.zenario_adminLoggedIn.zenario_adminToolbarHidden {
+	height:100%;
+}
+
 html,
 body .zenario_skin {
 	height:100%;

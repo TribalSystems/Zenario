@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -404,7 +404,7 @@ class pageCache {
 						 && !empty($ids['id'])
 						 && !is_array($ids['id'])) {
 							$result = \ze\sql::select("
-								SELECT id, content_id, content_type, content_version
+								SELECT id, content_id, `content_type`, content_version
 								FROM ". DB_PREFIX. ($table == 'plugin_item_link'? 'plugin_item_link' : 'plugin_instances'). "
 								WHERE id = ". (int) $ids['id']);
 							

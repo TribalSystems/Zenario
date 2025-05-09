@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -691,8 +691,12 @@ class zenario_document_container extends ze\moduleBaseClass {
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if ($values['first_tab/container_mode'] == 'documents' && !$values['first_tab/document_source']) {
-			$fields['first_tab/document_source']['error'] = 'Please select a document or folder.';
+		switch ($path) {
+			case 'plugin_settings':
+				if ($values['first_tab/container_mode'] == 'documents' && !$values['first_tab/document_source']) {
+					$fields['first_tab/document_source']['error'] = 'Please select a document or folder.';
+				}
+				break;
 		}
 	}
 	

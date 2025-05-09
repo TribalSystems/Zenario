@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -164,7 +164,7 @@ class zenario_project_locations extends ze\moduleBaseClass {
 		$sql = "
 			SELECT
 				pl.*,
-				v.id AS content_id, v.type AS content_type,
+				v.id AS content_id, v.type AS `content_type`,
 				c.alias, v.title, v.tag_id,
 				v.description, v.content_summary, v.feature_image_id,
                                 pl.content_type as content_item,

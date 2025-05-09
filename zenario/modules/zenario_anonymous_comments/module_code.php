@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -362,7 +362,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$sql = "
 			DELETE FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
 		
 		$result = ze\sql::update($sql);
@@ -373,7 +373,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				post_count = post_count - 1
 			WHERE post_count > 0
 			  AND content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'";
 		
 		$result = ze\sql::update($sql);
 	}
@@ -393,7 +393,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			WHERE 
 					post_count > 0
 				AND content_id = ". (int) $contentId . "
-				AND content_type = '".$contentType . "'";
+				AND `content_type` = '".$contentType . "'";
 		
 		$result = ze\sql::update($sql);
 	}
@@ -403,7 +403,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 				SET status='published'
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
 		
 		$result = ze\sql::update($sql);
@@ -442,7 +442,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$sql .= "date_updated = NOW(),
 				updater_id = ". (int) $userId. "
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'
 			  AND id = ". (int) $this->post['id'];
 		
 		$result = ze\sql::update($sql);
@@ -489,7 +489,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				locked
 			FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'";
 		
 		$result = ze\sql::select($sql);
 		
@@ -501,7 +501,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 		$sql = "
 			INSERT INTO ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				content_id = ". (int) $this->cID. ",
-				content_type = '". ze\escape::asciiInSQL($this->cType). "'";
+				`content_type` = '". ze\escape::asciiInSQL($this->cType). "'";
 		ze\sql::update($sql);
 		
 		$this->thread = [
@@ -592,7 +592,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 				rating
 			FROM ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'";
 
 		if ($this->setting('comments_require_approval') && !$this->modPrivs) {
 			$sql .= "
@@ -676,7 +676,7 @@ class zenario_anonymous_comments extends ze\moduleBaseClass {
 			UPDATE ". DB_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "comment_content_items SET
 				locked = ". (int) $lock. "
 			WHERE content_id = ". (int) $this->cID. "
-			  AND content_type = '". ze\escape::asciiInSQL($this->cType). "'";
+			  AND `content_type` = '". ze\escape::asciiInSQL($this->cType). "'";
 		
 		$result = ze\sql::update($sql);
 	}

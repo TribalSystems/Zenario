@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -297,7 +297,7 @@ class zenario_common_features__organizer__modules extends ze\moduleBaseClass {
 						//$module['has_webpage'] = true;
 					//}
 					
-					if ($module['nestable'] == 2) {
+					if ($module['nestable'] == 2 && $module['status'] == 'module_running') {
 						if ($mode == 'full') {
 							$module['link'] = [
 								//'path' => 'zenario__modules/panels/modules/item//'. $id. '//collection_buttons/view_nests_containing////'

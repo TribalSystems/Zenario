@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -423,7 +423,7 @@ class zenario_plugin_nest extends ze\moduleBaseClass {
 			//Look through the nested paths that lead from this slide, and note each down
 			//as long as it leads to another slide that we can see.
 			$sql = "
-				SELECT to_state, equiv_id, content_type, command, descendants, hierarchical_var, is_custom, is_forwards
+				SELECT to_state, equiv_id, `content_type`, command, descendants, hierarchical_var, is_custom, is_forwards
 				FROM ". DB_PREFIX. "nested_paths
 				WHERE instance_id = ". (int) $this->instanceId. "
 				  AND from_state = '". ze\escape::sql($this->state). "'

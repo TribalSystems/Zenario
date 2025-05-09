@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -117,10 +117,10 @@ class zenario_pro_features__admin_boxes__alias extends ze\moduleBaseClass {
 					
 					} else {
 						$sql = "
-							SELECT content_id,content_type,alias
+							SELECT content_id, `content_type`, alias
 							FROM ". DB_PREFIX. "spare_aliases
 							WHERE `alias`= '". ze\escape::sql($alias). "'
-							  AND (content_id, content_type) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::asciiInSQL($box['key']['cType']). "'))
+							  AND (content_id, `content_type`) NOT IN ((". (int) $box['key']['cID']. ", '". ze\escape::asciiInSQL($box['key']['cType']). "'))
 							LIMIT 1";
 						
 						$box['tabs']['meta_data']['notices']['spare_alias_already_exists']['show'] = false;

@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2024, Tribal Limited
+ * Copyright (c) 2025, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -911,7 +911,7 @@ class miscAdm {
 		
 				//Load the existing destination for each path on this slide.
 				$sql = "
-					SELECT from_state, to_state, equiv_id, content_type, command
+					SELECT from_state, to_state, equiv_id, `content_type`, command
 					FROM ". DB_PREFIX. "nested_paths
 					WHERE from_state IN (". \ze\escape::in($currentStates). ")
 					  AND instance_id = ". (int) $box['key']['instanceId']. "
