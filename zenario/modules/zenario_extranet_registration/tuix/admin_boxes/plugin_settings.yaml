@@ -378,6 +378,18 @@ plugin_settings:
                     value: active
                     side_note: >
                         When the user verifies their email address, set status to User (Active status) to allow login; otherwise leave as Contact/User (Pending status).
+                
+                trusted_email_domains:
+                    plugin_setting:
+                        name: trusted_email_domains
+                    label: 'List of trusted email domains:'
+                    type: text
+                    side_note: >
+                        Enter a comma separated list of email domains, e.g., @tribiq.com,@zenario.com,@bigcompany.co.uk. Users registering
+                        using an email from one of these domains will be set to active after email verification, otherwise they're left
+                        as-is.
+                    indent: 1
+                
                 welcome_email_template:
                     label: '"Welcome" email:'
                     plugin_setting:
@@ -393,17 +405,6 @@ plugin_settings:
                     side_note: "Pick the email template to send the welcome emails to newly activated users. This setting applies only when the User's initial status is Active. Please see the module description to get a full list of merge fields which can be used."
                     value: zenario_users__to_user_account_activated
                     note_below: 'By default this plugin uses the email template with code "zenario_users__to_user_account_activated".'
-                    indent: 1
-                
-                trusted_email_domains:
-                    plugin_setting:
-                        name: trusted_email_domains
-                    label: 'List of trusted email domains:'
-                    type: text
-                    side_note: >
-                        Enter a comma separated list of email domains, e.g., @tribiq.com,@zenario.com,@bigcompany.co.uk. Users registering
-                        using an email from one of these domains will be set to active after email verification, otherwise they're left
-                        as-is.
                     indent: 1
                 
                 show_welcome_page:

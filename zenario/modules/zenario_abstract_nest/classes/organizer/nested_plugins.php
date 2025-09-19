@@ -446,12 +446,12 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 						$label = $toState['command']. ' → ';
 						
 						if ($toState['equiv_id']) {
-							$label = ze\content::formatTag($toState['equiv_id'], $toState['content_type'], -1, false, true). ', ';
+							$label .= ze\content::formatTag($toState['equiv_id'], $toState['content_type'], -1, false, true). ', ';
 							
 							if (is_numeric($toState['to_state'])) {
-								$label .= ze\admin::phrase('slide [[to_state]]');
+								$label .= ze\admin::phrase('slide [[to_state]]', $toState);
 							} else {
-								$label .= ze\admin::phrase('state [[to_state]]');
+								$label .= ze\admin::phrase('state [[to_state]]', $toState);
 							}
 						
 						} elseif (isset($statesToSlides[$toState['to_state']])) {

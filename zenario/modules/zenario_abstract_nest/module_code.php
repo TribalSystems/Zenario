@@ -317,7 +317,7 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 	
 	
 	
-	public function showPlugin($slotNameNestId, $includeAdminControlsIfInAdminMode = false) {
+	public function showPlugin($slotNameNestId, $includeAdminControlsIfInAdminMode = false, $firstOnSlide = false) {
 		
 		//Flag that we're no longer running Twig code, if this was called from a Twig Framework
 		if ($wasTwig = ze::$isTwig) {
@@ -337,6 +337,10 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 			if ($cols == 0
 			 || $cols > $this->maxColumns) {
 				$cols = $this->maxColumns;
+			}
+			
+			if ($firstOnSlide) {
+				$this->usedColumns = 0;
 			}
 			
 			//If we are not in the grouping, or are just starting a grouping,

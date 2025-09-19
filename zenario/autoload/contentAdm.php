@@ -1643,7 +1643,11 @@ class contentAdm {
 				$error[] = \ze\admin::phrase("An alias is a unique identifier for a content item on this site. An alias (or spare alias) should not be a reserved name (e.g. 'admin', 'cache', 'private', 'public', or 'zenario').");
 		
 			} elseif (is_numeric($alias)) {
-				$error[] = \ze\admin::phrase("An alias or spare alias must start with a letter, not a digit or special character.");
+				if (preg_match('/[^0-9]/', $alias)) {
+					$error[] = \ze\admin::phrase("Your alias looks like a number, which isn't allowed.");
+				} else {
+					$error[] = \ze\admin::phrase("An alias may not be all-digits. Please include at least one letter.");
+				}
 		
 			} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
 				$error[] = \ze\admin::phrase("An alias/spare alias can only contain a-z, A-Z, 0-9, - (hyphen) and _ (underscore). Do not enter http/s, a domain name, menu path or language code.");
@@ -2132,13 +2136,39 @@ class contentAdm {
 	
 		} else {
 			//2. This Content Item is the default language.
-			//   In this case, we only need change its equiv_id for everything *else*
+			//   In this case, we need change the equiv_ids for everything *else*
 			$newEquivId = false;
 			$result = \ze\row::query('content_items', ['id', 'alias'], ['equiv_id' => $content['equiv_id'], 'type' => $cType]);
 			while ($row = \ze\sql::fetchAssoc($result)) {
 				if ($row['id'] != $cID) {
 					if (!$newEquivId) {
 						$newEquivId = $row['id'];
+						
+						//Update the equiv_id column in the related tables
+						$vals = ['equiv_id' => $newEquivId];
+						$key = [
+							'equiv_id' => $content['equiv_id'],
+							'content_type' => $cType
+						];
+						foreach ([
+							'category_item_link',
+							'menu_nodes',
+							'nested_paths',
+							'plugin_pages_by_mode',
+							'special_pages',
+							'translation_chain_privacy'
+						] as $table) {
+							\ze\row::update($table, $vals, $key);
+						}
+						\ze\row::update('translation_chains', $vals, [
+							'equiv_id' => $content['equiv_id'],
+							'type' => $cType
+						]);
+						\ze\row::update('group_link', ['link_from_id' => $newEquivId], [
+							'link_from' => 'chain',
+							'link_from_id' => $content['equiv_id'],
+							'link_from_char' => $cType
+						]);
 					}
 					$vals = ['equiv_id' => $newEquivId];
 				
@@ -2151,7 +2181,7 @@ class contentAdm {
 				}
 			}
 			if ($newEquivId) {
-				\ze\contentAdm::copyTranslationsTable($cID, $newEquivId, $cType);
+				\ze\contentAdm::copyTranslationsTable($newEquivId, $cID, $cType);
 			}
 		}
 	}

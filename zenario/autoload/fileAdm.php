@@ -618,13 +618,20 @@ To correct this, please ask your system administrator to perform a
 			}
 		}
 		
-		if (($mimeType = \ze\file::mimeType($file['filename']))
-		 && (\ze\file::isImage($mimeType))
+		$mimeType = \ze\file::mimeType($file['filename']);
+		
+		if (\ze\file::isImage($mimeType)
 		 && ($image = @getimagesize($path))) {
 			$file['width'] = $image[0];
 			$file['height'] = $image[1];
 		
 			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']. '/'. $file['width']. '/'. $file['height']);
+		
+		} else
+		if ($mimeType == 'image/svg+xml'
+		 && \ze\fileAdm::getWidthAndHeightOfSVG($file, file_get_contents($path))) {
+			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']. '/'. $file['width']. '/'. $file['height']);
+		
 		} else {
 			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']);
 		}

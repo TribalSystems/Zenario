@@ -527,6 +527,7 @@ class image {
 		
 		
 		$mimeType = $image['mime_type'];
+		$inDocstore = $image['location'] == 'docstore';
 	
 		//SVG images do not need to use the retina logic, as they are always crisp
 		if ($isSVG = $mimeType == 'image/svg+xml') {
@@ -592,6 +593,13 @@ class image {
 		//SVGs are vector images and don't need resizing or reprocessing.
 		if ($isSVG) {
 			$imageNeedsToBeResized = false;
+			$imageNeedsToBeReEncoded = false;
+		}
+		
+		//With images stored in the dosctore, we have a slight preference for not converting to WebP
+		//and keeping the original image exactly as it was encoded.
+		//(However if we need to resize the image later, it's okay if it gets converted to WebP.)
+		if ($inDocstore) {
 			$imageNeedsToBeReEncoded = false;
 		}
 		
@@ -837,7 +845,7 @@ class image {
 				}
 			}
 			
-			if ($image['location'] == 'docstore') {
+			if ($inDocstore) {
 				$pathDS = \ze\file::docstorePath($image['path']);
 			}
 			
@@ -845,7 +853,7 @@ class image {
 				if ($image['location'] == 'db') {
 					$image['data'] = \ze\row::get('files', 'data', $imageId);
 			
-				} elseif ($image['location'] == 'docstore' && $pathDS) {
+				} elseif ($inDocstore && $pathDS) {
 					$image['data'] = file_get_contents($pathDS);
 			
 				} else {
@@ -862,11 +870,11 @@ class image {
 			
 			//If $useCacheDir is set, attempt to store the image in the cache directory
 			if ($useCacheDir && $path) {
-				if ($imageNeedsToBeResized || $pregeneratedThumbnailUsed || $image['location'] == 'db') {
+				if ($imageNeedsToBeResized || $imageNeedsToBeReEncoded || $pregeneratedThumbnailUsed || !$inDocstore) {
 					file_put_contents($filepath, $image['data']);
 					\ze\cache::chmod($filepath, 0666);
 				
-				} elseif ($image['location'] == 'docstore') {
+				} elseif ($inDocstore) {
 					if (!file_exists($filepath)) {
 						\ze\server::symlinkOrCopy($pathDS, $filepath);
 					}

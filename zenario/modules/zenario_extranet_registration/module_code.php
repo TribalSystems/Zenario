@@ -327,7 +327,7 @@ class zenario_extranet_registration extends zenario_extranet {
 					}
 				}
 				
-				$fields['user_activation/welcome_email_template']['hidden'] = !($values['user_activation/verified_account_status'] == 'active' || $values['user_activation/verified_account_status'] == 'contact');
+				$fields['user_activation/welcome_email_template']['hidden'] = $values['user_activation/verified_account_status'] == 'leave';
 				$fields['user_activation/trusted_email_domains']['hidden'] = $values['user_activation/verified_account_status'] != 'check_trusted';
 	
 				$fields['user_activation/user_activation_notification_email_template']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];

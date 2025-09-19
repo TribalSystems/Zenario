@@ -61,6 +61,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			$box['key']['instanceId'] = $details['instance_id'];
 			$instance = ze\plugin::details($box['key']['instanceId']);
 			
+			$aLib = ze\plugin::setting('animation_library', $box['key']['instanceId']);
 			$nestType = ze\plugin::setting('nest_type', $box['key']['instanceId']);
 			$box['key']['usesConductor'] = $nestType == 'conductor';
 			
@@ -133,6 +134,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			}
 			$instance = ze\plugin::details($box['key']['instanceId']);
 			
+			$aLib = ze\plugin::setting('animation_library', $box['key']['instanceId']);
 			$nestType = ze\plugin::setting('nest_type', $box['key']['instanceId']);
 			$box['key']['usesConductor'] = $nestType == 'conductor';
 			
@@ -270,6 +272,13 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 					];
 				}
 			}
+		
+		} elseif ($aLib === 'accordion') {
+			$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label:');
+			$fields['details/slide_label_notices']['notices_below']['appearance'] = [
+				'type' => 'information',
+				'message' => ze\admin::phrase('The above label will appear on the link in the accordion to display this slide.')
+			];
 		
 		} else {
 			switch ($nestType) {

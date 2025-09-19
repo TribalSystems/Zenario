@@ -97,7 +97,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		} else {
 			//We'll want a slightly bigger version of the image for use when defining crops and zooms
 			$width = $height = $url = false;
-			\ze\image::retinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 900, $heightLimit = 400);
+			\ze\image::adminRetinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 900, $heightLimit = 400);
 			$cropImageBG = [
 				'width' => $width,
 				'height' => $height,

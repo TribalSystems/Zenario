@@ -5,10 +5,19 @@ zenario__languages:
         languages:
             title: Enabled languages
             db_items:
+                # Note: There's a bit of a hacky work-around here.
+                # We don't have any database table in the CMS that stores every possible language,
+                # we just have one for the currently enabled language.
+                # But we'd need a table to use on this panel, as there is a refiner needs to show
+                # languages that aren't enabled yet!
+                # However if we want every possible language, it's a very short list so fine to use
+                # a sub-query/sub-table for this without worrying about memory, and it's from an
+                # indexed column as well so speed won't be an issue.
                 table: |
-                    [[DB_PREFIX]]visitor_phrases AS vp
-                                        LEFT JOIN [[DB_PREFIX]]languages AS l ON l.id = vp.language_id
-                id_column: vp.language_id
+                    (SELECT DISTINCT language_id from [[DB_PREFIX]]visitor_phrases) AS al
+                    LEFT JOIN [[DB_PREFIX]]languages AS l
+                       ON l.id = al.language_id
+                id_column: al.language_id
                 client_side: true
                 custom_where_statement_if_at_least_one_language_enabled: |
                     WHERE l.id IS NOT NULL
@@ -26,14 +35,12 @@ zenario__languages:
             columns:
                 name:
                     title: Language name
-                    searchable: true
-                    db_column: vp.local_text
                     show_by_default: true
                     width: medium
                 code:
                     title: Code
                     searchable: true
-                    db_column: vp.language_id
+                    db_column: al.language_id
                     show_by_default: false
                     width: xsmall
                     disallow_sorting: true
@@ -43,7 +50,7 @@ zenario__languages:
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]visitor_phrases AS en
                            ON en.module_class_name = 'zenario_common_features'
-                          AND en.language_id = vp.language_id
+                          AND en.language_id = al.language_id
                           AND en.code = '__LANGUAGE_ENGLISH_NAME__'
                     db_column: en.local_text
                     width: medium
@@ -54,7 +61,7 @@ zenario__languages:
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]visitor_phrases AS lo
                            ON lo.module_class_name = 'zenario_common_features'
-                          AND lo.language_id = vp.language_id
+                          AND lo.language_id = al.language_id
                           AND lo.code = '__LANGUAGE_LOCAL_NAME__'
                     db_column: lo.local_text
                     show_by_default: true
@@ -75,7 +82,13 @@ zenario__languages:
                     disallow_sorting: true
                 phrase_count:
                     title: Phrases
-                    db_column: COUNT(DISTINCT vp.code, vp.module_class_name)
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT pc.code, pc.module_class_name)
+                            FROM [[DB_PREFIX]]visitor_phrases AS pc
+                            WHERE pc.language_id = l.id
+                              AND pc.code != '__LANGUAGE_FLAG_FILENAME__'
+                        )
                     show_by_default: true
                     align_right: true
                     width: xsmall

@@ -116,6 +116,8 @@ zenario_convert_nest:
                             visible_if: |
                                 zenarioAB.value('module_class_name') == 'zenario_ajax_nest'
                             label: Conductor-driven (advanced)
+                    validation:
+                        required_if_not_hidden: 'Please choose the method of navigation.'
                 
                 buttons_desc:
                     indent: 3

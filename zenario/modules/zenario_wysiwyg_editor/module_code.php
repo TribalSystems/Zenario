@@ -30,6 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 // This plugin shows some static content
 class zenario_wysiwyg_editor extends zenario_html_snippet {
 	
+	protected $canEdit = false;
 	protected $editing = false;
 	protected $editorId = '';
 	
@@ -98,7 +99,6 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	
 	//When the plugin is set up, also get the content item's status and the content section to display
 	function init() {
-		$canEdit = false;
 		
 		//Alow allow editing of inline content if this is a version controlled Plugin
 		if ($this->isVersionControlled) {
@@ -109,10 +109,10 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				exit;
 			}
 			
-			$canEdit = !empty($_SESSION['admin_userid']) && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType);
+			$this->canEdit = !empty($_SESSION['admin_userid']) && ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType);
 			
 			//Open the editor if it has been requested, and the current Admin has permissions
-			if ($canEdit && ze::$isDraft) {
+			if ($this->canEdit && ze::$isDraft) {
 				
 				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 				
@@ -125,13 +125,13 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			}
 			
 			// Enable double click access to editor
-			if ($canEdit) {
+			if ($this->canEdit) {
 				$buttonSelector = '#zenario_slot_control__'.$this->slotName.'__actions__'.$this->moduleClassName.'__edit_inline';
 				$this->callScript('zenario_wysiwyg_editor', 'listenForDoubleClick', $this->slotName, $this->containerId, $buttonSelector);
 			}
 		}
 		
-		return zenario_html_snippet::init() || $canEdit;
+		return zenario_html_snippet::init() || $this->canEdit;
 	}
 	
 	public function showLayoutPreview() {
@@ -213,6 +213,12 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	}
 	
 	public function fillAdminSlotControls(&$controls) {
+		
+		//If double-clicking the slot will do something, add a CSS class so we can style a different icon for the drop-down menu
+		if ($this->canEdit) {
+			$controls['css_class'] .= ' zenario_showDoubleClickInEditMode';
+		}
+		
 	 	//Add an "Edit Inline" option for Wireframe HTML areas
 		if ($this->isVersionControlled
 		 && ze::$cVersion == ze::$adminVersion

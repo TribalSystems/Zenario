@@ -367,7 +367,6 @@ zenario_wysiwyg_editor.listenForDoubleClick = function(slotName, containerId, bu
 			$(buttonSelector).click();
 		}
 	});
-	$('#'+containerId + '-wrap').addClass('zenario_showDoubleClickInEditMode');
 };
 
 

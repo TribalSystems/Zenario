@@ -602,6 +602,13 @@ class file {
 	//The numbers won't be very large so it needn't be super efficient
 	public static function aspectRatioRemoveFactors($a, $b, $sensibleLimit) {
 		
+		//Handle the simple case where the two numbers are equal.
+		if ($a == $b) {
+			return [1, 1];
+		}
+		
+		//Loop through all possible factors for the numbers.
+		//Note that we only need to check up to the smallest square root of the number
 		$step = 1;
 		$limit = min((int) floor(sqrt($a)), (int) floor(sqrt($b)));
 		
@@ -610,9 +617,20 @@ class file {
 				$a = (int) ($a / $i);
 				$b = (int) ($b / $i);
 			}
+			
+			//Start skipping odd numbers after 2.
+			//Note: really I could skip all non-prime numebrs, but this is just a quick-and-dirty
+			//implementation.
 			if ($i === 3) {
 				$step = 2;
 			}
+		}
+		
+		//Catch the case where one number is a factor of the other
+		$i = min($a, $b);
+		if (($a % $i === 0) && ($b % $i === 0)) {
+			$a = (int) ($a / $i);
+			$b = (int) ($b / $i);
 		}
 		
 		//Have an option not to have crazy mis-matched aspect ratios.
