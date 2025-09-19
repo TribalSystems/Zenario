@@ -49,6 +49,20 @@ class date {
 		$row = \ze\sql::fetchRow('SELECT DATE(NOW())');
 		return $row[0];
 	}
+	
+	public static function validate($mysqlFormattedDate, $modify = null) {
+		$date = \DateTime::createFromFormat('Y-m-d', $mysqlFormattedDate);
+		
+		if (!$date) {
+			return false;
+		}
+		
+		if (!is_null($modify)) {
+			$date->modify($modify);
+		}
+		
+		return $date->format('Y-m-d');
+	}
 
 
 	public static function format($date, $format_type = false, $languageId = false, $time_format = '', $rss = false, $adminPhrase = false) {
@@ -276,11 +290,11 @@ class date {
 		}
 	
 		$etime = time() - (int) $timestamp;
-		if ($etime < 1) {
+		if ($etime < 10) {
 			if ($adminPhrase) {
-				return \ze\admin::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0]);
+				return \ze\admin::phrase('A few seconds ago');
 			} else {
-				return \ze\lang::phrase($phrasePrefix. 'secs'. $phraseSuffix, ['time_elapsed' => 0], 'zenario_common_features', $languageId);
+				return \ze\lang::phrase('A few seconds ago', [], 'zenario_common_features', $languageId);
 			}
 		}
 	

@@ -347,6 +347,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 				//For nests, come up with a slightly more descriptive title based on what was selected in the plugin settings
 				switch ($instance['class_name']) {
 					case 'zenario_ajax_nest':
+						$panel['key']['nestType'] =
 						$nest_type = ze\plugin::setting('nest_type', $instance['instance_id']);
 						switch ($nest_type) {
 							case 'permission':
@@ -361,6 +362,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 						break;
 						
 					case 'zenario_nest':
+						$panel['key']['aLib'] =
 						$animation_library = ze\plugin::setting('animation_library', $instance['instance_id']);
 						switch ($animation_library) {
 							case 'cycle2':
@@ -388,7 +390,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 			if ($item['is_slide']) {
 				if ($usesConductor && $item['states']) {
 					foreach (explode(',', $item['states']) as $state) {
-						$statesToSlides[$state] = $item['ordinal'];
+						$statesToSlides[$state] = $item['slide_num'];
 					}
 				}
 			} else {
@@ -397,25 +399,27 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		}
 		
 		
+		$slideCount = 0;
 		require_once CMS_ROOT. 'zenario/libs/manually_maintained/public_domain/convert_to_roman/convert_to_roman.php';
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
 			if ($item['is_slide']) {
+				++$slideCount;
 				$item['name_or_slide_label'] = zenario_abstract_nest::formatTitleTextAdmin($item['name_or_slide_label']);
 			} else {
 				$item['name_or_slide_label'] = ze\pluginAdm::nestedPluginName($id, $refinerId, null, $item['module_class_name']);
 			}
 			
 			if ($item['is_slide']) {
-				if ($usesConductor && $item['global_command']) {
+				if ($usesConductor && !$item['is_inner_slide']) {
 					$item['css_class'] = 'zenario_key_slide';
 				} else {
 					$item['css_class'] = 'zenario_nest_tab';
 				}
 				$item['cols'] = ' ';
 				$item['small_screens'] = ' ';
-				$item['prefix'] = $item['ordinal']. '. ';
+				$item['prefix'] = $item['slide_num']. '. ';
 				
 				if ($item['slide_permissions'] != 'public') {
 					$panel['columns']['slide_permissions']['always_show'] = true;
@@ -456,6 +460,15 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 						
 						} elseif (isset($statesToSlides[$toState['to_state']])) {
 							$label .= $statesToSlides[$toState['to_state']]. $toState['to_state'];
+							$panel['custom__slides_with_incoming_paths'][$statesToSlides[$toState['to_state']]] = true;
+						}
+						
+						//Track which slides have back paths set.
+						//Known issue: this logic is too simplistic to warn you if you have slides with multiple states, and one is missing a back button.
+						//However that's a rare situation and might even be removed from the codebase at some point, so I won't go to the effort to code
+						//a warning for that.
+						if ($toState['command'] == 'back') {
+							$item['has_back'] = true;
 						}
 						
 						$toText[] = $label;
@@ -490,6 +503,17 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 					$item['makes_breadcrumbs'] += 10;
 				}
 			}
+		}
+		
+		if (isset($panel['key']['aLib'])
+		 && $panel['key']['aLib'] === 'one_slide'
+		 && $slideCount > 1) {
+			$panel['notice'] = [
+				'show' => true,
+				'type' => 'warning',
+				'message' =>
+					ze\admin::phrase('Only the first slide will be shown. Change the "Appearance" option in the settings if you want to show more than one slide.')
+			];
 		}
 	}
 	

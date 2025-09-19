@@ -56,14 +56,12 @@ zenario_admin:
             fields:
                 datetime_created: 
                     label: "Created:"
-                    type: datetime
-                    change_month_and_year: true
+                    type: text
                     readonly: true
                     show_as_a_span: true
                 last_login: 
                     label: "Last login:"
-                    type: datetime
-                    change_month_and_year: true
+                    type: text
                     readonly: true
                     show_as_a_span: true
                 last_login_browser_and_ip:

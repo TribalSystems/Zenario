@@ -130,10 +130,10 @@ zenario_location_manager__location:
                     style: >
                         width: 17em;
                     onblur: |
-                        var latValue = document.getElementById("marker_lat").value,
-                            lngValue = document.getElementById("marker_lng").value;
+                        var latValue = zenarioAB.get("marker_lat").value,
+                            lngValue = zenarioAB.get("marker_lng").value;
                         
-                        document.getElementById('google_map_iframe').contentWindow.placeLatLng(latValue,lngValue);
+                        document.getElementById('google_map_iframe').contentWindow.placeLatLng(zenarioAB, latValue, lngValue);
                 marker_lat:
                     label: 'Pin Latitude:'
                     type: text
@@ -142,10 +142,10 @@ zenario_location_manager__location:
                     style: >
                         width: 17em;
                     onblur: |
-                        var latValue = document.getElementById("marker_lat").value,
-                            lngValue = document.getElementById("marker_lng").value;
+                        var latValue = zenarioAB.get("marker_lat").value,
+                            lngValue = zenarioAB.get("marker_lng").value;
                         
-                        document.getElementById('google_map_iframe').contentWindow.placeLatLng(latValue,lngValue);
+                        document.getElementById('google_map_iframe').contentWindow.placeLatLng(zenarioAB, latValue, lngValue);
                         
                 zoom:
                     ord: 9994

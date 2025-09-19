@@ -62,21 +62,34 @@ switch ($path) {
 		
 		$runningJobIds = static::getRunningJobs();
 		
+		if (ze::setting('site_enabled')) {
+			if (!ze::setting('jobs_enabled')) {
+				$panel['item_buttons']['enable']['disabled'] = true;
+				$panel['item_buttons']['enable']['disabled_tooltip'] = ze\admin::phrase('Scheduled tasks may not be enabled whilst the master switch is off.');
+				
+				$panel['item_buttons']['rerun']['disabled'] = true;
+				$panel['item_buttons']['rerun']['disabled_tooltip'] = ze\admin::phrase('Scheduled tasks may not be rerun whilst the master switch is off.');
+			}
+		} else {
+			$panel['item_buttons']['enable']['disabled'] = true;
+			$panel['item_buttons']['enable']['disabled_tooltip'] = ze\admin::phrase('Scheduled tasks may not be enabled whilst the site is disabled.');
+			
+			$panel['item_buttons']['rerun']['disabled'] = true;
+			$panel['item_buttons']['rerun']['disabled_tooltip'] = ze\admin::phrase('Scheduled tasks may not be rerun whilst the site is disabled.');
+		}
+		
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$item['traits'] = [];
 			
-			if (ze::setting('site_enabled')
-			 && ze::setting('jobs_enabled')) {
-				if ($item['enabled']) {
-					if ($item['status'] != 'rerun_scheduled') {
-						$item['traits']['can_rerun'] = true;
-					}
-					
-					$item['traits']['can_suspend'] = true;
-				} else {
-					$item['traits']['can_enable'] = true;
+			if ($item['enabled']) {
+				if ($item['status'] != 'rerun_scheduled') {
+					$item['can_rerun'] = true;
 				}
+				
+				$item['can_suspend'] = true;
+			} else {
+				$item['can_enable'] = true;
 			}
 			
 			//Calculate the status column, the logic differs between background tasks and scheduled tasks

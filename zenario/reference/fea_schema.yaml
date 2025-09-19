@@ -116,7 +116,18 @@ additionalProperties:
             description: >
                 The name of the microtemplate to use to display this data.
                 
-                If not set, it defaults to 'fea_list' for list mode, and 'fea_form' for form mode.
+                If you don't set this, it will be set to a default value depending on the
+                value of the fea_type property you've used.
+                'fea_form' is the default for FEA form plugins,
+                'fea_list' is the default for FEA list plugins,
+                'fea_graph' is the default for FEA graphs plugins,
+                and finally FEA dash plugins have no default value as they require you
+                to write your own custom microtemplate.
+                
+                FEA list plugins have two other options for their microtemplate built in to the core.
+                'fea_list_blocks' will show each item as a block.
+                'fea_list_transposed' shows items in a table with each item displayed vertically instead of horizontally,
+                and each field displayed horizontally instead of vertically.
         
         title:
             type: string
@@ -126,6 +137,16 @@ additionalProperties:
                 
                 If you do not specify this property, the h1 will be hidden from view.
         
+        use_merge_fields_from_request_vars_in_title:
+            type: boolean
+            description: >
+                Set this to true to enable using merge fields from variables in the request in the title and subtitle.
+                (The format used for the merge fields is the same as the format used in the slide labels.)
+                
+                This property will only take effect if you call $this->applyTitleSetting() in your fillVisitorTUIX() method.
+                
+                This works from version 10.2 onwards.
+        
         title_for_existing_records:
             type: string
             description: >
@@ -134,7 +155,7 @@ additionalProperties:
                 (The toolkit will consider that you are editing an existing record if the $tags['key']['id']
                  variable is set.)
                 
-                You can also use merge fields, e.g.: Editing the animal "[[name]]".
+                You can also use merge fields from the fields on the page, e.g.: Editing the animal "[[name]]".
                 
                 As of version 8.7, you can also include variables from the key.
         
@@ -523,6 +544,15 @@ additionalProperties:
                             by this column (descending).
                             
                             You can provide a string, e.g. "Name (Z-A)", or just set this to true.
+                    sort_desc_by_default:
+                        type: boolean
+                        description: >
+                            If you use both the "sort_asc" and "sort_desc" properties for a column,
+                            when the user first clicks it the sort will be ascending first, and they will
+                            need to click a second time if they wish to sort descending,
+                            
+                            You can set this property to flip that order and sort descending on the first click.
+                            Best used on "date" columns where the user might expect the most recent things first.
                     
                     html:
                         type: boolean
@@ -577,6 +607,12 @@ additionalProperties:
                             (This can also be used on the regular list microtemplate, but only for columns that have parents.)
                             You can set this property to only show a column if it is not empty.
                     
+                    units:
+                        type: string
+                        description: >
+                            This will add a label just after the value, intended to be for displaying
+                            the units of the field.
+                    
                     mirror_field:
                         type: object
                         description: >
@@ -628,6 +664,20 @@ additionalProperties:
                                     
                                     You should enter a positive integer weighting to give the field. The extract has
                                     a weighting of 1, and you can adjust the weightings of the other fields relative to this.
+                            
+                            order_linked_documents_by_this_field:
+                                type: boolean
+                                description: >
+                                    When showing documents in a chain, by default they're shown in ID order.
+                                    
+                                    In some situations it might be more logical to show then ordered by a specific
+                                    field, e.g. if you have a date field. You can set this property
+                                    on field to flag that you want the chain sorted by that field.
+                            order_linked_documents_by_this_field_desc:
+                                type: boolean
+                                description: >
+                                    Set this property if you're using the order_linked_documents_by_this_field
+                                    property and want to sort in a descending order.
         
         list_groupings:
             type: object
@@ -704,6 +754,12 @@ additionalProperties:
                 type: object
                 
                 properties:
+                    label:
+                        type: string
+                        description: >
+                            When using the fea_list_transposed microtemplate, you can optionally set the label property
+                            on each item to add a plain-text label for them.
+                            (Does nothing when not using the fea_list_transposed microtemplate.)
                     list_grouping:
                         type: string
                         description: >
@@ -713,6 +769,7 @@ additionalProperties:
                         description: >
                             This property lets you add a CSS class name to the whole row for the item which
                             you can then style.
+                            (Does nothing when using the fea_list_transposed microtemplate.)
                     cell_css_classes:
                         type: object
                         description: >
@@ -753,13 +810,16 @@ additionalProperties:
         sort_by:
             type: string
             description: >
-                The code name of a column to sort by. Defaults to "name".
-                This requires to define and turn on either of the plugin settings
-                "enable.sort_list" or "enable.sort_col_headers"
+                It's possible to have an FEA list and populate the results using pure PHP instead of MySQL.
+                However if you have a FEA list that doesn't pull items from the database,
+                then you won't be calling the populateItems() function or writing the populateItems... series of methods,
+                and the sort order won't be defined.
+                In this case you should set a column to sort by using this property.
+                However 
         sort_desc:
             type: boolean
             description: >
-                Whether to sort asending or descending
+                Set this property if you're using the sort_by property but want to show the items in descending order.
         
         map:
             type: object
@@ -859,11 +919,12 @@ additionalProperties:
                             - search
                             - above_list
                             - column_header
+                            - bottom
                         collection_button_only: true
                         description: >
                             Setting this properly lets you override the default location and put the button in a different position.
                             
-                            Note: there is some smart logic; if you choose the "column_header"location but the column headers
+                            Note: there is some smart logic; if you choose the "column_header" location but the column headers
                             are not visible due to the "hide_column_headings" option being enabled, the "above_list" option will be
                             automatically used as a replacement.
                             
@@ -915,6 +976,56 @@ additionalProperties:
                                     the current slide will be reloaded after the AJAX request is complete.
                                     
                                     Otherwise just the plugin itself will be reloaded.
+                            toast:
+                                type: object
+                                description: >
+                                    Use this to display a "toast" message at the top right
+                                    after the AJAX request is complete.
+                                    
+                                    The toastr library is used;
+                                    you can see https://github.com/CodeSeven/toastr for more information.
+                                properties:
+                                    message:
+                                        type: string
+                                        description: >
+                                            A message for the toast.
+                                    title:
+                                        type: string
+                                        description: >
+                                            An optional title for the toast.
+                                    
+                                    message_type:
+                                        enum:
+                                            - error
+                                            - warning
+                                            - info
+                                            - success
+                                        default: info
+                                        description: >
+                                            The type of message. A different styling will be applied for each different type.
+                                    
+                                    options:
+                                        additionalProperties:
+                                            type: *variable
+                                            description: >
+                                                Any additional options to pass to the toastr library.
+                    
+                    
+                    export:
+                        type: object
+                        description: >
+                            Use this property to create a file download.
+                            When the user clicks the button, a request will be launched to your exportVisitorTUIX()
+                            method, which you should use to generate a file download.
+                        properties:
+                            request:
+                                type: object
+                                additionalProperties:
+                                    type: *variable
+                                    description: >
+                                        A variable to put in the $_POST of the request.
+                                description: >
+                                    You can use the request property to add requests to the download request.
                     
                     go:
                         type: object
@@ -925,6 +1036,15 @@ additionalProperties:
                                 type: string
                                 description: >
                                     If the nest conductor is running, issue this command.
+                            command_animation:
+                                type: string
+                                description: >
+                                    Set this property to issue a command but play the animation
+                                    from a different command.
+                                    
+                                    Commands with specific animations are "back" and "refresh".
+                                    
+                                    Any other command has a generic animation.
                             mode:
                                 type: string
                                 description: >
@@ -1121,6 +1241,10 @@ additionalProperties:
                                     If this is an item or inline button, your message may contain [[merge_field]]s
                                     which match up to the column names, and will be populated according to the item
                                     which is selected.
+                            html:
+                                type: boolean
+                                description: >
+                                    If this is set, the message will not be html-escaped.
                             multiple_select_title:
                                 type: string
                                 description: >

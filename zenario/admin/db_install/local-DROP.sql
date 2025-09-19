@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_setting_defaults`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]categories`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]category_item_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]centralised_lists`;
-DROP TABLE IF EXISTS `[[DB_PREFIX]]content_cache`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]content_items_searchable_cache`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_items`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_item_versions`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content_types`;

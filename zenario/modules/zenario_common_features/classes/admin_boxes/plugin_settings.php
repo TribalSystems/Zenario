@@ -227,6 +227,24 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					break;
 			}
 			
+			
+			//Track which plugin modes are on this slide
+			$sql = "
+				SELECT ps.value AS mode
+				FROM ". DB_PREFIX. "nested_plugins AS np
+				INNER JOIN ". DB_PREFIX. "plugin_settings AS ps
+				   ON ps.instance_id = np.instance_id
+				  AND ps.egg_id = np.id
+				  AND ps.name = 'mode'
+				WHERE np.instance_id = ". (int) $box['key']['instanceId']. "
+				  AND np.slide_num = ". (int) $box['key']['slideNum']. "
+				  AND np.id != ". (int) $box['key']['eggId'];
+			
+			foreach (ze\sql::fetchValues($sql) as $mode) {
+				$box['key']['modesOnThisSlide'][$mode] = true;
+			}
+			
+			
 		} else {
 			$box['identifier']['value'] = ze\plugin::codeName($box['key']['instanceId'], $box['key']['moduleClassName']);
 			$box['identifier']['label'] = $ucPluginAdminName;
@@ -719,6 +737,20 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 
 		$box['title'] = $title;
+		
+		if ($box['key']['instanceId']) {
+			$usage = \ze\pluginAdm::getUsage($box['key']['instanceId']);
+			if (empty($usage)) {
+				$box['identifier']['where_used'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
+			} else {
+				$usageLinks = [
+					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $box['key']['instanceId']. '//', 
+					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $box['key']['instanceId']. '//'
+				];
+				$mrg['usage_text'] = implode(', ', \ze\miscAdm::getUsageText($usage, $usageLinks, true));
+				$box['identifier']['where_used'] = \ze\admin::phrase('Used on [[usage_text]]', $mrg);
+			}
+		}
 		
 		//Set a flag if this is a plugin in a conductor
 		$box['key']['usesConductor'] = ze\pluginAdm::conductorEnabled($box['key']['instanceId']);
@@ -1303,7 +1335,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 
 				if ($instance['content_id']) {
 					if ($syncContent) {
-						ze\contentAdm::syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
+						ze\contentAdm::updateContentItemCache($instance['content_id'], $instance['content_type'], $instance['content_version']);
 					}
 	
 					//Update the last modified date on the Content Item if this is a Wireframe Plugin
@@ -1534,19 +1566,16 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 		
 		//Show or hide the "phrases" tab depending on whether any phrases were actually found.
-		//Also, we have the issue where some plugins can also have tabs called "phrases".
-		//We want to avoid having two tabs with the same name, so we'll change this to something a bit more
-		//specific in some situations
 		if ($pInCode) {
-			if ($pInTwig && !isset($box['tabs']['phrases'])) {
-				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases');
+			if ($pInTwig) {
+				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Text (in code/framework)');
 			} else {
-				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases (PHP code)');
+				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Text (in code)');
 			}
 		
 		} else {
 			if ($pInTwig) {
-				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Phrases (framework)');
+				$box['tabs']['phrases.framework']['label'] = ze\admin::phrase('Text (in framework)');
 			} else {
 				$box['tabs']['phrases.framework']['hidden'] = true;
 				return;
@@ -1560,13 +1589,28 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		
 		
 		
-		$ord = 1000;
 		
 		$html = '
-			<table class="zfab_customise_phrases cols_2"><tr>
-				<th>Original Phrase</th>
-				<th>Customised Phrase</th>
-			</tr>';
+			<p class="zfab_customise_phrases_explainer">';
+		
+		if ($pInCode && $pInTwig) {
+			$html .= htmlspecialchars(ze\admin::phrase("This module's code and framework contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+		} elseif ($pInCode) {
+			$html .= htmlspecialchars(ze\admin::phrase("This module's code contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+		} else {
+			$html .= htmlspecialchars(ze\admin::phrase("This module's framework contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+		}
+		
+		$html .= '
+			</p>
+			<table class="zfab_customise_phrases cols_2">
+				<thead>
+					<tr>
+						<th>Original text/message</th>
+						<th>Customised text/message</th>
+					</tr>
+				</thead>
+				<tbody>';
 		
 		$fields['phrase_table_start'] = [
 			'ord' => 100,
@@ -1590,13 +1634,14 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 		unset($defaultText);
 		asort($phrases, SORT_FLAG_CASE | SORT_NATURAL);	
 		
+		$ord = 1000;
 		foreach ($phrases as $code => $defaultText) {
 			$ppath = 'phrase.framework.'. $code;
 			
 			if (!isset($fields[$ppath])) {
 				
 				$pre_field_html = '
-					<tr><td>
+					<tr><td class="zfab_customise_phrase">
 						'. htmlspecialchars($defaultText);
 			
 				if ($code[0] == '_') {
@@ -1639,22 +1684,39 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			'same_row' => true,
 			'snippet' => [
 				'html' => '
-					</table>'
+				</tbody>
+			</table>'
 			]
 		];
 	
 		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
-			$mrg = [
-				'def_lang_name' => htmlspecialchars(\ze\lang::name(ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
-			];
-		
 			$fields['phrase_table_end']['show_phrase_icon'] = true;
-			$fields['phrase_table_end']['snippet']['html'] .= '
-				<br/>
-				<span>'.
-				\ze\admin::phrase('<a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg).
-				'</span>';
+			
+			if (\ze\row::exists('visitor_phrases', ['module_class_name' => $box['module_class_name']])) {
+				
+				$filters = [
+					'module_name' => [
+						's' => 1,
+						'v' => $box['module_class_name']
+					]
+				];
+				
+				$mrg = [
+					'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases~_'. rawurlencode(json_encode($filters)))
+				];
+			
+				$fields['phrase_table_end']['snippet']['html'] .= '
+					<br/>
+					<span>'.
+					\ze\admin::phrase('Phrases have been created for this module. <a href="[[phrases_panel]]" target="_blank">Click here to see the phrases in Organizer</a>.', $mrg).
+					'</span>';
+			
+			} else {
+				$fields['phrase_table_end']['snippet']['html'] .= '
+					<br/>
+					<span>'.
+					\ze\admin::phrase('Phrases will be created when these are viewed on a content item that is being translated.');
+			}
 		}
 	}
 	

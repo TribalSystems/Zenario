@@ -335,6 +335,52 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		//...
 	}
 	
+	
+	//Functions for getting data to export.
+	//They default to the same functions as displaying the items, unless overridden.
+	protected function exportItemsSelect($path, &$tags) {
+		$fields = $values = [];
+		return $this->populateItemsSelect($path, $tags, $fields, $values);
+	}
+	protected function exportItemsFrom($path, &$tags) {
+		$fields = $values = [];
+		return $this->populateItemsFrom($path, $tags, $fields, $values);
+	}
+	protected function exportItemsWhere($path, &$tags) {
+		$fields = $values = [];
+		return $this->populateItemsWhere($path, $tags, $fields, $values);
+	}
+	protected function exportItemsGroupBy($path, &$tags) {
+		$fields = $values = [];
+		return $this->populateItemsGroupBy($path, $tags, $fields, $values);
+	}
+	protected function exportItemsOrderBy($path, &$tags) {
+		$fields = $values = [];
+		return $this->populateItemsOrderBy($path, $tags, $fields, $values);
+	}
+	
+	protected $exportWasFiltered = false;
+	protected function exportItemsSQL($path, &$tags) {
+		
+		$sql = $this->exportItemsSelect($path, $tags). "
+				". $this->exportItemsFrom($path, $tags). "
+				". ($where = $this->exportItemsWhere($path, $tags)). "
+				". $this->exportItemsGroupBy($path, $tags). "
+				". $this->exportItemsOrderBy($path, $tags);
+		
+		$where = trim($where);
+		if ($where !== ''
+		 && $where !== 'WHERE TRUE') {
+			$this->exportWasFiltered = true;
+		}
+		
+		//Use this to put the full query into the console.log
+		//ze::dump($sql);
+		
+		return $sql;
+	}
+
+	
 	//Functions for generating smart breadcrumbs.
 	//They default to the functions for the items, unless overridden.
 	protected function populateBreadcrumbsSelect() {
@@ -349,13 +395,13 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		$tags = $fields = $values = [];
 		return $this->populateItemsWhere('', $tags, $fields, $values);
 	}
-	protected function populateBreadcrumbsOrderBy() {
-		$tags = $fields = $values = [];
-		return $this->populateItemsOrderBy('', $tags, $fields, $values);
-	}
 	protected function populateBreadcrumbsGroupBy() {
 		$tags = $fields = $values = [];
 		return $this->populateItemsGroupBy('', $tags, $fields, $values);
+	}
+	protected function populateBreadcrumbsOrderBy() {
+		$tags = $fields = $values = [];
+		return $this->populateItemsOrderBy('', $tags, $fields, $values);
 	}
 	protected function populateBreadcrumbsPageSize() {
 		$tags = $fields = $values = [];
@@ -543,19 +589,6 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		
 		$orderBy = $this->populateItemsOrderBy($path, $tags, $fields, $values);
 		
-		//If there is something newly created, try to place it at the top of the list
-		if ($this->newThing !== false) {
-			$pos = stripos($orderBy, 'ORDER BY');
-			
-			if ($pos !== false) {
-				$orderBy =
-					substr($orderBy, 0, $pos + 8). ' '.
-					$this->populateItemsIdColDB($path, $tags, $fields, $values). " = '".
-					ze\escape::sql($this->newThing). "' DESC, ".
-					substr($orderBy, $pos + 8);
-			}
-		}
-		
 		$sql .= "
 			". $orderBy. "
 			". $limit;
@@ -626,6 +659,8 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 	}
 	
+	
+	
 	private $tuixSnippetId = false;
 	protected function mergeCustomTUIX(&$tags) {
 		if (($this->tuixSnippetId = $this->setting('~tuix_snippet~'))
@@ -651,6 +686,73 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		}
 	}
 	
+	protected function applyTitleSetting(&$tags) {
+	
+		if ($this->setting('show_title')) {
+			$tags['title_tags'] = $this->setting('title_tags');
+			
+			if (isset($this->parentNest)
+			 && isset($tags['title'])
+			 && !empty($tags['use_merge_fields_from_request_vars_in_title'])) {
+				$tags['title'] = $this->parentNest->formatTitleText($tags['title']);
+			}
+			
+		} else {
+			unset($tags['title'], $tags['title_for_existing_records']);
+		}
+	
+		if ($this->setting('show_subtitle')) {
+			$tags['subtitle_tags'] = $this->setting('subtitle_tags');
+			
+			if (isset($this->parentNest)
+			 && isset($tags['subtitle'])
+			 && !empty($tags['use_merge_fields_from_request_vars_in_title'])) {
+				$tags['subtitle'] = $this->parentNest->formatTitleText($tags['subtitle']);
+			}
+			
+		} else {
+			unset($tags['subtitle']);
+		}
+	}
+	
+	protected function applyGraphSetting(&$graph) {
+		
+		//Have the option to show markers/tooltips on the graph to let the viewer visually inspect the values
+		$showDebugInfo = false;
+		switch ($this->setting('show_debug_info_on_graph')) {
+			case 'admin':
+				$showDebugInfo = ze::isAdmin();
+				break;
+			case 'visitor':
+				$showDebugInfo = true;
+				break;
+		}
+		
+		if (!$showDebugInfo) {
+			$graph['tooltip'] = ['enabled' => false];
+			$graph['plotOptions']['spline']['marker'] = ['enabled' => false];
+		}
+		
+		//Set the render-target for the graph.
+		//This matches up with a <div> in the graph's microtemplate
+		$graph['chart']['renderTo'] = 'graph_'. $this->containerId;
+	}
+						
+	//Load the value of a search request that was packed up using the zenario.pack() function
+	protected function unpackSearchRequest(&$tags) {
+	
+		$flat = $_REQUEST['search'] ?? $tags['key']['search'];
+		if (!empty($flat)) {
+			$search = ze\cache::unpack($flat);
+			
+			if (!empty($search) && is_array($search)) {
+				return $search;
+			}
+		}
+		
+		return null;
+	}
+	
 	
 	protected function setupOverridesForPhrases(&$box, &$fields, &$values) {
 		return require ze::funIncPath(__FILE__, __FUNCTION__);
@@ -672,9 +774,27 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	protected function includeEditor() {
 		if (!ze::isAdmin()) {
 			$this->requireJsLib('zenario/js/ace.bundle.js.php');
-			$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
+			$this->requireJSLibsForToasts();
 			$this->requireJsLib('zenario/libs/yarn/spectrum-colorpicker/spectrum.min.js', 'zenario/libs/yarn/spectrum-colorpicker/spectrum.min.css');
 		}
+	}
+	
+	//This function lets you override the sort order of an FEA list from what the user had it set to.
+	protected function overrideSortOrder(&$tags, $sortCol, $sortDesc) {
+		
+		//Update the sort order variables stored in the FEA's key.
+		$tags['key']['sortCol'] = $sortCol;
+		$tags['key']['sortDesc'] = true;
+		
+		//Update the sort order variables stored conductor's variables.
+		//(And set the "update URL" flag after we've changed the last one, to trigger a URL update.)
+		$this->callScript('zenario_conductor', 'setVar', $this->slotName, 'sortCol', $sortCol, $updateURL = false);
+		$this->callScript('zenario_conductor', 'setVar', $this->slotName, 'sortDesc', (int) $sortDesc, $updateURL = true);
+		
+		//By default, the standard AJAX reload will update the URL to whatever was just requested.
+		//This happens *after* the above calls are run, so would override them if it went ahead.
+		//Set a flag to turn this behaviour off for this request.
+		ze\escape::flag('RECORD_IN_URL', 0);
 	}
 	
 	
@@ -755,7 +875,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			$mrg = [
 				'modeDisplayName' => zenario_abstract_fea::pluginModeDisplayName($this->moduleClassName, $mode)
 			];
-			$this->setErrorMessage(ze\admin::phrase('This plugin needs to be placed in a nest, on the same slide as a [[modeDisplayName]] plugin', $mrg));
+			$this->setErrorMessage(ze\admin::phrase('This plugin needs to be placed in a nest, on the same slide as a [[modeDisplayName]] plugin.', $mrg));
 		}
 		return false;
 	}

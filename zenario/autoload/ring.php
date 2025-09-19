@@ -526,20 +526,13 @@ class ring {
 	}
 	
 
-	//A slightly different version of the ze\escape::hyp() function, that works with ~s instead.
+	//A slightly different version of the ze\cache::swig() function, that doesn't convert
+	//some characters such as commas, colons and hyphens.
 	//Intended to be used with the tokenise() function below.
-	public static function squig($text) {
+	public static function swigLite($text) {
 		return str_replace(
 			['~',	"\n",	"\r",	"'",	'"'],
 			['~s',	'~n',	'~r',	'~q',	'~d'],
-			$text
-		);
-	}
-	
-	public static function unsquig($text) {
-		return str_replace(
-			['~n',	'~r',	'~q',	'~d',	'~s'],
-			["\n",	"\r",	"'",	'"',	'~'],
 			$text
 		);
 	}
@@ -677,11 +670,11 @@ class ring {
 						
 						//Split them up using a tokeniser. (I could have used a preg statement instead, but
 						// using a tokeniser should be a bit more intelligent/consistent with the results.)
-						//Note the call to the ze\ring::squig() function is needed so that any single/double quotes 
+						//Note the call to the ze\ring::swigLite() function is needed so that any single/double quotes 
 						//in the text won't stop tokens from being created.
 						$tokenedText = '';
 						$tokenedWordCount = 0;
-						foreach (\ze\ring::tokenise(\ze\ring::squig($currentLine), true) as $token) {
+						foreach (\ze\ring::tokenise(\ze\ring::swigLite($currentLine), true) as $token) {
 							
 							//Not all of the tokens will be words, some will be one character
 							//symbols like commas.
@@ -695,17 +688,17 @@ class ring {
 							if (($tokenedWordCount > $softCap)
 							 || (2*$tokenedWordCount > $softCap && ($token == '-' || $token == ',' || $token == ';' || $token == ':'))) {
 								
-								$chunksOut[] = trim(\ze\ring::unsquig($tokenedText));
+								$chunksOut[] = trim(\ze\cache::deswig($tokenedText));
 								$tokenedText = '';
 								$tokenedWordCount = 0;
 							}
 						}
 						
 						if ($tokenedWordCount !== 0) {
-							$chunksOut[] = trim(\ze\ring::unsquig($tokenedText));
+							$chunksOut[] = trim(\ze\cache::deswig($tokenedText));
 						} else {
 							//Fix a bug where a trailling full stop can sometimes get left off the end of the last chunk
-							$chunksOut[count($chunksOut) - 1] .= \ze\ring::unsquig($tokenedText);
+							$chunksOut[count($chunksOut) - 1] .= \ze\cache::deswig($tokenedText);
 						}
 						
 						$currentLine = '';

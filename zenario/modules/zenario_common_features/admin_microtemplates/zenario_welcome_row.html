@@ -97,7 +97,7 @@
 		<legend class="zenario_legend zenario_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
 	<% } %>
 	
-	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
 		zenario_ab_row
 		zenario_ab_row__{{ff._id|escape}}
 		{{rowHasError? 'zenario_row_with_error' : ''}}

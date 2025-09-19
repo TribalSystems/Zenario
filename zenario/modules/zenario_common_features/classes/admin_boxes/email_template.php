@@ -176,6 +176,7 @@ class zenario_common_features__admin_boxes__email_template extends zenario_commo
 
 		if (isset($fields['meta_data/test_send_button']) && !ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
 			$fields['meta_data/test_send_button']['disabled'] = true;
+			$fields['meta_data/test_send_button']['class'] = 'zenario_disabled_button';
 		}
 		
 		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
@@ -310,7 +311,7 @@ class zenario_common_features__admin_boxes__email_template extends zenario_commo
 								$file = ze\file::link($document['file_id']);
 								$attachments[] = realpath(rawurldecode($file));
 							} else {
-								$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['message'] = ze\admin::phrase('The selected attachment is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
+								$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['message'] = ze\admin::phrase('The selected attachment is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $document['privacy']]);
 								$box['tabs']['meta_data']['notices']['test_send_attachment_not_sent']['show'] = true;
 							}
 						} else {

@@ -54,6 +54,8 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$box['identifier']['css_class'] = 'content_type_'. $details['content_type_id'];
 		$box['title'] = ze\admin::phrase('Settings for the content type "[[content_type_name_en]]"', $details);
 		
+		$values['details/maximum_title_length'] = $details['maximum_title_length'];
+		
 		$values['details/content_type_name_en'] = $details['content_type_name_en'];
 		$values['details/content_type_plural_en'] = $details['content_type_plural_en'];
 		$values['details/tooltip_text'] = $details['tooltip_text'];
@@ -207,6 +209,8 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			$vals['keywords_field'] = $values['details/keywords_field'] ? ($values['details/keywords_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
 			$vals['summary_field'] = $values['details/summary_field'] ? ($values['details/summary_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
 			$vals['release_date_field'] = $values['details/release_date_field'] ? 'optional' : 'hidden';
+			
+			$vals['maximum_title_length'] = $values['details/maximum_title_length'];
 			
 			ze\row::update('content_types', $vals, $box['key']['id']);
 		}

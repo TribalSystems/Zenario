@@ -103,11 +103,13 @@ class pluginAdm {
 		$pluginType = $isVersionControlled? 99 : ($isSlideshow? 2 : ($isNest? 1 : 0));
 		
 		foreach ([
-			'replace_reusable_on_item_layer' => [1, 0], 'replace_nest_on_item_layer' => [1, 1], 'replace_slideshow_on_item_layer' => [1, 2],
-			'replace_reusable_on_layout_layer' => [2, 0], 'replace_nest_on_layout_layer' => [2, 1], 'replace_slideshow_on_layout_layer' => [2, 2]
+			'replace_fab_item_layer' => [1, 98, false],
+			'replace_reusable_on_item_layer' => [1, 0, true], 'replace_nest_on_item_layer' => [1, 1, true], 'replace_slideshow_on_item_layer' => [1, 2, true],
+			'replace_reusable_on_layout_layer' => [2, 0, true], 'replace_nest_on_layout_layer' => [2, 1, true], 'replace_slideshow_on_layout_layer' => [2, 2, true]
 		] as $buttonName => $details) {
 			$buttonLevel = $details[0];
 			$buttonPluginType = $details[1];
+			$appearsInsideFAB = $details[2];
 			
 			if (isset($actions[$buttonName])) {
 				$button = &$actions[$buttonName];
@@ -140,20 +142,22 @@ class pluginAdm {
 				$button['label_replace'],
 				$button['label_replace_like4like']
 			);
-	
-			if (isset($button['onclick'])) {
-				if ($pluginType === $buttonPluginType) {
-					$preselectCurrentChoice = 'true';
-				} else {
-					$preselectCurrentChoice = 'false';
+			
+			if ($appearsInsideFAB) {
+				if (isset($button['onclick'])) {
+					if ($pluginType === $buttonPluginType) {
+						$preselectCurrentChoice = 'true';
+					} else {
+						$preselectCurrentChoice = 'false';
+					}
+					$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
 				}
-				$button['onclick'] = str_replace('[[preselectCurrentChoice]]', $preselectCurrentChoice, $button['onclick']);
-			}
-			if (isset($button['pick_new_plugin'])) {
-				if ($pluginType === $buttonPluginType) {
-					$button['pick_new_plugin']['preselect'] = true;
-				} else {
-					$button['pick_new_plugin']['preselect'] = false;
+				if (isset($button['pick_new_plugin'])) {
+					if ($pluginType === $buttonPluginType) {
+						$button['pick_new_plugin']['preselect'] = true;
+					} else {
+						$button['pick_new_plugin']['preselect'] = false;
+					}
 				}
 			}
 		}
@@ -207,6 +211,7 @@ class pluginAdm {
 			
 			
 			$mrg = \ze\plugin::details($instanceId);
+			$mrg['ucPluginAdminName'] = htmlspecialchars($ucPluginAdminName);
 			$mrg['instance_name'] = htmlspecialchars($mrg['instance_name']);
 			$mrg['plugins_link'] = htmlspecialchars($skLink. $pluginsLink);
 			
@@ -221,7 +226,7 @@ class pluginAdm {
 					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $instanceId. '//'
 				];
 				$mrg['usage_text'] = implode(', ', \ze\miscAdm::getUsageText($usage, $usageLinks, true));
-				$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>; used on [[usage_text]]', $mrg);
+				$info['reusable_plugin_details']['label'] = \ze\admin::phrase('[[ucPluginAdminName]] <a class="plugins_link_new_window" target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on [[usage_text]]', $mrg);
 			}
 		}
 		
@@ -471,8 +476,8 @@ class pluginAdm {
 					css_class,
 					makes_breadcrumbs,
 					is_slide,
+					is_inner_slide,
 					show_back,
-					no_choice_no_going_back,
 					show_refresh,
 					show_auto_refresh,
 					auto_refresh_interval,
@@ -500,8 +505,8 @@ class pluginAdm {
 					css_class,
 					makes_breadcrumbs,
 					is_slide,
+					is_inner_slide,
 					show_back,
-					no_choice_no_going_back,
 					show_refresh,
 					show_auto_refresh,
 					auto_refresh_interval,
@@ -1595,11 +1600,19 @@ class pluginAdm {
 				echo '<em>'. \ze\admin::phrase('You need to be logged in as an extranet user to view this plugin.'). '</em>';
 			}
 	
-		} elseif ($slot->error()) {
-			echo '<em>'. htmlspecialchars($slot->error()). '</em>';
-	
-		} elseif (!$slot->moduleId()) {
-			echo \ze\admin::phrase('[Empty Slot]');
+		} else {
+			$error = $slot->error();
+			if ($error) {
+				$errorClass = $slot->errorClass();
+				if (is_null($errorClass)) {
+					echo '<em>', htmlspecialchars($error), '</em>';
+				} else {
+					echo '<span class="', htmlspecialchars($errorClass), '">', htmlspecialchars($error), '</span>';
+				}
+		
+			} elseif (!$slot->moduleId()) {
+				echo \ze\admin::phrase('[Empty Slot]');
+			}
 		}
 	}
 

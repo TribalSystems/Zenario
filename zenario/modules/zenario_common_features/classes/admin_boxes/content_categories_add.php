@@ -63,7 +63,7 @@ class zenario_common_features__admin_boxes__content_categories_add extends ze\mo
 			$box['key']['id'] = implode(',', $tagIds);
 		}
 		
-		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__library/panels/categories';
+		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__content/panels/categories';
 		$linkStart = '<a href="' . htmlspecialchars($categoriesPanelHref) . '" target="_blank">';
 		$linkEnd = "</a>";
 		

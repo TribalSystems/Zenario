@@ -81,15 +81,6 @@ zenarioAT.init2 = function(tuix) {
 		
 		zenarioT.checkDumps(tuix);
 		
-		//If the admin has just closed grid maker, try to start this next page load showing
-		//empty slots.
-		//(I am forced to implement this using purely client-side code though, as the
-		//"show empty slots" button has no server-side component.)
-		if (zenario.sGetItem(true, 'show_empty_slots_next_page_load')) {
-			zenario.sSetItem(true, 'show_empty_slots_next_page_load', '');
-			zenarioA.toggleShowEmptySlots(true);
-		}
-		
 		
 		zenarioAT.setURL();
 		zenarioAT.tuix = tuix;
@@ -115,7 +106,16 @@ zenarioAT.init2 = function(tuix) {
 		zenarioAT.runOnInit = [];
 		
 		if (tuix.lock_warning) {
-			zenarioA.longToast(tuix.lock_warning, 'warning');
+			zenarioT.longToast(tuix.lock_warning, 'warning');
+		}
+		
+		//If the admin has just closed grid maker, try to start this next page load showing
+		//empty slots.
+		//(I am forced to implement this using purely client-side code though, as the
+		//"show empty slots" button has no server-side component.)
+		if (zenario.sGetItem(true, 'show_empty_slots_next_page_load')) {
+			zenario.sSetItem(true, 'show_empty_slots_next_page_load', '');
+			zenarioA.toggleShowEmptySlots(true);
 		}
 	});
 };
@@ -130,10 +130,11 @@ zenarioAT.init2 = function(tuix) {
 zenarioAT.clickTab = function(toolbar, flashNewTabToHighlightChange, runAfter) {
 	if (zenarioA.checkForEdits()) {
 		
-		var oldToolbar = zenarioAT.tuix.toolbars[zenarioA.toolbar],
-			newToolbar;
+		var toolbars = zenarioAT.tuix.toolbars,
+			oldToolbar = toolbars[zenarioA.toolbar],
+			newToolbar = toolbars[toolbar];
 		
-		if (newToolbar = zenarioAT.tuix && zenarioAT.tuix.toolbars && zenarioAT.tuix.toolbars[toolbar]) {
+		if (newToolbar = toolbars[toolbar]) {
 			zenarioA.closeSlotControls();
 			zenarioA.cancelMovePlugin();
 			
@@ -143,7 +144,8 @@ zenarioAT.clickTab = function(toolbar, flashNewTabToHighlightChange, runAfter) {
 				newPageMode = newToolbar.page_mode || toolbar,
 				toolbarSubstr = toolbar.substr(0, 4),
 				sbcFun = zenarioL.set,
-				testPageMode,
+				testPageMode, testToolbar, testClass,
+				$body = $(document.body),
 				possiblePageModes = {
 					preview: 0,
 					edit_disabled: 0,
@@ -153,6 +155,14 @@ zenarioAT.clickTab = function(toolbar, flashNewTabToHighlightChange, runAfter) {
 					layout: 0
 				};
 			
+			for (testToolbar in toolbars) {
+				testClass = 'zenario_pageToolbar_' + testToolbar;
+				if (toolbar == testToolbar) {
+					$body.addClass(testClass);
+				} else {
+					$body.removeClass(testClass);
+				}
+			}
 			for (testPageMode in possiblePageModes) {
 				sbcFun(newPageMode == testPageMode, 'zenario_pageMode_' + testPageMode, 'zenario_pageModeIsnt_' + testPageMode);
 			}
@@ -552,7 +562,6 @@ zenarioAT.draw = function(flashNewTabToHighlightChange) {
 	zenarioA.tooltips('#zenario_at_wrap a[title]');
 	zenarioA.tooltips('#zenario_at_wrap div[title]');
 	zenarioA.tooltips('#zenario_at_wrap ul ul a[title]', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-	zenarioA.setTooltipIfTooLarge('#zenario_at_lower_section .zenario_at_infobar', undefined, zenarioA.tooltipLengthThresholds.adminToolbarTitle);
 };
 
 

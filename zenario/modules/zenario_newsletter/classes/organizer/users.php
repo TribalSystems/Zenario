@@ -58,7 +58,25 @@ class zenario_newsletter__organizer__users extends zenario_newsletter {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		//...your PHP code...//
+		if ($path == 'zenario__users/panels/users' && $refinerName == 'smart_group') {
+			$groupDetails = ze\smartGroup::details($refinerId);
+			
+			if ($groupDetails['intended_usage'] == 'smart_newsletter_group') {
+				foreach ($panel['items'] as &$item) {
+					$userDetails = ze\user::details($item['id']);
+					
+					if ($userDetails && is_array($userDetails)) {
+						if ($userDetails['all_newsletters_opt_out']) {
+							$item['user_opted_out_of_newsletters'] = true;
+						}
+						
+						if (!$userDetails['terms_and_conditions_accepted']) {
+							$item['user_did_not_accept_tcs'] = true;
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

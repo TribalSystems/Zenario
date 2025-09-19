@@ -112,6 +112,8 @@
 						{{this.frameworkField({'type': "email", 'name': "email", 'id': "email", 'pattern': "unverified_email", 'required': "true", 'class': "extranet_text"})}}
 					</div>
 					
+					{% include this.frameworkBaseDir() ~ 'includes/captcha.twig.html' %}
+					
 					<div class="extranet_btn">
 						<input type="submit" name="extranet_register" class="extranet_submit" value="{{'Resend verification email'|trans}}" />
 					</div>
@@ -126,21 +128,31 @@
 			
 			{% if Logged_In %}
 				{% if Welcome_Message_Section %}
-				<div class="extranet_welcome_text">{{Welcome_Message}}</div>
+					<div class="extranet_welcome_text">{{Welcome_Message}}</div>
 				{% endif %}
+				
+				{% if Welcome_Message_2 %}
+					<div class="extranet_welcome_text_2">{{Welcome_Message_2}}</div>
+				{% endif %}
+				
 				{% if Destination_url_section %} 
-				<div class="extranet_requested_link">
-					{{"Your requested page:"|trans}}
-					<a href="{{destURL_Link}}">{{destURL_Title}}</a>
-				</div>
+					<div class="extranet_requested_link">
+						{{"It looks like you requested this page:"|trans}}
+						<a href="{{destURL_Link}}">{{destURL_Title}}</a>
+					</div>
 				{% endif %}
 				<div class="extranet_links">
-					{% if Change_Password_Link_Section %}
+					{% if this.setting('show_link_to_profile_page') and Profile_Link_Section %}
+						<div class="extranet_link">
+							<a {{Profile_Link}}>{{"Your profile"|trans}}</a>
+						</div>
+					{% endif %}
+					{% if this.setting('show_link_to_change_password_page') and Change_Password_Link_Section %}
 						<div class="extranet_link">
 							<a {{Change_Password_Link}}>{{"Change your password"|trans}}</a>
 						</div>
 					{% endif %}
-					{% if Logout_Link_Section %}
+					{% if this.setting('show_link_to_logout_page') and Logout_Link_Section %}
 						<div class="extranet_link">
 							<a {{Logout_Link}}>{{"Logout"|trans}}</a>
 						</div>

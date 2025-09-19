@@ -23,7 +23,7 @@ site_settings:
                     type: checkbox
                     label: 'Allow document content items to be stored on AWS S3'
                     note_below: |
-                        AWS S3 permits files up to 5GB to be uploaded, but also see the "Documents, images and file handling" settings (File Upload Sizes tab and the Largest Possible Upload Size setting for your server); if that is lower than 5GB, file sizes will be limited at the lower size.
+                        AWS S3 permits files up to 5GB to be uploaded, but also see the "Documents, images and file handling" site ettings; if that is lower than 5GB, file sizes will be limited at the lower size.
                     visible_if: |
                         zenarioAB.value('enable_aws_support')
                     redraw_onchange: true

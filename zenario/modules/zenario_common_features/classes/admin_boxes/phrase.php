@@ -56,7 +56,12 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		
 		$mostRecentDate = null;
 		$existingPhrases = [];
-		$result = ze\row::query('visitor_phrases', ['local_text', 'language_id', 'protect_flag', 'modified_date'], ['code'=>$details['code'], 'module_class_name'=>$details['module_class_name']]);
+		$result = ze\row::query(
+			'visitor_phrases',
+			['local_text', 'language_id', 'protect_flag', 'modified_date', 'seen_at_content_id', 'seen_at_content_type'],
+			['code' => $details['code'], 'module_class_name' => $details['module_class_name']]
+		);
+		
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$existingPhrases[$row['language_id']] = $row;
 			
@@ -64,6 +69,28 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 				if (is_null($mostRecentDate)
 				 || $mostRecentDate < $row['modified_date']) {
 					$mostRecentDate = $row['modified_date'];
+				}
+			}
+			
+			if ($row['seen_at_content_id'] && $row['seen_at_content_type']) {
+				$contentItemTag = $row['seen_at_content_type'] . '_' . $row['seen_at_content_id'];
+				$contentItemTagFormatted = ze\content::formatTag($row['seen_at_content_id'], $row['seen_at_content_type']);
+				
+				if (ze\row::exists('content_items', ['id' => $row['seen_at_content_id'], 'type' => $row['seen_at_content_type'], 'status' => ['!' => 'deleted']])) {
+					$contentItemLink = ze\link::toItem($row['seen_at_content_id'], $row['seen_at_content_type']);
+					$contentItemClass = ze\contentAdm::getItemIconClass($row['seen_at_content_id'], $row['seen_at_content_type']);
+					
+					$linkStart = '<a href="organizer.php#zenario__content/panels/content//' . htmlspecialchars($contentItemTag) . '" target="_blank">';
+					$linkEnd = '</a>';
+					
+					$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase(
+						'[[link_start]][[content_item_tag]][[link_end]]',
+						['link_start' => $linkStart, 'content_item_tag' => $contentItemTagFormatted, 'link_end' => $linkEnd]
+					);
+					
+					$fields['phrase/seen_at']['row_class'] = 'organizer_item_image ' . $contentItemClass;
+				} else {
+					$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('[[content_item_tag]] (deleted)', ['content_item_tag' => $contentItemTagFormatted]);
 				}
 			}
 		}
@@ -84,7 +111,6 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		
 		} elseif ($languages[ze::$defaultLang]['translate_phrases']) {
 			$fields['phrase/code']['label'] = ze\admin::phrase('Phrase:');
-		
 		} else {
 			$mrg = [
 				'language_english_name' => $languages[ze::$defaultLang]['english_name'],
@@ -97,9 +123,13 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			$fields['phrase/code']['label'] = ze\admin::phrase('Phrase / [[language_english_name]]:', $mrg);
 			
 			$fields['phrase/code']['note_below'] = 
-				ze\admin::phrase('This code comes from a module or one of its plugins. In order to edit the text in [[language_english_name]]
+				ze\admin::phrase('This phrase comes from a module or one of its plugins. In order to edit the text in [[language_english_name]]
 							please go to the [[module_display_name]] and inspect its plugins\' settings, their frameworks, 
 							and possibly the module\'s program code.', $mrg);
+		}
+		
+		if (!$box['key']['is_code']) {
+			unset($box['tabs']['phrase']['fields']['phrase_codes_info']);
 		}
 		
 		if ($box['key']['is_html']) {
@@ -108,10 +138,21 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 			$fields['phrase/code']['editor_options'] = [
 				'height' => 150
 			];
+			
+			if (!$languages[ze::$defaultLang]['translate_phrases']) {
+				$box['tabs']['phrase']['fields']['code']['notices_below'] = [
+					'html_detected' => [
+						'type' => 'information',
+						'message' => ze\admin::phrase('This phrase uses HTML')
+					]
+				];
+			}
 		}
 		
 		$ord = 4;
 		$hasSomePerms = false;
+		$proFeaturesModuleIsRunning = ze\module::isRunning('zenario_pro_features');
+		
 		foreach ($languages as $language) {
 			if ($box['key']['is_code'] || $language['translate_phrases']) {
 		
@@ -127,30 +168,49 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 					($hasPerms = ze\priv::onLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $language['id']))
 				 || $hasSomePerms;
 				
+				$box['tabs']['phrase']['fields']['grouping_' . $language['id']] = [
+					'type' => 'grouping',
+					'ord' => ++$ord,
+					'grouping_wrapper_is_main_scroll' => true
+				];
+				
 				$box['tabs']['phrase']['fields'][$language['id']] =
 					[
 						'class_name' => 'zenario_common_features',
-						'ord' => $ord,
+						'ord' => ++$ord,
 						'label' => $language['english_name']. ':',
 						'type' => 'textarea',
 						'readonly' => !$hasPerms,
-						'rows' => '4',
-						'value' => $phraseValue
-						];
+						'rows' => 4,
+						'value' => $phraseValue,
+						'css_class' => 'textarea_with_slider_on_the_side',
+						'grouping' => 'grouping_' . $language['id']
+					];
+				
+				if ($box['key']['is_code']) {
+					$box['tabs']['phrase']['fields'][$language['id']]['rows'] = 1;
+				}
 		
+				//If the Pro Features module is running, it will add a "Translate with Google" button.
+				//Leave an ordinal gap here.
+				if ($proFeaturesModuleIsRunning) {
+					$ord++;
+				}
+				
 				$box['tabs']['phrase']['fields']['protect_flag_'. $language['id']] =
 					[
 						'class_name' => 'zenario_common_features',
-						'ord' => $ord + 1,
+						'ord' => ++$ord,
 						'label' => 'Protect',
 						'type' => 'checkbox',
 						'readonly' => !$hasPerms,
 						'visible_if' => 'zenarioAB.editModeOn()',
 						'value' => $protectValue,
-						'side_note' =>
-						"If importing a CSV/Excel translation file, prevent this phrase from being overwritten."
+						'format_onchange' => true,
+						'onoff' => true,
+						'side_note' => ze\admin::phrase("If importing a CSV/Excel translation file, prevent this phrase from being overwritten."),
+						'grouping' => 'grouping_' . $language['id']
 					];
-				$ord += 2;
 				
 				if ($box['key']['is_html']) {
 					$box['tabs']['phrase']['fields'][$language['id']]['type'] = 'editor';
@@ -168,31 +228,27 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		
 		//Try to set the Module's name
 		if ($box['key']['module_class_name']) {
-			if ($box['tabs']['phrase']['fields']['module']['value'] = ze\module::id($box['key']['module_class_name'])) {
-				$box['tabs']['phrase']['fields']['module']['readonly'] = true;
+			if ($box['tabs']['phrase']['fields']['module']['value'] = $box['key']['module_class_name'] . ' (' . ze\module::getModuleDisplayNameByClassName($box['key']['module_class_name']) . ')') {
 			} else {
 				//If this is a phrase for a Module that doesn't exist any more, don't let it be edited
-				unset($box['tabs']['phrase']['fields']['module']['pick_items']);
-				$box['tabs']['phrase']['fields']['module']['type'] = 'text';
 				$box['tabs']['phrase']['fields']['module']['value'] = $box['key']['module_class_name'];
 				unset($box['tabs']['phrase']['edit_mode']);
 			}
 		
 		//Any unclaimed phrases should be marked against the Common Features Module
 		} else {
-			$box['tabs']['phrase']['fields']['module']['value'] = ze\module::id('zenario_common_features');
+			$box['tabs']['phrase']['fields']['module']['value'] = ze\module::getModuleDisplayNameByClassName('zenario_common_features');
 		}
 		
 		$box['tabs']['phrase']['fields']['code']['value'] = $box['key']['code'];
 		
-		// If this a phrase code (e.g. _HELLO_WORLD) or a ze\lang::phrase (e.g. Hello World)
-		if ($box['key']['is_code']) {
-			$box['title'] = ze\admin::phrase('Editing the phrase "[[code]]".', $box['key']);			
+		$phrase = 'Editing a phrase';
 		
-		// If this is a ze\lang::phrase (not a code)
-		} else {
-			$box['title'] = ze\admin::phrase('Editing a phrase');
+		if (ze\lang::count() > 1) {
+			$phrase .= ' (all languages)';
 		}
+		
+		$box['title'] = ze\admin::phrase($phrase);
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

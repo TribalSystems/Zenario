@@ -1,0 +1,176 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__languages:
+    panels:
+        phrases_code_based:
+            title: Code-based phrases
+            php: true
+            db_items:
+                table: >
+                    [[DB_PREFIX]]visitor_phrases AS vp
+                    INNER JOIN [[DB_PREFIX]]languages AS l
+                    ON vp.language_id = l.id
+                id_column: vp.id
+                where_statement: |
+                    WHERE vp.language_id = [[FOCUSED_LANGUAGE_ID]]
+                    AND vp.code LIKE "\_%"
+                    AND vp.code != '__LANGUAGE_FLAG_FILENAME__'
+            quick_filter_buttons:
+                module:
+                    label: 'Phrases from all modules'
+                all_module:
+                    parent: module
+                    label: 'Phrases from all modules'
+                    column: module_name
+                    value: ''
+                    remove_filter: true
+            columns:
+                code:
+                    title: Phrase code
+                    searchable: true
+                    db_column: vp.code
+                    show_by_default: true
+                    width: large
+                is_html:
+                    title: Is HTML
+                    db_column: vp.is_html
+                    format: yes_or_no
+                    yes_phrase: HTML
+                    no_phrase: Plain text
+                    show_by_default: false
+                    width: small
+                module_name:
+                    title: Source module name
+                    db_column: vp.module_class_name
+                    format: module_class_name
+                    show_by_default: true
+                    width: large
+                    searchable: true
+                    ascii_only: true
+                module_class_name:
+                    db_column: vp.module_class_name
+                seen_in_visitor_mode:
+                    title: Seen in visitor mode
+                    db_column: vp.seen_in_visitor_mode
+                    format: yes_or_no
+                    yes_phrase: Seen
+                    no_phrase: Unseen
+                    show_by_default: false
+                    disallow_sorting: true
+                    width: small
+                seen_at:
+                    db_column: |
+                        IF (vp.seen_at_content_id IS NULL, NULL, CONCAT(vp.seen_at_content_type, '_', vp.seen_at_content_id))
+                    title: Seen at
+                    show_by_default: true
+                    width: large
+                    disallow_sorting: true
+                    item_link: content_item_or_url
+                first_seen_by_visitor:
+                    title: First seen in visitor mode
+                    db_column: vp.first_seen_by_visitor
+                    format: date
+                    show_by_default: true
+                    disallow_sorting: true
+                    values:
+                        unknown: Unknown
+            default_sort_column: code
+            item:
+                name: Phrase
+                names: Phrases
+                css_class: phrases
+            collection_buttons:
+                export_phrases_dropdown:
+                    label: Export phrases
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes
+                import_phrases:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Import phrases
+                    tooltip: |
+                        Import phrases from an Excel or CSV file.
+                        
+                        The Excel or CSV file that you provide contain the ISO code for the language that you are trying to update, and must be in the correct format.
+                    upload:
+                        fileExt: '*.csv;*.ods;*.xls;*.xlsx'
+                        fileDesc: CSV, Excel or OpenDocument spreadsheet files
+                        request:
+                            import_phrases: "1"
+                reimport_phrases:
+                    label: Re-import phrases from config files
+                    hide_in_select_mode: Yes
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to re-import all code-based phrases phrases from their config files?
+                        
+                                This will re-import phrases from the CSV files in each module's "phrases" directory.
+                        
+                                Existing phrases that are marked as "protected" will not be overwritten, but all non-protected phrases will be overwritten.
+                            button_message: Re-import
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            reimport_phrases: 1
+                help:
+                    label: Help
+                    help:
+                        message: |
+                            Code-based phrases are the essential phrases used across Zenario.
+                            
+                            This panel lists all of the code-based phrases that exist on your site. Code-based phrases are added to Zenario by a phrase file in a module's "phrases" folder, e.g. a Spanish file would be called "es.csv.php".
+                            
+                            A phrase needs to be viewed by a visitor to be added to this panel.
+                            
+                            If your site is multilingual, then a phrase's translation will be displayed on the page in the corresponding language. Untranslated phrases will be displayed in the original language, followed by "(untranslated)".
+                            
+                            Standard phrases can be found on another Organizer panel (below).
+            item_buttons:
+                edit_dropdown:
+                    label: Edit phrase...
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes
+                edit:
+                    ord: 0
+                    priv: _PRIV_VIEW_LANGUAGE
+                    parent: edit_dropdown
+                    label: Edit phrase (all languages)
+                    admin_box:
+                        path: zenario_phrase
+                
+                mark_as_unseen_plain_text:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Mark as unseen
+                    multiple_select: true
+                    visible_if_for_all_selected_items: |
+                        !item.is_html
+                    visible_if_for_any_selected_items: |
+                        item.seen_in_visitor_mode
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to clear the record of where the phrase "[[code]]" was first seen?
+                            multiple_select_message: |
+                                Are you sure you wish to clear the record of where the [[item_count]] selected phrases were first seen?
+                            button_message: Mark as unseen
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_unseen: 1
+                mark_as_unseen_html:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Mark as unseen
+                    multiple_select: true
+                    visible_if_for_any_selected_items: |
+                        item.is_html && item.seen_in_visitor_mode
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to clear the record of where the selected phrase was first seen?
+                            multiple_select_message: |
+                                Are you sure you wish to clear the record of where the [[item_count]] selected phrases were first seen?
+                            button_message: Mark as unseen
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_unseen: 1

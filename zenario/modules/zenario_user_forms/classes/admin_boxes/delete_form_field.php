@@ -47,12 +47,17 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 				
 				// If no responses delete field normally
 				if ($responseCount <= 0) {
+					$box['max_height'] = 150;
+					
 					$fields['details/warning_message']['snippet']['html'] = 
-						'<p>' . ze\admin::phrase('There are no user responses for this field. Delete this form field?') . '</p>';
+						'<p>' . ze\admin::phrase('There are no user responses for this field.') . '<br /><br />' . ze\admin::phrase('Delete this form field?') . '</p>';
 				} else {
 					$fields['details/delete_field_options']['hidden'] = false;
 					
 					$responsesTransferFields = json_decode($values['details/dummy_field'], true);
+					if (!is_array($responsesTransferFields) || empty($responsesTransferFields)) {
+						$responsesTransferFields = [];
+					}
 					$responsesTransferFieldsCount = count($responsesTransferFields);
 					
 					// If no compatible fields disable migration and show message but otherwise delete normally
@@ -65,7 +70,8 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 								'This field has [[count]] responses recorded against it, but there are no fields of the same type on the form. If you want to migrate this fields data to another field then create a new field of type "[[type]]".',
 								$responseCount,
 								['count' => $responseCount, 'type' => $box['key']['field_english_type']]
-							) . 
+							) . '</p><br /><p>' . 
+							ze\admin::phrase('(The response may or may not contain data.)') . 
 							'</p>';
 						
 						$fields['details/delete_field_options']['values']['delete_field_but_migrate_data']['disabled'] = true;
@@ -125,5 +131,4 @@ class zenario_user_forms__admin_boxes__delete_form_field extends ze\moduleBaseCl
 		$fields['details/data_migration_warning_message']['hidden'] = ($responseCount == 0);
 		
 	}
-	
 }

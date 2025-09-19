@@ -35,8 +35,8 @@ zenario_slot_insert_replace:
                     type: information
                     #html: true
                     message: >
-                        A nest contains a number of slides, and those slides contain plugins.
-                        A nest can appear with one tab per slide, with navigation arrows, or as an accordion.
+                        A nest contains one or more slides, and those slides contain plugins.
+                        When showing multiple slides, they can appear with tab-links, with navigation arrows, or as an accordion.
                         Useful for creating visitor interaction.
                 insert_nest_on_layout_layer: *nest_note
                 insert_slideshow_on_item_layer: &slideshow_note

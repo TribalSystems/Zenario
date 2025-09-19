@@ -485,10 +485,8 @@ class zenario_content_list extends ze\moduleBaseClass {
 	public function init() {
 	
 		//To add Toastr library if permalink is set
-		if (!ze::isAdmin()) {
-			if($this->setting('show_permalink')) {
-				$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
-			}
+		if ($this->setting('show_permalink')) {
+			$this->requireJSLibsForToasts();
 		}
 		
 		//To add Zip settings

@@ -489,7 +489,7 @@ zenario.lib(function(
 		return URLBasePath +
 			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
 			'&path=' + encodeURIComponent(path) +
-			'&method_call=' + (mode == 'tas'? 'typeaheadSearchAJAX' : (mode == 'format' || mode == 'validate' || mode == 'save'? mode : 'fill') + 'VisitorTUIX') +
+			'&method_call=' + (mode == 'tas'? 'typeaheadSearchAJAX' : (mode == 'format' || mode == 'validate' || mode == 'save' || mode == 'export'? mode : 'fill') + 'VisitorTUIX') +
 			zenario.urlRequest(requests);
 	};
 	
@@ -1177,11 +1177,6 @@ zenario.loadLibrary = function(path, callback, alreadyLoaded, stylesheet) {
 };
 
 
-//Lazy-load the datepicker library when needed
-zenario.loadDatePicker = function(async) {
-	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js?v=' + zenarioCSSJSVersionNumber,
-		async, $.datepicker);
-};
 //Lazy-load the autocomplete library when needed
 zenario.loadAutocomplete = function(async) {
 	return zenario.loadLibrary(URLBasePath + 'zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.autocomplete.min.js?v=' + zenarioCSSJSVersionNumber,
@@ -1613,7 +1608,7 @@ zenario.linkToItem = function(cID, cType, request, linkViaAdminWelcomePage) {
 				canonicalURL = chopLeft(canonicalURL, pos);
 			}
 			
-			if (request) {
+			if (!_.isEmpty(request)) {
 				return canonicalURL + '?' + zenario.urlRequest(request).substr(1);
 			} else {
 				return canonicalURL;
@@ -2030,17 +2025,6 @@ zenario.setActiveClass = function(id) {
 };
 
 
-zenario.unpackAndMerge = function(target, string) {
-	var i,
-		a = string.split('~'),
-		m = a.length - 1;
-	
-	for (i = 0; i < m; i += 2) {
-		target[a[i]] = a[i+1].replace(/`s/g, "~").replace(/`t/g, "`");
-	}
-};
-
-
 //As per https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
 zenario.offerDownload = function(filename, body) {
 	
@@ -2074,18 +2058,68 @@ zenario.csvEscape = function(string) {
 };
 
 
-zenario.hypEscape = function(string) {
-	return string.replace(/`/g, "`t").replace(/\-/g, "`h").replace(/\:/g, "`c").replace(/\n/g, "`n").replace(/\r/g, "`r").replace(/\&/g, "`a").replace(/\"/g, "`q").replace(/\</g, "`l").replace(/\>/g, "`g");
+//Packing/unpacking functions for passing variables and shallow objects into strings.
+
+zenario.swig = function(string) {
+	return ('' + string)
+		.replace(/~/g,	"~s")
+		.replace(/\-/g,	"~h")
+		.replace(/`/g,	"~t")
+		.replace(/\:/g,	"~c")
+		.replace(/\n/g,	"~n")
+		.replace(/\r/g,	"~r")
+		.replace(/\'/g,	"~q")
+		.replace(/\"/g,	"~d")
+		.replace(/\,/g,	"~m");
 };
 
-zenario.uneschyp = function(string) {
+zenario.deswig = function(string) {
 	
-	if (string == '`1') {
+	//Special case for the logic in the ze\escape::flag() function. We want to be able to pass a value of
+	//true for a flag with a name but no value.
+	if (string == '~1') {
 		return true;
-	} else {
-		return string.replace(/`h/g, "-").replace(/`c/g, ":").replace(/`n/g, "\n").replace(/`r/g, "\r").replace(/`a/g, '&').replace(/`q/g, '"').replace(/`l/g, '<').replace(/`g/g, '>').replace(/`t/g, "`");
 	}
+	
+	return string
+		.replace(/~h/g, '-')
+		.replace(/~t/g, ':')
+		.replace(/~c/g, ':')
+		.replace(/~n/g, "\n")
+		.replace(/~r/g, "\r")
+		.replace(/~q/g, "'")
+		.replace(/~d/g, '"')
+		.replace(/~m/g, ',')
+		.replace(/~s/g, '~');
 };
+
+zenario.pack = function(json) {
+	var output = [], k, v;
+	foreach (json as k => v) {
+		output.push(zenario.swig(k) + '-' + zenario.swig(v));
+	}
+	return output.join('-');
+};
+
+zenario.unpack = function(string, output) {
+	
+	if (!defined(output)) {
+		output = {};
+	}
+	
+	var i,
+		a = string.split('-'),
+		m = a.length - 1;
+	
+	for (i = 0; i < m; i += 2) {
+		output[zenario.deswig(a[i])] = zenario.deswig(a[i+1]);
+	}
+	
+	return output;
+};
+
+
+
 
 //Given a message that might have flags in it, parse the flags then strip them from the message.
 zenario.splitFlagsFromMessage = function(resp) {
@@ -2110,7 +2144,7 @@ zenario.splitFlagsFromMessage = function(resp) {
 		if (headers.length) {
 			for (i = 1; i < headers.length; i += 3) {
 				flagName = headers[i].toUpperCase();
-				flagValue = zenario.uneschyp($.trim(headers[i + 1]));
+				flagValue = zenario.deswig($.trim(headers[i + 1]));
 				
 				resp.flags[flagName] = flagValue;
 			}
@@ -2132,13 +2166,13 @@ zenario.splitFlagsFromMessage = function(resp) {
 	if (resp.responseText = resp.responseText || '') {
 		//Strip the flags off of from start
 		while ((flag = resp.responseText.split(/^(\<\!--|\<x-zenario-flag value\=\")([^\:-]*?)(|\:([^\:-]*?))(\"\/\>|--\>)/)) && (flag.length > 1)) {
-			resp.flags[flag[2].toUpperCase()] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
+			resp.flags[flag[2].toUpperCase()] = !defined(flag[4])? true : zenario.deswig(flag[4]);
 			resp.responseText = flag[6];
 		}
 	
 		//Strip the flags off from the end
 		while ((flag = resp.responseText.split(/(\<\!--|\<x-zenario-flag value\=\")([^\:-]*?)(|\:([^\:-]*?))(\"\/\>|--\>)$/)) && (flag.length > 1)) {
-			resp.flags[flag[2].toUpperCase()] = !defined(flag[4])? true : zenario.uneschyp(flag[4]);
+			resp.flags[flag[2].toUpperCase()] = !defined(flag[4])? true : zenario.deswig(flag[4]);
 			resp.responseText = flag[0];
 		}
 	}
@@ -2398,8 +2432,8 @@ zenario.off = function(slotName, containerId, eventName) {
 	}
 };
 
-zenario.sendSignal = function(signalName, data) {
-
+zenario.sendSignal = function(signalName, data, callingLib) {
+	
 	//Dont' allow infinite loops, or anything that's not been registered
 	if (signalsInProgress[signalName]
 	 || !signalHandlersBySlot[signalName]) {
@@ -2420,7 +2454,7 @@ zenario.sendSignal = function(signalName, data) {
 			if (containers = slot.events[signalName]) {
 				foreach (containers as containerId => handlers) {
 					foreach (handlers as hi => handler) {
-						returnValue = handler(data);
+						returnValue = handler(data, callingLib);
 	
 						if (defined(returnValue)) {
 							returnValues.push(returnValue);
@@ -2440,6 +2474,28 @@ zenario.sendSignal = function(signalName, data) {
 
 zenario.hasInlineTag = function(html) {
 	return html.match(/\<\s*(link|script|style)/i);
+};
+
+
+zenario.currentRequests = function() {
+	
+	var requests,
+		conductorSlot = zenario_conductor.getSlot();
+	
+	if (conductorSlot && conductorSlot.exists) {
+		requests = zenario_conductor.request(conductorSlot, 'refresh');
+	} else {
+		requests = zenarioA.importantGetRequests;
+	}
+	
+	return requests;
+};
+
+zenario.reloadPage = function(linkViaAdminWelcomePage) {
+	
+	var requests = zenario.currentRequests();
+	
+	return zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests, linkViaAdminWelcomePage));
 };
 
 
@@ -2476,13 +2532,9 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	resp = zenario.splitFlagsFromMessage(resp);
 	flags = resp.flags;
 	
+	
 	//Allow modules to reject the AJAX reload and request an entire page reload
 	forceReloadHref = flags.FORCE_PAGE_RELOAD;
-	
-	//Allow the AJAX request to specifically override the default recordInURL setting by sending a flag.
-	if (defined(flags.RECORD_IN_URL)) {
-		recordInURL = engToBoolean(flags.RECORD_IN_URL);
-	}
 	
 	//Don't try and do an AJAX reload if text has <script> or <styles> tags in
 		//However, if this was a POST submission, ignore this check as we don't want to re-submit the post data
@@ -2508,15 +2560,26 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 		}
 	}
 	
+	
+	//Check if the current user has logged in/logged out as an extranet user/administrator since the
+	//page was generated. Trigger a page reload if so.
+	if (1 * zenario.userId != (1 * flags.USER_ID || 0)
+	 || 1 * zenario.adminId != (1 * flags.ADMIN_ID || 0)) {
+		zenario.reloadPage();
+		return false;
+	}
+	
+	
+	//Allow the AJAX request to specifically override the default recordInURL setting by sending a flag.
+	if (defined(flags.RECORD_IN_URL)) {
+		recordInURL = engToBoolean(flags.RECORD_IN_URL);
+	}
+	
 	if (flags.PAGE_TITLE) {
 		document.title = flags.PAGE_TITLE;
 	}
 	
-	if (dumps = flags.DUMPS) {
-		if (dumps = JSON.parse(dumps)) {
-			zenario.dumps(dumps);
-		}
-	}
+	zenario.showDumpsFromFlags(flags);
 	
 	//Watch out for the "In Edit Mode" tag from modules in their edit modes
 	beingEdited = flags.IN_EDIT_MODE;
@@ -2692,6 +2755,15 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, resp, additio
 	});
 	
 	ocb.poke();
+};
+
+zenario.showDumpsFromFlags = function(flags) {
+	var dumps;
+	if (dumps = flags.DUMPS) {
+		if (dumps = JSON.parse(dumps)) {
+			zenario.dumps(dumps);
+		}
+	}
 };
 
 zenario.recordRequestsInURL = function(slotName, requests) {
@@ -3238,6 +3310,42 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited, firstLoad) 
 		});
 	}
 	
+	//Add a quick and easy way to create a hide/show toggle
+	$(path + '[data-z-toggle-for]').each(function(i, el) {
+		var $toggle = $(el),
+			contentId = $toggle.data('z-toggle-for'),
+			domContent = get(contentId),
+			$content = $(domContent);
+		
+		//console.log('adding click event for', contentId);
+		
+		$toggle.click(function() {
+			if ($content.is(':hidden')) {
+				$content.slideDown(200);
+				$toggle.addClass('z_toggle_open').removeClass('z_toggle_closed');
+				//content.show().css('height', 0).animate({ height: content.get(0).scrollHeight }, 200);
+			} else {
+				$content.slideUp(200);
+				$toggle.addClass('z_toggle_closed').removeClass('z_toggle_open');
+				//content.animate({ height: 0 }, 200, function() {
+				//	$(this).hide();
+				//});
+				
+			}
+			
+			//const icon = $(this).find('i');
+			//icon.toggleClass('fa-chevron-down fa-chevron-up');
+		});
+	});
+	
+	$(path + "a[rel^='colorbox_no_arrows']").colorbox({
+		title: function() { return $(this).attr('data-box-title'); },
+		className: function() { return $(this).attr('data-box-className'); },
+		maxWidth: '100%',
+		maxHeight: '100%',
+		rel: false
+	});
+	
 	if (zenario.browserIsIE(9)) {
 		$(path + 'input[placeholder]').placeholder();
 		$(path + 'textarea[placeholder]').placeholder();
@@ -3245,7 +3353,6 @@ zenario.addJQueryElements = function(path, adminFacing, beingEdited, firstLoad) 
 	
 	//jQuery datepickers (plugin frameworks version)
 	$(path + 'input.jquery_datepicker').each(function(i, el) {
-		zenario.loadDatePicker();
 		
 		//Flexible Form functionality for date pickers that degrade gracefully into three select lists
 		//if JavaScript is not enabled.
@@ -3338,7 +3445,6 @@ zenario.clearDateField = function(el) {
 	}
 	
 	if (el) {
-		zenario.loadDatePicker();
 		$(el).datepicker('hide');
 		
 		el.value = '';
@@ -3396,7 +3502,6 @@ zenario.formatDate = function(date, showTime, format) {
 			}
 		}
 		
-		zenario.loadDatePicker();
 		if (format) {
 			out = $.datepicker.formatDate(format, date);
 		

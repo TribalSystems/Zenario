@@ -77,7 +77,7 @@ zenario.on('', '', 'eventSetOrganizerIcons', function() {
 			_$div = zenarioT.div;
 	
 		foreach (times as ti) {
-			times[ti] = zenario.uneschyp(times[ti]);
+			times[ti] = zenario.deswig(times[ti]);
 		}
 	
 	

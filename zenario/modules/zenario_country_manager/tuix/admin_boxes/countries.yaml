@@ -8,6 +8,7 @@ zenario_country_manager__country:
         css_class: zenario_country_manager_country
         label: |
             Country ID:
+    max_height: 300
     tabs:
         details:
             label: Details
@@ -25,6 +26,3 @@ zenario_country_manager__country:
                 name:
                     label: 'Country name:'
                     type: text
-                update_phrase:
-                    label: 'When saving, copy the name to localised phrases. The name can then be translated into other languages.'
-                    type: checkbox

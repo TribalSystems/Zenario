@@ -101,7 +101,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	//Show Growl message if saved changes
 	if (thus.changesSaved) {
 		thus.changesSaved = false;
-		zenarioA.notification(phrase.changesSaved);
+		zenarioT.notification(phrase.changesSaved);
 	}
 };
 

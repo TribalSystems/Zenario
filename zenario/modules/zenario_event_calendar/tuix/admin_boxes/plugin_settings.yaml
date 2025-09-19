@@ -88,9 +88,27 @@ plugin_settings:
                         name: first_day_of_week
                     type: select
                     values:
-                        Saturday: Saturday
-                        Sunday: Sunday
-                        Monday: Monday
+                        Monday:
+                            ord: 1
+                            label: Monday
+                        Tuesday:
+                            ord: 2
+                            label: Tuesday
+                        Wednesday: 
+                            ord: 3
+                            label: Wednesday
+                        Thursday:
+                            ord: 4
+                            label: Thursday
+                        Friday:
+                            ord: 5
+                            label: Friday
+                        Saturday:
+                            ord: 6
+                            label: Saturday
+                        Sunday:
+                            ord: 7
+                            label: Sunday
                     value: Monday
                     indent: 1
                 show_other_periods:
@@ -204,10 +222,10 @@ plugin_settings:
                     plugin_setting:
                         name: category
                     pick_items:
-                        path: zenario__library/panels/categories
-                        min_path: zenario__library/panels/categories
-                        max_path: zenario__library/panels/categories
-                        target_path: zenario__library/panels/categories
+                        path: zenario__content/panels/categories
+                        min_path: zenario__content/panels/categories
+                        max_path: zenario__content/panels/categories
+                        target_path: zenario__content/panels/categories
                         select_phrase: Select category...
         popout:
             label: Popup

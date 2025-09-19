@@ -20,11 +20,11 @@ plugin_settings:
                     plugin_setting:
                         name: show_labels
                     grouping: options
-                    label: "Show labels"
+                    label: "Show field labels"
                     type: checkbox
                     value: 0
                     format_onchange: true
-                    side_note: 'If this is enabled, check the "Phrases" tab to customise the label phrases.'
+                    note_below: 'If enabled, check the "Text (in code)" tab to customise the label text.'
                 show_title:
                     plugin_setting:
                         name: show_title
@@ -88,6 +88,7 @@ plugin_settings:
                     grouping: filters
                     label: "Show content item's release date"
                     type: checkbox
+                    note_below: "This information will only be displayed if the release date field is enabled for the content item's type."
                     value: 1
                     format_onchange: true
                 date_format:

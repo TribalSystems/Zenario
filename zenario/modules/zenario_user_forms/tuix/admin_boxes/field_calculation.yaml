@@ -32,7 +32,7 @@ zenario_field_calculation:
                     css_class: zenario_gp_button
                     value: ">"
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('field', get('numeric_field').value);
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('field', lib.get('numeric_field').value);
                     note_below: "You may select a text field (provided its validation is set to Number, Integer or Floating point), or to another calculated field."
                 
                 static_value:
@@ -46,14 +46,14 @@ zenario_field_calculation:
                     css_class: zenario_gp_button
                     value: ">"
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('static_value', get('static_value').value);
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('static_value', lib.get('static_value').value);
                 
                 operation_addition:
                     grouping: left_column
                     type: button
                     css_class: zenario_gp_button
                     value: "+"
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_addition');
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('operation_addition');
                     pre_field_html: |
                         <div class="title"><label>Add operator...</label></div><br />
                 operation_subtraction:
@@ -62,35 +62,35 @@ zenario_field_calculation:
                     css_class: zenario_gp_button
                     value: "-"
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_subtraction');
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('operation_subtraction');
                 operation_multiplication:
                     grouping: left_column
                     type: button
                     css_class: zenario_gp_button
                     value: "×"
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_multiplication');
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('operation_multiplication');
                 operation_division:
                     grouping: left_column
                     type: button
                     css_class: zenario_gp_button
                     value: "÷"
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('operation_division');
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('operation_division');
                 parentheses_open:
                     grouping: left_column
                     type: button
                     css_class: zenario_gp_button
                     value: (
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('parentheses_open');
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('parentheses_open');
                 parentheses_close:
                     grouping: left_column
                     type: button
                     css_class: zenario_gp_button
                     value: )
                     same_row: true
-                    onclick: zenarioO.pi.calculationAdminBoxAddSomthing('parentheses_close');
+                    onclick: zenarioO.pi.calculationAdminBoxAddSomething('parentheses_close');
                 
                 right_column:
                     type: grouping

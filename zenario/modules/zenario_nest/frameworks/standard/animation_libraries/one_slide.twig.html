@@ -1,0 +1,7 @@
+{# Use the common framework from the base nest for this. #}
+
+{% set dir = ze('', 'moduleDir', 'zenario_abstract_nest', 'frameworks/common/', false, true) %}
+
+{% if dir %}
+	{% include dir ~ 'framework.twig.html' %}
+{% endif %}

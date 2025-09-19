@@ -155,10 +155,10 @@ full_slot:
         
         replace_reusable_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Override with a plugin on this content item...
-            label_like4like: Override with a different plugin on this content item...
-            label_replace: Replace with a plugin on this content item...
-            label_replace_like4like: Replace with a different plugin on this content item...
+            label: Override with a plugin
+            label_like4like: Override with a different plugin
+            label_replace: Replace with a plugin
+            label_replace_like4like: Replace with a different plugin
             page_modes:
                 edit: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -177,10 +177,10 @@ full_slot:
         replace_nest_on_item_layer:
             hidden: true    # N.b. this will be unhidden if a nest module is running
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Override with a nest on this content item...
-            label_like4like: Override with another nest on this content item...
-            label_replace: Replace with a nest on this content item...
-            label_replace_like4like: Replace with another nest on this content item...
+            label: Override with a nest
+            label_like4like: Override with another nest
+            label_replace: Replace with a nest
+            label_replace_like4like: Replace with another nest
             page_modes:
                 edit: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -199,10 +199,10 @@ full_slot:
         replace_slideshow_on_item_layer:
             hidden: true    # N.b. this will be unhidden if a slideshow module is running
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Override with a slideshow on this content item...
-            label_like4like: Override with another slideshow on this content item...
-            label_replace: Replace with a slideshow on this content item...
-            label_replace_like4like: Replace with another slideshow on this content item...
+            label: Override with a slideshow
+            label_like4like: Override with another slideshow
+            label_replace: Replace with a slideshow
+            label_replace_like4like: Replace with another slideshow
             page_modes:
                 edit: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -230,8 +230,8 @@ full_slot:
         
         replace_reusable_on_layout_layer:
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Replace with a plugin on this layout...
-            label_like4like: Replace with a different plugin on this layout...
+            label: Replace with a plugin on this layout
+            label_like4like: Replace with a different plugin on this layout
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -245,8 +245,8 @@ full_slot:
         replace_nest_on_layout_layer:
             hidden: true    # N.b. this will be unhidden if a nest module is running
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Replace with a nest on this layout...
-            label_like4like: Replace with a different nest on this layout...
+            label: Replace with a nest on this layout
+            label_like4like: Replace with a different nest on this layout
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -260,8 +260,8 @@ full_slot:
         replace_slideshow_on_layout_layer:
             hidden: true    # N.b. this will be unhidden if a slideshow module is running
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Replace with a slideshow on this layout...
-            label_like4like: Replace with a different slideshow on this layout...
+            label: Replace with a slideshow on this layout
+            label_like4like: Replace with a different slideshow on this layout
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -283,7 +283,8 @@ full_slot:
                     zenarioA.showSlotOptionsInFAB(slotName, 're_move_place', 'edit');
                 }
                 return false;
-            label: Replace this ~plugin~ on this content item...
+            label: Override this ~plugin~ on this content item...
+            label_replace: Replace with...
         
         replace_fab_layout_layer:
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
@@ -291,7 +292,7 @@ full_slot:
                 layout: true
             visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 're_move_place', 'layout');
             onclick: return zenarioA.showSlotOptionsInFAB(slotName, 're_move_place', 'layout');
-            label: Replace this ~plugin~ on this layout...
+            label: Replace on this layout with...
         
         remove_from_item_layer:
             page_modes:

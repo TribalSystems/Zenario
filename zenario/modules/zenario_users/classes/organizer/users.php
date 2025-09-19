@@ -202,7 +202,11 @@ class zenario_users__organizer__users extends zenario_users {
 		} elseif ($refinerName == 'smart_group') {
 			$groupDetails = ze\smartGroup::details($refinerId);
 				
-			$panel['title'] = ze\admin::phrase('Members of smart group "[[name]]"', $groupDetails);
+			if ($groupDetails['intended_usage'] == 'smart_newsletter_group') {
+				$panel['title'] = ze\admin::phrase('Members of smart newsletter group "[[name]]"', $groupDetails);
+			} else {
+				$panel['title'] = ze\admin::phrase('Members of smart group "[[name]]"', $groupDetails);
+			}
 			$panel['no_items_message'] = ze\admin::phrase('This smart group has no members.');
 		}
 	

@@ -85,7 +85,10 @@ class userAdm {
 		//Else use screen name (if the feature is enabled and a screen name is entered)
 		//Otherwise, use "User", to which a number will be added
 		
-		if ($firstName) {
+		if (\ze::setting('user_use_screen_name') && $details['screen_name']) {
+			$baseIdentifier = $details['screen_name'];
+		
+		} elseif ($firstName) {
 			if ($lastName) {
 				$baseIdentifier =
 					mb_substr($firstName, 0, (int) \ze::setting('user_chars_from_first_name') ?: 99).
@@ -97,8 +100,6 @@ class userAdm {
 		} elseif ($lastName) {
 			$baseIdentifier =
 				mb_substr($lastName, 0, (int) \ze::setting('user_chars_from_name') ?: 99);
-		} elseif (\ze::setting('user_use_screen_name') && $details['screen_name']) {
-			$baseIdentifier = $details['screen_name'];
 		} else {
 			// Check if this is a user or contact.
 			// Add their record ID to the base identifier.

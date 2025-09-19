@@ -24,13 +24,11 @@ INSERT INTO `[[DB_PREFIX]]modules` VALUES
  (11,'zenario_language_picker','zenario_language_picker','Language Picker','Community','pluggable','select_list','zenario_language_picker',1,'',0,0,0,1,'module_running',0),
  (12,'zenario_menu_responsive_push_pull','zenario_menu_responsive_push_pull','Menu for Mobile with Push-Pull','Community','pluggable','standard','zenario_menu_responsive_push_pull',1,'',0,0,0,1,'module_running',0),
  (13,'zenario_slideshow','zenario_plugin_nest','Slideshow','Community','pluggable','standard','zenario_slideshow',1,'',0,0,0,0,'module_running',0),
- (14,'zenario_ajax_nest','zenario_plugin_nest','Ajax Nest','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
+ (14,'zenario_nest','zenario_plugin_nest','Nest','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
  (15,'zenario_copyright','zenario_copyright','Copyright','Community','pluggable','standard','zenario_copyright',1,'',0,0,0,1,'module_running',0),
  (16,'zenario_document_container','zenario_document_container','Document Container','Community','pluggable','standard','zenario_document_container',1,'',0,0,0,1,'module_running',0),
  (17,'zenario_user_forms','zenario_user_forms','Form Container','Pro','management','standard','zenario_user_forms',1,'',0,0,0,1,'module_running',0),
- (18,'zenario_nest','zenario_plugin_nest','Nest','Community','pluggable','standard','zenario_plugin_nest',1,'',0,0,0,0,'module_running',0),
- (19,'zenario_ctype_news','zenario_ctype_news','Content Type News','Community','content_type','','zenario_ctype_news',0,'',0,0,0,0,'module_running',0),
- (20,'zenario_advanced_search','zenario_advanced_search','Advanced Search','Community','content_type','standard','zenario_advanced_search',1,'',0,0,0,1,'module_running',0);
+ (18,'zenario_advanced_search','zenario_advanced_search','Advanced Search','Community','content_type','standard','zenario_advanced_search',1,'',0,0,0,1,'module_running',0);
 ALTER TABLE `[[DB_PREFIX]]modules` ENABLE KEYS;
 
 
@@ -54,28 +52,28 @@ INSERT INTO `[[DB_PREFIX]]plugin_instances` VALUES
  (21,'Breadcrumbs',3,0,'',0,'','standard','',0,0),
  (22,'Masthead, second page',2,0,'',0,'','image_then_title_then_text','banner_masthead',0,0),
  (29,'News list for home page',7,0,'',0,'','standard','',0,0),
- (30,'Advanced Search',20,0,'',0,'','standard','',0,0);
+ (30,'Advanced Search',18,0,'',0,'','standard','',0,0);
 ALTER TABLE `[[DB_PREFIX]]plugin_instances` ENABLE KEYS;
 
 
 ALTER TABLE `[[DB_PREFIX]]nested_plugins` DISABLE KEYS;
 INSERT INTO `[[DB_PREFIX]]nested_plugins` VALUES 
- (1,4,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (2,4,1,1,9,'show',2,'image_then_title_then_text','align_right',0,0,0,0,0,0,0,0,60,'','','','','Banner','public','any',0,'','','','',1),
- (3,4,1,2,3,'show',11,'select_list','align_right',0,0,0,0,0,0,0,0,60,'','','','','Language Picker','public','any',0,'','','','',1),
- (4,5,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (5,5,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,60,'','','','','slide-1.jpg','public','any',0,'','','','',1),
- (6,5,2,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 2','public','any',0,'','','','',1),
- (7,5,2,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,60,'','','','','slide-2.jpg','public','any',0,'','','','',1),
- (10,8,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (11,8,1,1,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Design Service','public','any',0,'','','','',1),
- (12,8,1,2,4,'show',2,'image_then_title_then_text','animated_child_2',0,0,0,0,0,0,0,0,60,'','','','','Banner: Development Service','public','any',0,'','','','',1),
- (13,8,1,3,4,'show',2,'image_then_title_then_text','animated_child_3',0,0,0,0,0,0,0,0,60,'','','','','Banner: Support Service','public','any',0,'','','','',1),
- (14,9,1,0,0,'show',0,'','',0,1,0,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
- (15,9,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,0,60,'','','','','Banner: a call to action...','public','any',0,'','','','',1),
- (16,9,1,2,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 1','public','any',0,'','','','',1),
- (17,9,1,3,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 2','public','any',0,'','','','',1),
- (18,9,1,4,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,0,60,'','','','','Banner: Product 3','public','any',0,'','','','',1);
+ (1,4,1,0,0,'show',0,'','',0,1,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (2,4,1,1,9,'show',2,'image_then_title_then_text','align_right',0,0,0,0,0,0,0,60,'','','','','Banner','public','any',0,'','','','',1),
+ (3,4,1,2,3,'show',11,'select_list','align_right',0,0,0,0,0,0,0,60,'','','','','Language Picker','public','any',0,'','','','',1),
+ (4,5,1,0,0,'show',0,'','',0,1,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (5,5,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,60,'','','','','slide-1.jpg','public','any',0,'','','','',1),
+ (6,5,2,0,0,'show',0,'','',0,1,0,0,0,0,0,60,'','','','','Slide 2','public','any',0,'','','','',1),
+ (7,5,2,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,60,'','','','','slide-2.jpg','public','any',0,'','','','',1),
+ (10,8,1,0,0,'show',0,'','',0,1,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (11,8,1,1,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,60,'','','','','Banner: Design Service','public','any',0,'','','','',1),
+ (12,8,1,2,4,'show',2,'image_then_title_then_text','animated_child_2',0,0,0,0,0,0,0,60,'','','','','Banner: Development Service','public','any',0,'','','','',1),
+ (13,8,1,3,4,'show',2,'image_then_title_then_text','animated_child_3',0,0,0,0,0,0,0,60,'','','','','Banner: Support Service','public','any',0,'','','','',1),
+ (14,9,1,0,0,'show',0,'','',0,1,0,0,0,0,0,60,'','','','','Slide 1','public','any',0,'','','','',1),
+ (15,9,1,1,0,'show',2,'image_then_title_then_text','',0,0,0,0,0,0,0,60,'','','','','Banner: a call to action...','public','any',0,'','','','',1),
+ (16,9,1,2,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,60,'','','','','Banner: Product 1','public','any',0,'','','','',1),
+ (17,9,1,3,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,60,'','','','','Banner: Product 2','public','any',0,'','','','',1),
+ (18,9,1,4,4,'show',2,'image_then_title_then_text','animated_child_1',0,0,0,0,0,0,0,60,'','','','','Banner: Product 3','public','any',0,'','','','',1);
 ALTER TABLE `[[DB_PREFIX]]nested_plugins` ENABLE KEYS;
 
 
@@ -111,6 +109,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_settings` VALUES
  (1,'mobile_behaviour',0,'mobile_same_image_different_size','synchronized_setting','text',NULL,0,'','remove',NULL),
  (1,'mobile_canvas',0,'fixed_height','synchronized_setting','text',NULL,0,'','remove',NULL),
  (1,'mobile_height',0,'30','synchronized_setting','text',NULL,0,'','remove',NULL),
+ (4,'animation_library',0,'one_slide','synchronized_setting','text',NULL,0,'','remove',NULL),
  (4,'text',2,'<p class=\"phone\">Call us on +44 118 324 5555</p>','synchronized_setting','translatable_html',NULL,0,'','remove',NULL),
  (4,'title_tags',2,'p','synchronized_setting','text',NULL,0,'','remove',NULL),
  (5,'advanced_behaviour',5,'none','synchronized_setting','text',NULL,0,'','remove',NULL),
@@ -168,6 +167,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_settings` VALUES
  (7,'title_tags',0,'h2','synchronized_setting','text',NULL,0,'','remove',NULL),
  (7,'translate_text',0,'','synchronized_setting','text',NULL,0,'','remove',NULL),
  (7,'width',0,'588','synchronized_setting','text',NULL,0,'','remove',NULL),
+ (8,'animation_library',0,'one_slide','synchronized_setting','text',NULL,0,'','remove',NULL),
  (8,'banner_canvas',0,'crop_and_zoom','synchronized_setting','text',NULL,0,'','remove',NULL),
  (8,'banner_height',0,'150','synchronized_setting','text',NULL,0,'','remove',NULL),
  (8,'banner_width',0,'150','synchronized_setting','text',NULL,0,'','remove',NULL),
@@ -187,6 +187,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_settings` VALUES
  (8,'title',11,'Creative Design','synchronized_setting','translatable_text',NULL,0,'','remove',NULL),
  (8,'title',12,'Skillful Development','synchronized_setting','translatable_text',NULL,0,'','remove',NULL),
  (8,'title',13,'Brilliant Support','synchronized_setting','translatable_text',NULL,0,'','remove',NULL),
+ (9,'animation_library',0,'one_slide','synchronized_setting','text',NULL,0,'','remove',NULL),
  (9,'banner_canvas',0,'crop_and_zoom','synchronized_setting','text',NULL,0,'','remove',NULL),
  (9,'banner_height',0,'380','synchronized_setting','text',NULL,0,'','remove',NULL),
  (9,'banner_width',0,'380','synchronized_setting','text',NULL,0,'','remove',NULL),
@@ -390,7 +391,7 @@ INSERT INTO `[[DB_PREFIX]]plugin_sitewide_link` VALUES
  (2,1,'Slot_Header_Logo'),
  (6,2,'Slot_Header_Menu'),
  (12,3,'Slot_Header_Mobile_Menu'),
- (20,30,'Slot_Header_Search'),
+ (18,30,'Slot_Header_Search'),
  (14,4,'Slot_Header_Top');
 ALTER TABLE `[[DB_PREFIX]]plugin_sitewide_link` ENABLE KEYS;
 

@@ -36,7 +36,7 @@ ze\cookie::startSession();
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && (ze\image::link($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, 'resize', $offset = 0, $retina = true))) {
+ && (ze\image::specialImageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;
 } else {
 	$logoURL = 'zenario/admin/images/zenario-logo-black.svg';

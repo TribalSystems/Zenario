@@ -169,7 +169,7 @@ class zenario_multiple_image_container__admin_boxes__plugin_settings extends zen
 									$image['width'] = $details[2];
 									$image['height'] = $details[3];
 									$image['label'] = ze\admin::phrase('{{1}} [{{2}} × {{3}}]', $details, false, '{{', '}}');
-									$image['image'] = 'zenario/file.php?og=1&getUploadedFileInCacheDir='. $imageId;
+									$image['image'] = 'zenario/preview_uploaded_file.php?og=1&uploadCode='. $imageId;
 									
 									$box['tabs']['links']['fields']['image_'. $imageId]['values'][$imageId] = $image;
 								}

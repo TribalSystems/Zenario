@@ -2,8 +2,9 @@
 	id="afb_tab_{{m.tabId|escape}}"
 	class="
 		{{m.current? 'current' : ''}}
-		{{m.onclick? '' : 'zenario_fab_dummy_parent_tab'}}
-		{{m.childCurrent? 'zenario_fab_child_tab_is_current' : ''}}
+		{{m.onclick? 'zenario_fab_tab_with_fields' : 'zenario_fab_tab_with_no_fields'}}
+		{{m.children? 'zenario_fab_tab_with_child' : 'zenario_fab_tab_no_child'}}
+		{{m.childCurrent? 'zenario_fab_tab_with_current_child' : ''}}
 	"
 ><div>
 	<a href="#" onclick="{{m.onclick|escape}} return false;">

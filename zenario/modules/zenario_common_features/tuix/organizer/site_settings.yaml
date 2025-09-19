@@ -55,7 +55,7 @@ zenario__administration:
                 date_and_time:
                     name: Date and time
                     desc: Set the formats used when displaying dates and times.
-                    keywords: date format date-picker format time timezone zone
+                    keywords: date format date-picker format time timezone zone day month week year calendar
                 dirs:
                     name: Backups
                     desc: >
@@ -100,7 +100,7 @@ zenario__administration:
                         Upload or remove the favicon, and the logo used on the site-disabled and
                         admin login screen.
                     keywords: >
-                        favicon mobile icon home screen icon
+                        favicon mobile icon home screen icon image og open graph
                 files_and_images:
                     name: Documents, images and file handling
                     desc: Settings for how documents, files and images are managed.
@@ -121,6 +121,10 @@ zenario__administration:
                     name: Search engine optimisation
                     desc: Settings that affect how URLs for your site are generated, and to manage an XML sitemap and robots.txt file.
                     keywords: seo mod_rewrite suffix sitemap xml robots.txt robots robot friendly url urls
+                security:
+                    name: Security
+                    desc: Select which warnings are displayed on the diagnostics screen.
+                    keywords: security
                 users:
                     name: Users
                     desc: Settings that affect extranet users & contacts.

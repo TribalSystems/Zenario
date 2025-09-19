@@ -31,12 +31,35 @@ class zenario_users__admin_boxes__group extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($groupId = (int) $box['key']['id']) {
-			$groupDetails = ze\row::get('custom_dataset_fields', ['label', 'db_column'], $groupId);
+			$groupDetails = ze\row::get('custom_dataset_fields', ['label', 'db_column', 'protected'], $groupId);
 			
 			$box['title'] = ze\admin::phrase('Editing the group "[[label]]"', $groupDetails);
 			
 			$values['details/name'] = $groupDetails['label'];
 			$values['details/db_column'] = $groupDetails['db_column'];
+			
+			if ($groupDetails['protected']) {
+				$message = 'This group is protected in the [[link_start]]dataset field settings[[link_end]]. Its code name may not be changed.';
+				
+				if (ze\priv::check('_PRIV_MANAGE_DATASET')) {
+					$dataset = ze\dataset::details('users');
+					
+					$linkStart = '<a href="organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//' . (int) $dataset['id'] . '//" target="_blank">';
+					$linkEnd = '</a>';
+					
+					$replace = ['link_start' => $linkStart, 'link_end' => $linkEnd];
+				} else {
+					$replace = ['link_start' => '', 'link_end' => ''];
+				}
+				
+				$fields['details/db_column']['readonly'] = true;
+				$fields['details/db_column']['notices_below']['protected'] = [
+					'show' => true,
+					'type' => 'information',
+					'html' => true,
+					'message' => ze\admin::phrase($message, $replace)
+				];
+			}
 			
 			# The Users and AI and machine learning modules have an optional dependency on each other.
 			# If both are running, show an option in the groups FAB to sync information abut the link between content items and this group into Qdrant payloads
@@ -118,6 +141,12 @@ class zenario_users__admin_boxes__group extends zenario_users {
 			$groupDetails['dataset_id'] = $dataset['id'];
 			$groupDetails['is_system_field'] = 0;
 			$groupDetails['ord'] = $ord;
+			
+			//Check if the group is protected. Do not allow changing the code name if it is.
+			$groupIsProtected = ze\row::get('custom_dataset_fields', 'protected', $box['key']['id']);
+			if ($groupIsProtected) {
+				unset($groupDetails['db_column']);
+			}
 		}
 		
 		$groupId = $box['key']['id'] = ze\row::set('custom_dataset_fields', $groupDetails, $box['key']['id']);

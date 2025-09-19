@@ -81,6 +81,8 @@ class zenario_extranet_change_password extends zenario_extranet {
 			return;
 		}
 		
+		$this->subSections['Logged_In'] = true;
+		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->subSections['Change_Password_Form'] = true;
 			$this->objects['Password_Requirements_Settings'] = [

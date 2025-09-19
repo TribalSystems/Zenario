@@ -123,7 +123,7 @@ zenarioSE.setTitle = function(isReadOnly) {
 };
 
 zenarioSE.insertHTML = function(html, cb, isNewTab) {
-	this.get('zenario_abtab').innerHTML = html;
+	get('zenario_abtab').innerHTML = html;
 	this.tabHidden = false;
 	
 	cb.done();
@@ -212,7 +212,7 @@ zenarioSE.size = function(refresh, resizing) {
 			);
 			
 			if (this.get('css_source')) {
-				var editor = ace.edit('css_source');
+				var editor = zenarioSE.getCodeEditor('css_source');
 				editor.resize();
 			}
 			

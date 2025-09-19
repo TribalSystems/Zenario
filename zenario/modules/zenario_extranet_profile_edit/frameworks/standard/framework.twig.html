@@ -30,11 +30,15 @@
 				
 					{% if extranet_screen_name_unconfirmed %}
 						{{extranet_openForm}}
-							<div class="screen_name_confirmed_info">{{extranet_screen_name_confirmed_info}}</div>
-							<input type="submit" value="{{'Confirm screen name'|trans}}" name="extranet_confirm_screen_name"/>
+							<div class="screen_name_info_wrap">
+								<div class="screen_name_confirmed_info">{{extranet_screen_name_confirmed_info}}</div>
+								<input type="submit" value="{{'Confirm screen name'|trans}}" name="extranet_confirm_screen_name"/>
+							</div>
 						{{extranet_closeForm}}
 					{% elseif extranet_screen_name_confirmed_message %}
-						{{extranet_screen_name_confirmed_message}}
+						<div class="screen_name_info_wrap success">
+							{{extranet_screen_name_confirmed_message}}
+						</div>
 					{% endif %}
 				
 					{% if allow_user_to_delete_their_account %}

@@ -209,7 +209,7 @@ class row {
 			}
 		}
 	
-		if ($val === null || (!$val && $d->isTime)) {
+		if ($val === null || (!$val && $d->isDateOrTime)) {
 			if ($in) {
 				$sql .= $cSql. $sign. 'NULL';
 		

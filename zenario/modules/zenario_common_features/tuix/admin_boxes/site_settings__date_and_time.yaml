@@ -70,6 +70,12 @@ site_settings:
                             label: ''
                         '[[_MONTH_SHORT_%m]] %e, %Y':
                             label: ''
+                        '[[_WEEKDAY_SHORT_%w]] %e [[_MONTH_SHORT_%m]] %y':
+                            label: ''
+                        '[[_WEEKDAY_SHORT_%w]] %e [[_MONTH_SHORT_%m]] %Y':
+                            label: ''
+                        '[[_WEEKDAY_SHORT_%w]] [[_MONTH_SHORT_%m]] %e, %Y':
+                            label: ''
                     validation:
                         required: Please enter a medium date format.
                 vis_date_format_long:
@@ -88,6 +94,10 @@ site_settings:
                         '[[_WEEKDAY_%w]] %D [[_MONTH_LONG_%m]] %Y':
                             label: ''
                         '[[_WEEKDAY_%w]] [[_MONTH_LONG_%m]] %D, %Y':
+                            label: ''
+                        '[[_WEEKDAY_SHORT_%w]] %e [[_MONTH_SHORT_%m]] %Y':
+                            label: ''
+                        '[[_WEEKDAY_SHORT_%w]] [[_MONTH_SHORT_%m]] %e, %Y':
                             label: ''
                     validation:
                         required: Please enter a long date format.
@@ -191,6 +201,37 @@ site_settings:
                         required: Please enter a date format.
                     note_below: |
                         Used in Organizer and the admin back-end.
+                
+                first_day_of_the_week_for_calendars:
+                    #The JQuery datepicker uses the following numbers:
+                    #0 = Sunday, 1 = Monday and so on
+                    site_setting:
+                        name: first_day_of_the_week_for_calendars
+                    label: 'First day of week when displaying calendars:'
+                    type: select
+                    value: monday
+                    values:
+                        monday:
+                            ord: 1
+                            label: Monday
+                        tuesday:
+                            ord: 2
+                            label: Tuesday
+                        wednesday:
+                            ord: 3
+                            label: Wednesday
+                        thursday:
+                            ord: 4
+                            label: Thursday
+                        friday:
+                            ord: 5
+                            label: Friday
+                        saturday:
+                            ord: 6
+                            label: Saturday
+                        sunday:
+                            ord: 7
+                            label: Sunday
                 
         times:
             label: Times

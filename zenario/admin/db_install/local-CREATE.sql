@@ -920,7 +920,6 @@ CREATE TABLE `[[DB_PREFIX]]nested_plugins` (
   `css_class` varchar(100) NOT NULL DEFAULT '',
   `makes_breadcrumbs` tinyint(1) NOT NULL DEFAULT '0',
   `is_slide` tinyint(1) NOT NULL DEFAULT '0',
-  `invisible_in_nav` tinyint(1) NOT NULL DEFAULT '0',
   `show_back` tinyint(1) NOT NULL DEFAULT '0',
   `no_choice_no_going_back` tinyint(1) NOT NULL DEFAULT '0',
   `show_embed` tinyint(1) NOT NULL DEFAULT '0',

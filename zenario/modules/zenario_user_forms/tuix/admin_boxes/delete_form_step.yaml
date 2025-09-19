@@ -1,0 +1,25 @@
+zenario_delete_form_step:
+    title: 'Deleting "[[form_step_name]]"'
+    max_height: 150
+    hide_tab_bar: true
+    save_button_message: Delete
+    cancel_button_message: Cancel
+    key:
+        id: ""
+        form_id: ""
+        step_name: ""
+        step_fields: {}
+    tabs:
+        details:
+            edit_mode:
+                enabled: true
+            fields:
+                dummy_field:
+                    type: textarea
+                    hidden: true
+                    
+                warning_message:
+                    pre_field_html: <div class="zenario_fbWarning">
+                    snippet:
+                        html: ''
+                    post_field_html: </div>

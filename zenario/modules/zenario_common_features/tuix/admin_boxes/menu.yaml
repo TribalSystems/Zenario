@@ -43,6 +43,9 @@ zenario_menu:
                     label: 'Menu text:'
                     type: text
                     maxlength: 250
+                    #Please note: if there is more than 1 language enabled,
+                    #this onkeyup event will be ignored and a new one will be created
+                    #in the PHP class for each enabled language.
                     onkeyup: |
                         $(zenarioAB.get('span__path_of__' + this.id)).text(this.value);
                 path_of__menu_title:
@@ -77,22 +80,58 @@ zenario_menu:
                             label: Link by language
                             side_note: Link to a different external URL in each language.
                     format_onchange: true
-                hyperlink_target:
-                    ord: 1006
-                    indent: 1
-                    label: 'Content item:'
-                    pick_items:
+                
+                #On multi-language sites, this will always link to the translation in the visitor's language.
+                #On single-language sites, this will always link to a content item in the only enabled language.
+                hyperlink_target__specific:
+                    ord: 1005.1
+                    hidden: true
+                    pick_items: &hyperlink_target__specific__pick_items
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: true
                         select_phrase: Select a content item...
                         hide_remove_button: true
+                    validation: &hyperlink_target__specific__validation
+                        required_if_not_hidden: Please select a content item.
+                hyperlink_target__translation:
+                    ord: 1005.2
+                    hidden: true
+                    pick_items:
+                        path: zenario__content/panels/translation_chains
+                        min_path: zenario__content/panels/translation_chains
+                        max_path: zenario__content/panels/translation_chains
+                        target_path: zenario__content/panels/translation_chains
+                        select_phrase: Select a translation chain...
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: "You've set the destination to be to a content item, please select a content item."
+                        required_if_not_hidden: Please select a translation chain.
+                
+                #On multi-language sites, this will always link to the translation in the visitor's language.
+                #On single-language sites, this will always link to a content item in the only enabled language.
+                use_translation:
+                    ord: 1005.3
+                    indent: 1
+                    plugin_setting:
+                        name: use_translation
+                    type: radios
+                    value: 0
+                    values:
+                        0:
+                            ord: 1
+                            label: 'Link to a content item in a specific language:'
+                        1:
+                            ord: 0
+                            label: "Link to a translation in the visitor's language (recommended):"
                     format_onchange: true
-                    side_note: "Multilingual sites: if a translation exists in the visitor's language, the link destination always will be to that translation."
+                hyperlink_target:
+                    ord: 1006
+                    indent: 1
+                    label: 'Content item:'
+                    pick_items: *hyperlink_target__specific__pick_items
+                    validation: *hyperlink_target__specific__validation
+                    format_onchange: true
                 use_download_page:
                     ord: 1007
                     indent: 2

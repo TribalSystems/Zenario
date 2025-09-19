@@ -36,6 +36,7 @@ class zenario_common_features__admin_boxes__slot_insert_replace extends ze\modul
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		$ord = 0;
+		$first = true;
 		
 		//Check the key to see what options we should show, and add a radioin a grouping for each one.
 		//The calling function will set the text for a label in the key for each option that
@@ -84,6 +85,12 @@ class zenario_common_features__admin_boxes__slot_insert_replace extends ze\modul
                     	'note' => $box['tabs']['details']['custom_notes'][$controlName]
 					]
                 ];
+                
+                //Pre-select whichever option is first
+                if ($first) {
+                	$box['tabs']['details']['fields'][$radioName]['value'] = '1';
+	                $first = false;
+	            }
 			}
 		}
 	}

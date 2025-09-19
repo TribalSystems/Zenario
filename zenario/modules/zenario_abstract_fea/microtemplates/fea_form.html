@@ -23,22 +23,26 @@
 		{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, 'top')}}
 	</div>
 	
-	<% if (m.tuix.form_title !== undefined) { %>
-	    <% if (m.tuix.title_tags) { %>
-		    <{{m.tuix.title_tags|e}}>{{m.tuix.form_title|e}}</{{m.tuix.title_tags|e}}>
-		<% } else { %>
-		    <h1>{{m.tuix.form_title|e}}</h1>
-		<% } %>
-	<% } %>
+	{{m.lib.pMicroTemplate('title', m)}}
+	
+	{{m.lib.pMicroTemplate('subtitle', m)}}
 	
 	<form onsubmit="return false;">
 		<div class="zfea_form">
 			{{m.lib.pMicroTemplate('row', m.rows)}}
 		</div>
-		<div class="zfea_buttons zfea_bottom_buttons zfea_form_buttons">
-			{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
-		</div>
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, false)) { %>
+			<div class="zfea_buttons zfea_bottom_buttons zfea_form_buttons">
+				{{m.lib.pMicroTemplate('button', m.thus.sortedCollectionButtons, false)}}
+			</div>
+		<% } %>
 	</form>
+	
+	<% if (zenarioT.find(m.thus.sortedCollectionButtons, "bottom")) { %>
+		<div class="zfea_buttons zfea_bottom_buttons">
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "bottom")}}
+		</div>
+	<% } %>
 </div>
 
 <% if (m.tuix.show_overlay_layer) { %>

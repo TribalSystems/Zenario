@@ -687,7 +687,7 @@ if (!$xml) {
 	}
 	
 	
-	ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+	ze\contentAdm::updateContentItemCache($cID, $cType, $cVersion);
 	
 	return true;
 }

@@ -20,14 +20,14 @@ plugin_settings:
                         name: title_tags
                     label: 'Title heading tag:'
                     type: select
-                    values:
-                        h1: <h1>
-                        h2: <h2>
-                        h3: <h3>
-                        h4: <h4>
-                        h5: <h5>
-                        h6: <h6>
-                        p: <p>
+                    values: &tags
+                        h1: h1
+                        h2: h2
+                        h3: h3
+                        h4: h4
+                        h5: h5
+                        h6: h6
+                        p: p
                     value: h1
                     side_note: |
                         Choose which HTML tags the title will be displayed in
@@ -166,6 +166,7 @@ plugin_settings:
                         name: show_document_extra_data
                     type: checkbox
                     value: 1
+                
                 show_release_datetime:
                     label: "Show item's release date/time"
                     plugin_setting:
@@ -197,6 +198,51 @@ plugin_settings:
                     type: checkbox
                     value: "0"
                     indent: 1
+                release_datetime_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: release_datetime_html_tag
+                    label: "Release date tags:"
+                    value: p
+                    visible_if:
+                        lib.value: show_release_datetime
+                    type: select
+                    values: *tags
+                
+                show_published_date:
+                    label: "Show item's published date"
+                    plugin_setting:
+                        name: show_published_date
+                    type: checkbox
+                    value: "1"
+                    format_onchange: true
+                published_date_format:
+                    label: 'Date format:'
+                    plugin_setting:
+                        name: published_date_format
+                    type: radios
+                    values:
+                        _SHORT:
+                            ord: 1
+                            label: Short
+                        _MEDIUM:
+                            ord: 2
+                            label: Medium
+                        _LONG:
+                            ord: 3
+                            label: Long
+                    value: _MEDIUM
+                    indent: 1
+                published_date_html_tag:
+                    indent: 1
+                    plugin_setting:
+                        name: published_date_html_tag
+                    label: "Published date tags:"
+                    value: p
+                    visible_if:
+                        lib.value: show_published_date
+                    type: select
+                    values: *tags
                 
                 show_categories:
                     label: "Show categories"

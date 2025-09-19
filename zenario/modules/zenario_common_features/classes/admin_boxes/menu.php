@@ -166,6 +166,9 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$url = 'ext_url__'. $lang['id'];
 	
 			$box['tabs']['text']['fields'][$title] = $fields['text/menu_title'];
+			//Build the onkeyup event to correctly populate the menu path preview for each enabled language
+			$box['tabs']['text']['fields'][$title]['onkeyup'] = "$(zenarioAB.get('span__" . htmlspecialchars($pathCodename) . "')).text(this.value);";
+			$box['tabs']['text']['fields'][$title]['format_onchange'] = true;
 			$box['tabs']['text']['fields'][$pathCodename] = $fields['text/path_of__menu_title'];
 			$box['tabs']['text']['fields'][$url] = $fields['text/ext_url'];
 	
@@ -228,7 +231,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 	
 			//Set the existing Menu Path from the existing title and the parent path
 			zenario_common_features::setMenuPath($box['tabs']['text']['fields'], $title, 'value');
-			
 		}
 
 		$fields['text/menu_title']['hidden'] = true;
@@ -355,6 +357,17 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$values['feature_image/use_rollover_image'] = (bool) $menu['rollover_image_id'];
 			$values['feature_image/rollover_image_id'] = $menu['rollover_image_id'];
 		}
+		
+		//On multilingual sites, content item links on the menu use the translation chain.
+		//On single-language sites, content item links on the menu use a specific content item.
+		if (ze\lang::count() >= 2) {
+			$values['text/use_translation'] = 1;
+			$fields['text/hyperlink_target']['label'] = ze\admin::phrase('Content item translation chain:');
+		} else {
+			$values['text/use_translation'] = 0;
+		}
+		
+		$fields['text/use_translation']['hidden'] = true;
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -403,6 +416,15 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 
 		$langs = ze\lang::getLanguages();
 		$numLangs = count($langs);
+		$langsWhichHideLinks = [];
+		if ($numLangs > 1) {
+			foreach ($langs as $lang) {
+				if (!ze\row::get('languages', 'show_untranslated_content_items', ['id' => $lang['id']]) && $lang['id'] != ze::$defaultLang) {
+					$langsWhichHideLinks[] = $lang['id'];
+					unset($box['tabs']['text']['fields']['menu_title__' . $lang['id']]['notices_below']);
+				}
+			}
+		}
 
 		//For multilingal sites, add a note about using the Content Item in the default language if no translation is set.
 		//(But use the ze\content::langEquivalentItem() function to work out what language will actually be used.)
@@ -419,6 +441,32 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 					$langs[$mainLang]);
 	
 			$equivs = ze\content::equivalences($cID, $cType);
+			
+			if (count($langsWhichHideLinks) > 0) {
+				foreach ($langsWhichHideLinks as $langWhichHidesLinks) {
+					if ($values['text/menu_title__' . $langWhichHidesLinks] && empty($equivs[$langWhichHidesLinks])) {
+						$languagePanel = ze\link::absolute() . 'organizer.php#zenario__languages/panels/languages//' . $langWhichHidesLinks;
+						$linkStart = '<a href="' . htmlspecialchars($languagePanel) . '" target="_blank">';
+						$linkEnd = "</a>";
+						
+						$mergeFields = [
+							'english_name' => $langs[$langWhichHidesLinks]['english_name'],
+							'link_start' => $linkStart,
+							'link_end' => $linkEnd
+						];
+						
+						$box['tabs']['text']['fields']['menu_title__' . $langWhichHidesLinks]['notices_below']['no_translation_exists'] = [
+							'type' => 'warning',
+							'html' => true,
+							'hidden' => false,
+							'message' => ze\admin::phrase(
+								"Warning, no translation exists in [[english_name]], so this will not appear. See also [[link_start]]settings for this language[[link_end]].",
+								$mergeFields
+							)
+						];
+					}
+				}
+			}
 		}
 
 
@@ -518,6 +566,28 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 					}
 				}
 			}
+		}
+		
+		//The tag IDs in translation chain pickers have a slightly different format.
+		//This is needed for a technical reason, as meta-info about the selected items are stored by ID.
+		//When displaying, change between formats depending on whether we are showing a specific content item or a translation chain.
+		$values['text/hyperlink_target'] =
+			ze\contentAdm::convertBetweenTagIdAndTranslationChainId($values['text/hyperlink_target'], $values['text/use_translation']);
+		
+		//Don't show the option to pick a translation chain when not linking to a content item, on single-language sites,
+		//or on version controlled plugins.
+		
+		//Format the picker slightly differently when selecting a translation chain v.s selecting a content item.
+		//Note: these are cosmetic changes only, for backwards compatibility reasons the values in the database and logic in the
+		//PHP code is still exactly the same as it was in Zenario 9.4.
+		if ($values['text/use_translation']) {
+			$fields['text/hyperlink_target']['pick_items'] = $fields['text/hyperlink_target__translation']['pick_items'];
+			$fields['text/hyperlink_target']['validation'] = $fields['text/hyperlink_target__translation']['validation'];
+		} else {
+			$fields['text/hyperlink_target']['pick_items'] = $fields['text/hyperlink_target__specific']['pick_items'];
+			$fields['text/hyperlink_target']['validation'] = $fields['text/hyperlink_target__specific']['validation'];
+			
+			$fields['text/hyperlink_target']['label'] = ze\admin::phrase('Content item:');
 		}
 	}
 
@@ -630,6 +700,12 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				}
 			}
 		}
+		
+		//The tag IDs in translation chain pickers have a slightly different format.
+		//This is needed for a technical reason, as meta-info about the selected items are stored by ID.
+		//For backwards compatibility reasons, always save the value in the old format
+		$values['text/hyperlink_target'] =
+			ze\contentAdm::convertBetweenTagIdAndTranslationChainId($values['text/hyperlink_target'], false);
 	}
 	
 	

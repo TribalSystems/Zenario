@@ -12,6 +12,17 @@ funs:
                 If you specify the name of a library, this will check the library for the function,
                 otherwise it will check for a global function.
             </p>
+    toast:
+        summary: |
+            A shortcut to the toastr library, with some sensible default settings.
+    notification:
+        summary: |
+            Briefly displays a short message in a "toast" notification at the top of the screen..
+        example: |
+            <pre>zenarioT.notification('Hello world!');</pre>
+    clearToast:
+        summary: |
+            Clears a toast message that was displayed using the zenarioT.toast() function.
     eval:
         summary: |
             Given a snippet of JavaScript code, this does an eval() and returns the results.

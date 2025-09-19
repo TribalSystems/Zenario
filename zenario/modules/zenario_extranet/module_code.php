@@ -527,6 +527,13 @@ class zenario_extranet extends ze\moduleBaseClass {
 			if ($userDetails['email_verified'] == 'verified') {
 				ze\row::set('users', ['hash_verify_email' => ''], ['id' => $userId]);
 			}
+			
+			if ($this->moduleClassName == 'zenario_extranet_registration') {
+				if ($this->setting('show_message_if_user_views_register_page_subsequently') && !isset($this->objects['Welcome_Message_2'])) {
+					$textToShow = $this->setting('user_views_register_page_subsequently_message');
+					$this->objects['Welcome_Message_2'] = $this->phrase($textToShow);
+				}
+			}
 		}
 		
 		$this->framework('Outer', $this->objects, $this->subSections);
@@ -618,12 +625,12 @@ class zenario_extranet extends ze\moduleBaseClass {
 		$cID = $cType = false;
 		
 		if (ze\content::langSpecialPage('zenario_login', $cID, $cType)
-		 && (!ze\user::id())) {
+		 && ($this->moduleClassName != 'zenario_extranet' || !ze\user::id())) {
 			$this->subSections['Login_Link_Section'] = true;
 			$this->objects['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
 		
-		if ($link = ze\link::toSpecialPage('zenario_password_reset')) {
+		if ($this->setting('show_link_to_password_reset_page') && ($link = ze\link::toSpecialPage('zenario_password_reset'))) {
 			$this->subSections['Reset_Password_Link_Section'] = true;
 			$this->objects['Reset_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
@@ -670,12 +677,17 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 		$this->objects['Welcome_Message'] = $this->getWelcomeUserString();
 		
-		if ($link = ze\link::toSpecialPage('zenario_change_password')) {
+		if ($this->setting('show_link_to_profile_page') && ze\module::isRunning('zenario_extranet_profile_edit') && ($link = ze\link::toSpecialPage('zenario_profile'))) {
+			$this->subSections['Profile_Link_Section'] = true;
+			$this->objects['Profile_Link'] = 'href="'. htmlspecialchars($link). '"';
+		}
+		
+		if ($this->setting('show_link_to_change_password_page') && ze\module::isRunning('zenario_extranet_change_password') && ($link = ze\link::toSpecialPage('zenario_change_password'))) {
 			$this->subSections['Change_Password_Link_Section'] = true;
 			$this->objects['Change_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
 		
-		if ($link = ze\link::toSpecialPage('zenario_logout')) {
+		if ($this->setting('show_link_to_logout_page') && ze\module::isRunning('zenario_extranet_logout') && ($link = ze\link::toSpecialPage('zenario_logout'))) {
 			$this->subSections['Logout_Link_Section'] = true;
 			$this->objects['Logout_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
@@ -684,14 +696,26 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->subSections['Destination_url_section'] = true;
 			$this->objects['destURL_Link'] = htmlspecialchars($_SESSION['destURL']);
 			
-			if (isset($_SESSION['destTitle'])) {
-				$this->objects['destURL_Title'] = htmlspecialchars($_SESSION['destTitle']);
-
-			} elseif (isset($_SESSION['destCID'])) {
+			if (isset($_SESSION['destCID'])) {
 				$this->objects['destURL_Title'] = htmlspecialchars(ze\content::title($_SESSION['destCID'], $_SESSION['destCType']));
 
 			} else {
 				$this->objects['destURL_Title'] = htmlspecialchars($this->phrase('Click here to be redirected back to where you just came from.'));
+			}
+		}
+		
+		//Show the link to the after-login page. Only display it if it's different to the requested page.
+		$afterLoginContentItemTagId = $this->redirectToPage(true, true, true, $returnDestinationOnly = true);
+		if ($afterLoginContentItemTagId) {
+			$afterLoginCID = $afterLoginCType = false;
+			ze\content::getCIDAndCTypeFromTagId($afterLoginCID, $afterLoginCType, $afterLoginContentItemTagId);
+			
+			if (!empty($_SESSION['destCID']) && !empty($afterLoginCID) && !empty($_SESSION['destCType']) && !empty($afterLoginCType)) {
+				if ($_SESSION['destCID'] != $afterLoginCID || $_SESSION['destCType'] != $afterLoginCType) {
+					$this->subSections['After_login_url_section'] = true;
+					$this->objects['afterLoginURL_Link'] = htmlspecialchars($this->linkToItem($afterLoginCID, $afterLoginCType));
+					$this->objects['afterLoginURL_Title'] = htmlspecialchars(ze\content::title($afterLoginCID, $afterLoginCType));
+				}
 			}
 		}
 	}
@@ -1065,33 +1089,43 @@ class zenario_extranet extends ze\moduleBaseClass {
 				
 				//Select the home page as the default redirect page.
 				//Also show links to other possible special pages.
-				$fields['action_after_login/welcome_page']['value'] = ze::$specialPages['zenario_home'] ?? '';
-				$fields['first_tab/change_password_page']['value'] = ze::$specialPages['zenario_change_password'] ?? '';
-				$fields['first_tab/password_reset_page']['value'] = ze::$specialPages['zenario_password_reset'] ?? '';
-				$fields['first_tab/logout_page']['value'] = ze::$specialPages['zenario_logout'] ?? '';
+				$loopThrough = [
+					'action_after_login/welcome_page' => 'zenario_home',
+					'first_tab/registration_page' => 'zenario_registration',
+					'first_tab/profile_page' => 'zenario_profile',
+					'first_tab/change_password_page' => 'zenario_change_password',
+					'first_tab/password_reset_page' => 'zenario_password_reset',
+					'first_tab/logout_page' => 'zenario_logout'
+				];
 				
-				if (!ze\module::isRunning('zenario_extranet_change_password') || !$fields['first_tab/change_password_page']['value']) {
-					$fields['first_tab/change_password_page']['notices_below']['module_not_running'] = [
-						'show' => true,
-						'type' => 'warning',
-						'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Change Password module to show.')
-					];
+				foreach ($loopThrough as $pluginSetting => $defaultSpecialPage) {
+					if (isset($fields[$pluginSetting]) && empty($fields[$pluginSetting]['value'])) {
+						$fields[$pluginSetting]['value'] = ze::$specialPages[$defaultSpecialPage] ?? '';
+					}
 				}
 				
-				if (!ze\module::isRunning('zenario_extranet_password_reset') || !$fields['first_tab/password_reset_page']['value']) {
-					$fields['first_tab/password_reset_page']['notices_below']['module_not_running'] = [
-						'show' => true,
-						'type' => 'warning',
-						'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Password Reset module to show.')
-					];
-				}
+				//If a specific module is not running, display a warning that a link
+				//to the special page associated with it will not be displayed.
+				$loopThrough = [
+					'zenario_extranet_registration' => 'registration_page',
+					'zenario_extranet_profile_edit' => 'profile_page',
+					'zenario_extranet_change_password' => 'change_password_page',
+					'zenario_extranet_password_reset' => 'password_reset_page',
+					'zenario_extranet_logout' => 'logout_page'
+				];
 				
-				if (!ze\module::isRunning('zenario_extranet_logout') || !$fields['first_tab/logout_page']['value']) {
-					$fields['first_tab/logout_page']['notices_below']['module_not_running'] = [
-						'show' => true,
-						'type' => 'warning',
-						'message' => ze\admin::phrase('Link will not be shown. Start the Extranet Logout module to show.')
-					];
+				foreach ($loopThrough as $moduleClassName => $settingCodename) {
+					if (
+						isset($fields['first_tab/' . $settingCodename])
+						&& (!ze\module::isRunning($moduleClassName) || !$fields['first_tab/' . $settingCodename]['value'])
+					) {
+						$moduleName = ze\module::getModuleDisplayNameByClassName($moduleClassName);
+						$fields['first_tab/' . $settingCodename]['notices_below']['module_not_running'] = [
+							'show' => true,
+							'type' => 'warning',
+							'message' => ze\admin::phrase('Link will not be shown. Start the [[module_name]] module to show.', ['module_name' => $moduleName])
+						];
+					}
 				}
 
 				//Disable Captcha feature if not set up in the API keys
@@ -1134,10 +1168,6 @@ class zenario_extranet extends ze\moduleBaseClass {
 					$addRows = !empty($box['tabs']['action_after_login']['fields']['add_redirect_rule']['pressed']);
 					$multiRows = $this->setupRedirectRuleRows($box, $fields, $values, $changes, $filling = false, $addRows);
 					$values['action_after_login/number_of_redirect_rules'] = $multiRows['numRows'];
-				}
-				
-				if (!ze\module::isRunning('zenario_extranet_registration')) {
-					$fields['first_tab/registration_page']['note_below'] = ze\admin::phrase('Warning: Extranet Registration module is not running.<br />Registration page link will not be shown.');
 				}
 				
 				break;

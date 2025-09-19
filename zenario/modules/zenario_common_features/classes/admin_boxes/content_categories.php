@@ -72,7 +72,7 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 		
 		ze\categoryAdm::setupFABCheckboxes($fields['categories/categories'], true);
 		
-		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__library/panels/categories';
+		$categoriesPanelHref = ze\link::absolute() . 'organizer.php#zenario__content/panels/categories';
 		$linkStart = '<a href="' . htmlspecialchars($categoriesPanelHref) . '" target="_blank">';
 		$linkEnd = "</a>";
 		
@@ -90,7 +90,7 @@ class zenario_common_features__admin_boxes__content_categories extends ze\module
 			$fields['categories/no_categories']['hidden'] = true;
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
 			
 			
 			$inCats = [];

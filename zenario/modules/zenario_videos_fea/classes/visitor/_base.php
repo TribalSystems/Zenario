@@ -44,11 +44,7 @@ class zenario_videos_fea__visitor_base extends zenario_videos_fea {
 		zenario_abstract_fea::fillVisitorTUIX($path, $tags, $fields, $values);
 		
 		if (in_array($this->getMode(), ['list_videos', 'search_videos'])) {
-			if (!$this->setting('show_title')) {
-				unset($tags['title']);
-			} else {
-				$tags['title_tags'] = $this->setting('title_tags');
-			}
+			$this->applyTitleSetting($tags);
 		}
 	}
 	

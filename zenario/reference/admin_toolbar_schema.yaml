@@ -120,6 +120,15 @@ properties:
                         You need to enter the name of a microtemplate that will be used to
                         draw this toolbar when it is open.
                 
+                enable_slot_controls:
+                    type: boolean
+                    description: >
+                        Set this to true if you want the slot controls to be clickable/usable
+                        when this toolbar is the current toolbar.
+                        
+                        Note: This is needed from version 10.2 onwards.
+                        From 10.1 and earlier this option was hardcoded.
+                
                 page_mode:
                     enum:
                         - preview
@@ -194,6 +203,8 @@ properties:
            type: object
            description: >
                Each section has some conditional display logic, and an array of buttons.
+               This is an object containing different keys (e.g. translations, layout, etc.)
+               which can be displayed in a microtemplate for one or more tabs.
            additionalProperties: false
            properties:
                hidden: *hidden

@@ -158,6 +158,10 @@ var secondLevelNavCollapsed = false;
 //Create an instance of the admin forms library for the view options box
 var zenarioVO = window.zenarioVO = new zenarioAF();
 
+zenarioVO.idPrefix = function() {
+	return 'zvo_';
+};
+
 
 
 
@@ -2134,7 +2138,7 @@ zenarioO.setPanel = function() {
 	zenarioO.pi.showPanel($header, $panel, $footer);
 	
 	if (zenarioO.tuix.toast) {
-		zenarioA.toast(zenarioO.tuix.toast);
+		zenarioT.toast(zenarioO.tuix.toast);
 	}
 	
 	
@@ -3253,7 +3257,12 @@ zenarioO.action2 = function() {
 			}
 
 			if (message) {
-				if (zenarioA.showMessage(message, undefined, 'error') === false) {
+				
+				var resp = zenario.splitFlagsFromMessage(message);
+				
+				zenario.showDumpsFromFlags(resp.flags);
+				
+				if (zenarioA.showMessage(resp, undefined, 'error') === false) {
 					get('organizer_preloader_circle').style.display = 'none';
 					return;
 				}
@@ -3828,8 +3837,16 @@ zenarioO.getColumnFilterType = function(c) {
 
 zenarioO.setViewOptions = function() {
 	
-	var fields = {},
-		cb = new zenario.callback;
+	var cb = new zenario.callback,
+		idPrefix = zenarioVO.idPrefix(),
+		fields = {},
+		c, colNo, column,
+		alwaysShown,
+		lastCol = false,
+		lastColName = false,
+		prefs = zenarioO.prefs[zenarioO.path] || {},
+		title, shownInPanel,
+		colToggleField;
 	
 	fields.showcol__title_ = {
 		ord: -3,
@@ -3838,13 +3855,6 @@ zenarioO.setViewOptions = function() {
 		snippet: {html: phrase.show},
 		post_field_html: '</div>'
 	};
-	
-	var c, colNo, column,
-		alwaysShown,
-		lastCol = false,
-		lastColName = false,
-		prefs = zenarioO.prefs[zenarioO.path] || {},
-		title, shownInPanel;
 	
 	
 	foreach (zenarioO.sortedColumns as colNo => c) {
@@ -3884,7 +3894,9 @@ zenarioO.setViewOptions = function() {
 				snippet: {html: ''}
 			}
 			
-			fields['showcol_' + c] = {
+			colToggleField = 'showcol_' + c;
+			
+			fields[colToggleField] = {
 				ord: 100 * colNo + 4,
 				same_row: true,
 				pre_field_html: '<div class="zen_col_show_hide' + (alwaysShown? ' alwaysShown' : '') + '">',
@@ -3895,17 +3907,17 @@ zenarioO.setViewOptions = function() {
 					'zen_col_show_hide-checkbox ' +
 					(alwaysShown? 'alwaysShown ' : '') +
 					(zenarioO.shownColumns[c]? 'zen_col_hidden' : 'zen_col_shown'),
-				post_field_html: '<label class="zen_col_show_hide-label" for="' + htmlspecialchars('showcol_' + c) + '"></label></div>',
+				post_field_html: '<label class="zen_col_show_hide-label" for="' + htmlspecialchars(idPrefix + colToggleField) + '"></label></div>',
 			};
 			
 			
 			if (zenarioO.showCSVInViewOptions) {
-				delete fields['showcol_' + c].onclick;
+				delete fields[colToggleField].onclick;
 				
 				if (engToBoolean(engToBoolean(column.server_side_only))) {
-					fields['showcol_' + c].style = 'visibility: hidden;';
+					fields[colToggleField].style = 'visibility: hidden;';
 				} else {
-					fields['showcol_' + c].disabled = 'disabled';
+					fields[colToggleField].disabled = 'disabled';
 				}
 				
 				var value = zenarioO.shownColumns[c];
@@ -4180,14 +4192,14 @@ zenarioO.setViewOptions = function() {
 zenarioO.updateDateFilters = function(c) {
 	
 	//var getDateFromField = function(id) {
-	//		return $.datepicker.formatDate($.datepicker.ATOM, $(get(id)).datepicker('getDate'));
+	//		return $.datepicker.formatDate($.datepicker.ATOM, $(zenarioVO.get(id)).datepicker('getDate'));
 	//	},
 	//	dateAfter = getDateFromField('date_after_col_' + c),
 	//	dateBefore = getDateFromField('date_before_col_' + c),
 	
 	var dateAfter = zenarioVO.readField('date_after_col_' + c),
 		dateBefore = zenarioVO.readField('date_before_col_' + c),
-		domValue = get('v' + c);
+		domValue = zenarioVO.get('v' + c);
 	
 	if (dateAfter || dateBefore) {
 		domValue.value = dateAfter + ',' + dateBefore;
@@ -4404,11 +4416,16 @@ zenarioO.changeSortOrder = function(c) {
 		return;
 	}
 	
+	var col = zenarioO.tuix.columns[c];
+	
+	//Check if we're already sorting on this column. If this is the case, then flip the sort order
 	if (zenarioO.sortBy == c) {
 		zenarioO.sortDesc = !zenarioO.sortDesc;
+	
+	//Otherwise use the default option for the column
 	} else {
 		zenarioO.sortBy = c;
-		zenarioO.sortDesc = false;
+		zenarioO.sortDesc = !!col.sort_desc_by_default;
 	}
 	
 	zenarioO.deselectAllItems();
@@ -4467,8 +4484,8 @@ zenarioO.toggleFilter = function(el, c) {
 	zenarioVO.hideShowFields(function() {
 		zenarioO.size(true);
 		//Focus a text field straight away if we can
-		if (get('v' + c) && $(get('v' + c)).is(':visible')) {
-			get('v' + c).focus();
+		if (zenarioVO.get('v' + c) && $(zenarioVO.get('v' + c)).is(':visible')) {
+			zenarioVO.get('v' + c).focus();
 		}
 	});
 	
@@ -4577,15 +4594,15 @@ zenarioO.changeFilters = function() {
 	var value, c, column;
 	foreach (zenarioO.tuix.columns as c => column) {
 		if (column.shown_in_view_options || zenarioO.isShowableColumn(c)) {
-			if (get('v' + c) || get('v' + c + '___yes')) {
+			if (zenarioVO.get('v' + c) || zenarioVO.get('v' + c + '___yes')) {
 				if (value = zenarioVO.readField('v' + c)) {
 					zenarioO.setFilterValue('v', c, value);
 				} else {
 					zenarioO.setFilterValue('v', c, '');
 				}
 			}
-			if (get('remove_filter_' + c)) {
-				get('remove_filter_' + c).className =
+			if (zenarioVO.get('remove_filter_' + c)) {
+				zenarioVO.get('remove_filter_' + c).className =
 					zenarioO.filterSetOnColumn(c)? 'organizer_remove_filter organizer_remove_filter_active' : 'organizer_remove_filter organizer_remove_filter_inactive'
 			}
 		}
@@ -4796,7 +4813,10 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 				return item.name;
 			} else {
 				
-				var href = '';
+				var href = '',
+					navPath,
+					isLinkToMenu = item_link == 'menu_item',
+					isLinkToContentItem = item_link == 'content_item' || item_link == 'content_item_or_url';
 				
 				if (zenarioO.tuix.items[i].cell_css_classes
 				 && zenarioO.tuix.items[i].cell_css_classes[c]
@@ -4804,61 +4824,41 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 					//Don't allow ghosted Item Links to be clickable
 					href = ' style="cursor: default;"';
 					
-					if (item_link == 'menu_item') {
+					if (isLinkToMenu) {
 						href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|"';
 					
-					} else if (item_link == 'content_item' || item_link == 'content_item_or_url') {
+					} else if (isLinkToContentItem) {
 						href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|"';
 					}
 				
 				} else {
-					if (isSKLink && !window.zenarioONotFull) {
-						
-						var extraParams = '',
-							navPath,
-							tagPath = zenarioO.shallowLinks[item_link] || item_link;
-						
-						if (item.navigation_path) {
+					if (isSKLink) {
+						if (isLinkToContentItem && item.navigation_path) {
 							navPath = item.navigation_path;
 						
 						} else if (zenarioO.shallowLinks[item_link]) {
 							navPath = zenarioO.shallowLinks[item_link] + '//' + value;
 						
+						} else if (isLinkToContentItem && item.navigation_path) {
+							navPath = item.navigation_path;
+						
 						} else {
 							navPath = item_link + '//' + value;
 						}
 						
-						if (zenarioO.shallowLinks[item_link]) {
-							extraParams = ", name: 'following_item_link', languageId: '" + htmlspecialchars(zenarioO.itemLanguage(i)) + "'";
-						}
-						
 						href =
-							' href="organizer.php#' + htmlspecialchars(navPath) + '" onclick="' +
-								"zenarioO.deselectAllItems();" +
-								"var selectedItems = {};" +
-								"selectedItems['" + htmlspecialchars(i) + "'] = true;" +
-								"zenarioO.pi.cmsSetsSelectedItems(selectedItems);" +
-								"zenarioO.setHash();" +
-								"zenarioO.go('" + htmlspecialchars(tagPath) + "', true, {id: '" + htmlspecialchars(value) + "'" + extraParams + "}, undefined, undefined, undefined, undefined, '" + htmlspecialchars(value) + "');" +
-								"return zenario.stop(event);" +
-							'"';
+							' href="organizer.php#' + htmlspecialchars(navPath) + '" target="_blank"';
 					
-					} else if (item.navigation_path) {
-						href = ' href="' + URLBasePath + 'organizer.php#/' + htmlspecialchars(item.navigation_path) + '" target="_blank"';
-					
-					} else {
-						isSKLink = false;
-						if (item.frontend_link) {
-							isURL = true;
-							href = ' href="' + htmlspecialchars(zenario.addBasePath(item.frontend_link)) + '" target="_blank"';
-						}
+					} else if (item.frontend_link) {
+						isURL = true;
+						href = ' href="' + htmlspecialchars(zenario.addBasePath(item.frontend_link)) + '" target="_blank"';
 					}
 					
 					if (isSKLink) {
-						if (item_link == 'menu_item') {
+						if (isLinkToMenu) {
 							href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|' + phrase.clkToViewLinkedMenuNode + '"';
 						
-						} else if (item_link == 'content_item' || item_link == 'content_item_or_url') {
+						} else if (isLinkToContentItem) {
 							href += ' title="' + htmlspecialchars(htmlspecialchars(item.name)) + '|' + phrase.clkToViewLinkedCItem + '"';
 						}
 					
@@ -4867,26 +4867,21 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 					}
 				}
 				
+				if (isLinkToMenu) {
+					var longName = htmlspecialchars(item.name);
+					var shortName = longName.replace(/.*?\u203a /g, '\u203a ');
 				
-				switch (item_link) {
-					case 'content_item':
-					case 'content_item_or_url':
-						itemName = htmlspecialchars(item.name);
-						break;
-			
-					case 'menu_item':
-						var longName = htmlspecialchars(item.name);
-						var shortName = longName.replace(/.*?\u203a /g, '\u203a ');
+					if (shortName == longName) {
+						shortName = longName.replace(/.*?\: /g, '');
+					}
 					
-						if (shortName == longName) {
-							shortName = longName.replace(/.*?\: /g, '');
-						}
-						
-						itemName = shortName;
-						break;
-			
-					default:
-						itemName = zenarioA.formatOrganizerItemName(zenarioO.otherItemLinks[item_link], value);
+					itemName = shortName;
+				
+				} else if (isLinkToContentItem) {
+					itemName = htmlspecialchars(item.name);
+				
+				} else {
+					itemName = zenarioA.formatOrganizerItemName(zenarioO.otherItemLinks[item_link], value);
 				}
 				
 				return zenarioT.microTemplate('zenario_organizer_item_link', {

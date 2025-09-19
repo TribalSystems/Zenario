@@ -371,9 +371,9 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to delete [[archived_versions_count]] archived version(s) of this content item?
+                            Delete [[archived_versions_count]] archived version(s) of this content item?
                             
-                            This will not affect any published versions or drafts, such as version [[version]] ([[admin_version_status]]).
+                            This will not affect published or draft versions.
                             
                             This cannot be undone.
                         button_message: Delete archived versions

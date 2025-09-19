@@ -75,27 +75,9 @@ if (ze::request('method_call') == 'handleWelcomeAJAX') {
 			$_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'],
 			$_REQUEST['_html5_backwards_compatibility_hack'] ?? false,
 			false, false,
-			$isAllowed = true, $baseLink = 'zenario/admin/welcome.ajax.php'
+			$isAllowed = true
 		);
 	}
-	exit;
-}
-
-//Display such an image that was previously uploaded
-if (!$installed && !empty($_GET['getUploadedFileInCacheDir'])) {
-	
-	if (($filepath = ze\file::getPathOfUploadInCacheDir($_GET['getUploadedFileInCacheDir']))
-	 && ($mimeType = ze\file::mimeType($filepath))) {
-		
-		$filename = basename($filepath);
-		
-		//Output the file
-		header('Content-type: '. $mimeType);
-		
-		ze\cache::end();
-		readfile($filepath);
-	}
-	
 	exit;
 }
 

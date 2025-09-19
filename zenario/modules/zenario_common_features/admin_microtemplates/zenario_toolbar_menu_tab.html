@@ -71,19 +71,22 @@
 				<% } %>
 			/>
 		<% } %>
-		<div
-			class="
-				zenario_at_infobar
-				zenario_at_infobar_menu_path
-				{{buttons.menu_path.css_class|escape}}
-				
-				<% if (buttons.edit_menu_text && buttons.edit_menu_text.admin_box) { %>
-					zenario_at_clickable_infobar" onclick="zenarioAT.clickButton(zenarioA.toolbar, 'edit_menu_text');
-				<% } %>
-			"
-		>
-			<span>{{buttons.menu_path.label|escape}}</span>
-		</div>
+		<% if (buttons.menu_path.label) { %>
+			<div
+				class="
+					zenario_at_infobar
+					zenario_at_infobar_menu_path
+					zfab_menuPathPreview
+					{{buttons.menu_path.css_class|escape}}
+					
+					<% if (buttons.edit_menu_text && buttons.edit_menu_text.admin_box) { %>
+						zenario_at_clickable_infobar" onclick="zenarioAT.clickButton(zenarioA.toolbar, 'edit_menu_text');
+					<% } %>
+				"
+			>
+				{{buttons.menu_path.label}}
+			</div>
+		<% } %>
 	</div>
 	{{zenarioT.microTemplate('zenario_toolbar_common_footer', m)}}
 </div>

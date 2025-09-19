@@ -66,6 +66,12 @@ methods.validateFormatOrRedrawForField = function(field) {
 };
 
 
+methods.submitForm = function() {
+	if (thus.ffoving < 4) {
+		thus.ffoving = 4;
+		thus.save();
+	}
+};
 
 methods.fill = function() {
 	return thus.ffov('fill');
@@ -154,11 +160,12 @@ methods.ffov = function(action) {
 				thus.reloadParent();
 			}
 			
-			//If the js flag was set, execute that code
+			//Allow FEA plugins to call a functions or methods to run before a FEA plugin is displayed.
 			if (js) {
 				zenarioT.eval(js, thus);
 			}
 			
+			//Allow FEA plugins to call a functions or methods to run after a FEA plugin has finished displaying.
 			if (runAfter && !_.isFunction(runAfter)) {
 				runAfterString = runAfter;
 				
@@ -266,8 +273,6 @@ methods.redrawTab = function() {
 methods.draw2 = function() {
 	thus.sortTabs();
 	
-	thus.tuix.form_title = thus.getTitle();
-	
 	thus.cb = new zenario.callback;
 	thus.putHTMLOnPage(thus.drawFields(thus.cb, thus.mtPrefix + '_form'));
 	
@@ -278,6 +283,9 @@ methods.draw2 = function() {
 	 && thus.lastFocus.id != ''
 	 && (DOMlastFieldInFocus = thus.get(thus.lastFocus.id))) {
 		DOMlastFieldInFocus.focus();
+	
+	} else {
+		thus.focusFirstField();
 	}
 	
 	thus.sendSignalAfterRedraw();
@@ -563,7 +571,15 @@ methods.doAjaxLoadThenShowPlugin = function(request, callWhenLoaded) {
 };
 
 methods.loadingDoneInAdvanceSoDrawPlugin = function() {
-	var typeOfLogic = thus.typeOfLogic();
+	var typeOfLogic = thus.typeOfLogic(),
+		tuix = thus.tuix || {},
+		js = thus.tuix.js,
+		runAfter = thus.tuix.js_after;
+	
+	//Allow FEA plugins to call a functions or methods to run before a FEA plugin is displayed.
+	if (js) {
+		zenarioT.eval(js, thus);
+	}
 	
 	delete thus.__lastFormHTML;
 	
@@ -591,6 +607,11 @@ methods.loadingDoneInAdvanceSoDrawPlugin = function() {
 		default:
 			console.error('"' + typeOfLogic + '" is not a valid value for the fea_type property. (If this value is out of date, you may need to clear the site cache.');
 	}
+	
+	//Allow FEA plugins to call a functions or methods to run after a FEA plugin has finished displaying.
+	if (runAfter) {
+		zenarioT.eval(runAfter, thus);
+	}
 };
 
 
@@ -605,6 +626,8 @@ methods.doAjaxLoadThenShowList = function(callWhenLoaded) {
 	
 	thus.showLoader();
 	thus.ajax(url, false, true).after(function(tuix) {
+		
+		zenarioT.checkDumps(tuix);
 	
 		thus.tuix = tuix;
 		
@@ -759,7 +782,7 @@ methods.drawList = function() {
 			coeffAcceleration: 2,
 			
 			onPageClicked: function(a,num) { 
-				thus.doSearch(undefined, undefined, undefined, num);
+				thus.setVarAndReload('page', num);
 			}
 		});
 	}
@@ -807,15 +830,47 @@ methods.drawGraph = function() {
 	thus.graphCustomSetup();
 	
 	thus.sortOutTUIX();
+	
 	thus.cb = new zenario.callback;
 	
+	
+	
+	//We currently have two slightly different ways to implement a graph:
+	
+	//1. A simple option that just display a graph, but does not live update.
+	//This uses the graph property in TUIX.
+	
+	//2. A more advanced graph that supports adding/removing axis or changing the date/time
+	//range dynamically.
+	//This uses the always_sync_this_data_between_client_and_server and
+	//never_sync_this_data_between_client_and_server properties in TUIX.
+	
+	
+	//Write the code to implement the simple version first.
+	var tuix = thus.tuix,
+		graph = tuix.graph;
+	
+	if (graph) {
+		//Draw the HTML using the microtemplate.
+		//(Needs to be done before we try and initialise the graph as the <idv> for the graph will need to exist in the DOM first.)
+		thus.putHTMLOnPage(thus.microTemplate(tuix.microtemplate || 'fea_graph', {}));
+		
+		//Call highcharts to render the graph
+		Highcharts.chart(graph);
+		
+		//And that's it for the simple version.
+		return;
+	}
+	
+	
+	//Here's the code to support the advanced version.
 	if (!thus._storedGraphSeriesData) {
 		thus._storedGraphSeriesData = {};
 	}
 	
 	var seriesData = thus._storedGraphSeriesData,
-		sync = thus.tuix.always_sync_this_data_between_client_and_server,
-		noSync = thus.tuix.never_sync_this_data_between_client_and_server,
+		sync = tuix.always_sync_this_data_between_client_and_server,
+		noSync = tuix.never_sync_this_data_between_client_and_server,
 		incomingSeriesData = noSync && noSync.seriesData || {},
 		incomingGraph = sync.graph,
 		existingGraph = thus._graph,
@@ -896,8 +951,8 @@ methods.drawGraph = function() {
 	
 	
 	//Draw the HTML using the microtemplate.
-	//(Needs to be done before we try and initialise the graph as the <idv> for the graph will need to exist in the DOM first.)
-	thus.putHTMLOnPage(thus.microTemplate(thus.tuix.microtemplate, {}));
+	//(Needs to be done before we try and initialise the graph as the <div> for the graph will need to exist in the DOM first.)
+	thus.putHTMLOnPage(thus.microTemplate(tuix.microtemplate, {}));
 	
 	
 	//If the graph didn't previously exist on the page, initialise it
@@ -991,8 +1046,8 @@ methods.registerSignalHandlers = function() {
 					(function(signal) {
 						//And *this* function call here is to keep the this/thus variable still
 						//pointing to the instance.
-						thus.on(signal, function(data) {
-							thus[signal](data);
+						thus.on(signal, function(data, callingLib) {
+							thus[signal](data, callingLib);
 						});
 					})(signal);
 				}
@@ -1299,6 +1354,20 @@ methods.parseTypeaheadSearch = function(field, id, tab, readOnly, data) {
 
 
 
+methods.setSearchAndReloadIfNeeded = function(search, conductorSearchVar) {
+	
+	conductorSearchVar = conductorSearchVar || 'search';
+	
+	var prevSearch = zenario_conductor.getVar(thus.containerId, conductorSearchVar) || '',
+		newSearch = zenario.pack(search) || '';
+	
+	if (prevSearch != newSearch) {
+		thus.setVarAndReload('search', newSearch);
+	}
+};
+
+
+
 
 methods.lookupFileDetails = function(fileId) {
 	return false;
@@ -1337,57 +1406,74 @@ methods.drawSimpleForm = function(tuix, cb) {
 
 
 methods.getSearchFieldValue = function() {
-	var domSearch = thus.get('search_' + thus.containerId);
+	var domSearch = get('search_' + thus.containerId);
 	
 	return (domSearch ? domSearch.value: false);
 };
 
-methods.doSearch = function(e, searchValue, requests, page) {
-	
+
+methods.setVar = function(name, value, updateURL) {
+	zenario_conductor.setVar(thus.containerId, name, value, updateURL);
+	thus.request[name] = value;
+};
+
+
+methods.setVarAndReload = function(name, value, e) {
 	zenario.stop(e);
 	
+	//Automatically clear any pagination when changing filters
+	if (name !== 'page' && thus.request.page) {
+		thus.setVar('page', '');
+	}
+	
+	thus.setVar(name, value, true);
+	
+	thus.doAjaxLoadThenShowPlugin();
+};
+
+methods.doSearch = function(e, searchValue) {
 	if (!defined(searchValue)) {
 		searchValue = thus.getSearchFieldValue();
 	}
 	
-	requests = _.extend({}, thus.request, requests);
-	
-	var page = page ? page : '',
-		search = {
-			page: page,
-			search: searchValue
-		};
-
-	thus.go(thus.checkRequests(requests, false, undefined, search, true));
+	thus.setVarAndReload('search', searchValue, e);
 	
 	return false;
 };
 
+//Handle changing the sort order of a column
 methods.changeSortCol = function(colId, sortDesc) {
 	var columns = thus.tuix.columns || {},
 		col = columns[colId] || {},
-		req = {};
+		canSortAsc = col.sort_asc,
+		canSortDesc = col.sort_desc;
 	
-	if (col.sort_asc || col.sort_desc) {
+	if (canSortAsc || canSortDesc) {
 		
-		if (thus.key('page') || thus.request.page) {
-			req.page = 1;
-		}
-		
-		if (col.sort_asc && !col.sort_desc) {
+		//Check if only one sort order is allowed on this column.
+		//In that case, the column should always be sorted in that direction.
+		if (canSortAsc && !canSortDesc) {
 			sortDesc = 0;
 		
-		} else if (!col.sort_asc && col.sort_desc) {
+		} else if (!canSortAsc && canSortDesc) {
 			sortDesc = 1;
 		
-		} else if (!defined(sortDesc)) {
-			sortDesc = engToBoolean(thus.key('sortCol') == colId && !thus.key('sortDesc'));
+		//If the caller wants a specific direction, make sure we use that.
+		} else if (defined(sortDesc)) {
+		
+		//Check if we're already sorting on this column. If this is the case, then flip the sort order
+		} else if (thus.key('sortCol') == colId) {
+			sortDesc = engToBoolean(!thus.key('sortDesc'));
+		
+		//Otherwise use the default option for the column
+		} else {
+			sortDesc = engToBoolean(col.sort_desc_by_default);
 		}
 		
-		req.sortDesc = sortDesc;
-		req.sortCol = colId;
+		//console.log({canSortAsc, canSortDesc, colId, sortDesc});
 		
-		thus.go(req);
+		thus.setVar('sortDesc', sortDesc);
+		thus.setVarAndReload('sortCol', colId);
 	}
 };
 
@@ -1673,8 +1759,6 @@ methods.sortOutTUIX = function() {
 	
 	var i, id, j, itemButton, childItemButton, col, item, button, sortedItemIds,
 		sortedButtonsAndColumnButtons,
-		sortBy = tuix.sort_by || 'name',
-		sortDesc = engToBoolean(tuix.sort_desc),
 		numberofItemsShown = _.size(tuix.items);
 	
 	thus.sortedCollectionButtonIds = zenarioT.getSortedIdsOfTUIXElements(tuix, tuix.collection_buttons);
@@ -1749,6 +1833,9 @@ methods.sortOutTUIX = function() {
 	if (tuix.__item_sort_order__) {
 		sortedItemIds = tuix.__item_sort_order__;
 	} else {
+		var sortBy = tuix.sort_by || 'name',
+			sortDesc = engToBoolean(tuix.sort_desc);
+		
 		sortedItemIds = zenarioT.getSortedIdsOfTUIXElements(tuix, 'items', sortBy, sortDesc);
 	}
 	
@@ -1882,6 +1969,7 @@ methods.setupButtonLinks = function(button, itemId) {
 	
 	if (button.go
 	 || button.ajax
+	 || button.export
 	 || button.onclick
 	 || button.confirm) {
 		
@@ -2003,6 +2091,7 @@ methods.button = function(el, button, item, itemId, onclickFun, confirmed) {
 		go, request,
 		isDelete,
 		confirm,
+		isHTML,
 		funReturn,
 		itemIds,
 		numItems = 0;
@@ -2022,10 +2111,13 @@ methods.button = function(el, button, item, itemId, onclickFun, confirmed) {
 		//For item buttons, modify the confirm message to include details on the item(s) selected
 		if (defined(itemId)) {
 			confirm = _.extend({}, confirm);
+			isHTML = confirm.html;
 			
 			if (numItems === 1) {
-				confirm.title = zenario.applyMergeFields(confirm.title, item);
-				confirm.message = zenario.applyMergeFields(confirm.message, item);
+				if (defined(confirm.title)) {
+					confirm.title = zenario.applyMergeFields(confirm.title, item);
+				}
+				confirm.message = zenario.applyMergeFields(confirm.message, item, undefined, isHTML);
 			} else {
 				
 				getMergeField = function(mrg, options) {
@@ -2060,8 +2152,10 @@ methods.button = function(el, button, item, itemId, onclickFun, confirmed) {
 					return out.join(join) + and;
 				};
 				
-				confirm.title = zenario.applyMergeFields(confirm.multiple_select_title || confirm.title, undefined, getMergeField);
-				confirm.message = zenario.applyMergeFields(confirm.multiple_select_message || confirm.message, undefined, getMergeField);
+				if (defined(confirm.title)) {
+					confirm.title = zenario.applyMergeFields(confirm.multiple_select_title || confirm.title, undefined, getMergeField);
+				}
+				confirm.message = zenario.applyMergeFields(confirm.multiple_select_message || confirm.message, undefined, getMergeField, isHTML);
 			}
 		}
 		
@@ -2089,7 +2183,26 @@ methods.button = function(el, button, item, itemId, onclickFun, confirmed) {
 			go = _.extend({search: thus.getSearchFieldValue()}, go);
 		}
 		
-		if (button.ajax) {
+		if (button.export) {
+			//Create a file download that links to the plugin's exportVisitorTUIX() method.
+			request = thus.checkRequests(button.export.request, false, itemId, undefined, true);
+			
+			var url = thus.visitorTUIXLink(request, 'export'),
+				$a = $('<a>'),
+				a = $a[0];
+			
+			//We serve a download by creating a temporary anchor element and virtually clicking it.
+			a.href = url;
+			$a.appendTo(document.body);
+			
+			//Note: For some reason, both $a.click() and $a.trigger('click') don't work! It needs 
+			//to be a native browser a.click() to function. I wasn't able to work out why when debugging.
+			a.click();
+			
+			//Remove the temporary element when done
+			$a.remove();
+
+		} else if (button.ajax) {
 			request = thus.checkRequests(button.ajax.request, false, itemId, undefined, true);
 			
 			thus.runAJAXRequest(request, go, button.ajax, itemId);
@@ -2469,7 +2582,8 @@ methods.runAJAXRequest = function(request, goAfter, ajax, itemId) {
 	
 	$.colorbox.remove();
 	
-	var isDelete = ajax.is_delete,
+	var toast = ajax.toast,
+		isDelete = ajax.is_delete,
 		isDownload = ajax.download,
 		reloadSlide = ajax.reload_slide;
 	
@@ -2481,6 +2595,10 @@ methods.runAJAXRequest = function(request, goAfter, ajax, itemId) {
 		thus.showLoader();
 		thus.ajax(url, request).after(function(resp) {
 			thus.hideLoader();
+			
+			if (toast) {
+				zenarioT.toast(toast);
+			}
 			
 			if (resp) {
 				thus.AJAXErrorHandler(resp);

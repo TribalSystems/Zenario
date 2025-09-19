@@ -14,42 +14,11 @@ site_settings:
                     snippet:
                         html: >
                             Set the image used as a favicon, an image that can be saved as a home screen icon on mobile devices, and an OG image for when the site is mentioned on social media.
-                favicon: 
+                favicon_png: 
                     site_setting:
-                        name: favicon
+                        name: favicon_png
                     label: |
-                        Browser favicon:
-                    upload: 
-                        accept: "image/png, image/gif, image/x-icon"
-                        extensions: 
-                            - .gif
-                            - .ico
-                            - .png
-                        drag_and_drop: false
-                    pick_items: 
-                        path: zenario__library/panels/special_images
-                        min_path: zenario__library/panels/special_images
-                        max_path: zenario__library/panels/special_images
-                        target_path: zenario__library/panels/special_images
-                        select_phrase: Select from special images library...
-                        disabled_if_for_all_selected_items: |
-                            !zenario.IN(item.mime_type, 'image/png', 'image/gif', 'image/x-icon')
-                    note_below: |
-                        You may upload a <code>.ico</code>, <code>.gif</code> or <code>.png</code> file. (<code>.svg</code> files are not supported.) The favicon must be a multiple of 48px square, for example: 48x48px, 96x96px, 144x144px and so on, up to a maximum of 528x528px.
-                    validation:
-                        must_be_gif_ico_or_png: |
-                            The favicon must be a file with format .gif, .ico or .png.
-                    format_onchange: true
-                    notices_below:
-                        favicon_size_warning:
-                            hidden: true
-                            type: warning
-                            message: 'The image dimensions are not multiples of 48.'
-                mobile_icon: 
-                    site_setting:
-                        name: mobile_icon
-                    label: |
-                        Mobile device "home screen" icon:
+                        PNG favicon (recommended for Google):
                     upload: 
                         accept: "image/png, image/gif"
                         extensions: 
@@ -64,13 +33,42 @@ site_settings:
                         select_phrase: Select from special images library...
                         disabled_if_for_all_selected_items: |
                             !zenario.IN(item.mime_type, 'image/png', 'image/gif')
-                    note_below: >
-                        You may upload a <code>.png</code> or <code>.gif</code> file. (<code>.svg</code> files are not supported.)
-                        We recommend that the image be 144×144 pixels in size; larger images will be auto-downsized.
+                    note_below: |
+                        You may upload a <code>.png</code> file. The favicon must be square, and we recommend 48x48px.
                     validation:
-                        must_be_gif_or_png: >
-                            The home screen icon must be a .gif or a .png file.
+                        must_be_gif_or_png: |
+                            The favicon must be a file with format .gif or .png.
                     format_onchange: true
+                    notices_below:
+                        favicon_size_warning:
+                            hidden: true
+                            type: warning
+                            message: 'The image dimensions are not multiples of 48.'
+                    # N.b. this site setting actually supports GIF and PNGs, we're just not
+                    # mentioning the old GIF format to simplify the instructions.
+                favicon_ico: 
+                    site_setting:
+                        name: favicon_ico
+                    label: |
+                        ICO favicon (recommended for Bing):
+                    upload: 
+                        accept: "image/x-icon"
+                        extensions: 
+                            - .ico
+                        drag_and_drop: false
+                    pick_items: 
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
+                        disabled_if_for_all_selected_items: |
+                            item.mime_type != 'image/x-icon'
+                    note_below: |
+                        You may upload a <code>.ico</code> file.
+                    validation:
+                        must_be_ico: |
+                            The favicon must be a file with format .ico.
                 default_icon:
                     site_setting:
                         name: default_icon
@@ -99,6 +97,32 @@ site_settings:
                     validation:
                         must_be_image: >
                             The OG image must be a .gif, .jpg, .jpeg or a .png file.
+                    format_onchange: true
+                mobile_icon: 
+                    site_setting:
+                        name: mobile_icon
+                    label: |
+                        Mobile device "home screen" icon:
+                    upload: 
+                        accept: "image/png, image/gif"
+                        extensions: 
+                            - .gif
+                            - .png
+                        drag_and_drop: false
+                    pick_items: 
+                        path: zenario__library/panels/special_images
+                        min_path: zenario__library/panels/special_images
+                        max_path: zenario__library/panels/special_images
+                        target_path: zenario__library/panels/special_images
+                        select_phrase: Select from special images library...
+                        disabled_if_for_all_selected_items: |
+                            !zenario.IN(item.mime_type, 'image/png', 'image/gif')
+                    note_below: >
+                        Not recommended. You may upload a <code>.png</code> or <code>.gif</code> file. (<code>.svg</code> files are not supported.)
+                        We recommend that the image be 144×144 pixels in size; larger images will be auto-downsized.
+                    validation:
+                        must_be_gif_or_png: >
+                            The home screen icon must be a .gif or a .png file.
                     format_onchange: true
         admin_login:
             label: Admin/site disabled

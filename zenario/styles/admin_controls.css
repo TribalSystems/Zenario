@@ -696,6 +696,10 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc:first-ch
 	margin-top:0;
 }
 
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc .zenario_slotControl_MsInfo {
+	padding-right:3px;
+}
+
 .zenario_plugin_info_tooltip > div span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_slotName span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span,
@@ -823,7 +827,8 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_actions .zenar
     margin-right: 0;
 }
 
-.zenario_sc a.zenario_linkToNewTab {
+.zenario_sc a.zenario_linkToNewTab,
+.zenario_sc a.plugins_link_new_window {
 	margin-left:1px;
 	background: url('../admin/images/icon-open-in-new-window-bright-blue.svg') no-repeat center center / auto 100%;
 }
@@ -851,6 +856,12 @@ div.zenario_slotControlsWrap .zenario_slotControl_menuSection {
 
 div.zenario_slotControlsWrap .zenario_slotControl_empty {
 	/*opacity: 0.4;*/
+}
+
+.zenario_sc a.plugins_link_new_window {
+	background-position:right center;
+	background-size: 10px 10px;
+	padding-right:15px;
 }
 
 .zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview {

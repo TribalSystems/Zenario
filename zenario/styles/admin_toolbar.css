@@ -332,10 +332,14 @@
 
 #zenario_at .zenario_at_status_icons_container {
 	position:absolute;
-	right:65px;
+	right:15px;
 	top:0;
 	height:32px;
 	padding:9px 0 0 5px;
+}
+
+body.zenario_pageToolbar_preview:not(.zenario_pageToolbar_translations) #zenario_at .zenario_at_status_icons_container {
+	right:65px;
 }
 
 #zenario_at .zenario_at_tabs {
@@ -859,6 +863,41 @@
 	background-image:url('../admin/images/icon-layout-on-state-v2.svg');
 }
 
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations .zenario_middle .zenario_middle_inner {
+	padding-left: 35px;
+  	position: relative;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations .zenario_middle .zenario_middle_inner:before {
+	font-family:"FontAwesome";
+	content:"\f1ab";
+  	position: absolute;
+  	left: 8px;
+  	top: 10px;
+	font-size: 16px;
+	line-height: 1em;
+  	text-indent: initial;
+}
+
+
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations.zenario_toolbar_on[class*='hidden'] .zenario_middle_inner:before {
+	color:#484848;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations.zenario_toolbar_on[class*='trashed'] .zenario_middle_inner:before {
+	color:#a77a4b;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations.zenario_toolbar_on[class*='published'] .zenario_middle_inner:before,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations.zenario_toolbar_on[class*='unlisted'] .zenario_middle_inner:before {
+	color:#01ac02;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__translations.zenario_toolbar_on[class*='draft'] .zenario_middle_inner:before {
+	color:#ff5600;
+}
+
 body.zenario_pageMode_edit #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
 body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner,
 body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar__create .zenario_middle .zenario_middle_inner {
@@ -897,7 +936,9 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenar
 }
 
 .zenario_pageMode_menu #zenario_at .zenario_at_status_icons_container,
+.zenario_pageToolbar_translations #zenario_at .zenario_at_status_icons_container,
 .zenario_pageMode_menu #zenario_at .zenario_at_toolbar_container .zenario_at_topRightIcons > div:not(.zenario_debug),
+.zenario_pageToolbar_translations #zenario_at .zenario_at_toolbar_container .zenario_at_topRightIcons > div:not(.zenario_debug),
 .zenario_pageMode_layout #zenario_at .zenario_at_toolbar_container .zenario_at_topRightIcons > div:not(.zenario_debug) {
 	display:none;
 }
@@ -1022,6 +1063,7 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_tabs .zenario_toolbar.zenar
 #zenario_at .zenario_at_toolbar > div > ul > li#zenario_at_button__edit span:before,
 #zenario_at .zenario_at_toolbar > div > ul > li#zenario_at_button__preview span:before,
 #zenario_at .zenario_at_toolbar > div > ul > li#zenario_at_button__item span:before,
+#zenario_at .zenario_at_toolbar > div > ul > li#zenario_at_button__translations span:before,
 #zenario_at .zenario_at_toolbar > div > ul > li#zenario_at_button__menu1 span:before,
 #zenario_at .zenario_at_toolbar > div > ul > li#zenario_at_button__layout span:before {
 	content:" ";
@@ -1421,6 +1463,18 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 	background:transparent;
 }
 
+#zenario_at .zenario_at_toolbar ul li.current_language_button {
+	font-weight:700;
+}
+
+#zenario_at .zenario_at_toolbar ul li.current_language_button:hover {
+	background-color: transparent;
+}
+
+#zenario_at .zenario_at_toolbar ul li.current_language_button a:hover {
+	cursor:default;
+}
+
 #zenario_at ul li {
 	display:inline-block;
 	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat right 10px;
@@ -1520,7 +1574,62 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path {
-	width:calc(80% - 12px);
+	width:auto;
+	display:inline-block;
+	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
+  	line-height: 1.4em;
+  	word-wrap: break-word;
+  	border:0;
+  	background:#e6f7ff;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path span {
+	display:inline-block;
+	margin-left:5px;
+	margin-top:3px;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path span,
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path span:hover {
+	background:none;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path span:first-child {
+	margin-left:0;
+	padding-left:24px;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path span:first-child,
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path span:first-child:hover {
+	background:url('../admin/images/icon-eye-visible.svg') no-repeat 2px 0 / 16px 16px;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.invisible_menu_node span:first-child,
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.invisible_menu_node span:first-child:hover {
+	background-image:url('../admin/images/icon-eye-hidden.svg');
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.zfab_menuPathPreview > span:last-child:not(:first-child)::before {
+	content: "\f105";
+  	padding: 0 6px 0 0;
+} 
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.zfab_menuPathPreview > span.zfab_menuPathPreviewUpdatingNode,
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.zfab_menuPathPreview > span:last-child {
+	font-weight:bold;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path,
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.zfab_menuPathPreview > span.zfab_menuPathPreviewUpdatingNode,
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar.zenario_at_infobar_menu_path.zfab_menuPathPreview > span:last-child {
+	font-size:10px;
+  	color:#333;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path.zenario_at_infobar_menu_orphaned {
+	line-height:20px;
+	padding-left:10px;
+	padding-right:25px;
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar {
@@ -1531,14 +1640,25 @@ body.zenario_pageMode_layout #zenario_at .zenario_at_toolbar > div > ul > li.zen
 
 #zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar span {
 	display:block;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar span,
+#zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path {
 	background-image:url('../admin/images/icon-edit-on-state.svg');
 	background-repeat:no-repeat;
 	background-position:right center;
 	background-size:auto 12px;
 }
 
-#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar span:hover {
+#zenario_at #zenario_at_lower_section .zenario_at_clickable_infobar span:hover,
+#zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path:hover {
 	background-image:url('../admin/images/icon-edit-on-state-v2.svg');
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar.zenario_at_infobar_menu_path {
+	margin-top:1px;
+	padding-right: 30px;
+  	background-position: 98% center;
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_version,
@@ -2299,6 +2419,12 @@ div.zenario_grid_overlay_view .row {
 
 #zenario_at_top_left_menu ul li ul li ul::after {
 	border-color: #fff transparent;
+}
+
+#zenario_at_top_left_menu > ul > li > ul > li > ul {
+	max-height:80vh;
+	overflow-y:auto;
+	overflow-x:hidden;
 }
 
 /* Attempt to show the icons from Organizer */

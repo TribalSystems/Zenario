@@ -160,13 +160,15 @@ site_settings:
                     full_width: true
                     snippet:
                         html: |
-                            When images are uploaded, Zenario will automatically create thumbnails for them.
-                            <br/><br/>
-                            When a plugin requests a thumbnail of an image, where possible Zenario will use the premade ones
-                            instead of generating a new one on the fly. This reduces the load on your server and make your
-                            web pages load more quickly for visitors.
-                            <br/><br/>
-                            You can use this tab to define up to three different thumbnails for each image.
+                            <p>
+                                When images are uploaded, Zenario will automatically create thumbnails for them.
+                            </p><p>
+                                When a plugin requests a thumbnail of an image using the &ldquo;Constrain by width and height&rdquo; option,
+                                where possible Zenario will use a premade one instead of generating a new one on the fly.
+                                This reduces the load on your server and make your web pages load more quickly for visitors.
+                            </p><p>
+                                You can use this tab to define up to three different premade thumbnails for each image.
+                            </p>
                 
                 thumbnail_180x130_width: 
                     label: 'Thumbnail size (width × height):'
@@ -219,6 +221,7 @@ site_settings:
                 
                 custom_thumbnail_2:
                     indent: 1
+                    hide_if_previous_outdented_value_isnt: 1
                     label: 'Create a third thumbnail'
                     type: checkbox
                     redraw_onchange: true

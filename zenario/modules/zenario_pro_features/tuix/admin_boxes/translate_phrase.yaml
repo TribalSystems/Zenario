@@ -1,0 +1,21 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_translate_phrase:
+    tabs:
+        phrase:
+            notices:
+                translation_error:
+                    show: false
+                    type: error
+                    html: true
+                    message: "Google API reported an error. See [[link_start]]site settings[[link_end]] to check if the API key is valid."
+            fields:
+                #This module will add the "Translate with Google" button.
+                translate_with_google:
+                    grouping: right_column
+                    class_name: zenario_pro_features
+                    css_class: zenario_text_button
+                    ord: 8
+                    value: 'Translate with Google'
+                    type: button
+                    format_onchange: true

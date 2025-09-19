@@ -253,6 +253,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		}
 
 		$contentType = ze\row::get('content_types', true, $box['key']['cType'] ?: $box['key']['target_cType']);
+		
+		$box['tabs']['meta_data']['fields']['title']['maxlength'] = (int) $contentType['maximum_title_length'];
 
 		$content = $version = $status = $tag = false;
 	
@@ -537,6 +539,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 					$values['meta_data/menu_text'] = $values['meta_data/title'];
 				}
 				
+				if (!empty($contentType['maximum_title_length']) && strlen($values['meta_data/title']) > $contentType['maximum_title_length']) {
+					$fields['meta_data/title']['notices_below']['title_is_longer_than_the_allowed_length']['hidden'] = false;
+				}
+				
 				//If a file has already been selected, don't rely on Zenario's standard function for
 				//automatically looking up the label, as the internal filename might have been changed
 				//and be different to the one used here. Specifically use this filename.
@@ -618,23 +624,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 				$tag = ze\content::formatTag($box['key']['source_cID'], $box['key']['cType'], ($content['alias'] ?? false));
 		
-				$status = ze\admin::phrase('archived');
-				if ($box['key']['source_cVersion'] == $content['visitor_version']) {
-					if ($content['status'] == 'unlisted' || $content['status'] == 'unlisted_with_draft') {
-						$status = ze\admin::phrase('published unlisted');
-					} else {
-						$status = ze\admin::phrase('published');
-					}
-		
-				} elseif ($box['key']['source_cVersion'] == $content['admin_version']) {
-					if ($content['admin_version'] > $content['visitor_version'] && $content['status'] != 'hidden') {
-						$status = ze\admin::phrase('draft');
-					} elseif ($content['status'] == 'hidden' || $content['status'] == 'hidden_with_draft') {
-						$status = ze\admin::phrase('hidden');
-					} elseif ($content['status'] == 'trashed' || $content['status'] == 'trashed_with_draft') {
-						$status = ze\admin::phrase('trashed');
-					}
-				}
+				$status = ze\contentAdm::formatVersionStatus($content, $box['key']['source_cVersion']);
 			}
 
 			//Location (DB, docstore, s3)
@@ -759,7 +749,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		if (isset($box['tabs']['categories']['fields']['desc'])) {
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				ze\admin::phrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/categories'). '" target="_blank"']);
+					['link' => ' href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__content/panels/categories'). '" target="_blank"']);
 		
 				if (ze\row::exists('categories', [])) {
 					$fields['categories/no_categories']['hidden'] = true;
@@ -808,7 +798,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			if ($box['key']['cID'] != $box['key']['source_cID']) {
 				if ($box['key']['target_language_id'] && $box['key']['target_language_id'] != $content['language_id']) {
 					$box['title'] =
-						ze\admin::phrase('Creating a translation in "[[lang]]" of the content item "[[tag]]" ([[old_lang]]).',
+						ze\admin::phrase('Duplicating content item [[tag]] ([[old_lang]]) for translation into [[lang]]',
 							['tag' => $tag, 'old_lang' => $content['language_id'], 'lang' => ze\lang::name($box['key']['target_language_id'])]);
 					//Check if the source content item is in the menu.
 					//If it is, offer to add the translation to the menu.
@@ -922,7 +912,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$values['css/customise_background'] = true;
 		}
 		//To show history tab in content FAB
-		if($box['key']['id']){
+		if ($box['key']['id']) {
 			$box['tabs']['history']['hidden'] = false;
 			$content = ze\row::get('content_items', true, ['tag_id' => $box['key']['id']]);
 			$sql = "SELECT version, created_datetime, 
@@ -1030,11 +1020,10 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			}
 			
 			
-			//Show the plain text extract from the content cache table
-			if (ze::in($box['key']['cType'], 'html', 'news', 'blog')) {
-				if ($contentCache = \ze\row::get('content_cache', ['text', 'text_wordcount'], ['content_id' => $box['key']['cID'], 'content_type' => $box['key']['cType'], 'content_version' => $box['key']['cVersion']])) {
-					$values['plain_text/text'] = $contentCache['text'];
-					$values['plain_text/text_wordcount'] = $contentCache['text_wordcount'];
+			//Remember what file was selected upon opening this box.
+			if (ze::in($box['key']['cType'], 'audio', 'document', 'picture', 'video')) {
+				if ($values['file/file']) {
+					$box['key']['local_file_id_on_load'] = $values['file/file'];
 				}
 			}
 		}
@@ -1186,8 +1175,8 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		$keywordsCounterHTML = '
 			<div class="snippet__keywords" >
-				<div id="snippet__keywords_length" >
-					<span id="snippet__keywords_counter">[[initial_characters_count]]</span>
+				<div id="zaf_snippet__keywords_length" >
+					<span id="zaf_snippet__keywords_counter">[[initial_characters_count]]</span>
 				</div>
 			</div>';
 
@@ -1463,7 +1452,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						}
 					
 						$fields['meta_data/redraft_menu_warning']['snippet']['html'] = '
-							<div id="redraft_menu_warning" class="zenario_fbWarning">
+							<div id="zaf_redraft_menu_warning" class="zenario_fbWarning">
 								' . ze\admin::phrase($text) . '
 							</div>';
 					} else {
@@ -1580,6 +1569,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		
 		if ($menuPos) {
 			ze\menuAdm::setupPathPreview($menuPos, $fields['meta_data/menu_path_preview'], $values['meta_data/language_id']);
+			$fields['meta_data/menu_path_preview']['hidden'] = false;
 			
 			if ($box['key']['cID']) {
 				$fields['meta_data/menu_path_preview']['value'] =
@@ -1587,8 +1577,11 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			} else {
 				$fields['meta_data/menu_path_preview']['value'] =
 				$fields['meta_data/menu_path_preview']['current_value'] = $values['meta_data/menu_text'];
+				
+				if (!$values['meta_data/create_menu_node']) {
+					$fields['meta_data/menu_path_preview']['hidden'] = true;
+				}
 			}
-			$fields['meta_data/menu_path_preview']['hidden'] = false;
 		}
 		
 
@@ -2057,7 +2050,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 
 		if ($version['file_id']) {
 			if ($box['key']['cType'] && $box['key']['cType'] == 'document') {
-				ze\fileAdm::updateDocumentContentItemExtract($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version['file_id']);
+				
+				$fileChanged =
+					empty($fields['file/file']['current_value'])
+				 || $fields['file/file']['current_value'] != $version['file_id'];
+				
+				ze\fileAdm::updateDocumentContentItemExtract($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $version['file_id'], false, $fileChanged);
 			}
 			
 			if ($box['key']['cType'] && ($box['key']['cType'] == 'document' || $box['key']['cType'] == 'picture')) {
@@ -2078,7 +2076,7 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 						'foreign_key_version' => $box['key']['cVersion']
 					]);
 					ze\contentAdm::updateVersion($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], ['feature_image_id' => $thumbnailId]);
-					ze\contentAdm::syncInlineFileContentLink($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
+					ze\contentAdm::updateContentItemCache($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
 				}
 			}
 		}
@@ -2199,9 +2197,24 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 		$underNodeAtStart = 2;	//N.b. this option is not supported by position pickers using Organizer Select, but supported by ze\menuAdm::addContentItems() when saving
 		$defaultPos = '';
 		
+		$createdFromHomePage = false;
+		
+		$menu = false;
+		
 		//If a content item was set as the "from" or "source", attempt to get details of its primary menu node
 		if ($box['key']['from_cID']) {
-			$menu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']);
+			//If the admin was on the home page (in any language) before attempting to create a content item,
+			//always suggest the "Main" menu section.
+			//For now, do not set the menu path. This will be handled later.
+			$equivId = ze\content::equivId($box['key']['from_cID'], $box['key']['from_cType']);
+			
+			if ($equivId == ze::$homeEquivId && $box['key']['from_cType'] == ze::$homeCType && !$box['key']['id']) {
+				$createdFromHomePage = true;
+			}
+			
+			if (!$createdFromHomePage) {
+				$menu = ze\menu::getFromContentItem($box['key']['from_cID'], $box['key']['from_cType']);
+			}
 			
 			//Change the default to "after" if there's a known position
 			$defaultPos = 'after';
@@ -2215,8 +2228,6 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 			$menu = ze\menu::details($box['key']['target_menu']);
 			$defaultPos = 'under';
 		
-		} else {
-			$menu = false;
 		}
 		
 		
@@ -2316,6 +2327,12 @@ class zenario_common_features__admin_boxes__content extends ze\moduleBaseClass {
 				//If we know the menu section we're aiming to create in, at least pre-populate that
 				if ($box['key']['target_menu_section']) {
 					$values['meta_data/menu_pos_specific'] = $box['key']['target_menu_section']. '_0_'. $underNode;
+				} elseif ($createdFromHomePage) {
+					//If the admin was on the home page (in any language) before attempting to create a content item,
+					//always suggest the "Main" menu section.
+					if (ze\row::exists('menu_sections', 1)) {
+						$values['meta_data/menu_pos_specific'] = '1_0_1';
+					}
 				}
 				
 				//Default the "create a menu node" checkbox to the value in the content type settings

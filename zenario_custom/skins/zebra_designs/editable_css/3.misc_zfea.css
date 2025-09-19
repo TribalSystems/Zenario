@@ -28,6 +28,11 @@
 	background-color:#B20000;
 }
 
+.zenario_slot:not(.zenario_comments) input[type="button"] .icon_button, 
+.zenario_slot:not(.zenario_comments) input[type="button"].icon_button {
+	min-width:auto;
+}
+
 .zenario_skin .zfea .search_form input[type="submit"] {
 	height:41px;
 	background-color:#2a98ce;
@@ -39,8 +44,8 @@
 	opacity:0.8;
 }
 
-.zenario_skin .zfea_table_list_wrap table tr th, 
-.zenario_skin .zfea_table_list_wrap table tr td {
+.zenario_skin .zfea_table_wrap table tr th, 
+.zenario_skin .zfea_table_wrap table tr td {
 	border:0;
 	border-bottom:1px solid #ccc;
 }

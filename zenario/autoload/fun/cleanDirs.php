@@ -58,10 +58,11 @@ $directories = [
 		'uploads' => 1 * 60 * 60
 	], 
 	'public' => [
+		'css' => -1,
 		'downloads' => -1,
 		'images' => -1,
-		'css' => -1,
-		'js' => -1
+		'js' => -1,
+		'special_images' => -1
 	]
 ];
 

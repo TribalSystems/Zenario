@@ -168,12 +168,20 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			
 		$localFileSize = ze\lang::formatFilesizeNicely(ze\row::get('files', 'size', $version['file_id']), 0, false, 'zenario_ctype_document');
 
-		if ($this->setting('show_release_datetime')) {
-			if ($this->mergeFields['Published'] = ze\date::format(($version['release_date'] ?: $version['published_datetime']), $this->setting('date_format'))) {
+		if ($this->setting('show_release_datetime') && $version['release_date']) {
+			if ($this->mergeFields['Released'] = ze\date::format($version['release_date'], $this->setting('date_format'))) {
 				if ($this->setting('show_time')) {
-					$this->mergeFields['Published'] .= ' ' . ze\date::formatTime(($version['release_date'] ?: $version['published_datetime']),ze::setting('vis_time_format'));
-				} 
-				$this->allowedChildSections['Published_Section'] = true;
+					$this->mergeFields['Released'] .= ' ' . ze\date::formatTime($version['release_date'], ze::setting('vis_time_format'));
+				}
+				$this->allowedChildSections['Release_Date_Html_Tag'] = $this->setting('release_datetime_html_tag');
+				$this->allowedChildSections['Release_Date_Section'] = true;
+			}
+		}
+		
+		if ($this->setting('show_published_date') && $version['published_datetime']) {
+			if ($this->mergeFields['Published'] = ze\date::format($version['published_datetime'], $this->setting('published_date_format'))) {
+				$this->allowedChildSections['Published_Date_Html_Tag'] = $this->setting('published_date_html_tag');
+				$this->allowedChildSections['Published_Date_Section'] = true;
 			}
 		}
 		
@@ -333,10 +341,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		
 		if ($this->setting('show_permalink')) {
 			$this->requireJsPhrases('zenario/js/visitor.phrases.js.php');
-
-			if (!ze::isAdmin()) {
-				$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
-			}
+			$this->requireJSLibsForToasts();
 		}
 		
 		return true;
@@ -390,7 +395,10 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		switch ($path) {
 		    case 'plugin_settings':
 		        $fields['first_tab/another_document']['hidden'] = 
-		        	!(($values['first_tab/show_details_and_link'] ?? false)=='another_content_item');
+		        	!(($values['first_tab/show_details_and_link'] ?? false) == 'another_content_item');
+		        
+		        $fields['first_tab/published_date_format']['hidden'] = !(($values['first_tab/show_published_date'] ?? false));
+		        
 		        $fields['first_tab/date_format']['hidden'] = 
 		        $fields['first_tab/show_time']['hidden'] = 
 		        	!(($values['first_tab/show_release_datetime'] ?? false));
@@ -452,23 +460,30 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 								
 								switch ($extract['extract_source']) {
 									case 'antiword':
-										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract by Antiword:');
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Searchable text extract (from Antiword):');
 										break;
 									case 'pdftotext':
-										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract by pdftotext:');
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Searchable text extract (from pdftotext):');
 										break;
 									case 'Textract':
-										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract by Textract:');
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Searchable text extract (from Amazon Textract):');
 										break;
 									case 'ZipArchive':
-										$fields['file/text_extract']['label'] = ze\admin::phrase('Text extract:');
+										$fields['file/text_extract']['label'] = ze\admin::phrase('Searchable text extract:');
 										break;
 								}
 								
+								$fields['file/text_extract']['note_below'] = '';
+								
+								if (!ze\contentAdm::contentItemIsSearchable($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
+									$fields['file/text_extract']['note_below'] .=
+										ze\admin::phrase('The text extract will be searchable once the content item is published.'). ' ';
+								}
+								
 								if (ze::setting('aws_textract_extract_from_jpg_and_png')) {
-									$fields['file/text_extract']['note_below'] = ze\admin::phrase('Cannot be edited. With PDFs, PNG and JPEG images, and Word files, Zenario makes a plain-text extract of the file\'s contents. To re-run an extract, close this box and click "Rescan".');
+									$fields['file/text_extract']['note_below'] .= ze\admin::phrase('Zenario makes a plain-text extract of the contents of PDFs, PNG and JPEG images, and Word documents, for search purposes. This cannot be edited. To re-extract, close this box and click "Rescan".');
 								} else {
-									$fields['file/text_extract']['note_below'] = ze\admin::phrase('Cannot be edited. With PDFs and Word files, Zenario makes a plain-text extract of the file\'s contents. To re-run an extract, close this box and click "Rescan".');
+									$fields['file/text_extract']['note_below'] .= ze\admin::phrase('Zenario makes a plain-text extract of the contents of PDFs and Word documents for search purposes. This cannot be edited. To re-extract, close this box and click "Rescan".');
 								}
 								
 								break;
@@ -646,7 +661,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 										['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 									$newIds[] = $cType. '_'. $cID;
 									
-									ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId);
+									ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId, false, true);
 									
 									//If this document has been created from an image, create a thumbnail.
 									$file = ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $fileId]);
@@ -666,7 +681,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 											'foreign_key_version' => $cVersion
 										]);
 										ze\contentAdm::updateVersion($cID, $cType, $cVersion, ['feature_image_id' => $thumbnailId]);
-										ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+										ze\contentAdm::updateContentItemCache($cID, $cType, $cVersion);
 									}
 								}
 							}
@@ -826,7 +841,6 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 					$filenameArray = explode('.', $s3Filename);
 					$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
 					$file['alt_tag'] = $altTag;
-					$file['archived'] = 0;
 					
 					//If the file already exists in the DB, keep some of its files table values without overwriting.
 					//Otherwise, set them on the new file.
@@ -875,14 +889,14 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 							//Plain text extracts for the latest published version and any drafts are stored separately,
 							//because a draft may use a different file. Update the extract for both if applicable.
 							if ($row['admin_version']) {
-								$extract = ze\fileAdm::updateDocumentContentItemExtract($row['id'], $row['type'], $row['admin_version'], false, $forceRescan);
+								$extract = ze\fileAdm::updateDocumentContentItemExtract($row['id'], $row['type'], $row['admin_version'], false, $forceRescan, true);
 								$extractOneStatus = $extract['extract_status'] ?? '';
 								$doneSomething = true;
 								$forceRescan = false;
 							}
 						
 							if ($row['visitor_version'] && $row['visitor_version'] != $row['admin_version']) {
-								$extract = ze\fileAdm::updateDocumentContentItemExtract($row['id'], $row['type'], $row['visitor_version'], false, $forceRescan);
+								$extract = ze\fileAdm::updateDocumentContentItemExtract($row['id'], $row['type'], $row['visitor_version'], false, $forceRescan, true);
 								$extractTwoStatus = $extract['extract_status'] ?? '';
 								$doneSomething = true;
 								$forceRescan = false;

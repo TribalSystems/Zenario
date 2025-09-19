@@ -108,25 +108,25 @@ site_settings:
                     label: "Delete data from error log:"
                     type: select
                     values:
-                        "never_delete":
-                            label: Never delete
-                            ord: 1
-                        "90":
+                        7:
+                            label: Delete data older than 1 week
+                        14:
+                            label: Delete data older than 2 weeks
+                        30:
+                            label: Delete data older than 1 month
+                        90:
                             label: Delete data older than 3 months
-                            ord: 2
-                        "180":
+                        180:
                             label: Delete data older than 6 months
-                            ord: 4
-                        "365":
+                        365:
                             label: Delete data older than 1 year
-                            ord: 5
-                        "730":
+                        730:
                             label: Delete data older than 2 years
-                            ord: 6
-                        "1095":
+                        1095:
                             label: Delete data older than 3 years
-                            ord: "7"
-                    value: "never_delete"
+                        never_delete:
+                            label: Never delete
+                    value: 30
         security:
             ord: 15
             label: Security

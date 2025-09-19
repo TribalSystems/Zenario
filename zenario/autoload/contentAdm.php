@@ -123,6 +123,29 @@ class contentAdm {
 			return 'archived';
 		}
 	}
+	
+	public static function formatVersionStatus($content, $cVersion) {
+		
+		$status = \ze\admin::phrase('archived');
+		if ($cVersion == $content['visitor_version']) {
+			if ($content['status'] == 'unlisted' || $content['status'] == 'unlisted_with_draft') {
+				$status = \ze\admin::phrase('published unlisted');
+			} else {
+				$status = \ze\admin::phrase('published');
+			}
+
+		} elseif ($cVersion == $content['admin_version']) {
+			if ($content['admin_version'] > $content['visitor_version'] && $content['status'] != 'hidden') {
+				$status = \ze\admin::phrase('draft');
+			} elseif ($content['status'] == 'hidden' || $content['status'] == 'hidden_with_draft') {
+				$status = \ze\admin::phrase('hidden');
+			} elseif ($content['status'] == 'trashed' || $content['status'] == 'trashed_with_draft') {
+				$status = \ze\admin::phrase('trashed');
+			}
+		}
+		
+		return $status;
+	}
 
 	//Reverse of the above
 	public static function getSettingsFromDefaultMenuPosition($position, &$parentId, &$startOrEnd) {
@@ -285,8 +308,15 @@ class contentAdm {
 		$version['published_datetime'] = \ze\date::now();
 		$version['access_code'] = null;
 	
-		$autoSetReleaseDate = \ze\row::get('content_types', 'auto_set_release_date', ['content_type_id' => $cType]);
-		if ($autoSetReleaseDate && !$version['release_date']) {
+		$contentItemReleaseDateSettings = \ze\row::get('content_types', ['release_date_field', 'auto_set_release_date'], ['content_type_id' => $cType]);
+		if (
+			$contentItemReleaseDateSettings
+			&& is_array($contentItemReleaseDateSettings)
+			&& !empty($contentItemReleaseDateSettings['release_date_field'])
+			&& $contentItemReleaseDateSettings['release_date_field'] != 'hidden'
+			&& $contentItemReleaseDateSettings['auto_set_release_date']
+			&& !$version['release_date']
+		) {
 			$version['release_date'] = \ze\date::now();
 		}
 
@@ -310,14 +340,21 @@ class contentAdm {
 		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	
 		\ze\pluginAdm::removeUnusedVCs($cID, $cType, $content['admin_version']);
-		\ze\contentAdm::syncInlineFileContentLink($cID, $cType, $content['admin_version'], true);
+		\ze\contentAdm::updateContentItemCache($cID, $cType, $content['admin_version'], true);
+		
+		//As of version 10.2, document content items will need their text extracts inserted into
+		//the content_items_searchable_cache table when they are published or relisted, as the
+		//extracts are no longer stored in there while they are drafts/hidden/unlisted.
+		if ($cType === 'document') {
+			\ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $content['admin_version']);
+		}
 	
 		$prev_version = $cVersion - 1;
 	
 	
 	
 		$sql = "
-			DELETE FROM ". DB_PREFIX. "content_cache
+			DELETE FROM ". DB_PREFIX. "content_items_searchable_cache
 			WHERE content_id = ". (int) $cID. "
 			  AND `content_type` = '". \ze\escape::asciiInSQL($cType). "'
 			  AND content_version < ". (int) $cVersion;
@@ -339,14 +376,12 @@ class contentAdm {
 	public static function flagImagesInArchivedVersions($cID = false, $cType = false) {
 	
 		$deletedImages = [];
-		$undeletedImages = [];
 	
 		//Look through every image attached to this content item
 		$sql = "
 			SELECT
 				ii.foreign_key_to, ii.foreign_key_id, ii.foreign_key_char, ii.foreign_key_version,
 				ii.image_id, ii.archived,
-				f.archived AS f_archived,
 				v.id IS NULL AS v_deleted,
 				v.version NOT IN (c.visitor_version, c.admin_version) AS v_archived
 			FROM ". DB_PREFIX. "inline_images AS ii
@@ -370,37 +405,17 @@ class contentAdm {
 		$result = \ze\sql::select($sql);
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			$key = $row;
-			unset($key['f_archived'], $key['v_archived'], $key['v_deleted']);
+			unset($key['v_archived'], $key['v_deleted']);
 		
 			//If this version is deleted, remove anything from the inline_images table
 			if ($row['v_deleted']) {
 				\ze\row::delete('inline_images', $key);
-			
-				//Look for images that were previously deleted by the admin, but were still in use so had to be marked as
-				//archived instead.
-				if ($row['f_archived']) {
-					$deletedImages[$row['image_id']] = $row['image_id'];
-				}
 		
 			//If the version still exists, update the "archived" flag
 			} else {
 				if ($row['archived'] != $row['v_archived']) {
 					\ze\row::update('inline_images', ['archived' => $row['v_archived']], $key);
 				}
-			
-				//If the file was flagged as archived because it was "deleted" but still in use here,
-				//"undelete" it by removing the flag to add it back to the library
-				if ($row['f_archived'] && !$row['v_archived']) {
-					\ze\row::update('files', ['archived' => 0], $row['image_id']);
-					$undeletedImages[$row['image_id']] = $row['image_id'];
-				}
-			}
-		}
-	
-		//Check to see if we can delete any archived images.
-		foreach ($deletedImages as $imageId) {
-			if (!isset($undeletedImages[$imageId])) {
-				\ze\contentAdm::deleteUnusedImage($imageId);
 			}
 		}
 	}
@@ -464,7 +479,7 @@ class contentAdm {
 				'instance_id' => $instanceId,
 				'name' => $settingName]);
 	
-		\ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+		\ze\contentAdm::updateContentItemCache($cID, $cType, $cVersion);
 	}
 
 
@@ -569,10 +584,22 @@ class contentAdm {
 	public static function adminFileLink($fileId) {
 		return \ze\link::absolute() . 'zenario/admin/file.php?id=' . $fileId;
 	}
+	
+	//Check the rules for whether a version of a content item should be found by search plugins,
+	//and therefore should have an entry in the content_items_searchable_cache table.
+	//To be searchable, a version must be the published version, and not be unlisted.
+	public static function contentItemIsSearchable($cID, $cType, $cVersion) {
+		return \ze\row::exists('content_items', [
+			'id' => $cID,
+			'type' => $cType,
+			'visitor_version' => $cVersion,
+			'status' => ['published_with_draft', 'published'],
+		]);
+	}
 
 	//Scan a Content Item's HTML and other information, and come up with a list of inline files that relate to it
 	//Note there is simmilar logic in zenario/admin/db_updates/step_4_migrate_the_data/local.inc.php for migration
-	public static function syncInlineFileContentLink($cID, $cType, $cVersion, $publishing = false) {
+	public static function updateContentItemCache($cID, $cType, $cVersion, $publishing = false) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
@@ -620,8 +647,8 @@ class contentAdm {
 			return;
 	
 		} elseif ($instance['content_id']) {
-			//This function only works for library plugins; \ze\contentAdm::syncInlineFileContentLink() should be used instead if a plugin is version-controlled
-			\ze\contentAdm::syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
+			//This function only works for library plugins; \ze\contentAdm::updateContentItemCache() should be used instead if a plugin is version-controlled
+			\ze\contentAdm::updateContentItemCache($instance['content_id'], $instance['content_type'], $instance['content_version']);
 	
 		} else {
 			//Get all of the images used in a plugin's settings
@@ -690,45 +717,6 @@ class contentAdm {
 		}
 	}
 
-	//Check to see if an image is not used, and delete it
-	//This is only designed to work for files with their usage set to 'image'
-	public static function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {
-	
-		$key = [
-			'image_id' => $imageId,
-			'in_use' => 1,
-			'archived' => 0,
-			'foreign_key_to' => ['content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template'],
-			'foreign_key_id' => ['!' => 0]
-		];
-	
-		//Check that the file is the correct usage, and is not used anywhere!
-		if (($image = \ze\row::get('files', ['archived', 'usage'], $imageId))
-		 && (!$onlyDeleteUnusedArchivedImages || $image['archived'])
-		 && (!\ze\row::exists('inline_images', $key))) {
-		
-			//Check to see if the file is archived anywhere.
-			$key['archived'] = 1;
-			if (\ze\row::exists('inline_images', $key)) {
-				//If so, we must keep it in the system, so we'll "delete" it by just flagging it as archived
-				if (!$image['archived']) {
-					\ze\row::update('files', ['archived' => 1], $imageId);
-				}
-				\ze\file::deletePublicImage($imageId);
-		
-			} else {
-				//Otherwise delete it straight away
-				\ze\fileAdm::delete($imageId);
-			}
-		
-			//Remove the image from the linking table anywhere it is unused
-			$key['in_use'] = 0;
-			unset($key['archived']);
-			\ze\row::delete('inline_images', $key);
-		}
-	}
-
-	//Delete images, even if they're used!
 	public static function deleteImage($imageId) {
 		
 		//If a menu node was using this image, remove it from the menu node
@@ -866,7 +854,7 @@ class contentAdm {
 	public static function deleteVersion($cID, $cType, $cVersion) {
 		\ze\row::delete('content_item_versions', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		\ze\row::delete('plugin_item_link', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
-		\ze\row::delete('content_cache', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
+		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion]);
 	
 		\ze\pluginAdm::deleteVC($cID, $cType, $cVersion);
 		
@@ -953,6 +941,8 @@ class contentAdm {
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::removeItemFromPluginSettings('content', $cID, $cType, $mode);
 		\ze\row::delete('plugin_pages_by_mode', ['equiv_id' => $cID, 'content_type' => $cType]);
+		
+		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType]);
 	
 		\ze\module::sendSignal("eventContentTrashed",["cID" => $cID,"cType" => $cType]);
 	}
@@ -979,6 +969,8 @@ class contentAdm {
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'hidden');
+		
+		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType]);
 	
 		\ze\module::sendSignal("eventContentHidden",["cID" => $cID,"cType" => $cType]);
 	}
@@ -1002,6 +994,8 @@ class contentAdm {
 		
 		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
 		
+		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType]);
+		
 		if (!$skipSignal) {
 			\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
 		}
@@ -1009,7 +1003,7 @@ class contentAdm {
 
 	public static function relistContent($cID, $cType) {
 	
-		$content = \ze\row::get('content_items', ['status'], ['id' => $cID, 'type' => $cType]);
+		$content = \ze\row::get('content_items', ['status', 'visitor_version'], ['id' => $cID, 'type' => $cType]);
 		
 		switch ($content['status']) {
 			case 'unlisted':
@@ -1027,8 +1021,15 @@ class contentAdm {
 		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
 		
 		\ze\contentAdm::updateContentItemCache($cID, $cType, $content['visitor_version'], $publishing = true);
+		
+		//As of version 10.2, document content items will need their text extracts inserted into
+		//the content_items_searchable_cache table when they are published or relisted, as the
+		//extracts are no longer stored in there while they are drafts/hidden/unlisted.
+		if ($cType === 'document') {
+			\ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $content['visitor_version']);
+		}
 	
-		\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
+		\ze\module::sendSignal('eventContentListed', ['cID' => $cID,'cType' => $cType]);
 	}
 
 	//If a Content Item is published/hidden, its Menu Node may be shown/hidden as well
@@ -1400,16 +1401,16 @@ class contentAdm {
 	}
 
 	public static function deleteLanguage($langId) {
-		//Remove all of the Content Items in a Language
+		//Remove all of the content items in a language
 		$result = \ze\row::query('content_items', ['id', 'type'], ['language_id' => $langId]);
 		while ($content = \ze\sql::fetchAssoc($result)) {
 			\ze\contentAdm::deleteContentItem($content['id'], $content['type']);
 		}
 	
-		//Remove any remaining Menu translations in a Language
+		//Remove any remaining menu translations in a language
 		\ze\row::delete('menu_text', ['language_id' => $langId]);
 	
-		//Remove any Menu Nodes that now do not have translations
+		//Remove any menu nodes that now do not have translations
 		$sql = "
 			SELECT mn.id
 			FROM ". DB_PREFIX. "menu_nodes AS mn
@@ -1421,8 +1422,12 @@ class contentAdm {
 			\ze\menuAdm::delete($menu['id']);
 		}
 	
-		//Remove any Visitor Phrases, except for Visitor Pharses from the Common Features Module
-		\ze\row::delete('visitor_phrases', ['language_id' => $langId, 'module_class_name' => ['!1' => 'zenario_common_features', '!2' => '']]);
+		//Remove any standard phrases for this language
+		$sql = "
+			DELETE FROM " . DB_PREFIX . "visitor_phrases
+			WHERE `language_id` = '" . \ze\escape::sql($langId) . "'
+			AND code NOT LIKE '\_%'";
+		\ze\sql::update($sql);
 	
 		\ze\row::delete('languages', $langId);
 	}
@@ -1446,7 +1451,7 @@ class contentAdm {
 
 	public static function importPhrasesForModule($moduleClassName, $langId = false) {
 
-		//Check if this Module uses the old Visitor phrases system, with phrases in CSV files
+		//Check if this module uses the old visitor phrases system, with phrases in CSV files
 		if ($path = \ze::moduleDir($moduleClassName, 'phrases/', true)) {
 			$importFiles = \ze\phraseAdm::scanModulePhraseDir($moduleClassName, 'language id');
 			if (!empty($importFiles)) {
@@ -1477,7 +1482,7 @@ class contentAdm {
 			
 						if ($bestMatch) {
 							$languageIdFound = false;
-							\ze\phraseAdm::importVisitorLanguagePack(CMS_ROOT. $path. $bestMatch, $languageIdFound, $adding = false, $scanning = false, $forceLanguageIdOverride = $installedLang);
+							\ze\phraseAdm::importVisitorLanguagePack(CMS_ROOT. $path. $bestMatch, $languageIdFound, $keepExistingTranslations = true, $scanning = false, $forceLanguageIdOverride = $installedLang, $realFilename = false, $checkPerms = false, $addPhrasesThatDontExist = true);
 						}
 					}
 				}
@@ -1746,6 +1751,48 @@ class contentAdm {
 		$alias = preg_replace("/[^a-zA-Z0-9-_]/","",$alias);
 	
 		return $alias;
+	}
+	
+	
+	//Check if it looks like we might be able to make a spare alias out fo a page request,
+	public static function aliasHasSupportedExtension($alias) {
+		
+		//As per T13031, Error log: fixing a URL with a ? does not work properly
+		//We should strip off anything after the "?".
+		$parts = explode('?', $alias, 2);
+		
+		if (!empty($parts[0])) {
+			$alias = $parts[0];
+		}
+		
+		//Except for the above, don't accept URLs in the format ?cID=alias
+		if (false !== strpbrk($alias, '?&=')) {
+			return false;
+		}
+		
+		//Check if a file extension was being used
+		$parts = explode('.', $alias, 2);
+		
+		//If one was used, does it match the list of allowed extensions?
+		//N.b. this list should match the extensions used in the regular expression used in the .htaccess file
+		switch ($parts[1] ?? '') {
+			case '':
+			case 'htm':
+			case 'html':
+			
+			//To support "T13127, Spare aliases: allow a dot in spare aliases"
+			//we'll also allow any extension you might want to make a spare alias for.
+			//(E.g. someone might want to redirect links to a PDF that used to be on
+			// an older version of their website to something.)
+			case 'doc':
+			case 'docx':
+			case 'pdf':
+			case 'zip':
+			
+				return $parts[0];
+			default:
+				return false;
+		}
 	}
 
 

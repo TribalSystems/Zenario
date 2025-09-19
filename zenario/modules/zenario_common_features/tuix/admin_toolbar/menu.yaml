@@ -6,7 +6,9 @@ sections:
             menu_path:
                 hidden: true
                 css_class: zenario_at_infobar_menu_orphaned
-                label: '[Not in menu]'
+                #Previously, the label would be '[Not in menu]'.
+                #As of 10.2, this will be blank, and if the content item is not in menu,
+                #the editable note on the admin toolbar will not be displayed.
             menu_section:
                 hidden: true
                 label: '[Not in menu]'
@@ -40,7 +42,6 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Edit menu text
-                tooltip: Edit the text of this menu node in the navigation
                 admin_box:
                     path: zenario_menu_text
                     key:
@@ -49,7 +50,6 @@ sections:
             edit_menu_item:
                 priv: _PRIV_EDIT_MENU_ITEM
                 label: Menu node properties
-                tooltip: Edit the text of this menu node in the navigation
                 admin_box:
                     path: zenario_menu
                     key:

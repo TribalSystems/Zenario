@@ -190,13 +190,6 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		} else {
 			
 			
-			//Don't show archived images in the image library, or the "view images using tags" refiner
-			if (!$refinerName || $refinerName == 'tag') {
-				$panel['db_items']['where_statement'] .= '
-					AND f.archived = 0';
-			}
-			
-			
 			//If this is the image library, add quick-filters for images tags
 			if (!$refinerName) {
 				$ord = 1000;
@@ -296,7 +289,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 			foreach ($panel['items'] as $id => &$item) {
 				
 				
-				if (!empty($item['in_use_anywhere'])) {
+				if (!empty($item['in_use_anywhere']) || !empty($item['in_use_in_archived_content'])) {
 					$usageLinks = self::imageUsageLinks($id);
 					$usage = ze\fileAdm::getImageUsage($id);
 					$item['where_used'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
@@ -393,7 +386,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 
 	protected static function setFeatureImage($content, $imageId = 0) {
 		ze\contentAdm::updateVersion($content['id'], $content['type'], $content['admin_version'], ['feature_image_id' => $imageId]);
-		ze\contentAdm::syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
+		ze\contentAdm::updateContentItemCache($content['id'], $content['type'], $content['admin_version']);
 	}
 	
 	//If this is an image upload, or an image was picked from the library,
@@ -472,7 +465,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 		//Upload a new file
 		if (ze::post('upload') && $privCheck) {
 			
-			ze\fileAdm::exitIfUploadError(false, false, true, 'Filedata');
+			ze\fileAdm::exitIfUploadError($adminFacing = true, $checkIsAllowed = true, $alwaysAllowImages = true, $fileVar = 'Filedata');
 			
 			//Check to see if an identical file has already been uploaded
 			$existingFilename = false;
@@ -571,14 +564,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				ze\file::deletePublicImage($id);
 			}
 
-		//Delete an unused image
-		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
-			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-				ze\contentAdm::deleteUnusedImage($id);
-			}
-		
-		//Delete images, even if they're used
-		} elseif (ze::get('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::get('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			$idsArray = ze\ray::explodeAndTrim($ids, true);
 			$count = count($idsArray);
 			if ($count == 1) {
@@ -587,9 +573,14 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				$usageLinks = self::imageUsageLinks($id);
 				$usage = ze\fileAdm::getImageUsage($id);
 				
-				echo '
-					<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
-					<ul><li>', implode('</li><li>', ze\miscAdm::getUsageText($usage, $usageLinks, $fullPath = true)), '</li></ul>';
+				if ($usage) {
+					echo '
+						<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
+						<ul><li>', implode('</li><li>', ze\miscAdm::getUsageText($usage, $usageLinks, $fullPath = true, "", $showExampleOfHistoricContent = true)), '</li></ul>';
+				} else {
+					echo '
+						<p>', ze\admin::phrase('Are you sure you wish to delete the unused image "[[filename]]"?', $mrg), '</p>';
+				}
 			} elseif ($count > 0) {
 				$usedImages = $unusedImaged = 0;
 				foreach ($idsArray as $id) {
@@ -622,7 +613,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 					<p>', $phrase, '</p>';
 			}
 		
-		} elseif (ze::post('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\contentAdm::deleteImage($id);
 			}

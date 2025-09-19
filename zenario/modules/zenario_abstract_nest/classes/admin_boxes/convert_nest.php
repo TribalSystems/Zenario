@@ -44,6 +44,20 @@ class zenario_abstract_nest__admin_boxes__convert_nest extends zenario_abstract_
 			}
 		}
 		
+		
+		//Some small QoL for the special case where someone has a nest with one slide and wants to convert
+		//between a Nest and an AJAX Nest.
+		//Make it so the "one slide" option on the other version of the settings is pre-selected.
+		if ($values['details/module_class_name'] == 'zenario_nest'
+		 && $values['details/animation_library'] == 'one_slide') {
+			$values['details/nest_type'] = 'permission';
+		
+		} else
+		if ($values['details/module_class_name'] == 'zenario_ajax_nest'
+		 && $values['details/nest_type'] == 'permission') {
+			$values['details/animation_library'] = 'one_slide';
+		}
+		
 	}
 	
 	
@@ -81,6 +95,10 @@ class zenario_abstract_nest__admin_boxes__convert_nest extends zenario_abstract_
 						break;
 					
 					case 'accordion':
+						$aLibOut = $aLibIn;
+						break;
+					
+					case 'one_slide':
 						$aLibOut = $aLibIn;
 						break;
 				}

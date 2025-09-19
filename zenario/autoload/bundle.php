@@ -375,24 +375,6 @@ class bundle {
 		
 	}
 	
-	public static function outputMicrotemplates($microtemplateDirs, $targetVar) {
-		$output = '';
-		foreach ($microtemplateDirs as $mDir) {
-			foreach (scandir($dir = CMS_ROOT. $mDir) as $file) {
-				if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
-					$name = substr($file, 0, -5);
-					$output .=
-						\ze\cache::esctick($name). '~'.
-						\ze\cache::esctick(trim(
-							preg_replace('@\s+@', ' ', preg_replace('@%>\s*<%@', '', preg_replace('@<\!--.*?-->@s', '',
-								file_get_contents($dir. $file)
-						))))). '~';
-				}
-			}
-		}
-		return "\nzenario._mkd(". $targetVar. ','. json_encode($output). ');';
-	}
-	
 	
 	
 	
@@ -683,7 +665,7 @@ class bundle {
 			}
 	
 			if (!empty($includeMicrotemplates)) {
-				$code = \ze\bundle::outputMicrotemplates($includeMicrotemplates, 'zenario.microTemplates');
+				$code = 'zenario.unpack('. \ze\cache::packMicrotemplates($includeMicrotemplates). ', zenario.microTemplates);';
 				\ze\bundle::writeCodeToBundle($f, $fallbackMode, $code);
 			}
 		}

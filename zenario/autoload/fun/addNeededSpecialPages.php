@@ -248,7 +248,7 @@ if ($resultSp = \ze\sql::select($sql)) {
 								}
 							
 								//Update the wordcount and other stats
-								\ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+								\ze\contentAdm::updateContentItemCache($cID, $cType, $cVersion);
 								
 								$shouldBeUnlisted = $sp['listing_policy'] == 'must_be_unlisted';
 							

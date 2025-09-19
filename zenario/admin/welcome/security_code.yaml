@@ -50,10 +50,10 @@ security_code:
                     row_class: row_form
                     return_key_presses_button: submit
                     oninput: |
-                        codeEl = document.getElementById("code");
+                        codeEl = zenarioAW.get("code");
                         codeValue = codeEl.value;
                         if (codeValue.length == 6) {
-                            submitEl = document.getElementById("submit");
+                            submitEl = zenarioAW.get("submit");
                             submitEl.click();
                         }
                     style: |

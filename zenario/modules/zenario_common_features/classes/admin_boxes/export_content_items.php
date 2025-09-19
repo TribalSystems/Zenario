@@ -140,6 +140,14 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 		
 		$linkHeader = ze\admin::phrase('<p>Fields to be exported:</p>');
 		$fields['download/desc']['snippet']['html'] = $linkHeader.'<p>'.$datasetFieldNames. '</p>';
+		
+		//Display what filters were selected
+		$filtersMessage = zenario_common_features::getExportWindowFilters();
+		
+		if ($filtersMessage) {
+			$box['tabs']['download']['notices']['selected_filters']['message'] = $filtersMessage;
+			$box['tabs']['download']['notices']['selected_filters']['show'] = true;
+		}
 	}
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Get Rows
@@ -157,8 +165,8 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 					f.short_checksum,';
 			
 			$sql .= '
-					IFNULL(cc.text_wordcount, 0) AS text_wordcount,
-					IFNULL(cc.extract_wordcount, 0) AS extract_wordcount,';
+					IFNULL(cc.content_item_text_wordcount, 0) AS content_item_text_wordcount,
+					IFNULL(cc.file_extract_wordcount, 0) AS file_extract_wordcount,';
 			
 			if (ze\module::inc('zenario_ctype_document_extra_data')) {
 				$sql .= ',
@@ -237,7 +245,7 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			$sql .= '
 			LEFT JOIN ' . DB_PREFIX . 'files AS f
                 ON f.id = v.file_id
-			LEFT JOIN ' . DB_PREFIX . 'content_cache AS cc
+			LEFT JOIN ' . DB_PREFIX . 'content_items_searchable_cache AS cc
 				ON v.id = cc.content_id
 				AND v.type = cc.content_type
 				AND v.version = cc.content_version';
@@ -369,8 +377,8 @@ class zenario_common_features__admin_boxes__export_content_items extends ze\modu
 			
 			if ($box['key']['exportDuplicates']) {
 				$contentItem['version_id'] = $row['version_id'];
-				$contentItem['text_wordcount'] = $row['text_wordcount'];
-				$contentItem['extract_wordcount'] = $row['extract_wordcount'];
+				$contentItem['content_item_text_wordcount'] = $row['content_item_text_wordcount'];
+				$contentItem['file_extract_wordcount'] = $row['file_extract_wordcount'];
 			}
 			
 			if ($box['key']['exportDuplicates'] || $box['key']['contentTypeDetails']['export_filename']) {

@@ -128,10 +128,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		$numLanguages = ze\lang::count();
 
 		$menuItem = $menuParent = false;
-		if ($refinerName == 'following_item_link') {
-			$menuItem = ze\menu::details($refinerId);
-
-		} elseif (ze::get('refiner__children')) {
+		if (ze::get('refiner__children')) {
 			$menuParent = ze\menu::details(ze::get('refiner__children'));
 		}
 
@@ -176,7 +173,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			
 		if (isset($panel['item_buttons']['duplicate'])) {
 			$panel['item_buttons']['duplicate']['label'] =
-				ze\admin::phrase('Create a translation in [[language_name]]', $mrg);
+				ze\admin::phrase('Duplicate content item for translation into [[language_name]]', $mrg);
 		}
 
 
@@ -263,6 +260,34 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			AND enable_categories = 1';
 		$categoriesEnabledResult = ze\sql::select($categoriesEnabledSql);
 		$categoriesEnabled = ze\sql::fetchValues($categoriesEnabledResult);
+		
+		if ($numLanguages > 1) {
+			$defaultLanguageName = ze\lang::name(ze::$defaultLang);
+			ze\lang::applyMergeFields($panel['item_buttons']['delete']['disabled_tooltip'], ['default_language_name' => $defaultLanguageName]);
+			ze\lang::applyMergeFields($panel['item_buttons']['delete_recursive']['disabled_tooltip'], ['default_language_name' => $defaultLanguageName]);
+			
+			$panel['item_buttons']['delete']['ajax']['confirm']['message'] = ze\admin::phrase(
+				'Delete the menu node "[[name]]"? This will affect the menu text in all languages.'
+			);
+			$panel['item_buttons']['delete']['ajax']['confirm']['multiple_select_message'] = ze\admin::phrase(
+				'Delete these menu nodes? This will affect the menu text in all languages.'
+			);
+		}
+		
+		$sectionsUsedByBreadcrumbs = [];
+		if (ze\module::isRunning('zenario_breadcrumbs')) {
+			$pluginInstancesAndSettings = ze\module::getModuleInstancesAndPluginSettings('zenario_breadcrumbs');
+			
+			foreach ($pluginInstancesAndSettings as $instance) {
+				if ($instance['settings']['breadcrumb_trail'] == 'other_menu_node') {
+					$position = explode('_', $instance['settings']['breadcrumb_prefix_menu']);
+					$menuNodeId = $position[1] ?? 0;
+					$sectionsUsedByBreadcrumbs[] = $menuNodeId;
+				}
+			}
+			
+			$sectionsUsedByBreadcrumbs = array_unique($sectionsUsedByBreadcrumbs);
+		}
         
 		foreach ($panel['items'] as &$item) {
 	
@@ -293,7 +318,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 				$item['tooltip'] = ze\admin::phrase('This menu node links to an external URL.');
 	
 			} else {
-				$item['tooltip'] = ze\admin::phrase('This menu node has no link. Unlinked menu nodes are hidden from visitors unless they have a child menu node that is visible.');
+				$item['tooltip'] = ze\admin::phrase('This menu node doesn\'t link to anything. Unlinked menu nodes are hidden from visitors unless they have a child menu node that is visible.');
 			}
 			
 			if ($item['restrict_child_content_types']) {
@@ -326,7 +351,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 			
 	
 			if ($item['name'] === null) {
-				$item['css_class'] .= ' ghost';
+				$item['css_class'] .= ' zenario_menunode_unlinked';
 		
 				//Apply formatting for untranslated menu nodes
 				foreach ($panel['columns'] as $columnName => &$column) {
@@ -357,7 +382,7 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 		
 				$item['ghost'] = true;
 		
-				$item['name'] = ze\menu::name($id, $panel['key']['languageId'], '[[name]] [[[language_id]], untranslated]');
+				$item['name'] = ze\menu::name($id, $panel['key']['languageId'], '[[name]] [[[language_id]] (menu node untranslated)');
 				$item['row_class'] .= ' organizer_untranslated_menu_node';
 				$item['tooltip'] = ze\admin::phrase('This menu node has not been translated into [[language_name]].', $mrg);
 		
@@ -387,8 +412,8 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					}
 				}
 		
-				if ($panel['key']['languageId'] != ze::$defaultLang && !empty($item['translations']) && $item['translations'] > 1) {
-					$item['removable'] = true;
+				if ($panel['key']['languageId'] == ze::$defaultLang || empty($item['translations']) || $item['translations'] == 1) {
+					$item['can_be_removed'] = true;
 				}
 			}
 	
@@ -530,6 +555,10 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					$item['linked_content_item_can_be_trashed'] = true;
 				}
 			}
+			
+			if (in_array($id, $sectionsUsedByBreadcrumbs) && !empty($item['can_be_removed'])) {
+				$item['in_use_by_breadcrumbs_plugin'] = true;
+			}
 		}
 
 		if (!$isFlatView) {
@@ -616,14 +645,28 @@ class zenario_common_features__organizer__menu_nodes extends ze\moduleBaseClass 
 					}
 				}
 			}
-	
-			ze\menuAdm::moveMenuNode(
-				$ids,
-				$newSectionId,
-				$newParentId,
-				$newNeighbourId,
-				$afterNeighbour = 0,
-				$languageId);
+			
+			$menuIds = \ze\ray::explodeAndTrim($ids);
+			
+			//Check a given movement is valid.
+			//Note: The code in this function is a bit old, it will print a message and exit instead of returning false.
+			foreach ($menuIds as $menuId) {
+				ze\menuAdm::checkMoveIsValid(
+					$newSectionId,
+					$menuId,
+					$newParentId,
+					$newNeighbourId
+				);
+			}
+			
+			foreach ($menuIds as $menuId) {
+				ze\menuAdm::moveMenuNode(
+					$newSectionId,
+					$menuId,
+					$newParentId,
+					$newNeighbourId
+				);
+			}
 	
 
 		} elseif (ze::post('remove') && ze\priv::check('_PRIV_CREATE_DELETE_MENU_ITEM') && ze::request('languageId') != ze::$defaultLang) {

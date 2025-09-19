@@ -548,9 +548,9 @@ diagnostics:
                     snippet:
                         html: |
                             This site's description file is missing.
-                            Please create the <code>zenario_custom/site_description.yaml</code> file,
-                            e.g. by copying or symlinking one of the files from the
-                            <code>zenario/reference/sample_site_descriptions/</code> directory.
+                            Please copy a file from the <code>zenario/reference/sample_site_descriptions/</code> directory,
+                            choosing the appropriate one for the Zenario edition,
+                            into the <code>zenario_custom</code> directory.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 site_disabled: &blank_child
@@ -687,6 +687,16 @@ diagnostics:
                             Please edit the <code>zenario_custom/site_description.yaml</code> file to enable 2FA.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
+                admin_login_captcha:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site does not have captcha enabled for admin logins.
+                            Please edit the <code>zenario_custom/site_description.yaml</code> file to enable admin login captcha.
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
                 unencrypted_data:
                     grouping: sub_table
                     full_width: true
@@ -751,6 +761,16 @@ diagnostics:
                     row_class: sub_level
                     visible_if: zenarioAW.togglePressed(field)
                 
+                error_log_grew_over_10000_records:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed(field)
+                    snippet:
+                        html: |
+                            The 404 [[link_start]]error log[[link_end]] has over 10,000 records.
+                
                 plugin_must_be_on_private_page_error:
                     grouping: sub_table
                     full_width: true
@@ -805,6 +825,9 @@ diagnostics:
                     hide_on_install: true
                     visible_if: "zenarioAW.togglePressed(field, 1)"
                                    
+                administrator_no_warnings_to_report: *blank_child
+                    snippet:
+                        html: No warnings to report.
                 administrators_active: *blank_child
                     snippet:
                         html: No administrator has been inactive for over 90 days.

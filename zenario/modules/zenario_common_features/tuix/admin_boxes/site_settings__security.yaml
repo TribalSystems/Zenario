@@ -1,0 +1,62 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Editing security settings
+    setting_group: security
+    tabs:
+        admin_login:
+            label: Admin login
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: Select which warnings should appear on the Diagnostics screen.
+                warn_when_2fa_is_not_enabled_for_admins:
+                    site_setting:
+                        name: warn_when_2fa_is_not_enabled_for_admins
+                    label: "Warn when 2FA is not enabled for admin logins"
+                    type: checkbox
+                    value: true
+                warn_when_captcha_is_not_enabled_for_admins:
+                    site_setting:
+                        name: warn_when_captcha_is_not_enabled_for_admins
+                    label: "Warn when captcha is not enabled for admin logins"
+                    type: checkbox
+                    value: false
+                warn_when_admin_ip_changed_since_last_login:
+                    site_setting:
+                        name: warn_when_admin_ip_changed_since_last_login
+                    label: "Warn when administrator's IP address has changed since last login"
+                    type: checkbox
+                    value: true
+                warn_when_admin_had_failed_logins:
+                    site_setting:
+                        name: warn_when_admin_had_failed_logins
+                    label: "Warn when there have been failed logins for administrator"
+                    type: checkbox
+                    value: true
+                warn_when_admin_did_not_log_in_for_over_3_months:
+                    site_setting:
+                        name: warn_when_admin_did_not_log_in_for_over_3_months
+                    #The label is created in the PHP class and the value is read from the site description.
+                    type: checkbox
+                    value: true
+                warn_when_email_debug_is_enabled:
+                    label: 'Warn when "Email debug mode" is enabled'
+                    type: checkbox
+                    value: true
+                    readonly: true
+                warn_when_site_contains_personal_data_but_does_not_use_pde:
+                    site_setting:
+                        name: warn_when_site_contains_personal_data_but_does_not_use_pde
+                    label: "Warn when site contains personal data but is not protected using Personal Data Encryption (PDE)"
+                    type: checkbox
+                warn_when_error_log_grows_beyond_10000_records:
+                    site_setting:
+                        name: warn_when_error_log_grows_beyond_10000_records
+                    label: "Warn if the Error log grows beyond 10,000 records"
+                    type: checkbox
+                    value: true

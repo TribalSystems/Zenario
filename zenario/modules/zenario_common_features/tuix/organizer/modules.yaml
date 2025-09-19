@@ -322,16 +322,6 @@ zenario__modules:
                     link:
                         path: zenario__content/panels/content
                         refiner: module_usage
-                phrases:
-                    priv: _PRIV_VIEW_LANGUAGE
-                    parent: view_dropdown
-                    label: "Module's phrases"
-                    with_columns_set:
-                        uses_vlps: true
-                    hide_in_select_mode: true
-                    link:
-                        path: zenario__languages/panels/phrases
-                        refiner: modules_phrases
                 show_frameworks:
                     parent: view_dropdown
                     label: "Module's frameworks"

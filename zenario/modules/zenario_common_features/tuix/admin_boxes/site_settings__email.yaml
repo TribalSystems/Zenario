@@ -31,7 +31,7 @@ site_settings:
                         name: email_address_from
                     label: '"From" email address:'
                     type: text
-                    value: yourname@example.com
+                    value: yourname@zenar.io
                     note_below: |
                         Email address which all server-generated emails should appear to come "from".
                         You can use a real email account to catch undeliverable message reports, but note that your email system administrator may need to do things to allow you to send email from this domain, such as adding SPF and DKIM records.

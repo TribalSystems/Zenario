@@ -329,7 +329,7 @@ if (ze\priv::check()) {
 				echo ze\admin::phrase(
 					'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on this layout?
 					<br/><br/>
-					The content or settings of this plugin will then be editable via the Edit tab.
+					The content will then be editable in &quot;Content item&quot; view.
 					<br/><br/>
 					This will affect just this content item, so <b>[[published]] published</b> content items.'
 				, $mrg);
@@ -337,7 +337,7 @@ if (ze\priv::check()) {
 				echo ze\admin::phrase(
 					'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on this layout?
 					<br/><br/>
-					The content or settings of this plugin will then be editable via the Edit tab.
+					The content will then be editable in &quot;Content item&quot; view.
 					<br/><br/>
 					This will affect [[pages]] content items, including <b>[[published]] published</b> content items.'
 				, $mrg);
@@ -516,10 +516,10 @@ if (ze\priv::check()) {
 					echo ze\admin::phrase('Are you sure you wish to move the [[moduleDisplayName]]?<br/><br/>This will affect [[pages]] (<b>[[published]] published</b>) content item(s).', $mrg);
 				
 				} else {
-					echo ze\admin::phrase('Are you sure you wish to remove the [[moduleDisplayName]] from the layout [[codeName]]?', $mrg);
+					echo ze\admin::phrase('Remove the [[moduleDisplayName]] from slot [[slotName]] on layout [[codeName]]?', $mrg);
 					
 					if (!empty($contentItemsWithContentInThisSlot)) {
-						echo '<br/><br/>', ze\admin::phrase('This slot contains content on [[vcUsage]]. [[organizerLink]]<br/><br/>You should review, edit and remove the content before removing the plugin from the layout, or else the content will be lost!', $mrg);
+						echo '<br/><br/>', ze\admin::phrase('This slot contains version-controlled content on [[vcUsage]]. [[organizerLink]] (Note that items some may not contain content in this slot).<br/><br/>You should review, edit and remove the content before removing the plugin from the layout, or else the content will be lost!', $mrg);
 					}
 				}
 			

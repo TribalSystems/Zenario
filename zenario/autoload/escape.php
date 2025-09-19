@@ -55,10 +55,10 @@ class escape {
 		$flag = $name;
 		
 		if ($val !== null) {
-			$flag .= ':'. \ze\escape::hyp($val);
+			$flag .= ':'. \ze\cache::swig($val);
 		
 		} elseif ($useHeader) {
-			$flag .= ':`1';
+			$flag .= ':~1';
 		}
 		
 		if ($useHeader) {
@@ -74,54 +74,6 @@ class escape {
 	
 	public static function bFlag($name, $val = null) {
 		\ze\escape::flag($name, $val, false);
-	}
-
-
-	public static function hyp($text) {
-		return str_replace(
-			['`',	'-',	':',	"\n",	"\r",	'&',	'"',	'<',	'>'],
-			['`t',	'`h',	'`c',	'`n',	'`r',	'`a',	'`q',	'`l',	'`g'],
-			$text
-		);
-	}
-	
-	
-	
-	
-	//A version of hypEscape()/unpackAndMerge() that looks nicer in URLs
-	//Possible post-branch change for 10.2:
-		//Replace hypEscape() and unpackAndMerge() with this series of functions as this format also works in URLs
-	public static function swig($text) {
-		return str_replace(
-			['~',	'-'],
-			['~s',	'~h'],
-			$text
-		);
-	}
-	public static function swigDescape($text) {
-		return str_replace(
-			['~h',	'~s'],
-			['-',	'~'],
-			$text
-		);
-	}
-	public static function flatten($array) {
-		$output = [];
-		foreach ($array as $k => $v) {
-			$output[] = \ze\escape::swig($k). '-'. \ze\escape::swig($v);
-		}
-		return implode('-', $output);
-	}
-	public static function inflate($string) {
-		$output = [];
-		$array = explode('-', $string);
-		$count = count($array) - 1;
-		
-		for ($i = 0; $i < $count; $i += 2) {
-			$output[\ze\escape::swigDescape($array[$i])] = \ze\escape::swigDescape($array[$i + 1]);
-		}
-		
-		return $output;
 	}
 	
 	

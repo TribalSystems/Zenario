@@ -423,7 +423,7 @@ methods.draw2 = function() {
 	}
 	
 	//Add wrapper CSS classes
-	thus.get('zenario_fbAdminFloatingBox').className =
+	get('zenario_fbAdminFloatingBox').className =
 		thus.baseCSSClass +
 		' ' +
 		(thus.tuix.css_class || 'zenario_fab_default_style') + 
@@ -442,7 +442,7 @@ methods.draw2 = function() {
 	}
 	
 	//Set the HTML for the floating boxes tabs and title
-	thus.get('zenario_fabTabs').innerHTML = thus.drawTabs();
+	get('zenario_fabTabs').innerHTML = thus.drawTabs();
 	
 	
 	var isReadOnly = !thus.editModeOnBox(),
@@ -453,11 +453,11 @@ methods.draw2 = function() {
 	
 	thus.setTitle(isReadOnly);
 	
-	thus.get('zenario_fbButtons').innerHTML = thus.microTemplate(thus.mtPrefix + '_buttons', m);
+	get('zenario_fbButtons').innerHTML = thus.microTemplate(thus.mtPrefix + '_buttons', m);
 	zenario.addJQueryElements('#zenario_fbButtons ', true);
 	
 	//Show the box
-	thus.get('zenario_fbAdminFloatingBox').style.display = 'block';
+	get('zenario_fbAdminFloatingBox').style.display = 'block';
 	
 	//Set the floating box to the max height for the user's screen
 	thus.tallAsPossibleField = undefined;
@@ -768,11 +768,11 @@ methods.drawPickedItem = function(item, id, field, readOnly, inDropDown) {
 			}
 		} else {
 			//Otherwise try to display it from the cache/uploads/ directory
-			src = URLBasePath + 'zenario/file.php?getUploadedFileInCacheDir=' + encodeURIComponent(item);
+			src = URLBasePath + 'zenario/preview_uploaded_file.php?uploadCode=' + encodeURIComponent(item);
 		}
 	
-		//Check if thus is an image this has been chosen
-		if (extension.match(/gif|jpg|jpeg|png|svg/)) {
+		//Check if this is an image that has been chosen
+		if (extension.match(/gif|jpg|jpeg|png|webp|svg|ico/)) {
 			//For images, display a thumbnail this opens a colorbox when clicked
 			mi.thumbnail = {
 				onclick: thus.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "', '" + label + "');",
@@ -1270,7 +1270,7 @@ methods.showConfirm = function(saveAndContinue, createAnother, saveAndNext) {
 
 
 methods.dragDropTarget = function() {
-	return thus.get('zenario_fbAdminInner');
+	return get('zenario_fbAdminInner');
 };
 
 methods.enableDragDropUpload = function() {

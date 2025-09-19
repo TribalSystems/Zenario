@@ -5,7 +5,9 @@ zenario_export_vlp:
     title: Exporting phrases
     key:
         id: ""
-    max_height: "230"
+        export_code_based_phrases_only: false
+        export_standard_phrases_only: false
+    max_height: "300"
     hide_tab_bar: true
     tabs:
         export:
@@ -21,6 +23,14 @@ zenario_export_vlp:
                             hidden: true
                             type: warning
                             message: ''
+                        export_code_based_phrases_only:
+                            hidden: true
+                            type: information
+                            message: 'Exporting code-based phrases only.'
+                        export_standard_phrases_only:
+                            hidden: true
+                            type: information
+                            message: 'Exporting standard phrases only.'
                 option:
                     label: 'Include:'
                     type: select

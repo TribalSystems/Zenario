@@ -34,9 +34,16 @@ foreach ($datasetFieldIds as $datasetFieldId) {
 		continue;
 	}
 	
+	$fieldLabel = $fieldLabelWithColon = ($datasetField['label'] ?: $datasetField['default_label']);
+	if ($fieldLabel) {
+		if (substr($fieldLabel, -1) != ':') {
+			$fieldLabelWithColon .= ":";
+		}
+	}
+	
 	$newInput = [
 		'ord' => $startOrd++,
-		'label'=> $datasetField['label'].":",
+		'label'=> $fieldLabelWithColon,
 		'type' => $datasetField['type'],
 		'placeholder' => $this->phrase("Optional"),
 		'value' => ''
@@ -55,7 +62,7 @@ foreach ($datasetFieldIds as $datasetFieldId) {
 	if ($datasetField['type'] == 'checkbox' || $datasetField['type'] == 'group') {
 		if ($edit) {
 			$newInput['type'] = 'checkbox';
-			$newInput['label'] = $datasetField['label'];
+			$newInput['label'] = $fieldLabel;
 		} else {
 			$newInput['value'] = $newInput['value'] ? $this->phrase('Yes') : $this->phrase('No');
 		}
@@ -67,6 +74,12 @@ foreach ($datasetFieldIds as $datasetFieldId) {
 	} elseif ($datasetField['type'] == 'centralised_radios') {
 		if ($edit) {
 			$newInput['type'] = "radios";
+		}
+	} elseif ($datasetField['type'] == 'date') {
+		if (!$edit) {
+			if (!empty($newInput['value'])) {
+				$newInput['value'] = ze\date::formatDateTime($newInput['value']);
+			}
 		}
 	}
 	

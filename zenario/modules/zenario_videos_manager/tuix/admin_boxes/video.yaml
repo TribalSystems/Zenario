@@ -34,7 +34,7 @@ zenario_videos_manager__video:
                     css_class: zenario_gp_button
                     value: Test
                     dataset_label: '[URL test button]'
-                    onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"
+                    onclick: "if ($(lib.get('url')).val()!='') {window.open($(lib.get('url')).val())}"
                 fetch_youtube_details:
                     type: button
                     css_class: zenario_gp_button

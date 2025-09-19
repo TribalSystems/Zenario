@@ -39,7 +39,10 @@ class col {
 	public $hashed = false;
 	public $isFloat = false;
 	public $isInt = false;
-	public $isTime = false;
+	public $isDate = false;
+	public $isDateTime = false;
+	public $isTimestamp = false;
+	public $isDateOrTime = false;
 	public $isSet = false;
 	public $isJSON = false;
 	public $isPK = false;
@@ -69,11 +72,20 @@ class col {
 				break;
 
 			case 7:
+				$this->isTimestamp = true;
+				$this->isDateOrTime = true;
+				break;
 			case 10:
-			case 11:
+				$this->isDate = true;
+				$this->isDateOrTime = true;
+				break;
 			case 12:
+				$this->isDateTime = true;
+				$this->isDateOrTime = true;
+				break;
+			case 11:
 			case 13:
-				$this->isTime = true;
+				$this->isDateOrTime = true;
 				break;
 
 			case 245:

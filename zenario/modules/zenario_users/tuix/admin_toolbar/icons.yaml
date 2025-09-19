@@ -4,7 +4,10 @@ sections:
     icons:
         buttons:
             item_permissions:
-                ord: 13
+                ord: 7
                 css_class: zenario_at_icon_permissions
                 admin_box:
-                  path: zenario_content_privacy
+                    path: zenario_content_privacy
+                appears_in_toolbars:
+                    preview: true
+                    edit: true

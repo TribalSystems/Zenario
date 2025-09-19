@@ -3,7 +3,7 @@
 zenario__languages:
     panels:
         phrases:
-            title: Phrases
+            title: Standard phrases
             php: true
             db_items:
                 table: >
@@ -11,33 +11,25 @@ zenario__languages:
                     INNER JOIN [[DB_PREFIX]]languages AS l
                     ON vp.language_id = l.id
                 id_column: vp.id
-                custom_where_statement_if_no_refiner: |
+                where_statement: |
                     WHERE vp.language_id = [[FOCUSED_LANGUAGE_ID]]
-            refiners:
-                modules_phrases:
-                    table_join: |
-                        INNER JOIN [[DB_PREFIX]]modules AS m
-                        ON m.id = [[REFINER__MODULES_PHRASES]]
-                    sql: vp.module_class_name = m.class_name
-                group_public_name:
-                    sql: |
-                        vp.code = '_GROUP_[[REFINER__GROUP_PUBLIC_NAME]]'
-                        AND vp.module_class_name = 'zenario_common_features'
+                    AND vp.code NOT LIKE "\_%"
+                    AND vp.archived = 0
+            quick_filter_buttons:
+                module:
+                    label: 'Phrases from all modules'
+                all_module:
+                    parent: module
+                    label: 'Phrases from all modules'
+                    column: module_name
+                    value: ''
+                    remove_filter: true
             columns:
                 code:
-                    title: Phrase code
                     searchable: true
                     db_column: vp.code
                     show_by_default: true
                     width: large
-                is_code:
-                    title: Is code
-                    db_column: SUBSTR(vp.code, 1, 1) = '_'
-                    format: yes_or_no
-                    yes_phrase: Code-based
-                    no_phrase: Text-based
-                    show_by_default: false
-                    width: xsmall
                 is_html:
                     title: Is HTML
                     db_column: vp.is_html
@@ -81,37 +73,12 @@ zenario__languages:
                     disallow_sorting: true
                     values:
                         unknown: Unknown
-                    #width: small
-                #modified_date:
-                #    title: Last modified by admin
-                #    db_column: vp.modified_date
-                #    format: date
-                #    show_by_default: true
-                #    #width: small
             default_sort_column: code
             item:
                 name: Phrase
                 names: Phrases
-                css_class: language
+                css_class: phrases
             collection_buttons:
-                help:
-                    label: Help
-                    help:
-                        message: |
-                            This panel lists all of the phrases that exist on your site. If your site is multilingual, then a phrase's  translation will display on the page in the corresponding language.
-                            
-                            A phrase cannot be created in organizer, for a phrase to be added it must be found in a plugin's framework or created as a plugin's setting. In both cases, the phrase needs to be viewed by a visitor to be added to this panel.
-                reimport_phrases:
-                    label: Re-import phrases from config files
-                    hide_in_select_mode: Yes
-                    ajax:
-                        confirm:
-                            message: 
-                            button_message: Re-import
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            reimport_phrases: 1
                 export_phrases_dropdown:
                     label: Export phrases
                     multiple_select: Yes
@@ -128,35 +95,31 @@ zenario__languages:
                         fileDesc: CSV, Excel or OpenDocument spreadsheet files
                         request:
                             import_phrases: "1"
-            
+                help:
+                    label: Help
+                    help:
+                        message: |
+                            Standard phrases are module-related phrases.
+                            
+                            This panel lists all of the standard phrases that exist on your site. They may come from a module's plugin settings, framework or program code.
+                            
+                            A phrase needs to be viewed by a visitor to be added to this panel.
+                            
+                            If your site is multilingual, then a phrase's translation will be displayed on the page in the corresponding language. Untranslated phrases will be displayed in the original language, followed by "(untranslated)".
+                            
+                            Code-based phrases can be found on another Organizer panel (above).
             item_buttons:
                 edit_dropdown:
                     label: Edit phrase...
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
                 edit:
-                    ord: 999
+                    ord: 0
                     priv: _PRIV_VIEW_LANGUAGE
                     parent: edit_dropdown
                     label: Edit phrase (all languages)
                     admin_box:
                         path: zenario_phrase
-                merge:
-                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-                    label: Merge
-                    multiple_select: true
-                    multiple_select_only: true
-                    without_columns_set:
-                        is_code: true
-                    ajax:
-                        confirm:
-                            html: true
-                            message: 'Are you sure you wish to merge the selected phrases?'
-                            button_message: Merge
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            merge_phrases: 1
                 
                 mark_as_unseen_plain_text:
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
@@ -195,22 +158,49 @@ zenario__languages:
                         request:
                             mark_as_unseen: 1
                 
+                #Please note: the "Archive" button will only appear on multilingual sites,
+                #and only for phrases that have been translated into at least 1 language.
+                archive:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Archive
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Archive this phrase?
+                                
+                                This phrase (with any translations) will be saved in an archived form. If the site front-end displays the phrase again, it will be restored along with its translations.
+
+                                If an import is run and it is in the import file, it will be similarly be restored.
+                            multiple_select_message: |
+                                Archive these phrases?
+                                
+                                These phrases (with any translations) will be saved in an archived form. If the site front-end displays the phrases again, they will be restored along with translations.
+
+                                If an import is run and they are in the import file, they will similarly be restored.
+                            button_message: Archive
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            archive_phrase: 1
+                    visible_if_for_all_selected_items: !item.phrase_is_not_translated
+                
                 delete_plain_text:
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                     label: Delete
                     multiple_select: true
                     visible_if_for_all_selected_items: |
-                        !item.is_code && !item.is_html
+                        !item.is_html
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete the translations of the phrase "[[code]]"?
+                                Delete the translations of the phrase "[[code]]"?
                                 
-                                This will not delete any plugin settings or customised phrases.
+                                This will not delete any plugin settings where it may originate.
                             multiple_select_message: |
-                                Are you sure you wish to delete the translations of the [[item_count]] selected phrases?
+                                Delete the translations of the [[item_count]] selected phrases?
                                 
-                                This will not delete any plugin settings or customised phrases.
+                                This will not delete any plugin settings where they may originate.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -220,20 +210,18 @@ zenario__languages:
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                     label: Delete
                     multiple_select: true
-                    visible_if_for_all_selected_items: |
-                        !item.is_code
                     visible_if_for_any_selected_items: |
                         item.is_html
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete the translations of the selected phrase?
+                                Delete the translations of the selected phrase?
                                 
-                                This will not delete any plugin settings or customised phrases.
+                                This will not delete any plugin settings where it may originate.
                             multiple_select_message: |
-                                Are you sure you wish to delete the translations of the [[item_count]] selected phrases?
+                                Delete the translations of the [[item_count]] selected phrases?
                                 
-                                This will not delete any plugin settings or customised phrases.
+                                This will not delete any plugin settings where they may originate.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

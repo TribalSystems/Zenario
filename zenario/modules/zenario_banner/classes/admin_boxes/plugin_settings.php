@@ -195,8 +195,8 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		}
 
 		$box['tabs']['first_tab']['fields']['anchor_name']['oninput'] = '
-			var side_note = document.getElementById("row__anchor_name").getElementsByClassName("zenario_note_content")[0];
-			var anchor_name = document.getElementById("row__anchor_name").getElementsByClassName("zfab_row_fields")[0].firstElementChild.value;
+			var side_note = lib.get("row__anchor_name").getElementsByClassName("zenario_note_content")[0];
+			var anchor_name = lib.get("row__anchor_name").getElementsByClassName("zfab_row_fields")[0].firstElementChild.value;
 
 			if (!anchor_name) {
 				anchor_name = "[anchorname]";

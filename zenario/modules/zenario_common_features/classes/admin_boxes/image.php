@@ -41,10 +41,18 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		$box['key']['filename_on_load'] = $details['filename'];
 		
-		if ($details['usage'] == 'mic') {
-			$box['key']['mic_image'] = true;
-		} elseif ($details['usage'] == 'site_setting') {
-			$box['key']['site_setting_image'] = true;
+		switch ($details['usage']) {
+			case 'image':
+				$box['key']['regular_image'] = true;
+				break;
+			
+			case 'mic':
+				$box['key']['mic_image'] = true;
+				break;
+			
+			case 'site_setting':
+				$box['key']['special_image'] = true;
+				break;
 		}
 		
 		$box['title'] = ze\admin::phrase('Editing properties of image "[[filename]]"', $details);
@@ -73,13 +81,29 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			ze\admin::phrase($dimensionsString, $details, false, '{{', '}}');
 		
 		$box['tabs']['details']['fields']['filename']['value'] = $details['filename'];
-		$box['tabs']['details']['fields']['alt_tag']['value'] = $details['alt_tag'];
+		
+		if ($box['key']['special_image']) {
+			$box['tabs']['details']['fields']['alt_tag']['hidden'] = true;
+			$box['tabs']['link']['hidden'] = true;
+		} else {
+			$box['tabs']['details']['fields']['alt_tag']['value'] = $details['alt_tag'];
+		}
 		
 		
 		
 		//Show a resized version of the image front-and-center in the properties tab
 		$width = $height = $url = false;
-		\ze\image::adminRetinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 700, $heightLimit = 200);
+		if ($box['key']['special_image']) {
+			if ($details['mime_type'] == 'image/x-icon') {
+				$width = $details['width'];
+				$height = $details['height'];
+				$url = ze\file::specialImageLink($box['key']['id']);
+			} else {
+				\ze\image::specialImageRetinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 700, $heightLimit = 200);
+			}
+		} else {
+			\ze\image::adminRetinaLink($width, $height, $url, $box['key']['id'], $widthLimit = 700, $heightLimit = 200);
+		}
 		
 		$fields['details/image']['image'] = [
 			'width' => $width,
@@ -88,8 +112,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		];
 		
 		
-		//SVGs shouldn't see the crop and zoom options
-		if ($isSVG) {
+		//SVGs and any site setting images shouldn't see the crop and zoom options
+		if ($isSVG || $box['key']['special_image']) {
 			unset($box['tabs']['crop']);
 			unset($box['tabs']['crops_here']);
 			unset($box['tabs']['crops_elsewhere']);
@@ -543,13 +567,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					['folder_name' => $details['path']]
 				);
 			}
-		} elseif ($box['key']['site_setting_image']) {
-			unset($box['tabs']['details']['fields']['tags']);
-			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
-			unset($box['tabs']['details']['fields']['floating_box_title']);
-			unset($box['tabs']['details']['fields']['image_credit']);
-			unset($box['tabs']['details']['fields']['where_used']);
-		} else {
+			
+		} elseif ($box['key']['regular_image']) {
 			//Load details on the image tags in use in the system, and which have been chosen here
 			$sql = "
 				SELECT it.name, itl.tag_id
@@ -580,73 +599,81 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 				unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
 				unset($box['tabs']['details']['fields']['floating_box_title']);
 			}
-		}
-
-		$box['tabs']['details']['fields']['image_credit']['value'] = $details['image_credit'];
 		
-		
-		switch ($details['privacy']) {
-			case 'auto':
-				$fields['details/privacy_auto']['hidden'] = false;
-				break;
-			
-			case 'private':
-				$fields['details/privacy_private']['hidden'] = false;
-				break;
-			
-			case 'public':
-				$fields['details/privacy_public']['hidden'] = false;
-				
-				$mrg = [];
-				$mrg['path'] = ze\image::publicPath($details);
-				$mrg['link'] = ze\link::absolute(). $mrg['path'];
-				
-				$fields['details/privacy_public']['note_below'] =
-					ze\admin::phrase('Public: this image can be accessed publicly via the URL [[link]], internal references to the image should be via [[path]]', $mrg);
-				
-				if (!file_exists(CMS_ROOT. $mrg['path'])) {
-					$fields['details/missing_public_image']['hidden'] = false;
-				}
-				
-				break;
-		}
-		
-		if ($details['privacy'] == 'public') {
-			//If this is a public image, generate all the required links.
-			$fields['link/image_is_public_snippet']['hidden'] = false;
-			$fields['link/image_is_not_public_snippet']['hidden'] = true;
-			
-			$rememberWhatThisWas = ze::$mustUseFullPath;
-			ze::$mustUseFullPath = false;
-			
-			$width = $height = $url = $internalPath = false;
-			ze\image::link($width, $height, $url, $box['key']['id']);
-			ze\image::internalPath($width, $height, $internalPath, $box['key']['id']);
-			
-			$originalImageSize = ze\file::formatSizeUnits(filesize($internalPath));
-			
-			$values['link/internal_original_image_link'] = htmlspecialchars($url);
-			$values['link/external_original_image_link'] = htmlspecialchars(ze\link::absolute(). $url);
-			
-			ze\lang::applyMergeFields($fields['link/internal_original_image_link']['label'], ['size' => $originalImageSize]);
-			ze\lang::applyMergeFields($fields['link/external_original_image_link']['label'], ['size' => $originalImageSize]);
-			
-			
-			//Code for embedding
-			$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($url) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
-			
-			ze::$mustUseFullPath = $rememberWhatThisWas;
 		} else {
-			if ($details['usage'] == 'mic') {
-				$box['tabs']['link']['hidden'] = true;
-			} else {
-				$fields['link/image_is_public_snippet']['hidden'] = true;
-				$fields['link/image_is_not_public_snippet']['hidden'] = false;
-				$fields['link/links_grouping']['hidden'] = true;
-			}
+			unset($box['tabs']['details']['fields']['tags']);
+			unset($box['tabs']['details']['fields']['add_a_gallery_caption']);
+			unset($box['tabs']['details']['fields']['floating_box_title']);
+			unset($box['tabs']['details']['fields']['image_credit']);
+			unset($box['tabs']['details']['fields']['where_used']);
 		}
-
-		if (!$box['key']['site_setting_image']) {
+		
+		
+		if ($box['key']['regular_image'] || $box['key']['mic_image']) {
+			
+			$values['details/image_credit'] = $details['image_credit'];
+			
+			switch ($details['privacy']) {
+				case 'auto':
+					$fields['details/privacy_auto']['hidden'] = false;
+					break;
+				
+				case 'private':
+					$fields['details/privacy_private']['hidden'] = false;
+					break;
+				
+				case 'public':
+					$fields['details/privacy_public']['hidden'] = false;
+					
+					$mrg = [];
+					$mrg['path'] = ze\image::publicPath($details);
+					$mrg['link'] = ze\link::absolute(). $mrg['path'];
+					
+					$fields['details/privacy_public']['note_below'] =
+						ze\admin::phrase('Public: this image can be accessed publicly via the URL [[link]], internal references to the image should be via [[path]]', $mrg);
+					
+					if (!file_exists(CMS_ROOT. $mrg['path'])) {
+						$fields['details/missing_public_image']['hidden'] = false;
+					}
+					
+					break;
+			}
+		
+			if ($details['privacy'] == 'public') {
+				//If this is a public image, generate all the required links.
+				$fields['link/image_is_public_snippet']['hidden'] = false;
+				$fields['link/image_is_not_public_snippet']['hidden'] = true;
+				
+				$rememberWhatThisWas = ze::$mustUseFullPath;
+				ze::$mustUseFullPath = false;
+				
+				$width = $height = $url = $internalPath = false;
+				ze\image::link($width, $height, $url, $box['key']['id']);
+				ze\image::internalPath($width, $height, $internalPath, $box['key']['id']);
+				
+				$originalImageSize = ze\file::formatSizeUnits(filesize($internalPath));
+				
+				$values['link/internal_original_image_link'] = htmlspecialchars($url);
+				$values['link/external_original_image_link'] = htmlspecialchars(ze\link::absolute(). $url);
+				
+				ze\lang::applyMergeFields($fields['link/internal_original_image_link']['label'], ['size' => $originalImageSize]);
+				ze\lang::applyMergeFields($fields['link/external_original_image_link']['label'], ['size' => $originalImageSize]);
+				
+				
+				//Code for embedding
+				$values['link/html_embed_link'] = '<img src="' . htmlspecialchars($url) . '" width="' . (int) $width . '" height="' . (int) $height . '" alt="' . htmlspecialchars($details['alt_tag']) . '"/>';
+				
+				ze::$mustUseFullPath = $rememberWhatThisWas;
+			} else {
+				if ($details['usage'] == 'mic') {
+					$box['tabs']['link']['hidden'] = true;
+				} else {
+					$fields['link/image_is_public_snippet']['hidden'] = true;
+					$fields['link/image_is_not_public_snippet']['hidden'] = false;
+					$fields['link/links_grouping']['hidden'] = true;
+				}
+			}
+			
 			$usageLinks = self::imageUsageLinks((int) $box['key']['id']);
 			$usage = ze\fileAdm::getImageUsage((int) $box['key']['id']);
 			$box['tabs']['details']['fields']['where_used']['snippet']['html'] = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
@@ -692,10 +719,10 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase($errorMessage);
 		
 		} elseif ($values['details/filename'] !== ze\file::safeName($values['details/filename'])) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: \\ / : ; * ? " < > |');
+			$box['tabs']['details']['errors'][] = ze\admin::phrase('The filename must not contain any of the following characters: % \\ / : ; * ? " < > |');
 		}
 		
-		if (!$box['key']['mic_image'] && !$box['key']['site_setting_image']) {
+		if ($box['key']['regular_image']) {
 			//Ensure image tags are all lower-case
 			$values['details/tags'] = mb_strtolower($values['details/tags']);
 			
@@ -716,7 +743,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		if (empty($box['tabs']['details']['errors'])) {
 			
-			if (!$box['key']['mic_image'] && !$box['key']['site_setting_image'] && !empty($tags)) {
+			if ($box['key']['regular_image'] && !empty($tags)) {
 				$existingTags = ze\sql::fetchValues("
 					SELECT name
 					FROM ". DB_PREFIX. "image_tags
@@ -743,7 +770,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 			}
 		}
 		
-		if ($values['details/alt_tag']) {
+		if (!$box['key']['special_image'] && $values['details/alt_tag']) {
 			$altTag = trim(preg_replace('/[^a-zA-Z0-9\.\,\-\'\s]/', ' ', $values['details/alt_tag']));
 			
 			if ($values['details/alt_tag'] != $altTag) {
@@ -759,11 +786,16 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		$details = [
 			'filename' => $values['details/filename'],
-			'alt_tag' => $values['details/alt_tag'],
-			'image_credit' => $values['details/image_credit']
+			'alt_tag' => $values['details/alt_tag']
 		];
+		
+		if ($box['key']['regular_image'] || $box['key']['mic_image']) {
+			$details['image_credit'] = $values['details/image_credit'];
+		} else {
+			$details['image_credit'] = '';
+		}
 
-		if (ze::setting('show_default_floating_box_caption') && !$box['key']['mic_image'] && !$box['key']['site_setting_image']) {
+		if ($box['key']['regular_image'] && ze::setting('show_default_floating_box_caption')) {
 			if ($values['details/add_a_gallery_caption']) {
 				$details['floating_box_title'] = ze\ring::sanitiseWYSIWYGEditorHTML($values['details/floating_box_title']);
 			} else {
@@ -775,7 +807,8 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 		
 		
 		//Check whether any tags were picked
-		if (!$box['key']['mic_image'] && !$box['key']['site_setting_image'] && $values['details/tags']
+		if ($box['key']['regular_image']
+		 && $values['details/tags']
 		 && ($tagNames = ze\escape::in($values['details/tags'], 'sql'))) {
 			//If so, remove any tags that weren't picked
 			$sql = "

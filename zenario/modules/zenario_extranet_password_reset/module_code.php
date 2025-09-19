@@ -33,6 +33,9 @@ class zenario_extranet_password_reset extends zenario_extranet {
 	public function init() {
 		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
 		$this->requireJsLib('zenario/js/password_functions.min.js');
+		
+		$this->registerGetRequest('extranet_reset_password', '', $canonical = false);
+		$this->registerGetRequest('hash', '', $canonical = false);
 
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetOrPostVarIsSet = false, $ifSessionVarOrCookieIsSet = false);

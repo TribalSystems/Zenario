@@ -37,7 +37,7 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 		
 		$folderDetails= ze\row::get('documents', ['id','folder_name'], ['id' => $box['key']['id'],'type'=>'folder']);
 		if ($folderDetails) {
-			$box['title'] = 'Uploading document for the folder "'.$folderDetails['folder_name'].'"';
+			$box['title'] = ze\admin::phrase('Uploading document for the folder "[[folder_name]]"', ['folder_name' => $folderDetails['folder_name']]);
 			$documentProperties['folder_id'] = $box['key']['id'];
 		}
 	}
@@ -62,42 +62,47 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 					$box['tabs']['upload_document']['errors'][] = $fileCheck->__toString();
 				}
 			}
-			if ($documentNameList){
-				if (in_array($filename,$documentNameList)){
-					$found=true;
-				}else{
-					$documentNameList[]=$filename;
+			
+			if ($documentNameList) {
+				if (in_array($filename, $documentNameList)) {
+					$found = true;
+				} else {
+					$documentNameList[] = $filename;
 				}
-			}else{
-				$documentNameList[]=$filename;
+			} else {
+				$documentNameList[] = $filename;
 			}
 		}
-		if ($found){
+		
+		if ($found) {
 			$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('You cannot upload documents with the same name and extension in a folder');
 		}
 		
 		//same name 
-		if ($box['key']['id'] && $box['key']['id']!="id"){
+		if ($box['key']['id'] && $box['key']['id'] != "id") {
 			$parentfolderId = $box['key']['id'];
-		}else{
+		} else {
 			$parentfolderId = "0";
 		}
 		
-		$sql="
+		$sql = "
 			SELECT filename
-			FROM ".DB_PREFIX."documents
-			WHERE folder_id = ".(int)$parentfolderId;
+			FROM " . DB_PREFIX . "documents
+			WHERE folder_id = " . (int) $parentfolderId;
 			
 		$result = ze\sql::select($sql);
 		while($row = ze\sql::fetchAssoc($result)) {
 			$fileNameList[] = $row['filename'];
 		}
 		
-		if ($values['upload_document/document__upload'] && isset($fileNameList) && $fileNameList){
-			foreach ($documentNameList as $name){
+		if ($values['upload_document/document__upload'] && isset($fileNameList) && $fileNameList) {
+			foreach ($documentNameList as $name) {
 				if (array_search($name, $fileNameList) !== false) {
 					$nameDetails = explode(".",$name);
-					$box['tabs']['upload_document']['errors'][] = ze\admin::phrase('A file named "[[filename]]" with extension ".[[extension]]" already exists in this folder!', ['filename' => $nameDetails[0],'extension'=>$nameDetails[1]]);
+					$box['tabs']['upload_document']['errors'][] = ze\admin::phrase(
+						'A file named "[[filename]]" with extension ".[[extension]]" already exists in this folder!',
+						['filename' => $nameDetails[0], 'extension' => $nameDetails[1]]
+					);
 					break;
 				}
 			}
@@ -112,17 +117,67 @@ class zenario_common_features__admin_boxes__document_upload extends ze\moduleBas
 		$privacy = $box['tabs']['upload_document']['fields']['privacy']['current_value'];
 		
 		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
+		$documentsCreated = [];
 		$documentId = false;
+		
+		//Get last ordinal within folder. Use it later for ordering.
+		$sql = '
+			SELECT MAX(ordinal) + 1
+			FROM ' . DB_PREFIX . 'documents
+			WHERE folder_id = ' . (int)($folderId ? $folderId : 0);
+		$result = \ze\sql::select($sql);
+		$row = \ze\sql::fetchRow($result);
+		$ordinal = $row[0] ? $row[0] : 1;
+		
 		foreach ($documentsUploaded as $document) {
 			$filepath = ze\file::getPathOfUploadInCacheDir($document);
 			$filename = basename(ze\file::getPathOfUploadInCacheDir($document));
 			
 			if ($filepath && $filename) {
 				$documentId = ze\document::upload($filepath, $filename, $folderId, $privacy);
+				$documentsCreated[] = $documentId;
 			}
 		}
-		$box['key']['id'] = $documentId;
 		
+		//Newly added documents should be sorted A-Z and appear at the end of the folder or panel.
+		$numDocumentsCreated = count($documentsCreated);
+		if ($numDocumentsCreated == 1) {
+			$ql = "
+				SELECT id
+				FROM " . DB_PREFIX . "documents
+				WHERE id IN (" . ze\escape::in($documentsCreated) . ")
+				ORDER BY filename";
+			$result = ze\sql::select($ql);
+			
+			while ($createdDocumentId = ze\sql::fetchValue($result)) {
+				ze\row::set('documents', ['ordinal' => $ordinal], $createdDocumentId);
+				$ordinal++;
+			}
+			
+			$box['key']['id'] = implode(',', $documentsCreated);
+		}
+		
+		if ($numDocumentsCreated) {
+			if ($privacy == 'public') {
+				$message = ze\admin::nPhrase(
+					'Document uploaded successfully, and made public. Click "View public link" to make a link to it.',
+					'[[count]] documents uploaded successfully, and made public. Click "View public link" on each of them to make links to them.',
+					$numDocumentsCreated,
+					['count' => $numDocumentsCreated]
+				);
+			} else {
+				$message = ze\admin::nPhrase(
+					'Document uploaded successfully.',
+					'[[count]] documents uploaded successfully.',
+					$numDocumentsCreated,
+					['count' => $numDocumentsCreated]
+				);
+			}
+			
+			$box['toast'] = [
+				'message' => $message,
+				'message_type' => 'success'
+			];
+		}
 	}
-	
 }

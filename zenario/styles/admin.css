@@ -122,9 +122,9 @@
 	background-color: black;
 }
 
-#row__title input,
-#row__description textarea,
-#row__keywords textarea {
+#zaf_row__title input,
+#zaf_row__description textarea,
+#zaf_row__keywords textarea {
 	float:left;
 }
 
@@ -1165,6 +1165,10 @@ x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
 	display:none;
 }
 
+body.zenario_pageMode_edit x-zenario-admin-slot-wrapper.zenario_slotWithNoContents.zenario_slotSetToShowNothing {
+	display:block;
+}
+
 body.zenario_adminToolbarShown.zenario_pageModeIsnt_preview.zenario_show_empty_slots_and_mobile_only_slots x-zenario-admin-slot-wrapper.zenario_slotWithNoContents {
 	display:block;
 }
@@ -1299,4 +1303,67 @@ body.zenario_showing_plugin_preview .zenario_image_properties_button {
     top: 4px;
     width: 16px;
     height: 16px;
+}
+
+/* Colorbox */
+
+#colorbox.zenario_admin_cb #cboxContent {
+	border-width:5px;
+}
+
+#colorbox.zenario_admin_cb:not(zenario_grid_maker) #cboxClose {
+	top: -22px;
+  	right: -22px;
+  	border-radius:50%;
+  	width: 28px;
+  	height: 28px;
+  	background-size: 30px;
+  	background-position:center;
+}
+
+#colorbox.zenario_admin_cb.zenario_grid_box #cboxClose {
+  	background-size: 14px;
+}
+
+#colorbox.zenario_admin_cb:not(zenario_grid_maker) #cboxTitle {
+	padding-left:10px;
+	padding-right:10px;
+	padding-bottom:5px;
+	width: calc(100% - 20px);
+	background:#222;
+}
+
+#colorbox.zenario_admin_cb:not(.zenario_grid_maker) #cboxContent {
+	overflow:initial;
+}
+
+#colorbox.zenario_admin_cb:not(.zenario_grid_maker, .zenario_grid_box) #cboxContent {
+	background:url('../admin/images/checkered.gif') repeat;
+}
+
+#colorbox.zenario_admin_cb #cboxLoadingOverlay {
+	background:none;
+}
+
+#colorbox.zenario_admin_cb #cboxLoadingGraphic {
+	width: 30px;
+	height: 30px;
+	border: 5px solid rgba(0, 0, 0, 0.1);
+	border-top-color: #000000;
+	animation: spincboxLoadingGraphic 1s infinite linear;
+	box-sizing: border-box;
+	background:transparent !important;
+	right: 0;
+  	bottom: 0;
+  	margin:auto;
+	border-radius:50%;
+}
+
+@keyframes spincboxLoadingGraphic {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

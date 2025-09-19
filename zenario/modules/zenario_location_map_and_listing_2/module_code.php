@@ -29,6 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 	
+	protected $id;
 	protected $dataset;
 	protected $datasetFields;
 	protected $datasetCustomFields;
@@ -50,7 +51,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		//Only load data if this isn't the map
 		if (!empty($_REQUEST['display_map'])) {
 			if (!empty($this->setting('show_map'))) {
-				$this->requireJsLib('https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')));
+				$this->requireJsLib('https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '&libraries=drawing,marker');
 			}
 			return true;
 		}
@@ -356,7 +357,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 		$jsChangeTime = filectime (CMS_ROOT. ze::moduleDir('zenario_location_map_and_listing_2') . "/js/areas.js");
 		echo '<html>
 				<head>
-				<script id="google_api" type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) .'&libraries=drawing"></script>
+				<script id="google_api" type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) .'&libraries=drawing,marker"></script>
 				<link href="' , ze\link::absolute() , ze::moduleDir("zenario_location_map_and_listing_2") , '/adminstyles/fab_area_map.css" media="screen" type="text/css" rel="stylesheet">
 				<script type="text/javascript" src="' , ze\link::absolute() , ze::moduleDir("zenario_location_map_and_listing_2") , '/js/areas.js?' . $jsChangeTime . '"></script>
 				</head>

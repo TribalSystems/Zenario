@@ -117,7 +117,19 @@
 					<a href="{{destURL_Link}}">{{destURL_Title}}</a>
 				</div>
 			{% endif %}
+			
+			{% if After_login_url_section %} 
+				<div class="extranet_requested_link">
+					{{"After-login page:"|trans}}
+					<a href="{{afterLoginURL_Link}}">{{afterLoginURL_Title}}</a>
+				</div>
+			{% endif %}
 			<div class="extranet_links">
+				{% if Profile_Link_Section %}
+					<div>
+						<a {{Profile_Link}}>{{"Your profile"|trans}}</a>
+					</div>
+				{% endif %}
 				{% if Change_Password_Link_Section %}
 					<div>
 						<a {{Change_Password_Link}}>{{"Change your password"|trans}}</a>

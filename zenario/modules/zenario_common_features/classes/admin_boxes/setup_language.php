@@ -164,11 +164,11 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		}
 		
 		$fields['settings/show_untranslated_content_items']['label'] =
-			ze\admin::phrase('When showing banners/menus in [[settings/english_name]], and the site is only partially translated into [[settings/english_name]]:', $values);
+			ze\admin::phrase('When showing menus and banners plugins on pages in [[settings/english_name]]:', $values);
 		$fields['settings/show_untranslated_content_items']['values'][0]['label'] =
-			ze\admin::phrase('Hide banner/menu links when no [[settings/english_name]] page exists', $values);
+			ze\admin::phrase('Hide text and link when the [[settings/english_name]] page does not exist (not recommended)', $values);
 		$fields['settings/show_untranslated_content_items']['values'][1]['label'] =
-			ze\admin::phrase('Show all banner/menu links, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists', $values);
+			ze\admin::phrase('Always show text and link, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists (recommended)', $values);
 	}
 	
 	protected function lookupLangPhrase($code, $langId) {
@@ -317,7 +317,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		}
 
 		//Check if a default language has been set, and set it now if not
-		if ($addedFirstLanguage = !ze::$defaultLang) {
+		if (!ze::$defaultLang) {
 			ze\site::setSetting('default_language', $langId);
 			ze::$defaultLang = $langId;
 		}

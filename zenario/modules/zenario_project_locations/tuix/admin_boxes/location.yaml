@@ -91,7 +91,7 @@ zenario_project_locations__project:
                     type: hidden
                     same_row: Yes
                 map_lookup:
-                    label: 'Place map pin using:;
+                    label: 'Place map pin using:'
                     ord: 998
                     snippet:
                         html:

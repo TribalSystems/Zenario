@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS `[[DB_PREFIX]]admin_storekeeper_prefs`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]characteristic_user_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]content`;
+DROP TABLE IF EXISTS `[[DB_PREFIX]]content_cache`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]disused_custom_phrases`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_content_link`;
 DROP TABLE IF EXISTS `[[DB_PREFIX]]group_slide_link`;

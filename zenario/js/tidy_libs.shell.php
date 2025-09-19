@@ -164,6 +164,15 @@ filterWantedCode('wow.js', 'dist');
 filterWantedCode('wow.js/dist', 'wow');
 filterWantedCode('zxcvbn', 'dist');
 
+
+//I did a bit of work investigating what would happen if we ever replaced the tokenize library with Tom Select.
+//It needed '"tom-select": "2.*"; set package.json and the following filters, I'm just leaving them here
+//commented out so I don't lose this work if we ever come to switch over and need to add it.
+#filterWantedCode('tom-select/dist', 'css', 'js');
+#filterWantedCode('tom-select/dist/js', 'tom-select.complete');
+#filterWantedCode('tom-select/dist/css', 'tom-select');
+
+
 //Remove some optional dependancies that the yarn packages we've asked for installed,
 //but I don't actually think we need
 removeUnwantedCode('.bin');

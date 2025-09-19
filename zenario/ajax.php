@@ -54,6 +54,7 @@ if ($methodCall == 'refreshPlugin'
 		$methodCall == 'showFile'
 	 || $methodCall == 'showImage'
 	 || $methodCall == 'showStandalonePage'
+	 || $methodCall == 'exportVisitorTUIX'
 	 || $methodCall == 'fillVisitorTUIX'
 	 || $methodCall == 'formatVisitorTUIX'
 	 || $methodCall == 'validateVisitorTUIX'
@@ -144,6 +145,7 @@ if ($methodCall == 'refreshPlugin'
 		|| $methodCall == 'handleAdminToolbarAJAX'
 		|| $methodCall == 'showFile'
 		|| $methodCall == 'showImage'
+		|| $methodCall == 'exportVisitorTUIX'
 		|| $methodCall == 'fillVisitorTUIX'
 		|| $methodCall == 'formatVisitorTUIX'
 		|| $methodCall == 'validateVisitorTUIX'
@@ -304,7 +306,8 @@ if ($methodCall == 'showFile') {
 	$module->showFile();
 	
 
-} elseif ($methodCall == 'fillVisitorTUIX'
+} elseif ($methodCall == 'exportVisitorTUIX'
+	   || $methodCall == 'fillVisitorTUIX'
 	   || $methodCall == 'formatVisitorTUIX'
 	   || $methodCall == 'validateVisitorTUIX'
 	   || $methodCall == 'saveVisitorTUIX'
@@ -359,13 +362,14 @@ if ($methodCall == 'showFile') {
 		}
 	
 	
-		$filling = $methodCall == 'fillVisitorTUIX' || empty($_POST['_tuix']);
+		$exporting = $methodCall == 'exportVisitorTUIX';
+		$filling = $methodCall == 'fillVisitorTUIX' || $exporting || empty($_POST['_tuix']);
 		$saving = !$filling && $methodCall == 'saveVisitorTUIX';
 		$validating = !$filling && ($saving || $methodCall == 'validateVisitorTUIX');
 	
 		$debugMode = ze::isAdmin() && ze::get('_debug');
 	
-		ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode);
+		ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode, $exporting);
 	}
 	
 	if (!empty(ze::$dumps)) {
@@ -543,6 +547,11 @@ if ($methodCall == 'showFile') {
 				$_SESSION['sk_new_ids'][$id] = true;
 			}
 		}
+		
+		if (!empty(ze::$dumps)) {
+			ze\escape::flag('DUMPS', json_encode(ze::$dumps), false);
+			ze::$dumps = [];
+		}
 	}
 
 
@@ -552,17 +561,19 @@ if ($methodCall == 'showFile') {
 	$slot = ze::$slotContents[$slotName];
 	$module = ze::$slotContents[$slotNameNestId]->class();
 	
+	$isAdmin = ze::isAdmin();
+	
 	//Display an info section at the top of the result, to help the CMS pick up on a few things
 	$showInfo = true;
 	
 	if ($url = $slot->headerRedirectLink()) {
-		if (!ze::isAdmin()) {
+		if (!$isAdmin) {
 			$showInfo = false;
 		}
 		ze\escape::flag('FORCE_PAGE_RELOAD', $url);
 	
 	} elseif ($slot->pageNeedsReloading()) {
-		if (!ze::isAdmin()) {
+		if (!$isAdmin) {
 			$showInfo = false;
 		}
 		ze\escape::flag('FORCE_PAGE_RELOAD', ze\link::toItem(ze::$cID, ze::$cType, true, '', ze::$alias, true));
@@ -571,6 +582,14 @@ if ($methodCall == 'showFile') {
 	
 	if ($showInfo) {
 		ze\escape::flag('INSTANCE_ID', (int) $slot->instanceId());
+		
+		if ($isAdmin) {
+			ze\escape::flag('ADMIN_ID', ze\admin::id());
+		}
+		
+		if ($userId = (int) ($_SESSION['extranetUserID'] ?? 0)) {
+			ze\escape::flag('USER_ID', $userId);
+		}
 		
 		if ($slot->scrollToTop() === true) {
 			ze\escape::flag('SCROLL_TO_TOP');
@@ -597,7 +616,7 @@ if ($methodCall == 'showFile') {
 		$layoutPreview = null;
 		$slotControls = null;
 			
-		if (ze::isAdmin()) {
+		if ($isAdmin) {
 			$slotContents = [$slotName => &$slot];
 			$slotControls = ze\pluginAdm::setupSlotControls($slotContents, true);
 			

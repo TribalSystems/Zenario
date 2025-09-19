@@ -213,7 +213,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 										'height' => $image[1],
 									];
 									$file['id'] = ze\ring::encodeIdForOrganizer($sha. '/'. $safeFileName. '/'. $file['width']. '/'. $file['height']);
-									$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
+									$file['link'] = 'zenario/preview_uploaded_file.php?uploadCode='. $file['id'];
 									$file['label'] = $safeFileName . ' [' . $file['width'] . ' × ' . $file['height'] . ']';
 
 									$fields['details/image']['values'][$file['id']] = $file;
@@ -298,7 +298,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 													'height' => $image[1],
 												];
 												$file['id'] = ze\ring::encodeIdForOrganizer($sha. '/'. $safeFileName. '/'. $file['width']. '/'. $file['height']);
-												$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
+												$file['link'] = 'zenario/preview_uploaded_file.php?uploadCode='. $file['id'];
 												$file['label'] = $safeFileName . ' [' . $file['width'] . ' × ' . $file['height'] . ']';
 			
 												$fields['details/image']['values'][$file['id']] = $file;

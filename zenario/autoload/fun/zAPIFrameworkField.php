@@ -87,7 +87,7 @@ if ($type != 'submit' && $postValue !== null) {
 
 //Check for a value set as an attribute
 } elseif (isset($attributes['value']) && ($type == 'button' || $type == 'submit' || $postValue === null)) {
-	$value = ($type == 'checkbox' || $type == 'toggle')? $attributes['value'] : $this->phrase($attributes['value']);
+	$value = ($type == 'checkbox' || $type == 'toggle' || $type == 'hidden') ? $attributes['value'] : $this->phrase($attributes['value']);
 
 //Check for a value in the merge fields
 } else

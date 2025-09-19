@@ -75,19 +75,19 @@ class welcome {
 
 							$passwordMessageSnippet = 
 								'<div>
-									<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
+									<span id="zenario_password_message" class="title_green">' . \ze\admin::phrase($phrase) . '</span>
 								</div>';
 							break;
 						case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
 							if ($minScore == 4) {
 								$passwordMessageSnippet = 
 								'<div>
-									<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+									<span id="zenario_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 								</div>';
 							} elseif ($minScore < 4) {
 								$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
+										<span id="zenario_password_message" class="title_green">' . \ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
 									</div>';
 							}
 							break;
@@ -100,12 +100,12 @@ class welcome {
 								}
 								$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_orange">' . $phrase . '</span>
+										<span id="zenario_password_message" class="title_orange">' . $phrase . '</span>
 									</div>';
 							} elseif ($minScore > 2) {
 								$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+										<span id="zenario_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 									</div>';
 							}
 							break;
@@ -114,7 +114,7 @@ class welcome {
 						default:
 							$passwordMessageSnippet = 
 								'<div>
-									<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+									<span id="zenario_password_message" class="title_red">' . \ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 								</div>';
 							break;
 					}
@@ -122,13 +122,13 @@ class welcome {
 			} else {
 				$passwordMessageSnippet = 
 					'<div>
-						<span id="snippet_password_message" class="title_red">' . \ze\admin::phrase('Password does not match the requirements') . '</span>
+						<span id="zenario_password_message" class="title_red">' . \ze\admin::phrase('Password does not match the requirements') . '</span>
 					</div>';
 			}
 		} else {
 			$passwordMessageSnippet = 
 				'<div>
-					<span id="snippet_password_message" class="title_orange">' . \ze\admin::phrase('Please enter a password') . '</span>
+					<span id="zenario_password_message" class="title_orange">' . \ze\admin::phrase('Please enter a password') . '</span>
 				</div>';
 		}
 		
@@ -1919,7 +1919,7 @@ class welcome {
 				'label' => '',
 				'post_field_html' =>
 					'<label
-						for="'. htmlspecialchars($fieldCodeName). '___'. htmlspecialchars($val). '"
+						for="zaf_'. htmlspecialchars($fieldCodeName). '___'. htmlspecialchars($val). '"
 						id="radio_selector_box___'. htmlspecialchars($val). '"
 						class="radio_selector_box '. ($val == $currentValue? 'radio_selector_box_selected' : ''). '"
 					>
@@ -2032,13 +2032,13 @@ class welcome {
 		\ze\menuAdm::recalcAllHierarchy();
 		
 		//If any content items were pre-created in the installer SQL,
-		//run the syncInlineFileContentLink() function to make sure their
+		//run the updateContentItemCache() function to make sure their
 		//metadata is up to date.
 		foreach (\ze\sql::select('
 			SELECT id, type, admin_version
 			FROM '. DB_PREFIX. 'content_items'
 		) as $content) {
-			\ze\contentAdm::syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
+			\ze\contentAdm::updateContentItemCache($content['id'], $content['type'], $content['admin_version']);
 		}
 		
 		//And the same for plugins
@@ -2168,7 +2168,10 @@ class welcome {
 					
 					if (!$errorsExist) {
 						$_SESSION['failed_login_count_since_last_successful_login']++;
-						$errorsExist = true;
+						
+						if (\ze::setting('warn_when_admin_had_failed_logins')) {
+							$errorsExist = true;
+						}
 					}
 					
 					//Be nasty and reset the captcha if they got the username or password wrong!
@@ -2913,7 +2916,7 @@ class welcome {
 					$lastLoginIp = $row['last_login_ip'];
 				}
 
-				$adminhtml .= ' from IP address '. htmlspecialchars($lastLoginIp);
+				$adminhtml .= ' from the same IP address ('. htmlspecialchars($lastLoginIp) .')';
 				
 				if (\ze\module::inc("zenario_geoip_lookup")) {
 					if ($userCountry = \zenario_geoip_lookup::getCountryISOCodeForIp($row['last_login_ip'])) {
@@ -2929,7 +2932,7 @@ class welcome {
 				$adminhtml .= '.';
 
 				$currentIp = \ze\user::ip();
-				if ($currentIp != $lastLoginIp) {
+				if ($currentIp != $lastLoginIp && \ze::setting('warn_when_admin_ip_changed_since_last_login')) {
 					$adminhtml .= '</p>';
 
 					$lastIpString = $lastLoginIp;
@@ -2970,7 +2973,7 @@ class welcome {
 			}
 		}
 		
-		if (!empty($row['failed_login_count_since_last_successful_login']) && $row['failed_login_count_since_last_successful_login'] >= 1) {
+		if (\ze::setting('warn_when_admin_had_failed_logins') && !empty($row['failed_login_count_since_last_successful_login']) && $row['failed_login_count_since_last_successful_login'] >= 1) {
 			if (!$adminhtml) {
 				if (\ze::request('task') == 'diagnostics' && $row['last_login']) {
 					$adminhtml .= '<h2>This login</h2>';
@@ -3340,21 +3343,24 @@ class welcome {
 				$fields['0/site_disabled']['snippet']['html'] = \ze\admin::phrase('Your site is enabled.');
 			}	
 			
+			//Check to see if every hierarchical document that is public has a symlink in the public/downloads/ directory.
+			//If we find any that don't, try to automatically fix them.
+			//If we fail, show the user a warning.
 			$errors = $exampleFile = false;
 			\ze\document::checkAllPublicLinks($forceRemake = false, $errors, $exampleFile);
 			if ($errors) {
 				$show_warning = true;
 				$mrg = [
-					'exampleFile' => $exampleFile,
+					'exampleFile' => htmlspecialchars($exampleFile),
 					'manageDocumentsLink' => htmlspecialchars('organizer.php#zenario__library/panels/documents')
 				];
 				
 				$fields['0/public_documents']['row_class'] = 'warning';
 				$fields['0/public_documents']['snippet']['html'] =
 					\ze\admin::nzPhrase(
-						'There is a problem with the public link for the document [[exampleFile]]. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
-						'There is a problem with the public link for [[exampleFile]] and 1 other document. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
-						'There is a problem with the public link for [[exampleFile]] and [[count]] other documents. Please check your docstore and public/downloads directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						'There is a problem with the public link for the hierarchical document [[exampleFile]]. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						'There is a problem with the public link for [[exampleFile]] and 1 other hierarchical document. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						'There is a problem with the public link for [[exampleFile]] and [[count]] other hierarchical documents. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
 						abs($errors - 1), $mrg
 					);
 		
@@ -3364,22 +3370,26 @@ class welcome {
 			}
 			
 			
+			//Handle the admin clicking on the "repair images" button (see just below).
 			if (!empty($fields['0/repair_public_images']['pressed'])) {
 				set_time_limit(60 * 10);
 				\ze\fileAdm::checkAllImagePublicLinks($check = false);
 				\ze\skinAdm::emptyPageCache();
 			}
 			
+			//Check to see if every image that is public has a copy in the public/images/ directory.
+			//If we find any that don't, don't try to automatically fix them. Instead, show the admin a button to press (see just above).
 			$mrg = \ze\fileAdm::checkAllImagePublicLinks($check = true);
 			if ($mrg && $mrg['numMissing']) {
 				$show_warning = true;
+				$mrg['numMissing'] = htmlspecialchars($mrg['numMissing']);
 				$fields['0/public_images']['row_class'] = 'warning';
 				$fields['0/public_images']['hidden'] = false;
 				$fields['0/public_images']['snippet']['html'] =
 					\ze\admin::nzPhrase(
-						'There is a problem with the public link for the document &quot;[[exampleFile]]&quot;. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
-						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
-						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other images. Please repair public images. If that does not help, check your public/images/ directory for possible permission problems.',
+						'There is a problem with the public link for the image &quot;[[exampleFile]]&quot;. Please repair public images. If that does not help, check your <code>public/images/</code> directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other image. Please repair public images. If that does not help, check your <code>public/images/</code> directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other images. Please repair public images. If that does not help, check your <code>public/images/</code> directory for possible permission problems.',
 						abs($mrg['numMissing'] - 1), $mrg
 					);
 				
@@ -3769,14 +3779,26 @@ class welcome {
 				]
 			);
 			
-			//Check if extranet sites have two-factor authentication enabled
+			//Check if two-factor authentication (2FA) is enabled for admin logins.
 			$warnAboutThis = 
-				!\ze\site::description('enable_two_factor_authentication_for_admin_logins')
+				\ze::setting('warn_when_2fa_is_not_enabled_for_admins')
+				&& !\ze\site::description('enable_two_factor_authentication_for_admin_logins')
 				&& $storesUserData;
 			
 			if (!$fields['0/two_factor_security']['hidden'] = !$warnAboutThis) {
 				$show_warning = true;
 				$fields['0/two_factor_security']['row_class'] = 'warning';
+			}
+			
+			//Check if captcha is enabled for admin logins.
+			$warnAboutThis = 
+				\ze::setting('warn_when_captcha_is_not_enabled_for_admins')
+				&& !\ze\site::description('enable_captcha_for_admin_logins')
+				&& $storesUserData;
+			
+			if (!$fields['0/admin_login_captcha']['hidden'] = !$warnAboutThis) {
+				$show_warning = true;
+				$fields['0/admin_login_captcha']['row_class'] = 'warning';
 			}
 			
 			
@@ -3791,16 +3813,6 @@ class welcome {
 			if (!$fields['0/no_ssl_for_login']['hidden'] = !$warnAboutThis) {
 				$show_warning = true;
 				$fields['0/no_ssl_for_login']['row_class'] = 'warning';
-			}
-			
-			//Check if extranet sites use SSL
-			$warnAboutThis = 
-				!\ze\site::description('enable_two_factor_authentication_for_admin_logins')
-				&& $storesUserData;
-			
-			if (!$fields['0/two_factor_security']['hidden'] = !$warnAboutThis) {
-				$show_warning = true;
-				$fields['0/two_factor_security']['row_class'] = 'warning';
 			}
 			
 			//Get any public pages which have plugins that must be on a private page (e.g. change password)
@@ -3832,17 +3844,48 @@ class welcome {
 				$fields['0/plugin_must_be_on_public_page_error']['hidden'] = true;
 			}
 			
+			//Check if site contains user/contact data unencrypted
+			$warnAboutThis =
+				(bool) (
+					\ze::setting('warn_when_site_contains_personal_data_but_does_not_use_pde')
+					&& !\ze::$dbL->columnIsEncrypted('users', 'first_name')
+					&& !\ze::$dbL->columnIsEncrypted('users', 'last_name')
+					&& !\ze::$dbL->columnIsEncrypted('users', 'email')
+					&& !\ze::$dbL->columnIsEncrypted('users', 'identifier')
+				);
+			
+			if (!$fields['0/unencrypted_data']['hidden'] = !$warnAboutThis) {
+				
+				$sql = "
+					SELECT count(*) as numberOfRecordsUnencrypted
+					FROM ". DB_PREFIX. "users";
+				$numberOfRecordsUnencrypted = \ze\sql::fetchAssoc($sql);
+				if ($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] > 10) {
+				    $textForNumber = "users/contacts";  
+				   
+				    $numberOfRecordsUnencrypted["textForNumber"] = $textForNumber;
+				    \ze\lang::applyMergeFields($fields['0/unencrypted_data']["snippet"]["html"], $numberOfRecordsUnencrypted);
+				    $show_warning = true;
+				    $fields['0/unencrypted_data']['row_class'] = 'warning';
+				} else {
+					//If a site contains no user records, don't show the warning.
+					$fields['0/unencrypted_data']['hidden'] = true;
+				}
+			}
+			
 			//If it looks like a site is supposed to be using encryption, but it's not set up properly,
 			//show an error message.
-			if (\ze\pde::checkForSetupError()) {
+			$warnAboutThis =
+				(bool) \ze::setting('warn_when_site_contains_personal_data_but_does_not_use_pde');
 			
-			//If company key exists, and users module is running, show a warning if the consent table is not encrypted
-			$warnAboutThis = \ze\pde::checkConfIsOkay() && $storesUserData;
+			if (\ze\pde::checkForSetupError()) {
+				//If company key exists, and users module is running, show a warning if the consent table is not encrypted
+				$warnAboutThis = \ze\pde::checkConfIsOkay() && $storesUserData && \ze::setting('warn_when_site_contains_personal_data_but_does_not_use_pde');
 			} elseif ($warnAboutThis) {
 				
-				$encryptedColumns = ['ip_address', 'email', 'first_name', 'last_name'];
+				$columnsThatShouldBeEncrypted = ['ip_address', 'email', 'first_name', 'last_name'];
 				$unencryptedColumns = [];
-				foreach ($encryptedColumns as $column) {
+				foreach ($columnsThatShouldBeEncrypted as $column) {
 					if (!\ze::$dbL->columnIsHashed('consents', $column)) {
 						$unencryptedColumns[] = '<code>' . $column . '</code>';
 					}
@@ -3854,40 +3897,13 @@ class welcome {
 					
 					$fields['0/consent_table_encrypted']['snippet']['html'] = 
 						\ze\admin::phrase('The following columns should be encrypted and hashed in the table <code>consents</code>: [[columns]]. Put the site into developer mode, cd to <code>public_html</code>, and run <code>php zenario/scripts/pde/encrypt_and_hash_column.php consents [field name]</code>.', ['columns' => implode(', ', $unencryptedColumns)]);
+				} else {
+					$fields['0/consent_table_encrypted']['hidden'] = true;
 				}
 			} else {
 				//Otherwise, hide the warning.
 				$fields['0/consent_table_encrypted']['hidden'] = true;
 			}
-			
-			//Check if site contains user/contact data unencrypted
-			$warnAboutThis =(bool)(!\ze::$dbL->columnIsEncrypted('users', 'first_name') && !\ze::$dbL->columnIsEncrypted('users', 'last_name') && !\ze::$dbL->columnIsEncrypted('users', 'email') && !\ze::$dbL->columnIsEncrypted('users', 'identifier'));
-			
-			if (!$fields['0/unencrypted_data']['hidden'] = !$warnAboutThis) {
-				
-				$sql = "
-					SELECT count(*) as numberOfRecordsUnencrypted
-					FROM ". DB_PREFIX. "users";
-				$numberOfRecordsUnencrypted = \ze\sql::fetchAssoc($sql);
-				if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] > 4){
-				    $textForNumber = '';
-				    if($numberOfRecordsUnencrypted['numberOfRecordsUnencrypted'] == 1){
-				        $textForNumber = "user/contact";
-				      
-				    }else {
-				        $textForNumber = "users/contacts";
-				    }    
-
-				   
-				    $numberOfRecordsUnencrypted["textForNumber"] = $textForNumber;
-				    \ze\lang::applyMergeFields($fields['0/unencrypted_data']["snippet"]["html"], $numberOfRecordsUnencrypted);
-				    $show_warning = true;
-				    $fields['0/unencrypted_data']['row_class'] = 'warning';
-				} else {
-					//If a site contains no user records, don't show the warning.
-					$fields['0/unencrypted_data']['hidden'] = true;
-				}
-			} 
 			
 			
 			//Check if a site is using encryption and has any encrypted columns on the users table
@@ -3978,6 +3994,20 @@ class welcome {
                 $fields['0/column_not_found']['snippet']['html'] = \ze\admin::phrase('The following columns are encrypted/ hashed but their corresponding plain text columns are missing: [[columns]].', ['columns' => implode(', ', $userColumns)]);
 	        }
 	        
+	        //Check the 404 error log count.
+	        $errorLogPanelPath = 'organizer.php#zenario__administration/panels/error_log';
+	        $linkStart = '<a href="' . htmlspecialchars($errorLogPanelPath) . '" target="_blank">';
+			$linkEnd = '</a>';
+			\ze\lang::applyMergeFields($tags['tabs']['0']['fields']['error_log_grew_over_10000_records']['snippet']['html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			$warnAboutThis = 
+				\ze::setting('warn_when_error_log_grows_beyond_10000_records')
+				&& (\ze\row::count('error_404_log', []) > 10000);
+			
+			if (!$fields['0/error_log_grew_over_10000_records']['hidden'] = !$warnAboutThis) {
+				$show_warning = true;
+				$fields['0/error_log_grew_over_10000_records']['row_class'] = 'warning';
+			}
+	        
 			//Do some basic checks on the robots.txt file
 			$robotsDotTextError = false;
 			$robotsTxtSiteSettingPath = 'organizer.php#zenario__administration/panels/site_settings//search_engine_optimisation~.site_settings~trobots_txt~k{"id"%3A"search_engine_optimisation"}';
@@ -3991,9 +4021,9 @@ class welcome {
 					);
 			
 			} else {
-				$robotsDotTextContents = \ze::setting('robots_txt_file_contents');
+				$customRobotsContents = \ze::setting('robots_txt_file_contents');
 				
-				if (!self::trimContents($robotsDotTextContents)) {
+				if (!self::trimContents($customRobotsContents)) {
 					$robotsDotTextError =
 						\ze\admin::phrase(
 							"The <code>robots.txt</code> file is blank. Please check the setting in the [[link_start]]Search engine optimisation[[link_end]] section.",
@@ -4002,69 +4032,24 @@ class welcome {
 				} else {
 					$robotsFileLink = 'robots.txt';
 					
-					$currentFileRules = [];
-					foreach (explode("\n", $robotsDotTextContents) as $line) {
-						$parts = explode(':', $line, 2);
-						if (!empty($parts[1])) {
-							$command = trim(strtolower($parts[0]));
-							$param = trim($parts[1]);
-						
-							if (!isset($currentFileRules[$command])) {
-								$currentFileRules[$command] = [];
-							}
-						
-							$currentFileRules[$command][$param] = true;
-						}
-					}
+					$userAgentPatterns = [];
+					preg_match_all('/User-agent:\s*([^\r\n]+)[\r\n]+\s*Disallow:\s*\/\s*($|\r|\n)/i', $customRobotsContents, $userAgentPatterns);
 					
-					if (isset($currentFileRules['user-agent']['*']) && isset($currentFileRules['disallow']['/'])) {
+					if ($userAgentPatterns && isset($userAgentPatterns[1]) && isset($userAgentPatterns[1][0]) && $userAgentPatterns[1][0] == '*') {
 						$robotsDotTextError =
 							\ze\admin::phrase(
 								"This site has a <code>robots.txt</code> that is blocking search engine indexing. Please check the setting in the [[link_start]]Search engine optimisation[[link_end]] section.",
 								['link_start' => $linkStart, 'link_end' => $linkEnd]
 							);
-				
 					} else {
 						//Check if the current robots file has non-standard modifications.
 						//Get the contents of the default file...
-						$defaultRobotsDotTextContents = @file_get_contents(CMS_ROOT. 'zenario/includes/test_files/default_robots.txt');
-						if ($defaultRobotsDotTextContents) {
-							//... and split them into a multi-dimensional array.
-							$defaultFileRules = [];
-							foreach (explode("\n", $defaultRobotsDotTextContents) as $line) {
-								$parts = explode(':', $line, 2);
-								if (!empty($parts[1])) {
-									$command = trim(strtolower($parts[0]));
-									$param = trim($parts[1]);
-						
-									if (!isset($defaultFileRules[$command])) {
-										$defaultFileRules[$command] = [];
-									}
-						
-									$defaultFileRules[$command][$param] = true;
-								}
-							}
+						$defaultRobotsContents = \ze\miscAdm::robotsTxtDefaultConfig();
+						if ($defaultRobotsContents) {
+							$string1 = preg_replace('/^\s*\R/m', '', $defaultRobotsContents);
+							$string2 = preg_replace('/^\s*\R/m', '', $customRobotsContents);
 							
-							//Ignore the sitemap line if the current file references it.
-							if (isset($currentFileRules['sitemap'])) {
-								unset($currentFileRules['sitemap']);
-							}
-							
-							//Compare the contents. Remove everything from the current file array that is a default setting.
-							foreach ($defaultFileRules as $command => $rules) {
-								foreach ($rules as $rule => $value) {
-									if (isset($currentFileRules[$command][$rule])) {
-										unset($currentFileRules[$command][$rule]);
-									}
-								}
-								
-								if (empty($currentFileRules[$command])) {
-									unset($currentFileRules[$command]);
-								}
-							}
-							
-							//If the current file has no non-standard modifications, the array should be empty.
-							if (!empty($currentFileRules)) {
+							if ($string1 != $string2) {
 								$robotsDotTextError =
 									\ze\admin::phrase(
 										"This site has a <code>robots.txt</code> that has non-standard modifications. Please check the setting in the [[link_start]]Search engine optimisation[[link_end]] section.",
@@ -4406,7 +4391,8 @@ class welcome {
 				$fields['0/administrator_with_3_or_more_failed_logins_3']['row_class'] = 
 				$fields['0/administrator_with_3_or_more_failed_logins_4']['row_class'] = 
 				$fields['0/administrator_with_3_or_more_failed_logins_5']['row_class'] = 
-				$fields['0/administrator_with_3_or_more_failed_logins_more']['row_class'] = 'valid';
+				$fields['0/administrator_with_3_or_more_failed_logins_more']['row_class'] =
+				$fields['0/administrator_no_warnings_to_report']['row_class'] = 'valid';
 				
 				$fields['0/administrator_inactive_1']['hidden'] = 
 				$fields['0/administrator_inactive_2']['hidden'] = 
@@ -4419,72 +4405,76 @@ class welcome {
 				$fields['0/administrator_with_3_or_more_failed_logins_3']['hidden'] = 
 				$fields['0/administrator_with_3_or_more_failed_logins_4']['hidden'] = 
 				$fields['0/administrator_with_3_or_more_failed_logins_5']['hidden'] = 
-				$fields['0/administrator_with_3_or_more_failed_logins_more']['hidden'] = true;
+				$fields['0/administrator_with_3_or_more_failed_logins_more']['hidden'] =
+				$fields['0/administrators_active']['hidden'] = true;
 				
-				$fields['0/administrators_active']['hidden'] = false;
-				
-				$days = \ze\admin::getDaysBeforeAdminsAreInactive();
-				$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
-		
-				//Inactive admin count logic
-				$inactiveAdminCount = 0;
-				$sql = '
-					SELECT id, username, first_name, last_name, last_login, created_date, authtype
-					FROM ' . DB_PREFIX . 'admins
-					WHERE authtype = \'local\'
-					  AND `status` = \'active\'
-					ORDER BY last_login';
-				$result = \ze\sql::select($sql);
-				
-				while ($row = \ze\sql::fetchAssoc($result)) {
-					$row['username'] = \ze\admin::formatName($row);
-					if (\ze\admin::isInactive($row['id'])) {
-						if (!$show_warning) {
-							$show_warning = true;
-							$fields['0/administrators_active']['hidden'] = true;
-						}
-						
-						if (++$inactiveAdminCount <= 5) {
-							$row['link'] = 'organizer.php#zenario__administration/panels/administrators//' . $row['id'];
-
-							$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
-							$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
+				if (\ze::setting('warn_when_admin_did_not_log_in_for_over_3_months')) {
+					$fields['0/administrators_active']['hidden'] = false;
+					$fields['0/administrator_no_warnings_to_report']['hidden'] = true;
+					
+					$days = \ze\admin::getDaysBeforeAdminsAreInactive();
+					$fields['0/administrators_active']['snippet']['html'] = \ze\admin::phrase('No administrator has been inactive for over [[count]] days.', ['count' => $days]);
+					
+					//Inactive admin count logic
+					$inactiveAdminCount = 0;
+					$sql = '
+						SELECT id, username, first_name, last_name, last_login, created_date, authtype
+						FROM ' . DB_PREFIX . 'admins
+						WHERE authtype = \'local\'
+						  AND `status` = \'active\'
+						ORDER BY last_login';
+					$result = \ze\sql::select($sql);
+					
+					while ($row = \ze\sql::fetchAssoc($result)) {
+						$row['username'] = \ze\admin::formatName($row);
+						if (\ze\admin::isInactive($row['id'])) {
+							if (!$show_warning) {
+								$show_warning = true;
+								$fields['0/administrators_active']['hidden'] = true;
+							}
 							
-							if ($row['last_login']) {
-								$row['days'] = floor((strtotime('now') - strtotime($row['last_login'])) / 60 / 60 / 24);
-								$row['last_login_date'] = \ze\admin::formatDate($row['last_login'], '_MEDIUM');
+							if (++$inactiveAdminCount <= 5) {
+								$row['link'] = 'organizer.php#zenario__administration/panels/administrators//' . $row['id'];
+	
+								$fields['0/administrator_inactive_'. $inactiveAdminCount]['hidden'] = false;
+								$fields['0/administrator_inactive_'. $inactiveAdminCount]['row_class'] = 'warning';
 								
-								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
-									\ze\admin::phrase(
-										"Administrator <a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago, consider whether this person's account should be trashed.",
-										$row
-									);
-							} else {
-								$row['created_date'] = \ze\admin::formatDate($row['created_date'], '_MEDIUM');
-								
-								$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
-									\ze\admin::phrase(
-										"Administrator account <a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] but has never logged in, consider whether this person's account should be trashed.",
-										$row
-									);
+								if ($row['last_login']) {
+									$row['days'] = floor((strtotime('now') - strtotime($row['last_login'])) / 60 / 60 / 24);
+									$row['last_login_date'] = \ze\admin::formatDate($row['last_login'], '_MEDIUM');
+									
+									$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
+										\ze\admin::phrase(
+											"Administrator <a target='blank' href='[[link]]'>[[username]]</a> hasn't logged in since [[last_login_date]], [[days]] days ago, consider whether this person's account should be trashed.",
+											$row
+										);
+								} else {
+									$row['created_date'] = \ze\admin::formatDate($row['created_date'], '_MEDIUM');
+									
+									$fields['0/administrator_inactive_'. $inactiveAdminCount]['snippet']['html'] =
+										\ze\admin::phrase(
+											"Administrator account <a target='blank' href='[[link]]'>[[username]]</a> was created on [[created_date]] but has never logged in, consider whether this person's account should be trashed.",
+											$row
+										);
+								}
 							}
 						}
 					}
-				}
-				
-				if ($inactiveAdminCount > 5) {
-					$merge = ['link' => 'organizer.php#zenario__administration/panels/administrators'];
-				
-					$fields['0/administrator_more_inactive']['hidden'] = false;
-					$fields['0/administrator_more_inactive']['row_class'] = 'warning';
-					$fields['0/administrator_more_inactive']['snippet']['html'] =
-						\ze\admin::nPhrase('1 other administrator is inactive. <a target="blank" href="[[link]]">View...</a>',
-							'[[count]] other administrators are inactive. <a target="blank" href="[[link]]">View...</a>',
-							abs($inactiveAdminCount - 5), $merge);
+					
+					if ($inactiveAdminCount > 5) {
+						$merge = ['link' => 'organizer.php#zenario__administration/panels/administrators'];
+					
+						$fields['0/administrator_more_inactive']['hidden'] = false;
+						$fields['0/administrator_more_inactive']['row_class'] = 'warning';
+						$fields['0/administrator_more_inactive']['snippet']['html'] =
+							\ze\admin::nPhrase('1 other administrator is inactive. <a target="blank" href="[[link]]">View...</a>',
+								'[[count]] other administrators are inactive. <a target="blank" href="[[link]]">View...</a>',
+								abs($inactiveAdminCount - 5), $merge);
+					}
 				}
 				
 				//Failed login attempt count logic
-				if (\ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'failed_login_count_since_last_successful_login')) {
+				if (\ze::setting('warn_when_admin_had_failed_logins') && \ze::$dbL->checkTableDef(DB_PREFIX. 'admins', 'failed_login_count_since_last_successful_login')) {
 					$adminsWith3OrMoreFailedLoginsCount = 0;
 					$sql = '
 						SELECT id, username, first_name, last_name, authtype, failed_login_count_since_last_successful_login
@@ -4710,7 +4700,7 @@ class welcome {
 			//If the site has a favicon, show that as an icon in the select list.
 			if (empty($fields['0/continue_to']['hidden'])
 			 && ($faviconId = \ze::setting('favicon'))
-			 && ($url = \ze\file::link($faviconId, false, 'public/images'))) {
+			 && ($url = \ze\file::specialImageLink($faviconId))) {
 				
 				$destThumbnails['home'] = \ze\link::absolute(). $url;
 			}

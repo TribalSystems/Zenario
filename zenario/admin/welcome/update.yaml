@@ -42,15 +42,15 @@ update:
                             html: true
                             message: |
                                 <p>
-                                    In Zenario 10.1 we've changed the format of the directory structure in the docstore directory.
-                                </p><p>
-                                    Until Zenario 10.0, files were stored in its sub-directories using the naming convention
-                                     &ldquo;<code>filename_checksum/</code>&rdquo;.
+                                    In Zenario 10.1 we've changed the format of the directory structure in the <code>docstore</code> directory.
                                 </p><p>
                                     Starting in 10.1, Zenario uses a sub-directory that groups files according to how they are used,
                                     their &ldquo;usage&rdquo;.
                                     It now has an extra level of sub-directory, in the naming convention
                                     &ldquo;<code>usage/filename-shortchecksum/</code>&rdquo;.
+                                </p><p>
+                                    (Previously, files were stored in <code>docstore</code> sub-directories using the naming convention
+                                     &ldquo;<code>filename_checksum/</code>&rdquo;.)
                                 </p><p>
                                     This migration script will attempt to change the docstore at
                                     <code>[[docstore_dir]]</code> to the new naming convention.

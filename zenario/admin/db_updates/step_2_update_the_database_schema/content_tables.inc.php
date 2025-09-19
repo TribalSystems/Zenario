@@ -1008,13 +1008,6 @@ _sql
 	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]] 
 _sql
 
-//Remove the "invisible in nav" option for slides
-);	ze\dbAdm::revision( 46050
-, <<<_sql
-	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
-	DROP COLUMN `invisible_in_nav`
-_sql
-
 //Remove support for module-powered TUIX installation wizards.
 );	ze\dbAdm::revision( 57210
 , <<<_sql
@@ -2183,10 +2176,82 @@ _sql
 	ALTER TABLE `[[DB_PREFIX]]documents`
 	ADD FULLTEXT KEY (`extract`)
 _sql
+);
+
+
+
+
+//
+//	Zenario 10.2
+//
+
+
+//Fix a bug where the "invisible_in_nav" column was previously dropped for migrated sites,
+//but not for new installations.
+if (ze::$dbL->checkTableDef(DB_PREFIX. 'nested_plugins', 'invisible_in_nav')) {
+	ze\dbAdm::revision(62030
+	, <<<_sql
+		ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+		DROP COLUMN `invisible_in_nav`
+	_sql
+	);
+}
+
+
+//Add a new flag for inner slides to the nested table.
+	ze\dbAdm::revision(62031
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins`
+	ADD COLUMN `is_inner_slide` tinyint(1) NOT NULL default 0
+	AFTER `is_slide`
+_sql
+
+//Try to automatically set the "is_inner_slide" flag for all conductor slides that are not the first one
+//and don't have a global command
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi
+	INNER JOIN `[[DB_PREFIX]]nested_plugins` AS np
+	   ON np.instance_id = pi.id
+	  AND np.is_slide = 1
+	  AND np.slide_num != 1
+	  AND np.global_command = ''
+	INNER JOIN `[[DB_PREFIX]]plugin_settings` AS ps
+	   ON ps.instance_id = np.instance_id
+	  AND ps.egg_id = 0
+	  AND ps.name = 'nest_type'
+	  AND ps.value = 'conductor'
+	SET np.is_inner_slide = 1
+	WHERE pi.is_nest = 1
+_sql
+
+//Try to automatically set a global command for any slide in a conductor that should have one.
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi
+	INNER JOIN `[[DB_PREFIX]]nested_plugins` AS np
+	   ON np.instance_id = pi.id
+	  AND np.is_slide = 1
+	  AND np.is_inner_slide = 0
+	  AND np.global_command = ''
+	INNER JOIN `[[DB_PREFIX]]plugin_settings` AS ps
+	   ON ps.instance_id = np.instance_id
+	  AND ps.egg_id = 0
+	  AND ps.name = 'nest_type'
+	  AND ps.value = 'conductor'
+	SET np.global_command = CONCAT('slide_', np.slide_num)
+	WHERE pi.is_nest = 1
+_sql
+
+
+//Remove the "Only show the Back button when the previous slide has more than one item to choose from" option from the conductor
+);	ze\dbAdm::revision(62040
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]nested_plugins` 
+	DROP COLUMN `no_choice_no_going_back`
+_sql
 
 
 //Fix a bug where the module_id column on the plugin_sitewide_link table hadn't been updated properly.
-);	ze\dbAdm::revision(61941
+);	ze\dbAdm::revision(62300
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]plugin_sitewide_link` AS psl
 	INNER JOIN `[[DB_PREFIX]]plugin_instances` AS pi
@@ -2195,12 +2260,105 @@ _sql
 _sql
 
 
+
+//Add a chain_id column to the documents table
+);	ze\dbAdm::revision(62440
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]documents`
+	ADD COLUMN `chain_id` int unsigned NULL default NULL
+	AFTER `id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]documents`
+	ADD INDEX (`chain_id`)
+_sql
+
+
+
+//In 10.2
+);	ze\dbAdm::revision(62660
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]files`
+	DROP COLUMN `archived`
+_sql
+
+
+//Fix a bug where some phrases were being created with a blank module class name
+);	ze\dbAdm::revision(62870
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]visitor_phrases` AS vp
+	SET vp.module_class_name = 'zenario_common_features'
+	WHERE vp.module_class_name = ''
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]visitor_phrases` AS vp
+	WHERE vp.module_class_name = ''
+_sql
+
+
+//In 10.2, we removed an obsolete site setting and moved the feature into individual form settings.
+//Clean up the site settings table.
+);	ze\dbAdm::revision(62885
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]site_settings`
+	WHERE name = "zenario_user_forms_admin_email_attachments"
+_sql
+
+
+//Tidy up data from a bug on HEAD, where on newly created sites some phrases were being created with the wrong module class name.
+//(This bug was HEAD only, so this update could be deleted in the future.)
+);	ze\dbAdm::revision(63000
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]visitor_phrases` AS vp
+	SET vp.module_class_name = 'zenario_country_manager'
+	WHERE vp.module_class_name = 'zenario_common_features'
+	  AND vp.code LIKE "\_COUNTRY_NAME\_%"
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]visitor_phrases` AS vp
+	WHERE vp.module_class_name = 'zenario_common_features'
+	  AND vp.code LIKE "\_COUNTRY_NAME\_%"
+_sql
+
+
+//As of 10.2, Zenario can archive standard phrases (please note: code-based phrases may not be archived).
+//Archived phrases will not appear in Organizer and will not be exported.
+//Importing a phrase that is archived will remove the archived flag.
+); ze\dbAdm::revision(63010
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	ADD COLUMN `archived` tinyint(1) NOT NULL default 0 AFTER `protect_flag`
+_sql
+
+
+//Tidy up a content type specific setting
+); ze\dbAdm::revision(63015
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET `auto_set_release_date` = 0
+	WHERE `release_date_field` = 'hidden'
+	AND `auto_set_release_date` = 1
+_sql
+
+
+//In 10.2, we no longer store alt tag data for site setting images (it will always be blank).
+//Remove the data for existing image.
+); ze\dbAdm::revision(63030
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]files`
+	SET `alt_tag` = '' WHERE `usage` = 'site_setting'
+_sql
+
+
 //Fix some bad data where some nests/slideshows were not correctly flagged as nests/slideshows in the database.
 //Note: This has actually happened several times due to various uncaught mistakes in either the installer SQL and/or
 //various migration scripts.
 //However it is safe to run and rerun multiple times, so I've been re-issuing it and also adding it to post-branch patches
 //each time we make this mistake!
-);	ze\dbAdm::revision( 61945
+);	ze\dbAdm::revision( 63250
 , <<<_sql
 	UPDATE `[[DB_PREFIX]]plugin_instances` AS pi SET
 		pi.is_nest = 0,
@@ -2238,5 +2396,116 @@ _sql
 		ii.is_slideshow = pi.is_slideshow
 	WHERE ii.foreign_key_to = 'library_plugin'
 _sql
+
+
+//In 10.2, we renamed the table content_cache to content_items_searchable_cache.
+);	ze\dbAdm::revision( 63260
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]content_cache`
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_PREFIX]]content_items_searchable_cache`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_PREFIX]]content_items_searchable_cache` (
+		`content_id` int unsigned NOT NULL DEFAULT '0',
+		`content_type` varchar(20) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL,
+		`content_tag` varchar(32) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+		`content_version` int unsigned NOT NULL DEFAULT '0',
+		`title` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '',
+		`description` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+		`keywords` text CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+		`content_summary` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+		`content_item_text` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+		`content_item_text_wordcount` int unsigned NOT NULL DEFAULT '0',
+		`file_extract` mediumtext CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]],
+		`file_extract_wordcount` int unsigned NOT NULL DEFAULT '0',
+		`file_extract_pagecount` int unsigned DEFAULT NULL,
+		PRIMARY KEY (`content_id`,`content_type`),
+		KEY `extract_wordcount` (`file_extract_wordcount`),
+		KEY `content_tag` (`content_tag`),
+		FULLTEXT KEY `text` (`content_item_text`),
+		FULLTEXT KEY `extract` (`file_extract`),
+		FULLTEXT KEY `title_fulltext_key` (`title`),
+		FULLTEXT KEY `description_fulltext_key` (`description`),
+		FULLTEXT KEY `keywords_fulltext_key` (`keywords`),
+		FULLTEXT KEY `content_summary_fulltext_key` (`content_summary`)
+	) ENGINE=[[ZENARIO_TABLE_ENGINE]] CHARSET=[[ZENARIO_TABLE_CHARSET]] COLLATE=[[ZENARIO_TABLE_COLLATION]]
+_sql
+
+
+//Move a handlful of phrases from being standard phrases to being code-based phrases.
+);	ze\dbAdm::revision( 63270
+, <<<_sql
+	UPDATE IGNORE `[[DB_PREFIX]]visitor_phrases` AS p
+	SET p.local_text = IFNULL(p.local_text, p.code),
+		p.code = REPLACE(CONCAT('_', UPPER(p.code)), ' ', '_')
+	WHERE p.module_class_name = 'zenario_common_features'
+	  AND p.code IN ('Prev', 'Next', 'Copy to clipboard', 'Copied', 'Cancel', 'Copied to clipboard')
+_sql
+
+
+//Add a new index to the phrases table. And also fix a confusingly named index.
+);	ze\dbAdm::revision( 63290
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	RENAME INDEX `module_class_name` TO `phrase_lookup`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]visitor_phrases`
+	ADD INDEX (`module_class_name`)
+_sql
+
+//And the same for the modules table
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	RENAME INDEX `uses_wireframes` TO `can_be_version_controlled`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]modules`
+	ADD INDEX (`vlp_class`),
+	ADD INDEX (`display_name`),
+	ADD INDEX (`is_pluggable`),
+	ADD INDEX (`nestable`),
+	ADD INDEX (`status`),
+	ADD INDEX (`missing`)
+_sql
+
+
+//In 10.2, we added a content-type setting to allow a different title length.
+//This is now a list of options in range 100 - 250 characters, and 125 is the default.
+//PLEASE NOTE: This was originally developed for 10.3 and backpatched to 10.2.
+//10.3 will first check if the new column already exists before attempting to add it.
+);	ze\dbAdm::revision( 63292
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `maximum_title_length` int(3) unsigned NOT NULL DEFAULT 125 AFTER `release_date_field`
+_sql
+
+
+//Try to fix some bad data in the database where deleted content items where
+//still linked to by some menu nodes.
+//Please note: this was backpatched from 10.3. However, this code should be safe to use more than once.
+);	ze\dbAdm::revision(63296
+, <<<_sql
+	UPDATE [[DB_PREFIX]]menu_nodes AS m
+	LEFT JOIN [[DB_PREFIX]]translation_chains AS t
+	   ON t.equiv_id = m.equiv_id
+	  AND t.type = m.content_type
+	LEFT JOIN [[DB_PREFIX]]content_items AS c
+	   ON c.equiv_id = t.equiv_id
+	  AND c.type = t.type
+	  AND c.status NOT IN ('deleted', 'trashed')
+	SET m.target_loc = 'none',
+		m.equiv_id = 0,
+		m.content_type = ''
+	WHERE m.target_loc = 'int'
+	  AND c.equiv_id IS NULL
+_sql
+
 
 );

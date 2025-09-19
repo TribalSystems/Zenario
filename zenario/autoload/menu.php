@@ -851,7 +851,7 @@ class menu {
 	}
 	
 	const pathFromTwig = true;
-	public static function path($menuId, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false) {
+	public static function path($menuId, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false, $outputLanguageCode = true) {
 		if ($langId === false) {
 			$langId = \ze\content::visitorLangId();
 	
@@ -860,8 +860,17 @@ class menu {
 		}
 	
 		$sql = "
-			SELECT m.id, m.section_id, m.redundancy, m.target_loc, m.equiv_id, m.content_type, m.ordinal, (
-				SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))
+			SELECT m.id, m.section_id, m.redundancy, m.target_loc, m.equiv_id, m.content_type, m.ordinal, (";
+		
+		if ($outputLanguageCode) {
+			$sql .= "
+				SELECT CONCAT(mt.name, IF(mt.language_id = '". \ze\escape::asciiInSQL($langId). "', '', CONCAT(' (', mt.language_id, ')')))";
+		} else {
+			$sql .= "
+				SELECT mt.name";
+		}
+		
+		$sql .= "		
 				FROM ". DB_PREFIX. "menu_text AS mt
 				WHERE mt.menu_id = m.id
 				ORDER BY

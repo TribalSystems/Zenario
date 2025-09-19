@@ -161,6 +161,8 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			}
 		}
 		
+		$toastMessage = null;
+		
 		//The new module may add new features to several places so we need to completely clear the cache
 		ze\skinAdm::clearCache();
 
@@ -239,14 +241,31 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 		//Modules that change Organizer will require a Organizer reload.
 		if (ze\dbAdm::needToReloadOrganizerWhenModuleIsInstalled($module['class_name'])) {
 			$this->needReload = true;
+			
+			//Catch the case where we're reloading but also trying to set a toast message.
+			//Clear the toast message and use the TOAST_NEXT_PAGELOAD flag to set it instead.
+			if (!is_null($toastMessage)) {
+				unset($box['toast']);
+				$this->needReloadWithToast = true;
+				$this->toastMessage = $toastMessage;
+			}
 		}
 	}
 	
 	private $needReload = false;
+	private $needReloadWithToast = false;
+	private $toastMessage;
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($this->needReload) {
-			ze\tuix::closeWithFlags(['RELOAD_ORGANIZER' => true]);
+			$flags = ['RELOAD_ORGANIZER' => true];
+			
+			if (!is_null($this->needReloadWithToast)) {
+				$flags['TOAST_NEXT_PAGELOAD'] = $this->toastMessage;
+				$flags['TOAST_TYPE_NEXT_PAGELOAD'] = 'information';
+			}
+			
+			ze\tuix::closeWithFlags($flags);
 			exit;
 		}
 	}

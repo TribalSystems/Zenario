@@ -42,7 +42,7 @@ zenario__content:
                        ON f.id = v.file_id
                     LEFT JOIN [[DB_PREFIX]]file_extracts AS fe
                        ON fe.file_id = v.file_id
-                    LEFT JOIN [[DB_PREFIX]]content_cache AS cc
+                    LEFT JOIN [[DB_PREFIX]]content_items_searchable_cache AS cc
                        ON v.id = cc.content_id
                       AND v.type = cc.content_type
                       AND v.version = cc.content_version
@@ -80,43 +80,38 @@ zenario__content:
                     column: status
                     value: ''
                     remove_filter: true
-                first_draft:
+                has_draft:
                     parent: status
                     label: "Drafts"
                     column: status
-                    value: first_draft
-                published_with_draft:
+                    value: has_draft
+                is_published:
                     parent: status
-                    label: "Published with draft"
+                    label: "Published, with or without a draft"
                     column: status
-                    value: published_with_draft
-                unlisted_with_draft:
+                    value: is_published
+                is_unlisted:
                     parent: status
-                    label: "Published unlisted with draft"
+                    label: "Unlisted, with or without a draft"
                     column: status
-                    value: unlisted_with_draft
-                published:
+                    value: is_unlisted
+                x_with_draft:
                     parent: status
-                    label: "Published"
+                    label: "Published or unlisted, with a draft"
                     column: status
-                    value: published
-                unlisted:
-                    parent: status
-                    label: "Published unlisted"
-                    column: status
-                    value: unlisted
-                hidden:
+                    value: x_with_draft
+                is_hidden:
                     parent: status
                     label: "Hidden"
                     column: status
-                    value: hidden
+                    value: is_hidden
+                    
+                
                 #All enabled content types will appear below.
                 #The list of values is populated in the PHP class.
                     
                 
             refiners:
-                following_item_link:
-                    exists: true
                 filter_by_lang:
                     exists: true
                 filter_exclude_documents:
@@ -268,7 +263,7 @@ zenario__content:
                     width: xsmall
                 type:
                     ord: 3
-                    title: Content Type
+                    title: Content type
                     db_column: c.type
                     format: enum
                     width: xsmall
@@ -299,6 +294,7 @@ zenario__content:
                     title: Release date
                     db_column: v.release_date
                     format: date
+                    sort_desc_by_default: true
 
                 number_of_categories:
                     ord: 9
@@ -392,6 +388,19 @@ zenario__content:
                         unlisted: Published unlisted
                         hidden: Hidden
                         trashed: Trashed
+                    #This property enable us to create filters on some specific combinations of values,
+                    #e.g. to show all content items that have a draft.
+                    filters_by_value:
+                        has_draft: |
+                            c.status IN ('first_draft', 'published_with_draft', 'unlisted_with_draft', 'hidden_with_draft', 'trashed_with_draft')
+                        is_published: |
+                            c.status IN ('published_with_draft', 'published')
+                        is_unlisted: |
+                            c.status IN ('unlisted_with_draft', 'unlisted')
+                        x_with_draft: |
+                            c.status IN ('published_with_draft', 'unlisted_with_draft')
+                        is_hidden: |
+                            c.status IN ('hidden_with_draft', 'hidden')
                 permissions:
                     ord: 16
                     title: Permissions
@@ -463,18 +472,21 @@ zenario__content:
                     title: First draft created
                     db_column: c.first_created_datetime
                     format: datetime
+                    sort_desc_by_default: true
                 created_datetime:
                     ord: 20
                     title: Latest draft created
                     db_column: v.created_datetime
                     show_by_default: No
                     width: large
+                    sort_desc_by_default: true
                 concealed_datetime:
                     ord: 21
                     title: Hidden/Trashed
                     db_column: v.concealed_datetime
                     format: datetime
                     show_by_default: No
+                    sort_desc_by_default: true
                 concealed_by:
                     ord: 22
                     title: Hidden/Trashed by
@@ -489,6 +501,7 @@ zenario__content:
                     db_column: v.last_modified_datetime
                     show_by_default: Yes
                     width: large
+                    sort_desc_by_default: true
                 last_modified_by_admin:
                     ord: 24
                     title: Last edited by
@@ -501,6 +514,7 @@ zenario__content:
                     title: Published
                     db_column: v.published_datetime
                     format: datetime
+                    sort_desc_by_default: true
                 publisher_id:
                     db_column: v.publisher_id
                 word_count:
@@ -508,7 +522,7 @@ zenario__content:
                     title: Page word count
                     sortable: true
                     db_column: >
-                        IFNULL(cc.text_wordcount, 0)
+                        IFNULL(cc.content_item_text_wordcount, 0)
                     align_right: true
                     width: xsmall
                     show_by_default: true
@@ -518,7 +532,7 @@ zenario__content:
                     title: Attachment word count
                     sortable: true
                     db_column: >
-                        IFNULL(cc.extract_wordcount, 0)
+                        IFNULL(cc.file_extract_wordcount, 0)
                     align_right: true
                     width: xsmall
                     show_by_default: true
@@ -527,7 +541,7 @@ zenario__content:
                     ord: 28
                     title: Attachment page count
                     sortable: true
-                    db_column: cc.extract_pagecount
+                    db_column: cc.file_extract_pagecount
                     empty_value: 'n/a'
                     align_right: true
                     width: xsmall
@@ -744,7 +758,6 @@ zenario__content:
                     parent: settings_dropdown
                     hide_in_select_mode: true
                     hide_on_refiner: &hide_settings_on_these_refiners
-                        following_item_link: true
                         filter_by_lang: true
                         #content_type: true
                         #language: true
@@ -1013,7 +1026,7 @@ zenario__content:
                     parent: publishing_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
                     hide_in_select_mode: true
-                    label: Change scheduled publishing...
+                    label: Scheduled publishing...
                     multiple_select: true
                     visible_if_for_all_selected_items: |
                         zenarioA.checkSpecificPerms(id) &&
@@ -1065,6 +1078,7 @@ zenario__content:
                         && item.lock_owner_id != 0
                         && item.lock_owner_id == zenario.adminId
                         && zenarioA.checkSpecificPerms(id)
+                        && !item.publication_time
                     label: Unlock
                     tooltip: This content item is locked by you
                     ajax:
@@ -1085,6 +1099,7 @@ zenario__content:
                         ('' + item.status).match(/draft/)
                         && item.lock_owner_id != 0
                         && item.lock_owner_id != zenario.adminId
+                        && !item.publication_time
                     label: Force unlock
                     tooltip: This content item is locked by another administrator
                     ajax:
@@ -1439,15 +1454,15 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete [[archived_versions_count]] archived version(s) of "[[tag]]"?
+                                Delete [[archived_versions_count]] archived version(s) of "[[tag]]"?
                                 
-                                This will not affect any published versions or drafts, such as version [[version]] ([[admin_version_status]]).
+                                This will not affect published or draft versions.
                                 
                                 This cannot be undone.
                             multiple_select_message: |
-                                Are you sure you wish to delete any archived versions of [[item_count]] content items?
+                                Delete any archived versions of [[item_count]] content items?
                                 
-                                This will not affect any published versions or drafts.
+                                This will not affect published or draft versions.
                                 
                                 This cannot be undone.
                             button_message: Delete archived versions

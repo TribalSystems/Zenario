@@ -44,12 +44,20 @@
 								</div>
 							{% endif %}
 							{% if Aws_Support_Enabled_On_Site %}
-								{% if Published_Section %}
-									<p><span class="label">{{"Published:"|trans}} </span>{{Published}}</p>
+								{% if Release_Date_Section %}
+									<{{Release_Date_Html_Tag|e}}><span class="label">{{"Released:"|trans}} </span>{{Released}}</{{Release_Date_Html_Tag|e}}>
+								{% endif %}
+								
+								{% if Published_Date_Section %}
+									<{{Published_Date_Html_Tag|e}}><span class="label">{{"Published:"|trans}} </span>{{Published}}</{{Published_Date_Html_Tag|e}}>
 								{% endif %}
 							{% else %}
-								{% if Published_Section %}
-									<p><span class="label">{{"Published:"|trans}} </span>{{Published}}</p>
+								{% if Release_Date_Section %}
+									<{{Release_Date_Html_Tag|e}}><span class="label">{{"Released:"|trans}} </span>{{Released}}</{{Release_Date_Html_Tag|e}}>
+								{% endif %}
+								
+								{% if Published_Date_Section %}
+									<{{Published_Date_Html_Tag|e}}><span class="label">{{"Published:"|trans}} </span>{{Published}}</{{Published_Date_Html_Tag|e}}>
 								{% endif %}
 							{% endif %}
 						</div>

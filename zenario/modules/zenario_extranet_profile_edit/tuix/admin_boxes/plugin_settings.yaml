@@ -205,7 +205,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: 'Please enter a message.'
         phrases:
-            label: Phrases (Form)
+            label: Text (in form)
             fields:
                 view_profile_title:
                     plugin_setting:

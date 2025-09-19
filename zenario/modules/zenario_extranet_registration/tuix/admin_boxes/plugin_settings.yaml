@@ -5,30 +5,38 @@ plugin_settings:
     tabs:
         first_tab:
             ord: 1
-            label: Initial signup
+            label: Signup screen
             fields:
                 desc:
                     ord: 0
                     full_width: true
                     snippet:
-                        html: Configure the registration form through which a user or contact can create an account.
+                        html: >
+                          <p>This tab defines the initial signup form of the user/contact registration system.</p>
             
+                name_fields:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                The registration form will show email, name and password fields. A first name may not exceed 25 characters, and a last name may not exceed 35 characters.
+                            </div>
+                
                 initial_email_address_status:
-                    label: 'Verify email address:'
+                    label: 'Email address verification:'
                     type: radios
                     plugin_setting:
                         name: initial_email_address_status
                     values:
-                        verified:
-                            label: Don't verify
                         not_verified:
                             label: Require verification (recommended)
+                        verified:
+                            label: Don't verify
                     value: not_verified
                     format_onchange: true
                     side_note: >
-                        Send a verification email to the user with an embedded link; use this to be sure that the email address entered can be accessed.
+                        Send a verification email to the user with a special link; use this to be sure that the user/contact can access the email address they entered.
                 verification_email_template:
-                    label: 'Email template for verifications:'
+                    label: 'Email template for verification:'
                     plugin_setting:
                         name: verification_email_template
                         foreign_key_to: email_template
@@ -49,13 +57,208 @@ plugin_settings:
                     indent: 1
             
                 show_resend_verification_link:
-                    label: 'Show link to resend verification email'
+                    label: |
+                      Show link to "Resend verification email"
                     plugin_setting:
                         name: show_resend_verification_link
                     type: checkbox
                     indent: 1
                     value: "1"
+                
+                user_password:
+                    label: "User's password:"
+                    type: select
+                    plugin_setting:
+                        name: user_password
+                    values:
+                        user_to_choose_password:
+                            label: "User to choose password"
+                        user_to_have_random_password:
+                            label: "Auto-create a password for the user"
+                    value: user_to_choose_password
+                    format_onchange: true
+                    empty_value: "-- Select --"
+                    validation:
+                        required_if_not_hidden: "Please select an option for the user's password."
+                password_needs_changing:
+                    visible_if: "zenarioAB.value('user_password') == 'user_to_have_random_password'"
+                    label: 'User must change password on next login'
+                    plugin_setting:
+                        name: password_needs_changing
+                    type: checkbox
+                    indent: 1
+                    value: "0"
+                    side_note: >
+                        When the extranet user next logs in to the site, they will be asked to change their password before they can access the extranet area.
+                
+                user_email_verification:
+                    label: 'Require email address to be entered twice'
+                    plugin_setting:
+                        name: user_email_verification
+                    type: checkbox
+                    value: "0"
+                    side_note: >
+                        Users must enter their email twice before they can continue.
+                
+                show_salutation:
+                    label: 'Show salutation field'
+                    plugin_setting:
+                        name: show_salutation
+                    type: checkbox
+                    value: "0"
+                    side_note: |
+                        Show field for salutations, with a helper dropdown from the centralised list. See the <a href='organizer.php#zenario__languages/panels/salutations' target='_blank'>Salutations</a> panel.
+                
+                show_screen_name:
+                    label: 'Show screen name'
+                    plugin_setting:
+                        name: show_screen_name
+                    type: checkbox
+                    readonly: true
+                    side_note: >
+                        To show/hide screen name you must change the "Use screen names" <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target='_blank'>site setting</a>.
             
+                requires_terms_and_conditions:
+                    plugin_setting:
+                        name: requires_terms_and_conditions
+                    label: 'Show a mandatory checkbox to give consent (e.g. for personal data storage)'
+                    type: checkbox
+                    value: ""
+                    format_onchange: true
+                    side_note: >
+                        Show a terms and conditions checkbox which must be checked in order to register. Every registration will be recorded in the <a href='organizer.php#zenario__users/panels/consents' target='_blank'>consents log</a>.
+                link_type:
+                    plugin_setting:
+                        name: link_type
+                    label: 'Destination:'
+                    type: select
+                    value: _CONTENT_ITEM
+                    visible_if: "zenarioAB.value('requires_terms_and_conditions') == true"
+                    values:
+                        _CONTENT_ITEM:
+                            label: Link to a content item
+                        _EXTERNAL_URL:
+                            label: Link to an external URL
+                    format_onchange: true
+                    indent: 1
+                    
+                terms_and_conditions_page:
+                    indent: 2
+                    plugin_setting:
+                        name: terms_and_conditions_page
+                        foreign_key_to: content
+                    label: 'Terms and conditions page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    visible_if: "zenarioAB.value('link_type') != '_EXTERNAL_URL'"
+                    validation:
+                        required_if_not_hidden: Please select a terms and conditions page
+                    side_note: >
+                        A link to this page will be placed in the "Accept our terms and conditions" checkbox text. Always opens in a new window.       
+                url:
+                    indent: 2
+                    plugin_setting:
+                        name: url
+                        foreign_key_to: content
+                    label: 'External URL:'
+                    type: url
+                    maxlength: "255"
+                    value: ""
+                    visible_if: "zenarioAB.value('link_type') == '_EXTERNAL_URL'"
+                    validation:
+                        required_if_not_hidden: "Please enter a URL."
+                    note_below: "Always opens in a new window."  
+                use_captcha:
+                    plugin_setting:
+                        name: use_captcha
+                    label: 'Show a captcha'
+                    type: checkbox
+                    side_note: >
+                        Require completion of a captcha to ensure a human is using the registration form.
+            
+                show_link_to_login_page:
+                    plugin_setting:
+                        name: show_link_to_login_page
+                    label: Show "Go to login" link
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                login_page:
+                    visible_if: zenarioAB.value('show_link_to_login_page')
+                    plugin_setting:
+                        name: login_page
+                        foreign_key_to: content
+                    label: 'Login page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a login page.
+                    indent: 1
+                
+                custom_fields_desc:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">
+                                You may add <a href='organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[id]]//' target='_blank'>user dataset fields</a> to the registration form.<br />
+                                If using the standard framework, all custom fields will appear after last name and will be optional.<br />
+                                System fields may not be selected.<br />
+                                Custom fields may be selected except these types:
+                                <ul>
+                                    <li>Checkbox group</li>
+                                    <li>Editor</li>
+                                    <li>Dataset picker</li>
+                                    <li>File picker</li>
+                                </ul>
+                user_custom_fields:
+                    plugin_setting:
+                        name: user_custom_fields
+                    format_onchange: true
+                    label: 'Custom fields:'
+                    pick_items:
+                        reorder_items: true
+                        multiple_select: true
+                        enable_type_ahead_search: true
+                        #The path is built in the PHP class.
+                        path: ''
+                        select_phrase: Select custom field...
+                        disabled_if_for_any_selected_items: (!item.is_field || item.is_system_field || (['checkboxes', 'editor', 'other_system_field', 'dataset_picker', 'file_picker'].includes(item.type)))
+                        disallow_refiners_looping_on_min_path: true
+        
+        initial_signup_actions:
+            label: Actions 1
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                          <p>This tab defines initial signup actions, i.e. actions that are performed when the account is first created.</p>
+                initial_account_status:
+                    label: 'Status after initial signup:'
+                    type: radios
+                    plugin_setting:
+                        name: initial_account_status
+                    values:
+                        contact:
+                            label: Contact
+                        pending:
+                            label: User with pending status
+                    format_onchange: true
+                    value: pending
+                    side_note: >
+                        After initial sign-up, set the account to be either "Contact" (the site can send them email, but they cannot log in) or "User" (they may be able to log in).
+                
                 enable_notifications_on_user_signup:
                     label: 'Notify an administrator when a user/contact signs up'
                     type: checkbox
@@ -91,141 +294,14 @@ plugin_settings:
                     note_below: 'By default this plugin uses the email template with code "zenario_extranet_registration__to_admin_user_signup_notification_en".'
                     indent: 1
                 
-                name_fields:
-                    snippet:
-                        html: |
-                            <div class="zenario_fbInfo">
-                                The first name may not exceed 25 characters.<br />
-                                The last name may not exceed 35 characters.
-                            </div>
-                
-                user_password:
-                    label: "User's password:"
-                    type: select
-                    plugin_setting:
-                        name: user_password
-                    values:
-                        user_to_choose_password:
-                            label: "User to choose password"
-                        user_to_have_random_password:
-                            label: "Auto-create a password for the user"
-                    value: user_to_choose_password
-                    format_onchange: true
-                    empty_value: "-- Select --"
-                    validation:
-                        required_if_not_hidden: "Please select an option for the user's password."
-                password_needs_changing:
-                    visible_if: "zenarioAB.value('user_password') == 'user_to_have_random_password'"
-                    label: 'User must change password on next login'
-                    plugin_setting:
-                        name: password_needs_changing
-                    type: checkbox
-                    indent: 1
-                    value: "0"
-                    side_note: >
-                        When the extranet user next logs in to the site, they will be asked to change their password before they can access the extranet area.
-                
-                show_screen_name:
-                    label: 'Show screen name'
-                    plugin_setting:
-                        name: show_screen_name
-                    type: checkbox
-                    readonly: true
-                    side_note: >
-                        To show/hide screen name you must change the "Use screen names" <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target='_blank'>site setting</a>.
-                    
-            
-                user_email_verification:
-                    label: 'User must enter email twice'
-                    plugin_setting:
-                        name: user_email_verification
-                    type: checkbox
-                    value: "0"
-                    side_note: >
-                        Users must enter their email twice before they can continue.
-            
-                show_salutation:
-                    label: 'Show salutation field'
-                    plugin_setting:
-                        name: show_salutation
-                    type: checkbox
-                    value: "0"
-                    side_note: |
-                        Show field for salutations, with a helper dropdown from the centralised list, see <a href='organizer.php#zenario__languages/panels/salutations' target='_blank'>International->Salutations</a>.
-                requires_terms_and_conditions:
-                    plugin_setting:
-                        name: requires_terms_and_conditions
-                    label: 'Require user to give consent'
-                    type: checkbox
-                    value: ""
-                    format_onchange: true
-                    side_note: >
-                        Show a terms and conditions checkbox which is mandatory. Every registration will be recorded in the <a href='organizer.php#zenario__users/panels/consents' target='_blank'>consents log</a>.
-                link_type:
-                    plugin_setting:
-                        name: link_type
-                    label: 'Destination:'
-                    type: select
-                    value: _CONTENT_ITEM
-                    visible_if: "zenarioAB.value('requires_terms_and_conditions') == true"
-                    values:
-                        _CONTENT_ITEM:
-                            label: Link to a content item
-                        _EXTERNAL_URL:
-                            label: Link to an external URL
-                    format_onchange: true
-                    indent: 1
-                    
-                terms_and_conditions_page:
-                    indent: 2
-                    plugin_setting:
-                        name: terms_and_conditions_page
-                        foreign_key_to: content
-                    label: 'Terms and conditions page:'
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/filter_by_lang////
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
-                        hide_remove_button: true
-                    visible_if: "zenarioAB.value('link_type') != '_EXTERNAL_URL'"
-                    validation:
-                        required_if_not_hidden: Please select a terms and conditions page
-                    side_note: >
-                        A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
-                    note_below: "Always opens in a new window."        
-                url:
-                    indent: 2
-                    plugin_setting:
-                        name: url
-                        foreign_key_to: content
-                    label: 'External URL:'
-                    type: url
-                    maxlength: "255"
-                    value: ""
-                    visible_if: "zenarioAB.value('link_type') == '_EXTERNAL_URL'"
-                    validation:
-                        required_if_not_hidden: "Please enter a URL."
-                    note_below: "Always opens in a new window."  
-                use_captcha:
-                    plugin_setting:
-                        name: use_captcha
-                    label: 'Show captcha'
-                    type: checkbox
-                    side_note: >
-                        Require completion of a captcha to ensure we're dealing with a human.
-            
-            
                 set_characteristics_on_new_users:
                     plugin_setting:
                         name: set_characteristics_on_new_users
-                    label: Set a flag when creating the user/contact
+                    label: When user/contact registers, set a checkbox on account
                     type: checkbox
                     format_onchange: true
                     side_note: >
-                        When users or contacts are created with this form, you can specify a characteristic that is set for those users.
+                        When account for user or contact is created, set a checkbox on the account. See the [[link_start]]Users dataset[[link_end]].
 
                 select_characteristics_for_new_users:
                     plugin_setting:
@@ -244,17 +320,18 @@ plugin_settings:
                     label: 'Dataset flag values:'
                     type: checkboxes
                     validation:
-                        required_if_not_hidden: Please select a value for the dataset flag.
+                        required_if_not_hidden: Please select a value for the Users dataset flag.
                     indent: 1
                 
                 set_timer_on_new_users:
                     plugin_setting:
                         name: set_timer_on_new_users
-                    label: 'Set a timer'
+                    label: |
+                      When user registers, start a user timer
                     type: checkbox
                     format_onchange: true
                     side_note: >
-                        When users or contacts are created with this form, you can specify a timer that is set for those users.
+                        When a user account is created, start a timer for that user. See [[link_start]]Timer plans[[link_end]].
                 
                 timer_for_new_users:
                     plugin_setting:
@@ -269,97 +346,36 @@ plugin_settings:
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a user timer.
-                    side_note: >
-                        When users or contacts are created with this form, only timers that are open will be applied for those users.
                     indent: 1
                 
                 add_user_to_group:
                     plugin_setting:
                         name: add_user_to_group
-                    label: Add the user to a group
+                    label: |
+                      When user/contact registers, add them to a group
                     type: checkbox
                     format_onchange: true
                     side_note: >
-                        When users or contacts are created with this form, you can add that user to a group.
+                        When a user or contact account is created, add it to a group. See [[link_start]]Groups[[link_end]].
                 select_group_for_new_users:
                     plugin_setting:
                         name: select_group_for_new_users
-                    label: 'Group'
+                    label: |
+                      Group:
                     type: select
                     empty_value: ' -- Select -- '
                     validation:
                         required_if_not_hidden: Please select a group.
                     indent: 1
-            
-                show_link_to_login_page:
-                    plugin_setting:
-                        name: show_link_to_login_page
-                    label: Show link to login page
-                    type: checkbox
-                    value: 1
-                    redraw_onchange: true
-                login_page:
-                    visible_if: zenarioAB.value('show_link_to_login_page')
-                    plugin_setting:
-                        name: login_page
-                        foreign_key_to: content
-                    label: 'Login page:'
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/filter_by_lang////
-                        min_path: zenario__content/panels/content
-                        max_path: zenario__content/panels/content
-                        target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select a login page.
-                    indent: 1
-                include_an_attachment:
-                    plugin_setting:
-                        name: include_an_attachment
-                    label: Include an attachment
-                    type: checkbox
-                    value: 0
-                    redraw_onchange: true
-                selected_attachment:
-                    plugin_setting:
-                        name: selected_attachment
-                        foreign_key_to: file
-                    pick_items:
-                        path: zenario__library/panels/documents
-                        min_path: zenario__library/panels/documents
-                        max_path: zenario__library/panels/documents
-                        target_path: zenario__library/panels/documents
-                        select_phrase: Select an attachment...
-                        hide_remove_button: true
-                    validation:
-                        required_if_not_hidden: Please select an attachment.
-                    visible_if: zenarioAB.value('include_an_attachment')
-                    indent: 1
-                    format_onchange: true
-            
+
         user_activation:
-            label: Activation
+            label: Actions 2
             fields:
                 desc:
                     full_width: true
                     snippet:
-                        html: This defines the activation policy for new people signing up. It is recommended for Zenario to send a verification email to the person, to ensure their email address is valid and they can access it.
-                initial_account_status:
-                    label: 'Status upon signup (before email verification):'
-                    type: radios
-                    plugin_setting:
-                        name: initial_account_status
-                    values:
-                        contact:
-                            label: Contact
-                        pending:
-                            label: User (Pending status)
-                    format_onchange: true
-                    value: pending
-                    side_note: >
-                        Upon initial sign-up, class people as either "Contacts" (the site can email them but they cannot log in to an extranet area) or "User" (with Pending status, until they verify their email address and/or an administrator activates the account).
+                        html: |
+                          <p>This tab defines actions to perform on the user/contact account after the individual has verified their email address.</p>
                 verified_account_status:
                     label: 'Status after email verification:'
                     type: radios
@@ -371,23 +387,21 @@ plugin_settings:
                         contact:
                             label: Set to Contact
                         active:
-                            label: Set to User (Active status)
+                            label: Set to User with active status
                         check_trusted:
-                            label: Set to User (Active status) if from a trusted domain, otherwise leave as-is
+                            label: Set to User with active status if from a trusted domain, otherwise leave as-is
                     format_onchange: true
                     value: active
                     side_note: >
-                        When the user verifies their email address, set status to User (Active status) to allow login; otherwise leave as Contact/User (Pending status).
-                
+                        When the user verifies their email address, set status to User (active status) to allow login; otherwise leave as Contact/User (pending status).
                 trusted_email_domains:
                     plugin_setting:
                         name: trusted_email_domains
                     label: 'List of trusted email domains:'
                     type: text
                     side_note: >
-                        Enter a comma separated list of email domains, e.g., @tribiq.com,@zenario.com,@bigcompany.co.uk. Users registering
-                        using an email from one of these domains will be set to active after email verification, otherwise they're left
-                        as-is.
+                        Enter a comma separated list of email domains, e.g. @zenar.io. Users who have an email address 
+                        in one of these domains will made active after email verification.
                     indent: 1
                 
                 welcome_email_template:
@@ -402,10 +416,35 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         select_phrase: Select an email template...
-                    side_note: "Pick the email template to send the welcome emails to newly activated users. This setting applies only when the User's initial status is Active. Please see the module description to get a full list of merge fields which can be used."
+                    side_note: "The email template to use for welcome emails to newly activated users. Only applies when initial status is active. See the module description for a list of merge fields."
                     value: zenario_users__to_user_account_activated
                     note_below: 'By default this plugin uses the email template with code "zenario_users__to_user_account_activated".'
                     indent: 1
+                    format_onchange: true
+                
+                include_an_attachment:
+                    plugin_setting:
+                        name: include_an_attachment
+                    label: Include an attachment
+                    type: checkbox
+                    value: 0
+                    format_onchange: true
+                    indent: 2
+                selected_attachment:
+                    plugin_setting:
+                        name: selected_attachment
+                        foreign_key_to: file
+                    pick_items:
+                        path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
+                        select_phrase: Select an attachment...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an attachment.
+                    indent: 3
+                    format_onchange: true
                 
                 show_welcome_page:
                     plugin_setting:
@@ -444,6 +483,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a content item
                     indent: 1
+
                 user_activation_notification_email_enable:
                     label: Notify an administrator by email when a user is activated
                     type: checkbox
@@ -451,12 +491,7 @@ plugin_settings:
                         name: user_activation_notification_email_enable
                     format_onchange: true
                     side_note: >
-                        You can enable email notifications here when the User
-                        account status is set to active or account awaits for the
-                        manual activation. Email notification are send when
-                        activation policy is applied to the User account. Depending
-                        on the settings on the "Initial signup" tab this may occur
-                        on user signup or when User clicks verification link.
+                        Be notified by email when an account is activated or awaits manual activation.
                     value: ""
                 user_activation_notification_email_template:
                     label: 'Email template:'
@@ -474,8 +509,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template
                     side_note: >
-                        Please see the module description to get a full list of
-                        merge fields.
+                        Please see the module description to get a full list of merge fields.
                     value: zenario_extranet_registration__to_admin_user_activation_notification_en
                     note_below: 'By default this plugin uses the email template with code "zenario_extranet_registration__to_admin_user_activation_notification_en".'
                     indent: 1
@@ -487,52 +521,123 @@ plugin_settings:
                     side_note: >
                         Enter the recipient(s) who should be notified. Multiple email addresses can be separated by commas.
                     indent: 1
-        custom_fields:
-            label: Custom fields
-            
-            edit_mode:
-                enabled: true
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: >
-                            <div>Use this tab to add <a href='organizer.php#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[id]]//' target='_blank'>user dataset fields</a>. 
-                            If using the standard framework, all fields will appear after last name and will be optional.</div>
-                unsupported_fields_snippet:
-                    snippet:
-                        html: |
-                            <div class="zenario_fbInfo">
-                                System fields may not be selected.<br />
-                                Custom fields may be selected except these types:
-                                <ul>
-                                    <li>Checkbox group</li>
-                                    <li>Editor</li>
-                                    <li>Dataset picker</li>
-                                    <li>File picker</li>
-                                </ul>
-                user_custom_fields:
+                
+                show_message_when_user_is_first_activated:
                     plugin_setting:
-                        name: user_custom_fields
-                    format_onchange: true
-                    label: 'Custom fields:'
+                        name: show_message_when_user_is_first_activated
+                    label: Show a message when user account is first activated
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                user_is_first_activated_message:
+                    indent: 1
+                    plugin_setting:
+                        name: user_is_first_activated_message
+                    label: 'Message:'
+                    type: text
+                    value: Congratulations, your account has been activated.
+                    show_phrase_icon: true
+                    visible_if: lib.value('show_message_when_user_is_first_activated')
+                    validation:
+                        required_if_not_hidden: 'Please enter the message.'
+                
+                show_message_if_user_views_register_page_subsequently:
+                    plugin_setting:
+                        name: show_message_if_user_views_register_page_subsequently
+                    label: Show a message if user views the Register page subsequently
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                user_views_register_page_subsequently_message:
+                    indent: 1
+                    plugin_setting:
+                        name: user_views_register_page_subsequently_message
+                    label: 'Message:'
+                    type: text
+                    value: It looks like you have already registered for an account.
+                    show_phrase_icon: true
+                    visible_if: lib.value('show_message_if_user_views_register_page_subsequently')
+                    validation:
+                        required_if_not_hidden: 'Please enter the message.'
+                
+                show_link_to_profile_page:
+                    plugin_setting:
+                        name: show_link_to_profile_page
+                    label: |
+                        Show link to "profile" special page
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                profile_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Profile page:'
                     pick_items:
-                        reorder_items: true
-                        multiple_select: true
-                        enable_type_ahead_search: true
-                        #The path is built in the PHP class.
-                        path: ''
-                        select_phrase: Select custom field...
-                        disabled_if_for_any_selected_items: (!item.is_field || item.is_system_field || (['checkboxes', 'editor', 'other_system_field', 'dataset_picker', 'file_picker'].includes(item.type)))
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
-                    
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                    visible_if: lib.value('show_link_to_profile_page')
+                
+                show_link_to_change_password_page:
+                    plugin_setting:
+                        name: show_link_to_change_password_page
+                    label: |
+                        Show link to "change password" special page
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                change_password_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Change password page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                    visible_if: lib.value('show_link_to_change_password_page')
+                
+                show_link_to_logout_page:
+                    plugin_setting:
+                        name: show_link_to_logout_page
+                    label: |
+                        Show link to "logout" special page
+                    type: checkbox
+                    value: 1
+                    redraw_onchange: true
+                logout_page:
+                    plugin_setting:
+                        foreign_key_to: content
+                    label: 'Logout page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
+                    readonly: true
+                    indent: 1
+                    visible_if: lib.value('show_link_to_logout_page')
         text:
             label: Text
             fields:
                 description:
                     snippet:
                         html: >
-                            These settings control the display text of the plugin.
+                            <p>This tab determines what text to display on the signup screen and after email verification.</p>
                 registration_title:
                     label: 'Title:'
                     type: text
@@ -562,7 +667,8 @@ plugin_settings:
                     value: 'Use this if you have previously registered but not received your verification email.'
                     show_phrase_icon: true
                 go_back_to_login_text:
-                    label: 'Go back to login text:'
+                    label: |
+                      "Go to login" text:
                     type: text
                     plugin_setting:
                         name: go_back_to_login_text
@@ -604,7 +710,7 @@ plugin_settings:
                     full_width: true
                     snippet:
                         html: >
-                            These settings control what the user sees if the registration or resend verification email process fails.
+                            <p>This tab determines what error messages to display if certain things fail.</p>
                 email_not_in_db_message:
                     plugin_setting:
                         name: email_not_in_db_message

@@ -55,6 +55,10 @@ zenario.lib(function(
 
 
 
+methods.idPrefix = function() {
+	return 'zaf_';
+};
+
 methods.defaultDatePickerFormat = function() {
 	return (zenarioA.siteSettings && zenarioA.siteSettings.organizer_date_format) || zenario.dpf;
 };
@@ -121,8 +125,8 @@ methods.load = function(data) {
 	zenarioT.checkDumps(data);
 	
 	if (data.toast
-	 && zenarioA.toast) {
-		zenarioA.toast(data.toast);
+	 && zenarioT.toast) {
+		zenarioT.toast(data.toast);
 	}
 	
 	if (thus.callFunctionOnEditors('isDirty')) {
@@ -138,6 +142,36 @@ methods.load = function(data) {
 	}
 	
 	return true;
+};
+
+
+methods.insertHTML = function(html, cb, isNewTab) {
+	var tab = get('zenario_abtab'),
+		lastFocus = thus.lastFocus || thus.fieldThatTriggeredRedraw,
+		field;
+	
+	tab.innerHTML = html;
+	thus.tabHidden = false;
+	
+	if (thus.changes(thus.tuix.tab)) {
+		$(tab).addClass('zenario_abtab_changed');
+	} else {
+		$(tab).removeClass('zenario_abtab_changed');
+	}
+	
+	cb.done();
+	
+	if (field = !isNewTab && lastFocus && thus.field(lastFocus.id)) {
+		thus.focusField(field, lastFocus.ss, lastFocus.se);
+	}
+	
+	thus.sendSignalAfterRedraw();
+	
+	thus.fieldThatTriggeredRedraw = false;
+	
+	if (zenarioT.showDevTools()) {
+		thus.__lastFormHTML = html;
+	}
 };
 
 
@@ -196,7 +230,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 			});
 			
 			//Attempt to preserve the previous scroll height if this is the same tab as last time
-			$('#zenario_fbAdminInner').scrollTop(lastScrollTop);
+			thus.tabScrollableDiv().scrollTop(lastScrollTop);
 			
 			thus.hideShowFields();
 		}
@@ -215,6 +249,16 @@ methods.animateInTab = function(html, cb, $shakeme) {
 			
 			thus.focusFirstField();
 		});
+	}
+};
+
+methods.tabScrollableDiv = function() {
+	var domMainScroll = thus.get('|||main_scroll|||');
+	
+	if (domMainScroll) {
+		return $(domMainScroll);
+	} else {
+		return $('#zenario_fbAdminInner');
 	}
 };
 

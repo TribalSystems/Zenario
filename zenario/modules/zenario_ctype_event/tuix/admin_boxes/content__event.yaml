@@ -241,4 +241,4 @@ zenario_content:
                     type: button
                     css_class: zenario_gp_button
                     value: Test
-                    onclick: "if ($('#url').val()!='') {window.open($('#url').val())}"
+                    onclick: "if ($(lib.get('url')).val()!='') {window.open($(lib.get('url')).val())}"

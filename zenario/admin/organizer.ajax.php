@@ -742,6 +742,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			 && !ze\ring::engToBoolean($col['disallow_filtering'] ?? false)) {
 				
 				$value_ = zenario_organizer::$filters[$colName]['v'];
+				$match = empty(zenario_organizer::$filters[$colName]['not']);
 				
 				//Special case for encrypted columns with hashed values
 				if (!empty($col['encrypted']['hashed'])) {
@@ -749,13 +750,24 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					$whereStatement .= "
 						AND ". $col['encrypted']['hashed_column'];
 					
-					if (empty(zenario_organizer::$filters[$colName]['not'])) {
+					if ($match) {
 						$whereStatement .= " = '";
 					} else {
 						$whereStatement .= " != '";
 					}
 					
 					$whereStatement .= ze\escape::sql(ze\db::hashDBColumn($value_)). "'";
+				
+				//New option in 10.1 that lets us have specific filter logic for specific values.
+				} elseif (isset($col['filters_by_value'][$value_])) {
+					if ($match) {
+						$whereStatement .= "
+						  AND ". $col['filters_by_value'][$value_];
+			
+					} else {
+						$whereStatement .= "
+						  AND NOT ". $col['filters_by_value'][$value_];
+					}
 				
 				} else {
 					//Try to get the column to filter on
@@ -798,10 +810,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						
 							break;
 					
-						//Yes/No type filters on tinyint columns
+						//Yes/No type filters on tinyint columns.
+						//Has some special logic where a value of "null" will count as "no" and still be matched.
 						case 'yes_or_no':
-					
-							if (empty(zenario_organizer::$filters[$colName]['not'])) {
+							if ($match) {
 								$whereStatement .= "
 								  AND ". $columnName. " != 0";
 					
@@ -823,7 +835,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 							//A value of "*" should match all values (or all empty values if not is set)
 							if ($value_ == '*') {
-								if (empty(zenario_organizer::$filters[$colName]['not'])) {
+								if ($match) {
 									$whereStatement .= "
 									  AND ". $columnName. " != 0
 									  AND ". $columnName. " != ''";
@@ -843,12 +855,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						
 						default:
 							if ($searchable || ze\ring::engToBoolean($col['searchable'] ?? false)) {
-								
-								$not = !empty(zenario_organizer::$filters[$colName]['not']);
-								
 								$whereStatement .= "
 								  AND ";
-								searchOrganizerColumn($whereStatement, $columnName, $value_, $exactMatch, $not, $col);
+								searchOrganizerColumn($whereStatement, $columnName, $value_, $exactMatch, !$match, $col);
 							}
 					}
 				}

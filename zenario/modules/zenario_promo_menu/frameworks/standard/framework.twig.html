@@ -120,7 +120,7 @@
 								</span>
 							{%~ endif %}
 							
-							{% if not node1.active %}<em class="zenario_inactive">{%~ endif -%}
+							{% if not node1.active %}<em class="zenario_menu_node zenario_inactive">{%~ endif -%}
 								<a {% if node1.url %}href="{{node1.url|e}}"{% else %}class="unlinked_menu_item"{% endif %} {% if node1.onclick %}onclick="{{node1.onclick|e}}"{% endif %} {% if node1.accesskey %}accesskey="{{node1.accesskey|e}}"{% endif %} {% if node1.rel_tag %}rel="{{node1.rel_tag|e}}"{% endif %} {% if node1.target %}target="{{node1.target|e}}"{% endif %} {% if node1.title %}title="{{node1.title|e}}"{% endif %}><span {% if (nodeExtraProperties[node1.mID]['feature_image_link']) %} {{self.addOnMouseOver(containerId|e, nodeExtraProperties[node1.mID], nodeExtraProperties[node1.mID], true)}} {% endif %}>{{node1.name|e}}</span></a>
 							{% if not node1.active %}</em>{%~ endif %}
 							
@@ -175,7 +175,7 @@
 																</span>
 															{%~ endif %}
 														
-															{% if not node2.active %}<em class="zenario_inactive">{%~ endif -%}
+															{% if not node2.active %}<em class="zenario_menu_node zenario_inactive">{%~ endif -%}
 																<a {% if node2.url %}href="{{node2.url|e}}" {% else %} class="unlinked_menu_item"{% endif %} {% if node2.onclick %}onclick="{{node2.onclick|e}}"{% endif %} {% if node2.accesskey %}accesskey="{{node2.accesskey|e}}"{% endif %} {% if node2.rel_tag %}rel="{{node2.rel_tag|e}}"{% endif %} {% if node2.target %}target="{{node2.target|e}}"{% endif %} {% if node2.title %}title="{{node2.title|e}}"{% endif %}>{{node2.name|e}}</a>
 															{% if not node2.active %}</em>{%~ endif %}
 														
@@ -199,7 +199,7 @@
 																	</span>
 																{%~ endif %}
 															
-																{% if not node3.active %}<em class="zenario_inactive">{%~ endif -%}
+																{% if not node3.active %}<em class="zenario_menu_node zenario_inactive">{%~ endif -%}
 																	<a {% if node3.url %}href="{{node3.url|e}}"{% else %}class="unlinked_menu_item"{% endif %} {% if node3.onclick %}onclick="{{node3.onclick|e}}"{% endif %} {% if node3.accesskey %}accesskey="{{node3.accesskey|e}}"{% endif %} {% if node3.rel_tag %}rel="{{node3.rel_tag|e}}"{% endif %} {% if node3.target %}target="{{node3.target|e}}"{% endif %} {% if node3.title %}title="{{node3.title|e}}"{% endif %}>{{node3.name|e}}</a>
 																{% if not node3.active %}</em>{%~ endif %}
 															

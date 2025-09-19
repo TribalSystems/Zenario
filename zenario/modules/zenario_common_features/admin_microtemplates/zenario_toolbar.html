@@ -18,14 +18,17 @@
 		<div class="zenario_at_title_label">Admin Toolbar</div>
 		<div class="zenario_at_title_for">for {{zenarioATLinks.tag|escape}}</div>
 	</div>
-	<div id="zenario_at_logout_link">
-		<a
-			id="zenario_logout_button"
-			{{zenarioATLinks.logout}}
-			title="{{zenarioA.phrase.logout}}"
-			data-tooltip-options='{"tooltipClass": "zenario_admin_tooltip"}'
-		></a>
-	</div>
+	
+	<% if (m.current_toolbar_tab_grouping == 'preview') { %>
+		<div id="zenario_at_logout_link">
+			<a
+				id="zenario_logout_button"
+				{{zenarioATLinks.logout}}
+				title="{{zenarioA.phrase.logout}}"
+				data-tooltip-options='{"tooltipClass": "zenario_admin_tooltip"}'
+			></a>
+		</div>
+	<% } %>
 	<div id="zenario_at">
 		<div class="zenario_at_container zenario_at_tabs_container">
 			<div class="zenario_at_content zenario_at_tabs">
@@ -49,6 +52,11 @@
 					pageBodyAdminToolbar() function.
 					When actually drawing this microtemplate, the "if (false)" will stop
 					the "display: none;" from being output.
+				-->
+				
+				<!--
+					These icons may be visible or hidden depending on which toolbar tab is clicked.
+					This is done in CSS rather than any visibility logic in this microtemplate.
 				-->
 				<div class="zenario_at_topRightIcons" style="<% if (false) { %>display: none;<% } %>">
 					<% if (zenarioT.showDevTools()) { %>

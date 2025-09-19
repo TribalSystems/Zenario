@@ -9,7 +9,7 @@
 		<% if (m.html) { %>
 			{{m.message}}
 		<% } else { %>
-			{{m.message|escape}}
+			{{zenario.htmlspecialchars(m.message, true)}}
 		<% } %>
 	</div>
 	

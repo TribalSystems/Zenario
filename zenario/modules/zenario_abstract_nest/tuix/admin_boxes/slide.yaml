@@ -35,7 +35,7 @@ zenario_slide:
                     row_class: zenario_row_with_dropdown
                     label: 'Slide label:'
                     type: text
-                    maxlength: 100
+                    maxlength: 150
                     validation:
                         required: Please enter a label for the link to this slide
                 title_merge_fields:
@@ -96,43 +96,33 @@ zenario_slide:
                     validation:
                         numeric: The refresh interval must be numeric.
                 
-                show_back:
+                
+                slide_type:
                     visible_if: tuix.key.usesConductor
-                    label: Show a Back button
-                    type: checkbox
-                    redraw_onchange: true
-                    note_below: |
-                        This will look for a conductor path from this slide called "back".
-                no_choice_no_going_back:
+                    label: Slide type
+                    type: radios
+                    format_onchange: true
+                    value: key_slide
+                    values:
+                        key_slide:
+                            label: Key slide
+                        inner_slide:
+                            label: Inner slide
+                
+                key_slide_desc:
                     indent: 1
                     hide_with_previous_outdented_field: true
-                    hide_if_previous_outdented_value_isnt: 1
-                    label: Only show the Back button when the previous slide has more than one item to choose from
-                    type: checkbox
-                    note_below: |
-                        This check works by counting the number of smart breadcrumbs.
-                        Smart breadcrumbs must be enabled for this to function.
-                
-                
-                set_global_command:
-                    visible_if: tuix.key.usesConductor
-                    label: 'Make this a key slide'
-                    type: checkbox
-                    format_onchange: true
-                    note_below: |
-                        Normally, the visitor can only navigate from one slide in the conductor to
-                        another if there is:
-                        <ul><li>
-                            A plugin that issues a command placed on the first slide.
-                        </li><li>
-                            A path with this command, drawn between the two slides.
-                        </li></ul>
-                        Key slides can be navigated to from any point in the conductor.
-                        The navigation path will not be preserved in this case.
+                    hide_if_previous_outdented_value_isnt: key_slide
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        html: |
+                            Key slides are starting points in the navigation.
+                            They can have tab links going to them.
+                            Each key slide has a command that will take the user to this slide from any other point in the conductor.
                 global_command:
                     indent: 1
                     hide_with_previous_outdented_field: true
-                    hide_if_previous_outdented_value_isnt: 1
+                    hide_if_previous_outdented_value_isnt: key_slide
                     label: 'Command name:'
                     type: text
                     maxlength: 100
@@ -145,6 +135,24 @@ zenario_slide:
                             Please don't enter any spaces in the command's name
                         screen_name: |
                             Please don't enter any special characters in the command's name
+                
+                inner_slide_desc:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: inner_slide
+                    row_class: zenario_fbInfo zenario_fbInfo_small
+                    snippet:
+                        html: |
+                            Inner slides are slides that cannot be accessed without first navigating from a different slide.
+                            They must have at least one path going into them, and must have a back path going from them.
+                
+                show_back:
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: inner_slide
+                    label: Show the back button at the top of the slide
+                    type: checkbox
+                    redraw_onchange: true
                 
                 slide_link_image_id:
                     label: 'Image for tab link:'

@@ -96,8 +96,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			break;
 		}
 		if ($defaultLanguageName) {
-			$fields['details/translate_text']['side_note'] = ze\admin::phrase(
-				'This will cause all displayable text from this form to be translated when used in a Forms plugin. This should be disabled if you enter non-[[default_language]] text into the form field admin boxes.', ['default_language' => $defaultLanguageName]);
+			$fields['details/translate_text']['tooltip'] = ze\admin::phrase(
+				"<p>If this is enabled, all displayable text from this form will be translated to a visitor's selected language when used in a Form Container.</p><p>Otherwise, the text will not be translated regardless of the visitor's selected language and will always appear exactly as entered.</p>",
+				['default_language' => $defaultLanguageName]
+			);
 		}
 		
 		
@@ -810,6 +812,13 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		} else {
 			$fields['anti_spam/recaptcha_policy_warning']['hidden'] = true;
 		}
+		
+		//Display the form response privacy setting below the "Log the form response" checkbox
+		$phrase = '';
+		
+		zenario_user_forms::formatDataProtectionValueNicelyForFieldNoteBelow($individualFormSetting = $values['data_deletion/period_to_delete_response_headers'], $phrase);
+		
+		$fields['data/save_record']['note_below'] = ze\admin::phrase($phrase);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -1080,8 +1089,10 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		$record['enable_summary_page_required_checkbox'] = 0;
 		$record['summary_page_required_checkbox_label'] = null;
 		$record['summary_page_required_checkbox_error_message'] = null;
+		$record['summary_page_top_text'] = '';
 		$record['summary_page_lower_text'] = null;
 		if ($record['enable_summary_page'] = $values['enable_summary_page']) {
+			$record['summary_page_top_text'] = $values['summary_page_top_text'];
 			$record['summary_page_lower_text'] = $values['summary_page_lower_text'];
 			if ($record['enable_summary_page_required_checkbox'] = $values['enable_summary_page_required_checkbox']) {
 				$record['summary_page_required_checkbox_label'] = $values['summary_page_required_checkbox_label'];

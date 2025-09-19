@@ -251,14 +251,14 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		$fields = [];
 		$fields[] =	['name' => 'c.alias',				'weighting' => $weights[$this->setting('alias_weighting')]];
 		$fields[] =	['name' => 'c.language_id',			'weighting' => 0];
-		$fields[] =	['name' => 'v.title',				'weighting' => $weights[$this->setting('title_weighting')]];
-		$fields[] =	['name' => 'v.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]];
-		$fields[] =	['name' => 'v.description',			'weighting' => $weights[$this->setting('description_weighting')]];
+		$fields[] =	['name' => 'cc.title',				'weighting' => $weights[$this->setting('title_weighting')]];
+		$fields[] =	['name' => 'cc.keywords',			'weighting' => $weights[$this->setting('keywords_weighting')]];
+		$fields[] =	['name' => 'cc.description',		'weighting' => $weights[$this->setting('description_weighting')]];
 		$fields[] =	['name' => 'v.filename',			'weighting' => $weights[$this->setting('filename_weighting')]];
-		$fields[] =	['name' => 'v.content_summary',		'weighting' => $weights[$this->setting('content_summary_weighting')]];
+		$fields[] =	['name' => 'cc.content_summary',	'weighting' => $weights[$this->setting('content_summary_weighting')]];
 		$fields[] =	['name' => 'v.feature_image_id',	'weighting' => 0];
-		$fields[] =	['name' => 'cc.text',				'weighting' => $weights[$this->setting('content_weighting')]];
-		$fields[] =	['name' => 'cc.extract',			'weighting' => $weights[$this->setting('extract_weighting')]];
+		$fields[] =	['name' => 'cc.content_item_text',	'weighting' => $weights[$this->setting('content_weighting')]];
+		$fields[] =	['name' => 'cc.file_extract',		'weighting' => $weights[$this->setting('extract_weighting')]];
 
 		$this->fields = [];
 		
@@ -998,7 +998,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		//Note: The logic below may cause a "DOUBLE value is out of range" database error
 		//if your fulltext indexes are corrupted. If this happens, a work-around for fixing it
 		//can be to run an "ANALYZE" on the tables used, e.g.:
-		#ze\sql::cacheFriendlyUpdate("ANALYZE TABLE `". DB_PREFIX. "content_cache`");
+		#ze\sql::cacheFriendlyUpdate("ANALYZE TABLE `". DB_PREFIX. "content_items_searchable_cache`");
 		#ze\sql::cacheFriendlyUpdate("ANALYZE TABLE `". DB_PREFIX. "content_item_versions`");
 		
 		
@@ -1046,7 +1046,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		//Step 1: Calculate the SQL needed for matching rows against the search terms.
 		//Use the "flat table".
-		$useCC = false;
 		$sqlScore = "";
 		$sqlWhere = "";
 		$scoreStatementFirstLine = $whereStatementFirstLine = true;
@@ -1099,10 +1098,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					
 					foreach ($fields as $field) {
 						if ($field['weighting']) {
-							if (substr($field['name'], 0, 3) == 'cc.') {
-								$useCC = true;
-							}
-							
 							if (!$scoreStatementFirstLine) {
 								$sqlScore .= " + ";
 							}
@@ -1160,15 +1155,11 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		$joinSQL = "
 			INNER JOIN " . DB_PREFIX . "languages l
-				ON c.language_id = l.id ";
-		
-		if ($useCC) {
-			$joinSQL .= "
-				INNER JOIN ". DB_PREFIX. "content_cache AS cc
-					ON cc.content_id = v.id
-					AND cc.content_type = v.type
-					AND cc.content_version = v.version";
-		}
+				ON c.language_id = l.id
+			INNER JOIN ". DB_PREFIX. "content_items_searchable_cache AS cc
+				ON cc.content_id = v.id
+				AND cc.content_type = v.type
+				AND cc.content_version = v.version";
 
 		$limitSearchScopeByCategory = $this->setting($cType . '_limit_search_scope_by_category');
 		$categories = '';
@@ -1186,9 +1177,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		
 		
 		if ($searchPrivateItems) {
-			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
+			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, false, $showUnpublishedContentItemsToAdmins = false);
 		} else {
-			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
+			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, false, $showUnpublishedContentItemsToAdmins = false);
 		}
 		
 		$sql = $sqlFrom;
@@ -1326,10 +1317,6 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 					}
 					
 					if ($field['weighting']) {
-						if (substr($field['name'], 0, 3) == 'cc.') {
-							$useCC = true;
-						}
-						
 						if (!$scoreStatementFirstLine) {
 							$sqlScore .= " + ";
 						}
@@ -1529,7 +1516,7 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 		}
 		
 		foreach ($fields as $field) {
-			if (substr($field['name'], 0, 3) != 'cc.') {
+			if (!ze::in($field['name'], 'cc.content_item_text', 'cc.file_extract')) {
 				$columnName = substr($field['name'], (strpos($field['name'], '.') + 1));
 				
 				if (ze::in($columnName, 'language_id', 'title', 'keywords', 'description', 'content_summary')) {
@@ -1549,9 +1536,9 @@ class zenario_advanced_search extends ze\moduleBaseClass {
 				AND results.type = v.type";
 		
 		if ($searchPrivateItems) {
-			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
+			$sqlFrom = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, false, $showUnpublishedContentItemsToAdmins = false);
 		} else {
-			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, false, $displayHiddenContentItemsForAdmins = false);
+			$sqlFrom = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, false, $showUnpublishedContentItemsToAdmins = false);
 		}
 
 		$resultsCountSql .= $sqlFrom;

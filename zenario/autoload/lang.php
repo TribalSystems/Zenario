@@ -102,6 +102,7 @@ class lang {
 		$needsTranslating = $isCode || !empty(\ze::$langs[$languageId]['translate_phrases']);
 		$phrase = $code;
 		
+		$needsInsert = false;
 		$needsUpdate = false;
 		$neverSeenByVisitorBefore = false;
 		$neverSeenOnContentItemBefore = false;
@@ -125,13 +126,13 @@ class lang {
 			
 			//Attempt to find a record of the phrase in the database
 			$sql = "
-				SELECT local_text, seen_in_visitor_mode, seen_at_content_id IS NULL, is_html
+				SELECT local_text, seen_in_visitor_mode, seen_at_content_id IS NULL, is_html, `archived`
 				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
 				  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
 				  AND code = '". \ze\escape::sql($code). "'
 				LIMIT 1";
-	
+			
 			$result = \ze\sql::select($sql);
 			if ($row = \ze\sql::fetchRow($result)) {
 				//If we found a translation, replace the code/default text with the translation
@@ -157,75 +158,23 @@ class lang {
 			
 				//If we've never recorded a URL for this phrase before, we need to note it down
 				if ($row[2] && !$isFromCommandLine) {
-					
-					//Try and check if we know what content item this is on
-					do {
-						//If the phrase is actually on a page, we can just record the cID and cType
-						if (!empty(\ze::$cID)) {
-							$seenAtCID = \ze::$cID;
-							$seenAtCType = \ze::$cType;
-							$needsUpdate = true;
-							$neverSeenOnContentItemBefore = true;
-							break;
-						}
-						
-						//For AJAX requests, try and check the referer
-						if (!isset($_SERVER['HTTP_REFERER'])) {
-							break;
-						}
-						$parsedURL = parse_url($_SERVER['HTTP_REFERER']);
-						
-						//This logic checks to see if this was a URL in the form "index.php?cID=123", and tries to parse it to get the content item.
-						if (!empty($parsedURL['query'])) {
-							$parsedQuery = [];
-							parse_str($parsedURL['query'] ?? '', $parsedQuery);
-							
-							if (!empty($parsedQuery)) {
-								$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
-								\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $parsedQuery, $parsedQuery, []);
-								
-								if ($cID) {
-									$seenAtCID = $cID;
-									$seenAtCType = $cType;
-									$needsUpdate = true;
-									$neverSeenOnContentItemBefore = true;
-									break;
-								}
-							}
-						}
-							
-						//This logic checks to see if this was a friendly in the form "/alias" or "/alias.html", and tries to parse it to get the content item.
-						if (!empty($parsedURL['path'])) {
-							
-							$pathParts = \ze\ray::explodeAndTrim($parsedURL['path'], false, '/');
-							
-							if (!empty($pathParts)) {
-								$alias = array_pop($pathParts);
-								$aliasParts = \ze\ray::explodeAndTrim($alias, false, '.');
-								
-								if (!empty($aliasParts)) {
-									$alias = array_shift($aliasParts);
-									$parsedQuery = ['cID' => $alias];
-									
-									$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
-									\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $parsedQuery, $parsedQuery, []);
-								
-									if ($cID) {
-										$seenAtCID = $cID;
-										$seenAtCType = $cType;
-										$needsUpdate = true;
-										$neverSeenOnContentItemBefore = true;
-										break;
-									}
-								}
-							}
-						}
-					} while (false);
+					if (\ze\lang::getCurrentContentItem($seenAtCID, $seenAtCType)) {
+						$needsUpdate = true;
+						$neverSeenOnContentItemBefore = true;
+					}
 				}
-			
+				
 				//Catch the case where the isHTML flag has been changed by a dev, we need to update this
 				if ($isHTML != ((bool) $row[3])) {
 					$needsUpdate = true;
+				}
+				
+				//Catch the case where we've found a phrase that we thought was archived
+				if ((bool) $row[4]) {
+					$needsUpdate = true;
+					
+					//Restoring a phrase from archive should also update the first seen date.
+					$neverSeenByVisitorBefore = true;
 				}
 		
 			} else {
@@ -237,28 +186,42 @@ class lang {
 					}
 				}
 			
-				//For multilingal sites, any phrases that are not in the database need to be noted down
-				if (\ze::$trackPhrases
-				 && (\ze::$defaultLang == $languageId
-				  || !\ze\row::exists(
-						'visitor_phrases',
-						[
+				//For multilingal sites, check if the phrase is at least recorded as existing in the
+				//default language.
+				if (\ze::$trackPhrases) {
+					//Catch the case where this is the default language and we already looked for it above.
+					if (\ze::$defaultLang == $languageId) {
+						//In this case we already know it's missing without needing another check in the DB.
+						$needsInsert = true;
+					
+					//Otherwise we'll need to do another query to check to see if the row is
+					//already recorded in the default language already.
+					} else {
+						$row = \ze\row::get('visitor_phrases', ['archived'], [
 							'language_id' => \ze::$defaultLang,
 							'module_class_name' => $moduleClass,
-							'code' => $code]
-				))) {
-					$needsUpdate = true;
-					
-					if ($isFromCommandLine || !\ze::isAdmin()) {
-						$neverSeenByVisitorBefore = true;
+							'code' => $code
+						]);
+						
+						//If not, it needs adding
+						if (!$row) {
+							$needsInsert = true;
+						
+						//Catch the case where it's there, but archived.
+						} elseif ($row['archived']) {
+							//We'll need to update it to remove the archive flag in this situation.
+							$needsUpdate = true;
+							
+							//Restoring a phrase from archive should also update the first seen date.
+							$neverSeenByVisitorBefore = true;
+						}
 					}
 				}
 			}
 		
 			//Make sure that this phrase is registered in the database
-			if ($needsUpdate
-			 && \ze::$trackPhrases
-				//Never register a phrase if this a plugin preview!
+			if (($needsInsert || $needsUpdate) && \ze::$trackPhrases
+				//Never register a phrase if this is a plugin preview!
 			 && empty($_REQUEST['fakeLayout'])
 			 && empty($_REQUEST['grid_columns'])
 			 && empty($_REQUEST['grid_container'])
@@ -297,8 +260,11 @@ class lang {
 					}
 				}
 				
+				
+				//Collect the details that this phrase should have
 				$details = [];
 				$details['is_html'] = $isHTML;
+				$details['archived'] = 0;
 				
 				if ($neverSeenByVisitorBefore) {
 					$details['seen_in_visitor_mode'] = 1;
@@ -311,24 +277,27 @@ class lang {
 				}
 				
 				$key = [
-					'language_id' => \ze::$defaultLang,
 					'module_class_name' => $moduleClass,
 					'code' => $code
 				];
-							
-				//Don't clear the cache for this update
-				\ze\row::cacheFriendlySet(
-					'visitor_phrases',
-					$details,
-					$key
-				);
-			
-				//For multilingual sites, we need to note down this information against
-				//the current language as well, to
-				//fix a bug where missing phrases would continously clear the cache.
-				if (\ze::$defaultLang != $languageId) {
-					
-					$key['language_id'] = $languageId;
+				
+				
+				//If we want to update the flags for an existing phrase, we should
+				//update them on every translation of that phrase to make sure they are kept in sync.
+				if ($needsUpdate) {	
+					//Don't clear the cache for this update
+					\ze\row::cacheFriendlyUpdate(
+						'visitor_phrases',
+						$details,
+						$key
+					);
+				}
+				
+				
+				//If we've found a phrase we've never seen before, note down that it exists in the
+				//default language.
+				if ($needsInsert) {
+					$key['language_id'] = \ze::$defaultLang;
 					
 					//Don't clear the cache for this update
 					\ze\row::cacheFriendlySet(
@@ -339,7 +308,6 @@ class lang {
 				}
 			}
 		}
-	
 	
 		//Replace merge fields in the phrase
 		if (!empty($replace) && is_array($replace)) {
@@ -485,9 +453,71 @@ class lang {
 	public static function dayPhrase($code, $i, $languageId = false) {
 		return \ze\lang::phrase($code. $i, false, 'zenario_common_features', $languageId);
 	}
+	
+	
+	//Try and check if we know what content item we're translating phrases for
+	public static function getCurrentContentItem(&$seenAtCID, &$seenAtCType) {
+		
+		//If the phrase is actually on a page, we can just record the cID and cType
+		if (!empty(\ze::$cID)) {
+			$seenAtCID = \ze::$cID;
+			$seenAtCType = \ze::$cType;
+			return true;
+		}
+		
+		//For AJAX requests, try and check the referer
+		if (!isset($_SERVER['HTTP_REFERER'])) {
+			return false;
+		}
+		$parsedURL = parse_url($_SERVER['HTTP_REFERER']);
+		
+		//This logic checks to see if this was a URL in the form "index.php?cID=123", and tries to parse it to get the content item.
+		if (!empty($parsedURL['query'])) {
+			$parsedQuery = [];
+			parse_str($parsedURL['query'] ?? '', $parsedQuery);
+			
+			if (!empty($parsedQuery)) {
+				$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
+				\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $parsedQuery, $parsedQuery, []);
+				
+				if ($cID) {
+					$seenAtCID = $cID;
+					$seenAtCType = $cType;
+					return true;
+				}
+			}
+		}
+			
+		//This logic checks to see if this was a friendly URL in the form "/alias" or "/alias.html", and tries to parse it to get the content item.
+		if (!empty($parsedURL['path'])) {
+			
+			$pathParts = \ze\ray::explodeAndTrim($parsedURL['path'], false, '/');
+			
+			if (!empty($pathParts)) {
+				$alias = array_pop($pathParts);
+				$aliasParts = \ze\ray::explodeAndTrim($alias, false, '.');
+				
+				if (!empty($aliasParts)) {
+					$alias = array_shift($aliasParts);
+					$parsedQuery = ['cID' => $alias];
+					
+					$cID = $cType = $redirectNeeded = $aliasInURL = $langIdInURL = false;
+					\ze\content::resolveFromRequest($cID, $cType, $redirectNeeded, $aliasInURL, $langIdInURL, $parsedQuery, $parsedQuery, []);
+				
+					if ($cID) {
+						$seenAtCID = $cID;
+						$seenAtCType = $cType;
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
 
 
-	public static function formatFilesizeNicely($size, $precision = 0, $adminMode = false, $vlpClass = '') {
+	public static function formatFilesizeNicely($size, $precision = 0, $adminMode = false, $vlpClass = 'zenario_common_features') {
 	
 		if (is_array($size)) {
 			$size = $size['size'];
@@ -521,7 +551,7 @@ class lang {
 		}
 	}
 
-	public static function formatFileTypeNicely($type, $vlpClass = '') {
+	public static function formatFileTypeNicely($type, $vlpClass = 'zenario_common_features') {
 		switch($type) {
 			case 'image/webp': 
 				//Note by Chris:

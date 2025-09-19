@@ -182,18 +182,28 @@ zenario_newsletter:
                         select_phrase: "Select recipients' smart newsletter group(s)..."
                         nothing_selected_phrase: "No recipients' smart newsletter groups selected"
                         disallow_refiners_looping_on_min_path: true
+                    format_onchange: true
                 exclude_recipients_with_opt_out:
                     label: Exclude users/contacts with Newsletter opt-out field checked
                     type: checkbox
-                    note_below: >
-                        Users or contacts who have clicked the Unsubscribe link on a previous email will have the all_newsletters_opt_out field checked and will not be sent this newsletter.
+                    #The note below is created in the PHP class.
                     value: 1
                     readonly: true
+                    notices_below:
+                        opted_out_users_note:
+                            show: true
+                            type: information
+                            message: ''
                 
                 exclude_recipients_with_no_consent:
                     label: Only send to users/contacts with the "Has accepted terms and conditions" field checked
                     type: checkbox
                     readonly: true
+                    notices_below:
+                        users_who_did_not_accept_tc_note:
+                            show: true
+                            type: information
+                            message: ''
                 
                 unsubscribe_link:
                     label: 'Unsubscribe link:'
@@ -225,7 +235,7 @@ zenario_newsletter:
                     validation:
                         required_if_not_hidden: Please enter text that will appear on the email informing the recipient that they can unsubscribe from emails.
                     post_field_html: '<div id="unsubscribe_info"></div>'
-                    onkeyup: "$('#unsubscribe_info').html('Preview: ' + $('#unsubscribe_text').val() + ' ' + $('#example_unsubscribe_url_underlined_and_hidden').val());"
+                    onkeyup: "$('#unsubscribe_info').html('Preview: ' + $(lib.get('unsubscribe_text')).val() + ' ' + $(lib.get('example_unsubscribe_url_underlined_and_hidden')).val());"
                 example_unsubscribe_url_underlined_and_hidden:
                     type: text
                     same_row: true
@@ -238,7 +248,7 @@ zenario_newsletter:
                     validation:
                         required_if_not_hidden: Please enter text that will appear on the email informing the recipient that they can have their account deleted.
                     post_field_html: '<div id="delete_account_info"></div>'
-                    onkeyup: "$('#delete_account_info').html('Preview: ' + $('#delete_account_text').val() + ' ' + $('#example_delete_account_url_underlined_and_hidden').val());"
+                    onkeyup: "$('#delete_account_info').html('Preview: ' + $(lib.get('delete_account_text')).val() + ' ' + $(lib.get('example_delete_account_url_underlined_and_hidden')).val());"
                 example_delete_account_url_underlined_and_hidden:
                     type: text
                     same_row: true

@@ -83,13 +83,13 @@ if ($this->eggId && isset($this->parentNest)) {
 			
 			$classInfo = $this->getClassInfo();
 			
-			$tooltip = '<div>'. \ze\admin::phrase('Plugin of module:'). ' <span>'. htmlspecialchars($this->moduleClassName). '</span></div>';
+			$tooltip = '<div>'. \ze\admin::phrase('Nested plugin of'). ' <span>'. htmlspecialchars($this->moduleClassName). '</span></div>';
 			
 			if ($classInfo['mode']) {
 				$tooltip .= '<div>'. \ze\admin::phrase('Plugin mode:'). ' <span>'. htmlspecialchars($classInfo['mode']). '</span></div>';
 			}
 			
-			$tooltip .= '<div>'. \ze\admin::phrase('Click to edit plugin settings'). '</div>';
+			$tooltip .= '<div>'. \ze\admin::phrase('Click to edit its settings'). '</div>';
 			
 			
 			echo '

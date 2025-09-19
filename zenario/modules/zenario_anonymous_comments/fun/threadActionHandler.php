@@ -37,7 +37,7 @@ if (ze::post('comm_request') == 'post_reply' && $this->canMakePost()) {
 	if ($this->enableCaptcha()) {
 		if (!$this->checkCaptcha2()) {
 			$failure = true;
-			$this->postingErrors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
+			$this->postingErrors[] = ['Error' => $this->phrase('Please verify that you are human.')];
 		}
 	}
 

@@ -178,6 +178,56 @@ class document {
 		
 		return true;
 	}
+	
+	
+	//Remove a document from a chain.
+	//(N.b. this is safe to call on a doucment that isn't currently in a chain; nothing will happen in this case.)
+	public static function removeFromChain($id) {
+		$chainId = \ze\row::get('documents', 'chain_id', $id);
+		
+		if ($chainId) {
+			\ze\row::update('documents', ['chain_id' => NULL], $id);
+			\ze\document::updateChain([$chainId], false);
+		}
+	}
+	
+	
+	//Chain two documents together, or add a document into an existing chain, or
+	//merge two chains together.
+	//(N.b. this is safe to call on doucments that are already chained together in the same chain; nothing will happen in this case.)
+	public static function updateChain($ids, $adding) {
+		
+		//Get all of the document ids that should be in the current chain
+		$sql = "
+			SELECT id
+			FROM ". DB_PREFIX. "documents
+			WHERE chain_id IN (". \ze\escape::in($ids, true). ")
+			   OR chain_id IN (
+				SELECT chain_id
+				FROM ". DB_PREFIX. "documents
+				WHERE id IN (". \ze\escape::in($ids, true). ")
+			)";
+		
+		if ($adding) {
+			$sql .= "
+			   OR id IN (". \ze\escape::in($ids, true). ")";
+		}
+		
+		$ids = \ze\sql::fetchValues($sql);
+		$count = count($ids);
+		
+		//If we only have 1 left in a chain, remove the chain ID.
+		if ($count === 1) {
+			\ze\row::update('documents', ['chain_id' => NULL], ['id' => $ids]);
+		
+		//As long as there are more than 1 doucments in a chain, update the chain
+		//ID to be the smallest document ID in the chain.
+		} elseif ($count > 1) {
+			$newChainId = min($ids);
+			\ze\row::update('documents', ['chain_id' => $newChainId], ['id' => $ids]);
+		}
+		
+	}
 
 	public static function delete($documentId) {
 		$details = \ze\row::get('documents', ['type', 'file_id', 'thumbnail_id'], $documentId);
@@ -196,32 +246,15 @@ class document {
 			$fileIdsInDocument = \ze\row::getAssocs('documents', ['file_id', 'filename'], ['file_id' => $document['file_id']]);
 			$numberFileIds = count($fileIdsInDocument);
 			
-			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'checksum'], $document['file_id']);
+			$file = \ze\row::get('files', ['id', 'filename', 'path', 'created_datetime', 'checksum'], ['id' => $document['file_id'], 'usage' => 'hierarchical_file']);
 
 			\ze\document::deletePubliclink($documentId, true);
 			
 			if ($file['filename']) {
-				//Check to see if the file is used by another document, or a document content item,  before deleting.
-				//Please note: it is possible that the same file is in the files table more than once
-				//with different 'usage' column values. Check these too!
-				$fileInUseByOtherDocuments = false;
-				if (\ze\row::exists('content_item_versions', ['file_id' => $details['file_id']])) {
-					$fileInUseByOtherDocuments = true;
-				}
-				
-				if (!$fileInUseByOtherDocuments) {
-					$otherInstancesOfIdenticalFile = \ze\row::getAssocs('files', ['id', 'filename', 'path', 'created_datetime'], ['checksum' => $file['checksum'], 'id' => ['!' => $file['id']]]);
-					if (!empty($otherInstancesOfIdenticalFile)) {
-						foreach ($otherInstancesOfIdenticalFile as $otherInstance) {
-							if (\ze\row::exists('content_item_versions', ['file_id' => $otherInstance['id']])) {
-								$fileInUseByOtherDocuments = true;
-								break;
-							}
-						}
-					}
-				}
-				
-				if (($numberFileIds == 1) && !$fileInUseByOtherDocuments) {
+				//Please note: before 10.2, this logic would also check if any document content item uses the same file.
+				//As of 10.2, that logic is removed, as docstore is now split into folders named after the `usage` column.
+				//Doc content items and hierarchical documents are in separate pools.
+				if (($numberFileIds == 1)) {
 					\ze\row::delete('files', ['id' => $details['file_id']]);
 					
 					//Delete the linked row from the file_extracts table as well if it exists
@@ -248,6 +281,7 @@ class document {
 			}
 			
 			\ze\document::removeMetadata($documentId);
+			\ze\document::removeFromChain($documentId);
 			
 			\ze\row::delete('documents', ['id' => $documentId]);
 		}
@@ -281,9 +315,9 @@ class document {
 		$thumbnailId = false;
 		\ze\fileAdm::updateHierarchicalDocumentExtract($fileId, $extract, $thumbnailId, $reScan);
 		
-		if ($extract['extract']) {
-			$documentProperties['extract'] = $extract['extract'];
-			$documentProperties['extract_wordcount'] = $extract['extract_wordcount'];
+		if ($extract['file_extract']) {
+			$documentProperties['extract'] = $extract['file_extract'];
+			$documentProperties['extract_wordcount'] = $extract['file_extract_wordcount'];
 		}
 		if ($thumbnailId) {
 			$documentProperties['thumbnail_id'] = $thumbnailId;

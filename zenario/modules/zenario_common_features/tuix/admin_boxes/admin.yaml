@@ -35,12 +35,12 @@ zenario_admin: &admin
                     style: 'width: 25em;'
                     onchange: |
                         if (zenarioAB.tuix.key && !zenarioAB.tuix.key.id) {
-                            var fName = $('#first_name').val();
-                            var lName = $('#last_name').val();
+                            var fName = $(lib.get('first_name')).val();
+                            var lName = $(lib.get('last_name')).val();
                             var lastChar = lName.charAt(0)
                             var userFName = fName.toLowerCase();
                             var userLName = lastChar.toLowerCase();
-                            $('#username').val(userFName + userLName);
+                            $(lib.get('username')).val(userFName + userLName);
                         }
                     validation:
                         required: |
@@ -52,12 +52,12 @@ zenario_admin: &admin
                     style: 'width: 25em;'
                     onchange: |
                         if (zenarioAB.tuix.key && !zenarioAB.tuix.key.id) {
-                            var fName = $('#first_name').val();
-                            var lName = $('#last_name').val();
+                            var fName = $(lib.get('first_name')).val();
+                            var lName = $(lib.get('last_name')).val();
                             var lastChar = lName.charAt(0)
                             var userFName = fName.toLowerCase();
                             var userLName = lastChar.toLowerCase();
-                            $('#username').val(userFName + userLName);
+                            $(lib.get('username')) .val(userFName + userLName);
                         }
                     validation:
                         required: |

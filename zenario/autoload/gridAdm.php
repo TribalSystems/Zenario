@@ -1169,7 +1169,8 @@ public static function sensibleDefault() {
 		'minWidth' => 769,
 		"gutterFlu" => 1,
 		"gutterLeftEdgeFlu" => 1,
-		"gutterRightEdgeFlu" => 1
+		"gutterRightEdgeFlu" => 1,
+		"headerAndFooter" => true
 	];
 }
 

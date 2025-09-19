@@ -103,7 +103,6 @@ zenario__user_forms:
                                 label: 'Label:'
                                 type: text
                                 maxlength: 250
-                                note_below: The field label shown to the user/visitor.
                                 is_phrase: true
                             subheading_tag:
                                 visible_if: |
@@ -145,9 +144,8 @@ zenario__user_forms:
                             description:
                                 visible_if: |
                                     item.type == 'section_description'
-                                label: 'Description (HTML):'
+                                label: 'Further information (HTML):'
                                 type: textarea
-                                note_below: Description of the section placed under the label.
                                 is_phrase: true
                             values_source:
                                 visible_if: |

@@ -207,6 +207,7 @@ class zenario_extranet_registration extends zenario_extranet {
 							}
 							$this->logUserIn($userId);
 							$this->mode = 'modeLoggedIn';
+							
 							$this->redirectToPage();
 						} else {
 							$this->mode = 'modeRegisteredVerifiedNotActivated';
@@ -219,7 +220,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 			}
 			
-			if ($this->mode == 'modeRegistration') {
+			if (ze::in($this->mode, 'modeRegistration', 'modeResend')) {
 				if ($this->enableCaptcha()) {
 					$this->subSections['Captcha'] = true;
 					$this->objects['Captcha'] = $this->captcha2();
@@ -236,7 +237,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
 				$fields['set_timer_on_new_users']['hidden'] = !ze\module::inc('zenario_user_timers');
@@ -244,20 +245,48 @@ class zenario_extranet_registration extends zenario_extranet {
 				$customFields = ze\datasetAdm::listCustomFields('users', $flat = false, ['checkbox', 'checkboxes'], $customOnly = true, $useOptGroups = true);
 
 				if ($options = self::removeEmptyTabs($customFields)) {
-					$box['tabs']['first_tab']['fields']['select_characteristics_for_new_users']['values'] = $options;
+					$box['tabs']['initial_signup_actions']['fields']['select_characteristics_for_new_users']['values'] = $options;
 				}
 
 				$customFields = ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true);
 				if ($options = self::removeEmptyTabs($customFields)) {
-					$box['tabs']['first_tab']['fields']['select_group_for_new_users']['values'] = $options;
+					$box['tabs']['initial_signup_actions']['fields']['select_group_for_new_users']['values'] = $options;
 				}
 				
-				//Set the default value of the login page selector to the special page.
-				if (!$values['first_tab/login_page']) {
-					$cID = $cType = false;
-					if (ze\content::langSpecialPage('zenario_login', $cID, $cType)) {
-						$tagId = $cType . '_' . $cID;
-						$values['first_tab/login_page'] = $tagId;
+				//Select the home page as the default redirect page.
+				//Also show links to other possible special pages.
+				$loopThrough = [
+					'first_tab/login_page' => 'zenario_home',
+					'user_activation/profile_page' => 'zenario_profile',
+					'user_activation/change_password_page' => 'zenario_change_password',
+					'user_activation/logout_page' => 'zenario_logout'
+				];
+				
+				foreach ($loopThrough as $pluginSetting => $defaultSpecialPage) {
+					if (isset($fields[$pluginSetting]) && empty($fields[$pluginSetting]['value'])) {
+						$fields[$pluginSetting]['value'] = ze::$specialPages[$defaultSpecialPage] ?? '';
+					}
+				}
+				
+				//If a specific module is not running, display a warning that a link
+				//to the special page associated with it will not be displayed.
+				$loopThrough = [
+					'zenario_extranet_profile_edit' => 'profile_page',
+					'zenario_extranet_change_password' => 'change_password_page',
+					'zenario_extranet_logout' => 'logout_page'
+				];
+				
+				foreach ($loopThrough as $moduleClassName => $settingCodename) {
+					if (
+						isset($fields['user_activation/' . $settingCodename])
+						&& (!ze\module::isRunning($moduleClassName) || !$fields['user_activation/' . $settingCodename]['value'])
+					) {
+						$moduleName = ze\module::getModuleDisplayNameByClassName($moduleClassName);
+						$fields['user_activation/' . $settingCodename]['notices_below']['module_not_running'] = [
+							'show' => true,
+							'type' => 'warning',
+							'message' => ze\admin::phrase('Link will not be shown. Start the [[module_name]] module to show.', ['module_name' => $moduleName])
+						];
 					}
 				}
 
@@ -281,12 +310,28 @@ class zenario_extranet_registration extends zenario_extranet {
                     $fields['use_captcha']['value'] = 0;
 				}
 				        
-				$fields['custom_fields/user_custom_fields']['pick_items']['info_button_path'] =
+				$fields['first_tab/user_custom_fields']['pick_items']['info_button_path'] =
 					'zenario__administration/panels/custom_datasets/item_buttons/edit_gui//'. $dataset['id']. '//';
                 
-                $fields['custom_fields/desc']['snippet']['html'] = ze\admin::phrase($fields['custom_fields/desc']['snippet']['html'], $dataset);
+                ze\lang::applyMergeFields($fields['first_tab/custom_fields_desc']['snippet']['html'], $dataset);
                 
-                $fields['custom_fields/user_custom_fields']['pick_items']['path'] = 'zenario__administration/panels/custom_fields_hierarchy/refiners/dataset_id//' . (int) $dataset['id'] . '//';
+                $fields['first_tab/user_custom_fields']['pick_items']['path'] = 'zenario__administration/panels/custom_fields_hierarchy/refiners/dataset_id//' . (int) $dataset['id'] . '//';
+                
+                //Populate merge fields for fields that are supposed to be links to Organizer panels, etc.
+                $usersDataset = ze\dataset::details('users');
+                if ($usersDataset) {
+					$linkStart = "<a href='organizer.php#zenario__administration/panels/custom_datasets//" . (int) $usersDataset['id'] . "' target='_blank'>";
+					$linkEnd = "</a>";
+					ze\lang::applyMergeFields($fields['initial_signup_actions/set_characteristics_on_new_users']['side_note'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+				}
+				
+				$linkStart = "<a href='organizer.php#zenario__users/panels/timer_templates/refiners/target//users//' target='_blank'>";
+				$linkEnd = "</a>";
+				ze\lang::applyMergeFields($fields['initial_signup_actions/set_timer_on_new_users']['side_note'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+				
+				$linkStart = "<a href='organizer.php#zenario__users/panels/groups' target='_blank'>";
+				$linkEnd = "</a>";
+				ze\lang::applyMergeFields($fields['initial_signup_actions/add_user_to_group']['side_note'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 
 				break;
 			case 'site_settings':
@@ -308,27 +353,32 @@ class zenario_extranet_registration extends zenario_extranet {
 
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['first_tab/select_group_for_new_users']['hidden'] = !$values['first_tab/add_user_to_group'];
+				$fields['initial_signup_actions/select_group_for_new_users']['hidden'] = !$values['initial_signup_actions/add_user_to_group'];
 				$fields['first_tab/verification_email_template']['hidden'] = $values['first_tab/initial_email_address_status']=='verified';
-				$fields['first_tab/user_signup_notification_email_template']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
-				$fields['first_tab/user_signup_notification_email_address']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
-				$fields['first_tab/select_characteristics_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users'];
-				$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = (!$values['first_tab/set_characteristics_on_new_users'] || !$values['first_tab/select_characteristics_for_new_users']);
-				$fields['first_tab/timer_for_new_users']['hidden'] = !$values['first_tab/set_timer_on_new_users'];
+				$fields['initial_signup_actions/user_signup_notification_email_template']['hidden'] = !$values['initial_signup_actions/enable_notifications_on_user_signup'];
+				$fields['initial_signup_actions/user_signup_notification_email_address']['hidden'] = !$values['initial_signup_actions/enable_notifications_on_user_signup'];
+				$fields['initial_signup_actions/select_characteristics_for_new_users']['hidden'] = !$values['initial_signup_actions/set_characteristics_on_new_users'];
+				$fields['initial_signup_actions/select_characteristic_values_for_new_users']['hidden'] =
+					(!$values['initial_signup_actions/set_characteristics_on_new_users'] || !$values['initial_signup_actions/select_characteristics_for_new_users']);
+				$fields['initial_signup_actions/timer_for_new_users']['hidden'] = !$values['initial_signup_actions/set_timer_on_new_users'];
 				$fields['first_tab/terms_and_conditions_page']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
 				$fields['first_tab/url']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
-				if ($values['first_tab/select_characteristics_for_new_users']) {
-					$fieldType = ze\row::get('custom_dataset_fields', 'type', $values['first_tab/select_characteristics_for_new_users']);
+				if ($values['initial_signup_actions/select_characteristics_for_new_users']) {
+					$fieldType = ze\row::get('custom_dataset_fields', 'type', $values['initial_signup_actions/select_characteristics_for_new_users']);
 					if ($fieldType == 'checkboxes') {
-						$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users'];
-						$fields['first_tab/select_characteristic_values_for_new_users']['values'] = ze\dataset::fieldLOV($values['first_tab/select_characteristics_for_new_users']);
+						$fields['initial_signup_actions/select_characteristic_values_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users'];
+						$fields['initial_signup_actions/select_characteristic_values_for_new_users']['values'] = ze\dataset::fieldLOV($values['initial_signup_actions/select_characteristics_for_new_users']);
 					} else {
-						$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = true;
+						$fields['initial_signup_actions/select_characteristic_values_for_new_users']['hidden'] = true;
 					}
 				}
 				
 				$fields['user_activation/welcome_email_template']['hidden'] = $values['user_activation/verified_account_status'] == 'leave';
 				$fields['user_activation/trusted_email_domains']['hidden'] = $values['user_activation/verified_account_status'] != 'check_trusted';
+				
+				$fields['user_activation/include_an_attachment']['hidden'] =
+					$values['user_activation/verified_account_status'] == 'leave' || !$values['user_activation/welcome_email_template'];
+				$fields['user_activation/selected_attachment']['hidden'] = !empty($fields['user_activation/include_an_attachment']['hidden']) || !$values['user_activation/include_an_attachment'];
 	
 				$fields['user_activation/user_activation_notification_email_template']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];
 				$fields['user_activation/user_activation_notification_email_address']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];
@@ -342,16 +392,21 @@ class zenario_extranet_registration extends zenario_extranet {
 			    //Show checkbox rensend verification link
 				$fields['first_tab/show_resend_verification_link']['hidden'] = $values['first_tab/initial_email_address_status'] == 'verified';
 				
-				if ($values['first_tab/include_an_attachment'] == true && $values['first_tab/selected_attachment']) {
-					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['first_tab/selected_attachment']]);
+				if (
+					($values['user_activation/verified_account_status'] == 'active' || $values['user_activation/verified_account_status'] == 'contact')
+					&& $values['user_activation/welcome_email_template']
+					&& $values['user_activation/include_an_attachment']
+					&& $values['user_activation/selected_attachment']
+				) {
+					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['user_activation/selected_attachment']]);
 					
 					if ($privacy == 'offline') {
-						$fields['first_tab/selected_attachment']['note_below'] = ze\admin::phrase('The selected document is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
+						$fields['user_activation/selected_attachment']['note_below'] = ze\admin::phrase('The selected document is [[privateOrOffline]] and will not be sent. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $privacy]);
 					} else {
-						unset($fields['first_tab/selected_attachment']['note_below']);
+						unset($fields['user_activation/selected_attachment']['note_below']);
 					}
 				} else {
-					unset($fields['first_tab/selected_attachment']['note_below']);
+					unset($fields['user_activation/selected_attachment']['note_below']);
 				}
 
 				
@@ -369,11 +424,11 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 		switch ($path) {
 			case 'plugin_settings':
-				if ($values['first_tab/include_an_attachment'] == true && $values['first_tab/selected_attachment']) {
-					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['first_tab/selected_attachment']]);
+				if ($values['user_activation/include_an_attachment'] == true && $values['user_activation/selected_attachment']) {
+					$privacy = ze\row::get('documents', 'privacy', ['id' => $values['user_activation/selected_attachment']]);
 					
 					if ($privacy == 'offline') {
-						$fields['first_tab/selected_attachment']['error'] = true;
+						$fields['user_activation/selected_attachment']['error'] = true;
 					}
 				}
 			break;
@@ -426,10 +481,11 @@ class zenario_extranet_registration extends zenario_extranet {
 				if (count($errors)) {
 					$this->errors = array_merge($this->errors, $errors);
 					unset($_SESSION['captcha_passed__'. $this->instanceId]);
-					return false;
 				}
 			}
-
+		}
+		
+		if (ze::in($section, 'Registration_Form', 'Resend_Form')) {
 			if (!empty($this->errors)) {
 				unset($_SESSION['captcha_passed__'. $this->instanceId]);
 			}
@@ -438,7 +494,7 @@ class zenario_extranet_registration extends zenario_extranet {
 				if ($this->checkCaptcha2()) {
 					$_SESSION['captcha_passed__'. $this->instanceId] = true;
 				} else {
-					$this->errors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
+					$this->errors[] = ['Error' => $this->phrase('Please verify that you are human.')];
 				}
 			}
 		}

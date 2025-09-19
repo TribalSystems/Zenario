@@ -527,7 +527,7 @@ zenarioAB.makeFieldAsTallAsPossible = function() {
 	if (defined(id)) {
 		
 		if (isWYSIWYG
-		 && ($resizeMe = tinyMCE.get(id))
+		 && ($resizeMe = zenarioAB.getEditor(id))
 		 && ($resizeMe = $resizeMe.getContainer())
 		) {
 		} else {
@@ -555,7 +555,7 @@ zenarioAB.makeFieldAsTallAsPossible = function() {
 					$resizeMe.height(Math.floor(height));
 					
 					if (type == 'code_editor') {
-						if (editor = ace.edit(id)) {
+						if (editor = zenarioAB.getCodeEditor(id)) {
 							editor.resize();
 						}
 					}
@@ -578,7 +578,7 @@ zenarioAB.clickTab = function(tab) {
 //Specific bespoke functions for a few cases. These could have been on onkeyup/onchange events, but zenarioAB way is more efficient.
 //Remove http and https from alias...
 zenarioAB.removeHttpAndHttpsFromAlias = function() {
-	var domAlias = get('alias');
+	var domAlias = zenarioAB.get('alias');
 	var alias = domAlias.value;
 
 	alias = alias.replace(/(http|https)\:\/\//,'');
@@ -588,7 +588,7 @@ zenarioAB.removeHttpAndHttpsFromAlias = function() {
 
 //... and .html or .htm if the mod_rewrite_suffix is set in the site settings.
 zenarioAB.removeHtmAndHtmlFromAlias = function(suffix) {
-	var domAlias = get('alias');
+	var domAlias = zenarioAB.get('alias');
 	var alias = domAlias.value;
 
 	alias = alias.replace(suffix, '');
@@ -605,7 +605,7 @@ zenarioAB.validateAlias = function() {
 
 zenarioAB.validateAliasGo = function() {
 	
-	var domAlias = get('alias');
+	var domAlias = zenarioAB.get('alias');
 	
 	if (!domAlias) {
 		return;
@@ -625,14 +625,14 @@ zenarioAB.validateAliasGo = function() {
 	if (zenarioAB.tuix.key.equivId) {
 		req.equivId = zenarioAB.tuix.key.equivId;
 	}
-	if (get('language_id')) {
-		req.langId = get('language_id').value;
+	if (zenarioAB.get('language_id')) {
+		req.langId = zenarioAB.get('language_id').value;
 	}
 	
-	if (get('update_translations')) {
+	if (zenarioAB.get('update_translations')) {
 		req.lang_code_in_url = 'show';
-		if (get('update_translations').value == 'update_this' && get('lang_code_in_url')) {
-			req.lang_code_in_url = get('lang_code_in_url').value;
+		if (zenarioAB.get('update_translations').value == 'update_this' && zenarioAB.get('lang_code_in_url')) {
+			req.lang_code_in_url = zenarioAB.get('lang_code_in_url').value;
 		}
 	}
 	
@@ -642,7 +642,7 @@ zenarioAB.validateAliasGo = function() {
 		true
 	).after(function(data) {
 		var html = '',
-			alias_warning_display = get('alias_warning_display');
+			alias_warning_display = zenarioAB.get('alias_warning_display');
 	
 		if (data) {
 			foreach (data as var error) {
@@ -695,12 +695,12 @@ zenarioAB.contentTitleChange = function() {
 		aliasDOM = zenarioAB.get('alias');
 	
 	if (menuTextDOM && !zenarioAB.tuix.___menu_text_changed) {
-		menuTextDOM.value = get('title').value.replace(/\s+/g, ' ');
+		menuTextDOM.value = zenarioAB.get('title').value.replace(/\s+/g, ' ').substr(0, 125).trim();
 		$(menuTextDOM).trigger('input');
 	}
 	
 	if (aliasDOM && !aliasDOM.disabled && !aliasDOM.readOnly && !zenarioAB.tuix.___alias_changed) {
-		aliasDOM.value = zenarioAB.generateAlias(get('title').value);
+		aliasDOM.value = zenarioAB.generateAlias(zenarioAB.get('title').value);
 		zenarioAB.validateAlias();
 
 		$('#alias').trigger('input');
@@ -767,10 +767,10 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 		parentClass = 'zenario_permgroup_full';
 	}
 	
-	get(parentName).checked =
+	zenarioAB.get(parentName).checked =
 	fields[parentName].current_value = parentChecked;
 	
-	$(get('row__' + parentName))
+	$(zenarioAB.get('row__' + parentName))
 		.removeClass('zenario_permgroup_empty')
 		.removeClass('zenario_permgroup_half_full')
 		.removeClass('zenario_permgroup_full')
@@ -784,7 +784,7 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 			+ ' ' + parentClass;
 	
 	//Set the "X / Y" display on the toggle
-	get(toggleName).value =
+	zenarioAB.get(toggleName).value =
 	fields[toggleName].value =
 	fields[toggleName].current_value = c + '/' + n;
 };
@@ -794,7 +794,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	var n = 0,
 		c = 0,
 		current_value = '',
-		checked = get(parentName).checked,
+		checked = zenarioAB.get(parentName).checked,
 		$children = $('input[name=' + childrenName + ']'),
 		visibleChildren = !!$children.length;
 	
@@ -838,8 +838,8 @@ zenarioAB.previewDateFormat = function(formatField, previewField) {
 };
 
 zenarioAB.previewDateFormatGo = function(formatField, previewField) {
-	if ((formatField = get(formatField))
-	 && (previewField = get(previewField))) {
+	if ((formatField = zenarioAB.get(formatField))
+	 && (previewField = zenarioAB.get(previewField))) {
 		previewField.value = zenario.moduleNonAsyncAJAX('zenario_common_features', {previewDateFormat: formatField.value});
 	}
 };

@@ -164,7 +164,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 			} else {
 				echo
 					'<div class="zenario_editor_placeholder_text only_show_in_edit_mode">',
-						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p>', ['slotName' => $this->slotName]),
+						ze\admin::phrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Select the &quot;Content item&quot; view, then double-click enter some content.</p>', ['slotName' => $this->slotName]),
 					'</div>';
 			}
 		}

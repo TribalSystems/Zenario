@@ -361,66 +361,38 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 				ze\document::delete($id);
 			}
 		} elseif (ze::post('generate_public_link')) {
-			$messageType = 'Success';
-			$html = '';
 			$idsArray = explode(',', $ids);
 			$count = count($idsArray);
 			
-			foreach ($idsArray as $id) {
-				$result = ze\document::generatePublicLink($id);
-				
-				if (ze::isError($result)) {
-					
-					//Show error message only if 1 item was selected
-					if($count == 1) {
-						$html .= $result->errors['message'] . '<br/>';
-						$messageType = 'Error';
-					}
-				} else {
-					
-					//Show success message only if 1 item was selected
-					if($count == 1) {
-						$result = str_replace(' ', '%20', $result);
-						$fullLink = ze\link::absolute() . $result;
-						$internalLink = $result;
-						
-						$fileId = ze\row::get('documents', 'file_id', ['id' => $id]);
-						$shortChecksum = ze\row::get('files', 'short_checksum', ['id' => $fileId]);
-						$html .= '
-							<div class="document_hyperlinks_message">
-								<h3>The hyperlinks to your document are shown below:</h3>
-								<div class="document_hyperlinks_content">
-									<div class="document_hyperlinks_label">Full hyperlink:
-										<span class="note"></span>
-									</div>
-									<div class="document_hyperlinks_field">
-										<input type="text" style="width: 488px;" value="'. htmlspecialchars($fullLink). '" readonly/>
-									</div>
-								</div>
-								<div class="document_hyperlinks_content">
-									<div class="document_hyperlinks_label">Internal hyperlink:
-										<span class="note"></span>
-									</div>
-									<div class="document_hyperlinks_field">
-										<input type="text" style="width: 488px;" value="'. htmlspecialchars($internalLink). '" readonly/>
-									</div>
-								</div>
-								<div class="document_hyperlinks_content">
-									<div class="document_hyperlinks_label">Checksum:
-										<span class="note"></span>
-									</div>
-									<div class="document_hyperlinks_field">
-										<input type="text" style="width: 488px;" value="'. htmlspecialchars($shortChecksum). '" readonly/>
-									</div>
-								</div>
-							</div>';
-					}
-				}			
-			}
+			$html = '';
 			
-			if($count == 1) {
-				ze\escape::bFlag('MESSAGE_TYPE', $messageType);
-				echo $html;
+			$successfullyMadePublic = 0;
+			$errorsWhileMakingPublic = 0;
+			
+			if ($count) {
+				foreach ($idsArray as $id) {
+					$result = ze\document::generatePublicLink($id);
+					
+					if (ze::isError($result)) {
+						$errorsWhileMakingPublic++;
+						//Show error message only if 1 item was selected
+						if ($count == 1) {
+							$html .= $result->errors['message'] . '<br/>';
+						}
+					} else {
+						$successfullyMadePublic++;
+					}
+				}
+				
+				
+				if ($errorsWhileMakingPublic) {
+					if ($errorsWhileMakingPublic > 1) {
+						$html .= ze\admin::phrase('[[count]] documents were not made public due to errors.', $errorsWhileMakingPublic, ['count' => $errorsWhileMakingPublic]);
+					}
+					
+					ze\escape::bFlag('MESSAGE_TYPE', 'Error');
+					echo $html;
+				}
 			}
 			
 		} elseif (ze::post('make_document_private')) {
@@ -488,7 +460,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 						['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 					$newIds[] = $cType. '_'. $cID;
 					
-					ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId);
+					ze\fileAdm::updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId, false, true);
 					
 					//If this document has been created from an image, create a thumbnail.
 					$file = ze\row::get('files', ['usage', 'filename', 'location', 'path', 'image_credit'], ['id' => $fileId]);
@@ -508,7 +480,7 @@ class zenario_common_features__organizer__documents extends ze\moduleBaseClass {
 							'foreign_key_version' => $cVersion
 						]);
 						ze\contentAdm::updateVersion($cID, $cType, $cVersion, ['feature_image_id' => $thumbnailId]);
-						ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+						ze\contentAdm::updateContentItemCache($cID, $cType, $cVersion);
 					}
 					
 					$succeeded++;

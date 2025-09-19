@@ -57,7 +57,9 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			
 			$settingValue = ze::setting($siteSettingName);
 			if ($settingValue) {
-				$imagesInUseIds[] = $settingValue;
+				foreach (ze\ray::explodeAndTrim($settingValue, true) as $imageId) {
+					$imagesInUseIds[] = $imageId;
+				}
 			}
 		}
 		
@@ -92,6 +94,11 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			if (in_array($id, $imagesInUseIds)) {
 				$item['image_in_use'] = true;
 			}
+			
+			$item['copy_exists_in_image_library'] = false;
+			if (ze\row::exists('files', ['usage' => 'image', 'checksum' => $item['checksum']])) {
+				$item['copy_exists_in_image_library'] = true;
+			}
 		}
     }
 
@@ -99,7 +106,22 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 		//Upload a new file
 		if (ze::post('upload') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			
-			ze\fileAdm::exitIfUploadError(false, false, true, 'Filedata');
+			ze\fileAdm::exitIfUploadError($adminFacing = true, $checkIsAllowed = true, $alwaysAllowImages = false, $fileVar = 'Filedata');
+			
+			$mimeType = ze\file::mimeType($_FILES['Filedata']['name']);
+			
+			switch($mimeType) {
+				case 'image/gif':
+				case 'image/jpeg':
+				case 'image/png':
+				case 'image/x-icon':
+				case 'image/icon':
+				case 'image/svg+xml':
+					break;
+				default:
+					echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG, SVG or ICO image.');
+					return false;
+			}
 			
 			//Check to see if an identical file has already been uploaded
 			$existingFilename = false;
@@ -110,7 +132,7 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			}
 			
 			//Try to add the uploaded image to the database
-			$fileId = ze\fileAdm::addToDatabase('site_setting', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true, $deleteWhenDone = false, $addToDocstoreDirIfPossible = false);
+			$fileId = ze\fileAdm::addToDatabase('site_setting', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']));
 
 			if ($fileId) {
 
@@ -132,13 +154,17 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 			}
 		} elseif (ze::post('copy_to_image_library') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit'], $id)) {
-					ze\fileAdm::copyInDatabase('image', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+				if ($file = ze\row::get('files', ['filename', 'location', 'path', 'image_credit', 'checksum'], $id)) {
+					//If a copy of this image already exists in the image library, the "Copy" button will be disabled.
+					//This is a safety check.
+					if (!ze\row::exists('files', ['usage' => 'image', 'checksum' => $file['checksum']])) {
+						ze\fileAdm::copyInDatabase('image', $id, $file['filename'], $mustBeAnImage = true, $addToDocstoreDirIfPossible = false);
+					}
 				}
 			}
 		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-				ze\contentAdm::deleteImage($id);
+				ze\fileAdm::deleteSpecialImage($id);
 			}
 		//Add an image from the library
 		} elseif (ze::post('add_from_image_library') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {

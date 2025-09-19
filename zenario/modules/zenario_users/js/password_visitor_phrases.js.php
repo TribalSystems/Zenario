@@ -52,8 +52,7 @@ ze\db::loadSiteConfig();
 
 
 //Output a few commonly used phrases for visitors
-$output = '';
-foreach([
+echo 'window.zenarioUserPasswordPhrase = zenario.unpack(', ze\cache::packPhrases([
 	'password_score_4_matches_requirements' => 'That\'s a good, strong password.',
 	'password_score_4_exceeds_requirements' => 'That\'s a good, strong password.',
 	'password_score_3_matches_requirements' => 'That\'s a satisfactory password, but consider making it longer or stronger.',
@@ -63,16 +62,7 @@ foreach([
 	'password_score_0_too_easy_to_guess' => 'Make the password longer and harder to guess.',
 	'password_does_not_match_the_requirements' => 'Make the password longer and harder to guess.',
 	'enter_password' => 'Please enter a password.'
-] as $code => $phrase) {
-	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick(
-		ze\lang::phrase($phrase, false, 'zenario_users', $langId)
-	). '~';
-}
-
-echo '
-window.zenarioUserPasswordPhrase = window.zenarioUserPasswordPhrase || {};
-zenario._mkd(window.zenarioUserPasswordPhrase,', json_encode($output), ');';
-	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+], 'zenario_users', $langId), ');';
 	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 

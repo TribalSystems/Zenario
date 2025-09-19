@@ -114,8 +114,21 @@ zenario_content_type_details:
                         It can be made visible later.
                 
                 other_options:
-                    label: |
-                        Other options:
+                    snippet:
+                        html: |
+                            <hr />
+                            <b>Other options</b>
+                
+                maximum_title_length:
+                    label: 'Maximum title length:'
+                    type: select
+                    value: 125
+                    values:
+                        100: 100 characters
+                        125: 125 characters
+                        150: 150 characters
+                        200: 200 characters
+                        250: 250 characters
 
                 auto_flag_feature_image:
                     label: 'Flag the first-uploaded image as the featured image'

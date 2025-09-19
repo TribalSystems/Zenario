@@ -203,7 +203,7 @@ class zenario_extranet_change_email extends zenario_extranet {
 						$_SESSION['captcha_passed__'. $this->instanceId] = true;
 					}
 				} else {
-					$this->errors[] = ['Error' => $this->phrase('Please correctly verify that you are human.')];
+					$this->errors[] = ['Error' => $this->phrase('Please verify that you are human.')];
 				}
 			}
 

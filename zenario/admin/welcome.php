@@ -229,7 +229,7 @@ echo
 '<!DOCTYPE HTML>
 <html>
 <head>
-	<title>', ze\admin::phrase('Welcome to Zenario'), '</title>
+	<title>', ze\admin::phrase('Zenario admininstrator login'), '</title>
 	<meta name="viewport" content="initial-scale=0.5">
 	<base href="', ze\link::absolute(), '">';
 
@@ -264,7 +264,7 @@ ze\content::pageFoot('zenario/', 'welcome', false, false);
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::$dbL
  && ze::setting('brand_logo') == 'custom'
- && (ze\image::link($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (ze\image::specialImageLink($logoWidth, $logoHeight, $logoURL, ze::setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = ze\link::absolute(). $logoURL;
@@ -430,7 +430,7 @@ echo '
 	
 				<div>
 					<div class="problem">
-						<h1>', ze\admin::phrase('Welcome to Zenario'), '</h1>
+						<h1>', ze\admin::phrase('Zenario administrator login'), '</h1>
 						<p id="no_cookies">',
 							ze\admin::phrase("Unable to start a session! We cannot log you in at the moment.<br/><br/>Please check that cookies are enabled in your browser.<br/><br/>If you've enabled cookies and this message persists, please advise your system administrator to: <ul><li>Check the <code>COOKIE_DOMAIN</code> setting in the <code>zenario_siteconfig.php</code> file to ensure it is not referencing a different domain.</li><li>Check for any problems with caching or session storage on the server.</li></ul>"),
 						'</p>

@@ -2,13 +2,6 @@
 ---
 sections:
     translations:
-        custom_template_buttons_current:
-           'znz_this':
-                label: 'This is the [[english_name]] ([[id]]) translation'
-                label_og: 'This is the original (in [[english_name]] ([[id]]))'
-                parent: 'current_language_button'
-                frontend_link: ''
-        
         custom_template_buttons_exists:
            'znz_go':
                 label: '[[english_name]] ([[id]])'
@@ -58,7 +51,6 @@ sections:
         buttons: {}
             current_language_button:
                 css_class: current_language_button
-                label: 'This is the [[english_name]] translation'
             existing_translations_dropdown:
                 css_class: existing_translations_dropdown
                 label: "Existing translations"

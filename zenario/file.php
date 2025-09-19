@@ -141,18 +141,6 @@ $file = false;
 $filePath = false;
 $filename = $_REQUEST['filename'] ?? false;
 $useCacheDir = true;
-$getUploadedFileInCacheDir = 
-		ze::request('getUploadedFileInCacheDir') 
-		&& (
-			ze\priv::check() 
-			|| (
-					(!$requestedWidth && !$requestedHeight)
-					|| ($requestedWidth == 80 && $requestedHeight == 80)
-					// For slideshow 2 admin images
-					|| ($requestedWidth == 150 && $requestedHeight == 150)
-					|| ($requestedWidth == 300 && $requestedHeight == 150)
-				)
-			);
 
 //Attempt to get the id from the request
 	//(This is only allowed under certain situations, as images may be protected or not public.)
@@ -216,236 +204,200 @@ if (isset($_GET['og'])) {
 	} else {
 		$mode = 'resize';
 	}
-
-} elseif ($requestedWidth && $requestedHeight && $getUploadedFileInCacheDir) {
-	$width = $requestedWidth;
-	$height = $requestedHeight;
-	$mode = 'resize';
 }
 
+//If this is a file for a content item, check that the visitor can see the current content item
+//Again, this is a little slower than it could be, as you need to exchange session information. It's only intended
+//as a fallback if the cache/ directory isn't writable.
+if ($usage == 'content') {
+	$hasPerms = false;
 
-//Attempt to output an image in the cache/uploads/ directory
-if ($getUploadedFileInCacheDir) {
-	
-	$file = [];
-	
-	if (($filepath = ze\file::getPathOfUploadInCacheDir(ze::request('getUploadedFileInCacheDir')))
-	 && ($file['mime_type'] = ze\file::mimeType($filepath))) {
-		
-		$file['data'] = file_get_contents($filepath);
-		$file['filename'] = $filename = basename($filepath);
-		
-		if (ze\file::isImage($file['mime_type'])
-		 && ($image = getimagesize($filepath))) {
-			$file['width'] = $image[0];
-			$file['height'] = $image[1];
-			$file['mime_type'] = $image['mime'];
-		
-			if ($width && $height) {
-				ze\image::resize(
-					$file['data'], $file['mime_type'],
-					$file['width'], $file['height'],
-					$width, $height,
-					$mode);
-			}
-		}
-	}
+	$sql = "
+		SELECT v.id, v.type, v.version, v.file_id, v.filename
+		FROM ". DB_PREFIX. "files AS f
+		INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+		   ON v.file_id = f.id";
 
-} else {
+	if (ze::request('cID') && ze::request('cType')) {
+		$sql .= "
+		WHERE f.`usage` = 'content'
+		  AND v.id = ". (int) ze::request('cID'). "
+		  AND v.type = '". ze\escape::asciiInSQL(ze::request('cType')). "'";
 
-	//If this is a file for a content item, check that the visitor can see the current content item
-	//Again, this is a little slower than it could be, as you need to exchange session information. It's only intended
-	//as a fallback if the cache/ directory isn't writable.
-	if ($usage == 'content') {
-		$hasPerms = false;
-
-		$sql = "
-			SELECT v.id, v.type, v.version, v.file_id, v.filename
-			FROM ". DB_PREFIX. "files AS f
-			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
-			   ON v.file_id = f.id";
-
-		if (ze::request('cID') && ze::request('cType')) {
+		if (ze\priv::check() && ze::request('cVersion')) {
 			$sql .= "
-			WHERE f.`usage` = 'content'
-			  AND v.id = ". (int) ze::request('cID'). "
-			  AND v.type = '". ze\escape::asciiInSQL(ze::request('cType')). "'";
-	
-			if (ze\priv::check() && ze::request('cVersion')) {
-				$sql .= "
-				  AND v.version = ". (int) ze::request('cVersion');
-	
-			} elseif (ze\priv::check()) {
-				$sql .= "
-				  AND v.version = ". (int) ze\content::latestVersion($_REQUEST['cID'] ?? false, ze::request('cType'));
-	
-			} else {
-				$sql .= "
-				  AND v.version = ". (int) ze\content::publishedVersion($_REQUEST['cID'] ?? false, ze::request('cType'));
-			}
+			  AND v.version = ". (int) ze::request('cVersion');
 
-		} elseif ($checksum) {
+		} elseif (ze\priv::check()) {
 			$sql .= "
-			INNER JOIN ". DB_PREFIX. "content_items AS c
-			   ON v.id = c.id
-			  AND v.type = c.type
-			  AND v.version = ". (ze\priv::check()? "c.admin_version" : "c.visitor_version"). "
-			WHERE f.". $checksumCol. " = '". ze\escape::asciiInSQL($checksum). "'
-			  AND f.`usage` = 'content'";
+			  AND v.version = ". (int) ze\content::latestVersion($_REQUEST['cID'] ?? false, ze::request('cType'));
 
 		} else {
-			header('HTTP/1.0 404 Not Found');
-			exit;
+			$sql .= "
+			  AND v.version = ". (int) ze\content::publishedVersion($_REQUEST['cID'] ?? false, ze::request('cType'));
 		}
 
-		if ($result = ze\sql::select($sql)) {
-			while ($row = ze\sql::fetchAssoc($result)) {
-				if (ze\content::checkPerm($row['id'], $row['type'], $row['version'])) {
-					$hasPerms = true;
-					$id = $row['file_id'];
-			
-					if (!$filename) {
-						$filename = $row['filename'];
-					}
-					break;
-				}
-			}
-		}
+	} elseif ($checksum) {
+		$sql .= "
+		INNER JOIN ". DB_PREFIX. "content_items AS c
+		   ON v.id = c.id
+		  AND v.type = c.type
+		  AND v.version = ". (ze\priv::check()? "c.admin_version" : "c.visitor_version"). "
+		WHERE f.". $checksumCol. " = '". ze\escape::asciiInSQL($checksum). "'
+		  AND f.`usage` = 'content'";
 
-		if (!$hasPerms) {
-			header('HTTP/1.0 404 Not Found');
-			exit;
-		}
-
-	//If this wasn't a request for a Content Item file/Favicon/Home screen icon,
-	//and if no id or checksum was requested, exit
-	} elseif ($usage == 'documents') {
-		$hasPerm = ze\priv::check('_PRIV_VIEW_DOCUMENTS');
-		
-		if (!$hasPerm) {
-			header('HTTP/1.0 404 Not Found');
-			exit;
-		}
-	} elseif (!$checksum && !$id) {
+	} else {
 		header('HTTP/1.0 404 Not Found');
 		exit;
 	}
 
-
-
-	//Get the details of the file from the database
-	$sql = "
-		SELECT
-			id,
-			filename,
-			";
-
-	//If we are going to be drawing a thumbnail for admin mode, then we'll grab the thumbnail image data.
-	//(But note that SVGs won't have this set, we still need to pull the original data in their case.)
-	if (isset($_GET['og'])) {
-		$sql .= "IFNULL(thumbnail_180x130_data, data) AS data";
-
-	//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.
-	} elseif ($adminBackend || $usage == 'content') {
-		$sql .= "data";
-
-	//Otherwise we won't load it now, and we'll use the ze\image::link() function to get it below.
-	} else {
-		$sql .= "NULL AS data";
-	}
-
-	$sql .= ",
-			location,
-			path,
-			mime_type,
-			width,
-			height,
-			size
-		FROM ". DB_PREFIX . "files";
-
-	if ($id) {
-		$sql .= "
-		WHERE id = ". (int) $id;
-
-	} else {
-		$sql .= "
-		WHERE `usage` = '". ze\escape::asciiInSQL($usage). "'";
-
-		if ($checksum) {
-			$sql .= "
-		  AND ". $checksumCol. " = '". ze\escape::asciiInSQL($checksum). "'";
-		}
-	}
-
-	$sql .= "
-		LIMIT 1";
-
-
-	if (($result = ze\sql::select($sql)) && ($file = ze\sql::fetchAssoc($result))) {
-
-		//If the file is supposed to be in the docstore, check if it is actually there
-		if ($file['location'] == 'docstore' && empty($file['data'])) {
-			if (!$filePath = ze\file::docstorePath($file['path'])) {
-				echo ze\admin::phrase('File missing!');
-				exit;
-			
-			//Check to see if this is an image
-			} elseif (ze\file::isImageOrSVG($file['mime_type'])) {
-			
-			//Check to see if this is a pdf downloading from Organizer
-			} else
-			if ($file['mime_type'] == 'application/pdf'
-			 && !empty($_SERVER['HTTP_REFERER'])
-			 && (strpos($_SERVER['HTTP_REFERER'], '/organizer.php') !== false
-			  || strpos($_SERVER['HTTP_REFERER'], '/zenario/admin/') !== false)) {
-			
-			//If this is not an image, and is not a PDF that is being downloaded from Organizer,
-			//attempt to symlink the file to the private directory rather than load it all into memory in php
-			} else
-			if (($fileLink = ze\file::linkForCurrentVisitor($file['id'], ze\ring::random(24), 'private/files', false, $filename))
-			 && (!ze\ring::chopPrefix($fileLink, 'zenario/file.php'))) {
-				header('location: '. ze\link::absolute(). $fileLink);
-				exit;
-			}
-		}
-
-		//When Handling resizes from WYSIWYG Editors, use a hash in the get request to make it harder for visitors to hack the URL and ask for whatever size image they want.
-		if (($requestedWidth || $requestedHeight) && $key) {
-			if ($key != ze::hash64($file['id']. '_'. $requestedWidth. '_'. $requestedHeight. '_'. $checksum, 10)) {
-				$width = $file['width'];
-				$height = $file['height'];
-				$mode = 'resize';
-			}
-		}
-
-		//If this is an image, check to see if it is in the cache directory.
-		//If it's not yet there, resize it if needed and then attempt to put it in there
-		if (empty($file['data'])) {
-			if (ze\file::isImageOrSVG($file['mime_type'])) {
-				$result =
-					ze\image::link(
-						$width, $height, $filePath, $file['id'], $width, $height, $mode, $offset,
-						$retina, $fullPath = false, $privacy = 'auto',
-						$useCacheDir, $internalFilePath = true, $returnImageStringIfCacheDirNotWorking = true);
+	if ($result = ze\sql::select($sql)) {
+		while ($row = ze\sql::fetchAssoc($result)) {
+			if (ze\content::checkPerm($row['id'], $row['type'], $row['version'])) {
+				$hasPerms = true;
+				$id = $row['file_id'];
 		
-				//The image link function will return false if a file is not an image, or if it was not found...
-				if ($result === false) {
-		
-				//...true if an image was found and it could get a path
-				} elseif ($result === true) {
-					$file['data'] = null;
-		
-				//...otherwise it will return the image data, if it could get the image but couldn't write to the cache directory
-				} else {
-					$file['data'] = $result;
+				if (!$filename) {
+					$filename = $row['filename'];
 				}
-	
-			} else {
-				$file['data'] = ze\row::get('files', 'data', $file['id']);
+				break;
 			}
-	
-			unset($result);
 		}
+	}
+
+	if (!$hasPerms) {
+		header('HTTP/1.0 404 Not Found');
+		exit;
+	}
+
+//If this wasn't a request for a Content Item file/Favicon/Home screen icon,
+//and if no id or checksum was requested, exit
+} elseif ($usage == 'documents') {
+	$hasPerm = ze\priv::check('_PRIV_VIEW_DOCUMENTS');
+	
+	if (!$hasPerm) {
+		header('HTTP/1.0 404 Not Found');
+		exit;
+	}
+} elseif (!$checksum && !$id) {
+	header('HTTP/1.0 404 Not Found');
+	exit;
+}
+
+
+
+//Get the details of the file from the database
+$sql = "
+	SELECT
+		id,
+		filename,
+		";
+
+//If we are going to be drawing a thumbnail for admin mode, then we'll grab the thumbnail image data.
+//(But note that SVGs won't have this set, we still need to pull the original data in their case.)
+if (isset($_GET['og'])) {
+	$sql .= "IFNULL(thumbnail_180x130_data, data) AS data";
+
+//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.
+} elseif ($adminBackend || $usage == 'content') {
+	$sql .= "data";
+
+//Otherwise we won't load it now, and we'll use the ze\image::link() function to get it below.
+} else {
+	$sql .= "NULL AS data";
+}
+
+$sql .= ",
+		location,
+		path,
+		mime_type,
+		width,
+		height,
+		size
+	FROM ". DB_PREFIX . "files";
+
+if ($id) {
+	$sql .= "
+	WHERE id = ". (int) $id;
+
+} else {
+	$sql .= "
+	WHERE `usage` = '". ze\escape::asciiInSQL($usage). "'";
+
+	if ($checksum) {
+		$sql .= "
+	  AND ". $checksumCol. " = '". ze\escape::asciiInSQL($checksum). "'";
+	}
+}
+
+$sql .= "
+	LIMIT 1";
+
+
+if (($result = ze\sql::select($sql)) && ($file = ze\sql::fetchAssoc($result))) {
+
+	//If the file is supposed to be in the docstore, check if it is actually there
+	if ($file['location'] == 'docstore' && empty($file['data'])) {
+		if (!$filePath = ze\file::docstorePath($file['path'])) {
+			echo ze\admin::phrase('File missing!');
+			exit;
+		
+		//Check to see if this is an image
+		} elseif (ze\file::isImageOrSVG($file['mime_type'])) {
+		
+		//Check to see if this is a pdf downloading from Organizer
+		} else
+		if ($file['mime_type'] == 'application/pdf'
+		 && !empty($_SERVER['HTTP_REFERER'])
+		 && (strpos($_SERVER['HTTP_REFERER'], '/organizer.php') !== false
+		  || strpos($_SERVER['HTTP_REFERER'], '/zenario/admin/') !== false)) {
+		
+		//If this is not an image, and is not a PDF that is being downloaded from Organizer,
+		//attempt to symlink the file to the private directory rather than load it all into memory in php
+		} else
+		if (($fileLink = ze\file::linkForCurrentVisitor($file['id'], ze\ring::random(24), 'private/files', false, $filename))
+		 && (!ze\ring::chopPrefix($fileLink, 'zenario/file.php'))) {
+			header('location: '. ze\link::absolute(). $fileLink);
+			exit;
+		}
+	}
+
+	//When Handling resizes from WYSIWYG Editors, use a hash in the get request to make it harder for visitors to hack the URL and ask for whatever size image they want.
+	if (($requestedWidth || $requestedHeight) && $key) {
+		if ($key != ze::hash64($file['id']. '_'. $requestedWidth. '_'. $requestedHeight. '_'. $checksum, 10)) {
+			$width = $file['width'];
+			$height = $file['height'];
+			$mode = 'resize';
+		}
+	}
+
+	//If this is an image, check to see if it is in the cache directory.
+	//If it's not yet there, resize it if needed and then attempt to put it in there
+	if (empty($file['data'])) {
+		if (ze\file::isImageOrSVG($file['mime_type'])) {
+			$result =
+				ze\image::link(
+					$width, $height, $filePath, $file['id'], $width, $height, $mode, $offset,
+					$retina, $fullPath = false, $privacy = 'auto',
+					$useCacheDir, $internalFilePath = true, $returnImageStringIfCacheDirNotWorking = true);
+	
+			//The image link function will return false if a file is not an image, or if it was not found...
+			if ($result === false) {
+	
+			//...true if an image was found and it could get a path
+			} elseif ($result === true) {
+				$file['data'] = null;
+	
+			//...otherwise it will return the image data, if it could get the image but couldn't write to the cache directory
+			} else {
+				$file['data'] = $result;
+			}
+
+		} else {
+			$file['data'] = ze\row::get('files', 'data', $file['id']);
+		}
+
+		unset($result);
 	}
 }
 

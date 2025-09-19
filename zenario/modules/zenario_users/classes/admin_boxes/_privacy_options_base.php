@@ -183,21 +183,21 @@ class zenario_users__privacy_options_base extends zenario_users {
 		switch ($values['privacy/privacy']) {
 			case 'call_static_method':
 				if (!$values['privacy/module_class_name']) {
-					$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the class name of a module.');
+					$fields['privacy/module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module.');
 	
 				} elseif (!ze\module::inc($values['privacy/module_class_name'])) {
-					$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the class name of a module that you have running on this site.');
+					$fields['privacy/module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module that you have running on this site.');
 	
 				} elseif ($values['privacy/method_name']
 					&& !method_exists(
 							$values['privacy/module_class_name'],
 							$values['privacy/method_name'])
 				) {
-					$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the name of an existing public static method.');
+					$fields['privacy/method_name']['error'] = ze\admin::phrase('Please enter the name of an existing public static method.');
 				}
 	
 				if (!$values['privacy/method_name']) {
-					$box['tabs']['privacy']['errors'][] = ze\admin::phrase('Please enter the name of a public static method.');
+					$fields['privacy/method_name']['error'] = ze\admin::phrase('Please enter the name of a public static method.');
 				}
 				break;
 		}

@@ -49,10 +49,8 @@ ze\db::loadSiteConfig();
 
 
 
-
 //Output a few commonly used phrases for visitors
-$output = '';
-foreach([
+echo 'window.anonymousCommentsPhrase = zenario.unpack(', ze\cache::packPhrases([
 	'editorBold' => 'Bold',
     'editorItalic' => 'Italic',
     'editorUnderline' => 'Underline',
@@ -74,16 +72,7 @@ foreach([
 	'editorParagraphPreformatted' => 'Paragraph with preformatted text',
 	'editorParagraphQuote' => 'Paragraph with quoted text',
 	'editorRemoveFormatting' => 'Remove formatting'
-] as $code => $phrase) {
-	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick(
-		ze\lang::phrase($phrase, false, 'zenario_anonymous_comments', $langId)
-	). '~';
-}
-
-echo '
-window.anonymousCommentsPhrase = window.anonymousCommentsPhrase || {};
-zenario._mkd(window.anonymousCommentsPhrase,', json_encode($output), ');';
-	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+], 'zenario_anonymous_comments', $langId), ');';
 	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 

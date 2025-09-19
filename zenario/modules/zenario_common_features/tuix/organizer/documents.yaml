@@ -191,7 +191,7 @@ zenario__library:
                     with_columns_set:
                         traits.is_folder: true
                 
-                view_tags:
+                document_properties:
                     priv: _PRIV_EDIT_DOCUMENTS
                     hide_in_select_mode: true
                     label: Edit document metadata
@@ -200,6 +200,47 @@ zenario__library:
                         traits.is_folder: true
                     admin_box:
                         path: zenario_document_properties
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                open:
+                    parent: view_dropdown
+                    label: Open file
+                    multiple_select: false
+                    hide_in_select_mode: true
+                    without_columns_set:
+                        traits.is_folder: true
+                    onclick: |
+                        var item = zenarioO.selectedItemDetails();
+                        window.open(URLBasePath + 'zenario/file.php?usage=documents&showInWindow=1&document_id=' + item.id);
+                        return false;
+                download:
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: Download
+                    multiple_select: false
+                    without_columns_set:
+                        traits.is_folder: true
+                    ajax:
+                        confirm:
+                            download: true
+                            message: 'Download the file "[[name]]"?'
+                            message_type: warning
+                            button_message: Download
+                            cancel_button_message: Cancel
+                view_public_link:
+                    parent: view_dropdown
+                    hide_in_select_mode: false
+                    label: View public link
+                    multiple_select: false
+                    with_columns_set:
+                        traits.public: true
+                    without_columns_set:
+                        traits.is_folder: true
+                    admin_box:
+                        path: zenario_document_link
+                
                 actions_dropdown:
                     label: Actions
                     multiple_select: true
@@ -214,31 +255,6 @@ zenario__library:
                         path: zenario_document_rename
                     with_columns_set:
                         traits.is_folder: true
-                open:
-                    parent: actions_dropdown
-                    label: Open file
-                    multiple_select: false
-                    hide_in_select_mode: true
-                    without_columns_set:
-                        traits.is_folder: true
-                    onclick: |
-                        var item = zenarioO.selectedItemDetails();
-                        window.open(URLBasePath + 'zenario/file.php?usage=documents&showInWindow=1&document_id=' + item.id);
-                        return false;
-                download:
-                    parent: actions_dropdown
-                    hide_in_select_mode: true
-                    label: Download
-                    multiple_select: false
-                    without_columns_set:
-                        traits.is_folder: true
-                    ajax:
-                        confirm:
-                            download: true
-                            message: 'Are you sure you wish to download the file "[[name]]"?'
-                            message_type: warning
-                            button_message: Download
-                            cancel_button_message: Cancel
                 generate_public_link:
                     priv: _PRIV_EDIT_DOCUMENTS
                     parent: actions_dropdown
@@ -250,8 +266,8 @@ zenario__library:
                         traits.public: true
                     ajax: 
                         confirm:
-                            message: Are you sure you want to make this document public? This will generate a public link to the document, with which it will be accessible by anyone.
-                            multiple_select_message: Are you sure you want to make these documents public? This will generate public links to each document, with which they will be accessible by anyone.
+                            message: Make this document public? This will generate a public link to the document, with which it will be accessible by anyone.
+                            multiple_select_message: Make these documents public? This will generate public links to each document, with which they will be accessible by anyone.
                             button_message: Make public
                             cancel_button_message: Cancel
                             message_type: question
@@ -269,26 +285,13 @@ zenario__library:
                         traits.private: true
                     ajax: 
                         confirm:
-                            message: Are you sure you want to make this document private?
-                            multiple_select_message: Are you sure you want to make these documents private?
+                            message: Make this document private?
+                            multiple_select_message: Make these documents private?
                             button_message: Make private
                             cancel_button_message: Cancel
                             message_type: question
                         request: 
                             make_document_private: true
-                            
-                view_public_link:
-                    parent: actions_dropdown
-                    hide_in_select_mode: false
-                    label: View public link
-                    multiple_select: false
-                    with_columns_set:
-                        traits.public: true
-                    without_columns_set:
-                        traits.is_folder: true
-                    ajax: 
-                        request: 
-                            generate_public_link: true
                 advanced_dropdown:
                     label: Advanced
                     multiple_select: true
@@ -303,8 +306,8 @@ zenario__library:
                         traits.is_folder: true
                     ajax: 
                         confirm: 
-                            message: "Are you sure you want to remove all of the metadata from the document \"[[name]]\"?"
-                            multiple_select_message: "Are you sure you want tto remove all of the metadata from the selected documents?"
+                            message: "Remove all of the metadata from the document \"[[name]]\"?"
+                            multiple_select_message: "Remove all of the metadata from the selected documents?"
                             message_type: warning
                             button_message: Delete
                             cancel_button_message: Cancel
@@ -324,7 +327,7 @@ zenario__library:
                     ajax:
                         confirm: 
                             message: | 
-                                Are you sure you want to rescan the text and thumbnail? 
+                                Rescan the text and thumbnail? 
                                 
                                 If you are using a custom thumbnail image it will be lost.
                             message_type: warning
@@ -344,7 +347,7 @@ zenario__library:
                     ajax:
                         confirm: 
                             message: | 
-                                Are you sure you want to rescan the thumbnail? 
+                                Rescan the thumbnail? 
                                 
                                 If you are using a custom thumbnail image it will be lost.
                             message_type: warning
@@ -397,8 +400,8 @@ zenario__library:
                     ajax: 
                         class_name: zenario_common_features
                         confirm: 
-                            message: "Are you sure you want to delete the document \"[[name]]\"?"
-                            multiple_select_message: "Are you sure you want to delete the selected documents?"
+                            message: "Delete the document \"[[name]]\"?"
+                            multiple_select_message: "Delete the selected documents?"
                             message_type: warning
                             button_message: Delete
                             cancel_button_message: Cancel
@@ -416,11 +419,11 @@ zenario__library:
                     ajax: 
                         confirm:
                             message: | 
-                                Are you sure you want to make this document offline? 
+                                Make this document offline? 
                                                                 
                                 This will remove all public links to the document. Anyone with the URL will be unable to access it.
                             multiple_select_message: |
-                                Are you sure you want to make these documents offline? 
+                                Make these documents offline? 
                                                                 
                                 This will remove all public links to the documents. Anyone with the URLs will be unable to access them.
                             button_message: Make offline
@@ -464,7 +467,7 @@ zenario__library:
                         class_name: zenario_common_features
                         confirm: 
                             message: |
-                                Are you sure you want to delete the folder "[[name]]"?
+                                Delete the folder "[[name]]"?
                                 
                                 If you DELETE this folder all [[folder_file_count]] files and folders within this folder will be DELETED.
                             message_type: warning
@@ -483,7 +486,7 @@ zenario__library:
                         class_name: zenario_common_features
                         confirm: 
                             message: |
-                                Are you sure you want to delete the empty folder "[[name]]"?
+                                Delete the empty folder "[[name]]"?
                             message_type: warning
                             button_message: Delete
                             cancel_button_message: Cancel

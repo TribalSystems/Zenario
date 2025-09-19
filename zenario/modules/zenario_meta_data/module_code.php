@@ -61,18 +61,23 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		if ($this->setting('show_date') && $this->setting('date_format')){
 			$dates = ze\row::get('content_item_versions', ['release_date'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
 			
+			$releaseDateCTypeSetting = ze\row::get('content_types', ['release_date_field', 'auto_set_release_date'], ['content_type_id' => $this->cType]);
+			
 			$releaseDate = '';
 			if ($dates['release_date']) {
-				$releaseDate = ze\date::format($dates['release_date'], $this->setting('date_format'));
+				if ($releaseDateCTypeSetting['release_date_field'] == 'optional') {
+					$releaseDate = ze\date::format($dates['release_date'], $this->setting('date_format'));
+				}
 			} elseif ($adminId) {
-				$releaseDateCTypeSetting = ze\row::get('content_types', ['release_date_field', 'auto_set_release_date'], ['content_type_id' => $this->cType]);
 				if ($releaseDateCTypeSetting['release_date_field'] == 'optional' && $releaseDateCTypeSetting['auto_set_release_date']) {
-					$releaseDate = $this->phrase('[ Will display release date when published ]');
+					$releaseDate = ze\admin::phrase('[will display release date when published]');
 				}
 			}
 			
-			$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
-			$this->showSections['show_date'] = true;
+			if ($releaseDateCTypeSetting['release_date_field'] == 'optional' && $releaseDate) {
+				$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
+				$this->showSections['show_date'] = true;
+			}
 		}
 		
 		if ($this->setting('show_published_date') && $this->setting('published_date_format')){
@@ -82,7 +87,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			if ($pDates['published_datetime']) {
 				$publishedDate = ze\date::format($pDates['published_datetime'], $this->setting('published_date_format'));
 			} elseif ($adminId) {
-				$publishedDate = $this->phrase('[ Will display date when published ]');
+				$publishedDate = ze\admin::phrase('[will display date when published]');
 			}
 			
 			$this->mergeFields['Published_date'] = ['value' => $publishedDate, 'html_tag' => $this->setting('published_date_html_tag'), 'label' => $this->phrase('Published date'), 'class' => 'published_date'];

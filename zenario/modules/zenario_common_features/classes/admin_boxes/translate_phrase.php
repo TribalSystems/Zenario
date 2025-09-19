@@ -34,7 +34,7 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		
 		//Don't use this box for editing phrases in the default language
 		if (!$box['key']['language_id']
-		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name', 'is_html'], $box['key']['id']))) {
+		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name', 'is_html', 'seen_at_content_id', 'seen_at_content_type'], $box['key']['id']))) {
 			exit;
 		}
 		
@@ -48,9 +48,16 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		$translateDefaultLang = $languages[ze::$defaultLang]['translate_phrases'];
 		$translateThisPhraseInDefaultLang = $box['key']['is_code'] || $translateDefaultLang;
 		
+		if ($box['key']['is_code']) {
+			$fields['phrase/local_text']['rows'] = $fields['phrase/phrase']['rows'] = 1;
+		} else {
+			unset($box['tabs']['phrase']['fields']['phrase_codes_info']);
+		}
+		
 		$mrg = [
-			'default_lang' => ze\lang::name(ze::$defaultLang),
-			'this_lang' => ze\lang::name($box['key']['language_id'])];
+			'default_lang' => ze\lang::name(ze::$defaultLang, $addIdInBracketsToEnd = false),
+			'this_lang' => ze\lang::name($box['key']['language_id'], $addIdInBracketsToEnd = false)
+		];
 		
 		$box['title'] = ze\admin::phrase('Editing a phrase in [[this_lang]]', $mrg);
 		$fields['phrase/phrase']['label'] = ze\admin::phrase('Phrase in [[default_lang]]:', $mrg);
@@ -61,9 +68,17 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 			$fields['phrase/local_text']['type'] = 'editor';
 			$fields['phrase/phrase']['editor_type'] =
 			$fields['phrase/local_text']['editor_type'] = 'phrase_editor';
+			$fields['phrase/phrase']['notices_below'] = [
+				'html_detected' => [
+					'type' => 'information',
+					'message' => ze\admin::phrase('This phrase uses HTML')
+				]
+			];
 		}
 		
-		$phraseKey['language_id'] = ze::$defaultLang;
+		$lookupWhereStatement = $phraseKey;
+		unset($lookupWhereStatement['seen_at_content_id'], $lookupWhereStatement['seen_at_content_type']);
+		$lookupWhereStatement['language_id'] = ze::$defaultLang;
 		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag'], $phraseKey)) {
 			
 			if ($translateThisPhraseInDefaultLang) {
@@ -73,8 +88,8 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 			}
 		}
 		
-		$phraseKey['language_id'] = $box['key']['language_id'];
-		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag', 'modified_date'], $phraseKey)) {
+		$lookupWhereStatement['language_id'] = $box['key']['language_id'];
+		if ($phrase = ze\row::get('visitor_phrases', ['local_text', 'protect_flag', 'modified_date'], $lookupWhereStatement)) {
 			$values['phrase/local_text'] = $phrase['local_text'];
 			$values['phrase/protect_flag'] = $phrase['protect_flag'];
 			
@@ -98,7 +113,29 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 			$values['phrase/code'] = $box['key']['code'];
 		}
 		
-		$values['phrase/module'] = ze\module::id($box['key']['module_class_name']);
+		$values['phrase/module'] = $box['key']['module_class_name'] . ' (' . ze\module::getModuleDisplayNameByClassName($box['key']['module_class_name']) . ')';
+		
+		if ($phraseKey['seen_at_content_id'] && $phraseKey['seen_at_content_type']) {
+			$contentItemTag = $phraseKey['seen_at_content_type'] . '_' . $phraseKey['seen_at_content_id'];
+			$contentItemTagFormatted = ze\content::formatTag($phraseKey['seen_at_content_id'], $phraseKey['seen_at_content_type']);
+			
+			if (ze\row::exists('content_items', ['id' => $phraseKey['seen_at_content_id'], 'type' => $phraseKey['seen_at_content_type'], 'status' => ['!' => 'deleted']])) {
+				$contentItemLink = ze\link::toItem($phraseKey['seen_at_content_id'], $phraseKey['seen_at_content_type']);
+				$contentItemClass = ze\contentAdm::getItemIconClass($phraseKey['seen_at_content_id'], $phraseKey['seen_at_content_type']);
+				
+				$linkStart = '<a href="organizer.php#zenario__content/panels/content//' . htmlspecialchars($contentItemTag) . '" target="_blank">';
+				$linkEnd = '</a>';
+				
+				$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase(
+					'[[link_start]][[content_item_tag]][[link_end]]',
+					['link_start' => $linkStart, 'content_item_tag' => $contentItemTagFormatted, 'link_end' => $linkEnd]
+				);
+				
+				$fields['phrase/seen_at']['row_class'] = 'organizer_item_image ' . $contentItemClass;
+			} else {
+				$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('[[content_item_tag]] (deleted)', ['content_item_tag' => $contentItemTagFormatted]);
+			}
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

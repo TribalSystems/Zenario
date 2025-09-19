@@ -158,7 +158,7 @@ class zenario_menu_multicolumn extends zenario_menu {
 		$menuItem .= '</a>';
 		
 		if (!isset($row['active']) || !$row['active']) {
-			$menuItem = '<em class="zenario_inactive">'. $menuItem. '</em>';
+			$menuItem = '<em class="zenario_menu_node zenario_inactive">'. $menuItem. '</em>';
 		}
 		
 		if (!empty($row['descriptive_text'])) {

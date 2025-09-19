@@ -192,7 +192,7 @@ zenario__user_forms:
             
             inline_buttons:
                 form_has_no_fields:
-                    css_class: zenario_user_forms_form_has_no_fields
+                    css_class: inline_warning
                     tooltip: "Form has no fields"
                     visible_if: >
                         (item.field_count == 0)

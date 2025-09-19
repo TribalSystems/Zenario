@@ -20,6 +20,7 @@
 		"bez": "*",
 		"blueimp-file-upload": "10.*",
 		"cytoscape": "*",
+		"howler": "^2.2.4",
 		"jquery": "*",
 		"jquery-cycle2": "malsup\/cycle2",
 		"jquery-doubletaptogo": "3.*",
@@ -37,5 +38,5 @@
 		"wow.js": "1.*",
 		"zxcvbn": "4.*"
 	},
-	"version": "10.1.64501"
+	"version": "10.2.64503"
 }

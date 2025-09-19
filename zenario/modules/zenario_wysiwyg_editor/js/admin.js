@@ -231,7 +231,7 @@ zenario_wysiwyg_editor.open = function(slotName, containerId, editorId, html, de
 					if (warnAboutTagRemoval) {
 						warnAboutTagRemoval = false;
 						
-						zenarioA.notification(phrase.editorStripsTagsWarning, 'warning', {timeOut: 15000, extendedTimeOut: 60000});
+						zenarioT.notification(phrase.editorStripsTagsWarning, 'warning', {timeOut: 15000, extendedTimeOut: 60000});
 					}
 				});
 				
@@ -318,7 +318,7 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	} else if (close) {
 		zenario_wysiwyg_editor.doClose(slotName);
 	} else {
-		zenarioA.notification(phrase.contentSaved);
+		zenarioT.notification(phrase.contentSaved);
 	}
 };
 

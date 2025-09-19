@@ -4,8 +4,9 @@ zenario_image:
     key:
         id: ''
         filename_on_load: ''
-        mic_image: ''
-        site_setting_image: ''
+        regular_image: false
+        mic_image: false
+        special_image: false
         slotName: ''
         instanceId: ''
         eggId: ''
@@ -120,8 +121,7 @@ zenario_image:
                 links_grouping:
                     type: grouping
                     snippet:
-                        label: "How to link to this image"
-                        label_class: subheading
+                      label: "To embed the image, or link to it, please copy one of the items below."
                 
                 image_is_public_snippet:
                     grouping: descriptions_grouping
@@ -136,19 +136,22 @@ zenario_image:
                 
                 internal_original_image_link:
                     grouping: links_grouping
-                    label: "Internal link to full image ([[size]]):"
+                    label: "Internal link to image at full size ([[size]]):"
+                    note_below: "To embed the image in a WYSIWYG area, either select the image, or paste this file path into the image tag. Note that the editor will adjust the image tag if you show the image at a different size."
                     type: text
                     readonly: true
                     show_copy_text_button: true
                 html_embed_link:
                     grouping: links_grouping
-                    label: "HTML for pasting into a Raw HTML Snippet plugin:"
+                    label: "Image tag for a Raw HTML/JavaScript Snippet:"
+                    note_below: "To embed the image in such a plugin, paste this image tag into the raw HTML."
                     type: text
                     readonly: true
                     show_copy_text_button: true
                 external_original_image_link:
                     grouping: links_grouping
-                    label: "External link to full image ([[size]]):"
+                    label: "External link to image at full size:"
+                    note_below: "To link to the image from an email or an external website, use this link."
                     type: text
                     readonly: true
                     show_copy_text_button: true

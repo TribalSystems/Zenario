@@ -26,8 +26,6 @@ zenario__languages:
             refiners:
                 not_enabled:
                     exists: true
-                plugin:
-                    exists: true
             
             bold_columns_in_list_view: name
             default_sort_column: name
@@ -70,28 +68,39 @@ zenario__languages:
                 enabled:
                     db_column: l.id
                 default:
-                    title: Default language
                     table_join: |
                         LEFT JOIN [[DB_PREFIX]]site_settings AS si
                            ON si.name = 'default_language'
                           AND si.value = l.id
                     db_column: si.name
                     format: yes_or_no
-                    show_by_default: true
-                    width: small
-                    disallow_sorting: true
-                phrase_count:
-                    title: Phrases
+                phrase_code_count:
+                    title: Code-based phrases
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT pc.code, pc.module_class_name)
                             FROM [[DB_PREFIX]]visitor_phrases AS pc
                             WHERE pc.language_id = l.id
                               AND pc.code != '__LANGUAGE_FLAG_FILENAME__'
+                              AND pc.code LIKE "\_%"
                         )
                     show_by_default: true
                     align_right: true
-                    width: xsmall
+                    width: medium
+                    disallow_sorting: true
+                phrase_count:
+                    title: Standard phrases
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT pc.code, pc.module_class_name)
+                            FROM [[DB_PREFIX]]visitor_phrases AS pc
+                            WHERE pc.language_id = l.id
+                              AND pc.code != '__LANGUAGE_FLAG_FILENAME__'
+                              AND pc.code NOT LIKE "\_%"
+                        )
+                    show_by_default: true
+                    align_right: true
+                    width: medium
                     disallow_sorting: true
                 domain:
                     title: Language-specific doomain

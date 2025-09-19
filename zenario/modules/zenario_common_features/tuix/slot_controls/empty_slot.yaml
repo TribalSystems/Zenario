@@ -67,7 +67,7 @@ empty_slot:
     actions:
         insert_reusable_on_item_layer:
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert a plugin on this content item...
+            label: Insert a plugin
             page_modes:
                 edit: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -86,7 +86,7 @@ empty_slot:
         insert_nest_on_item_layer:
             hidden: true    # N.b. this will be unhidden if a nest module is running
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert nest on this content item...
+            label: Insert a nest
             page_modes:
                 edit: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -105,7 +105,7 @@ empty_slot:
         insert_slideshow_on_item_layer:
             hidden: true    # N.b. this will be unhidden if a slideshow module is running
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Insert slideshow on this content item...
+            label: Insert a slideshow
             page_modes:
                 edit: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -132,12 +132,12 @@ empty_slot:
                     zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'edit');
                 }
                 return false;
-            label: Insert a plugin/nest/slideshow on this content item...
+            label: Insert...
         
         
         insert_reusable_on_layout_layer:
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert a plugin on this layout...
+            label: Insert a plugin on this layout
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -151,7 +151,7 @@ empty_slot:
         insert_nest_on_layout_layer:
             hidden: true    # N.b. this will be unhidden if a nest module is running
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert nest on this layout...
+            label: Insert a nest on this layout
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -165,7 +165,7 @@ empty_slot:
         insert_slideshow_on_layout_layer:
             hidden: true    # N.b. this will be unhidden if a slideshow module is running
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Insert slideshow on this layout...
+            label: Insert a slideshow on this layout
             page_modes:
                 layout: true
             # In Zenario 10.1 we're experimenting with showing some options in a FAB
@@ -182,7 +182,7 @@ empty_slot:
                 layout: true
             visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'layout');
             onclick: return zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'layout');
-            label: Insert a plugin/nest/slideshow on this layout...
+            label: Insert a plugin/nest/slideshow...
     
     
     

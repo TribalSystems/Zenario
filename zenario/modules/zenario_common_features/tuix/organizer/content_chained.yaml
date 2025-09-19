@@ -49,9 +49,9 @@ zenario__content:
                             WHERE id = [[REFINER__ZENARIO_TRANS__CHAINED_IN_LINK__FROM_MENU_NODE]]
                         )
             item:
-                name: Content Item
-                names: Content Items
-                css_class: content_chained_double
+                name: Content item
+                names: Content items
+                css_class: language
             columns:
                 tag:
                     title: ID/alias
@@ -65,7 +65,7 @@ zenario__content:
                 id:
                     db_column: c.id
                 type:
-                    title: Content Type
+                    title: Content type
                     db_column: c.type
                     format: enum
                 language_id:
@@ -514,15 +514,15 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete [[archived_versions_count]] archived version(s) of "[[tag]]"?
+                                Delete [[archived_versions_count]] archived version(s) of "[[tag]]"?
                                 
-                                This will not affect any published versions or drafts, such as version [[version]] ([[admin_version_status]]).
+                                This will not affect published or draft versions.
                                 
                                 This cannot be undone.
                             multiple_select_message: |
-                                Are you sure you wish to delete any archived versions of [[item_count]] content items?
+                                Delete archived versions of [[item_count]] content items?
                                 
-                                This will not affect any published versions or drafts.
+                                This will not affect published or draft versions of those items.
                                 
                                 This cannot be undone.
                             button_message: Delete archived versions

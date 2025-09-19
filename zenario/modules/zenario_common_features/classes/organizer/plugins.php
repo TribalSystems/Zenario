@@ -63,6 +63,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				}
 				
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests match your search');
+                $panel['columns']['id']['chop_prefix_from_search'] = "N";
 				break;
 			
 			case 'slideshows':
@@ -76,6 +77,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$panel['key']['moduleId'] = $slideshowModuleId;
 				
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No slideshows match your search');
+                $panel['columns']['id']['chop_prefix_from_search'] = "S";
 				break;
 			
 			case 'plugin':
@@ -88,6 +90,13 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$ucPluginAdminName = \ze\admin::phrase('Plugin');
                 $panel['no_items_in_search_message'] = \ze\admin::phrase('No nests or slideshows match your search');
 				$panel['key']['containingModuleId'] = (int) (ze::get('refiner__plugin') ?: $refinerId);
+				
+				if ($refinerName == 'view_nests_containing') {
+					$loopThrough = ['id', 'code', 'name', 'module_name'];
+					foreach ($loopThrough as $column) {
+						unset($panel['columns'][$column]['searchable']);
+					}
+				}
 				break;
 			
 			default:
@@ -414,14 +423,30 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
-			$item['code'] = ze\plugin::codeName($id, $item['module_class_name']);
-			
-			
-			if ($item['checksum']) {
-				$img = '&c='. $item['checksum'];
+			//Check to see if each plugin has an image we can use for a thumbnail
+			$sql = "
+				SELECT img_f.filename, img_f.checksum, img_f.mime_type
+				FROM ". DB_PREFIX. "plugin_settings AS img_ps
+				INNER JOIN ". DB_PREFIX. "files AS img_f
+				   ON img_f.id = img_ps.foreign_key_id
+				  AND img_f.`usage` = 'image'
+				  AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
+				WHERE img_ps.instance_id = ". (int) $id. "
+                  AND img_ps.foreign_key_to = 'file'
+                ORDER BY
+                	img_ps.name = 'image' DESC,
+                	img_ps.egg_id";
+            
+            if ($img = ze\sql::fetchAssoc($sql)) {
 				$item['has_image'] = true;
-				$item['image'] = 'zenario/file.php?og=1'. $img;
-			}
+            	$item['filename'] = $img['filename'];
+            	$item['checksum'] = $img['checksum'];
+            	$item['mime_type'] = $img['mime_type'];
+				$item['image'] = 'zenario/file.php?og=1&c='. $img['checksum'];
+            }
+			
+			
+			$item['code'] = ze\plugin::codeName($id, $item['module_class_name']);
 			
 			if ($item['module_class_name'] != 'zenario_nest'
 			 && $item['module_class_name'] != 'zenario_ajax_nest'

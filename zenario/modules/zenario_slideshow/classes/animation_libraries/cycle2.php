@@ -75,7 +75,7 @@ class zenario_slideshow__animation_libraries__cycle2 extends zenario_slideshow {
 		}
 		
 		//Catch the unusual case where someone wants a slideshow, but has only defined one slide,
-		//so there are no transistions to animate
+		//so there are no transitions to animate
 		if ($tabOrd < 2) {
 			$this->mergeFields['Next_Link'] = '';
 			$this->mergeFields['Next_Disabled'] = '_disabled';

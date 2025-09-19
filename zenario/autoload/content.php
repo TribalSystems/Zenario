@@ -190,7 +190,13 @@ class content {
 	}
 
 	//Automatically generate SQL to search through Content, for example for a content list
-	public static function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $extraJoinSQL = '', $includeSearchableSpecialPages = false, $displayHiddenContentItemsForAdmins = true) {
+	public static function sqlToSearchContentTable(
+		$hidePrivateItems = true,
+		$onlyShow = false,
+		$extraJoinSQL = '',
+		$includeSearchableSpecialPages = false,
+		$showUnpublishedContentItemsToAdmins = true
+	) {
 		$adminMode = \ze::isAdmin();
 
 		$sql = "
@@ -202,17 +208,13 @@ class content {
 			   ON c.equiv_id = tc.equiv_id
 			  AND c.type = tc.type";
 		
-		if ($adminMode) {
+		if ($adminMode && $showUnpublishedContentItemsToAdmins) {
+			//"List" modules will show unpublished content items to admins.
+			//"Search" modules will not.
 			$sql .= "
 			  AND v.version = c.admin_version";
 			
-			$statusList = ['first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published'];
-			
-			//Search modules should not display hidden content items to admins,
-			//so the $displayHiddenContentItemsForAdmins value should be false.
-			if ($displayHiddenContentItemsForAdmins) {
-				$statusList[] = 'hidden';
-			}
+			$statusList = ['first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published', 'hidden'];
 			
 			$sql .= "
 			  AND c.status IN (" . \ze\escape::in($statusList) . ")";
@@ -1192,10 +1194,10 @@ class content {
 				return ZENARIO_403_NO_PERMISSION;
 		
 			case 'in_smart_group':
-				return \ze\smartGroup::isUserIn($privacy['smart_group_id'], $userId)? true : ZENARIO_403_NO_PERMISSION;
+				return \ze\row::exists('smart_groups', $privacy['smart_group_id']) && \ze\smartGroup::isUserIn($privacy['smart_group_id'], $userId) ? true : ZENARIO_403_NO_PERMISSION;
 		
 			case 'logged_in_not_in_smart_group':
-				return !\ze\smartGroup::isUserIn($privacy['smart_group_id'], $userId)? true : ZENARIO_403_NO_PERMISSION;
+				return \ze\row::exists('smart_groups', $privacy['smart_group_id']) && !\ze\smartGroup::isUserIn($privacy['smart_group_id'], $userId) ? true : ZENARIO_403_NO_PERMISSION;
 		
 			//Call a module's static method, or send the eventCheckContentItemPermission() signal,
 			//to decide whether the current user should see this content item
@@ -1477,9 +1479,9 @@ class content {
 	}
 
 	const menuPathFromTwig = true;
-	public static function menuPath($cID, $cType, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false) {
+	public static function menuPath($cID, $cType, $langId = false, $separator = ' › ', $addHome = true, $returnArray = false, $outputLanguageCode = false) {
 		if ($menu = \ze\menu::getFromContentItem($cID, $cType)) {
-			return \ze\menu::path($menu['mID'], $langId, $separator, $addHome, $returnArray);
+			return \ze\menu::path($menu['mID'], $langId, $separator, $addHome, $returnArray, $outputLanguageCode);
 		} else {
 			return false;
 		}

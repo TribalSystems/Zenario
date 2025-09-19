@@ -76,8 +76,8 @@ class miscAdm {
 					$value);
 			}
 			$value = str_replace(
-				['[[_WEEKDAY_%w]]', '[[_MONTH_LONG_%m]]', '[[_MONTH_SHORT_%m]]'],
-				['%W', '%M', '%b'],
+				['[[_WEEKDAY_%w]]', '[[_WEEKDAY_SHORT_%w]]', '[[_MONTH_LONG_%m]]', '[[_MONTH_SHORT_%m]]'],
+				['%W', '%a', '%M', '%b'],
 				$value);
 		
 			$sql = "SELECT DATE_FORMAT('" . \ze\escape::sql($exampleDate) . "', '" . \ze\escape::sql($value) . "')";
@@ -150,7 +150,7 @@ class miscAdm {
 	
 	//Make a sentence from the output of getPluginInstanceUsage
 	//optionally, if an instanceId is parsed in $usage, it will display the plugin at the start.
-	public static function getUsageText($usage, $usageLinks = [], $fullPath = null, $overrideNotUsedMessage = "") {
+	public static function getUsageText($usage, $usageLinks = [], $fullPath = null, $overrideNotUsedMessage = "", $showExampleOfHistoricContent = false) {
 		$usageText = [];
 		
 		//If this isn't full mode, make sure all Organizer links use the full path. Otherwise we can just use a #.
@@ -309,7 +309,7 @@ class miscAdm {
 				$link = 'zenario__modules/panels/plugins/refiners/nests////'. (int) $instanceId;
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
-						<span class="listicon organizer_item_image plugin_album_instance">
+						<span class="listicon organizer_item_image nest_library">
 						</span>'. htmlspecialchars($name). '</a>';
 			}
 			
@@ -347,7 +347,7 @@ class miscAdm {
 				$link = 'zenario__modules/panels/plugins/refiners/slideshows////'. (int) $instanceId;
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
-						<span class="listicon organizer_item_image plugin_album_instance">
+						<span class="listicon organizer_item_image slideshow_library">
 						</span>'. htmlspecialchars($name). '</a>';
 			}
 			
@@ -413,8 +413,8 @@ class miscAdm {
 			if ($count > 1) {
 				if (isset($usageLinks['content_items'])) {
 					$text = \ze\admin::nPhrase(
-						'[[name]] and <a target="_blank" href="[[content_items]]">1 other content item</a>', 
-						'[[name]] and <a target="_blank" href="[[content_items]]">[[count]] other content items</a>',
+						'[[name]] and 1 other item (<a target="_blank" href="[[content_items]]">view all</a>)', 
+						'[[name]] and [[count]] other items (<a target="_blank" href="[[content_items]]">view all</a>)',
 						$count - 1, 
 						['name' => $name, 'content_items' => $prefix. $usageLinks['content_items']]
 					);
@@ -430,6 +430,17 @@ class miscAdm {
 				$text = $name;
 			}
 			$usageText[] = $text;
+		}
+		
+		if (!empty($usage['historic_content'])) {
+			if ($showExampleOfHistoricContent) {
+				$cID = $usage['historic_content']['cID'];
+				$cType = $usage['historic_content']['cType'];
+				$cVersion = $usage['historic_content']['cVersion'];
+				$usageText[] = \ze\admin::phrase("[[content_tag]], version [[version]] (archived)", ['content_tag' => \ze\content::formatTag($cID, $cType), 'version' => $cVersion]);
+			} else {
+				$usageText[] = \ze\admin::phrase("(in historic content)");
+			}
 		}
 		
 		
@@ -1447,7 +1458,50 @@ class miscAdm {
 	}
 	
 	
+	public static function sitemapURL($siteMapEnabled = null) {
+		if (is_null($siteMapEnabled)) {
+			$siteMapEnabled = \ze::setting('sitemap_enabled');
+		}
+		
+		if ($siteMapEnabled) {
+			return \ze\link::protocol() . \ze\link::primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
+		}
+		
+		return '';
+	}
 	
+	public static function robotsTxtDefaultConfig($siteMapEnabled = null, $siteMapUrl = null) {
+		if (is_null($siteMapEnabled)) {
+			$siteMapEnabled = \ze::setting('sitemap_enabled');
+		}
+		
+		if (is_null($siteMapUrl)) {
+			$siteMapUrl = \ze\miscAdm::sitemapURL($siteMapEnabled);
+		}
+		
+		$defaultValue = '';
+		
+		$defaultConfigFilePath = CMS_ROOT . 'zenario/includes/test_files/default_robots.txt';
+		$file = fopen($defaultConfigFilePath, 'r');
+		if ($file) {
+			while ($line = fgets($file)) {
+				$defaultValue .= $line;
+			}
+		}
+		
+		fclose($file);
+		
+		//Also include the sitemap if in use
+		if ($siteMapEnabled && $siteMapUrl) {
+			$defaultValue .= "\nSitemap: " . $siteMapUrl;
+		}
+		
+		return trim($defaultValue);
+	}
 	
-
+	public static function robotsTxtBlockAllConfig() {
+		return
+'User-agent: *
+Disallow: /';
+	}
 }

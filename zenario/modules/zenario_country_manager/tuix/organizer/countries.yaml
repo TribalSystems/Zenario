@@ -157,11 +157,11 @@ zenario__languages:
                             message: |
                                 Delete the country "[[country_name]]"?
 
-                                This will also delete its name (phrase) as seen by visitors.
+                                This will also delete the phrase with its name.
                             multiple_select_message: |
                                 Delete the selected countries?
 
-                                This will also delete their names (phrases) as seen by visitors.
+                                This will also delete the phrases with their names.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

@@ -447,7 +447,7 @@ if (ze\dbAdm::needRevision(62)) {
 ze\dbAdm::revision(63
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
-	ADD COLUMN `page_end_name` varchar(255) DEFAULT 'Page 1'
+	ADD COLUMN `page_end_name` varchar(255) DEFAULT 'Step 1'
 _sql
 
 ); ze\dbAdm::revision(64
@@ -1723,3 +1723,34 @@ ze\dbAdm::revision(295
 	ADD COLUMN `admin_email_attachments` tinyint(1) NOT NULL DEFAULT 0 AFTER `admin_email_template`
 _sql
 );
+
+//In 10.2, we changed the text at the top of the summary step to be an editable phrase.
+ze\dbAdm::revision(296
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `summary_page_top_text` varchar(255) DEFAULT '' AFTER `enable_summary_page`
+_sql
+);
+
+if (ze\dbAdm::needRevision(297)) {
+	
+	//Warning!
+	//The ze\row library is not designed to be used in steps 1 or 2 of applying the database update,
+	//nor in database updates for modules!
+	//If you must use it, you need to be very careful about clearing its cache first!
+	//You can call the checkTableDef() as needed before calling it, to clear the cached information.
+	\ze::$dbL->checkTableDef(DB_PREFIX. ZENARIO_USER_FORMS_PREFIX. 'user_forms');
+	
+	//Fix a bug where certain fields are visible on condition, and the conditional value is wrong.
+	$userForms = ze\row::getValues(ZENARIO_USER_FORMS_PREFIX. 'user_forms', ['id', 'enable_summary_page', 'summary_page_top_text'], []);
+	
+	if (!empty($userForms)) {
+		foreach ($userForms as $userForm) {
+			if ($userForm['enable_summary_page'] && !$userForm['summary_page_top_text']) {
+				ze\row::set(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['summary_page_top_text' => "You're nearly done, please check your details before submitting."], ['id' => $userForm['id']]);
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(297);
+}

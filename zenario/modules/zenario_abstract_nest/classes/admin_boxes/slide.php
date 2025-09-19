@@ -73,15 +73,16 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 				ze\priv::exitIfNot('_PRIV_VIEW_REUSABLE_PLUGIN');
 			}
 			
-			$values['details/show_back'] = $details['show_back'];
-			$values['details/no_choice_no_going_back'] = $details['no_choice_no_going_back'];
 			$values['details/show_refresh'] = $details['show_refresh'];
 			$values['details/show_auto_refresh'] = $details['show_auto_refresh'];
 			$values['details/auto_refresh_interval'] = $details['auto_refresh_interval'];
 			
 			if ($box['key']['usesConductor']) {
-				if ($details['global_command'] != '') {
-					$values['details/set_global_command'] = 1;
+				if ($details['is_inner_slide']) {
+					$values['details/slide_type'] = 'inner_slide';
+					$values['details/show_back'] = $details['show_back'];
+				} else {
+					$values['details/slide_type'] = 'key_slide';
 					$values['details/global_command'] = $details['global_command'];
 					$values['details/slide_link_image_id'] = $details['slide_link_image_id'];
 				}
@@ -163,6 +164,16 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			}
 			
 			unset($box['identifier']);
+			
+			
+			//In the conductor, yry and set the slide type to something logical when creating a new slide.
+			//In most situations, the first slide will be the key slide, and all subsequent slides will
+			//be inner slides.
+			if ($details['slide_num'] == 1) {
+				$values['details/slide_type'] = 'key_slide';
+			} else {
+				$values['details/slide_type'] = 'inner_slide';
+			}
 		}
 		
 		//Add some things if this is a slide in a conductor
@@ -357,7 +368,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 		if ($box['key']['usesConductor']) {
 			if (ze\plugin::setting('show_global_tabs', $box['key']['instanceId'], 0)
 			 && ze\plugin::setting('show_images_on_slide_links', $box['key']['instanceId'], 0)) {
-				$showImageSelector = (bool) $values['details/set_global_command'];
+				$showImageSelector = $values['details/slide_type'] == 'key_slide';
 				$imageSettingIndent = 1;
 			}
 		
@@ -441,10 +452,10 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			'param_2' => '',
 			'always_visible_to_admins' => 1,
 			'show_back' => 0,
-			'no_choice_no_going_back' => 0,
 			'show_refresh' => 0,
 			'show_auto_refresh' => 0,
 			'auto_refresh_interval' => 60,
+			'is_inner_slide' => 0,
 			'global_command' => ''
 		];
 		
@@ -454,12 +465,11 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 		}
 		
 		if ($box['key']['usesConductor']) {
-			if ($values['details/set_global_command']) {
+			if ($values['details/slide_type'] == 'key_slide') {
 				$details['global_command'] = $values['details/global_command'];
-			}
-			
-			if ($details['show_back'] = $values['details/show_back']) {
-				$details['no_choice_no_going_back'] = $values['details/no_choice_no_going_back'];
+			} else {
+				$details['is_inner_slide'] = 1;
+				$details['show_back'] = $values['details/show_back'];
 			}
 			
 			if ($details['show_refresh'] = $values['details/show_refresh']) {

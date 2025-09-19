@@ -101,7 +101,7 @@
 		</div>
 	<% } %>
 	
-	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
 		zfea_form_row
 		zfea_form_row__{{ff._id|escape}}
 		{{rowHasError? 'zenario_row_with_error' : ''}}
@@ -139,7 +139,11 @@
 					<% } %>
 				</div>
 			<% } %>
-			<div class="{{ff._hideOnOpen? 'zfea_form_hide_on_open' : ''}} {{ff._showOnOpen? 'zfea_form_show_on_open' : ''}}">
+			<div class="
+				zfea_row_fields_inner
+				{{ff._hideOnOpen? 'zfea_form_hide_on_open' : ''}}
+				{{ff._showOnOpen? 'zfea_form_show_on_open' : ''}}
+			">
 				{{m.lib.microTemplate(m.lib.mtPrefix + '_field', m.fields)}}
 			</div>
 			<% foreach (m.fields as f => field) { %>

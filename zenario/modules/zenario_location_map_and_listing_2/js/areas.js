@@ -73,7 +73,7 @@ function init() {
 		
 	 drawingManager.setMap(map);
 
-	var polygonPointsSaved = parent.document.getElementById("polygon_points").value;
+	var polygonPointsSaved = parent.zenarioAB.get("polygon_points").value;
 
 	if (polygonPointsSaved) {
 		//paint
@@ -102,18 +102,18 @@ function init() {
 		var arrayOfPoints = (polygon.getPath().getArray());
 		
 		stringPoints = getStringPoints(arrayOfPoints);
-		parent.document.getElementById("polygon_points").value = stringPoints;
+		parent.zenarioAB.get("polygon_points").value = stringPoints;
 	
 		google.maps.event.addListener(polygon.getPath(), 'set_at', function() {
 			arrayOfPoints = (polygon.getPath().getArray());
 			stringPoints = getStringPoints(arrayOfPoints);
-			parent.document.getElementById("polygon_points").value = stringPoints;
+			parent.zenarioAB.get("polygon_points").value = stringPoints;
 		});
 
 		google.maps.event.addListener(polygon.getPath(), 'insert_at', function() {
 			arrayOfPoints = (polygon.getPath().getArray());
 			stringPoints = getStringPoints(arrayOfPoints);
-			parent.document.getElementById("polygon_points").value = stringPoints;
+			parent.zenarioAB.get("polygon_points").value = stringPoints;
 		});
 		
 		drawingManager.setMap(null);
@@ -129,14 +129,14 @@ function init() {
 	sw_lat = sw.lat();
 	sw_lng = sw.lng();
 
-	parent.document.getElementById("ne_lat").value = ne_lat;
-	parent.document.getElementById("ne_lng").value = ne_lng;
-	parent.document.getElementById("sw_lat").value = sw_lat;
-	parent.document.getElementById("sw_lng").value = sw_lng;
-	parent.document.getElementById("zoom").value = map.getZoom();
+	parent.zenarioAB.get("ne_lat").value = ne_lat;
+	parent.zenarioAB.get("ne_lng").value = ne_lng;
+	parent.zenarioAB.get("sw_lat").value = sw_lat;
+	parent.zenarioAB.get("sw_lng").value = sw_lng;
+	parent.zenarioAB.get("zoom").value = map.getZoom();
 });
  
-	google.maps.event.addDomListener(document.getElementById('delete-button'), 'click', deleteAllShape);
+	document.getElementById('delete-button').addEventListener('click', deleteAllShape);
 }
 
 
@@ -145,7 +145,7 @@ function deleteAllShape() {
 	// To show drawing buttons:
 	drawingManager.setOptions({drawingControl: true});
 	deleteSelectedShape();
-	parent.document.getElementById("polygon_points").value = null;
+	parent.zenarioAB.get("polygon_points").value = null;
 	for (var i=0; i < all_overlays.length; i++){
 		all_overlays[i].overlay.setMap(null);
 	}
@@ -172,7 +172,7 @@ function deleteSelectedShape() {
 }
 
 function removeLine() {
-	var polygonPointsSaved = parent.document.getElementById("polygon_points").value;
+	var polygonPointsSaved = parent.zenarioAB.get("polygon_points").value;
 
 	if (polygonPointsSaved && flightPath) {
 		flightPath.setMap(null);
@@ -199,7 +199,7 @@ function paintPath() {
 	var pathLat = new Array();
 	var pathlng = new Array();
 	var flightPlanCoordinates = new Array();
-	var polygonPointsSaved = parent.document.getElementById("polygon_points").value;
+	var polygonPointsSaved = parent.zenarioAB.get("polygon_points").value;
 	var pointsSaved = polygonPointsSaved.split(",");
 	var j;
 	var k;
@@ -236,13 +236,13 @@ function paintPath() {
 	google.maps.event.addListener(flightPath.getPath(), 'set_at', function() {
 		arrayOfPoints = (flightPath.getPath().getArray());
 		stringPoints = getStringPoints(arrayOfPoints);
-		parent.document.getElementById("polygon_points").value = stringPoints;
+		parent.zenarioAB.get("polygon_points").value = stringPoints;
 	});
 	
 	google.maps.event.addListener(flightPath.getPath(), 'insert_at', function() {
 		arrayOfPoints = (flightPath.getPath().getArray());
 		stringPoints = getStringPoints(arrayOfPoints);
-		parent.document.getElementById("polygon_points").value = stringPoints;
+		parent.zenarioAB.get("polygon_points").value = stringPoints;
 	});
 }
 

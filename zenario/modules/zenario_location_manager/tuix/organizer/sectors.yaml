@@ -71,6 +71,7 @@ zenario__locations:
                         css_class: zenario_create_a_new
                         admin_box:
                             path: zenario_location_manager__sector
+                            create_another: true
                     add_sector:
                         priv: _PRIV_MANAGE_LOCATIONS
                         ord: 1

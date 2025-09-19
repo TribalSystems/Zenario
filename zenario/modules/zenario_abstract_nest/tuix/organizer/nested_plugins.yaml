@@ -4,6 +4,7 @@ zenario__modules:
     panels:
         nested_plugins:
             panel_type: hierarchy
+            
             key:
                 usesConductor: false
                 instanceId: ''
@@ -11,6 +12,10 @@ zenario__modules:
                 cID: ''
                 cType: ''
                 cVersion: ''
+                nestType: null
+                aLib: null
+            custom__slides_with_incoming_paths: {}
+            
             db_items:
                 table: |
                     [[DB_PREFIX]]nested_plugins AS np
@@ -103,15 +108,15 @@ zenario__modules:
                     format: enum
                     values:
                         1:
-                            label: Can generate smart breadcrumbs
+                            label: Can be enabled for smart breadcrumbs
                         2:
                             label: Generating smart breadcrumbs
                         3:
-                            label: Hidden, used for generating smart breadcrumbs only
+                            label: Hidden; only generates smart breadcrumbs
                         12:
-                            label: 'Generating smart breadcrumbs (Warning: Breadcrumbs link not set in conductor settings)'
+                            label: 'Generating smart breadcrumbs (warning: breadcrumbs link not set in conductor settings)'
                         13:
-                            label: 'Hidden, used for generating smart breadcrumbs only (Warning: Breadcrumbs link not set in conductor settings)'
+                            label: 'Hidden; only generates smart breadcrumbs (warning: breadcrumbs link not set in conductor settings)'
                 
                 parent:
                     hidden: true
@@ -130,8 +135,8 @@ zenario__modules:
                     db_column: np.framework
                 is_slide:
                     db_column: np.is_slide
-                global_command:
-                    db_column: np.global_command
+                is_inner_slide:
+                    db_column: np.is_inner_slide
                 slide_link_image_id:
                     db_column: np.slide_link_image_id
                 filename:
@@ -237,6 +242,38 @@ zenario__modules:
                     css_class: inline_warning
                     tooltip: |
                         Warning: this slide will not appear, please select it and add a plugin (e.g. Banner).
+                inner_slide_is_not_first:
+                    visible_if: |
+                        tuix.key.aLib === 'one_slide' &&
+                        item.is_slide &&
+                        item.slide_num > 1
+                    css_class: inline_warning
+                    tooltip: |
+                        Warning: only the first slide is being shown in this nest.
+                inner_slide_is_first:
+                    visible_if: |
+                        tuix.key.usesConductor &&
+                        item.slide_num == 1 &&
+                        item.is_inner_slide
+                    css_class: inline_warning
+                    tooltip: |
+                        Warning: the first slide in a conductor MUST be a key slide.
+                inner_slide_with_no_incoming_path:
+                    visible_if: |
+                        tuix.key.usesConductor &&
+                        item.is_inner_slide &&
+                        !tuix.custom__slides_with_incoming_paths[item.slide_num]
+                    css_class: inline_warning
+                    tooltip: |
+                        Warning: Inner slides MUST have a path going to them.
+                inner_slide_missing_back_path:
+                    visible_if: |
+                        tuix.key.usesConductor &&
+                        item.is_inner_slide &&
+                        !item.has_back
+                    css_class: inline_warning
+                    tooltip: |
+                        Warning: Inner slides MUST have a "back" path going from them.
             item_buttons:
                 add_plugin:
                     hide_on_filter: true
@@ -379,7 +416,7 @@ zenario__modules:
                     label: Smart breadcrumbs
                 use_for_breadcrumbs:
                     parent: breadcrumbs
-                    label: Use for smart breadcrumbs
+                    label: Enable smart breadcrumbs for this plugin
                     ajax:
                         request:
                             use_for_breadcrumbs: 2
@@ -389,7 +426,7 @@ zenario__modules:
                         tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 1, 11)
                 hide_and_use_for_breadcrumbs:
                     parent: breadcrumbs
-                    label: Hide and use for smart breadcrumbs only
+                    label: Hide plugin; generate smart breadcrumbs only
                     ajax:
                         request:
                             use_for_breadcrumbs: 3
@@ -399,7 +436,7 @@ zenario__modules:
                         tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 1, 11, 2, 12)
                 show_and_use_for_breadcrumbs:
                     parent: breadcrumbs
-                    label: Show plugin
+                    label: Stop hiding plugin
                     ajax:
                         request:
                             use_for_breadcrumbs: 2
@@ -409,7 +446,7 @@ zenario__modules:
                         tuix.key.usesConductor && zenario.IN(1*item.makes_breadcrumbs, 3, 13)
                 stop_using_for_breadcrumbs:
                     parent: breadcrumbs
-                    label: Stop using for smart breadcrumbs
+                    label: Disable smart breadcrumbs from this plugin
                     ajax:
                         request:
                             use_for_breadcrumbs: 1

@@ -79,6 +79,13 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 		, ['dataset' => $box['key']['dataset']]);
 		$fields['download/desc']['snippet']['html'] = $linkHeader.'<p>'.$datasetExportFields. '</p>'.$linkFooter ;
 		
+		//Display what filters were selected
+		$filtersMessage = zenario_common_features::getExportWindowFilters();
+		
+		if ($filtersMessage) {
+			$box['tabs']['download']['notices']['selected_filters']['message'] = $filtersMessage;
+			$box['tabs']['download']['notices']['selected_filters']['show'] = true;
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

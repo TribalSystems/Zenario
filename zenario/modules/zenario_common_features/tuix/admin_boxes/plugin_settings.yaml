@@ -24,10 +24,12 @@ plugin_settings:
         mode: ''
         lastMode: ''
         lastTuixSnippet: -1
+        modesOnThisSlide: {}
     identifier:
         css_class: plugin_album_instance
         label: ''
         value: ''
+        where_used: ''
     missing_items_warning: 'ID [[items]] missing, save settings to clean up.'
     tab: first_tab
     tabs:
@@ -69,7 +71,7 @@ plugin_settings:
         
         'phrases.framework':
             hidden: true
-            label: Phrases
+            label: Text used
             ord: 100001
             fields: {}
         

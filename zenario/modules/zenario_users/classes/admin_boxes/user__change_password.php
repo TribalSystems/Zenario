@@ -52,6 +52,9 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 			$values['details/screen_name'] = $user['screen_name'];
 			
 			$fields['details/password_reset_email']['value'] = ze::setting('default_password_reset_email_template');
+			
+			$box['key']['min_extranet_user_password_length'] = ze::setting('min_extranet_user_password_length');
+			$box['key']['min_extranet_user_password_score'] = ze::setting('min_extranet_user_password_score');
 		}
 	}
 	
@@ -68,14 +71,14 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 			if (!$values['details/password']) {
 				$passwordMessageSnippet = 
 					'<div>
-						<span id="snippet_password_message" class="title_orange">' . ze\admin::phrase('Please enter a password') . '</span>
+						<span id="zenario_password_message" class="title_orange">' . ze\admin::phrase('Please enter a password') . '</span>
 					</div>';
 			} else {
 				$passwordLengthValidation = ze\user::checkPasswordStrength($values['details/password']);
 				if (!$passwordLengthValidation['password_matches_requirements']) {
 					$passwordMessageSnippet = 
 						'<div>
-							<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+							<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
 						</div>';
 				} else {
 					$minScore = (int) ze::setting('min_extranet_user_password_score');
@@ -94,19 +97,19 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 
 								$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_green">' . ze\admin::phrase($phrase) . '</span>
+										<span id="zenario_password_message" class="title_green">' . ze\admin::phrase($phrase) . '</span>
 									</div>';
 								break;
 							case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
 								if ($minScore == 4) {
 									$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+										<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 									</div>';
 								} elseif ($minScore < 4) {
 									$passwordMessageSnippet = 
 										'<div>
-											<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
+											<span id="zenario_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
 										</div>';
 								}
 								break;
@@ -114,12 +117,12 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 								if ($minScore == 2) {
 									$passwordMessageSnippet = 
 										'<div>
-											<span id="snippet_password_message" class="title_orange">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+											<span id="zenario_password_message" class="title_orange">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 										</div>';
 								} elseif ($minScore > 2) {
 									$passwordMessageSnippet = 
 										'<div>
-											<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+											<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 										</div>';
 								}
 								break;
@@ -128,7 +131,7 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 							default:
 								$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
+										<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
 									</div>';
 								break;
 						}
@@ -160,7 +163,7 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 							//Set the post-html field to display "FAIL" highlighted in red.
 							$passwordMessageSnippet = 
 								'<div>
-									<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+									<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
 								</div>';
 						} else {
 							$minScore = (int) ze::setting('min_extranet_user_password_score');
@@ -175,13 +178,13 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 									//Set the post-html field to display "FAIL" highlighted in red.
 									$passwordMessageSnippet = 
 										'<div>
-											<span id="snippet_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
+											<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
 										</div>';
 								} else {
 									//Set the post-html field to display "PASS" highlighted in green.
 									$passwordMessageSnippet = 
 									'<div>
-										<span id="snippet_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
+										<span id="zenario_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
 									</div>';
 								}
 							}

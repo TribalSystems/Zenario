@@ -61,32 +61,29 @@ Options -Indexes -MultiViews
 	# so we need to use a PHP script for this.
 	RewriteRule ^admin/$ zenario/redirect.php?redirect=admin [L,QSA]
 	
-	# Favicons
-	RewriteRule ^favicon.ico$ zenario/file.php?usage=favicon [L]
-	
 	# Admin URL:
 	RewriteRule ^admin(|\.\w+)$ zenario/admin/welcome.php [L,QSA]
 	RewriteRule ^organizer.php$ zenario/admin/organizer.php [L,QSA]
 	
-	# Staging mode URLs:
-	RewriteRule ^staging.php$ zenario/staging.php [L,QSA]
-	
-	# Friendly URLs:
+	# Handle most URLs (aliases and spare aliases):
+	# Note: regular aliases don't use .doc/.docx/.pdf/.zip, but spare aliases can.
 	RewriteCond %{REQUEST_URI} !/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)/
-	RewriteRule ^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html)$ index.php?cID=$1 [L,QSA]
+	RewriteRule ^([\/,A-Za-z0-9~_-]+)(|\.html|\.htm|\.doc|\.docx|\.pdf|\.zip)$ index.php?cID=$1 [L,QSA]
 	
 	# Download Now links:
 	RewriteRule ^([\/,A-Za-z0-9~_-]+)\.download$ index.php?cID=$1&download=1 [L]
 	
-	# RSS feeds:
-	RewriteRule ^([\/,A-Za-z0-9~_-]+)\.rss$ index.php?cID=$1&method_call=showRSS [L]
-	
-	# A friendly URL for the XML sitemap:
-	RewriteRule ^sitemap.xml$ index.php?method_call=showSitemap [L]
+	# Staging mode URLs:
+	RewriteRule ^staging.php$ zenario/staging.php [L,QSA]
 	
 	# A friendly URL for the robots.txt file:
 	RewriteRule ^robots.txt$ index.php?method_call=robots [L]
 	
+	# A friendly URL for the XML sitemap:
+	RewriteRule ^sitemap.xml$ index.php?method_call=showSitemap [L]
+	
+	# RSS feeds:
+	RewriteRule ^([\/,A-Za-z0-9~_-]+)\.rss$ index.php?cID=$1&method_call=showRSS [L]
 	
 	# Remove cached pages and stats from public view:
 	RewriteRule ^cache/.*$ - [F,NC]

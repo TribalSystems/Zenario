@@ -38,7 +38,7 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		if ($documentId = $box['key']['id']) {
 			$documentTagsString = '';
 
-			$documentDetails = ze\row::get('documents', ['file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title', 'filename', 'folder_name', 'privacy'],  $documentId);
+			$documentDetails = ze\row::get('documents', ['chain_id', 'file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title', 'filename', 'folder_name', 'privacy'],  $documentId);
 			$documentName = $documentDetails['filename'];
 			$box['title'] = ze\admin::phrase('Editing metadata for document "[[filename]]"', ["filename" => $documentName]);
 			
@@ -117,6 +117,32 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 			}
 
 			$fields['details/document_name']['note_below'] = ze\admin::phrase($storageString, ['storage_location' => $fileInfo['location'], 'folder_name' => $fileInfo['path']]);
+			
+			
+			//If this document is in a chain, show all of the chained documents
+			if ($chainId = $documentDetails['chain_id']) {
+				
+				$sql = "
+					SELECT id
+					FROM ". DB_PREFIX. "documents
+					WHERE chain_id = ". (int) $chainId. "
+					  AND id != ". (int) $documentId. "
+					ORDER BY id";
+				
+				$chainedIds = ze\sql::fetchValues($sql);
+				$values['details/chain_ids'] = implode(',', $chainedIds);
+				$values['details/in_chain'] = 1;
+				$fields['details/in_chain']['label'] = ze\admin::nphrase('This document is linked to another document', 'This document is linked to [[count]] other documents', count($chainedIds));
+			
+			//Otherwise we'll need to show a picker to select a document to link to
+			} else {
+				//Don't let the UI allow the admin to select the current document to link to
+				$fields['details/chain_id']['pick_items']['disabled_if_for_all_selected_items'] .= ' || item.id == '. (int) $documentId;
+				
+				$fields['details/chain_id']['tooltip'] =
+					ze\admin::phrase('Select a document here to link "[[filename]]" to the selected document. To link multiple documents together in the same chain, select a document that\'s already linked.',
+						$documentDetails);
+			}
 		}
 	}
 	
@@ -265,6 +291,13 @@ class zenario_common_features__admin_boxes__document_properties extends ze\modul
 		//... or delete public link if the document is private or offline.
 		} else {
 			ze\document::deletePublicLink($documentId, $documentDeleted = false, $documentPrivacy);
+		}
+		
+		if ($values['details/add_to_chain'] && ($chainId = $values['details/chain_id'])) {
+			ze\document::updateChain([$documentId, $chainId], true);
+		
+		} elseif (!$values['details/in_chain']) {
+			ze\document::removeFromChain($documentId);
 		}
 	}
 	

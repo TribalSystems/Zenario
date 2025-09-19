@@ -6,7 +6,6 @@ zenario_publish:
         id: ""
         cID: ""
         cType: ""
-    max_height: 450
     hide_tab_bar: true
     save_button_message: Publish
     cancel_button_message: Cancel
@@ -202,12 +201,62 @@ zenario_publish:
                         
                     value: 00
                     same_row: true
-                publishing_before_release_date_warning:
+                
+                featured_image_grouping:
+                    type: grouping
+                    grouping_css_class: content_item_feature_image
+                    pre_grouping_html: '<div class="testing_grouping">'
+                featured_image:
+                    grouping: featured_image_grouping
+                    snippet:
+                        html: ''
+                content_item_details:
+                    type: grouping
+                    grouping_css_class: content_item_details_inner
+                    post_grouping_html: '</div>'
+                full_site_url:
+                    grouping: content_item_details
+                    label: 'Full site URL:'
                     snippet:
                         html: |
-                            <div class="zenario_fbWarning">
-                                [[publishing_before_release_date_warning_note]]
-                            </div>
+                            <a href="[[full_site_url]]" target="_blank">[[full_site_url]]</a>
+                title:
+                    grouping: content_item_details
+                    type: text
+                    label: 'Title:'
+                    show_as_a_span: true
+                menu_node_path:
+                    grouping: content_item_details
+                    type: text
+                    label: 'Menu node path:'
+                    show_as_a_span: true
+                categories:
+                    grouping: content_item_details
+                    type: text
+                    label: 'Categories:'
+                    show_as_a_span: true
+                permissions:
+                    hidden: true
+                    grouping: content_item_details
+                    type: text
+                    label: 'Permissions:'
+                    show_as_a_span: true
+                language:
+                    hidden: true
+                    grouping: content_item_details
+                    type: text
+                    label: 'Language:'
+                    show_as_a_span: true
+                
+                
+                publishing_before_release_date_warning:
+                    notices_above:
+                        notice:
+                            type: warning
+                            message: "[[publishing_before_release_date_warning_note]]"
+                            html: true
+                            hidden: true
+
 #                 notify_indexnow:
 #                     type: checkbox
 #                     label: 'Notify IndexNow of new or updated content'

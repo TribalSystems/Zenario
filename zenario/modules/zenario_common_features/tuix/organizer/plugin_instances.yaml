@@ -141,6 +141,8 @@ zenario__modules:
                     format: id
                     db_column: pi.id
                     searchable: true
+                    #Please note: the chop_prefix_from_search property will change
+                    #to "N" when viewing nests, or to "S" when viewing slideshows.
                     chop_prefix_from_search: P
                 code:
                     title: ID
@@ -182,37 +184,6 @@ zenario__modules:
                     width: xlarge
                     html: true
                     css_class: 'organizer_cell_line otherline no_italics'
-                filename:
-                    db_column: img_f.filename
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
-                           ON img_ps.instance_id = pi.id
-                          AND img_ps.foreign_key_to = 'file'
-                        LEFT JOIN [[DB_PREFIX]]files AS img_f
-                           ON img_f.id = img_ps.foreign_key_id
-                          AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
-                checksum:
-                    db_column: img_f.checksum
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
-                           ON img_ps.instance_id = pi.id
-                          AND img_ps.foreign_key_to = 'file'
-                        LEFT JOIN [[DB_PREFIX]]files AS img_f
-                           ON img_f.id = img_ps.foreign_key_id
-                          AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
-                mime_type:
-                    server_side_only: true
-                    db_column: img_f.mime_type
-                    table_join: |
-                        LEFT JOIN [[DB_PREFIX]]plugin_settings AS img_ps
-                           ON img_ps.instance_id = pi.id
-                          AND img_ps.foreign_key_to = 'file'
-                        LEFT JOIN [[DB_PREFIX]]files AS img_f
-                           ON img_f.id = img_ps.foreign_key_id
-                          AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
                 plugin_email_address:
                     title: Email
                     db_column: |

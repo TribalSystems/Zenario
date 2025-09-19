@@ -77,6 +77,9 @@ class zenario_abstract_nest__admin_boxes__plugin_settings extends ze\moduleBaseC
 			if ($animationLibControlsAreVisible && $values['first_tab/animation_library'] == 'accordion') {
 				$showImageSelector = true;
 			
+			} elseif ($animationLibControlsAreVisible && $values['first_tab/animation_library'] == 'one_slide') {
+				$showImageSelector = false;
+			
 			} else {
 				switch ($values['first_tab/nest_type']) {
 					case 'tabs':

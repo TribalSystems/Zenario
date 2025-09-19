@@ -61,7 +61,7 @@ $columns = false;
 $justHadAnEmptyLine = true;
 
 //Keep some results on what happens
-$numberOf = ['upload_error' => false, 'wrong_language' => false, 'added' => 0, 'updated' => 0, 'protected' => 0];
+$numberOf = ['upload_error' => false, 'wrong_language' => false, 'language_not_enabled' => false, 'added' => 0, 'updated' => 0, 'protected' => 0, 'skipped' => 0, 'restored_from_archive' => 0];
 
 //Work out whether this is a spreadsheet or a CSV file and load the file appropriately
 $mimeType = ze\file::mimeType(str_replace('.php', '', ($realFilename ?: $file)));
@@ -100,9 +100,13 @@ if (\ze::in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 	$maxI = $sheet->getHighestRow();
 }
 
+$enabledLanguages = \ze\lang::getLanguages();
+
 //Loop through each row
 for ($i = 1; true; ++$i) {
-	//Work out whether this is a spreadsheet or a CSV file and load the next row appropriately
+	
+	//Work out whether this is a spreadsheet or a CSV file and load the next row appropriately.
+	//We're using the parseCSV library for CSV files, and the PhpOffice library for Excel spreadsheets.
 	if ($csv) {
 		if (!$row = fgets($f)) {
 			break;
@@ -143,21 +147,30 @@ for ($i = 1; true; ++$i) {
 	}
 	
 	
-	//Look out for column headers if we've not had them already,
-	//or if we've just had an empty line and we see what looks like a column header
+	
+	//Look out for column headers.
+	//We look for column headers as columns could be optional, or transposed, so we need to record
+	//where they actually are to be able to read a spreadsheet.
+	//If this is the first row, or the row above was blank, we're likely about to get a fresh
+	//set of column headers.
+	//We'll try look through this row to see if we can find any titles that are in our list of
+	//known titles to look for. If we find some, assume these were column headers.
 	if (!$columns || $justHadAnEmptyLine) {
 		$lookForColumnHeaders = [];
 		$headersFound = 0;
 		
 		for ($j = 0; $j < 5; ++$j) {
 			if (!empty($row[$j])) {
-				$header = strtolower($row[$j]);
-			
+				$header = strtolower(ze\escape::ascii($row[$j]));
+				
+				//Special case for the "translation" column.
+				//Allow people to be helpful and write titles such as "French translation", yet still
+				//have this script pick up the column.
 				if (substr($header, -12) == ' translation') {
 					$lookForColumnHeaders['translation'] = $j;
 					++$headersFound;
 			
-				} elseif (!empty($row[$j]) && !empty($knownColumnHeaders[$header])) {
+				} elseif (isset($knownColumnHeaders[$header])) {
 					$lookForColumnHeaders[$knownColumnHeaders[$header]] = $j;
 					++$headersFound;
 				}
@@ -165,8 +178,8 @@ for ($i = 1; true; ++$i) {
 		}
 		
 		//If these look like column headers, note down what they were and then move to the next line
-		if ($headersFound >= 4
-		 || ($headersFound >= 1 && (!$columns || $headersFound == count($row)))) {
+		if ($headersFound >= 2
+		 || ($headersFound >= 1 && !$columns)) {
 		
 			$columns = $lookForColumnHeaders;
 			$justHadAnEmptyLine = false;
@@ -179,13 +192,18 @@ for ($i = 1; true; ++$i) {
 		continue;
 	}
 	
-	//Look for changes to the subheadings (e.g. if the language id or module change)
+	//To avoid lots of repeated values in the spreadsheet, we allow some of the variables
+	//(such as language ID and module class name) to only be declared once in a block of metadata
+	//at the top of the spreadsheet. This should have one row of column headers, one row of data
+	//to define the values, then a blank row to signal the end of the block and to expect
+	//more column headers ntext.
 	foreach ($subheadings as $col => &$value) {
 		if (isset($columns[$col]) && !empty($row[$columns[$col]])) {
 			$value = $row[$columns[$col]];
 		}
 	}
 	
+	//Note: This parameter is currently unused.
 	if ($forceLanguageIdOverride !== false) {
 		$subheadings['language_id'] = $forceLanguageIdOverride;
 	}
@@ -236,7 +254,8 @@ for ($i = 1; true; ++$i) {
 	
 	//Otherwise try to import this phrase
 	} else {
-		\ze\phraseAdm::importVisitorPhrase($subheadings['language_id'], $subheadings['module_class_name'], $code, $thisRow['translation'], $adding, $numberOf);
+		$languageIsEnabled = is_array($subheadings) && !empty($subheadings) && !empty($subheadings['language_id']) && !empty($enabledLanguages[$subheadings['language_id']]);
+		\ze\phraseAdm::importVisitorPhrase($subheadings['language_id'], $subheadings['module_class_name'], $code, $thisRow['translation'], $keepExistingTranslations, $languageIsEnabled, $addPhrasesThatDontExist, $numberOf);
 	}
 }
 

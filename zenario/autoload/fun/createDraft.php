@@ -162,6 +162,7 @@ unset($version['published_datetime']);
 unset($version['concealer_id']);
 unset($version['concealed_datetime']);
 unset($version['admin_notes']);
+unset($version['scheduled_publish_datetime']);
 
 if ($newDraftCreated) {
 	$version['created_datetime'] = \ze\date::now(true);
@@ -186,7 +187,7 @@ if ($newDraftCreated) {
 	//Copy everything from the Source Content Item, if one was set
 	if ($cIDFrom) {
 		//Copy the record of which inline files are used here
-		//Note that while the "in_use" column is set here, it will be recalculated by the \ze\contentAdm::syncInlineFileContentLink() function below
+		//Note that while the "in_use" column is set here, it will be recalculated by the \ze\contentAdm::updateContentItemCache() function below
 		$sql = "
 			REPLACE INTO ". DB_PREFIX. "inline_images (
 				image_id,
@@ -239,34 +240,10 @@ if ($newDraftCreated) {
 		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
 		
 		
-		$sql = "
-			REPLACE INTO ". DB_PREFIX. "content_cache (
-				content_id,
-				`content_type`,
-				content_version,
-				text,
-				extract,
-				extract_wordcount,
-				extract_pagecount
-			) SELECT
-				". (int) $cIDTo. ",
-				'". \ze\escape::sql($cTypeTo). "',
-				". (int) $cVersionTo. ",
-				text,
-				extract,
-				extract_wordcount,
-				extract_pagecount
-			FROM ". DB_PREFIX. "content_cache
-			WHERE content_id = ". (int) $cIDFrom. "
-			  AND `content_type` = '". \ze\escape::asciiInSQL($cTypeFrom). "'
-			  AND content_version = ". (int) $cVersionFrom;
-		\ze\sql::cacheFriendlyUpdate($sql);  //No need to check the cache as the other statements should clear it correctly
-		
-		
 		\ze\pluginAdm::duplicateVC($cIDFrom, $cTypeFrom, $cVersionFrom, $cIDTo, $cTypeTo, $cVersionTo);
 		\ze\pluginAdm::removeUnusedVCs($cIDTo, $cTypeTo, $cVersionTo);
 		\ze\contentAdm::flagImagesInArchivedVersions($cIDTo, $cTypeTo);
-		\ze\contentAdm::syncInlineFileContentLink($cIDTo, $cTypeTo, $cVersionTo);
+		\ze\contentAdm::updateContentItemCache($cIDTo, $cTypeTo, $cVersionTo);
 	}
 
 	\ze\module::sendSignal("eventDraftCreated", ["cIDTo" => $cIDTo, "cIDFrom" => $cIDFrom, "cTypeTo" => $cTypeTo, "cVersionTo" => $cVersionTo, "cVersionFrom" => $cVersionFrom, "cTypeFrom" => $cTypeFrom]);

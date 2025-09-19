@@ -954,6 +954,14 @@ additionalProperties:
                                         
                                         This works from version 9.4 onwards.
                                 
+                                pre_button_text:
+                                    type: string
+                                    description: >
+                                        If you have a button/submit button/toggle button/remove button, this property lets you attach some text to it.
+                                        The text will be styled as if it's attached to the button, but the button won't be pressed if the user tries to click the text.
+                                        
+                                        This works from version 10.2 onwards.
+                                
                                 side_note:
                                     type: string
                                     description: >
@@ -1060,6 +1068,7 @@ additionalProperties:
                                         - radio
                                         - radios
                                         - select
+                                        - remove
                                         - submit
                                         - text
                                         - textarea
@@ -1452,17 +1461,17 @@ additionalProperties:
                                 captcha:
                                     type: object
                                     description: >
-                                        Set this property to add a Google ReCAPTURE to a TUIX form.
+                                        Set this property to add a Google ReCAPTCHA to a TUIX form.
                                         
-                                        This will only work properly if the ReCAPTURE library is already included on the
+                                        This will only work properly if the ReCAPTCHA library is already included on the
                                         page, and the sitekey and secret key are set correctly in the site settings.
                                         
-                                        When the user correctly completes the CAPTURE, their successful responce will be stored
+                                        When the user correctly completes the CAPTCHA, their successful response will be stored
                                         in this field's value.
                                         
-                                        Any unsuccessful responces, or responces that are not verified, will be stripped out.
+                                        Any unsuccessful responses, or responses that are not verified, will be stripped out.
                                         So if you see a value in this field in your PHP code, then you can be sure that the
-                                        CAPTURE was successfully completed.
+                                        CAPTCHA was successfully completed.
                                     properties:
                                         theme:
                                             enum:
@@ -1780,16 +1789,25 @@ additionalProperties:
                                         This works from version 7.5 onwards.
                                 
                                 redraw_microtemplates_onkeyup:
-                                    type: boolean
+                                    type: object
                                     description: >
                                         You can set this property on text or textarea fields.
                                         If set, any time the user types in the field, any snippets that use the microtemplate property will have their
                                         snippets redrawn.
                                         
-                                        You should use this if the text you enter is used sopmewhere in an example, and you want it to live update
+                                        You should use this if the text you enter is used somewhere in an example, and you want it to live update
                                         as the text is changed.
                                         
                                         This works from version 10.0 onwards.
+                                    properties:
+                                        delay:
+                                            type: number
+                                            description: >
+                                                Use this to set a delay before the redraw is triggered, just in case the user is still typing.
+                                                
+                                                (The default value if you don't set one is 125ms.)
+                                                
+                                                This works from version 10.1 onwards.
                                 
                                 redraw_onchange:
                                     type: boolean
@@ -1825,6 +1843,16 @@ additionalProperties:
                                     description: >
                                         If set, the contents of the Admin Box will be sent to the server to your
                                         <code>formatAdminBox()</code> method whenever an Admin changes this field.
+                                
+                                submit_onchange:
+                                    type: boolean
+                                    description: >
+                                        If you're writing a FEA form, you can add this property to a field to trigger
+                                        a submit after the user changes a field.
+                                        
+                                        Note: This only works for FEA forms, and not FABs.
+                                        
+                                        This works from version 10.1 onwards.
                                 
                                 format_on_toggle_on:
                                     type: boolean
@@ -2549,6 +2577,20 @@ additionalProperties:
                                                 We have the option to have the values on the search form be encoded if needed.
                                                 If you're going to do that and want a field to be searchable, you need to set this to true
                                                 so the documents search plugin knows to decode any values it receives.
+                                        
+                                        order_linked_documents_by_this_field:
+                                            type: boolean
+                                            description: >
+                                                When showing documents in a chain, by default they're shown in ID order.
+                                                
+                                                In some situations it might be more logical to show then ordered by a specific
+                                                field, e.g. if you have a date field. You can set this property
+                                                on field to flag that you want the chain sorted by that field.
+                                        order_linked_documents_by_this_field_desc:
+                                            type: boolean
+                                            description: >
+                                                Set this property if you're using the order_linked_documents_by_this_field
+                                                property and want to sort in a descending order.
                                 
                                 values:
                                     type:
@@ -2915,7 +2957,7 @@ additionalProperties:
                                     type: boolean
                                     modified_by_cms: true
                                     html_description: |
-                                        <p>There are two types of button field available in the Admin Box toolkit (submit buttons and toggle buttons), which can be pressed by an Administrator. If an&nbsp;Administrator presses a button then the <code>pressed</code> boolean property will be set to true.</p>
+                                        <p>There are three types of button field available in the Admin Box toolkit (submit, toggle and remove), which can be pressed by an Administrator. If an&nbsp;Administrator presses a button then the <code>pressed</code> boolean property will be set to true.</p>
                                         <h2>Submit Buttons</h2>
                                         <p>The 'submit' type buttons act as if they always have the <code>validate_onchange</code> property set; when they are pressed&nbsp;the client will change the value of the <code>pressed</code> property to true, then call the validation function.</p>
                                         <p>When the field is next redrawn after the validation, the client then automatically unsets the <code>pressed</code> property.</p>
@@ -2924,12 +2966,14 @@ additionalProperties:
                                         <p>For 'toggle' type buttons, the client will toggle the value of <code>pressed</code> between false and true each time the Admin presses this button.</p>
                                         <p>Before Zenario&nbsp;version 6.0.4,&nbsp;'toggle' type buttons acted as if they always had the&nbsp;<code>format_onchange</code> property set; when they were pressed the client changed the value of the <code>pressed</code> property, then called the format function.</p>
                                         <p>From version 6.0.4 and onwards, you must add either the&nbsp;<code>redraw_onchange</code>,&nbsp;<code>format_onchange</code>,&nbsp;<code>validate_onchange</code> or <code>quick_validate_onchange</code> properties to make a&nbsp;<code>span</code>'toggle' type button to do something when the Admin presses it.</span></p>
+                                        <h2>Remove Buttons</h2>
+                                        <p>Remove buttons work in a similar way to toggle buttons, however they have a specifc design and are automatically hidden when pressed.</p>
                                         <h2>PHP Good Practice</h2>
                                         <p>As the value of the <code>pressed</code> may not be set in PHP, you should check it using <code>!empty()</code>, <code>isset()</code>, <code>arrayKey()</code>, <code>issetArrayKey()</code> or a similar function to avoid a PHP warning.</p>
                                 can_be_pressed_in_view_mode:
                                     type: boolean
                                     description: >
-                                        Setting this property allows a submit or toggle button to be pressed in view
+                                        Setting this property allows a submit/toggle/remove button to be pressed in view
                                         mode.
                                 
                                 language:
@@ -2990,7 +3034,7 @@ additionalProperties:
                                          is set to "currency".)
                                 
                                 decimal_places:
-                                    type: boolean
+                                    type: number
                                     description: >
                                         Set this to limit the number of decimal places in a numeric field.
                                         (Fields count as "numeric" if you set the "numeric" validation option, or the field type
@@ -3091,6 +3135,15 @@ additionalProperties:
                                     description: >
                                         Do not show a field in the dataset editor.
                                 
+                                dataset_label:
+                                    type: string
+                                    description: >
+                                        If set, this label will appear in the dataset editor for the selected field.
+                                        
+                                        Setting this is recommended if a field is supposed to appear in the dataset editor, but doesn't have a label.
+                                        
+                                        If a field already has a label, and this property is set too, then it will take precedence over the regular label.
+                                
                                 allow_admin_to_change_visibility:
                                     type: boolean
                                     description: >
@@ -3186,6 +3239,15 @@ additionalProperties:
                                         set this to add a record count inside it.
                                     
                                         This works from version 9.4 onwards.
+                                grouping_wrapper_is_main_scroll:
+                                    type: boolean
+                                    description: >
+                                        Normally the scroll logic in FABs works off of a specific <div>.
+                                        If you've used CSS to disable the scroll and put it on a grouping wrapper instead,
+                                        you should set this TUIX property to flag that you've done this otherwise all of the
+                                        scrolling logic in the JS will break.
+                                    
+                                        This works from version 10.1 onwards.
                                 pre_grouping_html:
                                     type: string
                                     description: >

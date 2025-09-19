@@ -9,7 +9,7 @@ sections:
                 visible_if: '!zenarioA.showEmptySlotsOn'
                 onclick: |
                     zenarioA.toggleShowEmptySlots(true);
-                    zenarioA.notification(zenarioA.phrase.showingEmptySlots);
+                    zenarioT.notification(zenarioA.phrase.showingEmptySlots);
             show_empty_slots_on:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
                 tooltip: Hide mobile & empty slots
@@ -22,7 +22,7 @@ sections:
                 visible_if: '!zenarioA.showGridOn'
                 onclick: |
                     zenarioA.toggleShowGrid();
-                    zenarioA.notification(zenarioA.phrase.showingGridlines);
+                    zenarioT.notification(zenarioA.phrase.showingGridlines);
             show_grid_on:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
                 tooltip: Hide gridlines

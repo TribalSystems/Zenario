@@ -86,7 +86,7 @@ empty_sitewide_slot:
                 layout: true
             visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'layout');
             onclick: return zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'layout');
-            label: Insert a plugin/nest/slideshow into the site-wide ~header~...
+            label: Insert into site-wide ~header~...
     
     
     overridden_info:

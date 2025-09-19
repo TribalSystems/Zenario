@@ -185,6 +185,11 @@ styles_fab_white: &styles_fab
                     type: toggle
                     label: Toggle button
                     value: Press me
+                remove:
+                    type: remove
+                    pre_button_text: Click on this button to get rid of it
+                    value: ×
+                    redraw_onchange: true
         
         tab_with_notices:
             label: Notices

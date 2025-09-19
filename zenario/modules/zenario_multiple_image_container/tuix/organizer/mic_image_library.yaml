@@ -305,33 +305,15 @@ zenario__library:
                     label: Delete
                     multiple_select: true
                     hide_in_select_mode: true
-                    visible_if_for_all_selected_items: >
-                        !item.in_use_anywhere
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
-                            multiple_select_message: Are you sure you wish to delete these unused images?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: 1
-                    
-                delete_in_use:
-                    priv: _PRIV_MANAGE_MEDIA
-                    label: Delete
-                    multiple_select: true
-                    hide_in_select_mode: true
-                    visible_if_for_any_selected_items: >
-                        item.in_use_anywhere
-                    ajax:
-                        confirm:
+                            #The confirmation message is created in the PHP class.
                             html: true
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            delete_in_use: 1
+                            delete: 1
             
             hidden_nav:
                 plugins_using_image:

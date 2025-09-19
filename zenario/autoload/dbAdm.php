@@ -122,12 +122,18 @@ class dbAdm {
 	}
 
 
+	public static function majorMinorInteger() {
+		return (int) (ZENARIO_MAJOR_VERSION. str_pad(ZENARIO_MINOR_VERSION, 3, '0', STR_PAD_LEFT));
+	}
+
+
 	//Check the current revisions as recorded in the revision_numbers tables
 	//to see if database updates are needed from the updates directory
 	public static function checkIfUpdatesAreNeeded(&$moduleErrors, $andDoUpdates = false, $uninstallPluginOnFail = false, $quickCheckForUpdates = true) {
 		
 		if ($andDoUpdates) {
 			\ze\dbAdm::getTableEngine();
+			$majorMinorInteger = \ze\dbAdm::majorMinorInteger();
 		}
 		
 		
@@ -165,6 +171,14 @@ class dbAdm {
 				//Major updates may need table data converted to the correct format
 				'zenario/admin/db_updates/step_4_migrate_the_data'	=> LATEST_REVISION_NO
 			];
+			
+			//Step 5 is a special case that runs every new version of Zenario.
+			//It has it's own special numbering system that is formed from the major and minor version number.
+			//Don't include it in the logic when seeing if there are any database updates that need running,
+			//but do include it when we are actually applying updates.
+			if ($andDoUpdates) {
+				$directoriesAndTheirRevisionNumbers['zenario/admin/db_updates/step_5_run_every_new_zenario_version'] = $majorMinorInteger;
+			}
 	
 			$desc = false;
 			$unorderedModules = \ze\module::modules($onlyGetRunningPlugins = false, $ignoreUninstalledPlugins = true, $dbUpdateSafemode = true);

@@ -178,6 +178,7 @@ div.zenario_cookie_consent.cookies_explicit,
 	right:0;
     background-color: rgba(0,0,0,0.5);
     font-size:13px;
+    line-height:1.5;
 }
 
 div.zenario_cookie_consent.cookies_explicit .zenario_cookie_consent_wrap,
@@ -279,13 +280,9 @@ body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage
 	width:52%;
 }
 
-.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text p {
-	padding-top:1em;
-}
-
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie {
 	overflow:hidden;
-	padding-bottom:25px;
+	padding-bottom:15px;
 }
 
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > label {
@@ -298,9 +295,23 @@ body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage
 	padding-left:20px;
 }
 
-.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info h5 {
-	font-size:15px;
-	padding-bottom:4px;
+body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info h5 {
+	font-size: 15px;
+  	padding-bottom: 4px;
+}
+
+body.mobile .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookie > .cookie_info h5 {
+	font-size:13px;
+	font-weight:600;
+	padding-bottom:0;
+}
+
+.zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text p {
+	padding-top:5px;
+}
+
+body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap .cookie_title_text p {
+	padding-top:1em;
 }
 
 .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap form .cookies_buttons {
@@ -400,7 +411,7 @@ body.desktop .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage
 	
 .touchscreen .zenario_cookie_consent_manage_popup .zenario_cookie_consent_manage_popup_wrap {
 	width:90%;
-	height: 85vh;
+	max-height: 85vh;
 	overflow-y: auto;
 }
 	
@@ -768,6 +779,22 @@ input[type="password"].border_green {
 	}
 
 /*
+	Built in support for toggling elements
+*/
+
+.z_toggle_open .z_toggle_closed_indicator {
+	display: none;
+}
+
+.z_toggle_closed .z_toggle_open_indicator {
+	display: none;
+}
+
+.lang_flag.lang_disabled {
+	opacity: 0.3;
+}
+
+/*
 	Disabled flags on the language picker
 */
 
@@ -783,6 +810,23 @@ input[type="password"].border_green {
 #toast-container > .toast {
 	font-family:Arial,Helvetica,Sans-Serif;
 	font-size:13px;
+}
+
+#toast-container.toast-top-right>div {
+	width: 365px;
+	font-family: verdana, arial, helvetica;
+    font-size: 13px;
+    opacity: 0.95;
+    background-position: 15px 12px;
+}
+
+#toast-container .toast-message a {
+	transition:color 200ms ease-in-out;
+}
+
+#toast-container .toast-message a:hover {
+	color:#FFE61A;
+	text-decoration:underline;
 }
 
 /*

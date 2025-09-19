@@ -31,7 +31,6 @@ switch($path) {
 	case 'zenario_country_manager__country':
 		if (!($values['details/code'] ?? false)) {
 			$fields['details/code']['error'] = ze\admin::phrase("Please enter a code.");
-			break;
 		} else {
 			if (preg_match('/[^A-Z]/', $values['details/code'])) {
 				$fields['details/code']['error'] = ze\admin::phrase("Code may only contain capital letters A-Z.");
@@ -42,13 +41,16 @@ switch($path) {
 			$fields['details/name']['error'] = ze\admin::phrase("Please enter a name.");
 			break;
 		}
+		
 		if (!($box['key']['id'] ?? false) && ze\row::exists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', ['id' => ($values['details/code'] ?? false)])) {
 			$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Country code must be unique.");
 			break;
 		}
-		$countries = ze\row::query(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
-								['id','english_name'], 
-									['english_name' => ($values['details/name'] ?? false)]);
+		$countries = ze\row::query(
+			ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
+			['id','english_name'], 
+			['english_name' => ($values['details/name'] ?? false)]
+		);
 		while($country = ze\sql::fetchAssoc($countries)) {
 			if (($box['key']['id'] ?? false) != $country['id'] ?? false)  {
 				$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Country name must be unique.");
@@ -58,11 +60,11 @@ switch($path) {
 		break;
 	case 'zenario_country_manager__region':
 		if (!($values['details/name'] ?? false)) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Please enter a Name");
+			$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Please enter a name.");
 			break;
 		}
 		if (!($values['details/region_type'] ?? false) && ze::setting('zenario_country_manager__region_type_management')) {
-			$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Please select region type");
+			$box['tabs']['details']['errors'][] = ze\admin::phrase("Error. Please select the region type.");
 			break;
 		}
 		$parentRegionId = $box['key']['parent_id'] ?? false;
@@ -88,7 +90,5 @@ switch($path) {
 			return 'Error. No parent country or region was set.';
 		}
 
-		
 		break;
-
 }

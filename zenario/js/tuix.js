@@ -381,9 +381,14 @@ zenarioT.uploadProgress = function(e) {
 
 zenarioT.uploadDone = function(e) {
 	
-	if (zenarioT.uploader.responseText && zenarioT.uploader.responseText != 1) {
+	var resp = zenario.splitFlagsFromMessage(zenarioT.uploader.responseText),
+		responseText = resp.responseText;
+	
+	zenario.showDumpsFromFlags(resp.flags);
+	
+	if (responseText && responseText != 1) {
 		try {
-			data = JSON.parse(zenarioT.uploader.responseText);
+			data = JSON.parse(responseText);
 		
 			if (typeof data != 'object') {
 				throw 0;
@@ -393,9 +398,9 @@ zenarioT.uploadDone = function(e) {
 		
 		} catch (e) {
 			if (zenarioA.showMessage) {
-				zenarioA.showMessage(zenarioT.uploader.responseText, true, 'error', false, true);
+				zenarioA.showMessage(resp, true, 'error', false, true);
 			} else {
-				alert(zenarioT.uploader.responseText);
+				alert(responseText);
 			}
 		}
 	}
@@ -1158,6 +1163,82 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 };
 
 
+
+//A shortcut to the toastr library
+zenarioT.currentToast = false;
+zenarioT.toast = function(object) {
+	if (defined(object)
+	 && _.isObject(object)) {
+		
+		//Remember this toast that we had for the next 60 seconds,
+		//or until another toast comes in
+		zenarioT.clearToast();
+		zenarioT.currentToast = object;
+		setTimeout(function () {
+			zenarioT.currentToast = false;
+		}, 60000);
+		
+		//Work out what type of toast this is
+		var mt = object.message_type,
+			toast = toastr.info,
+			options = object.options || {},
+			title;
+		
+		if (defined(object.title)) {
+			title = object.title;
+		
+		} else if (defined(options.title)) {
+			title = options.title;
+		}
+		
+		switch (object.message_type) {
+			case 'error':
+			case 'warning':
+			case 'success':
+				toast = toastr[mt];
+		}
+		
+		if (!defined(options.closeButton)) {
+			options.closeButton = true;
+		}
+		
+		if (!defined(options.hideDuration)) {
+			options.hideDuration = 200;
+		}
+		
+		//display the toast
+		return toast(object.message, title, options);
+		
+		//Reminder to self: the toast function returns a $jQuery element with the toaster,
+		//just in case we ever wanted to do something like add a click event...
+	}
+};
+
+zenarioT.notification = function(message, type, options) {
+	
+	return zenarioT.toast({
+		message: message,
+		message_type: type || 'success',
+		options: options
+	});
+};
+
+zenarioT.longToast = function(msg, type, options) {
+	
+	options = options || {};
+	options.timeOut =
+	options.extendedTimeOut = 15000;
+	
+	zenarioT.notification(msg, type, options);
+};
+
+zenarioT.clearToast = function() {
+	zenario.sSetItem(true, 'current_toast', '');
+};
+
+
+
+
 zenarioT.generateGlobalName = function() {
 	var i, globalName;
 	for (i = 1; window[globalName = 'zenarioLib' + i]; ++i) {};
@@ -1499,39 +1580,6 @@ zenarioT.tuixToArray = function(tuix) {
 	}
 	
 	return vals;
-};
-
-
-//A version of hypEscape()/unpackAndMerge() that looks nicer in URLs
-//Possible post-branch change for 10.2:
-	//Replace hypEscape() and unpackAndMerge() with this series of functions as this format also works in URLs
-zenarioT.swigEscape = function(string) {
-	return ('' + string).replace(/\~/g, "~s").replace(/\-/g, "~h");
-};
-
-zenarioT.swigDescape = function(string) {
-	return string.replace(/\~h/g, "-").replace(/\~s/g, "~");
-};
-
-zenarioT.flatten = function(json) {
-	var output = [], k, v;
-	foreach (json as k => v) {
-		output.push(zenarioT.swigEscape(k) + '-' + zenarioT.swigEscape(v));
-	}
-	return output.join('-');
-};
-
-zenarioT.inflate = function(string) {
-	var output = {},
-		i,
-		a = string.split('-'),
-		m = a.length - 1;
-	
-	for (i = 0; i < m; i += 2) {
-		output[zenarioT.swigDescape(a[i])] = zenarioT.swigDescape(a[i+1]);
-	}
-	
-	return output;
 };
 
 

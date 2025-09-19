@@ -206,7 +206,7 @@ class pageCache {
 					case 'admin_setting_defaults':
 					
 					//Tables for other types of cache; again ignore these
-					case 'content_cache':
+					case 'content_items_searchable_cache':
 					case 'lock__clean_dirs':
 					case 'plugin_instance_store':
 					

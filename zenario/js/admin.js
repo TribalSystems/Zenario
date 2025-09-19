@@ -50,7 +50,6 @@ zenarioA.orgMinWidth = 550;
 
 zenarioA.tooltipLengthThresholds = {
 	adminBoxTitle: 120,
-	adminToolbarTitle: 60,
 	organizerBackButton: 70,
 	organizerPanelTitle: 100
 };
@@ -179,7 +178,7 @@ zenarioA.showMessage = function(resp, buttonsHTML, messageType, modal, htmlEscap
 	
 	//Show a toast
 	if (flags.TOAST_MESSAGE) {
-		zenarioA.toast({
+		zenarioT.toast({
 			message: flags.TOAST_MESSAGE,
 			message_type: flags.TOAST_TYPE,
 			title: flags.TOAST_TITLE
@@ -899,10 +898,11 @@ zenarioA.adminSlotWrapperClick = function(slotName, e, isEgg) {
 		return false;
 	}
 	
-	//Don't do anything in preview/create/menu modes
-	if (zenarioA.toolbar == 'preview'
-	 || zenarioA.toolbar == 'create'
-	 || zenarioA.toolbar.match(/^menu/)) {
+	var currentToolbar = zenarioA.toolbar,
+		toolbarTUIX = zenarioAT.tuix && zenarioAT.tuix.toolbars && zenarioAT.tuix.toolbars[currentToolbar] || {};
+	
+	//Don't do anything in preview/create/translate/menu modes
+	if (!toolbarTUIX.enable_slot_controls) {
 		return true;
 	}
 	
@@ -1089,7 +1089,7 @@ zenarioA.copyEmbedLink = function(link) {
 
 zenarioA.copy = function(text, confirmMessage) {
 	if (zenario.copy(text)) {
-		zenarioA.notification(confirmMessage || phrase.copied);
+		zenarioT.notification(confirmMessage || phrase.copied);
 	}
 };
 
@@ -3434,7 +3434,7 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 			buttonsHTML +=
 				_$input('type', 'button', 'class', 'zenario_gp_button', 'value', object.ajax.confirm.cancel_button_message);
 			
-			object.ajax.confirm.message = '<!--Button_HTML:' + zenario.hypEscape(buttonsHTML) + '-->' + confirmMessage;
+			object.ajax.confirm.message = '<!--Button_HTML:' + zenario.swig(buttonsHTML) + '-->' + confirmMessage;
 		
 		//Handle the case where we wouldn't normally show a warning before creating a draft,
 		//but there was still a confirm message to show
@@ -3531,14 +3531,7 @@ zenarioA.toggleAdminToolbar = function(hide) {
 
 zenarioA.reloadPage = function(sameVersion, linkViaAdminWelcomePage, task) {
 	
-	var requests,
-		conductorSlot = zenario_conductor.getSlot();
-	
-	if (conductorSlot && conductorSlot.exists) {
-		requests = zenario_conductor.request(conductorSlot, 'refresh');
-	} else {
-		requests = zenarioA.importantGetRequests;
-	}
+	var requests = zenario.currentRequests();
 	
 	if (sameVersion) {
 		requests = _.clone(requests);
@@ -3555,78 +3548,17 @@ zenarioA.reloadPage = function(sameVersion, linkViaAdminWelcomePage, task) {
 
 
 
-//A shortcut to the toastr library
-zenarioA.currentToast = false;
-zenarioA.toast = function(object) {
-	if (defined(object)
-	 && _.isObject(object)) {
-		
-		//Remember this toast that we had for the next 60 seconds,
-		//or until another toast comes in
-		zenarioA.clearToast();
-		zenarioA.currentToast = object;
-		setTimeout(function () {
-			zenarioA.currentToast = false;
-		}, 60000);
-		
-		//Work out what type of toast this is
-		var mt = object.message_type,
-			toast = toastr.info,
-			options = object.options || {},
-			title;
-		
-		if (defined(object.title)) {
-			title = object.title;
-		
-		} else if (defined(options.title)) {
-			title = options.title;
-		}
-		
-		switch (object.message_type) {
-			case 'error':
-			case 'warning':
-			case 'success':
-				toast = toastr[mt];
-		}
-		
-		if (!defined(options.closeButton)) {
-			options.closeButton = true;
-		}
-		
-		if (!defined(options.hideDuration)) {
-			options.hideDuration = 200;
-		}
-		
-		//display the toast
-		return toast(object.message, title, options);
-		
-		//Reminder to self: the toast function returns a $jQuery element with the toaster,
-		//just in case we ever wanted to do something like add a click event...
-	}
-};
-
-zenarioA.notification = function(message, type, options) {
-	
-	return zenarioA.toast({
-		message: message,
-		message_type: type || 'success',
-		options: options
-	});
-};
-
-
-
 zenarioA.manageToastOnReload = function(flags, isOrganizerReload) {
 	
 	var msg;
 	if (msg = flags.TOAST_NEXT_PAGELOAD) {
 		//Use this flag if you're reloading a page and want to display a toast message after the page had reloaded
-		zenarioA.showToastOnNextPageLoad(msg);
-		zenarioA.clearToast();
+		zenarioA.showToastOnNextPageLoad(msg, flags.TOAST_TYPE_NEXT_PAGELOAD);
+		zenarioT.clearToast();
 	
 	} else if (flags.CLEAR_TOAST) {
 		//Use this flag if you're reloading a page and want to clearly specify that you DON'T want a toast message after the page had reloaded
-		zenarioA.clearToast();
+		zenarioT.clearToast();
 	
 	} else if (isOrganizerReload) {
 		//By default, if the is page reloading, pages in the front-end don't keep any open toasts after the reload, but Organizer does keep its toasts open after the reload
@@ -3634,43 +3566,33 @@ zenarioA.manageToastOnReload = function(flags, isOrganizerReload) {
 	}
 };
 
-zenarioA.clearToast = function() {
-	zenario.sSetItem(true, 'current_toast', '');
-};
-
 zenarioA.rememberToast = function() {
 	//Check if we just displayed a toast. If so, remember it for next time.
-	if (zenarioA.currentToast) {
-		zenario.sSetItem(true, 'current_toast', zenarioA.currentToast, true);
+	if (zenarioT.currentToast) {
+		zenario.sSetItem(true, 'current_toast', zenarioT.currentToast, true);
 	}
 };
 
-zenarioA.longToast = function(msg, type, options) {
-	
-	options = options || {};
-	options.timeOut =
-	options.extendedTimeOut = 15000;
-	
-	zenarioA.notification(msg, type, options);
-};
-
 zenarioA.imagesWarning = function(title, msg) {
-	zenarioA.longToast(msg, 'warning', {title: title});
+	zenarioT.longToast(msg, 'warning', {title: title});
 };
 
-zenarioA.showToastOnNextPageLoad = function(msg) {
+zenarioA.showToastOnNextPageLoad = function(msg, type) {
 	zenario.sSetItem(true, 'toast_next_pageload', msg);
+	zenario.sSetItem(true, 'toast_type_next_pageload', type);
 };
 
 zenarioA.checkToastThisPageLoad = function() {
-	var msg = zenario.sGetItem(true, 'toast_next_pageload');
+	var msg = zenario.sGetItem(true, 'toast_next_pageload'),
+		type = zenario.sGetItem(true, 'toast_type_next_pageload') || undefined;
 	
 	if (msg) {
-		zenarioA.longToast(msg);
+		zenarioT.longToast(msg, type);
 		zenario.sSetItem(true, 'toast_next_pageload', '');
+		zenario.sSetItem(true, 'toast_type_next_pageload', '');
 	
 	} else if (msg = zenario.sGetItem(true, 'current_toast', true)) {
-		zenarioA.toast(msg);
+		zenarioT.toast(msg);
 		zenario.sSetItem(true, 'current_toast', '');
 	}
 };
@@ -3870,7 +3792,25 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
     zenario.ajax(ajaxURL, post, true, true).after(function(statuses) {
         for (i = 0; i < statuses.length; ++i) {
             for (j = 0; j < $links[i].length; ++j) {
-                zenarioA.addLinkStatus($links[i][j], statuses[i]);
+            	
+            	//Don't show a status triangle where the target page is this page
+            	if (
+            		$links[i][j][0].pathname != document.location.pathname
+            		|| (
+						(
+							$links[i][j][0].offsetParent
+							&& $links[i][j][0].offsetParent.classList
+							&& $links[i][j][0].offsetParent.classList.contains("zenario_menu_node")
+						)
+						|| (
+							$links[i][j][0].parentNode
+							&& $links[i][j][0].parentNode.classList
+							&& $links[i][j][0].parentNode.classList.contains("zenario_menu_node")
+						)
+            		)
+            	) {
+                	zenarioA.addLinkStatus($links[i][j], statuses[i]);
+                }
             }
         }
 		
@@ -3999,7 +3939,7 @@ zenarioA.init = function(
 			onPrimaryDomain = primaryDomainIsSet && primaryDomain == currentDomain;
 		
 		if (adminDomainIsSet && !onAdminDomain) {
-			zenarioA.toast({
+			zenarioT.toast({
 				message_type: 'error',
 				message: zenario.applyMergeFields(phrase.notOnAdminDomain, {admin_domain: adminDomain, current_domain: currentDomain}),
 				options: {
@@ -4011,7 +3951,7 @@ zenarioA.init = function(
 		}
 		
 		if (primaryDomainIsSet && !onAdminDomain && !onPrimaryDomain) {
-			zenarioA.toast({
+			zenarioT.toast({
 				message_type: 'error',
 				message: zenario.applyMergeFieldsIntoHTML(phrase.notOnPrimaryDomain, {
 					primary_domain: primaryDomain,
@@ -4052,7 +3992,7 @@ zenarioA.init = function(
 			
 			//Warn if there are no slots on the layout
 			if (!numSlots) {
-				zenarioA.toast({
+				zenarioT.toast({
 					message_type: 'error',
 					message: phrase.noSlots,
 					options: {
@@ -4069,7 +4009,7 @@ zenarioA.init = function(
 				//Save a reference to this toast in a variable, as we may need to close
 				//it programatically later.
 				missingSlotsToast =
-					zenarioA.toast({
+					zenarioT.toast({
 						message_type: 'warning',
 						message: zenario.applyMergeFields(phrase.missingSlots, {layout: zenarioA.layoutCodeName(zenarioL.layoutId)}),
 						options: {
@@ -4081,6 +4021,32 @@ zenarioA.init = function(
 			}
 		});
 	}
+	
+	//Set some default values for the jQuery datepickers.
+	//Some of these can also have been set in datepicker.phrases.js.php, but it's safe to set the same value twice.
+	var firstDayNumber = 1;
+	switch (siteSettings.first_day_of_the_week_for_calendars) {
+		case 'tuesday':
+			firstDayNumber = 2;
+			break;
+		case 'wednesday':
+			firstDayNumber = 3;
+			break;
+		case 'thursday':
+			firstDayNumber = 4;
+			break;
+		case 'friday':
+			firstDayNumber = 5;
+			break;
+		case 'saturday':
+			firstDayNumber = 6;
+			break;
+		case 'sunday':
+			firstDayNumber = 0;
+			break;
+	}
+	
+	$.datepicker.setDefaults({firstDay: firstDayNumber});
 	
 	zenarioA.checkToastThisPageLoad();
 };

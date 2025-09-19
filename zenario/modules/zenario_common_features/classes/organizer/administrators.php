@@ -109,7 +109,11 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 				);
 			}
 			
-			$item['last_login'] = ze\admin::formatDateTime($item['last_login'], 'vis_date_format_med', $useDefaultLang = true);
+			if ($item['last_login']) {
+				$item['last_login'] = ze\admin::formatRelativeDateTime($item['last_login'], "day", true, 'vis_date_format_med', $useDefaultLang = true);
+			} else {
+				$item['last_login'] = ze\admin::phrase('Never logged in');
+			}
 
 			//Check if an admin has ever logged in.
 			if ($sessionId = $item['session_id']) {
@@ -123,33 +127,35 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		
 					//If the admin was active less than 10 mins ago, show "Logged in now" instead of a date.
 					$inactivityDuration = (time() - $lastActivityTimestamp);
+					
+					if ($lastActivityTimestamp && $inactivityDuration) {
+						if ($inactivityDuration < 90) {
+							$item['last_activity_time'] = ze\admin::phrase('Last active just now');
+						} else {
+							$item['last_activity_time'] = ze\admin::phrase('Last active [[last_active]] minutes ago', ['last_active' => (int) ($inactivityDuration / 60)]);
+						}
+					}
 				
 					if ($inactivityDuration < 600) {
 						//When 2FA is enabled, show the login status of this admin.
 						if (ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
 							$sqlCode = "
-								Select value FROM ". DB_PREFIX. "admin_settings
+								SELECT value FROM ". DB_PREFIX. "admin_settings
 								WHERE name LIKE 'z_admin_2fa_%'
 								AND admin_id = ". (int) $id;
 							
 							$sqlCodeResult = ze\sql::select($sqlCode);
 							$sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
 							
-							if (!empty($sqlCodeRow) && is_array($sqlCodeRow) && !empty($sqlCodeRow['value'])) {
-								$item['last_login'] = ze\admin::phrase('Logged in now');
-							} else {
-								$item['last_login'] = ze\admin::phrase('Logged in now (pending 2FA)');
+							if (empty($sqlCodeRow) || !is_array($sqlCodeRow) || empty($sqlCodeRow['value'])) {
+								$item['pending_2fa'] = ze\admin::phrase('Pending 2FA');
 							}
-						} else {
-							$item['last_login'] = ze\admin::phrase('Logged in now');
 						}
 						
 					}
+				}  elseif ($item['last_login']) {
+					$item['last_activity_time'] = ze\admin::phrase('Logged out');
 				}
-			}
-			
-			if (!$item['last_login']) {
-				$item['last_login'] = ze\admin::phrase('Never logged in');
 			}
 			
 			unset($item['session_id']);

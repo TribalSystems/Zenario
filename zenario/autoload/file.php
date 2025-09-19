@@ -52,7 +52,16 @@ class file {
 	}
 
 	//Remove an image from the public/images/ directory
-	public static function deletePublicImage($image) {
+	public static function deletePublicImage($image, $specialImage = false) {
+		
+		//Starting in version 10.2, we're going to be using slightly different logic for special images.
+		//These will always be considered public, and be placed in the public/special_images directory instead
+		//of the public/images directory.
+		if ($specialImage) {
+			$publicDir = 'public/special_images/';
+		} else {
+			$publicDir = 'public/images/';
+		}
 	
 		if (!is_array($image)) {
 			$image = \ze\row::get('files', ['mime_type', 'short_checksum'], $image);
@@ -61,7 +70,7 @@ class file {
 		if ($image
 		 && $image['short_checksum']
 		 && \ze\file::isImageOrSVG($image['mime_type'])) {
-			\ze\cache::deleteDir(CMS_ROOT. 'public/images/'. $image['short_checksum'], 1);
+			\ze\cache::deleteDir(CMS_ROOT. $publicDir. $image['short_checksum'], 1);
 		}
 	}
 
@@ -265,6 +274,8 @@ class file {
 		switch ($type) {
 			case 'gif':
 				return 'image/gif';
+			case 'ico':
+				return 'image/x-icon';
 			case 'jpe':
 			case 'jpeg':
 			case 'jpg':
@@ -471,6 +482,10 @@ class file {
 		return 'zenario/file.php?usage='. $file['usage']. '&c='. $file['checksum']. '&filename='. urlencode($filename);
 	}
 
+	public static function specialImageLink($fileId) {
+		return \ze\file::link($fileId, false, 'public/special_images');
+	}
+
 	public static function guessAltTagFromname($filename) {
 		$filename = explode('.', $filename);
 		unset($filename[count($filename) - 1]);
@@ -512,7 +527,7 @@ class file {
 					]);
 				if ($setAsStickImage) {
 					\ze\contentAdm::updateVersion($cID, $cType, $cVersion, ['feature_image_id' => $fileId]);
-					\ze\contentAdm::syncInlineFileContentLink($cID, $cType, $cVersion);
+					\ze\contentAdm::updateContentItemCache($cID, $cType, $cVersion);
 				}
 				return true;
 			}
@@ -530,7 +545,7 @@ class file {
 		if ($strict) {
 			$filename = preg_replace('@[^\w\.-]@', '', $filename);
 		} else {
-			$filename = str_replace(['/', '\\', ':', ';', '*', '?', '"', '<', '>', '|'], '', $filename);
+			$filename = str_replace(['%', '/', '\\', ':', ';', '*', '?', '"', '<', '>', '|'], '', $filename);
 		}
 		
 		if ($filename === '') {
@@ -542,13 +557,13 @@ class file {
 		return $filename;
 	}
 
-	public static function getPathOfUploadInCacheDir($string) {
+	public static function getPathOfUploadInCacheDir($uploadCode) {
 		
-		if (is_numeric($string)) {
+		if (is_numeric($uploadCode)) {
 			return false;
 		}
 		
-		$details = explode('/', \ze\ring::decodeIdForOrganizer($string), 3);
+		$details = explode('/', \ze\ring::decodeIdForOrganizer($uploadCode), 3);
 	
 		if (!empty($details[1])
 		 && file_exists($filepath = CMS_ROOT. 'private/uploads/'. preg_replace('@[^\w-]@', '', $details[0]). '/'. \ze\file::safeName($details[1]))) {

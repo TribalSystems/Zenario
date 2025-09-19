@@ -189,6 +189,10 @@ if (!$moduleId) {
 	unset($controls['info']['vc']);
 	unset($controls['info']['vc_warning']);
 	
+	if ($overriddenSlot) {
+		$controls['css_class'] .= ' zenario_slotSetToShowNothing';
+	}
+	
 
 } else {
 	ze\pluginAdm::fillSlotControlPluginInfo($slot, $cID, $cType, $level, $controls['info'], $controls['actions'], $controls['re_move_place']);
@@ -218,7 +222,7 @@ if (!$moduleId) {
 	} elseif (!$isVersionControlled && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 		$controls['actions']['settings']['label'] = $controls['actions']['settings']['label']['settings'];
 	
-	} elseif ($isVersionControlled || (!$isVersionControlled && ze\priv::check('_PRIV_VIEW_REUSABLE_PLUGIN'))) {
+	} elseif (!$isVersionControlled && ze\priv::check('_PRIV_VIEW_REUSABLE_PLUGIN')) {
 		$controls['actions']['settings']['label'] = $controls['actions']['settings']['label']['view_settings'];
 	
 	} else {
@@ -237,7 +241,7 @@ if (!$moduleId) {
 	}
 	
 	//Show options to switch to the correct level to change the settings
-	if (!$canChange) {
+	if (!$canChange || !$couldEdit) {
 		unset($controls['switch_to']['switch_to_edit']);
 		unset($controls['switch_to']['switch_to_edit_settings']);
 		unset($controls['switch_to']['switch_to_layout']);
@@ -278,7 +282,7 @@ if (!$moduleId) {
 		unset($controls['re_move_place']['replace_nest_on_item_layer']);
 		unset($controls['re_move_place']['replace_slideshow_on_item_layer']);
 	}
-	if (!$couldChange || ($level == 1 && !$overriddenSlot) || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
+	if (!$couldEdit || !$couldChange || ($level == 1 && !$overriddenSlot) || ze::$locked || !ze\priv::check('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType)) {
 		unset($controls['re_move_place']['hide_plugin']);
 	}
 	

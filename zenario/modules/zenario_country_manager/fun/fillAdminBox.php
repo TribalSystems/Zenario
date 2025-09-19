@@ -54,15 +54,15 @@ switch($path) {
 				$region = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name','region_type'], ['id' => ($box['key']['id'] ?? false)]);
 				$box['title'] = ze\admin::phrase('Editing the region "[[region_name]]"', ['region_name' => $region['name']]);
 				$box['tabs']['details']['fields']['name']['value'] = $region['name'];
-				$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
 				if (ze::setting('zenario_country_manager__region_type_management')) {
 					$box['tabs']['details']['fields']['region_type']['value'] = $region['region_type'];
 				}
 			} elseif ($box['key']['parent_id'] ?? false) {
 				$parentRegion = ze\row::get(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', ['name'], ['id' => ($box['key']['parent_id'] ?? false)]);
-				$box['title'] = ze\admin::phrase('Creating a sub-region of "[[parent_region_name]]"', 
-												['parent_region_name' => $parentRegion['name']]);
-				$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
+				$box['title'] = ze\admin::phrase(
+					'Creating a sub-region of "[[parent_region_name]]"', 
+					['parent_region_name' => $parentRegion['name']]
+				);
 			}
 		} elseif (ze::get('refiner__country_code_filter')) {
 			$box['key']['country_id'] = $_GET['refiner__country_code_filter'] ?? false;
@@ -72,14 +72,14 @@ switch($path) {
 				$box['title'] = ze\admin::phrase('Editing the region "[[region_name]]" in "[[country_name]]"', 
 												['region_name' => $region['name'], 'country_name' => $countryName]);
 				$box['tabs']['details']['fields']['name']['value'] = $region['name'];
-				$box['tabs']['details']['fields']['update_phrase']['hidden'] = false;
 				if (ze::setting('zenario_country_manager__region_type_management')) {
 					$box['tabs']['details']['fields']['region_type']['value'] = $region['region_type'];
 				}
 			} else {
-				$box['title'] = ze\admin::phrase('Creating a region within "[[country_name]]"', 
-												['country_name' => $countryName]);
-				$box['tabs']['details']['fields']['update_phrase']['hidden'] = true;
+				$box['title'] = ze\admin::phrase(
+					'Creating a region within "[[country_name]]"', 
+					['country_name' => $countryName]
+				);
 			}
 		}
 		break;

@@ -31,7 +31,7 @@ zenario_user__details:
                     type: text
                     onblur: |
                         var emailOnLoad = zenarioAB.tuix.key.email_on_load;
-                        var emailNow = $('#email');
+                        var emailNow = $(zenarioAB.get('email'));
                         var emailVerifiedStatus = $('.email_status');
                         
                         if (emailNow && emailOnLoad) {
@@ -119,11 +119,11 @@ zenario_user__details:
                             <input type="button" value="Suggest" onclick="
                                 zenario.ajax(
                                     'zenario/admin/quick_ajax.php',
-                                    {screen_name_suggestion: 1, first_name: zenario.get('first_name').value, last_name: zenario.get('last_name').value, email: zenario.get('email').value},
+                                    {screen_name_suggestion: 1, first_name: zenarioAB.get('first_name').value, last_name: zenarioAB.get('last_name').value, email: zenarioAB.get('email').value},
                                     false, false
                                 ).after(function(screen_name) {
                                     var screen_name_field;
-                                    if (screen_name_field = zenario.get('screen_name')) {
+                                    if (screen_name_field = zenarioAB.get('screen_name')) {
                                         screen_name_field.value = screen_name;
                                     }
                                 });
@@ -175,10 +175,15 @@ zenario_user__details:
                     autocomplete: "off_yes_really_i_want_this_off"
                     oninput: |
                         var adminFacing = true;
-                        zenarioP.updatePasswordNotifier('#password', {
-                            min_extranet_user_password_length: lib.tuix.key.min_extranet_user_password_length,
-                            min_extranet_user_password_score: lib.tuix.key.min_extranet_user_password_score
-                        }, '#snippet_password_message', adminFacing);
+                        zenarioP.updatePasswordNotifier(
+                            zenarioAB.get('password'),
+                            {
+                                min_extranet_user_password_length: zenarioAB.tuix.key.min_extranet_user_password_length,
+                                min_extranet_user_password_score: zenarioAB.tuix.key.min_extranet_user_password_score
+                            },
+                            '#zenario_password_message',
+                            adminFacing
+                        );
                         
                     pre_field_html: |
                         <input type="text" name="dummy_username" autocomplete="off_yes_really_i_want_this_off" tabindex="-1" style="
@@ -206,9 +211,9 @@ zenario_user__details:
                     type: toggle
                     onclick: |
                         var fields = zenarioAB.tuix.tabs.details.fields,
-                            passwordEl = zenario.get('password'),
+                            passwordEl = zenarioAB.get('password'),
                             passwordField = fields.password,
-                            revealEl = zenario.get('reveal_password'),
+                            revealEl = zenarioAB.get('reveal_password'),
                             revealField = fields.reveal_password,
                             previouslyPressed = zenarioAB.value('reveal_password', 'details');
                     
@@ -234,11 +239,11 @@ zenario_user__details:
                             <input type="button" value="Suggest" onclick="
                                 zenario.ajax('zenario/admin/quick_ajax.php', {password_suggestion: 1}, false, false).after(function(password) {
                                     var passwordEl;
-                                    if (passwordEl = zenario.get('password')) {
+                                    if (passwordEl = zenarioAB.get('password')) {
                                         passwordEl.value = password;
                                     }
                                 
-                                    $('#password').trigger('oninput');
+                                    $(zenarioAB.get('password')).trigger('oninput');
                                 });
                             "/>
                 
@@ -253,7 +258,7 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details') != 'contact'
                     post_field_html: |
                         <div>
-                            <span id="snippet_password_message" class="title_red">Password does not match the requirements</span>
+                            <span id="zenario_password_message" class="title_red">Password does not match the requirements</span>
                         </div>
                 password_needs_changing:
                     grouping: password_grouping

@@ -3,7 +3,7 @@
 zenario__library:
     nav:
         zenario_settings_pro_features__spare_aliases:
-            ord: 5
+            ord: 4
             visible_if: >
                 zenarioA.siteSettings.default_language
             #css_class: alias_urls_collection

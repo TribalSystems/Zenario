@@ -134,7 +134,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 		//Upload a new file
 		if (ze::post('upload') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			
-			ze\fileAdm::exitIfUploadError(false, false, true, 'Filedata');
+			ze\fileAdm::exitIfUploadError($adminFacing = true, $checkIsAllowed = true, $alwaysAllowImages = true, $fileVar = 'Filedata');
 			
 			//Check to see if an identical file has already been uploaded
 			$existingFilename = false;
@@ -187,13 +187,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 				ze\file::deletePublicImage($id);
 			}
 			
-		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
-			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
-				ze\contentAdm::deleteUnusedImage($id);
-			}
-		
-		//Delete images, even if they're used
-		} elseif (ze::get('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::get('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			$idsArray = ze\ray::explodeAndTrim($ids, true);
 			$count = count($idsArray);
 			if ($count == 1) {
@@ -202,9 +196,14 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 				$usageLinks = self::imageUsageLinks($id);
 				$usage = ze\fileAdm::getMICImageUsage($id);
 				
-				echo '
-					<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
-					<ul><li>', implode('</li><li>', $usage), '</li></ul>';
+				if ($usage) {
+					echo '
+						<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
+						<ul><li>', implode('</li><li>', $usage), '</li></ul>';
+				} else {
+					echo '
+						<p>', ze\admin::phrase('Are you sure you wish to delete the unused image "[[filename]]"?', $mrg), '</p>';
+				}
 			} elseif ($count > 0) {
 				$usedImages = $unusedImaged = 0;
 				foreach ($idsArray as $id) {
@@ -235,7 +234,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 					<p>', $phrase;
 			}
 		
-		} elseif (ze::post('delete_in_use') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
+		} elseif (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {
 				ze\contentAdm::deleteImage($id);
 			}

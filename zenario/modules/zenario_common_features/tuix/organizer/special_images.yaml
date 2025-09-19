@@ -114,7 +114,7 @@ zenario__library:
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     upload:
-                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg;*.ico'
                         fileDesc: Images
                         multi: true
                         drag_and_drop: true
@@ -147,7 +147,6 @@ zenario__library:
                         zenarioO.itemButtonClick('edit');
                     admin_box:
                         path: zenario_image
-                    visible_if: item.mime_type != "image/x-icon" && item.mime_type != "image/icon"
                 actions_dropdown:
                     label: Actions
                     multiple_select: true
@@ -178,6 +177,11 @@ zenario__library:
                     parent: actions_dropdown
                     hide_in_select_mode: true
                     multiple_select: true
+                    disabled_if_for_any_selected_items: |
+                        item.copy_exists_in_image_library
+                    disabled_tooltip: A copy of one or more selected images already exists in the image library.
+                    visible_if_for_all_selected_items: |
+                        (item.mime_type != "image/x-icon" && item.mime_type != "image/icon")
                     ajax:
                         confirm:
                             message: >
@@ -205,4 +209,5 @@ zenario__library:
                         request:
                             delete: 1
                     disabled_if_for_any_selected_items: item.image_in_use
-                    disabled_tooltip: 'Only images that are not in use may be deleted.'
+                    disabled_tooltip: |
+                      This image can't be deleted because it is in use.

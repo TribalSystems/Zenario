@@ -61,10 +61,7 @@ install:
                 i_agree:
                     type: checkbox
                     full_width: true
-                    post_field_html: |
-                        <label for="i_agree">
-                            I agree to the terms of the license.
-                        </label>
+                    label: I agree to the terms of the license.
                     note_below: |
                         Zenario comes bundled with several third-party software libraries, under the
                             <a href="https://opensource.org/license/apache-2-0" target="_blank">
@@ -391,24 +388,24 @@ install:
                     row_class: row_form
                     return_key_presses_button: next
                     onchange: |
-                        var fName = $('#first_name').val();
-                        var lName = $('#last_name').val();
+                        var fName = $(lib.get('first_name')).val();
+                        var lName = $(lib.get('last_name')).val();
                         var lastChar = lName.charAt(0)
                         var userFName = fName.toLowerCase();
                         var userLName = lastChar.toLowerCase();
-                        $('#username').val(userFName + userLName);
+                        $(lib.get('username')).val(userFName + userLName);
                 last_name:
                     label: "Your last name:"
                     type: text
                     row_class: row_form
                     return_key_presses_button: next
                     onchange: |
-                        var fName = $('#first_name').val();
-                        var lName = $('#last_name').val();
+                        var fName = $(lib.get('first_name')).val();
+                        var lName = $(lib.get('last_name')).val();
                         var lastChar = lName.charAt(0)
                         var userFName = fName.toLowerCase();
                         var userLName = lastChar.toLowerCase();
-                        $('#username').val(userFName + userLName);
+                        $(lib.get('username')).val(userFName + userLName);
                 email:
                     label: "Your email address:"
                     type: text
@@ -428,7 +425,7 @@ install:
                             min_extranet_user_password_length: lib.tuix.key.min_extranet_user_password_length,
                             min_extranet_user_password_score: lib.tuix.key.min_extranet_user_password_score
                         }
-                        zenarioP.updatePasswordNotifier('#password', settings, '#snippet_password_message', true);
+                        zenarioP.updatePasswordNotifier(lib.get('password'), settings, '#zenario_password_message', true);
                     row_class: row_form
                     return_key_presses_button: next
                 password_requirements:

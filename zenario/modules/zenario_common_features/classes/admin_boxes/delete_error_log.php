@@ -34,11 +34,23 @@ class zenario_common_features__admin_boxes__delete_error_log extends ze\moduleBa
 		if ($box['key']['id']) { 
 			$deleteAlias = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
 			if ($deleteAlias) {
-				$aliasCount = ze\row::count('error_404_log', ['page_alias' => $deleteAlias]);
+				$brokenAliasSanitised = $deleteAlias;
+				$questionMarkPos = strpos($brokenAliasSanitised, '?');
+				if ($questionMarkPos !== false) {
+					$brokenAliasSanitised = substr($brokenAliasSanitised, 0, $questionMarkPos);
+				}
+				
+				$sql = "
+					SELECT COUNT(*)
+					FROM " . DB_PREFIX . "error_404_log
+					WHERE page_alias LIKE '" . ze\escape::sql($brokenAliasSanitised) . "?%'
+					OR page_alias = '" . ze\escape::sql($brokenAliasSanitised) . "'";
+				$result = ze\sql::select($sql);
+				$aliasCount = ze\sql::fetchValue($result);
 				
 				$box['tabs']['delete']['notices']['are_you_sure']['message'] = ze\admin::phrase(
-					'Are you sure you wish to delete [[number]] entries of the requested alias "[[alias]]"?',
-					['alias' => $deleteAlias, 'number' => $aliasCount]
+					'Delete [[number]] error log entries of the requested alias "[[alias]]"?',
+					['alias' => $brokenAliasSanitised, 'number' => $aliasCount]
 				);
 			}
 		}
@@ -46,10 +58,15 @@ class zenario_common_features__admin_boxes__delete_error_log extends ze\moduleBa
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$deleteAliasLog = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
-		$sql = '
-			DELETE FROM '. DB_PREFIX . 'error_404_log
-			WHERE page_alias = "' . ze\escape::sql($deleteAliasLog) . '"';
+		$brokenAliasSanitised = ze\row::get('error_404_log', 'page_alias', ['id' => $box['key']['id']]);
+		$questionMarkPos = strpos($brokenAliasSanitised, '?');
+		if ($questionMarkPos !== false) {
+			$brokenAliasSanitised = substr($brokenAliasSanitised, 0, $questionMarkPos);
+		}
+		$sql = "
+			DELETE FROM " . DB_PREFIX . "error_404_log
+			WHERE page_alias LIKE '" . ze\escape::sql($brokenAliasSanitised) . "?%'
+			OR page_alias = '" . ze\escape::sql($brokenAliasSanitised) . "'";
 		ze\sql::update($sql);
 	}
 }

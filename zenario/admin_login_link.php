@@ -37,7 +37,7 @@ $url =
 //Add the logo
 $logoURL = $logoWidth = $logoHeight = false;
 if (ze::setting('admin_link_logo') == 'custom'
- && (ze\image::link($logoWidth, $logoHeight, $logoURL, ze::setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
+ && (ze\image::specialImageLink($logoWidth, $logoHeight, $logoURL, ze::setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
 
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = \ze\link::absolute(). $logoURL;

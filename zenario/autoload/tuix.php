@@ -1165,9 +1165,10 @@ class tuix {
 		if (!empty($field['type'])) {
 			switch ($field['type']) {
 				case 'grouping':
+				case 'button':
 				case 'submit':
 				case 'toggle':
-				case 'button':
+				case 'remove':
 					return false;
 			}
 		}
@@ -1391,7 +1392,7 @@ class tuix {
 						 || isset($field['pick_items'])
 						 || isset($field['captcha'])
 						 || (isset($field['image']) && isset($field['image_crop_tool']))
-						 || (!empty($field['type']) && $field['type'] != 'submit' && $field['type'] != 'toggle' && $field['type'] != 'button');
+						 || (!empty($field['type']) && $field['type'] != 'button' && $field['type'] != 'submit' && $field['type'] != 'toggle' && $field['type'] != 'remove');
 
 					
 						if ($addOrds && !empty($field['values']) && is_array($field['values'])) {
@@ -1549,6 +1550,16 @@ class tuix {
 					}
 				}
 			}
+		}
+	}
+	
+	//A shortcut function for calling the readValues() function just to reset any error messages
+	public static function resetErrors(&$tags, &$fields, &$values) {
+		$fields = [];
+		$values = [];
+		$changes = [];
+		if (\ze\tuix::looksLikeFAB($tags)) {
+			\ze\tuix::readValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true);
 		}
 	}
 
@@ -2020,6 +2031,7 @@ class tuix {
 							if (isset($t[$i='sort_asc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 							if (isset($t[$i='sort_desc'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 							if (isset($t[$i='empty_value'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+							if (isset($t[$i='post_field_label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 							break;
 		
 						case 'tabs':
@@ -2081,13 +2093,21 @@ class tuix {
 								if (isset($t[$i][$j='nothing_selected_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 								if (isset($t[$i][$j='upload_phrase'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 							}
-		
-							//Translate button values
-							if (isset($t['value']) && isset($t['type']) && ($t['type'] == 'button' || $t['type'] == 'toggle' || $t['type'] == 'submit')) {
-			
-								//Only translate the values if they look like text
-								if ('' !== trim(preg_replace(['/\\{\\{.*?\\}\\}/', '/\\{\\%.*?\\%\\}/', '/\\<\\%.*?\\%\\>/', '/\\W/'], '', $t['value']))) {
-									\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, 'value');
+							
+							//Some specific rules for translating buttons
+							if (isset($t['type']) && ($t['type'] == 'button' || $t['type'] == 'submit' || $t['type'] == 'toggle' || $t['type'] == 'remove')) {
+								
+								//Translate button values
+								if (isset($t['value'])) {
+									//Only translate the values if they look like text
+									if ('' !== trim(preg_replace(['/\\{\\{.*?\\}\\}/', '/\\{\\%.*?\\%\\}/', '/\\<\\%.*?\\%\\>/', '/\\W/'], '', $t['value']))) {
+										\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, 'value');
+									}
+								}
+								
+								//Translate the pre-button text
+								if (isset($t['pre_button_text'])) {
+									\ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, 'pre_button_text');
 								}
 							}
 				
@@ -2102,6 +2122,8 @@ class tuix {
 							if (isset($t[$i='confirm'][$j='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 							if (isset($t[$i='confirm'][$j='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
 							if (isset($t[$i='confirm'][$j='cancel_button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j);
+							if (isset($t[$i='ajax'][$j='toast'][$k='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
+							if (isset($t[$i='ajax'][$j='toast'][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
 							if (isset($t[$i='ajax'][$j='confirm'][$k='title'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
 							if (isset($t[$i='ajax'][$j='confirm'][$k='message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
 							if (isset($t[$i='ajax'][$j='confirm'][$k='button_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i, $j, $k);
@@ -2164,20 +2186,34 @@ class tuix {
 		$languageId = $box['key']['languageId'] ?? false;
 		$showSecondLanguageColumn = $languageId && $languageId != \ze::$defaultLang && \ze\priv::check('_PRIV_VIEW_LANGUAGE');
 		
+		
+		
+
+		$html = '
+			<p class="zfab_customise_phrases_explainer">';
+		
+		$html .= htmlspecialchars(\ze\admin::phrase("This mode's YAML code contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+		
 		if ($showSecondLanguageColumn) {
-			$html = '
-				<table class="zfab_customise_phrases cols_3"><tr>
-					<th>Original Phrase</th>
-					<th>Customised Phrase</th>
-					<th>' . \ze\lang::name($languageId) . '</th>';
+			$html .= '
+				<table class="zfab_customise_phrases cols_3">
+					<thead>
+						<tr>
+							<th>Original text/message</th>
+							<th>Customised text/message</th>
+							<th>' . \ze\lang::name($languageId) . '</th>';
 		} else {
-			$html = '
-				<table class="zfab_customise_phrases cols_2"><tr>
-					<th>Original Phrase</th>
-					<th>Customised Phrase</th>';
+			$html .= '
+				<table class="zfab_customise_phrases cols_2">
+					<thead>
+						<tr>
+							<th>Original text/message</th>
+							<th>Customised text/message</th>';
 		}
 		$html .= '
-			</tr>';
+						</tr>
+					</thead>
+					<tbody>';
 		$fields['phrase_table_start'] = [
 			'ord' => ++$ord,
 			'snippet' => [
@@ -2202,7 +2238,7 @@ class tuix {
 				'ord' => ++$ord,
 				'same_row' => true,
 				'pre_field_html' => '
-					<tr><td>
+					<tr><td class="zfab_customise_phrase">
 						'. htmlspecialchars($defaultText). '
 						<br/>
 						<span>(<span>'. htmlspecialchars(substr($ppath, 7)). '</span>)</span>
@@ -2244,22 +2280,39 @@ class tuix {
 			'same_row' => true,
 			'snippet' => [
 				'html' => '
-					</table>'
+					</tbody>
+				</table>'
 			]
 		];
-	
-		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
-			$mrg = [
-				'def_lang_name' => htmlspecialchars(\ze\lang::name(\ze::$defaultLang)),
-				'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
-			];
 		
+		if (\ze\row::exists('languages', ['translate_phrases' => 1])) {
 			$fields['phrase_table_end']['show_phrase_icon'] = true;
-			$fields['phrase_table_end']['snippet']['html'] .= '
-				<br/>
-				<span>'.
-				\ze\admin::phrase('<a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg).
-				'</span>';
+			
+			if (\ze\row::exists('visitor_phrases', ['module_class_name' => $box['module_class_name']])) {
+				
+				$filters = [
+					'module_name' => [
+						's' => 1,
+						'v' => $box['module_class_name']
+					]
+				];
+				
+				$mrg = [
+					'phrases_panel' => htmlspecialchars(\ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases~_'. rawurlencode(json_encode($filters)))
+				];
+			
+				$fields['phrase_table_end']['snippet']['html'] .= '
+					<br/>
+					<span>'.
+					\ze\admin::phrase('Phrases have been created for this module. <a href="[[phrases_panel]]" target="_blank">Click here to see the phrases in Organizer</a>.', $mrg).
+					'</span>';
+			
+			} else {
+				$fields['phrase_table_end']['snippet']['html'] .= '
+					<br/>
+					<span>'.
+					\ze\admin::phrase('Phrases will be created when these are viewed on a content item that is being translated.');
+			}
 		}
 	}
 	
@@ -2294,7 +2347,15 @@ class tuix {
 		}
 		return true;
 	}
-
+	
+	
+	//Some constant definitions to make code calling the setupMultipleRows() function a bit more readable,
+	//without me needing to make a breaking change.
+	const ALWAYS_KEEP_ROWS_WHEN_DELETED = '~ak~';
+	const ALWAYS_REMOVE_ROWS_WHEN_DELETED = '';
+	const NO_DELETE_BUTTON = '';
+	const NO_ID_FIELD = '';
+	const NO_DUPLICATE_BUTTON = '';
 
 	//Utility function to set up a multi-row FAB or FEA plugin.
 	//You need to pass this an array of $templateFields, all of which need to have code names
@@ -2315,14 +2376,16 @@ class tuix {
 		$idFieldCodeName = '',
 		$dupFieldCodeName = '',
 		$firstN = 1,
-		$setGrouping = false
+		$setGrouping = false,
+		$offsetFromField = null,
+		$forceDeleteAllRows = false
 	) {
 	
 		$changed = false;
 		$removeRows = [];
 	
 		$tab = &$box['tabs'][$tabName];
-	
+		
 		$fieldCodeNames = array_keys($templateFields);
 		if (empty($fieldCodeNames)) {
 			echo 'No template fields found';
@@ -2337,7 +2400,7 @@ class tuix {
 		
 	
 		//Check if ordinals have not been added, and add them automatically if needed
-		if (!isset($templateFields[$firstCodeName]['ord'])) {
+		if (!$forceDeleteAllRows && !isset($templateFields[$firstCodeName]['ord'])) {
 			\ze\tuix::addOrdinalsToTUIX($templateFields);
 		
 			foreach ($templateFields as $id => &$field) {
@@ -2391,7 +2454,9 @@ class tuix {
 				
 					//For things with ids in the database, we'll need to keep the rows in existance so
 					//the system can see that they're deleted.
-					if ($idFieldCodeName && !empty($tab['fields'][str_replace('znz', $n, $idFieldCodeName)]['value'])) {
+					if (is_string($idFieldCodeName)
+					 && ($idFieldCodeName === \ze\tuix::ALWAYS_KEEP_ROWS_WHEN_DELETED
+					  || ($idFieldCodeName !== '' && !empty($tab['fields'][str_replace('znz', $n, $idFieldCodeName)]['value'])))) {
 						//Hide all of the fields on that row, but keep the actual fields and values
 						$removeRows[$n] = false;
 
@@ -2426,8 +2491,12 @@ class tuix {
 					}
 				}
 			}
-		
-			$inRange = $n - $firstN < $numRows;
+			
+			if ($forceDeleteAllRows) {
+				$inRange = false;
+			} else {
+				$inRange = $n - $firstN < $numRows;
+			}
 		
 			if ($inRange) {
 			
@@ -2437,8 +2506,20 @@ class tuix {
 					//Row doesn't exist and should be added.
 					//Copy the template fields, replacing "znz" with the row number
 					$templateFieldsForThisRow = json_decode(str_replace('znz', $n, json_encode($templateFields)), true);
-			
+					
+					//Experimenting with an idea I had for multiple rows nested within more multiple rows.
+					//Allow the dev to specify a specific field that should serve as an offset for the ordinals.
+					//(Note: Currently the target field must have an integer ordinal. If that's an issue I could do more dev work on that.)
+					$offsetOrd = null;
+					if ($offsetFromField !== null) {
+						$offsetOrd = $box['tabs'][$tabName]['fields'][$offsetFromField]['ord'] ?? null;
+					}
+					
 					foreach ($templateFieldsForThisRow as $id => &$field) {
+						
+						if ($offsetOrd !== null) {
+							$field['ord'] = $offsetOrd. '.'. $field['ord'];
+						}
 					
 						//Allow the caller to pre-populate the values of the fields in the $values array.
 						//If they have been put in there they won't be references as usual. So we'll pick them up
@@ -2467,7 +2548,7 @@ class tuix {
 					}
 					unset($field);
 					$changed = true;
-				
+					
 					if ($dupN !== false) {
 						foreach ($fieldCodeNames as $fieldCodeName) {
 							if ($fieldCodeName !== $deleteButtonCodeName
@@ -2565,6 +2646,30 @@ class tuix {
 			'firstRow' => $firstRow,
 			'lastRow' => $lastRow
 		];
+	}
+	
+	//Delete every multiple row that was just added.
+	//Works by calling the setupMultipleRows() with a specific flag set.
+	public static function deleteAllMultipleRows(
+		&$box, &$fields, &$values, &$changes,
+		&$templateFields,
+		$tabName = 'details',
+		$firstN = 1
+	) {
+		return \ze\tuix::setupMultipleRows(
+			$box, $fields, $values, $changes, $filling = false,
+			$templateFields,
+			$addRows = 0,
+			$minNumRows = 0,
+			$tabName,
+			$deleteButtonCodeName = '',
+			$idFieldCodeName = '',
+			$dupFieldCodeName = '',
+			$firstN,
+			$setGrouping = false,
+			$offsetFromField = null,
+			$forceDeleteAllRows = true
+		);
 	}
 	
 	//If you have a series of rows on your FAB or FEA plugin created using the
@@ -2927,7 +3032,7 @@ class tuix {
 
 
 
-	public static function visitorTUIX($owningModule, $requestedPath, &$tags, $filling = true, $validating = false, $saving = false, $debugMode = false) {
+	public static function visitorTUIX($owningModule, $requestedPath, &$tags, $filling = true, $validating = false, $saving = false, $debugMode = false, $exporting = false) {
 		
 		\ze::$tuixType = $type = 'visitor';
 		\ze::$tuixPath = $requestedPath;
@@ -3007,8 +3112,7 @@ class tuix {
 		if ($debugMode) {
 			$staticTags = $tags;
 		
-		
-			//Logic for initialising an Admin Box
+			//Read the variables from the key
 			if (!empty($tags['key']) && is_array($tags['key'])) {
 				foreach ($tags['key'] as $key => &$value) {
 					if (!empty($_REQUEST[$key])) {
@@ -3025,10 +3129,32 @@ class tuix {
 			\ze\tuix::displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath = $requestedPath, false, \ze\tuix::$feaSelectQuery, \ze\tuix::$feaSelectCountQuery);
 			exit;
 		}
+		
+		//Export logic
+		//This is designed to allow an FEA list to offer a download of its data using CSV or Excel formats.
+		//This doesn't try to send or sync JSON data to the client so we can skip all of those usual steps.
+		if ($exporting) {
+			
+			//Read the variables from the key
+			if (!empty($tags['key']) && is_array($tags['key'])) {
+				foreach ($tags['key'] as $key => &$value) {
+					if (!empty($_REQUEST[$key])) {
+						$value = $_REQUEST[$key];
+					}
+				}
+			}
+			
+			foreach ($modules as $className => &$module) {
+				$module->exportVisitorTUIX($requestedPath, $tags);
+			}
+			exit;
+		}
 	
 		$doSave = false;
 		if ($filling) {
 			//Logic for initialising an Admin Box
+			
+			//Read the variables from the key
 			if (!empty($tags['key']) && is_array($tags['key'])) {
 				foreach ($tags['key'] as $key => &$value) {
 					if (!empty($_REQUEST[$key])) {

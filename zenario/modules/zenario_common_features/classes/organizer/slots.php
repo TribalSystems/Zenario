@@ -57,8 +57,11 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 				}
 			
 				$lookForSlots = ['layout_id' => $version['layout_id']];
+				
+				$content['formattedTag'] = ze\content::formatTagFromTagId($content['tag_id']);
+				$content['formattedStatus'] = ze\contentAdm::formatVersionStatus($content, $content['admin_version']);
 	
-				$panel['title'] = ze\admin::phrase('Slots on the Content Item "[[tag]]"', ['tag' => ze\content::formatTagFromTagId($content['tag_id'])]);
+				$panel['title'] = ze\admin::phrase('Slots on content item "[[formattedTag]]", version [[admin_version]] ([[formattedStatus]])', $content);
 				$panel['no_items_message'] = ze\admin::phrase('There are no slots on the chosen Layout.'); 
 	
 	
@@ -152,12 +155,12 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 			
 			if ($item['is_sitewide'] = $item['is_header'] || $item['is_footer']) {
 				$item['visitor_sees'] = ze\admin::phrase('Nothing');
-				$item['content_item'] = ze\admin::phrase('Transparent');
+				$item['content_item'] = ze\admin::phrase('Empty');
 				$item['layout'] = ze\admin::phrase('-');
 				$item['sitewide'] = ze\admin::phrase('Empty');
 			} else {
 				$item['visitor_sees'] = ze\admin::phrase('Nothing');
-				$item['content_item'] = ze\admin::phrase('Transparent');
+				$item['content_item'] = ze\admin::phrase('Empty');
 				$item['layout'] = ze\admin::phrase('Empty');
 				$item['sitewide'] = ze\admin::phrase('-');
 			}
@@ -260,6 +263,18 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 										')';
 								}
 							}
+							
+							switch ($slot->moduleClassName()) {
+								case 'zenario_nest':
+								case 'zenario_ajax_nest':
+									$item['is_nest'] = true;
+									break;
+								case 'zenario_slideshow':
+									$item['is_slideshow'] = true;
+									break;
+								default:
+									$item['is_plugin'] = true;
+							}
 						}
 					}
 					
@@ -280,7 +295,7 @@ class zenario_common_features__organizer__slots extends ze\moduleBaseClass {
 								$usage = [];
 								switch ($instance['class_name']) {
 									case 'zenario_nest':
-									case 'zenario_abstract_nest':
+									case 'zenario_ajax_nest':
 										$usage = [
 											'nests' => 1,
 											'nest' => $instanceId

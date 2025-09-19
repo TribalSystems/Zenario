@@ -151,7 +151,6 @@ zenario__library:
                             FROM [[DB_PREFIX]]files AS df
                             WHERE df.`usage` = f.`usage`
                               AND df.filename = f.filename
-                              AND df.archived = 0
                               AND df.id != f.id
                             LIMIT 1
                         )
@@ -261,6 +260,21 @@ zenario__library:
                             WHERE image_id = f.id
                               AND in_use = 1
                               AND archived = 0
+                              AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template', 'standard_email_template') 
+                              AND foreign_key_id != 0
+                            LIMIT 1
+                        )
+                    format: yes_or_no
+                    hidden: true
+                
+                in_use_in_archived_content:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_PREFIX]]inline_images
+                            WHERE image_id = f.id
+                              AND in_use = 1
+                              AND archived = 1
                               AND foreign_key_to IN ('content', 'library_plugin', 'menu_node', 'email_template', 'newsletter', 'newsletter_template', 'standard_email_template') 
                               AND foreign_key_id != 0
                             LIMIT 1
@@ -384,76 +398,17 @@ zenario__library:
                     clear_all: true
                     label: In use
                     column: in_use_anywhere
-                #not_in_use_anywhere:
-                #    parent: usage_dropdown
-                #    clear_all: true
-                #    label: Not in use
-                #    column: in_use_anywhere
-                #    invert: true
-                usage_content:
-                    parent: usage_dropdown
-                    clear_all: true
-                    label: Attached to a content item
-                    column: usage_content
-                    value: 1
-                #not_usage_content:
-                #    parent: usage_dropdown
-                #    clear_all: true
-                #    label: Not attached to a content item
-                #    column: usage_content
-                #    value: 1
-                #    invert: true
-                usage_plugins:
-                    parent: usage_dropdown
-                    clear_all: true
-                    label: Used by a library plugin
-                    column: usage_plugins
-                    value: 1
-                #not_usage_plugins:
-                #    parent: usage_dropdown
-                #    clear_all: true
-                #    label: Not used by a library plugin
-                #    column: usage_plugins
-                #    value: 1
-                #    invert: true
-                usage_nests:
-                    parent: usage_dropdown
-                    clear_all: true
-                    label: Used by a nest
-                    column: usage_nests
-                    value: 1
-                usage_slideshows:
-                    parent: usage_dropdown
-                    clear_all: true
-                    label: Used by a slideshow
-                    column: usage_slideshows
-                    value: 1
-                usage_email_templates:
-                    parent: usage_dropdown
-                    clear_all: true
-                    label: Used by an email template
-                    column: usage_email_templates
-                    value: 1
-                
-                usage_menu_node:
-                    parent: usage_dropdown
-                    clear_all: true
-                    label: Used by a menu node
-                    column: usage_menu_nodes
-                    value: 1
-                
-                #not_usage_email_templates:
-                #    parent: usage_dropdown
-                #    clear_all: true
-                #    label: Not used by an email template
-                #    column: usage_email_templates
-                #    value: 1
-                #    invert: true
+                not_in_use_anywhere:
+                   parent: usage_dropdown
+                   clear_all: true
+                   label: Not in use
+                   column: in_use_anywhere
+                   invert: true
                 duplicate_filename:
                     ord: 99
                     parent: usage_dropdown
                     clear_all: true
-                    label: Duplicate file names
+                    label: Has a duplicate filename
                     column: duplicate_filename
                     value: 1
                 
@@ -783,8 +738,7 @@ zenario__library:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Delete
                     multiple_select: true
-                    visible_if_for_all_selected_items: >
-                        !item.in_use_anywhere
+                    hide_in_select_mode: true
                     onclick: |
                         if (window.zenarioOQuickMode) {
                             zenario.reloadPageWhenOrganizerQuickCloses = true;
@@ -792,34 +746,13 @@ zenario__library:
                         zenarioO.itemButtonClick('delete');
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
-                            multiple_select_message: Are you sure you wish to delete these unused images?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: 1
-                    
-                delete_in_use:
-                    priv: _PRIV_MANAGE_MEDIA
-                    label: Delete
-                    multiple_select: true
-                    hide_in_select_mode: true
-                    visible_if_for_any_selected_items: >
-                        item.in_use_anywhere
-                    onclick: |
-                        if (window.zenarioOQuickMode) {
-                            zenario.reloadPageWhenOrganizerQuickCloses = true;
-                        }
-                        zenarioO.itemButtonClick('delete_in_use');
-                    ajax:
-                        confirm:
+                            #The confirmation message is created in the PHP class.
                             html: true
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            delete_in_use: 1
+                            delete: 1
             
             hidden_nav:
                 plugins_using_image:

@@ -44,8 +44,10 @@ plugin_settings:
                         name: animation_library
                     label:  'Appearance:'
                     type: select
-                    value: cycle2
+                    value: one_slide
                     values:
+                        one_slide:
+                            label: 'Show just one slide, no animation'
                         cycle2:
                             label: 'Show as slides'
                         accordion:

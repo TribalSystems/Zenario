@@ -60,6 +60,9 @@
 		<% if (ff.grouping) { %>
 			<% if (!pgf || m.grouping.start_new_grouping_wrapper) { %>
 				<x-zenario-grouping-wrapper
+					<% if (m.grouping.grouping_wrapper_is_main_scroll) { %>
+						id="{{m.lib.idPrefix()|e}}|||main_scroll|||"
+					<% } %>
 					class="
 						zfab_grouping_wrapper
 						{{m.grouping.grouping_wrapper_css_class|escape}}
@@ -106,7 +109,7 @@
 		<legend class="zenario_legend zenario_legend_for__{{ff._id|escape}}"><span>{{ff.legend}}</span></legend>
 	<% } %>
 	
-	<div id="row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
+	<div id="{{m.lib.idPrefix()|escape}}row__{{ff._id|escape}}" style="{{ff.row_style|escape}}" class="
 		zfab_row
 		zenario_ab_row__{{ff._id|escape}}
 		{{rowHasError? 'zenario_row_with_error' : ''}}

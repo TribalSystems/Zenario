@@ -810,6 +810,15 @@ additionalProperties:
                                         or set in your preFillOrganizerPanel() method.
                                         It can't be changed in your fillOrganizerPanel() method.
                                 
+                                filters_by_value:
+                                    type: object
+                                    description: >
+                                        This option allows you to write different SQL in your filters for specific values.
+                                        
+                                        This works from version 10.1 onwards.
+                                    additionalProperties:
+                                        type: string
+                                
                                 values:
                                     type: object
                                     description: >
@@ -899,6 +908,15 @@ additionalProperties:
                                     description: >
                                         Always show this column in list view, and disallow
                                         an administrator from hiding it.
+                                sort_desc_by_default:
+                                    type: boolean
+                                    description: >
+                                        If a column is sortable,
+                                        when the user first clicks it the sort will be ascending first, and they will
+                                        need to click a second time if they wish to sort descending,
+                                        
+                                        You can set this property to flip that order and sort descending on the first click.
+                                        Best used on "date" columns where the user might expect the most recent things first.
                                 disallow_sorting:
                                     type: boolean
                                     static: true

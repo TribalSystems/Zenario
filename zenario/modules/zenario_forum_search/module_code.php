@@ -100,9 +100,9 @@ class zenario_forum_search extends zenario_forum {
 			   ON t.id = up.thread_id";
 		
 		if ($showPrivateItems) {
-			$sql = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, $includeSpecialPages = true, $displayHiddenContentItemsForAdmins = false);
+			$sql = ze\content::sqlToSearchContentTable($hidePrivateItems, '', $joinSQL, $includeSpecialPages = true, $showUnpublishedContentItemsToAdmins = false;
 		} else {
-			$sql = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, $includeSpecialPages = true, $displayHiddenContentItemsForAdmins = false);
+			$sql = ze\content::sqlToSearchContentTable(true, 'public', $joinSQL, $includeSpecialPages = true, $showUnpublishedContentItemsToAdmins = false);
 		}
 		
 		

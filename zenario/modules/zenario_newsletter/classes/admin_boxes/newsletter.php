@@ -287,6 +287,28 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients']['hidden'] =
 			!$values['unsub_exclude/exclude_previous_newsletters_recipients_enable'];
 		
+		//Get the count of excluded recipients
+		$fields['unsub_exclude/exclude_recipients_with_opt_out']['notices_below']['opted_out_users_note']['type'] = 'information';
+		$fields['unsub_exclude/exclude_recipients_with_opt_out']['notices_below']['opted_out_users_note']['message'] = ze\admin::phrase(
+			'Users or contacts who have clicked the Unsubscribe link on a previous email will have the all_newsletters_opt_out field checked and will not be sent this newsletter.'
+		);
+		if ($values['unsub_exclude/recipients']) {
+			$excludedRecipientCount = 0;
+			
+			$excludedRecipientCount += ze\smartGroup::countOptedOutMembers($values['unsub_exclude/recipients']);
+			
+			if ($excludedRecipientCount) {
+				$fields['unsub_exclude/exclude_recipients_with_opt_out']['notices_below']['opted_out_users_note']['message'] .= " " . ze\admin::nPhrase(
+					'Warning: this results in 1 recipient being excluded from this newsletter.',
+					'Warning: this results in [[count]] recipients being excluded from this newsletter.',
+					$excludedRecipientCount,
+					['count' => $excludedRecipientCount]
+				);
+				
+				$fields['unsub_exclude/exclude_recipients_with_opt_out']['notices_below']['opted_out_users_note']['type'] = 'warning';
+			}
+		}
+		
 		if (ze\ring::engToBoolean($box['tabs']['meta_data']['fields']['test_send_button']['pressed'] ?? false)) {
 			$box['tabs']['meta_data']['notices']['test_send']['show'] = true;
 			
@@ -350,10 +372,31 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$values['unsub_exclude/exclude_recipients_with_no_consent'] = ($newsletterConsentPolicy == 'consent_required');
 		if (!$newsletterConsentPolicy) {
 			//If the newsletter consent flag is not set, show a link to the site settings tab
-			$link= ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"email"}');
-			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Select a flag that represents a recipients consent to receive newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['type'] = 'warning';
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['html'] = true;
+			$link = ze\link::absolute() . 'organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tzenario_newsletter__site_settings~k' . urlencode('{"id":"email"}');
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['message'] = ze\admin::phrase('Select a flag that represents a recipients consent to receive newsletters <a target="_blank" href="[[link]]">here</a>.', ['link' => $link]);
 		} else {
-			$fields['unsub_exclude/exclude_recipients_with_no_consent']['note_below'] = ze\admin::phrase('Users or contacts whose accounts don\'t have the terms_and_conditions_accepted checkbox checked will not be sent this newsletter. There is no need to make a smart group rule for this!');
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['message'] = ze\admin::phrase('Users or contacts whose accounts don\'t have the terms_and_conditions_accepted checkbox checked will not be sent this newsletter. There is no need to make a smart group rule for this!');
+			
+			//Get the count of recipients who have not accepted T&Cs
+			$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['type'] = 'information';
+			if ($values['unsub_exclude/recipients']) {
+				$excludedRecipientCount = 0;
+				
+				$excludedRecipientCount += ze\smartGroup::countMembersWhoDidNotAcceptTC($values['unsub_exclude/recipients']);
+				
+				if ($excludedRecipientCount) {
+					$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['message'] .= " " . ze\admin::nPhrase(
+						'Warning: this results in 1 recipient being excluded from this newsletter.',
+						'Warning: this results in [[count]] recipients being excluded from this newsletter.',
+						$excludedRecipientCount,
+						['count' => $excludedRecipientCount]
+					);
+					
+					$fields['unsub_exclude/exclude_recipients_with_no_consent']['notices_below']['users_who_did_not_accept_tc_note']['type'] = 'warning';
+				}
+			}
 		}
 		
 		if ($values['meta_data/apply_css_rules']) {

@@ -51,20 +51,12 @@ ze\db::loadSiteConfig();
 
 
 //Output a few commonly used phrases for visitors
-$output = '';
-foreach([
-	'cancel' => 'Cancel',
-	'copy' => 'Copy to clipboard',
-	'copied' => 'Copied',
-	'copiedToClipboard' => 'Copied to clipboard'
-] as $code => $phrase) {
-	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick(
-		ze\lang::phrase($phrase, false, 'zenario_common_features', $langId)
-	). '~';
-}
-
-echo 'zenario._mkd(zenario.vphrase,', json_encode($output), ');';
-	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+echo 'zenario.unpack(', ze\cache::packPhrases([
+	'cancel' => '_CANCEL',
+	'copy' => '_COPY_TO_CLIPBOARD',
+	'copied' => '_COPIED',
+	'copiedToClipboard' => '_COPIED_TO_CLIPBOARD'
+], 'zenario_common_features', $langId), ', zenario.vphrase);';
 	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 

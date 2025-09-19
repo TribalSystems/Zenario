@@ -47,31 +47,7 @@ class zenario_common_features__organizer__languages extends ze\moduleBaseClass {
 			
 			case 'zenario__languages/panels/languages':
 			
-				if ($refinerName == 'plugin') {
-					$panel['db_items']['table'] = '
-								[[DB_PREFIX]]languages AS l
-							LEFT JOIN 
-								[[DB_PREFIX]]visitor_phrases AS vp
-							ON
-								l.id = vp.language_id
-							LEFT JOIN 
-								[[DB_PREFIX]]modules pl
-							ON 
-								vp.module_class_name=pl.class_name';
-	
-					$panel['db_items']['id_column'] = 'l.id';
-	
-	
-					foreach ($panel['columns'] as &$column) {
-						if (trim($column['db_column'] ?? false) == 'vp.language_id') {
-							$column['db_column'] = 'l.id';
-						}
-					}
-	
-					$panel['columns']['phrase_count']['db_column'] = 'COUNT(DISTINCT IF (NOT [[REFINER__PLUGIN]] OR pl.id=[[REFINER__PLUGIN]],vp.code,NULL))';
-					unset($panel['view_content']);
-
-				} elseif (($atLeastOneLanguageEnabled = ze\row::exists('languages', [])) && $refinerName != 'not_enabled') {
+				if (($atLeastOneLanguageEnabled = ze\row::exists('languages', [])) && $refinerName != 'not_enabled') {
 					$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_at_least_one_language_enabled'];
 				
 				} else {
@@ -101,7 +77,7 @@ _text
 
 				if (ze::in($mode, 'select', 'quick')) {
 					unset($panel['popout_message']);
-				}	
+				}
 				
 				
 				break;
@@ -212,6 +188,11 @@ _text
 								$item['homepage_id'] = $cType. '_'. $cID;
 								$item['traits']['has_homepage'] = true;
 							}
+						}
+						
+						//Show the default language as a note after the name, and not in its own column
+						if (!empty($item['default'])) {
+							$item['name'] .= ' '. ze\admin::phrase('(default language)');
 						}
 					}
 			

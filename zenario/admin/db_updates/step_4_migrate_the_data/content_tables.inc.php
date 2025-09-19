@@ -64,10 +64,10 @@ if (ze\dbAdm::needRevision(30731)) {
 	while ($row = ze\sql::fetchAssoc($result)) {
 		
 		if ($row['visitor_version']) {
-			ze\contentAdm::syncInlineFileContentLink($row['id'], $row['type'], $row['visitor_version']);
+			ze\contentAdm::updateContentItemCache($row['id'], $row['type'], $row['visitor_version']);
 		}
 		if ($row['admin_version'] && $row['admin_version'] != $row['visitor_version']) {
-			ze\contentAdm::syncInlineFileContentLink($row['id'], $row['type'], $row['admin_version']);
+			ze\contentAdm::updateContentItemCache($row['id'], $row['type'], $row['admin_version']);
 		}
 	}
 	
@@ -1891,9 +1891,46 @@ if (ze\dbAdm::needRevision(61625)) {
 //In Zenario 10.1, we're trying to use WebP images rather than PNG or JPEG.
 //Try to go through any email templates and switch any links to public images from using 
 //PNG or JPEG to using WebP if possible.
-if (ze\dbAdm::needRevision(61942)) {
+if (ze\dbAdm::needRevision(62340)) {
 	set_time_limit(60 * 10);
 	\ze\fileAdm::updateAllImagePublicLinksInEmailTemplates();
 	
-	ze\dbAdm::revision(61942);
+	ze\dbAdm::revision(62340);
+}
+
+
+
+
+//
+//	Zenario 10.2
+//
+
+
+
+//In 10.2, we renamed the table content_cache to content_items_searchable_cache. We also added a few new columns to it.
+//Populate these columns now.
+if (ze\dbAdm::needRevision(63260)) {
+	$sql = "
+		SELECT id AS cID, type AS cType, visitor_version AS cVersion, tag_id AS cTag
+		FROM " . DB_PREFIX . "content_items
+		WHERE status IN('published', 'published_with_draft')";
+	$result = \ze\sql::select($sql);
+	
+	while ($row = \ze\sql::fetchAssoc($result)) {
+		//Put the content info in the content_items_searchable_cache table
+		ze\contentAdm::updateContentItemCache($row['cID'], $row['cType'], $row['cVersion']);
+		ze\fileAdm::updateDocumentContentItemExtract($row['cID'], $row['cType'], $row['cVersion']);
+	}
+	
+	ze\dbAdm::revision(63260);
+}
+
+
+//In 10.2 we've moved a few standard phrases to be code based phrases.
+//There's an update (also revision 63270) in step 2 to migrate them if you've previously created them.
+//However if you've not previously created them we'll need to create them by re-importing the CSV files.
+if (ze\dbAdm::needRevision(63270)) {
+	\ze\contentAdm::importPhrasesForModule('zenario_common_features');
+	
+	ze\dbAdm::revision(63270);
 }

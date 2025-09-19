@@ -15,6 +15,7 @@ zenario__users:
             select_mode_title: Select a smart group
             no_items_message: No smart groups are defined.
             no_items_in_search_message: No smart groups match your search.
+            label_format_for_picked_items: '[[name]] ([[members_formatted_nicely]])'
             
             db_items:
                 table: '[[DB_PREFIX]]smart_groups AS sg'

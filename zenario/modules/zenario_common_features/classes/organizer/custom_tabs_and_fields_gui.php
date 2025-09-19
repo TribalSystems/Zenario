@@ -145,6 +145,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 			$locationManagerPrefix = ze\module::prefix('zenario_location_manager');
 		}
 		
+		$organizationManagerPrefix = '';
+		if (ze\module::isRunning('zenario_company_locations_manager')) {
+			$organizationManagerPrefix = ze\module::prefix('zenario_company_locations_manager');
+		}
+		
 		
 		//Get custom data for system tabs and custom tabs
 		$panel['pages'] = [];
@@ -334,8 +339,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				// Screen names and country-based permissions are tied to site settings.
 				// Display a warning if the relevant site setting is turned off.
 				if ($dataset['system_table'] == 'users') {
-					if ($field['field_name'] == 'screen_name') {
-						$fieldProperties['field_name'] = 'screen_name';
+					if (ze::in($field['field_name'], 'screen_name', 'suggest_screen_name', 'screen_name_confirmed')) {
+						$fieldProperties['field_name'] = $field['field_name'];
 						$fieldProperties['dataset'] = $dataset['system_table'];
 						$fieldProperties['field_dependent_on_a_site_setting'] = true;
 						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('user_use_screen_name');
@@ -363,6 +368,17 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 							$fieldProperties['dataset'] = 'locations';
 							$fieldProperties['field_dependent_on_a_site_setting'] = true;
 							$fieldProperties['site_setting_enabled'] = (bool) ze::setting('zenario_location_manager__enable_external_id');
+						}
+					}
+				}
+				
+				if ($organizationManagerPrefix) {
+					if ($dataset['system_table'] == $organizationManagerPrefix . 'companies') {
+						if ($field['field_name'] == 'company_number') {
+							$fieldProperties['field_name'] = 'company_number';
+							$fieldProperties['dataset'] = 'companies';
+							$fieldProperties['field_dependent_on_a_site_setting'] = true;
+							$fieldProperties['site_setting_enabled'] = (bool) ze::setting('zenario_company_locations_manager__enable_external_id');
 						}
 					}
 				}

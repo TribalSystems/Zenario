@@ -7,17 +7,19 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Registration
 description: |
-    <p>This module allows a visitor to register an account as an extranet user.</p>
-    <p>When you start this module, it automatically creates a registation plugin and puts it on a new content item. To make it live, you should navigate to that content item and publish it.</p>
-    <p>To register, a visitor must enter their email address, first and last name, and choose a password. The plugin settings have a range of options, and it is possible to let a user choose a public "screen name", to require them to accept terms and conditions, to fill in custom fields from the Users & Contacts dataset, and more.</p>
-    <p>By default, the plugin will create a new account in a Pending state and send a verification email to the email address given by a new user, and then change the account status to Active when the user verifies their email address by clicking the link in the email.</p>
-    <p>The plugin settings encompass a range of possible setups:<ol>
-        <li>The <strong>Initial signup</strong> tab defines the various options for the registration form itself</li>
-        <li>The <strong>Custom fields</strong> tab allows you to add custom fields to the registration form (they must first be defined in Organizer->Configuration->Datasets->Users</li>
-        <li>The <strong>Activation</strong> tab defines whether new accounts are made as Users (who may log in, once activated) or as Contacts (who may not log in), whether to send an email notification, whether to make a User account active automatically after the email address is verified (or whether to await administrator approval), and how to redirect the new user when they first log in.</li>
-        </ol>
+    <p>This module allows a visitor to register an account as an extranet user, or as a contact.</p>
 
-    <p>For email notification, the email template can contain various merge fields:</p>
+    <p>When this module is started, it creates an HTML registration page with a registration plugin on it. You should navigate to that content item, check the settings, and publish it.</p>
+
+    <p>In typical use, a visitor must enter their email address, first and last name, and choose a password. The plugin settings have a range of options, and it is possible to let a user choose a public "screen name", to require them to accept terms and conditions, to fill in custom fields from the Users & Contacts dataset, and more. See plugin settings for detailed options.</p>
+
+    <p>The normal behaviour is to create a new User account with a "pending" status, with the system sending a verification email to the email address given by the user. Provided the user clicks the verification link, the account status is change to "active". Once "active", the user can log in to areas of the site where the content items have their permissions set to share to "all extranet users".</p>
+
+    <p>It is possible to have the status remain as "pending" after the verification step, so that an administrator should manually check and activate the account. It is also possible to use Groups, and by a user being a member of a group they are granted access to areas of the site whose content items are shared only to members of a certain group.</p>
+
+    <p>Most behaviours are defined in the plugin settings, but note also that there are site settings for User and Contact data, and for User permissions, which affect global behaviour.</p>
+
+    <p>For emails sent by this module, the email template can contain various merge fields:</p>
             <ul>
                 <li>[[first_name]] - user's first name</li>
                 <li>[[last_name]] - user's last name</li>

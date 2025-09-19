@@ -38,7 +38,7 @@ $modePath = $this->getPathFromMode($mode);
 
 
 if ($this->getModeFromPath($modePath)) {
-	$box['tabs']['first_tab']['label'] = ze\admin::phrase('Options (mode)');
+	$box['tabs']['first_tab']['label'] = ze\admin::phrase('Options (in this mode)');
 } else {
 	$box['tabs']['first_tab']['label'] = ze\admin::phrase('Options');
 }
@@ -63,7 +63,7 @@ foreach (ze\row::getDistinctAssocs(
 				'ord' => $ord,
 				'edit_mode' => $box['tabs']['first_tab']['edit_mode'],
 				'fields' => [],
-				'label' => ze\admin::phrase('Phrases (mode)')
+				'label' => ze\admin::phrase('Text (in this mode)')
 			];
 			$box['key']['feaPath'] = $feaPath;
 			ze\tuix::setupOverridesForPhrases($box, $box['tabs']['phrases.'. $feaPath]['fields'], $feaPath);

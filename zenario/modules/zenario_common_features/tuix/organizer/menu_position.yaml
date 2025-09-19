@@ -58,7 +58,16 @@ zenario__menu:
                 section_id:
                     db_column: mp.section_id
                 order_by:
-                    db_column: IF (mp.is_dummy_child = 1, '~~~~~~~~~', IFNULL(mi.ordinal, ms.section_name))
+                    # N.b. this logic here shows the main menu section first and the secondary menu section last.
+                    # Other menu sections are shown in alphabetical order.
+                    # Menu nodes are sorted by whether they are real or placeholders, then by ordinal.
+                    # The SQL is a unfortunately a bit heinous as all of this is required by the toolkit
+                    # to be in one column :(
+                    db_column: |
+                        IF (mp.is_dummy_child = 1, '~~~~~~~~~',
+                        IFNULL(mi.ordinal,
+                        IF(ms.id < 3, CONCAT(ms.id, '0', ms.section_name), CONCAT('15', ms.section_name))
+                        ))
                 ordinal:
                     db_column: mi.ordinal
                 menu_id:

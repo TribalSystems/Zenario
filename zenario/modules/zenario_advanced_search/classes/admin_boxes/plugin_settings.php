@@ -145,46 +145,46 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$this->showHideImageOptions($fields, $values, 'content_types', $hidden, $contentType . '_');
 
 					//Default column heading text
-					$columnHeadingText = '';
-					switch ($contentType) {
-						case 'html':
-							$columnHeadingText = 'HTML pages';
-							break;
-						case 'document':
-							$columnHeadingText = 'Documents';
-							break;
-						case 'news':
-							$columnHeadingText = 'News articles';
-							break;
-						case 'blog':
-							$columnHeadingText = 'Blog posts';
-							break;
-					}
-
-					if (!$values['content_types/' . $contentType . '_column_heading_text']) {
+					if (empty($fields['content_types/' . $contentType . '_column_heading_text']['value'])) {
+						$columnHeadingText = '';
+						switch ($contentType) {
+							case 'html':
+								$columnHeadingText = 'HTML pages';
+								break;
+							case 'document':
+								$columnHeadingText = 'Documents';
+								break;
+							case 'news':
+								$columnHeadingText = 'News articles';
+								break;
+							case 'blog':
+								$columnHeadingText = 'Blog posts';
+								break;
+						}
+	
 						$fields['content_types/' . $contentType . '_column_heading_text']['value'] = $columnHeadingText;
-					} else {
-						$fields['content_types/' . $contentType . '_column_heading_text']['value'] = $values['content_types/' . $contentType . '_column_heading_text'];
 					}
 					
 					//Default "No results" text
-					$noResultsText = '';
-					switch ($contentType) {
-						case 'html':
-							$noResultsText = 'No results found';
-							break;
-						case 'document':
-							$noResultsText = 'No documents found';
-							break;
-						case 'news':
-							$noResultsText = 'No news articles found';
-							break;
-						case 'blog':
-							$noResultsText = 'No blog posts found';
-							break;
+					if (empty($fields['content_types/' . $contentType . '_no_results_text']['value'])) {
+						$noResultsText = '';
+						switch ($contentType) {
+							case 'html':
+								$noResultsText = 'No results found';
+								break;
+							case 'document':
+								$noResultsText = 'No documents found';
+								break;
+							case 'news':
+								$noResultsText = 'No news articles found';
+								break;
+							case 'blog':
+								$noResultsText = 'No blog posts found';
+								break;
+						}
+	
+						$fields['content_types/' . $contentType . '_no_results_text']['value'] = $noResultsText;
 					}
-
-					$fields['content_types/' . $contentType . '_no_results_text']['value'] = $noResultsText;
 					
 					//Side note for retina feature for content types
 					if ($values['content_types/' . $contentType . '_canvas'] != "unlimited") {
@@ -194,10 +194,8 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					}
 				}
 
-				if (!$values['content_types/other_module_column_heading_text']) {
+				if (empty($fields['content_types/other_module_column_heading_text']['value'])) {
 					$fields['content_types/other_module_column_heading_text']['value'] = 'Other results';
-				} else {
-					$fields['content_types/other_module_column_heading_text']['value'] = $values['content_types/other_module_column_heading_text'];
 				}
 
 				if ($values['content_types/search_in_other_modules']) {

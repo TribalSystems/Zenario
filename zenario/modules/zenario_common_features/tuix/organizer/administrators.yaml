@@ -91,6 +91,16 @@ zenario__administration:
                         a.last_login
                     show_by_default: true
                     width: medium
+                last_activity_time:
+                    parent: last_login
+                    title: Last activity
+                    show_by_default: true
+                    width: medium
+                pending_2fa:
+                    parent: last_login
+                    title: Pending 2FA
+                    show_by_default: true
+                    width: medium
                 last_platform:
                     title: Last login browser & IP address
                     db_column: |

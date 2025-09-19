@@ -108,7 +108,7 @@ class fileAdm {
 				//If this file is stored in the database, continue running this function to move it to the docstore dir
 				if (!($addToDocstoreDirIfPossible && $existingFile['location'] == 'db')) {
 			
-					//If this file is already stored, just update the name and remove the 'archived' flag if it was set
+					//If this file is already stored, just update the name
 					$path = false;
 					if ($existingFile['location'] == 'db' || ($path = \ze\file::docstorePath($existingFile['path']))) {
 						//If the name has changed, attempt to rename the file in the filesystem
@@ -117,7 +117,7 @@ class fileAdm {
 						}
 				
 						*/
-						\ze\row::update('files', ['filename' => $filename, 'archived' => 0], $key);
+						\ze\row::update('files', ['filename' => $filename], $key);
 						if ($deleteWhenDone) {
 							unlink($location);
 						}
@@ -154,7 +154,7 @@ class fileAdm {
 				
 				if ($image === false) {
 					return false;
-				}	
+				}
 				$file['width'] = $image[0];
 				$file['height'] = $image[1];
 				$file['mime_type'] = $image['mime'];
@@ -192,8 +192,12 @@ class fileAdm {
 			if ($imageAltTag) {
 				$altTag = $imageAltTag;
 			} else {
-				$filenameArray = explode('.', $filename);
-				$altTag = self::generateAltTagFromFilename($filename);
+				if ($usage == 'site_setting') {
+					$altTag = '';
+				} else {
+					$filenameArray = explode('.', $filename);
+					$altTag = self::generateAltTagFromFilename($filename);
+				}
 			}
 			
 			if (strlen($altTag) > 125) {
@@ -201,10 +205,54 @@ class fileAdm {
 			}
 			
 			$file['alt_tag'] = $altTag;
+		
+		//Have some special handling to try and get metadata from other types of file
+		} else {
+			switch ($file['mime_type']) {
+				case 'image/icon':
+				case 'image/x-icon':
+					//Attempt to read the header of a .ico file and get the image size from it.
+					$data = file_get_contents($location);
+					
+					if (empty($data)) {
+						break;
+					}
+					
+					$iconsMetadata = unpack("Sreserved/Stype/Scount", $data);
+					
+					if (empty($iconsMetadata)) {
+						break;
+					}
+					$data = substr($data, 6);
+					
+					$largestWidth = $largestHeight = 0;
+					for ($i = 0; $i < $iconsMetadata['count']; ++$i) {
+						$iconMetadata = unpack("Cwidth/Cheight/Ccolours/Creserved/Splanes/SbitCount/Lsize/LfOffset", $data);
+						
+						if (empty($iconMetadata)) {
+							break;
+						}
+						$data = substr($data, 16);
+						
+						$width = (int) ($iconMetadata['width'] ?? 0);
+						$height = (int) ($iconMetadata['height'] ?? 0);
+						
+						if ($width
+						 && $largestWidth < $width) {
+							$largestWidth = $width;
+							$largestHeight = $height;
+						}
+					}
+					
+					if ($largestWidth) {
+						$file['width'] = $largestWidth;
+						$file['height'] = $largestHeight;
+					}
+				break;
+			}
 		}
 
 
-		$file['archived'] = 0;
 		$file['created_datetime'] = \ze\date::now();
 		
 		//Assume we're storing this file in the database to start with, but change these settings later if needed.
@@ -342,6 +390,11 @@ class fileAdm {
 		}
 	}
 
+	public static function deleteSpecialImage($fileId) {
+		\ze\file::deletePublicImage($fileId, $specialImage = true);
+		\ze\row::delete('files', $fileId);
+	}
+
 	public static function deleteMediaContentItemFileIfUnused($cID, $cType, $fileId) {
 		if ($cID && $cType && $fileId) {
 			//Check if the file is used by other content items...
@@ -357,21 +410,10 @@ class fileAdm {
 			$result = \ze\sql::select($sql);
 			$usage = \ze\sql::fetchValue($result);
 			
-			//... and check if any hierarchical document uses the same file (search by checksum).
-			$fileChecksum = \ze\row::get('files', 'checksum', $fileId);
-			
-			$otherFiles = \ze\row::getValues('files', 'id', ['checksum' => $fileChecksum]);
-			$hierarchicalDocumentsUsage = [];
-			if (!empty($otherFiles)) {
-				$hierarchicalDocumentsSql = '
-					SELECT id
-					FROM ' . DB_PREFIX . 'documents
-					WHERE file_id IN(' . \ze\escape::in($otherFiles) . ')';
-				$result = \ze\sql::select($hierarchicalDocumentsSql);
-				$hierarchicalDocumentsUsage = \ze\sql::fetchValues($result);
-			}
-			
-			if (!$usage && !$hierarchicalDocumentsUsage) {
+			//Please note: before 10.2, this logic would also check if any hierarchical document uses the same file.
+			//As of 10.2, that logic is removed, as docstore is now split into folders named after the `usage` column.
+			//Doc content items and hierarchical documents are in separate pools.
+			if (!$usage) {
 				\ze\fileAdm::delete($fileId);
 				return true;
 			}
@@ -524,7 +566,7 @@ class fileAdm {
 
 	public static function putUploadFileIntoCacheDir(
 		$filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false,
-		$cacheFor = false, $isAllowed = null, $baseLink = 'zenario/file.php'
+		$cacheFor = false, $isAllowed = null
 	) {
 		
 		//Catch the case where the browser or the server URLencoded the filename
@@ -636,7 +678,7 @@ To correct this, please ask your system administrator to perform a
 			$file['id'] = \ze\ring::encodeIdForOrganizer($sha. '/'. $file['filename']);
 		}
 		
-		$file['link'] = $baseLink. '?getUploadedFileInCacheDir='. $file['id'];
+		$file['link'] = 'zenario/preview_uploaded_file.php?uploadCode='. $file['id'];
 		if ($cacheFor) {
 			$file['link'] .= '&cacheFor=' . (int)$cacheFor;
 		}
@@ -735,7 +777,7 @@ To correct this, please ask your system administrator to perform a
 		//Check if there is an admin interface limit.
 		$pathRequest = '';
 		$method_call = \ze::request('method_call');
-		if ($method_call == 'handleAdminBoxAJAX') {
+		if ($method_call == 'handleAdminBoxAJAX' || $method_call == 'handlePluginAJAX') {
 			$pathRequest = \ze::request('path');
 		} elseif ($method_call == 'handleOrganizerPanelAJAX') {
 			$pathRequest = \ze::request('__path__');
@@ -772,12 +814,39 @@ To correct this, please ask your system administrator to perform a
 						exit;
 					}
 				}
+			} else {
+				//This logic will run in a TUIX file picker
+				$apacheMaxFilesizeInBytes = \ze\dbAdm::apacheMaxFilesize();
+				$apacheMaxFilesizeFormatted = \ze\file::fileSizeConvert($apacheMaxFilesizeInBytes);
+
+				$zenarioMaxFilesizeValue = \ze::setting('content_max_filesize');
+				$zenarioMaxFilesizeUnit = \ze::setting('content_max_filesize_unit');
+				$zenarioMaxFilesizeInBytes = \ze\file::fileSizeBasedOnUnit($zenarioMaxFilesizeValue, $zenarioMaxFilesizeUnit);
+				$zenarioMaxFilesizeFormatted = $zenarioMaxFilesizeValue . ' ' .  $zenarioMaxFilesizeUnit;
+
+				if ($_FILES[$fileVar]['size'] ?? false) {
+					if ($_FILES[$fileVar]['size'] > $apacheMaxFilesizeInBytes || $_FILES[$fileVar]['size'] > $zenarioMaxFilesizeInBytes) {
+						if ($apacheMaxFilesizeInBytes < $zenarioMaxFilesizeInBytes) {
+							$maxUploadableSizeFormatted = $apacheMaxFilesizeFormatted;
+						} else {
+							$maxUploadableSizeFormatted = $zenarioMaxFilesizeFormatted;
+						}
+		
+						echo \ze\lang::phrase(
+							'Your file was too large to be uploaded. The maximum uploadable size is [[max_uploadable_file_size]].',
+							['max_uploadable_file_size' => $maxUploadableSizeFormatted],
+							$moduleClass
+						);
+						exit;
+					}
+				}
 			}
 		}
 		
 		switch ($_FILES[$fileVar]['error'] ?? false) {
 			case UPLOAD_ERR_INI_SIZE:
 			case UPLOAD_ERR_FORM_SIZE:
+				//This logic runs on a form submission
 				$apacheMaxFilesizeInBytes = \ze\dbAdm::apacheMaxFilesize();
 				$apacheMaxFilesizeFormatted = \ze\file::fileSizeConvert($apacheMaxFilesizeInBytes);
 
@@ -934,33 +1003,42 @@ To correct this, please ask your system administrator to perform a
 					"\n\n";
 				
 				if (isset($fileCheck->errors['MISSNAMED_GIF'])) {
-					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a GIF, so its extension must be .gif (upper or lower case).', $mrg, $moduleClass);
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be a [[extension]] file, but from scanning its contents it appears to be a GIF, so its extension must be .gif (upper or lower case).', $mrg, $moduleClass);
 				
 				} elseif (isset($fileCheck->errors['MISSNAMED_JPG'])) {
-					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a JPEG, so its extension must be .jpg or .jpeg (upper or lower case).', $mrg, $moduleClass);
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be a [[extension]] file, but from scanning its contents it appears to be a JPEG, so its extension must be .jpg or .jpeg (upper or lower case).', $mrg, $moduleClass);
 				
 				} elseif (isset($fileCheck->errors['MISSNAMED_WEBP'])) {
-					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a WebP, so its extension must be .webp (upper or lower case).', $mrg, $moduleClass);
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be a [[extension]] file, but from scanning its contents it appears to be a WebP, so its extension must be .webp (upper or lower case).', $mrg, $moduleClass);
 				
 				} elseif (isset($fileCheck->errors['MISSNAMED_PNG'])) {
-					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a PNG, so its extension must be .png (upper or lower case).', $mrg, $moduleClass);
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be a [[extension]] file, but from scanning its contents it appears to be a PNG, so its extension must be .png (upper or lower case).', $mrg, $moduleClass);
 				
 				} elseif (isset($fileCheck->errors['MISSNAMED_SVG'])) {
-					echo \ze\lang::phrase('According to its name, we expect "[[name]]" to be an [[extension]] file - but on scanning its contents are a SVG, so its extension must be .svg (upper or lower case).', $mrg, $moduleClass);
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be a [[extension]] file, but from scanning its contents it appears to be an SVG, so its extension must be .svg (upper or lower case).', $mrg, $moduleClass);
 				
 				} else {
-					echo \ze\lang::phrase('According to its name, "[[name]]" should be an [[extension]] file, but on scanning its contents it failed to match "[[mimeType]]".', $mrg, $moduleClass);
+					echo \ze\lang::phrase('According to its name, "[[name]]" should be a file of type [[extension]], but from scanning its contents it failed to match "[[mimeType]]".', $mrg, $moduleClass);
 				}
 				
 				echo
 					"\n\n",
-					\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass),
-					"\n\n",
-					\ze\lang::phrase('Developers: if this message constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.', [], $moduleClass);
+					\ze\lang::phrase('This could be because the file has been corrupted, or you could have renamed the extension by mistake.', [], $moduleClass);
+				
+				if (\ze::isAdmin()) {
+					echo
+						"\n\n",
+						\ze\admin::phrase('Developers: if this message constantly occurs, even on valid files, then this is probably a misclassification in the UNIX file utility. You can fix this by adding an exception/correction in the function check() in zenario/autoload/file.php.');
+				}
 			}
 			
 			exit;
 		}
+	}
+	
+	
+	public static function scanMimeType($filepath) {
+		return exec('file --mime-type --brief '. escapeshellarg($filepath));
 	}
 	
 	
@@ -977,7 +1055,7 @@ To correct this, please ask your system administrator to perform a
 			//Attempt to call the file program to check what mime-type it thinks this file should be.
 			//Note that our check using \ze\file::mimeType() just checks the file extension and nothing else.
 			//The file program is a little more sophisticated and does some basic checks on the file's contents as well.
-			if (!$scannedMimeType = exec('file --mime-type --brief '. escapeshellarg($filepath))) {
+			if (!$scannedMimeType = \ze\fileAdm::scanMimeType($filepath)) {
 				return \ze\file::genericCheckError($filepath);
 			}
 			
@@ -1163,6 +1241,24 @@ To correct this, please ask your system administrator to perform a
 				$usage[$keyTo. 's'] = $ucat['cnt'];
 				$usage[$keyTo] = $ucat['eg'];
 			}
+		}
+		
+		$historicContent = \ze\sql::fetchAssoc("
+			SELECT foreign_key_id, foreign_key_char, foreign_key_version
+			FROM ". DB_PREFIX. "inline_images
+			WHERE image_id = ". (int) $imageId. "
+			  AND archived = 1
+			  AND foreign_key_to = 'content'
+			ORDER BY foreign_key_version DESC
+			LIMIT 1
+		");
+		
+		if ($historicContent) {
+			$usage['historic_content'] = [
+				'cID' => $historicContent['foreign_key_id'],
+				'cType' => $historicContent['foreign_key_char'],
+				'cVersion' => $historicContent['foreign_key_version']
+			];
 		}
 		
 		return $usage;
@@ -1541,25 +1637,42 @@ To correct this, please ask your system administrator to perform a
 		return false;
 	}
 
-	public static function updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId = false, $forceRescan = false) {
+	public static function updateDocumentContentItemExtract($cID, $cType, $cVersion, $fileId = false, $forceRescan = false, $createThumbnail = false) {
+		
 		if ($fileId === false) {
 			$fileId = \ze\row::get('content_item_versions', 'file_id', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		}
 	
-		if ($fileId && $file = \ze\file::docstorePath($fileId)) {
+		if ($createThumbnail
+		 && $fileId
+		 && $file = \ze\file::docstorePath($fileId)) {
 			\ze\file::addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file, true);
 		}
 		
 		//Get the file's extract
 		$extract = \ze\fileAdm::textExtract($fileId, $allowAsync = true, $forceRescan);
-	
-		\ze\row::set('content_cache', [
-			'extract' => $extract['extract'],
-			'extract_wordcount' => $extract['extract_wordcount'],
-			'extract_pagecount' => $extract['extract_pagecount']
-		], [
-			'content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion
-		]);
+		
+		//If this is a draft content item, we just want to call the ze\fileAdm::textExtract() function above
+		//to populate the file_extracts table. However for published versions of the content item
+		//we'll want to update the content_items_searchable_cache table as well
+		if (\ze\contentAdm::contentItemIsSearchable($cID, $cType, $cVersion)) {
+			
+			\ze\row::set('content_items_searchable_cache', [
+				'content_tag' => $cType . '_' . $cID,
+				'content_version' => $cVersion,
+				'file_extract' => $extract['extract'],
+				'file_extract_wordcount' => $extract['extract_wordcount'],
+				'file_extract_pagecount' => $extract['extract_pagecount']
+			], [
+				'content_id' => $cID,
+				'content_type' => $cType
+			]);
+		
+		//Drafts/trashed content items/hidden content items/unlisted content items should not be in the 
+		//content_items_searchable_cache table, clear them up if they are there.
+		} else {
+			\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cType]);
+		}
 	
 		return $extract;
 	}
@@ -1571,9 +1684,9 @@ To correct this, please ask your system administrator to perform a
 		
 		//Trim down to just the columns we use in the documents table
 		$extract = [
-			'extract' => $extract['extract'],
-			'extract_wordcount' => $extract['extract_wordcount'],
-			'extract_pagecount' => $extract['extract_pagecount']
+			'file_extract' => $extract['extract'],
+			'file_extract_wordcount' => $extract['extract_wordcount'],
+			'file_extract_pagecount' => $extract['extract_pagecount']
 		];
 	
 		$filePath = \ze\file::docstorePath($fileId);

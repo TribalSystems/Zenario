@@ -8,8 +8,8 @@ license_info: 'Modified BSD License'
 display_name: Extranet Change Password
 description: >
     <p>This module allows extranet users to change their passwords.</p>
-    <p>When you install this module, it creates a change-password page on your site with the appropriate plugin.</p>
-    <p>You should make this page that is private for all extranet users.</p>
+    <p>When this module is started, it creates a change-password content item with a plugin already in a slot.</p>
+    <p>This content item must have its permissions set to be private for all extranet users.</p>
 category: pluggable
 keywords: change, extranet, password, user
 

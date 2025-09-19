@@ -97,22 +97,22 @@ foreach (ze\sql::select($sql) as $extract) {
 				'extract_pagecount' => $pageCount
 			], $extract['file_id']);
 			
-			//Update the content_cache table, anywhere it was linked to.
+			//Update the content_items_searchable_cache table, anywhere it was linked to.
 			$sql = "
 				UPDATE ". DB_PREFIX. "content_item_versions AS v
-				INNER JOIN ". DB_PREFIX. "content_cache AS cc
+				INNER JOIN ". DB_PREFIX. "content_items_searchable_cache AS cc
 				   ON cc.content_id = v.id
 				  AND cc.content_type = v.type
 				  AND cc.content_version = v.version
-				SET cc.extract = '". ze\escape::sql($textExtract). "',
-					cc.extract_wordcount = ". (int) $wordCount;
+				SET cc.file_extract = '". ze\escape::sql($textExtract). "',
+					cc.file_extract_wordcount = ". (int) $wordCount;
 			
 			if (is_null($pageCount)) {
 				$sql .= ",
-					cc.extract_pagecount = NULL";
+					cc.file_extract_pagecount = NULL";
 			} else {
 				$sql .= ",
-					cc.extract_pagecount = ". (int) $pageCount;
+					cc.file_extract_pagecount = ". (int) $pageCount;
 			}
 			
 			$sql .= "

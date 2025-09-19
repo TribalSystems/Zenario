@@ -42,9 +42,9 @@ zenario_user__convert_to_user:
                     snippet:
                         html: |
                             <input type="button" value="Suggest" onclick="
-                                    screen_name_field = zenario.get('screen_name');
+                                    screen_name_field = zenarioAB.get('screen_name');
                                     if (screen_name_field) {
-                                        screen_name_field.value = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {screen_name_suggestion: 1, first_name: zenario.get('first_name').value, last_name: zenario.get('last_name').value, email: zenario.get('email').value}, false, false);
+                                        screen_name_field.value = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {screen_name_suggestion: 1, first_name: zenarioAB.get('first_name').value, last_name: zenarioAB.get('last_name').value, email: zenarioAB.get('email').value}, false, false);
                                     }
                             "/>
                 password:
@@ -59,9 +59,9 @@ zenario_user__convert_to_user:
                     type: toggle
                     onclick: |
                         var fields = zenarioAB.tuix.tabs.details.fields,
-                            passwordEl = zenario.get('password'),
+                            passwordEl = zenarioAB.get('password'),
                             passwordField = fields.password,
-                            revealEl = zenario.get('reveal_password'),
+                            revealEl = zenarioAB.get('reveal_password'),
                             revealField = fields.reveal_password,
                             previouslyPressed = zenarioAB.value('reveal_password', 'details');
                     
@@ -83,7 +83,7 @@ zenario_user__convert_to_user:
                                 var password = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {password_suggestion: 1}, false, false),
                                     passwordEl;
                             
-                                if (passwordEl = zenario.get('password')) {
+                                if (passwordEl = zenarioAB.get('password')) {
                                     passwordEl.value = password;
                                 }
                             "/>

@@ -404,11 +404,18 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 		
 		var commandDetails = slot.commands[command],
 			containerId = 'plgslt_' + slot.slotName,
+			commandAnimation = command,
 			di, ds;
 		
 		//Assume we'll be scrolling back up to the top of the slot unless otherwise mentioned
 		if (!defined(scrollToTopOfSlot)) {
 			scrollToTopOfSlot = true;
+		}
+		
+		//Have a special request that lets you change which animation plays for this navigation
+		if (requests && defined(requests.command_animation)) {
+			commandAnimation = requests.command_animation;
+			delete requests.command_animation;
 		}
 		
 		//Remove any code editors from the page, as a work-around to prevent
@@ -426,7 +433,7 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 		//Handle links to other slides
 		} else {
 	
-			if (command == 'back') {
+			if (commandAnimation == 'back') {
 				
 				//If this is a back-link, wipe clear all variables from states below this one in the conductor hierarchy
 				zenario_conductor.resetVarsOnBackNav(slot, commandDetails);
@@ -441,7 +448,7 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 					}
 				});
 		
-			} else if (command == 'refresh') {
+			} else if (commandAnimation == 'refresh') {
 				//Don't run any animations for pressing the refresh button, just use the usual animation in zenario.refreshPluginSlot()
 				
 				//(Also, for some reason I can't work out yet, putting a fade-out animation here causes a problem where the
@@ -472,7 +479,8 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 		
 			//zenario.refreshPluginSlot(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post)
 			zenario.refreshPluginSlot(slot.slotName, 'lookup', zenario_conductor.request(slot, commandDetails, requests), true, scrollToTopOfSlot).after(function() {
-				if (command == 'back') {
+				
+				if (commandAnimation == 'back') {
 					//Show a fade-out and back in tranisition for pressing the back link
 					zenario_conductor.transitionIn(slot, {
 						initial: {
@@ -487,7 +495,7 @@ zenario_conductor.go = function(slot, command, requests, runAfter, scrollToTopOf
 						}
 					});
 				
-				} else if (command == 'refresh') {
+				} else if (commandAnimation == 'refresh') {
 					//Don't run any animations for pressing the refresh button, just use the usual animation in zenario.refreshPluginSlot()
 				
 				} else {

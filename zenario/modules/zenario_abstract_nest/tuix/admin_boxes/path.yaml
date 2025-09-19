@@ -69,7 +69,7 @@ zenario_path:
                     onkeydown: >
                         if (this.value != ''
                          && (event.keyCode == 13 || event.keyCode > 45)) {
-                            zenario.get('commands___#custom#').checked = true;
+                            lib.get('commands___#custom#').checked = true;
                         }
                     validation:
                         no_spaces: |
@@ -113,9 +113,8 @@ zenario_path:
                             type: warning
                             size: small
                             message: >
-                                No plugin on this slide is set to generate smart breadcrumbs.
-                                Edit the nest, select a suitable plugin, and click "Use for smart breadcrumbs".
-                                You should add one.
+                                No plugin on this slide is enabled for generating smart breadcrumbs.
+                                To enable one, edit the nest, select a suitable plugin, and click "Enable smart breadcrumbs for this plugin".
                 command_end:
                     snippet:
                         show_split_values_from: command

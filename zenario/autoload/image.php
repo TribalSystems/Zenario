@@ -468,6 +468,20 @@ class image {
 		);
 	}
 	
+	public static function specialImageLink(
+		&$width, &$height, &$url, $imageId,
+		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$retina = false, $fullPath = false
+	) {
+		$mimeType = $isRetina = null;
+
+		return \ze\image::linkInternal(
+			$width, $height, $url, $retina, $isRetina, $mimeType,
+			$imageId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, 'auto', true, false, false, false, true
+		);
+	}
+	
 	public static function adminRetinaLink(
 		&$width, &$height, &$url, $imageId,
 		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
@@ -482,12 +496,26 @@ class image {
 		);
 	}
 	
+	public static function specialImageRetinaLink(
+		&$width, &$height, &$url, $imageId,
+		$maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$fullPath = false
+	) {
+		$mimeType = $isRetina = null;
+
+		return \ze\image::linkInternal(
+			$width, $height, $url, true, $isRetina, $mimeType,
+			$imageId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, 'auto', true, false, false, false, true
+		);
+	}
+	
 	public static function linkInternal(
 		&$width, &$height, &$url, $retina, &$isRetina, &$mimeType,
 		$imageId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$fullPath = false, $privacy = 'auto',
 		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false,
-		$adminFacing = false
+		$adminFacing = false, $specialImage = false
 	) {
 		$url =
 		$width = $height = $isRetina = $mimeType = false;
@@ -512,6 +540,18 @@ class image {
 			], $imageId, $orderBy = [], $ignoreMissingColumns = true))
 		 || !(\ze\file::isImageOrSVG($image['mime_type']))) {
 			return false;
+		}
+		
+		//Starting in version 10.2, we're going to be using slightly different logic for special images.
+		//These will always be considered public, and be placed in the public/special_images directory instead
+		//of the public/images directory.
+		if ($specialImage) {
+			$privacy =
+			$image['privacy'] = 'public';
+			
+			$publicDir = 'public/special_images';
+		} else {
+			$publicDir = 'public/images';
 		}
 		
 		//From version 9.7 on Zenario we're adding an extra protection for private images.
@@ -596,10 +636,10 @@ class image {
 			$imageNeedsToBeReEncoded = false;
 		}
 		
-		//With images stored in the dosctore, we have a slight preference for not converting to WebP
+		//With special images, or images stored in the dosctore, we have a slight preference for not converting to WebP
 		//and keeping the original image exactly as it was encoded.
 		//(However if we need to resize the image later, it's okay if it gets converted to WebP.)
-		if ($inDocstore) {
+		if ($inDocstore || $specialImage) {
 			$imageNeedsToBeReEncoded = false;
 		}
 		
@@ -690,11 +730,11 @@ class image {
 			//If this image should be in the public directory, try to create friendly and logical directory structure
 			if ($image['privacy'] == 'public') {
 				//We'll try to create a subdirectory inside public/images/ using the short checksum as the name
-				$path = $publicImagePath = \ze\cache::createDir($image['short_checksum'], 'public/images', false);
+				$path = $publicImagePath = \ze\cache::createDir($image['short_checksum'], $publicDir, false);
 			
 				//If this is a resize, we'll put the resize in another subdirectory using the code above as the name.
 				if ($path && $imageNeedsToBeResized) {
-					$path = \ze\cache::createDir($image['short_checksum']. '/'. $settingCode, 'public/images', false);
+					$path = \ze\cache::createDir($image['short_checksum']. '/'. $settingCode, $publicDir, false);
 				}
 		
 			//If the image should be in the private directory, don't worry about a friendly URL and

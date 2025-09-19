@@ -14,6 +14,7 @@ toolbars:
         label_when_grouping_inactive: Tools...
         label: Content item
         tooltip: ''
+        enable_slot_controls: true
         page_mode: edit_disabled
         toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
@@ -23,6 +24,7 @@ toolbars:
         label_when_grouping_inactive: Tools...
         label: Content item
         tooltip: ''
+        enable_slot_controls: true
         page_mode: edit
         toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
@@ -32,6 +34,7 @@ toolbars:
         label_when_grouping_inactive: Tools...
         label: Content item
         tooltip: You are viewing a previous version of this content item
+        enable_slot_controls: true
         page_mode: rollback
         toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
@@ -40,9 +43,19 @@ toolbars:
         priv: _PRIV_EDIT_DRAFT
         label: Restricted editing
         tooltip: Editing this content item is restricted
+        enable_slot_controls: true
         page_mode: preview
         toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_restricted_editing_tab
+    
+    translations:
+        ord: 45
+        label: Translations
+        tooltip: ''
+        page_mode: preview
+        toolbar_tab_grouping: edit
+        toolbar_microtemplate: zenario_toolbar_translations_tab
+        visible_if: zenarioA.toolbar != 'preview' && zenarioA.toolbar != 'create'
         
     menu1:
         ord: 50
@@ -67,6 +80,7 @@ toolbars:
         ord: 60
         priv: _PRIV_MANAGE_TEMPLATE_SLOT
         label: Layout
+        enable_slot_controls: true
         page_mode: layout
         toolbar_tab_grouping: edit
         toolbar_microtemplate: zenario_toolbar_layout_tab

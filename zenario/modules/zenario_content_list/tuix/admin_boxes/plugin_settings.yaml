@@ -281,10 +281,10 @@ plugin_settings:
                     label: 'Filter by category:'
                     indent: 1
                     pick_items:
-                        path: zenario__library/panels/categories
-                        min_path: zenario__library/panels/categories
-                        max_path: zenario__library/panels/categories
-                        target_path: zenario__library/panels/categories
+                        path: zenario__content/panels/categories
+                        min_path: zenario__content/panels/categories
+                        max_path: zenario__content/panels/categories
+                        target_path: zenario__content/panels/categories
                         select_phrase: Select categories...
                         multiple_select: true
                     value: ""
@@ -338,10 +338,10 @@ plugin_settings:
                     plugin_setting:
                         name: omit_category
                     pick_items:
-                        path: zenario__library/panels/categories
-                        min_path: zenario__library/panels/categories
-                        max_path: zenario__library/panels/categories
-                        target_path: zenario__library/panels/categories
+                        path: zenario__content/panels/categories
+                        min_path: zenario__content/panels/categories
+                        max_path: zenario__content/panels/categories
+                        target_path: zenario__content/panels/categories
                         select_phrase: Select categories...
                         multiple_select: true
                     value: ""
@@ -376,6 +376,7 @@ plugin_settings:
                     plugin_setting:
                         name: translate_text
                     label: 'Make this plugin multilingual using the phrases system'
+                    note_below: 'Zenario creates phrases when they are viewed (by an admin or visitor) on a content item which is not in English.'
                     type: checkbox
                     value: 1
                     format_onchange: true

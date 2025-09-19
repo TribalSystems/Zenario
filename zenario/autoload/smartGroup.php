@@ -71,6 +71,60 @@ class smartGroup {
 		return false;
 	}
 	
+	public static function countOptedOutMembers($smartGroupIds) {
+		$optedOutMembers = [];
+		
+		foreach (\ze\ray::explodeAndTrim($smartGroupIds) as $smartGroupId) {
+			$and = $tableJoins = '';
+			if (\ze\smartGroup::sql($and, $tableJoins, $smartGroupId)) {
+				$result = \ze\sql::select("
+					SELECT DISTINCT u.id
+					FROM ". DB_PREFIX. "users AS u
+					LEFT JOIN ". DB_PREFIX. "users_custom_data AS ucd
+					   ON ucd.user_id = u.id
+					". $tableJoins. "
+					WHERE TRUE
+					AND ucd.all_newsletters_opt_out = 1
+					". $and);
+				
+				while ($id = \ze\sql::fetchValue($result)) {
+					if (!in_array($id, $optedOutMembers)) {
+						$optedOutMembers[] = $id;
+					}
+				}
+			}
+		}
+	
+		return count($optedOutMembers);
+	}
+	
+	public static function countMembersWhoDidNotAcceptTC($smartGroupIds) {
+		$optedOutMembers = [];
+		
+		foreach (\ze\ray::explodeAndTrim($smartGroupIds) as $smartGroupId) {
+			$and = $tableJoins = '';
+			if (\ze\smartGroup::sql($and, $tableJoins, $smartGroupId)) {
+				$result = \ze\sql::select("
+					SELECT DISTINCT u.id
+					FROM ". DB_PREFIX. "users AS u
+					LEFT JOIN ". DB_PREFIX. "users_custom_data AS ucd
+					   ON ucd.user_id = u.id
+					". $tableJoins. "
+					WHERE TRUE
+					AND u.terms_and_conditions_accepted = 0
+					". $and);
+				
+				while ($id = \ze\sql::fetchValue($result)) {
+					if (!in_array($id, $optedOutMembers)) {
+						$optedOutMembers[] = $id;
+					}
+				}
+			}
+		}
+	
+		return count($optedOutMembers);
+	}
+	
 	public static function getMemberIds($smartGroupId) {
 	
 		$and = $tableJoins = '';

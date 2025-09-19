@@ -70,22 +70,18 @@ if (empty($_SESSION['page_mode'])
 	$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 }
 
-//In 9.0, we're experiementing with disabling the feature that remembers the page mode/admin toolbar mode.
-//However we wish to test it out first, so rather than going to all of the effort to rip it out straight
-//away, I've added this line to try and counteract it, just so we can try it out.
-
-//Commented out as of 12 Jul 2021 -- Marcin
-//$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
-
 
 
 $_SESSION['last_item'] = ze::$cType. '_'. ze::$cID. '.'. ze::$cVersion;
 
 //Check that we're about to use a toolbar that exists
-if (!ze::$cID || !isset($toolbars[($_SESSION['page_toolbar'] ?? false)])) {
+$currentToolbar = $_SESSION['page_toolbar'] ?? '';
+if (!ze::$cID || !$currentToolbar || !isset($toolbars[$currentToolbar])) {
+	
+	//If we catch a request for a toolbar that doesn't exist, have some fallback logic to try and fix this.
 	
 	//Allow switching between edit/edit_disabled/rollback. Default to preview mode otherwise.
-	if (($_SESSION['page_toolbar'] ?? false) == 'edit' || ($_SESSION['page_toolbar'] ?? false) == 'edit_disabled' || ($_SESSION['page_toolbar'] ?? false) == 'rollback') {
+	if ($currentToolbar == 'edit' || $currentToolbar == 'edit_disabled' || $currentToolbar == 'rollback') {
 		
 		if (isset($toolbars['edit'])) {
 			$_SESSION['page_mode'] = 'edit';
@@ -103,16 +99,19 @@ if (!ze::$cID || !isset($toolbars[($_SESSION['page_toolbar'] ?? false)])) {
 			$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 		}
 	
+	//Catch the case where a menu node was deleted, and its toolbar doesn't exist now.
+	//Show the primary menu node's toolbar as a fallback.
 	} elseif ($_SESSION['page_mode'] == 'menu') {
 		$_SESSION['page_toolbar'] = 'menu1';
 	
+	//Otherwise default to the "preview" toolbar.
 	} else {
 		$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
 	}
 }
 
 
-$class .= ' zenario_adminLoggedIn';
+$class .= ' zenario_adminLoggedIn zenario_pageToolbar_'. $_SESSION['page_toolbar'];
 
 foreach ([
 	'preview',

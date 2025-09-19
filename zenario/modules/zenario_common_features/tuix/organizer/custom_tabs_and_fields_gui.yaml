@@ -64,7 +64,7 @@ zenario__administration:
                                         <p>Warning: screen names are not enabled in site settings. Please go to the <a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{"id"%3A"users"}' target="_blank">Users and contacts</a> site setting to enable screen names.</p>
                                 post_field_html: </div>
                                 visible_if: |
-                                    item.dataset == 'users' && item.field_name == 'screen_name' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
+                                    item.dataset == 'users' && (item.field_name == 'screen_name' || item.field_name == 'suggest_screen_name' || item.field_name == 'screen_name_confirmed') && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
                             users_linked_countries_site_setting_disabled:
                                 pre_field_html: <div class="dataset_warning">
                                 snippet:
@@ -89,6 +89,14 @@ zenario__administration:
                                 post_field_html: </div>
                                 visible_if: |
                                     item.dataset == 'locations' && item.field_name == 'external_id' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
+                            external_number_for_organizations_site_setting_disabled:
+                                pre_field_html: <div class="dataset_warning">
+                                snippet:
+                                    html: |
+                                        <p>Warning: external number for organizations is not enabled in site settings. Please go to the <a href='organizer.php#zenario__administration/panels/site_settings//zenario_location_manager__site_settings_group~.site_settings~tzenario_location_manager__site_settings~k{"id"%3A"zenario_location_manager__site_settings_group"}' target="_blank">Organizations</a> site setting to enable it.</p>
+                                post_field_html: </div>
+                                visible_if: |
+                                    item.dataset == 'companies' && item.field_name == 'company_number' && item.field_dependent_on_a_site_setting && !item.site_setting_enabled
                             label:
                                 label: 'Label:'
                                 type: text

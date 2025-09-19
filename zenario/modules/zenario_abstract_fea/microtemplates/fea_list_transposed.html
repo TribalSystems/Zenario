@@ -1,0 +1,163 @@
+<%
+	var containerId = m.lib.containerId, tuix = m.tuix, lib = m.lib;
+	sortingEnabled = lib.sortingEnabled(),
+	showSortControls = lib.checkThingEnabled('sort_col_headers');
+	zenario.sendSignal("eventListPreDisplay", {containerId: containerId, microTemplate: "fea_list_blocks", tuix: tuix, lib: lib});
+%>
+
+
+{{m.lib.displayDevTools()}}
+
+
+<div class="{{m.lib.wrapperClassName()|e}} fea_transposed_list">
+	{{m.tuix.header_html}}
+	
+	{{m.lib.pMicroTemplate('title', m)}}
+	
+	<div class="zfea_back_button">
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, "back")) { %>
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "back")}}
+		<% } %>
+	</div>
+	<div class="zfea_buttons zfea_top_buttons">
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, "top")) { %>
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "top")}}
+		<% } %>
+	</div>
+	
+	<% var ci, col, chi, child, bi, button, oi, log, logName, gi, lg, lgName, ii, item, tag, showParent, headerId = false, firstItem = true; %>
+	
+	{{m.lib.pMicroTemplate("list_search_and_sort", m)}}
+	
+	<% if (m.tuix.item_count_message && m.tuix.__item_count__ > 1) { %>
+		<div class="item_count">
+			<p>{{m.tuix.item_count_message.replace("[[count]]", m.tuix.__item_count__)|e}}</p> 
+		</div>
+	<% } %>
+	
+	{{m.lib.pMicroTemplate('subtitle', m)}}
+	
+	<% if (m.thus.sortedCollectionButtons.length) { %>
+		<% if (zenarioT.find(m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined]) && !_.isEmpty(m.tuix.columns)) { %>
+			<div class="zfea_buttons zfea_buttons_above_list sorted_buttons">
+				{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, ["above_list", "column_header", undefined])}}
+			</div>
+		<% } %>
+	<% } %>
+	
+	<% if (!_.isEmpty(m.tuix.columns)) { %>
+		<div class="zfea_table_wrap zfea_table_list_wrap">
+		<table
+			class="
+				table_list
+				{{m.tuix.table_css_class|e}}
+			"
+		>
+			<% var labelsUsed = false; %>
+			<% foreach (m.thus.sortedItems as ii => item) { %>
+				<% if (zenario.defined(item.label)) { %>
+					<% var labelsUsed = true;%>
+					<% break;%>
+				<% } %>
+			<% } %>
+			
+			<% if (labelsUsed) { %>
+				<thead>
+					<tr class="fea_transposed_list_labels">
+						<th></th>
+						<% foreach (m.thus.sortedItems as ii => item) { %>
+							<th class="fea_transposed_list_label">{{item.label|e}}</th>
+						<% } %>
+					</tr>
+				</thead>
+			<% } %>
+			<tbody>
+			<% foreach (m.thus.sortedColumns as ci => col) { %>
+				<tr class="fea_transposed_list_column">
+					<th
+						class="
+							<% if (ci == 0) { %>
+								zfea_first_col
+							<% } %>
+							
+							<% if (sortingEnabled && (col.sort_asc || col.sort_desc)) { %>
+								<% var thisIsSorted = col.id == m.tuix.key.sortCol; %>
+								
+								<% if (showSortControls) { %>
+									zfea_col_sortable
+									
+									<% if (!thisIsSorted && col.sort_desc && (!col.sort_asc || col.sort_desc_by_default)) { %>
+										zfea_col_will_sort_desc
+									<% } %>
+								<% } %>
+								
+								<% if (thisIsSorted) { %>
+									zfea_col_sorted
+								
+									<% if (m.tuix.key.sortDesc) { %>
+										zfea_col_sorted_desc
+									<% } %>
+								<% } %>
+							<% } %>
+						"
+						<% if (showSortControls && (col.sort_asc || col.sort_desc)) { %>
+							onclick="{{m.lib.fun('changeSortCol')}}('{{col.id|e}}');"
+						<% } %>
+					><div>
+						<span>{{col.title|e}}</span>
+					</div></th>
+					
+					<% foreach (m.thus.sortedItems as ii => item) { %>
+						<td
+							id="{{('zfea_' + m.lib.containerId + '_row_' + ii + '_col_' + ci)|e}}"
+							data-label="{{col.title|e}}" 
+							class="
+								{{col.css_class|e}}
+								<% if (ci == 0) { %>
+									zfea_first_col
+								<% } %>
+							"
+							style="
+								<% if (col.align_right) { %>
+									text-align: right;
+								<% } %>
+							"
+						>
+							<div class="col_value col_value_for__{{col.id|e}} 
+		
+								<% if (item.cell_css_classes && item.cell_css_classes[col.id]) { %>
+									{{item.cell_css_classes[col.id]|e}}
+								<% } %>
+								" 
+								<% if (item.cell_tooltip && item.cell_tooltip[col.id]) { %>
+									title="{{item.cell_tooltip[col.id]|e}}"
+								<% } %>
+							>
+								{{m.lib.pMicroTemplate('list_cell', {col: col, item: item})}}
+							</div>
+						</td>
+					<% } %>
+				</tr>
+			<% } %>
+			</tbody>
+		</table>
+		</div>
+	<% } %>
+	
+	{{m.lib.pMicroTemplate("list_pagination", m)}}
+	
+	<% if (zenarioT.find(m.thus.sortedCollectionButtons, "bottom")) { %>
+		<div class="zfea_buttons zfea_bottom_buttons">
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "bottom")}}
+		</div>
+	<% } %>
+	
+	{{m.tuix.footer_html}}
+</div>
+
+
+<%
+	m.lib.after(function() {
+		zenario.sendSignal("eventListPostDisplay", {containerId: containerId, microTemplate: "fea_list_blocks", tuix: tuix, lib: lib});
+	});
+%>

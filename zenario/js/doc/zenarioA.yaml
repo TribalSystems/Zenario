@@ -26,9 +26,6 @@ funs:
             Checks if any slots on the page were flagged as being edited by an admin.
         returns: |
             Returns true or false.
-    clearToast:
-        summary: |
-            Clears a toast message that was displayed using the zenarioA.toast() function.
     closeBox:
         summary: |
             Closes a box opened by the zenarioA.openBox() function.
@@ -147,11 +144,6 @@ funs:
             Displays the name of the default language for a site.
         returns: |
             The name of the site's default language.
-    notification:
-        summary: |
-            Briefly displays a short message in a "toast" notification at the top of the screen..
-        example: |
-            <pre>zenarioA.notification('Hello world!');</pre>
     nowDoingSomething:
         summary: |
             This can be used to display a pulsating "Loading..." or "Saving..." message on the screen..
@@ -205,7 +197,7 @@ funs:
             </p>
     rememberToast:
         summary: |
-            Saves the value of the last toast message opened using the zenarioA.toast() function ahead of a page/browser reload.
+            Saves the value of the last toast message opened using the zenarioT.toast() function ahead of a page/browser reload.
         desc: |
             <p>
                 After the page is reloaded, the toast message will be re-displayed.
@@ -278,9 +270,6 @@ funs:
             an attempt tidy any bad/messy HTML from TinyMCE up a little bit.
         returns: |
             None (the input is modified).
-    toast:
-        summary: |
-            A shortcut to the toastr library, with some sensible default settings.
     toggleShowGrid:
         summary: |
             This function toggles on/off the "grid" display viewing the Edit or the Layout tab on the Admin Toolbar.

@@ -426,10 +426,68 @@ class cache {
 	}
 	
 	
-	//Functions for outputting microtemplates
-	public static function esctick($text) {
-		return str_replace(['`', '~'], ['`t', '`s'], $text);
+	
+	//This function removes certain characters from a string, so you are then free to use
+	//those characters as special characters for something.
+	public static function swig($text) {
+		return str_replace(
+			['~',	'-',	'`',	':',	"\n",	"\r",	"'",	'"',	','],
+			['~s',	'~h',	'~t',	'~c',	'~n',	'~r',	'~q',	'~d',	'~m'],
+			$text
+		);
 	}
+	public static function deswig($text) {
+		return str_replace(
+			['~h',	'~t',	'~c',	'~n',	'~r',	'~q',	'~d',	'~m',	'~s'],
+			['-',	'`',	':',	"\n",	"\r",	"'",	'"',	',',	'~'],
+			$text
+		);
+	}
+	
+	//Packing/unpacking functions for converting shallow objects into strings.
+	//This is basicly a slightly more compact, but also much more limited, alternative to JSON encoding.
+	public static function pack($array) {
+		$output = [];
+		foreach ($array as $k => $v) {
+			$output[] = \ze\cache::swig($k). '-'. \ze\cache::swig($v);
+		}
+		return implode('-', $output);
+	}
+	public static function unpack($string) {
+		$output = [];
+		$array = explode('-', $string);
+		$count = count($array) - 1;
+		
+		for ($i = 0; $i < $count; $i += 2) {
+			$output[\ze\cache::deswig($array[$i])] = \ze\cache::deswig($array[$i + 1]);
+		}
+		
+		return $output;
+	}
+	public static function packPhrases($array, $moduleClass, $languageId) {
+		$output = [];
+		foreach ($array as $k => $v) {
+			$output[$k] = \ze\lang::phrase($v, false, $moduleClass, $languageId);
+		}
+		return json_encode(\ze\cache::pack($output));
+	}
+	
+	public static function packMicrotemplates($microtemplateDirs, $targetVar = 'undefined') {
+		$output = [];
+		foreach ($microtemplateDirs as $mDir) {
+			foreach (scandir($dir = CMS_ROOT. $mDir) as $file) {
+				if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
+					$name = substr($file, 0, -5);
+					$output[$name] = trim(
+							preg_replace('@\s+@', ' ', preg_replace('@%>\s*<%@', '', preg_replace('@<\!--.*?-->@s', '',
+								file_get_contents($dir. $file)
+						))));
+				}
+			}
+		}
+		return json_encode(\ze\cache::pack($output));
+	}
+	
 	
 	
 	//Returns the IP address of the current visitor.

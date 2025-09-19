@@ -54,6 +54,55 @@ zenario_document_properties:
                             label: 'Offline'
                     validation:
                         required: 'Choose the privacy of the document.'
+                chain_documents:
+                    type: grouping
+                    name: chain_documents
+                    dataset_label: '[Chain grouping]'
+                add_to_chain:
+                    grouping: chain_documents
+                    visible_if:
+                        lib.valueIsEmpty: chain_ids
+                    type: checkbox
+                    label: 'Link to another document'
+                    redraw_onchange: true
+                chain_id:
+                    grouping: chain_documents
+                    dataset_label: '[Document link picker]'
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    pick_items:
+                        #path: zenario__library/panels/documents/refiners/public_documents_only////
+                        path: zenario__library/panels/documents
+                        min_path: zenario__library/panels/documents
+                        max_path: zenario__library/panels/documents
+                        target_path: zenario__library/panels/documents
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a document to link to...
+                        disabled_if_for_all_selected_items: |
+                            item.type == 'folder'
+                    validation:
+                        required_if_not_hidden: true
+                in_chain:
+                    grouping: chain_documents
+                    dataset_label: '["Remove document link" checkbox]'
+                    visible_if:
+                        lib.valueIsNotEmpty: chain_ids
+                    type: checkbox
+                    #label: ''
+                    redraw_onchange: true
+                    tooltip: |
+                        Uncheck this checkbox to remove the link.
+                chain_ids:
+                    grouping: chain_documents
+                    dataset_label: '[Document link viewer]'
+                    indent: 1
+                    hide_with_previous_outdented_field: true
+                    hide_if_previous_outdented_value_isnt: 1
+                    pick_items:
+                        path: zenario__library/panels/documents
+                        multiple_select: true
+                    readonly: true
                 tags:
                     label: 'Document tags:'
                     type: checkboxes
@@ -116,4 +165,3 @@ zenario_document_properties:
                     align_right: true
                     style: >
                         width: 13em;
-

@@ -7,8 +7,9 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Extranet Logout
 description: |
-    <p>This module allows extranet users to log out of your site.</p>
-            <p>When installed, it creates a Logout content item on the site.</p>
+    <p>This module allows extranet users to log out of the site.</p>
+    <p>When this module is started, it creates a logout content item with a plugin already in a slot.</p>
+    <p>This content item must have its permissions set to be public.</p>
 category: pluggable
 keywords: extranet, logout, user
 
@@ -17,6 +18,7 @@ keywords: extranet, logout, user
 vlp_class_name: zenario_extranet_logout
 css_class_name: zenario_extranet_logout
 is_pluggable: true
+plugin_must_be_on_public_page: true
 default_framework: standard
 special_pages:
     special_page:
@@ -37,4 +39,4 @@ special_pages:
 # to fix it automatically for every site.
 dependencies:
     zenario_extranet: true
-default_instance_name: Extranet Logout
+default_instance_name: Extranet logout

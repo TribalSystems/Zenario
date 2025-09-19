@@ -136,7 +136,7 @@ zenario_content_privacy:
                     type: text
                     maxlength: 200
                     oninput: |
-                        var $warningRow = $('#row__content_item_privacy_info_warning');
+                        var $warningRow = $(lib.get('row__content_item_privacy_info_warning'));
                         
                         var moduleClassNameOnLoad = zenarioAB.tuix.key.privacy_settings_on_load.module_class_name;
                         if (moduleClassNameOnLoad != this.value) {

@@ -10,7 +10,9 @@
 		inFullScreen,
 		allowProgressBarNavigation,
 		page,
+		pageOrd,
 		maxPageReached,
+		maxPageReachedOrd,
 		showLeavingPageMessage,
 		isErrors,
 		phrases,
@@ -36,7 +38,7 @@
 		}
 		
 		if (showLeavingPageMessage) {
-            if (maxPageReached > 1) {
+            if (maxPageReachedOrd > 1) {
                 window.onbeforeunload = function() {
                     return true;
                 }
@@ -66,7 +68,7 @@
 		if (allowProgressBarNavigation) {
 		    $('#' + containerId + ' .page_switcher li.step').on('click', function() {
 		        var targetPage = $(this).data('page');
-		        if (targetPage <= maxPageReached && targetPage != page) {
+		        if (this.classList.contains('clickable_step') && pageOrd <= maxPageReachedOrd && targetPage != page) {
 		            window.onbeforeunload = null;
 		            that.submitForm(containerId, {'target_page': targetPage}, true);
 		        }
@@ -266,9 +268,19 @@
 				if ($field.length > 0) {
 					
 					if ($field.is('input')) {
-						$field.on('keyup', function() {
-							$(that).find(':input').val($(this).val());
-						});
+						if ($field.attr('type') == 'radio') {
+							$('input[type=radio][name=' + $field.attr('name') + ']').change(function() {
+								//Get the label for the selected radio
+								var labelFor = $(this).attr('id');
+								var labelText = $('label[for="' + labelFor + '"]').text();
+								
+								$(that).find(':input').val($(this).val() === '' ? '' : labelText);
+							});
+						} else {
+							$field.on('keyup', function() {
+								$(that).find(':input').val($(this).val());
+							});
+						}
 					} else if ($field.is('select')) {
 						$field.on('change', function() {
 							$(that).find(':input').val($(this).val() === '' ? '' : $(this).find('option:selected').text());

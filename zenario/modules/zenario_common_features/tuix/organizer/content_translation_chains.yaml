@@ -5,7 +5,7 @@ zenario__content:
         translation_chains:
             key:
                 cType: ''
-            title: Content items and their translations
+            title: Content items and their translation chains
             no_items_message: No content items have been created.
             db_items:
                 table: >
@@ -34,8 +34,8 @@ zenario__content:
                 content_type:
                     sql: 'tc.type = [[REFINER__CONTENT_TYPE]]'
             item:
-                name: Content item and its translations
-                names: Content items and their translations
+                name: Content item and its translation chain
+                names: Content items and their translation chains
                 css_class: translation_chain
             columns:
                 chain_desc:
@@ -55,7 +55,7 @@ zenario__content:
                     align_right: true
                     width: xsmall
                 type:
-                    title: Content Type
+                    title: Content type
                     db_column: c.type
                     format: enum
                     width: large

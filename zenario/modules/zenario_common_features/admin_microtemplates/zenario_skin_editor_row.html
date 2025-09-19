@@ -2,7 +2,7 @@
 	<% var f; %>
 	<% var firstField = m.fields[0]; %>
 
-	<div id="row__{{firstField._id|escape}}" class="
+	<div id="{{m.lib.idPrefix()|escape}}row__{{firstField._id|escape}}" class="
 		zenario_ab_row__{{firstField._id|escape}}
 	">
 		<% for (f in m.fields) { %>

@@ -178,6 +178,7 @@ site_settings:
                         The XML sitemap will have the above URL. It is not editable.
                         Copy and paste this URL into search engine tools such as <a href="https://www.google.com/webmasters/tools/" target="_blank">Google Webmaster Tools</a>.
                         Friendly URLs must be enabled in order to enable the XML sitemap.
+                        If enabled, make sure you add it to the robots.txt by pressing the "Default config" button.
         robots_txt:
             label: robots.txt
             edit_mode:

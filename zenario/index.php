@@ -348,7 +348,7 @@ if (ze::$canCache) {
 
 
 
-$canonicalURL = ze\link::toItem(ze::$cID, ze::$cType, true, '', false, true, true);
+$canonicalURL = ze\link::canonical(ze::$cID, ze::$cType, true);
 
 
 $specialPage = ze\content::isSpecialPage(ze::$cID, ze::$cType);
@@ -419,11 +419,11 @@ else {
 //This default image will be shown if a page does not have a feature image.
 	if (($ogImageId = ze::setting('default_icon')) && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], $ogImageId))) {
 
-		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
-			$url = ze\file::link($icon['id']);
+		if ($icon['mime_type'] == 'image/x-icon') {
+			$url = ze\file::specialImageLink($icon['id']);
 		} else {
 			$imageWidth = $imageHeight = $url = false;
-			ze\image::link($imageWidth, $imageHeight, $url, $icon['id'], $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true);
+			ze\image::specialImageLink($imageWidth, $imageHeight, $url, $icon['id'], $ogImageMaxWidth, $ogImageMaxHeight, 'resize', 0, false, $fullPath = true);
 		}
 		
 		$mimeType = ze\file::mimeType($url);
@@ -443,16 +443,20 @@ else {
 echo '
 <meta property="og:description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '"/>
 <meta name="description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '" />
-<meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />
-<meta name="keywords" content="', (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ''), '" />';
+<meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />';
+
+if (!empty(ze::$pageKeywords)) {
+	echo '
+<meta name="keywords" content="', htmlspecialchars(ze::$pageKeywords), '" />';
+}
 
 
 // Add hreflang tags
 if (ze\lang::count() > 1) {
 	// If there are no important get requests
 	$getRequests = false;
-	foreach(ze::$importantGetRequests as $getRequest => $defaultValue) {
-		if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
+	foreach(ze::$importantGetRequests as $var => $gr) {
+		if (isset($_GET[$var]) && $_GET[$var] != $gr->defaultValue) {
 			$getRequests = true;
 			break;
 		}
@@ -478,10 +482,6 @@ if (ze\lang::count() > 1) {
 		}
 	}
 }
-
-//Skin information
-echo '
-<meta name="skin" content="' . ze::$skinName . '"/>';
 
 ze\content::pageHead('zenario/', false, true, $overrideFrameworkAndCSS);
 

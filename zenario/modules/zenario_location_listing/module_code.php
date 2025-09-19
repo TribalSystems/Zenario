@@ -281,7 +281,7 @@ class zenario_location_listing extends ze\moduleBaseClass {
 
 				if ($row['latitude'] && $row['longitude']) {
 					$mergeFields['Location_Map'] = true;
-					$mergeFields['Map_URL'] = $this->showFloatingBoxLink("&map_zoom=" . $row['map_zoom'] ."&map_center_lat=" . $row['latitude'] . "&map_center_lng=" . $row['longitude'] . "&location_id=" . (int) $row['id']);
+					$mergeFields['Map_URL'] = $this->pluginShowStandalonePageLink("&map_zoom=" . $row['map_zoom'] ."&map_center_lat=" . $row['latitude'] . "&map_center_lng=" . $row['longitude'] . "&location_id=" . (int) $row['id']);
 				}
 				
 				foreach ($row as $key => $value) {
@@ -373,12 +373,12 @@ class zenario_location_listing extends ze\moduleBaseClass {
 		}
 	}
 
-	function showFloatingBox() {
-		
+	function showStandalonePage() {
 		echo '
+			<!DOCTYPE html>
 			<html>
 				<head>
-					<script id="google_api" type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
+					<script id="google_api" type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '&libraries=marker"></script>
 					<style>
 						.zenario_slot_padding { display:none; }
 					</style>
@@ -399,14 +399,15 @@ class zenario_location_listing extends ze\moduleBaseClass {
 						mapOptions = {
 							center: new google.maps.LatLng(lat,lng),
 							zoom: actualZoom,
-							mapTypeId: google.maps.MapTypeId.ROADMAP
+							mapTypeId: google.maps.MapTypeId.ROADMAP,
+							mapId: \'my_map\'
 						}
 					
 						map = new google.maps.Map(document.getElementById(elId),mapOptions);
 				
-						marker = new google.maps.Marker({
+						marker = new google.maps.marker.AdvancedMarkerElement({
 							position: new google.maps.LatLng(lat,lng),
-							map: map
+							map
 						});
 					};
 					
@@ -421,6 +422,4 @@ class zenario_location_listing extends ze\moduleBaseClass {
 				</body>
 			</html>';
 	}
-
-
 }

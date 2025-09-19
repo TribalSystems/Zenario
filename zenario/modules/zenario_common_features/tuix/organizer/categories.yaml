@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__library:
+zenario__content:
     panels:
         categories:
             title: Content item categories
@@ -23,7 +23,7 @@ zenario__library:
                 css_class: zenario_category_icon
                 tooltip_when_link_is_active: 'View sub-categories of "[[name]]"'
                 link:
-                    path: zenario__library/panels/categories
+                    path: zenario__content/panels/categories
                     refiner: parent_category
                     branch: Yes
             columns:

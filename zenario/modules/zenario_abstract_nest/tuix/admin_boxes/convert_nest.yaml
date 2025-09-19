@@ -42,7 +42,7 @@ zenario_convert_nest:
                     row_class: zenario_fbInfo zenario_fbInfo_small
                     snippet:
                         html: |
-                            Used for a nest with multiple slides. SEO friendly when used on public pages (slides are preloaded on the client browser, and transistions are
+                            Used for a nest with multiple slides. SEO friendly when used on public pages (slides are preloaded on the client browser, and transitions are
                             implemented using JavaScript, so their content can be read by search engine bots).
                 zenario_ajax_nest_desc:
                     indent: 1
@@ -50,7 +50,7 @@ zenario_convert_nest:
                     row_class: zenario_fbInfo zenario_fbInfo_small
                     snippet:
                         html: |
-                            Used for a nest with one or multiple slides. Only one slide is loaded on the client browser at a time, and transistions
+                            Used for a nest with one or multiple slides. Only one slide is loaded on the client browser at a time, and transitions
                             between slides are implemented using AJAX (server-side calls). Allows use of Conductor for advanced nest configurations.
                 
                 animation_library:
@@ -60,6 +60,8 @@ zenario_convert_nest:
                     type: select
                     empty_value: ' -- Select -- '
                     values:
+                        one_slide:
+                            label: 'Show just one slide, no animation'
                         cycle2:
                             label: 'Show as slides'
                         accordion:

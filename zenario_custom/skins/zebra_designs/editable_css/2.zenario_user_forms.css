@@ -161,9 +161,14 @@ body.ff .zenario_user_forms .field_radios input[type=radio] + label:before {
 	padding-left:8px;
 }
 
-.zenario_user_forms .user_form .form_field.field_section_description .field_title {
-	font-weight:bold;
-	color:#525151;
+.zenario_user_forms .form_field .field_title h1, 
+.zenario_user_forms .form_field .field_title h2, 
+.zenario_user_forms .form_field .field_title h3, 
+.zenario_user_forms .form_field .field_title h4, 
+.zenario_user_forms .form_field .field_title h5, 
+.zenario_user_forms .form_field .field_title h6, 
+.zenario_user_forms .form_field .field_title p {
+	margin-bottom:0;
 }
 
 .zenario_user_forms .form_field .values_wrap .field_radio,
@@ -178,11 +183,6 @@ body.ff .zenario_user_forms .field_radios input[type=radio] + label:before {
 	max-width:740px;
 	margin:auto;
 	overflow:hidden;
-}
-
-.zenario_user_forms.zenario_user_forms__default_style .form_wrapper h2 {
-	text-align:center;
-	font-size:2em;
 }
 
 .zenario_user_forms.zenario_user_forms__default_style .form_buttons {
@@ -661,6 +661,7 @@ body.mobile .zenario_user_forms .resume_box .resume_buttons {
 
 .zenario_user_forms.form_popup .user_form .form_field.field_section_description {
 	padding-top:0;
+	padding-bottom:0;
 }
 
 .zenario_user_forms.form_popup .user_form .form_field.field_section_description .description p {

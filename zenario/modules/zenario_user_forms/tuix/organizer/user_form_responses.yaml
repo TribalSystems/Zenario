@@ -8,6 +8,8 @@ zenario__user_forms:
             css_class: two_line_list_panel
             use_tall_rows: true
             title: User Responses
+            select_mode_title: Select a response
+            multiple_select_mode_title: Select response(s)
             no_items_message: No user responses have been recorded.
             hidden: true
             default_sort_column: response_datetime
@@ -151,9 +153,12 @@ zenario__user_forms:
                 delete:
                     priv: _PRIV_VIEW_FORM_RESPONSES
                     label: 'Delete'
+                    multiple_select: true
+                    multiple_select_label: 'Delete selected responses'
                     ajax:
                         confirm:
-                            message: Are you sure you wish to delete this response?
+                            message: Delete this response?
+                            multiple_select_message: Delete the selected responses?
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

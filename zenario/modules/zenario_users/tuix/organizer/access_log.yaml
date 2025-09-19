@@ -35,9 +35,9 @@ zenario__users:
                 content:
                     table_join: |
                         INNER JOIN [[DB_PREFIX]]content_items AS c
-                                                           ON c.tag_id = [[REFINER_ID]]
-                                                          AND c.id = uca.content_id
-                                                          AND c.type = uca.content_type
+                           ON c.tag_id = [[REFINER_ID]]
+                          AND c.id = uca.content_id
+                          AND c.type = uca.content_type
             columns:
                 Time:
                     title: Time accessed
@@ -53,7 +53,7 @@ zenario__users:
                     width: small
                 User_Identifier:
                     width: medium
-                    title: User Identifier
+                    title: User identifier
                     db_column: "IFNULL(u.identifier, CONCAT(u.id, ' (account deleted)'))"
                     table_join: '[[DB_PREFIX]]users AS u ON u.id = uca.user_id'
                     show_by_default: Yes
@@ -123,4 +123,3 @@ zenario__users:
                         key:
                             tag_id: ''
                     hide_in_select_mode: true
-            

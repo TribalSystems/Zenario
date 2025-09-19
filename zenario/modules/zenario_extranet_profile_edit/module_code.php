@@ -132,7 +132,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 						$this->data['extranet_openForm'] = $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 						$this->data['extranet_closeForm'] = $this->closeForm();
 						$this->data['extranet_screen_name_unconfirmed'] = true;
-						$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', ['screen_name' => $screenName]);
+						$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('Are you happy with your screen name, "[[screen_name]]"? You can click below to confirm it, but if you want to change it, click the "Edit profile" button.', ['screen_name' => $screenName]);
 					}
 				}
 			}

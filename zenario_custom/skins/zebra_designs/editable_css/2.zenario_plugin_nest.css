@@ -64,8 +64,6 @@
 /* Indicators */
 
 .zenario_plugin_nest .nest_tabs.indicators {
-	position:absolute;
-	bottom:-25px !important;
 	width:100% !important;
 	height:24px !important;
 	text-align:center;

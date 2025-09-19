@@ -37,32 +37,74 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		$phrases = [];
-		$phrases['total'] = ze\sql::fetchValue("
+		
+		$totalPhrasesCountSql = "
 			SELECT COUNT(DISTINCT code, module_class_name)
-			FROM ". DB_PREFIX. "visitor_phrases"
-		);
-		$phrases['present'] = ze\sql::fetchValue("
+			FROM ". DB_PREFIX. "visitor_phrases";
+		
+		if ($box['key']['export_code_based_phrases_only']) {
+			$totalPhrasesCountSql .= "
+				WHERE code LIKE '\_%'
+				AND code != '__LANGUAGE_FLAG_FILENAME__'";
+			
+			$fields['export/desc']['notices_below']['export_code_based_phrases_only']['hidden'] = false;
+		} elseif ($box['key']['export_standard_phrases_only']) {
+			$totalPhrasesCountSql .= "
+				WHERE code NOT LIKE '\_%'";
+			
+			$fields['export/desc']['notices_below']['export_standard_phrases_only']['hidden'] = false;
+		}
+		
+		$totalPhrasesCountSql .= "
+			AND archived = 0";
+		
+		$phrases['total'] = ze\sql::fetchValue($totalPhrasesCountSql);
+		
+		$presentPhrasesCountSql = "
 			SELECT COUNT(DISTINCT code, module_class_name)
 			FROM ". DB_PREFIX. "visitor_phrases
 			WHERE language_id = '". ze\escape::asciiInSQL($box['key']['id']). "'
 			  AND local_text IS NOT NULL
-			  AND local_text != ''"
-		);
+			  AND local_text != ''";
+		
+		if ($box['key']['export_code_based_phrases_only']) {
+			$presentPhrasesCountSql .= "
+				AND code LIKE '\_%'
+				AND code != '__LANGUAGE_FLAG_FILENAME__'";
+		} elseif ($box['key']['export_standard_phrases_only']) {
+			$presentPhrasesCountSql .= "
+				AND code NOT LIKE '\_%'";
+		}
+		
+		$presentPhrasesCountSql .= "
+			AND archived = 0";
+		
+		$phrases['present'] = ze\sql::fetchValue($presentPhrasesCountSql);
 		
 		$phrases['missing'] = $phrases['total'] - $phrases['present'];
 		$phrases['lang'] = ze\lang::name($box['key']['id']);
 		$phrases['def_lang'] = ze\lang::name(ze::$defaultLang);
 		
-		//Display a warning if any of the phrases some from modules that cannot be found.
-		$count = ze\sql::fetchValue("
+		//Display a warning if any of the phrases come from modules that cannot be found.
+		$phrasesFromMissingModulesSql = "
 			SELECT COUNT(DISTINCT ph.code, ph.module_class_name)
 			FROM ". DB_PREFIX. "visitor_phrases ph
 			LEFT JOIN " . DB_PREFIX . "modules m
 				ON m.class_name = ph.module_class_name
 			WHERE ph.module_class_name IS NOT NULL
 			AND ph.module_class_name <> ''
-			AND m.status IS NULL OR m.status = 'module_not_initialized'"
-		);
+			AND m.status IS NULL OR m.status = 'module_not_initialized'";
+		
+		if ($box['key']['export_code_based_phrases_only']) {
+			$phrasesFromMissingModulesSql .= "
+				AND code LIKE '\_%'
+				AND code != '__LANGUAGE_FLAG_FILENAME__'";
+		} elseif ($box['key']['export_standard_phrases_only']) {
+			$phrasesFromMissingModulesSql .= "
+				AND code NOT LIKE '\_%'";
+		}
+		
+		$count = ze\sql::fetchValue($phrasesFromMissingModulesSql);
 		
 		if ($count) {
 			$fields['export/desc']['notices_below']['phrases_coming_from_missing_or_uninitialised_modules']['hidden'] = false;
@@ -150,6 +192,17 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 				SELECT DISTINCT code, module_class_name
 				FROM ". DB_PREFIX. "visitor_phrases
 				WHERE code != '__LANGUAGE_FLAG_FILENAME__'
+				AND archived = 0";
+		
+		if ($box['key']['export_code_based_phrases_only']) {
+			$sql .= "
+				AND code LIKE '\_%'";
+		} elseif ($box['key']['export_standard_phrases_only']) {
+			$sql .= "
+				AND code NOT LIKE '\_%'";
+		}
+		
+		$sql .= "
 			) AS codes
 			LEFT JOIN ". DB_PREFIX. "visitor_phrases AS phrases
 			   ON phrases.code = codes.code
@@ -217,9 +270,7 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 			$j = 0;
 			foreach ($row as $key => &$value) {
 				if ($key == 'Module') {
-					if ($value) {
-						$value .= ' (' . ze\module::getModuleDisplayNameByClassName($value) . ')';
-					} else {
+					if (!$value) {
 						$value = ze\admin::phrase('Core Features');
 					}
 				}
@@ -228,17 +279,6 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		}
 		
 		$extension = $values['export/format'];
-		if ($extension != 'csv') {
-			
-			$activeWorksheet->getProtection()->setSheet(true); 
-			$editableBit = $activeWorksheet->getStyle('E2:E'. $i);
-			$editableBit->getProtection()->setLocked(\PhpOffice\PhpSpreadsheet\Style\Protection::PROTECTION_UNPROTECTED);
-			$editableBit->applyFromArray([
-				'fill' => [
-					'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-					'color' => ['rgb' => 'e0ffe0']
-			]]);
-		}
 		
 		switch ($extension) {
 			case 'xls':
@@ -261,8 +301,15 @@ class zenario_common_features__admin_boxes__export_vlp extends ze\moduleBaseClas
 		
 		$mimeType = ze\file::mimeType($extension);
 		
+		$filename = $languageId;
+		if ($box['key']['export_code_based_phrases_only']) {
+			$filename .= "_code_based_phrases";
+		} elseif ($box['key']['export_standard_phrases_only']) {
+			$filename .= "_standard_phrases";
+		}
+		
 		header('Content-Type: '. $mimeType. '; charset=UTF-8');
-		header('Content-Disposition: attachment;filename="' . $languageId . '.'. $extension . '"');
+		header('Content-Disposition: attachment;filename="' . $filename . '.'. $extension . '"');
 		$objWriter->save('php://output');
 		exit;
 	}

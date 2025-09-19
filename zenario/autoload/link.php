@@ -158,9 +158,9 @@ class link {
 	public static function importantGetRequests($includeCIDAndType = false) {
 
 		$importantGetRequests = [];
-		foreach(\ze::$importantGetRequests as $getRequest => $defaultValue) {
-			if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
-				$importantGetRequests[$getRequest] = $_GET[$getRequest];
+		foreach(\ze::$importantGetRequests as $var => $gr) {
+			if (isset($_GET[$var]) && $_GET[$var] != $gr->defaultValue) {
+				$importantGetRequests[$var] = $_GET[$var];
 			}
 		}
 	
@@ -277,6 +277,19 @@ class link {
 	) {
 		return \ze\link::toItem($cID, $cType, $fullPath, $request, $alias, false, true, $equivId, $languageId);
 	}
+	
+	//Get the canonical URL for a page
+	public static function canonical(
+		$cID, $cType, $fullPath
+	) {
+		return \ze\link::toItem(
+			$cID, $cType, $fullPath, '', false,
+			true, true,
+			false, false, false,
+			true, false, false,
+			true
+		);
+	}
 
 
 	const toItemFromTwig = true;
@@ -286,7 +299,8 @@ class link {
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $forceAliasInAdminMode = false,
 		$equivId = false, $languageId = false, $stayInCurrentLanguage = false,
-		$useHierarchicalURLsIfEnabled = true, $overrideAlias = false, $overrideLangId = false
+		$useHierarchicalURLsIfEnabled = true, $overrideAlias = false, $overrideLangId = false,
+		$canonical = false
 	) {
 	
 		//Catch the case where a tag id is entered, not a cID and cType
@@ -379,12 +393,16 @@ class link {
 		}
 
 		//Add important requests to the URL, if the content item being linked to is the current content item,
-		//or a translation
+		//or a translation.
 		if ($autoAddImportantRequests
 		 && $equivId == \ze::$equivId) {
-			foreach(\ze::$importantGetRequests as $getRequest => $defaultValue) {
-				if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
-					$request .= '&'. urlencode($getRequest). '='. urlencode($_GET[$getRequest]);
+			foreach(\ze::$importantGetRequests as $var => $gr) {
+				//Have an option to only include variables flagged as canonical (e.g. not things like confirmation hashes).
+				if ($canonical && !$gr->canonical) {
+					continue;
+				}
+				if (isset($_GET[$var]) && $_GET[$var] != $gr->defaultValue) {
+					$request .= '&'. urlencode($var). '='. urlencode($_GET[$var]);
 				}
 			}
 		}

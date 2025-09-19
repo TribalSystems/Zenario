@@ -44,9 +44,11 @@ class zenario_users__organizer__access_log extends zenario_users {
 	
 		} elseif ($refinerName == 'user') {
 			unset($panel['columns']['User_Id']);
-			unset($panel['columns']['Screen name']['title']);
+			unset($panel['columns']['User_Identifier']);
+			unset($panel['columns']['Screen name']);
 			unset($panel['columns']['First_Name']);
 			unset($panel['columns']['Last_Name']);
+			unset($panel['columns']['User_Name']);
 			unset($panel['columns']['Email']);
 			unset($panel['columns']['Company_Name']);
 			$panel['title'] = ze\admin::phrase('Private content item access log for "[[user]]"', ['user' => ze\user::identifier($refinerId)]);
@@ -115,22 +117,24 @@ class zenario_users__organizer__access_log extends zenario_users {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
 			case 'zenario__users/panels/access_log':
-				foreach ($panel['items'] as $id => &$item) {
-					$fullName = '';
-					
-					if (!empty($item['First_Name'])) {
-						$fullName .= $item['First_Name'];
-					}
-					
-					if (!empty($item['Last_Name'])) {
+				if (isset($panel['columns']['User_Name'])) {
+					foreach ($panel['items'] as $id => &$item) {
+						$fullName = '';
+						
 						if (!empty($item['First_Name'])) {
-							$fullName .= ' ';
+							$fullName .= $item['First_Name'];
 						}
 						
-						$fullName .= $item['Last_Name'];
+						if (!empty($item['Last_Name'])) {
+							if (!empty($item['First_Name'])) {
+								$fullName .= ' ';
+							}
+							
+							$fullName .= $item['Last_Name'];
+						}
+						
+						$item['User_Name'] = $fullName;
 					}
-					
-					$item['User_Name'] = $fullName;
 				}
 			break;
 		}

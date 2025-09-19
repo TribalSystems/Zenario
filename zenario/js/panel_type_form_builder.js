@@ -109,7 +109,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	//Show Growl message if saved changes
 	if (thus.changesSaved) {
 		thus.changesSaved = false;
-		zenarioA.notification(phrase.changesSaved);
+		zenarioT.notification(phrase.changesSaved);
 	}
 };
 
@@ -794,14 +794,8 @@ methods.deletePage = function(pageId) {
 			//Move all fields on deleted page to another
 			if (pages[i - 1]) {
 				var nextPageId = pages[i - 1].id;
-				for (var j = 0; j < fields.length; j++) {
-					thus.moveFieldToPage(pageId, nextPageId, fields[j].id);
-				}
 			} else {
 				var nextPageId = pages[i + 1].id;
-				for (var j = fields.length - 1; j >= 0; j--) {
-					thus.moveFieldToPage(pageId, nextPageId, fields[j].id, true);
-				}
 			}
 			thus.deletedPages.push(pageId);
 			delete(thus.tuix.pages[pageId]);
@@ -882,13 +876,30 @@ methods.addTUIXTabEvents = function(itemType, itemId, tuixTabId) {
 	
 	if (itemType == 'page' && thus.tuix.form.status == 'active') {
 		$('#organizer_remove_form_page').on('click', function(e) {
-			var message = '<p>Delete the step "' + item.name + '"?</p>';
-			if (item.fields.length) {
-				message += '<p>All fields on this page will be moved onto the previous page.</p>';
+			e.stopPropagation();
+			
+			//Make sure we can delete this field
+			if (!thus.saveCurrentOpenDetails()) {
+				return;
 			}
-			zenarioA.floatingBox(message, 'Delete', 'warning', true, false, undefined, undefined, function() {
-				thus.deletePage(itemId);
-			});
+			
+			var keys = {
+				id: item.id,
+				form_id: item.form_id,
+				
+				//Catch the case where an admin is trying to delete a step which has not been saved yet.
+				step_name: item.name,
+				step_fields: JSON.stringify(item.fields)
+			};
+			
+			zenarioAB.open(
+				'zenario_delete_form_step',
+				keys,
+				undefined, undefined,
+				function() {
+					thus.deletePage(item.id);
+				}
+			);
 		});
 		
 	} else if (itemType == 'field') {
@@ -2012,7 +2023,7 @@ methods.canAddFieldToList = function(type, fieldId) {
 	} else if (type == 'conditional_fields') {
 		return (thus.editingThing != 'field' || field.id != thus.editingThingId) && (['checkbox', 'group', 'radios', 'select', 'centralised_radios', 'centralised_select', 'checkboxes'].indexOf(field.type) != -1);
 	} else if (type == 'mirror_fields') {
-		return (thus.editingThing != 'field' || field.id != thus.editingThingId) && (['text', 'calculated', 'select', 'centralised_select'].indexOf(field.type) != -1);
+		return (thus.editingThing != 'field' || field.id != thus.editingThingId) && (['text', 'calculated', 'select', 'centralised_select', 'radios', 'centralised_radios'].indexOf(field.type) != -1);
 	}
 	return false;
 };
@@ -2308,7 +2319,7 @@ methods.getCalculationCodeDisplay = function(calculationCode, displayHTML) {
 };
 
 //Calculation admin box methods
-methods.calculationAdminBoxAddSomthing = function(type, value) {
+methods.calculationAdminBoxAddSomething = function(type, value) {
 	var code = false;
 	switch (type) {
 		case 'operation_addition':
@@ -2322,34 +2333,34 @@ methods.calculationAdminBoxAddSomthing = function(type, value) {
 		case 'static_value':
 			if (value !== '' && !isNaN(+value)) {
 				code = {type: type, value: +value};
-				$('#static_value').val('');
+				$('#zaf_static_value').val('');
 			}
 			break;
 		case 'field':
 			if (value) {
 				code = {type: type, value: value};
-				$('#numeric_field').val('');
+				$('#zaf_numeric_field').val('');
 			}
 			break;
 	}
 	if (code) {
 		var calculationCode = [];
-		if ($('#calculation_code').val()) {
-			calculationCode = JSON.parse($('#calculation_code').val());
+		if ($('#zaf_calculation_code').val()) {
+			calculationCode = JSON.parse($('#zaf_calculation_code').val());
 		}
 		calculationCode.push(code);
-		$('#calculation_code').val(JSON.stringify(calculationCode));
+		$('#zaf_calculation_code').val(JSON.stringify(calculationCode));
 		
 		thus.calculationAdminBoxUpdateDisplay(calculationCode);
 	}
 };
 methods.calculationAdminBoxDelete = function() {
 	var calculationCode = [];
-	if ($('#calculation_code').val()) {
-		calculationCode = JSON.parse($('#calculation_code').val());
+	if ($('#zaf_calculation_code').val()) {
+		calculationCode = JSON.parse($('#zaf_calculation_code').val());
 		if (calculationCode) {
 			calculationCode.pop();
-			$('#calculation_code').val(JSON.stringify(calculationCode));
+			$('#zaf_calculation_code').val(JSON.stringify(calculationCode));
 		}
 	}
 	thus.calculationAdminBoxUpdateDisplay(calculationCode);

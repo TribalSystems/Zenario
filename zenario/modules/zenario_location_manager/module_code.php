@@ -590,11 +590,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 					}
 					
 					$map_lookup .= "</select>\n";
-					$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
-					$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap();return false\">Clear Map</button>\n";
+					$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(zenarioAB, document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
+					$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap(zenarioAB);return false\">Clear Map</button>\n";
 					
-					$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=1") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
-					$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+					$mapEdit = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=1&globalName=zenarioAB") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+					$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . htmlspecialchars($this->showFileLink("&map_center_lat=" . ($locationDetails['map_center_latitude'] ?? false) . "&map_center_lng=" . ($locationDetails['map_center_longitude'] ?? false) . "&marker_lat=" . ($locationDetails['latitude'] ?? false) . "&marker_lng=" . ($locationDetails['longitude'] ?? false) . "&zoom=" . ($locationDetails['map_zoom'] ?? false)) . "&editmode=0&globalName=zenarioAB") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
 					$fields['details/map_lookup']['snippet']['html'] = $map_lookup;				
 					$fields['details/map_edit']['snippet']['html'] = $mapEdit;
@@ -825,6 +825,18 @@ class zenario_location_manager extends ze\moduleBaseClass {
 				break;
 			case 'site_settings':
 			    if ($settingGroup == 'zenario_location_manager__site_settings_group') {
+			        if (ze\module::isRunning('zenario_organization_manager')) {
+						if (ze\module::isRunning('zenario_company_locations_manager')) {
+							$box['title'] = ze\admin::phrase('Editing settings for organizations, locations and user roles');
+						} else {
+							$box['title'] = ze\admin::phrase('Editing settings for locations and user roles');
+						}
+					} elseif (ze\module::isRunning('zenario_company_locations_manager')) {
+						$box['title'] = ze\admin::phrase('Editing settings for organizations and locations');
+					} else {
+						$box['title'] = ze\admin::phrase('Editing settings for locations');
+					}
+			        
 			        $methods = static::getMapPinPlacementMethods();
 			        $i = 0;
 			        foreach ($methods as $method => $label) {
@@ -869,7 +881,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 																	&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
 																	&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
 																	&zoom=" . ($values['details/zoom'] ?? false)) . "
-																	&editmode=1") . "\" 
+																	&editmode=1&globalName=zenarioAB") . "\" 
 																	style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 					$mapView = "<iframe id=\"google_map_iframe\" name=\"google_map_iframe\" src=\"" . 
 							htmlspecialchars($this->showFileLink("	&map_center_lat=" . ($values['details/map_center_lat'] ?? false) . "
@@ -877,7 +889,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 																	&marker_lat=" . ($values['details/marker_lat'] ?? false) . "
 																	&marker_lng=" . ($values['details/marker_lng'] ?? false) . "
 																	&zoom=" . ($values['details/zoom'] ?? false)) . "
-																	&editmode=0") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
+																	&editmode=0&globalName=zenarioAB") . "\" style=\"width: 425px;height: 425px;border: none;\"></iframe>\n";
 
 					$fields['details/map_edit']['snippet']['html'] =  $mapEdit;
 					$fields['details/map_view']['snippet']['html'] =  $mapView;
@@ -1528,7 +1540,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 									}
 									
 									if ($addressString) {
-										$response = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($addressString) . '&sensor=true');
+										$response = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($addressString));
 										$response = json_decode($response, true);
 										
 										// Responses must have one of the statuses below
@@ -1759,7 +1771,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	public function showFile() {
 		echo '<html>
 				<head>
-				<script id="google_api" type="text/javascript" src="' . ze\link::protocol() . 'maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '"></script>
+				<script id="google_api" type="text/javascript" src="' . ze\link::protocol() . 'maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '&libraries=marker"></script>
 				<script type="text/javascript" src="modules/zenario_location_manager/js/locations.js"></script>
 				</head>
 				<script type="text/javascript">
@@ -1786,7 +1798,7 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		
 		echo '					
 				</script>
-				<body onload="init()">
+				<body onload="init(window.parent[' . htmlspecialchars(json_encode($_GET['globalName'] ?? '')) . '])">
 				
 				<div id="map" style="width: 400px;height: 400px;"></div>
 				
@@ -1864,7 +1876,77 @@ class zenario_location_manager extends ze\moduleBaseClass {
 		return $rv;
 	}
 	
-	public static function getLocationDetails($ID){
+	public static function getLocations($organizationId = null, $status = null, $unsasignedOnly = false) {
+		$locations = [];
+		$sql = 'SELECT
+			loc.id,
+			loc.parent_id,
+			loc.external_id,
+			loc.description,
+			loc.address1, loc.address2, loc.locality, loc.city, loc.state, loc.postcode, loc.country_id,
+			loc.latitude, loc.longitude, loc.map_zoom, loc.map_center_latitude, loc.map_center_longitude,
+			loc.hide_pin,
+			loc.timezone,
+			loc.status,
+			loc.equiv_id,
+			loc.content_type,
+			loc.created, loc.created_admin_id, loc.created_user_id, loc.created_username,
+			loc.last_edited, loc.last_edited_admin_id, loc.last_edited_user_id, loc.last_edited_username,';
+		
+		//Companies
+		if (ze\module::inc('zenario_company_locations_manager')) {
+			$sql .= "
+				c.company_name,";
+		}
+		
+		//Custom data:
+		$sql .= "
+			cd.*
+			FROM " . DB_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS loc";
+		
+		//Companies
+		$organizationLocationManagerModuleIsRunning = ze\module::inc('zenario_company_locations_manager');
+		if ($organizationLocationManagerModuleIsRunning) {
+			$sql .= "
+				LEFT JOIN ". DB_PREFIX. ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "company_location_link AS cll
+				   ON cll.location_id = loc.id
+				LEFT JOIN ". DB_PREFIX. ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. "companies AS c
+				   ON c.id = cll.company_id";
+		}
+		
+		//Custom data:
+		$sql .= "
+			LEFT JOIN ". DB_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+			   ON cd.location_id = loc.id";
+		
+		$sql .= "
+			WHERE TRUE";
+			   
+		if ($organizationLocationManagerModuleIsRunning) {
+			if ($organizationId) {
+				$sql .= "
+					AND cll.company_id = " . (int) $organizationId;
+			}
+			
+			if ($unsasignedOnly) {
+				$sql .= "
+					AND cll.company_id = 0";
+			}
+		}
+		
+		if ($status && ze::in($status, 'pending', 'active', 'suspended')) {
+			$sql .= "
+				AND loc.status = '" . ze\escape::sql($status) . "'";
+		}
+		
+		$result = ze\sql::select($sql);
+		
+		$locations = ze\sql::fetchAssocs($result);
+		
+		return $locations;
+	}
+	
+	public static function getLocationDetails($ID) {
 		$rv = [];
 		$sql = 'SELECT loc.id,
 					loc.parent_id,

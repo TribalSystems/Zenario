@@ -42,7 +42,7 @@ echo '<!DOCTYPE HTML>
 			margin: 0;
 		}
 	</style>
-	<script src="' . ze\link::protocol() . 'maps.googleapis.com/maps/api/js?v=3&key=' . urlencode(ze::setting('google_maps_api_key')) . '" type="text/javascript"></script>
+	<script src="' . ze\link::protocol() . 'maps.googleapis.com/maps/api/js?v=3&key=' . urlencode(ze::setting('google_maps_api_key')) . '&libraries=marker,geocoding" type="text/javascript"></script>
 </head>
 <body>
 	<div id="map">
@@ -106,24 +106,21 @@ echo '<!DOCTYPE HTML>
 			}
 			
 			options.mapTypeId = options.mapTypeId || google.maps.MapTypeId.ROADMAP;
+			options.mapId = \'my_map\';
 			options.scrollwheel = false;
-			//console.log(lat + " " + lng);
-			//console.log(options.zoom + " " + lng);
 			
 			map = new google.maps.Map(el, options);
 			if (lat && lng) {
 				if (addMarkerAtCentre && customIcon) {
-					marker = new google.maps.Marker({
+					marker = new google.maps.marker.AdvancedMarkerElement({
 						position: options.center,
-						map: map,
-						zoom: options.zoom,
+						map,
 						icon: customIcon
 					});
 				} else if (addMarkerAtCentre) {
-					marker = new google.maps.Marker({
+					marker = new google.maps.marker.AdvancedMarkerElement({
 						position: options.center,
-						zoom: options.zoom,
-						map: map
+						map
 					});
 				}
 			}

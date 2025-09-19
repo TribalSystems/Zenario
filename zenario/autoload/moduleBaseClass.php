@@ -29,6 +29,20 @@
 
 namespace ze;
 
+
+//Define a very small class just so I can avoid using an array in my code.
+class getRequest {
+	public $defaultValue = '';
+	public $canonical = true;
+	
+	public function __construct($defaultValue = '', $canonical = true) {
+		$this->defaultValue = $defaultValue;
+		$this->canonical = $canonical;
+	}
+}
+
+
+
 class moduleAPI {
 	
 	
@@ -448,16 +462,16 @@ class moduleAPI {
 		
 		if ($autoAddRequests) {
 			//Add important requests to the URL
-			foreach(\ze::$importantGetRequests as $getRequest => $defaultValue) {
-				if (isset($_REQUEST[$getRequest]) && $_REQUEST[$getRequest] != $defaultValue) {
-					$html .= $this->remember($getRequest);
+			foreach(\ze::$importantGetRequests as $var => $gr) {
+				if (isset($_REQUEST[$var]) && $_REQUEST[$var] != $gr->defaultValue) {
+					$html .= $this->remember($var);
 				}
 			}
 		
 			//Add anything from the \ze::$vars, if they were missed from the \ze::$importantGetRequests
-			foreach(\ze::$vars as $getRequest => $value) {
-				if (!isset(\ze::$importantGetRequests[$getRequest]) && $value) {
-					$html .= $this->remember($getRequest, $value);
+			foreach(\ze::$vars as $var => $value) {
+				if (!isset(\ze::$importantGetRequests[$var]) && $value) {
+					$html .= $this->remember($var, $value);
 				}
 			}
 		}
@@ -657,6 +671,17 @@ class moduleAPI {
 		$securimage = new \Securimage();
 		return isset($_POST['captcha_code']) && $securimage->check($_POST['captcha_code']) != false;
 	}
+	
+	public function requireJSLibsForToasts() {
+		if (!\ze::isAdmin()) {
+			$this->requireJsLib('zenario/libs/yarn/toastr/toastr.min.js', 'zenario/libs/yarn/toastr/build/toastr.min.css');
+		}
+	}
+	
+	public function requireJSLibsForDatePickers() {
+		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
+		$this->requireJsPhrases('zenario/js/datepicker.phrases.js.php');
+	}
 
 	public final function forcePageReload($reload = true) {
 		\ze::$slotContents[$this->slotName]->forcePageReload($reload);
@@ -682,11 +707,11 @@ class moduleAPI {
 		\ze::$slotContents[$this->slotName]->showInFloatingBox($shownInFloatingBox, $floatingBoxParams);
 	}
 
-	public final function registerGetRequest($request, $defaultValue = '') {
-		\ze::$importantGetRequests[$request] = $defaultValue;
+	public final function registerGetRequest($var, $defaultValue = '', $canonical = true) {
+		\ze::$importantGetRequests[$var] = new \ze\getRequest($defaultValue, $canonical);
 	}
-	public final function clearRegisteredGetRequest($request) {
-		unset(\ze::$importantGetRequests[$request]);
+	public final function clearRegisteredGetRequest($var) {
+		unset(\ze::$importantGetRequests[$var]);
 	}
 	
 	public final function setPageTitle($title) {
@@ -940,6 +965,12 @@ class moduleAPI {
 		}
 		return '';
 	}
+	public function conductorStopDisplay($title, $message) {
+		if (isset($this->parentNest)) {
+			return $this->parentNest->stopDisplay($title, $message);
+		}
+		return false;
+	}
 	
 	
 
@@ -1109,9 +1140,9 @@ class moduleAPI {
 		}
 	}
 	
-	public final function setErrorMessage($errorMessage) {
+	public final function setErrorMessage($errorMessage, $errorClass = null) {
 		if (!empty(\ze::$slotContents[$this->slotNameNestId])) {
-			\ze::$slotContents[$this->slotNameNestId]->setErrorMessage($errorMessage);
+			\ze::$slotContents[$this->slotNameNestId]->setErrorMessage($errorMessage, $errorClass);
 		}
 	}
 	
@@ -1924,6 +1955,14 @@ class moduleBaseClass extends moduleAPI {
 		
 		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
 			return $this->subClass->typeaheadSearchAJAX($path, $tab, $searchField, $searchTerm, $searchResults);
+		}
+	}
+	
+	public function exportVisitorTUIX($path, &$tags) {
+		if (\ze::$isTwig) return;
+		
+		if ($this->subClass || ($this->subClass = $this->runSubClass(static::class, false, $path))) {
+			return $this->subClass->exportVisitorTUIX($path, $tags);
 		}
 	}
 	

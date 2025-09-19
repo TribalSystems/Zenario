@@ -37,22 +37,16 @@ switch($path) {
 			['id' => ze\escape::asciiInSQL($values['details/code'])]
 		);
 					
-		if ($values['details/update_phrase'] || !$box['key']['id']) {
-			$languages = ze\lang::getLanguages();
-			foreach ($languages as $language) {
-				ze\row::set(
-					"visitor_phrases", 	
-					[
-						'local_text' => $values['details/name'],
-						'protect_flag' => 1
-						], 
-					[
-						'language_id' => $language['id'],
-						'module_class_name' => 'zenario_country_manager',
-						'code' => '_COUNTRY_NAME_' . $values['details/code']
-					]
-				); 
-			}
+		if (!$box['key']['id']) {
+			ze\row::set(
+				"visitor_phrases", 	
+				['local_text' => $values['details/name']], 
+				[
+					'language_id' => ze::$defaultLang,
+					'module_class_name' => 'zenario_country_manager',
+					'code' => '_COUNTRY_NAME_' . $values['details/code']
+				]
+			); 
 		}
 
 		$box['key']['id'] = $values['details/code'];
@@ -78,21 +72,15 @@ switch($path) {
 		}
 		
 		if (!$box['key']['id']) {
-			$languages = ze\lang::getLanguages();
-			foreach ($languages as $language) {
-				ze\row::set(
-					"visitor_phrases", 	
-					[
-						'local_text' => $values['details/name'],
-						'protect_flag' => 1
-						], 
-					[
-						'language_id' => $language['id'],
-						'module_class_name' => 'zenario_country_manager',
-						'code' => $values['details/name']
-					]
-				); 
-			}
+			ze\row::set(
+				"visitor_phrases", 	
+				['local_text' => $values['details/name']], 
+				[
+					'language_id' => ze::$defaultLang,
+					'module_class_name' => 'zenario_country_manager',
+					'code' => $values['details/name']
+				]
+			); 
 		}
 
 		$box['key']['id'] = ze\row::set(

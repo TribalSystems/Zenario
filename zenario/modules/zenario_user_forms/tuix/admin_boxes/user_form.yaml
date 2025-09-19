@@ -164,8 +164,8 @@ zenario_user_form:
                 
                 show_page_switcher:
                     ord: 15
-                    label: Show step indicators on multi-step forms
-                    side_note: Most forms have a single step, or page, but Zenario supports forms with multiple steps. To add a step, edit the form's fields, go to the tab bar above the fields, and click + to add a step.
+                    label: Show step name or indicator
+                    side_note: Recommended if the form has two or more steps.
                     type: checkbox
                     redraw_onchange: true
                 page_switcher_navigation:
@@ -193,6 +193,17 @@ zenario_user_form:
                             type: information
                             message: |
                                 For single-step forms, the whole form will be shown in summary. For multi-step forms, each individual step that is set to appear in summary will need to be selected. This can be done in the form editor on the step settings.
+                summary_page_top_text:
+                    ord: 17.5
+                    label: 'Text at the top of the summary step:'
+                    type: text
+                    value: "You're nearly done, please check your details before submitting."
+                    maxlength: 250
+                    indent: 1
+                    hide_with_previous_field: true
+                    visible_if: zenarioAB.value('enable_summary_page')
+                    validation:
+                        required_if_not_hidden: 'Please enter the text at the top of the summary step.'
                 enable_summary_page_required_checkbox:
                     ord: 18
                     label: 'Show a mandatory checkbox on the summary step (e.g. a confirmation)'

@@ -1,0 +1,16 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_phrase:
+    tabs:
+        phrase:
+            notices:
+                translation_error:
+                    show: false
+                    type: error
+                    html: true
+                    message: "Google API reported an error. See [[link_start]]site settings[[link_end]] to check if the API key is valid."
+            fields:
+                #This module will add the "Translate with Google" buttons.
+                #All of this is done in the PHP class. Add a dummy field here so the class runs.
+                dummy_field:
+                    hidden: true

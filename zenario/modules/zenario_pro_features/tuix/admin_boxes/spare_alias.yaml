@@ -110,7 +110,7 @@ zenario_pro_features_spare_alias:
                         required_if_not_hidden: Please enter a URL
                     indent: 1
                     onkeyup: |
-                        $('#alias').keyup();
+                        $(lib.get('alias')).keyup();
                 delete_error_log:
                     grouping: grouping_right
                     label: ''                    

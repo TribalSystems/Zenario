@@ -51,7 +51,7 @@ if (!ze\priv::check('_PRIV_EDIT_DRAFT', ze::$cID, ze::$cType)) {
 		['is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => $html],
 		['name' => 'html', 'instance_id' => $this->instanceId, 'egg_id' => $this->eggId]);
 	
-	ze\contentAdm::syncInlineFileContentLink($this->cID, $this->cType, $this->cVersion);
+	ze\contentAdm::updateContentItemCache($this->cID, $this->cType, $this->cVersion);
 	
 	ze\contentAdm::updateVersion(ze::$cID, ze::$cType, ze::$cVersion);
 }

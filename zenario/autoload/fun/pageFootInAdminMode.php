@@ -50,7 +50,7 @@ if ($includeOrganizer) {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 			echo '
-'. $scriptTag. ' src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' , urlencode(ze::setting('google_maps_api_key')) , '"></script>';
+'. $scriptTag. ' src="https://maps.googleapis.com/maps/api/js?libraries=geometry&key=' , urlencode(ze::setting('google_maps_api_key')) , '&libraries=marker"></script>';
 		}
 	}
 	
@@ -111,6 +111,7 @@ if (!empty(ze::$siteConfig)) {
 			 || $setting == 'site_in_dev_mode'
 			 || $setting == 'vis_time_format'
 			 || $setting == 'google_maps_api_key'
+			 || $setting == 'first_day_of_the_week_for_calendars'
 			) {
 				$settings[$setting] = $value;
 			

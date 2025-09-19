@@ -54,8 +54,10 @@ abstract class slot {
 	}
 	
 	protected $error = false;
-	public function setErrorMessage($errorMessage) {
+	protected $errorClass;
+	public function setErrorMessage($errorMessage, $errorClass = null) {
 		$this->error = $errorMessage;
+		$this->errorClass = $errorClass;
 	}
 	
 	protected $disallowCaching = false;

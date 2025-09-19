@@ -21,20 +21,21 @@ zenario_phrase:
                 priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                 enabled: true
             fields:
+                phrase_codes_info:
+                    notices_below:
+                        phrase_codes_info:
+                            type: information
+                            message: "Code-based phrases are added to Zenario by a phrase file in a module's \"phrases\" folder, e.g. a Spanish file would be called \"es.csv.php\"."
                 module:
                     label: 'Module:'
-                    pick_items:
-                        path: zenario__modules/panels/modules
-                        target_path: zenario__modules/panels/modules
-                        min_path: zenario__modules/panels/modules
-                        max_path: zenario__modules/panels/modules
-                        disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select Module...
-                        nothing_selected_phrase: No Module Selected
-                        hide_remove_button: true
-                    validation:
-                        required: Please select a Module.
+                    type: text
+                    show_as_a_span: true
+                seen_at:
+                    label: 'Seen at:'
+                    snippet:
+                        html: ''
                 code:
                     type: textarea
                     readonly: true
+                    disabled: true
                     rows: 2

@@ -31,13 +31,7 @@
 ">
 	{{m.tuix.header_html}}
 	
-	<% if (m.tuix.title !== undefined) { %>
-	    <% if (m.tuix.title_tags) { %>
-		    <{{m.tuix.title_tags|e}}>{{m.tuix.title|e}}</{{m.tuix.title_tags|e}}>
-		<% } else { %>
-		    <h1>{{m.tuix.title|e}}</h1>
-		<% } %>
-	<% } %>
+	{{m.lib.pMicroTemplate('title', m)}}
 	
 	<div class="zfea_back_button">
 		<% if (zenarioT.find(m.thus.sortedCollectionButtons, "back")) { %>
@@ -81,16 +75,12 @@
 		</div>
 	<% } %>
 	
-	<% if (m.tuix.subtitle !== undefined) { %>
-		<div class="subtitle">
-			<h1>{{m.tuix.subtitle|e}}</h1>
-		</div>
-	<% } %>
+	{{m.lib.pMicroTemplate('subtitle', m)}}
 	
 	{{m.tuix.body_html}}
 	
 	<% if (!_.isEmpty(m.tuix.columns)) { %>
-		<div class="zfea_table_list_wrap">
+		<div class="zfea_table_wrap zfea_table_list_wrap">
 			<% foreach (m.thus.sortedListOuterGroupings as oi => logName) { %>
 				<% log = m.tuix.list_outer_groupings && m.tuix.list_outer_groupings[logName]; %>
 				
@@ -143,11 +133,17 @@
 											<% } %>
 											
 											<% if (sortingEnabled && (col.sort_asc || col.sort_desc)) { %>
+												<% var thisIsSorted = col.id == m.tuix.key.sortCol; %>
+												
 												<% if (showSortControls) { %>
 													zfea_col_sortable
+													
+													<% if (!thisIsSorted && col.sort_desc && (!col.sort_asc || col.sort_desc_by_default)) { %>
+														zfea_col_will_sort_desc
+													<% } %>
 												<% } %>
 												
-												<% if (col.id == m.tuix.key.sortCol) { %>
+												<% if (thisIsSorted) { %>
 													zfea_col_sorted
 												
 													<% if (m.tuix.key.sortDesc) { %>
@@ -281,8 +277,13 @@
 		</div>
 	<% } %>
 	
-	
 	{{m.lib.pMicroTemplate('list_pagination', m)}}
+	
+	<% if (zenarioT.find(m.thus.sortedCollectionButtons, "bottom")) { %>
+		<div class="zfea_buttons zfea_bottom_buttons">
+			{{m.lib.pMicroTemplate("button", m.thus.sortedCollectionButtons, "bottom")}}
+		</div>
+	<% } %>
 	
 	{{m.tuix.footer_html}}
 </div>

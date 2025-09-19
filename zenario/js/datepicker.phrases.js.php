@@ -48,8 +48,8 @@ ze\db::loadSiteConfig();
 //Enable the phrases translation system for this script
 \ze::$trackPhrases = true;
 
-$prevText = ze\lang::phrase('Prev', false, 'zenario_common_features', $langId);
-$nextText = ze\lang::phrase('Next', false, 'zenario_common_features', $langId);
+$prevText = ze\lang::phrase('_PREV', false, 'zenario_common_features', $langId);
+$nextText = ze\lang::phrase('_NEXT', false, 'zenario_common_features', $langId);
 
 $monthNames = [];
 $monthNamesShort = [];
@@ -65,6 +65,31 @@ for ($i = 0; $i <= 6; ++$i) {
 	$dayNamesShort[] = ze\lang::dayPhrase('_WEEKDAY_SHORT_', $i, $langId);
 }
 
+switch (ze::setting('first_day_of_the_week_for_calendars')) {
+	case 'monday':
+	default:
+		$firstDayNumber = 1;
+		break;
+	case 'tuesday':
+		$firstDayNumber = 2;
+		break;
+	case 'wednesday':
+		$firstDayNumber = 3;
+		break;
+	case 'thursday':
+		$firstDayNumber = 4;
+		break;
+	case 'friday':
+		$firstDayNumber = 5;
+		break;
+	case 'saturday':
+		$firstDayNumber = 6;
+		break;
+	case 'sunday':
+		$firstDayNumber = 0;
+		break;
+}
+
 echo '
 $.datepicker.setDefaults({
 	prevText: ', json_encode($prevText), ',
@@ -73,7 +98,8 @@ $.datepicker.setDefaults({
 	monthNamesShort: ', json_encode($monthNamesShort), ',
 	dayNames: ', json_encode($dayNames), ',
 	dayNamesShort: ', json_encode($dayNamesShort), ',
-	dayNamesMin: ', json_encode($dayNamesShort), '
+	dayNamesMin: ', json_encode($dayNamesShort), ',
+	firstDay: ', json_encode($firstDayNumber), '
 });
 ';
 

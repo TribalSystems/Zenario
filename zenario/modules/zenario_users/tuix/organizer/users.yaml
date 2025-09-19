@@ -246,6 +246,15 @@ zenario__users:
                     hide_when_children_are_not_visible: true
                     label: ⚙
                 
+                users_dataset:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Edit Users dataset
+                    parent: settings_dropdown
+                    hide_in_select_mode: true
+                    hide_on_refiner: true
+                    link:
+                        path: ''
+                
                 settings:
                     priv: _PRIV_VIEW_SITE_SETTING
                     label: Settings for Users/Contacts
@@ -267,24 +276,6 @@ zenario__users:
                         path: site_settings
                         key:
                             id: data_protection
-
-
-                
-                dataset_dropdown:
-                    css_class: organizer_settings_dropdown
-                    ord: 999993
-                    hide_when_children_are_not_visible: true
-                    label: 💿 
-                    #✇ 
-                
-                users_dataset:
-                    priv: _PRIV_MANAGE_DATASET
-                    label: Edit Users Dataset
-                    parent: dataset_dropdown
-                    hide_in_select_mode: true
-                    hide_on_refiner: true
-                    link:
-                        path: ''
                     
                 
                 

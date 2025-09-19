@@ -1162,4 +1162,117 @@ Requesting admin: [[requesting_admin]]
 			}
 		}
 	}
+	
+	public static function getExportWindowFilters() {
+		$selectedFilters = [];
+		
+		if (isset($_GET['_filters'])) {	
+			$filters = json_decode($_GET['_filters'], true);
+			if (!empty($filters)) {
+				foreach ($filters as $filterColumn => $filterValues) {
+					if (!empty($filterValues)) {
+						$filterValue = $filters[$filterColumn]['v'] ?? '';
+						
+						if ($filterValue) {
+							//Check if this is a range of dates
+							if (strpos($filterValue, ',') !== false) {
+								$dates = explode(',', $filterValue);
+								$replace = ['filter_column' => $filterColumn];
+								
+								if ($dates[0]) {
+									$phrase = '[[filter_column]] is on or after "[[filter_value_start]]"';
+									$replace['filter_value_start'] = $dates[0];
+									
+									if ($dates[1]) {
+										$phrase .= ', and on or before "[[filter_value_end]]"';
+										$replace['filter_value_end'] = $dates[1];
+									}
+								} elseif ($dates[1]) {
+									$phrase = '[[filter_column]] is on or before "[[filter_value_end]]"';
+									$replace['filter_value_end'] = $dates[1];
+								}
+							} else {
+								if (!empty($filters[$filterColumn]['not'])) {
+									$phrase = '[[filter_column]] is not "[[filter_value]]"';
+								} else {
+									$phrase = '[[filter_column]] is "[[filter_value]]"';
+								}
+								
+								$replace = ['filter_column' => $filterColumn, 'filter_value' => $filterValue];
+							}
+						}
+						
+						$selectedFilters[] = ze\admin::phrase($phrase, $replace);
+					}
+				}
+			}
+		}
+		
+		if (isset($_GET['_search'])) {
+			$searchTerms = $_GET['_search'];
+			$selectedFilters[] = ze\admin::phrase('records matching the search term(s) "[[search_terms]]"', ['search_terms' => htmlspecialchars($searchTerms)]);
+		}
+		
+		if ($selectedFilters) {
+			return ze\admin::phrase('Selected filters:') . '<ul><li>' . implode('</li><li>', $selectedFilters) . '</li></ul>';
+		}
+		
+		return '';
+	}
+	
+	public static function languageImportResults($languageId, $numberOf, $error = false, $changeButtonHTML = false) {
+		$fileImportedString = '';
+		$replace = $numberOf;
+		if ($languageId && ($language = ze\lang::name($languageId))) {
+			$fileImportedString = 'File with [[language_name]] translations imported.';
+			$replace['language_name'] = $language;
+		}
+		
+		$replace['default_language'] = ze\lang::name(ze::$defaultLang);
+		
+		$fileImportedString .= '
+			
+			Translations for [[added]] phrase(s) were added.
+			
+			Translations for [[updated]] phrase(s) were updated.
+			
+			Translations of [[protected]] phrase(s) were skipped because they were protected.
+			
+			Translations of [[skipped]] phrase(s) were skipped because they do not exist in [[default_language]].
+			
+			Translations of [[restored_from_archive]] phrase(s) were restored from archive.';
+		
+		
+		
+		if ($error) {
+			echo $error;
+
+		} elseif ($numberOf['wrong_language']) {
+			echo ze\admin::phrase("_VLP_IMPORT_FOR_WRONG_LANGUAGE");
+			
+		} elseif ($numberOf['language_not_enabled']) {
+			echo ze\admin::phrase("The language pack you are trying to import is for a language that is not enabled on this site.");
+
+		} elseif ($numberOf['upload_error']) {
+			echo ze\admin::phrase("There was an error with your file upload. Please make sure you have provided a valid file, in the format required by this tool.").
+					ze\admin::phrase($fileImportedString, $replace);
+	
+		} elseif ($numberOf['added'] || $numberOf['updated']) {
+			ze\escape::bFlag('MESSAGE_TYPE', 'success');
+			
+			if ($changeButtonHTML) {
+				ze\escape::bFlag('BUTTON_HTML', '<input type="button" class="submit zenario_gp_button" value="'. ze\admin::phrase('OK'). '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>');
+			}
+			
+			echo ze\admin::phrase($fileImportedString, $replace);
+	
+		} else {
+			ze\escape::bFlag('MESSAGE_TYPE', 'warning');
+			echo ze\admin::phrase("No phrases were imported.");
+	
+			if ($numberOf['protected'] > 0) {
+				echo ze\admin::phrase(" [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
+			}
+		}
+	}
 }

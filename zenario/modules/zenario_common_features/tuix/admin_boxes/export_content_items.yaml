@@ -17,6 +17,12 @@ zenario_export_content_items:
             label: File
             edit_mode:
                 enabled: true
+            notices: 
+                selected_filters:
+                    show: false
+                    type: information
+                    html: true
+                    message: ''
             fields:
                 desc:
                     snippet:

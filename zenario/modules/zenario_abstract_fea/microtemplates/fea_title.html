@@ -1,0 +1,5 @@
+<% var title = m.lib.getTitle(); %>
+<% if (title !== undefined) { %>
+	<% var tag = m.tuix.title_tags || 'h1'; %>
+	<{{tag|e}} class="zfea_title">{{title|e}}</{{tag|e}}>
+<% } %>

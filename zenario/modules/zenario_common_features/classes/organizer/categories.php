@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__categories extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__library/panels/categories') return;
+		if ($path != 'zenario__content/panels/categories') return;
 		
 		if (!$refinerName && !ze::in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 			$panel['title'] = ze\admin::phrase('Categories (top level)');
@@ -44,7 +44,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__library/panels/categories') return;
+		if ($path != 'zenario__content/panels/categories') return;
 		
 		$langs = ze\lang::getLanguages();
 		foreach($langs as $lang) {
@@ -131,7 +131,7 @@ class zenario_common_features__organizer__categories extends ze\moduleBaseClass 
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($path != 'zenario__library/panels/categories') return;
+		if ($path != 'zenario__content/panels/categories') return;
 		
 		if (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_CATEGORY')) {
 			foreach (explode(',', $ids) as $id) {

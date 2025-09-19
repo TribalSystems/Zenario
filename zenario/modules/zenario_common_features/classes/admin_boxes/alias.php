@@ -197,12 +197,17 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-		if (!array_key_exists("refinerName",$_GET)){
-
-				ze\tuix::closeWithFlags(['GO_TO_URL' => $values['meta_data/alias'] ]);
-				exit;
+		//On the front-end, redirect the admin to the new alias.
+		//Use the content item identifier if the alias was blanked.
+		if (!array_key_exists("refinerName", $_GET)) {
+			if ($values['meta_data/alias']) {
+				$target = $values['meta_data/alias'];
+			} else {
+				$target = $box['key']['id'];
+			}
+			
+			ze\tuix::closeWithFlags(['GO_TO_URL' => $target]);
+			exit;
 		}
-		
 	}
 }

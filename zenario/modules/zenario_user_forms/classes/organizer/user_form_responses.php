@@ -38,9 +38,9 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			$panel['title'] = ze\admin::phrase('Responses for form "[[name]]" (ID: [[form_id]])', ['name' => $form['name'], 'form_id' => (int) $refinerId]);
 
 			//Information to view Data Protection settings
-			$phrase = '';
+			$phrase = $noticeType = '';
 			
-			self::formatDataProtectionValueNicely($individualFormSetting = $form['period_to_delete_response_headers'], $phrase, $noticeType);
+			zenario_user_forms::formatDataProtectionValueNicelyForOrganizerNotice($individualFormSetting = $form['period_to_delete_response_headers'], $phrase, $noticeType);
 
 			$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$linkStart = "<a target='_blank' href='" . $href . "'>";
@@ -90,8 +90,8 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			//Information to view Data Protection settings
 			$setting = ze::setting('period_to_delete_the_form_response_log_headers');
 
-			$phrase = '';
-			self::formatDataProtectionValueNicely($individualFormSetting = null, $phrase, $noticeType);
+			$phrase = $noticeType = '';
+			zenario_user_forms::formatDataProtectionValueNicelyForOrganizerNotice($individualFormSetting = null, $phrase, $noticeType);
 
 			$href = ze\link::absolute() .'organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 			$linkStart = "<a target='_blank' href='" . $href . "'>";
@@ -172,7 +172,7 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 						$label .= ' [[allocated_relative_date]] by [[admin_name]]';
 			
 						$timestampAllocated = strtotime($response['allocated_to_admin_datetime']);
-						$labelMergeFields = ['allocated_relative_date' => ze\date::formatRelativeDateTime($timestampAllocated), 'admin_name' => ze\admin::formatName($response['allocated_to_admin_id'])];
+						$labelMergeFields = ['allocated_relative_date' => ze\date::formatRelativeDateTime($timestampAllocated, $maxPeriod = "day", $addFullTime = false), 'admin_name' => ze\admin::formatName($response['allocated_to_admin_id'])];
 						
 						$response['allocated_to_admin'] = ze\admin::phrase($label, $labelMergeFields);
 					}
@@ -236,115 +236,12 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 					zenario_user_forms::deleteFormResponse($row['id']);
 				}
 			}
-		//Delete single response
+		//Delete single response or multiple selected responses
 		} else if (ze::post('delete_form_response')) {
-			zenario_user_forms::deleteFormResponse($ids);
-		}
-	}
-
-	private function formatDataProtectionValueNicely($individualFormSetting, &$phrase, &$noticeType) {
-		$noticeType = 'information';
-		
-		$siteSetting = ze::setting('period_to_delete_the_form_response_log_headers');
-		
-		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
-			$phrase = "Responses for this form ";
-			$settingToCheck = $individualFormSetting;
-		} else {
-			$phrase = "Form responses ";
-			$settingToCheck = $siteSetting;
-		}
-		
-		switch ($settingToCheck) {
-			case 'never_delete':
-				$phrase .= 'are stored forever';
-				break;
-			case 0:
-				$phrase .= 'are not stored';
-				break;
-			case 1:
-				$phrase .= 'are deleted after 1 day';
-				break;
-			case 7:
-				$phrase .= 'are deleted after 1 week';
-				break;
-			case 14:
-				$phrase .= 'are deleted after 2 weeks';
-				break;
-			case 30:
-				$phrase .= 'are deleted after 1 month';
-				break;
-			case 90:
-				$phrase .= 'are deleted after 3 months';
-				break;
-			case 180:
-				$phrase .= 'are deleted after 6 months';
-				break;
-			case 270:
-				$phrase .= 'are deleted after 9 months';
-				break;
-			case 365:
-				$phrase .= 'are deleted after 1 year';
-				break;
-			case 730:
-				$phrase .= 'are deleted after 2 years';
-				break;
-		}
-		
-		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
-			//Please note: this phrase will appear even in silly situations where the individual form setting
-			//is not "Use site-wide setting" and its value is exactly the same as the site setting.
-			$phrase .= "; this overrides the global settings";
-		}
-		
-		$phrase .= ".";
-		
-		//As of Zenario 10.1, display a warning if the sent email log
-		//is cleared out before the form responses.
-		$emailLogSiteSetting = ze::setting('period_to_delete_the_email_template_sending_log_headers');
-		if (
-			($settingToCheck == 'never_delete' && $emailLogSiteSetting != 'never_delete')
-			|| ($settingToCheck > $emailLogSiteSetting)
-		) {
-			$noticeType = 'warning';
-			$phrase .= " ";
-			
-			switch ($emailLogSiteSetting) {
-				case 'never_delete':
-					$phrase .= 'Entries in the sent email log are stored forever.';
-					break;
-				case 0:
-					$phrase .= 'Entries in the sent email log are not stored.';
-					break;
-				case 1:
-					$phrase .= 'Entries in the sent email log are deleted after 1 day.';
-					break;
-				case 7:
-					$phrase .= 'Entries in the sent email log are deleted after 1 week.';
-					break;
-				case 14:
-					$phrase .= 'Entries in the sent email log are deleted after 2 weeks.';
-					break;
-				case 30:
-					$phrase .= 'Entries in the sent email log are deleted after 1 month.';
-					break;
-				case 90:
-					$phrase .= 'Entries in the sent email log are deleted after 3 months.';
-					break;
-				case 180:
-					$phrase .= 'Entries in the sent email log are deleted after 6 months.';
-					break;
-				case 270:
-					$phrase .= 'Entries in the sent email log are deleted after 9 months.';
-					break;
-				case 365:
-					$phrase .= 'Entries in the sent email log are deleted after 1 year.';
-					break;
-				case 730:
-					$phrase .= 'Entries in the sent email log are deleted after 2 years.';
-					break;
-				
+			foreach (explode(',', $ids) as $id) {
+				zenario_user_forms::deleteFormResponse($id);
 			}
+
 		}
 	}
 }

@@ -7,11 +7,14 @@ plugin_settings:
             label: Send email confirmation
             fields:
                 show_link_to_logout_page:
+                    plugin_setting:
+                        name: show_link_to_logout_page
                     label: Show link to logout page
                     type: checkbox
                     value: 1
-                    readonly: true
+                    redraw_onchange: true
                 logout_page:
+                    visible_if: zenarioAB.value('show_link_to_logout_page')
                     plugin_setting:
                         foreign_key_to: content
                     label: 'Logout page:'

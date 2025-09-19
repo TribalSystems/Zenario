@@ -91,6 +91,25 @@ sections:
                         <p>
                             This view allows you to view details of a previous version of this content item.
                         </p>
+            translations:
+                appears_in_toolbars:
+                    translations: true
+                label: Translations view
+                help:
+                    html: true
+                    message: |
+                        <p>
+                            <strong>Translations view</strong>
+                        </p>
+                        <p>
+                            Content items may exist in one language or be translated into different languages.
+                        </p>
+                        <p>
+                            A group of translations of the same content item is called a "translation chain". You can check which translations exist in the chain, and which ones may be missing, using the "Existing translations" dropdown.
+                        </p>
+                        <p>
+                            You can also create a new translation using the "Create translation in..." dropdown, or if there is an existing content item outside of the chain, you can add it to the current chain.
+                        </p>
             #item:
             #    appears_in_toolbars:
             #        item: true

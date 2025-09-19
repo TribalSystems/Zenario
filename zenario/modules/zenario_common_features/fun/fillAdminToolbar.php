@@ -118,7 +118,7 @@ if (!$content || !$version) {
 		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']['admin_box']);
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['css_class'] .= ' zenario_at_icon_staging_mode_not_available';
 		$adminToolbar['sections']['icons']['buttons']['staging_mode']['tooltip'] =
-			ze\admin::phrase('Staging mode not available for private content items.');
+			ze\admin::phrase('Staging mode cannot be used for private content items.');
 	
 	} elseif (!ze::$isDraft) {
 		unset($adminToolbar['sections']['icons']['buttons']['staging_mode']['admin_box']);
@@ -577,8 +577,12 @@ if (!ze::$isDraft) {
 	if ($content['lock_owner_id'] && $content['lock_owner_id'] == ($_SESSION['admin_userid'] ?? false)) {
 		$adminToolbar['sections']['actions']['buttons']['locked']['label'] = ze\admin::phrase('LOCKED by you');
 		
-		$adminToolbar['sections']['actions']['buttons']['unlock']['tooltip'] =
-			ze\admin::phrase('Locked by you [[time]] ago|Click here to unlock', $mrg);
+		if ($version['scheduled_publish_datetime']) {
+			unset($adminToolbar['sections']['actions']['buttons']['unlock']);
+		} else {
+			$adminToolbar['sections']['actions']['buttons']['unlock']['tooltip'] =
+				ze\admin::phrase('Locked by you [[time]] ago|Click here to unlock', $mrg);
+		}
 		
 		unset($adminToolbar['sections']['actions']['buttons']['lock']);
 		unset($adminToolbar['sections']['actions']['buttons']['force_open']);
@@ -588,8 +592,12 @@ if (!ze::$isDraft) {
 		$adminToolbar['sections']['actions']['buttons']['locked']['label'] = ze\admin::phrase('LOCKED');
 		$adminToolbar['sections']['actions']['css_class'] = 'zenario_section_pink';
 		
-		$adminToolbar['sections']['actions']['buttons']['force_open']['tooltip'] =
-			ze\admin::phrase('Locked by [[name]], [[time]] ago|Click here to force-unlock', $mrg);
+		if ($version['scheduled_publish_datetime']) {
+			unset($adminToolbar['sections']['actions']['buttons']['force_open']);
+		} else {
+			$adminToolbar['sections']['actions']['buttons']['force_open']['tooltip'] =
+				ze\admin::phrase('Locked by [[name]], [[time]] ago|Click here to force-unlock', $mrg);
+		}
 		
 		if (isset($adminToolbar['toolbars']['edit'])) {
 			$adminToolbar['toolbars']['edit']['help'] =
@@ -657,8 +665,9 @@ if (isset($adminToolbar['sections']['edit']['buttons']['view_slots'])) {
 if (isset($adminToolbar['sections']['translations'])) {
 	
 	//Hide the multilingual section of the toolbar if not in use
-	if (!$isMultilingual) {
+	if (!$isMultilingual || ($cVersion != ze::$adminVersion && $cVersion != ze::$visitorVersion)) {
 		$adminToolbar['sections']['translations']['hidden'] = true;
+		$adminToolbar['toolbars']['translations']['hidden'] = true;
 
 	} else {
 		//Loop through every possible language, added a drop-down with options for that language
@@ -684,10 +693,6 @@ if (isset($adminToolbar['sections']['translations'])) {
 			//Select one of the different templates to copy, depending on what the status of the translation is
 			if ($exists) {
 				$lang['status'] = $translation['status'];
-				
-				if ($isCurrent) {
-					$buttons = $adminToolbar['sections']['translations']['custom_template_buttons_current'];
-				}
 			} else {
 				//For admins with limited permissions, do not display any options to create or attach.
 				if (ze\priv::onLanguage('_PRIV_EDIT_DRAFT', $lang['id'])) {
@@ -714,7 +719,6 @@ if (isset($adminToolbar['sections']['translations'])) {
 					['language_name' => $lang['english_name'], 'language_code' => $lang['id']]
 				);
 			}
-			
 			
 			//Always display every enabled language on the list of "Existing languages",
 			//even if this language has already been added to the default/create/attach list.
@@ -1013,7 +1017,33 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			//Get some information on this Menu Node's position/path
 			$level = ze\menuAdm::level($menuItem['id']);
 			$parent = $menuItem;
-			$menuItem['path'] = ze\menuAdm::path($menuItem['id'], ze::$langId);
+			
+			$menuPath = [];
+			$menuPathWithoutHtml = [];
+			$separator = ' › ';
+			
+			$menuPathArray = ze\menuAdm::path($menuItem['id'], ze::$langId, $separator, $addHome = true, $returnArray = true);
+			if ($menuPathArray) {
+				$lastElementIndex = count($menuPathArray) - 1;
+				$j = 0;
+				foreach ($menuPathArray as $menuRow) {
+					if ($j == 0 && $menuRow['section_id'] != 1) {
+						$j++;
+						continue;
+					}
+					
+					$classList = 'zfab_menuPathPreviewNode';
+					if ($j == $lastElementIndex) {
+						$classList .= ' zenario_textbox_noborder zfab_menuPathPreviewUpdatingNode';
+					}
+					$j++;
+					
+					$menuPath[] = '<span class="' . $classList . '">' . htmlspecialchars($menuRow['text']) . '</span>';
+					$menuPathWithoutHtml[] = $menuRow['text'];
+				}
+			}
+			
+			$menuItem['path'] = implode('', $menuPath);
 			
 			//Add a fake button with the path information
 				//(This will actually be used to display an infobar)
@@ -1023,27 +1053,9 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				'zenario_at_infobar'.
 				($menuItem['parent_id']? '_child' : '_toplevel').
 				($primary? '_menuitem' : '_secondary_menuitem').
-				(ze\row::exists('menu_nodes', ['parent_id' => $menuItem['id']])? '_with_children' : '_without_children');
+				(ze\row::exists('menu_nodes', ['parent_id' => $menuItem['id']])? '_with_children' : '_without_children').
+				(!empty($menuItem['invisible']) ? ' invisible_menu_node' : '');
 		
-			
-			$mrg = [
-				'path' => htmlspecialchars($menuItem['path']),
-				'level' => htmlspecialchars($level),
-				'section' => htmlspecialchars(ze\menu::sectionName($menuItem['section_id']))];
-			
-			foreach (['edit_menu_item', 'edit_menu_text', 'view_menu_node_in_sk'] as $button) {
-				if (isset($adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'])) {
-					$adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'] .=
-						'|'. 
-						(	$unique ? ze\admin::phrase('Unique Menu Node') :
-							($primary ?
-								ze\admin::phrase('Primary Menu Node')
-							:	ze\admin::phrase('Secondary Menu Node'))
-							).
-						ze\admin::phrase('<br/>Section: [[section]]<br/>Path: [[path]] (Level [[level]])', $mrg);
-				}
-			}
-			
 			$menuLink = ze\menuAdm::organizerLink($menuItem['id'], ze::$langId);
 			if (isset($adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick'])) {
 				$adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick']['path'] = $menuLink;
@@ -1160,7 +1172,7 @@ $mrg = [
 	'title' => htmlspecialchars(ze::$pageTitle),
 	'alias' => htmlspecialchars(ze::$alias),
 	'lang' => ze\lang::name(ze::$langId),
-	'wordcount' => (int) ze\row::get('content_cache', 'text_wordcount', ['content_id' => ze::$cID, 'content_type' => ze::$cType, 'content_version' => ze::$cVersion])
+	'wordcount' => (int) ze\row::get('content_items_searchable_cache', 'content_item_text_wordcount', ['content_id' => ze::$cID, 'content_type' => ze::$cType, 'content_version' => ze::$cVersion])
 ];
 
 if (ze::$cVersion < ze::$visitorVersion) {
@@ -1204,15 +1216,25 @@ $adminToolbar['meta_info']['title'] = ze::$pageTitle;
 $adminToolbar['meta_info']['cversion_css_class'] = $versionClassName;
 
 //Add a tab-link to view the current content item in Organizer
-foreach (['edit', 'edit_disabled', 'rollback'] as $tabName) {
+foreach (['edit', 'edit_disabled', 'rollback', 'translations'] as $tabName) {
 	if (isset($adminToolbar['toolbars'][$tabName])) {
-		$adminToolbar['toolbars'][$tabName]['tab_link'] = [
-			'href' => $orgLink. '#zenario__content/panels/content/refiners/content_type//'. $cType. '//'. $tagId
-		];
-		
-		//Set the icon
-		$adminToolbar['toolbars'][$tabName]['icon_class'] =
-			'organizer_item_image '. $versionClassName;
+		if ($tabName == 'translations') {
+			$adminToolbar['toolbars']['translations']['tab_link'] = [
+				'href' => $orgLink. '#'. 'zenario__content/panels/content/refiners/content_type//' . $cType . '//item_buttons/zenario_trans__view//' . $tagId . '//'
+			];
+			
+			//Set the class
+			$adminToolbar['toolbars'][$tabName]['css_class'] =
+				'organizer_item_image '. $versionClassName;
+		} else {
+			$adminToolbar['toolbars'][$tabName]['tab_link'] = [
+				'href' => $orgLink. '#zenario__content/panels/content/refiners/content_type//'. $cType. '//'. $tagId
+			];
+			
+			//Set the icon
+			$adminToolbar['toolbars'][$tabName]['icon_class'] =
+				'organizer_item_image '. $versionClassName;
+		}
 	}
 }
 
@@ -1326,9 +1348,16 @@ $visitorURL = ze\link::toItemWithAlias(
 	$cID, $cType, $fullPath = true, $request = '', ze::$alias);
 
 if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
+	$contentItemLink = ze\link::toItem($cID, $cType);
+	
+	$copyConfirmationMessage = ze\admin::phrase(
+		"Copied to clipboard: [[content_item_link]]",
+		['content_item_link' => $contentItemLink]
+	);
+	
 	$adminToolbar['sections']['icons']['buttons']['copy_url']['onclick'] =
 		//Attempt to copy the cannonical URL to the clipboard when the visitor presses this button
-		'zenarioA.copy("'. ze\escape::js($visitorURL). '");'.
+		'zenarioA.copy("'. ze\escape::js($visitorURL). '", "' . ze\escape::js($copyConfirmationMessage) . '");'.
 		//Small little hack here:
 			//After the URL is copy/pasted, the dropdown stays open which is counter-intuative.
 			//However the dropdown is powered by pure CSS and there's no way to close it using JavaScript.
@@ -1592,6 +1621,6 @@ if (isset($adminToolbar['sections']['actions']['buttons']['publish'])) {
 		WHERE c.tag_id = '". ze\escape::sql($tagId). "'
 		  AND v.scheduled_publish_datetime IS NOT NULL";
 	if ($row = ze\sql::fetchAssoc($sql)) {
-		$adminToolbar['sections']['actions']['buttons']['publish']['label'] = ze\admin::phrase('Change scheduled publishing...');
+		$adminToolbar['sections']['actions']['buttons']['publish']['label'] = ze\admin::phrase('Scheduled publishing...');
 	}
 }

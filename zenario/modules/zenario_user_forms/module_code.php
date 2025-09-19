@@ -50,8 +50,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	protected $formCanBeSavedAndCompletedLater = false;
 	
 	public function init() {
+		$this->requireJSLibsForDatePickers();
 		$this->requireJsLib('zenario/js/fileupload.bundle.js.php');
-		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.datepicker.min.js');
 		$this->requireJsLib('zenario/libs/manually_maintained/mit/jqueryui/jquery-ui.sortable.min.js');
 		
 		$this->allowCaching(
@@ -391,12 +391,22 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Get page
 		$this->pages = zenario_user_forms::getFormPages($formId);
+		if (!count($this->pages)) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The selected form has no content and will not be displayed to visitors.')) . '</p>';
+			}
+			$this->formCannotBeLoaded = true;
+			return true;
+		}
+		
 		if ($this->form['enable_summary_page']) {
 			$summaryPageId = 'summary';
+			$summaryPageOrd = end($this->pages)['ord'] + 100;
+			
 			$this->pages[$summaryPageId] = [
 				'id' => $summaryPageId,
 				'form_id' => $formId,
-				'ord' => end($this->pages)['ord'] + 100,
+				'ord' => $summaryPageOrd,
 				'name' => $summaryPageId,
 				'label' => $summaryPageId,
 				'visibility' => 'visible',
@@ -422,6 +432,31 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		
 		//Get fields per page
 		$this->fields = static::getFormFields($formId, false, $this->instanceId, $this->formPageHash);
+		if (!count($this->fields)) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('The selected form has no content and will not be displayed to visitors.')) . '</p>';
+			}
+			$this->formCannotBeLoaded = true;
+			return true;
+		}
+		
+		$allPagesAreHidden = true;
+		foreach ($this->pages as $tPageId => &$tPage) {
+			$tPage['hidden'] = $this->isPageHidden($tPage);
+			if ($tPageId != 'summary' && !$tPage['hidden']) {
+				$allPagesAreHidden = false;
+			}
+		}
+		
+		if ($allPagesAreHidden) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('All steps on the selected form are hidden. It will not be displayed to visitors.')) . '</p>';
+			}
+			$this->formCannotBeLoaded = true;
+			return true;
+		}
+		
+		$allFieldsAreHidden = true;
 		foreach ($this->fields as $fieldId => $field) {
 			if ($field['dataset_field_id']) {
 				if ($field['db_column'] && is_numeric($fieldId)) {
@@ -440,7 +475,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 			
+			if (!$this->isFieldHidden($field) && !$this->isPageHidden($this->pages[$field['page_id']])) {
+				$allFieldsAreHidden = false;
+			}
+			
 			$this->pages[$field['page_id']]['fields'][] = $fieldId;
+		}
+		
+		if ($allFieldsAreHidden) {
+			if (ze\admin::id()) {
+				$this->data['form_HTML'] = '<p class="error">' . htmlspecialchars(ze\admin::phrase('All fields on the selected form are hidden. It will not be displayed to visitors.')) . '</p>';
+			}
+			$this->formCannotBeLoaded = true;
+			return true;
 		}
 		
 		//Save data from previous page if changing
@@ -568,9 +615,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 		}
 		
-		foreach ($this->pages as $tPageId => &$tPage) {
-			$tPage['hidden'] = $this->isPageHidden($tPage);
-		}
 		$this->inFullScreen = !empty($_POST['inFullScreen']);
 		
 		//Get form HTML
@@ -601,6 +645,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			'set_predefined_text_warning' => static::fPhrase('This will override the existing content, are you sure?', [], $t)
 		];
 		
+		$thisStepOrd = $this->pages[$pageId]['ord'];
+		$lastReachedStepOrd = (!empty($this->pages[$lastStepReached]) ? $this->pages[$lastStepReached]['ord'] : false);
+		
 		$this->callScript(
 			'zenario_user_forms',
 			'initForm',
@@ -612,7 +659,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$this->inFullScreen,
 			$allowProgressBarNavigation,
 			$pageId,
+			$thisStepOrd,
 			$lastStepReached,
+			$lastReachedStepOrd,
 			$showLeavingPageMessage = true,
 			$isErrors,
 			json_encode($extraPhrases),
@@ -1121,8 +1170,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				//If a single-step form is supposed to have a summary step,
 				//treat the single step as always visible.
 				$pageIsHidden = false;
-				$page['show_in_summary'] = true;
 				$page = $pages[$field['page_id']];
+				$page['show_in_summary'] = true;
 			}
 			
 			//Show field if not hidden
@@ -1345,19 +1394,26 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$fieldHtml .= '<tr><th colspan="2" class="subheader">' . $repeatSectionLabel . '</th></tr>';
 				}
 				
+				//If a label already has a colon at the end, do not add another one.
+				if ($label) {
+					if (substr($label, -1) != ':') {
+						$label .= ":";
+					}
+				}
+				
 				if ($displayHTML) {
-					$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . ':</td><td>' . $displayHTML . '</td></tr>';
+					$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . $displayHTML . '</td></tr>';
 				} else {
 					//Catch the case where the value is a 0 rather than "empty".
 					if (isset($field['value']) && is_numeric($field['value'])) {
-						$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . ':</td><td>0</td></tr>';
+						$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . '</td><td>0</td></tr>';
 					} else {
 						if ($stepWasHidden || $fieldWasHidden) {
 							$phraseString = '(' . ze\admin::phrase('was not shown') . ')';
 						} else {
 							$phraseString = '(' . ze\admin::phrase('no data recorded') . ')';
 						}
-						$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . ':</td><td>' . ze\admin::phrase($phraseString) . '</td></tr>';
+						$fieldHtml .= '<tr><td>' . htmlspecialchars($label) . '</td><td>' . ze\admin::phrase($phraseString) . '</td></tr>';
 						$fieldHasValue = false;
 					}
 				}
@@ -1722,6 +1778,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	}
 	
 	public static function deleteFormPage($pageId) {
+		//Delete all the fields on this page
+		$result = ze\row::query(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', ['id'], ['page_id' => $pageId]);
+		while ($row = ze\sql::fetchAssoc($result)) {
+			static::deleteFormField($row['id'], false, false);
+		}
+		
+		//Delete the page itself
 		ze\row::delete(ZENARIO_USER_FORMS_PREFIX . 'pages', $pageId);
 	}
 	
@@ -2105,7 +2168,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			$lastStepReached = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data']['last_step_reached'] ?? $pageId;
 			
-			$step = 1;
+			$step = 0;
 			$pagesCount = count($this->pages);
 			foreach ($this->pages as $tPageId => $tPage) {
 				if ($tPage['hide_in_page_switcher']) {
@@ -2162,7 +2225,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$switcherHTML .= $this->getVisibleConditionDataValuesHTML($tPage, $pageId);
 					$extraClasses .= ' visible_on_condition';
 				}
-				$switcherHTML .= 'class="step step_' . (int)($step++) . ' ' . ($step == 2 ? 'first' : '') . ' ' . ($step == $pagesCount ? 'last' : '') . ' ' . htmlspecialchars($extraClasses) . ' ' . (($makeStepsClickableIfPossible && ($isCurrent || $isComplete)) ? 'clickable_step' : '') . '"><span>' . htmlspecialchars($tPage['name']) . '</span></li>';
+				$switcherHTML .= 'class="step step_' . (int)($step++) . ' ' . ($step == 1 ? 'first' : '') . ' ' . ($step == $pagesCount ? 'last' : '') . ' ' . htmlspecialchars($extraClasses) . ' ' . (($makeStepsClickableIfPossible && ($isCurrent || $isComplete)) ? 'clickable_step' : '') . '"><span>' . htmlspecialchars($tPage['name']) . '</span></li>';
 			}
 			$switcherHTML .= '</ul></div>';
 			if ($hasPageVisibleOnSwitcher) {
@@ -2258,7 +2321,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$repeatFieldWrapDivOpen = false;
 		
 		if ($this->form['enable_summary_page'] && $onLastPage) {
-			$html .= '<p>' . htmlspecialchars(static::fPhrase("You're nearly done, please check your details before submitting.", [], $t)) . '</p>';
+			$html .= '<p>' . htmlspecialchars(static::fPhrase($this->form['summary_page_top_text'], [], $t)) . '</p>';
 			$data = [];
 			foreach ($this->fields as $fieldId => $field) {
 				$data[$fieldId] = $this->getFieldCurrentValue($fieldId);
@@ -4093,8 +4156,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					//for both the left and right-hand side column are stored in the following format:
 					//comma-separated list for left-hand side column, colon, then comma-separated list for right-hand side column.
 					$sortableSelectionFieldLeftAndRightHandSideValues = explode(';', $field['value']);
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values'] = $sortableSelectionFieldLeftAndRightHandSideValues[0];
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values'] = $sortableSelectionFieldLeftAndRightHandSideValues[1];
+					
+					if ($sortableSelectionFieldLeftAndRightHandSideValues) {
+						if (!empty($sortableSelectionFieldLeftAndRightHandSideValues[0]) || !empty($sortableSelectionFieldLeftAndRightHandSideValues[1])) {
+							$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['left_values'] = $sortableSelectionFieldLeftAndRightHandSideValues[0];
+							$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values'] = $sortableSelectionFieldLeftAndRightHandSideValues[1];
+						}
+					}
 				} else {
 					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $field['value'];
 				}
@@ -5606,7 +5674,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						$rightHandSideValues = $_POST['field_' . $fieldId . '_right_values'];
 					}
 				}
-				$value = $leftHandSideValues . ';' . $rightHandSideValues;
+				
+				$value = '';
+				if ($leftHandSideValues || $rightHandSideValues) {
+					$value = $leftHandSideValues . ';' . $rightHandSideValues;
+				}
 			} else {
 				$value = static::getFieldStorableValue($field, $field['value']);
 			}
@@ -5699,7 +5771,6 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$recaptchaFormPolicy = ze::setting('recaptcha_form_policy');
 		if ($this->enableCaptcha() && $recaptchaFormPolicy != 'show_form_without_recaptcha' && ze::post('submitForm') && $this->instanceId == ze::post('instanceId')) {
 			$error = false;
-			$t = $this->form['translate_text'];
 			if ($this->form['captcha_type'] == 'math') {
 				if ($this->checkMathCaptcha()) {
 					$_SESSION['captcha_passed__' . $this->instanceId] = true;
@@ -5714,7 +5785,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			}
 			if ($error) {
-				return static::fPhrase('Please verify that you are human.', [], $t);
+				return 'Please verify that you are human.';
 			}
 		}
 		return false;
@@ -7089,6 +7160,213 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			
 			if (empty($_SESSION['custom_form_data'])) {
 				unset($_SESSION['custom_form_data']);
+			}
+		}
+	}
+	
+	public static function formatDataProtectionValueNicelyForOrganizerNotice($individualFormSetting, &$phrase, &$noticeType) {
+		$noticeType = 'information';
+		
+		$siteSetting = ze::setting('period_to_delete_the_form_response_log_headers');
+		
+		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
+			$phrase = "Responses for this form ";
+			$settingToCheck = $individualFormSetting;
+		} else {
+			$phrase = "Form responses ";
+			$settingToCheck = $siteSetting;
+		}
+		
+		switch ($settingToCheck) {
+			case 'never_delete':
+				$phrase .= 'are stored forever';
+				break;
+			case 0:
+				$phrase .= 'are not stored';
+				break;
+			case 1:
+				$phrase .= 'are deleted after 1 day';
+				break;
+			case 7:
+				$phrase .= 'are deleted after 1 week';
+				break;
+			case 14:
+				$phrase .= 'are deleted after 2 weeks';
+				break;
+			case 30:
+				$phrase .= 'are deleted after 1 month';
+				break;
+			case 90:
+				$phrase .= 'are deleted after 3 months';
+				break;
+			case 180:
+				$phrase .= 'are deleted after 6 months';
+				break;
+			case 270:
+				$phrase .= 'are deleted after 9 months';
+				break;
+			case 365:
+				$phrase .= 'are deleted after 1 year';
+				break;
+			case 730:
+				$phrase .= 'are deleted after 2 years';
+				break;
+		}
+		
+		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
+			//Please note: this phrase will appear even in silly situations where the individual form setting
+			//is not "Use site-wide setting" and its value is exactly the same as the site setting.
+			$phrase .= "; this overrides the global settings";
+		}
+		
+		$phrase .= ".";
+		
+		//As of Zenario 10.1, display a warning if the sent email log
+		//is cleared out before the form responses.
+		$emailLogSiteSetting = ze::setting('period_to_delete_the_email_template_sending_log_headers');
+		if (
+			($settingToCheck == 'never_delete' && $emailLogSiteSetting != 'never_delete')
+			|| ($settingToCheck > $emailLogSiteSetting)
+		) {
+			$noticeType = 'warning';
+			$phrase .= " ";
+			
+			switch ($emailLogSiteSetting) {
+				case 'never_delete':
+					$phrase .= 'Entries in the sent email log are stored forever.';
+					break;
+				case 0:
+					$phrase .= 'Entries in the sent email log are not stored.';
+					break;
+				case 1:
+					$phrase .= 'Entries in the sent email log are deleted after 1 day.';
+					break;
+				case 7:
+					$phrase .= 'Entries in the sent email log are deleted after 1 week.';
+					break;
+				case 14:
+					$phrase .= 'Entries in the sent email log are deleted after 2 weeks.';
+					break;
+				case 30:
+					$phrase .= 'Entries in the sent email log are deleted after 1 month.';
+					break;
+				case 90:
+					$phrase .= 'Entries in the sent email log are deleted after 3 months.';
+					break;
+				case 180:
+					$phrase .= 'Entries in the sent email log are deleted after 6 months.';
+					break;
+				case 270:
+					$phrase .= 'Entries in the sent email log are deleted after 9 months.';
+					break;
+				case 365:
+					$phrase .= 'Entries in the sent email log are deleted after 1 year.';
+					break;
+				case 730:
+					$phrase .= 'Entries in the sent email log are deleted after 2 years.';
+					break;
+				
+			}
+		}
+	}
+	
+	public static function formatDataProtectionValueNicelyForFieldNoteBelow($individualFormSetting, &$phrase) {
+		$siteSetting = ze::setting('period_to_delete_the_form_response_log_headers');
+		
+		$phrase = "Responses for this form ";
+		
+		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
+			$settingToCheck = $individualFormSetting;
+		} else {
+			$settingToCheck = $siteSetting;
+		}
+		
+		switch ($settingToCheck) {
+			case 'never_delete':
+				$phrase .= 'will be stored indefinitely';
+				break;
+			case 0:
+				$phrase .= 'will not be stored';
+				break;
+			case 1:
+				$phrase .= 'will be stored, but will be deleted after 1 day';
+				break;
+			case 7:
+				$phrase .= 'will be stored, but will be deleted after 1 week';
+				break;
+			case 14:
+				$phrase .= 'will be stored, but will be deleted after 2 weeks';
+				break;
+			case 30:
+				$phrase .= 'will be stored, but will be deleted after 1 month';
+				break;
+			case 90:
+				$phrase .= 'will be stored, but will be deleted after 3 months';
+				break;
+			case 180:
+				$phrase .= 'will be stored, but will be deleted after 6 months';
+				break;
+			case 270:
+				$phrase .= 'will be stored, but will be deleted after 9 months';
+				break;
+			case 365:
+				$phrase .= 'will be stored, but will be deleted after 1 year';
+				break;
+			case 730:
+				$phrase .= 'will be stored, but will be deleted after 2 years';
+				break;
+		}
+		
+		if (!is_null($individualFormSetting) && $individualFormSetting !== "") {
+			//Please note: this phrase will appear even in silly situations where the individual form setting
+			//is not "Use site-wide setting" and its value is exactly the same as the site setting.
+			$phrase .= "; this overrides the global settings";
+		}
+		
+		$phrase .= ".";
+		
+		$emailLogSiteSetting = ze::setting('period_to_delete_the_email_template_sending_log_headers');
+		if (
+			($settingToCheck == 'never_delete' && $emailLogSiteSetting != 'never_delete')
+			|| ($settingToCheck > $emailLogSiteSetting)
+		) {
+			$phrase .= " ";
+			
+			switch ($emailLogSiteSetting) {
+				case 'never_delete':
+					$phrase .= 'Please note: entries in the sent email log are stored forever.';
+					break;
+				case 0:
+					$phrase .= 'Please note: entries in the sent email log are not stored.';
+					break;
+				case 1:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 1 day.';
+					break;
+				case 7:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 1 week.';
+					break;
+				case 14:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 2 weeks.';
+					break;
+				case 30:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 1 month.';
+					break;
+				case 90:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 3 months.';
+					break;
+				case 180:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 6 months.';
+					break;
+				case 270:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 9 months.';
+					break;
+				case 365:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 1 year.';
+					break;
+				case 730:
+					$phrase .= 'Please note: entries in the sent email log are deleted after 2 years.';
+					break;
+				
 			}
 		}
 	}

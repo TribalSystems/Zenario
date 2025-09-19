@@ -1,5 +1,5 @@
 zenario_delete_error_log:
-    title: "Delete the same"
+    title: "Delete all error log entries like this"
     max_height: 100
     hide_tab_bar: true
     save_button_message: Delete
@@ -19,4 +19,4 @@ zenario_delete_error_log:
             fields:
                 info_1:
                     snippet:
-                        html: 'Error log entries with this text will be deleted.'
+                        html: 'This cannot be undone.'

@@ -568,7 +568,7 @@ plugin_settings:
                     value: "Test"
                     same_row: true
                     hide_with_previous_field: true
-                    onclick: "var email_address = document.getElementById('email_address'); if (email_address) {var popup = window.open(email_address.value); setTimeout(function() { popup.close() }, 500);;}"
+                    onclick: "var email_address = lib.get('email_address'); if (email_address) {var popup = window.open(email_address.value); setTimeout(function() { popup.close() }, 500);;}"
                 target_blank:
                     indent: 1
                     plugin_setting:
@@ -764,6 +764,7 @@ plugin_settings:
                     plugin_setting:
                         name: translate_text
                     label: 'Make this plugin multilingual using the phrases system'
+                    note_below: 'Zenario creates phrases when they are viewed (by an admin or visitor) on a content item which is not in English.'
                     type: checkbox
                     value: 1
                     format_onchange: true

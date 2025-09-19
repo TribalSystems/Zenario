@@ -72,6 +72,7 @@ methods.showPanel = function($header, $panel, $footer) {
 		var 
 			map,
 			mapOptions = {
+				mapId: 'my_map',
 				center: {
 					lat: 0, 
 					lng: 0
@@ -97,14 +98,19 @@ methods.showPanel = function($header, $panel, $footer) {
 			if (item[lat] && item[lng]) {
 				itemsWithLatLng++;
 				position = new google.maps.LatLng(item[lat], item[lng]);
-				marker = new google.maps.Marker({
+				
+				const icon = document.createElement("img");
+				
+				icon.src = thus.offIconURL;
+				
+				marker = new google.maps.marker.AdvancedMarkerElement({
 					position: position,
 					map: map,
-					icon: thus.offIconURL
+					content: icon
 				});
 			
 				if (thus.selectedItems[key]) {
-					marker.icon = thus.onIconURL;
+					marker.content.src = thus.onIconURL;
 				}
 			
 				bounds.extend(position);
@@ -119,7 +125,7 @@ methods.showPanel = function($header, $panel, $footer) {
 		if (itemsWithLatLng) {
 			map.fitBounds(bounds);
 		}
-		google.maps.event.addDomListener(window, "resize", function() {
+		window.addEventListener("resize", function() {
 			var center = map.getCenter();
 			google.maps.event.trigger(map, "resize");
 			map.setCenter(center); 
@@ -188,12 +194,12 @@ methods.itemClick = function(id, marker, select) {
 }
 
 methods.selectItem = function(id, marker) {
-	marker.setIcon(thus.onIconURL);
+	marker.content.src = thus.onIconURL;
 	methodsOf(panelTypes.base).selectItem.call(thus, id);
 };
 
 methods.deselectItem = function(id, marker) {
-	marker.setIcon(thus.offIconURL);
+	marker.content.src = thus.offIconURL;
 	methodsOf(panelTypes.base).deselectItem.call(thus, id);
 };
 

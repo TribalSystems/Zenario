@@ -188,7 +188,7 @@ zenario__administration:
                         request:
                             enable: 1
                     with_columns_set:
-                        traits.can_enable: true
+                        can_enable: true
                 suspend:
                     ord: 20
                     priv: _PRIV_MANAGE_SCHEDULED_TASK
@@ -209,7 +209,7 @@ zenario__administration:
                         request:
                             suspend: 1
                     with_columns_set:
-                        traits.can_suspend: true
+                        can_suspend: true
                 edit:
                     visible_if: |
                         item.job_type == 'scheduled'
@@ -239,7 +239,7 @@ zenario__administration:
                         request:
                             rerun: 1
                     with_columns_set:
-                        traits.can_rerun: true
+                        can_rerun: true
             
             hidden_nav:
                 log:

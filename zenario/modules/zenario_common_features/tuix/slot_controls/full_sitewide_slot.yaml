@@ -136,7 +136,7 @@ full_sitewide_slot:
                 layout: true
             visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 're_move_place', 'layout');
             onclick: return zenarioA.showSlotOptionsInFAB(slotName, 're_move_place', 'layout');
-            label: Replace this ~plugin~ on the site-wide ~header~...
+            label: Replace site-wide with...
         
         remove_from_layout_layer:
             ord: 99

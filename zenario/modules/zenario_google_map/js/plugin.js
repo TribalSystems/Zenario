@@ -40,14 +40,15 @@ zenario_google_map.initMap2 = function(address, elId, errPhrase) {
 				mapOptions = {
 					center: results[0].geometry.location,
 					zoom: 3,
-					mapTypeId: google.maps.MapTypeId.ROADMAP
+					mapTypeId: google.maps.MapTypeId.ROADMAP,
+					mapId: 'my_map'
 				}
 
 				map = new google.maps.Map(zenario.get(elId),mapOptions);
 	
 				map.fitBounds(results[0].geometry.viewport);
 	
-				marker = new google.maps.Marker({
+				marker = new google.maps.marker.AdvancedMarkerElement({
 					position: results[0].geometry.location,
 					map: map
 				});

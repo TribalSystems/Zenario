@@ -226,18 +226,18 @@ class moduleAdm {
 				$module['missing_modules'] = '';
 				foreach ($missingModules as $moduleClassName) {
 					$module['missing_modules'] .=
-						($module['missing_modules']? ', ' : '').
-						(\ze\module::getModuleDisplayNameByClassName($moduleClassName) ?: $moduleClassName);
+						($module['missing_modules']? ', ' : ''). $moduleClassName. ' ('.
+						(\ze\module::getModuleDisplayNameByClassName($moduleClassName) ?: ''). ')';
 				}
 		
 				if (count($missingModules) > 1) {
 					return \ze\admin::phrase(
-						'Cannot run the module "[[class_name]]" ([[display_name]]) as it depends on the following modules, which are not present or not running: [[missing_modules]]',
+						'Cannot start module [[class_name]] ([[display_name]]) as it depends on modules which are not present or not running: [[missing_modules]]',
 						$module);
 		
 				} else {
 					return \ze\admin::phrase(
-						'Cannot run the module "[[class_name]]" ([[display_name]]) as it depends on the "[[missing_modules]]" module, which is not present or not running.',
+						'Cannot start module [[class_name]] ([[display_name]]) as it depends on [[missing_modules]], which is not present or not running. Please start that module first.',
 						$module);
 				}
 	
@@ -246,7 +246,7 @@ class moduleAdm {
 		
 				if (!class_exists($module['class_name'])) {
 					return \ze\admin::phrase(
-						'Cannot run the module "[[class_name]]" ([[display_name]]) as its class "[[class_name]]" is not defined in its module_code.php file.',
+						'Cannot start the module [[class_name]] ([[display_name]]) as its class [[class_name]] is not defined in its module_code.php file.',
 						$module);
 		
 				} elseif ($test) {
@@ -1106,7 +1106,9 @@ class moduleAdm {
 			foreach($desc['content_types'] as $type) {
 				if (!empty($type['content_type_id'])
 				 && !empty($type['content_type_name_en'])) {
-			
+					$releaseDateField = $type['release_date_field'] ?? 'optional';
+					$autoSetReleaseDate = ($releaseDateField != 'hidden') && !empty($type['auto_set_release_date']) && \ze\ring::engToBoolean($type['auto_set_release_date']);
+					
 					$sql = "
 						INSERT INTO ". DB_PREFIX. "content_types SET
 							content_type_id = '". \ze\escape::asciiInSQL($type['content_type_id']). "',
@@ -1117,8 +1119,8 @@ class moduleAdm {
 							tooltip_text = '". \ze\escape::sql($type['tooltip_text'] ?? ''). "',
 							keywords_field = '". \ze\escape::sql($type['keywords_field'] ?? 'optional'). "',
 							summary_field = '". \ze\escape::sql($type['summary_field'] ?? 'optional'). "',
-							release_date_field = '". \ze\escape::sql($type['release_date_field'] ?? 'optional'). "',
-							auto_set_release_date = ". (isset($type['auto_set_release_date']) ? \ze\ring::engToBoolean($type['auto_set_release_date'] ?? 0) : '1') . ",
+							release_date_field = '". \ze\escape::sql($releaseDateField). "',
+							auto_set_release_date = ". (int) $autoSetReleaseDate . ",
 							enable_categories = ". \ze\ring::engToBoolean($type['enable_categories'] ?? 0). ",
 							is_creatable = ". (isset($type['is_creatable']) ? \ze\ring::engToBoolean($type['is_creatable'] ?? 0) : '1') . ",
 							hide_private_item = 1,

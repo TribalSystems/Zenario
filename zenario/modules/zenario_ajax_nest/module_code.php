@@ -124,11 +124,17 @@ class zenario_conductor__link {
 
 class zenario_ajax_nest extends zenario_abstract_nest {
 	
+	protected $stopDisplay = false;
+	protected $stopDisplayTitle;
+	protected $stopDisplayMsg;
 	
+	public function stopDisplay($title, $message) {
+		$this->stopDisplay = true;
+		$this->stopDisplayTitle = $title;
+		$this->stopDisplayMsg = $message;
+	}
 	
 	public function init() {
-		
-		$hideBackButtonIfNeeded = false;
 		
 		//Flag that this plugin is actually a nest
 		ze::$slotContents[$this->slotName]->flagAsNest();
@@ -226,7 +232,6 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 					
 					if ($slide['show_back']) {
 						$tabMergeFields['Show_Back'] = true;
-						$hideBackButtonIfNeeded = (bool) $slide['no_choice_no_going_back'];
 					}
 					$tabMergeFields['Show_Refresh'] = (bool) $slide['show_refresh'];
 					$tabMergeFields['Show_Auto_Refresh'] = (bool) $slide['show_auto_refresh'];
@@ -234,7 +239,7 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 					$tabMergeFields['Last_Updated'] = ze\date::formatTime(time(), '%H:%i:%S');
 				}
 				
-				$tabMergeFields['Visible'] = !$conductorEnabled || $slide['global_command'] != '';
+				$tabMergeFields['Visible'] = !$conductorEnabled || !$slide['is_inner_slide'];
 				
 				$tabMergeFields['Slide_Class'] = 'slide_'. $slide['slide_num']. ' '. $slide['css_class'];
 				
@@ -322,7 +327,8 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 						
 							//If this slide has a global command set, note it down
 							//N.b. if two slides have the same global command, then go to the slide with the lowest ordinal.
-							if (($command = $slide['global_command'])
+							if (!$slide['is_inner_slide']
+							 && ($command = $slide['global_command'])
 							 && !isset($hadCommands[$command])) {
 								
 								//Don't allow the link if we're already in that state...
@@ -428,17 +434,6 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 						$this->setPageTitle($this->formatTitleText($this->slides[$this->slideNum]['slide_label']));
 						break;
 				}
-				
-				if ($hideBackButtonIfNeeded) {
-					if (($backToState = $this->getBackState())
-					 && ($backs = $this->getBackLinks())
-					 && (!empty($backs[$backToState]['smart']))
-					 && (count($backs[$backToState]['smart']) > 1)) {
-					} else {
-						$this->sections['Tab'][$this->slideNum]['Show_Back'] = false;
-					}
-				}
-				
 			}
 		}
 		
@@ -487,6 +482,15 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 	
 	
 	public function showSlot() {
+		
+		if ($this->stopDisplay) {
+			echo '
+				<div class="zenario_conductor_error">
+					<h1>', htmlspecialchars($this->stopDisplayTitle), '</h1>
+					<p>', htmlspecialchars($this->stopDisplayMsg), '</p>
+				</div>';
+			return;
+		}
 		
 		$this->mergeFields['TAB_ORDINAL'] = $this->slideNum;
 		

@@ -2,7 +2,8 @@
 ---
 site_settings:
     setting_group: zenario_location_manager__site_settings_group
-    title: Editing settings for Locations
+    #The title is created in the PHP class file. All permutations of the following modules running are accounted for:
+    #Location Manager, Organization-Location Manager, Organization-User Role Manager.
     tabs:
         zenario_location_manager__site_settings:
             edit_mode:

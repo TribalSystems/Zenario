@@ -81,8 +81,15 @@ zenario__content:
             label: Hidden content items
             link:
                 path: zenario__content/panels/hidden_content_items
-        access_codes:
+        categories:
             ord: 30
+            css_class: zenario_separator_before_this zenario_category_icon
+            label: Categories
+            tooltip: Edit categories of content item, used when listing items in Content Summary List (CSL) plugins.
+            link:
+                path: zenario__content/panels/categories
+        access_codes:
+            ord: 35
             visible_if: >
                 zenarioA.siteSettings.enable_staging_mode
             css_class: access_code
@@ -143,31 +150,24 @@ zenario__library:
             link:
                 path: zenario__library/panels/special_images
         #MIC images will be here if the module is enabled. (ord: 2)
-        categories:
-            ord: 3
-            css_class: zenario_category_icon
-            label: Categories
-            tooltip: Edit categories of content item, used when listing items in Content Summary List (CSL) plugins.
-            link:
-                path: zenario__library/panels/categories
         writer_profiles:
-            ord: 4
+            ord: 3
             css_class: writer_profile
             label: Writer profiles
             tooltip: |
                 Manage writer profiles
             link:
                 path: zenario__library/panels/writer_profiles
-        #Spare aliases will be here if the Pro Features module is enabled. (ord: 5)
+        #Spare aliases will be here if the Pro Features module is enabled. (ord: 4)
         documents:
-            ord: 6
+            ord: 5
             priv: _PRIV_VIEW_DOCUMENTS
             label: Hierarchical documents
             tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
             link:
                 path: zenario__library/panels/documents
         document_tags:
-            ord: 7
+            ord: 6
             priv: _PRIV_VIEW_DOCUMENTS
             label: Document tags
             tooltip: >
@@ -259,7 +259,7 @@ zenario__modules:
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_plugins
     label: Modules
-    tooltip: Enable modules for enhanced Zenario functionality; view plugins, nests and slideshows
+    tooltip: Enhanced interactivity using plugins, nests and slideshows
     nav:
         modules:
             label: Modules
@@ -321,11 +321,18 @@ zenario__languages:
             tooltip: The languages in which visitors can use your site
             link:
                 path: zenario__languages/panels/languages
+        phrases_code_based:
+            visible_if: >
+                zenarioA.siteSettings.default_language
+            label: Code-based phrases
+            tooltip: Essential phrases that are displayed to visitors
+            link:
+                path: zenario__languages/panels/phrases_code_based
         phrases:
             visible_if: >
                 zenarioA.siteSettings.default_language
-            label: Phrases
-            tooltip: Phrases that are displayed to website visitors
+            label: Standard phrases
+            tooltip: Module-related phrases that are displayed to visitors
             link:
                 path: zenario__languages/panels/phrases
         salutations:
@@ -354,6 +361,7 @@ zenario__administration:
                 category categories
                 cookie implied consent explicit consent message
                 data protection GDPR personal PDE encryption consent 
+                day month week year calendar
                 time date format zone timezone
                 log directory 
                 primary domain redirect cookie-free

@@ -49,10 +49,10 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 		
 		if ($tagsCount == 1) {
 			$box['tabs']['publish']['notices']['are_you_sure']['message'] = 
-				ze\admin::phrase('Are you sure you wish to publish the content item "[[tag]]"?', ['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
+				ze\admin::phrase('Publish the content item "[[tag]]"?', ['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
 		} else {
 			$box['tabs']['publish']['notices']['are_you_sure']['message'] = 
-				ze\admin::phrase('Are you sure you wish to publish the [[count]] selected content items?', ['count' => $tagsCount]);
+				ze\admin::phrase('Publish the [[count]] selected content items?', ['count' => $tagsCount]);
 		}
 		
 		//Look for any access codes in use
@@ -102,11 +102,96 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			$fields['publish/publish_options__schedule']['note_below'] = ze\admin::phrase($string, ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 		}
 		
+		//Display info about the content item
+		if ($tagsCount == 1) {
+			$version = ze\content::version($box['key']['cID'], $box['key']['cType']);
+			$featuredImageId = ze\content::featureImageId($box['key']['cID'], $box['key']['cType'], $version);
+			if ($featuredImageId) {
+				$altTag = ze\row::get('files', 'alt_tag', $featuredImageId);
+				$featuredImageHTML = ze\content::featureImageHTML(
+					$box['key']['cID'], $box['key']['cType'], $version, $useFallbackImage = false, $fallbackImageId = false,
+					$maxWidth = 100, $maxHeight = 100, $canvas = 'fixed_width_and_height', $retina = false, $altTag
+				);
+				
+				if ($featuredImageHTML) {
+					$fields['publish/featured_image']['snippet']['html'] = $featuredImageHTML;
+				}
+			} else {
+				$fields['publish/featured_image']['snippet']['html'] = '<span>' . ze\admin::phrase('No featured image') . '</span>';
+				$fields['publish/featured_image']['row_class'] = 'no_featured_image';
+			}
+			
+			ze\lang::applyMergeFields($fields['publish/full_site_url']['snippet']['html'], ['full_site_url' => ze\link::toItem($box['key']['cID'], $box['key']['cType'])]);
+			
+			$values['publish/title'] = ze\content::title($box['key']['cID'], $box['key']['cType'], $version);
+			$contentItemClassIcon = ze\contentAdm::getItemIconClass($box['key']['cID'], $box['key']['cType']);
+			$fields['publish/title']['row_class'] = 'organizer_item_image ' . $contentItemClassIcon;
+			
+			$langId = ze\content::langId($box['key']['cID'], $box['key']['cType']);
+			
+			$menuFromContentItem = ze\menu::getFromContentItem($box['key']['cID'], $box['key']['cType']);
+			if ($menuFromContentItem) {
+				$menuPath = ze\content::menuPath($box['key']['cID'], $box['key']['cType']);
+				$values['publish/menu_node_path'] = $menuPath;
+				
+				
+				$menuDetails = ze\menu::details($menuFromContentItem['mID'], $langId);
+				$menuNodeClass = ze\menuAdm::cssClass($menuDetails);
+				
+				$fields['publish/menu_node_path']['row_class'] = 'organizer_item_image ' . $menuNodeClass;
+			} else {
+				$values['publish/menu_node_path'] = ze\admin::phrase('Not in menu');
+				
+				$fields['publish/menu_node_path']['row_class'] = 'organizer_item_image zenario_not_at_menu';
+			}
+			
+			if (ze\row::get('content_types', 'enable_categories', ['content_type_id'=> $box['key']['cType']])) {
+				$contentItemCategories = ze\category::contentItemCategories($box['key']['cID'], $box['key']['cType'], $publicOnly = false);
+				
+				if ($contentItemCategories) {
+					$categoryNames = [];
+					foreach ($contentItemCategories as $category) {
+						$categoryNames[] = $category['name'];
+					}
+					$values['publish/categories'] = implode(', ', $categoryNames);
+					
+					$fields['publish/categories']['row_class'] = 'zenario_at_icon_categories_some';
+				} else {
+					$values['publish/categories'] = ze\admin::phrase('No categories');
+					
+					$fields['publish/categories']['row_class'] = 'zenario_at_icon_categories_none';
+				}
+			} else {
+				$fields['publish/categories']['hidden'] = true;
+			}
+			
+			if (ze\module::isRunning('zenario_extranet')) {
+				$fields['publish/permissions']['hidden'] = false;
+				
+				$equivId = ze\content::equivId($box['key']['cID'], $box['key']['cType']);
+				$translationChain = ze\row::get('translation_chains', true, ['equiv_id' => $equivId, 'type' => $box['key']['cType']]);
+				
+				if ($translationChain) {
+					$values['publish/permissions'] = ze\contentAdm::privacyDesc($translationChain);
+					$fields['publish/permissions']['row_class'] = 'content_privacy ' . $translationChain['privacy'];
+				}
+			}
+			
+			if (ze\lang::count() > 1) {
+				$fields['publish/language']['hidden'] = false;
+				
+				$values['publish/language'] = ze\lang::name($langId);
+			}
+		} else {
+			$fields['publish/featured_image_grouping']['hidden'] = $fields['publish/content_item_details']['hidden'] = true;
+		}
+		
 		if ($clash) {
 			$href = ze\link::absolute() . 'organizer.php#zenario__content/panels/content/refiners/content_type//' . $box['key']['cType'] . '//' . $box['key']['id'] . '~.zenario_content~tmeta_data~k{"id"%3A"' . $box['key']['id'] . '"}';
 			$linkStart = '<a href="' . htmlspecialchars($href) . '" target="blank">';
 			$linkEnd = '</a>';
-			ze\lang::applyMergeFields($fields['publish/publishing_before_release_date_warning']['snippet']['html'],
+			ze\lang::applyMergeFields(
+				$fields['publish/publishing_before_release_date_warning']['notices_above']['notice']['message'],
 				[
 					'publishing_before_release_date_warning_note' => ze\admin::phrase(
 						'This content item has a release date of [[date]], which is in the future. If that is not correct, [[link_start]]edit its meta data[[link_end]] to change the release date.',
@@ -118,8 +203,8 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					)
 				]
 			);
-		} else {
-			$fields['publish/publishing_before_release_date_warning']['hidden'] = true;
+			
+			$fields['publish/publishing_before_release_date_warning']['notices_above']['notice']['hidden'] = false;
 		}
 		
 		

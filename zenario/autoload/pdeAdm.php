@@ -98,7 +98,7 @@ return \''. $ascii . '\';';
 			
 			if ($colDef->isInt
 			 || $colDef->isFloat
-			 || $colDef->isTime) {
+			 || $colDef->isDateOrTime) {
 				$coltype = 'varbinary(255)';
 			} else {
 				$coltype = 'mediumblob';

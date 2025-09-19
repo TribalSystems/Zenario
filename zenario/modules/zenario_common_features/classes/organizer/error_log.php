@@ -30,21 +30,20 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__error_log extends ze\moduleBaseClass {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$spareAliases = [];
-		$sql = '
-			SELECT el.id, sa.target_loc, sa.content_id, sa.content_type, sa.ext_url
-			FROM ' . DB_PREFIX . 'spare_aliases sa
-			INNER JOIN '. DB_PREFIX. 'error_404_log el
-				ON sa.alias = el.page_alias';
-		$result = ze\sql::select($sql);
-		while ($row = ze\sql::fetchAssoc($result)) {
-			$spareAliases[$row['id']] = $row;
-		}
 
 		$accessLogDuration = '';
 		switch (ze::setting('period_to_delete_error_log')) {
 			case 'never_delete':
 				$accessLogDuration = ze\admin::phrase('Entries in the error log are stored forever.');
+				break;
+			case 7:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 1 week.');
+				break;
+			case 14:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 2 weeks.');
+				break;
+			case 30:
+				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 1 month.');
 				break;
 			case 90:
 				$accessLogDuration = ze\admin::phrase('Entries in the error log are deleted after 3 months.');
@@ -70,13 +69,32 @@ class zenario_common_features__organizer__error_log extends ze\moduleBaseClass {
 		$panel['notice']['message'] = $accessLogDuration.".";
 		$panel['notice']['html'] = true;
 		
+		
+		
+		//Loop through the items being shown from the error log
 		foreach($panel['items'] as $key => &$item) {
-			if (isset($spareAliases[$key])) {
-				if ($spareAliases[$key]['target_loc'] == 'int') {
-					$formattedTagId = ze\content::formatTag($spareAliases[$key]['content_id'], $spareAliases[$key]['content_type'], false, false, true);
+			
+			//Check if this URL would actually be a valid spare alias
+			$alias = ze\contentAdm::aliasHasSupportedExtension($item['requested_page_alias']);
+			
+			if ($alias === false) {
+				continue;
+			}
+			$item['supported_extension'] = true;
+			
+			
+			//Check if an alias already exists
+			$sql = "
+				SELECT sa.target_loc, sa.content_id, sa.content_type, sa.ext_url
+				FROM ". DB_PREFIX. "spare_aliases AS sa
+				WHERE sa.alias = '". ze\escape::sql($alias). "'";
+			
+			if ($spareAlias = ze\sql::fetchAssoc($sql)) {
+				if ($spareAlias['target_loc'] == 'int') {
+					$formattedTagId = ze\content::formatTag($spareAlias['content_id'], $spareAlias['content_type'], false, false, true);
 					$item['connected_spare_alias_destination'] = $formattedTagId;
 				} else {
-					$item['connected_spare_alias_destination'] = $spareAliases[$key]['ext_url'];
+					$item['connected_spare_alias_destination'] = $spareAlias['ext_url'];
 				}
 			}
 		}

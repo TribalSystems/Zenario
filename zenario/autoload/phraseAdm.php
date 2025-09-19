@@ -65,13 +65,13 @@ class phraseAdm {
 	}
 
 	//check if a Visitor Phrase is protected
-	public static function isProtected($languageId, $moduleClass, $phraseCode, $adding) {
+	public static function isProtected($languageId, $moduleClass, $phraseCode, $keepExistingTranslations) {
 
 		$sql = "
 			SELECT";
 	
 		//Are we adding a new VLP, or updating an existing one?
-		if (!$adding) {
+		if (!$keepExistingTranslations) {
 			//If we are editing an existing one, do not overwrite a protected phrase
 			$sql .= "
 				protect_flag";
@@ -89,7 +89,25 @@ class phraseAdm {
 			  AND code = '". \ze\escape::sql($phraseCode). "'";
 	
 	
-		//Return true for protected, false for exists bug not protected, and 0 for when the phrase does not exist
+		//Return true for protected, false for exists but not protected, and 0 for when the phrase does not exist
+		if ($row = \ze\sql::fetchRow(\ze\sql::select($sql))) {
+			return (bool) $row[0];
+		} else {
+			return 0;
+		}
+	}
+	
+	public static function isArchived($languageId, $moduleClass, $phraseCode) {
+
+		$sql = "
+			SELECT archived
+			FROM " . DB_PREFIX . "visitor_phrases
+			WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
+			  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
+			  AND code = '". \ze\escape::sql($phraseCode). "'";
+	
+	
+		//Return true for archived, false for exists bug not archived, and 0 for when the phrase does not exist
 		if ($row = \ze\sql::fetchRow(\ze\sql::select($sql))) {
 			return (bool) $row[0];
 		} else {
@@ -98,53 +116,99 @@ class phraseAdm {
 	}
 
 	//Update a Visitor Phrase from the importer
-	public static function importVisitorPhrase($languageId, $moduleClass, $phraseCode, $localText, $adding, &$numberOf) {
+	public static function importVisitorPhrase($languageId, $moduleClass, $phraseCode, $localText, $keepExistingTranslations, $languageIsEnabled, $addPhrasesThatDontExist, &$numberOf) {
 	
 		//Don't attempt to add empty phrases
 		if (!$phraseCode || $localText === null || $localText === false || $localText === '') {
 			return;
 		}
 		
-		//As of 10.0, the export logic exports the class name as, for example:
+		//In 10.0, the export logic exports the class name as, for example:
 		//zenario_common_features (Common Features)
 		//so the import logic needs to discard everything after the class name.
+		//Please note: this was dropped again as of 10.2, but I have kept this code
+		//for compatibility reasons. It does not change anything.
 		$moduleClassArray = explode(' ', $moduleClass);
 		$moduleClass = $moduleClassArray[0];
+		if ($moduleClass == 'Core Features') {
+			$moduleClass = '';
+		}
 		
 		//Also check if the module class name provided
 		//is an existing module, and is running.
-		if (!\ze\module::isRunning($moduleClass)) {
+		if (!$moduleClass || !\ze\module::isRunning($moduleClass)) {
 			return;
 		}
 	
-		//Check if the phrase is protected
-		if ($protected = \ze\phraseAdm::isProtected($languageId, $moduleClass, $phraseCode, $adding)) {
-			++$numberOf['protected'];
+		//Check if the language is enabled on site. If not enabled, do not import the phrase.
+		if ($languageIsEnabled) {
+			//Check if the phrase already exists in the DB in English.
+			//If it does not, do not import it.
+			$sql = "
+				SELECT id
+				FROM " . DB_PREFIX . "visitor_phrases
+				WHERE language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "'
+				  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
+				  AND code = '". \ze\escape::sql($phraseCode). "'";
 		
-		} else {
-			//Update or insert the phrase
-			\ze\row::set(
-				'visitor_phrases',
-				[
-					'local_text' => trim($localText)],
-				[
-					'language_id' => $languageId,
-					'module_class_name' => $moduleClass,
-					'code' => $phraseCode]);
 		
-			//\ze\phraseAdm::isProtected() returns false for phrases that are unprotected, and 0 for phrases that do not exist
-			if ($protected === 0) {
-				++$numberOf['added'];
-		
+			//Return true for protected, false for exists bug not protected, and 0 for when the phrase does not exist
+			if ($addPhrasesThatDontExist || ($row = \ze\sql::fetchRow(\ze\sql::select($sql)))) {
+				//Check if the phrase is protected
+				if ($protected = \ze\phraseAdm::isProtected($languageId, $moduleClass, $phraseCode, $keepExistingTranslations)) {
+					++$numberOf['protected'];
+				
+				} else {
+					//Update or insert the phrase
+					\ze\row::set(
+						'visitor_phrases',
+						[
+							'local_text' => trim($localText)
+						],
+						[
+							'language_id' => $languageId,
+							'module_class_name' => $moduleClass,
+							'code' => $phraseCode
+						]
+					);
+					
+					if ($archived = \ze\phraseAdm::isArchived($languageId, $moduleClass, $phraseCode, $keepExistingTranslations)) {
+						if ($archived) {
+							++$numberOf['restored_from_archive'];
+						}
+					}
+					
+					//If a phrase was archived before but has now been imported, remove the archived flag
+					\ze\row::set(
+						'visitor_phrases',
+						[
+							'archived' => 0
+						],
+						[
+							'module_class_name' => $moduleClass,
+							'code' => $phraseCode
+						]
+					);
+				
+					//\ze\phraseAdm::isProtected() returns false for phrases that are unprotected, and 0 for phrases that do not exist
+					if ($protected === 0) {
+						++$numberOf['added'];
+				
+					} else {
+						++$numberOf['updated'];
+					}
+				}
 			} else {
-				++$numberOf['updated'];
+				++$numberOf['skipped'];
 			}
+		} else {
+			++$numberOf['skipped'];
+			$numberOf['language_not_enabled'] = true;
 		}
-
 	}
 
 	//Given an uploaded XML file, pharse that file looking for visitor language phrases
-	public static function importVisitorLanguagePack($file, &$languageIdFound, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false, $checkPerms = false) {
+	public static function importVisitorLanguagePack($file, &$languageIdFound, $keepExistingTranslations, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false, $checkPerms = false, $addPhrasesThatDontExist = false) {
 		return require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
@@ -155,7 +219,7 @@ class phraseAdm {
 				if (is_file($path. $file) && substr($file, 0, 1) != '.') {
 				
 					$languageIdFound = false;
-					$numberOf = \ze\phraseAdm::importVisitorLanguagePack($path. $file, $languageIdFound, $adding = true, $scanMode);
+					$numberOf = \ze\phraseAdm::importVisitorLanguagePack($path. $file, $languageIdFound, $keepExistingTranslations = true, $scanMode);
 				
 					if (!$numberOf['upload_error']) {
 						if ($scanMode === 'number and file') {

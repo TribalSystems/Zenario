@@ -19,6 +19,11 @@ zenario_export_dataset:
                     show: false
                     type: warning
                     message: 'No dataset fields are marked to be included in an export, so your download file will be empty.'
+                selected_filters:
+                    show: false
+                    type: information
+                    html: true
+                    message: ''
             fields:
                 
                 desc:

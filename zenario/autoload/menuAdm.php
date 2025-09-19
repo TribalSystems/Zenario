@@ -183,7 +183,7 @@ class menuAdm {
 			//When creating a top-level node there'll be no parent ID set.
 			//Create a menu path using just the prefix.
 			} else {
-				\ze\menu::addPrefixToMenuPath($output, $newSectionId, $addHome = false);
+				\ze\menu::addPrefixToMenuPath($output, $newSectionId, $addHome = true);
 					//N.b. we're handling an edge case here.
 					//When creating a menu node in the main section at the top level, we don't want to show
 					//it as being created under the Homepage like we would normally, as that would cause some confusion.
@@ -215,7 +215,14 @@ class menuAdm {
 		
 		$preHTML = '<div class="zfab_menuPathPreview">';
 		
+		$firstProcessedNode = true;
 		foreach ($menuPath as $node) {
+			if (($firstProcessedNode && $node['section_id'] != 1) || ($firstProcessedNode && $firstItem && !$lastItem && count($menuPath) == 1) || ($lastItem && count($menuPath) == 1)) {
+				//Only show the word "Home" if the section is Main, otherwise omit this
+				$firstProcessedNode = false;
+				continue;
+			}
+			
 			if (!empty($node['text'])) {
 				$nodeText = $node['text'];
 			} else {
@@ -608,162 +615,266 @@ class menuAdm {
 		
 		return $menuIds;
 	}
-
-	public static function moveMenuNode($ids, $newSectionId, $newParentId, $newNeighbourId, $afterNeighbour = 0, $languageId = false) {
-		$numMoves = 0;
-		$idsList = '';
-		$sectionId = false;
-		$sectionIds = [];
-		$menuNodes = [];
-		$newNeighbour = false;
-		$newSectionId = \ze\menu::sectionId($newSectionId);
-
-		if (!is_array($ids)) {
-			$ids = \ze\ray::explodeAndTrim($ids);
+	
+	//Move a menu node that's currently a parent up tp the top level of the menu tree.
+	public static function moveNodeToTopLevel($sectionId, $menuId) {
+		
+		//Look up where the menu node currently is
+		$old = \ze\row::get('menu_nodes', ['id', 'section_id', 'parent_id', 'ordinal'], $menuId);
+		
+		//If we can't find it, or it's already at the top, return without doing anything
+		if (!$old || !$old['parent_id']) {
+			return;
 		}
-
-		//If a specific node was picked, move the selected nodes to that ordinal
-		if ($newNeighbourId) {
-			$newNeighbour = \ze\row::get('menu_nodes', 'ordinal', $newNeighbourId);
+		
+		
+		//Assume we're keeping the menu node in the same menu section, if the section ID wasn't specified
+		if (is_null($sectionId)) {
+			$sectionId = $old['section_id'];
 		}
+		
+		
+		//Work out what the next ordinal number should be
+		$ordinal = 1 + (int) \ze\row::max('menu_nodes', 'ordinal', ['section_id' => $sectionId, 'parent_id' => 0]);
+		
+		
+		//Move the menu to the top of the tree, and put it after any currently existing menu nodes
+		//(Note: this function doesn't support the target-neighbour feature, so I don't need to
+		//change any other ordinals/move menu nodes out of the way.)
+		$sql = "
+			UPDATE ". DB_PREFIX. "menu_nodes AS m
+			SET m.parent_id = 0,
+				m.ordinal = ". (int) $ordinal. "
+			WHERE m.id = ". (int) $menuId;
+		\ze\sql::update($sql);
+		
+		\ze\menuAdm::addNewMenuPosition($sectionId, $menuId, $parentId = 0, $replace = true);
+		
+		//Fix the ordinals for any menu nodes that were after its original position
+		$sql = "
+			UPDATE ". DB_PREFIX. "menu_nodes AS m
+			SET m.ordinal = m.ordinal - 1
+			WHERE m.parent_id = ". (int) $old['parent_id']. "
+			  AND m.ordinal > ". (int) $old['ordinal'];
+		\ze\sql::update($sql);
 
-		if ($newParentId && ($parentDetails = \ze\menu::details($newParentId))) {
+		
+		
+		//The following queries aim to update the menu_hierarchy table
+		//without having to delete and regenerate it.
+		
+		//Detach the node we're breaking off from everything above it
+		$sql = "
+			DELETE FROM ". DB_PREFIX. "menu_hierarchy
+			WHERE child_id = ". (int) $menuId. "
+			  AND ancestor_id != ". (int) $menuId;
+		\ze\sql::update($sql);
 	
-			//Move one or more Menu Nodes under a Parent Menu Node
-			foreach ($ids as $id) {
-				if ($id == $parentDetails['id']) {
-					echo \ze\admin::phrase('A Menu Node cannot be its own Parent. Please choose a different Menu Node to be the Parent.');
-					exit;
-		
-				} elseif (\ze\menu::isAncestor($parentDetails['id'], $id)) {
-					echo \ze\admin::phrase('A Menu Node cannot be both the Child and the Parent of another Menu Node. Please choose a different Menu Node to be the Parent.');
-					exit;
-				}
-			}
+		//The nodes below will still be attached to the things above, so
+		//we need to loop through and detatch them all
+		$sql = "
+			SELECT child_id, separation
+			FROM ". DB_PREFIX. "menu_hierarchy
+			WHERE ancestor_id = ". (int) $menuId;
+		$result = \ze\sql::select($sql);
 	
-			foreach ($ids as $id) {
-				if ($menuDetails = \ze\row::get('menu_nodes', ['section_id', 'parent_id', 'ordinal'], $id)) {
-					$menuNodes[$id] = $menuDetails;
-					$idsList .= ($idsList? ',' : ''). (int) $id;
-			
-					//Remove the ordinal, to be fixed later
-					\ze\row::update('menu_nodes', ['ordinal' => 0], $id);
-				}
-			}
-	
-			foreach ($menuNodes as $id => $menuDetails) {
-		
-				//If this is a different section, move the Menu Node and its children to that section.
-				//(This will mess up the menu_hierarchy, but that will be fixed later.)
-				if ($menuDetails['section_id'] != ($sectionId = $parentDetails['section_id'])) {
-					$sql = "
-						UPDATE ". DB_PREFIX. "menu_hierarchy AS h
-						INNER JOIN ". DB_PREFIX. "menu_nodes AS m
-						   ON m.id = h.child_id
-						  SET m.section_id = ". (int) $parentDetails['section_id']. ",
-							  h.section_id = ". (int) $parentDetails['section_id']. "
-						WHERE h.ancestor_id = ". (int) $id;
-					\ze\sql::update($sql);
-		
-					$sectionIds[$menuDetails['section_id']] = true;
-				}
-		
-				$submission = [
-					'parent_id' => $newParentId,
-					'parentMenuID' => -1];
-		
-				//If there was a specific ordinal chosen, move there
-				if ($newNeighbour !== false) {
-					$submission['ordinal'] = $newNeighbour + $afterNeighbour + $numMoves++;
-				}
-		
-				\ze\menuAdm::save($submission, $id, false);
-			}
-
-		} else {
-			foreach ($ids as $id) {
-				if ($menuDetails = \ze\row::get('menu_nodes', ['section_id', 'parent_id', 'ordinal'], $id)) {
-					$menuNodes[$id] = $menuDetails;
-					$idsList .= ($idsList? ',' : ''). (int) $id;
-			
-					//Remove the ordinal, to be fixed later
-					\ze\row::update('menu_nodes', ['ordinal' => 0], $id);
-				}
-			}
-	
-			//Move one or more Menu Nodes to the Top Level
-			foreach ($menuNodes as $id => $menuDetails) {
-		
-				if ($menuDetails['section_id'] != ($sectionId = $newSectionId)) {
-			
-					//If this is a different section, move the Menu Node and its children to that section.
-					//(This will mess up the menu_hierarchy, but that will be fixed later.)
-					$sql = "
-						UPDATE ". DB_PREFIX. "menu_hierarchy AS h
-						INNER JOIN ". DB_PREFIX. "menu_nodes AS m
-						   ON m.id = h.child_id
-						  SET m.section_id = ". (int) $newSectionId. ",
-							  h.section_id = ". (int) $newSectionId. "
-						WHERE h.ancestor_id = ". (int) $id;
-					\ze\sql::update($sql);
-			
-					$sectionIds[$menuDetails['section_id']] = true;
-				}
-		
-				$submission = [
-					'parent_id' => 0,
-					'parentMenuID' => -1];
-		
-				//If there was a specific ordinal chosen, move there
-				if ($newNeighbour !== false) {
-					$submission['ordinal'] = $newNeighbour + $afterNeighbour + $numMoves++;
-				}
-		
-				\ze\menuAdm::save($submission, $id, false);
-			}
-		}
-
-		//If there was a specific ordinal chosen, we'll need to bump up the ordinals of the existing Menu Node(s) after that ordinal
-		if ($newNeighbour !== false && $numMoves && $idsList) {
+		while ($child = \ze\sql::fetchAssoc($result)) {
 			$sql = "
-				UPDATE ". DB_PREFIX. "menu_nodes
-				SET ordinal = ordinal + ". (int) $numMoves. "
-				WHERE section_id = ". (int) $sectionId. "
-				  AND parent_id = ". (int) $newParentId. "
-				  AND id NOT IN (". $idsList. ")
-				  AND ordinal >= ". (int) ($newNeighbour + $afterNeighbour);
+				DELETE FROM ". DB_PREFIX. "menu_hierarchy
+				WHERE child_id = ". (int) $child['child_id']. "
+				  AND separation > ". (int) $child['separation'];
 			\ze\sql::update($sql);
 		}
-
-		//Renumber the ordinal of all the sections we've just moved from
-		$renumbers = [];
-		foreach ($menuNodes as $id => $menuDetails) {
-			if (!isset($renumbers[$menuDetails['section_id']. '_'. $menuDetails['parent_id']])) {
 		
-				$result = \ze\row::query('menu_nodes', ['id', 'ordinal'], ['section_id' => $menuDetails['section_id'], 'parent_id' => $menuDetails['parent_id']], 'ordinal');
-				$o = 0;
-				while ($row = \ze\sql::fetchAssoc($result)) {
-					if ($row['ordinal'] != ++$o) {
-						\ze\row::set('menu_nodes', ['ordinal' => $o], $row['id']);
-					}
-				}
 		
-				$renumbers[$menuDetails['section_id']. '_'. $menuDetails['parent_id']] = true;
+		//Update menu sections of the moved menu node and its children, if we just changed section.
+		\ze\menuAdm::moveMenuNodesBetweenSections($menuId, $sectionId, $old['section_id']);
+	}
+	
+	private static function moveMenuNodesBetweenSections($menuId, $sectionId, $oldSectionId) {
+		if ($sectionId != $oldSectionId) {
+			$sql = "
+				UPDATE ". DB_PREFIX. "menu_hierarchy AS h
+				INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+				   ON h.child_id = m.id
+				SET m.section_id = ". (int) $sectionId. ",
+					h.section_id = ". (int) $sectionId. "
+				WHERE h.ancestor_id = ". (int) $menuId;
+			\ze\sql::update($sql);
+			
+			$sql = "
+				SELECT m.id, m.parent_id
+				FROM ". DB_PREFIX. "menu_hierarchy AS h
+				INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+				   ON h.child_id = m.id
+				WHERE h.ancestor_id = ". (int) $menuId;
+			
+			foreach (\ze\sql::select($sql) as $child) {
+				\ze\menuAdm::addNewMenuPosition($sectionId, $child['id'], $child['parent_id'], $replace = true);
 			}
 		}
-
-
-		$sectionIds[$sectionId] = true;
-
-		//Delete and recalculate the menu hierarchy for every section that has been effected
-		foreach ($sectionIds as $sectionId => $dummy) {
-			\ze\row::delete('menu_hierarchy', ['section_id' => $sectionId]);
+	}
+	
+	//Do the reverse of the above function. Move a top-level menu node down into the depths of the tree.
+	public static function moveTopLevelNodeDown($sectionId, $menuId, $parentId, $neighbourId = null) {
+		
+		//Look up where the menu node is going
+		if (!empty($parentId)) {
+			$parent = \ze\row::get('menu_nodes', ['id', 'section_id', 'parent_id', 'ordinal'], $parentId);
+			
+			//If we can't find it, return without doing anything
+			if (!$parent) {
+				return;
+			}
+			
+			$sectionId = $parent['section_id'];
+		
+		} else {
+			//Bit of an odd edge case here.
+			//Catch the case where the admin is trying to move a node around at the top level, when they
+			//want to change the ordinal but not the parent id.
+			//We're just going to do nothing about this and let it happen. We'llallow the admin to change
+			//the menu node's ordinal using the moveMenuNode() and moveTopLevelNodeDown() functions if they
+			//really want to, even though that's a bit overkill and there are much easier ways to do that!
 		}
+		
+		
+		//Work out what the next ordinal number should be. This will either be from the target neighbour,
+		//or otherwise at the end if no neighbour is specified
+		$ordinal = false;
+		if (!empty($neighbourId)) {
+			$ordinal = \ze\row::get('menu_nodes', 'ordinal', [
+				'id' => $neighbourId,
+				'section_id' => $sectionId,
+				'parent_id' => $parentId
+			]);
+		}
+		if (empty($ordinal)) {
+			$ordinal = 1 + (int) \ze\row::max('menu_nodes', 'ordinal', ['parent_id' => $parentId]);
+		}
+		
+		
+		//Look up where the menu node currently is
+		$old = \ze\row::get('menu_nodes', ['id', 'section_id', 'parent_id', 'ordinal'], $menuId);
+		
+		//If we can't find it, or it's not at the top, return without doing anything
+		if (!$old || $old['parent_id']) {
+			return;
+		}
+		
+		
+		//If we're not inserting at the end, create a gap in the ordinals to put the new menu node we're moving into
+		$sql = "
+			UPDATE ". DB_PREFIX. "menu_nodes AS m
+			SET m.ordinal = m.ordinal + 1
+			WHERE m.parent_id = ". (int) $parentId. "
+			  AND m.ordinal >= ". (int) $ordinal;
+		\ze\sql::update($sql);
+		
+		
+		//Move the menu down into the tree, and set the new ordinal
+		$sql = "
+			UPDATE ". DB_PREFIX. "menu_nodes AS m
+			SET m.parent_id = ". (int) $parentId. ",
+				m.ordinal = ". (int) $ordinal. "
+			WHERE m.id = ". (int) $menuId;
+		\ze\sql::update($sql);
+		
+		\ze\menuAdm::addNewMenuPosition($sectionId, $menuId, $parentId, $replace = true);
+		
+		
+		//Fix the ordinals for any menu nodes that were after its original position
+		$sql = "
+			UPDATE ". DB_PREFIX. "menu_nodes AS m
+			SET m.ordinal = m.ordinal - 1
+			WHERE m.parent_id = 0
+			  AND m.ordinal > ". (int) $old['ordinal'];
+		\ze\sql::update($sql);
+		
+		
+		//Update menu sections of the moved menu node and its children, if we just changed section.
+		\ze\menuAdm::moveMenuNodesBetweenSections($menuId, $sectionId, $old['section_id']);
+		
+		
+		
+		//The following queries aim to update the menu_hierarchy table
+		//without having to delete and regenerate it.
+		
+		//Add a record for the menu node against its new parent
+		$sql = '
+			REPLACE INTO '. DB_PREFIX. 'menu_hierarchy (
+				section_id, ancestor_id,
+				child_id, separation
+			)
+			VALUES (
+				'. (int) $sectionId. ', '. (int) $parentId. ',
+				'. (int) $menuId. ', 1
+			)';
+		\ze\sql::update($sql);
+		
+		//If the menu node we are joining had children, we will need to join up
+		//all of the children below to the nodes above
+		$sql = '
+			REPLACE INTO '. DB_PREFIX. 'menu_hierarchy (
+				section_id, ancestor_id,
+				child_id, separation
+			)
+			SELECT
+				'. (int) $sectionId. ', '. (int) $parentId. ',
+				m.id, 2
+			FROM '. DB_PREFIX. 'menu_nodes AS m
+			WHERE m.parent_id = '. (int) $menuId;
+		\ze\sql::update($sql);
+		
+		$sql = '
+			REPLACE INTO '. DB_PREFIX. 'menu_hierarchy (
+				section_id, ancestor_id,
+				child_id, separation
+			)
+			SELECT
+				'. (int) $sectionId. ', '. (int) $parentId. ',
+				below.child_id, below.separation + 1
+			FROM '. DB_PREFIX. 'menu_hierarchy AS below
+			WHERE below.ancestor_id = '. (int) $menuId;
+		\ze\sql::update($sql);
+		
+		$sql = '
+			REPLACE INTO '. DB_PREFIX. 'menu_hierarchy (
+				section_id, ancestor_id,
+				child_id, separation
+			)
+			SELECT
+				'. (int) $sectionId. ', above.ancestor_id,
+				below.child_id, above.separation + below.separation + 1
+			FROM '. DB_PREFIX. 'menu_hierarchy AS above
+			INNER JOIN '. DB_PREFIX. 'menu_hierarchy AS below
+			   ON below.ancestor_id = '. (int) $menuId. '
+			WHERE above.child_id = '. (int) $parentId;
+		\ze\sql::update($sql);
+	}
+	
+	//Shortcut to calling the two above functions in turn
+	public static function moveMenuNode($sectionId, $menuId, $parentId, $neighbourId = null) {
+		
+		\ze\menuAdm::moveNodeToTopLevel($sectionId, $menuId);
+		\ze\menuAdm::moveTopLevelNodeDown($sectionId, $menuId, $parentId, $neighbourId);
+	}
+	
+	//Check a given movement is valid.
+	//Note: The code in this function is a bit old, it will print a message and exit instead of returning false.
+	public static function checkMoveIsValid($sectionId, $menuId, $parentId, $neighbourId = null) {
+		
+		if ($menuId == $parentId) {
+			echo \ze\admin::phrase('A Menu Node cannot be its own Parent. Please choose a different Menu Node to be the Parent.');
+			exit;
 
-		foreach ($sectionIds as $sectionId => $dummy) {
-			\ze\menuAdm::recalcHierarchy($sectionId);
+		} elseif (\ze\menu::isAncestor($parentId, $menuId)) {
+			echo \ze\admin::phrase('A Menu Node cannot be both the Child and the Parent of another Menu Node. Please choose a different Menu Node to be the Parent.');
+			exit;
 		}
 	}
+	
+	
 
 
 	//Delete a Menu Item and all of its children
@@ -815,6 +926,27 @@ class menuAdm {
 				". (int) $sectionId. ", ". (int) $menuId. ", ". (int) $menuId. ", 0
 			)";
 		\ze\sql::update($sql);
+		
+		\ze\menuAdm::addNewMenuPosition($sectionId, $menuId, $parentId);
+	
+		if ($parentId) {
+			$sql = "
+				INSERT INTO ". DB_PREFIX. "menu_hierarchy (
+					section_id, child_id, ancestor_id, separation
+				) SELECT
+					section_id, ". (int) $menuId. ", ancestor_id, separation + 1
+				FROM ". DB_PREFIX. "menu_hierarchy
+				WHERE child_id = ". (int) $parentId. "
+				ORDER BY section_id, child_id, ancestor_id, separation";
+			\ze\sql::update($sql);
+		}
+	}
+
+	private static function addNewMenuPosition($sectionId, $menuId, $parentId, $replace = false) {
+		
+		if ($replace) {
+			\ze\row::delete('menu_positions', ['section_id' => $sectionId, 'menu_id' => $menuId]);
+		}
 	
 		$sql = "
 			INSERT INTO ". DB_PREFIX. "menu_positions (
@@ -839,18 +971,6 @@ class menuAdm {
 				". (int) $sectionId. ", ". (int) $menuId. ", 1
 			)";
 		\ze\sql::update($sql);
-	
-		if ($parentId) {
-			$sql = "
-				INSERT INTO ". DB_PREFIX. "menu_hierarchy (
-					section_id, child_id, ancestor_id, separation
-				) SELECT
-					section_id, ". (int) $menuId. ", ancestor_id, separation + 1
-				FROM ". DB_PREFIX. "menu_hierarchy
-				WHERE child_id = ". (int) $parentId. "
-				ORDER BY section_id, child_id, ancestor_id, separation";
-			\ze\sql::update($sql);
-		}
 	}
 
 	public static function recalcAllHierarchy() {

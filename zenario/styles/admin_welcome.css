@@ -100,7 +100,7 @@ body.webkit input {
 	overflow:hidden;
 }
 
-.welcome div.thickbox_table #row__blurb > div,
+.welcome div.thickbox_table #zaf_row__blurb > div,
 .welcome div.thickbox_table .zfab_error_wrap
 {
 	background:url('../admin/images/welcome/border-line-grey-white.gif') repeat-x bottom;
@@ -144,20 +144,25 @@ body.webkit input {
 	text-align:left;
 }
 
-.admin_welcome_security_code .welcome #row__code {
+.admin_welcome_security_code .welcome #zaf_row__code {
 	display:inline-block;
 }
 
-.admin_welcome_security_code .welcome #row__code > div {
+.admin_welcome_security_code .welcome #zaf_row__code > div {
 	float:left;
 }
 
-.admin_welcome_security_code .welcome #row__code > div.title {
+.admin_welcome_security_code .welcome #zaf_row__code > div.title {
 	padding:12px 10px 0 0;
 }
 
-.admin_welcome_security_code .welcome #row__code > div .zenario_field_tooltip {
+.admin_welcome_security_code .welcome #zaf_row__code > div .zenario_field_tooltip {
 	margin-top:10px;
+}
+
+.admin_welcome_security_code .welcome .zenario_ab_row__code_sent {
+	padding-left:50px;
+	background:url('../admin/images/welcome/icon-envelope-blue.svg') no-repeat 0 3px / 35px auto;
 }
 
 /* Sys Requirements Screen */
@@ -187,25 +192,25 @@ body.webkit input {
 	padding:5px 5px 5px 20px;
 	overflow:hidden;
 }
-.welcome #row__sub_table_open td fieldset.zenario_grouping__sub_table tr:first-child td,
-.welcome #row__sub_table_close td
+.welcome #zaf_row__sub_table_open td fieldset.zenario_grouping__sub_table tr:first-child td,
+.welcome #zaf_row__sub_table_close td
 {
 	height: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
 }
 
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins {
 	color:#2C5611;
 }
 
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins h2 {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins h2 {
 	font-size: 13px;
 	font-weight: 600;
 }
 
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins h2,
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins h2,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins p {
 	padding-bottom:3px;
 }
 
@@ -254,7 +259,7 @@ body.webkit input {
 	padding:5px 5px 5px 40px;
 }
 
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins p.warning {
 	padding:5px 5px 5px 25px;
 }
 
@@ -272,7 +277,7 @@ body.webkit input {
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div,
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins p.warning
 {
 	background:url('../admin/images/icon-warning.svg') no-repeat 15px 5px / 16px 16px;
 }
@@ -282,7 +287,7 @@ body.webkit input {
 	background:url('../admin/images/icon-information.svg') no-repeat 15px 5px / 16px 16px;
 }
 
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#snippet__show_administrators_logins p.warning {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row span#zaf_snippet__show_administrators_logins p.warning {
 	background-position:0 5px;
 }
 
@@ -418,13 +423,13 @@ input:-webkit-autofill.password:active {
 	line-height:30px;
 }
 
-.welcome .zenario_ab_row__host input#host,
-.welcome .zenario_ab_row__multi_db_host #multi_db_host {
+.welcome .zenario_ab_row__host input#zaf_host,
+.welcome .zenario_ab_row__multi_db_host #zaf_multi_db_host {
 	width: calc(100% - 140px);
 }
 
-.welcome .zenario_ab_row__host input#port,
-.welcome .zenario_ab_row__multi_db_host #multi_db_port {
+.welcome .zenario_ab_row__host input#zaf_port,
+.welcome .zenario_ab_row__multi_db_host #zaf_multi_db_port {
 	width: 60px;
 	margin-left: 12px;
 }
@@ -450,12 +455,12 @@ input:-webkit-autofill.password:active {
 	margin-right:5px;
 }
 
-.welcome div.thickbox_table input#backup_dir,
-.welcome div.thickbox_table input#docstore_dir,
-.welcome div.thickbox_table input#template_dir,
-.welcome div.thickbox_table input#cache_dir,
-.welcome div.thickbox_table input#public_dir,
-.welcome div.thickbox_table input#private_dir
+.welcome div.thickbox_table input#zaf_backup_dir,
+.welcome div.thickbox_table input#zaf_docstore_dir,
+.welcome div.thickbox_table input#zaf_template_dir,
+.welcome div.thickbox_table input#zaf_cache_dir,
+.welcome div.thickbox_table input#zaf_public_dir,
+.welcome div.thickbox_table input#zaf_private_dir
 {
 	width: 90%;
 }
@@ -638,7 +643,7 @@ input:-webkit-autofill.password:active {
 	border:1px solid #ABB4BB;
 	padding:12px 20px 12px 20px;
 }
-.welcome div.thickbox_table div#row__zenario_siteconfig textarea#zenario_siteconfig{
+.welcome div.thickbox_table div#zaf_row__zenario_siteconfig textarea#zaf_zenario_siteconfig{
 	line-height: 16px;
 	font-size: 10.4px;
 	font-family: Monaco, monospace;
@@ -683,7 +688,7 @@ input:-webkit-autofill.password:active {
 	text-align:center;
 }
 /*
-.welcome div.thickbox_table input#previous
+.welcome div.thickbox_table input#zaf_previous
 {
 	background:#FFF url('../admin/images/welcome/btn_prev_bg.gif') no-repeat left bottom;
 }
@@ -693,14 +698,14 @@ input:-webkit-autofill.password:active {
 	background:#FFF url('../admin/images/welcome/btn_bg.jpg') no-repeat right top;
 }
 */
-.welcome div.thickbox_table tr#row__fresh_install input.disabled,
-.welcome div.thickbox_table tr#row__previous input.disabled
+.welcome div.thickbox_table tr#zaf_row__fresh_install input.disabled,
+.welcome div.thickbox_table tr#zaf_row__previous input.disabled
 {
 	border:2px solid #C8CCCF;
 	background:#FFF url('../admin/images/welcome/btn_next_disabled_bg.gif') no-repeat right bottom;
 }
-.welcome div.thickbox_table #row__fresh_install input.disabled,
-.welcome div.thickbox_table #row__previous input.disabled{
+.welcome div.thickbox_table #zaf_row__fresh_install input.disabled,
+.welcome div.thickbox_table #zaf_row__previous input.disabled{
 	background-color: #C8CCCF;
 	color: #e1e1e1;
 	border-color: #afafaf;
@@ -725,27 +730,27 @@ input:-webkit-autofill.password:active {
 	border: 0; 
 }
 
-.welcome div.thickbox_table input#skip,
-.welcome div.thickbox_table input#resend,
-.welcome div.thickbox_table input#do_it_for_me
+.welcome div.thickbox_table input#zaf_skip,
+.welcome div.thickbox_table input#zaf_resend,
+.welcome div.thickbox_table input#zaf_do_it_for_me
 {
 	margin-right:10px;
 }
 
-.welcome div.thickbox_table input#restore,
-.welcome div.thickbox_table input#restore_disabled,
-.welcome div.thickbox_table input#fresh_install,
-.welcome div.thickbox_table input#fresh_install_disabled,
-.welcome div.thickbox_table input#check_again,
-.welcome div.thickbox_table input#save_and_continue
+.welcome div.thickbox_table input#zaf_restore,
+.welcome div.thickbox_table input#zaf_restore_disabled,
+.welcome div.thickbox_table input#zaf_fresh_install,
+.welcome div.thickbox_table input#zaf_fresh_install_disabled,
+.welcome div.thickbox_table input#zaf_check_again,
+.welcome div.thickbox_table input#zaf_save_and_continue
 {
 	float:right;
 }
 
-.welcome div.thickbox_table input#restore,
-.welcome div.thickbox_table input#restore_disabled,
-.welcome div.thickbox_table input#check_again,
-.welcome div.thickbox_table input#save_and_continue
+.welcome div.thickbox_table input#zaf_restore,
+.welcome div.thickbox_table input#zaf_restore_disabled,
+.welcome div.thickbox_table input#zaf_check_again,
+.welcome div.thickbox_table input#zaf_save_and_continue
 {
 	margin-right:10px;
 }
@@ -757,28 +762,28 @@ input:-webkit-autofill.password:active {
 	cursor: hand;
 }
 
-.welcome div.thickbox_table tr#row__fresh_install input.disabled
+.welcome div.thickbox_table tr#zaf_row__fresh_install input.disabled
 {
 	cursor: default;
 }
 
-.welcome div.thickbox_table input.input_submit#check_again {
+.welcome div.thickbox_table input.input_submit#zaf_check_again {
 	background:#0398C3 url('../admin/images/icon-refresh-white.svg') no-repeat 10px center / auto 18px;
 	padding-left:35px;
 }
 
-.welcome div.thickbox_table input.input_submit#continue {
+.welcome div.thickbox_table input.input_submit#zaf_continue {
 	background:#0398C3 url('../admin/images/icon-arrow-next-white.svg') no-repeat 90% center / auto 18px;
 	padding-right:32px;
 }
 
 /* Plain buttons, Forgotten password, Return front-end */
 
-.welcome div.thickbox_table tr#row__forgot div {
+.welcome div.thickbox_table tr#zaf_row__forgot div {
 	padding:0 0 10px;
 }
 
-.welcome div.thickbox_table input#forgot,
+.welcome div.thickbox_table input#zaf_forgot,
 .welcome div.thickbox_table input.return_front_end {
 	background:transparent;
 	border:0;
@@ -786,7 +791,7 @@ input:-webkit-autofill.password:active {
 	font-weight:normal;
 }
 
-.welcome div.thickbox_table input#forgot {
+.welcome div.thickbox_table input#zaf_forgot {
 	color:#6F6F6F;
 	font-size:12px;
 	text-decoration:underline;
@@ -817,7 +822,7 @@ input:-webkit-autofill.password:active {
 	overflow:hidden;
 }
 
-.welcome div.thickbox_table input#resend {
+.welcome div.thickbox_table input#zaf_resend {
 	position:absolute;
 	right:20px;
 	bottom:30px;
@@ -832,7 +837,7 @@ input:-webkit-autofill.password:active {
 
 /* Message */
 
-.welcome #row__reason .zenario_reason{
+.welcome #zaf_row__reason .zenario_reason{
 	padding: 10px 10px;
 	display: inline-block!important;
 	background: #f9f9f9;
@@ -840,22 +845,22 @@ input:-webkit-autofill.password:active {
 	border-radius: 3px;
 }
 
-.welcome div.thickbox_table input#password
+.welcome div.thickbox_table input#zaf_password
 {
 	float:left;
 }
 
-.welcome div.thickbox_table tr#row__sample div
+.welcome div.thickbox_table tr#zaf_row__sample div
 {
 	padding-left: 50px;
 }
 
-.welcome div.thickbox_table tr#row__sample input
+.welcome div.thickbox_table tr#zaf_row__sample input
 {
 	margin-top: 5px;
 }
 
-.welcome div.thickbox_table tr#row__sample label
+.welcome div.thickbox_table tr#zaf_row__sample label
 {
 	font-weight: bold;
 }
@@ -930,7 +935,7 @@ input:-webkit-autofill.password:active {
 	padding-left:25px;
 }
 
-.welcome div.thickbox_table #row__path_status div
+.welcome div.thickbox_table #zaf_row__path_status div
 {
 	padding-left:0;
 }
@@ -945,7 +950,7 @@ input:-webkit-autofill.password:active {
 	font-family:verdana,arial,helvetica;
 }
 
-.welcome div.thickbox_table #row__why
+.welcome div.thickbox_table #zaf_row__why
 {
 	font-weight:bold;
 }
@@ -995,13 +1000,13 @@ input:-webkit-autofill.password:active {
 	line-height:1.5em;
 }
 
-.welcome div.thickbox_table #row__path_status div {
+.welcome div.thickbox_table #zaf_row__path_status div {
 	font-size:14px;
 }
 
 .welcome div.thickbox_table input.username,
 .welcome div.thickbox_table input.password,
-.welcome div.zenario_ab_tab__forgot input#email {
+.welcome div.zenario_ab_tab__forgot input#zaf_email {
 	font-size:13px;
 }
 
@@ -1035,17 +1040,17 @@ input:-webkit-autofill.password:active {
 .welcome h1,
 .welcome h2,
 .welcome h3,
-.welcome #snippet__link a,
+.welcome #zaf_snippet__link a,
 .welcome .zenario_note_below a,
-.welcome div.thickbox_table #row__path_status div,
+.welcome div.thickbox_table #zaf_row__path_status div,
 .welcome div.thickbox_table a.link_color,
 .welcome div.thickbox_table p a 
 {
 	color:#007FA3;
 }
 
-.welcome div.thickbox_table tr#row__fresh_install input.disabled,
-.welcome div.thickbox_table tr#row__previous input.disabled
+.welcome div.thickbox_table tr#zaf_row__fresh_install input.disabled,
+.welcome div.thickbox_table tr#zaf_row__previous input.disabled
 {
 	color:#ADADAD;
 }
@@ -1055,7 +1060,7 @@ input:-webkit-autofill.password:active {
 	color:#E00800;
 }
 
-.welcome div.thickbox_table #snippet__password_strength
+.welcome div.thickbox_table #zaf_snippet__password_strength
 {
 	color:#000;
 	float: right;
@@ -1172,8 +1177,8 @@ input:-webkit-autofill.password:active {
 /* License */
 
 .welcome .zenario_ab_row__i_agree .zenario_note_below,
-.welcome .zenario_ab_row__blurb span#snippet__blurb p,
-.welcome .zenario_ab_row__blurb2 span#snippet__blurb2 p{
+.welcome .zenario_ab_row__blurb span#zaf_snippet__blurb p,
+.welcome .zenario_ab_row__blurb2 span#zaf_snippet__blurb2 p{
 	margin-top: 5px;
 	line-height: 1.4em;
 }
@@ -1200,10 +1205,10 @@ input:-webkit-autofill.password:active {
 .welcome .zenario_ab_row .title label{
 	font-size: 1.1em;
 }
-.welcome div.thickbox_table input#password{
+.welcome div.thickbox_table input#zaf_password{
 	float: none;
 }
-.welcome #row__license pre{
+.welcome #zaf_row__license pre{
 	font-family: Menlo, Monaco, "andale mono", "Courier", monospace;
 	font-size: 1em;
 	line-height:1.45em;
@@ -1211,12 +1216,12 @@ input:-webkit-autofill.password:active {
 	padding-right:15px !important;
 }
 /* Reset password */
-.welcome #row__current_password title,
-.welcome #row__password title,
-.welcome #row__re_password title{
+.welcome #zaf_row__current_password title,
+.welcome #zaf_row__password title,
+.welcome #zaf_row__re_password title{
 	margin: 15px 0 5px 0;
 }
-.welcome #row__re_password {
+.welcome #zaf_row__re_password {
 	clear: both;
 	padding: 0 0 15px;
 }
@@ -1477,19 +1482,19 @@ input:-webkit-autofill.password:active {
 	margin-right:5px;
 }
 
-#welcome #snippet__content_unpublished {
+#welcome #zaf_snippet__content_unpublished {
 	display:block;
 	max-height:220px;
 	overflow-y:auto;
 }
 
-#welcome #snippet__content_unpublished .zenario_row_for_snippet {
+#welcome #zaf_snippet__content_unpublished .zenario_row_for_snippet {
 	position:relative;
 	display:block;
 	padding:5px 5px 5px 25px;
 }
 
-#welcome #snippet__content_unpublished .zenario_row_for_snippet .organizer_item_image {
+#welcome #zaf_snippet__content_unpublished .zenario_row_for_snippet .organizer_item_image {
 	position:absolute;
 	top:5px;
 	left:0;
@@ -1598,7 +1603,7 @@ input:-webkit-autofill.password:active {
 	Tooltip for password, applies for Admin and visitor
 */
 
-#snippet__password_requirements {
+#zaf_snippet__password_requirements {
 	display:none;
 	text-align:left;
     font-size: 11px;
@@ -1613,23 +1618,23 @@ input:-webkit-autofill.password:active {
     max-width: 150px;
 }
 
-#snippet__password_requirements p {
+#zaf_snippet__password_requirements p {
 	margin-bottom:5px !important;
 }
 
-#snippet__password_requirements ul {
+#zaf_snippet__password_requirements ul {
 	padding:0 !important;
 	margin:3px 0 !important;
 	line-height:1.5em !important;
 }
 
-#snippet__password_requirements ul li {
+#zaf_snippet__password_requirements ul li {
 	margin:0 0 4px 0 !important;
 	text-align:left !important;
 }
 
-#snippet__password_requirements ul li.fail,
-#snippet__password_requirements ul li.pass {
+#zaf_snippet__password_requirements ul li.fail,
+#zaf_snippet__password_requirements ul li.pass {
 	list-style:none !important;
 	background-repeat:no-repeat;
 	background-position:0 2px;
@@ -1638,11 +1643,11 @@ input:-webkit-autofill.password:active {
 	color:#FFF;
 }
 
-#snippet__password_requirements ul li.fail {
+#zaf_snippet__password_requirements ul li.fail {
 	background-image:url('../zenario/admin/images/icon-error.svg');
 }
 
-#snippet__password_requirements ul li.pass {
+#zaf_snippet__password_requirements ul li.pass {
 	background-image:url('../zenario/admin/images/icon-tick-green-circle.svg');
 }
 
@@ -1652,7 +1657,7 @@ input:-webkit-autofill.password:active {
 	position:relative;
 }
 
-.zenario_ab_row__password_requirements #snippet__password_requirements {
+.zenario_ab_row__password_requirements #zaf_snippet__password_requirements {
 	position:absolute;
 	right:0;
 	top:-65px;

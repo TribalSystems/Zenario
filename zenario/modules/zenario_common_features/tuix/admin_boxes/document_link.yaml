@@ -1,0 +1,36 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_document_link:
+    key: 
+        id: ''
+    identifier: 
+        css_class: zenario_file_item
+        value: ''
+    hide_tab_bar: true
+    tabs:
+        link:
+            edit_mode:
+                enabled: false
+            label: Link to document
+            fields:
+                descriptions_grouping:
+                    type: grouping
+                links_grouping:
+                    type: grouping
+                    snippet:
+                        label: "This document is public and has a permanent link. To link to it, please copy one of the links below."
+                
+                document_internal_hyperlink:
+                    grouping: links_grouping
+                    label: "Internal hyperlink:"
+                    note_below: To make a link to the document within this site from a WYSIWYG area, paste this link into the editor.
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true
+                document_full_hyperlink:
+                    grouping: links_grouping
+                    label: "Full hyperlink:"
+                    note_below: To link to the document from an email or an external website, use this link.
+                    type: text
+                    readonly: true
+                    show_copy_text_button: true

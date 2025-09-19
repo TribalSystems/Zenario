@@ -71,25 +71,27 @@ if ($isWelcome || ($isOrganizer && \ze::setting('organizer_favicon') == 'zenario
 } elseif (\ze::$dbL) {
 	
 	if ($isOrganizer && \ze::setting('organizer_favicon') == 'custom') {
-		$faviconId = \ze::setting('custom_organizer_favicon');
+		$faviconIds = \ze::setting('custom_organizer_favicon');
 	} else {
-		$faviconId = \ze::setting('favicon');
+		$faviconIds = \ze::setting('favicon');
 	}
 	
-	if ($faviconId
-	 && ($icon = \ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], $faviconId))
-	 && ($link = ze\file::link($icon['id'], false, 'public/images'))) {
-		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
-			echo "\n", '<link rel="shortcut icon" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
-		} else {
-			echo "\n", '<link type="', htmlspecialchars($icon['mime_type']), '" rel="icon" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
+	if ($faviconIds) {
+	    foreach (ze\ray::explodeAndTrim($faviconIds, true) as $imageId) {
+			if ($link = \ze\file::specialImageLink($imageId)) {
+				$mimeType = \ze\file::mimeType($link);
+				if ($mimeType == 'image/x-icon') {
+					echo "\n", '<link type="', htmlspecialchars($mimeType), '" rel="shortcut icon" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
+				} else {
+					echo "\n", '<link type="', htmlspecialchars($mimeType), '" rel="icon" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
+				}
+			}
 		}
 	}
 
 	if (!$isOrganizer
-	 && \ze::setting('mobile_icon')
-	 && ($icon = \ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], \ze::setting('mobile_icon')))
-	 && ($link = ze\file::link($icon['id'], false, 'public/images'))) {
+	 && ($mobileIconId = \ze::setting('mobile_icon'))
+	 && ($link = \ze\file::specialImageLink($mobileIconId))) {
 		echo "\n", '<link rel="apple-touch-icon-precomposed" href="', \ze\link::absolute(), htmlspecialchars($link), '"/>';
 	}
 }

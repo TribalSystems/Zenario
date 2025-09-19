@@ -170,8 +170,8 @@ class zenario_pro_features extends zenario_common_features {
 							CURLOPT_HTTPHEADER => ['X-HTTP-Method-Override: GET'],
 							CURLOPT_SSL_VERIFYPEER => false];
 						
-						if ($responce = ze\curl::fetch($url, $post, $options)) {
-							if ($json = json_decode($responce, true)) {
+						if ($response = ze\curl::fetch($url, $post, $options)) {
+							if ($json = json_decode($response, true)) {
 								if (isset($json['data']['translations'][0]['translatedText'])) {
 									
 									//Attempt to add a work-around for Google stripping off all of the white-space
@@ -189,7 +189,7 @@ class zenario_pro_features extends zenario_common_features {
 									exit;
 								}
 							} else {
-								echo $responce;
+								echo $response;
 								exit;
 							}
 						} else {
@@ -339,22 +339,22 @@ class zenario_pro_features extends zenario_common_features {
 		
 				//Check if the scheduled task manager is running
 				if (!ze\module::inc('zenario_scheduled_task_manager')) {
-					echo '--', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager module is not running.'));
-					echo '-', ze\escape::hyp('zenario__modules/panels/modules~-zenario_scheduled_task_manager');
+					echo '--', ze\cache::swig(ze\admin::phrase('The Scheduled Tasks Manager module is not running.'));
+					echo '-', ze\cache::swig('zenario__modules/panels/modules~-zenario_scheduled_task_manager');
 					return;
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {
-					echo '-jobs_not_running-', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager module is running, but the master switch is Off and so tasks are not being run.'));
+					echo '-jobs_not_running-', ze\cache::swig(ze\admin::phrase('The Scheduled Tasks Manager module is running, but the master switch is Off and so tasks are not being run.'));
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = true)) {
-					echo '-jobs_not_running-', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager module is running, but not correctly configured in the crontab.'));
+					echo '-jobs_not_running-', ze\cache::swig(ze\admin::phrase('The Scheduled Tasks Manager module is running, but not correctly configured in the crontab.'));
 		
 				} else {
-					echo '-jobs_running-', ze\escape::hyp(ze\admin::phrase('The Scheduled Tasks Manager is running'));
+					echo '-jobs_running-', ze\cache::swig(ze\admin::phrase('The Scheduled Tasks Manager is running'));
 				}
 		
 				if (ze\priv::check('_PRIV_VIEW_SCHEDULED_TASK')) {
-					echo '-', ze\escape::hyp('zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks');
+					echo '-', ze\cache::swig('zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks');
 				}
 			}
 		
@@ -429,6 +429,29 @@ class zenario_pro_features extends zenario_common_features {
 			default:
 				return substr($langId, 0, 2);
 		}
+	}
+	
+	public static function translatePhrase($phraseToTranslate, $targetLanguage) {
+		if ($phraseToTranslate) {
+			$googleTranslateApiKey = ze::setting('google_translate_api_key');
+			
+			if ($googleTranslateApiKey) {
+				$url = 'https://translation.googleapis.com/language/translate/v2';
+				$data = [
+					'q' => $phraseToTranslate,
+					'target' => $targetLanguage,
+					'key' => $googleTranslateApiKey
+				];
+				
+				$response = ze\curl::fetch($url, $data);
+				if ($response) {
+					$result = json_decode($response, true);
+					return htmlspecialchars_decode($result['data']['translations'][0]['translatedText']);
+				}
+			}
+		}
+		
+		return '';
 	}
 	
 	public static function encode($text) {

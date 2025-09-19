@@ -7,44 +7,78 @@ sections:
                 ord: 1
                 css_class: zenario_at_icon_tag_id
                 label: ""
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             version_1:
                 ord: 2
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             version_2:
                 ord: 3
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             version_3:
                 ord: 4
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             staging_mode:
                 ord: 5
                 css_class: zenario_at_icon_staging_mode
                 admin_box:
                     path: zenario_content_staging_mode
-            alias_dropdown:
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+            layout_id:
                 ord: 6
-                css_class: zenario_at_icon_alias
-            copy_url:
-                ord: 7
-                visible_if: zenario.canCopy()
-                parent: alias_dropdown
-                label: Copy URL/alias to clipboard
-            go_to_alias:
+                css_class: zenario_at_icon_layout
+                tooptip: Content Item Layout
+                admin_box:
+                    path: zenario_content_layout
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+            
+            #If the Users module is running, it will insert the permissions icon with ord 7.
+            
+            language_id:
                 ord: 8
-                parent: alias_dropdown
-                label: Go to content item via its alias
-            no_alias:
+                css_class: zenario_at_icon_language
+                label: ""
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+                    translations: true
+            alias_dropdown:
                 ord: 9
+                css_class: zenario_at_icon_alias
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+                    translations: true
+            no_alias:
+                ord: 10
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+                    translations: true
             alias:
-                ord: 10
+                ord: 11
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
@@ -53,18 +87,27 @@ sections:
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_alias
-            language_id:
-                ord: 11
-                css_class: zenario_at_icon_language
-                label: ""
-            layout_id:
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+                    translations: true
+            copy_url:
                 ord: 12
-                css_class: zenario_at_icon_layout
-                tooptip: Content Item Layout
-                admin_box:
-                    path: zenario_content_layout
-            
-            #If the Users module is running, it will insert the permissions icon with ord 13.
+                visible_if: zenario.canCopy()
+                parent: alias_dropdown
+                label: Copy URL/alias to clipboard
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+                    translations: true
+            go_to_alias:
+                ord: 13
+                parent: alias_dropdown
+                label: Go to content item via its alias
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
+                    translations: true
             
             item_categories_some:
                 ord: 14
@@ -73,6 +116,9 @@ sections:
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_content_categories
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             item_categories_none:
                 ord: 15
                 css_class: zenario_at_icon_categories_none
@@ -80,16 +126,24 @@ sections:
                 admin_box:
                     priv: _PRIV_EDIT_DRAFT
                     path: zenario_content_categories
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             pinned:
                 ord: 16
                 css_class: pinned
                 tooltip: "This content item is pinned"
                 admin_box:
                     path: zenario_content
+                appears_in_toolbars:
+                    preview: true
+                    edit: true
             not_pinned:
                 ord: 17
                 css_class: not_pinned
                 tooltip: "This content item is not pinned"
                 admin_box:
                     path: zenario_content
-            
+                appears_in_toolbars:
+                    preview: true
+                    edit: true

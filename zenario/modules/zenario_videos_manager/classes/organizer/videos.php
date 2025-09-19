@@ -76,7 +76,7 @@ class zenario_videos_manager__organizer__videos extends zenario_videos_manager {
 								
 								if ($item['vimeo_privacy_setting'] && array_key_exists($item['vimeo_privacy_setting'], $vimeoPrivacySettingsFormattedNicely)) {
 									$privacyString = $vimeoPrivacySettingsFormattedNicely[$item['vimeo_privacy_setting']]['note'];
-									ze\lang::applyMergeFields($privacyString, ['code' => $item['vimeo_privacy_setting'], 'date_time' => ze\date::formatRelativeDateTime(strtotime($item['vimeo_privacy_last_cached']))]);
+									ze\lang::applyMergeFields($privacyString, ['code' => $item['vimeo_privacy_setting'], 'date_time' => ze\date::formatRelativeDateTime(strtotime($item['vimeo_privacy_last_cached']), $maxPeriod = "day", $addFullTime = false)]);
 								} else {
 									$privacyString = $this->phrase('Sorry, cannot show privacy setting');
 								}

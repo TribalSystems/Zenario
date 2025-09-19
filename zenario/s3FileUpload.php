@@ -79,8 +79,8 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 				
 				</div>';
 			echo '<script type="text/javascript" > 
-			parent.document.getElementById("s3_file_id").value = "'. ze\escape::js($s3file['fid']). '";
-			parent.document.getElementById("s3_file_name").value = "'. ze\escape::js($s3file['filename']).'";				
+			parent.document.getElementById("zaf_s3_file_id").value = "'. ze\escape::js($s3file['fid']). '";
+			parent.document.getElementById("zaf_s3_file_name").value = "'. ze\escape::js($s3file['filename']).'";				
 			</script>';
 		
 			echo '<div class = "remove_s3">
@@ -156,9 +156,9 @@ if ($_GET['cId'] && $_GET['cType'] && $_GET['cVersion']) {
 	} else {
 		if($removeFlag){
 			echo '<script type="text/javascript" > 
-			parent.document.getElementById("s3_file_id").value = "";
-			parent.document.getElementById("s3_file_name").value = "";
-			parent.document.getElementById("s3_file_remove").value = "true";			
+			parent.document.getElementById("zaf_s3_file_id").value = "";
+			parent.document.getElementById("zaf_s3_file_name").value = "";
+			parent.document.getElementById("zaf_s3_file_remove").value = "true";			
 			</script>';
 		}
 		?>

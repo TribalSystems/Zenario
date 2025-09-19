@@ -5,19 +5,22 @@ copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
-display_name: Extranet Change Email
+display_name: Extranet change email address
 description: |
     <p>This module allows extranet users to change their email address.</p>
-            <p>A user must be logged in to use this plugin, and must enter their current password and their new email address.</p>
-            <p>When the user has entered their password correctly, Zenario sends a a verification email to the existing email address, containing a verification link. When clicked successfully, Zenario sends an email to both the old and the new email address to notify that the change has been made.</p>
-            <p>You can create and select your own email template which will be used to send the messages. It can contain various merge fields which will be replaced by real values when the email is sent. You can use the following fields:</p>
-            <ul>
-                <li>[[new_email]] - the new email address</li>
-                <li>[[hash]] - a hash code required to activate new email address</li>
-                <li>[[ip_address]] - the IP address of the computer from which email address change was requested</li>
-                <li>[[cms_url]] - the Website URL</li>
-                <li>[[email_confirmation_link]] - the confirmation link to activate email address change.</li>
-            </ul>
+    <p>When this module is started, it creates a change-email content item with a plugin already in a slot.</p>
+    <p>This content item must have its permissions set to be private for all extranet users.</p>
+
+    <p>To use the feature, a user must be logged in, and must enter their new email address, and their current password for security.</p>
+    <p>If correct, Zenario sends a a verification email to the existing email address with a verification link. When clicked, Zenario changes the email address in the database and sends an email to both the old and new email addresses to confirm that the change has been made.</p>
+    <p>You can create and select your own email template which will be used to send the messages. It can contain various merge fields which will be replaced by real values when the email is sent. You can use the following fields:</p>
+        <ul>
+        <li>[[new_email]] - the new email address</li>
+        <li>[[hash]] - a hash code required to activate new email address</li>
+        <li>[[ip_address]] - the IP address of the computer from which email address change was requested</li>
+        <li>[[cms_url]] - the Website URL</li>
+        <li>[[email_confirmation_link]] - the confirmation link to activate email address change.</li>
+        </ul>
 category: pluggable
 keywords: address, change, email, extranet, user
 
@@ -32,8 +35,8 @@ default_framework: standard
 special_pages:
     special_page:
         page_type: zenario_change_email
-        default_alias: change-email
-        default_title: Change Email Address
+        default_alias: update-email-address
+        default_title: Update your email address
         only_show_to_visitors_who_are_logged_in: true
         logic: create_and_maintain_in_default_language
         allow_hide: true
@@ -48,4 +51,4 @@ special_pages:
 # to fix it automatically for every site.
 dependencies:
     zenario_extranet: true
-default_instance_name: Extranet Change Email
+default_instance_name: Extranet change email address

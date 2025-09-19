@@ -25,22 +25,26 @@ zenario__content:
                     hidden: true
                 slot_name:
                     title: Slot name
+                    searchable: true
                     disallow_sorting: true
                     always_show: true
                 sitewide:
                     title: Slot contents (site-wide)
+                    searchable: true
                     always_show: true
                     disallow_sorting: true
                     width: large
                     html: true
                 layout:
                     title: Slot contents (layout)
+                    searchable: true
                     always_show: true
                     disallow_sorting: true
                     width: large
                     html: true
                 content_item:
                     title: Slot contents (content item)
+                    searchable: true
                     always_show: true
                     disallow_sorting: true
                     width: large
@@ -213,12 +217,7 @@ zenario__content:
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
                         
                 
-                remove_dropdown:
-                    label: Remove slot contents...
-                    hide_when_children_are_not_visible: true
-                
-                remove_from_layout_layer:
-                    parent: remove_dropdown
+                remove_from_layout_layer: &remove_from_layout_layer
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
                     label: Remove plugin from slot
                     ajax:
@@ -233,11 +232,11 @@ zenario__content:
                     with_columns_set:
                         full: true
                         layout_filled: true
+                        is_plugin: true
                     visible_if: >
                         zenarioO.refiner && zenarioO.refiner.name == 'layout'
                 
-                remove_from_item_layer:
-                    parent: remove_dropdown
+                remove_from_item_layer: &remove_from_item_layer
                     label: Remove plugin from slot
                     ajax:
                         confirm:
@@ -251,8 +250,35 @@ zenario__content:
                     with_columns_set:
                         full: true
                         content_item_filled: true
+                        is_plugin: true
                     visible_if: >
                         zenarioO.refiner && (zenarioO.refiner.name == 'content_item' || zenarioO.refiner.name == 'content_item_from_menu_node')
+                
+                #Some alternate versions of the buttons above, just with different labels for different situations
+                remove_nest_from_layout_layer: *remove_from_layout_layer
+                    label: Remove nest from slot
+                    with_columns_set:
+                        full: true
+                        layout_filled: true
+                        is_nest: true
+                remove_nest_from_item_layer: *remove_from_item_layer
+                    label: Remove nest from slot
+                    with_columns_set:
+                        full: true
+                        content_item_filled: true
+                        is_nest: true
+                remove_slideshow_from_layout_layer: *remove_from_layout_layer
+                    label: Remove slideshow from slot
+                    with_columns_set:
+                        full: true
+                        layout_filled: true
+                        is_slideshow: true
+                remove_slideshow_from_item_layer: *remove_from_item_layer
+                    label: Remove slideshow from slot
+                    with_columns_set:
+                        full: true
+                        content_item_filled: true
+                        is_slideshow: true
                 
                 hide_plugin:
                     label: Show nothing on this content item

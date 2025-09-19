@@ -38,8 +38,8 @@ $output = '';
 
 
 //Get a few phrases used in admin mode
-foreach([
 
+echo 'zenario.unpack(', json_encode(ze\cache::pack([
 	'_BYTES' => ' B',
 	'_GBYTES' => ' GB',
 	'_KBYTES' => ' KB',
@@ -151,7 +151,7 @@ foreach([
 	'menuRolloverImage' => "Menu node's rollover image",
 	
 	'missingId' => 'Missing ID',
-	'missingSlots' => 'This content item has plugins in slots that aren\'t supported by layout [[layout]]. Switch to "Edit" view, check the plugins in the "Missing Slots" section the bottom of the page, and either remove them or move them to slots that exist.',
+	'missingSlots' => 'This content item has plugins in slots that aren\'t supported by layout [[layout]]. Use the "Tools" tab, scroll to the bottom of the page and check the plugins in the "Missing Slots" section, and either move them to slots on this layout or remove them.',
 	'mode' => 'Mode',
 	'module' => 'Module',
 	'module_not_found' => 'module not found',
@@ -375,17 +375,13 @@ _help
 	'password_does_not_match_the_requirements' => 'Password does not match the requirements',
 	'enter_password' => 'Please enter a password'
 
-] as $code => $phrase) {
-	$output .= ze\cache::esctick($code). '~'. ze\cache::esctick($phrase). '~';
-}
-
-echo 'zenario._mkd(zenarioA.phrase,', json_encode($output), ');';
-	//N.b. zenario._mkd() is the short-name for zenario.unpackAndMerge()
+])), ', zenarioA.phrase);';
 	//(For shorter lists than this, consider using callScript() and calling the zenario.readyPhrasesOnBrowser() function)
 
 
 
-echo ze\bundle::outputMicrotemplates(ze::moduleDirs('admin_microtemplates/'), 'zenarioT.microTemplates={}');
+echo '
+zenarioT.microTemplates = zenario.unpack(', ze\cache::packMicrotemplates(ze::moduleDirs('admin_microtemplates/')), ');';
 
 
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/bundle.post_display.inc.php';

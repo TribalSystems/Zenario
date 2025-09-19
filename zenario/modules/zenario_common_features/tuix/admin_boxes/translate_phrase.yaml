@@ -17,13 +17,25 @@ zenario_translate_phrase:
             edit_mode:
                 priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                 enabled: true
-            fields: 
+            fields:
+                phrase_codes_info:
+                    ord: 1
+                    notices_below:
+                        phrase_codes_info:
+                            type: information
+                            message: "Code-based phrases are added to Zenario by a phrase file in a module's \"phrases\" folder, e.g. a Spanish file would be called \"es.csv.php\"."
                 module:
+                    ord: 2
                     label: 'Module:'
-                    pick_items:
-                        path: zenario__modules/panels/modules
-                    readonly: true
+                    type: text
+                    show_as_a_span: true
+                seen_at:
+                    ord: 3
+                    label: 'Seen at:'
+                    snippet:
+                        html: ''
                 code:
+                    ord: 4
                     hidden: true
                     label: 'Code:'
                     type: text
@@ -31,29 +43,40 @@ zenario_translate_phrase:
                     rows: 2
                 
                 left_column:
+                    ord: 5
                     type: grouping
                     name: left_column
                 phrase:
+                    ord: 6
                     grouping: left_column
                     label: 'Phrase:'
                     type: textarea
                     readonly: true
+                    disabled: true
                     rows: 4
                 
                 right_column:
+                    ord: 7
                     type: grouping
                     name: right_column
                 
                 local_text:
                     grouping: right_column
+                    ord: 8
                     label: ''
                     type: textarea
                     rows: 4
                 
+                #If the Pro Features module is running, it will add a "Translate with Google" button.
+                #Leave an ordinal gap here.
+                
                 protect_flag:
                     grouping: right_column
+                    ord: 10
                     label: Protect
                     type: checkbox
+                    onoff: true
+                    format_onchange: true
                     visible_if: |
                         zenarioAB.editModeOn()
                     side_note : >

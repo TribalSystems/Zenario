@@ -315,7 +315,7 @@ class plugin {
 					//If there is something hidden at the item layer and there is a plugin
 					//at the layout layer, show a special message
 					if ($slotContents[$slotName]->isOpaque()) {
-						$slotContents[$slotName]->setErrorMessage(\ze\admin::phrase('[Slot set to show nothing on this content item]'));
+						$slotContents[$slotName]->setErrorMessage(\ze\admin::phrase('[Slot set to show nothing on this content item]'), 'zenario_showNothingMsg');
 					}
 				}
 				
@@ -420,8 +420,8 @@ class plugin {
 						SELECT 
 							id, id AS slide_id,
 							slide_num, css_class, slide_label, set_page_title_with_conductor,
-							states, show_back, no_choice_no_going_back, show_refresh, show_auto_refresh, auto_refresh_interval,
-							request_vars, global_command,
+							states, show_back, show_refresh, show_auto_refresh, auto_refresh_interval,
+							request_vars,
 							privacy, at_location, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 						FROM ". DB_PREFIX. "nested_plugins AS np
 						WHERE np.instance_id = ". (int) $instanceId. "

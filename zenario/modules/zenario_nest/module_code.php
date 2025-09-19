@@ -51,6 +51,7 @@ class zenario_nest extends zenario_abstract_nest {
 		switch ($this->aLib) {
 			case 'accordion':
 			case 'cycle2':
+			case 'one_slide':
 				//Create a subclass for the library, so we can use different logic depending on which one was selected
 				if ($this->subClass = $this->runSubClass('zenario_nest', 'animation_libraries', $this->aLib)) {
 					//Pass control to the subclass
@@ -69,6 +70,19 @@ class zenario_nest extends zenario_abstract_nest {
 			return $this->subClass->showSlot();
 		}
 		return false;
+	}
+	
+	//Small bugfix for the "one_slide" animation library.
+	//If we are only showing one slide we don't want to report as having a value for the nest type setting,
+	//even if something was previously saved in that setting from a different mode, or previously saved before
+	//using the Convert Nest FAB.
+	public function nestType() {
+		$this->aLib = $this->setting('animation_library');
+		if ($this->aLib == 'one_slide') {
+			return '';
+		} else {
+			return parent::nestType();
+		}
 	}
 	
 	

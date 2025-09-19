@@ -735,11 +735,11 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			}
 			
 			if (!empty($item['created_datetime'])) {
-				$item['created_datetime'] = ze\admin::formatRelativeDateTime($item['created_datetime']);
+				$item['created_datetime'] = ze\admin::formatRelativeDateTime($item['created_datetime'], $maxPeriod = "day", $addFullTime = false);
 			}
 			
 			if (!empty($item['last_modified_datetime'])) {
-				$item['last_modified_datetime'] = ze\admin::formatRelativeDateTime($item['last_modified_datetime']);
+				$item['last_modified_datetime'] = ze\admin::formatRelativeDateTime($item['last_modified_datetime'], $maxPeriod = "day", $addFullTime = false);
 				$item['unpublished_content_info'] =
 					 ze\admin::phrase('Last edit [[time]] by [[admin]].', [
 						'time' => $item['last_modified_datetime'],
@@ -904,10 +904,20 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 					if (ze::get('languageId') && $item['language_id'] != $_GET['languageId'] ?? false) {
 						$item['name'] .= ' ('. $item['language_id']. ')';
 					}
-			
-					$item['navigation_path'] = 'zenario__content/panels/content//'. $id;
 					
-					
+					switch ($item['status']) {
+						case 'trashed':
+							$item['navigation_path'] = 'zenario__content/panels/trashed_content_items//'. $id;
+							break;
+							
+						case 'hidden':
+							$item['navigation_path'] = 'zenario__content/panels/hidden_content_items//'. $id;
+							break;
+							
+						default:
+							$item['navigation_path'] = 'zenario__content/panels/content/refiners/content_type//'. $item['type']. '//'. $id;
+							break;
+					}
 				}
 				
 				if (ze\content::isSpecialPage($item['id'], $item['type'])) {
@@ -1283,22 +1293,17 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 					$cVersion = $contentInfo['admin_version'];
 					$adminDetails = ze\admin::details($contentInfo['lock_owner_id']);
 					
-					if (ze\priv::check(false, $cID, $cType)) {
-						echo ze\admin::phrase('Unlock this draft?');
-					} else {
-						echo ze\admin::phrase('Are you sure that you wish to force-unlock this draft?');
-					}
+					$date = ze\row::get('content_item_versions', 'scheduled_publish_datetime', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 					
-					echo ' ';
-					
-					if ($date = ze\row::get('content_item_versions',
-						'scheduled_publish_datetime',
-						['id' => $cID, 'type' => $cType, 'version' => $cVersion]
-					)) {
-						$mrg = $adminDetails;
-						$mrg['publicationTime'] = ze\admin::formatDateTime($date, 'vis_date_format_med');
-						echo ze\admin::phrase('It has been scheduled by [[first_name]] [[last_name]] to be published on [[publicationTime]].', $mrg);
-					} else {
+					//Content items scheduled for publishing may not be unlocked.
+					if (!$date) {
+						if (ze\priv::check(false, $cID, $cType)) {
+							echo ze\admin::phrase('Unlock this draft?');
+						} else {
+							echo ze\admin::phrase('Are you sure that you wish to force-unlock this draft?');
+						}
+						
+						echo ' ';
 						echo ze\admin::phrase('Other administrators will then be able to edit it.');
 					}
 				}
@@ -1310,7 +1315,13 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				if (ze\content::getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 					if (ze\priv::check('_PRIV_CANCEL_CHECKOUT') || ze\priv::check(false, $cID, $cType)) {
 						$cVersion = ze\row::get('content_items', 'admin_version', ['id'=>$cID, 'type'=>$cType]);
-						ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => null], ['id' => $cID, 'type' => $cType]);
+						
+						$date = ze\row::get('content_item_versions', 'scheduled_publish_datetime', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+						
+						//Content items scheduled for publishing may not be unlocked.
+						if (!$date) {
+							ze\row::update('content_items', ['lock_owner_id' => 0, 'locked_datetime' => null], ['id' => $cID, 'type' => $cType]);
+						}
 					}
 				}
 			}

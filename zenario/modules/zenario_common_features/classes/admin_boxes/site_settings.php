@@ -318,6 +318,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$fields['template/standard_email_template']['editor_options']['style_formats'] = $styleFormats;
 		}
 		
+		
+		
 		if ($settingGroup == 'data_protection') {
 			//Show a warning if the scheduled task for deleting content is not running.
 			if (!ze\module::inc('zenario_scheduled_task_manager') 
@@ -374,6 +376,19 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
 			$fields['data_protection/period_to_delete_the_email_template_sending_log_headers']['note_below'] = $note;
 			
+			//Show the number of items in the error log
+			$count = ze\row::count('error_404_log');
+			$note = ze\admin::nPhrase('1 record currently stored.', '[[count]] records currently stored.', $count);
+			
+			if ($count) {
+				$min = ze\row::min('error_404_log', 'logged');
+				$note .= ' ' . ze\admin::phrase('Oldest record from [[date]].', ['date' => ze\admin::formatDateTime($min, '_MEDIUM')]);
+			}
+			
+			$link = ze\link::absolute() . 'organizer.php#zenario__administration/panels/error_log';
+			$note .= ' ' . '<a target="_blank" href="' . $link . '">View</a>';
+			$fields['data_protection/period_to_delete_error_log']['note_below'] = $note;
+			
 		} elseif ($settingGroup == 'dirs') {
             		$warnings = ze\welcome::getBackupWarningsWithoutHtmlLinks();
             		if (!empty($warnings) && isset($warnings['show_warning'])) {
@@ -388,9 +403,13 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		$link = ze\link::absolute() . '/organizer.php#zenario__administration/panels/site_settings//data_protection~.site_settings~tdata_protection~k{"id"%3A"data_protection"}';
 		$fields['email/data_protection_link']['snippet']['html'] = ze\admin::phrase('See the <a target="_blank" href="[[link]]">data protection</a> panel for settings on how long to store sent email logs.', ['link' => htmlspecialchars($link)]);
 		
+		
+		
 		if ($box['setting_group'] == 'email' && !ze\module::isRunning('zenario_newsletter')) {
 			$box['title'] = 'Editing email settings';
 		}
+		
+		
 		
 		if ($settingGroup == 'cookies') {
 			if (ze::setting('captcha_status_and_version') == 'enabled_v2' && ze::setting('google_recaptcha_site_key') && ze::setting('google_recaptcha_secret_key')) {
@@ -398,13 +417,39 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$fields['recaptcha_policy/recaptcha_warning']['hidden'] = false;
 			}
 		}
-
+		
+		
+		
 		if ($settingGroup == 'head_and_foot' && !ze\priv::check('_PRIV_EDIT_SITEWIDE')) {
 			$box['tabs']['head']['edit_mode']['enabled'] =
 			$box['tabs']['body']['edit_mode']['enabled'] =
 			$box['tabs']['foot']['edit_mode']['enabled'] =
 			$box['tabs']['cookie_content']['edit_mode']['enabled'] = false;
 		}
+		
+		
+    	if ($settingGroup == 'logos_and_branding') {
+    		
+    		//Internally, we allow people to upload multiple favicons for a site.
+    		//However to make the admin UI less confusing, we'll only offer the ability to
+    		//have at most two favicons: a .ico (for Microsoft Bing) and a .png (for Google).
+    		$faviconIds = \ze::setting('favicon');
+    		if (!empty($faviconIds)) {
+	    		foreach (ze\ray::explodeAndTrim($faviconIds, true) as $imageId) {
+	    			if ($file = ze\row::get('files', ['id', 'usage', 'mime_type'], $imageId)) {
+	    				if ($file['usage'] != 'site_setting') {
+	    					continue;
+	    				}
+	    				if ($file['mime_type'] == 'image/x-icon') {
+	    					$values['favicon/favicon_ico'] = $imageId;
+	    				} else {
+	    					$values['favicon/favicon_png'] = $imageId;
+	    				}
+	    			}
+	    		}
+	    	}
+	    }
+	    			
 		
 		
 		if ($settingGroup == 'aws_s3_and_vector_data_processing') {
@@ -447,6 +492,19 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					'html' => true
 				]];
 			}
+		}
+		
+		
+		
+		if ($settingGroup == 'security') {
+			$days = ze\admin::getDaysBeforeAdminsAreInactive();
+			
+			$fields['admin_login/warn_when_admin_did_not_log_in_for_over_3_months']['label'] = ze\admin::nPhrase(
+				"Warn when there are administrators on the site who haven't logged in for over 1 day",
+				"Warn when there are administrators on the site who haven't logged in for over [[days]] days",
+				$days,
+				['days' => $days]
+			);
 		}
 	}
 
@@ -528,13 +586,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$fields['sitemap/sitemap_disabled_warning']['hidden'] = true;
 			if (isset($fields['sitemap/sitemap_url'])) {
 				if (!$fields['sitemap/sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
-					if (ze::setting('mod_rewrite_enabled')) {
-						$fields['sitemap/sitemap_url']['value'] =
-						$fields['sitemap/sitemap_url']['current_value'] = ze\link::protocol() . ze\link::primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
-					} else {
-						$fields['sitemap/sitemap_url']['value'] =
-						$fields['sitemap/sitemap_url']['current_value'] = ze\link::protocol() . ze\link::primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
-					}
+					$fields['sitemap/sitemap_url']['value'] =
+					$fields['sitemap/sitemap_url']['current_value'] = ze\miscAdm::sitemapURL($values['sitemap/sitemap_enabled']);
 				}
 			}
 		} elseif (isset($fields['urls/mod_rewrite_enabled']) && !$values['urls/mod_rewrite_enabled']) {
@@ -879,8 +932,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		//Note: This is done in formatAdminBox() and not fillAdminBox() as one of the default values changes depending
 		//on the settings chosen in the sitemap tab!
 		if ($settingGroup == 'search_engine_optimisation') {
-			$defaultConfig = self::setRobotsTxtToDefaultConfig($values['sitemap/sitemap_enabled'], $values['sitemap/sitemap_url']);
-			$blockAll = self::setRobotsTxtToBlockAll();
+			$defaultConfig = ze\miscAdm::robotsTxtDefaultConfig($values['sitemap/sitemap_enabled'], $values['sitemap/sitemap_url']);
+			$blockAll = ze\miscAdm::robotsTxtBlockAllConfig();
 			
 			if (!empty($fields['robots_txt/default_config']['pressed'])) {
 				unset($fields['robots_txt/default_config']['pressed']);
@@ -918,28 +971,25 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
     	}
     	
     	if ($settingGroup == 'logos_and_branding') {
-    		if (isset($fields['favicon/favicon'])) {
-    			$fields['favicon/favicon']['notices_below']['favicon_size_warning']['hidden'] = true;
-    			
-				if ($values['favicon/favicon']) {
-					$mimeType = $imageWidth = $imageHeight = '';
-					
-					if (is_numeric($values['favicon/favicon']) && ($file = ze\row::get('files', true, $values['favicon/favicon']))) {
-						$imageWidth = $file['width'];
-						$imageHeight = $file['height'];
-						$mimeType = $file['mime_type'];
-					//Add new uploads into the pool.
-					} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($values['favicon/favicon'])) {
-						$imageSize = getimagesize($filepath);
-						
-						$imageWidth = $imageSize[0];
-						$imageHeight = $imageSize[1];
-						$mimeType = $imageSize['mime'];
-					}
-					
-					if (ze\file::isImageOrSVG($mimeType) && ((($imageWidth % 48) != 0) || ($imageHeight % 48) != 0)) {
-						$fields['favicon/favicon']['notices_below']['favicon_size_warning']['hidden'] = false;
-					}
+			$fields['favicon/favicon_png']['notices_below']['favicon_size_warning']['hidden'] = true;
+			
+			if ($imageId = $values['favicon/favicon_png']) {
+				$mimeType = $imageWidth = $imageHeight = '';
+				
+				if (is_numeric($imageId) && ($file = ze\row::get('files', ['width', 'height', 'mime_type'], $imageId))) {
+					$imageWidth = $file['width'];
+					$imageHeight = $file['height'];
+					$mimeType = $file['mime_type'];
+				
+				} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($imageId)) {
+					$imageSize = getimagesize($filepath);
+					$imageWidth = $imageSize[0];
+					$imageHeight = $imageSize[1];
+					$mimeType = $imageSize['mime'];
+				}
+				
+				if (ze\file::isImageOrSVG($mimeType) && ((($imageWidth % 48) != 0) || ($imageHeight % 48) != 0)) {
+					$fields['favicon/favicon_png']['notices_below']['favicon_size_warning']['hidden'] = false;
 				}
 			}
     	}
@@ -952,27 +1002,6 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			 && $values['admin_domain/admin_domain'] != $_SERVER['HTTP_HOST']
 			 && $values['admin_domain/admin_domain'] != ze::setting('admin_domain')) {
 				$box['tabs']['admin_domain']['errors'][] = ze\admin::phrase('Please select a domain name.');
-			}
-		}
-		
-		if (isset($fields['favicon/favicon']) && $values['favicon/favicon']) {
-			$mimeType = $imageWidth = $imageHeight = '';
-			
-			if (is_numeric($values['favicon/favicon']) && ($file = ze\row::get('files', true, $values['favicon/favicon']))) {
-				$imageWidth = $file['width'];
-				$imageHeight = $file['height'];
-				$mimeType = $file['mime_type'];
-			//Add new uploads into the pool.
-			} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($values['favicon/favicon'])) {
-				$imageSize = getimagesize($filepath);
-				
-				$imageWidth = $imageSize[0];
-				$imageHeight = $imageSize[1];
-				$mimeType = $imageSize['mime'];
-			}
-			
-			if (ze\file::isImageOrSVG($mimeType) && ($imageWidth > 528 || $imageHeight > 528)) {
-				$fields['favicon/favicon']['error'] = ze\admin::phrase('The favicon dimensions may not exceed 528 x 528 px.');
 			}
 		}
 
@@ -1107,6 +1136,26 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			if (!$values['admin_login/site_disabled_message']) {
 				$box['tabs']['admin_login']['errors'][] =
 					ze\admin::phrase('Please enter a message.');
+			}
+		
+			if ($imageId = $values['favicon/favicon_png']) {
+				$mimeType = $imageWidth = $imageHeight = '';
+				
+				if (is_numeric($imageId) && ($file = ze\row::get('files', ['width', 'height', 'mime_type'], $imageId))) {
+					$imageWidth = $file['width'];
+					$imageHeight = $file['height'];
+					$mimeType = $file['mime_type'];
+				
+				} elseif ($filepath = ze\file::getPathOfUploadInCacheDir($imageId)) {
+					$imageSize = getimagesize($filepath);
+					$imageWidth = $imageSize[0];
+					$imageHeight = $imageSize[1];
+					$mimeType = $imageSize['mime'];
+				}
+				
+				if (ze\file::isImageOrSVG($mimeType) && ($imageWidth > 528 || $imageHeight > 528)) {
+					$fields['favicon/favicon_png']['error'] = ze\admin::phrase('The favicon dimensions may not exceed 528 x 528 px.');
+				}
 			}
 		}
 		
@@ -1414,6 +1463,18 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if ($settingGroup == 'logos_and_branding') {
 			ze\site::setSetting('site_disabled_title', $values['admin_login/site_disabled_title']);
 			ze\site::setSetting('site_disabled_message', ze\ring::sanitiseWYSIWYGEditorHTML($values['admin_login/site_disabled_message'], true));
+			
+    		//Internally, we allow people to upload multiple favicons for a site.
+    		//However to make the admin UI less confusing, we'll only offer the ability to
+    		//have at most two favicons: a .ico (for Microsoft Bing) and a .png (for Google).
+			$faviconIds = [];
+			if ($values['favicon/favicon_png']) {
+				$faviconIds[] = $values['favicon/favicon_png'];
+			}
+			if ($values['favicon/favicon_ico']) {
+				$faviconIds[] = $values['favicon/favicon_ico'];
+			}
+			ze\site::setSetting('favicon', implode(',', $faviconIds));
 		}
 		
 		//In Zenario 9.4, a new setting for User Forms max attachment size was introduced.
@@ -1481,32 +1542,5 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			['local_text' => $text],
 			['module_class_name' => 'zenario_common_features', 'language_id' => ze::$defaultLang, 'code' => $code]
 		);
-	}
-	
-	protected function setRobotsTxtToBlockAll() {
-		return
-'User-agent: *
-Disallow: /';
-	}
-	
-	protected function setRobotsTxtToDefaultConfig($siteMapEnabled, $siteMapUrl) {
-		$defaultValue = '';
-		
-		$defaultConfigFilePath = CMS_ROOT . 'zenario/includes/test_files/default_robots.txt';
-		$file = fopen($defaultConfigFilePath, 'r');
-		if ($file) {
-			while ($line = fgets($file)) {
-				$defaultValue .= $line;
-			}
-		}
-		
-		fclose($file);
-		
-		//Also include the sitemap if in use
-		if ($siteMapEnabled) {
-			$defaultValue .= 'Sitemap: ' . $siteMapUrl;
-		}
-		
-		return trim($defaultValue);
 	}
 }

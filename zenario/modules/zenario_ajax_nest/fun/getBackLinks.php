@@ -81,8 +81,8 @@ if ($this->usesConductor && $this->state) {
 		
 		//If we're generating a link to the current state, keep all of the registered get requests
 		if ($back['state'] == $this->state) {
-			foreach(ze::$importantGetRequests as $reqVar => $defaultValue) {
-				if (isset($_GET[$reqVar]) && $_GET[$reqVar] != $defaultValue) {
+			foreach(ze::$importantGetRequests as $reqVar => $gr) {
+				if (isset($_GET[$reqVar]) && $_GET[$reqVar] != $gr->defaultValue) {
 					$requests[$reqVar] = $_GET[$reqVar];
 				}
 			}

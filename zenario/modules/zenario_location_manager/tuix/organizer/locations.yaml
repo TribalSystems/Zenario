@@ -329,11 +329,12 @@ zenario__locations:
                     multiple_select: true
                     request:
                         action: add_child_location
+            
             # User dataset import buttons
             import_dropdown:
                 label: Import
                 hide_when_children_are_not_visible: true
-                ord: 999998
+                ord: 999992
             import:
                 priv: _PRIV_EXPORT_LOCATIONS
                 label: Start import wizard
@@ -365,8 +366,22 @@ zenario__locations:
                     pass_matched_ids: true
                     key:
                         dataset: ''
-                ord: 999999
+                ord: 999993
             
+            settings_dropdown:
+                css_class: organizer_settings_dropdown
+                ord: 999999
+                hide_when_children_are_not_visible: true
+                label: ⚙
+            settings:
+                priv: _PRIV_VIEW_SITE_SETTING
+                label: Settings for locations
+                parent: settings_dropdown
+                hide_in_select_mode: true
+                admin_box:
+                    path: site_settings
+                    key:
+                        id: zenario_location_manager__site_settings_group
             
         item_buttons:
             rename_location:

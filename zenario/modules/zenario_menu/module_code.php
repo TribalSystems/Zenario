@@ -353,7 +353,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		$objects['URL'] = $row['url'] ?? null;
 		$objects['Text'] = $row['name'] ?? null;
 		
-		$objects['Class'] = 'level'. $depth. ' level'. $depth. '_'. $i;
+		$objects['Class'] = 'zenario_menu_node level'. $depth. ' level'. $depth. '_'. $i;
 		
 		if (!empty($row['on'])) {
 			$objects['Class'] .= ' level'. $depth. '_on level'. $depth. '_'. $i. '_on';
@@ -458,7 +458,7 @@ class zenario_menu extends ze\moduleBaseClass {
 		if (!empty($row['conditionally_hidden'])) {
 			$objects['Conditionally_Hidden'] = true;
 		} elseif (empty($row['active'])) {
-			$objects['Inactive_Open_Tag'] = '<em class="zenario_inactive">';
+			$objects['Inactive_Open_Tag'] = '<em class="zenario_menu_node zenario_inactive">';
 			$objects['Inactive_Close_Tag'] = '</em>';
 		}
 		
@@ -528,7 +528,7 @@ class zenario_menu extends ze\moduleBaseClass {
 	
 	function getHomepage($langId) {
 		$cID = $cType = false;
-		ze\content::langSpecialPage('zenario_home', $cID, $cType, $langId, true);
+		ze\content::langSpecialPage('zenario_home', $cID, $cType, $langId, false);
 		
 		return $this->getSpecificPage($cID, $cType);
 	}

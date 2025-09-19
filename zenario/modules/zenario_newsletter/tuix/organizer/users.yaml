@@ -7,3 +7,12 @@ zenario__users:
                 zenario_newsletter__recipients:
                     table_join: ""
                     sql: 'FALSE'
+            inline_buttons:
+                user_opted_out_of_newsletters:
+                    css_class: inline_warning
+                    tooltip: "This user has opted out of newsletters"
+                    visible_if: item.user_opted_out_of_newsletters
+                user_did_not_accept_tcs:
+                    css_class: inline_warning
+                    tooltip: "This user has not accepted the terms and conditions"
+                    visible_if: item.user_did_not_accept_tcs

@@ -268,6 +268,7 @@
 						center: new google.maps.LatLng(location.latitude, location.longitude),
 						zoom: (1*location.map_zoom) || 7,
 						mapTypeId: google.maps.MapTypeId.ROADMAP,
+						mapId: 'my_map',
 						scrollwheel: allowScrolling
 					};
 					map = new google.maps.Map(zenario.get(mapId), mapOptions);
@@ -280,27 +281,22 @@
 				//Create a marker, using the image we found if possible.
 				//The optimized: false parameter helps with certain bugs where on Chrome, the markers
 				//appear trimmed, and on Firefox don't appear at all.
+				const iconData = document.createElement("img");
 				if (location.icon_name) {
 					var width = 31, height = 48;
-					iconData = {
-						url: imagesFolder + "/icon_" + location.icon_name + ".svg",
-						size: new google.maps.Size(width, height),
-						scaledSize: new google.maps.Size(width, height)
-					};
+					iconData.src = imagesFolder + "/icon_" + location.icon_name + ".svg";
+					iconData.size = new google.maps.Size(width, height);
 				} else {
 					var width = 27, height = 43;
-					iconData = {
-						url: "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2.png",
-						size: new google.maps.Size(width, height)
-					};
+					iconData.src = "https://maps.gstatic.com/mapfiles/api-3/images/spotlight-poi2.png";
+					iconData.size = new google.maps.Size(width, height);
 				}
 				
-				marker = new google.maps.Marker({
+				marker = new google.maps.marker.AdvancedMarkerElement({
 					position: pos,
 					map: map,
 					title: location.name,
-					icon: iconData,
-					optimized: false
+					content: iconData
 				});
 			
 				//Add this marker to the bounds of the map
