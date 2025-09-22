@@ -2293,8 +2293,8 @@ _sql
 _sql
 
 , <<<_sql
-	DELETE FROM `[[DB_PREFIX]]visitor_phrases` AS vp
-	WHERE vp.module_class_name = ''
+	DELETE FROM `[[DB_PREFIX]]visitor_phrases`
+	WHERE `module_class_name` = ''
 _sql
 
 
@@ -2318,9 +2318,9 @@ _sql
 _sql
 
 , <<<_sql
-	DELETE FROM `[[DB_PREFIX]]visitor_phrases` AS vp
-	WHERE vp.module_class_name = 'zenario_common_features'
-	  AND vp.code LIKE "\_COUNTRY_NAME\_%"
+	DELETE FROM `[[DB_PREFIX]]visitor_phrases`
+	WHERE `module_class_name` = 'zenario_common_features'
+	  AND `code` LIKE "\_COUNTRY_NAME\_%"
 _sql
 
 
