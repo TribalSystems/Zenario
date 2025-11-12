@@ -6,48 +6,6 @@
                 <label>{{"Search"|trans}}</label>
             {% endif %}
 
-            {% if HasCategory00 %}
-                <div class="search_area_category search_area_extra_settings">
-                <label>{{"Category"|trans}}</label>
-                {{this.frameworkField({
-                	'type': "select",
-                	'class': "input_select",
-                	'name': "category00_id",
-                	'value': Category_00_value,
-                	'source_method': "getCategory00Options",
-                	'onchange': "if (this.form.category01_id) { this.form.category01_id.value=0; } this.form.searchString.onkeyup()"
-                })}}
-                </div>
-            {% endif %}
-
-            {% if HasCategory01 %}
-                <div class="search_area_subcategory_1 search_area_extra_settings">
-                <label>{{"Subcategory"|trans}}</label>
-                {{this.frameworkField({
-                	'type': "select",
-                	'class': "input_select",
-                	'name': "category01_id",
-                	'value': Category_01_value,
-                	'source_method': "getCategory01Options",
-                	'onchange': "if (this.form.category02_id) { this.form.category02_id.value=0; } this.form.searchString.onkeyup()"
-                })}}
-                </div>
-            {% endif %}
-
-            {% if HasCategory02 %}
-                <div class="search_area_subcategory_2 search_area_extra_settings">
-                <label>{{"Subcategory"|trans}}</label>
-                {{this.frameworkField({
-                	'type': "select",
-                	'class': "input_select",
-                	'name': "category02_id",
-                	'value': Category_02_value,
-                	'source_method': "getCategory02Options",
-                	'onchange': "this.form.searchString.onkeyup()"
-                })}}
-                </div>
-            {% endif %}
-
             {% if HasLanguageSelection %}
                 <div class="search_area_language search_area_extra_settings">
                 <label>{{"Language"|trans}}</label>

@@ -33,25 +33,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-//A couple of functions for use with the instances returned from ze\module::getModuleInstancesAndPluginSettings()
-function setPluginSetting($instance, $name, $value) {
-	ze\row::set('plugin_settings', ['value' => $value], [
-		'instance_id' => $instance['instance_id'],
-		'egg_id' => $instance['egg_id'],
-		'name' => $name]
-	);
-}
-
-function deletePluginSetting($instance, $name) {
-	ze\row::delete('plugin_settings', [
-		'instance_id' => $instance['instance_id'],
-		'egg_id' => $instance['egg_id'],
-		'name' => $name]
-	);
-}
-
-
-
 
 //Some old updates. Not currently needed but I'm just keeping the code
 //here so I can easily find it if I ever need to re-issue them again.
@@ -1253,18 +1234,18 @@ if (ze\dbAdm::needRevision(58730)) {
 		
 		if (!empty($instance['settings']['if_get_set'])
 		 && !empty($instance['settings']['if_post_set'])) {
-			setPluginSetting($instance, 'if_get_or_post_var_set', 1);
+			ze\pluginAdm::setSetting('if_get_or_post_var_set', 1, $instance['instance_id'], $instance['egg_id']);
 		}
 		if (!empty($instance['settings']['if_session_set'])
 		 && !empty($instance['settings']['if_cookie_set'])) {
-			setPluginSetting($instance, 'if_session_var_or_cookie_set', 1);
+			ze\pluginAdm::setSetting('if_session_var_or_cookie_set', 1, $instance['instance_id'], $instance['egg_id']);
 		}
 		
-		deletePluginSetting($instance, 'if_get_set');
-		deletePluginSetting($instance, 'if_post_set');
-		deletePluginSetting($instance, 'if_session_set');
-		deletePluginSetting($instance, 'if_cookie_set');
-		deletePluginSetting($instance, 'clear_by_file');
+		ze\pluginAdm::deleteSettingFromInstance($instance, 'if_get_set');
+		ze\pluginAdm::deleteSettingFromInstance($instance, 'if_post_set');
+		ze\pluginAdm::deleteSettingFromInstance($instance, 'if_session_set');
+		ze\pluginAdm::deleteSettingFromInstance($instance, 'if_cookie_set');
+		ze\pluginAdm::deleteSettingFromInstance($instance, 'clear_by_file');
 	}
 
 	ze\dbAdm::revision(58730);
@@ -1474,19 +1455,6 @@ if (ze\dbAdm::needRevision(59600)) {
 	ze\dbAdm::revision(59600);
 }
 
-//In 9.6, we modified the Image library "Where used" column to also include the Standard email template.
-//Scan the existing value for images.
-if (ze\dbAdm::needRevision(59601)) {
-	$files = [];
-	$htmlChanged = false;
-	$value = ze::setting('standard_email_template');
-	ze\contentAdm::syncInlineFileLinks($files, $value, $htmlChanged);
-	$key = ['foreign_key_to' => 'standard_email_template', 'foreign_key_id' => 1, 'foreign_key_char' => ''];
-	ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
-	
-	ze\dbAdm::revision(59601);
-}
-
 //In 9.7, we enhanced AWS support to also allow extracting text from document content items by using AWS Textract.
 //A setting was renamed and an additional setting to enable S3 was added. Make the necessary adjustments.
 if (ze\dbAdm::needRevision(60020)) {
@@ -1639,39 +1607,6 @@ if (ze\dbAdm::needRevision(61230)) {
 	\ze\fileAdm::updateAllImagePublicLinks();
 	
 	ze\dbAdm::revision(61230);
-}
-
-//In Zenario 10.1, we moved the Email Template Manager into Common Features.
-//The update below used to be revision 120 of ETM, but now the code is moved here.
-//It is safe to run this update again even if it did run in the past as part of ETM.
-
-//What this update does:
-//Convert the format of any inline image URLs in Email Templates to use the new email pool.
-//Also resync all of the images used in them.
-if (ze\dbAdm::needRevision(61236)) {
-	//Get the body text from the newsletters
-	$sql = "
-		SELECT id, code, body
-		FROM ". DB_PREFIX. "email_templates
-		WHERE body LIKE '%file.php%'";
-	$result = ze\sql::select($sql);
-	
-	while ($row = ze\sql::fetchAssoc($result)) {
-		$files = [];
-		$htmlChanged = false;
-		ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged);
-		
-		if ($htmlChanged) {
-			ze\row::update('email_templates', ['body' => $row['body']], ['id' => $row['id']]);
-		}
-		
-		ze\contentAdm::syncInlineFiles(
-			$files,
-			['foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']],
-			$keepOldImagesThatAreNotInUse = false);
-	}
-
-	ze\dbAdm::revision(61236);
 }
 
 
@@ -1888,17 +1823,6 @@ if (ze\dbAdm::needRevision(61625)) {
 }
 
 
-//In Zenario 10.1, we're trying to use WebP images rather than PNG or JPEG.
-//Try to go through any email templates and switch any links to public images from using 
-//PNG or JPEG to using WebP if possible.
-if (ze\dbAdm::needRevision(62340)) {
-	set_time_limit(60 * 10);
-	\ze\fileAdm::updateAllImagePublicLinksInEmailTemplates();
-	
-	ze\dbAdm::revision(62340);
-}
-
-
 
 
 //
@@ -1906,10 +1830,98 @@ if (ze\dbAdm::needRevision(62340)) {
 //
 
 
+//In 10.2 we've moved a few standard phrases to be code based phrases.
+//There's an update (also revision 63270) in step 2 to migrate them if you've previously created them.
+//However if you've not previously created them we'll need to create them by re-importing the CSV files.
+if (ze\dbAdm::needRevision(63270)) {
+	\ze\contentAdm::importPhrasesForModule('zenario_common_features', $langId = false, $keepExistingTranslations = true);
+	
+	ze\dbAdm::revision(63270);
+}
+
+
+
+
+//
+//	Zenario 10.3
+//
+
+
+
+//In 10.3, we removed the setting to send a delayed registration email.
+//Clean up the old site settings.
+if (ze\dbAdm::needRevision(63552)) {
+	$loopThrough = [
+		'send_delayed_registration_email',
+		'delayed_registration_email_template',
+		'delayed_registration_email_days_delayed',
+		'delayed_registration_email_time_of_day'
+	];
+	
+	foreach ($loopThrough as $settingName) {
+		ze\row::delete('site_settings', ['name' => $settingName]);
+	}
+	
+	ze\dbAdm::revision(63552);
+}
+
+//In 10.3, we added code to prevent adding special pages to the searchable cache table.
+//Remove any existing special pages from the table now.
+if (ze\dbAdm::needRevision(63560)) {
+	$contentItems = ze\row::getArray('content_items_searchable_cache', ['content_id', 'content_type', 'content_version', 'content_tag'], [], ['content_type', 'content_id']);
+	
+	if ($contentItems && is_array($contentItems) && count($contentItems) > 0) {
+		$specialPagesInSearchableCacheTable = [];
+		
+		foreach ($contentItems as $contentItem) {
+			if (!\ze\contentAdm::contentItemIsSearchable($contentItem['content_id'], $contentItem['content_type'], $contentItem['content_version'])) {
+				$specialPagesInSearchableCacheTable[] = $contentItem['content_tag'];
+			}
+		}
+		
+		if (count($specialPagesInSearchableCacheTable) > 0) {
+			$sql = "
+				DELETE FROM " . DB_PREFIX . "content_items_searchable_cache
+				WHERE `content_tag` IN(" . ze\escape::in($specialPagesInSearchableCacheTable) . ")";
+			ze\sql::update($sql);
+		}
+	}
+	
+	ze\dbAdm::revision(63560);
+}
+
+
+//T13130, MIC images should be stored in their own folder inside public/ directory
+//MiC images use slightly different different logic to regular images.
+//From version 10.3 onwards, we're going to be putting them in a different directory to regular images
+//to prevent bugs and issues caused when the same image is used in both places.
+if (ze\dbAdm::needRevision(63590)) {
+	
+	//Look through the MIC images recorded in the database.
+	//We'll want to check if these are in the public/images/ directory and remove them if so.
+	//However exclude any images where there is also an identical image in the image library.
+	//Those can stay in the public/images/ directory as the images system will be using them.
+	$sql = "
+		SELECT mi.mime_type, mi.short_checksum, 'image' AS `usage`
+		FROM ". DB_PREFIX. "files AS mi
+		LEFT JOIN ". DB_PREFIX. "files AS fi
+		   ON fi.short_checksum = mi.short_checksum
+		  AND fi.usage = 'image'
+		  AND fi.privacy = 'public'
+		WHERE mi.usage = 'mic'
+		  AND fi.short_checksum IS NULL";
+	
+	foreach (ze\sql::select($sql) as $image) {
+		ze\file::deletePublicImage($image);
+	}
+	
+	ze\dbAdm::revision(63590);
+}
 
 //In 10.2, we renamed the table content_cache to content_items_searchable_cache. We also added a few new columns to it.
-//Populate these columns now.
-if (ze\dbAdm::needRevision(63260)) {
+//In 10.3, we added more columns to it.
+//Populate the table with the relevant data.
+if (ze\dbAdm::needRevision(63595)) {
 	$sql = "
 		SELECT id AS cID, type AS cType, visitor_version AS cVersion, tag_id AS cTag
 		FROM " . DB_PREFIX . "content_items
@@ -1922,15 +1934,96 @@ if (ze\dbAdm::needRevision(63260)) {
 		ze\fileAdm::updateDocumentContentItemExtract($row['cID'], $row['cType'], $row['cVersion']);
 	}
 	
-	ze\dbAdm::revision(63260);
+	ze\dbAdm::revision(63595);
 }
 
-
-//In 10.2 we've moved a few standard phrases to be code based phrases.
-//There's an update (also revision 63270) in step 2 to migrate them if you've previously created them.
-//However if you've not previously created them we'll need to create them by re-importing the CSV files.
-if (ze\dbAdm::needRevision(63270)) {
-	\ze\contentAdm::importPhrasesForModule('zenario_common_features');
+//In 10.3, we removed the setting to send a delayed registration email.
+//Old settings were cleaned up in rev 63552.
+//Now remove the scheduled task and any logs.
+if (ze\dbAdm::needRevision(63597)) {
+	$sql = "
+		DELETE j.*, jl.*
+		FROM ". DB_PREFIX. "jobs AS j
+		INNER JOIN ". DB_PREFIX. "job_logs AS jl
+		   ON jl.job_id = j.id
+		WHERE j.job_name = ?";
+	$statement = ze\sql::prepare($sql, 'a');
+	$statement->update(['jobSendDelayedRegistrationEmails']);
 	
-	ze\dbAdm::revision(63270);
+	ze\dbAdm::revision(63597);
+}
+
+//In 10.3, the menu_text table now has a redundant column with info on the content item that row is linked to,
+//to help make certain queries on the menu more efficient.
+//These will need to be populated.
+if (ze\dbAdm::needRevision(63680)) {
+	$sql = "
+		SELECT id, type
+		FROM ". DB_PREFIX. "content_items";
+	foreach (ze\sql::select($sql) as $content) {
+		ze\contentAdm::syncMenuTextStatus($content['id'], $content['type']);
+	}
+	
+	ze\dbAdm::revision(63680);
+}
+
+//In 10.3, we removed Dropbox support. Clean up the API key setting.
+if (ze\dbAdm::needRevision(63760)) {
+	ze\row::delete('site_settings', ['name' => 'dropbox_api_key']);
+	
+	ze\dbAdm::revision(63760);
+}
+
+//In 10.3, we removed the feature to set a background image
+//on a content item or layout. Sort out any possible leftover images:
+//attempt to move them to the image library. Delete duplicates.
+if (ze\dbAdm::needRevision(63785)) {
+	if (ze\row::exists('files', ['usage' => 'background_image'])) {
+		$backgroundImages = ze\row::getArray('files', ['id', 'checksum'], ['usage' => 'background_image']);
+		
+		//If this image already exists in the image library,
+		//just delete the leftover background image.
+		//Otherwise move it to the image library.
+		
+		foreach ($backgroundImages as $backgroundImage) {
+			if (!ze\row::exists('files', ['checksum' => $backgroundImage['checksum'], 'usage' => 'image'])) {
+				ze\fileAdm::copyInDatabase('image', $backgroundImage['id']);
+			}
+			
+			ze\fileAdm::delete($backgroundImage['id']);
+		}
+	}
+	
+	ze\dbAdm::revision(63785);
+}
+
+//In 10.3, we moved a site setting from 1 tab to another
+//and made it dependent on a checkbox. Check the checkbox
+//if the setting was previously populated.
+if (ze\dbAdm::needRevision(64130)) {
+	if (ze::setting('default_icon')) {
+		ze\site::setSetting('enable_og_tags_for_public_pages', 1);
+	}
+	
+	ze\dbAdm::revision(64130);
+}
+
+//Automatically turn on the "base64" encoding option for emails in this update,
+//as the "automatic" option can have compatibility issues.
+//Note: this was backpatched from 10.4 to 10.3, but is safe to run multiple times.
+if (ze\dbAdm::needRevision(64133)) {
+	ze\site::setSetting('base64_encode_emails', 1);
+	
+	ze\dbAdm::revision(64133);
+}
+
+//Combined update that fixes/resyncs links to images in email templates.
+//Try to replace links to file.php with links to the actual files in the public/images/ directory.
+//Also try to replace links to WebP images with links to the original JPEG/PNG versions.
+//Note: this was backpatched from 10.4 to 10.3, but is safe to run multiple times.
+if (ze\dbAdm::needRevision(64134)) {
+	
+	ze\fileAdm::updateAllImagePublicLinksInEmailTemplates();
+
+	ze\dbAdm::revision(64134);
 }

@@ -94,43 +94,6 @@ zenario_admin: &admin
                     label: 'Is client account'
                     type: checkbox
                 
-        password:
-            priv: _PRIV_CHANGE_ADMIN_PASSWORD
-            label: Password
-            edit_mode:
-                enabled: true
-                use_view_and_edit_mode: true
-            notices:
-                new_admin:
-                    show: false
-                    type: information
-                    message: Zenario will send the administrator an email with a link to where they can set a password.
-                is_trashed:
-                    show: false
-                    type: warning
-                    message: This administrator's account has been trashed and they cannot log in.
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: ""
-                    visible_if: zenarioAB.tuix.key.id
-                password:
-                    label: 'Password:'
-                    type: password
-                    style: 'width: 20em;'
-                    visible_if: zenarioAB.tuix.key.id
-                password_confirm:
-                    label: 'Re-confirm password:'
-                    type: password
-                    style: 'width: 20em;'
-                    visible_if: zenarioAB.tuix.key.id
-                password_needs_changing:
-                    label: 'Password needs changing'
-                    type: checkbox
-                    note_below: >
-                        If checked, the administrator will be prompted to change their password when they next log in.
-                    visible_if: zenarioAB.tuix.key.id
         permissions:
             label: Permissions
             edit_mode:
@@ -199,11 +162,49 @@ zenario_admin: &admin
                         disallow_refiners_looping_on_min_path: true
                 
                 desc_at_bottom:
+                    ord: 200000
                     visible_if: |
                         zenarioAB.value('permissions') &&
                         zenarioAB.value('permissions') != 'all_permissions'
                     note_below: |
                         Administrators without specific permissions can view ALL content items,
                         irrespective of publishing status or user permission.
+        password:
+            priv: _PRIV_CHANGE_ADMIN_PASSWORD
+            label: Password
+            edit_mode:
+                enabled: true
+                use_view_and_edit_mode: true
+            notices:
+                new_admin:
+                    show: false
+                    type: information
+                    message: Zenario will send the administrator an email with a link to where they can set a password.
+                is_trashed:
+                    show: false
+                    type: warning
+                    message: This administrator's account has been trashed and they cannot log in.
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""
+                    visible_if: zenarioAB.tuix.key.id
+                password:
+                    label: 'Password:'
+                    type: password
+                    style: 'width: 20em;'
+                    visible_if: zenarioAB.tuix.key.id
+                password_confirm:
+                    label: 'Re-confirm password:'
+                    type: password
+                    style: 'width: 20em;'
+                    visible_if: zenarioAB.tuix.key.id
+                password_needs_changing:
+                    label: 'Password needs changing'
+                    type: checkbox
+                    note_below: >
+                        If checked, the administrator will be prompted to change their password when they next log in.
+                    visible_if: zenarioAB.tuix.key.id
                     
 zenario_admin_edit_self: *admin

@@ -6,12 +6,15 @@ zenario_newsletter:
     title: Creating a newsletter
     key:
         id: ""
+        action: ""
+        newsletter_template: 0
+        previous_newsletter: 0
     identifier:
         css_class: zenario_newsletter_draft
         label: Newsletter ID
     tabs:
         meta_data:
-            label: Meta Data
+            label: Metadata
             edit_mode:
                 priv: _PRIV_EDIT_NEWSLETTER
                 enabled: true
@@ -28,77 +31,7 @@ zenario_newsletter:
                     maxlength: "500"
                     validation:
                         required: Please enter a Subject line for this newsletter.
-                email_name_from:
-                    label: 'From name/email:'
-                    type: text
-                    maxlength: "255"
-                    style: width:290px
-                    validation:
-                        required: Please enter the From name.
-                email_address_from:
-                    type: text
-                    pre_field_html: '<span style="font-weight:bold;">&nbsp;&nbsp;&nbsp;&lt;&nbsp;</span>'
-                    post_field_html: '<span style="font-weight:bold;">&nbsp;&nbsp;&nbsp;&gt;&nbsp;</span>'
-                    maxlength: "100"
-                    style: width:250px
-                    same_row: true
-                    validation:
-                        required: Please enter an email address.
-                        email: >
-                            The email address you entered doesn't appear to be valid.
-                load_content_source:
-                    label: 'Load content:'
-                    type: select
-                    empty_value: -- Select --
-                    values:
-                        use_newsletter_template: 
-                            label: Use newsletter template...
-                            ord: 2
-                        use_email_template: 
-                            label: Use email template...
-                            ord: 3
-                        copy_from_archived_newsletter: 
-                            label: Copy from archived newsletter...
-                            ord: 4
-                    format_onchange: true
-                load_content_source_newsletter_template:
-                    label: 'Newsletter template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/newsletter_templates
-                        target_path: zenario__email_template_manager/panels/newsletter_templates
-                        min_path: zenario__email_template_manager/panels/newsletter_templates
-                        select_phrase: Select newsletter template...
-                        nothing_selected_phrase: Select newsletter template...
-                    format_onchange: true
-                load_content_source_email_template:
-                    label: 'Email template:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/email_templates
-                        target_path: zenario__email_template_manager/panels/email_templates
-                        min_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select email template...
-                        nothing_selected_phrase: Select email template...
-                    format_onchange: true
-                load_content_source_archived_newsletter:
-                    label: 'Archived newsletter:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/newsletters/refiners/archive////
-                        target_path: zenario__email_template_manager/panels/newsletters
-                        min_path: zenario__email_template_manager/panels/newsletters
-                        select_phrase: Select newsletter...
-                        nothing_selected_phrase: No newsletter selected
-                    format_onchange: true
-                load_content_cancel:
-                    pre_field_html: 'Warning: You have already started entering content. All content you have entered into the body will be erased. Continue?<br/><div style="float:right">'
-                    type: submit
-                    class: zenario_gp_button
-                    value: Cancel
-                load_content_continue:
-                    type: submit
-                    class: zenario_gp_button
-                    value: Continue
-                    same_row: true
-                    post_field_html: '</div style="float:right">'
+                
                 add_user_field:
                     label: 'Add user field:'
                     type: select
@@ -108,11 +41,11 @@ zenario_newsletter:
                     full_width: true
                     type: editor
                     editor_type: full_featured
-                    tall_as_possible: true
                     dont_trim: true
                     editor_options:
                         convert_urls: false
                         relative_urls: false
+                        height: 900px
                     insert_image_button:
                         pick_items:
                             path: ""
@@ -126,6 +59,12 @@ zenario_newsletter:
                     format_onchange: true
                     post_field_html: |
                         &nbsp;[[link_start]]CSS rules[[link_end]]
+                
+                from_details:
+                    label: '"From" sender email address and name:'
+                    type: text
+                    show_as_a_span: true
+                
                 test_send_email_address:
                     type: text
                     maxlength: "100"
@@ -205,6 +144,26 @@ zenario_newsletter:
                             type: information
                             message: ''
                 
+                exclude_previous_newsletters_recipients_enable:
+                    label: 'Exclude recipients of earlier newsletters...'
+                    type: checkbox
+                    format_onchange: true
+                exclude_previous_newsletters_recipients:
+                    indent: 1
+                    label: 'Select newsletters:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/newsletters/refiners/archive////
+                        target_path: zenario__email_template_manager/panels/newsletters/refiners/archive////
+                        min_path: zenario__email_template_manager/panels/newsletters
+                        disallow_refiners_looping_on_min_path: true
+                        multiple_select: true
+                        select_phrase: Select newsletters...
+                        nothing_selected_phrase: No newsletters selected
+                    validation:
+                        required_if_not_hidden: >
+                            Please select an archived newsletter whose recipients you
+                            wish to exclude in the new newsletter.
+
                 unsubscribe_link:
                     label: 'Unsubscribe link:'
                     type: radios
@@ -253,25 +212,3 @@ zenario_newsletter:
                     type: text
                     same_row: true
                     style: display:none;
-                
-                
-                
-                exclude_previous_newsletters_recipients_enable:
-                    label: 'Exclude recipients of earlier newsletters...'
-                    type: checkbox
-                    format_onchange: true
-                exclude_previous_newsletters_recipients:
-                    indent: 1
-                    label: 'Select newsletters:'
-                    pick_items:
-                        path: zenario__email_template_manager/panels/newsletters/refiners/archive////
-                        target_path: zenario__email_template_manager/panels/newsletters/refiners/archive////
-                        min_path: zenario__email_template_manager/panels/newsletters
-                        disallow_refiners_looping_on_min_path: true
-                        multiple_select: true
-                        select_phrase: Select newsletters...
-                        nothing_selected_phrase: No newsletters selected
-                    validation:
-                        required_if_not_hidden: >
-                            Please select an archived newsletter whose recipients you
-                            wish to exclude in the new newsletter.

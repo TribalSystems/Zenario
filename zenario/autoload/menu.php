@@ -442,7 +442,28 @@ class menu {
 
 
 	public static function query($language, $menuId, $byParent = true, $sectionId = false, $showInvisibleMenuItems = false, $getFullMenu = false, $adminMode = false) {
-	
+		
+		//Menu nodes linking to content items should only be shown, depending on what their statuses are.
+		if ($adminMode) {
+			if ($showInvisibleMenuItems) {
+				$bannedStatuses = "('deleted', 'trashed')";
+			} else {
+				$bannedStatuses = "('deleted', 'trashed', 'unlisted', 'unlisted_with_draft')";
+			}
+		} else {
+			if ($showInvisibleMenuItems) {
+				$bannedStatuses = "('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted')";
+			} else {
+				$bannedStatuses = "('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted', 'unlisted', 'unlisted_with_draft')";
+			}
+		}
+		
+		//The $getFullMenu option only has meaning when viewing a translation
+		if ($getFullMenu && $language != \ze::$defaultLang) {
+			$getFullMenu = false;
+		}
+		
+		
 		$sql = "
 			SELECT
 				m.id AS mID,
@@ -469,16 +490,11 @@ class menu {
 				m.image_id,
 				m.rollover_image_id,
 				m.css_class,
-				tc.privacy,
-				(
-					SELECT tc2.privacy
-					FROM " . DB_PREFIX . "translation_chains AS tc2
-					WHERE tc2.equiv_id = m.equiv_id
-					AND tc2.type = m.content_type
-				) AS translation_chain_privacy";
-	
-		if ($getFullMenu
-		 && $language != \ze::$defaultLang) {
+				tc.privacy";
+		
+		//When viewing a translation, we have the option to fill in links to content items
+		//that are missing translations with links to the content item in the site's default language.
+		if ($getFullMenu) {
 			$sql .= ",
 				IFNULL(t.name, d.name) AS name,
 				IFNULL(t.ext_url, d.ext_url) AS ext_url,
@@ -487,10 +503,12 @@ class menu {
 			LEFT JOIN ". DB_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
 			  AND t.language_id = '". \ze\escape::asciiInSQL($language). "'
+			  AND t.content_item_status NOT IN ". $bannedStatuses. "
 			LEFT JOIN ". DB_PREFIX. "menu_text AS d
 			   ON t.menu_id IS NULL
 			  AND d.menu_id = m.id
-			  AND d.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "'";
+			  AND d.language_id = '". \ze\escape::asciiInSQL(\ze::$defaultLang). "'
+			  AND d.content_item_status NOT IN ". $bannedStatuses;
 	
 		} else {
 			$sql .= ",
@@ -500,20 +518,20 @@ class menu {
 			FROM ". DB_PREFIX. "menu_nodes AS m
 			INNER JOIN ". DB_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
-			  AND t.language_id = '". \ze\escape::asciiInSQL($language). "'";
+			  AND t.language_id = '". \ze\escape::asciiInSQL($language). "'
+			  AND t.content_item_status NOT IN ". $bannedStatuses;
 		}
 	
 		$sql .= "
 			LEFT JOIN ".DB_PREFIX."content_items AS c
 			   ON m.target_loc = 'int'
-			  AND m.equiv_id = c.equiv_id
-			  AND m.content_type = c.type
-			  AND c.language_id = '". \ze\escape::asciiInSQL($language). "'";
-
-		$sql .= "
+			  AND c.equiv_id = m.equiv_id
+			  AND c.type = m.content_type
+			  AND c.language_id = '". \ze\escape::asciiInSQL($language). "'
 			LEFT JOIN ".DB_PREFIX."translation_chains AS tc
-			   ON tc.equiv_id = c.equiv_id
-			  AND tc.type = c.type";
+			   ON m.target_loc = 'int'
+			  AND tc.equiv_id = m.equiv_id
+			  AND tc.type = m.content_type";
 		
 		if ($byParent) {
 			$sql .= "
@@ -530,22 +548,24 @@ class menu {
 	
 		if ($adminMode) {
 			if ($showInvisibleMenuItems) {
-				$sql .= "
-					AND IFNULL(c.status, 'published') NOT IN ('deleted', 'trashed')";
 			} else {
 				$sql .= "
-					AND IFNULL(c.status, 'published') NOT IN ('deleted', 'trashed', 'unlisted', 'unlisted_with_draft')
 					AND m.invisible != 1";
 			}
 		} else {
 			if ($showInvisibleMenuItems) {
-				$sql .= "
-					AND IFNULL(c.status, 'published') NOT IN ('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted')";
 			} else {
 				$sql .= "
-					AND IFNULL(c.status, 'published') NOT IN ('first_draft', 'hidden_with_draft', 'trashed_with_draft', 'hidden', 'trashed', 'deleted', 'unlisted', 'unlisted_with_draft')
 					AND m.invisible != 1";
 			}
+		}
+		
+		//Catch an edge case where a content item is in a translated language but not in the
+		//default language. When showing the menu in a third language, we shouldn't try to fill in
+		//the translations there.
+		if ($getFullMenu) {
+			$sql .= "
+			  AND IFNULL(t.menu_id, d.menu_id) IS NOT NULL";
 		}
 	
 		$sql .= "
@@ -836,7 +856,7 @@ class menu {
 		}
 	
 		if ($row['accesskey']) {
-			$row['title'] = \ze\admin::phrase('_ACCESS_KEY_EQUALS', ['key' => $row['accesskey']]);
+			$row['title'] = \ze\admin::phrase('Access Key = [[key]]', ['key' => $row['accesskey']]);
 		}
 
 		if ($row['open_in_new_window']) {

@@ -1137,3 +1137,8 @@ body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .
 body.zenario_pageMode_template .zenario_slotOuter div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_inThisSlot {
 	color:#FFF;
 }
+
+div.zenario_slotControlsWrap .zenario_debug {
+	right: 10px;
+	top: 9px;
+}

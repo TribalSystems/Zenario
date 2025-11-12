@@ -35,16 +35,12 @@ class zenario_users__organizer__groups extends zenario_users {
 		//show an error message.
 		ze\pdeAdm::showNoticeOnPanelIfConfIsBad($panel);
 		
+		$dataset = \ze\dataset::details('users');
+		
 		
 		foreach ($panel['items'] as $id => &$item) {
-			$sql = '
-				SELECT COUNT(*)
-				FROM '. DB_PREFIX. 'users_custom_data AS ucd
-				INNER JOIN '. DB_PREFIX. 'users AS u
-				   ON ucd.user_id = u.id
-				'. ze\row::whereCol('users_custom_data', 'ucd', $item['db_column'], '=', 1, $first = true). '
-				'. ze\row::whereCol('users', 'u', 'status', '!=', 'suspended');
-			$item['members'] = (int) ze\sql::fetchValue($sql);
+			//Please note: this will only count users who are not suspended.
+			$item['members'] = (int) ze\user::getGroupMemberCount($item);
 			
 			$sql = '
 				SELECT COUNT(*)

@@ -16,10 +16,10 @@ zenarioP.checkPasswordStrength = function(password, settings) {
 			min_pass_length = 10;
 		}
 
-		if (settings.min_extranet_user_password_score >= 2) {
+		if (settings.min_extranet_user_password_score >= 1) {
 			min_pass_score = settings.min_extranet_user_password_score;
 		} else {
-			min_pass_score = 2;
+			min_pass_score = 1;
 		}
 	} else {
 		settings = {};
@@ -73,47 +73,66 @@ zenarioP.updatePasswordNotifier = function(passwordField, settings, passwordMess
 		
 		if (validation['password_matches_requirements']) {
 			if (result) {
+				var cssClass;
+				var phrase;
 				switch (result.score) {
 					case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+						cssClass = 'title_green';
+						
 						if (validation.min_pass_score < 4) {
-							passwordMessageField.addClass('title_green');	
-							passwordMessageField.text(phrases.password_score_4_exceeds_requirements);
+							phrase = phrases.password_score_4_exceeds_requirements;
 						} else if (validation.min_pass_score == 4) {
-							passwordMessageField.addClass('title_green');	
-							passwordMessageField.text(phrases.password_score_4_matches_requirements);
+							phrase = phrases.password_score_4_matches_requirements;
 						}
 						break;
 					case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
 						if (validation.min_pass_score == 4) {
-							passwordMessageField.addClass('title_red');
-							passwordMessageField.text(phrases.password_score_3_too_easy_to_guess);
+							cssClass = 'title_red';
+							phrase = phrases.password_score_3_too_easy_to_guess;
 						} else if (validation.min_pass_score < 4) {
-							passwordMessageField.addClass('title_green');	
-							passwordMessageField.text(phrases.password_score_3_matches_requirements);
+							cssClass = 'title_green';
+							phrase = phrases.password_score_3_matches_requirements;
 						}
 						break;
 					case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-						if (validation.min_pass_score == 2) {
-							passwordMessageField.addClass('title_orange');
+						if (validation.min_pass_score < 2) {
+							cssClass = 'title_orange';
+							phrase = phrases.password_score_2_matches_requirements;
+						} else if (validation.min_pass_score == 2) {
+							cssClass = 'title_orange';
+							
 							if (isInstaller) {
-								passwordMessageField.text(phrases.password_score_2_matches_requirements_but_easy_to_guess);
+								phrase = phrases.password_score_2_matches_requirements_but_easy_to_guess;
 							} else {
-								passwordMessageField.text(phrases.password_score_2_too_easy_to_guess);
+								phrase = phrases.password_score_2_matches_requirements;
 							}
 						} else if (validation.min_pass_score > 2) {
-							passwordMessageField.addClass('title_red');
-							passwordMessageField.text(phrases.password_score_2_too_easy_to_guess);
+							cssClass = 'title_red';
+							phrase = phrases.password_score_2_too_easy_to_guess;
 						}
 						break;
 					case 1: //is still very guessable (guesses < 10^6)
-						passwordMessageField.addClass('title_red');
-						passwordMessageField.text(phrases.password_score_1_too_easy_to_guess);
+						if (validation.min_pass_score == 1) {
+							cssClass = 'title_orange';
+							
+							if (isInstaller) {
+								phrase = phrases.password_score_1_matches_requirements_but_easy_to_guess;
+							} else {
+								phrase = phrases.password_score_1_matches_requirements;
+							}
+						} else if (validation.min_pass_score > 1) {
+							cssClass = 'title_red';
+							phrase = phrases.password_score_1_too_easy_to_guess;
+						}
 						break;
 					case 0: //s extremely guessable (within 10^3 guesses)
 					default:
-						passwordMessageField.addClass('title_red');
-						passwordMessageField.text(phrases.password_score_0_too_easy_to_guess);
+						cssClass = 'title_red';
+						phrase = phrases.password_score_0_too_easy_to_guess;
 				}
+				
+				passwordMessageField.addClass(cssClass);
+				passwordMessageField.text(phrase);
 			}
 		} else {
 			if (validation['password_length'] > 0) {

@@ -23,10 +23,6 @@ zenario_enable_site:
                     label: Enable site
                     value: 1
                     redraw_onchange: true
-                site_enabled_note:
-                    indent: 1
-                    visible_if:
-                        lib.value: site_enabled
                 site_disabled_note:
                     indent: 1
                     visible_if:
@@ -35,41 +31,34 @@ zenario_enable_site:
                         Site disabled, and the front-end only visible when logged in as an administrator.
                         You can define text for a holding page that visitors can see in the [[link_start]]Logos and branding[[link_end]] site setting.
                 
-                
-                
-                clear_cache_desc:
+                advanced_options:
                     snippet:
-                        html: >
-                            <p>
-                                Click the following button to clear cache and check for changes.
-                                You do not need to do this if developer mode is enabled, as performing
-                                a browser reload in admin mode will achieve the same result.
-                            </p>
-                
-                clear_cache:
-                    indent: 1
-                    type: submit
-                    value: 'Clear cache and check for changes'
-                    class: zenario_submit_button
-                    format_onchange: true
-                    notices_below:
-                        checked: 
-                            hidden: true
-                            type: success
-                            message: Cache cleared; checked for changes.
-                
-                clear_cache_note:
+                        hr: true
+                        h3: Advanced options
+                    visible_if:
+                        lib.value: site_enabled
+
+                in_moratorium:
+                    indent: 2
+                    visible_if:
+                        lib.value: site_enabled
+                    type: checkbox
+                    onoff: true
+                    label: Enforce content moratorium
+                    redraw_onchange: true
+                in_moratorium_note:
+                    indent: 2
+                    visible_if:
+                        lib.value: site_enabled
                     note_below: |
-                        <p>This button will:</p>
-                        <ul>
-                            <li>Clear the <code>cache/</code> directory of all cached web pages, plugins, <code>.css</code>, <code>.js</code> and <code>.yaml</code> files (they will be freshly re-created on visitor demand)</li>
-                            <li>Re-create the minified copies of skins in the <code>public/css/</code> directory</li>
-                            <li>Cause visitors' browser caches to be cleared on next load.</li>
-                        </ul>
-                        <p>This button will also, where applicable, restart any running background scripts managed by the Scheduled Task Manager, and cause any reverse proxy cache's data to be cleared.</p>
+                        Enforcing a content moratorium will lock out all local administrators from admin mode, thereby preventing them from editing the site.
+                        This feature can only be enabled or disabled by a multisite admin.
                 
-                
-                
+                dev_options:
+                    snippet:
+                        hr: true
+                        h3: Developer options
+
                 dev_mode_desc:
                     notices_below:
                         head_warning:
@@ -94,7 +83,7 @@ zenario_enable_site:
                     indent: 2
                     visible_if:
                         lib.value: enable_dev_mode
-                    type: radios
+                    type: select
                     values:
                         3600:
                             label: For 1 hour
@@ -133,8 +122,41 @@ zenario_enable_site:
                     visible_if:
                         lib.valueIsEmpty: enable_dev_mode
                     note_below: |
-                        The site will run more quickly for administrators when developer mode is disabled,
-                        but if a developer changes a file,
-                        they will need to manually press the button above.
-
+                        When developer mode is disabled, the site will run more quickly for administrators as it will make use of the cache as it does for visitors.
+                        But if a developer changes a file, the administrator will need to manually press the "Clear cache and check for changes" button.
+                
+                
+                clear_cache_desc:
+                    snippet:
+                        html: >
+                            <p>
+                                Click the following button to clear cache and check for changes.
+                                You do not need to do this if developer mode is enabled, as performing
+                                a browser reload in admin mode will achieve the same result.
+                            </p>
+                
+                clear_cache:
+                    indent: 1
+                    type: submit
+                    value: 'Clear cache and check for changes'
+                    class: zenario_submit_button
+                    format_onchange: true
+                    notices_below:
+                        checked: 
+                            hidden: true
+                            type: success
+                            message: Cache cleared; checked for changes.
+                
+                clear_cache_note:
+                    note_below: |
+                        <p>This button will:</p>
+                        <ul>
+                            <li>Clear the <code>cache/</code> directory of all cached web pages, plugins, <code>.css</code>, <code>.js</code> and <code>.yaml</code> files (they will be freshly re-created on visitor demand)</li>
+                            <li>Re-create the minified copies of skins in the <code>public/css/</code> directory</li>
+                            <li>Cause visitors' browser caches to be cleared on next load.</li>
+                        </ul>
+                        <p>This button will also, where applicable, restart any running background scripts managed by the Scheduled Task Manager, and cause any reverse proxy cache's data to be cleared.</p>
+                
+                
+                
 

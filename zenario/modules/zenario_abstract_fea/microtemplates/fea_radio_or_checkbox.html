@@ -1,4 +1,13 @@
-<div class="zfea_form_radio_or_checkbox zfea_form_group zfea_form_group_{{m.cols|e}}_cols zfea_form_group_col_{{m.col|e}}">
+<div class="
+	zfea_form_radio_or_checkbox
+	zfea_form_group
+	zfea_form_group_{{m.cols|e}}_cols
+	zfea_form_group_col_{{m.col|e}}
+	
+	<% if (m.checked) { %>
+		zfea_form_group_selected
+	<% } %>
+">
 
 	<% if (m.lovField.pre_field_html !== undefined) { %>
 		{{m.lovField.pre_field_html}}

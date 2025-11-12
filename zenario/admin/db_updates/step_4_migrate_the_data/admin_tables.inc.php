@@ -253,3 +253,45 @@ if (ze\dbAdm::needRevision(61020)) {
 	
 	ze\dbAdm::revision(61020);
 }
+
+
+//
+//	Zenario 10.3
+//
+
+//More re-arrangements of the admin permissions.
+//Try and update the top-level checkboxes to correctly match their new contents
+
+ze\dbAdm::revision(64110
+, <<<_sql
+	DELETE FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN ('perm_restore', 'perm_manage', 'perm_system_permissions', 'perm_designer_permissions')
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]action_admin_link` (action_name, admin_id)
+	SELECT 'perm_advanced', admin_id
+	FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN (
+		'_PRIV_VIEW_ADMIN', '_PRIV_EDIT_ADMIN', '_PRIV_CREATE_ADMIN', '_PRIV_DELETE_ADMIN',
+		'_PRIV_CHANGE_ADMIN_PASSWORD', '_PRIV_EDIT_CSS', '_PRIV_RUN_MODULE',
+		'_PRIV_RESET_MODULE', '_PRIV_VIEW_SITE_SETTING', '_PRIV_EDIT_SITE_SETTING',
+		'_PRIV_EDIT_CONTENT_TYPE', '_PRIV_MANAGE_DATASET', '_PRIV_PROTECT_UNPROTECT_DATASET_FIELD',
+		'_PRIV_BACKUP_SITE', '_PRIV_RESTORE_SITE', '_PRIV_RESET_SITE'
+	)
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]action_admin_link` (action_name, admin_id)
+	SELECT 'perm_system_permissions', admin_id
+	FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN ('_PRIV_VIEW_DIAGNOSTICS', '_PRIV_APPLY_DATABASE_UPDATES', '_PRIV_REGENERATE_DOCUMENT_PUBLIC_LINKS')
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_PREFIX]]action_admin_link` (action_name, admin_id)
+	SELECT 'perm_designer_permissions', admin_id
+	FROM `[[DB_PREFIX]]action_admin_link`
+	WHERE action_name IN ('_PRIV_EDIT_TEMPLATE', '_PRIV_EDIT_SITEWIDE', '_PRIV_VIEW_SLOT', '_PRIV_MANAGE_ITEM_SLOT', '_PRIV_MANAGE_TEMPLATE_SLOT')
+_sql
+);

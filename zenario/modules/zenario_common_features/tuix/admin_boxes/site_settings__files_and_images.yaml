@@ -79,8 +79,17 @@ site_settings:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
+                
+                max_image:
+                    type: grouping
+                    snippet:
+                        label: Image size limit
+                        label_class: subheading
                 image_privacy:
                     type: grouping
+                    snippet:
+                        label: Image privacy
+                        label_class: subheading
                 og_image:
                     type: grouping
                     snippet:
@@ -91,12 +100,51 @@ site_settings:
                     snippet:
                         label: Gallery options
                         label_class: subheading
+                
+                max_image_desc:
+                    grouping: max_image
+                    full_width: true
+                    snippet:
+                        html: |
+                            This lets you set an upper limit on how large uploaded images can be.
+                            Does not apply to SVG images.
+                max_image_width: 
+                    grouping: max_image
+                    site_setting:
+                        name: max_image_width
+                    label: 'Largest allowed image size (width × height):'
+                    type: text
+                    value: 6000
+                    validation: 
+                        required: Please enter a width in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;&nbsp;×&nbsp;'
+                max_image_height: 
+                    grouping: max_image
+                    site_setting:
+                        name: max_image_height
+                    same_row: true
+                    type: text
+                    value: 6000
+                    validation: 
+                        required: Please enter a height in pixels.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
+                    maxlength: 5
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                
                 description:
                     grouping: image_privacy
                     full_width: true
                     snippet:
                         html: |
-                            This tab lets you control whether images on your site appear in search engines.
+                            This lets you control whether images on your site appear in search engines.
                 default_image_privacy:
                     grouping: image_privacy
                     site_setting:
@@ -133,6 +181,10 @@ site_settings:
                     value: 1200
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;px'
+                    validation:
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                 og_image_max_height:
                     grouping: og_image
                     site_setting:
@@ -142,6 +194,10 @@ site_settings:
                     value: 630
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;px'
+                    validation:
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                 show_default_floating_box_caption:
                     grouping: gallery_options
                     site_setting:
@@ -201,7 +257,9 @@ site_settings:
                     type: text
                     validation: 
                         required_if_not_hidden: Please enter a width in pixels.
-                        numeric: The width must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;&nbsp;×&nbsp;'
@@ -214,7 +272,9 @@ site_settings:
                     type: text
                     validation: 
                         required_if_not_hidden: Please enter a height in pixels.
-                        numeric: The height must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
@@ -236,7 +296,9 @@ site_settings:
                     type: text
                     validation: 
                         required_if_not_hidden: Please enter a width in pixels.
-                        numeric: The width must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;&nbsp;×&nbsp;'
@@ -250,7 +312,9 @@ site_settings:
                     type: text
                     validation: 
                         required_if_not_hidden: Please enter a height in pixels.
-                        numeric: The height must be a number.
+                        non_zero_number: Please enter a whole number greater than 0.
+                        integer_number: Please enter a whole number greater than 0.
+                        positive_number: Please enter a whole number greater than 0.
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'

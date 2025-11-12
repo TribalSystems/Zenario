@@ -43,7 +43,7 @@ class pluginAdm {
 		}
 	
 		if (!$instanceName) {
-			$errors[] = \ze\admin::phrase('_ERROR_INSTANCE_NAME');
+			$errors[] = \ze\admin::phrase('Please enter a name for this plugin.');
 			return false;
 		}
 	
@@ -88,6 +88,51 @@ class pluginAdm {
 			'plugin_settings',
 			['is_content' => $content, 'format' => $format, 'value' => $value],
 			['name' => $name, 'instance_id' => $instanceId, 'egg_id' => $eggId]);
+	}
+	
+	public static function deleteSettingFromInstance($instance, $name) {
+		ze\row::delete('plugin_settings', [
+			'instance_id' => $instance['instance_id'],
+			'egg_id' => $instance['egg_id'],
+			'name' => $name]
+		);
+	}
+	
+	public static function deleteSettingFromModules(
+		$moduleNames, $pluginSettingName,
+		$checkNonNestedPlugins = true, $checkNestedPlugins = true,
+		$extraSetSQL = '', $extraWhereSQL = ''
+	) {
+		
+		if ($checkNonNestedPlugins) {
+			$sql = "
+				DELETE `ps` FROM `". DB_PREFIX. "modules` AS m
+				INNER JOIN `". DB_PREFIX. "plugin_instances` AS pi
+				   ON pi.module_id = m.id
+				INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
+				   ON ps.instance_id = pi.id
+				  AND ps.egg_id = 0
+				  AND ps.name = '". \ze\escape::sql($pluginSettingName). "'
+				". $extraSetSQL. "
+				WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")
+				". $extraWhereSQL;
+			\ze\sql::update($sql);
+		}
+	
+		if ($checkNestedPlugins) {
+			$sql = "
+				DELETE `ps` FROM `". DB_PREFIX. "modules` AS m
+				INNER JOIN `". DB_PREFIX. "nested_plugins` AS np
+				   ON np.module_id = m.id
+				INNER JOIN `". DB_PREFIX. "plugin_settings` AS ps
+				   ON ps.instance_id = np.instance_id
+				  AND ps.egg_id = np.id
+				  AND ps.name = '". \ze\escape::sql($pluginSettingName). "'
+				". $extraSetSQL. "
+				WHERE m.class_name IN (". \ze\escape::in($moduleNames, 'asciiInSQL'). ")
+				". $extraWhereSQL;
+			\ze\sql::update($sql);
+		}
 	}
 
 
@@ -167,7 +212,7 @@ class pluginAdm {
 	
 		$skLink = 'organizer.php?fromCID='. (int) $cID. '&fromCType='. urlencode($cType);
 		
-		//$modulesLink = '#zenario__modules/panels/modules//' . $moduleId;
+		//$modulesLink = '#zenario__library/panels/modules//' . $moduleId;
 		//
 		//$mrg = [
 		//	'link' => htmlspecialchars($skLink . $modulesLink),
@@ -194,17 +239,17 @@ class pluginAdm {
 			if ($isSlideshow) {
 				$pluginAdminName = \ze\admin::phrase('slideshow');
 				$ucPluginAdminName = \ze\admin::phrase('Slideshow');
-				$pluginsLink = '#zenario__modules/panels/plugins/refiners/slideshows////'. $instanceId;
+				$pluginsLink = '#zenario__library/panels/plugins/refiners/slideshows////'. $instanceId;
 			
 			} elseif ($isNest) {
 				$pluginAdminName = \ze\admin::phrase('nest');
 				$ucPluginAdminName = \ze\admin::phrase('Nest');
-				$pluginsLink = '#zenario__modules/panels/plugins/refiners/nests////'. $instanceId;
+				$pluginsLink = '#zenario__library/panels/plugins/refiners/nests////'. $instanceId;
 			
 			} else {
 				$pluginAdminName = \ze\admin::phrase('plugin');
 				$ucPluginAdminName = \ze\admin::phrase('Plugin');
-				$pluginsLink = '#zenario__modules/panels/modules/item//' . $moduleId. '//'. $instanceId;
+				$pluginsLink = '#zenario__library/panels/modules/item//' . $moduleId. '//'. $instanceId;
 			}
 		
 			//$info['module_name']['css_class'] = 'zenario_slotControl_reusable';
@@ -222,8 +267,8 @@ class pluginAdm {
 				$info['reusable_plugin_details']['label'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
 			} else {
 				$usageLinks = [
-					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $instanceId. '//', 
-					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $instanceId. '//'
+					'content_items' => 'zenario__library/panels/plugins/item_buttons/usage_item//'. (int) $instanceId. '//', 
+					'layouts' => 'zenario__library/panels/plugins/item_buttons/usage_layouts//'. (int) $instanceId. '//'
 				];
 				$mrg['usage_text'] = implode(', ', \ze\miscAdm::getUsageText($usage, $usageLinks, true));
 				$info['reusable_plugin_details']['label'] = \ze\admin::phrase('[[ucPluginAdminName]] <a class="plugins_link_new_window" target="_blank" href="[[plugins_link]]">[[instance_name]]</a>, used on [[usage_text]]', $mrg);
@@ -1247,7 +1292,7 @@ class pluginAdm {
 		}
 	
 		return \ze\link::absolute(). 'organizer.php#'.
-				'zenario__modules/panels/modules/item//'. (int) $moduleId. '//item_buttons/view_content_items//'. (int) $instanceId. '//';
+				'zenario__library/panels/modules/item//'. (int) $moduleId. '//item_buttons/view_content_items//'. (int) $instanceId. '//';
 	}
 	
 	
@@ -1293,6 +1338,12 @@ class pluginAdm {
 		}
 		if (\ze\module::inc($moduleClassName)) {
 			return call_user_func([$moduleClassName, 'nestedPluginName'], $eggId, $instanceId, $moduleClassName);
+		
+		} elseif ($module = \ze\module::details($moduleClassName, 'class')) {
+			switch ($module['status']) {
+				case 'module_suspended':
+					return \ze\admin::phrase('[Module [[display_name]] suspended]', $module);
+			}
 		}
 	}
 

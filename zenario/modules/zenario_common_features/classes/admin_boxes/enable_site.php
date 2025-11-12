@@ -43,6 +43,11 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 		);
 		
 		$values['site/site_enabled'] = (bool) ze::setting('site_enabled');
+		$values['site/in_moratorium'] = (bool) ze::setting('in_moratorium');
+		
+		if (!ze\admin::isMultisite()) {
+			$fields['site/in_moratorium']['readonly'] = true;
+		}
 		
 		$devModeSetting = \ze::setting('site_in_dev_mode');
 		
@@ -152,12 +157,24 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 					'message' => ze\admin::phrase('You are about to enable this site, and make it visible to site visitors. Are you sure you wish to enable the site?'),
 					'button_message' => ze\admin::phrase('Enable site'),
 				];
+			
 			} elseif (!$values['site/site_enabled'] && ze::setting('site_enabled')) {
 				$box['confirm'] = [
 					'show' => true,
 					'message_type' => 'warning',
 					'message' => ze\admin::phrase('You are about to disable this site, which will make it no longer visible to site visitors. Are you sure you wish to disable the site?'),
 					'button_message' => ze\admin::phrase('Disable site'),
+				];
+			
+			} elseif ($values['site/in_moratorium'] && !ze::setting('in_moratorium') && ze\admin::isMultisite()) {
+				$box['confirm'] = [
+					'show' => true,
+					'message_type' => 'warning',
+					'message' =>
+						ze\admin::phrase('You are about to enforce a content moratorium, which will lock out all local administrators from admin mode, thereby preventing them from editing the site.').
+						"\n\n".
+						ze\admin::phrase('You are logged in with a multi-site account so your access will not be affected.'),
+					'button_message' => ze\admin::phrase('Enforce content moratorium'),
 				];
 			}
 		}
@@ -171,9 +188,17 @@ class zenario_common_features__admin_boxes__enable_site extends ze\moduleBaseCla
 			if ($values['site/site_enabled']) {
 				ze\site::setSetting('site_enabled', 1);
 				$box['key']['id'] = 'site_enabled';
+				
+				if ($values['site/in_moratorium'] && ze\admin::isMultisite()) {
+					ze\site::setSetting('in_moratorium', 1);
+				} else {
+					ze\site::setSetting('in_moratorium', '');
+				}
 			} else {
 				ze\site::setSetting('site_enabled', '');
 				$box['key']['id'] = 'site_disabled';
+				
+				ze\site::setSetting('in_moratorium', '');
 			}
 			
 			if (!$values['site/enable_dev_mode']) {

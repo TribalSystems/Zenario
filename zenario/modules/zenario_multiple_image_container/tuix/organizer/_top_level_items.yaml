@@ -3,7 +3,7 @@
 zenario__library:
 	nav:
 		mic_image_library:
-			ord: 2
+			ord: 110
 			css_class: media_image
 			label: MIC images
 			tooltip: |

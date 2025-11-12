@@ -160,12 +160,13 @@ plugin_settings:
                         name: default_image_id
                     label: 'Default image:'
                     upload:
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                     pick_items:
                         path: zenario__library/panels/image_library

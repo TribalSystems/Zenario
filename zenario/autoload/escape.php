@@ -124,6 +124,10 @@ class escape {
 	public static function sql($text) {
 		return \ze::$dbL->con->escape_string($text);
 	}
+
+	public static function hashedColumn($text) {
+		return \ze\escape::sql(\ze\db::hashDBColumn($text));
+	}
 	
 	public static function json($val) {
 		if (is_null($val) || false === ($enc = json_encode($val))) {

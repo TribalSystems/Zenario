@@ -437,7 +437,7 @@ class zenario_common_features__admin_boxes__email_template extends zenario_commo
 			
 			$htmlChanged = false;
 			ze\fileAdm::addImageDataURIsToDatabase($values['meta_data/body'], ze\link::absolute());
-			ze\contentAdm::syncInlineFileLinks($files, $values['meta_data/body'], $htmlChanged);
+			ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $values['meta_data/body'], $htmlChanged);
 			
 			//Try and ensure that we use absolute URLs where possible
 			ze\contentAdm::addAbsURLsToAdminBoxField($fields['meta_data/body']);

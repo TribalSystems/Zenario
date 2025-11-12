@@ -69,4 +69,3 @@ zenario__content:
             item:
                 name: File
                 names: Files
-                css_class: dropbox_file

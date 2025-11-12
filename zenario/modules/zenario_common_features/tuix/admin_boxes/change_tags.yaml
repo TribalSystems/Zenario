@@ -13,9 +13,9 @@ zenario_change_tags:
             fields: 
                 desc:
                     snippet:
-                        html: Add tags to the selected images using the dropdowns below.
+                        html: Add tags to the selected images using the dropdowns below. [[link_start]]Manage tags[[link_end]].
                     hidden: false
                 no_tags_warning:
                     snippet:
-                        html: {}
+                        html: ''
                     hidden: true

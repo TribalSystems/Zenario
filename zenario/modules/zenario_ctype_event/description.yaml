@@ -22,7 +22,6 @@ keywords: event, calendar, conference, diary, meeting
 vlp_class_name: zenario_ctype_event
 css_class_name: zenario_ctype_event
 is_pluggable: true
-can_be_version_controlled: false
 default_framework: standard
 content_types:
     content_type:
@@ -36,6 +35,8 @@ content_types:
         summary_field: optional
         release_date_field: hidden
         writer_field: hidden
+        organizer_default_sort_logic: start_date_desc
+        allow_editing_content_in_fab: true
 signals:
     signal1: 
         name: eventDraftCreated

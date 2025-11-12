@@ -500,7 +500,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$fields['tuix_snippet/desc2']['snippet']['html'] =
 					'<a
 						target="_blank"
-						href="'. ze\link::absolute(). 'organizer.php#zenario__modules/panels/tuix_snippets"
+						href="'. ze\link::absolute(). 'organizer.php#zenario__administration/panels/tuix_snippets"
 					>'. ze\admin::phrase('Create/edit TUIX Snippets'). '</a>';
 		
 			
@@ -729,11 +729,15 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 				$box['identifier']['where_used'] = \ze\admin::phrase(' <a target="_blank" href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
 			} else {
 				$usageLinks = [
-					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $box['key']['instanceId']. '//', 
-					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $box['key']['instanceId']. '//'
+					'content_items' => 'zenario__library/panels/plugins/item_buttons/usage_item//'. (int) $box['key']['instanceId']. '//', 
+					'layouts' => 'zenario__library/panels/plugins/item_buttons/usage_layouts//'. (int) $box['key']['instanceId']. '//'
 				];
 				$mrg['usage_text'] = implode(', ', \ze\miscAdm::getUsageText($usage, $usageLinks, true));
-				$box['identifier']['where_used'] = \ze\admin::phrase('Used on [[usage_text]]', $mrg);
+				if ($mrg['usage_text'] == 'Not used') {
+					$box['identifier']['where_used'] = \ze\admin::phrase('Not used');
+				} else {
+					$box['identifier']['where_used'] = \ze\admin::phrase('Used on [[usage_text]]', $mrg);
+				}
 			}
 		}
 		
@@ -1148,6 +1152,18 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 												}
 												$value = [];
 												$value['value'] = $values[$tabName. '/'. $fieldName] ?? false;
+												
+												//As per T12878, trim leading zeroes from integers
+												if (ze\tuix::isIntField($field)) {
+													$valWithZeros = trim($value['value']);
+													$value['value'] = ltrim($valWithZeros, '0');
+													
+													//Catch the case where "0" was trimmed to an empty string
+													if ($value['value'] === ''
+													 && $valWithZeros !== '') {
+														$value['value'] = '0';
+													}
+												}
 												
 												break;
 										}
@@ -1579,11 +1595,11 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 			<p class="zfab_customise_phrases_explainer">';
 		
 		if ($pInCode && $pInTwig) {
-			$html .= htmlspecialchars(ze\admin::phrase("This module's code and framework contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+			$html .= htmlspecialchars(ze\admin::phrase("This module's program code and Twig framework contain the following text and messages. Use this tab to override and customise them when they are displayed."));
 		} elseif ($pInCode) {
-			$html .= htmlspecialchars(ze\admin::phrase("This module's code contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+			$html .= htmlspecialchars(ze\admin::phrase("This module's program code contains the following text and messages. Use this tab to override and customise them when they are displayed."));
 		} else {
-			$html .= htmlspecialchars(ze\admin::phrase("This module's framework contains the following text and messages. Use this tab to override and customise them when they are displayed."));
+			$html .= htmlspecialchars(ze\admin::phrase("This module's Twig framework contains the following text and messages. Use this tab to override and customise them when they are displayed."));
 		}
 		
 		$html .= '

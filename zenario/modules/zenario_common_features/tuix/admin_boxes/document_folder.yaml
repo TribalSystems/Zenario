@@ -17,3 +17,4 @@ zenario_document_folder:
                     label: 'Folder name:'
                     type: text
                     maxlength: "255"
+                    focus_on_load: true

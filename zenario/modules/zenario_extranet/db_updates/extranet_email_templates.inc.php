@@ -266,3 +266,37 @@ ze\dbAdm::revision(133,
 	WHERE `code` = 'zenario_users__to_user_account_created'
 "
 );
+
+ze\dbAdm::revision(138,
+	"INSERT IGNORE INTO [[DB_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`,
+		`use_standard_email_template`,
+		`module_class_name`
+	) VALUES 
+		(
+		 'zenario_users__to_user_account_upgraded',
+		 'To User: Account upgraded by admin',
+		 'Your account on [[cms_url]] has been created',
+		 '<p>Dear [[first_name]] [[last_name]],</p>
+		<p>Your account has been upgraded and you can now log in using the following details:</p>
+		<p>[[login_details]]</p>
+		<p>Please click the button below to go to <a href=\"[[cms_url]]\">[[cms_url]]</a> and log in.</p>
+		<p>&nbsp;</p>
+		<p style=\"text-align: center;\"><a style=\"background: #015ca1; color: white; text-decoration: none; padding: 20px 40px; font-size: 16px;\" href=\"[[login_page_link]]\">LOG IN</a></p>
+		<p>&nbsp;</p>
+		<p>If the above link doesn\'t work, copy the following link and paste it into your browser:</p>
+		<p><a href=\"[[login_page_link]]\">[[login_page_link]]</a></p>',
+		 NOW(),
+		 " .(int) ($_SESSION['admin_userid'] ?? false) . ",
+		 0,
+		 1,
+		 'zenario_extranet'
+		)
+"
+);

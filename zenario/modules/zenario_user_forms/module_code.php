@@ -507,14 +507,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//Change page
 			$pageId = $this->getNextFormPage($currentPageId);
 			if (!isset($_POST['filter'])) {
-				$submitted = !empty($_POST['submitForm']);
+				$submitted = !empty($_POST['submitForm']) && $this->checkPostIsMine();
 				$moveToHigherPage = $this->pages[$pageId]['ord'] > $this->pages[$currentPageId]['ord'];
 				$saveToCompleteLaterButtonPressed = $this->form['allow_partial_completion'] && !empty($_POST['saveLater']);
 				$saveToCompleteLaterPageNav = $this->form['allow_partial_completion'] && $currentPageId != $pageId;
 				
 				$valid = true;
 				if ($submitted || $moveToHigherPage || $saveToCompleteLaterButtonPressed) {
-					$valid = $this->validateForm($currentPageId, $validateAllFields = $submitted, $ignoreRequiredFields = $saveToCompleteLaterButtonPressed);
+					$valid = $this->validateForm($currentPageId, $validateAllFields = $submitted, $saveToCompleteLaterButtonPressed);
 				}
 				if (!$valid) {
 					if ($submitted) {
@@ -621,12 +621,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$colorboxFormHTML = false;
 		$html = $this->getFormHTML($pageId, $firstPageId);
 		
-		if ($this->form['allow_partial_completion'] && !$this->userId) {
-			if (ze\admin::id()) {
-				$html =
-					'<p class="info">' . htmlspecialchars(ze\admin::phrase('This form has the "Save and complete later" feature enabled, but the feature is only active for logged in extranet users.')) . '</p>' .
-					$html;
-			}
+		if ($this->parentNest && ($this->parentNest->moduleClassName != 'zenario_ajax_nest') && ze\admin::id()) {
+			$html = '<p class="error">' . htmlspecialchars(ze\admin::phrase('User forms should not be used in a regular Nest. To use a form, you should convert this to an Ajax Nest.')) . '</p>' . $html;
 		}
 		
 		$this->data['form_HTML'] = $html;
@@ -835,10 +831,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$formId = ze::request('formId');
 			$fieldId = ze::request('fieldId');
 			$fieldValue = ze::request('fieldValue');
+			$confirmationFieldValue = ze::request('confirmationFieldValue') ?: null;
 			$conditionalFieldValue = ze::request('conditionalFieldValue') ?: null;
 			$this->fields = static::getFormFields($formId);
 			if (is_numeric($fieldId)) {
-				$error = $this->validateFormField($fieldId, $ignoreRequiredFields = false, $fieldValue, $conditionalFieldValue);
+				$error = $this->validateFormField($fieldId, $saveToCompleteLaterButtonPressed = false, $fieldValue, $conditionalFieldValue, $confirmationFieldValue);
 			} else {
 				$error = false;
 			}
@@ -1127,6 +1124,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						case 'handle_referrer_content_item_deadline':
 							$label = $formDetails['referrer_content_item_deadline_label'];
 							break;
+						case 'handle_referrer_content_item_email_address':
+							$label = $formDetails['referrer_content_item_email_address_label'];
+							break;
 						case 'handle_referrer_content_item_alias':
 							$label = $formDetails['referrer_content_item_alias_label'];
 							break;
@@ -1297,6 +1297,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							break;
 						case 'handle_referrer_content_item_deadline':
 							$label = $formDetails['referrer_content_item_deadline_label'];
+							break;
+						case 'handle_referrer_content_item_email_address':
+							$label = $formDetails['referrer_content_item_email_address_label'];
 							break;
 						case 'handle_referrer_content_item_alias':
 							$label = $formDetails['referrer_content_item_alias_label'];
@@ -1960,6 +1963,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				uff.required_error_message,
 				uff.validation AS field_validation,
 				uff.validation_error_message AS field_validation_error_message,
+				uff.show_field_twice_for_confirmation,
+				uff.confirmation_field_label,
+				uff.confirmation_field_error_message,
 				uff.field_type,
 				IFNULL(uff.description, "") AS description,
 				uff.calculation_code,
@@ -2118,6 +2124,14 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			$html .= ' in_fullscreen';
 		}
 		$html .= '">';
+		
+		if ($this->form['allow_partial_completion'] && !$this->userId) {
+			if (ze\admin::id()) {
+				$html .=
+					'<p class="info">' . htmlspecialchars(ze\admin::phrase('This form has the "Save and complete later" feature enabled, but the feature is only active for logged in extranet users.')) . '</p>';
+			}
+		}
+		
 		$html .= $this->getFormTitle();
 		
 		
@@ -2499,6 +2513,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			'handle_referrer_content_item_release_date' => 'release_date',
 			'handle_referrer_content_item_reference' => 'reference',
 			'handle_referrer_content_item_deadline' => 'deadline',
+			'handle_referrer_content_item_email_address' => 'job_vacancy_custom_email_address',
 			'handle_referrer_content_item_alias' => 'alias',
 			'handle_referrer_content_item_tag' => 'tag'
 		];
@@ -2555,7 +2570,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			if ($cType == 'vacancy' && ze\module::inc('zenario_ctype_job_vacancies')) {
 				$vacancyData = ze\row::get(
 					ZENARIO_CTYPE_JOB_VACANCIES_PREFIX . 'job_vacancies',
-					['reference', 'job_vacancy_has_deadline', 'job_vacancy_deadline_date', 'job_vacancy_specify_deadline_time', 'job_vacancy_deadline_time'],
+					[
+						'reference',
+						'job_vacancy_has_deadline', 'job_vacancy_deadline_date', 'job_vacancy_specify_deadline_time', 'job_vacancy_deadline_time',
+						'job_vacancy_destination_email_address', 'job_vacancy_custom_email_address'
+					],
 					['id' => $cID, 'version' => $cVersion]
 				);
 			
@@ -2565,9 +2584,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					
 					$referrerContentItemData['deadline'] = $vacancyDeadlineData['vacancy_deadline'];
 					
-					if (ze::setting('zenario_ctype_job_vacancies__deadline_support')) {
+					$deadlineFieldSetting = ze::setting('zenario_ctype_job_vacancies__deadline_support');
+					if ($deadlineFieldSetting && $deadlineFieldSetting == 'optional') {
 						if (!$referrerContentItemData['deadline']) {
 							$referrerContentItemData['deadline'] = ze\lang::phrase('Ongoing');
+						}
+					}
+					
+					$customEmailAddressesField = ze::setting('zenario_ctype_job_vacancies__custom_email_addresses_support');
+					$referrerContentItemData['job_vacancy_custom_email_address'] = '';
+					
+					if ($customEmailAddressesField && $customEmailAddressesField == 'optional') {
+						if ($vacancyData['job_vacancy_destination_email_address'] == 'use_custom_email_address') {
+							$referrerContentItemData['job_vacancy_custom_email_address'] =  $vacancyData['job_vacancy_custom_email_address'];
 						}
 					}
 				}
@@ -2593,7 +2622,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				ze\content::langSpecialPage('zenario_login', $cID, $cType);
 				
 				if ($loginSpecialPageLink = ze\link::toItem($cID, $cType)) {
-					$html .= '<div class="complete_later"><a href="' . htmlspecialchars($loginSpecialPageLink) . '" class="saveLater">' . $this->phrase('Save and complete later (login required)') . '</div>';
+					$html .= '<div class="complete_later"><a href="' . htmlspecialchars($loginSpecialPageLink) . '" class="saveLater">' . $this->phrase('Save and complete later (login required)') . '</a></div>';
 				}
 			}
 		}
@@ -2693,6 +2722,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$fieldName = 'referrer_deadline';
 					$field['type'] = 'text';
 					$field['label'] = $this->form['referrer_content_item_deadline_label'];
+					break;
+				case 'handle_referrer_content_item_email_address':
+					$fieldName = 'referrer_email_address';
+					$field['type'] = 'text';
+					$field['label'] = $this->form['referrer_content_item_email_address_label'];
 					break;
 				case 'handle_referrer_content_item_alias':
 					$fieldName = 'referrer_alias';
@@ -2927,8 +2961,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				
 				//Set type to "email" if validation is for an email address
 				$fieldInputType = 'text';
+				$showFieldTwiceForConfirmation = false;
 				if ($field['field_validation'] == 'email') {
 					$fieldInputType = 'email';
+					
+					$showFieldTwiceForConfirmation = (int) $field['show_field_twice_for_confirmation'];
 				}
 				$html .= '<input type="' . htmlspecialchars($fieldInputType) . '"';
 				if ($readonly) {
@@ -3464,7 +3501,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Field containing div open
-		$containerHTML = '<div id="' . $containerElementId . '" data-id="' . htmlspecialchars($fieldId) . '" ';
+		$containerHTMLId = '<div id="' . $containerElementId . '" data-id="' . htmlspecialchars($fieldId) . '" ';
+		$containerHTML = '';
 		if ($field['visibility'] == 'visible_on_condition') {
 			$containerHTML .= $this->getVisibleConditionDataValuesHTML($field, $pageId);
 		}
@@ -3514,7 +3552,68 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		$containerHTML .= ' ' . htmlspecialchars($extraClasses);
 		$containerHTML .= '">';
 		
-		$html = $containerHTML . $html . '</div>';
+		$html = $containerHTMLId . $containerHTML . $html . '</div>';
+		
+		if ($field['type'] == 'text' && $fieldInputType == 'email' && $showFieldTwiceForConfirmation) {
+			$confirmationContainerHTMLId = '<div id="' . $containerElementId . '_confirmation" data-id="' . htmlspecialchars($fieldId) . '" ';
+			$html .= $confirmationContainerHTMLId . $containerHTML . '<div class="field_title">' . $openingTag . htmlspecialchars(static::fPhrase($field['confirmation_field_label'], [], $t)) . $closingTag . '</div>';
+			
+			$html .= '<input type="' . htmlspecialchars($fieldInputType) . '"';
+			if ($readonly) {
+				$html .= ' readonly ';
+			}
+			if ($hidden) {
+				$html .= ' autocomplete="hidden-field" ';
+			}
+			
+			if ($useTextFieldName) {
+				$html .= ' name="' . htmlspecialchars($fieldName) . '_confirmation"';
+			}
+			$html .= ' id="' . htmlspecialchars($fieldElementId) . '_confirmation"';
+			//Data vars to help caculated fields
+			if ($field['repeat_start_id']) {
+				$html .= ' data-repeated="1" data-repeated_row="' . htmlspecialchars($field['row']) . '" data-repeat_id="' . htmlspecialchars($field['repeat_start_id']) . '"';
+			}
+			
+			$value = $this->getFieldCurrentValue($fieldId, $recursionCount = 1, null, $isConfirmationField = true);
+			if ($value !== false) {
+				$html .= ' value="' . htmlspecialchars($value) . '"';
+			}
+			if ($field['placeholder'] !== '' && $field['placeholder'] !== null) {
+				$html .= ' placeholder="' . htmlspecialchars(static::fPhrase($field['placeholder'], [], $t)) . '"';
+			}
+			//Set maxlength to 255, or shorter for system field special cases
+			$maxlength = 250;
+			switch ($field['db_column']) {
+				case 'salutation':
+					$maxlength = 25;
+					break;
+				case 'screen_name':
+				case 'password':
+					$maxlength = 50;
+					break;
+				case 'first_name':
+				case 'last_name':
+				case 'email':
+					$maxlength = 100;
+					break;
+			}	
+			$html .= ' maxlength="' . htmlspecialchars($maxlength) . '" ';
+			
+			if ($fieldId) {
+				if (
+					($field['type'] == 'text' || $field['type'] == 'url')
+					&& ($field['is_required'] || $field['mandatory_if_visible'] || $field['mandatory_condition_field_id'] || $field['field_validation'])
+				) {
+					$html .= $this->addFieldValidationJsEvent($field, $fieldId, $fieldElementId, $containerElementId);
+				}
+			}
+			
+			$html .= '/>';
+			$html .= $suggestedValuesHTML;
+			$html .= '</div>';
+		}
+		
 		return $html;
 	}
 	
@@ -3581,7 +3680,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return ['valuesHtml' => $html, 'values' => $values];
 	}
 	
-	protected function getFieldCurrentValue($fieldId, $recursionCount = 1, $jsValidateValue = null) {
+	protected function getFieldCurrentValue($fieldId, $recursionCount = 1, $jsValidateValue = null, $isConfirmationField = false) {
 		if (!isset($this->fields[$fieldId]) || $recursionCount > 999) {
 			return false;
 		}
@@ -3615,17 +3714,19 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Check if value has been saved before...
-		if (isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
+		if (!$isConfirmationField && isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId])) {
 			if ($field['type'] == 'sortable_selection') {
 				$value = explode(',', $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId]['right_values']);
 			} else {
 				$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId];
 			}
 		//... otherwise see if it was submitted right now...
-		} elseif ($valueInpost = ze::post(static::getFieldName($fieldId, $field['custom_code_name']))) {
+		} elseif ($isConfirmationField && isset($_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId . '_confirmation'])) {
+			$value = $_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId . '_confirmation'] ?: false;
+		} elseif ($valueInpost = ze::post(static::getFieldName($fieldId, $field['custom_code_name'], $isConfirmationField))) {
 			$value = $valueInpost;
 		//... otherwise see if we can load from the  dataset (only on a fresh load - NOT after a submission!)...
-		} elseif ($field['preload_dataset_field_user_data'] && $this->userId && $field['db_column'] && !$submitted) {
+		} elseif (!$isConfirmationField && $field['preload_dataset_field_user_data'] && $this->userId && $field['db_column'] && !$submitted) {
 			$this->allowCaching(false);
 			
 			$row = false;
@@ -3946,6 +4047,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					case 'select':
 					case 'centralised_select':
 						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $post[$name] ?? false;
+						
+						if ($field['type'] == 'text' && $field['field_validation'] == 'email' && $field['show_field_twice_for_confirmation']) {
+							$name = static::getFieldName($fieldId, $field['custom_code_name'], $isConfirmationField = true);
+							$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId . '_confirmation'] = $post[$name] ?? false;
+						}
 						break;
 					case 'textarea':
 						if (isset($post['set_predefined_text_' . $fieldId])) {
@@ -4164,7 +4270,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 						}
 					}
 				} else {
-					$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $field['value'];
+					if ($field['type'] == 'text' && $field['field_validation'] == 'email' && $field['show_field_twice_for_confirmation']) {
+						$value = json_decode($field['value'], $associative = true);
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $value['field_value'];
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId . '_confirmation'] = $value['confirmation_field_value'];
+					} else {
+						$_SESSION['custom_form_data'][$this->instanceId][$this->formPageHash]['data'][$fieldId] = $field['value'];
+					}
 				}
 			}
 		}
@@ -4178,7 +4290,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 	}
 	
-	private function validateForm($pageId, $validateAllFields, $ignoreRequiredFields) {
+	private function validateForm($pageId, $validateAllFields, $saveToCompleteLaterButtonPressed) {
 		$t = $this->form['translate_text'];
 
 		//Validate honeypot field
@@ -4195,7 +4307,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		if ($pageId == 'summary') {
 			//If a form shows a mandatory checkbox on the summary step, and it's not checked, show an error.
 			//Do NOT show an error if the user simply pressed "Save and complete later", though.
-			if ($this->form['enable_summary_page_required_checkbox'] && empty($_POST['summary_required_checkbox']) && !$ignoreRequiredFields) {
+			if ($this->form['enable_summary_page_required_checkbox'] && empty($_POST['summary_required_checkbox']) && !$saveToCompleteLaterButtonPressed) {
 				$this->errors['summary_required_checkbox'] = static::fPhrase($this->form['summary_page_required_checkbox_error_message'], [], $t);
 			}
 			
@@ -4225,7 +4337,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			}
 			
 			if ($pageVisibility[$field['page_id']]) {
-				$error = $this->validateFormField($fieldId, $ignoreRequiredFields);
+				$error = $this->validateFormField($fieldId, $saveToCompleteLaterButtonPressed);
 				if ($error) {
 					$this->errors[$fieldId] = $error;
 					$this->errors['global_top'] = ze\lang::phrase('Please check below for errors.');
@@ -4246,7 +4358,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		return empty($this->errors);
 	}
 	
-	private function validateFormField($fieldId, $ignoreRequiredFields, $jsValidateValue = null, $jsValidateConditionalFieldValue = null) {
+	private function validateFormField($fieldId, $saveToCompleteLaterButtonPressed, $jsValidateValue = null, $jsValidateConditionalFieldValue = null, $jsConfirmationFieldValue = null) {
 		//Don't overwrite existing error (e.g. file upload errors are assigned before this function is called)
 		if (isset($this->errors[$fieldId])) {
 			return false;
@@ -4315,7 +4427,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Check if field is required but has no data
-		if ($field['is_required'] && !$ignoreRequiredFields) {
+		if ($field['is_required'] && !$saveToCompleteLaterButtonPressed) {
 			switch ($field['type']) {
 				case 'group':
 				case 'checkbox':
@@ -4372,7 +4484,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Text/URL field validation
-		if (($field['type'] == 'text' || $field['type'] == 'url') && $field['field_validation'] && $value !== '' && $value !== false) {
+		if (!$saveToCompleteLaterButtonPressed && ($field['type'] == 'text' || $field['type'] == 'url') && $field['field_validation'] && $value !== '' && $value !== false) {
 			switch ($field['field_validation']) {
 				case 'name':
 					if (strpos($value, '<') !== false || strpos($value, '>') !== false) {
@@ -4382,6 +4494,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				case 'email':
 					if (!ze\ring::validateEmailAddress($value)) {
 						return static::fPhrase($field['field_validation_error_message'], [], $t);
+					} elseif ($value && $field['show_field_twice_for_confirmation']) {
+						$confirmationFieldValue = $this->getFieldCurrentValue($fieldId, 1, $jsConfirmationFieldValue, $isConfirmationField = true);
+						if ($value != $confirmationFieldValue) {
+							return static::fPhrase($field['confirmation_field_error_message'], [], $t);
+						}
 					}
 					break;
 				case 'URL':
@@ -4424,7 +4541,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		}
 		
 		//Dataset field validation
-		if ($field['dataset_field_id'] && $field['dataset_field_validation'] && $value !== '') {
+		if (!$saveToCompleteLaterButtonPressed && $field['dataset_field_id'] && $field['dataset_field_validation'] && $value !== '') {
 			switch ($field['dataset_field_validation']) {
 				case 'email':
 					if (!ze\ring::validateEmailAddress($value)) {
@@ -4679,7 +4796,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				&& (
 					($this->form['send_email_to_admin_destination_for_form_response'] == 'enter_address_manually' && $this->form['admin_email_addresses'])
 					|| ($this->form['send_email_to_admin_destination_for_form_response'] == 'call_static_method' && $this->form['admin_email_destination_module_class_name'] && $this->form['admin_email_destination_method_name'])
+					|| ($this->form['send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values' && $this->form['admin_email_destination_select_list_for_fields'])
 				);
+			
+			$recipientEmailAddress = '';
+			if ($this->form['send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values' && $this->form['admin_email_destination_select_list_for_fields']) {
+				$fieldId = $this->form['admin_email_destination_select_list_for_fields'];
+				
+				if (!empty($this->fields[$fieldId]['value'])) {
+					$selectedValueId = $this->fields[$fieldId]['value'];
+					$recipientEmailAddress = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', 'admin_email_addresses', ['id' => $selectedValueId, 'form_field_id' => $fieldId]);
+				}
+			}
 			
 			$userEmailMergeFields = false;
 			$adminEmailMergeFields = false;
@@ -4768,7 +4896,7 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			//If there is a condition, make sure the email is only sent if the correct
 			//checkbox is selected.
 			if ($sendEmailToAdmin) {
-				static::sendEmailResponseToAdmin($responseId, $this->form, $userId, $this->fields, $url, $makeURLsNotClickableAdmin, $commentForAdmin = '', $commentAuthorAdminId = 0, $recipientEmailAddress = '', $this->referrerContentItemTag);
+				static::sendEmailResponseToAdmin($responseId, $this->form, $userId, $this->fields, $url, $makeURLsNotClickableAdmin, $commentForAdmin = '', $commentAuthorAdminId = 0, $recipientEmailAddress, $this->referrerContentItemTag);
 			}
 		}
 		
@@ -4930,6 +5058,17 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$ignoreDebugMode = true;
 			}
 			
+			//If this email is sent using a vacancy content item referrer,
+			//check if there is a custom email address specified.
+			if (!$recipientEmailAddress && $referrerContentItemTag) {
+				$referrerContentItemData = self::getReferrerFieldsValues($referrerContentItemTag);
+				
+				if (!empty($referrerContentItemData['job_vacancy_custom_email_address'])) {
+					$recipientEmailAddress = $referrerContentItemData['job_vacancy_custom_email_address'];
+				}
+			}
+			
+			$adminEmailAddresses = '';
 			if ($recipientEmailAddress) {
 				$adminEmailAddresses = $recipientEmailAddress;
 			} else {
@@ -5092,6 +5231,9 @@ class zenario_user_forms extends ze\moduleBaseClass {
 							break;
 						case 'handle_referrer_content_item_deadline':
 							$label = $form['referrer_content_item_deadline_label'];
+							break;
+						case 'handle_referrer_content_item_email_address':
+							$label = $form['referrer_content_item_email_address_label'];
 							break;
 						case 'handle_referrer_content_item_alias':
 							$label = $form['referrer_content_item_alias_label'];
@@ -5681,6 +5823,13 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				}
 			} else {
 				$value = static::getFieldStorableValue($field, $field['value']);
+				
+				if ($field['type'] == 'text' && $field['field_validation'] == 'email' && $field['show_field_twice_for_confirmation']) {
+					$confirmationFieldValue = $this->getFieldCurrentValue($fieldId, 1, $jsConfirmationFieldValue = null, $isConfirmationField = true);
+					
+					$value = ['field_value' => $value,  'confirmation_field_value' => $confirmationFieldValue];
+					$value = json_encode($value);
+				}
 			}
 			
 			ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response_data', ['user_partial_response_id' => $responseId, 'form_field_id' => $field['id'], 'value' => $value, 'field_row' => $row]);
@@ -5996,13 +6145,20 @@ class zenario_user_forms extends ze\moduleBaseClass {
 	
 	
 	//Get the name of the field input on the form
-	public static function getFieldName($fieldId, $customCodeName = false) {
+	public static function getFieldName($fieldId, $customCodeName = false, $isConfirmationField = false) {
+		$suffix = '';
+		
+		if ($isConfirmationField) {
+			$suffix = '_confirmation';
+		}
 		
 		if ($customCodeName) {
-			return 'field_' . $fieldId . '_' . $customCodeName;
+			$fieldName = 'field_' . $fieldId . '_' . $customCodeName . $suffix;
 		} else {
-			return 'field_' . $fieldId;
+			$fieldName = 'field_' . $fieldId . $suffix;
 		}
+		
+		return $fieldName;
 	}
 	
 	//Get the name of the field input on the form
@@ -6057,7 +6213,8 @@ class zenario_user_forms extends ze\moduleBaseClass {
 			ze\escape::js($field['mandatory_if_visible']) . '\', \'' .
 			ze\escape::js($field['mandatory_condition_field_id']) . '\', \'' .
 			ze\escape::js($mandatoryConditionFieldType) . '\', \'' .
-			ze\escape::js($field['field_validation']) . '\');"';
+			ze\escape::js($field['field_validation']) . '\', ' .
+			ze\escape::js($field['show_field_twice_for_confirmation']) . ');"';
 	}
 	
 	public static function fPhrase($text, $replace, $translate) {
@@ -6374,6 +6531,18 @@ class zenario_user_forms extends ze\moduleBaseClass {
 		foreach ($formJSON['forms'] as $index => &$data) {
 			//Create forms
 			$form = $data['form'];
+			
+			//If a form uses the "Destination depends on a select list" feature for sending admin emails,
+			//update the duplicated form's value to use the new field's ID.
+			$adminEmailDestinationFieldId = 0;
+			if (
+				$form['send_email_to_admin']
+				&& $form['send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values'
+				&& $form['admin_email_destination_select_list_for_fields']
+			) {
+				$adminEmailDestinationFieldId = $form['admin_email_destination_select_list_for_fields'];
+			}
+			
 			$oldFormId = $form['id'];
 			unset($form['id']);
 			$newFormId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $form);
@@ -6403,6 +6572,10 @@ class zenario_user_forms extends ze\moduleBaseClass {
 				$field['page_id'] = $pageIdLink[$field['page_id']];
 				$newFieldId = ze\row::insert(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', $field);
 				$fieldIdLink[$oldFieldId] = $newFieldId;
+				
+				if ($adminEmailDestinationFieldId && ($adminEmailDestinationFieldId == $oldFieldId)) {
+					$adminEmailDestinationFieldId = $newFieldId;
+				}
 				
 				if ($formCRMIntegrationModuleRunning) {
 					if (!empty($data['crm_fields'][$oldFieldId])) {
@@ -6438,6 +6611,11 @@ class zenario_user_forms extends ze\moduleBaseClass {
 					$update[$fieldName] = $fieldIdLink[$form[$fieldName]];
 				}
 			}
+			
+			if ($adminEmailDestinationFieldId) {
+				$update['admin_email_destination_select_list_for_fields'] = $adminEmailDestinationFieldId;
+			}
+			
 			if ($update) {
 				ze\row::update(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $update, $newFormId);
 			}

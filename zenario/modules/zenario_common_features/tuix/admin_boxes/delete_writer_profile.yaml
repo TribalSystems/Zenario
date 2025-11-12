@@ -19,25 +19,23 @@ zenario_delete_writer_profile:
                     type: warning
                     show: false
                     message: |
-                        Are you sure you wish to delete the writer profile "[[name]]"?
-                        This person has [[post_count]] post(s), last one published [[last_published]].
-                        Those articles will no longer have a writer associated with them.
-                        Proceed?
+                        Are you sure you wish to delete the writer profile for [[name]]?
+
+                        This person has [[post_count]] posts, with the most recent one published [[last_published]]. Those articles will no longer have a writer associated with them.
                 delete_post_count_1:
                     type: warning
                     show: false
                     message: |
-                        Are you sure you wish to delete the writer profile "[[name]]"?
-                        This person has 1 post, published [[last_published]].
-                        The article will no longer have a writer associated with it.
-                        Proceed?
+                        Are you sure you wish to delete the writer profile for [[name]]?
+
+                        This person has 1 post, published [[last_published]]. The article will no longer have a writer associated with it.
                 delete_no_post_count:
                     type: warning
                     show: false
                     message: |
-                        Are you sure you wish to delete the writer profile "[[name]]"?
+                        Delete the writer profile for [[name]]?
+
                         This person has no posts.
-                        Proceed?
             fields:
                 post_count:
                     type: text

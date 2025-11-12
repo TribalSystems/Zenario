@@ -12,132 +12,186 @@ zenario_content:
                 desc:
                     snippet:
                         html: Use this screen to set dates, times and a location.
-                    full_width: Yes
+                    full_width: true
+                
+                grouping_start_date_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                start_date_original:
+                    grouping: grouping_start_date_left
+                    label: 'Start date (original):'
+                    type: date
+                    show_as_a_span: true
+                
+                grouping_start_date_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 start_date:
+                    grouping: grouping_start_date_right
                     label: 'Start date:'
                     type: date
-                    format_onchange: Yes
+                    format_onchange: true
                     last_value: ""
+                    change_month_and_year: true
+                    allow_typing_in_date_field: true
+                    show_date_format_as_placeholder: true
+                
+                grouping_end_date_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                end_date_original:
+                    grouping: grouping_end_date_left
+                    label: 'End date (original):'
+                    type: date
+                    show_as_a_span: true
+                
+                grouping_end_date_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 end_date:
+                    grouping: grouping_end_date_right
                     label: 'End date:'
                     type: date
                     side_note: Set this if it's a multi-day event, otherwise leave it the same as the start date.
+                    change_month_and_year: true
+                    allow_typing_in_date_field: true
+                    show_date_format_as_placeholder: true
+                
+                grouping_specify_time_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                specify_time_original:
+                    grouping: grouping_specify_time_left
+                    label: 'Specify a time (original)'
+                    type: checkbox
+                    show_as_a_span: true
+                
+                grouping_specify_time_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 specify_time:
+                    grouping: grouping_specify_time_right
                     label: 'Specify a time'
                     type: checkbox
                     side_note: Set this if you want to show the start and end time of the event, as well as the date.
-                    format_onchange: Yes
-                start_time_hours:
+                    format_onchange: true
+                
+                grouping_start_time_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                start_time_original:
+                    grouping: grouping_start_time_left
                     indent: 1
-                    hidden: Yes
+                    label: 'Start time (original):'
+                    type: text
+                    show_as_a_span: true
+                
+                grouping_start_time_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
+                start_time_hours:
+                    grouping: grouping_start_time_right
+                    indent: 1
+                    hidden: true
                     label: 'Start time:'
                     pre_field_html: '&nbsp;Hours:&nbsp;'
                     type: select
-                    values:
-                        00: "00"
-                        01: "01"
-                        02: "02"
-                        03: "03"
-                        04: "04"
-                        05: "05"
-                        06: "06"
-                        07: "07"
-                        08: "08"
-                        09: "09"
-                        10: "10"
-                        11: "11"
-                        12: "12"
-                        13: "13"
-                        14: "14"
-                        15: "15"
-                        16: "16"
-                        17: "17"
-                        18: "18"
-                        19: "19"
-                        20: "20"
-                        21: "21"
-                        22: "22"
-                        23: "23"
+                    values: {}
                     last_value: ""
                     format_onchange: true
                 start_time_minutes:
-                    hidden: Yes
-                    same_row: Yes
+                    grouping: grouping_start_time_right
+                    hidden: true
+                    same_row: true
                     pre_field_html: '&nbsp;Minutes:&nbsp;'
                     type: select
-                    values:
-                        00: "00"
-                        05: "05"
-                        10: "10"
-                        15: "15"
-                        20: "20"
-                        25: "25"
-                        30: "30"
-                        35: "35"
-                        40: "40"
-                        45: "45"
-                        50: "50"
-                        55: "55"
-                        59: "59"
+                    values: {}
                     last_value: ""
                     format_onchange: true
-                end_time_hours:
+                
+                grouping_end_time_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                end_time_original:
+                    grouping: grouping_end_time_left
                     indent: 1
-                    hidden: Yes
+                    label: 'End time (original):'
+                    type: text
+                    show_as_a_span: true
+                
+                late_evening_event_original:
+                    grouping: grouping_end_time_left
+                    indent: 1
+                    label: '+1 day'
+                    type: checkbox
+                    same_row: true
+                    show_as_a_span: true
+                
+                grouping_end_time_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
+                end_time_hours:
+                    grouping: grouping_end_time_right
+                    indent: 1
+                    hidden: true
                     label: 'End time:'
                     pre_field_html: '&nbsp;Hours:&nbsp;'
                     type: select
-                    values:
-                        00: "00"
-                        01: "01"
-                        02: "02"
-                        03: "03"
-                        04: "04"
-                        05: "05"
-                        06: "06"
-                        07: "07"
-                        08: "08"
-                        09: "09"
-                        10: "10"
-                        11: "11"
-                        12: "12"
-                        13: "13"
-                        14: "14"
-                        15: "15"
-                        16: "16"
-                        17: "17"
-                        18: "18"
-                        19: "19"
-                        20: "20"
-                        21: "21"
-                        22: "22"
-                        23: "23"
+                    values: {}
                 end_time_minutes:
-                    hidden: Yes
-                    same_row: Yes
+                    grouping: grouping_end_time_right
+                    hidden: true
+                    same_row: true
                     pre_field_html: '&nbsp;Minutes:&nbsp;'
                     type: select
-                    values:
-                        00: "00"
-                        05: "05"
-                        10: "10"
-                        15: "15"
-                        20: "20"
-                        25: "25"
-                        30: "30"
-                        35: "35"
-                        40: "40"
-                        45: "45"
-                        50: "50"
-                        55: "55"
-                        59: "59"
+                    values: {}
                 late_evening_event:
+                    grouping: grouping_end_time_right
                     indent: 1
                     label: '+1 day'
                     type: checkbox
                     side_note: Check this if your event runs past midnight and the end time is next day.
                     same_row: true
+                
+                grouping_event_timezone_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                event_timezone_original:
+                    grouping: grouping_event_timezone_left
+                    indent: 1
+                    label: 'Event timezone (original):'
+                    type: text
+                    show_as_a_span: true
+                
+                grouping_event_timezone_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 event_timezone:
+                    grouping: grouping_event_timezone_right
                     indent: 1
                     type: radios
                     label: 'Event timezone:'
@@ -150,7 +204,7 @@ zenario_content:
                             ord: 2
                             label: Other timezone...
                     visible_if: lib.value('specify_time')
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                     notices_below:
                         enable_timezone_support:
                             hidden: true
@@ -158,6 +212,7 @@ zenario_content:
                             message: ''
                             html: true
                 event_other_timezone:
+                    grouping: grouping_event_timezone_right
                     indent: 2
                     type: select
                     values: []
@@ -166,20 +221,80 @@ zenario_content:
                     validation:
                         required_if_not_hidden: 'Please select a timezone.'
                 
+                grouping_event_location_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                locations_snippet_original:
+                    grouping: grouping_event_location_left
+                    snippet:
+                        html: |
+                            <span class="title">Where it's on (original):</span>
+                online_original:
+                    grouping: grouping_event_location_left
+                    label: 'Online'
+                    type: checkbox
+                    show_as_a_span: true
+                at_location_checkbox_original:
+                    grouping: grouping_event_location_left
+                    label: 'At a physical location'
+                    type: checkbox
+                    show_as_a_span: true
+                at_physical_location_original:
+                    grouping: grouping_event_location_left
+                    indent: 1
+                    type: select
+                    values:
+                        location_picker:
+                            label: 'Location in database'
+                        address_text:
+                            label: 'Address not in database'
+                    visible_if: lib.value('at_location_checkbox_original')
+                    show_as_a_span: true
+                location_id_original:
+                    grouping: grouping_event_location_left
+                    indent: 2
+                    label: 'Location (original):'
+                    pick_items:
+                        path: zenario__locations/panel
+                        target_path: zenario__locations/panel
+                        min_path: zenario__locations/panel
+                        nothing_selected_phrase: No location selected
+                        select_phrase: Select a location...
+                    visible_if: lib.value('at_location_checkbox_original') && lib.value('at_physical_location_original') == 'location_picker'
+                    show_as_a_span: true
+                location_original:
+                    grouping: grouping_event_location_left
+                    indent: 2
+                    label: 'Enter the address (original):'
+                    type: text
+                    maxlength: 250
+                    visible_if: lib.value('at_location_checkbox_original') && lib.value('at_physical_location_original') == 'address_text'
+                
+                grouping_event_location_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 locations_snippet:
+                    grouping: grouping_event_location_right
                     snippet:
                         html: |
                             <span class="title">Where it's on:</span>
                 online:
+                    grouping: grouping_event_location_right
                     ord: 100
                     label: 'Online'
                     type: checkbox
                 at_location_checkbox:
+                    grouping: grouping_event_location_right
                     ord: 101
                     label: 'At a physical location'
                     type: checkbox
                     redraw_onchange: true
                 at_physical_location:
+                    grouping: grouping_event_location_right
                     ord: 102
                     indent: 1
                     type: select
@@ -200,6 +315,7 @@ zenario_content:
                             message: ''
                             html: true
                 location_id:
+                    grouping: grouping_event_location_right
                     ord: 103
                     indent: 2
                     label: 'Location:'
@@ -213,6 +329,7 @@ zenario_content:
                     validation:
                         required_if_not_hidden: 'Please select a location.'
                 location:
+                    grouping: grouping_event_location_right
                     ord: 104
                     indent: 2
                     label: 'Enter the address:'
@@ -224,11 +341,36 @@ zenario_content:
                 
                 #If the Conference Manager module is running, an event may be linked to a conference.
                 #The relevant fields will be in this grouping.
-                conference_grouping:
+                conference_grouping_left:
                     ord: 105
                     type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                conference_grouping_right:
+                    ord: 106
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
+                grouping_event_url_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                event_url_original:
+                    grouping: grouping_event_url_left
+                    label: 'URL for further info (original):'
+                    type: text
+                    show_as_a_span: true
+                
+                grouping_event_url_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
                 
                 url:
+                    grouping: grouping_event_url_right
                     ord: 106
                     label: 'URL for further info:'
                     type: text
@@ -236,8 +378,9 @@ zenario_content:
                         To enter the URL of an external page, start the URL with http:// or https://
                     onclick: "if ($(this).val()=='') {$(this).val('http://')}"
                 url_test:
+                    grouping: grouping_event_url_right
                     ord: 107
-                    same_row: Yes
+                    same_row: true
                     type: button
                     css_class: zenario_gp_button
                     value: Test

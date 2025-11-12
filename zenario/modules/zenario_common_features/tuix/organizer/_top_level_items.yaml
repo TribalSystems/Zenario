@@ -40,7 +40,8 @@ zenario__content:
     nav:
         special:
             ord: 20
-            css_class: zenario_separator_before_this special_content_published
+            css_class: special_content_published
+            separator_before_this: true
             label: Special pages
             tooltip: HTML pages including the home page, not-found (404) and other essential content items that cannot be trashed.
             link:
@@ -83,17 +84,24 @@ zenario__content:
                 path: zenario__content/panels/hidden_content_items
         categories:
             ord: 30
-            css_class: zenario_separator_before_this zenario_category_icon
+            css_class: zenario_category_icon
+            separator_before_this: true
             label: Categories
             tooltip: Edit categories of content item, used when listing items in Content Summary List (CSL) plugins.
             link:
                 path: zenario__content/panels/categories
+        writer_profiles:
+            ord: 32
+            css_class: writer_profile
+            label: Writer profiles
+            link:
+                path: zenario__content/panels/writer_profiles
         access_codes:
             ord: 35
             visible_if: >
                 zenarioA.siteSettings.enable_staging_mode
             css_class: access_code
-            label: Staging content
+            label: Access codes
             link:
                 path: zenario__content/panels/access_codes
         # This hidden nav is here so that, if you're on the content item translations panel,
@@ -129,12 +137,12 @@ zenario__library:
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_library
     label: Library
-    tooltip: "Central resources: images, categories, writer profiles, documents in a hierarchy, tags"
+    tooltip: "Central resources: images, hierarchical downloads"
     youtube_video_id: jR8CDnaoMSo
     youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
     nav:
         image_library:
-            ord: 1
+            ord: 100
             css_class: media_image
             label: Image library
             tooltip: |
@@ -142,38 +150,69 @@ zenario__library:
             link:
                 path: zenario__library/panels/image_library
         special_images:
-            ord: 1.1
+            ord: 120
             css_class: media_image
+            separator_after_this: true
             label: Special images
             tooltip: |
                 Images for site settings are stored in a central library, edit them here.
             link:
                 path: zenario__library/panels/special_images
-        #MIC images will be here if the module is enabled. (ord: 2)
-        writer_profiles:
-            ord: 3
-            css_class: writer_profile
-            label: Writer profiles
-            tooltip: |
-                Manage writer profiles
-            link:
-                path: zenario__library/panels/writer_profiles
-        #Spare aliases will be here if the Pro Features module is enabled. (ord: 4)
         documents:
-            ord: 5
+            ord: 200
             priv: _PRIV_VIEW_DOCUMENTS
             label: Hierarchical documents
             tooltip: Documents arranged in folders, which can be public or private, for public sharing or extranet protection
             link:
                 path: zenario__library/panels/documents
         document_tags:
-            ord: 6
+            ord: 210
             priv: _PRIV_VIEW_DOCUMENTS
             label: Document tags
             tooltip: >
                 Manage tags for documents
             link:
                 path: zenario__library/panels/document_tags
+        
+        modules:
+            ord: 300
+            priv: _PRIV_VIEW_SLOT
+            css_class: module
+            separator_before_this: true
+            label: Modules
+            tooltip: View modules that add plugins to front-end pages and other functionality
+            link:
+                path: zenario__library/panels/modules_running_and_suspended
+        plugins:
+            ord: 310
+            priv: _PRIV_VIEW_SLOT
+            css_class: plugin_album_instance
+            label: Plugin library
+            tooltip: >
+                Plugins that may be used on visitor-facing pages
+            link:
+                path: zenario__library/panels/plugins
+        
+        nests:
+            ord: 320
+            priv: _PRIV_VIEW_SLOT
+            hidden: true    # N.b. this will be unhidden if a nest module is running
+            css_class: nest_library
+            label: Nest library
+            tooltip: |
+                View nests - collections of plugins that may be used on visitor-facing pages
+            link:
+                path: zenario__library/panels/plugins/refiners/nests////
+        slideshows:
+            ord: 330
+            priv: _PRIV_VIEW_SLOT
+            hidden: true    # N.b. this will be unhidden if a slideshow module is running
+            css_class: slideshow_library
+            label: Slideshow library
+            tooltip: >
+                View slideshows - animated collections of plugins that may be used on visitor-facing pages
+            link:
+                path: zenario__library/panels/plugins/refiners/slideshows////
 
 zenario__email_template_manager:
     ord: -760
@@ -185,36 +224,37 @@ zenario__email_template_manager:
             Define how emails are sent from the site and view sent mail
     nav:
         email_templates: 
-            ord: 1
+            ord: 100
             label: Email templates
             tooltip: "Email templates that your site can send"
             link:
                 path: zenario__email_template_manager/panels/email_templates
         email_log:
-            ord: 2
+            ord: 120
             priv: _PRIV_VIEW_USER
             label: Sent email log
             tooltip: "Log of emails sent from your site"
             link:
                 path: zenario__email_template_manager/panels/email_log
         plugin_email_addresses:
+            ord: 200
             css_class: plugin_album_instance
-            ord: 5
+            separator_before_this: true
             priv: _PRIV_VIEW_USER
             label: Plugin recipients
             tooltip: "View plugins that have an email address in a setting"
             link:
-                path: zenario__modules/panels/plugins
+                path: zenario__library/panels/plugins
                 refiner: email_address_setting
         other_email_addresses:
-            ord: 6
+            ord: 250
             priv: _PRIV_VIEW_USER
             label: Other emails
             tooltip: "View other modules that have an email address"
             link:
                 path: zenario__email_template_manager/panels/other_email_addresses
         site_setting_email_addresses:
-            ord: 7
+            ord: 220
             priv: _PRIV_VIEW_USER
             label: Site-wide recipients
             tooltip: "View site settings that have an email address"
@@ -252,60 +292,6 @@ zenario__layouts:
             keywords: "CSS, layout, font, style"
             link:
                 path: zenario__layouts/panels/skins
-zenario__modules:
-    ord: 9200
-    priv: _PRIV_VIEW_SLOT
-    visible_if: >
-        zenarioA.siteSettings.default_language
-    css_class: zenario_cms_core_plugins
-    label: Modules
-    tooltip: Enhanced interactivity using plugins, nests and slideshows
-    nav:
-        modules:
-            label: Modules
-            tooltip: View modules that add plugins to front-end pages and other functionality
-            link:
-                path: zenario__modules/panels/modules
-        plugins:
-            css_class: module
-            label: Plugin library
-            tooltip: >
-                Plugins that may be used on visitor-facing pages
-            link:
-                path: zenario__modules/panels/plugins
-        
-        nests:
-            hidden: true    # N.b. this will be unhidden if a nest module is running
-            css_class: nest_library
-            label: Nest library
-            tooltip: |
-                View nests - collections of plugins that may be used on visitor-facing pages
-            link:
-                path: zenario__modules/panels/plugins/refiners/nests////
-        slideshows:
-            hidden: true    # N.b. this will be unhidden if a slideshow module is running
-            css_class: slideshow_library
-            label: Slideshow library
-            tooltip: >
-                View slideshows - animated collections of plugins that may be used on visitor-facing pages
-            link:
-                path: zenario__modules/panels/plugins/refiners/slideshows////
-
-        tuix_snippets:
-            ord: 99
-            priv: _PRIV_EDIT_SITE_SETTING
-            css_class: zenario_separator_before_this tuix_snippets
-            label: TUIX Snippets
-            tooltip: >
-                Use this panel to create snippets of customised TUIX code that can be used to
-                modify the appearance and/or behaviour of the FEA plugins on this site.
-            link:
-                path: zenario__modules/panels/tuix_snippets
-    data-step: 13
-    data-position: right
-    data-intro: >
-        <p><strong>Modules</strong></p>
-        <p>View and install all website modules and their plugins.</p>
 zenario__languages:
     youtube_video_id: e-kjG0sgeTs
     youtube_thumbnail_title: 'Zenario CMS: Adding languages to a Zenario site'
@@ -352,12 +338,13 @@ zenario__administration:
         Manage site settings, datasets, URLs, redirects, backups, and more
     nav:
         site_settings:
+            ord: 10
             priv: _PRIV_VIEW_SITE_SETTING
             label: Site settings
             tooltip: Configure how Zenario works
             keywords: >
                 editing security 2fa two factor authentication auto-lock drafts autolock permissions new content items release date minimum admin password strength
-                api keys key dropbox captcha recaptcha google map maps translate translation tools 
+                api keys key captcha recaptcha google map maps translate translation tools 
                 category categories
                 cookie implied consent explicit consent message
                 data protection GDPR personal PDE encryption consent 
@@ -386,15 +373,17 @@ zenario__administration:
             link:
                 path: zenario__administration/panels/site_settings
         content_types:
+            ord: 20
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
-            label: Content types
+            label: Content type settings
             tooltip: |
                 Manage content types (HTML pages, news etc.)
             link:
                 path: zenario__content/panels/content_types
         custom_datasets:
+            ord: 30
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
@@ -406,15 +395,18 @@ zenario__administration:
                 path: zenario__administration/panels/custom_datasets
         
         administrators:
+            ord: 50
             priv: _PRIV_VIEW_ADMIN
             label: Administrators
-            css_class: zenario_separator_before_this admin_item
+            css_class: admin_item
+            separator_before_this: true
             tooltip: |
                 Manage Zenario admins, who can edit this site
             link:
                 path: zenario__administration/panels/administrators
         
         backups:
+            ord: 60
             priv: _PRIV_BACKUP_SITE
             #css_class: backups
             label: Backups
@@ -422,6 +414,7 @@ zenario__administration:
             link:
                 path: zenario__administration/panels/backups
         error_log:
+            ord: 70
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
@@ -431,16 +424,27 @@ zenario__administration:
                 path: zenario__administration/panels/error_log
         
         file_types:
-            ord: 10001
+            ord: 80
             priv: _PRIV_VIEW_SITE_SETTING
             visible_if: >
                 zenarioA.siteSettings.default_language
-            label: File/MIME Types
+            label: File/MIME types
             tooltip: >
                 Manage which types of files/file extensions are allowed in a document upload,
                 and set the MIME type for each extension.
             link:
                 path: zenario__administration/panels/file_types
+        
+        tuix_snippets:
+            ord: 85
+            priv: _PRIV_EDIT_SITE_SETTING
+            css_class: tuix_snippets
+            label: TUIX Snippets
+            tooltip: >
+                Use this panel to create snippets of customised TUIX code that can be used to
+                modify the appearance and/or behaviour of the FEA plugins on this site.
+            link:
+                path: zenario__administration/panels/tuix_snippets
 
 
     data-step: 14

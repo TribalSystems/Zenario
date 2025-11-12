@@ -231,11 +231,7 @@ $originalTags = [];
 ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
 
 if (ze::$recordFiles) {
-	foreach ($moduleFilesLoaded as $moduleFiles) {
-		foreach ($moduleFiles['paths'] as $path) {
-			ze::$tuixFiles[$path] = true;
-		}
-	}
+	ze\tuix::recordYAMLFiles($moduleFilesLoaded);
 }
 
 
@@ -710,7 +706,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						
 						if (!empty($col['encrypted']['hashed'])) {
 							$whereStatement .= "
-								". $col['encrypted']['hashed_column']. " = '". ze\escape::sql(ze\db::hashDBColumn($_GET['_search'])). "'";
+								". $col['encrypted']['hashed_column']. " = '". ze\escape::hashedColumn($_GET['_search']). "'";
 						
 						} else {
 							
@@ -725,6 +721,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 			if ($first) {
 				$whereStatement .= "TRUE";
+			}
+			
+			//The quickSearchOrganizerPanel() placeholder method adds the ability for
+			//panels to add specific logic to their quick-searches, that's not tied to a specific column.
+			//This was added for T13107, Searching for users/contacts in Organizer
+			foreach ($modules as $className => &$module) {
+				$whereStatement .= $module->quickSearchOrganizerPanel($requestedPath, $tags, ze::request('refinerName'), ze::request('refinerId'), $mode, $_GET['_search']);
 			}
 			
 			$whereStatement .= "
@@ -756,7 +759,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						$whereStatement .= " != '";
 					}
 					
-					$whereStatement .= ze\escape::sql(ze\db::hashDBColumn($value_)). "'";
+					$whereStatement .= ze\escape::hashedColumn($value_). "'";
 				
 				//New option in 10.1 that lets us have specific filter logic for specific values.
 				} elseif (isset($col['filters_by_value'][$value_])) {
@@ -1018,7 +1021,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			}
 		
 		} elseif ($mode == 'typeahead_search') {
-			$limitForAJAXLookups = ze\sql::limit(1, 30);
+			
+			//T12820, When all content items are listed, e.g. picker box, put HTML items first
+			//The order that the typeahead results appear in the pickers should match the order they appear in the Organizer panel
+			$limitForAJAXLookups = "
+				ORDER BY ". $orderBy;
+			
+			$limitForAJAXLookups .= ze\sql::limit(1, 30);
 		
 		} elseif ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openToItemInHierarchy']))) {
 			
@@ -1611,10 +1620,7 @@ if ($doExport) {
 	}
 	
 	if (ze::$recordFiles) {
-		$tags['__source_files'] = [
-			'root' => CMS_ROOT,
-			'paths' => ze::$tuixFiles
-		];
+		$tags['__source_files'] = ze\tuix::recordedFiles();
 	}
 	
 	if (!empty(ze::$dumps)) {

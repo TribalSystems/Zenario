@@ -3,7 +3,7 @@
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
-start_running_on_install: false
+start_running_on_install: true  # N.b. changing this property won't do anything as this module is hard-coded in the installer to run on install.
 license_info: 'Modified BSD License'
 is_abstract: true
 fill_organizer_nav: true
@@ -37,7 +37,7 @@ special_pages:
         default_content: |
             <h2>Welcome to your new Zenario site!</h2>
             <p>Congratulations, you have just installed your new Zenario site.</p>
-            <p>You may add another page by clicking "New..." on the Admin Toolbar, then selecting what kind of content to create. Initially you may just see HTML pages but you can enable more content types <a href="organizer.php?#zenario__modules/panels/modules~-zenario_ctype">in Organizer</a>.</p>
+            <p>You may add another page by clicking "New..." on the Admin Toolbar, then selecting what kind of content to create. Initially you may just see HTML pages but you can enable more content types <a href="organizer.php?#zenario__library/panels/modules~-zenario_ctype">in Organizer</a>.</p>
             <p>Pages (called "content items" in Zenario) will be created as drafts and visible to administrators only. Click on the "Publish" button to make them visible to regular site visitors.</p>
             <p>View tutorials, and get support, at <a href="https://zenar.io" target="_blank" rel="noopener">https://zenar.io</a>.</p>
             <p>We hope you enjoy using Zenario.</p>

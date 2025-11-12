@@ -29,7 +29,42 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 				
 class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\moduleBaseClass {
-
+	
+	
+	protected function queryLogTable($targetAlias, $doDelete = false) {
+		
+		//Look through the error_404_log table, looking for related aliases to the current one.
+		//We'll start by using a "like" to do a basic string match.
+		$count = 0;
+		$sql = "
+			SELECT l.id, l.page_alias
+			FROM ". DB_PREFIX. "error_404_log AS l
+			WHERE page_alias LIKE '%". ze\escape::sql($targetAlias). "%'";
+		
+		foreach (ze\sql::select($sql) as $row) {
+			
+			//The basic string match will return a lot of false-positives.
+			//use the aliasHasSupportedExtension() on each row and check it actually contains an alias,
+			//and that the alias actually matches the current one.
+			$alias = ze\contentAdm::aliasHasSupportedExtension($row['page_alias']);
+			
+			if ($alias !== false
+			 && $alias === $targetAlias) {
+			 	
+			 	//Either return a count or do a delete, depending on what stage of the FAB we are at.
+				++$count;
+				
+				if ($doDelete) {
+					ze\row::delete('error_404_log', $row['id']);
+				}
+			}
+		}
+		
+		return $count;
+	}
+	
+	
+	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
 		if ($box['key']['id'] && $box['key']['id_is_error_log_id']) {
 			
@@ -55,26 +90,12 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 				$box['key']['id'] = '';
 				$values['spare_alias/alias'] = $alias;
 				$fields['spare_alias/alias']['readonly'] = true;
-				$box['title'] = ze\admin::phrase('Fixing the 404 error "[[alias]]"', ['alias' => ($brokenAlias)]);
+				$box['title'] = ze\admin::phrase('Fixing the 404 (page not found) error "[[alias]]"', ['alias' => ($brokenAlias)]);
 			}
 			
 			$values['spare_alias/delete_alias'] = $alias;
 
-			$sql = "
-				SELECT COUNT(*)
-				FROM " . DB_PREFIX . "error_404_log
-				WHERE page_alias IN(
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . "',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".htm',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".html',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".doc',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".docx',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".pdf',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".zip'
-				)
-				   OR page_alias LIKE '" . ze\escape::sql($values['spare_alias/delete_alias']) . "?%'";
-			$result = ze\sql::select($sql);
-			$logCount = ze\sql::fetchValue($result);
+			$logCount = $this->queryLogTable($values['spare_alias/delete_alias']);
 			
 			$fields['spare_alias/delete_error_log']['label'] =
 				ze\admin::phrase(
@@ -156,24 +177,10 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 		$box['confirm']['message'] = '';
 		if ($values['spare_alias/delete_error_log'] == true) {
 			
-			$sql = "
-				SELECT COUNT(*)
-				FROM " . DB_PREFIX . "error_404_log
-				WHERE page_alias IN(
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . "',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".htm',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".html',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".doc',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".docx',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".pdf',
-					'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".zip'
-				)
-				   OR page_alias LIKE '" . ze\escape::sql($values['spare_alias/delete_alias']) . "?%'";
-			$result = ze\sql::select($sql);
-			$aliasCount = ze\sql::fetchValue($result);
+			$logCount = $this->queryLogTable($values['spare_alias/delete_alias']);
 		
 			$box['confirm']['show'] = true;
-			$box['confirm']['message'] = \ze\admin::phrase('[[number]] instances of "[[name]]" will be deleted from the error log.',['number' => $aliasCount, 'name' => $values['spare_alias/alias']]);
+			$box['confirm']['message'] = \ze\admin::phrase('[[number]] instances of "[[name]]" will be deleted from the error log.',['number' => $logCount, 'name' => $values['spare_alias/alias']]);
 			$box['confirm']['button_message'] = \ze\admin::phrase('Confirm ');
 		}
 		if (!$box['key']['id']) {
@@ -223,19 +230,7 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends ze\mod
 			$deleteAliasLog = $values['spare_alias/delete_alias'];
 			
 			if ($deleteAliasLog) {
-				$sql = "
-					DELETE FROM ". DB_PREFIX. "error_404_log
-					WHERE page_alias IN(
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . "',
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".htm',
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".html',
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".doc',
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".docx',
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".pdf',
-						'" . ze\escape::sql($values['spare_alias/delete_alias']) . ".zip'
-					)
-					   OR page_alias LIKE '" . ze\escape::sql($values['spare_alias/delete_alias']) . "?%'";
-				ze\sql::update($sql);
+				$this->queryLogTable($values['spare_alias/delete_alias'], true);
 			}
 			
 		}

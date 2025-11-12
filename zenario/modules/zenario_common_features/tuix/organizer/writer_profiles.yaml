@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__library:
+zenario__content:
 	panels:
 		writer_profiles:
 			title: Writer profiles
@@ -79,7 +79,18 @@ zenario__library:
 					admin_box:
 						path: zenario_writer_profile
 						create_another: true
-
+				help:
+					label: Help
+					hide_in_select_mode: true
+					help:
+						message: |
+							Writer profiles are a convenient way of maintaining the name, photo, email and other information about people who write blog articles or other types of content.
+							
+							Writers do not need to be administrators.
+							
+							You can use this panel to create writer profiles. When creating a content item (most commonly a blog item), you then can select which writer to attribute the article to. 
+							
+							When an article is displayed, it will automatically display the name, photo and other details of the writer. This is done through a Meta Data plugin, which should be on the layout that is used to display that type of content.
 			item_buttons:
 				edit:
 					label: Edit writer profile

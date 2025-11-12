@@ -15,7 +15,7 @@ plugin_settings:
                         name: company_name
                     label: 'Company name:'
                     type: text
-                    value: 'Tribiq'
+                    placeholder: 'Your company name'
                     maxlength: 255
                         
                 year_display:
@@ -28,10 +28,10 @@ plugin_settings:
                             label: "Don't display year"
                             ord: 1
                         display_single_year: 
-                            label: 'Display single year'
+                            label: 'Display a single year'
                             ord: 2
                         display_year_range: 
-                            label: 'Display year range'
+                            label: 'Display a year range'
                             ord: 3
                     empty_value: "-- Select --"
                     format_onchange: true
@@ -50,7 +50,7 @@ plugin_settings:
                             label: "Current year"
                             ord: 1
                         specific_year: 
-                            label: 'Specific year'
+                            label: 'A specific year'
                             ord: 2
                     value: current_year
                     format_onchange: true

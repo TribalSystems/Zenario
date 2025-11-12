@@ -630,6 +630,11 @@ methods.typeaheadSearchAJAXURL = function(field, id, tab) {
 			}
 		}
 		
+		//T12820, When all content items are listed, e.g. picker box, put HTML items first
+		//The order that the typeahead results appear in the pickers should match the order they appear in the Organizer panel
+		pAndR.request._sort_col = zenarioO.followPathOnMap(pAndR.path, 'default_sort_column');
+		pAndR.request._sort_desc = engToBoolean(zenarioO.followPathOnMap(pAndR.path, 'default_sort_desc'));
+		
 		return URLBasePath + 'zenario/admin/organizer.ajax.php?_typeahead_search=1&path=' + encodeURIComponent(pAndR.path) + zenario.urlRequest(pAndR.request);
 	}
 };
@@ -655,9 +660,12 @@ methods.parseTypeaheadSearch = function(field, id, tab, readOnly, panel) {
 		}
 	}
 	
+	//Before we implemented T12820, we sorted the list by label alphabetically.
+	//I'm leaving this code here commented out, just in case we need to revert back to it.
+	
 	//Rather than the order being undefined/random/by ID, try to sort the suggestions by their label
 	//so they look more logical to a human reading down the list.
-	data.sort(zenarioT.sortArrayByText);
+	//data.sort(zenarioT.sortArrayByText);
 	
 	return data;
 };

@@ -9,71 +9,133 @@ plugin_settings:
                 show_title:
                     plugin_setting:
                         name: show_title
-                    label: "Show title"
+                    label: "Show title of document content item"
                     type: checkbox
                     value: true
                     redraw_onchange: true
                 title_tags:
-                    hide_with_previous_field: true
                     visible_if: zenarioAB.value('show_title')
                     plugin_setting:
                         name: title_tags
-                    label: 'Title heading tag:'
                     type: select
                     values: &tags
-                        h1: h1
-                        h2: h2
-                        h3: h3
-                        h4: h4
-                        h5: h5
-                        h6: h6
-                        p: p
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
                     value: h1
-                    side_note: |
-                        Choose which HTML tags the title will be displayed in
-                    indent: 1
-                show_language_name:
+                    same_row: true
+                
+                view_and_download_links_local_file:
                     plugin_setting:
-                        name: show_language_name
-                    label: "Show language name"
-                    type: checkbox
-                    redraw_onchange: true
-                show_language_name_in_which_language:
-                    indent: 1
-                    plugin_setting:
-                        name: show_language_name_in_which_language
+                        name: view_and_download_links_local_file
+                    label: 'Buttons for viewing or downloading the file:'
                     type: radios
-                    value: in_site_default_language
+                    value: view_only
                     values:
-                        in_site_default_language:
+                        view_only:
                             ord: 1
-                            label: "Show the document's language name in the default language ([[default_site_language]])"
-                        in_local_language:
+                            label: |
+                              Show "View file" button
+                        download_only:
                             ord: 2
-                            label: "Show the document's language name in local language"
-                    visible_if: lib.value('show_language_name')
-                    validation:
-                        required_if_not_hidden: "Please select one of the options."
+                            label: |
+                              Show "Download file" button
+                        both:
+                            ord: 3
+                            label: |
+                              Show both "View" and "Download" buttons
+                        neither:
+                            ord: 4
+                            label: |
+                              Show neither (not recommended)
+                    format_onchange: true
+                    notices_below:
+                        document_cannot_be_viewed_or_downloaded:
+                            hidden: true
+                            type: warning
+                            message: 'If neither button is shown, it will not be possible to view or download any documents displayed by this plugin.'
+                local_file_view_button_label:
+                    indent: 1
+                    label: 'View button label:'
+                    plugin_setting:
+                        name: local_file_view_button_label
+                    type: text
+                    value: 'View file in browser'
+                    show_phrase_icon: true
+                    visible_if:
+                        lib.valueIn: view_and_download_links_local_file, view_only, both
+                local_file_download_button_label:
+                    indent: 1
+                    label: 'Download button label:'
+                    plugin_setting:
+                        name: local_file_download_button_label
+                    type: text
+                    value: 'Download now'
+                    show_phrase_icon: true
+                    notices_below:
+                        plugin_setting_overridden_by_site_setting:
+                            hidden: true
+                            type: information
+                            message: ''
+                            html: true
+                    visible_if:
+                        lib.valueIn: view_and_download_links_local_file, download_only, both
+                s3_file:
+                    label: 'Show S3 file Download button for immediate download'
+                    plugin_setting:
+                        name: s3_file
+                    type: checkbox
+                    hidden: true
+                    redraw_onchange: true
+                s3_file_not_found_error_phrase:
+                    indent: 1
+                    plugin_setting:
+                        name: s3_file_not_found_error_phrase
+                        translate: true
+                    label: 'Error phrase if S3 file is not found:'
+                    type: text
+                    value: 'AWS file not found or the storage settings are incorrect'
+                    show_phrase_icon: true
+                    visible_if: zenarioAB.value('s3_file')
+                
                 show_filename_local_file:
                     plugin_setting:
                         name: show_filename_local_file
-                    label: 'Show filename of local file if it exists'
+                    label: 'Show filename'
                     type: checkbox
                     value: true
                 show_filename_s3_file:
                     plugin_setting:
                         name: show_filename_s3_file
-                    label: 'Show filename of S3 file if it exists'
+                    label: 'Show filename of S3 file'
                     type: checkbox
                     value: true
                     hidden: true
+                
+                show_local_file_type_and_size:
+                    label: 'Show file type and size'
+                    plugin_setting:
+                        name: show_local_file_type_and_size
+                    type: checkbox
+                    value: 1
+                show_s3_file_type_and_size:
+                    label: 'Show file type and size of S3 file'
+                    plugin_setting:
+                        name: show_s3_file_type_and_size
+                    type: checkbox
+                    value: 1
+                    hidden: true
+                
                 show_featured_image:
                     plugin_setting:
                         name: show_featured_image
-                    label: "Show thumbnail of each content item's featured image"
+                    label: "Show thumbnail of featured image"
                     type: checkbox
                     value: ""
-                    side_note: Show the featured image or default icon.
                     format_onchange: true
                     
                 image_canvas:
@@ -140,6 +202,36 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
+                
+                show_language_name:
+                    plugin_setting:
+                        name: show_language_name
+                    label: "Show language name"
+                    type: checkbox
+                    redraw_onchange: true
+                show_language_name_in_which_language:
+                    indent: 1
+                    plugin_setting:
+                        name: show_language_name_in_which_language
+                    type: radios
+                    value: in_site_default_language
+                    values:
+                        in_site_default_language:
+                            ord: 1
+                            label: "Show in the default language ([[default_site_language]])"
+                        in_local_language:
+                            ord: 2
+                            label: "Show translation in local language"
+                    visible_if: lib.value('show_language_name')
+                    validation:
+                        required_if_not_hidden: "Please select one of the options."
+                show_categories:
+                    label: "List categories"
+                    plugin_setting:
+                        name: show_categories
+                    type: checkbox
+                    tooltip: Only top-level, public categories will be listed.
+                
                 show_permalink:
                     label: 'Show permalink'
                     plugin_setting:
@@ -159,13 +251,6 @@ plugin_settings:
                         to_file_itself:
                             label: "To file itself (only available on public content items)"
                     visible_if: zenarioAB.value('show_permalink')
-                show_document_extra_data:
-                    #Only appears if "Document content type: extra data" module is running.
-                    label: "Show document extra data"
-                    plugin_setting:
-                        name: show_document_extra_data
-                    type: checkbox
-                    value: 1
                 
                 show_release_datetime:
                     label: "Show item's release date/time"
@@ -174,11 +259,11 @@ plugin_settings:
                     type: checkbox
                     value: "1"
                     format_onchange: true
-                date_format:
+                release_date_format:
                     label: 'Date format:'
                     plugin_setting:
-                        name: date_format
-                    type: radios
+                        name: release_date_format
+                    type: select
                     values:
                         _SHORT:
                             ord: 1
@@ -191,66 +276,44 @@ plugin_settings:
                             label: Long
                     value: _MEDIUM
                     indent: 1
-                show_time:
-                    label: 'Show time'
-                    plugin_setting:
-                        name: show_time
-                    type: checkbox
-                    value: "0"
-                    indent: 1
                 release_datetime_html_tag:
-                    indent: 1
                     plugin_setting:
                         name: release_datetime_html_tag
-                    label: "Release date tags:"
                     value: p
                     visible_if:
                         lib.value: show_release_datetime
                     type: select
                     values: *tags
-                
-                show_published_date:
-                    label: "Show item's published date"
+                    same_row: true
+                show_release_time:
+                    label: 'Show time'
                     plugin_setting:
-                        name: show_published_date
+                        name: show_release_time
                     type: checkbox
-                    value: "1"
-                    format_onchange: true
-                published_date_format:
-                    label: 'Date format:'
-                    plugin_setting:
-                        name: published_date_format
-                    type: radios
-                    values:
-                        _SHORT:
-                            ord: 1
-                            label: Short
-                        _MEDIUM:
-                            ord: 2
-                            label: Medium
-                        _LONG:
-                            ord: 3
-                            label: Long
-                    value: _MEDIUM
+                    value: "0"
                     indent: 1
-                published_date_html_tag:
-                    indent: 1
-                    plugin_setting:
-                        name: published_date_html_tag
-                    label: "Published date tags:"
-                    value: p
-                    visible_if:
-                        lib.value: show_published_date
-                    type: select
-                    values: *tags
                 
-                show_categories:
-                    label: "Show categories"
+                show_document_extra_data:
+                    #Only appears if "Document content type: extra data" module is running.
+                    label: "Show document extra data"
                     plugin_setting:
-                        name: show_categories
+                        name: show_document_extra_data
                     type: checkbox
-                    side_note: 'Only the categories marked as "public" will be shown.'
+                    value: 1
                 
+                show_document_download_page_link:
+                    label: "Show link to document download page"
+                    plugin_setting:
+                        name: show_document_download_page_link
+                    type: checkbox
+                
+                dummy_comment_field:
+                    #This dummy field is here so that the "Update" button does not cover up the phrase icon of the field above.
+                    snippet:
+                        html: ''
+        advanced:
+            label: Advanced
+            fields:
                 show_details_and_link:
                     label: 'Target content item:'
                     type: radios
@@ -259,7 +322,7 @@ plugin_settings:
                     values:
                         current_content_item:
                             ord: 1
-                            label: Automatic
+                            label: Automatic (recommended)
                             side_note: This plugin should be in a slot on the layout for the Document content type. Creates a web page with summary details, from which the file can be downloaded.
                         another_content_item:
                             ord: 2
@@ -268,6 +331,7 @@ plugin_settings:
                     value: current_content_item
                     format_onchange: true
                 another_document:
+                    indent: 1
                     label: 'Select document content item:'
                     plugin_setting:
                         name: another_document
@@ -280,76 +344,38 @@ plugin_settings:
                         select_phrase: Select...
                     validation:
                         required_if_not_hidden: Please select content item.
-                    indent: 1
-                show_view_link:
-                    label: "Show a View button (view local file in new browser tab/window)"
+                
+                show_published_date:
+                    label: "Show item's published date"
                     plugin_setting:
-                        name: show_view_link
+                        name: show_published_date
                     type: checkbox
-                download_source:
-                    label: 'Sources for download:'
-                    hidden: true
-                local_file:
-                    label: 'Show Download button to download local file if it exists'
-                    plugin_setting:
-                        name: local_file
-                    type: checkbox
-                    value: 1
-                    redraw_onchange: true
-                links_should:
+                    value: "1"
+                    format_onchange: true
+                published_date_format:
                     indent: 1
+                    label: 'Date format:'
                     plugin_setting:
-                        name: links_should
+                        name: published_date_format
                     type: select
-                    value: download_the_file
                     values:
-                        download_the_file:
+                        _SHORT:
                             ord: 1
-                            label: Download the file
-                        open_file_in_browser_window:
+                            label: Short
+                        _MEDIUM:
                             ord: 2
-                            label: Open the file in a new browser window
-                    visible_if: zenarioAB.value('local_file')
-                show_local_file_type_and_size:
-                    indent: 1
-                    label: 'Show file type and size'
-                    plugin_setting:
-                        name: show_local_file_type_and_size
-                    type: checkbox
-                    value: 1
-                    visible_if: zenarioAB.value('local_file')
-                    hide_with_previous_outdented_field: true
-                s3_file:
-                    label: 'Show Download button to download S3 file if it exists'
-                    plugin_setting:
-                        name: s3_file
-                    type: checkbox
-                    hidden: true
-                    redraw_onchange: true
-                s3_file_not_found_error_phrase:
+                            label: Medium
+                        _LONG:
+                            ord: 3
+                            label: Long
+                    value: _MEDIUM
+                published_date_html_tag:
                     indent: 1
                     plugin_setting:
-                        name: s3_file_not_found_error_phrase
-                        translate: true
-                    label: 'Error phrase if S3 file is not found:'
-                    type: text
-                    value: 'AWS file not found or the storage settings are incorrect'
-                    show_phrase_icon: true
-                    visible_if: zenarioAB.value('s3_file')
-                show_s3_file_type_and_size:
-                    indent: 1
-                    label: 'Show file type and size'
-                    plugin_setting:
-                        name: show_s3_file_type_and_size
-                    type: checkbox
-                    value: 1
-                    visible_if: zenarioAB.value('s3_file')
-                show_document_download_page_link:
-                    label: "Show link to document download page"
-                    plugin_setting:
-                        name: show_document_download_page_link
-                    type: checkbox
-                dummy_comment_field:
-                    #This dummy field is here so that the "Update" button does not cover up the phrase icon of the field above.
-                    snippet:
-                        html: ''
+                        name: published_date_html_tag
+                    value: p
+                    visible_if:
+                        lib.value: show_published_date
+                    type: select
+                    values: *tags
+                    same_row: true

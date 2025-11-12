@@ -38,17 +38,26 @@ final class ModuleNode extends Node
         if (!$body instanceof BodyNode) {
             trigger_deprecation('twig/twig', '3.12', \sprintf('Not passing a "%s" instance as the "body" argument of the "%s" constructor is deprecated.', BodyNode::class, static::class));
         }
+        if (!$embeddedTemplates instanceof Node) {
+            trigger_deprecation('twig/twig', '3.21', \sprintf('Not passing a "%s" instance as the "embedded_templates" argument of the "%s" constructor is deprecated.', Node::class, static::class));
+
+            if (null !== $embeddedTemplates) {
+                $embeddedTemplates = new Nodes($embeddedTemplates);
+            } else {
+                $embeddedTemplates = new EmptyNode();
+            }
+        }
 
         $nodes = [
             'body' => $body,
             'blocks' => $blocks,
             'macros' => $macros,
             'traits' => $traits,
-            'display_start' => new Node(),
-            'display_end' => new Node(),
-            'constructor_start' => new Node(),
-            'constructor_end' => new Node(),
-            'class_end' => new Node(),
+            'display_start' => new Nodes(),
+            'display_end' => new Nodes(),
+            'constructor_start' => new Nodes(),
+            'constructor_end' => new Nodes(),
+            'class_end' => new Nodes(),
         ];
         if (null !== $parent) {
             $nodes['parent'] = $parent;
@@ -64,6 +73,9 @@ final class ModuleNode extends Node
         $this->setSourceContext($source);
     }
 
+    /**
+     * @return void
+     */
     public function setIndex($index)
     {
         $this->setAttribute('index', $index);
@@ -78,6 +90,9 @@ final class ModuleNode extends Node
         }
     }
 
+    /**
+     * @return void
+     */
     protected function compileTemplate(Compiler $compiler)
     {
         if (!$this->getAttribute('index')) {
@@ -107,6 +122,9 @@ final class ModuleNode extends Node
         $this->compileClassFooter($compiler);
     }
 
+    /**
+     * @return void
+     */
     protected function compileGetParent(Compiler $compiler)
     {
         if (!$this->hasNode('parent')) {
@@ -125,10 +143,8 @@ final class ModuleNode extends Node
             $compiler->subcompile($parent);
         } else {
             $compiler
-                ->raw('$this->loadTemplate(')
+                ->raw('$this->load(')
                 ->subcompile($parent)
-                ->raw(', ')
-                ->repr($this->getSourceContext()->getName())
                 ->raw(', ')
                 ->repr($parent->getTemplateLine())
                 ->raw(')')
@@ -142,6 +158,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileClassHeader(Compiler $compiler)
     {
         $compiler
@@ -180,6 +199,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileConstructor(Compiler $compiler)
     {
         $compiler
@@ -203,10 +225,8 @@ final class ModuleNode extends Node
 
                 $compiler
                     ->addDebugInfo($node)
-                    ->write(\sprintf('$_trait_%s = $this->loadTemplate(', $i))
+                    ->write(\sprintf('$_trait_%s = $this->load(', $i))
                     ->subcompile($node)
-                    ->raw(', ')
-                    ->repr($node->getTemplateName())
                     ->raw(', ')
                     ->repr($node->getTemplateLine())
                     ->raw(");\n")
@@ -244,7 +264,11 @@ final class ModuleNode extends Node
                         ->string($key)
                         ->raw(\sprintf(']; unset($_trait_%s_blocks[', $i))
                         ->string($key)
-                        ->raw("]);\n\n")
+                        ->raw(']); $this->traitAliases[')
+                        ->subcompile($value)
+                        ->raw('] = ')
+                        ->string($key)
+                        ->raw(";\n\n")
                     ;
                 }
             }
@@ -315,6 +339,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileDisplay(Compiler $compiler)
     {
         $compiler
@@ -331,10 +358,8 @@ final class ModuleNode extends Node
             $compiler->addDebugInfo($parent);
             if ($parent instanceof ConstantExpression) {
                 $compiler
-                    ->write('$this->parent = $this->loadTemplate(')
+                    ->write('$this->parent = $this->load(')
                     ->subcompile($parent)
-                    ->raw(', ')
-                    ->repr($this->getSourceContext()->getName())
                     ->raw(', ')
                     ->repr($parent->getTemplateLine())
                     ->raw(");\n")
@@ -362,6 +387,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileClassFooter(Compiler $compiler)
     {
         $compiler
@@ -371,11 +399,17 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileMacros(Compiler $compiler)
     {
         $compiler->subcompile($this->getNode('macros'));
     }
 
+    /**
+     * @return void
+     */
     protected function compileGetTemplateName(Compiler $compiler)
     {
         $compiler
@@ -392,6 +426,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileIsTraitable(Compiler $compiler)
     {
         // A template can be used as a trait if:
@@ -410,7 +447,7 @@ final class ModuleNode extends Node
             }
 
             if (!\count($nodes)) {
-                $nodes = new Node([$nodes]);
+                $nodes = new Nodes([$nodes]);
             }
 
             foreach ($nodes as $node) {
@@ -439,6 +476,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileDebugInfo(Compiler $compiler)
     {
         $compiler
@@ -453,6 +493,9 @@ final class ModuleNode extends Node
         ;
     }
 
+    /**
+     * @return void
+     */
     protected function compileGetSourceContext(Compiler $compiler)
     {
         $compiler
@@ -468,22 +511,5 @@ final class ModuleNode extends Node
             ->outdent()
             ->write("}\n")
         ;
-    }
-
-    protected function compileLoadTemplate(Compiler $compiler, $node, $var)
-    {
-        if ($node instanceof ConstantExpression) {
-            $compiler
-                ->write(\sprintf('%s = $this->loadTemplate(', $var))
-                ->subcompile($node)
-                ->raw(', ')
-                ->repr($node->getTemplateName())
-                ->raw(', ')
-                ->repr($node->getTemplateLine())
-                ->raw(");\n")
-            ;
-        } else {
-            throw new \LogicException('Trait templates can only be constant nodes.');
-        }
     }
 }

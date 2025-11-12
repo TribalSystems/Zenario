@@ -1,7 +1,7 @@
 <div id="document_details">
 	<div class="document">
 		{% if Show_Title %}
-			<{{Title_Tags|e}} class="ctype_document_header">{{"Document Download:"|trans}} {{Title}}</{{Title_Tags|e}}>
+			<{{Title_Tags|e}} class="ctype_document_header">{{Document_Download_Phrase}} {{Title}}</{{Title_Tags|e}}>
 		{% endif %}
 
 		<div id="document_details_content">
@@ -14,156 +14,202 @@
 							</div>
 						{% endif %}
 						
-						{% if Summary_Section %}
-							<div class="document_details_content_summary">
-								{% if Description_Section %}
-									<h3>{{"Description:"|trans}}</h3>
-									<p>{{Description}}</p>
-								{% endif %}
-							</div>
-						{% endif %}
-					
-						<div class="document_details_content_details">
-							{% if Show_Language_Name %}
-								<div class="ctype_document_language_name">{{"Language:"|trans}} {{Language_Name}}</div>
-							{% endif %}
-							
-							{% if Show_document_extra_data and Extra_data %}
-								{% for extraDataKey, extraDataValue in Extra_data %}
-									<p class="{{extraDataKey|e}}">{{extraDataValue|e}}</p>
-								{% endfor %}
-							{% endif %}
-
-							{% if Show_categories %}
-								<div class="categories">
-									{% if Categories %}
-										{{Categories|e}}
-									{% else %}
-										{{"This document is not in any category."|trans}}
+						<div class="document_details_content_download">		
+						
+							{% if Summary_Section %}
+								<div class="document_details_content_summary">
+									{% if Description_Section %}
+										<h3>{{"Description:"|trans}}</h3>
+										<p>{{Description}}</p>
 									{% endif %}
 								</div>
 							{% endif %}
+							
+							{% if Show_Language_Name %}
+								<div class="document_detail ctype_document_language_name">
+									<h3>{{Language_Phrase}}</h3>
+									<p>{{Language_Name}}</p>
+								</div>
+							{% endif %}
+							
+							{% if Show_document_extra_data and Extra_data %}
+								<div class="document_detail document_extra_data">
+								{% for extraDataKey, extraDataValue in Extra_data %}
+									<p class="{{extraDataKey|e}}">{{extraDataValue|e}}</p>
+								{% endfor %}
+								</div>
+							{% endif %}
+							
+							{% if Show_categories %}
+								<div class="document_detail categories">
+									{% if Categories %}
+										{{Categories|e}}
+									{% else %}
+										{{Document_Is_Not_In_Any_Category_Phrase}}
+									{% endif %}
+								</div>
+							{% endif %}
+						
 							{% if Aws_Support_Enabled_On_Site %}
 								{% if Release_Date_Section %}
-									<{{Release_Date_Html_Tag|e}}><span class="label">{{"Released:"|trans}} </span>{{Released}}</{{Release_Date_Html_Tag|e}}>
+									<div class="document_detail aws_release_date">
+										<{{Release_Date_Html_Tag|e}}><span class="label">{{"Released:"|trans}} </span>{{Released}}</{{Release_Date_Html_Tag|e}}>
+									</div>
 								{% endif %}
-								
+									
 								{% if Published_Date_Section %}
-									<{{Published_Date_Html_Tag|e}}><span class="label">{{"Published:"|trans}} </span>{{Published}}</{{Published_Date_Html_Tag|e}}>
+									<div class="document_detail aws_published_date">
+										<{{Published_Date_Html_Tag|e}}><span class="label">{{Published_Phrase}} </span>{{Published}}</{{Published_Date_Html_Tag|e}}>
+									</div>
 								{% endif %}
 							{% else %}
 								{% if Release_Date_Section %}
-									<{{Release_Date_Html_Tag|e}}><span class="label">{{"Released:"|trans}} </span>{{Released}}</{{Release_Date_Html_Tag|e}}>
+									<div class="document_detail aws_release_date">
+										<{{Release_Date_Html_Tag|e}}><span class="label">{{"Released:"|trans}} </span>{{Released}}</{{Release_Date_Html_Tag|e}}>
+									</div>
 								{% endif %}
-								
+									
 								{% if Published_Date_Section %}
-									<{{Published_Date_Html_Tag|e}}><span class="label">{{"Published:"|trans}} </span>{{Published}}</{{Published_Date_Html_Tag|e}}>
-								{% endif %}
-							{% endif %}
-						</div>
-						
-						<div class="document_details_content_download">
-							{% if Download_Page %}
-								<h3>{{"Download page:"|trans}}</h3>
-								<a href="{{Download_Page|e}}" target="_blank">{{Download_Page|e}}</a>
-							{% endif %}
-
-							{% if Link %}
-								{% if Local_File_Name %}
-									<h3>{{"Filename:"|trans}}</h3>
-									<p>{{Local_File_Name|e}}</p>
-								{% endif %}
-
-								{% if Link_For_Viewing %}
-									<h3>{{"View:"|trans}}</h3>
-									<p><a href="{{Link_For_Viewing}}" class="document_download" target = "_blank">{{"View file in browser"|trans}}</a></p>
-								{% endif %}
-
-								<p
-									{% if Show_Permalink %}
-										{% set itemElId = containerId %}
-										onmouseover="
-											if (window.$) $('#copyLinkButton_{{itemElId}}').show().css('display', 'inline-block');
-										"
-										onmouseout="
-											if (window.$) $('#copyLinkButton_{{itemElId}}').hide();
-										"
-									{% endif %}	
-								>
-
-									<span>
-									<a
-										href="{{Link}}"
-										onclick="{{Google_Analytics_Link}}"
-										class="document_download"
-										{% if Links_should == 'open_file_in_browser_window' %} target = "_blank" {% else %} download {% endif %}
-									>{{Download_Local_File|trans}}</a>
-									</span>
-
-									{% if Show_Local_File_Type_And_Size %}
-										<span>({{Type}}, {{File_Size}})</span>
-									{% endif %}
-
-									{% if Show_Permalink %}
-										<span class="shareable_link">
-											<span class="shareable_link_input" >
-												<span
-													class="zenario_copy" style="display: none;"
-													id="copyLinkButton_{{itemElId}}"
-													onmouseover="
-														if (window.$) $('#noteCopyLink_{{itemElId}}').show().css('display', 'inline-block');
-													"
-													onmouseout="
-														if (window.$) $('#noteCopyLink_{{itemElId}}').hide();
-													"
-													onclick="
-														if (window.$) {
-															zenario_ctype_document.copyLink('{{ze('escape', 'jsOnClick', CopyLink)}}');
-															$('#noteCopyLink_{{itemElId}}').hide();
-															return false;
-														}
-													"
-												>
-													<i class="fa fa-copy"></i>
-												</span>
-					
-												<span id="noteCopyLink_{{itemElId}}" class="zenario_copy_link zenario_visitor_tooltip tooltip_top_center" style="display: none;">
-													<span class="ui-tooltip-content">{{"Copy to clipboard"|trans}}</span>
-													<span class="tooltip_arrow"></span>
-												</span>
-											</span>
-										</span>
-									{% endif %}
-								</p>
-							{% endif %}
-
-							{# S3 file support #}
-							{% if this.setting('s3_file') and S3_File_Download_Phrase and Aws_Support_Enabled_On_Site %}
-								{% if S3_File_Id %}
-									{% if S3_Link %}
-										{% if S3_File_Name %}
-											<h3>{{"S3 filename:"|trans}}</h3>
-											<p>{{S3_File_Name|e}}</p>
-										{% endif %}
-
-										<p>
-											<span>
-												<a href="{{S3_Link}}" class="document_download" download>{{S3_File_Download_Phrase|trans}}</a>
-											</span>
-
-											{% if Show_S3_File_Type_And_Size %}
-												<span>({{S3Type}}, {{S3_Size}})</span>
-											{% endif %}
-										</p>
-									{% else %}
-										<h3>{{"S3 filename:"|trans}}</h3>
-										<p class="error">{{S3_File_Not_Found_Error_Phrase|e}}</p>
-									{% endif %}
+									<div class="document_detail aws_date_html">
+										<{{Published_Date_Html_Tag|e}}><span class="label">{{Published_Phrase}} </span>{{Published}}</{{Published_Date_Html_Tag|e}}>
+									</div>
 								{% endif %}
 							{% endif %}
 							
+								{% if Link %}
+									{% if Local_File_Name %}
+										<div class="document_detail document_filename">
+											<h3>{{Filename_Phrase}}</h3>
+											<p>{{Local_File_Name|e}}</p>
+										</div>
+									{% endif %}
+									
+									{% if Show_Local_File_Type_And_Size %}
+										<div class="document_detail document_type_size">
+											<h3>{{File_Type_And_Size_Phrase}}</h3>
+											<p>{{Type}}, {{File_Size}}</p>
+										</div>
+									{% endif %}
+									
+									
+									{% if Link_For_Viewing or Link_To_Download %}
+										<div class="document_detail document_view_download">
+											
+											{% if Link_For_Viewing or Link_To_Download %}
+												<h3>{{View_Or_Download_Phrase}}</h3>
+											{% endif %}
+											<div class="document_view_download_buttons">
+												{% if Link_For_Viewing %}
+													<p class="document_view_link"><a href="{{Link_For_Viewing}}" class="document_download" target = "_blank">{{View_Local_File|trans}}</a></p>
+												{% endif %}
+				
+												<p
+													{% if Show_Permalink %}
+														{% set itemElId = containerId %}
+														onmouseover="
+															if (window.$) $('#copyLinkButton_{{itemElId}}').show().css('display', 'inline-block');
+														"
+														onmouseout="
+															if (window.$) $('#copyLinkButton_{{itemElId}}').hide();
+														"
+													{% endif %}	
+												 class="document_download_link">
+				
+													{% if Link_To_Download %}
+														<span>
+															<a
+																href="{{Link}}"
+																onclick="{{Google_Analytics_Link}}"
+																class="document_download"
+																download
+															>{{Download_Local_File|trans}}</a>
+														</span>
+													{% endif %}
+				
+													{% if Show_Permalink %}
+														<span class="shareable_link">
+															<span class="shareable_link_input" >
+																<span
+																	class="zenario_copy" style="display: none;"
+																	id="copyLinkButton_{{itemElId}}"
+																	onmouseover="
+																		if (window.$) $('#noteCopyLink_{{itemElId}}').show().css('display', 'inline-block');
+																	"
+																	onmouseout="
+																		if (window.$) $('#noteCopyLink_{{itemElId}}').hide();
+																	"
+																	onclick="
+																		if (window.$) {
+																			zenario_ctype_document.copyLink('{{ze('escape', 'jsOnClick', CopyLink)}}');
+																			$('#noteCopyLink_{{itemElId}}').hide();
+																			return false;
+																		}
+																	"
+																>
+																	<i class="fa fa-copy"></i>
+																</span>
+									
+																<span id="noteCopyLink_{{itemElId}}" class="zenario_copy_link zenario_visitor_tooltip tooltip_top_center" style="display: none;">
+																	<span class="ui-tooltip-content">{{Copy_To_Clipboard_Phrase}}</span>
+																	<span class="tooltip_arrow"></span>
+																</span>
+															</span>
+														</span>
+													{% endif %}
+													</p>
+												</div>
+											</div>
+										{% endif %}
+									{% endif %}
+									
+									{# S3 file support #}
+									{% if this.setting('s3_file') and S3_File_Download_Phrase and Aws_Support_Enabled_On_Site %}
+										{% if S3_File_Id %}
+											
+												{% if S3_Link %}
+													{% if S3_File_Name %}
+														<div class="document_detail document_s3">
+															<h3>{{S3_Filename_Phrase}}</h3>
+															<p>{{S3_File_Name|e}}</p>
+														</div>
+													{% endif %}
+													
+													{% if Show_S3_File_Type_And_Size %}
+														<div class="document_detail document_s3">
+															<h3>{{S3_File_Type_And_Size_Phrase}}</h3>
+															<p>{{S3Type}}, {{S3_Size}}</p>
+														</div>
+													{% endif %}
+													
+													<div class="document_detail document_s3">
+														<p>
+															<span>
+																<a href="{{S3_Link}}" class="document_download" download>{{S3_File_Download_Phrase|trans}}</a>
+															</span>
+														</p>
+													</div>
+												{% elseif S3_File_Not_Found_Error_Phrase %}
+													<div class="document_detail document_s3">
+														<h3>{{S3_Filename_Phrase}}</h3>
+														<p class="error">{{S3_File_Not_Found_Error_Phrase|e}}</p>
+													</div>
+												{% endif %}
+											
+										{% endif %}
+									{% endif %}
+
+								
 							{% if No_Document_Link_Section %}
-								{{"Sorry, but currently this document is not available for download."|trans}}
+								<div class="document_detail document_no_download">
+									{{"Sorry, but currently this document is not available for download."|trans}}
+								</div>
+							{% endif %}
+									
+							{% if Download_Page %}
+								<div class="document_detail document_download_page">
+									<h3>{{Document_Download_Page_Phrase}}</h3>
+									<a href="{{Download_Page|e}}" target="_blank">{{Download_Page|e}}</a>
+								</div>
 							{% endif %}
 						</div>
 					</div>

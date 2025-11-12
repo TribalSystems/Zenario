@@ -130,6 +130,18 @@ zenario__email_template_manager:
                     label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                test_send_template:
+                    parent: action_dropdown
+                    hide_in_select_mode: true
+                    label: Send test email
+                    ajax:
+                        confirm:
+                            message: Send a test email to [[admin_email_address]]?
+                            button_message: Send
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: test_send_template
                 duplicate_template:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_EMAIL_TEMPLATE

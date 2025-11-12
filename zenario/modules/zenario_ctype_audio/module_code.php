@@ -62,7 +62,7 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		}
 		if ($targetType != 'audio'){
 			if (ze\admin::id()) {
-				echo "This Plugin needs to be placed on an Audio Content Item or be configured to point to another Audio Content Item. Please check your Plugin Settings.";
+				echo "This plugin needs to be placed on an Audio content item or be configured to point to another Audio content item. Please check plugin settings.";
 			}
 			return;
 		}
@@ -73,7 +73,10 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 		
 		$contentItemDetails = ze\row::get('content_item_versions', ['title', 'file_id'], ['id' => $targetID, 'type' => $targetType, 'version' => $targetVersion]);
 		
-		$this->data['Size'] = ze\lang::formatFilesizeNicely(ze\row::get('files','size', ['id' => ($contentItemDetails['file_id'] ?? false)]), 0, false, 'zenario_ctype_audio');
+		$fileSize = ze\row::get('files','size', ['id' => ($contentItemDetails['file_id'] ?? false)]);
+		if ($this->setting('show_file_size')) {
+			$this->data['size'] = ze\file::formatSizeUnits($fileSize);
+		}
 		$this->data['title'] = $contentItemDetails['title'] ?? false;
 		ze\file::contentLink($url, $targetID, $targetType, $targetVersion);
 		$this->data['mp3Path'] = $url;
@@ -129,10 +132,6 @@ class zenario_ctype_audio extends ze\moduleBaseClass {
 				if (isset($panel['collection_buttons']['zenario_ctype_audio__create_multiple'])) {
 					if ($panel['key']['cType'] != 'audio') {
 						unset($panel['collection_buttons']['zenario_ctype_audio__create_multiple']);
-					} else {
-						$panel['collection_buttons']['zenario_ctype_audio__create_multiple']['tooltip'] = 
-							ze\admin::phrase('Create multiple Audio files in the Language "[[lang]]"',
-								['lang' => ze\lang::name((($panel['key']['language'] ?? false) ?: ze::$defaultLang))]);
 					}
 				}
 				break;

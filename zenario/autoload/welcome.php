@@ -1011,8 +1011,8 @@ class welcome {
 	}
 
 	public static function installerAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task, $installStatus, &$adminId) {
-		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
-		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
+		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_admin_password_length');
+		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_admin_password_score');
 		
 		$merge = [];
 
@@ -1594,7 +1594,7 @@ class welcome {
 				foreach (\ze\welcome::listSampleThemes() as $dir => $imageSrc) {
 					$skinThumbnails[$dir] = '<img src="'. htmlspecialchars($imageSrc). '"/>';
 				}
-				\ze\welcome::setupRadioSelectorValues('theme', $fields['4/theme'], $skinThumbnails, $values['4/theme']);
+				\ze\tuix::setupRadioSelectorValues('zaf_', 'theme', $fields['4/theme'], $skinThumbnails);
 			
 				break;
 		
@@ -1790,7 +1790,7 @@ class welcome {
 							\ze\site::setSetting('default_language', \ze::$defaultLang = $merge['LANGUAGE_ID']);
 
 							//Import any phrases for Modules that use phrases
-							\ze\contentAdm::importPhrasesForModules($merge['LANGUAGE_ID']);
+							\ze\contentAdm::importPhrasesForModules($merge['LANGUAGE_ID'], $keepExistingTranslations = false);
 						}
 					
 						\ze\site::setSetting('vis_date_format_short', $merge['VIS_DATE_FORMAT_SHORT']);
@@ -1905,32 +1905,6 @@ class welcome {
 		}
 	
 		return false;
-	}
-	
-	//Setup a radio-selector box
-	public static function setupRadioSelectorValues($fieldCodeName, &$field, $lov, $currentValue = '') {
-		
-		$ord = 0;
-		$field['values'] = [];
-		
-		foreach ($lov as $val => $html) {
-			$field['values'][$val] = [
-				'ord' => ++$ord,
-				'label' => '',
-				'post_field_html' =>
-					'<label
-						for="zaf_'. htmlspecialchars($fieldCodeName). '___'. htmlspecialchars($val). '"
-						id="radio_selector_box___'. htmlspecialchars($val). '"
-						class="radio_selector_box '. ($val == $currentValue? 'radio_selector_box_selected' : ''). '"
-					>
-						'. $html. '
-					</label>',
-				'onchange' => '
-					$(".radio_selector_box").removeClass("radio_selector_box_selected");
-					$("#radio_selector_box___'. htmlspecialchars(\ze\escape::js($val)). '").addClass("radio_selector_box_selected");
-				'
-			];
-		}
 	}
 	
 	//Insert the starter images from the starter_images/ directory (also using the yaml file for their metadata).
@@ -2184,6 +2158,11 @@ class welcome {
 					}
 
 					return false;
+				
+				} elseif (\ze::setting('in_moratorium') && !\ze\admin::isMultisite($adminIdL)) {
+					$tags['tabs']['login']['errors']['details_wrong'] = \ze\admin::phrase('This site is in moratorium. This may be because it is in the process of being upgraded or undergoing modifications. Access to all local administrators is currently blocked. Please check back later.');
+					return false;
+				
 				} else {
 					\ze\admin::logIn($adminIdL, $values['login/remember_me']);
 					
@@ -2734,8 +2713,8 @@ class welcome {
 	}
 
 	public static function changePasswordAJAX(&$source, &$tags, &$fields, &$values, $changes, &$task) {
-		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
-		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
+		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_admin_password_length');
+		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_admin_password_score');
 		
 		//Skip this screen if the Admin presses the "Skip" button
 		if (!empty($fields['change_password/skip']['pressed'])) {
@@ -2759,14 +2738,14 @@ class welcome {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('Please enter your current password.');
 		
 			} elseif (!\ze\ring::engToBoolean(\ze\admin::checkPassword($_SESSION['admin_username'] ?? false, $details, $currentPassword))) {
-				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('_MSG_PASS_WRONG');
+				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('You did not type your current password correctly.');
 			}
 		
 			if (!$newPassword) {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('Please enter your new password.');
 		
 			} elseif ($newPassword == $currentPassword) {
-				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('_MSG_PASS_NOT_CHANGED');
+				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('Your new password must be different from your current password.');
 		
 			} elseif (!\ze\user::checkPasswordStrength($newPassword, $checkIfEasilyGuessable = true)['password_matches_requirements']) {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('The password provided does not match the requirements.');
@@ -2775,7 +2754,7 @@ class welcome {
 				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('Please repeat your New Password.');
 		
 			} elseif ($newPassword != $newPasswordConfirm) {
-				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('_MSG_PASS_2');
+				$tags['tabs']['change_password']['errors'][] = \ze\admin::phrase('Please ensure that the passwords you submit are identical.');
 			}
 		
 			//If no errors with validation, then save new password
@@ -2826,8 +2805,8 @@ class welcome {
 	}
 	
 	public static function newAdminAJAX(&$source, &$tags, &$fields, &$values, $changes, $task, $adminId) {
-		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_extranet_user_password_length');
-		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_extranet_user_password_score');
+		$tags['key']['min_extranet_user_password_length'] = \ze::setting('min_admin_password_length');
+		$tags['key']['min_extranet_user_password_score'] = \ze::setting('min_admin_password_score');
 		
 		//Set password if the Admin presses the save and login button
 		if (!empty($fields['new_admin/save_password_and_login']['pressed'])) {
@@ -2845,7 +2824,7 @@ class welcome {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please enter your password again.');
 				
 			} elseif ($password != $passwordConfirm) {
-				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('_MSG_PASS_2');
+				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please ensure that the passwords you submit are identical.');
 				
 			} elseif (!$accept_box) {
 				$tags['tabs']['new_admin']['errors'][] = \ze\admin::phrase('Please confirm that you accept your data will be stored as described below by checking the checkbox.');
@@ -3036,9 +3015,30 @@ class welcome {
 			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> is not writable.', $mrg);
 	
 		} else {
-			$fields['0/dir_1']['row_class'] = 'sub_section_valid';
-			$fields['0/docstore_dir_status']['row_class'] = 'sub_valid';
-			$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
+			//Loop through subdirectories in docstore. Check for any permission issues.
+			//Please note: a "directory" is a "file" in Linux, but we are looking for directories only.
+			$nonWritableSubdirs = [];
+			foreach (scandir($dir) as $file) {
+				if ($file != '.' && $file != '..' && $file != 'accessed' && is_dir($dir . '/' . $file)) {
+					if (!\ze\welcome::directoryIsWritable($dir . '/' . $file)) {
+						$nonWritableSubdirs[] = $file;
+					}
+				}
+			}
+			
+			if (count($nonWritableSubdirs) > 0) {
+				$mrg['non_writable_subdir_list'] = implode(', ', $nonWritableSubdirs);
+				
+				$fields['0/docstore_dir_status']['row_class'] = 'sub_invalid';
+				$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase(
+					'The following subdirectories in the directory <code>[[basename]]</code> are not writable: <code>[[non_writable_subdir_list]]</code>.',
+					$mrg
+				);
+			} else {
+				$fields['0/dir_1']['row_class'] = 'sub_section_valid';
+				$fields['0/docstore_dir_status']['row_class'] = 'sub_valid';
+				$fields['0/docstore_dir_status']['snippet']['html'] = \ze\admin::phrase('The directory <code>[[basename]]</code> exists and is writable.', $mrg);
+			}
 		}
 		
 		
@@ -3341,32 +3341,6 @@ class welcome {
 			} else {
 				$fields['0/site_disabled']['row_class'] = 'valid';
 				$fields['0/site_disabled']['snippet']['html'] = \ze\admin::phrase('Your site is enabled.');
-			}	
-			
-			//Check to see if every hierarchical document that is public has a symlink in the public/downloads/ directory.
-			//If we find any that don't, try to automatically fix them.
-			//If we fail, show the user a warning.
-			$errors = $exampleFile = false;
-			\ze\document::checkAllPublicLinks($forceRemake = false, $errors, $exampleFile);
-			if ($errors) {
-				$show_warning = true;
-				$mrg = [
-					'exampleFile' => htmlspecialchars($exampleFile),
-					'manageDocumentsLink' => htmlspecialchars('organizer.php#zenario__library/panels/documents')
-				];
-				
-				$fields['0/public_documents']['row_class'] = 'warning';
-				$fields['0/public_documents']['snippet']['html'] =
-					\ze\admin::nzPhrase(
-						'There is a problem with the public link for the hierarchical document [[exampleFile]]. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
-						'There is a problem with the public link for [[exampleFile]] and 1 other hierarchical document. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
-						'There is a problem with the public link for [[exampleFile]] and [[count]] other hierarchical documents. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
-						abs($errors - 1), $mrg
-					);
-		
-			} else {
-				$fields['0/public_documents']['row_class'] = 'valid';
-				$fields['0/public_documents']['hidden'] = true;
 			}
 			
 			
@@ -3398,6 +3372,70 @@ class welcome {
 				$fields['0/public_images']['row_class'] = 'valid';
 				$fields['0/public_images']['hidden'] = true;
 				$fields['0/repair_public_images']['hidden'] = true;
+			}
+			
+			
+			//Handle the admin clicking on the "repair document content items" button (see just below).
+			if (!empty($fields['0/repair_public_ctype_documents']['pressed'])) {
+				\ze\contentAdm::checkAllDocumentPublicLinks($check = false);
+			}
+			
+			//Check to see if every document content item that is public has a copy in the public/documents/ directory.
+			//If we find any that don't, don't try to automatically fix them. Instead, show the admin a button to press (see just above).
+			$mrg = \ze\contentAdm::checkAllDocumentPublicLinks($check = true);
+			if ($mrg && $mrg['numMissing']) {
+				$show_warning = true;
+				$mrg['numMissing'] = htmlspecialchars($mrg['numMissing']);
+				$fields['0/public_ctype_documents']['row_class'] = 'warning';
+				$fields['0/public_ctype_documents']['hidden'] = false;
+				$fields['0/public_ctype_documents']['snippet']['html'] =
+					\ze\admin::nzPhrase(
+						'There is a problem with the public link for the document content item &quot;[[exampleFile]]&quot;. Please repair public document content items. If that does not help, check your <code>public/documents/</code> directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and 1 other document content item. Please repair public document content items. If that does not help, check your <code>public/documents/</code> directory for possible permission problems.',
+						'There is a problem with the public link for &quot;[[exampleFile]]&quot; and [[count]] other document content items. Please repair public document content items. If that does not help, check your <code>public/documents/</code> directory for possible permission problems.',
+						abs($mrg['numMissing'] - 1), $mrg
+					);
+				
+				$fields['0/repair_public_ctype_documents']['hidden'] = false;
+			} else {
+				$fields['0/public_ctype_documents']['row_class'] = 'valid';
+				$fields['0/public_ctype_documents']['hidden'] = true;
+				$fields['0/repair_public_ctype_documents']['hidden'] = true;
+			}
+			
+			
+			//Handle the admin clicking on the "repair hierarchical documents" button (see just below).
+			$errors = $exampleFile = false;
+			if (!empty($fields['0/repair_public_hierarchical_documents']['pressed'])) {
+				\ze\document::checkAllPublicLinks($forceRemake = true, $errors, $exampleFile);
+			}
+			
+			//Check to see if every hierarchical document that is public has a symlink in the public/downloads/ directory.
+			//If we find any that don't, try to automatically fix them.
+			//If we fail, show the user a warning.
+			$errors = $exampleFile = false;
+			\ze\document::checkAllPublicLinks($forceRemake = false, $errors, $exampleFile);
+			if ($errors) {
+				$show_warning = true;
+				$mrg = [
+					'exampleFile' => htmlspecialchars($exampleFile),
+					'manageDocumentsLink' => htmlspecialchars('organizer.php#zenario__library/panels/documents')
+				];
+				
+				$fields['0/public_hierarchical_documents']['row_class'] = 'warning';
+				$fields['0/public_hierarchical_documents']['snippet']['html'] =
+					\ze\admin::nzPhrase(
+						'There is a problem with the public link for the hierarchical document [[exampleFile]]. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						'There is a problem with the public link for [[exampleFile]] and 1 other hierarchical document. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						'There is a problem with the public link for [[exampleFile]] and [[count]] other hierarchical documents. Please check your docstore and <code>public/downloads/</code> directory for possible permission problems. <a href="[[manageDocumentsLink]]" target="_blank">Manage documents</a>',
+						abs($errors - 1), $mrg
+					);
+				
+				$fields['0/repair_public_hierarchical_documents']['hidden'] = false;
+			} else {
+				$fields['0/public_hierarchical_documents']['row_class'] = 'valid';
+				$fields['0/public_hierarchical_documents']['hidden'] = true;
+				$fields['0/repair_public_hierarchical_documents']['hidden'] = true;
 			}
 			
 			
@@ -3719,12 +3757,12 @@ class welcome {
 			}
 			
 			if (!$fields['0/missing_modules']['hidden'] = empty($missingModules)) {
-				$linkToModulesPanel = htmlspecialchars('organizer.php#zenario__modules/panels/modules');
+				$linkToModulesPanel = htmlspecialchars('organizer.php#zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////');
 
 				$show_error = true;
 				$fields['0/missing_modules']['row_class'] = 'invalid';
 				
-				$href = 'organizer.php#zenario__modules/panels/modules';
+				$href = 'organizer.php#zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////';
 				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
 				$linkEnd = '</a>';
 				
@@ -4015,14 +4053,14 @@ class welcome {
 	        $errorLogPanelPath = 'organizer.php#zenario__administration/panels/error_log';
 	        $linkStart = '<a href="' . htmlspecialchars($errorLogPanelPath) . '" target="_blank">';
 			$linkEnd = '</a>';
-			\ze\lang::applyMergeFields($tags['tabs']['0']['fields']['error_log_grew_over_10000_records']['snippet']['html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+			\ze\lang::applyMergeFields($tags['tabs']['0']['fields']['error_log_grew_over_20000_records']['snippet']['html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 			$warnAboutThis = 
-				\ze::setting('warn_when_error_log_grows_beyond_10000_records')
-				&& (\ze\row::count('error_404_log', []) > 10000);
+				\ze::setting('warn_when_error_log_grows_beyond_20000_records')
+				&& (\ze\row::count('error_404_log', []) > 20000);
 			
-			if (!$fields['0/error_log_grew_over_10000_records']['hidden'] = !$warnAboutThis) {
+			if (!$fields['0/error_log_grew_over_20000_records']['hidden'] = !$warnAboutThis) {
 				$show_warning = true;
-				$fields['0/error_log_grew_over_10000_records']['row_class'] = 'warning';
+				$fields['0/error_log_grew_over_20000_records']['row_class'] = 'warning';
 			}
 	        
 			//Do some basic checks on the robots.txt file
@@ -4171,12 +4209,12 @@ class welcome {
 			    }
 			}
 			
-			if (!defined('SESSION_TIMEOUT') || SESSION_TIMEOUT < 120 || SESSION_TIMEOUT > 21600) {
+			if (!defined('SESSION_TIMEOUT') || SESSION_TIMEOUT < 120 || SESSION_TIMEOUT > 32400) {
 				$fields['0/admin_timeout_not_set_up_correctly']['row_class'] = 'warning';
 				$fields['0/admin_timeout_not_set_up_correctly']['hidden'] = false;
 				$show_warning = true;
 				
-				$fields['0/admin_timeout_not_set_up_correctly']['snippet']['html'] = \ze\admin::phrase('The session timeout should be between 120 (2 minutes) and 21600 (6 hours); we recommend setting it to 1800 (30 minutes). Please edit the zenario_siteconfig.php file and set the "SESSION_TIMEOUT" constant to be in this range.');
+				$fields['0/admin_timeout_not_set_up_correctly']['snippet']['html'] = \ze\admin::phrase('The session timeout should be between 120 (2 minutes) and 32400 (9 hours); we recommend setting it to 1800 (30 minutes). Please edit the zenario_siteconfig.php file and set the "SESSION_TIMEOUT" constant to be in this range.');
 			} else {
 				$fields['0/admin_timeout_not_set_up_correctly']['hidden'] = true;
 			}
@@ -4340,9 +4378,7 @@ class welcome {
 					$row['link'] = htmlspecialchars(\ze\link::toItem($row['id'], $row['type'], true));
 					$row['class'] = 'organizer_item_image '. \ze\contentAdm::getItemIconClass($row['id'], $row['type'], true, $row['status']);
 					
-					//THIS MIGHT BE CHANGED AFTER BRANCH TO ROLL THE SCHEDULED RELEASE ICON INTO THE ze\contentAdm::getItemIconClass() FUNCTION.
 					if ($row['scheduled_publish_datetime']) {
-						$row['class'] = 'organizer_item_image scheduled_tasks_on_icon';
 						$row['scheduled_publish_datetime_formatted'] = \ze\admin::formatDateTime($row['scheduled_publish_datetime'], 'vis_date_format_med');
 						$row['scheduled_for_publishing_note'] = \ze\admin::phrase('Scheduled to be published on [[scheduled_publish_datetime_formatted]].', $row);
 					}
@@ -4753,7 +4789,7 @@ class welcome {
 				$initialValue = $values['0/continue_to'];
 			}
 			
-			\ze\welcome::setupRadioSelectorValues('continue_to', $fields['0/continue_to'], $destOptions, $initialValue);
+			\ze\tuix::setupRadioSelectorValues('zaf_', 'continue_to', $fields['0/continue_to'], $destOptions);
 			
 			
 			

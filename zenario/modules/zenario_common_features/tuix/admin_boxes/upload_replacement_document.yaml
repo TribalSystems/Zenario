@@ -29,8 +29,6 @@ zenario_upload_replacement_document:
                     label: 'Upload replacement document:'
                     upload:
                         drag_and_drop: true
-                        dropbox: true
-                        dropbox_phrase: 'Upload from dropbox'
                 
                 keep_meta_data:
                     label: 'Keep current title and any dataset fields'

@@ -1,7 +1,41 @@
-<div class="organizer_no_items">
-	{{zenario.htmlspecialchars(m.no_items_message, true)}}
-	<div class="large_panel_buttons">
-		<% var mnb = {}; zenarioO.getCollectionButtons(mnb); %>
-		{{zenarioT.microTemplate('zenario_organizer_panel_buttons_no_items', mnb)}}
+<% var tuix = zenarioO.tuix; %>
+<% var iconClass = tuix.item && tuix.item.css_class; %>
+<% var helpHTML = zenarioO.getPanelHelp(m); %>
+<% var helpTitle = tuix.help_text_title || tuix.title %>
+
+<div class="organizer_empty_panel">
+
+	<% if (iconClass) { %>
+		<div class="organizer_empty_panel_icon organizer_item_image {{iconClass|e}}"></div>
+	<% } %>
+	
+	<div class="organizer_empty_panel_content">
+		<% if (helpTitle) { %>
+			<div class="organizer_empty_panel_title">
+				<h1>{{helpTitle|e}}</h1>
+			</div>
+		<% } %>
+		<% if (helpHTML) { %>
+			<div class="organizer_empty_panel_body">
+				{{helpHTML}}
+			</div>
+		<% } %>
+		<div class="organizer_no_items">
+			{{zenario.htmlspecialchars(m.no_items_message, true)}}
+		</div>
+		<div class="large_panel_buttons">
+			<% var mnb = {}; zenarioO.getCollectionButtons(mnb, true); %>
+			<div id="organizer_rightColumnOptions_no_items" class="organizer_panel_no_items clearfix">
+				<% if (mnb.collectionButtons && mnb.collectionButtons.length) { %>
+					<div class="panel_no_items" id="organizer_collectionPanel_no_items">
+						<span id="organizer_collectionPanelButtons_no_items" class="panelButtons_no_items">
+							{{zenarioT.microTemplate('zenario_organizer_button', mnb.collectionButtons)}}
+						</span>
+					</div>
+				<% } %>
+			
+			</div>
+
+		</div>
 	</div>
 </div>

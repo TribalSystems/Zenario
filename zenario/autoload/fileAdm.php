@@ -367,7 +367,7 @@ class fileAdm {
 	//Delete a file from the database, and anywhere it was stored on the disk
 	public static function delete($fileId) {
 	
-		if ($file = \ze\row::get('files', ['path', 'mime_type', 'short_checksum'], $fileId)) {
+		if ($file = \ze\row::get('files', ['path', 'mime_type', 'short_checksum', 'usage'], $fileId)) {
 	
 			//If the file was being stored in the docstore and nothing else uses it...
 			if ($file['path']
@@ -550,9 +550,6 @@ class fileAdm {
 			\ze\fileAdm::exitIfUploadError(true, true, true, 'Filedata');
 			\ze\fileAdm::putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], \ze::request('_html5_backwards_compatibility_hack'));
 	
-		} else if (\ze::request('fetchFromDropbox')) {
-			\ze\fileAdm::putDropboxFileIntoCacheDir($_POST['name'] ?? false, $_POST['link'] ?? false);
-	
 		} else {
 			exit;
 		}
@@ -560,12 +557,8 @@ class fileAdm {
 
 	//See also: function \ze\file::getPathOfUploadInCacheDir()
 
-	public static function putDropboxFileIntoCacheDir($filename, $dropboxLink) {
-		\ze\fileAdm::putUploadFileIntoCacheDir($filename, false, false, $dropboxLink);
-	}
-
 	public static function putUploadFileIntoCacheDir(
-		$filename, $tempnam, $html5_backwards_compatibility_hack = false, $dropboxLink = false,
+		$filename, $tempnam, $html5_backwards_compatibility_hack = false,
 		$cacheFor = false, $isAllowed = null
 	) {
 		
@@ -588,8 +581,6 @@ class fileAdm {
 	
 		if ($tempnam) {
 			$sha = sha1_file($tempnam);
-		} elseif ($dropboxLink) {
-			$sha = sha1($dropboxLink);
 		} else {
 			exit;
 		}
@@ -613,51 +604,7 @@ To correct this, please ask your system administrator to perform a
 		if (!file_exists($path = CMS_ROOT. $dir. $file['filename'])
 		 || !filesize($path = CMS_ROOT. $dir. $file['filename'])) {
 		
-			if ($dropboxLink) {
-				$failed = true;
-		
-				touch($path);
-				\ze\cache::chmod($path, 0666);
-				
-				//Attempt to use PHP to load the file
-				if ($in = fopen($dropboxLink, 'r')) {
-					$out = fopen($path, 'w');
-					while (!feof($in)) {
-						fwrite($out, fread($in, 65536));
-					}
-					fclose($out);
-					fclose($in);
-					
-					clearstatcache();
-					$failed = !filesize($path);
-				}
-				
-				//Attempt to use wget to fetch the file
-				if ($failed && !\ze\server::isWindows() && \ze\server::execEnabled()) {
-					try {
-						//Don't fetch via ssh, as this doesn't work when calling wget from php
-						$httpDropboxLink = str_replace('https://', 'http://', $dropboxLink);
-						
-						exec('wget -q '. escapeshellarg($httpDropboxLink). ' -O '. escapeshellarg($path));
-						
-						clearstatcache();
-						$failed = !filesize($path);
-						
-					} catch (\Exception $e) {
-						//echo 'Caught exception: ',  $e->getMessage(), "\n";
-					}
-				}
-				
-				if ($failed) {
-					echo \ze\admin::phrase('Could not get the file from Dropbox!');
-					exit;
-				}
-				
-				\ze\fileAdm::exitIfVirusInFile(true, $path, $filename, true);
-				
-			} else {
-				\ze\fileAdm::moveUploadedFile($tempnam, $path);
-			}
+			\ze\fileAdm::moveUploadedFile($tempnam, $path);
 		}
 		
 		$mimeType = \ze\file::mimeType($file['filename']);
@@ -924,6 +871,20 @@ To correct this, please ask your system administrator to perform a
 				$SvgSanitizer->load($path);
 				$SvgSanitizer->sanitize();
 				$SvgSanitizer->save($path);
+			}
+		
+		} elseif (\ze\file::isImage(\ze\file::mimeType($name))) {
+			\ze::ignoreErrors();
+				$size = getimagesize($path);
+			\ze::noteErrors();
+			
+			$size['maxImageWidth'] = \ze::setting('max_image_width') ?: 6000;
+			$size['maxImageHeight'] = \ze::setting('max_image_height') ?: 6000;
+			
+			if ($size && $size[0] > $size['maxImageWidth'] && $size[1] > $size['maxImageHeight']) {
+				echo
+					\ze\lang::phrase('The uploaded image is [[0]] × [[1]]. The largest allowed size is [[maxImageWidth]] × [[maxImageHeight]].', $size, $moduleClass);
+				exit;
 			}
 		}
 	}
@@ -1346,9 +1307,9 @@ To correct this, please ask your system administrator to perform a
 		}
 		
 		$sql = "
-			SELECT id, short_checksum, filename, mime_type, width, height
+			SELECT id, short_checksum, `usage`, filename, mime_type, width, height, location
 			FROM ". DB_PREFIX. "files
-			WHERE `usage` = 'image'
+			WHERE `usage` IN ('image', 'mic')
 			  AND mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')
 			  AND `privacy` = 'public'";
 		
@@ -1367,7 +1328,7 @@ To correct this, please ask your system administrator to perform a
 					//During development we often saw trying to make WebP versions of some images generate a crash on the server.
 					//We've added some simplistic logging information just to help see where this script is getting stuck.
 					//Note: This log file will be auto-deleted after one week of not being written to by the ze\cache::cleanDirs() function.
-					\ze\miscAdm::debugLog('images', 'adding_to_public_dir.log', \ze\admin::phrase('Adding [[filename]] into the public directory. (#[[id]], [[short_checksum]], [[mime_type]])', $image));
+					\ze\miscAdm::debugLog('images', 'adding_to_public_dir.log', \ze\admin::phrase('Adding [[filename]] into the public directory. (#[[id]], [[short_checksum]], [[mime_type]], [[usage]])', $image));
 					
 					\ze\image::addToPublicDir($image['id']);
 
@@ -1443,6 +1404,17 @@ To correct this, please ask your system administrator to perform a
 					]);
 				}
 			}
+			
+			//Check images used in emails
+			\ze\fileAdm::updateAllImagePublicLinksInEmailTemplates();
+			
+			//Also run a scan on images in Newsletters when trying to fix links.
+			//These need to use untranscoded images instead of WebPs, and also
+			//might have images used at different resizes.
+			if (\ze\module::inc('zenario_newsletter')) {
+				\zenario_newsletter::checkAllImagePublicLinksInNewsletters();
+				\zenario_newsletter::checkAllImagePublicLinksInNewsletterTemplates();
+			}
 		}
 	}
 	
@@ -1450,7 +1422,7 @@ To correct this, please ask your system administrator to perform a
 	public static function updateAllImagePublicLinksInEmailTemplates() {
 		
 		$sql = "
-			SELECT id, body
+			SELECT id, code, body
 			FROM ". DB_PREFIX. "email_templates
 			WHERE body IS NOT NULL";
 		$result = \ze\sql::select($sql);
@@ -1458,11 +1430,16 @@ To correct this, please ask your system administrator to perform a
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			$files = [];
 			$htmlChanged = false;
-			\ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+			\ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
 			
 			if ($htmlChanged) {
 				\ze\row::update('email_templates', ['body' => $row['body']], $row['id']);
 			}
+			
+			\ze\contentAdm::syncInlineFiles(
+				$files,
+				['foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']],
+				$keepOldImagesThatAreNotInUse = false);
 		}
 		
 		$sql = "
@@ -1475,11 +1452,14 @@ To correct this, please ask your system administrator to perform a
 		while ($row = \ze\sql::fetchAssoc($result)) {
 			$files = [];
 			$htmlChanged = false;
-			\ze\contentAdm::syncInlineFileLinks($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+			\ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
 			
 			if ($htmlChanged) {
 				\ze\row::update('site_settings', ['value' => $row['value']], $row['name']);
 			}
+			
+			$key = ['foreign_key_to' => 'standard_email_template', 'foreign_key_id' => 1, 'foreign_key_char' => ''];
+			\ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 		}
 	}	
 	
@@ -1654,7 +1634,7 @@ To correct this, please ask your system administrator to perform a
 		
 		//If this is a draft content item, we just want to call the ze\fileAdm::textExtract() function above
 		//to populate the file_extracts table. However for published versions of the content item
-		//we'll want to update the content_items_searchable_cache table as well
+		//we'll want to update the content_items_searchable_cache table as well.
 		if (\ze\contentAdm::contentItemIsSearchable($cID, $cType, $cVersion)) {
 			
 			\ze\row::set('content_items_searchable_cache', [
@@ -1668,7 +1648,7 @@ To correct this, please ask your system administrator to perform a
 				'content_type' => $cType
 			]);
 		
-		//Drafts/trashed content items/hidden content items/unlisted content items should not be in the 
+		//Drafts/trashed content items/hidden content items/unlisted content items/non-searchable special pages should not be in the 
 		//content_items_searchable_cache table, clear them up if they are there.
 		} else {
 			\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cType]);
@@ -1835,7 +1815,7 @@ To correct this, please ask your system administrator to perform a
 				return $extract;
 			
 			} elseif ($extract['extract_source'] = \ze\fileAdm::plainTextExtract($filePath, $extract['extract'], $file['mime_type'])) {
-				$extract['extract_wordcount'] = str_word_count($extract['extract']);
+				$extract['extract_wordcount'] = \ze\fileAdm::unicodeWordCount($extract['extract']);
 				$extract['extract_status'] = 'completed';
 				
 				\ze\row::set('file_extracts', $extract, $key);
@@ -1846,6 +1826,20 @@ To correct this, please ask your system administrator to perform a
 		//If anything failed, remove the row from the extracts table
 		\ze\row::delete('file_extracts', $key);
 		return $extract;
+	}
+
+	public static function unicodeWordCount($text) {
+		if (empty($text)) {
+			return 0;
+		}
+		
+		// Use Unicode-aware word boundary regex that properly handles Greek and other non-Latin scripts
+		// \p{L} matches any Unicode letter (including Greek, Cyrillic, Arabic, etc.)
+		// \p{M} matches combining marks (accents, diacritics)
+		// \p{Nd} matches decimal digits
+		$words = preg_split('/[^\p{L}\p{M}\p{Nd}]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+		
+		return count($words);
 	}
 
 	public static function textractConnection(&$cS3, &$cTextract, &$s3BucketName) {

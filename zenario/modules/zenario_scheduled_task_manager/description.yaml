@@ -8,30 +8,18 @@ license_info: 'Modified BSD License'
 display_name: Scheduled Task Manager
 description: |
             <p>
-                The Scheduled Task Manager provides support for other Modules to run scheduled tasks at a predefined time.
+                The Scheduled Task Manager provides support for other modules to run regular tasks at predefined times.
             </p>
             <p>
-                This Module requires a Unix-based server with support for crontabs and PHP from the command line.
-                To install it, a sysadmin must add a line of code to the server's crontab (this is generated for you).
-                Once this has been done, the Scheduled Task Manager will periodically call all Modules that have a Scheduled Task registered. 
+                It requires a Linux or Un*x-based server with support for crontabs and PHP from the command line (PHPCLI).
+                To install it, go to the Scheduled Tasks panel in Organizer, from where an administrator can copy the required line of text
+                and paste it into the server's crontab.
+                Once this has been done, the Scheduled Task Manager will run once per minute, and then call the appropriate module when required, typically once per day. 
             </p>
             <p>
-                You can determine the times and days when a Scheduled Task runs. You can determine the level of logging, and require this Module to report its activity by email. 
-                (For example, you might want an email sent every 
-                time a Task is run, an email sent only if the Task is run and performs an action, or 
-                only if the Task encounters an error.)
-            </p>
-            <p>
-                The Scheduled Backups Module is an example of a Module that uses Scheduled Tasks. It allows periodic backups to be taken automatically.
-            </p>
-            <p>
-                From Zenario 8.6 and onwards, the Scheduled Task Manager now provides the ability to run background tasks.
-                These are scripts that need to run constantly in the background.
-                Developers can register their scripts, and the Scheduled Task Manager will check once every minute to see
-                if they are there and running.
-                Functionality is also provided to restart and stop scripts.
+                You can determine the times and days when a Scheduled Task runs. You can determine the level of logging, and ask for activity reports by email. 
             </p>
 category: management
 keywords: >
     batch, cron, job, night, overnight, schedule, scheduler,
-    time, timer
+    time, timer, background

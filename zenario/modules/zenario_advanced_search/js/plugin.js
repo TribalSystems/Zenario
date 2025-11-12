@@ -18,7 +18,7 @@ zenario_advanced_search.onKeyUp = function(Container_Id, field, default_tab, mod
 					if (mode == 'search_page') {
 						var requestsToRemember = {};
 						
-						var params = ['ctab', 'language_id', 'category00_id', 'category01_id', 'category02_id', 'searchString'];
+						var params = ['ctab', 'language_id', 'searchString'];
 						
 						params.forEach((param) => {
 							var val;

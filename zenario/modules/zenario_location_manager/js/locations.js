@@ -18,7 +18,17 @@ function init(lib) {
 		center: new google.maps.LatLng(defaultMapCentreLat, defaultMapCentreLng),
 		zoom: defaultMapZoom,
 		mapTypeId: google.maps.MapTypeId.ROADMAP,
-		mapId: 'my_map'
+		mapId: 'my_map',
+		disableDefaultUI: true,
+		zoomControl: true,
+		fullscreenControl: true,
+		mapTypeControl:true,
+		zoomControlOptions: { 
+			position: google.maps.ControlPosition.RIGHT_BOTTOM
+		}, 
+		fullscreenControlOptions: {
+			position: google.maps.ControlPosition.TOP_RIGHT
+		}
 	}
 	
 	map = new google.maps.Map(document.getElementById("map"),mapOptions);

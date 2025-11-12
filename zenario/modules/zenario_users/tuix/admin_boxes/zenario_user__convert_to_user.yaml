@@ -25,15 +25,15 @@ zenario_user__convert_to_user:
                     type: text
                     readonly: true
                 first_name: 
-                    label: "First Name:"
+                    label: "First name:"
                     type: text
                     readonly: true
                 last_name: 
-                    label: "Last Name:"
+                    label: "Last name:"
                     type: text
                     readonly: true
                 screen_name: 
-                    label: "Screen Name:"
+                    label: "Screen name:"
                     type: text
                     maxlength: 50
                 suggest_screen_name:

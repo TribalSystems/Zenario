@@ -91,7 +91,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 			$values['publish/publish_date'] = date('Y-m-d');
 			
 			$scheduledTaskManagerModuleId = ze\module::id('zenario_scheduled_task_manager');
-			$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__modules/panels/modules//' . (int) $scheduledTaskManagerModuleId . '~-scheduled_task_manager';
+			$scheduledTaskHref = ze\link::absolute() . 'organizer.php#zenario__library/panels/modules//' . (int) $scheduledTaskManagerModuleId . '~-scheduled_task_manager';
 			
 			$linkStart = '<a href="' . htmlspecialchars($scheduledTaskHref) . '" target="_blank">';
 			$linkEnd = "</a>";
@@ -157,7 +157,7 @@ class zenario_common_features__admin_boxes__publish extends ze\moduleBaseClass {
 					
 					$fields['publish/categories']['row_class'] = 'zenario_at_icon_categories_some';
 				} else {
-					$values['publish/categories'] = ze\admin::phrase('No categories');
+					$values['publish/categories'] = ze\admin::phrase('Not in any categories');
 					
 					$fields['publish/categories']['row_class'] = 'zenario_at_icon_categories_none';
 				}

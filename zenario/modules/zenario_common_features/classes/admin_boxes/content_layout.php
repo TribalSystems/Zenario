@@ -299,5 +299,14 @@ class zenario_common_features__admin_boxes__content_layout extends ze\moduleBase
 		if ($box['key']['idInOrganizer']) {
 			$box['key']['id'] = $box['key']['idInOrganizer'];
 		}
+		
+		//If this was opened from the admin toolbar, make the "Mobile and empty slots" view
+		//be turned on automatically. Also switch to the edit tab.
+		if ($box['key']['fromAdminToolbar']) {
+			$_SESSION['page_toolbar'] = 'edit';
+			$_SESSION['page_mode'] = 'edit';
+			$_SESSION['last_item'] = $box['key']['cType'].  '_'. $box['key']['cID']. '.'. ze\content::latestVersion($box['key']['cID'], $box['key']['cType']);
+			$_SESSION['admin_show_empty_slots'] = true;
+		}
 	}
 }

@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
+		$contentItemCount = count($ids);
 		
 		//Get plugins linking to this content item.
 		$message = '';
@@ -85,15 +85,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 						switch ($row['class_name']) {
 							case 'zenario_nest':
 							case 'zenario_ajax_nest':
-								$pluginsLink = '#zenario__modules/panels/plugins/refiners/nests////';
+								$pluginsLink = '#zenario__library/panels/plugins/refiners/nests////';
 								break;
 								
 							case 'zenario_slideshow':
-								$pluginsLink = '#zenario__modules/panels/plugins/refiners/slideshows////';
+								$pluginsLink = '#zenario__library/panels/plugins/refiners/slideshows////';
 								break;
 								
 							default:
-								$pluginsLink = '#zenario__modules/panels/modules/item//'. $row['module_id']. '//';
+								$pluginsLink = '#zenario__library/panels/modules/item//'. $row['module_id']. '//';
 						}
 					}
 
@@ -142,9 +142,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 					
 						while ($row = ze\sql::fetchAssoc($result)) {
 							if (!in_array($row['type'] . '_' . $row['id'], $ids)) {
-								++$totalRowNum;
+								++$totalTranslationCount;
 						
-								$suffix = '__' . $totalRowNum;
+								$suffix = '__' . $totalTranslationCount;
 						
 								if ($showParentAlias) {
 									$values[$panelName . '/content_item' . $suffix] = ze\content::formatTag($cID, $cType);
@@ -155,13 +155,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 								$values[$panelName . '/status' . $suffix] = ze\contentAdm::statusPhrase($row['status']);
 								$values[$panelName . '/language_id' . $suffix] = $row['language_id'];
 
-								$contentItemTranslationLanguageIds[$totalRowNum] = $row['language_id'];
+								$contentItemTranslationLanguageIds[$totalTranslationCount] = ze\lang::name($row['language_id']);
 						
 								$showParentAlias = false;
 							}
 						}
 					
-						if ($totalRowNum > 0) {
+						if ($totalTranslationCount > 0) {
 						
 							//Show the translations table if any content item has translations.
 							$fields[$panelName . '/th_content_item']['hidden'] = 
@@ -170,13 +170,24 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							$fields[$panelName . '/th_action']['hidden'] = 
 							$fields[$panelName . '/table_end']['hidden'] = false;
 					
-							$fields[$panelName . '/translations_warning']['snippet']['html'] = 
-								ze\admin::nPhrase(
-									'This content item has 1 translation. Please select what to do with the content item in the other language.',
-									'This content item has [[count]] translations. Please select what to do with the content items in other languages.',
-									$totalRowNum,
-									['count' => $totalRowNum]
-								);
+							if ($contentItemCount == 1) {
+								$fields[$panelName . '/translations_warning']['snippet']['html'] = 
+									ze\admin::nPhrase(
+										'You have selected 1 content item which has 1 translation in total. Please select an action for the translation of this content item.',
+										'You have selected 1 content item which has [[translation_count]] translations in total. Please select an action for the translations of this content item.',
+										$totalTranslationCount,
+										['translation_count' => $totalTranslationCount]
+									);
+							} elseif ($contentItemCount > 1) {
+								$fields[$panelName . '/translations_warning']['snippet']['html'] = 
+									ze\admin::nPhrase(
+										'You have selected [[content_item_count]] content items which have 1 translation in total. Please select an action for the translation of these content items.',
+										'You have selected [[content_item_count]] content items which have [[translation_count]] translations in total. Please select an action for the translations of these content items.',
+										$totalTranslationCount,
+										['content_item_count' => $contentItemCount, 'translation_count' => $totalTranslationCount]
+									);
+							}
+							
 							$fields[$panelName . '/translations_warning']['hidden'] = false;
 							$box['max_height'] = false;
 						}
@@ -190,7 +201,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			ze\tuix::setupMultipleRows(
 				$box, $fields, $values, $changes, $filling = true,
 				$box['tabs'][$panelName]['custom_template_fields'],
-				$totalRowNum,
+				$totalTranslationCount,
 				$minNumRows = 0,
 				$tabName = $panelName
 			);
@@ -201,9 +212,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				$deleteOrTrash = 'delete';
 			}
 			
-			for ($i = 1; $i <= $totalRowNum; $i++) {
-				ze\lang::applyMergeFields($box['tabs'][$panelName]['fields']['action__' . $i]['values']['keep']['label'], ['language_id' => $contentItemTranslationLanguageIds[$i]]);
-				ze\lang::applyMergeFields($box['tabs'][$panelName]['fields']['action__' . $i]['values'][$deleteOrTrash]['label'], ['language_id' => $contentItemTranslationLanguageIds[$i]]);
+			for ($i = 1; $i <= $totalTranslationCount; $i++) {
+				ze\lang::applyMergeFields($box['tabs'][$panelName]['fields']['action__' . $i]['values']['keep']['label'], ['language' => $contentItemTranslationLanguageIds[$i]]);
+				ze\lang::applyMergeFields($box['tabs'][$panelName]['fields']['action__' . $i]['values'][$deleteOrTrash]['label'], ['language' => $contentItemTranslationLanguageIds[$i]]);
 			}
 			
 			//Disable "Trash/Delete translation" option for content items which can't be trashed/deleted
@@ -222,7 +233,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							$fields[$panelName . '/action'. $suffix]['values']['trash']['disabled'] = true;
 							$fields[$panelName . '/action'. $suffix]['values']['trash']['label'] = ze\admin::phrase('This translation cannot be trashed.');
 							if (ze\contentAdm::allowDelete($cID, $cType, false, $contentItemLanguageId = $values[$panelName . '/language_id'. $suffix])) {
-								$fields[$panelName . '/action'. $suffix]['values']['delete']['label'] = ze\admin::phrase('Delete draft translation');
+								$fields[$panelName . '/action'. $suffix]['values']['delete']['label'] = ze\admin::phrase('Delete draft translation in [[language]]', ['language' => ze\lang::name($contentItemLanguageId)]);
 							}
 						}
 						break;

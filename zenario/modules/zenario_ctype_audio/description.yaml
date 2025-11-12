@@ -8,8 +8,8 @@ license_info: 'Modified BSD License'
 display_name: Content Type Audio
 description: |
     <p>This is the base module for Audio content items in Zenario.</p>
-    <p>This podule creates a plugin which contains an audio player. When put in a slot on a page, visitors can listen to audio content.</p>
-    <p>The administrator can use the module settings to change the autoplay on load and loop feature.</p>
+    <p>This module creates a plugin which contains an audio player. When placed in a slot on a content item, visitors can listen to audio content.</p>
+    <p>An administrator can use the plugin settings to change the autoplay on load and loop feature.</p>
     <p>This module works with MP3 files (MPEG-1 or MPEG-2 Audio Layer III files), and files should be uploaded with the extension '.mp3'.</p>
 category: content_type
 keywords: audio, mp3, mpeg, mpg, sound, play, player, podcast

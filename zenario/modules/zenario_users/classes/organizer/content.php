@@ -40,8 +40,8 @@ class zenario_users__organizer__content extends zenario_users {
 		
 		if ($refinerName == 'group_members') {
 			$group = ze\user::getGroupLabel($refinerId);
-			$panel['title'] = ze\admin::phrase('Content items protected by the Group "[[group]]"', ['group' => $group]);
-			$panel['no_items_message'] = ze\admin::phrase('There are no Content items protected by the Group "[[group]]"', ['group' => $group]);
+			$panel['title'] = ze\admin::phrase('Content items protected by the group "[[group]]"', ['group' => $group]);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items protected by the group "[[group]]"', ['group' => $group]);
 			unset($panel['collection_buttons']['create']);
 		}
 	}

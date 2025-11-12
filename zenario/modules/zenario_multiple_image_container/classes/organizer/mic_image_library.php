@@ -162,7 +162,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 				return $fileId;
 
 			} else {
-				echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG or SVG image.');
+				echo ze\admin::phrase('Please upload a valid JPG, PNG, SVG, WEBP or GIF image.');
 				return false;
 			}
 		} elseif (ze::post('copy_to_image_library') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {
@@ -202,7 +202,7 @@ class zenario_multiple_image_container__organizer__mic_image_library extends ze\
 						<ul><li>', implode('</li><li>', $usage), '</li></ul>';
 				} else {
 					echo '
-						<p>', ze\admin::phrase('Are you sure you wish to delete the unused image "[[filename]]"?', $mrg), '</p>';
+						<p>', ze\admin::phrase('Delete the image "[[filename]]"?', $mrg), '</p><p>It is not in use.</p>';
 				}
 			} elseif ($count > 0) {
 				$usedImages = $unusedImaged = 0;

@@ -6,21 +6,26 @@
 		data-tooltip-options="
 			{position: {collision: 'flipfit'}}
 		"
+		
+		<% var iconClassName = 'zenario_topRightIcon organizer_enabled_disabled'; %>
+		<% if (zenarioA.siteSettings.in_moratorium) { %>
+			<% iconClassName += ' site_in_moratorium'; %>
+		<% } %>
 	
 		<% if (zenarioA.siteSettings.site_enabled) { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-				class="zenario_topRightIcon organizer_enabled_disabled site_enabled_development"
+				class="{{iconClassName}} site_enabled_development"
 				title="Site enabled, but in developer mode"
 			<% } else { %>
-				class="zenario_topRightIcon organizer_enabled_disabled site_enabled"
+				class="{{iconClassName}} site_enabled"
 				title="Site enabled"
 			<% } %>
 		<% } else { %>
 			<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-				class="zenario_topRightIcon organizer_enabled_disabled site_disabled"
+				class="{{iconClassName}} site_disabled"
 				title="Site disabled and in developer mode"
 			<% } else { %>
-				class="zenario_topRightIcon organizer_enabled_disabled site_disabled"
+				class="{{iconClassName}} site_disabled"
 				title="Site disabled"
 			<% } %>
 		<% } %>

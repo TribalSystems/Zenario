@@ -53,23 +53,33 @@ class file {
 
 	//Remove an image from the public/images/ directory
 	public static function deletePublicImage($image, $specialImage = false) {
-		
-		//Starting in version 10.2, we're going to be using slightly different logic for special images.
-		//These will always be considered public, and be placed in the public/special_images directory instead
-		//of the public/images directory.
-		if ($specialImage) {
-			$publicDir = 'public/special_images/';
-		} else {
-			$publicDir = 'public/images/';
-		}
 	
 		if (!is_array($image)) {
-			$image = \ze\row::get('files', ['mime_type', 'short_checksum'], $image);
+			$image = \ze\row::get('files', ['mime_type', 'short_checksum', 'usage'], $image);
 		}
 	
 		if ($image
 		 && $image['short_checksum']
 		 && \ze\file::isImageOrSVG($image['mime_type'])) {
+			
+			//Starting in version 10.2, we're going to be using slightly different logic for special images.
+			//These will always be considered public, and be placed in the public/special_images directory instead
+			//of the public/images directory.
+			if ($specialImage) {
+				$publicDir = 'public/special_images/';
+		
+			//T13130, MIC images should be stored in their own folder inside public/ directory
+			//MiC images use slightly different different logic to regular images.
+			//From version 10.3 onwards, we're going to be putting them in a different directory to regular images
+			//to prevent bugs and issues caused when the same image is used in both places.
+			} elseif ($image['usage'] == 'mic') {
+				$publicDir = 'public/mic_images/';
+			
+			} else {
+				$publicDir = 'public/images/';
+			}
+			
+			
 			\ze\cache::deleteDir(CMS_ROOT. $publicDir. $image['short_checksum'], 1);
 		}
 	}
@@ -196,6 +206,20 @@ class file {
 		}
 	
 		return true;
+	}
+
+	public static function publicLink($fileId, $filename = false) {
+		$url = \ze\file::link($fileId, false, 'public/documents', false, $filename);
+		
+		if (!$url) {
+			return false;
+		}
+		
+		if (\ze::$mustUseFullPath) {
+			$url = \ze\link::absolute(). $url;
+		}
+	
+		return $url;
 	}
 
 	public static function docstorePath($fileIdOrPath, $useTmpDir = true, $customDocstorePath = false) {
@@ -685,19 +709,49 @@ class file {
 		return false;
 	}
 
-	public static function formatSizeUnits($bytes) {
+	public static function formatSizeUnits($bytes, $adminMode = false) {
         if ($bytes >= 1073741824) {
-            $bytes = number_format($bytes / 1073741824, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_GB');
+            $bytes = number_format($bytes / 1073741824, 2) . ' ';
+            if ($adminMode) {
+            	$bytes .= \ze\admin::phrase('_FILE_SIZE_UNIT_GB');
+            } else {
+            	$bytes .= \ze\lang::phrase('_FILE_SIZE_UNIT_GB');
+            }
         } elseif ($bytes >= 1048576) {
-            $bytes = number_format($bytes / 1048576, 2) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_MB');
+            $bytes = number_format($bytes / 1048576, 2) . ' ';
+            if ($adminMode) {
+            	$bytes .= \ze\admin::phrase('_FILE_SIZE_UNIT_MB');
+            } else {
+            	$bytes .= \ze\lang::phrase('_FILE_SIZE_UNIT_MB');
+            }
         } elseif ($bytes >= 1024) {
-            $bytes = number_format($bytes / 1024, 0) . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_KB');
+            $bytes = number_format($bytes / 1024, 0) . ' ';
+            if ($adminMode) {
+            	$bytes .= \ze\admin::phrase('_FILE_SIZE_UNIT_KB');
+            } else {
+            	$bytes .= \ze\lang::phrase('_FILE_SIZE_UNIT_KB');
+            }
         } elseif ($bytes > 1) {
-            $bytes = $bytes . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
+            $bytes = $bytes . ' ';
+            if ($adminMode) {
+            	$bytes .= \ze\admin::phrase('_FILE_SIZE_UNIT_BYTES');
+            } else {
+            	$bytes .= \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
+            }
         } elseif ($bytes == 1) {
-            $bytes = $bytes . ' ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTE');
+            $bytes = $bytes . ' ';
+            if ($adminMode) {
+            	$bytes .= \ze\admin::phrase('_FILE_SIZE_UNIT_BYTE');
+            } else {
+            	$bytes .= \ze\lang::phrase('_FILE_SIZE_UNIT_BYTE');
+            }
         } else {
-            $bytes = '0 ' . \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
+            $bytes = '0 ';
+            if ($adminMode) {
+            	$bytes .= \ze\admin::phrase('_FILE_SIZE_UNIT_BYTES');
+            } else {
+            	$bytes .= \ze\lang::phrase('_FILE_SIZE_UNIT_BYTES');
+            }
         }
 
         return $bytes;

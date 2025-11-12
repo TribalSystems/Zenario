@@ -104,7 +104,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$values['advanced/rel_tag'] = $menu['rel_tag'];
 			$values['advanced/css_class'] = $menu['css_class'];
 			$values['advanced/add_registered_get_requests'] = $menu['add_registered_get_requests'];
-			$values['advanced/restrict_child_content_types'] = $menu['restrict_child_content_types'];
+			$values['content_item_preference/restrict_child_content_types'] = $menu['restrict_child_content_types'];
 	
 			if ($values['advanced/call_static_method'] = (bool) $menu['module_class_name']) {
 				$values['advanced/menu__module_class_name'] = $menu['module_class_name'];
@@ -168,7 +168,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$box['tabs']['text']['fields'][$title] = $fields['text/menu_title'];
 			//Build the onkeyup event to correctly populate the menu path preview for each enabled language
 			$box['tabs']['text']['fields'][$title]['onkeyup'] = "$(zenarioAB.get('span__" . htmlspecialchars($pathCodename) . "')).text(this.value);";
-			$box['tabs']['text']['fields'][$title]['format_onchange'] = true;
 			$box['tabs']['text']['fields'][$pathCodename] = $fields['text/path_of__menu_title'];
 			$box['tabs']['text']['fields'][$url] = $fields['text/ext_url'];
 	
@@ -206,7 +205,11 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				//or in any language if neither of those present.
 				//(Note that I'm relying on the default language being first in this loop for this logic to work.)
 				if (!$box['title'] || $lang['id'] == $box['key']['languageId']) {
-					$box['title'] = ze\admin::phrase('Editing the menu node "[[name]]" ("[[section_name]]" section)', $text);
+					if ($text['section_name']=="Main") {
+						$box['title'] = ze\admin::phrase('Editing properties of menu node "[[name]]"', $text);
+					} else {
+						$box['title'] = ze\admin::phrase('Editing properties of menu node "[[name]]" (in section "[[section_name]]")', $text);
+					}
 				}
 			}
 			
@@ -240,6 +243,59 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			$fields['text/hyperlink_target']['note_below'] = '';
 			$fields['text/target_loc']['values']['exts']['hidden'] = true;
 		}
+		
+		$langsWhichHideLinks = [];
+		if ($numLangs > 1) {
+			foreach ($langs as $lang) {
+				if (!ze\row::get('languages', 'show_untranslated_content_items', ['id' => $lang['id']]) && $lang['id'] != ze::$defaultLang) {
+					$langsWhichHideLinks[] = $lang['id'];
+					unset($box['tabs']['text']['fields']['menu_title__' . $lang['id'] . '_no_translations_exist_warning']);
+				}
+			}
+		}
+
+		//For multilingal sites, add a note about using the Content Item in the default language if no translation is set.
+		//(But use the ze\content::langEquivalentItem() function to work out what language will actually be used.)
+		$fields['text/multilingual_description']['hidden'] = true;
+		$equivs = $cID = $cType = false;
+		ze\content::getCIDAndCTypeFromTagId($cID, $cType, $values['text/hyperlink_target']);
+		if ($cID && $cType && $numLangs > 1) {
+			ze\content::langEquivalentItem($cID, $cType, $langId = true);
+			$mainLang = ze\content::langId($cID, $cType);
+	
+			$fields['text/multilingual_description']['hidden'] = false;
+			$fields['text/multilingual_description']['snippet']['html'] =
+				' '.
+				ze\admin::phrase(
+					'If a translation of a content item does not exist in a non-default language, the menu node will link to the item in [[english_name]].',
+					$langs[$mainLang]);
+	
+			$equivs = ze\content::equivalences($cID, $cType);
+			
+			if (count($langsWhichHideLinks) > 0) {
+				foreach ($langsWhichHideLinks as $langWhichHidesLinks) {
+					$languagePanel = ze\link::absolute() . 'organizer.php#zenario__languages/panels/languages//' . $langWhichHidesLinks;
+					$linkStart = '<a href="' . htmlspecialchars($languagePanel) . '" target="_blank">';
+					$linkEnd = "</a>";
+					
+					$mergeFields = [
+						'english_name' => $langs[$langWhichHidesLinks]['english_name'],
+						'link_start' => $linkStart,
+						'link_end' => $linkEnd
+					];
+					
+					$box['tabs']['text']['fields']['menu_title__' . $langWhichHidesLinks]['notices_below']['language_hides_node_when_no_translation_exists'] = [
+						'type' => 'warning',
+						'size' => 'small',
+						'html' => true,
+						'message' => ze\admin::phrase(
+							"If no content item exists in [[english_name]], menu node text given here may not appear because of the [[link_start]]settings for this language[[link_end]].",
+							$mergeFields
+						)
+					];
+				}
+			}
+		}
 
 		//Attempt to load a list of CSS Class Names from an xml file description in the current Skin to add choices in for the CSS Class Picker
 		$skinId = false;
@@ -272,10 +328,10 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		$cTypes = [];
 		foreach (ze\row::getAssocs('content_types', ['content_type_plural_en'], [], 'content_type_plural_en') as $cType => $cTypeDetails) {
 			if ($cType == 'html') {
-				$fields['advanced/restrict_child_content_types']['empty_value'] = 
+				$fields['content_item_preference/restrict_child_content_types']['empty_value'] = 
 					ze\admin::phrase("No preference for any content type");
 			} else {
-				$fields['advanced/restrict_child_content_types']['values'][$cType] = 
+				$fields['content_item_preference/restrict_child_content_types']['values'][$cType] = 
 					ze\admin::phrase('Preferential menu node for [[content_type_plural_en]]', $cTypeDetails);
 				
 				if ($i > 0) {
@@ -298,8 +354,8 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		
 		
 		
-		$fields['advanced/content_restriction_desc']['snippet']['html'] =
-			ze\admin::phrase($fields['advanced/content_restriction_desc']['snippet']['html'], $mrg);
+		$fields['content_item_preference/content_restriction_desc']['snippet']['html'] =
+			ze\admin::phrase($fields['content_item_preference/content_restriction_desc']['snippet']['html'], $mrg);
 		
 		//Images tab
 		$nodeId = $box['key']['id'];
@@ -415,60 +471,6 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 		}
 
 		$langs = ze\lang::getLanguages();
-		$numLangs = count($langs);
-		$langsWhichHideLinks = [];
-		if ($numLangs > 1) {
-			foreach ($langs as $lang) {
-				if (!ze\row::get('languages', 'show_untranslated_content_items', ['id' => $lang['id']]) && $lang['id'] != ze::$defaultLang) {
-					$langsWhichHideLinks[] = $lang['id'];
-					unset($box['tabs']['text']['fields']['menu_title__' . $lang['id']]['notices_below']);
-				}
-			}
-		}
-
-		//For multilingal sites, add a note about using the Content Item in the default language if no translation is set.
-		//(But use the ze\content::langEquivalentItem() function to work out what language will actually be used.)
-		$fields['text/multilingual_description']['hidden'] = true;
-		if ($cID && $cType && $numLangs > 1) {
-			ze\content::langEquivalentItem($cID, $cType, $langId = true);
-			$mainLang = ze\content::langId($cID, $cType);
-	
-			$fields['text/multilingual_description']['hidden'] = false;
-			$fields['text/multilingual_description']['snippet']['html'] =
-				' '.
-				ze\admin::phrase(
-					'If text is specified for a menu node but no translation of the content item exists, the menu node will link to the item in [[english_name]].',
-					$langs[$mainLang]);
-	
-			$equivs = ze\content::equivalences($cID, $cType);
-			
-			if (count($langsWhichHideLinks) > 0) {
-				foreach ($langsWhichHideLinks as $langWhichHidesLinks) {
-					if ($values['text/menu_title__' . $langWhichHidesLinks] && empty($equivs[$langWhichHidesLinks])) {
-						$languagePanel = ze\link::absolute() . 'organizer.php#zenario__languages/panels/languages//' . $langWhichHidesLinks;
-						$linkStart = '<a href="' . htmlspecialchars($languagePanel) . '" target="_blank">';
-						$linkEnd = "</a>";
-						
-						$mergeFields = [
-							'english_name' => $langs[$langWhichHidesLinks]['english_name'],
-							'link_start' => $linkStart,
-							'link_end' => $linkEnd
-						];
-						
-						$box['tabs']['text']['fields']['menu_title__' . $langWhichHidesLinks]['notices_below']['no_translation_exists'] = [
-							'type' => 'warning',
-							'html' => true,
-							'hidden' => false,
-							'message' => ze\admin::phrase(
-								"Warning, no translation exists in [[english_name]], so this will not appear. See also [[link_start]]settings for this language[[link_end]].",
-								$mergeFields
-							)
-						];
-					}
-				}
-			}
-		}
-
 
 		//When displaying the tab, update the menu preview path such that the current node
 		//starts off set to what was last typed.
@@ -589,6 +591,25 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 			
 			$fields['text/hyperlink_target']['label'] = ze\admin::phrase('Content item:');
 		}
+		
+		$replace = [];
+		if ($values['content_item_preference/restrict_child_content_types']) {
+			$restrictionClass = 'node_suggest_on';
+			$restrictionMessage = '[[content_type_name_plural]] will be created under this menu node.';
+			
+			$contentNamePlural = ze\content::getContentTypeName($values['content_item_preference/restrict_child_content_types'], $plural = true);
+			if ($contentNamePlural) {
+				$replace['content_type_name_plural'] = $contentNamePlural;
+			} else {
+				$replace['content_type_name_plural'] = ze\admin::phrase('(content type not found)');
+			}
+		} else {
+			$restrictionClass = 'node';
+			$restrictionMessage = 'Any kind of content may be created under this menu node.';
+		}
+		
+		$fields['content_item_preference/restriction_note']['snippet']['html'] =
+			'<span class="' . $restrictionClass . '">' . ze\admin::phrase($restrictionMessage, $replace) . '</span>';
 	}
 
 
@@ -609,7 +630,7 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				if ($numLangs > 1) {
 					$box['tabs']['text']['errors'][] = ze\admin::phrase('Please enter text in at least one language.');
 				} else {
-					$box['tabs']['text']['errors'][] = ze\admin::phrase('_ERROR_MUST_ENTER_TITLE_FOR_MENU_ITEM');
+					$box['tabs']['text']['errors'][] = ze\admin::phrase('Please ensure you enter text for this menu node.');
 				}
 			}
 		}
@@ -771,9 +792,11 @@ class zenario_common_features__admin_boxes__menu extends ze\moduleBaseClass {
 				$customGetRequests = implode('&', $customGetRequests);
 				$submission['custom_get_requests'] = $customGetRequests;
 			}
-			
-			if ($values['advanced/restrict_child_content_types']) {
-				$submission['restrict_child_content_types'] = $values['advanced/restrict_child_content_types'];
+		}
+
+		if (ze\ring::engToBoolean($box['tabs']['content_item_preference']['edit_mode']['on'] ?? false)) {
+			if ($values['content_item_preference/restrict_child_content_types']) {
+				$submission['restrict_child_content_types'] = $values['content_item_preference/restrict_child_content_types'];
 			} else {
 				$submission['restrict_child_content_types'] = '';
 			}

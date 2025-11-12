@@ -1,0 +1,112 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_create_newsletter:
+    save_and_continue_button_message: ""
+    save_button_message: ""
+    title: Creating a newsletter
+    key:
+        id: ""
+    identifier:
+        css_class: zenario_newsletter_draft
+        label: Newsletter ID
+    max_height: 370
+    hide_tab_bar: true
+    tab: initial_step
+    tabs:
+        create_newsletter:
+            label: Initial step
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                enabled: true
+            fields:
+                create_empty_newsletter_grouping:
+                    type: grouping
+                    name: create_empty_newsletter_grouping
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('create_empty_newsletter');
+                create_empty_newsletter:
+                    grouping: create_empty_newsletter_grouping
+                    type: radio
+                    name: action
+                    value: 1
+                    label: Create an empty newsletter
+                    format_onchange: true
+                
+                create_newsletter_from_template_grouping:
+                    type: grouping
+                    name: create_empty_newsletter_grouping
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('create_newsletter_from_template');
+                create_newsletter_from_template:
+                    grouping: create_newsletter_from_template_grouping
+                    type: radio
+                    name: action
+                    label: Create a newsletter from a template
+                    format_onchange: true
+                newsletter_template:
+                    grouping: create_newsletter_from_template_grouping
+                    indent: 1
+                    label: 'Newsletter template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/newsletter_templates
+                        target_path: zenario__email_template_manager/panels/newsletter_templates
+                        min_path: zenario__email_template_manager/panels/newsletter_templates
+                        select_phrase: Select newsletter template...
+                        nothing_selected_phrase: No newsletter template selected
+                    visible_if: zenarioAB.value('create_newsletter_from_template')
+                    validation:
+                        required_if_not_hidden: 'Please select a newsletter template.'
+                    format_onchange: true
+                
+                create_newsletter_from_previous_newsletter_grouping:
+                    type: grouping
+                    name: create_empty_newsletter_grouping
+                    grouping_css_class: zenario_vertical_radio
+                    grouping_wrapper_css_class: zenario_vertical_radios
+                    grouping_onclick: |
+                        zenarioAB.clickingGroupingChecksBox('create_newsletter_from_previous_newsletter');
+                create_newsletter_from_previous_newsletter:
+                    grouping: create_newsletter_from_previous_newsletter_grouping
+                    type: radio
+                    name: action
+                    label: Create based on a previous newsletter
+                    format_onchange: true
+                previous_newsletter:
+                    grouping: create_newsletter_from_previous_newsletter_grouping
+                    indent: 1
+                    label: 'Previous newsletter:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/newsletters/refiners/archive////
+                        target_path: zenario__email_template_manager/panels/newsletters
+                        min_path: zenario__email_template_manager/panels/newsletters
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select newsletter...
+                        nothing_selected_phrase: No newsletter selected
+                    visible_if: zenarioAB.value('create_newsletter_from_previous_newsletter')
+                    validation:
+                        required_if_not_hidden: 'Please select a newsletter.'
+                    format_onchange: true
+    
+    extra_button_html: ''
+    
+    cancel_button_html: |
+        <input
+            type="button"
+            class="zenario_fabExtraButton zenario_fabExtraButtonMenuProp zenario_gp_button"
+            value="Cancel"
+            onclick="
+                zenarioAB.close();
+            "
+        />
+    
+    extra_button_html_disabled_template: |
+        <input
+            type="button"
+            class="zenario_fabExtraButton zenario_fabExtraButtonMenuProp zenario_disabled_button"
+            value="Continue"
+            disabled
+        />

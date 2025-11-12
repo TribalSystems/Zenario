@@ -1268,10 +1268,10 @@ zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentC
 	
 	if (isNest) {
 		if (isNest == 'slideshow') {
-			path = 'zenario__modules/panels/plugins/refiners/slideshows////';
+			path = 'zenario__library/panels/plugins/refiners/slideshows////';
 			chooseButtonPhrase = phrase.insertSlideshow;
 		} else {
-			path = 'zenario__modules/panels/plugins/refiners/nests////';
+			path = 'zenario__library/panels/plugins/refiners/nests////';
 			chooseButtonPhrase = phrase.insertNest;
 		}
 	
@@ -1280,7 +1280,7 @@ zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentC
 			path += instanceId;
 		}
 	} else {
-		path = 'zenario__modules/panels/modules/refiners/slotable_only////';
+		path = 'zenario__library/panels/modules/refiners/slotable_only////';
 		chooseButtonPhrase = phrase.insertPlugin;
 	
 		//Select the existing module and plugin if possible
@@ -1289,7 +1289,7 @@ zenarioA.pickNewPlugin = function(el, slotName, level, isNest, preselectCurrentC
 		}
 	}
 	
-	zenarioA.organizerSelect('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__modules/panels/plugins', 'zenario__modules/panels/modules', 'zenario__modules/panels/plugins', true, true, chooseButtonPhrase);
+	zenarioA.organizerSelect('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__library/panels/plugins', 'zenario__library/panels/modules', 'zenario__library/panels/plugins', true, true, chooseButtonPhrase);
 	
 	return false;
 };
@@ -1318,13 +1318,15 @@ zenarioA.addNewReusablePlugin = function(path, key, row) {
 };
 
 
-zenarioA.addNewWireframePlugin = function(el, slotName, moduleId) {
+zenarioA.addNewWireframePlugin = function(el, slotName, moduleId, level, isHeader, isFooter) {
 	el.blur();
 	
 	var req = {
 			addPlugin: moduleId,
 			slotName: slotName,
-			level: 2,
+			level: level,
+			isHeader: 1*isHeader,
+			isFooter: 1*isFooter,
 			cID: zenario.cID,
 			cType: zenario.cType,
 			cVersion: zenario.cVersion
@@ -3145,8 +3147,11 @@ zenarioA.debug = function(el, e, globalName, orgMap) {
 		width = 365,
 		left,
 		top,
+		lib = window[globalName],
 		canShowSource = zenarioA.showSourceFiles(globalName, orgMap)
 		m = {
+			lib: lib,
+			orgMap: orgMap,
 			canShowSource: canShowSource
 		}
 		html = zenarioT.microTemplate('zenario_debug_menu', m);
@@ -3167,33 +3172,40 @@ zenarioA.debug = function(el, e, globalName, orgMap) {
 		el || e, width, left, top, false, false, false, false
 	);
 	
-	var $debugMenu = $('#zenario_debug_menu'),
-		$openDevToolsOption = $('#zenario_dm_open_dev_tools'),
-		$bbeditOption = $('#zenario_dm_copy_bbedit'),
-		$grepOption = $('#zenario_dm_copy_grep'),
-		$lsOption = $('#zenario_dm_copy_ls');
 	
-	//Use the jQuery menu widget for this.
-	$debugMenu.menu();
-	
-	//Wire up each option
-	$openDevToolsOption.click(function() {
-		window.open(URLBasePath + 'zenario/admin/dev_tools/dev_tools.php?mode=' + encodeURIComponent(globalName) + (orgMap? '&orgMap=1' : ''));
+	//Wire up all of the buttons on the menu with an action
+	$('#zenario_debug_menu [data-command]').each(function(i, el) {
+		var $el = $(el),
+			command = $el.data('command');
+		
+		$el.click(function() {
+			switch (command) {
+				case 'open':
+					window.open(URLBasePath + 'zenario/admin/dev_tools/dev_tools.php?mode=' + encodeURIComponent(globalName) + (orgMap? '&orgMap=1' : ''));
+					break;
+				case 'assistant':
+				case 'paths':
+					zenarioA.showSourceFiles(globalName, orgMap, true, command);
+					break;
+				case 'console':
+					window.lib = lib;
+					console.info('var lib = ' + globalName + ';');
+					break;
+				case 'copy':
+					var text = $el.find('code.zenario_debug_val').text();
+					zenarioA.copy(text, '&ldquo;' + htmlspecialchars(text) + '&rdquo; ' + phrase.copiedX);
+					break;
+				case 'reveal':
+					lib.debugRevealAllObjects = true;
+					lib.redraw();
+					break;
+				case 'unreveal':
+					delete lib.debugRevealAllObjects;
+					lib.redraw();
+					break;
+			}
+		});
 	});
-	
-	if (canShowSource) {
-		$bbeditOption.click(function() {
-			zenarioA.showSourceFiles(globalName, orgMap, true, 'bbedit');
-		});
-	
-		$grepOption.click(function() {
-			zenarioA.showSourceFiles(globalName, orgMap, true, 'grep');
-		});
-	
-		$lsOption.click(function() {
-			zenarioA.showSourceFiles(globalName, orgMap, true, 'ls');
-		});
-	}
 	
 	
 	zenario.stop(e);
@@ -3208,6 +3220,10 @@ zenarioA.debug = function(el, e, globalName, orgMap) {
 	
 	
 	return false;
+};
+
+zenarioA.escapeDebugVal = function(val) {
+	return zenario.htmlspecialchars(val).replace(/\//g, '/<wbr/>').replace(/\,/g, ',<wbr/>');
 };
 
 zenarioA.closeOrganizerMenu = function() {
@@ -3227,8 +3243,7 @@ zenarioA.showSourceFiles = function(globalName, orgMap, doIt, editor) {
 	
 	var lib = window[globalName],
 		adminSettings = zenarioA.adminSettings || {},
-		sftp = zenarioA.adminSettings.cli_sftp_connection,
-		tuix, source, command, path, absolute;
+		tuix, source, text, path, absolute;
 	
 	if (doIt && !editor) {
 		return false;
@@ -3249,64 +3264,67 @@ zenarioA.showSourceFiles = function(globalName, orgMap, doIt, editor) {
 				if (doIt) {
 					
 					var rootPath = source.root,
-						addLineBreaks = editor != 'grep',
-						runningRemotely = editor == 'bbedit' && !_.isEmpty(sftp),
-						runningLocally = !runningRemotely,
 						first = true,
 						message;
 					
-					command = '';
-					
-					command += editor;
-					
-					switch (editor) {
-						case 'grep':
-							command += ' -n "Enter your search term here"';
-							break;
-							
-						case 'ls':
-							command += ' -l';
-							break;
-							
-					}
-			
-					foreach (source.paths as path) {
+					if (editor == 'assistant') {
+						var files = [],
+							pathParts = lib.path.split('/').pop().split('_');
 						
-						absolute = path[0] == '/';
-						
-						if (runningLocally
-						 && rootPath
-						 && absolute
-						 && path.substr(0, rootPath.length) == rootPath) {
-							path = path.substr(rootPath.length);
+						if (pathParts[0] == 'zenario') {
+							pathParts.splice(0, 1);
 						}
 						
-						command += ' ';
-						if (first) {
-							first = false;
+						text = "I'm working on the " + pathParts.join(' ');
 						
-						} else if (addLineBreaks) {
-							command += '\\\n';
+						switch (globalName) {
+							case 'zenarioAB':
+								text += ' admin box';
+								break;
+							case 'zenarioO':
+								text += ' organizer panel';
+								break;
+							default:
+								text += ' FEA plugin';
+								break;
 						}
 						
-						if (runningRemotely) {
-							command += ' ' + sftp;
+						if (source.firstYAMLFile) {
+							files.push(source.firstYAMLFile);
 						}
-				
-						if (runningRemotely && !absolute) {
-							command += rootPath;
+						if (source.firstPHPFile) {
+							files.push(source.firstPHPFile);
 						}
-				
-						command += path;
-					}
-					
-					if (runningLocally) {
-						message = phrase.copiedCommandCD;
+						
+						if (files.length) {
+							text += ' in ' + files.join(' and ');
+						}
+						text += '.';
+						
+						message = phrase.copiedAssistant;
+						
+						
 					} else {
-						message = phrase.copiedCommand;
+						text = '';
+				
+						foreach (source.paths as path) {
+							
+							absolute = path[0] == '/';
+							
+							if (first) {
+								first = false;
+							
+							} else  {
+								text += ' ';
+							}
+					
+							text += path;
+						}
+						
+						message = phrase.copiedPaths;
 					}
-			
-					zenarioA.copy(command, message);
+					
+					zenarioA.copy(text, message);
 				}
 			
 				return true;
@@ -3316,6 +3334,42 @@ zenarioA.showSourceFiles = function(globalName, orgMap, doIt, editor) {
 	
 	return false;
 };
+
+
+//Work in progress!
+//I'm trying to add the ability to use the dev tools to view the data on the slot controls.
+zenarioA.debugSlotControls = function(slotName) {
+	
+	var path, slot = zenario.slots[slotName];
+	
+	if (slot.isSitewide) {
+		if (slot.moduleId) {
+			path = 'full_sitewide_slot';
+		} else {
+			path = 'empty_sitewide_slot';
+		}
+	} else {
+		if (slot.moduleId) {
+			path = 'full_slot';
+		} else {
+			path = 'empty_slot';
+		}
+	}
+	
+	//The dev tools won't work without a library or instance with a global name.
+	//Create a very small object here just so we can use the basic functionality from the dev tools.
+	var zenarioSlot = window.zenarioSlot = {
+		slotName: slotName,
+		url: URLBasePath + 'zenario/admin/slot_controls.ajax.php?path=' + path,
+		path: path,
+		//currentTopLevelPath: '',
+		//focus: {tuix: {}},
+		tuix: slot.slotControls
+	};
+	
+	window.open(URLBasePath + 'zenario/admin/dev_tools/dev_tools.php?mode=zenarioSlot');
+}
+
 
 //Functionality for clicking on Menu Nodes. They should:
 	//Follow their hyperlinks in preview mode
@@ -3491,7 +3545,6 @@ zenarioA.savePageMode = function(async, data) {
 	data._save_page_mode = zenarioA.pageMode;
 	data._save_page_toolbar = zenarioA.toolbar;
 	data._save_page_show_grid = zenarioA.showGridOn? 1 : '';
-	data._save_page_show_empty_slots = zenarioA.showEmptySlotsOn? 1 : '';
 	
 	$.ajax({
 		type: 'POST',
@@ -3553,7 +3606,7 @@ zenarioA.manageToastOnReload = function(flags, isOrganizerReload) {
 	var msg;
 	if (msg = flags.TOAST_NEXT_PAGELOAD) {
 		//Use this flag if you're reloading a page and want to display a toast message after the page had reloaded
-		zenarioA.showToastOnNextPageLoad(msg, flags.TOAST_TYPE_NEXT_PAGELOAD);
+		zenarioA.showToastOnNextPageLoad(msg, flags.TOAST_TYPE_NEXT_PAGELOAD, flags.TOAST_OPTIONS_NEXT_PAGELOAD);
 		zenarioT.clearToast();
 	
 	} else if (flags.CLEAR_TOAST) {
@@ -3577,19 +3630,33 @@ zenarioA.imagesWarning = function(title, msg) {
 	zenarioT.longToast(msg, 'warning', {title: title});
 };
 
-zenarioA.showToastOnNextPageLoad = function(msg, type) {
+zenarioA.showToastOnNextPageLoad = function(msg, type, options) {
 	zenario.sSetItem(true, 'toast_next_pageload', msg);
-	zenario.sSetItem(true, 'toast_type_next_pageload', type);
+	zenario.sSetItem(true, 'toast_type_next_pageload', type || '');
+	
+	if (!defined(options)) {
+		options = '';
+	
+	} else if (!_.isString(options)) {
+		options = JSON.stringify(options);
+	}
+	zenario.sSetItem(true, 'toast_options_next_pageload', options);
 };
 
 zenarioA.checkToastThisPageLoad = function() {
 	var msg = zenario.sGetItem(true, 'toast_next_pageload'),
-		type = zenario.sGetItem(true, 'toast_type_next_pageload') || undefined;
+		type,
+		options;
 	
 	if (msg) {
-		zenarioT.longToast(msg, type);
+		type = zenario.sGetItem(true, 'toast_type_next_pageload') || undefined;
+		options = zenario.sGetItem(true, 'toast_options_next_pageload');
+		options = options? JSON.parse(options) : undefined;
+		
+		zenarioT.notification(msg, type, options);
 		zenario.sSetItem(true, 'toast_next_pageload', '');
 		zenario.sSetItem(true, 'toast_type_next_pageload', '');
+		zenario.sSetItem(true, 'toast_options_next_pageload', '');
 	
 	} else if (msg = zenario.sGetItem(true, 'current_toast', true)) {
 		zenarioT.toast(msg);
@@ -3793,19 +3860,22 @@ zenarioA.scanHyperlinksAndDisplayStatus = function(containerId) {
         for (i = 0; i < statuses.length; ++i) {
             for (j = 0; j < $links[i].length; ++j) {
             	
-            	//Don't show a status triangle where the target page is this page
-            	if (
-            		$links[i][j][0].pathname != document.location.pathname
-            		|| (
-						(
-							$links[i][j][0].offsetParent
-							&& $links[i][j][0].offsetParent.classList
-							&& $links[i][j][0].offsetParent.classList.contains("zenario_menu_node")
-						)
+            	//Don't show a status triangle where the target page is this page,
+            	//or on "mailto:" links.
+            	if (!$links[i][j][0].href.includes("mailto:")
+            		&& (
+						$links[i][j][0].pathname != document.location.pathname
 						|| (
-							$links[i][j][0].parentNode
-							&& $links[i][j][0].parentNode.classList
-							&& $links[i][j][0].parentNode.classList.contains("zenario_menu_node")
+							(
+								$links[i][j][0].offsetParent
+								&& $links[i][j][0].offsetParent.classList
+								&& $links[i][j][0].offsetParent.classList.contains("zenario_menu_node")
+							)
+							|| (
+								$links[i][j][0].parentNode
+								&& $links[i][j][0].parentNode.classList
+								&& $links[i][j][0].parentNode.classList.contains("zenario_menu_node")
+							)
 						)
             		)
             	) {
@@ -3860,6 +3930,7 @@ zenarioA.init = function(
 	minPasswordLength,
 	minPasswordScore,
 	
+	showEmptySlotsOn,
 	showGridOn,
 	siteSettings,
 	adminSettings,
@@ -3884,16 +3955,15 @@ zenarioA.init = function(
 		min_extranet_user_password_score: minPasswordScore
 	};
 	
+	if (showEmptySlotsOn) {
+		zenarioA.showEmptySlotsOn = true;
+		$(document.body).addClass('zenario_show_empty_slots_and_mobile_only_slots');
+	}
+	
 	zenarioA.showGridOn = showGridOn;
 	zenarioA.siteSettings = siteSettings;
 	zenarioA.adminSettings = adminSettings;
 	zenarioA.adminPrivs = adminPrivs;
-	
-	//N.B. we used to save the value of zenarioA.showEmptySlotsOn in the session
-	//so that it would stay as it was if you reloaded the same page.
-	//However this ability has since been removed and we now always start a page load
-	//with it in the "off" position.
-	//zenarioA.showEmptySlotsOn = showEmptySlotsOn;
 	
 	zenarioA.importantGetRequests = importantGetRequests;
 	zenarioA.adminHasSpecificPerms = adminHasSpecificPerms;

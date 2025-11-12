@@ -1,0 +1,11 @@
+"Language ID","Module"
+sl,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Prenos dokumenta:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL te strani:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Ta dokument ni v nobeni kategoriji."
+_VIEW_OR_DOWNLOAD,"Poglej/prenesi:"
+_FILE_TYPE_AND_SIZE,"Tip datoteke in velikost:"
+_S3_FILE_TYPE_AND_SIZE,"Tip datoteke S3 in velikost:"
+_S3_FILENAME,"Ime datoteke S3:"

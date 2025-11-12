@@ -51,13 +51,20 @@ class zenario_common_features__admin_boxes__change_tags extends ze\moduleBaseCla
 				FROM ' . DB_PREFIX . 'image_tags
 				ORDER BY name';
 			$result = ze\sql::select($sql);
+			
+			$link = 'organizer.php?#zenario__library/panels/image_library/collection_buttons/tags////';
 			if (ze\sql::numRows($result) <= 0) {
 				$fields['desc']['hidden'] = true;
-				$link = 'organizer.php?#zenario__content/panels/image_tags';
+				
 				$fields['no_tags_warning']['hidden'] = false;
 				$fields['no_tags_warning']['snippet']['html'] = 
-					'No image tags have been created. <a href="' . $link . '">Create tags</a>.';
+					'No image tags have been created. <a href="' . $link . '" target="_blank">Create tags</a>.';
 				return false;
+			} else {
+				ze\lang::applyMergeFields(
+					$fields['desc']['snippet']['html'],
+					['link_start' => '<a href="' . $link . '" target="_blank">', 'link_end' => '</a>']
+				);
 			}
 			while ($row = ze\sql::fetchAssoc($result)) {
 				++$counter;

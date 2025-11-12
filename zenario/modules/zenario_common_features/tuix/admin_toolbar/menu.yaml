@@ -57,7 +57,7 @@ sections:
                         languageId: ""
             view_menu_node_in_sk:
                 priv: _PRIV_EDIT_MENU_ITEM
-                label: Organize menu...
+                label: Edit menu hierarchy...
                 organizer_quick:
                     path: ""
                     target_path: zenario__menu/panels/menu_nodes
@@ -89,11 +89,11 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to detach this content item from the menu?
+                            Detach this content item from the menu?
                             
                             Its menu node will become unlinked. If there is a secondary menu node, it will be promoted to be the primary node.
                         message__orphaned: |
-                            Are you sure you wish to detach this content item from the menu?
+                            Detach this content item from the menu?
                             
                             The content item will be removed from the menu, and site visitors may have difficulty navigating to it. Its menu node will not be deleted but will become an unlinked menu node.
                         button_message: Detach
@@ -134,7 +134,7 @@ sections:
                         languageId: ""
             view_menu_node_in_sk:
                 priv: _PRIV_EDIT_MENU_ITEM
-                label: Organize menu...
+                label: Edit menu hierarchy...
                 organizer_quick:
                     path: ""
                     target_path: zenario__menu/panels/menu_nodes
@@ -156,7 +156,7 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to make this node the primary node for this content item?
+                            Make this node the primary node for this content item?
                             
                             Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
                         button_message: Make primary
@@ -174,11 +174,11 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure you wish to detach this content item from the menu?
+                            Detach this content item from the menu?
                             
                             This secondary menu node will become unlinked, but its primary node will not be affected.
                         message__orphaned: |
-                            Are you sure you wish to detach this content item from the menu?
+                            Detach this content item from the menu?
                             
                             The content item's menu node will become unlinked.
                         button_message: Detach
@@ -196,7 +196,7 @@ sections:
                 ajax:
                     confirm:
                         message: |
-                            Are you sure that you wish to delete this secondary menu node?
+                            Delete this secondary menu node?
                         button_message: Delete
                         cancel_button_message: Cancel
                         message_type: warning

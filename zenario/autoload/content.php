@@ -1264,9 +1264,24 @@ class content {
 		\ze::$visitorVersion = $content['visitor_version'];
 	
 		\ze::$pageTitle = $version['title'];
-		\ze::$pageDesc = $version['description'];
 		\ze::$pageImage = $version['feature_image_id'];
+		
+		
+		//Check that the description & keywords are actually enabled before
+		//loading their values.
+		$sql = "
+			SELECT ct.description_field, ct.keywords_field
+			FROM ". DB_PREFIX. "content_types AS ct
+			WHERE ct.content_type_id = ?";
+		$statement = \ze\sql::prepare($sql, 'a');
+		$row = $statement->fetchAssoc([$content['type']]);
+		
+		if ($row['description_field'] !== 'hidden') {
+			\ze::$pageDesc = $version['description'];
+		}
+		
 		\ze::$pageKeywords = $version['keywords'];
+		
 	
 		\ze::$itemCSS = $version['css_class'];
 		\ze::$date = ($version['release_date'] ?: ($version['published_datetime'] ?: $version['created_datetime']));

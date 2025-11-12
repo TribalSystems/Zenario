@@ -113,7 +113,7 @@ class zenario_conductor__link {
 				}
 			}
 			
-			return ze\link::toItem(ze::$cID, ze::$cType, false, $dRequests, ze::$alias);
+			return ze\link::toItemInVisitorsLanguage(ze::$cID, ze::$cType, false, $dRequests, ze::$alias);
 		}
 	}
 }
@@ -223,7 +223,7 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 				
 				$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
 				$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('slideId='. $slide['id'], false);
-				$tabMergeFields['Tab_Name'] = $this->formatTitleText($slide['slide_label'], true);
+				$tabMergeFields['Tab_Name'] = $this->formatTitleText(htmlspecialchars($slide['slide_label']), true);
 				
 				$this->addSlideImage($tabMergeFields, $slide, $tabOrd);
 				
@@ -441,11 +441,6 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 		//If the slide we're trying to display has at least one plugin on it, display it.
 		if ($this->slideNum !== false && $this->loadSlide($this->slideNum)) {
 			$this->show = true;
-		
-		//Special edge-case for if no slides have been created. Return true in this case.
-		} elseif (!ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1])) {
-			$this->loadSlide($this->slideNum = 1);
-			$this->show = true;
 		}
 		
 		if ($this->show) {
@@ -456,6 +451,7 @@ class zenario_ajax_nest extends zenario_abstract_nest {
 			
 			return true;
 		} else {
+			$this->nestEmptyMessage($conductorEnabled);
 			return false;
 		}
 	}

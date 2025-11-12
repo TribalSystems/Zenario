@@ -22,40 +22,67 @@ zenario_alias:
                     html: true
                     #message is set in the PHP class.
             fields:
+                title:
+                    ord: 1
+                    label: 'Browser title:'
+                    type: text
+                    readonly: true
                 alias:
+                    ord: 2
                     label: 'Alias:'
                     type: text
                     maxlength: 75
-                    onkeyup: zenarioAB.validateAlias(); zenarioAB.removeHttpAndHttpsFromAlias();
-                    onchange: zenarioAB.tuix.___alias_changed = true;
+                    oninput: |
+                        zenarioAB.validateAlias();
+                        zenarioAB.removeHttpAndHttpsFromAlias();
+                    onchange: |
+                        zenarioAB.tuix.___alias_changed = true;
+                        $(lib.get('alias_changed')).val(1);
                     side_note: |
-                        An alias for this content item, and part of its URL.
-                        The combination of a content item's alias and its language code is unique.
-                        Aliases can only contain the letters a-z, numbers, underscores or hyphens.
-                        They may not contain spaces or special characters.
+                        An alias uniquely identifies a content item. (On a multi-language site, it uniquely identifies a content item translation chain.)
+                        It is the last part of the URL. 
+                        Aliases can contain the letters A-Z, a-z, numbers, underscores and hyphens (no spaces or special characters).
+                    redraw_immediately_onchange: true
+                suggest_alias_from_title:
+                    ord: 4
+                    type: button
+                    css_class: zfab_text_link_button
+                    value: 'Suggest alias from title'
+                    onclick: |
+                        $(lib.get('alias_changed')).val("");
+                        zenarioAB.tuix.___alias_changed = false; 
+                        zenarioAB.contentTitleChange(); 
+                    redraw_onchange: true
+                    visible_if: |
+                        !lib.value('alias')
+                
                 a_warning_display:
+                    ord: 6
                     same_row: true
                     snippet:
                         html: |
                             <div id="alias_warning_display"></div>
                 language_id:
+                    ord: 7
                     label: 'Language:'
                     type: select
                     readonly: true
                 update_translations:
+                    ord: 8
                     visible_if: zenarioA.multipleLanguagesEnabled()
-                    label: 'For Translations:'
+                    label: 'For items in this translation chain:'
                     type: select
                     values:
                         update_all:
                             ord: 1
-                            label: Update all aliases
+                            label: Update aliases of all items in translation chain
                         update_this:
                             ord: 2
-                            label: Just update this translation
+                            label: Just update this content item's alias
                     onchange: zenarioAB.validateAlias();
                     redraw_onchange: true
                 lang_code_in_url:
+                    ord: 9
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
                         && zenarioAB.value('update_translations') == 'update_this'
@@ -75,6 +102,7 @@ zenario_alias:
                             label__hide: Use default behaviour (Hide the language code if possible)
                     onchange: zenarioAB.validateAlias();
                 lang_code_in_url_dummy:
+                    ord: 10
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
                         && zenarioAB.value('update_translations') != 'update_this'
@@ -86,3 +114,7 @@ zenario_alias:
                         show:
                             ord: 1
                             label: Always add the language code
+                alias_changed:
+                    ord: 11
+                    type: hidden
+                    hidden: true

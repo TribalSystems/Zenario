@@ -3,6 +3,12 @@
 zenario_content:
     tabs:
         meta_data:
+            notices:
+                translation_error:
+                    show: false
+                    type: error
+                    html: true
+                    message: "Google API reported an error. See [[link_start]]site settings[[link_end]] to check if the API key is valid."
             fields:
                 menu_invisible:
                     grouping: menu

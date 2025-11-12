@@ -24,20 +24,11 @@ zenario_admin:
     tabs:
         permissions:
             fields:
-                perm_jobs:
-                    is_admin_permission: true
-                    grouping: specific_actions
-                    type: checkbox
-                    full_width: true
-                    post_field_label: Manage scheduled tasks
-                perm_jobs_permissions:
-                    is_admin_permission: true
-                    grouping: specific_actions
-                    type: checkboxes
-                    full_width: true
+                perm_advanced_permissions:
                     values:
                         _PRIV_VIEW_SCHEDULED_TASK:
-                            label: "View a scheduled task's details"
+                            label: |
+                              View scheduled tasks
                         _PRIV_MANAGE_SCHEDULED_TASK:
-                            label: Manage scheduled tasks
+                            label: Edit scheduled tasks
                             label_class: zfab_scary_option

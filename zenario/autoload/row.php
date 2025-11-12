@@ -100,7 +100,7 @@ class row {
 				$sql .= ($first? '' : ','). $alias. '`%'. \ze\escape::sql($col). '` = \''. \ze\escape::sql((string) \ze\pde::encrypt($val, true)). '\'';
 			
 				if ($d->hashed) {
-					$sql .= ', '. $alias. '`#'. \ze\escape::sql($col). '` = \''. \ze\escape::sql(\ze\db::hashDBColumn($val)). '\'';
+					$sql .= ', '. $alias. '`#'. \ze\escape::sql($col). '` = \''. \ze\escape::hashedColumn($val). '\'';
 				}
 			
 				$first = false;
@@ -224,7 +224,7 @@ class row {
 			}
 	
 		} elseif ($d->hashed) {
-			$sql .= $cSql. $sign. '\''. \ze\escape::sql(\ze\db::hashDBColumn($val)). '\'';
+			$sql .= $cSql. $sign. '\''. \ze\escape::hashedColumn($val). '\'';
 	
 		} elseif ($d->isInt) {
 			$sql .= $cSql. $sign. ' '. (int) $val;

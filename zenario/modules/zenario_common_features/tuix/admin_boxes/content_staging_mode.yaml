@@ -38,15 +38,12 @@ zenario_content_staging_mode:
                                 margin-top: 4px;
                                 margin-bottom: 15px;
                             ">
-                                <p>You can use staging mode to share a draft of a content
-                                item with a colleague who's not a Zenario administrator.</p>
-                                <p>(This works for content items with permissions set to
-                                <em style="font-style: italic;">
-                                    &ldquo;Public: visible to everyone&rdquo;
-                                </em> but not private content items.)
+                                <p>Staging mode allows you to show a draft of a content
+                                item with someone who's not a Zenario administrator.</p>
                             </div>
                 use_access_code:
                     type: checkbox
+                    onoff: true
                     redraw_onchange: true
                 access_code:
                     indent: 1
@@ -78,7 +75,7 @@ zenario_content_staging_mode:
                     hide_if_previous_outdented_value_isnt: 1
                     type: button
                     css_class: zenario_gp_button
-                    value: Suggest
+                    value: Suggest a code
                     format_onchange: true
                     onclick: |
                         lib.markAsChanged();
@@ -94,9 +91,10 @@ zenario_content_staging_mode:
                     visible_if:
                         lib.valueIsNotEmpty: copy_code
                     snippet:
-                        p: |
-                            To let a colleague see the draft of this page in staging mode,
-                            copy this URL and send it to them:
+                        html: >
+                            <p>Note that staging mode only works for content items with permission set to Public, and not Private. In-page links to other unpublished content items will not be shown, even if they are in staging mode.</p>
+
+                            <p>To show this draft to a non-administrator, copy this URL and send it to them:</p>
                 copy_code:
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
@@ -118,13 +116,4 @@ zenario_content_staging_mode:
                             hidden: false
                             type: information
                             message: >
-                                This code will start working as soon as you press the
-                                "Save" button.
-                
-                note_about_links:
-                    snippet:
-                        html: |
-                            <em style="font-style: italic;">
-                                Please note that staging mode will not show links to unpublished
-                                content items, even if they are in staging mode.
-                            </em>
+                                Don't forget to save this box! The code will start working after saving.

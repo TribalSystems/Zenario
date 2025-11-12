@@ -300,7 +300,7 @@ class datasetAdm {
 		
 		
 		if ($flat) {
-			$columns = ['id', 'is_system_field', 'label', 'default_label', 'required', 'required_message'];
+			$columns = ['id', 'is_system_field', 'db_column', 'label', 'default_label', 'required', 'required_message'];
 		} else {
 			$columns = ['id', 'tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord', 'required', 'required_message', 'values_source'];
 		}
@@ -405,6 +405,7 @@ class datasetAdm {
 	}
 
 	public static function getGroupPickerCheckboxesForFAB() {
+		$dataset = \ze\dataset::details('users');
 		//Populate the list of groups
 		$lov = \ze\datasetAdm::listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 	
@@ -412,6 +413,12 @@ class datasetAdm {
 		foreach ($lov as &$v) {
 			if (!empty($v['parent'])) {
 				$parents[$v['parent']] = true;
+			}
+			
+			if (!empty($v['label']) && !empty($v['db_column'])) {
+				$v['type'] = 'group';
+				$groupMemberCount = (int) \ze\user::getGroupMemberCount($v, $dataset);
+				$v['label'] .= ' (' . \ze\admin::nPhrase('1 user', '[[count]] users', $groupMemberCount, ['count' => $groupMemberCount]) . ')';
 			}
 		}
 	

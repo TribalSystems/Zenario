@@ -143,7 +143,7 @@ foreach ($rules as $rule) {
 			
 				} else {
 					if ($hashed) {
-						$check = $col. " = '". \ze\escape::sql(\ze\db::hashDBColumn($rule['value'])). "'";
+						$check = $col. " = '". \ze\escape::hashedColumn($rule['value']). "'";
 					
 					} else {
 						switch ($field['type']) {

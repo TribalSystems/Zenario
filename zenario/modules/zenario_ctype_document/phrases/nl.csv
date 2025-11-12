@@ -1,0 +1,11 @@
+"Language ID","Module"
+nl,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Document download:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL van deze pagina:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Dit document behoort tot geen enkele categorie."
+_VIEW_OR_DOWNLOAD,"Bekijk/download:"
+_FILE_TYPE_AND_SIZE,"Bestandstype en grootte:"
+_S3_FILE_TYPE_AND_SIZE,"S3 bestandstype en grootte:"
+_S3_FILENAME,"S3 bestandsnaam:"

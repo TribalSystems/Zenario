@@ -110,7 +110,7 @@ zenario__layouts:
                     format: enum
                     values:
                         active: Available
-                        suspended: Archived
+                        suspended: Retired
                 
             default_sort_column: name
             label_format_for_grid_view: '[[code]] [[name]]'
@@ -235,7 +235,7 @@ zenario__layouts:
                 archived:
                     css_class: zenario_ib_archived
                     tooltip: |
-                        Archived
+                        Retired, so cannot be used for new content
                     visible_if: |
                         item.status == 'suspended'
                 

@@ -43,10 +43,6 @@ class layout {
 				l.header_and_footer,
 				l.skin_id,
 				l.css_class,
-				l.bg_image_id,
-				l.bg_color,
-				l.bg_position,
-				l.bg_repeat,
 				l.json_data_hash";
 		
 		if ($checkIfDefault) {
@@ -56,8 +52,8 @@ class layout {
 		
 		if ($showUsage) {
 			$sql .= ",
-				(	SELECT
-						count( DISTINCT id)
+				(
+					SELECT count(DISTINCT tag_id)
 					FROM " . DB_PREFIX . "content_item_versions
 					WHERE layout_id = " . (int) $layoutId . "
 				) AS content_item_count

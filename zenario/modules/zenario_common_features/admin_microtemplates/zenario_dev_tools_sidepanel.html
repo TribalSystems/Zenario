@@ -166,7 +166,8 @@
 				<div class="info_text">
 					<% switch (devTools.mode) { %>
 						<% case 'zenarioAB': %>
-							For more details see <code>zenario/<wbr>reference/<wbr>admin_box_schema.yaml</code> or
+							For more details see <code>zenario/<wbr>reference/<wbr>admin_box_schema.yaml</code>
+							and <code>zenario/<wbr>reference/<wbr>tuix_form_schema.yaml</code>, or
 							<% break; %>
 		
 						<% case 'zenarioAT': %>
@@ -178,8 +179,8 @@
 							<% break; %>
 		
 						<% default: %>
-							For more details see <code>zenario/<wbr>reference/<wbr>admin_toolbar_schema.yaml</code>
-							and <code>zenario/<wbr>reference/<wbr>fea_schema.yaml</code>, or
+							For more details see <code>zenario/<wbr>reference/<wbr>fea_schema.yaml</code>
+							and <code>zenario/<wbr>reference/<wbr>tuix_form_schema.yaml</code>, or
 							<% break; %>
 					<% } %>
 					<a target="_blank" href="{{m.object.url|escape}}">online documentation</a>.

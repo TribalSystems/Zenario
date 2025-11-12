@@ -2,31 +2,25 @@
 |||||||| This file lists Admin Phrases. It's read by a program that uses binomial search, so the phrase  ||||||||||
 |||||||| codes *must* be kept in (strict binary) alphabetical order. This header must also be kept here. ||||||||||
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-_ACCESS_KEY_EQUALS|Access Key = [[key]]
-_ALL_EXTRANET_USERS|All extranet users
-_ANOTHER_VERSION_OF_PLUGIN_IS_INSTALLED|Another version of this Module is installed or running
-_CANCEL|Cancel
-_DIRECTORY_DOES_NOT_EXIST|The directory [[dirpath]] does not exist. You should create this directory, or ask your system administrator to do so.
-_DIRECTORY_NOT_READ_AND_WRITEABLE|The directory [[dirpath]] does not have read and write permissions set
 _ERROR_ADMIN_LOGIN_MULTISITE_CONNECTION|You cannot use your multi-site account because this site has lost its connection to the global database. Please check that the correct settings have been entered in the zenario_siteconfig.php file.
 _ERROR_ADMIN_LOGIN_MULTISITE_PASSWORD_CHANGE_NEEDED|Your multi-site account has been flagged for a password change. Please log into the control site to change it.
 _ERROR_ADMIN_LOGIN_MULTISITE_PERMISSIONS|Your multi-site account only has permissions on specific areas, and cannot be used to accesss this site.
 _ERROR_ADMIN_LOGIN_PASSWORD|Your administrator username and password were not recognised. Please check and try again.
 _ERROR_ADMIN_LOGIN_PASSWORD_RESET|This account requires a password reset before it can log in.
 _ERROR_ADMIN_LOGIN_USERNAME|Your administrator username and password were not recognised. Please check you're using the username or registered email of your administrator account (not login details for an extranet user account).
-_ERROR_INSTANCE_NAME|Please enter a name for this plugin.
-_ERROR_MUST_ENTER_TITLE_FOR_MENU_ITEM|Please ensure you enter text for this menu node.
-_FIX_DOCSTORE_DIR_TO_BACKUP|Any document files in your backups will not be restored. Set up the docstore directory before restoring a backup to resolve this issue.
-_MEDIUM|Medium
-_MSG_CATEGORY_ALREADY_EXISTS|A category called "[[name]]" already exists. Please choose a different name.
-_MSG_ENTER_ALL_FIELDS|You must enter details in all fields
-_MSG_PASS_2|Please ensure that the passwords you submit are identical.
-_MSG_PASS_NOT_CHANGED|Your new password must be different from your current password.
-_MSG_PASS_WRONG|You did not type your current password correctly.
-_NO_ADMINS_TO_BACKUP|There are no local administrators for this site with management rights. We recommend you create one before taking a backup.
-_NO_GROUP_MEMBERSHIPS|No current group memberships
-_OK|OK
-_VLP_IMPORT_FOR_WRONG_LANGUAGE|The language pack you are trying to import is for a different language.
+_ERROR_EMAIL_ADDRESS_IN_USE|This email address is already in use.
+_ERROR_EMAIL_ADDRESS_INVALID|The email address is not valid.
+_ERROR_FIRST_NAME_TOO_LONG|First name cannot be more than 100 characters long.
+_ERROR_LAST_NAME_TOO_LONG|Last name cannot be more than 100 characters long.
+_ERROR_SALUTATION_TOO_LONG|Salutation cannot be more than 25 characters long.
+_ERROR_SCREEN_NAME_IN_USE|This screen name is already in use.
+_ERROR_SCREEN_NAME_TOO_LONG|Screen name cannot be more than 50 characters long.
+_ERROR_SCREEN_NAME_USES_INVALID_CHARACTERS|Screen name can contain only lower case letters a-z, capital letters A-Z, numbers 0-9, hyphens, underscores, and periods.
+_FILE_SIZE_UNIT_GB|GB
+_FILE_SIZE_UNIT_MB|MB
+_FILE_SIZE_UNIT_KB|KB
+_FILE_SIZE_UNIT_BYTE|byte
+_FILE_SIZE_UNIT_BYTES|bytes
 ~|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||~
 ~||||||| This file lists Admin Phrases. It's read by a program that uses binomial search, so the phrase  |||||||||~
 ~||||||| codes *must* be kept in (strict binary) alphabetical order. This footer must also be kept here. |||||||||~

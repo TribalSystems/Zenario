@@ -27,6 +27,6 @@ zenario_admin:
                 _PRIV_MANAGE_COUNTRY:
                     type: checkbox
                     full_width: true
-                    post_field_label: Edit countries
+                    post_field_label: Countries
                     is_admin_permission: true
                     grouping: specific_actions

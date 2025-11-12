@@ -6,10 +6,11 @@ zenario__menu:
         #to the menu sections panel so admins can still create/edit/delete them.
         menu_sections:
             ord: 999999
+            separator_before_this: true
             css_class: menu_section_edit
-            label: Edit menu sections
+            label: Menu sections
             tooltip: >
-                    (Advanced) Menu navigation is divided into "sections", i.e. the visual navigation areas on each page. Edit menu sections here.
+                (Advanced) Menu navigation is divided into "sections", i.e. the visual navigation areas on each page. Edit menu sections here.
             link:
                 path: ''
     panels:
@@ -31,6 +32,9 @@ zenario__menu:
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_menu_section
+                    disabled_if: item.name == 'Main'
+                    disabled_tooltip: |
+                      You cannot rename the menu section "Main".
                 delete:
                     priv: _PRIV_CREATE_DELETE_MENU_SECTION
                     label: Delete section
@@ -58,3 +62,38 @@ zenario__menu:
                     no_phrase: ''
                     db_column: mi.invisible
 
+            item_buttons:
+                make_menu_node_invisible:
+                    priv: _PRIV_CREATE_DELETE_MENU_SECTION
+                    parent: action_dropdown
+                    ord: make_primary + 0.1
+                    label: Make menu node invisible
+                    multiple_select_label: Make menu nodes invisible
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            #The confirmation message is created in the PHP class file.
+                            button_message: Make invisible
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_invisible: 1
+                    visible_if_for_any_selected_items: (!item.ghost && !item.invisible)
+                make_menu_node_visible:
+                    priv: _PRIV_CREATE_DELETE_MENU_SECTION
+                    parent: action_dropdown
+                    ord: make_primary + 0.2
+                    label: Make menu node visible
+                    multiple_select_label: Make menu nodes visible
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    ajax:
+                        confirm:
+                            #The confirmation message is created in the PHP class file.
+                            button_message: Make visible
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_visible: 1
+                    visible_if_for_any_selected_items: (!item.ghost && item.invisible)

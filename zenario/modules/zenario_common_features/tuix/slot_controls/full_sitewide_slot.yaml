@@ -65,9 +65,20 @@ full_sitewide_slot:
     actions:
         settings:
             label:
+                normal: Edit contents
+                cant_make_draft: View contents
+                trashed: View content (to edit, click Re-draft)
+                hidden: View content (to edit, click Re-draft)
                 settings: Edit plugin settings
                 view_settings: View plugin settings
             onclick: return zenarioA.pluginSlotEditSettings(this, slotName);
+    
+    switch_to:
+        switch_to_layout:
+            page_modes:
+                edit: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
+            label: Switch to Layout view to edit plugin settings
     
     re_move_place:
         move_on_layout_layer:
@@ -124,7 +135,7 @@ full_sitewide_slot:
             page_modes:
                 edit: true
             onclick: >
-                if (zenarioA.draft(this.id, false, 'Are you sure you wish to show nothing on this content item?', 'Hide')) {
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to show nothing in this slot on this content item?', 'Show nothing')) {
                     zenarioA.hidePlugin(this, slotName);
                 }
                 return false;
@@ -150,9 +161,3 @@ full_sitewide_slot:
                 edit: true
             css_class: zenario_slotControl_no_perms
             label: 'Limited options: you lack Designer permission'
-    switch_to:
-        switch_to_layout:
-            page_modes:
-                edit: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
-            label: Switch to Layout view to edit plugin settings

@@ -5,18 +5,15 @@ zenario_image_tag:
     key:
         id: ""
     hide_tab_bar: true
-    max_height: 230
+    max_height: 300
     title: Creating a tag
     title_for_existing_records: 'Editing the tag "[[details/name]]".'
+    save_and_continue_button_message: "Save and create another"
     tabs:
         details:
             edit_mode:
                 enabled: true
             fields:
-                description: 
-                    full_width: "1"
-                    snippet: 
-                        html: Image tags are a helpful way to organise your images. They are only seen by administrators, not website visitors.
                 name:
                     label: 'Tag name:'
                     type: text

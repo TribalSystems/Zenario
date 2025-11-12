@@ -1,0 +1,191 @@
+---
+
+
+
+common_definitions:
+    stringy: &stringy
+        - number
+        - string
+    booly: &booly
+        - boolean
+        - string
+    variable: &variable
+        - boolean
+        - number
+        - string
+        - "null"
+    css_class: &css_class
+        type: string
+        show_by_default_in_editor: true
+        description: A CSS class name to add to this element.
+    ord: &ord
+        type: *stringy
+        description: >
+            This controls the order in which elements are drawn on the screen.
+            
+            If not set, it defaults to the order the CMS finds them in.
+            
+            From version 10.1 onwards, we have some logic where you can place a field or a button
+            immediately before or after an existing field or button using an offset.
+            To do this you need to use a pattern like this: "field_name + 0.1" (to put your field after)
+            or like this: "field_name - 0.1" (to put your field before).
+    hidden: &hidden
+        type: boolean
+        description: >
+            The hidden property hides elements from view when <code>true</code>.
+    visible_if: &visible_if
+        type:
+            - string
+            - object
+        description: >
+            A snippet of JavaScript code to be evaluated.
+            
+            From version 7.5 onwards, to avoid using an inefficent eval(), you can also call a function
+            by using an object of the form:
+                lib.methodName => arg1, arg2, arg3, ...
+            
+            The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
+    
+    
+    
+    button: &button
+        type: object
+        description: >
+            A button in the slot-controls drop-down.
+        properties:
+            ord: *ord
+            css_class: *css_class
+            label:
+                type: string
+                show_by_default_in_editor: true
+                description: >
+                    A label for this button
+            
+            hidden: *hidden
+            visible_if: *visible_if
+            
+            page_modes:
+                type: object
+                description: >
+                    This lets you set the page modes that this button should be visible in.
+                properties:
+                    edit:
+                        type: boolean
+                        description: >
+                            Set this if you want your button to be visible in edit mode.
+                    layout:
+                        type: boolean
+                        description: >
+                            Set this if you want your button to be visible in layout mode.
+            
+            onclick:
+                type: string
+                description: >
+                    Some JavaScript code to run when your button is clicked.
+            
+            pick_new_plugin:
+                type: object
+                description: >
+                    Set this property if this button should call the zenarioA.pickNewPlugin() function
+                    when this button is clicked on.
+                properties:
+                    level:
+                        type: integer
+                        description: >
+                            Enter the level that the new plugin is being picked for.
+                            1 for item layout, 2 for layout, 3 for site-wide.
+                    is_nest:
+                        type: *booly
+                        description: >
+                            Set whether this should be a plugin, a nest, or a slideshow.
+                            For backwards compatibility reasons, the values are as follows:
+                            false (as a boolean) for plugin, true (as a boolean) for nest, 'slideshow' (as a string) for a slideshow.
+                    preselect:
+                        type: boolean
+                        description: >
+                            Whether to pre-select the currently selected plugin/nest/slideshow
+            
+            link_to_new_tab:
+                type: string
+                description: >
+                    Enter a URL here to show a 'target="_blank"' link to that URL after the label.
+            
+            show_as_option_in_fab:
+                type: boolean
+                description: >
+                    This is a flag to signal that this button/option should be shown in the slot options FAB
+                    and not in the slot-controls drop-down.
+
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: Slot Control Schema
+
+type: object
+additionalProperties:
+    title: Slot Control
+    type: object
+    properties:
+        css_class:
+            type: string
+            description: >
+                A CSS class name to place on the admin-wrapper for this slot.
+            
+        meta_info:
+            type: object
+            description: >
+                An object containing some variables with metadata about this slot.
+            properties:
+                is_sitewide:
+                    type: boolean
+                    description: >
+                        Whether this slot is a site-wide slot.
+                is_header:
+                    type: boolean
+                    description: >
+                        Whether this slot is in the site-wide header.
+                is_footer:
+                    type: boolean
+                    description: >
+                        Whether this slot is in the site-wide footer.
+        info:
+            type: object
+            description: >
+                A container for the buttons to show in the "info" block of the slot controls.
+            additionalProperties: *button
+        notes:
+            type: object
+            description: >
+                A container for the buttons to show in the "notes" block of the slot controls.
+            additionalProperties: *button
+        actions:
+            type: object
+            description: >
+                A container for the buttons to show in the "actions" block of the slot controls.
+            additionalProperties: *button
+        switch_to:
+            type: object
+            description: >
+                A container for the buttons to show in the "switch to..." block of the slot controls.
+            additionalProperties: *button
+        re_move_place:
+            type: object
+            description: >
+                A container for the buttons to show in the "remove/replace" block of the slot controls.
+            additionalProperties: *button
+        overridden_info:
+            type: object
+            description: >
+                A container for the buttons to show in the "overriden info" block of the slot controls.
+            additionalProperties: *button
+        overridden_actions:
+            type: object
+            description: >
+                A container for the buttons to show in the "overriden actions" block of the slot controls.
+            additionalProperties: *button
+        no_perms:
+            type: object
+            description: >
+                A container for the buttons to show in the "no permissions" block of the slot controls.
+            additionalProperties: *button
+            
+            

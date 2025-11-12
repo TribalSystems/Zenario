@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__modules:
+zenario__library:
     panels:
         nested_plugins:
             panel_type: hierarchy
@@ -8,6 +8,7 @@ zenario__modules:
             key:
                 usesConductor: false
                 instanceId: ''
+                nest_module_class_name: ''
                 skinId: ''
                 cID: ''
                 cType: ''
@@ -232,7 +233,7 @@ zenario__modules:
                     label: Open conductor state diagram
                     hide_in_select_mode: true
                     link:
-                        path: zenario__modules/panels/conductor
+                        path: zenario__library/panels/conductor
                         branch: true
                         refiner: from_nested_plugins
             inline_buttons:
@@ -242,6 +243,12 @@ zenario__modules:
                     css_class: inline_warning
                     tooltip: |
                         Warning: this slide will not appear, please select it and add a plugin (e.g. Banner).
+                at_least_one_module_should_not_be_used_in_regular_nest:
+                    visible_if: |
+                        tuix.key.nest_module_class_name == 'zenario_nest' && item.at_least_one_module_should_not_be_used_in_regular_nest
+                    css_class: inline_warning
+                    tooltip: |
+                        Warning: this slide contains at least one module whose plugins should not be used in a regular Nest: [[disallowed_module_list]]. You should convert this Nest to an Ajax Nest.
                 inner_slide_is_not_first:
                     visible_if: |
                         tuix.key.aLib === 'one_slide' &&
@@ -249,7 +256,7 @@ zenario__modules:
                         item.slide_num > 1
                     css_class: inline_warning
                     tooltip: |
-                        Warning: only the first slide is being shown in this nest.
+                        Warning: this nest is set to only have one slide, so this slide will not appear. Check nest settings, the appearance setting.
                 inner_slide_is_first:
                     visible_if: |
                         tuix.key.usesConductor &&
@@ -299,10 +306,10 @@ zenario__modules:
                     css_class: zenario_create_a_new
                     label: Copy plugin from library...
                     combine_items:
-                        path: zenario__modules/panels/modules/refiners/nestable_only////
-                        path_if_wireframe: zenario__modules/panels/modules/refiners/nestable_wireframes_only////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/modules
+                        path: zenario__library/panels/modules/refiners/nestable_only////
+                        path_if_wireframe: zenario__library/panels/modules/refiners/nestable_wireframes_only////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/modules
                         max_path: ''
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Copy
@@ -317,8 +324,13 @@ zenario__modules:
                     label: Upload an image
                     css_class: zenario_create_a_new
                     upload:
-                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-                        fileDesc: Images
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
                         multi: true
                         drag_and_drop: true
                         request:

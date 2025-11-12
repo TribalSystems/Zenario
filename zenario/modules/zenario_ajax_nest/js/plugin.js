@@ -658,6 +658,12 @@ zenario_conductor.request = function(slot, commandDetails, newRequests) {
 	
 	requests.state = toState;
 	
+	//If the visitor is using the visLang variable to view the current content item in a different language,
+	//try to keep it in the URL when using the conductor.
+	if (defined(zenario.visLang)) {
+		requests.visLang = zenario.visLang;
+	}
+	
 	return requests;
 };
 

@@ -26,18 +26,24 @@
  */
 (function(zenario, zenario_cycle2_interface, undefined) {
 	
-	var getContainerIdFromEl = zenario.getContainerIdFromEl;
-
 
 
 zenario_cycle2_interface.show = function(el, opt, startingSlide) {
-	var containerId = getContainerIdFromEl(el);
+	var containerId = zenario.getContainerIdFromEl(el),
+		$slideShow = $('#' + containerId + ' .nest_plugins_wrap'),
+		loopSlides = opt.next_prev_buttons_loop,
+		$prevButton = $('#' + containerId + '-prevButton'),
+		$nextButton = $('#' + containerId + '-nextButton');
 	
-	$('#' + containerId + ' .nest_plugins_wrap')
+	$slideShow
 		.data('cycle-slides', 'div.nest_plugins')
 		.cycle({
-			fx: opt.fx, sync: opt.sync, timeout: opt.timeout, speed: opt.speed, pauseOnHover: !!opt.pause,
-			loop: opt.next_prev_buttons_loop ? 0 : 1,
+			fx: opt.fx,
+			sync: opt.sync,
+			timeout: opt.timeout,
+			speed: opt.speed,
+			pauseOnHover: !!opt.pause,
+			loop: loopSlides? 0 : 1,		//N.b. 0 = loop forever, 1 = go through the slides once then stop
 			startingSlide: startingSlide,
 			//autoHeight: 'container', //Has height issues when loading on firefox
 			maxZ: 90, //100 is default and Admin controls have z-index 99
@@ -45,18 +51,42 @@ zenario_cycle2_interface.show = function(el, opt, startingSlide) {
 			log: false
 		})
 		.on('cycle-before', function(event, optionHash, outgoingSlideEl, incomingSlideEl, forwardFlag) {
-			var tab = optionHash.slideNum,
-				sel = '#' + containerId + ' .tab_' + tab;
+			
+			var slideNum = optionHash.slideNum,
+				sel = '#' + containerId + ' .tab_' + slideNum;
 		
 			$('#' + containerId + ' .tab_on').not(sel).removeClass('tab_on').addClass('tab');
 			$(sel).removeClass('tab').addClass('tab_on');
+		})
+		.on('cycle-update-view', function(event, optionHash, outgoingSlideEl, incomingSlideEl, forwardFlag) {
+			
+			var currSlide = optionHash.currSlide;
+			
+			if (!loopSlides) {
+				if (currSlide == 0) {
+					$prevButton.addClass('prev_disabled');
+					$slideShow.data('zenario-prev_disabled', '1');
+				} else {
+					$prevButton.removeClass('prev_disabled');
+					$slideShow.data('zenario-prev_disabled', '');
+				}
+				
+				if (currSlide == optionHash.slideCount - 1) {
+					$nextButton.addClass('next_disabled');
+					$slideShow.data('zenario-next_disabled', '1');
+				} else {
+					$nextButton.removeClass('next_disabled');
+					$slideShow.data('zenario-next_disabled', '');
+				}
+			}
 		});
 };
 
 zenario_cycle2_interface.page = function(el, i, mouseover) {
-	var containerId = getContainerIdFromEl(el);
+	var containerId = zenario.getContainerIdFromEl(el),
+		$slideShow = $('#' + containerId + ' .nest_plugins_wrap');
 	
-	$('#' + containerId + ' .nest_plugins_wrap').cycle('goto', i);
+	$slideShow.cycle('goto', i);
 	
 	if (mouseover) {
 		this.pause(containerId);
@@ -66,29 +96,39 @@ zenario_cycle2_interface.page = function(el, i, mouseover) {
 };
 
 zenario_cycle2_interface.next = function(el) {
-	var containerId = getContainerIdFromEl(el);
+	var containerId = zenario.getContainerIdFromEl(el),
+		$slideShow = $('#' + containerId + ' .nest_plugins_wrap');
 	
-	$('#' + containerId + ' .nest_plugins_wrap').cycle('next');
+	if (!$slideShow.data('zenario-next_disabled')) {
+		$slideShow.cycle('next');
+	}
+	
 	return false;
 };
 
 zenario_cycle2_interface.prev = function(el) {
-	var containerId = getContainerIdFromEl(el);
+	var containerId = zenario.getContainerIdFromEl(el),
+		$slideShow = $('#' + containerId + ' .nest_plugins_wrap');
 	
-	$('#' + containerId + ' .nest_plugins_wrap').cycle('prev');
+	if (!$slideShow.data('zenario-prev_disabled')) {
+		$slideShow.cycle('prev');
+	}
+	
 	return false;
 };
 
 zenario_cycle2_interface.pause = function(el) {
-	var containerId = getContainerIdFromEl(el);
+	var containerId = zenario.getContainerIdFromEl(el),
+		$slideShow = $('#' + containerId + ' .nest_plugins_wrap');
 	
-	$('#' + containerId + ' .nest_plugins_wrap').cycle('pause');
+	$slideShow.cycle('pause');
 };
 
 zenario_cycle2_interface.resume = function(el) {
-	var containerId = getContainerIdFromEl(el);
+	var containerId = zenario.getContainerIdFromEl(el),
+		$slideShow = $('#' + containerId + ' .nest_plugins_wrap');
 	
-	$('#' + containerId + ' .nest_plugins_wrap').cycle('resume');
+	$slideShow.cycle('resume');
 };
 
 

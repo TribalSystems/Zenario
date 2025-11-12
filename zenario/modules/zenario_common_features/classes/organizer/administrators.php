@@ -43,6 +43,50 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 		
 		$currentlyLoggedInAdmin = ze\admin::id();
 		
+		
+		//Get a list of which admin permissions are core/advanced/module permissions.
+		//Note: I don't want to hard-code this so I'll load and read them from the YAML
+		//file.
+		$corePrivs = [];
+		$advancedPrivs = [];
+		$tags = ze\tuix::readFile(CMS_ROOT. 'zenario/modules/zenario_common_features/tuix/admin_boxes/admin_perms.yaml');
+		foreach ($tags['zenario_admin']['tabs']['permissions']['fields'] as $fieldCodeName => $field) {
+			
+			$fieldType = $field['type'] ?? null;
+			
+			if ($fieldType == 'checkboxes' && !empty($field['values'])) {
+				if ($fieldCodeName == 'perm_advanced_permissions') {
+					$advancedPrivs = array_keys($field['values']);
+				} else {
+					$corePrivs = array_merge($corePrivs, array_keys($field['values']));
+				}
+			}
+		}
+		
+		//Use these lists to prepare some SQL statements that will give us a count of
+		//an admin's permissions
+		$sql = "
+			SELECT COUNT(action_name)
+			FROM ". DB_PREFIX. "action_admin_link
+			WHERE admin_id = ?
+			  AND action_name IN (". ze\escape::in($corePrivs, 'sql'). ")";
+		$corePrivsStatement = \ze\sql::prepare($sql, 'i');
+		
+		$sql = "
+			SELECT COUNT(action_name)
+			FROM ". DB_PREFIX. "action_admin_link
+			WHERE admin_id = ?
+			  AND action_name IN (". ze\escape::in($advancedPrivs, 'sql'). ")";
+		$advancedPrivsStatement = \ze\sql::prepare($sql, 'i');
+		
+		$sql = "
+			SELECT COUNT(action_name)
+			FROM ". DB_PREFIX. "action_admin_link
+			WHERE admin_id = ?
+			  AND action_name NOT IN (". ze\escape::in(array_merge($corePrivs, $advancedPrivs), 'sql'). ")
+			  AND action_name NOT LIKE 'perm_%'";
+		$modulePrivsStatement = \ze\sql::prepare($sql, 'i');
+		
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$item['has_permissions'] = ze\row::exists('action_admin_link', ['admin_id' => $id]);
@@ -109,53 +153,20 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 				);
 			}
 			
-			if ($item['last_login']) {
-				$item['last_login'] = ze\admin::formatRelativeDateTime($item['last_login'], "day", true, 'vis_date_format_med', $useDefaultLang = true);
-			} else {
-				$item['last_login'] = ze\admin::phrase('Never logged in');
+			$originalLastLogin = $item['last_login'];
+			$loginStatus = ze\admin::getFormattedLoginStatus($id, $item);
+			$item['last_activity_time'] = $loginStatus['last_activity_time'];
+			if ($loginStatus['pending_2fa']) {
+				$item['pending_2fa'] = ze\admin::phrase('Pending 2FA');
 			}
-
-			//Check if an admin has ever logged in.
-			if ($sessionId = $item['session_id']) {
-
-				if (file_exists(session_save_path(). "/sess_" . $sessionId)) {
-					clearstatcache(true, session_save_path(). "/sess_" . $sessionId);
-					$sessionInfo = stat(session_save_path(). "/sess_" . $sessionId);
-				
-					//Check how long ago the admin was active.
-					$lastActivityTimestamp = $sessionInfo['mtime'];
-		
-					//If the admin was active less than 10 mins ago, show "Logged in now" instead of a date.
-					$inactivityDuration = (time() - $lastActivityTimestamp);
-					
-					if ($lastActivityTimestamp && $inactivityDuration) {
-						if ($inactivityDuration < 90) {
-							$item['last_activity_time'] = ze\admin::phrase('Last active just now');
-						} else {
-							$item['last_activity_time'] = ze\admin::phrase('Last active [[last_active]] minutes ago', ['last_active' => (int) ($inactivityDuration / 60)]);
-						}
-					}
-				
-					if ($inactivityDuration < 600) {
-						//When 2FA is enabled, show the login status of this admin.
-						if (ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
-							$sqlCode = "
-								SELECT value FROM ". DB_PREFIX. "admin_settings
-								WHERE name LIKE 'z_admin_2fa_%'
-								AND admin_id = ". (int) $id;
-							
-							$sqlCodeResult = ze\sql::select($sqlCode);
-							$sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
-							
-							if (empty($sqlCodeRow) || !is_array($sqlCodeRow) || empty($sqlCodeRow['value'])) {
-								$item['pending_2fa'] = ze\admin::phrase('Pending 2FA');
-							}
-						}
-						
-					}
-				}  elseif ($item['last_login']) {
-					$item['last_activity_time'] = ze\admin::phrase('Logged out');
-				}
+			
+			//For Organizer, use relative time formatting for non-current sessions
+			if ($loginStatus['last_login'] === ze\admin::phrase('Never logged in') || 
+			    $loginStatus['last_login'] === ze\admin::phrase('Logged in now') || 
+			    $loginStatus['last_login'] === ze\admin::phrase('Logged in now (pending 2FA)')) {
+				$item['last_login'] = $loginStatus['last_login'];
+			} else {
+				$item['last_login'] = ze\admin::formatRelativeDateTime($originalLastLogin, "day", true, 'vis_date_format_med', $useDefaultLang = true);
 			}
 			
 			unset($item['session_id']);
@@ -167,14 +178,21 @@ class zenario_common_features__organizer__administrators extends ze\moduleBaseCl
 					$item['permissions'] = ze\admin::phrase('All permissions');
 					break;
 				case 'specific_actions':
-					$adminPermissionsCount = ze\row::count('action_admin_link', ['admin_id' => $item['id']]);
-					if (!$adminPermissionsCount) {
+					
+					$corePrivCount = $corePrivsStatement->fetchValue([$id]);
+					$modulePrivCount = $modulePrivsStatement->fetchValue([$id]);
+					$advancedPrivCount = $advancedPrivsStatement->fetchValue([$id]);
+					
+					if (!$corePrivCount
+					 && !$modulePrivCount
+					 && !$advancedPrivCount) {
 						$item['permissions'] = ze\admin::phrase('No permissions');
 					} else {
-						$item['permissions'] = ze\admin::phrase(
-							'Specific actions ([[perms_count]])',
-							['perms_count' => $adminPermissionsCount]
-						);
+						$item['permissions'] = ze\admin::phrase('Specific actions ([[corePrivCount]] core, [[modulePrivCount]] module-based, [[advancedPrivCount]] advanced)', [
+							'corePrivCount' => $corePrivCount,
+							'modulePrivCount' => $modulePrivCount,
+							'advancedPrivCount' => $advancedPrivCount
+						]);
 					}
 					break;
 				case 'specific_areas':

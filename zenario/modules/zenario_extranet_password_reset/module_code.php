@@ -59,8 +59,10 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			if ($this->sendResetEmail($userIsContactOrSuspended) || $userIsContactOrSuspended) {
 				if ($this->setting('block_email_enumeration') || $userIsContactOrSuspended) {
 					$this->message = $this->phrase('If the email address you provided matches your email on this site, you will have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
+					$this->messageCssClass = 'email_sent';
 				} else {
 					$this->message = $this->phrase('You have been sent an email containing a link to reset your password.<br /><br />Please ensure you check your spam/bulk mail folder in case it is mis-filed.');
+					$this->messageCssClass = 'email_sent';
 				}
 				$this->mode = 'modeLogin';
 			}
@@ -68,12 +70,14 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			if (!$this->checkResetPasswordTime($userId)) {
 				ze\row::update('users', ['reset_password_time' => null], ['id' => $userId]);
 				$this->message = $this->phrase('This link has expired. To reset your password make a new request.');
+				$this->messageCssClass = 'link_expired';
 				$this->mode = 'modeLogin';
 			} else {
 				$this->mode = 'modeResetPasswordStage2';
 				if (ze::post('extranet_change_password')) {
 					if ($this->changePassword($userId)) {
 						$this->message = $this->phrase('Your password has been changed.');
+						$this->messageCssClass = 'password_changed';
 						$this->mode = 'modeLogin';
 						ze\row::update('users', ['reset_password_time' => null], ['id' => $userId]);
 					}

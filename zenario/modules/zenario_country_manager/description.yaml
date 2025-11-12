@@ -33,6 +33,9 @@ description: |
 category: management
 keywords: country, county, location, place, region, state, world
 
+dependencies:
+    zenario_abstract_nest: true
+
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:
 vlp_class_name: zenario_country_manager

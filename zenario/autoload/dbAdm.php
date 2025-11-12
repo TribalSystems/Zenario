@@ -579,18 +579,20 @@ class dbAdm {
 			//Handle errors
 			if ($result === false) {
 				$errNo = $db->con->errno;
+				
+				//A long time ago, we ignored certain errors in database updates to try and accomodate
+				//installations where the database structure wasn't set properly.
+				//However as of Zenario 10.2, we're assuming your database is consistent by now. (I mean it has been 15 years!)
+				//So we'll no longer ignore these errors.
+				#	//Ignore "column already exists" errors
+				#	if ($errNo == 1060 && !preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
+				#		continue;
+				#
+				#	//Ignore errors if we try to drop columns or keys that do not exist
+				#	} elseif ($errNo == 1091) {
+				#		continue;
+				#	}
 			
-				//Ignore "column already exists" errors
-				if ($errNo == 1060 && !preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
-					continue;
-			
-				//Ignore errors if we try to drop columns or keys that do not exist
-				} elseif ($errNo == 1091) {
-					continue;
-				}
-			
-			
-				//Otherwise we can't recover from this error
 			
 				//Report the error
 				echo 'Database query error: '. $errNo. ', '. $db->con->error. ', '. $sql;
@@ -678,11 +680,11 @@ class dbAdm {
 		
 			if (!file_exists($dirpath)) {
 				$mrg = ['dirpath' => $dirpath];
-				$errors[] = \ze\admin::phrase('_DIRECTORY_DOES_NOT_EXIST', $mrg);
+				$errors[] = \ze\admin::phrase('The directory [[dirpath]] does not exist. You should create this directory, or ask your system administrator to do so.', $mrg);
 		
 			} elseif (!is_readable($dirpath) || !is_writeable($dirpath)) {
 				$mrg = ['dirpath' => $dirpath];
-				$errors[] = \ze\admin::phrase('_DIRECTORY_NOT_READ_AND_WRITEABLE', $mrg);
+				$errors[] = \ze\admin::phrase('The directory [[dirpath]] does not have read and write permissions set', $mrg);
 			}
 		}
 	
@@ -698,7 +700,7 @@ class dbAdm {
 	
 		$result = \ze\sql::select($sql);
 		if (!\ze\sql::fetchRow($result)) {
-			$warnings[] = \ze\admin::phrase('_NO_ADMINS_TO_BACKUP');
+			$warnings[] = \ze\admin::phrase('There are no local administrators for this site with management rights. We recommend you create one before taking a backup.');
 		}
 	
 	
@@ -812,7 +814,7 @@ class dbAdm {
 
 
 
-	//Suggest what the path of the backup/docstore/dropbox
+	//Suggest the path of the backup/docstore
 	public static function suggestDir($dir) {
 		$root = CMS_ROOT;
 	

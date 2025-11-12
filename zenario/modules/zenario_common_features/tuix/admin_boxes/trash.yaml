@@ -23,7 +23,7 @@ zenario_trash:
                 trash_items:
                     type: warning
                     message: |
-                        When these content items are trashed, they will no longer be seen by visitors, will not appear in the menu navigation, and it will lose their aliases.
+                        When these content items are trashed, they will no longer be seen by visitors, will not appear in the menu navigation, and they will lose their aliases.
             fields:
                 access_codes_warning:
                     snippet: {}
@@ -107,9 +107,9 @@ zenario_trash:
                     empty_value: ' - Choose what to do with translation - '
                     values:
                         keep:
-                            label: Keep translation in '[[language_id]]'
+                            label: Keep translation in [[language]]
                         trash:
-                            label: Trash translation in '[[language_id]]'
+                            label: Trash translation in [[language]]
                     validate_onchange: true
                     validation:
                         only_validate_when_saving: true

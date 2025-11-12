@@ -32,10 +32,11 @@ zenario_translate_phrase:
                 seen_at:
                     ord: 3
                     label: 'Seen at:'
-                    snippet:
-                        html: ''
-                code:
+                first_seen_in_visitor_mode:
                     ord: 4
+                    label: 'First seen in visitor mode:'
+                code:
+                    ord: 5
                     hidden: true
                     label: 'Code:'
                     type: text
@@ -43,11 +44,11 @@ zenario_translate_phrase:
                     rows: 2
                 
                 left_column:
-                    ord: 5
+                    ord: 6
                     type: grouping
                     name: left_column
                 phrase:
-                    ord: 6
+                    ord: 7
                     grouping: left_column
                     label: 'Phrase:'
                     type: textarea
@@ -56,13 +57,13 @@ zenario_translate_phrase:
                     rows: 4
                 
                 right_column:
-                    ord: 7
+                    ord: 8
                     type: grouping
                     name: right_column
                 
                 local_text:
                     grouping: right_column
-                    ord: 8
+                    ord: 9
                     label: ''
                     type: textarea
                     rows: 4
@@ -72,7 +73,7 @@ zenario_translate_phrase:
                 
                 protect_flag:
                     grouping: right_column
-                    ord: 10
+                    ord: 11
                     label: Protect
                     type: checkbox
                     onoff: true

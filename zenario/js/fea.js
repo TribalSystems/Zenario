@@ -48,6 +48,9 @@ methods.idVarName = function() {
 	return thus.specifiedIdVarName || 'id';
 };
 
+//Small hack here. This method just exists so we can run "if (lib.isFEA)" in the code.
+methods.isFEA = function() {};
+
 //Extend the parent function validateFormatOrRedrawForField() and add the
 //option to have a save button
 methods.validateFormatOrRedrawForField = function(field) {
@@ -611,6 +614,28 @@ methods.loadingDoneInAdvanceSoDrawPlugin = function() {
 	//Allow FEA plugins to call a functions or methods to run after a FEA plugin has finished displaying.
 	if (runAfter) {
 		zenarioT.eval(runAfter, thus);
+	}
+};
+
+methods.redraw = function() {
+	var typeOfLogic = thus.typeOfLogic()
+	
+	switch (typeOfLogic) {
+		case 'list':
+			thus.drawList();
+			break;
+	
+		case 'form':
+			thus.drawForm();
+			break;
+		
+		case 'dash':
+			thus.drawDash();
+			break;
+		
+		case 'graph':
+			thus.drawGraph();
+			break;
 	}
 };
 
@@ -1711,6 +1736,10 @@ methods.columnVisibleForItem = function(columnId, itemId) {
 
 methods.hidden = function(tuixObject, item, id, button, column, field, section, tab) {
 	
+	if (thus.debugRevealAllObjects) {
+		return false;
+	}
+	
 	tuixObject = tuixObject || button || column || field || item || section || tab;
 	
 	if (tuixObject.hide_with_search_bar
@@ -2014,17 +2043,28 @@ methods.setupButtonLinks = function(button, itemId) {
 						+ "items = {};";
 			}
 			
-			onclick += "lib.button(this, button, item, itemId";
-		
-			if (button.go) {
-				request = thus.checkRequests(button.go, true, itemId);
+			
+			//Some special logic for someone using the href and onclick properties of a button.
+			//Don't use the lib.button() function as a wrapper in this situation, as that
+			//will likely cause the logic to not behave as expected!
+			if (button.href
+			 && button.onclick) {
+				onclick += button.onclick;
+			
+			//Otherwise call lib.button() to handle the click event.
+			} else {
+				onclick += "lib.button(this, button, item, itemId";
+			
+				if (button.go) {
+					request = thus.checkRequests(button.go, true, itemId);
+				}
+			
+				if (button.onclick) {
+					onclick += ", function() {" + button.onclick + "}";
+				}
+			
+				onclick += "); return false;";
 			}
-		
-			if (button.onclick) {
-				onclick += ", function() {" + button.onclick + "}";
-			}
-		
-			onclick += "); return false;";
 		
 			button.onclick = onclick;
 		}
@@ -2488,6 +2528,11 @@ methods.runAJAXRequest = function(request, goAfter, ajax, itemId) {
 		window.location = url;
 	} else {
 		url = zenario.pluginAJAXLink(thus.moduleClassName, thus.containerId);
+		
+		//Experimental debugging feature.
+		//Add support for using ze::dump() when pressing AJAX buttons in FEA plugins.
+		url += '&supportsZeDump';
+		
 		thus.showLoader();
 		thus.ajax(url, request).after(function(resp) {
 			thus.hideLoader();
@@ -2496,7 +2541,12 @@ methods.runAJAXRequest = function(request, goAfter, ajax, itemId) {
 				zenarioT.toast(toast);
 			}
 			
-			if (resp) {
+			//Experimental debugging feature.
+			//Add support for using ze::dump() when pressing AJAX buttons in FEA plugins.
+			resp = zenario.splitFlagsFromMessage(resp);
+			zenario.showDumpsFromFlags(resp.flags);
+			
+			if (resp.responseText) {
 				thus.AJAXErrorHandler(resp);
 			
 			} else if (reloadSlide && zenario_conductor.refresh(zenario.getSlotnameFromEl(thus.containerId))) {

@@ -157,8 +157,8 @@ zenario__user_forms:
                     multiple_select_label: 'Delete selected responses'
                     ajax:
                         confirm:
-                            message: Delete this response?
-                            multiple_select_message: Delete the selected responses?
+                            message: Are you sure you wish to delete this response?
+                            multiple_select_message: Are you sure you wish to delete the selected responses?
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

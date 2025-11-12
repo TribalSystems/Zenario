@@ -34,6 +34,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 	protected $objects = [];
 	protected $subSections = [];
 	protected $message = false;
+	protected $messageCssClass = '';
 	
 	protected $userLoggedIn;
 	protected $idOfUserTryingToLogIn;
@@ -104,6 +105,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 		if ($this->message) {
 			$this->subSections['Message_Display'] = true;
 			$this->objects['Message'] = $this->message;
+			
+			if ($this->messageCssClass) {
+				$this->objects['Message_Css_Class'] = $this->messageCssClass;
+			}
 		}
 		
 		//Display any errors we encountered
@@ -306,6 +311,10 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->subSections['Login_Form'] = true;
 	
 			$this->objects['openForm'] = $this->getLoginOpenForm();
+			
+			if ($this->moduleClassName == 'zenario_extranet_password_reset') {
+				$this->subSections['Main_Title'] = true;
+			}
 		}
 			
 		$this->framework('Outer', $this->objects, $this->subSections);
@@ -352,7 +361,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 		
 			} elseif (!$confirmation) {
 				//no repeat password
-				$this->errors[] = ['Error' => ze\lang::phrase('Please repeat your new password.', false, $vlpClass)];
+				$this->errors[] = ['Error' => $this->phrase('Please repeat your new password.')];
 		
 			} elseif ($newPassword !== $confirmation) {
 				//passwords don't match
@@ -393,12 +402,21 @@ class zenario_extranet extends ze\moduleBaseClass {
 	}
 	
 	// Display a change password form
-	protected function modeChangePassword(){
+	protected function modeChangePassword() {
+		$this->requireJsLib('zenario/libs/yarn/zxcvbn/dist/zxcvbn.js');
+		$this->requireJsLib('zenario/js/password_functions.min.js');
+		$this->requireJsPhrases('zenario/modules/zenario_users/js/password_visitor_phrases.js.php');
 		
 		echo $this->openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = true, $fadeOutAndIn = true);
 			$this->objects['Container_Id'] = $this->containerId;
+			$this->objects['Password_Requirements_Settings'] = [
+				'min_extranet_user_password_length' => ze::setting('min_extranet_user_password_length'),
+				'min_extranet_user_password_score' => ze::setting('min_extranet_user_password_score')
+			];
 			$this->framework('Change_Password_Form', $this->objects, $this->subSections);
 		echo $this->closeForm();
+		
+		$this->callScript('zenarioP', 'updatePasswordNotifier', '#extranet_new_password', $this->objects['Password_Requirements_Settings'], '#password_message', $adminFacing = false, $isInstaller = false);
 	}
 	
 	protected function checkTermsStep() {
@@ -630,7 +648,7 @@ class zenario_extranet extends ze\moduleBaseClass {
 			$this->objects['Login_Link'] = $this->linkToItemAnchor($cID, $cType);
 		}
 		
-		if ($this->setting('show_link_to_password_reset_page') && ($link = ze\link::toSpecialPage('zenario_password_reset'))) {
+		if ($this->setting('show_link_to_password_reset_page') && ze\module::isRunning('zenario_extranet_password_reset') && ($link = ze\link::toSpecialPage('zenario_password_reset'))) {
 			$this->subSections['Reset_Password_Link_Section'] = true;
 			$this->objects['Reset_Password_Link'] = 'href="'. htmlspecialchars($link). '"';
 		}
@@ -1028,6 +1046,16 @@ class zenario_extranet extends ze\moduleBaseClass {
 			case 'plugin_settings':
 				if (isset($fields['first_tab/login_with'])) {
 					$fields['first_tab/login_with']['readonly'] = !ze::setting('user_use_screen_name');
+					if ($fields['first_tab/login_with']['readonly']) {
+						$fields['first_tab/login_with']['values']['Screen_Name']['side_note'] = ze\admin::phrase('Disabled, as screen names are not in use on the site.');
+					}
+					
+					$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tnames~k{\"id\"%3A\"users\"}' target='_blank'>";
+					$linkEnd = "</a>";
+					$fields['first_tab/login_with']['note_below'] = ze\admin::phrase(
+						"See the [[link_start]]User and Contact data[[link_end]] site settings to enable or disable screen names.",
+						['link_start' => $linkStart, 'link_end' => $linkEnd]
+					);
 				}
 		
 				$defaultLangId = ze::$defaultLang;

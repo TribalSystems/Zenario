@@ -28,11 +28,6 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (ze::setting('dropbox_api_key')) {
-	echo '
-		'. $scriptTag. ' src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="', htmlspecialchars(ze::setting('dropbox_api_key')), '"></script>';
-}
-
 if ($includeOrganizer) {
 	$moduleCodeHash = \ze\db::codeLastUpdated(). '___'. ze::setting('yaml_version');
 	
@@ -74,7 +69,7 @@ zenarioA.moduleCodeHash = "', $moduleCodeHash, '";';
 	if ($MaxFilesize = \ze\file::fileSizeBasedOnUnit(ze::setting('content_max_filesize'),ze::setting('content_max_filesize_unit'))) {
 		echo '
 zenarioA.maxUpload = ', (int) $MaxFilesize, ';
-zenarioA.maxUploadF = "', \ze\escape::js(\ze\lang::formatFilesizeNicely($MaxFilesize, $precision = 0, $adminMode = true)), '";';
+zenarioA.maxUploadF = "', \ze\escape::js(\ze\file::formatSizeUnits($MaxFilesize, $adminMode = true)), '";';
 	}
 	
 	if (ze::$skinName) {
@@ -217,6 +212,7 @@ zenarioA.init(
 	"', \ze\escape::js(\ze::setting('min_extranet_user_password_length')), '",
 	"', \ze\escape::js(\ze::setting('min_extranet_user_password_score')), '",
 	
+	', \ze\ring::engToBoolean($_SESSION['admin_show_empty_slots'] ?? false), ',
 	', \ze\ring::engToBoolean($_SESSION['admin_show_grid'] ?? false), ',
 	', json_encode($settings), ',
 	', json_encode($adminSettings), ',
@@ -229,6 +225,14 @@ zenarioA.init(
 	', json_encode($langs), ',
 	', json_encode($draftMessage), '
 );';
+
+//N.B. we used to save the value of admin_show_empty_slots in the session
+//so that it would stay as it was if you reloaded the same page.
+//However this ability has since been removed and we now always start a page load
+//with it in the "off" position.
+//A few rare things do force it on, however they shouldn't be kept.
+unset($_SESSION['admin_show_empty_slots']);
+
 
 //Warn the admin is this content item is public and someone had set a private image to display here
 if (!empty(\ze\content::$piWarnings)) {

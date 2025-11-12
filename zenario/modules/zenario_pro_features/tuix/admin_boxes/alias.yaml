@@ -15,13 +15,9 @@ zenario_alias:
                     type: error
                     html: true
             fields:
-                alias:
-                    redraw_immediately_onchange: true
-                    ord: 1
                 create_spare_alias:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    ord: 2
-                    same_row: true
+                    ord: 3
                     visible_if: |
                         tuix.tabs.meta_data.fields.alias.current_value &&
                         tuix.tabs.meta_data.fields.alias.current_value != tuix.tabs.meta_data.fields.alias.value
@@ -30,8 +26,8 @@ zenario_alias:
                     format_onchange: true
                     value: Create a spare alias under the old name
                 spare_aliases:
-                    ord: 3
-                    label: 'Spare aliases:'
+                    ord: 5
+                    label: 'Spare aliases redirecting to this content item:'
                     pick_items:
                         path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
                         multiple_select: true
@@ -42,4 +38,4 @@ zenario_alias:
                         info_button_path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases//
                     cols: 4
                     note_below: |
-                        To create spare aliases, just type its name (case sensitive), which will be in the URL after the / (slash). The visitor will then experience a redirect to the main alias. Type a tab or comma button to enter more than one.
+                        To create spare aliases, type the text which will be in the URL after the trailing / (slash). Any visitor who requests the spare alias will experience a redirect to the content item using its main alias. To enter more than one spare alias, press Tab or Comma.

@@ -100,6 +100,8 @@ class zenario_common_features__organizer__translation_chains extends ze\moduleBa
 				}
 			}
 			
+			$item['css_class'] = 'translation_chain';
+			
 			if ($item['translations'] == 1) {
 				$item['example'] = ze\content::formatTag($exampleTranslatedItem['id'], $exampleTranslatedItem['type'], $exampleTranslatedItem['alias'], $exampleTranslatedItem['language_id']);
 			}

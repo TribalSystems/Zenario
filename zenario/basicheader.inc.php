@@ -189,7 +189,6 @@ class ze {
 
 	public static $tuixType = 'visitor';
 	public static $tuixPath = '';
-	public static $tuixFiles = [];
 	public static $recordFiles = false;
 	public static $dumps = [];
 	public static $dbUpdating = false;

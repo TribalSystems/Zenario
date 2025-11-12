@@ -10,8 +10,14 @@
 			<div class="zenario_at_extranet_user">
 				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.extranet_user)}}
 			</div>
-			
 		<% } %>
+		
+		<% if (!zenarioT.hidden(m.sections.translations_2)) { %>
+			<div class="zenario_at_translations">
+				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.translations_2)}}
+			</div>
+		<% } %>
+		
 		<% if (!zenarioT.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
 				{{zenarioT.microTemplate('zenario_toolbar_button', m.sections.help)}}

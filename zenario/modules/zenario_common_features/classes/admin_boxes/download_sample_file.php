@@ -34,6 +34,12 @@ class zenario_common_features__admin_boxes__download_sample_file extends ze\modu
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$dataset = ze\dataset::details($box['key']['dataset']);
 		
+		if ($dataset['system_table'] == 'users') {
+			ze\priv::exitIfNot('_PRIV_VIEW_USER');
+		} elseif (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			ze\priv::exitIfNot('_PRIV_EXPORT_LOCATIONS');
+		}
+		
 		$fieldExists = false;
 		$datasetFieldNames = '<ul>';
 		
@@ -74,6 +80,13 @@ class zenario_common_features__admin_boxes__download_sample_file extends ze\modu
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		// Get user dataset columns
 		$dataset = ze\dataset::details($box['key']['dataset']);
+		
+		if ($dataset['system_table'] == 'users') {
+			ze\priv::exitIfNot('_PRIV_VIEW_USER');
+		} elseif (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			ze\priv::exitIfNot('_PRIV_EXPORT_LOCATIONS');
+		}
+		
 		$datasetColumns = [];
 		
 		if ($dataset['system_table'] == 'users') {

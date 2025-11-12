@@ -2474,25 +2474,148 @@ _sql
 	ADD INDEX (`status`),
 	ADD INDEX (`missing`)
 _sql
+);
 
 
 //In 10.2, we added a content-type setting to allow a different title length.
 //This is now a list of options in range 100 - 250 characters, and 125 is the default.
 //PLEASE NOTE: This was originally developed for 10.3 and backpatched to 10.2.
 //10.3 will first check if the new column already exists before attempting to add it.
-);	ze\dbAdm::revision( 63292
+if (!ze::$dbL->checkTableDef(DB_PREFIX. 'content_types', 'maximum_title_length')) {
+	ze\dbAdm::revision(63425
+	, <<<_sql
+		ALTER TABLE `[[DB_PREFIX]]content_types`
+		ADD COLUMN `maximum_title_length` int(3) unsigned NOT NULL DEFAULT 125 AFTER `release_date_field`
+	_sql
+	);
+}
+
+
+
+
+
+
+//
+//	Zenario 10.3
+//
+
+
+
+//Add new columns for content item versions that consistently show the date they were last
+//changed, and who did the change.
+	ze\dbAdm::revision( 63490
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD COLUMN `last_activity_admin_id` int unsigned NOT NULL default 0 AFTER `concealed_datetime`,
+	ADD COLUMN `last_activity_datetime` datetime NULL default NULL AFTER `last_activity_admin_id`
+_sql
+
+//Migrate the data as best we can from the previous values.
+//(Going forward, the new columns should be set by the logic in PHP any time a content item is changed,
+// so this will be a one-off migration.)
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions` AS v
+	SET v.last_activity_datetime = v.created_datetime
+	WHERE v.created_datetime IS NOT NULL
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions` AS v
+	SET v.last_activity_datetime = v.last_modified_datetime
+	WHERE v.last_modified_datetime IS NOT NULL
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions` AS v
+	SET v.last_activity_datetime = v.published_datetime
+	WHERE v.published_datetime IS NOT NULL
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions` AS v
+	SET v.last_activity_datetime = v.concealed_datetime
+	WHERE v.concealed_datetime IS NOT NULL
+	  AND (v.last_activity_datetime IS NULL OR v.last_activity_datetime < v.concealed_datetime)
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_item_versions` AS v
+	SET v.last_activity_admin_id =
+		IF (v.last_activity_datetime = v.concealed_datetime, v.concealer_id,
+		IF (v.last_activity_datetime = v.published_datetime, v.publisher_id,
+		IF (v.last_activity_datetime = v.last_modified_datetime, v.last_author_id,
+		IF (v.last_activity_datetime = v.created_datetime, v.creating_author_id,
+		0
+		))))
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions`
+	ADD KEY (`last_activity_admin_id`),
+	ADD KEY (`last_activity_datetime`)
+_sql
+
+
+//Add a new column to the content_types table for for the default sort order in Organizer
+);	ze\dbAdm::revision(63550
 , <<<_sql
 	ALTER TABLE `[[DB_PREFIX]]content_types`
-	ADD COLUMN `maximum_title_length` int(3) unsigned NOT NULL DEFAULT 125 AFTER `release_date_field`
+	ADD COLUMN `organizer_default_sort_logic` enum('last_activity_desc', 'id_asc', 'id_desc', 'release_date_asc', 'release_date_desc', 'start_date_asc', 'start_date_desc') NOT NULL default 'last_activity_desc'
+	AFTER `release_date_field`
+_sql
+
+
+//Remove delayed registration email functionality
+);	ze\dbAdm::revision(63551
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]users` 
+	DROP INDEX `send_delayed_registration_email`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]users` 
+	DROP COLUMN `send_delayed_registration_email`
+_sql
+
+
+);	ze\dbAdm::revision(63565
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_items_searchable_cache`
+	ADD COLUMN `alias` varchar(75) NOT NULL DEFAULT '' AFTER `content_version`,
+	ADD COLUMN `filename` varchar(250) NOT NULL DEFAULT '' AFTER `content_summary`,
+	ADD FULLTEXT KEY `alias` (`alias`),
+	ADD FULLTEXT KEY `filename` (`filename`)
+_sql
+
+//Move a column's position in a table
+);	ze\dbAdm::revision(63596
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_items_searchable_cache`
+	MODIFY COLUMN `filename` varchar(250) NOT NULL DEFAULT '' AFTER `content_item_text_wordcount`
+_sql
+
+
+//In 10.3, the menu_text table now has a redundant column with info on the content item that row is linked to,
+//to help make certain queries on the menu more efficient.
+);	ze\dbAdm::revision(63680
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_text`
+	ADD COLUMN `content_item_status` ENUM('not_linked', 'first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published', 'hidden', 'trashed', 'deleted', 'unlisted', 'unlisted_with_draft') NOT NULL DEFAULT 'not_linked'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]menu_text`
+	ADD INDEX (`content_item_status`)
 _sql
 
 
 //Try to fix some bad data in the database where deleted content items where
-//still linked to by some menu nodes.
-//Please note: this was backpatched from 10.3. However, this code should be safe to use more than once.
-);	ze\dbAdm::revision(63296
+//still linked to by some menu nodes
+);	ze\dbAdm::revision(63730
 , <<<_sql
 	UPDATE [[DB_PREFIX]]menu_nodes AS m
+	LEFT JOIN [[DB_PREFIX]]menu_text AS mt
+	   ON mt.menu_id = m.id
 	LEFT JOIN [[DB_PREFIX]]translation_chains AS t
 	   ON t.equiv_id = m.equiv_id
 	  AND t.type = m.content_type
@@ -2502,9 +2625,77 @@ _sql
 	  AND c.status NOT IN ('deleted', 'trashed')
 	SET m.target_loc = 'none',
 		m.equiv_id = 0,
-		m.content_type = ''
+		m.content_type = '',
+		mt.content_item_status = 'not_linked'
 	WHERE m.target_loc = 'int'
 	  AND c.equiv_id IS NULL
+_sql
+
+);	ze\dbAdm::revision(63735
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_items_searchable_cache`
+	DROP INDEX `alias`,
+	DROP INDEX `filename`,
+	ADD KEY (`alias`),
+	ADD KEY (`filename`)
+_sql
+
+);	ze\dbAdm::revision(63740
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]translation_chains`
+	ADD KEY (`privacy`)
+_sql
+
+//In 10.3, we removed the feature to set a background image
+//on a content item or layout. Also rename a content type specific column.
+);	ze\dbAdm::revision(63770
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]layouts` 
+	DROP COLUMN `bg_image_id`,
+	DROP COLUMN `bg_color`,
+	DROP COLUMN `bg_position`,
+	DROP COLUMN `bg_repeat`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_item_versions` 
+	DROP COLUMN `bg_image_id`,
+	DROP COLUMN `bg_color`,
+	DROP COLUMN `bg_position`,
+	DROP COLUMN `bg_repeat`
+_sql
+
+
+);	ze\dbAdm::revision(63780
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	CHANGE COLUMN `enable_css_tab` `enable_css_field` tinyint(1) NOT NULL default 0
+_sql
+
+//In 10.3, we removed the "sync assist" feature for translating content items/menu nodes.
+);	ze\dbAdm::revision(64100
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]languages` 
+	DROP COLUMN `sync_assist`
+_sql
+
+
+//Add a setting to control whether the content areas of content items can be edited in their FAB.
+//Note: this is being backpatched from 10.4. 10.4 has a check to see if a site has already got this update, and won't re-apply it.
+);	ze\dbAdm::revision(64131
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]]content_types`
+	ADD COLUMN `allow_editing_content_in_fab` tinyint(1) NOT NULL default 0
+	AFTER `allow_pinned_content`
+_sql
+
+//For existing sites migrating to the latest version of Zenario, set this option on for blog/news/events.
+//Note: This update isn't needed for a new site, as the option will be correctly read from the module description files
+//when they are installed.
+, <<<_sql
+	UPDATE `[[DB_PREFIX]]content_types`
+	SET `allow_editing_content_in_fab` = 1
+	WHERE `content_type_id` IN ('blog', 'news', 'event')
 _sql
 
 

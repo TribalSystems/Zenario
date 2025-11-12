@@ -356,11 +356,11 @@ zenario__user_forms:
             hidden_nav:
                 plugins_using_form:
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: plugins_using_form
                 nests_using_form:
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: nests_using_form
                 content_items_using_form:
                     link:

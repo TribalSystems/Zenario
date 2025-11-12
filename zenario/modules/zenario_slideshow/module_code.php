@@ -47,6 +47,7 @@ class zenario_slideshow extends zenario_abstract_nest {
 		
 		//Check if an animation library has been selected in the plugin settings (and it's actually a valid value).
 		$this->aLib = $this->setting('animation_library');
+		
 		switch ($this->aLib) {
 			case 'cycle2':
 			case 'swiper':

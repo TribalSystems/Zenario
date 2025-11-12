@@ -860,6 +860,7 @@ class plugin {
 		//Replacing anything non-alphanumeric with an underscore
 		$slotName = \ze\ring::HTMLId($slotName);
 		$eggId = (int) $eggId;
+		$isAdmin = \ze::isAdmin();
 		
 		$slotNameNestId = $slotName;
 		if ($eggId) {
@@ -872,17 +873,22 @@ class plugin {
 		 && empty(\ze::$slotContents[$slotNameNestId]->error())) {
 			$slot = \ze::$slotContents[$slotNameNestId];
 			
-			++\ze::$pluginsOnPage;
+			//Opaque slots should count as empty slots in visitor mode
+			if ($slot->isOpaque() && !$isAdmin) {
+				$pluginInstance = false;
+			} else {
+				++\ze::$pluginsOnPage;
+				
+				$slot->flagAsUsed();
+				$slot->flagAsFound();
 			
-			$slot->flagAsUsed();
-			$slot->flagAsFound();
-		
-			$pluginInstance = $slot->class();
-			$pluginInstance->start();
+				$pluginInstance = $slot->class();
+				$pluginInstance->start();
+			}
 	
 		//If we didn't find a plugin, but we're in admin mode, 
 		//return an "empty" plugin derrived from the base class so that the controls are still displayed to the admin
-		} elseif (\ze\priv::check()) {
+		} elseif ($isAdmin) {
 			//Mark that we've found this slot
 			\ze\plugin::setupNewBaseClass($slotNameNestId);
 			$slot = \ze::$slotContents[$slotNameNestId];
@@ -903,7 +909,7 @@ class plugin {
 				$pluginInstance->end();
 			}
 			//Add some padding for empty grid slots so they don't disappear and break the grid
-			if ($mode == 'grid' && (!$pluginInstance || \ze\priv::check())) {
+			if ($mode == 'grid' && (!$pluginInstance || $isAdmin)) {
 				echo '<span class="pad_slot pad_tribiq_slot">&nbsp;</span>';
 				//Note: "pad_tribiq_slot" was the old class name.
 				//I'm leaving it in for a while as any old Grid Layouts might still be using that name
@@ -1092,7 +1098,7 @@ class plugin {
 	//Did we use all of our slots..?
 	public static function checkSlotsWereUsed() {
 		//Only run this in admin mode
-		if (\ze\priv::check()) {
+		if (\ze::isAdmin()) {
 			require \ze::funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
@@ -1131,7 +1137,7 @@ class plugin {
 			return false;
 		}
 	
-		if ($instance['content_id'] && \ze\priv::check()) {
+		if ($instance['content_id'] && \ze::isAdmin()) {
 			$instance['instance_name'] = $instance['display_name'];
 		} else {
 			$codeName = \ze\plugin::codeName($instance['instance_id'], $instance['class_name']);

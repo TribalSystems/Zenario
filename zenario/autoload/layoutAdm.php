@@ -108,7 +108,7 @@ class layoutAdm {
 		
 		if ($duplicating) {
 			$sourceDetails = \ze\row::get('layouts', [
-				'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_position', 'bg_repeat',
+				'skin_id', 'css_class',
 				'json_data', 'json_data_hash',
 				'cols', 'min_width', 'max_width', 'fluid', 'responsive', 'header_and_footer',
 				'head_html', 'head_cc', 'head_cc_specific_cookie_types', 'head_visitor_only',
@@ -123,7 +123,7 @@ class layoutAdm {
 		}
 		
 		foreach ([
-			'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_repeat', 'bg_position',
+			'skin_id', 'css_class',
 			'name', 'cols', 'min_width', 'max_width', 'fluid', 'responsive', 'header_and_footer'
 		] as $var) {
 			if (isset($submission[$var])) {

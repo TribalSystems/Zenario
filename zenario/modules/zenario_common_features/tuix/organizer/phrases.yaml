@@ -9,7 +9,13 @@ zenario__languages:
                 table: >
                     [[DB_PREFIX]]visitor_phrases AS vp
                     INNER JOIN [[DB_PREFIX]]languages AS l
-                    ON vp.language_id = l.id
+                        ON vp.language_id = l.id
+                    LEFT JOIN [[DB_PREFIX]]content_items c
+                        ON c.id = vp.seen_at_content_id
+                        AND c.type = vp.seen_at_content_type
+                    LEFT JOIN [[DB_PREFIX]]translation_chains tc
+                        ON tc.equiv_id = c.equiv_id
+                        AND tc.type = c.type
                 id_column: vp.id
                 where_statement: |
                     WHERE vp.language_id = [[FOCUSED_LANGUAGE_ID]]
@@ -58,17 +64,15 @@ zenario__languages:
                     disallow_sorting: true
                     width: small
                 seen_at:
-                    db_column: |
-                        IF (vp.seen_at_content_id IS NULL, NULL, CONCAT(vp.seen_at_content_type, '_', vp.seen_at_content_id))
+                    #The db_column and item_link properties are set in the phrases_base.php file.
                     title: Seen at
                     show_by_default: true
-                    width: large
+                    width: xlarge
                     disallow_sorting: true
-                    item_link: content_item_or_url
                 first_seen_by_visitor:
                     title: First seen in visitor mode
                     db_column: vp.first_seen_by_visitor
-                    format: date
+                    format: datetime
                     show_by_default: true
                     disallow_sorting: true
                     values:
@@ -91,8 +95,12 @@ zenario__languages:
                         
                         The Excel or CSV file that you provide contain the ISO code for the language that you are trying to update, and must be in the correct format.
                     upload:
-                        fileExt: '*.csv;*.ods;*.xls;*.xlsx'
-                        fileDesc: CSV, Excel or OpenDocument spreadsheet files
+                        accept: 'text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.oasis.opendocument.spreadsheet '
+                        extensions:
+                            - .csv
+                            - .xls
+                            - .xlsx
+                            - .ods
                         request:
                             import_phrases: "1"
                 help:

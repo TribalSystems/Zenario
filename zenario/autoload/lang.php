@@ -128,13 +128,15 @@ class lang {
 			$sql = "
 				SELECT local_text, seen_in_visitor_mode, seen_at_content_id IS NULL, is_html, `archived`
 				FROM ". DB_PREFIX. "visitor_phrases
-				WHERE language_id = '". \ze\escape::asciiInSQL($languageId). "'
-				  AND module_class_name = '". \ze\escape::asciiInSQL($moduleClass). "'
-				  AND code = '". \ze\escape::sql($code). "'
+				WHERE language_id = ?
+				  AND module_class_name = ?
+				  AND code = ?
 				LIMIT 1";
 			
-			$result = \ze\sql::select($sql);
-			if ($row = \ze\sql::fetchRow($result)) {
+			$statement = \ze\sql::prepare($sql, 'aas');
+			$row = $statement->fetchRow([$languageId, $moduleClass, $code]);
+			
+			if ($row) {
 				//If we found a translation, replace the code/default text with the translation
 					//Note that phrases in the default language are never actually translated,
 					//we're just checking if they are there!
@@ -517,40 +519,6 @@ class lang {
 	}
 
 
-	public static function formatFilesizeNicely($size, $precision = 0, $adminMode = false, $vlpClass = 'zenario_common_features') {
-	
-		if (is_array($size)) {
-			$size = $size['size'];
-		}
-	
-		//Return 0 without formating if the size is 0.
-		if ($size <= 0) {
-			return '0';
-		}
-	
-		//Define labels to use
-		$labels = ['[[size]] Bytes', '[[size]] KB', '[[size]] MB', '[[size]] GB', '[[size]] TB'];
-	
-		//Work out which of the labels to use, based on how many powers of 1024 go into the size, and
-		//how many labels we have
-		$order = min(
-					floor(
-						log($size) / log(1024)
-					),
-				  count($labels)-1);
-	
-		$mrg = 
-			['size' => 
-				round($size / pow(1024, $order), $precision)
-			];
-	
-		if ($adminMode) {
-			return \ze\admin::phrase($labels[$order], $mrg);
-		} else {
-			return \ze\lang::phrase($labels[$order], $mrg, $vlpClass);
-		}
-	}
-
 	public static function formatFileTypeNicely($type, $vlpClass = 'zenario_common_features') {
 		switch($type) {
 			case 'image/webp': 
@@ -607,7 +575,6 @@ class lang {
 				IFNULL(f.local_text, 'white') as flag,
 				detect,
 				translate_phrases,
-				sync_assist,
 				search_type,
 				language_picker_logic";
 	

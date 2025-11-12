@@ -79,6 +79,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			if ($details['status'] == 'deleted') {
 				$box['tabs']['password']['hidden'] = true;
 			}
+			
 
 			
 			//Load this admin's settings
@@ -140,21 +141,19 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				 && !empty($field['is_admin_permission'])
 				 && ze\ring::engToBoolean($field['is_admin_permission'])) {
 					
-					if ($field['type'] == 'checkbox') {
-						$field['value'] = $allPerms || !empty($perms[$fieldName]);
-							
-					} elseif ($field['type'] == 'checkboxes' && !empty($field['values'])) {
-						$items = [];
-						foreach ($field['values'] as $valueName => &$value) {
-							if (!empty($perms[$valueName])) {
-								$items[] = $valueName;
+					if (!$allPerms) {
+						if ($field['type'] == 'checkbox') {
+							$field['value'] = !empty($perms[$fieldName]);
+								
+						} elseif ($field['type'] == 'checkboxes' && !empty($field['values'])) {
+							$items = [];
+							foreach ($field['values'] as $valueName => &$value) {
+								if (!empty($perms[$valueName])) {
+									$items[] = $valueName;
+								}
 							}
-						}
-						unset($value);
-						
-						if ($allPerms) {
-							$field['value'] = ze\escape::in(array_keys($field['values']), false);
-						} else {
+							unset($value);
+							
 							$field['value'] = ze\escape::in($items, false);
 						}
 					}
@@ -230,49 +229,8 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 			
 			$values['history/datetime_created'] = ze\admin::formatDate($details['created_date'], '_MEDIUM');
 			
-			if ($details['last_login']) {
-				$values['history/last_login'] = ze\admin::formatDateTime($details['last_login'], 'vis_date_format_med', $useDefaultLang = true);
-				
-				if ($sessionId = $details['session_id']) {
-	
-					if (file_exists(session_save_path(). "/sess_" . $sessionId)) {
-						clearstatcache(true, session_save_path(). "/sess_" . $sessionId);
-						$sessionInfo = stat(session_save_path(). "/sess_" . $sessionId);
-					
-						//Check how long ago the admin was active.
-						$lastActivityTimestamp = $sessionInfo['mtime'];
-			
-						//If the admin was active less than 10 mins ago, show "Logged in now" instead of a date.
-						$inactivityDuration = (time() - $lastActivityTimestamp);
-					
-						if ($inactivityDuration < 600) {
-							//When 2FA is enabled, show the login status of this admin.
-							if (ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
-								$sqlCode = "
-									Select value FROM ". DB_PREFIX. "admin_settings
-									WHERE name LIKE 'z_admin_2fa_%'
-									AND admin_id = ". (int) $box['key']['id'];
-								
-								$sqlCodeResult = ze\sql::select($sqlCode);
-								$sqlCodeRow = ze\sql::fetchAssoc($sqlCodeResult);
-								
-								if (!empty($sqlCodeRow) && is_array($sqlCodeRow) && !empty($sqlCodeRow['value'])) {
-									$values['history/last_login'] = ze\admin::phrase('Logged in now');
-								} else {
-									$values['history/last_login'] = ze\admin::phrase('Logged in now (pending 2FA)');
-								}
-							} else {
-								$values['history/last_login'] = ze\admin::phrase('Logged in now');
-							}
-							
-						}
-					}
-				}
-			}
-			
-			if (!$values['history/last_login']) {
-				$values['history/last_login'] = ze\admin::phrase('Never logged in');
-			}
+			$loginStatus = ze\admin::getFormattedLoginStatus($box['key']['id'], $details);
+			$values['history/last_login'] = $loginStatus['last_login'];
 			
 			if ($details['last_platform'] && $details['last_platform'] && $details['last_platform'] && $details['last_platform']) {
 				$replace = [
@@ -518,7 +476,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				if (ze\row::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
 						&& ze\row\g::exists('admins', ['username' => $values['details/username'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('An Administrator with this Username already exists. Please choose a different Username.');
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('An administrator with that username already exists. Please choose a different username.');
 				} elseif (preg_match('/[A-Z]/', $values['details/username'])) {
 					$fields['details/username']['error'] = ze\admin::phrase('The admin username must not contain upper case characters.');
 				}
@@ -528,7 +486,7 @@ class zenario_common_features__admin_boxes__admin extends ze\moduleBaseClass {
 				if (ze\row::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['id']]])
 				|| (ze\db::connectGlobal()
 						&& ze\row\g::exists('admins', ['email' => $values['details/email'], 'id' => ['!' => (int) $box['key']['global_id']]]))) {
-					$box['tabs']['details']['errors'][] = ze\admin::phrase('A Zenario administrator with this already exists with this email address. Please either edit that administrator or enter a different email address.');
+					$box['tabs']['details']['errors'][] = ze\admin::phrase('An administrator with that email address already exists. Please enter a different email address, or review the other administrator account.');
 				}
 			}
 		}

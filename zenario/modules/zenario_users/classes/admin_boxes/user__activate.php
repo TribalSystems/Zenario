@@ -38,7 +38,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 		
 		$userDetails = ze\user::details($box["key"]["id"] ?? false);
 	
-		$box['title'] = "Activating the user \"" . ($userDetails["identifier"] ?? false) . "\"";
+		$box['title'] = "Activating user account \"" . ($userDetails["identifier"] ?? false) . "\"";
 	
 		$fields['email/email_to_send']['value'] = ze::setting('default_activation_email_template');
 

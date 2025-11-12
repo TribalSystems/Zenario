@@ -1,13 +1,14 @@
 ---
-display_name: 'Project Locations Manager'
+display_name: 'Project/Locations Manager'
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: 'ProBusiness, Enterprise'
 start_running_on_install: false
 license_info: 'Modified BSD License'
 description: >
-    <p>The Project Locations Manager can be used to model a real world project.</p>
-    <p> Various kinds of project can be represented by this module, the project can optionally include a location (including map details), a descriptive page or both. </p>
+    <p>The Project/Locations Manager can be used to describe a project or case study that you want to present on a web site.</p>
+    <p>
+    <p>Various kinds of project can be represented by this module, the project can optionally include a location (including map details), a descriptive page or both. </p>
 category: management
 keywords: 'project'
 content_types: 

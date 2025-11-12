@@ -215,8 +215,10 @@ class contentAdm {
 		$version['version_changed'] = 'not_checked';
 		
 		//Mark down the current time and the currently logged in admin
-		$version['last_modified_datetime'] = \ze\date::now(true);
-		$version['last_author_id'] = $_SESSION['admin_userid'] ?? false;
+		$version['last_modified_datetime'] =
+		$version['last_activity_datetime'] = \ze\date::now(true);
+		$version['last_author_id'] =
+		$version['last_activity_admin_id'] = $_SESSION['admin_userid'] ?? false;
 		
 		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	}
@@ -304,8 +306,10 @@ class contentAdm {
 		$content['locked_datetime'] = null;
 		$content['visitor_version'] = $cVersion;
 	
-		$version['publisher_id'] = $adminId;
-		$version['published_datetime'] = \ze\date::now();
+		$version['publisher_id'] =
+		$version['last_activity_admin_id'] = $adminId;
+		$version['published_datetime'] =
+		$version['last_activity_datetime'] = \ze\date::now(true);
 		$version['access_code'] = null;
 	
 		$contentItemReleaseDateSettings = \ze\row::get('content_types', ['release_date_field', 'auto_set_release_date'], ['content_type_id' => $cType]);
@@ -341,6 +345,7 @@ class contentAdm {
 	
 		\ze\pluginAdm::removeUnusedVCs($cID, $cType, $content['admin_version']);
 		\ze\contentAdm::updateContentItemCache($cID, $cType, $content['admin_version'], true);
+		\ze\contentAdm::syncMenuTextStatus($cID, $cType);
 		
 		//As of version 10.2, document content items will need their text extracts inserted into
 		//the content_items_searchable_cache table when they are published or relisted, as the
@@ -366,6 +371,10 @@ class contentAdm {
 		
 		if ($publishUnlisted) {
 			\ze\contentAdm::delistContent($cID, $cType, true);
+		}
+		
+		if ($cType == 'document') {
+			\ze\contentAdm::reviewDocumentsInPublicDir($cID, $cType, $cVersion);
 		}
 
 		\ze\module::sendSignal("eventContentPublished",["cID" => $cID,"cType" => $cType, "cVersion" => $cVersion]);
@@ -587,14 +596,19 @@ class contentAdm {
 	
 	//Check the rules for whether a version of a content item should be found by search plugins,
 	//and therefore should have an entry in the content_items_searchable_cache table.
-	//To be searchable, a version must be the published version, and not be unlisted.
+	//To be searchable, a version must be the published version, and not be unlisted,
+	//and either be a searchable special page, or not be a special page at all.
 	public static function contentItemIsSearchable($cID, $cType, $cVersion) {
 		return \ze\row::exists('content_items', [
 			'id' => $cID,
 			'type' => $cType,
 			'visitor_version' => $cVersion,
 			'status' => ['published_with_draft', 'published'],
-		]);
+		])
+		&& (
+			!($specialPageType = \ze\content::isSpecialPage($cID, $cType))
+			|| empty(\ze::$nonSearchablePages[$specialPageType])
+		);
 	}
 
 	//Scan a Content Item's HTML and other information, and come up with a list of inline files that relate to it
@@ -603,11 +617,28 @@ class contentAdm {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 
+	public static function syncInlineFileLinksWithoutTranscoding(
+		&$files, &$html, &$htmlChanged,
+		$usage = 'image',
+		$publishingAPublicPage = false,
+		$fixWhereLinksGo = true, $fixPublicDir = false,
+		$noTranscoding = false
+	) {
+		\ze\contentAdm::syncInlineFileLinks(
+			$files, $html, $htmlChanged,
+			$usage,
+			$publishingAPublicPage,
+			$fixWhereLinksGo, $fixPublicDir,
+			$noTranscoding = true
+		);
+	}
+
 	public static function syncInlineFileLinks(
 		&$files, &$html, &$htmlChanged,
 		$usage = 'image',
 		$publishingAPublicPage = false,
-		$fixWhereLinksGo = true, $fixPublicDir = false
+		$fixWhereLinksGo = true, $fixPublicDir = false,
+		$noTranscoding = false
 	) {
 		require \ze::funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -774,22 +805,6 @@ class contentAdm {
 
 
 
-	public static function deleteUnusedBackgroundImages() {
-		$sql = "
-			DELETE f.*
-			FROM ". DB_PREFIX. "files AS f
-			LEFT JOIN ". DB_PREFIX. "layouts AS l
-			   ON l.bg_image_id = f.id
-			LEFT JOIN ". DB_PREFIX. "content_item_versions AS v
-			   ON v.bg_image_id = f.id
-			WHERE l.bg_image_id IS NULL
-			  AND v.bg_image_id IS NULL
-			  AND f.`usage` = 'background_image'";
-		\ze\sql::update($sql);
-	}
-
-
-
 	public static function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = false) {
 		if (!$adminId) {
 			$adminId = $_SESSION['admin_userid'] ?? false;
@@ -865,6 +880,8 @@ class contentAdm {
 		if (\ze\module::inc('zenario_ctype_document') && \ze\module::inc('zenario_ctype_document_extra_data')) {
 			\ze\row::delete(ZENARIO_CTYPE_DOCUMENT_EXTRA_DATA_PREFIX. 'document_extra_data', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		}
+		
+		\ze\contentAdm::syncMenuTextStatus($cID, $cType);
 	}
 
 	//Delete all of the archived versions of a content item before a specificied version,
@@ -934,15 +951,25 @@ class contentAdm {
 
 		$cVersion = \ze\row::get('content_items', 'admin_version', ['id' => $cID, 'type' => $cType]);
 		\ze\row::update('content_items', ['visitor_version' => 0, 'status' => 'trashed', 'alias' => ''], ['id' => $cID, 'type' => $cType]);
-		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now(), 'access_code' => null], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+		
+		$version = ['access_code' => null];
+		$version['concealer_id'] =
+		$version['last_activity_admin_id'] = $adminId;
+		$version['concealed_datetime'] =
+		$version['last_activity_datetime'] = \ze\date::now(true);
+		\ze\row::update('content_item_versions', $version, ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	
 		\ze\contentAdm::removeItemFromMenu($cID, $cType);
 		\ze\contentAdm::removeEquivalence($cID, $cType);
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
 		\ze\contentAdm::removeItemFromPluginSettings('content', $cID, $cType, $mode);
-		\ze\row::delete('plugin_pages_by_mode', ['equiv_id' => $cID, 'content_type' => $cType]);
 		
+		\ze\row::delete('plugin_pages_by_mode', ['equiv_id' => $cID, 'content_type' => $cType]);
 		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType]);
+		
+		if ($cType == 'document') {
+			\ze\contentAdm::reviewDocumentsInPublicDir($cID, $cType, $cVersion);
+		}
 	
 		\ze\module::sendSignal("eventContentTrashed",["cID" => $cID,"cType" => $cType]);
 	}
@@ -968,9 +995,14 @@ class contentAdm {
 		\ze\row::update('content_item_versions', ['concealer_id' => $adminId, 'concealed_datetime' => \ze\date::now(), 'access_code' => null], ['id' => $cID, 'type' => $cType, 'version' => $content['admin_version']]);
 	
 		\ze\contentAdm::flagImagesInArchivedVersions($cID, $cType);
+		\ze\contentAdm::syncMenuTextStatus($cID, $cType);
 		\ze\contentAdm::hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'hidden');
 		
 		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType]);
+		
+		if ($cType == 'document') {
+			\ze\contentAdm::reviewDocumentsInPublicDir($cID, $cType, $content['admin_version']);
+		}
 	
 		\ze\module::sendSignal("eventContentHidden",["cID" => $cID,"cType" => $cType]);
 	}
@@ -995,6 +1027,8 @@ class contentAdm {
 		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
 		
 		\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType]);
+		
+		\ze\contentAdm::syncMenuTextStatus($cID, $cType);
 		
 		if (!$skipSignal) {
 			\ze\module::sendSignal('eventContentDelisted', ['cID' => $cID,'cType' => $cType]);
@@ -1021,6 +1055,7 @@ class contentAdm {
 		\ze\row::update('content_items', ['status' => $newStatus], ['id' => $cID, 'type' => $cType]);
 		
 		\ze\contentAdm::updateContentItemCache($cID, $cType, $content['visitor_version'], $publishing = true);
+		\ze\contentAdm::syncMenuTextStatus($cID, $cType);
 		
 		//As of version 10.2, document content items will need their text extracts inserted into
 		//the content_items_searchable_cache table when they are published or relisted, as the
@@ -1047,6 +1082,32 @@ class contentAdm {
 		}
 	}
 
+	//The menu_text table has a redundant column with info on the content item that row is linked to,
+	//to help make certain queries on the menu more efficient.
+	//These should be updated whenever the status of the content item might change.
+	public static function syncMenuTextStatus($cID, $cType, $content = null) {
+		
+		if (is_null($content)) {
+			$content = \ze\row::get('content_items', ['status', 'equiv_id', 'language_id'], ['id' => $cID, 'type' => $cType]);
+		}
+		
+		//Right now: Add the columns to the table and add them to this update statement.
+		//Also to do: I need to review what happens if you edit an existing menu node and set/change/remove which content item it links to.
+		//Don't forget to test everything you can do with menu nodes, checking if the sync plan is working.
+		
+		$sql = "
+			UPDATE ". DB_PREFIX. "menu_nodes AS m
+			INNER JOIN ". DB_PREFIX. "menu_text AS t
+			   ON t.menu_id = m.id
+			  AND t.language_id = '". \ze\escape::asciiInSQL($content['language_id']). "'
+			SET t.content_item_status = '". \ze\escape::asciiInSQL($content['status']). "'
+			WHERE m.target_loc = 'int'
+			  AND m.equiv_id = ". (int) $content['equiv_id']. "
+			  AND m.content_type = '". \ze\escape::asciiInSQL($cType). "'";
+		
+		\ze\sql::update($sql);
+	}
+
 	//Delete the Menu Node for a Content Item
 	public static function removeItemFromMenu($cID, $cType) {
 		$languageId = \ze\content::langId($cID, $cType);
@@ -1067,11 +1128,22 @@ class contentAdm {
 		
 		
 			if ($childrenExist) {
-				if ($otherEquivsExist) {
-				} else {
-					//If this Menu Node has children, only remove the link to this item but keep it in the database as an unlinked Node
-					\ze\row::update('menu_nodes', ['equiv_id' => 0, 'content_type' => '', 'target_loc' => 'none'], $row['id']);
+				//If this Menu Node has children, only remove the link to this item but keep it in the database as an unlinked Node
+				if (!$otherEquivsExist) {
+					\ze\row::update('menu_nodes', [
+						'equiv_id' => 0,
+						'content_type' => '',
+						'target_loc' => 'none'
+					], $row['id']);
 				}
+				
+				\ze\row::update('menu_text', [
+					'content_item_status' => 'not_linked'
+				], [
+					'language_id' => $languageId,
+					'menu_id' => $row['id']
+				]);
+				
 			} else {
 				if ($otherEquivsExist) {
 					//If other languages are still using this Menu Node we cannot delete it completely
@@ -1172,6 +1244,106 @@ class contentAdm {
 			}
 		}
 	}
+	
+	//This function should be called whenever a ctype doucment is published/hidden/trashed.
+	//It will check which files might be affected, and check if any need to be either added or removed
+	//from the public/documents/ directory.
+	public static function reviewDocumentsInPublicDir($cID, $cType, $cVersion) {
+		
+		
+		//Look for the file(s) affected.
+		//Note if someone publishes a draft where they've changed the file, this will be
+		//two files not just one.
+		$sql = "
+			SELECT DISTINCT v.file_id, v.filename
+			FROM ". DB_PREFIX. "content_item_versions AS v
+			WHERE v.id = ". (int) $cID. "
+			  AND v.type = '". \ze\escape::asciiInSQL($cType). "'
+			  AND v.version IN (". (int) $cVersion. ", ". (int) $cVersion. " - 1)";
+		
+		foreach (\ze\sql::select($sql) as $version) {
+			
+			//Do a second query, checking to see if we can see a public & published version
+			//where the files is used and so 
+			//Normally this will just be in one place, which will be the document content item
+			//that triggered this function call. However it's possible to use the same file
+			//more than once, which is why this is a bit complex.
+			$sql = "
+				SELECT 1
+				FROM ". DB_PREFIX. "content_item_versions AS v
+				INNER JOIN ". DB_PREFIX. "content_items AS c
+				   ON c.id = v.id
+				  AND c.type = v.type
+				  AND c.visitor_version = v.version
+				INNER JOIN ". DB_PREFIX. "translation_chains AS tc
+				   ON tc.equiv_id = c.equiv_id
+				  AND tc.type = c.type
+				  AND tc.privacy IN ('public', 'logged_out')
+				WHERE v.file_id = ". (int) $version['file_id']. "
+				LIMIT 1";
+			
+			if (\ze\sql::exists($sql)) {
+				//Make sure the document is in the public/documents/ directory if it should be there
+				\ze\file::link($version['file_id'], false, 'public/documents', false, $version['filename']);
+			} else {
+				//Make sure the document is NOT in the public/documents/ directory if it shouldn't be there
+				if ($file = \ze\row::get('files', ['short_checksum'], $version['file_id'])) {
+					if (is_dir($dir = CMS_ROOT. 'public/documents/'. $file['short_checksum'])) {
+						\ze\cache::deleteDir($dir, $subDirLimit = 0, $deleteSymlinks = true);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	//A similar function to the above, but aimed at checking every public document for the diagnostics page
+	public static function checkAllDocumentPublicLinks($check) {
+		
+		if ($check) {
+			$report = ['numMissing' => 0];
+		}
+		
+		//Look for all of the published, public document content items
+		$sql = "
+			SELECT DISTINCT v.file_id, v.filename, f.short_checksum
+			FROM ". DB_PREFIX. "translation_chains AS tc
+			INNER JOIN ". DB_PREFIX. "content_items AS c
+			   ON c.equiv_id = tc.equiv_id
+			  AND c.type = tc.type
+			INNER JOIN ". DB_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version = c.visitor_version
+			INNER JOIN ". DB_PREFIX. "files AS f
+			   ON f.id = v.file_id
+			WHERE tc.type = 'document'
+			  AND tc.privacy IN ('public', 'logged_out')";
+		
+		foreach (\ze\sql::select($sql) as $row) {
+			
+			//For each one, check if it is on the disk
+			$filepath = 'public/documents/'. $row['short_checksum']. '/'. $row['filename'];
+			
+			if (file_exists(CMS_ROOT. $filepath)) {
+				continue;
+			}
+			
+			if ($check) {
+				++$report['numMissing'];
+				$report['exampleFile'] = $row['filename'];
+			} else {
+				//Make sure the document is in the public/documents/ directory if it should be there
+				\ze\file::link($row['file_id'], false, 'public/documents', false, $row['filename']);
+			}
+		}
+		
+		if ($check) {
+			return $report;
+		}
+	}
+	
+	
 	
 	const CANT_BECAUSE_SPECIAL_PAGE = 0;
 
@@ -1449,7 +1621,7 @@ class contentAdm {
 	}
 
 
-	public static function importPhrasesForModule($moduleClassName, $langId = false) {
+	public static function importPhrasesForModule($moduleClassName, $langId = false, $keepExistingTranslations = true) {
 
 		//Check if this module uses the old visitor phrases system, with phrases in CSV files
 		if ($path = \ze::moduleDir($moduleClassName, 'phrases/', true)) {
@@ -1482,7 +1654,7 @@ class contentAdm {
 			
 						if ($bestMatch) {
 							$languageIdFound = false;
-							\ze\phraseAdm::importVisitorLanguagePack(CMS_ROOT. $path. $bestMatch, $languageIdFound, $keepExistingTranslations = true, $scanning = false, $forceLanguageIdOverride = $installedLang, $realFilename = false, $checkPerms = false, $addPhrasesThatDontExist = true);
+							\ze\phraseAdm::importVisitorLanguagePack(CMS_ROOT. $path. $bestMatch, $languageIdFound, $keepExistingTranslations, $scanning = false, $forceLanguageIdOverride = $installedLang, $realFilename = false, $checkPerms = false, $addPhrasesThatDontExist = true);
 						}
 					}
 				}
@@ -1490,9 +1662,9 @@ class contentAdm {
 		}
 	}
 
-	public static function importPhrasesForModules($langId = false) {
+	public static function importPhrasesForModules($langId = false, $keepExistingTranslations = true) {
 		foreach (\ze\module::modules($onlyGetRunningPlugins = true, $ignoreUninstalledPlugins = true, $dbUpdateSafemode = true) as $module) {
-			\ze\contentAdm::importPhrasesForModule($module['class_name'], $langId);
+			\ze\contentAdm::importPhrasesForModule($module['class_name'], $langId, $keepExistingTranslations);
 		}
 	}
 
@@ -1518,37 +1690,44 @@ class contentAdm {
 				}
 			}
 		}
-	
-		switch ($status) {
-			case 'first_draft':
-				return $homepage? 'home_content_draft' : ($specialPage? 'special_content_draft' : 'content_draft');
 		
-			case 'published':
-				return $homepage? 'home_content_published' : ($specialPage? 'special_content_published' : 'content_published');
+		$cVersion = \ze\content::version($cID, $cType);
+		$date = \ze\row::get('content_item_versions', 'scheduled_publish_datetime', ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 		
-			case 'published_with_draft':
-				return $homepage? 'home_content_draft_published' : ($specialPage? 'special_content_draft_published' : 'content_draft_published');
-		
-			case 'hidden':
-				return $specialPage? 'special_content_hidden' : 'content_hidden';
-		
-			case 'hidden_with_draft':
-				return $specialPage? 'special_content_draft_hidden' : 'content_draft_hidden';
-		
-			case 'trashed':
-				return $specialPage? 'special_content_trashed' : 'content_trashed';
-		
-			case 'trashed_with_draft':
-				return $specialPage? 'special_content_draft_trashed' : 'content_draft_trashed';
+		if ($date) {
+			return 'scheduled_tasks_on_icon';
+		} else {
+			switch ($status) {
+				case 'first_draft':
+					return $homepage? 'home_content_draft' : ($specialPage? 'special_content_draft' : 'content_draft');
 			
-			case 'unlisted':
-				return $specialPage? 'special_content_unlisted' : 'content_unlisted';
-		
-			case 'unlisted_with_draft':
-				return $specialPage? 'special_content_draft_unlisted' : 'content_draft_unlisted';
+				case 'published':
+					return $homepage? 'home_content_published' : ($specialPage? 'special_content_published' : 'content_published');
 			
-			case 'archived':
-				return 'content_archived';
+				case 'published_with_draft':
+					return $homepage? 'home_content_draft_published' : ($specialPage? 'special_content_draft_published' : 'content_draft_published');
+			
+				case 'hidden':
+					return $specialPage? 'special_content_hidden' : 'content_hidden';
+			
+				case 'hidden_with_draft':
+					return $specialPage? 'special_content_draft_hidden' : 'content_draft_hidden';
+			
+				case 'trashed':
+					return $specialPage? 'special_content_trashed' : 'content_trashed';
+			
+				case 'trashed_with_draft':
+					return $specialPage? 'special_content_draft_trashed' : 'content_draft_trashed';
+				
+				case 'unlisted':
+					return $specialPage? 'special_content_unlisted' : 'content_unlisted';
+			
+				case 'unlisted_with_draft':
+					return $specialPage? 'special_content_draft_unlisted' : 'content_draft_unlisted';
+				
+				case 'archived':
+					return 'content_archived';
+			}
 		}
 	
 		return '';
@@ -1655,7 +1834,20 @@ class contentAdm {
 				}
 		
 			} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
-				$error[] = \ze\admin::phrase("An alias/spare alias can only contain a-z, A-Z, 0-9, - (hyphen) and _ (underscore). Do not enter http/s, a domain name, menu path or language code.");
+				
+				if ($isSpareAlias) {
+					$msg = \ze\admin::phrase("A spare alias can only contain a-z, A-Z, 0-9, - (hyphen) and _ (underscore).");
+				} else {
+					$msg = \ze\admin::phrase("An alias can only contain a-z, A-Z, 0-9, - (hyphen) and _ (underscore).");
+				}
+				
+				$msg .= "\n". \ze\admin::phrase("Don't enter http, https, a domain name, menu path or language code.");
+				
+				if ($isSpareAlias) {
+					$msg .= "\n". \ze\admin::phrase("To redirect a .html, .htm, .pdf, .doc, or .docx file, enter the filename without the extension.");
+				}
+				
+				$error[] = $msg;
 		
 			} elseif (\ze\row::exists('visitor_phrases', ['language_id' => $alias])) {
 				$error[] = \ze\admin::phrase("Don't incude a language code (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr').");
@@ -1757,6 +1949,20 @@ class contentAdm {
 	//Check if it looks like we might be able to make a spare alias out fo a page request,
 	public static function aliasHasSupportedExtension($alias) {
 		
+		//Catch links in the format "index.php?cID=abc" or "?cID=abc"
+		$parts = explode('?cID=', $alias, 2);
+		
+		if (isset($parts[1])
+		 && !empty($parts[1])
+		 && !is_numeric($parts[1])) {
+			
+			if ($parts[0] === ''
+			 || $parts[0] === 'index.php') {
+				$alias = $parts[1];
+			}
+		}
+		
+		
 		//As per T13031, Error log: fixing a URL with a ? does not work properly
 		//We should strip off anything after the "?".
 		$parts = explode('?', $alias, 2);
@@ -1764,6 +1970,7 @@ class contentAdm {
 		if (!empty($parts[0])) {
 			$alias = $parts[0];
 		}
+		
 		
 		//Except for the above, don't accept URLs in the format ?cID=alias
 		if (false !== strpbrk($alias, '?&=')) {
@@ -1801,6 +2008,32 @@ class contentAdm {
 
 
 	public static function privacyDesc($chain) {
+		$names = [];
+		$text = \ze\contentAdm::privacyDescInternal($chain, $names);
+		
+		if (!empty($names)) {
+			$text .= ' '. implode(', ', $names);
+		}
+		
+		return $text;
+	}
+	
+	public static function privacyDescHTML($chain, &$html, &$recordCount) {
+		$names = [];
+		$html = htmlspecialchars(\ze\contentAdm::privacyDescInternal($chain, $names));
+		
+		if (!empty($names)) {
+			$html .= '<ul>';
+			foreach ($names as $name) {
+				$html .= '<li>'. htmlspecialchars($name). '</li>';
+			}
+			$html .= '</ul>';
+		}
+		
+		$recordCount = count($names);
+	}
+	
+	private static function privacyDescInternal($chain, &$names) {
 		
 		if (is_string($chain)) {
 			$privacy = $chain;
@@ -1823,12 +2056,13 @@ class contentAdm {
 						  AND gcl.link_from_char = '". \ze\escape::sql($chain['type']). "'");
 			
 					if (count($groupNames) > 1) {
-						$groupNames = [implode(', ', $groupNames)];
-						return \ze\admin::phrase('Private, only show to extranet users in the groups: [[0]]', $groupNames);
+						$names = $groupNames;
+						return \ze\admin::phrase('Private, only show to extranet users in the groups:');
 					} elseif (count($groupNames) == 1) {
-						return \ze\admin::phrase('Private, only show to extranet users in the group: [[0]]', $groupNames);
+						$names = $groupNames;
+						return \ze\admin::phrase('Private, only show to extranet users in the group:');
 					} else {
-						return \ze\admin::phrase('Private, only show to extranet users in the group: [[0]]', [0 => '(error: selected group not found)']);
+						return \ze\admin::phrase('Private, only show to extranet users in the group: (error: selected group not found)');
 					}
 					break;
 			
@@ -1837,10 +2071,12 @@ class contentAdm {
 					if (($smartGroupId = \ze\row::get('translation_chains', 'smart_group_id', ['equiv_id' => $chain['equiv_id'], 'type' => $chain['type']]))
 					 && ($smartGroup = \ze\row::get('smart_groups', ['name'], $smartGroupId))) {
 				
+						$names = $smartGroup;
+						
 						if ($privacy == 'in_smart_group') {
-							return \ze\admin::phrase('Private, only show to extranet users in the smart group: [[name]]', $smartGroup);
+							return \ze\admin::phrase('Private, only show to extranet users in the smart group:');
 						} else {
-							return \ze\admin::phrase('Private, only show to extranet users NOT in the smart group: [[name]]', $smartGroup);
+							return \ze\admin::phrase('Private, only show to extranet users NOT in the smart group:');
 						}
 					} else {
 						if ($privacy == 'in_smart_group') {
@@ -1878,11 +2114,11 @@ class contentAdm {
 						}
 						
 						if (count($roleNames) > 1) {
-							$mrg['roles'] = implode(', ', $roleNames);
-							return \ze\admin::phrase('Private, only show to extranet users with the following roles [[at]]: [[roles]]', $mrg);
+							$names = $roleNames;
+							return \ze\admin::phrase('Private, only show to extranet users with the following roles [[at]]:', $mrg);
 						} elseif (count($roleNames) == 1) {
-							$mrg['role'] = $roleNames[0];
-							return \ze\admin::phrase('Private, only show to extranet users with the following role [[at]]: [[role]]', $mrg);
+							$names = $roleNames;
+							return \ze\admin::phrase('Private, only show to extranet users with the following role [[at]]:', $mrg);
 						} else {
 							return \ze\admin::phrase('Private, only show to extranet users with the following role [[at]]: (error: selected role not found)', $mrg);
 						}
@@ -1917,10 +2153,11 @@ class contentAdm {
 		$smartGroups = \ze\row::getValues('smart_groups', 'name', ['intended_usage' => $intendedUsage], 'name');
 		foreach ($smartGroups as $smartGroupId => &$name) {
 			$name .= 
-				' | '.
+				' ('.
 				\ze\contentAdm::getSmartGroupDescription($smartGroupId).
-				' | '.
-				\ze\admin::nzPhrase('empty', '1 user', '[[count]] users', (int) \ze\smartGroup::countMembers($smartGroupId), []);
+				', '.
+				\ze\admin::nzPhrase('empty', '1 user', '[[count]] users', (int) \ze\smartGroup::countMembers($smartGroupId), []).
+				')';
 		}
 		return $smartGroups;
 	}

@@ -45,11 +45,15 @@
 		
 		<div class="field_type_list_header field_type_section header_content">
 			<h5>Centralised data source fields</h5>
-			<p>Salutations, countries, regions, timezones, dialing codes, or other sources. Editable in International.</p>
 		</div>
 		<div id="organizer_centralised_field_type_list" class="field_type_list field_type_section header_content">
-			<div class="field_type" data-type="centralised_radios"><span class="centralised_radios"></span><h4>Radios</h4></div>
-			<div class="field_type" data-type="centralised_select"><span class="centralised_select"></span><h4>Select list</h4></div>
+			<!-- Centralised radios are removed as of 10.3. It is possible to edit existing ones but not add new ones. -->
+			<!-- Centralised select lists are added by looping through zenario/js/panel_type_form_builder.js. -->
+			<% if (m.centralised_lists) { %>
+				<% foreach (m.centralised_lists as source => centralised_list) { %>
+					<div class="field_type" data-type="centralised_select" data-source="{{source}}" data-label="{{centralised_list.label}}"><span class="centralised_select"></span><h4>{{centralised_list.label}}</h4></div>
+				<% } %>
+			<% } %>
 		</div>
 	</div>
 <% } else if (m.mode == 'edit_field' || m.mode == 'edit_page') { %>

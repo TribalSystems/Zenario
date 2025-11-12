@@ -79,6 +79,21 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			$box['tabs']['confirm']['fields']['module_description_or_help']['snippet']['html'] .= $desc['description'];
 			$box['tabs']['confirm']['fields']['module_description_or_help']['snippet']['html'] .= '</div>';
 			$box['tabs']['confirm']['fields']['module_description_or_help']['hidden'] = false;
+			
+			if (!empty($desc['content_types'])) {
+				if (!empty($desc['content_types']['content_type'])) {
+					if (!empty($desc['content_types']['content_type']['content_type_id'])) {
+						if (!preg_match("/^[a-z]+$/", $desc['content_types']['content_type']['content_type_id'])) {
+							echo ze\admin::phrase(
+								"This module specifies a content_type_id, the basic identifier of a content type, in its description.yaml file, with a name that is not permitted.
+								The content_type_id may only contain lower case letters (a-z) and no other characters.
+								Please update the description.yaml file before continuing."
+							);
+							exit;
+						}
+					}
+				}
+			}
 		}
 		
 		
@@ -263,6 +278,7 @@ class zenario_common_features__admin_boxes__setup_module extends ze\moduleBaseCl
 			if (!is_null($this->needReloadWithToast)) {
 				$flags['TOAST_NEXT_PAGELOAD'] = $this->toastMessage;
 				$flags['TOAST_TYPE_NEXT_PAGELOAD'] = 'information';
+				$flags['TOAST_OPTIONS_NEXT_PAGELOAD'] = ['timeOut' => 0, 'extendedTimeOut' => 0];
 			}
 			
 			ze\tuix::closeWithFlags($flags);

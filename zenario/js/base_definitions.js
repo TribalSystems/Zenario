@@ -151,7 +151,7 @@
 		//Safely escape some text for displaying as HTML
 		htmlspecialchars =
 		window.htmlspecialchars =
-		zenario.htmlspecialchars = function(text, preserveLineBreaks, preserveSpaces) {
+		zenario.htmlspecialchars = function(text, preserveLineBreaks, preserveSpaces, createParagraphs) {
 		
 			if (_.isFunction(text)) {
 				text = text();
@@ -173,6 +173,10 @@
 				}
 			} else {
 				text = $.trim(text);
+			}
+		
+			if (createParagraphs && text.m(/\n\n/)) {
+				text = '<p>' + text.r(/\n\n/g, '</p><p>') + '</p>';
 			}
 		
 			if (preserveLineBreaks) {

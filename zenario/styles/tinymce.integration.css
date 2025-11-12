@@ -32,6 +32,10 @@ body.zenario_fbAdminFloatingBox__isOpen:not(.zenario_fbAdminOrganizer__isOpen) .
 	z-index: 999999 !important;
 }
 
+body.zenario_fbAdminFloatingBox__isOpen.tox-fullscreen {
+	margin-top:0 !important;
+}
+
 /*	Give the styled menu items a bit more space  */
 .tox-tiered-menu .tox-collection__item {
 	margin: 3px 0;
@@ -176,4 +180,15 @@ body.zenario_fbAdminFloatingBox__isOpen:not(.zenario_fbAdminOrganizer__isOpen) .
 
 #zenario_at_wrap .tox .tox-collection__item-label {
 	line-height:1;
+}
+
+/*	Prevent button compression  */
+
+.tox-tbtn--select {
+	min-width: max-content !important;
+	flex-shrink: 0 !important;
+}
+
+.tox-toolbar__group {
+	flex-shrink: 0 !important;
 }

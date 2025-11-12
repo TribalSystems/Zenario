@@ -40,6 +40,12 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 	 	$box['key']['id'] = '';
 		$dataset = ze\dataset::details($box['key']['dataset']);
 		
+		if ($dataset['system_table'] == 'users') {
+			ze\priv::exitIfNot('_PRIV_VIEW_USER');
+		} elseif (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			ze\priv::exitIfNot('_PRIV_EXPORT_LOCATIONS');
+		}
+		
 		//To show which fields included in export
 		$sql = self::getExportableDatasetFieldsSQL($box['key']['dataset']);
 		$result = ze\sql::select($sql);
@@ -101,6 +107,13 @@ class zenario_common_features__admin_boxes__export_dataset extends ze\moduleBase
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		// Get dataset fields with export property
 		$dataset = ze\dataset::details($box['key']['dataset']);
+		
+		if ($dataset['system_table'] == 'users') {
+			ze\priv::exitIfNot('_PRIV_VIEW_USER');
+		} elseif (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			ze\priv::exitIfNot('_PRIV_EXPORT_LOCATIONS');
+		}
+		
 		$sql = self::getExportableDatasetFieldsSQL($dataset['id']);
 		$result = ze\sql::select($sql);
 		

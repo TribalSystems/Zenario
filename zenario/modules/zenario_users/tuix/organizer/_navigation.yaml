@@ -44,7 +44,8 @@ zenario__users:
             label: Consent log
             tooltip: >
                 When completing a form, a consent to store data may be required. View the log of consents.
-            css_class: "zenario_consent zenario_separator_before_this"
+            css_class: zenario_consent
+            separator_before_this: true
             link:
                 path: zenario__users/panels/consents
         #If Extranet Base module is running, element 7 will be the User sign-in log.

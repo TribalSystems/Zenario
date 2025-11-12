@@ -1,6 +1,7 @@
 <span class="
 	{{m.css_class|escape}}
 	{{m.disabled? 'zenario_at_button_disabled' : ''}}
+	{{m.record_count? 'has_record_count' : ''}}
 ">
 	<a <% if (m.href) { %> href="{{m.href|escape}}" <% } %>
 		title="{{m.tooltip|escape}}"
@@ -9,5 +10,8 @@
 	>
 		<span>{{m.label|escape}}</span>
 	</a>
+	<% if (m.record_count) { %>
+		<span class="record_count zenario_item_record_count">{{m.record_count|escape}}</span>
+	<% } %>
 	{{m.children? '<ul>' + zenarioT.microTemplate('zenario_organizer_button_children', m.children) + '</ul>'  : ''}}
 </span>

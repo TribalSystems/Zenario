@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__modules/panels/plugins') return;
+		if ($path != 'zenario__library/panels/plugins') return;
 		
 		$offerTheCreateAnotherOption = true;
 		$nestModuleId = ze\module::id('zenario_nest');
@@ -127,7 +127,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			
 			case 'view_nests_containing':
 				$mrg = ze\row::get('modules', ['display_name'], ['id' => (int) $refinerId]);
-				unset($panel['collection_buttons'], $panel['item_buttons']);
+				unset($panel['collection_buttons']['create'], $panel['collection_buttons']['create_dropdown']);
 				break;
 		}
 
@@ -331,8 +331,8 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				default:
 					$panel['title'] =
 					$panel['select_mode_title'] =
-						ze\admin::phrase('"[[name]]" plugins in the library', $mrg);
-					$panel['no_items_message'] = ze\admin::phrase('There are no "[[name]]" plugins in the library. Click the "Create" button to create one.', $mrg);
+						ze\admin::phrase('[[name]] plugins', $mrg);
+					$panel['no_items_message'] = ze\admin::phrase('No [[name]] plugins found', $mrg);
 			}
 			
 			
@@ -397,8 +397,35 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			if ($module['nestable_only']) {
 				$panel['notice'] = [
 					'show' => true,
-					'message' => ze\admin::phrase('The module [[display_name]] can only make plugins directly in a nest or slideshow.', $module),
+					'message' => ze\admin::phrase('The [[display_name]] module can only make plugins directly in a nest or slideshow.', $module),
 					'type' => 'information'
+				];
+				
+				
+				$message = 
+					'<p>'.
+						htmlspecialchars(ze\admin::phrase('Any nests or slideshows that contain a plugin from the [[display_name]] module will appear here.', $module)).
+					'</p><p>'.
+						htmlspecialchars(ze\admin::phrase('The [[display_name]] module  can only make plugins directly in a nest or slideshow.', $module)).
+					'</p>';
+				
+				$mrg = [
+					'nestsLink' => ze\link::absolute(). 'organizer.php#zenario__library/panels/plugins/refiners/nests////'
+				];
+				
+				if (ze\module::isRunning('zenario_nest') || ze\module::isRunning('zenario_ajax_nest')) {
+					$message .= 
+						'<p>'.
+							ze\admin::phrase('Please go to the <a href="[[nestsLink]]" target="_blank">Nests Panel in Organizer</a> and create a nest there.', $mrg).
+						'</p>';
+				}
+				
+				$panel['collection_buttons']['help'] = [
+					'label' => ze\admin::phrase('Help'),
+					'help' => [
+						'html' => true,
+						'message' => $message
+					]
 				];
 			}
 		
@@ -415,7 +442,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__modules/panels/plugins') return;
+		if ($path != 'zenario__library/panels/plugins') return;
 		
 		$addFullDetails = ze::in($mode, 'full', 'quick', 'select');
 		
@@ -466,8 +493,8 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$item['usage_layouts'] = $usage['layouts'];
 			
 				$usageLinks = [
-					'content_items' => 'zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $id. '//', 
-					'layouts' => 'zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $id. '//'
+					'content_items' => 'zenario__library/panels/plugins/item_buttons/usage_item//'. (int) $id. '//', 
+					'layouts' => 'zenario__library/panels/plugins/item_buttons/usage_layouts//'. (int) $id. '//'
 				];
 				$whereUsed = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
 				
@@ -489,7 +516,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 				$panel['notice']['show'] = true;
 				$panel['collection_buttons']['view_nests_containing']['hidden'] = false;
 
-				$linkStart = '<a href="' . ze\link::absolute(). 'organizer.php#zenario__modules/panels/modules/item//' . (int) $refinerId . '//collection_buttons/view_nests_containing////">';
+				$linkStart = '<a href="' . ze\link::absolute(). 'organizer.php#zenario__library/panels/modules/item//' . (int) $refinerId . '//collection_buttons/view_nests_containing////">';
 				$linkEnd = '</a>';
 				
 				$panel['notice']['message'] = ze\admin::nPhrase(
@@ -514,7 +541,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 			unset($panel['item_buttons']);
 			
 			foreach ($panel['items'] as &$item) {
-				$item['code'] = '<a href="organizer.php#zenario__modules/panels/plugins//' . ze\ring::chopPrefix('P', $item['code']) . '" target="_blank">' . $item['code'] . '</a>';
+				$item['code'] = '<a href="organizer.php#zenario__library/panels/plugins//' . ze\ring::chopPrefix('P', $item['code']) . '" target="_blank">' . $item['code'] . '</a>';
 			}
 		} else {
 			unset($panel['columns']['plugin_email_address']);
@@ -522,7 +549,7 @@ class zenario_common_features__organizer__plugins extends ze\moduleBaseClass {
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ($path != 'zenario__modules/panels/plugins') return;
+		if ($path != 'zenario__library/panels/plugins') return;
 		
 		if (ze::post('delete') && ze\priv::check('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			foreach (ze\ray::explodeAndTrim($ids, true) as $id) {

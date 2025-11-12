@@ -97,7 +97,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		}
 		if ($defaultLanguageName) {
 			$fields['details/translate_text']['tooltip'] = ze\admin::phrase(
-				"<p>If this is enabled, all displayable text from this form will be translated to a visitor's selected language when used in a Form Container.</p><p>Otherwise, the text will not be translated regardless of the visitor's selected language and will always appear exactly as entered.</p>",
+				"<p>If enabled, all displayable text on this form will be translated to a visitor's selected language, as defined in the Phrases for that language (see Organizer->International->Standard phrases).</p><p>If not enabled, text will be displayed exactly as entered.</p>",
 				['default_language' => $defaultLanguageName]
 			);
 		}
@@ -363,6 +363,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 					'handle_referrer_content_item_release_date' => 'referrer_content_item_release_date',
 					'handle_referrer_content_item_reference' => 'referrer_content_item_reference',
 					'handle_referrer_content_item_deadline' => 'referrer_content_item_deadline',
+					'handle_referrer_content_item_email_address' => 'referrer_content_item_email_address',
 					'handle_referrer_content_item_alias' => 'referrer_content_item_alias',
 					'handle_referrer_content_item_tag' => 'referrer_content_item_tag'
 				];
@@ -513,7 +514,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			}
 		} else {
 			$values['details/scheduled_task_manager_problem'] = true;
-			$linkStart = "<a href='" . ze\link::absolute() . "organizer.php#zenario__modules/panels/modules~-zenario_scheduled_task_manager' target='_blank'>";
+			$linkStart = "<a href='" . ze\link::absolute() . "organizer.php#zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////~-zenario_scheduled_task_manager' target='_blank'>";
 			
 			$scheduledTaskManagerProblemMessage = ze\admin::phrase(
 				'In order to use this feature, the [[link_start]]Scheduled Task Manager[[link_end]] must be running. The form will not be displayed to visitors otherwise.',
@@ -526,16 +527,78 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['details/scheduled_task_manager_problem_message']['hidden'] = false;
 		}
 		
-		//Check how many repeat sections the form has
+		//Check how many repeat sections the form has.
+		//Also find any select list type fields and populate them in a setting.
 		if ($box['key']['id']) {
 			$formFields = zenario_user_forms::getFormFields($box['key']['id']);
+			$validationRequiredMessage = ze\admin::phrase('Please enter at least one email address.');
+			$validationEmailMessage = ze\admin::phrase('Each email address entered must be valid.');
+			$placeholder = ze\admin::phrase('Enter one or more email addresses');
 			if (!empty($formFields)) {
+				$ord = 0;
 				foreach ($formFields as $formField) {
 					if ($formField['field_type'] == 'repeat_start') {
 						$box['key']['repeat_section_count']++;
+					} elseif ($formField['field_type'] == 'select') {
+						$stepVisibility = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'pages', 'visibility', ['id' => $formField['page_id'], 'form_id' => $formId]);
+						if ($formField['visibility'] == 'visible' && $formField['is_required'] && !$formField['is_readonly'] && $stepVisibility == 'visible') {
+							if ($formField['label']) {
+								$label = $formField['label'];
+							} elseif ($formField['label']) {
+								$label = $formField['default_label'];
+							} else {
+								$label = $formField['name'];
+							}
+							$box['tabs']['data']['fields']['admin_email_destination_select_list_for_fields']['values'][$formField['id']] = [
+								'label' => $label,
+								'ord' => ++$ord
+							];
+							
+							//Set up field values
+							$sql = "
+								SELECT id, label, ord, admin_email_addresses
+								FROM " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "form_field_values
+								WHERE form_field_id = " . (int) $formField['id'] . "
+								ORDER BY ord ASC";
+							$result = ze\sql::select($sql);
+							$fieldValuesLov = ze\sql::fetchAssocs($result);
+							if ($fieldValuesLov) {
+								$box['key']['admin_email_destination_fields_and_values'][$formField['id']] = [];
+								foreach ($fieldValuesLov as $fieldValue) {
+									$box['key']['admin_email_destination_fields_and_values'][$formField['id']][] = $fieldValue['id'];
+									
+									$box['tabs']['data']['fields']['field_' . $fieldValue['id'] . '_label'] = [
+										'grouping' => 'admin_email_destination_for_field_values_grouping',
+										'indent' => 3,
+										'value' => ze\admin::phrase('[[value_name]]', ['value_name' => $fieldValue['label']]),
+										'type' => 'text',
+										'show_as_a_span' => true,
+										'visible_if' => 'zenarioAB.value("send_email_to_admin") && zenarioAB.value("send_email_to_admin_destination_for_form_response") == "destination_depends_on_a_field_and_its_values" && zenarioAB.value("admin_email_destination_select_list_for_fields") == ' . (int) $formField['id']
+									];
+									
+									$box['tabs']['data']['fields']['field_' . $fieldValue['id'] . '_field_value_destination_email_address'] = [
+										'grouping' => 'admin_email_destination_for_field_values_grouping',
+										'type' => 'text',
+										'same_row' => true,
+										'value' => $fieldValue['admin_email_addresses'],
+										'placeholder' => $placeholder,
+										'validation' => [
+											'required_if_not_hidden' => $validationRequiredMessage,
+											'emails' => $validationEmailMessage
+										],
+										'visible_if' => 'zenarioAB.value("send_email_to_admin") && zenarioAB.value("send_email_to_admin_destination_for_form_response") == "destination_depends_on_a_field_and_its_values" && zenarioAB.value("admin_email_destination_select_list_for_fields") == ' . (int) $formField['id'],
+										'pre_field_html' => ' '
+									];
+								}
+							}
+						}
 					}
 				}
 			}
+		}
+		
+		if ($box['key']['opened_from_form_editor']) {
+			unset($box['tabs']['data']['edit_mode']);
 		}
 	}
 	
@@ -656,7 +719,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['data/duplicate_submission_message']['hidden'] = !$values['data/no_duplicate_submissions'];
 		}
 		
-		$messageNoRepeatingSections = 'Warning: please only use this option if a form does not have any repeating sections.';
+		$messageNoRepeatingSections = 'Don\'t use this option if the form has repeating sections.';
 		$messageOneRepeatingSection = 'Warning: this form has 1 repeating section. An email template is not recommended.';
 		$messageMultipleRepeatingSections = 'Warning: this form has [[count]] repeating sections. An email template is not recommended.';
 		
@@ -694,6 +757,14 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			
 			if (!file_exists($profanityCsvFilePath)) {
 				$fields['details/profanity_filter_text_fields']['notices_below']['profanities_csv_file_is_missing']['hidden'] = false;
+			}
+		}
+		
+		if ($values['data/send_email_to_admin'] && $values['data/send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values') {
+			$currentlySelectedField = $values['data/admin_email_destination_select_list_for_fields'];
+			
+			if ($currentlySelectedField) {
+			
 			}
 		}
 		
@@ -741,6 +812,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			$fields['data/send_email_to_admin']['hidden'] =
 			$fields['data/admin_email_addresses']['hidden'] =
 			$fields['data/send_email_to_admin_destination_for_form_response']['hidden'] =
+			$fields['data/admin_email_destination_select_list_for_fields']['hidden'] =
 			$fields['data/admin_email_destination_module_class_name']['hidden'] =
 			$fields['data/admin_email_destination_method_name']['hidden'] =
 			$fields['data/admin_email_options']['hidden'] =
@@ -881,6 +953,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				&& !$values['details/handle_referrer_content_item_release_date']
 				&& !$values['details/handle_referrer_content_item_reference']
 				&& !$values['details/handle_referrer_content_item_deadline']
+				&& !$values['details/handle_referrer_content_item_email_address']
 				&& !$values['details/handle_referrer_content_item_alias']
 				&& !$values['details/handle_referrer_content_item_tag']
 			) {
@@ -891,28 +964,31 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 				$fields['details/handle_referrer_content_item_release_date']['error'] =
 				$fields['details/handle_referrer_content_item_reference']['error'] =
 				$fields['details/handle_referrer_content_item_deadline']['error'] =
+				$fields['details/handle_referrer_content_item_email_address']['error'] =
 				$fields['details/handle_referrer_content_item_alias']['error'] =
 				$fields['details/handle_referrer_content_item_tag']['error'] = true;
 			}
 		}
 		
-		if ($values['data/send_email_to_admin'] && $values['data/send_email_to_admin_destination_for_form_response'] == 'call_static_method') {
-			if (!$values['data/admin_email_destination_module_class_name']) {
-				$fields['data/admin_email_destination_module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module.');
-
-			} elseif (!ze\module::inc($values['data/admin_email_destination_module_class_name'])) {
-				$fields['data/admin_email_destination_module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module that you have running on this site.');
-
-			} elseif ($values['data/admin_email_destination_method_name']
-				&& !method_exists(
-					$values['data/admin_email_destination_module_class_name'],
-					$values['data/admin_email_destination_method_name'])
-			) {
-				$fields['data/admin_email_destination_method_name']['error'] = ze\admin::phrase('Please enter the name of an existing public static method.');
-			}
-
-			if (!$values['data/admin_email_destination_method_name']) {
-				$fields['data/admin_email_destination_method_name']['error'] = ze\admin::phrase('Please enter the name of a public static method.');
+		if ($values['data/send_email_to_admin']) {
+			if ($values['data/send_email_to_admin_destination_for_form_response'] == 'call_static_method') {
+				if (!$values['data/admin_email_destination_module_class_name']) {
+					$fields['data/admin_email_destination_module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module.');
+	
+				} elseif (!ze\module::inc($values['data/admin_email_destination_module_class_name'])) {
+					$fields['data/admin_email_destination_module_class_name']['error'] = ze\admin::phrase('Please enter the class name of a module that you have running on this site.');
+	
+				} elseif ($values['data/admin_email_destination_method_name']
+					&& !method_exists(
+						$values['data/admin_email_destination_module_class_name'],
+						$values['data/admin_email_destination_method_name'])
+				) {
+					$fields['data/admin_email_destination_method_name']['error'] = ze\admin::phrase('Please enter the name of an existing public static method.');
+				}
+	
+				if (!$values['data/admin_email_destination_method_name']) {
+					$fields['data/admin_email_destination_method_name']['error'] = ze\admin::phrase('Please enter the name of a public static method.');
+				}
 			}
 		}
 	}
@@ -995,8 +1071,33 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 		}
 		
 		$record['send_email_to_admin_destination_for_form_response'] = null;
-		if (!empty($values['send_email_to_admin']) && ze::in($values['send_email_to_admin_destination_for_form_response'], 'enter_address_manually', 'call_static_method')) {
+		if (!empty($values['send_email_to_admin']) && ze::in($values['send_email_to_admin_destination_for_form_response'], 'enter_address_manually', 'destination_depends_on_a_field_and_its_values', 'call_static_method')) {
 			$record['send_email_to_admin_destination_for_form_response'] = $values['send_email_to_admin_destination_for_form_response'];
+		}
+		
+		$record['admin_email_destination_select_list_for_fields'] = 0;
+		if (
+			$values['send_email_to_admin']
+			&& $values['send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values'
+			&& $values['admin_email_destination_select_list_for_fields']
+		) {
+			$record['admin_email_destination_select_list_for_fields'] = $values['admin_email_destination_select_list_for_fields'];
+			
+			//As per task T13022, Forms: Destination email address(es) for form responses to depend on a select field eg. enquiry type
+			//the email address for each value will NOT be blanked out when the form no longer uses that setting.
+			//This way, if an admin wants to enable the feature again, the settings will be pre-loaded.
+			foreach ($box['key']['admin_email_destination_fields_and_values'] as $formFieldId => $fieldValues) {
+				if ($formFieldId == $values['admin_email_destination_select_list_for_fields']) {
+					foreach ($fieldValues as $fieldValue) {
+						$sql = "
+							UPDATE " . DB_PREFIX . ZENARIO_USER_FORMS_PREFIX . "form_field_values
+							SET admin_email_addresses = '" . ze\escape::sql($values['field_' . $fieldValue . '_field_value_destination_email_address']) . "'
+							WHERE form_field_id = " . (int) $formFieldId . "
+							AND id = " . (int) $fieldValue;
+						ze\sql::update($sql);
+					}
+				}
+			}
 		}
 		
 		$record['admin_email_destination_module_class_name'] = $record['admin_email_destination_method_name'] = '';
@@ -1138,6 +1239,7 @@ class zenario_user_forms__admin_boxes__user_form extends ze\moduleBaseClass {
 			'handle_referrer_content_item_release_date' => 'referrer_content_item_release_date',
 			'handle_referrer_content_item_reference' => 'referrer_content_item_reference',
 			'handle_referrer_content_item_deadline' => 'referrer_content_item_deadline',
+			'handle_referrer_content_item_email_address' => 'referrer_content_item_email_address',
 			'handle_referrer_content_item_alias' => 'referrer_content_item_alias',
 			'handle_referrer_content_item_tag' => 'referrer_content_item_tag'
 		];

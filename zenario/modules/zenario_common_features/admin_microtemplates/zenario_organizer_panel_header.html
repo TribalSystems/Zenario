@@ -32,7 +32,7 @@
 			"
 		></div>
 		<% if (zenarioO.pi.returnPageSize() !== false) { %>
-			<% var prefs = zenarioO.prefs[zenarioO.path] || {}; %>
+			<% var prefs = zenarioO.panelPrefs(); %>
 			<div class="organizer_pageSize">
 				<label for="organizer_pageSize">Page size:</label>
 				<select id="organizer_pageSize" onchange="zenarioO.changePageSize(this.value);">

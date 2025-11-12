@@ -137,7 +137,7 @@ methods.returnAJAXRequests = function() {
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
 	
-	var pageSize = (zenarioO.prefs[thus.path] && zenarioO.prefs[thus.path].pageSize);
+	var pageSize = zenarioO.panelPrefs(thus.path, thus.refiner).pageSize;
 	
 	return Math.max(20, Math.min(500, 1*pageSize || zenarioO.defaultPageSize));
 };
@@ -432,7 +432,11 @@ methods.updateItemCheckbox = function(id, checked) {
 		$(get('organizer_itemcheckbox_' + id)).prop('checked', checked);
 	}
 	
-	//Change the "all items selected" checkbox, if it is on the page.
+	thus.updateAllItemsCheckbox();
+};
+
+//Change the "all items selected" checkbox, if it is on the page.
+methods.updateAllItemsCheckbox = function() {
 	if (zenarioO.allItemsSelected()) {
 		$('#organizer_toggle_all_items_checkbox').prop('checked', true);
 	} else {

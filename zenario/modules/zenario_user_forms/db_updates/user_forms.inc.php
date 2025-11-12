@@ -1754,3 +1754,44 @@ if (ze\dbAdm::needRevision(297)) {
 	
 	ze\dbAdm::revision(297);
 }
+
+ze\dbAdm::revision(298
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `handle_referrer_content_item_email_address` tinyint(1) NOT NULL DEFAULT '0' AFTER `referrer_content_item_deadline_label`,
+	ADD COLUMN `referrer_content_item_email_address_label` varchar(255) DEFAULT '' AFTER `handle_referrer_content_item_email_address`
+_sql
+
+); ze\dbAdm::revision(299
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `show_field_twice_for_confirmation` tinyint(1) NOT NULL DEFAULT 0 AFTER `validation_error_message`
+_sql
+
+); ze\dbAdm::revision(300
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `confirmation_field_error_message` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL AFTER `show_field_twice_for_confirmation`
+_sql
+
+); ze\dbAdm::revision(301
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `confirmation_field_label` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NOT NULL DEFAULT '' AFTER `show_field_twice_for_confirmation`
+_sql
+
+);
+
+ze\dbAdm::revision(302
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	CHANGE COLUMN `send_email_to_admin_destination_for_form_response` `send_email_to_admin_destination_for_form_response` enum('enter_address_manually', 'destination_depends_on_a_field_and_its_values', 'call_static_method') DEFAULT NULL,
+	ADD COLUMN `admin_email_destination_select_list_for_fields` int(10) unsigned NOT NULL DEFAULT 0 AFTER `send_email_to_admin_destination_for_form_response`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_values`
+	ADD COLUMN `admin_email_addresses` varchar(250) CHARACTER SET [[ZENARIO_TABLE_CHARSET]] COLLATE [[ZENARIO_TABLE_COLLATION]] NULL
+_sql
+
+);

@@ -40,6 +40,24 @@ class zenario_common_features__admin_boxes__delete_draft extends ze\moduleBaseCl
 			$box['tabs']['delete_draft']['notices']['delete_items']['show'] = true;
 		} else {
 			$box['tabs']['delete_draft']['notices']['delete_item']['show'] = true;
+			
+			// Get content details for the single item
+			$tagId = $ids[0];
+			$cID = $cType = false;
+			ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+			
+			// Check if content has been published before
+			$content = ze\row::get('content_items', ['visitor_version', 'status'], ['id' => $cID, 'type' => $cType]);
+			$isFirstDraft = ($content && ($content['status'] == 'first_draft' || $content['visitor_version'] == 0));
+			
+			// Set appropriate message based on publication status
+			if ($isFirstDraft) {
+				$box['tabs']['delete_draft']['notices']['delete_item']['message'] = 
+					"Delete this content item's draft version?\n\nThis content item has not been published yet, so it will be completely deleted.";
+			} else {
+				$box['tabs']['delete_draft']['notices']['delete_item']['message'] = 
+					"Delete this content item's draft version?\n\nThe published version will not be affected.";
+			}
 		}
 		
 		//Look for any access codes in use

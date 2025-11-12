@@ -8,7 +8,7 @@ zenario_pro_features_spare_alias:
         id_is_error_log_id: false
     identifier:
         css_class: alias_url
-        label: Spare Alias
+        label: Spare alias
     hide_tab_bar: Yes
     tabs:
         spare_alias:
@@ -20,16 +20,14 @@ zenario_pro_features_spare_alias:
                     full_width: Yes
                     snippet:
                         html: |
-                            <p>A spare alias is a web server redirect, otherwise known as a permanent (or 301) redirect. When a visitor requests a spare alias, they are redirected to another content item or an external web address (URL).</p>
-                            <p>Use this admin box to create or edit a spare alias: you can define the text and the destination to which visitors will be redirected.</p>
-                            <p>If you change the alias of a content item, it's advisable to make its old alias be a spare alias, to avoid visitors seeing a Not Found error (404).</p>
-                            <p>Any number of spare aliases can point to the same content item.</p>
+                            <p>A spare alias is a permanent (301) redirect. When a visitor requests a spare alias, they can be redirected to another content item or external URL.</p>
+                            <p>Use this admin box to define a spare alias, and where visitors will be redirected to.</p>
                 grouping_left:
                     type: grouping
                     grouping_css_class: zenario_grouping__left
                 alias:
                     grouping: grouping_left
-                    label: 'Spare alias:'
+                    label: 'Spare alias name:'
                     type: text
                     maxlength: 255
                     style: 'width:350px'
@@ -65,6 +63,8 @@ zenario_pro_features_spare_alias:
                 preview:
                     grouping: grouping_left
                     pre_field_html: 'Preview:<br>'
+                    note_below: |
+                        Click this URL to test.
                     snippet:
                         html: ''
                 redirect_target_url:
@@ -76,7 +76,7 @@ zenario_pro_features_spare_alias:
                     grouping_css_class: zenario_grouping__right
                 target_loc:
                     grouping: grouping_right
-                    label: 'Redirect to:'
+                    label: 'Redirect visitors to:'
                     type: select
                     value: int
                     values:

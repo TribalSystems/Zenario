@@ -87,7 +87,7 @@ class zenario_abstract_nest__organizer__plugins extends ze\moduleBaseClass {
 					//Slideshows should have a different link than nests
 					if ($item['module_class_name'] == 'zenario_slideshow') {
 						$item['link'] = [
-							'path' => 'zenario__modules/panels/images_in_slideshow',
+							'path' => 'zenario__library/panels/images_in_slideshow',
 							'refiner' => 'nest'
 						];
 					}

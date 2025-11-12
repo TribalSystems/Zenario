@@ -175,8 +175,12 @@
 	z-index: 2000;
 }
 
-#zenario_fbDebugInfoBox {
+.zenario_fbDebugInfoBox {
 	z-index: 2001;
+}
+
+#zenario_fbFABDebugInfoBox.zenario_fbDebugInfoBox {
+	z-index: 330000;
 }
 
 .zenario_debugInfo {
@@ -510,6 +514,11 @@ body .zenario_admin_tooltip_over_tinymce {
 
 .zenario_admin_tooltip h3 {
     font-weight: bold !important;
+}
+
+.zenario_admin_tooltip ul {
+    list-style: disc;
+    margin:5px 0 5px 10px;
 }
 
 .zenario_admin_tooltip.ui-widget-shadow,
@@ -1304,6 +1313,57 @@ body.zenario_showing_plugin_preview .zenario_image_properties_button {
     width: 16px;
     height: 16px;
 }
+
+#zenario_debug_menu .ui-widget-header .ui-menu-item-wrapper {
+	line-height: 18px;
+	cursor: default;
+	user-select: none;
+}
+
+#zenario_debug_menu .ui-menu-item-wrapper {
+	max-height: 150px;
+	overflow-y: auto;
+}
+
+
+#zenario_debug_menu .zenario_debug_info {
+	margin: 7px 5px 0 0;
+	width:18px;
+	height:18px;
+	display:block;
+	float:right;
+	cursor:pointer;
+	background: url('../admin/images/icon-info.svg') no-repeat center / auto 18px;
+	z-index: 2;
+    position: relative;
+}
+
+.zenario_debug_tooltip,
+.ui-tooltip.zenario_debug_tooltip {
+	z-index: 9999999;
+}
+
+#zenario_debug_menu .zenario_debug_var {
+	vertical-align: top;
+	user-select: none;
+}
+
+#zenario_debug_menu .zenario_debug_val {
+	user-select: none;
+}
+
+#zenario_debug_menu .zenario_debug_val::after {
+  	margin-left: 3px;
+  	background: url('../admin/images/icon-copy.svg') no-repeat;
+  	width: 10px;
+  	height: 10px;
+  	display: inline-block;
+  	content: '';
+}
+
+
+
+
 
 /* Colorbox */
 

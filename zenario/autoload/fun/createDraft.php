@@ -165,8 +165,10 @@ unset($version['admin_notes']);
 unset($version['scheduled_publish_datetime']);
 
 if ($newDraftCreated) {
-	$version['created_datetime'] = \ze\date::now(true);
-	$version['creating_author_id'] = $adminId;
+	$version['created_datetime'] =
+	$version['last_activity_datetime'] = \ze\date::now(true);
+	$version['creating_author_id'] =
+	$version['last_activity_admin_id'] = $adminId;
 } else {
 	unset($version['created_datetime']);
 	unset($version['creating_author_id']);
@@ -244,6 +246,7 @@ if ($newDraftCreated) {
 		\ze\pluginAdm::removeUnusedVCs($cIDTo, $cTypeTo, $cVersionTo);
 		\ze\contentAdm::flagImagesInArchivedVersions($cIDTo, $cTypeTo);
 		\ze\contentAdm::updateContentItemCache($cIDTo, $cTypeTo, $cVersionTo);
+		\ze\contentAdm::syncMenuTextStatus($cIDTo, $cTypeTo);
 	}
 
 	\ze\module::sendSignal("eventDraftCreated", ["cIDTo" => $cIDTo, "cIDFrom" => $cIDFrom, "cTypeTo" => $cTypeTo, "cVersionTo" => $cVersionTo, "cVersionFrom" => $cVersionFrom, "cTypeFrom" => $cTypeFrom]);

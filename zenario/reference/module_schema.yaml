@@ -80,6 +80,8 @@ properties:
             If you set this property, the module will be flagged as running and installed if it is present in
             the filesystem when the Zenario installer is run, or the site is reset.
             
+            This property won't do anything for modules that are hard-coded in the installer to run on install.
+            
             Note: this is not a very smart feature and won't check for any dependancies your module has.
             If your module does have dependancies, you should also ensure that they are present in the
             filesystem and also have the start_running_on_install set.
@@ -447,6 +449,13 @@ properties:
             
                         This will be the default value; it can be overwritten on a per site basis
                         by changing it in the Content Type settings.
+                allow_editing_content_in_fab:
+                    type: boolean
+                    description: >
+                        Whether to show WYSIWYG editing areas on the content item metadata admin box.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
                 release_date_field:
                     enum:
                         - optional
@@ -455,6 +464,13 @@ properties:
                     default: optional
                     description: >
                         Whether to show the release date field to Admins.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
+                auto_set_release_date:
+                    type: boolean
+                    description: >
+                        Whether to automatically set the release date field.
             
                         This will be the default value; it can be overwritten on a per site basis
                         by changing it in the Content Type settings.
@@ -469,6 +485,22 @@ properties:
             
                         This will be the default value; it can be overwritten on a per site basis
                         by changing it in the Content Type settings.
+                organizer_default_sort_logic:
+                    enum:
+                        - last_activity_desc
+                        - id_asc
+                        - id_desc
+                        - release_date_asc
+                        - release_date_desc
+                        - start_date_asc
+                        - start_date_desc
+                    default: last_activity_desc
+                    description: >
+                        The default sort order for content items when showing them in an Organizer panel.
+                        
+                        Defaults to "last_activity_desc" if not set.
+                        
+                        This works from version 10.3 onwards.
     
     special_pages:
         type: object

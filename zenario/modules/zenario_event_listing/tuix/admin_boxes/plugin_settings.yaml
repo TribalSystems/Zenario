@@ -179,13 +179,13 @@ plugin_settings:
             label: Overall list
             fields:
                 heading:
-                    label: 'Heading:'
+                    label: 'Heading of overall list:'
                     plugin_setting:
                         name: heading
                     type: radios
                     values:
                         dont_show: "Don't show"
-                        show_heading: Show
+                        show_heading: Show text
                         show_period_name: Show period name
                     value: show_heading
                     format_onchange: Yes
@@ -193,10 +193,98 @@ plugin_settings:
                 heading_text:
                     plugin_setting:
                         name: heading_text
-                    label: 'Heading:'
+                    label: 'Heading text:'
                     type: text
-                    value: 'List of Events'
+                    value: 'List of events'
                     indent: 1
+                    validation:
+                        required_if_not_hidden: 'Please type in the heading text.'
+                heading_tags:
+                    #If the plugin is supposed to show the period name,
+                    #the tag selector will appear as a separate row.
+                    #If the plugin is supposed to show a specific heading,
+                    #the tag selector will appear on the same row as the heading text box.
+                    #Also the indentation will be handled separately.
+                    #All the logic is in the PHP class.
+                    plugin_setting:
+                        name: heading_tags
+                    label: 'Heading tag:'
+                    type: select
+                    values: &tags
+                        h1: <h1>
+                        h2: <h2>
+                        h3: <h3>
+                        h4: <h4>
+                        h5: <h5>
+                        h6: <h6>
+                        p: <p>
+                    value: h2
+                
+                show_headings_if_items:
+                    plugin_setting:
+                        name: show_headings_if_items
+                    label: 'If some content items match the filter:'
+                    type: select
+                    empty_value: |
+                        Don't show a message
+                    values:
+                        1:
+                            label: Show a message
+                    value: ""
+                    format_onchange: true
+                    
+                heading_if_items:
+                    plugin_setting:
+                        name: heading_if_items
+                        translate: true
+                    label: |
+                        Message text:
+                    type: text
+                    value: 'Latest events'
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: 'Please type in the message text.'
+                heading_tags_if_items:
+                    plugin_setting:
+                        name: heading_tags_if_items
+                    label: 'Title heading tags'
+                    type: select
+                    values: *tags
+                    value: h3
+                    same_row: true
+                show_headings_if_no_items:
+                    plugin_setting:
+                        name: show_headings_if_no_items
+                    label: |
+                        If no content items match the filter:
+                    type: select
+                    empty_value: |
+                        Show no output
+                    values:
+                        1:
+                            label: Show a message
+                    value: 1
+                    format_onchange: true
+                    
+                heading_if_no_items:
+                    plugin_setting:
+                        name: heading_if_no_items
+                        translate: true
+                    label: |
+                        Message if no items to list:
+                    type: text
+                    value: "There are no events to show"
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: 'Please type in the message text.'
+                heading_tags_if_no_items:
+                    plugin_setting:
+                        name: heading_tags_if_no_items
+                    label: 'Title heading tags'
+                    type: select
+                    values: *tags
+                    value: h3
+                    same_row: true
                 
                 sort_field:
                     label: 'Sort field:'
@@ -273,13 +361,23 @@ plugin_settings:
             label: Each item
             fields:
                 show_event_title:
-                    label: 'Show title'
+                    label: 'Show event name (content item browser title)'
                     plugin_setting:
                         name: show_event_title
                     type: checkbox
                     value: "1"
+                    redraw_onchange: true
+                event_title_tags:
+                    indent: 1
+                    plugin_setting:
+                        name: event_title_tags
+                    type: select
+                    values: *tags
+                    value: h2
+                    visible_if: lib.value('show_event_title')
+                    same_row: true
                 show_event_summary:
-                    label: 'Show summary'
+                    label: 'Show event summary'
                     plugin_setting:
                         name: show_event_summary
                     type: checkbox
@@ -287,12 +385,10 @@ plugin_settings:
                 show_featured_image:
                     plugin_setting:
                         name: show_featured_image
-                    label: "Show image"
+                    label: "Show featured image"
                     type: checkbox
                     value: ""
                     format_onchange: Yes
-                    side_note: |
-                        The featured image of the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no featured image exists.
                 fall_back_to_default_image:
                     plugin_setting:
                         name: fall_back_to_default_image
@@ -308,12 +404,13 @@ plugin_settings:
                     label: 'Default image:'
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                         reorder_items: false
                     pick_items:

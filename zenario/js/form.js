@@ -1728,6 +1728,10 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			   && indent > 0
 			   && !zenario.inList(field.hide_if_previous_outdented_value_isnt, fieldValuesByIndent && fieldValuesByIndent[indent - 1]));
 		
+		if (thus.debugRevealAllObjects) {
+			hidden = false;
+		}
+		
 		if (fieldValuesByIndent) {
 			fieldValuesByIndent.last = value;
 			
@@ -2063,25 +2067,18 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			 && !engToBoolean(pick_items.hide_select_button)) {
 				mergeFields.select = {
 					onclick: thus.globalName + ".pickItems('" + htmlspecialchars(id) + "');",
-					phrase: pick_items.select_phrase || phrase.selectDotDotDot
+					phrase: (value && pick_items.replace_phrase) || pick_items.select_phrase || phrase.selectDotDotDot
 				};
 			}
 			
 			if (upload) {
 				mergeFields.upload = {
 					onclick: thus.globalName + ".upload('" + htmlspecialchars(id) + "');",
-					phrase: upload.upload_phrase || phrase.uploadDotDotDot
+					phrase: (value && upload.replace_phrase) || upload.upload_phrase || phrase.uploadDotDotDot
 				};
 				
 				if (engToBoolean(upload.drag_and_drop)) {
 					thus.upload(id, true);
-				}
-				
-				if (window.Dropbox && Dropbox.isBrowserSupported()) {
-					mergeFields.dropbox = {
-						onclick: thus.globalName + ".chooseFromDropbox('" + htmlspecialchars(id) + "');",
-						phrase: upload.dropbox_phrase || phrase.dropboxDotDotDot
-					};
 				}
 			}
 		}
@@ -2886,7 +2883,7 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 				if (field.redraw_immediately_onchange) {
 					extraAtt.onkeyup =
 						(extraAtt.onkeyup || '') +
-						"if (lib.redrawImmediatelyWhenChanged(this, event, '" + htmlspecialchars(id) + "', '" + htmlspecialchars(field.value) + "', " + (field.value == value? 'false' : 'true') + ")) return false;";
+						"if (lib.redrawImmediatelyWhenChanged(this, event, '" + htmlspecialchars(id) + "', '" + htmlspecialchars(field.value) + "', " + (value === field.value? 'true' : 'false') + ", " + (value === ''? 'true' : 'false') + ")) return false;";
 				}
 			
 				thus.addExtraAttsForTextFields(field, extraAtt);
@@ -3199,7 +3196,12 @@ methods.drawField = function(cb, tab, id, field, visibleFieldsOnIndent, hiddenFi
 			}
 		}
 		
-		if (addWidgetWrap) {
+		//This line here is a workaround for an issue with browsers and jQuery tooltips, where it's impossible for
+		//jQuery to put a tooltip on a disabled element.
+		if (field.widget_wrap_tooltip) {
+			html = _$span('class', 'zenario_field_widget_wrap', 'title', field.widget_wrap_tooltip, html);
+		
+		} else if (addWidgetWrap) {
 			html = _$span('class', 'zenario_field_widget_wrap', html);
 		}
 		
@@ -3884,6 +3886,10 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 		}
 	});
 	
+	if (field.show_as_a_span || (field.show_as_a_span_when_readonly && readOnly)) {
+		$tokenize.container.addClass('show_as_a_span');
+	}
+	
 	//Don't allow any changes if the field is in read-only mode
 	if (readOnly) {
 		$tokenize.disable();
@@ -3926,122 +3932,6 @@ methods.setupPickedItems = function(field, id, tab, readOnly, multiple_select) {
 	}
 	
 	return;
-};
-
-
-methods.chooseFromDropbox = function(id) {
-				
-	var field,
-		options,
-		e, extension, extensions, split;
-
-	if (!(field = thus.field(id))
-	 || !(field.upload)) {
-		return false;
-	}
-	
-	if (extensions = field.upload.extensions || field.upload.accept) {
-		if (_.isString(extensions)) {
-			extensions = extensions.split(',');
-		} else {
-			extensions = _.toArray(extensions);
-		}
-	}
-	
-	//Dropbox has a set format this it uses.
-	//Attempt to automatically convert a few common things to the correct format
-	foreach (extensions as e => extension) {
-		
-		//Look for expressions such as "image/*", and convert them into the dropbox equivalents
-		split = extension.split('/');
-		if (defined(split[1])) {
-			if (split[0] == 'images') {
-				extensions[e] = 'image';
-			} else {
-				extensions[e] = split[0];
-			}
-		
-		//Look for file extensions without a "." in front of them, and automatically add the "."
-		} else
-		if (extension != 'text'
-		 && extension != 'documents'
-		 && extension != 'images'
-		 && extension != 'video'
-		 && extension != 'audio'
-		 && extension.substr(0, 1) != '.') {
-			extensions[e] = '.' + extension;
-		}
-	}
-	
-	options = {
-
-		// Optional. Called when the user closes the dialog without selecting a file
-		// and does not include any parameters.
-		cancel: function() {
-			zenarioA.hideAJAXLoader();
-		},
-
-		// Optional. "preview" (default) is a preview link to the document for sharing,
-		// "direct" is an expiring link to download the contents of the file. For more
-		// information about link types, see Link types below.
-		//linkType: "preview",
-		linkType: "direct",
-
-		// Optional. A value of false (default) limits selection to a single file, while
-		// true enables multiple file selection.
-		multiselect: !!engToBoolean(field.upload.multi),
-
-		// Optional. This is a list of file extensions. If specified, the user will
-		// only be able to select files with these extensions. You may also specify
-		// file types, such as "video" or "images" in the list. For more information,
-		// see File types below. By default, all extensions are allowed.
-		extensions: extensions,
-
-		// Required. Called when a user selects an item in the Chooser.
-		success: function(files) {
-			
-			zenarioA.showAJAXLoader();
-			
-			var f,
-				file,
-				cb = new zenario.callback;
-			
-			foreach (files as f => file) {
-				cb.add(zenario.ajax(thus.ajaxURL() + '&fetchFromDropbox=1', file, true));
-			}
-			
-			cb.after(function() {
-				var i,
-					file,
-					field,
-					values = '';
-		
-				if (!(field = thus.field(id))
-				 || !(field.upload)) {
-					return false;
-				}
-				
-				foreach (arguments as i) {
-					file = arguments[i];
-					
-					if (file && file.id) {
-						values += ',' + file.id;
-					}
-					
-					thus.setFileDetails(field, file);
-				}
-				
-				if (values !== '') {
-					thus.addToPickedItems(values, id);
-				}
-				
-				zenarioA.hideAJAXLoader();
-			});
-		}
-	};
-	
-	zenarioA.showAJAXLoader();
-	Dropbox.choose(options);
 };
 
 methods.setFileDetails = function(field, file) {
@@ -4192,10 +4082,16 @@ methods.drawSlider = function(cb, id, field, readOnly, before) {
 				options.slide =
 					function(event, ui) {
 						$(thus.get(id)).val(ui.value);
+						if (options.uses_colour_bands) {
+							thus.updateSliderColourBands(id);
+						}
 					};
 				
 				options.change = function(event, ui) {
 					thus.fieldChange(id);
+					if (options.uses_colour_bands) {
+						thus.updateSliderColourBands(id);
+					}
 				};
 				
 				$(domSlider).slider(options);
@@ -4939,6 +4835,42 @@ methods.fieldChange = function(id, lov) {
 	}, 1);
 };
 
+methods.updateSliderColourBands = function(id) {
+	var field = thus.get('zenario_slider_for__' + id);
+	value = $(thus.get(id)).val();
+	var addClass = '';
+	var removeClasses = [];
+	
+	if (id == 'min_admin_password_score' || id == 'min_extranet_user_password_score') {
+		if (id == 'min_admin_password_score') {
+			if (value < 3) {
+				addClass = 'black';
+				removeClasses.push('green');
+			} else {
+				addClass = 'green';
+				removeClasses.push('black');
+			}
+		} else if (id == 'min_extranet_user_password_score') {
+			if (value == 1) {
+				addClass = 'red';
+				removeClasses.push('grey', 'orange', 'green');
+			} else if (value == 2) {
+				addClass = 'orange';
+				removeClasses.push('grey', 'red', 'green');
+			} else if (value == 3 || value == 4) {
+				addClass = 'green';
+				removeClasses.push('grey', 'red', 'orange');
+			}
+		}
+		
+		foreach (removeClasses as var index => var classToBeRemoved) {
+			field.classList.remove(classToBeRemoved);
+		}
+		
+		field.classList.add(addClass);
+	}
+}
+
 methods.validateFormatOrRedrawForField = function(field, isToggleButton) {
 	
 	if (typeof field == 'string') {
@@ -4995,17 +4927,36 @@ methods.validateFormatOrRedrawForField = function(field, isToggleButton) {
 	}
 };
 
-methods.redrawImmediatelyWhenChanged = function(el, event, id, originalValue, back) {
+methods.redrawImmediatelyWhenChanged = function(el, event, id, originalValue, matchesOriginalValue, matchesEmptyString) {
 	
-	var changed;
+	//If the redraw_immediately_onchange property is set on a text field, the current tab
+	//will be redrawn on the client whenever an Admin changes this field.
+	//
+	//This happens immediately; the system won't wait for the un-focus event.
+	//
+	//However to prevent framerate/performance issues, this will only trigger when the field is
+	//changed from (or back to) its original value, or changed from (or back to) an empty string.
+	//Other modifications to the value of the field won't retrigger the change.
 	
-	if (back) {
-		changed = el.value === originalValue;
+	
+	var changedFromOriginal,
+		changedFromEmpty,
+		changed,
+		value = el.value;
+	
+	if (matchesOriginalValue) {
+		changedFromOriginal = value !== originalValue;
 	} else {
-		changed = el.value !== originalValue;
+		changedFromOriginal = value === originalValue;
 	}
 	
-	if (changed) {
+	if (matchesEmptyString) {
+		changedFromEmpty = value !== '';
+	} else {
+		changedFromEmpty = value === '';
+	}
+	
+	if (changed = changedFromOriginal || changedFromEmpty) {
 		
 		zenario.stop(event);
 		

@@ -3,7 +3,7 @@
 zenario__locations:
     panel:
         title: Locations
-        no_items_message: No locations exist
+        no_items_message: No locations found
         
         panel_type: google_map_or_list
         lat_column: latitude
@@ -382,6 +382,16 @@ zenario__locations:
                     path: site_settings
                     key:
                         id: zenario_location_manager__site_settings_group
+            help:
+                label: Help
+                hide_in_select_mode: true
+                help:
+                    message: |
+                        Locations represent places in the real world.
+                        
+                        These can be residential addresses, company offices, or just city names. 
+                        
+                        Locations can be displayed on a Google map (provided an API key has been set up in site settings).
             
         item_buttons:
             rename_location:
@@ -576,8 +586,13 @@ zenario__locations:
                     Upload an image|
                                             You may upload a .gif, a .jpeg, a .jpg or a .png images.<br/>
                 upload:
-                    fileExt: '*.gif;*.jpg;*.jpeg;*.png'
-                    fileDesc: Images
+                    accept: 'image/png, image/jpeg, image/gif, image/webp'
+                    extensions:
+                        - .gif
+                        - .jpg
+                        - .jpeg
+                        - .png
+                        - .webp
                     request:
                         upload_image: true
                 without_columns_set:

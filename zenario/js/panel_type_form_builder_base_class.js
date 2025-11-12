@@ -343,9 +343,23 @@ methods.getTUIXFieldsHTML = function(tags, tuixTabId, item, itemType) {
 		}
 		
 		//The logic is shared between the form editor and the dataset editor.
-		//The "if" statement below should only run in the form editor, and only when editing an archived form.
-		if (thus.tuix.form && thus.tuix.form.status && thus.tuix.form.status == 'archived') {
-			field.readonly = true;
+		//The "if" statement below should only run in the form editor:
+		//either when editing an archived form,
+		//or when editing a field that is used in the form settings.
+		if (thus.tuix.form) {
+			if (
+				(thus.tuix.form.status && thus.tuix.form.status == 'archived')
+				|| (
+					thus.tuix.form.send_email_to_admin
+					&& thus.tuix.form.send_email_to_admin_destination_for_form_response == 'destination_depends_on_a_field_and_its_values'
+					&& thus.tuix.form.admin_email_destination_select_list_for_fields == item.id
+				)
+			) {
+				field.readonly = true;
+				//There is logic that displays the "You cannot edit a dataset field's values." message.
+				//As this is a form and not a dataset, do not allow showing that message.
+				field.is_form = true;
+			}
 		}
 		
 		field.id = fieldId;
@@ -464,6 +478,17 @@ methods.getTUIXFieldsHTML = function(tags, tuixTabId, item, itemType) {
 							translationField.value = item[tFieldId];
 						} else {
 							translationField.value = '(No text is defined in the default language)';
+							translationField.disabled = true;
+						}
+						
+						if (
+							(thus.tuix.form.status && thus.tuix.form.status == 'archived')
+							|| (
+								thus.tuix.form.send_email_to_admin
+								&& thus.tuix.form.send_email_to_admin_destination_for_form_response == 'destination_depends_on_a_field_and_its_values'
+								&& thus.tuix.form.admin_email_destination_select_list_for_fields == item.id
+							)
+						) {
 							translationField.disabled = true;
 						}
 						

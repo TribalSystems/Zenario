@@ -34,7 +34,7 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		
 		//Don't use this box for editing phrases in the default language
 		if (!$box['key']['language_id']
-		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name', 'is_html', 'seen_at_content_id', 'seen_at_content_type'], $box['key']['id']))) {
+		 || !($phraseKey = ze\row::get('visitor_phrases', ['code', 'module_class_name', 'is_html', 'seen_at_content_id', 'seen_at_content_type', 'first_seen_by_visitor'], $box['key']['id']))) {
 			exit;
 		}
 		
@@ -117,24 +117,34 @@ class zenario_common_features__admin_boxes__translate_phrase extends ze\moduleBa
 		
 		if ($phraseKey['seen_at_content_id'] && $phraseKey['seen_at_content_type']) {
 			$contentItemTag = $phraseKey['seen_at_content_type'] . '_' . $phraseKey['seen_at_content_id'];
-			$contentItemTagFormatted = ze\content::formatTag($phraseKey['seen_at_content_id'], $phraseKey['seen_at_content_type']);
+			$contentMissing = false;
 			
-			if (ze\row::exists('content_items', ['id' => $phraseKey['seen_at_content_id'], 'type' => $phraseKey['seen_at_content_type'], 'status' => ['!' => 'deleted']])) {
-				$contentItemLink = ze\link::toItem($phraseKey['seen_at_content_id'], $phraseKey['seen_at_content_type']);
-				$contentItemClass = ze\contentAdm::getItemIconClass($phraseKey['seen_at_content_id'], $phraseKey['seen_at_content_type']);
-				
-				$linkStart = '<a href="organizer.php#zenario__content/panels/content//' . htmlspecialchars($contentItemTag) . '" target="_blank">';
-				$linkEnd = '</a>';
-				
-				$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase(
-					'[[link_start]][[content_item_tag]][[link_end]]',
-					['link_start' => $linkStart, 'content_item_tag' => $contentItemTagFormatted, 'link_end' => $linkEnd]
-				);
-				
-				$fields['phrase/seen_at']['row_class'] = 'organizer_item_image ' . $contentItemClass;
+			$usage = [];
+					
+			if (ze\lang::count() > 1) {
+				$usage['content_translation_chains'] = 1;
+				$usage['content_translation_chain'] = $contentItemTag;
 			} else {
-				$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('[[content_item_tag]] (deleted)', ['content_item_tag' => $contentItemTagFormatted]);
+				if (ze\row::exists('content_items', ['id' => $phraseKey['seen_at_content_id'], 'type' => $phraseKey['seen_at_content_type'], 'status' => ['!' => 'deleted']])) {
+					$usage['content_items'] = 1;
+					$usage['content_item'] = $contentItemTag;
+				} else {
+					$contentMissing = true;
+					$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('Missing content item [[tag]]', ['tag' => $contentItemTag]);
+				}
 			}
+			
+			if (!$contentMissing) {
+				$usageLinks = [];
+				$whereUsed = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+				
+				$fields['phrase/seen_at']['snippet']['html'] = $whereUsed;
+			}
+			
+			$fields['phrase/first_seen_in_visitor_mode']['snippet']['html'] = ze\date::formatDateTime($phraseKey['first_seen_by_visitor']);
+		} else {
+			$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('Not yet seen');
+			$fields['phrase/first_seen_in_visitor_mode']['hidden'] = true;
 		}
 	}
 	

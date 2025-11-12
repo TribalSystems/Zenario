@@ -1,0 +1,11 @@
+"Language ID","Module"
+sv,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Dokument nedladdning:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL till denna sida:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Detta dokument är inte i någon kategori."
+_VIEW_OR_DOWNLOAD,"Visa/ladda ner:"
+_FILE_TYPE_AND_SIZE,"Filtyp och storlek:"
+_S3_FILE_TYPE_AND_SIZE,"S3 filtyp och storlek:"
+_S3_FILENAME,"S3 filnamn:"

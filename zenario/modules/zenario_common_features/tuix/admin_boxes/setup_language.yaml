@@ -21,48 +21,34 @@ zenario_setup_language:
                                 Default language for this site
                             </div>
                             
-                            <p>
-                                [[language_english_name]] [[is_or_will_be]] the default language for this site. All web pages will include its ISO code, "[[iso_code]]".
-                            </p>
+                            <p><strong>[[language_english_name]]</strong> [[is_or_will_be]] enabled. Content items in this language will include its ISO code, "[[iso_code]]" in the page head.</p>
 
-                            <p>
-                                If the site has more than one enabled language, you may make a translation of each content item into the secondary languages.
-                                The content items are related via a "translation chain", as they are likely to contain equivalent content.
-                            </p>
+                            <p>When a Zenario site has more than one language, a <strong>translation chain</strong> is used to group content items together. Items in a translation chain are assumed to have the same meaning, while being in different languages.</p>
+                          
+                            <p>The items of a translation chain are in the same position in the menu hierarchy, and on an extranet site they have the same user permissions.</p>
 
-                            <p>
-                                Zenario can create "phrases" for words or sentences that appear in certain plugins that appear on web pages (such as Banner plugins).
-                                It also does this for phrases included in modules' program code.
-                            </p>
+                            <p>To make a translation, an administrator should use the "Translations" tab on the admin toolbar to create a translation of a content item from the original. The new item's content can be translated with machine translation assistance, or by a human.</p>
 
-                            <p>
-                                To create phrases, look for the "Uses phrases" icon on the settings panel of the plugin. The plugin must be on a page for which a non-[[language_english_name]] translation exists.
-                                When that content item is viewed, a phrase is created in the database, and can be seen in the phrases panel.
-                                You can find all phrases there, and enter translations for them into the site's other languages.
-                            </p>
+                            <p>Beside content items, there are phrases, which come from plugins, and they can also be translated. Phrases can be found under the <strong>International</strong> section of Organizer.</p>
+
                     visible_if: |
                         zenarioAB.tuix.key.id && (!zenarioA.siteSettings.default_language || zenarioAB.tuix.key.id == zenarioA.siteSettings.default_language)
                 secondary_language_info_snippet:
                     snippet:
                         html: |
                             <div class="zenario_fbInfo">
-                               Secondary language
+                               This is a non-default, or secondary, language.
                             </div>
                              
-                            <p>
-                                [[language_english_name]] [[is_or_will_be]] enabled as a language of this site. All content items (web pages) will include its ISO code, "[[iso_code]]".
-                            </p>
+                            <p><strong>[[language_english_name]]</strong> [[is_or_will_be]] enabled. Content items in this language will include its ISO code, "[[iso_code]]" in the page head.</p>
 
-                            <p>
-                                Zenario can create "phrases" for words or sentences that appear in certain plugins that appear on web pages (such as Banner plugins).
-                            </p>
+                            <p>When a Zenario site has more than one language, a <strong>translation chain</strong> is used to group content items together. Items in a translation chain are assumed to have the same meaning, while being in different languages.</p>
+                          
+                            <p>The items of a translation chain are in the same position in the menu hierarchy, and on an extranet site they have the same user permissions.</p>
 
-                            <p>
-                                To create phrases, edit a plugin on a content item in the default language ([[default_language_english_name]]), and look for the "Uses phrases" icon on the settings panel of the plugin.
-                                The plugin must be on a page for which a translation in [[language_english_name]] exists.
-                                When the content item on which the plugin is placed is viewed (by an administrator or a visitor) a phrase is created in the phrases panel.
-                                You can find all phrases there, and either enter translations for them, or export them as a spreadsheet to send to a translator, for subsequent import back into the panel.
-                            </p>
+                            <p>To make a translation, an administrator should use the "Translations" tab on the admin toolbar to create a translation of a content item from the original. The new item's content can be translated with machine translation assistance, or by a human.</p>
+
+                            <p>Beside content items, there are phrases, which come from plugins, and they can also be translated. Phrases can be found under the <strong>International</strong> section of Organizer.</p>
                     visible_if: |
                         zenarioAB.tuix.key.id && (zenarioA.siteSettings.default_language && zenarioAB.tuix.key.id != zenarioA.siteSettings.default_language)
                 english_name:
@@ -91,18 +77,14 @@ zenario_setup_language:
                     same_row: true
                     note_below: |
                         Phrases are chunks of text, defined in plugin settings, Twig frameworks, and PHP program files.
-                        They are originally in English as Zenario was developed in English, but you can create
-                        translations of phrases into other languages.
-                        When Zenario goes to display a phrase, it looks to see if a translation exists and displays
-                        that if it can. Phrases are managed in the <em>Phrases</em> panel in Organizer.
+                        Their definition is in English, but translations of these phrases can be made in other languages.
+                        When Zenario displays a phrase, it displays the translation in the visitor's language if it exists.
                 doesnt_use_phrases:
                     same_row: true
                     note_below: |
                         Phrases are chunks of text, defined in plugin settings, Twig frameworks, and PHP program files.
-                        They are originally in English as Zenario was developed in English, but you can create
-                        translations of phrases into other languages.
-                        When Zenario goes to display a phrase, it looks to see if a translation exists and displays
-                        that if it can. Phrases are managed in the <em>Phrases</em> panel in Organizer.
+                        Their definition is in English, but translations of these phrases can be made in other languages.
+                        When Zenario displays a phrase, it displays the translation in the visitor's language if it exists.
                 flag_filename:
                     label: 'Flag CSS class name:'
                     type: text
@@ -116,25 +98,16 @@ zenario_setup_language:
                     validation:
                         required: Please enter a class name.
                 
-                language_picker_logic:
-                    label: Visibility in language pickers
-                    type: select
-                    value: visible_or_disabled
-                    values:
-                        visible_or_disabled:
-                            label: Always show. If no link is possible then show as a disabled link.
-                        visible_or_hidden:
-                            label: Only show if a link is possible, hide if one is not.
-                        always_hidden:
-                            label: Never show, even if a link is possible.
-                
                 detect:
                     type: checkbox
-                    label: 'Use browser language detection'
+                    onoff: true
+                    value: true
+                    label: |
+                        Use browser language detection
                     redraw_onchange: Yes
-                    side_note: |
-                        Zenario will redirect a visitor to the home page of this language based on the
-                        language requested by their browser.
+                    note_below: |
+                        Recommended. Zenario will detect the language of the visitor's browser, and redirect them to the requested content item in that language,
+                        if it exists. If it doesn't exist, it will fall back on the default language of the site.
                 detect_lang_codes:
                     type: text
                     maxlength: 100
@@ -147,8 +120,20 @@ zenario_setup_language:
                     visible_if: "zenarioAB.value('detect')"
                     indent: 1
                     note_below: |
-                        <p>The visitor's browser's language code must start with that code or be equal to it.</p>
-                        <p>Multiple language codes may be entered (separated by commas). For example, for Portuguese, the value may be:<br /><code>pt-eu,pt-br,pt</code></p>
+                        The visitor's browser's language code must match or start with the code(s) entered here.
+                        Multiple language codes may be entered (separated by commas). For example, for Portuguese, the value may be: <code>pt-eu,pt-br,pt</code>.
+                
+                language_picker_logic:
+                    label: Visibility in language pickers
+                    type: select
+                    value: visible_or_disabled
+                    values:
+                        visible_or_disabled:
+                            label: Always show. If no link is possible then show as a disabled link.
+                        visible_or_hidden:
+                            label: Only show if a link is possible, hide if one is not.
+                        always_hidden:
+                            label: Never show, even if a link is possible.
                 
                 search_type:
                     label: 'Search algorithm:'
@@ -217,7 +202,3 @@ zenario_setup_language:
                         1:
                             ord: 1
                             label: ''
-                
-                sync_assist:
-                    type: checkbox
-                    label: 'Show an orange background colour in Organizer where a translation is missing in this language.'

@@ -168,7 +168,7 @@ class moduleAdm {
 		//Check to see if there are any other versions of the same module running.
 		//If we find another version running, don't let this version be activated!
 		} elseif (\ze\row::exists('modules', ['id' => ['!' => $id], 'class_name' => $module['class_name'], 'status' => ['module_running', 'module_is_abstract']])) {
-			return \ze\admin::phrase('_ANOTHER_VERSION_OF_PLUGIN_IS_INSTALLED');
+			return \ze\admin::phrase('Another version of this Module is installed or running');
 	
 		} elseif (!\ze\moduleAdm::loadDescription($module['class_name'], $desc)) {
 			return \ze\admin::phrase("This module's description file is missing or not valid.");
@@ -1034,7 +1034,7 @@ class moduleAdm {
 			}
 		}
 
-		\ze\contentAdm::importPhrasesForModule($moduleClassName);
+		\ze\contentAdm::importPhrasesForModule($moduleClassName, $langId = false, $keepExistingTranslations = true);
 
 
 		if ($specialPageChanges) {
@@ -1120,6 +1120,8 @@ class moduleAdm {
 							keywords_field = '". \ze\escape::sql($type['keywords_field'] ?? 'optional'). "',
 							summary_field = '". \ze\escape::sql($type['summary_field'] ?? 'optional'). "',
 							release_date_field = '". \ze\escape::sql($releaseDateField). "',
+							organizer_default_sort_logic = '". \ze\escape::asciiInSQL($type['organizer_default_sort_logic'] ?? 'last_activity_desc'). "',
+							allow_editing_content_in_fab = ". \ze\ring::engToBoolean($type['allow_editing_content_in_fab'] ?? 0). ",
 							auto_set_release_date = ". (int) $autoSetReleaseDate . ",
 							enable_categories = ". \ze\ring::engToBoolean($type['enable_categories'] ?? 0). ",
 							is_creatable = ". (isset($type['is_creatable']) ? \ze\ring::engToBoolean($type['is_creatable'] ?? 0) : '1') . ",
@@ -1128,7 +1130,8 @@ class moduleAdm {
 						ON DUPLICATE KEY UPDATE
 							content_type_name_en = IF (content_type_name_en = '', '". \ze\escape::sql($type['content_type_name_en']). "', content_type_name_en),
 							content_type_plural_en = IF (content_type_plural_en = '', '". \ze\escape::sql($type['content_type_plural_en']). "', content_type_plural_en),
-							module_id = ". (int) $moduleId;
+							module_id = VALUES(module_id),
+							organizer_default_sort_logic = VALUES(organizer_default_sort_logic)";
 					\ze\sql::update($sql);
 			
 					//Make sure a template exists for this Content Type, creating it if it doesn't

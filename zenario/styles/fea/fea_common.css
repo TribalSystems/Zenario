@@ -61,6 +61,10 @@ table.table_list.zfea_group_by tr.zfea_list_outer_grouping td h4 {
 	margin-left:-38px;
 }
 
+table .nowrap {
+	white-space: nowrap;
+}
+
 /* Form
 --------------------------------------------------------------------------------------------------*/
 
@@ -1313,6 +1317,7 @@ table.table_list tr th.zfea_col_sorted {
 
 .zenario_skin .zfea .search_form {
 	overflow:hidden;
+	display:inline;
 }
 
 .zenario_skin .zfea .search_form,
@@ -1330,7 +1335,7 @@ table.table_list tr th.zfea_col_sorted {
 
 .zenario_skin .zfea .search_form input[type="search"],
 .zenario_skin .zfea .search_form input.search_term {
-	max-width:800px;
+	max-width:600px;
 	padding:0 0 0 15px;
 	line-height:36px;
 	outline: none;
@@ -1557,8 +1562,9 @@ table.table_list tr th.zfea_col_sorted {
 	position:relative;
 }
 
+.zfea_zenario_list_users > h1,
 .zfea_zenario_list_users > h2 {
-	padding-right:100px;
+	margin-right:100px;
 }
 
 .zfea_zenario_list_users .zfea_button.export {
@@ -2182,6 +2188,7 @@ body.mobile .zenario_videos_fea .zfea_block_like_block .zfea_block .buttons {
 	float:right;
 	text-align:right;
 	padding:8px 8px 8px 10px;
+	margin-bottom:1em;
 	background-repeat:no-repeat;
 	background-position:8px center;
 	-webkit-border-radius: 4px;
@@ -3586,10 +3593,19 @@ body.retina #colorbox .connection_tabbed_panel .simulator_img {
 	text-align:left;
 }
 
-#colorbox .zfea_confirm_warning .zfea_colorbox_body {
+#colorbox .zfea_confirm_warning .zfea_colorbox_body,
+#colorbox .zfea_confirm_question .zfea_colorbox_body {
 	min-height:40px;
 	padding:5px 0 0 60px;
+}
+
+#colorbox .zfea_confirm_warning .zfea_colorbox_body {
 	background:url('images/icon-warning-triangle.svg') no-repeat 0 0 / 47px 40px;
+}
+
+#colorbox .zfea_confirm_question .zfea_colorbox_body {
+	padding-left:54px;
+	background:url('images/icon-question-blue.svg') no-repeat 0 0 / 40px 40px;
 }
 
 #colorbox .form_buttons {

@@ -45,12 +45,13 @@ plugin_settings:
                     format_onchange: true
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                         reorder_items: false
                     validation:
@@ -178,12 +179,13 @@ plugin_settings:
                     value: ""
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: false
                         reorder_items: false
                 rollover_tech:
@@ -258,12 +260,13 @@ plugin_settings:
                     format_onchange: true
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                         reorder_items: false
                     indent: 2
@@ -351,7 +354,7 @@ plugin_settings:
                         _CONTENT_ITEM:
                             label: Link to a content item
                         _DOCUMENT:
-                            label: Link to a document
+                            label: Link to a hierarchical document
                             #Only show the "Link to document" option for banners, and not anything that extends the banner
                             visible_if: |
                                 tuix.key.moduleClassName == 'zenario_banner'
@@ -477,7 +480,7 @@ plugin_settings:
                             label: 'Link to a content item in a specific language:'
                         1:
                             ord: 0
-                            label: "Link to a translation in the visitor's language (recommended):"
+                            label: "Link to a translation chain, to show a content item in the visitor's language (recommended):"
                     format_onchange: true
                 hyperlink_target:
                     indent: 1
@@ -611,6 +614,7 @@ plugin_settings:
                         foreign_key_to: document
                     indent: 1
                     format_onchange: true
+                    label: 'Hierarchical document:'
                     visible_if: |
                         zenarioAB.value('link_type') == '_DOCUMENT'
                     pick_items:
@@ -618,7 +622,7 @@ plugin_settings:
                         min_path: zenario__library/panels/documents
                         max_path: zenario__library/panels/documents
                         target_path: zenario__library/panels/documents
-                        select_phrase: Select a document...
+                        select_phrase: Select a hierarchical document...
                         disabled_if_for_all_selected_items: |
                             item && item.type == 'folder'
                 privacy_warning:
@@ -633,6 +637,7 @@ plugin_settings:
                         name: more_link_text
                         is_searchable_content: true
                         translate: true
+                    indent: 1
                     label: |
                         Text for "More info" link:
                     type: text
@@ -758,13 +763,3 @@ plugin_settings:
                     cols: 80
                     rows: 10
                     value: ""
-                
-                #Previously, translate_text was on the "Image & link" tab. As of 10.0, it is on the "Title & description" tab.
-                translate_text:
-                    plugin_setting:
-                        name: translate_text
-                    label: 'Make this plugin multilingual using the phrases system'
-                    note_below: 'Zenario creates phrases when they are viewed (by an admin or visitor) on a content item which is not in English.'
-                    type: checkbox
-                    value: 1
-                    format_onchange: true

@@ -13,7 +13,7 @@ zenario__users:
                         AND cdtabs.dataset_id = cdf.dataset_id
                 id_column: cdf.id
                 where_statement: WHERE cdf.type = 'group'
-            no_items_message: No groups are defined.
+            no_items_message: No groups found
             default_sort_column: label
             label_format_for_picked_items: |
                 [[group_label]]
@@ -77,27 +77,23 @@ zenario__users:
                     css_class: zenario_create_a_new
                     admin_box:
                         path: zenario_group
+                        create_another: true
                     priv: _PRIV_MANAGE_GROUP
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            Groups can be use to organise users. 
+                            
+                            More specifically, by putting certain users in a group, they are given permissions view specific content items, or other material, on an extranet site.
+
             item_buttons:
-                properties:
-                    label: Properties
+                edit:
+                    label: Edit group
                     admin_box:
                         path: zenario_group
                     priv: _PRIV_MANAGE_GROUP
-                delete:
-                    label: Delete
-                    ajax:
-                        confirm:
-                            message: Are you sure you want to delete the group "[[label]]"?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            action: delete
-                    priv: _PRIV_MANAGE_GROUP
-                    disabled_if: item.protected
-                    disabled_tooltip: |
-                        This group is protected and cannot be deleted.
                 view_dropdown:
                     label: 'View'
                     hide_when_children_are_not_visible: true
@@ -113,3 +109,17 @@ zenario__users:
                     link:
                         path: zenario__content/panels/content
                         refiner: group_members
+                delete:
+                    label: Delete
+                    ajax:
+                        confirm:
+                            message: Are you sure you want to delete the group "[[label]]"?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: delete
+                    priv: _PRIV_MANAGE_GROUP
+                    disabled_if: item.protected
+                    disabled_tooltip: |
+                        This group is protected and cannot be deleted.

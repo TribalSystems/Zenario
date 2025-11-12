@@ -10,7 +10,7 @@
 {% if Blog_Search_Results %}
     {% include advancedSearchCoreFrameworksPath ~ 'includes/populate_results_loop.twig.html' with {'Type': Blog_Search_Results} %}
     
-    {% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') and (Blog_Search_Results_Count > Maximum_Results_Number) %}
+    {% if (Mode == 'search_entry_box' or Mode == 'search_entry_box_show_always') %}
     	{% if Blog_And_X_More_Results_Phrase %}
     		<p class="more_results">{{Blog_And_X_More_Results_Phrase}}</p>
     	{% endif %}

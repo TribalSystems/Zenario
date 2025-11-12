@@ -10,7 +10,7 @@ description: |
     <p>This is the base module for Blog content items.</p>
     <p>This module creates the Blog content type, such that administrators can create Blog articles.</p>
     <p>The usual configuration of a Blog article is to have a release date and a writer name, and of course title, description and summary.</p>
-    <p>On a Blog content item, you should have a Meta Data plugin to display the release date and writer, and a WYSIWYG area for the main content.</p>
+    <p>On a Blog content item, you should have a Metadata plugin to display the release date and writer, and a WYSIWYG area for the main content.</p>
     <p>It's also typical to have blog articles appearing on the site's home page, and on a blog listing page, both of which can be achieved by putting a Content Summary List plugin in a slot on each page, and selecting a filter content type of Blog.</p>
 category: content_type
 keywords: news, rss, blog, article
@@ -27,3 +27,5 @@ content_types:
         release_date_field: optional
         auto_set_release_date: true
         writer_field: optional
+        organizer_default_sort_logic: release_date_desc
+        allow_editing_content_in_fab: true

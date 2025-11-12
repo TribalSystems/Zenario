@@ -74,6 +74,15 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	
+	$isAdmin = ze::isAdmin();
+	
+	//If dev tools are enabled, turn on the recording of PHP and YAML files used by TUIX, so
+	//the debug tools that show this information can work.
+	if ($isAdmin && ze\admin::setting('show_dev_tools')) {
+		\ze::$recordFiles = true;
+	}
+	
+	
 	$status = ze\content::getShowableContent($content, $chain, $version, $cID, $cType, ze::request('cVersion'), $checkRequestVars = true);
 	if (!$status || is_string($status)) {
 		exit;
@@ -119,7 +128,7 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	if (!$instanceFound) {
-		if (!($continueIfNoAccess = $methodCall == 'refreshPlugin' && ze::isAdmin()) || !$slotName) {
+		if (!($continueIfNoAccess = $methodCall == 'refreshPlugin' && $isAdmin) || !$slotName) {
 			exit;
 		
 		} else {
@@ -131,9 +140,9 @@ if ($methodCall == 'refreshPlugin'
 	} else
 	if (empty(ze::$slotContents[$slotNameNestId]->class())
 	 || (empty(ze::$slotContents[$slotNameNestId]->initStatus())
-	  && !($continueIfNoAccess = $methodCall == 'refreshPlugin' && ze::isAdmin()))) {
+	  && !($continueIfNoAccess = $methodCall == 'refreshPlugin' && $isAdmin))) {
 	  	
-	  	if (ze::isAdmin()) {
+	  	if ($isAdmin) {
 			echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		}
 		exit;
@@ -336,7 +345,7 @@ if ($methodCall == 'showFile') {
 	 || (!$isForPlugin && !$module->returnVisitorTUIXEnabledForPopouts($requestedPath))
 	) {
 	  	
-	  	if (ze::isAdmin()) {
+	  	if ($isAdmin) {
 			echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		}
 		exit;
@@ -367,7 +376,7 @@ if ($methodCall == 'showFile') {
 		$saving = !$filling && $methodCall == 'saveVisitorTUIX';
 		$validating = !$filling && ($saving || $methodCall == 'validateVisitorTUIX');
 	
-		$debugMode = ze::isAdmin() && ze::get('_debug');
+		$debugMode = $isAdmin && ze::get('_debug');
 	
 		ze\tuix::visitorTUIX($module, $requestedPath, $tags, $filling, $validating, $saving, $debugMode, $exporting);
 	}
@@ -561,8 +570,6 @@ if ($methodCall == 'showFile') {
 	$slot = ze::$slotContents[$slotName];
 	$module = ze::$slotContents[$slotNameNestId]->class();
 	
-	$isAdmin = ze::isAdmin();
-	
 	//Display an info section at the top of the result, to help the CMS pick up on a few things
 	$showInfo = true;
 	
@@ -737,6 +744,15 @@ if ($methodCall == 'showFile') {
 			ze::$dumps = [];
 		}
 	}
+}
+
+
+//Experimental debugging feature.
+//Add support for using ze::dump() when pressing AJAX buttons in FEA plugins,
+//as well as anything else that opts into it using the "supportsZeDump" flag.
+if (!empty(ze::$dumps) && isset($_GET['supportsZeDump'])) {
+	ze\escape::flag('DUMPS', json_encode(ze::$dumps), false);
+	ze::$dumps = [];
 }
 
 

@@ -6,7 +6,7 @@ zenario_content_type_details:
             fields:
                 zenario_ctype_event__location_field:
                     visible_if: zenarioAB.key('id') == 'event'
-                    label: 'Enable location'
+                    label: 'Enable location support'
                     type: checkbox
                     onoff: true
                     value: true

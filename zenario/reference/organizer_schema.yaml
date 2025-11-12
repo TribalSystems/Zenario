@@ -21,7 +21,7 @@ pages:
 
 
 
-#oneOf:
+#anyOf:
 #    - label
 #    - tooltip
 #dependencies:
@@ -250,6 +250,14 @@ additionalProperties:
                     hide_in_backend: *hide_in_backend
                     hide_in_frontend: *hide_in_frontend
                     visible_if: *visible_if
+                    separator_before_this:
+                        type: boolean
+                        description: |
+                            Set this property to show a separator just before this item.
+                    separator_after_this:
+                        type: boolean
+                        description: |
+                            Set this property to show a separator just after this item.
                     link:
                         type: object
                         required:
@@ -303,13 +311,23 @@ additionalProperties:
                         description: >
                             An alternate title for an Organizer panel to display when in
                             Organizer-select mode.
-                        default: (defaults to the title property)
+                            
+                            Defaults to the title property if not set.
                     multiple_select_mode_title:
                         type: string
                         description: >
                             An alternate title for an Organizer panel to display when in
                             Organizer-select mode when multiple selection is enabled.
-                        default: (defaults to the select_mode_title property)
+                            
+                            Defaults to the select_mode_title property if not set.
+                    help_text_title:
+                        type: string
+                        description: >
+                            The title to display for the help text.
+                            
+                            Defaults to the title property if not set.
+                            
+                            This works from version 10.3 onwards.
                     
 
                     notice:
@@ -623,6 +641,16 @@ additionalProperties:
                                         Defaults to the title property if not set.
                                         
                                         This works from version 9.6 onwards.
+                                
+                                parent:
+                                    type: string
+                                    description: >
+                                        Enter the code-name of another column here to make your column's value appear
+                                        inside the column you specify.
+                                        
+                                        Only works on multi-row panels.
+                                        
+                                        There's a limit of 2 levels; you can't have a column inside a column inside another column.
                                 
                                 db_column:
                                     type: string
@@ -1027,7 +1055,7 @@ additionalProperties:
                             columns with just one click.
                         additionalProperties:
                             type: object
-                            oneOf:
+                            anyOf:
                                 -
                                     required:
                                         - css_class
@@ -1085,7 +1113,7 @@ additionalProperties:
                                     description: >
                                         The codename/property name of a column from <code>columns</code> to apply the filter on.
                                 value:
-                                    type: string
+                                    type: *stringy
                                     description: >
                                         The value of the column to use.
                                         
@@ -1237,6 +1265,68 @@ additionalProperties:
                                         This works from version 8.2 onwards.
                                         
                                         From 8.4 onwards, you can use line breaks in "no items" messages to improve readability.
+                                
+                                
+                                prefs_by_refiner:
+                                    type: boolean
+                                    description: >
+                                        Enable this option to set things such as the sort column and the sort order on a per-refiner basis.
+                                        If this is enabled, the admin preferences will also be saved in this way.
+                                        
+                                        This works from version 10.3 onwards.
+                                        This must be written in your .yaml file, or set in your fillOrganizerNav() method.
+                    
+                                default_sort_column:
+                                    type: string
+                                    static: true
+                                    description: >
+                                        The code-name of a column (not the name in SQL) to use as the default sort column
+                                        for this refiner.
+                                        
+                                        This requires the "prefs_by_refiner" property set to true, otherwise it will not be read.
+                                        
+                                        This works from version 10.3 onwards.
+                                        This must be written in your .yaml file, or set in your fillOrganizerNav() method.
+                                
+                                default_sort_desc:
+                                    type: boolean
+                                    static: true
+                                    description: >
+                                        If this property is true, your panel will sort its items in descending order by default.
+                                        
+                                        This requires the "prefs_by_refiner" property set to true, otherwise it will not be read.
+                                        
+                                        This works from version 10.3 onwards.
+                                        This must be written in your .yaml file, or set in your fillOrganizerNav() method.
+                                
+                                
+                                
+                                prefs_by_refiner_value:
+                                    type: object
+                                    description: >
+                                        Use this object to set things such as the sort column and the sort order on a per-refiner value basis.
+                                        If this is enabled, the admin preferences will also be saved in this way.
+                                        
+                                        This works from version 10.3 onwards.
+                                        This must be written in your .yaml file, or set in your fillOrganizerNav() method.
+                                    additionalProperties:
+                                        type: object
+                                        properties:
+                                            default_sort_column:
+                                                type: string
+                                                static: true
+                                                description: >
+                                                    The code-name of a column (not the name in SQL) to use as the default sort column
+                                                    for this refiner.
+                                            
+                                            default_sort_desc:
+                                                type: boolean
+                                                static: true
+                                                description: >
+                                                    If this property is true, your panel will sort its items in descending order by default.
+                                
+                                
+                                
                     
                     refiner_required:
                         type: boolean
@@ -1256,7 +1346,7 @@ additionalProperties:
                             If you use the <code>db_items</code> property, this will be automatically populated for you.
                         additionalProperties:
                             type: object
-                            oneOf:
+                            anyOf:
                                 -
                                     required:
                                         - link
@@ -1506,7 +1596,7 @@ additionalProperties:
                         
                         additionalProperties:
                             type: object
-                            oneOf:
+                            anyOf:
                                 -
                                     required:
                                         - ajax
@@ -1905,7 +1995,7 @@ additionalProperties:
                                         in Organizer-select mode.
                                     required:
                                         - path
-                                    oneOf:
+                                    anyOf:
                                         -
                                             required:
                                                 - request
@@ -2083,7 +2173,7 @@ additionalProperties:
                             Item buttons appear when one or more items are selected, and are intended to be for actions that apply to the selected items.
                         additionalProperties:
                             type: object
-                            oneOf:
+                            anyOf:
                                 -
                                     required:
                                         - ajax
@@ -2343,7 +2433,7 @@ additionalProperties:
                             Inline buttons appear next to each item, and are intended to be for actions that apply to the item they are next to.
                         additionalProperties:
                             type: object
-                            oneOf:
+                            anyOf:
                                 -
                                     required:
                                         - ajax
@@ -2486,7 +2576,7 @@ additionalProperties:
                             Hidden navigation is effectively a button that is always hidden.
                         additionalProperties:
                             type: object
-                            oneOf:
+                            anyOf:
                                 -
                                     required:
                                         - link
@@ -2661,7 +2751,7 @@ additionalProperties:
                             This can be clicked and navigated into just like a button.
                             
                             The Trash icon will not be visible in Select Mode.
-                        oneOf:
+                        anyOf:
                             -
                                 required:
                                     - link
@@ -2997,7 +3087,7 @@ properties:
         
         additionalProperties:
             type: object
-            oneOf:
+            anyOf:
                 -
                     required:
                         - admin_box

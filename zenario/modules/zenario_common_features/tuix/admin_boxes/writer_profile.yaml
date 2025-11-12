@@ -75,12 +75,13 @@ zenario_writer_profile:
                         target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
                     upload:
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                     format_onchange: true
                 profile:

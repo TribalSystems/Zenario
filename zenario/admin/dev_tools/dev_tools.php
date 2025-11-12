@@ -86,6 +86,11 @@ switch (ze::get('mode')) {
 		$schemaNameForURL = 'organizer_schema';
 		break;
 	
+	case 'zenarioSlot':
+		$schemaName = 
+		$schemaNameForURL = 'slot_control_schema';
+		break;
+	
 	default:
 		$schemaName = 'fea_schema';
 		$schemaNameForURL = '';
@@ -95,21 +100,35 @@ switch (ze::get('mode')) {
 
 $schema = ze\tuix::readFile(CMS_ROOT. $schemaPath = 'zenario/reference/'. $schemaName. '.yaml');
 
-//Copy the some definitions from the FAB toolkit to the FEA toolkit
-//(This is a hack to save me from writing all of that out twice!)
-if ($schemaName == 'fea_schema') {
-	$fabSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/admin_box_schema.yaml');
-	
-	unset($fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']['additionalProperties']['properties']['pick_items']);
+//The tuix_form_schema.yaml file contains some common logic for all libraries that use TUIX forms.
+//This is defined in a separate file that's merged in as needed, to save me from having to maintain everything twice.
+if ($schemaName == 'admin_box_schema') {
+	$formSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/tuix_form_schema.yaml');
 	
 	$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'] = 
 		array_merge_recursive(
-			$fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'],
+			$formSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'],
 			$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']);
 	
 	$schema['additionalProperties']['properties']['lovs'] = 
 		array_merge_recursive(
-			$fabSchema['additionalProperties']['properties']['lovs'],
+			$formSchema['additionalProperties']['properties']['lovs'],
+			$schema['additionalProperties']['properties']['lovs']);
+	
+	
+} elseif ($schemaName == 'fea_schema') {
+	$formSchema = ze\tuix::readFile(CMS_ROOT. 'zenario/reference/tuix_form_schema.yaml');
+	
+	unset($formSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']['additionalProperties']['properties']['pick_items']);
+	
+	$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'] = 
+		array_merge_recursive(
+			$formSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'],
+			$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']);
+	
+	$schema['additionalProperties']['properties']['lovs'] = 
+		array_merge_recursive(
+			$formSchema['additionalProperties']['properties']['lovs'],
 			$schema['additionalProperties']['properties']['lovs']);
 	
 	//On Assetwolf sites, add some specific Assetwolf definitions
@@ -120,9 +139,7 @@ if ($schemaName == 'fea_schema') {
 			array_merge_recursive(
 				$schema['additionalProperties']['properties'],
 				$awSchema['additionalProperties']['properties']);
-		
 	}
-	
 }
 
 unset($schema['common_definitions']);

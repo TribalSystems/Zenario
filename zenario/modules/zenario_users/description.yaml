@@ -27,6 +27,7 @@ default_instance_name: Untitled User
 # database-revision in zenario/admin/db_updates/step_4_migrate_the_data/plugins.inc.php
 # to fix it automatically for every site.
 dependencies:
+    zenario_abstract_nest: true
     zenario_country_manager: true
 signals:
     -

@@ -139,6 +139,8 @@ methods.openEdit = function(itemType, itemId, tuixTabId, stopAnimation) {
 		thus.loadFieldsList(thus.currentPageId);
 	} else if (itemType == 'field') {
 		mergeFields.mode = 'edit_field';
+		mergeFields.field_name = item.field_name;
+		mergeFields.db_column = item.db_column;
 		mergeFields.label = item.label;
 		
 		var plural = item.record_count == 1 ? '' : 's';

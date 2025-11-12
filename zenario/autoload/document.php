@@ -443,7 +443,7 @@ class document {
 
 		//Get files that should have public links and their redirects
 		$sql = "
-			SELECT d.id, d.file_id, f.filename, f.location, f.path, f.short_checksum
+			SELECT d.id, d.file_id, d.filename, f.location, f.path, f.short_checksum
 			FROM " . DB_PREFIX . "documents d
 			INNER JOIN " . DB_PREFIX . "files f
 				ON d.file_id = f.id
@@ -453,16 +453,23 @@ class document {
 		while($doc = \ze\sql::fetchAssoc($result)) {
 			
 			if ($forceRemake || !file_exists(CMS_ROOT. 'public/downloads/'. $doc['short_checksum']. '/'. \ze\file::safeName($doc['filename']))) {
-				//Make public link
-				$publicLink = \ze\document::generatePublicLink($doc['id']);
-			
-				//Re-make any redirects
-				if (!\ze::isError($publicLink)) {
-					\ze\document::remakeRedirectHtaccessFiles($doc['id']);
+				if ($forceRemake) {
+					//Make public link
+					$publicLink = \ze\document::generatePublicLink($doc['id']);
 				
+					//Re-make any redirects
+					if (!\ze::isError($publicLink)) {
+						\ze\document::remakeRedirectHtaccessFiles($doc['id']);
+					
+					} else {
+						++$errors;
+						
+						if (is_null($exampleFile)) {
+							$exampleFile = $doc['filename'];
+						}
+					}
 				} else {
 					++$errors;
-					
 					if (is_null($exampleFile)) {
 						$exampleFile = $doc['filename'];
 					}

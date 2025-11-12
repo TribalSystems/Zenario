@@ -5,7 +5,7 @@ zenario__content:
         image_tags:
             panel_type: multi_line_list
             title: Image tags
-            no_items_message: No image tags found.
+            no_items_message: No image tags found
             db_items:
                 table: '[[DB_PREFIX]]image_tags AS it'
                 id_column: it.name
@@ -68,13 +68,13 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete the tag "[[name]]"?
+                                Delete the  tag "[[name]]"?
                                 
                                 No images use this tag.
                             multiple_select_message: |
-                                Are you sure you wish to delete the selected tags?
+                                Delete the selected tags?
                                 
-                                No images use these tag.
+                                No images use these tags.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -91,13 +91,13 @@ zenario__content:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to delete the tag "[[name]]"?
+                                Delete the tag "[[name]]"?
                                 
-                                It will be removed from the images that use it.
+                                Images that use it will no longer have this tag.
                             multiple_select_message: |
-                                Are you sure you wish to delete the selected tags?
+                                Delete the selected tags?
                                 
-                                They will be removed from the images that use them.
+                                Images that use them will no longer have these tags.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
@@ -120,3 +120,15 @@ zenario__content:
                         path: zenario_image_tag
                     css_class: zenario_create_a_new
                     hide_on_filter: true
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            Image tags can be used to help organise images that are stored in the library.
+                            
+                            You can edit an image and add tags, creating new tags as you go.
+                            
+                            Then you can filter by tag.
+                            
+                            Image tags are not visible to site visitors.

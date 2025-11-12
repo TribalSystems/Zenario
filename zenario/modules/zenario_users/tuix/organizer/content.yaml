@@ -16,6 +16,7 @@ zenario__content:
                 privacy:
                     ord: 3.1
                     parent: property_dropdown
+                    hide_in_select_mode: true
                     priv: _PRIV_EDIT_DRAFT
                     label: Change permissions
                     multiple_select: true

@@ -39,7 +39,7 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		
 		if (isset($_GET['refiner__archived'])) {
 			$panel['title'] = ze\admin::phrase('Retired layouts');
-			$panel['no_items_message'] = ze\admin::phrase('Area for layouts used in the past that shouldn\'t be used again.');
+			$panel['no_items_message'] = ze\admin::phrase('There are no retired layouts');
 			$panel['item']['css_class'] = 'archived_layout';
 			
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__archived'];
@@ -47,6 +47,19 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 			unset($panel['columns']['archived']['title']);
 			unset($panel['columns']['default']);
 			unset($panel['collection_buttons']);
+			
+			// Add help button specifically for archived layouts
+			$panel['collection_buttons']['help'] = [
+				'label' => ze\admin::phrase('Help'),
+				'help' => [
+					'message' => 
+						ze\admin::phrase('This panel shows retired layouts that are no longer available for use when creating new content items.').
+						"\n\n".
+						ze\admin::phrase('These layouts have been archived to keep the active layouts list clean while preserving them for content items that are already using them.').
+						"\n\n".
+						ze\admin::phrase('Retired layouts can be restored to make them available again, or they can be deleted if they are no longer in use by any content items.')
+				]
+			];
 		
 		} elseif ($refinerName == 'content_type') {
 			unset($panel['columns']['archived']['title']);
@@ -97,9 +110,13 @@ class zenario_common_features__organizer__layouts extends ze\moduleBaseClass {
 		
 		}
 		
+		$ord = 0;
 		$panel['columns']['content_type']['values'] = [];
 		foreach (ze\content::getContentTypes(false, false) as $cType) {
-			$panel['columns']['content_type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
+			$panel['columns']['content_type']['values'][$cType['content_type_id']] = [
+				'ord' => ++$ord,
+				'label' => $cType['content_type_name_en']
+			];
 		}
 		
 		$foundPaths = [];

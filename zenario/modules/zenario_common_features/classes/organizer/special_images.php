@@ -117,9 +117,10 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 				case 'image/x-icon':
 				case 'image/icon':
 				case 'image/svg+xml':
+				case 'image/webp':
 					break;
 				default:
-					echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG, SVG or ICO image.');
+					echo ze\admin::phrase('Please upload a valid JPG, PNG, SVG, WEBP, GIF or ICO image.');
 					return false;
 			}
 			
@@ -149,7 +150,7 @@ class zenario_common_features__organizer__special_images extends ze\moduleBaseCl
 				return $fileId;
 
 			} else {
-				echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG or SVG image.');
+				echo ze\admin::phrase('Please upload a valid JPG, PNG, SVG, WEBP, GIF or ICO image.');
 				return false;
 			}
 		} elseif (ze::post('copy_to_image_library') && ze\priv::check('_PRIV_MANAGE_MEDIA')) {

@@ -31,6 +31,7 @@ site_settings:
                     type: checkbox
                     value: true
                     format_onchange: true
+                    onoff: true
                     note_below: |
                         Recommended.
                         <br />
@@ -69,7 +70,7 @@ site_settings:
                         name: mod_rewrite_slashes
                     visible_if: |
                         zenarioAB.value('mod_rewrite_enabled')
-                    label: 'Show menu structure in friendly URLs'
+                    label: 'Show menu path in friendly URLs'
                     type: checkbox
                     value: true
                     redraw_onchange: true
@@ -144,17 +145,28 @@ site_settings:
                     note_below: >
                         Your language-specific domain names will be used to show the language,
                         e.g.: en.example.com/pagename
-        sitemap:
-            label: XML sitemap
+        sitemap_robots:
+            label: XML sitemap/robots.txt
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: No
+            notices:
+                robots_txt_does_not_include_sitemap:
+                    show: false
+                    message: The XML sitemap is not being mentioned in the robots.txt file, so search engines may not be aware of it. Click "Default config" to apply the default robots.txt configuration, and thereby include it.
+                    type: warning
+                robots_txt_refers_to_disabled_sitemap:
+                    show: false
+                    message: |
+                      The robots.txt file refers to the XML sitemap, but it is not being generated. You should enable the XML sitemap below.
+                    type: warning
             fields:
-                description:
+                sitemap_description:
                     full_width: Yes
                     snippet:
                         html: |
+                            <p><strong>XML Sitemap</strong></p>
                             <p>Zenario can generate an XML sitemap, which helps search engines to index this site.</p>
                             <p>It includes the URLs of all published, non-private content items.</p>
                 sitemap_disabled_warning:
@@ -169,6 +181,7 @@ site_settings:
                     label: 'Generate an XML sitemap'
                     type: checkbox
                     format_onchange: Yes
+                    onoff: true
                 sitemap_url:
                     indent: 1
                     label: 'Sitemap URL:'
@@ -178,41 +191,28 @@ site_settings:
                         The XML sitemap will have the above URL. It is not editable.
                         Copy and paste this URL into search engine tools such as <a href="https://www.google.com/webmasters/tools/" target="_blank">Google Webmaster Tools</a>.
                         Friendly URLs must be enabled in order to enable the XML sitemap.
-                        If enabled, make sure you add it to the robots.txt by pressing the "Default config" button.
-        robots_txt:
-            label: robots.txt
-            edit_mode:
-                enabled: Yes
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: No
-            notices:
-                robots_txt_does_not_include_sitemap:
-                    show: false
-                    message: The XML sitemap is not being mentioned in the robots.txt file, so search engines may not be aware of it. Click "Default config" to apply the default robots.txt configuration, and thereby include it.
-                    type: warning
-                robots_txt_refers_to_disabled_sitemap:
-                    show: false
-                    message: XML sitemap is being referred to but is not enabled; go to the XML sitemap tab to enable the XML sitemap.
-                    type: warning
-            fields:
-                description:
+                        If enabled, make sure you add it to the robots.txt by pressing the "Default config" button below.
+                
+                robots_description:
                     full_width: Yes
                     snippet:
                         html: |
-                            <p>Zenario generates a robots.txt file, which tells search engine crawlers which URLs they can access on this site.</p>
+                            <p><strong>robots.txt</strong></p>
+                            <p>Zenario generates a robots.txt file to dissuade search engine crawlers from indexing certain parts of the site.</p>
+                            <p>Use the buttons below to use a default configuration for a website that you want to have crawled (press "Default config" to do this), or a configation to block all crawlers (press "Block all"). Alternatively you may manually edit the file (recommended for advanced users only).
                 generate_robots_txt_file:
                     label: Generate a robots.txt file
                     type: checkbox
                     value: true
                     readonly: true
-                robots_config_info_message__blocks_all:
-                    snippet:
-                        html: |
-                            <div class="zenario_fbInfo">Using the block-all configuration</div>
                 robots_config_info_message__default_config:
                     snippet:
                         html: |
                             <div class="zenario_fbInfo">Using the default configuration</div>
+                robots_config_info_message__blocks_all:
+                    snippet:
+                        html: |
+                            <div class="zenario_fbInfo">Using the block-all configuration</div>
                 robots_txt_file_contents:
                     indent: 1
                     label: 'robots.txt contents:'
@@ -220,7 +220,7 @@ site_settings:
                         name: robots_txt_file_contents
                         protect_from_database_restore: true
                     type: textarea
-                    style: "height:400px"
+                    style: "height:340px"
                     value: |
                         User-agent: *
                         Disallow: /admin/
@@ -274,20 +274,20 @@ site_settings:
                 # Here we want two buttons that change the textarea above to one of two template values.
                 # If the buttons are pressed they should also appear temporarily greyed out until the text box is changed.
                 # We'll do this by using dummy buttons that are swapped out as needed.
-                block_all:
-                    indent: 1
-                    type: submit
-                    onclick: |
-                        lib.markAsChanged();
-                    css_class: zenario_gp_button
-                    value: 'Block all'
-                    format_onchange: true
                 default_config:
-                    same_row: true
                     indent: 1
                     type: submit
                     onclick: |
                         lib.markAsChanged();
                     css_class: zenario_gp_button
                     value: 'Default config'
+                    format_onchange: true
+                block_all:
+                    same_row: true
+                    indent: 1
+                    type: submit
+                    onclick: |
+                        lib.markAsChanged();
+                    css_class: zenario_gp_button
+                    value: 'Block all'
                     format_onchange: true

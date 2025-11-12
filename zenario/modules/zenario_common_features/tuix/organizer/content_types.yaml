@@ -91,7 +91,7 @@ zenario__content:
                     hide_in_select_mode: true
                     label: Enable more content types
                     link:
-                        path: zenario__modules/panels/modules~-zenario_ctype
+                        path: zenario__library/panels/modules~-zenario_ctype
 
             item_buttons:
                 edit_ctype:

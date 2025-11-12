@@ -101,13 +101,8 @@ switch ($path) {
 			!$values['pagination/show_pagination'];
 		
 		
-		//Don't show the translations checkbox if this can never be translated
-		$fields['overall_list/translate_text']['hidden'] =
-			$box['key']['isVersionControlled']
-		 || !ze\row::exists('languages', ['translate_phrases' => 1]);
-		
-		//Don't show notes about translations if this won't be translated
-		if ($fields['overall_list/translate_text']['hidden'] || !$values['overall_list/translate_text']) {
+		//Don't show notes about translations if a phrase won't be translated
+		if (!ze\row::exists('languages', ['translate_phrases' => 1])) {
 			$fields['overall_list/heading_if_items']['show_phrase_icon'] =
 			$fields['overall_list/heading_if_no_items']['show_phrase_icon'] =
 			$fields['overall_list/more_link_text']['show_phrase_icon'] = false;

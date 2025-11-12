@@ -122,7 +122,7 @@ zenarioAB.setTitle = function(isReadOnly) {
 	}
 	
 	if (isReadOnly) {
-		$('#zenario_fabBox_readonlyMarker').css('display', 'block');
+		$('#zenario_fabBox_readonlyMarker').css('display', '');
 	} else {
 		$('#zenario_fabBox_readonlyMarker').css('display', 'none');
 	}
@@ -130,6 +130,16 @@ zenarioAB.setTitle = function(isReadOnly) {
 	if (zenarioAB.tuix.key
 	 && (identifier = zenarioAB.tuix.identifier)
 	 && (identifier.value = identifier.value || (zenarioAB.tuix.key.id && zenario.decodeItemIdForOrganizer(zenarioAB.tuix.key.id)))) {
+		
+	//	//If the identifier has more than 5 items, shorten the string
+	//	var items = identifier.value.split(',');
+	//	var numItems = items.length;
+	//	if (numItems > 5) {
+	//		var firstFiveItems = [items[0], items[1], items[2], items[3], items[4]].join(', ');
+	//		var numRemainingItems = numItems - 5;
+	//		identifier.value = firstFiveItems + ' and ' + numRemainingItems + ' more';
+	//	}
+		//Note by Chris: I've had to emergency-revert this code as it causes a JavaScript crash!
 		
 		$zenario_fabId.show().html(zenarioAB.microTemplate(this.mtPrefix + '_identifier', identifier));
 		$zenario_fabBox.addClass('zfab_with_identifier');
@@ -679,13 +689,13 @@ zenarioAB.generateAlias = function(text) {
 						.replace(/-+$/, '')
 						.replace(/-+/g, '-');
 			
-	if (trimmed_text.length > 50) {
+	if (trimmed_text.length > 75) {
 		if (trimmed_text.indexOf('-') > -1) {
-			trimmed_text = trimmed_text.substr(0, trimmed_text.lastIndexOf('-', 50));
+			trimmed_text = trimmed_text.substr(0, trimmed_text.lastIndexOf('-', 75));
 		}
 	}
 	
-	trimmed_text = trimmed_text.substr(0, 50);
+	trimmed_text = trimmed_text.substr(0, 75);
 	return trimmed_text;
 };
 
@@ -713,7 +723,7 @@ zenarioAB.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +
 		'organizer.php' +
-		'#zenario__modules/show_frameworks//' + zenarioAB.tuix.key.moduleId + '//' + zenario.encodeItemIdForOrganizer(zenarioAB.readField('framework'));
+		'#zenario__library/show_frameworks//' + zenarioAB.tuix.key.moduleId + '//' + zenario.encodeItemIdForOrganizer(zenarioAB.readField('framework'));
 	window.open(url);
 	
 	return false;
@@ -868,11 +878,6 @@ zenarioAB.enableOrDisableSite = function() {
 		}
 	);
 };
-zenarioAB.updateSEP = function() {
-	zenario.actAfterDelayIfNotSuperseded('updateSEP', function() {
-		$('#microtemplate__search_engine_preview').html(zenarioAB.microTemplate('zenario_admin_box_search_engine_preview', {}));
-	}, 400);
-};
 
 zenarioAB.cutText = function(text, length) {
 	if (text.length > length) {
@@ -880,6 +885,28 @@ zenarioAB.cutText = function(text, length) {
 	}
 	
 	return text;
+};
+
+
+
+zenarioAB.animationLib = function() {
+	return zenarioAB.value('animation_library', 'first_tab');
+};
+
+zenarioAB.animationLibIn = function() {
+	return _.contains(arguments, zenarioAB.animationLib());
+};
+
+zenarioAB.animationLibNotIn = function() {
+	return !_.contains(arguments, zenarioAB.animationLib());
+};
+
+zenarioAB.animationLibIs = function(lib) {
+	return zenarioAB.animationLib() == lib;
+};
+
+zenarioAB.animationLibIsNot = function(lib) {
+	return zenarioAB.animationLib() != lib;
 };
 
 

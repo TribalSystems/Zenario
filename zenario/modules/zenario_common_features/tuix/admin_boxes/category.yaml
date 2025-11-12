@@ -49,7 +49,7 @@ zenario_categories:
                     type: checkbox
                     label: 'Set a landing page for this category'
                     note_below: |
-                        A category landing page is a content item to which content items in that category can have a link (use a Meta Data plugin for this). The category landing page will normally have a Content Summary List plugin on it listing items in that category.
+                        A category landing page is a content item to which content items in that category can have a link (use a Metadata plugin for this). The category landing page will normally have a Content Summary List plugin on it listing items in that category.
                     redraw_onchange: true
                     visible_if: zenarioAB.value('public')
                 landing_page:

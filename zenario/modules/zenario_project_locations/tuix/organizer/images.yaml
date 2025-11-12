@@ -73,8 +73,13 @@ zenario__projects:
                         css_class: zenario_create_a_new
                         hide_on_filter: true
                         upload:
-                            fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-                            fileDesc: Images
+                            accept: 'image/png, image/jpeg, image/gif, image/webp'
+                            extensions:
+                                - .gif
+                                - .jpg
+                                - .jpeg
+                                - .png
+                                - .webp
                             multi: Yes
                             drag_and_drop: Yes
                             request:

@@ -68,7 +68,7 @@ zenario_menu_text:
         <input
             type="button"
             class="zenario_fabExtraButton zenario_fabExtraButtonOrganizeMenu launch_keeper"
-            value="Organize menu..."
+            value="Edit menu hierarchy..."
             onclick="
                 var key = $.extend(true, {}, zenarioAB.tuix.key);
                 key.suggestedName = zenarioAB.readField('menu_title');

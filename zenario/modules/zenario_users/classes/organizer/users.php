@@ -76,6 +76,43 @@ class zenario_users__organizer__users extends zenario_users {
 		$panel['item_buttons']['convert_to_contact']['ajax']['confirm']['message'] = $convertToContactButtonConfirmationMessage;
 	}
 	
+	//The quickSearchOrganizerPanel() placeholder method adds the ability for
+	//panels to add specific logic to their quick-searches, that's not tied to a specific column.
+	//This was added for T13107, Searching for users/contacts in Organizer
+	public function quickSearchOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode, $searchString) {
+		$sql = '';
+		
+		//Catch the case where an admin is trying to search for a full name, e.g. "John Smith".
+		//As per the task we'll also allow the words in reverse order, e.g. "Smith, John" also should work.
+		$searchTerms = ze\ray::explodeAndTrim(preg_replace('@\s@', ',', $searchString));
+		
+		if (count($searchTerms) == 2) {
+			
+			$firstNameCol = $panel['columns']['first_name'];
+			$lastNameCol = $panel['columns']['name'];
+			
+			//Note: If either of the first or last name columns are encrypted but not hashed,
+			//then we can't do this logic.
+			if (!empty($firstNameCol['searchable'])
+			 && !empty($lastNameCol['searchable'])) {
+				
+				$sql .= '
+					OR ('. self::writeCheck($firstNameCol, $searchTerms[0]). ' AND '. self::writeCheck($lastNameCol, $searchTerms[1]). ')
+					OR ('. self::writeCheck($firstNameCol, $searchTerms[1]). ' AND '. self::writeCheck($lastNameCol, $searchTerms[0]). ')';
+			}
+		}
+		
+		return $sql;
+	}
+	
+	private static function writeCheck($col, $searchTerm) {
+		if (empty($col['encrypted']['hashed'])) {
+			return $col['db_column']. " LIKE '". ze\escape::like($searchTerm). "%'";
+		} else {
+			return $col['encrypted']['hashed_column']. " = '". ze\escape::hashedColumn($searchTerm). "'";
+		}
+	}
+	
 	function getEncryptedColumns($table) {
 		$db = ze::$dbL;
 		$tableName = $db->prefix. $table;
@@ -121,7 +158,20 @@ class zenario_users__organizer__users extends zenario_users {
 		// If no users, hide export button
 		if (count($panel['items']) <= 0) {
 			$panel['collection_buttons']['export']['hidden'] = true;
-		}		
+		}
+		
+
+		//If a filter with parent/child buttons is set, make sure to change the label of the parent to what was chosen.
+		if (!empty(zenario_organizer::filterValue('has_logged_in'))) {
+			if (zenario_organizer::filterIsNot('has_logged_in')) {
+				$panel['quick_filter_buttons']['has_logged_in']['label'] =
+					$panel['quick_filter_buttons']['never_logged_in']['label'];
+			} else {
+				$panel['quick_filter_buttons']['has_logged_in']['label'] =
+					$panel['quick_filter_buttons']['logged_in']['label'];
+			}
+		}
+		
 		
 		//Add user images to each user, if they have an image
 		foreach ($panel['items'] as $id => &$item) {
@@ -313,7 +363,7 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 		} elseif (ze::post('suspend_user') && ze\priv::check('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $id) {
-				static::suspendUser($id);
+				ze\userAdm::suspend($id, $adminFacing = true);
 			}
 			
 			ze\escape::bFlag('TOAST_TYPE', 'success');

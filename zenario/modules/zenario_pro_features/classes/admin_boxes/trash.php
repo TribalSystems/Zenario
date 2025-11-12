@@ -30,84 +30,95 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
     public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		$changes = [];
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
-
-        $changes = [];
-        $totalRowNum = count($ids);
-		ze\tuix::setupMultipleRows(
-			$box, $fields, $values, $changes, $filling = true,
-			$box['tabs']['trash']['pro_features_trash_template_fields'],
-			$totalRowNum,
-			$minNumRows = 0,
-			$tabName = 'trash',
-            '', '', '',
-            $firstN = 10001
-		);
-
-        $i = 10000;
-        foreach ($ids as $tagId) {
-            $i++;
-            $cID = $cType = false;
+		
+		foreach ($ids as $tagId) {
+			$cID = $cType = false;
             ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
             $alias = ze\row::get('content_items', 'alias', ['id' => $cID, 'type' => $cType]);
-            $box['tabs']['trash']['fields']['alias__' . $i]['value'] = $alias;
-            ze\lang::applyMergeFields($box['tabs']['trash']['fields']['create_spare_alias__' . $i]['label'], ['content_item' => ze\content::formatTagFromTagId($tagId)]);
             
-            if (!$alias) {
-            	$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['value'] = false;
+            if ($alias) {
+            	//Check if the alias is unique. If it is, remember it.
+            	$sql = "
+					SELECT count(tag_id)
+					FROM " . DB_PREFIX . "content_items
+					WHERE alias = '" . ze\escape::sql($alias) . "'
+					AND (id != " . (int) $cID . " OR type != '" . \ze\escape::asciiInSQL($cType) . "')";
+            	$result = ze\sql::select($sql);
+            	$count = ze\sql::fetchValue($result);
             	
-            	if ($totalRowNum == 1) {
-					$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['hidden'] = true;
-            	} elseif ($totalRowNum > 1) {
-            		$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['disabled'] = true;
-					$box['tabs']['trash']['fields']['create_spare_alias__' . $i]['side_note'] = ze\admin::phrase('This content item has no alias.');
+            	if (!$count) {
+            		$box['key']['aliases'][] = $alias;
             	}
             }
+		}
+		
+		$totalRowNum = count($box['key']['aliases']);
+		if ($totalRowNum) {
+			ze\tuix::setupMultipleRows(
+				$box, $fields, $values, $changes, $filling = true,
+				$box['tabs']['trash']['pro_features_trash_template_fields'],
+				$totalRowNum,
+				$minNumRows = 0,
+				$tabName = 'trash',
+				'', '', '',
+				$firstN = 10001
+			);
+	
+			$i = 10000;
+			foreach ($box['key']['aliases'] as $alias) {
+				$i++;
+				$box['tabs']['trash']['fields']['alias__' . $i]['value'] = $alias;
+				ze\lang::applyMergeFields($box['tabs']['trash']['fields']['create_spare_alias__' . $i]['label'], ['alias' => $alias]);
+			}
         }
 	}
 
     public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-        $ids = ze\ray::explodeAndTrim($box['key']['id']);
-
-        $suffix = ze::setting('mod_rewrite_suffix');
-
-        $i = 10000;
-        foreach ($ids as $tagId) {
-            $i++;
-            $fields['trash/alias__' . $i]['hidden'] =
-            $fields['trash/preview__' . $i]['hidden'] =
-            $fields['trash/target_loc__' . $i]['hidden'] = !$values['trash/create_spare_alias__' . $i];
-
-            $fields['trash/hyperlink_target__' . $i]['hidden'] = !$values['trash/create_spare_alias__' . $i] || $values['trash/target_loc__' . $i] != 'int';
-            $fields['trash/ext_url__' . $i]['hidden'] = !$values['trash/create_spare_alias__' . $i] || $values['trash/target_loc__' . $i] != 'ext';
-            
-            //Remember redirect target
-            if (!empty($fields['trash/target_loc__' . $i]['hidden'])) {
-                if ($values['trash/target_loc__' . $i] == 'int') {
-                    $targetTagId = $values['trash/hyperlink_target__' . $i];
-                    if ($targetTagId) {
-                        $cID = $cType = false;
-                        ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-                        $values['trash/redirect_target_url__' . $i] = ze\link::toItemWithAlias($targetTagId, $cType, true);
-                    }
-                } elseif ($values['trash/target_loc__' . $i] == 'ext') {
-                    $target = $values['trash/ext_url__' . $i];
-                    if (!preg_match("/^((http|https|ftp):\/\/)/", $target)) {
-                        $target = 'http://' . $target;
-                    }
-                    $values['trash/redirect_target_url__' . $i] = $target;
-                }
-            }
-
-            //Show preview
-            $alias = $values['trash/alias__' . $i];
-            if ($alias !== "") {
-                if ($suffix && strpos($alias, $suffix) === false) {
-                    $alias .= $suffix;
-                }
-            }
-
-            $fields['trash/preview__' . $i]['snippet']['html'] = '<a id="spare_alias_preview__' . htmlspecialchars($i) . '" data-base="' . ze\link::absolute() . '" data-suffix="' . $suffix . '" href="' . ze\link::absolute() . $alias . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
+        $totalRowNum = count($box['key']['aliases']);
+		if ($totalRowNum) {
+			
+			$suffix = ze::setting('mod_rewrite_suffix');
+	
+			$i = 10000;
+			foreach ($box['key']['aliases'] as $alias) {
+				$i++;
+				$fields['trash/alias__' . $i]['hidden'] =
+				$fields['trash/preview__' . $i]['hidden'] =
+				$fields['trash/target_loc__' . $i]['hidden'] = !$values['trash/create_spare_alias__' . $i];
+	
+				$fields['trash/hyperlink_target__' . $i]['hidden'] = !$values['trash/create_spare_alias__' . $i] || $values['trash/target_loc__' . $i] != 'int';
+				$fields['trash/ext_url__' . $i]['hidden'] = !$values['trash/create_spare_alias__' . $i] || $values['trash/target_loc__' . $i] != 'ext';
+				
+				//Remember redirect target
+				if (!empty($fields['trash/target_loc__' . $i]['hidden'])) {
+					if ($values['trash/target_loc__' . $i] == 'int') {
+						$targetTagId = $values['trash/hyperlink_target__' . $i];
+						if ($targetTagId) {
+							$cID = $cType = false;
+							ze\content::getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+							$values['trash/redirect_target_url__' . $i] = ze\link::toItemWithAlias($targetTagId, $cType, true);
+						}
+					} elseif ($values['trash/target_loc__' . $i] == 'ext') {
+						$target = $values['trash/ext_url__' . $i];
+						if (!preg_match("/^((http|https|ftp):\/\/)/", $target)) {
+							$target = 'http://' . $target;
+						}
+						$values['trash/redirect_target_url__' . $i] = $target;
+					}
+				}
+	
+				//Show preview
+				$alias = $values['trash/alias__' . $i];
+				if ($alias !== "") {
+					if ($suffix && strpos($alias, $suffix) === false) {
+						$alias .= $suffix;
+					}
+				}
+	
+				$fields['trash/preview__' . $i]['snippet']['html'] = '<a id="spare_alias_preview__' . htmlspecialchars($i) . '" data-base="' . ze\link::absolute() . '" data-suffix="' . $suffix . '" href="' . ze\link::absolute() . $alias . '" target="spare_alias_preview">' . ze\link::absolute() . $alias . '</a>';
+			}
         }
 	}
 	
@@ -115,11 +126,11 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
 		$ids = ze\ray::explodeAndTrim($box['key']['id']);
 		
 		$i = 10000;
-        foreach ($ids as $tagId) {
+        foreach ($box['key']['aliases']  as $alias) {
             $i++;
             if ($values['trash/create_spare_alias__' . $i] && $values['trash/target_loc__' . $i] == 'int' && $values['trash/hyperlink_target__' . $i]) {
-            	if ($values['trash/hyperlink_target__' . $i] == $tagId) {
-            		$fields['trash/hyperlink_target__' . $i]['error'] = ze\admin::phrase('The spare alias cannot redirect to the same content item.');
+            	if (in_array($values['trash/hyperlink_target__' . $i], $ids)) {
+            		$fields['trash/hyperlink_target__' . $i]['error'] = ze\admin::phrase('The spare alias cannot redirect to any content item about to be trashed.');
             	}
             }
         }
@@ -131,11 +142,9 @@ class zenario_pro_features__admin_boxes__trash extends ze\moduleBaseClass {
         $ids = ze\ray::explodeAndTrim($box['key']['id']);
 		
         $i = 10000;
-        foreach ($ids as $tagId) {
+        foreach ($box['key']['aliases'] as $alias) {
             $i++;
             if ($values['trash/create_spare_alias__' . $i]) {
-                $alias = $values['trash/alias__' . $i];
-                
                 $row = [
                     'ext_url' => '',
                     'content_id' => 0,

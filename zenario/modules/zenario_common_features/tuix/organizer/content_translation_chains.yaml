@@ -44,10 +44,24 @@ zenario__content:
                     searchable: true
                     ascii_only: true
                     db_column: c.tag_id
-                    sort_column: c.type, c.id
-                    sort_column_desc: c.type DESC, c.id DESC
                     always_show: true
                     disallow_filtering: true
+                    
+                    # If sorting by content type, try to display in the same order as we show the types in the select lists
+                    sort_column: |
+                        c.type != 'html',
+                        c.type != 'news',
+                        c.type != 'blog',
+                        c.type != 'document',
+                        c.type,
+                        c.id
+                    sort_column_desc: |
+                        c.type = 'html',
+                        c.type = 'news',
+                        c.type = 'blog',
+                        c.type = 'document',
+                        c.type DESC,
+                        c.id DESC
                 equiv_id:
                     db_column: c.equiv_id
                 id:
@@ -103,22 +117,22 @@ zenario__content:
             inline_buttons:
                 no_menu_linked:
                     css_class: zenario_not_at_menu
-                    tooltip: "This chain is not in the menu"
+                    tooltip: "This translation chain is not in the menu"
                     visible_if: >
                         item.menunodecounter == 0
                 menu_text_missing:
                     css_class: zenario_not_at_menu
-                    tooltip: "This chain is in the menu, but the menu text is missing"
+                    tooltip: "This translation chain is in the menu, but the menu text is missing"
                     visible_if: >
                         item.menunodecounter == 'menu_node_text_missing'
                 one_menu_linked:
                     css_class: zenario_at_menu_unique
-                    tooltip: "This chain is in the menu"
+                    tooltip: "This translation chain is in the menu"
                     visible_if: >
                         item.menunodecounter == 1
                 one_or_more_menu_linked:
                     css_class: zenario_at_menu_primary
-                    tooltip: "This chain has more than one menu node linking to it"
+                    tooltip: "This translation chain has more than one menu node linking to it"
                     visible_if: >
                         item.menunodecounter != 'menu_node_text_missing' && item.menunodecounter > 1
                 privacy:
@@ -129,21 +143,21 @@ zenario__content:
                 
                 no_categories:
                     css_class: no_categories
-                    tooltip: "Chain is not in any categories"
+                    tooltip: "Translation chain not in any categories"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >
                         item.number_of_categories == 0
                 one_category:
                     css_class: one_or_more_categories
-                    tooltip: "Chain is in one category"
+                    tooltip: "Translation chain in one category"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >
                         item.number_of_categories == 1
                 multiple_categories:
                     css_class: one_or_more_categories
-                    tooltip: "Chain is in [[number_of_categories]] categories"
+                    tooltip: "Translation chain in [[number_of_categories]] categories"
                     admin_box:
                         path: zenario_content_categories
                     visible_if: >

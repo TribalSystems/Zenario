@@ -56,7 +56,7 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			$this->callScript('zenario_wysiwyg_editor', 'hideAnimationsInEditors');
 		}
 		
-		if ($this->setting('show_details_and_link')=='another_content_item'){
+		if ($this->setting('show_details_and_link') == 'another_content_item'){
 			$item = $this->setting('another_document');
 			if (count($arr = explode("_",$item)) == 2) {
 				$this->targetID = $arr[1];
@@ -166,11 +166,11 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			}
 		}
 			
-		$localFileSize = ze\lang::formatFilesizeNicely(ze\row::get('files', 'size', $version['file_id']), 0, false, 'zenario_ctype_document');
+		$localFileSize = ze\file::formatSizeUnits(ze\row::get('files', 'size', $version['file_id']));
 
 		if ($this->setting('show_release_datetime') && $version['release_date']) {
-			if ($this->mergeFields['Released'] = ze\date::format($version['release_date'], $this->setting('date_format'))) {
-				if ($this->setting('show_time')) {
+			if ($this->mergeFields['Released'] = ze\date::format($version['release_date'], $this->setting('release_date_format'))) {
+				if ($this->setting('show_release_time')) {
 					$this->mergeFields['Released'] .= ' ' . ze\date::formatTime($version['release_date'], ze::setting('vis_time_format'));
 				}
 				$this->allowedChildSections['Release_Date_Html_Tag'] = $this->setting('release_datetime_html_tag');
@@ -192,8 +192,15 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 		$s3Filesize = '';
 		
 		if (ze::get('download') && (!$this->eggId || $this->eggId == ze::get('eggId'))) {
-			if (!ze\file::contentLink($url, $this->targetID, $this->targetType, $this->targetVersion)) {
+			
+			if (ze::$isPublic && ze::$cVersion === ze::$visitorVersion) {
+				$url = ze\file::publicLink($version['file_id'], $version['filename']);
 				
+			} else {
+				ze\file::contentLink($url, $this->targetID, $this->targetType, $this->targetVersion);
+			}
+			
+			if ($url === false) {
 				$body = ze\admin::phrase('An attempt to download the document [[url]] was unsuccessful.', ['url' => $this->linkToItem($this->targetID,$this->targetType,true)]);
 				ze\db::reportError('Failed document download at', $body);
 				
@@ -209,13 +216,11 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				$s3FileDownloadPhrase = ze::setting('s3_file_link_text');
 			} else {
 				//This will be translated in the framework.
-				$localFileDownload = 'Download now';
+				$localFileDownload = $this->setting('local_file_download_button_label') ?: 'Download now';
 			}
 			
 			$localFileDetails = ze\row::get('files', ['filename','path','size'], $version['file_id']);
-			if ($this->setting('local_file') && $localFileDetails && $localFileDetails['filename']) {
-				
-				$this->mergeFields['Links_should'] = $this->setting('links_should');
+			if ($localFileDetails && $localFileDetails['filename']) {
 				
 				$request = 'download=1';
 				
@@ -226,15 +231,29 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				$link = $this->linkToItem($this->targetID, $this->targetType, false, $request);
 				$link = htmlspecialchars($link);
 
-				if ($this->setting('show_view_link')) {
-					$linkForViewing = ze\file::linkForCurrentVisitor($version['file_id'], false, $type = 'private/downloads');
-					$this->mergeFields['Link_For_Viewing'] = htmlspecialchars($linkForViewing);
+				$viewAndDownloadLinksLocalFile = $this->setting('view_and_download_links_local_file');
+				if ($viewAndDownloadLinksLocalFile == 'view_only' || $viewAndDownloadLinksLocalFile == 'both') {
+					
+					if (ze::$isPublic && ze::$cVersion === ze::$visitorVersion) {
+						$linkForViewing = ze\file::publicLink($version['file_id'], $version['filename']);
+					} else {
+						$linkForViewing = ze\file::linkForCurrentVisitor($version['file_id'], false, 'private/downloads', false, $version['filename']);
+					}
+					
+					if ($linkForViewing !== false) {
+						$this->mergeFields['View_Local_File'] = $this->setting('local_file_view_button_label') ?: 'View file in browser';
+						$this->mergeFields['Link_For_Viewing'] = htmlspecialchars($linkForViewing);
+					}
 				}
 
 				$this->mergeFields['Show_Local_File_Type_And_Size'] = $this->setting('show_local_file_type_and_size');
 				
 				if ($this->setting('show_filename_local_file')) {
 					$this->mergeFields['Local_File_Name'] = $localFileDetails['filename'];
+				}
+				
+				if ($viewAndDownloadLinksLocalFile == 'download_only' || $viewAndDownloadLinksLocalFile == 'both') {
+					$this->mergeFields['Link_To_Download'] = $link;
 				}
 			} else {
 				$link = '';
@@ -261,6 +280,10 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				if (!empty($s3FileDetails) && isset($s3FileDetails['ContentType']) && $s3FileDetails['ContentType'] == 'video/mp4') {
 					$s3FileDownloadPhrase = ze::setting('s3_file_play_video_text');
 				}
+				
+				if (ze\admin::id()) {
+					$this->mergeFields['S3_File_Not_Found_Error_Phrase'] = ze\admin::phrase($this->setting('s3_file_not_found_error_phrase'));
+				}
 			}
 
 			$this->allowedChildSections['Document_Image_Link_Section'] = true;
@@ -286,13 +309,26 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			$this->mergeFields['Aws_Support_Enabled_On_Site'] = $s3SupportEnabledOnSite;
 			$this->mergeFields['Show_S3_File_Type_And_Size'] = $this->mergeFields['Aws_Support_Enabled_On_Site'] && $this->setting('show_s3_file_type_and_size');
 			$this->mergeFields['S3_Size'] = $s3Filesize;
-			$this->mergeFields['S3_File_Id'] = $version['s3_file_id'];
+			$this->mergeFields['S3_File_Id'] = 1;
 			$this->mergeFields['S3_Link'] = $s3Link;
-			$this->mergeFields['S3_File_Not_Found_Error_Phrase'] = $this->phrase($this->setting('s3_file_not_found_error_phrase'));
+			
 			$this->mergeFields['Google_Analytics_Link'] = htmlspecialchars(ze\file::trackDownload($link));
 			$this->mergeFields['Download_Local_File'] = $localFileDownload;
 			$this->mergeFields['S3_File_Download_Phrase'] = $s3FileDownloadPhrase;
 			$this->mergeFields['module_loc'] = ze::moduleDir('zenario_ctype_document');
+			
+			//Add a few phrases
+			$this->mergeFields['Filename_Phrase'] = ze\lang::phrase('_FILENAME');
+			$this->mergeFields['Language_Phrase'] = ze\lang::phrase('_LANGUAGE');
+			$this->mergeFields['Published_Phrase'] = ze\lang::phrase('_PUBLISHED');
+			$this->mergeFields['Copy_To_Clipboard_Phrase'] = ze\lang::phrase('_COPY_TO_CLIPBOARD');
+			$this->mergeFields['Document_Download_Phrase'] = $this->phrase('_DOCUMENT_DOWNLOAD');
+			$this->mergeFields['Document_Download_Page_Phrase'] = $this->phrase('_DOCUMENT_DOWNLOAD_PAGE');
+			$this->mergeFields['Document_Is_Not_In_Any_Category_Phrase'] = $this->phrase('_DOCUMENT_IS_NOT_IN_ANY_CATEGORY');
+			$this->mergeFields['View_Or_Download_Phrase'] = $this->phrase('_VIEW_OR_DOWNLOAD');
+			$this->mergeFields['S3_Filename_Phrase'] = $this->phrase('_S3_FILENAME');
+			$this->mergeFields['File_Type_And_Size_Phrase'] = $this->phrase('_FILE_TYPE_AND_SIZE');
+			$this->mergeFields['S3_File_Type_And_Size_Phrase'] = $this->phrase('_S3_FILE_TYPE_AND_SIZE');
 
 			if ($this->cType == 'document') {
 				if ($this->setting('show_categories')) {
@@ -369,14 +405,42 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 			}
 		
 		} elseif ($path == 'plugin_settings') {
+			if (!$values['first_tab/local_file_view_button_label']) {
+				$fields['first_tab/local_file_view_button_label'] = 'View file in browser';
+			}
+			
+			if (!$values['first_tab/local_file_download_button_label']) {
+				$fields['first_tab/local_file_download_button_label'] = 'Download now';
+			}
+			
 			if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
-				$fields['first_tab/download_source']['hidden'] = false;
 				$fields['first_tab/s3_file']['hidden'] = false;
 				$fields['first_tab/show_filename_s3_file']['hidden'] = false;
+				$fields['first_tab/show_s3_file_type_and_size']['hidden'] = false;
 
-				$fields['first_tab/show_view_button']['label'] = ze\admin::phrase('Show link to document download page');
-				$fields['first_tab/local_file']['label'] = ze\admin::phrase('Show local file Download button for immediate download (if local file exists)');
-				$fields['first_tab/s3_file']['label'] = ze\admin::phrase('Show S3 file Download button for immediate download');
+				$fields['first_tab/view_and_download_links_local_file']['label'] = ze\admin::phrase('Buttons for viewing or downloading the local file:');
+				$fields['first_tab/local_file_view_button_label']['label'] = ze\admin::phrase('View button label for the local file:');
+				$fields['first_tab/local_file_download_button_label']['label'] = ze\admin::phrase('Download button label for the local file:');
+				$fields['first_tab/show_filename_local_file']['label'] = ze\admin::phrase('Show filename of local file');
+				$fields['first_tab/show_local_file_type_and_size']['label'] = ze\admin::phrase('Show file type and size of local file');
+				
+				$fields['first_tab/local_file_download_button_label']['readonly'] = true;
+				
+				$href = 'organizer.php#zenario__administration/panels/site_settings//aws_s3_and_vector_data_processing~.site_settings~tawss3_file_downloads~k{"id"%3A"aws_s3_and_vector_data_processing"}';
+				$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
+				$linkEnd = '</a>';
+
+				$fields['first_tab/local_file_download_button_label']['notices_below']['plugin_setting_overridden_by_site_setting']['hidden'] = false;
+				$fields['first_tab/local_file_download_button_label']['notices_below']['plugin_setting_overridden_by_site_setting']['message'] =
+					ze\admin::phrase(
+						'AWS S3 document storate is enabled. This text will be overridden by the global setting. See [[link_start]]site settings[[link_end]].',
+						[
+							'link_start' => $linkStart,
+							'link_end' => $linkEnd
+						]
+					);
+			} else {
+				$fields['first_tab/s3_file_not_found_error_phrase']['hidden'] = true;
 			}
 			
 			$defaultLanguage = ze\lang::name(ze::$defaultLang);
@@ -394,20 +458,19 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes){
 		switch ($path) {
 		    case 'plugin_settings':
-		        $fields['first_tab/another_document']['hidden'] = 
-		        	!(($values['first_tab/show_details_and_link'] ?? false) == 'another_content_item');
+		        $fields['advanced/another_document']['hidden'] = 
+		        	!(($values['advanced/show_details_and_link'] ?? false) == 'another_content_item');
 		        
-		        $fields['first_tab/published_date_format']['hidden'] = !(($values['first_tab/show_published_date'] ?? false));
+		        $fields['advanced/published_date_format']['hidden'] = !(($values['advanced/show_published_date'] ?? false));
 		        
-		        $fields['first_tab/date_format']['hidden'] = 
-		        $fields['first_tab/show_time']['hidden'] = 
+		        $fields['first_tab/release_date_format']['hidden'] = 
+		        $fields['first_tab/show_release_time']['hidden'] = 
 		        	!(($values['first_tab/show_release_datetime'] ?? false));
 		        
 		        $hidden = !$values['first_tab/show_featured_image'];
 		        $this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'image_');
 				
 				if (ze::setting('enable_aws_support') && ze::setting('allow_document_content_items_to_be_stored_on_aws_s3')) {
-					$fields['first_tab/download_source']['hidden'] = false;
 					$fields['first_tab/local_file']['hidden'] = false;
 					$fields['first_tab/s3_file']['hidden'] = false;
 				}
@@ -424,6 +487,9 @@ class zenario_ctype_document extends ze\moduleBaseClass {
 				} else {
 					$fields['first_tab/image_canvas']['side_note'] = "";
 				}
+				
+				$fields['first_tab/view_and_download_links_local_file']['notices_below']['document_cannot_be_viewed_or_downloaded']['hidden'] =
+					($values['first_tab/view_and_download_links_local_file'] != 'neither');
 				
 		        break;
 			

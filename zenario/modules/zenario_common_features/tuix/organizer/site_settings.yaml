@@ -31,10 +31,14 @@ zenario__administration:
                 names: Settings
                 css_class: setting
             items:
+                admin_passwords:
+                    name: Admin passwords
+                    desc: Settings for administrator passwords.
+                    keywords: admin password passwords administrator
                 api_keys:
                     name: API keys
                     desc: API keys and settings for third party services.
-                    keywords: key keys api dropbox captcha recaptcha google map maps translate translation tools
+                    keywords: key keys api captcha recaptcha google map maps translate translation tools
                 aws_s3_and_vector_data_processing:
                     name: AWS S3 and Vector data processing
                     desc: Settings for Amazon Web Services (text extract and storage)
@@ -95,7 +99,7 @@ zenario__administration:
                 logos_and_branding:
                     css_class: favicon
                     priv: _PRIV_VIEW_SITE_SETTING
-                    name: Logos and branding
+                    name: Logos, social media meta tags, and branding
                     desc: >
                         Upload or remove the favicon, and the logo used on the site-disabled and
                         admin login screen.
@@ -118,9 +122,9 @@ zenario__administration:
                         Control which JavaScript libraries/font libraries are included site-wide on the front-end.
                     keywords: library libraries js javascript font
                 search_engine_optimisation:
-                    name: Search engine optimisation
+                    name: Search engine optimisation (SEO)
                     desc: Settings that affect how URLs for your site are generated, and to manage an XML sitemap and robots.txt file.
-                    keywords: seo mod_rewrite suffix sitemap xml robots.txt robots robot friendly url urls
+                    keywords: seo mod_rewrite suffix sitemap xml robots.txt robots robot friendly url urls alias language
                 security:
                     name: Security
                     desc: Select which warnings are displayed on the diagnostics screen.

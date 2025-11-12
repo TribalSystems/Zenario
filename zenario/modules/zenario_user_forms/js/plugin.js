@@ -972,7 +972,11 @@
 		return equation;
 	};
 	
-	module.validateFormFieldJs = function(containerId, formId, fieldId, fieldContainerElementId, fieldElementId, fieldType, isRequired, mandatoryIfVisible, mandatoryConditionFieldId, mandatoryConditionFieldType, validationType) {
+	module.validateFormFieldJs = function(
+		containerId, formId, fieldId, fieldContainerElementId, fieldElementId,
+		fieldType, isRequired, mandatoryIfVisible, mandatoryConditionFieldId, mandatoryConditionFieldType,
+		validationType, showFieldTwiceForConfirmation
+	) {
 		var containerEl = document.getElementById(fieldContainerElementId);
 		var el = document.getElementById(fieldElementId);
 		var errorMessageDiv = document.getElementById(fieldElementId + '__error_message');
@@ -1055,17 +1059,34 @@
 				requests.conditionalFieldValue = conditionalFieldValue;
 			}
 			
+			if (showFieldTwiceForConfirmation) {
+				var confirmationContainerEl = document.getElementById(fieldContainerElementId + '_confirmation');
+				var confirmationFieldEl = document.getElementById(fieldElementId + '_confirmation');
+				confirmationFieldValue = confirmationFieldEl.value;
+				requests.confirmationFieldValue = confirmationFieldValue;
+			}
+			
 			zenario.ajax(this.ajaxURL + '&validateFormFieldJs=1', requests).after(function(response) {
 				errorMessageDiv.innerHTML = htmlspecialchars(response);
 				
 				if (response) {
+					errorMessageDiv.style.display = "block";
 					containerEl.classList.remove("no_error");
 					containerEl.classList.add("has_error");
-					errorMessageDiv.style.display = "block";
+					
+					if (showFieldTwiceForConfirmation) {
+						confirmationContainerEl.classList.remove("no_error");
+						confirmationContainerEl.classList.add("has_error");
+					}
 				} else {
+					errorMessageDiv.style.display = "none";
 					containerEl.classList.add("no_error");
 					containerEl.classList.remove("has_error");
-					errorMessageDiv.style.display = "none";
+					
+					if (showFieldTwiceForConfirmation) {
+						confirmationContainerEl.classList.add("no_error");
+						confirmationContainerEl.classList.remove("has_error");
+					}
 				}
 			});
 		}

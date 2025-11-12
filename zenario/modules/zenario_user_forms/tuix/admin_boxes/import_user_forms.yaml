@@ -16,6 +16,7 @@ zenario_import_user_forms:
                 form_json:
                     label: 'Upload form:'
                     upload:
+                        accept: 'application/json'
                         extensions: .json
                     side_note: |
                         Upload a Zenario form design file in .json format that has been exported from another Zenario site of the same version.

@@ -126,8 +126,6 @@ if ($isAdmin = ze::isAdmin()) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	ze\skinAdm::checkForChangesInFiles();
 	ze\miscAdm::checkForChangesInYamlFiles();
-	
-	//ze\admin::setSession($_SESSION['admin_userid'], $_SESSION['admin_global_id']);
 
 //Don't directly show a Content Item if the site is disabled
 } elseif (!ze::setting('site_enabled')) {
@@ -236,6 +234,12 @@ unset($cID);
 unset($cType);
 unset($menu);
 
+
+//If dev tools are enabled, turn on the recording of PHP and YAML files used by TUIX, so
+//the debug tools that show this information can work.
+if ($isAdmin && ze\admin::setting('show_dev_tools')) {
+	\ze::$recordFiles = true;
+}
 
 ze\content::setShowableContent($content, $chain, $version, true);
 
@@ -413,11 +417,10 @@ if (ze::$pageImage && ze\image::link($imageWidth, $imageHeight, $imageURL, ze::$
 		echo '
 <meta property="og:image:secure_url" content="', htmlspecialchars($imageURL), '"/>';
 	}
-}
-else {
+} else {
 
 //This default image will be shown if a page does not have a feature image.
-	if (($ogImageId = ze::setting('default_icon')) && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], $ogImageId))) {
+	if (ze::$isPublic && ze::setting('enable_og_tags_for_public_pages') && ($ogImageId = ze::setting('default_icon')) && ($icon = ze\row::get('files', ['id', 'mime_type', 'filename', 'checksum'], $ogImageId))) {
 
 		if ($icon['mime_type'] == 'image/x-icon') {
 			$url = ze\file::specialImageLink($icon['id']);
@@ -440,12 +443,38 @@ else {
 	}
 }
 
+if (ze::$isPublic && ze::setting('enable_twitter_tags_for_public_pages')) {
+	echo '
+<meta name="twitter:card" content="summary"></meta>
+<meta name="twitter:title" content="', htmlspecialchars(ze::$pageTitle), '"/>';
+	
+	if (ze::$pageDesc) {
+		echo '
+<meta name="twitter:description" content="', htmlspecialchars(ze::$pageDesc), '"/>';
+	}
+	
+	if ($imageURL) {
+		echo '
+<meta name="twitter:image" content="', htmlspecialchars($imageURL), '"></meta>';
+	}
+}
+
 echo '
 <meta property="og:description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '"/>
-<meta name="description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '" />
-<meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />';
+<meta name="description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '" />';
 
-if (!empty(ze::$pageKeywords)) {
+if (ze::setting('show_generator_meta_tag')) {
+	$generatorContents = ze::setting('generator_meta_tag_contents');
+	if ($generatorContents == 'show_zenario_only') {
+		echo '
+<meta name="generator" content="Zenario" />';
+	} elseif ($generatorContents == 'show_zenario_name_and_version') {
+		echo '
+<meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />';
+	}
+}
+
+if (ze::$isPublic && !empty(ze::$pageKeywords)) {
 	echo '
 <meta name="keywords" content="', htmlspecialchars(ze::$pageKeywords), '" />';
 }
@@ -469,16 +498,15 @@ if (ze\lang::count() > 1) {
 			   ON c.equiv_id = tc.equiv_id
 			  AND c.type = tc.type
 			WHERE tc.privacy = 'public'
-			  AND c.equiv_id = ". (int) ze::$equivId. "
-			  AND c.type = '". ze\escape::asciiInSQL(ze::$cType). "'
+			  AND c.equiv_id = ?
+			  AND c.type = ?
 			  AND c.status IN ('published_with_draft', 'published', 'unlisted', 'unlisted_with_draft')";
-		$result = ze\sql::select($sql);
-		if (ze\sql::numRows($result) > 1) {
-			while($row = ze\sql::fetchAssoc($result)) {
-				$pageLink = ze\link::toItem($row['id'], $row['type'], true, '', $row['alias'], true, true, $row['equiv_id'], $row['language_id']);
-				echo '
+		
+		$statement = ze\sql::prepare($sql, 'ia');
+		foreach ($statement->select([ze::$equivId, ze::$cType]) as $row) {
+			$pageLink = ze\link::toItem($row['id'], $row['type'], true, '', $row['alias'], true, true, $row['equiv_id'], $row['language_id']);
+			echo '
 <link rel="alternate" href="'. htmlspecialchars($pageLink). '" hreflang="'. htmlspecialchars($row['language_id']). '">';
-			}
 		}
 	}
 }

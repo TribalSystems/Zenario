@@ -42,6 +42,24 @@ class zenario_common_features__organizer__access_codes extends ze\moduleBaseClas
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		//...
+		
+		if (!empty($_POST['delete_access_code'])) {
+			
+			// Check permissions
+			ze\priv::exitIfNot('_PRIV_EDIT_DRAFT');
+			
+			foreach (ze\ray::explodeAndTrim($ids) as $accessCode) {
+				$this->deleteAccessCode($accessCode);
+			}
+		}
+	}
+	
+	private function deleteAccessCode($accessCode) {
+		// Remove the access code from all content item versions that use it
+		// This sets access_code to NULL for all content items that currently use this code
+		ze\row::update('content_item_versions', 
+			['access_code' => null], 
+			['access_code' => $accessCode]
+		);
 	}
 }

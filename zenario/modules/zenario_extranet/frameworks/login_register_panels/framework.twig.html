@@ -12,6 +12,8 @@
 		
 		{% if Email_Verified %}
 			<div class="extranet_message">{{"Your email address has been successfully verified."|trans}}</div>
+		{% elseif Email_Verification_Link_Expired %}
+			<div class="extranet_error">{{"Your email address verification link has expired."|trans}}</div>
 		{% elseif Email_Could_Not_Be_Verified %}
 			<div class="extranet_error">{{"The link provided is not valid or the email address has already been verified."|trans}}</div>
 		{% endif %}
@@ -89,17 +91,13 @@
 					{% if Reset_Password_Link_Section %}
 						<div><a {{Reset_Password_Link}}>{{"Forgotten password?"|trans}}</a></div>
 					{% endif %}
-
-					{% if Registration_Link_Section %}
-						<div><a {{Registration_Link}}>{{"Register"|trans}}</a></div>
-					{% endif %}
 				</div>
 			</div>
 			
 			<div class="panel_register">
-				<h2>{{"Don't have an account?"|trans}}</h2>
-				
 				{% if Registration_Link_Section %}
+					<h2>{{"Don't have an account?"|trans}}</h2>
+					
 					<div><a {{Registration_Link}} class="nice_button">{{"Register here"|trans}}</a></div>
 				{% endif %}
 			</div>
@@ -155,7 +153,15 @@
 				<div class="extranet_field">
 					<div class="label"><label for="extranet_new_password">{{"New password"|trans}}:</label></div>
 					<div class="password_field_with_eye">
-						{{this.frameworkField({'type': "password", 'name': "extranet_new_password", 'id': "extranet_new_password", 'pattern': "new_password", 'required': "true", 'class': "extranet_password"})}}
+						{{this.frameworkField({
+							'type': "password",
+							'name': "extranet_new_password",
+							'id': "extranet_new_password",
+							'pattern': "new_password",
+							'required': "true",
+							'class': "extranet_password",
+							'oninput': "zOnLoad(function() {zenarioP.updatePasswordNotifier('#extranet_new_password', " ~ json_encode(Password_Requirements_Settings) ~ ", '#password_message', false, false)})"
+						})}}
 						
 						<i
 							id="{{Container_Id}}-password-reveal-hide-icon"
@@ -163,6 +169,11 @@
 							onclick="zOnLoad(function() {zenarioP.revealOrHidePasswordIconOnclick('{{Container_Id}}', 'password-reveal-hide-icon', 'extranet_new_password')})"
 						></i>
 					</div>
+					
+					<div>
+						<span id="password_message" class="title_orange">{{'Please enter a password.'|trans}}</span>
+					</div>
+					
 				</div>
 				<div class="extranet_field">
 					<div class="label"><label for="extranet_new_password_confirm">{{"Repeat password"|trans}}:</label></div>

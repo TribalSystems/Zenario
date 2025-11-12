@@ -51,7 +51,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 	\ze\tuix::parse2($swTagsEmpty, $removedColumns, 'slot_controls', $path);
 	$swTagsEmpty = $swTagsEmpty[$path];
 	
-	$sections = ['info', 'notes', 'actions', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms', 'switch_to'];
+	$sections = ['info', 'notes', 'actions', 'switch_to', 're_move_place', 'overridden_info', 'overridden_actions', 'no_perms'];
 	
 	//Loop through all of the slots
 	$activeModules = [];
@@ -154,9 +154,16 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		
 		if (!$ajaxReload) {
 			echo '
-				<div id="zenario_fbAdminSlotControls-'. $slotName. '" style="display: none;" onmouseout="zenarioA.closeSlotControlsAfterDelay();" onmouseover="zenarioA.dontCloseSlotControls();" class="zenario_fbAdminSlotControls">
-					<div class="zenario_slotControlsWrap" id="zenario_fbAdminPluginOptionsWrap-'. $slotName. '">
-						<div id="zenario_fbAdminSlotControlsContents-'. $slotName. '">';
+				<div id="zenario_fbAdminSlotControls-', $slotName, '" style="display: none;" onmouseout="zenarioA.closeSlotControlsAfterDelay();" onmouseover="zenarioA.dontCloseSlotControls();" class="zenario_fbAdminSlotControls">
+					<div class="zenario_slotControlsWrap" id="zenario_fbAdminPluginOptionsWrap-', $slotName, '">';
+			
+			if (\ze\admin::showDevTools()) {
+				echo '
+						<div class="zenario_debug" onclick="zenarioA.debugSlotControls(\'', $slotName, '\');"><div></div></div>';
+			}
+			
+			echo '
+						<div id="zenario_fbAdminSlotControlsContents-', $slotName, '">';
 		}
 		
 		

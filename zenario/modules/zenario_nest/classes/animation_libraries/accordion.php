@@ -60,7 +60,7 @@ class zenario_nest__animation_libraries__accordion extends zenario_nest {
 				'Class' => 'tab_'. $tabOrd. ' tab',
 				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
 				'Visible' => $tabOrd === 1 && $this->setting('accordion_1st_open'),
-				'Tab_Name' => $this->formatTitleText($slide['slide_label'], true)
+				'Tab_Name' => $this->formatTitleText(htmlspecialchars($slide['slide_label']), true)
 			];
 			
 			$this->addSlideImage($tabMergeFields, $slide, $tabOrd);

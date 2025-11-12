@@ -85,7 +85,7 @@ foreach (ze\sql::select($sql) as $extract) {
 			ze\ring::parseExtractEnd($chunks, $chunk);
 			$textExtract = implode("\n\n", $chunks);
 			
-			$wordCount = str_word_count($textExtract);
+			$wordCount = \ze\fileAdm::unicodeWordCount($textExtract);
 			
 			//Update the file_extracts table
 			ze\row::update('file_extracts', [

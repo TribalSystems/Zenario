@@ -20,21 +20,13 @@ zenario_videos_manager__video:
             fields:
                 url:
                     label: 'URL:'
-                    type: text
+                    type: url
                     maxlength: 255
-                    note_below: Enter a URL on YouTube, e.g. https://youtu.be/12345 or Vimeo, e.g. https://vimeo.com/12345 or https://vimeo.com/12345/98765 if the video is unlisted. You can then press the "Fetch" button to get the video's thumbnail and descriptive text.
+                    note_below: ''
                     row_class: zenario_row_full_width_field
-                    onclick: "if ($(this).val()=='') {$(this).val('https://')}"
                     validation:
                         required: "Please enter a URL."
                     format_onchange: true
-                url_test:
-                    same_row: Yes
-                    type: button
-                    css_class: zenario_gp_button
-                    value: Test
-                    dataset_label: '[URL test button]'
-                    onclick: "if ($(lib.get('url')).val()!='') {window.open($(lib.get('url')).val())}"
                 fetch_youtube_details:
                     type: button
                     css_class: zenario_gp_button
@@ -58,10 +50,7 @@ zenario_videos_manager__video:
                         start_time_info:
                             type: information
                             show: true
-                            message: |
-                                You may enter an additional start time argument.
-                                For example, for YouTube, enter "t=120" to start the video 2 minutes in.
-                                For Vimeo, enter "t=2m" to start the video 2 minutes in.
+                            message: ""
                 video_privacy:
                     label: "Privacy (applies to Vimeo only):"
                     snippet:
@@ -69,12 +58,13 @@ zenario_videos_manager__video:
                 image:
                     label: 'Image (public):'
                     upload:
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                     row_class: zenario_row_full_width_field
                 title:

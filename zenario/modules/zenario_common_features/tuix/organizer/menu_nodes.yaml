@@ -132,14 +132,6 @@ zenario__menu:
                             FROM [[DB_PREFIX]]menu_text AS mt_count
                             WHERE mt_count.menu_id = mi.id
                         )
-                sync_assist:
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT mt_sa.language_id)
-                            FROM [[DB_PREFIX]]menu_text AS mt_sa
-                            WHERE mt_sa.menu_id = mi.id
-                              AND mt_sa.language_id IN ([[ZENARIO_SYNC_ASSIST_LANGS]])
-                        )
                 target_loc:
                     db_column: mi.target_loc
                 target:
@@ -205,23 +197,23 @@ zenario__menu:
                     format: enum
                     values:
                         public:
-                            label: 'Permissions: Public, visible to everyone'
+                            label: 'Public'
                         logged_out:
-                            label: 'Permissions: Public, only show to visitors who are NOT logged in'
+                            label: 'Public, only show to visitors who are NOT logged in'
                         logged_in:
-                            label: 'Permissions: Private, only show to extranet users'
+                            label: 'Private, only show to extranet users'
                         group_members:
-                            label: 'Permissions: Private, only show to extranet users in group...'
+                            label: 'Private, only show to extranet users in group...'
                         in_smart_group:
-                            label: 'Permissions: Private, only show to extranet users in smart group...'
+                            label: 'Private, only show to extranet users in smart group...'
                         logged_in_not_in_smart_group:
-                            label: 'Permissions: Private, only show to extranet users NOT in smart group...'
+                            label: 'Private, only show to extranet users NOT in smart group...'
                         with_role:
-                            label: 'Permissions: Private, only show to extranet users with role...'
+                            label: 'Private, only show to extranet users with role...'
                         call_static_method:
-                            label: "Permissions: Call a module's static method to decide"
+                            label: "Call a module's static method to decide permissions"
                         send_signal:
-                            label: 'Permissions: Send a signal to decide'
+                            label: 'Send a signal to decide permissions'
             item:
                 name: Menu node
                 names: Menu nodes
@@ -239,7 +231,7 @@ zenario__menu:
                     hide_on_filter: true
                     parent: create_dropdown
                     label: Level 1 menu node only, or other options
-                    ord: 99
+                    ord: 9999
                     admin_box:
                         path: zenario_menu
             inline_buttons:
@@ -285,7 +277,6 @@ zenario__menu:
                     visible_if: !item.ghost && item.redundancy != 'secondary' && item.linked_content_item_allow_pinning && item.linked_content_item_pinned == 1
                 linked_content_item_not_pinned:
                     css_class: not_pinned
-                    tooltip: "This content item is not pinned"
                     admin_box:
                         path: zenario_content
                         key:
@@ -295,7 +286,6 @@ zenario__menu:
             
                 linked_content_item_no_categories:
                     css_class: no_categories
-                    tooltip: "Content item is not in any categories"
                     admin_box:
                         path: zenario_content_categories
                         key:
@@ -320,13 +310,13 @@ zenario__menu:
             
                 view_frontend:
                     css_class: view_frontend
-                    tooltip: View in front-end
+                    tooltip: Go to content item in front-end window
                     frontend_link:
                         exists: true
                     visible_if: !item.ghost && zenario.engToBoolean(item.frontend_link)
                 inspect:
                     css_class: inspect
-                    tooltip: View in floating box
+                    tooltip: Quick-view in floating box
                     popout:
                         iframe: true
                     visible_if: !item.ghost && zenario.engToBoolean(item.frontend_link)
@@ -344,7 +334,7 @@ zenario__menu:
                     hide_on_filter: true
                     parent: create_child_dropdown
                     label: Menu node only
-                    ord: 99
+                    ord: 9999
                     admin_box:
                         path: zenario_menu
                         key:
@@ -417,46 +407,15 @@ zenario__menu:
                         branch: true
                         refiner: menu_children
                 action_dropdown:
-                    label: More actions
+                    label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                quick_add_to_menu:
-                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
-                    label: Create secondary menu node for this item
-                    parent: action_dropdown
-                    combine_items:
-                        path: zenario__menu/panels/menu_position/refiners/create////
-                        min_path: zenario__menu/panels/menu_position
-                        target_path: zenario__menu/panels/menu_position
-                        disallow_refiners_looping_on_min_path: true
-                        one_to_one_choose_phrase: Create secondary menu node
-                        request:
-                            mass_add_to_menu: 1
-                    visible_if_for_all_selected_items: item.linked_content_item && (item.redundancy != 'secondary')
-                duplicate_as_child:
-                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
-                    label: Duplicate as child
-                    parent: action_dropdown
-                    tooltip: Duplicate this menu node as a child and make it the primary node
-                    ajax:
-                        confirm:
-                            message: |
-                                This action will duplicate the currently selected menu node, and put the new node underneath (i.e. a child node of) the selected one.
-
-                                It will also make the new node be the primary node, changing the current node to a secondary.
-
-                                Proceed?
-                            button_message: Duplicate
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            duplicate_as_child: 1
-                    visible_if_for_all_selected_items: item.linked_content_item
                 move:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_MENU_ITEM
                     hide_in_select_mode: true
-                    label: Move in tree
+                    label: Move menu node...
+                    multiple_select_label: Move menu nodes...
                     multiple_select: true
                     combine_items:
                         path: zenario__menu/panels/menu_position/refiners/move////
@@ -469,6 +428,37 @@ zenario__menu:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             move: 1
+                quick_add_to_menu:
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
+                    label: Create secondary menu node...
+                    parent: action_dropdown
+                    combine_items:
+                        path: zenario__menu/panels/menu_position/refiners/create////
+                        min_path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Create secondary menu node
+                        request:
+                            mass_add_to_menu: 1
+                    visible_if_for_all_selected_items: item.linked_content_item && (item.redundancy != 'secondary')
+                duplicate_as_child:
+                    priv: _PRIV_CREATE_DELETE_MENU_ITEM
+                    label: Duplicate to make child node
+                    parent: action_dropdown
+                    ajax:
+                        confirm:
+                            message: |
+                                This action will duplicate the selected menu node, and make the new one a child of the selected one.
+
+                                It will also make the new node be the primary node.
+
+                                Proceed?
+                            button_message: Duplicate
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            duplicate_as_child: 1
+                    visible_if_for_all_selected_items: item.linked_content_item
                         
                 make_primary:
                     priv: _PRIV_EDIT_MENU_ITEM
@@ -480,7 +470,7 @@ zenario__menu:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to make this node the primary node for this content item?
+                                Make this node the primary node for this content item?
                             
                                 Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
                             button_message: Make primary
@@ -490,7 +480,9 @@ zenario__menu:
                             make_primary: 1
                     visible_if_for_all_selected_items: item.redundancy == 'secondary'
             
-            
+                #If the Pro Features module is running, it will insert 2 buttons here:
+                #"Make invisible" and "Make visible".
+                
                 delete:
                     priv: _PRIV_CREATE_DELETE_MENU_ITEM
                     label: Delete menu node
@@ -524,18 +516,18 @@ zenario__menu:
                         zenarioO.itemButtonClick('delete');
                 delete_recursive:
                     priv: _PRIV_CREATE_DELETE_MENU_ITEM
-                    label: Delete recursively
+                    label: Delete menu node and child nodes
                     parent: action_dropdown
                     multiple_select: false
                     hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: |
-                                Are you sure that you wish to delete the menu node "[[name]]"?
+                                Delete the menu node "[[name]]"?
                             
-                                This menu node has [[children]] child node(s), which will also be deleted.
+                                This menu node has [[children]] child node(s), which will also be deleted recursively (descending down the tree).
                             
-                                No content items will be deleted, but the content items to which the child nodes link will be detached from the menu.
+                                No content items will be deleted. However, the content items to which the child nodes link will be detached from the menu, thus becoming orphans.
                         
                             button_message: Delete
                             cancel_button_message: Cancel
@@ -665,7 +657,7 @@ zenario__menu:
                     ord: 7
                     parent: linked_content_item_dropdown
                     priv: _PRIV_EDIT_DRAFT
-                    visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
+                    visible_if: item.linked_content_item && !item.linked_content_item_is_draft && zenarioA.checkSpecificPerms(id)
                     label: Copy from other...
                     combine_items:
                         path: zenario__content/panels/content/refiners/filter_exclude_documents////
@@ -675,17 +667,32 @@ zenario__menu:
                         one_to_one_choose_phrase: Copy from selected
                         ajax:
                             confirm:
-                                message: |
-                                    Are you sure you wish to copy the contents of the selected content item?
-                            
-                                    This will create a draft of the current content item with the contents of the one you selected.
                                 button_message: Create draft and copy
                                 cancel_button_message: Cancel
                                 message_type: warning
                             request:
                                 create_draft_by_copying: 1
-                linked_content_item__hide:
+                linked_content_item__create_draft_by_overwriting:
                     ord: 8
+                    parent: linked_content_item_dropdown
+                    priv: _PRIV_EDIT_DRAFT
+                    visible_if: item.linked_content_item && item.linked_content_item_is_draft && zenarioA.checkSpecificPerms(id)
+                    label: Copy from other...
+                    combine_items:
+                        path: zenario__content/panels/content/refiners/filter_exclude_documents////
+                        min_path: zenario__content/panels/languages
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        one_to_one_choose_phrase: Copy from selected
+                        ajax:
+                            confirm:
+                                button_message: Copy and overwrite
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                create_draft_by_copying: 1
+                linked_content_item__hide:
+                    ord: 9
                     parent: linked_content_item_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if: item.linked_content_item && item.linked_content_item_can_be_hidden && zenarioA.checkSpecificPerms(id)
@@ -696,7 +703,7 @@ zenario__menu:
                         key:
                             id_is_menu_node_id: true
                 linked_content_item__trash:
-                    ord: 9
+                    ord: 10
                     parent: linked_content_item_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
                     visible_if: item.linked_content_item && item.linked_content_item_can_be_trashed && zenarioA.checkSpecificPerms(id)
@@ -707,7 +714,7 @@ zenario__menu:
                         key:
                             id_is_menu_node_id: true
                 linked_content_item__categories:
-                    ord: 10
+                    ord: 11
                     priv: _PRIV_EDIT_DRAFT
                     visible_if: item.linked_content_item && zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
@@ -721,20 +728,20 @@ zenario__menu:
                         !item.linked_content_item_categories_enabled
                     disabled_tooltip: Categories are not enabled for this content type
                 linked_content_item__view_frontend:
-                    ord: 11
+                    ord: 12
                     parent: linked_content_item_dropdown
                     label: View in front end
                     frontend_link: true
                     visible_if: item.linked_content_item && zenario.engToBoolean(item.frontend_link)
                 linked_content_item__inspect:
-                    ord: 12
+                    ord: 13
                     parent: linked_content_item_dropdown
                     label: Quick-view in floating box
                     popout:
                         iframe: true
                     visible_if: item.linked_content_item && zenario.engToBoolean(item.frontend_link)
                 linked_content_item__view_images:
-                    ord: 13
+                    ord: 14
                     parent: linked_content_item_dropdown
                     label: View attached images
                     link:
@@ -743,7 +750,7 @@ zenario__menu:
                         refiner: images_for_menu_node_linked_content_item
                     visible_if: item.linked_content_item
                 linked_content_item__translations:
-                    ord: 14
+                    ord: 15
                     parent: linked_content_item_dropdown
                     hide_in_select_mode: true
                     label: "View content item's translations"
@@ -753,7 +760,7 @@ zenario__menu:
                         refiner: zenario_trans__chained_in_link__from_menu_node
                     visible_if: item.linked_content_item
                 linked_content_item__view_slots:
-                    ord: 15
+                    ord: 16
                     priv: _PRIV_VIEW_SLOT
                     parent: linked_content_item_dropdown
                     label: Slots and plugins on this content item
@@ -763,7 +770,7 @@ zenario__menu:
                         refiner: content_item_from_menu_node
                     visible_if: item.linked_content_item
                 linked_content_item__view_in_content_items_panel:
-                    ord: 16
+                    ord: 17
                     parent: linked_content_item_dropdown
                     hide_in_select_mode: true
                     label: "View in content items panel"

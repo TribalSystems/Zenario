@@ -169,6 +169,10 @@ zenario__library:
                     searchable: true
                     db_column: f.alt_tag
                     show_by_default: true
+                usage:
+                    db_column: f.usage
+                location:
+                    db_column: f.location
                 title:
                     db_column: f.title
                 checksum:
@@ -443,8 +447,14 @@ zenario__library:
                         }
                         zenarioO.collectionButtonClick('upload');
                     upload:
-                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-                        fileDesc: Images
+                        accept: 'image/png, image/jpeg, image/gif, image/webp, image/svg+xml'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
+                            - .svg
                         multi: true
                         drag_and_drop: true
                         request:
@@ -725,9 +735,9 @@ zenario__library:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you wish to detach the image "[[filename]]" from this content item?
+                                Detach the image "[[filename]]" from this content item?
                             multiple_select_message: |
-                                Are you sure you wish to detach these images from this content item?
+                                Detach these images from this content item?
                             button_message: Detach
                             cancel_button_message: Cancel
                             message_type: warning
@@ -757,15 +767,15 @@ zenario__library:
             hidden_nav:
                 plugins_using_image:
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: plugins_using_image
                 nests_using_image:
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: nests_using_image
                 slideshows_using_image:
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: slideshows_using_image
                 content_items_using_image:
                     link:

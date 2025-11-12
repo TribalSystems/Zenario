@@ -9,7 +9,7 @@
 	id="organizer_form_field_{{m.id|e}}" 
 	class="form_field {{m.type|e}} {{m.css_classes|e}}
 		<% if (m.dataset_field_id) { %> linked_field <% } %>
-		<% if (m._is_sortable) { %> is_sortable <% } %> 
+		<% if (m._is_sortable && !m._hide_drag_button) { %> is_sortable <% } %> 
 		<% if (m._is_current_field) { %> selected <% } %>"
 	data-id="{{m.id}}"
 	<% if (m._is_repeat_field) { %>

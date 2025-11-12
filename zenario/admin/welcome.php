@@ -300,9 +300,10 @@ echo '
 	</script>';
 
 
-if (ze::setting('google_recaptcha_site_key')
-    && ze::setting('google_recaptcha_secret_key')
-    && ze\site::description('enable_captcha_for_admin_logins')
+if (ze::$dbL
+ && ze::setting('google_recaptcha_site_key')
+ && ze::setting('google_recaptcha_secret_key')
+ && ze\site::description('enable_captcha_for_admin_logins')
 ) {
 	echo '
 		<script defer async src="https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit"></script>
@@ -315,6 +316,21 @@ if (ze::setting('google_recaptcha_site_key')
 			function recaptchaCallback() {
 				step1.done();
 			}
+		</script>';
+}
+
+
+if (ze::$dbL
+ && $task == 'login'
+ && ze::setting('in_moratorium')
+) {
+	echo '
+		<script type="text/javascript">
+			zOnLoad(function() {
+				zenarioT.permaToast(', json_encode(ze\admin::phrase('This site is in moratorium, and all updates by local administrators are currently blocked.')), ', \'warning\', {
+					closeButton: false
+				});
+			});
 		</script>';
 }
 

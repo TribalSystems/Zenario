@@ -757,3 +757,166 @@ if (ze\dbAdm::needRevision(61940)) {
 	
 	ze\dbAdm::revision(61940);
 }
+
+
+
+
+
+//
+//	Zenario 10.3
+//
+
+
+
+//In 10.3, a few settings in Meta Data were renamed.
+if (ze\dbAdm::needRevision(63400)) {
+	
+	if (ze\module::inc('zenario_meta_data')) {
+		
+		renamePluginSetting(['zenario_meta_data'], 'show_date', 'show_release_date');
+		renamePluginSetting(['zenario_meta_data'], 'date_format', 'release_date_format');
+		renamePluginSetting(['zenario_meta_data'], 'date_html_tag', 'release_date_html_tag');
+		
+		$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_meta_data');
+		
+		//Also make sure the field order uses the new name for a setting.
+		foreach ($instances as $instance) {
+			if (!empty($instance['settings']['reorder_fields'])) {
+				$currentOrder = explode(',', $instance['settings']['reorder_fields']);
+				
+				if (in_array('show_date', $currentOrder)) {
+					$newOrder = [];
+					
+					foreach ($currentOrder as $field) {
+						if ($field == 'show_date') {
+							$newOrder[] = 'show_release_date';
+						} else {
+							$newOrder[] = $field;
+						}
+					}
+					
+					$newOrder = implode(',', $newOrder);
+					
+					ze\pluginAdm::setSetting('reorder_fields', $newOrder, $instance['instance_id'], $instance['egg_id']);
+				}
+			}
+		}
+	}
+	
+	ze\dbAdm::revision(63400);
+}
+
+if (ze\dbAdm::needRevision(63405)) {
+	
+	if (ze\module::inc('zenario_ctype_document')) {
+		
+		renamePluginSetting(['zenario_ctype_document'], 'date_format', 'release_date_format');
+		renamePluginSetting(['zenario_ctype_document'], 'show_time', 'show_release_time');
+	}
+	
+	ze\dbAdm::revision(63405);
+}
+
+if (ze\dbAdm::needRevision(63435)) {
+	$listOfModules = [
+		'zenario_banner',
+		'zenario_storefront_banner',
+		'zenario_document_shortlist_banner',
+		'zenario_content_list',
+		'zenario_blog_news_list',
+		'zenario_forum_list',
+		'zenario_job_vacancy_summary_list',
+		'zenario_comment_forum_subscriptions'
+	];
+	
+	ze\pluginAdm::deleteSettingFromModules($listOfModules, 'translate_text');
+	
+	ze\dbAdm::revision(63435);
+}
+
+if (ze\dbAdm::needRevision(63605)) {
+	$listOfModules = [
+		'zenario_ctype_document'
+	];
+	
+	$settingsToDelete = [
+		'show_view_link',
+		'local_file',
+		'links_should'
+	];
+	
+	foreach ($settingsToDelete as $settingToDelete) {
+		ze\pluginAdm::deleteSettingFromModules($listOfModules, $settingToDelete);
+	}
+	
+	ze\dbAdm::revision(63605);
+}
+
+if (ze\dbAdm::needRevision(63750)) {
+	$settingsToDelete = [
+		'enable_categories',
+		'document_use_download_page'
+	];
+	
+	foreach ($settingsToDelete as $settingToDelete) {
+		ze\pluginAdm::deleteSettingFromModules('zenario_advanced_search', $settingToDelete);
+	}
+	
+	ze\dbAdm::revision(63750);
+}
+
+if (ze\dbAdm::needRevision(63755)) {
+	$settingsToDelete = [
+		'html_limit_search_scope_by_category',
+		'document_limit_search_scope_by_category',
+		'news_limit_search_scope_by_category',
+		'blog_limit_search_scope_by_category',
+		'project_limit_search_scope_by_category',
+		'html_limit_search_scope_choose_categories',
+		'document_limit_search_scope_choose_categories',
+		'news_limit_search_scope_choose_categories',
+		'blog_limit_search_scope_choose_categories',
+		'project_limit_search_scope_choose_categories'
+	];
+	
+	foreach ($settingsToDelete as $settingToDelete) {
+		ze\pluginAdm::deleteSettingFromModules('zenario_advanced_search', $settingToDelete);
+	}
+	
+	ze\dbAdm::revision(63755);
+}
+
+if (ze\dbAdm::needRevision(64115)) {
+	$settingsToDelete = [
+		'show_phone',
+		'show_fax',
+		'show_website',
+		'show_summary',
+		'show_email'
+	];
+	
+	foreach ($settingsToDelete as $settingToDelete) {
+		ze\pluginAdm::deleteSettingFromModules('zenario_location_viewer', $settingToDelete);
+	}
+	
+	ze\dbAdm::revision(64115);
+}
+
+//Previously, an indented textbox was not mandatory if visible.
+//It is now as of 10.4. Fix any bad data that might have resulted from lack of validation.
+//PLEASE NOTE: This was backpatched from 10.4 to 10.3, but is safe to run more than once.
+if (ze\dbAdm::needRevision(64132)) {
+	$instances = ze\module::getModuleInstancesAndPluginSettings('zenario_event_listing');
+	
+	foreach ($instances as $instance) {
+		if (
+			!empty($instance['settings']['heading'])
+			&& $instance['settings']['heading'] == 'show_heading'
+			&& empty($instance['settings']['heading_text'])
+		) {
+			ze\row::set('plugin_settings', ['value' => 'dont_show'], ['instance_id' => (int) $instance['instance_id'], 'egg_id' => (int) $instance['egg_id'], 'name' => 'heading']);
+		}
+	}
+	
+	ze\dbAdm::revision(64132);
+}

@@ -1,0 +1,11 @@
+"Language ID","Module"
+pl,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Pobieranie dokumentu:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL tej strony:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Ten dokument nie należy do żadnej kategorii."
+_VIEW_OR_DOWNLOAD,"Wyświetl/pobierz:"
+_FILE_TYPE_AND_SIZE,"Typ pliku i rozmiar:"
+_S3_FILE_TYPE_AND_SIZE,"Typ pliku S3 i rozmiar:"
+_S3_FILENAME,"Nazwa pliku S3:"

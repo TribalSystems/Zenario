@@ -463,6 +463,8 @@ class menuAdm {
 			}
 		
 			\ze\sql::update($sql);
+			
+			\ze\menuAdm::syncMenuTextStatus($menuId, $languageId);
 		
 			if (isset($submission['name'])) {
 				if (!$textExists) {
@@ -472,6 +474,38 @@ class menuAdm {
 					\ze\module::sendSignal('eventMenuNodeTextUpdated', ['menuId' => $menuId, 'languageId' => $languageId, 'newText' => $submission['name'], 'oldText' => $textExists['name']]);
 				}
 			}
+		}
+	}
+
+	//The menu_text table has a redundant column with info on the content item that row is linked to,
+	//to help make certain queries on the menu more efficient.
+	//These should be updated whenever the status of the content item might change.
+	public static function syncMenuTextStatus($menuId, $languageId = null) {
+		
+		$menu = \ze\row::get('menu_nodes', ['equiv_id', 'content_type'], ['id' => $menuId, 'target_loc' => 'int']);
+		
+		if ($menu && $menu['equiv_id']) {
+			
+			$key = ['equiv_id' => $menu['equiv_id'], 'type' => $menu['content_type']];
+			if (!is_null($languageId)) {
+				$key['language_id'] = $languageId;
+			}
+			
+			$contentItems = \ze\row::getAssocs('content_items',
+				['id', 'type', 'status', 'equiv_id', 'language_id'],
+				$key
+			);
+			
+			foreach ($contentItems as $content) {
+				\ze\contentAdm::syncMenuTextStatus($content['id'], $content['type'], $content);
+			}
+		
+		} else {
+			$sql = "
+				UPDATE ". DB_PREFIX. "menu_text AS t
+				SET t.content_item_status = 'not_linked'
+				WHERE t.menu_id = ". (int) $menuId;
+			\ze\sql::update($sql);
 		}
 	}
 

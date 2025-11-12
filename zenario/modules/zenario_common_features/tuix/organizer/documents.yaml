@@ -167,6 +167,7 @@ zenario__library:
                     hide_on_filter: true
                     admin_box:
                         path: zenario_document_folder
+                        create_another: true
                 
             item_buttons:
                 upload:
@@ -321,17 +322,17 @@ zenario__library:
                         item.mime_type == "application/pdf"
                         && zenarioA.siteSettings.pdftotext_path 
                         && zenarioA.siteSettings.ghostscript_path
-                    label: Rescan text/image extract
+                    label: Rescan text and thumbnail
                     without_columns_set:
                         traits.is_folder: true
                     ajax:
                         confirm: 
                             message: | 
-                                Rescan the text and thumbnail? 
+                                Rescan the text, and get a new thumbnail image of first page? 
                                 
                                 If you are using a custom thumbnail image it will be lost.
                             message_type: warning
-                            button_message: 'Ok'
+                            button_message: 'Rescan'
                             cancel_button_message: Cancel
                         request: 
                             rescan: true

@@ -105,7 +105,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 				self::$tsLink = ze\link::toItem($cItem['id'], $cItem['type'], false, ['state' => $cItem['to_state']], $cItem['alias']). '&id=';
 		
 			} elseif (ze\priv::check('_PRIV_EDIT_SITE_SETTING')) {
-				self::$tsLink = 'organizer.php?fromCID='. $this->cID. '&fromCType='. $this->cType. '#zenario__modules/panels/tuix_snippets//';
+				self::$tsLink = 'organizer.php?fromCID='. $this->cID. '&fromCType='. $this->cType. '#zenario__administration/panels/tuix_snippets//';
 			
 			} else {
 				self::$tsLink = false;
@@ -593,9 +593,6 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			". $orderBy. "
 			". $limit;
 		
-		//Use this to put the full query into the console.log
-		//ze::dump($sql);
-		
 		$result = $this->sqlSelect($sql);
 		
 		if (ze\tuix::$feaDebugMode) {
@@ -691,10 +688,9 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		if ($this->setting('show_title')) {
 			$tags['title_tags'] = $this->setting('title_tags');
 			
-			if (isset($this->parentNest)
-			 && isset($tags['title'])
+			if (isset($tags['title'])
 			 && !empty($tags['use_merge_fields_from_request_vars_in_title'])) {
-				$tags['title'] = $this->parentNest->formatTitleText($tags['title']);
+				$tags['title'] = $this->formatTitleText($tags['title']);
 			}
 			
 		} else {
@@ -704,14 +700,23 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 		if ($this->setting('show_subtitle')) {
 			$tags['subtitle_tags'] = $this->setting('subtitle_tags');
 			
-			if (isset($this->parentNest)
-			 && isset($tags['subtitle'])
+			if (isset($tags['subtitle'])
 			 && !empty($tags['use_merge_fields_from_request_vars_in_title'])) {
-				$tags['subtitle'] = $this->parentNest->formatTitleText($tags['subtitle']);
+				$tags['subtitle'] = $this->formatTitleText($tags['subtitle']);
 			}
 			
 		} else {
 			unset($tags['subtitle']);
+		}
+		
+		if (isset($tags['no_items_message'])
+		 && !empty($tags['use_merge_fields_from_request_vars_in_items_message'])) {
+			$tags['no_items_message'] = $this->formatTitleText($tags['no_items_message'], $isHTML = true);
+		}
+		
+		if (isset($tags['no_items_in_search_message'])
+		 && !empty($tags['use_merge_fields_from_request_vars_in_items_message'])) {
+			$tags['no_items_in_search_message'] = $this->formatTitleText($tags['no_items_in_search_message'], $isHTML = true);
 		}
 	}
 	
@@ -739,7 +744,7 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 	}
 						
 	//Load the value of a search request that was packed up using the zenario.pack() function
-	protected function unpackSearchRequest(&$tags) {
+	protected function unpackSearchRequest(&$tags, $useGetAsFallback = false) {
 	
 		$flat = $_REQUEST['search'] ?? $tags['key']['search'];
 		if (!empty($flat)) {
@@ -748,6 +753,10 @@ class zenario_abstract_fea extends ze\moduleBaseClass {
 			if (!empty($search) && is_array($search)) {
 				return $search;
 			}
+		}
+		
+		if ($useGetAsFallback && !empty($_GET)) {
+			return $_GET;
 		}
 		
 		return null;

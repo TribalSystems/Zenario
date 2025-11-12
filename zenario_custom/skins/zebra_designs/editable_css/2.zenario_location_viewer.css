@@ -1,0 +1,16 @@
+.zenario_location_viewer .title {
+	font-size: 1.3em;
+	line-height:1.2;
+	font-family:'cardoregular','Times New Roman','Georgia',serif;
+}
+
+.zenario_location_viewer .address_container {
+	background: #eff5f9;
+  	padding: 1em;
+  	display: inline-block;
+  	margin: 1em 0;
+}
+
+.zenario_location_viewer .address_container .address_label {
+	font-weight:700;
+}

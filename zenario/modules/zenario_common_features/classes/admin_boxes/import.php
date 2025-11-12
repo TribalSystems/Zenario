@@ -46,6 +46,13 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 		//Load list of dataset fields
 		$datasetId = $box['key']['dataset'];
 		$dataset = ze\dataset::details($datasetId);
+		
+		if ($dataset['system_table'] == 'users') {
+			ze\priv::exitIfNot('_PRIV_VIEW_USER');
+		} elseif (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			ze\priv::exitIfNot('_PRIV_EXPORT_LOCATIONS');
+		}
+		
 		$datasetFields = ze\datasetAdm::listCustomFields(
 			$datasetId, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = false,
 			$putMergeFieldsIntoLabel = true, '', $mergeFieldsOpen = '(', $mergeFieldsClose = ')'
@@ -289,8 +296,9 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 								break;
 							}
 							
-							$previewString .= $line;
-							$headers = str_getcsv($line);
+							$cleanedLine = str_replace("\xEF\xBB\xBF", '', $line);
+							$previewString .= $cleanedLine;
+							$headers = str_getcsv($cleanedLine);
 
 							//If this line has headers, remember them now using a temporary variable...
 							if ($lineNumber == $values['headers/key_line']) {
@@ -1098,11 +1106,18 @@ class zenario_common_features__admin_boxes__import extends ze\moduleBaseClass {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$dataset = ze\dataset::details($box['key']['dataset']);
+		
+		if ($dataset['system_table'] == 'users') {
+			ze\priv::exitIfNot('_PRIV_VIEW_USER');
+		} elseif (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations') {
+			ze\priv::exitIfNot('_PRIV_EXPORT_LOCATIONS');
+		}
+		
 		$currentAdminId = ze\admin::id();
 		$admin = ze\row::get('admins', ['username', 'authtype'], $currentAdminId);
 		
 		//Include required modules
-		$dataset = ze\dataset::details($box['key']['dataset']);
 		$systemIdCol = !empty($dataset['system_table']) ? ze\row::idColumnOfTable($dataset['system_table']) : false;
 		$customIdCol = !empty($dataset['table']) ? ze\row::idColumnOfTable($dataset['table']) : false;
 		if ($dataset['label'] == 'Locations') {

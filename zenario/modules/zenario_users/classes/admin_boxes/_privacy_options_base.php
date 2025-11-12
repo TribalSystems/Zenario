@@ -32,7 +32,8 @@ class zenario_users__privacy_options_base extends zenario_users {
 	
 	
 	protected function fillPrivacySettings($path, $settingGroup, &$box, &$fields, &$values) {
-	
+		$duplicatingOrTranslating = (!empty($box['key']['duplicate']) || !empty($box['key']['duplicate_from_menu']) || !empty($box['key']['translate']));
+		
 		if (!ze\module::isRunning('zenario_extranet')) {
 			foreach ($fields['privacy/privacy']['values'] as $name => $setting) {
 				if ($name != 'public') {
@@ -43,8 +44,17 @@ class zenario_users__privacy_options_base extends zenario_users {
 			$fields['privacy/privacy_settings_disabled_note']['hidden'] = false;
 		}
 		
+		$userCount = ze\row::count('users', ['status' => 'active']);
+		$userCountPhrase = ze\admin::nPhrase('1 user', '[[count]] users', $userCount, ['count' => $userCount]);
+		ze\lang::applyMergeFields($fields['privacy/privacy']['values']['logged_in']['label'], ['user_count' => $userCountPhrase]);
+		
 		$fields['privacy/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		$fields['privacy/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
+		
+		if ($duplicatingOrTranslating) {
+			$fields['privacy/group_ids_original']['values'] = $fields['privacy/group_ids']['values'];
+			$fields['privacy/smart_group_id_original']['values'] = $fields['privacy/smart_group_id']['values'];
+		}
 
 		if (count($fields['privacy/smart_group_id']['values']) > 0) {
 			unset($box['tabs']['privacy']['fields']['no_smart_groups_defined']);
@@ -53,8 +63,8 @@ class zenario_users__privacy_options_base extends zenario_users {
 			$fields['privacy/smart_group_id']['hidden'] = true;
 		}
 	
-		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['privacy/role_ids']['values'] = zenario_users::getRoleTypesIndexedByIdOrderedByName();
+		if (ze\module::inc('zenario_organization_manager')) {
+			$fields['privacy/role_ids']['values'] = zenario_organization_manager::getRoleTypesIndexedByIdOrderedByName();
 		} else {
 			$fields['privacy/role_ids']['hidden'] =
 			$fields['privacy/privacy']['values']['with_role']['hidden'] = true;
@@ -70,6 +80,10 @@ class zenario_users__privacy_options_base extends zenario_users {
 				}
 			}
 			unset($val);
+		}
+		
+		if ($duplicatingOrTranslating) {
+			$this->setupPrivacySettingsForOriginalContentItem($box);
 		}
 	}
 		
@@ -251,8 +265,105 @@ class zenario_users__privacy_options_base extends zenario_users {
 					$chain,
 					['equiv_id' => $equivId, 'type' => $cType]);
 				
+				
+				//For document content items, we'll need to check if any files should now be either
+				//added or removed from the public/documents/ directory.
+				if ($cType == 'document') {
+					
+					//Look for all of the content items in this translation chain
+					$sql = "
+						SELECT c.id, c.type, c.visitor_version
+						FROM ". DB_PREFIX. "content_items AS c
+						WHERE c.equiv_id = ". (int) $equivId. "
+						  AND c.type = '". \ze\escape::asciiInSQL($cType). "'
+						  AND c.visitor_version != 0";
+					
+					foreach (\ze\sql::select($sql) as $content) {
+						\ze\contentAdm::reviewDocumentsInPublicDir($content['id'], $content['type'], $content['visitor_version']);
+					}
+				}
+				
 				\ze\module::sendSignal('eventContentPrivacyUpdated', ['equivId' => $equivId,'cType' => $cType]);
 			}
 		}
+	}
+	
+	private function setupPrivacySettingsForOriginalContentItem(&$box) {
+		$box['tabs']['privacy']['fields']['privacy_original'] = $box['tabs']['privacy']['fields']['privacy'];
+		$box['tabs']['privacy']['fields']['privacy_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['privacy_original']['label'] = ze\admin::phrase('Permission to access (original):');
+		$box['tabs']['privacy']['fields']['privacy_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['privacy_original']['validation']);
+		unset($box['tabs']['privacy']['fields']['privacy_original']['format_onchange']);
+		
+		$box['tabs']['privacy']['fields']['group_ids_original'] = $box['tabs']['privacy']['fields']['group_ids'];
+		$box['tabs']['privacy']['fields']['group_ids_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['group_ids_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['group_ids_original']['validation']);
+		unset($box['tabs']['privacy']['fields']['group_ids_original']['format_onchange']);
+		unset($box['tabs']['privacy']['fields']['group_ids_original']['visible_if']);
+		$box['tabs']['privacy']['fields']['group_ids_original']['visible_if'] = [
+			'zenarioAB.valueIs' => 'privacy_original, group_members'
+		];
+		
+		$box['tabs']['privacy']['fields']['smart_group_id_original'] = $box['tabs']['privacy']['fields']['smart_group_id'];
+		$box['tabs']['privacy']['fields']['smart_group_id_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['smart_group_id_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['smart_group_id_original']['validation']);
+		unset($box['tabs']['privacy']['fields']['smart_group_id_original']['format_onchange']);
+		unset($box['tabs']['privacy']['fields']['smart_group_id_original']['visible_if']);
+		$box['tabs']['privacy']['fields']['smart_group_id_original']['visible_if'] = [
+			'zenarioAB.valueIn' => 'privacy_original, in_smart_group, logged_in_not_in_smart_group'
+		];
+		
+		$box['tabs']['privacy']['fields']['role_ids_original'] = $box['tabs']['privacy']['fields']['role_ids'];
+		$box['tabs']['privacy']['fields']['role_ids_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['role_ids_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['role_ids_original']['validation']);
+		unset($box['tabs']['privacy']['fields']['role_ids_original']['format_onchange']);
+		unset($box['tabs']['privacy']['fields']['role_ids_original']['visible_if']);
+		$box['tabs']['privacy']['fields']['role_ids_original']['visible_if'] = [
+			'zenarioAB.valueIs' => 'privacy_original, with_role'
+		];
+		
+		$box['tabs']['privacy']['fields']['at_location_original'] = $box['tabs']['privacy']['fields']['at_location'];
+		$box['tabs']['privacy']['fields']['at_location_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['at_location_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['at_location_original']['format_onchange']);
+		
+		$box['tabs']['privacy']['fields']['module_class_name_original'] = $box['tabs']['privacy']['fields']['module_class_name'];
+		$box['tabs']['privacy']['fields']['module_class_name_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['module_class_name_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['module_class_name_original']['visible_if']);
+		$box['tabs']['privacy']['fields']['module_class_name_original']['visible_if'] = [
+			'zenarioAB.valueIs' => 'privacy_original, call_static_method'
+		];
+		
+		$box['tabs']['privacy']['fields']['method_name_original'] = $box['tabs']['privacy']['fields']['method_name'];
+		$box['tabs']['privacy']['fields']['method_name_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['method_name_original']['readonly'] = true;
+		
+		$box['tabs']['privacy']['fields']['param_1_original'] = $box['tabs']['privacy']['fields']['param_1'];
+		$box['tabs']['privacy']['fields']['param_1_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['param_1_original']['readonly'] = true;
+		
+		$box['tabs']['privacy']['fields']['param_2_original'] = $box['tabs']['privacy']['fields']['param_2'];
+		$box['tabs']['privacy']['fields']['param_2_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['param_2_original']['readonly'] = true;
+		
+		$box['tabs']['privacy']['fields']['signal_name_original'] = $box['tabs']['privacy']['fields']['signal_name'];
+		$box['tabs']['privacy']['fields']['signal_name_original']['indent'] = 1;
+		$box['tabs']['privacy']['fields']['signal_name_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['signal_name_original']['readonly'] = true;
+		unset($box['tabs']['privacy']['fields']['signal_name_original']['hide_with_previous_field']);
+		unset($box['tabs']['privacy']['fields']['signal_name_original']['visible_if']);
+		$box['tabs']['privacy']['fields']['signal_name_original']['visible_if'] = [
+			'zenarioAB.valueIs' => 'privacy_original, send_signal'
+		];
+		
+		$box['tabs']['privacy']['fields']['privacy_part_2_original'] = $box['tabs']['privacy']['fields']['privacy_part_2'];
+		$box['tabs']['privacy']['fields']['privacy_part_2_original']['grouping'] = 'privacy_grouping_left';
+		$box['tabs']['privacy']['fields']['privacy_part_2_original']['snippet']['show_split_values_from'] = 'privacy_original';
+		unset($box['tabs']['privacy']['fields']['privacy_part_2_original']['note_below']);
 	}
 }

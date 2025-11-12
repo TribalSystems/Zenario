@@ -76,14 +76,15 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		$panel['title'] = ze\admin::phrase('Draft Newsletters');
 		
 		if ($refinerName == 'outbox') {
 			$panel['title'] = ze\admin::phrase('Newsletter Outbox');
+			$panel['no_items_message'] = ze\admin::phrase('The Outbox is empty');
 			$panel['item']['css_class'] = 'zenario_newsletter_in_progress_newsletter';
 	
 		} elseif ($refinerName == 'archive') {
-			$panel['title'] = ze\admin::phrase('Newsletter Archive');
+			$panel['title'] = ze\admin::phrase('Sent Newsletters');
+			$panel['no_items_message'] = ze\admin::phrase('No sent newsletters found');
 			$panel['item']['css_class'] = 'zenario_newsletter_sent_newsletter';
 		
 		
@@ -212,7 +213,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 		
 		//Only show the "Outbox" collection button if there is at least 1 newsletter in there
 		$outboxCount = ze\row::count(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', ['status' => '_IN_PROGRESS']);
-		if ($outboxCount == 0) {
+		if ($outboxCount == 0 || $refinerName == 'outbox') {
 			$panel['collection_buttons']['process']['hidden'] = true;
 		} else {
 			$panel['collection_buttons']['process']['hidden'] = false;
@@ -236,11 +237,11 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 			set_time_limit(60 * 10);
 			self::sendNewsletter($ids);
 			
-			$linkHref = ze\link::absolute() .'organizer.php#zenario__email_template_manager/panels/newsletters/collection_buttons/archive//'. (int) $ids. '//';
+			$linkHref = ze\link::absolute() .'organizer.php#zenario__email_template_manager/panels/newsletters/collection_buttons/archive////'. (int) $ids;
 			$linkOnclick = "zenarioA.closeFloatingBox();";
 			
 			$link = '<a href="' . $linkHref . '" onclick="' . $linkOnclick . '">';
-			$link .= ze\admin::phrase('View Sent Newsletter in Archive.');
+			$link .= ze\admin::phrase('View sent newsletters.');
 			$link .= '</a>';
 			
 			ze\escape::bFlag('MESSAGE_TYPE', 'success');
@@ -254,7 +255,7 @@ class zenario_newsletter__organizer__newsletters extends zenario_newsletter {
 
 			$admin_id = ze\admin::id();
 			$table_newsletters = DB_PREFIX . ZENARIO_NEWSLETTER_PREFIX . "newsletters"; 
-			$copy_cols = "subject, email_address_from, email_name_from, url, body, 
+			$copy_cols = "subject, url, body, 
 				status, unsubscribe_text, delete_account_text, smart_group_descriptions_when_sent_out";
 			
 			$sql = "INSERT INTO $table_newsletters(newsletter_name, $copy_cols, date_created, created_by_id)

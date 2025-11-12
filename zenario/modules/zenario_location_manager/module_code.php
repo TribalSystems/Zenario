@@ -1769,10 +1769,11 @@ class zenario_location_manager extends ze\moduleBaseClass {
 	}
 	
 	public function showFile() {
+		$v = ze\db::codeVersion();
 		echo '<html>
 				<head>
 				<script id="google_api" type="text/javascript" src="' . ze\link::protocol() . 'maps.google.com/maps/api/js?key=' . urlencode(ze::setting('google_maps_api_key')) . '&libraries=marker"></script>
-				<script type="text/javascript" src="modules/zenario_location_manager/js/locations.js"></script>
+				<script type="text/javascript" src="modules/zenario_location_manager/js/locations.js?v=' .  $v . '"></script>
 				</head>
 				<script type="text/javascript">
 				
@@ -2830,6 +2831,6 @@ class zenario_location_manager extends ze\moduleBaseClass {
 			}
 		}
 
-		return ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => 'locationId'];
+		return ['Record_count_total' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => 'locationId', 'No_results_text' => 'No locations found'];
 	}
 }

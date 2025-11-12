@@ -333,6 +333,13 @@ methods.getOrderedMergeFieldsForFields = function(pageId) {
 			fieldClone._hide_drag_button = true;
 			fieldClone._hide_delete_button = true;
 			fieldClone._hide_duplicate_button = true;
+		} else if (
+			thus.tuix.form.send_email_to_admin
+			&& thus.tuix.form.send_email_to_admin_destination_for_form_response == 'destination_depends_on_a_field_and_its_values'
+			&& thus.tuix.form.admin_email_destination_select_list_for_fields == fieldClone.id
+		) {
+			fieldClone._hide_drag_button = true;
+			fieldClone._hide_delete_button = true;
 		}
 	}
 	
@@ -432,7 +439,7 @@ methods.createPage = function() {
 	return pageId;
 };
 
-methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
+methods.createField = function(type, ord, datasetFieldId, copyFromFieldId, centralisedSource, centralisedSourceLabel) {
 	var fieldId = 't' + (++thus.newItemCount);
 	var field = {};
 	
@@ -455,11 +462,13 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 			} else if (datasetField.db_column == 'email') {
 				field.field_validation = 'email';
 				field.field_validation_error_message = 'The email address you have entered is not valid, please enter a valid email address.';
+				field.confirmation_field_error_message = 'The email addresses you have entered do not match.';
 			}
 		}
 		
 		field.name = datasetField.label.replace(/:$/, "");
 		field.label = datasetField.label;
+		field.confirmation_field_label = field.label + ' (confirm)';
 		field.dataset_field_id = datasetFieldId;
 		field.values_source = datasetField.values_source;
 		field.values_source_filter = datasetField.values_source_filter;
@@ -500,6 +509,8 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 	//Copy from existing field
 	} else if (copyFromFieldId) {
 		field = JSON.parse(JSON.stringify(thus.getItem('field', copyFromFieldId)));
+		delete field.field_is_used_as_email_destination_in_form_setting;
+		
 		if (field.type == 'checkboxes' || type == 'sortable_selection'  || field.type == 'select' || field.type == 'radios') {
 			var lov = field.lov;
 			delete(field.lov);
@@ -513,8 +524,19 @@ methods.createField = function(type, ord, datasetFieldId, copyFromFieldId) {
 	//Create new blank field
 	} else {
 		field.type = type;
-		field.label = 'Untitled';
-		field.name = 'Untitled ' + thus.getFieldReadableType(type).toLowerCase();
+		
+		if (field.type == 'centralised_select' && centralisedSource) {
+			field.values_source = centralisedSource;
+			
+			field.label = centralisedSourceLabel;
+			field.name = centralisedSourceLabel;
+		} else {
+			field.label = 'Untitled';
+			field.name = 'Untitled ' + thus.getFieldReadableType(type).toLowerCase();
+		}
+		
+		field.confirmation_field_label = field.label + ' (confirm)';
+		field.confirmation_field_error_message = 'The email addresses you have entered do not match.';
 		
 		if (type == 'checkboxes' || type == 'sortable_selection' || type == 'radios' || type == 'select') {
 			field.lov = {};
@@ -1162,6 +1184,8 @@ methods.loadFieldsList = function(pageId) {
 				$(this).find('div.field_type, div.dataset_field').each(function() {
 					var fieldType = $(this).data('type');
 					var datasetFieldId = $(this).data('id');
+					var centralisedSource = $(this).data('source');
+					var centralisedSourceLabel = $(this).data('label');
 					var ord = 0.1;
 					var previousFieldId = $(this).prev().data('id');
 					if (previousFieldId && thus.tuix.items[previousFieldId]) {
@@ -1173,7 +1197,7 @@ methods.loadFieldsList = function(pageId) {
 						}
 					}
 					
-					var fieldId = thus.createField(fieldType, ord, datasetFieldId);
+					var fieldId = thus.createField(fieldType, ord, datasetFieldId, 0, centralisedSource, centralisedSourceLabel);
 					thus.clickField(fieldId, true);
 					thus.updateFieldOrds();
 				});
@@ -1248,7 +1272,7 @@ methods.loadFieldsList = function(pageId) {
 			var fieldId = $(this).data('id');
 			if (thus.saveCurrentOpenDetails()) {
 				var field = thus.getItem('field', fieldId);
-				var message = '<p>Are you sure you want to duplicate the field "' + field.name + '"?</p>';
+				var message = '<p>Duplicate the field "' + field.name + '"?</p>';
 				zenarioA.floatingBox(message, 'Duplicate', 'warning', true, false, undefined, undefined, function() {
 					var newFieldId = thus.createField(undefined, field.ord + 0.1, undefined, fieldId);
 					thus.clickField(newFieldId, true);
@@ -1267,7 +1291,7 @@ methods.loadFieldsList = function(pageId) {
 				return;
 			}
 			
-			var message = '<p>Are you sure you want to update this dataset repeat field?</p>';
+			var message = '<p>Update this repeating field?</p>';
 			zenarioA.floatingBox(message, 'Update', 'warning', true, false, undefined, undefined, function() {
 				
 				var datasetRepeatFieldId = repeatField.dataset_field_id;
@@ -1352,7 +1376,8 @@ methods.loadNewFieldsPanel = function(stopAnimation) {
 	var mergeFields = {
 		mode: 'new_fields',
 		link_to_dataset: thus.tuix.link_to_dataset,
-		datasetTabs: thus.getOrderedMergeFieldsForDatasetFields()
+		datasetTabs: thus.getOrderedMergeFieldsForDatasetFields(),
+		centralised_lists: thus.tuix.centralised_lists.values
 	};
 	
 	var html = thus.microTemplate('zenario_organizer_form_builder_left_panel', mergeFields);
@@ -1568,6 +1593,19 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 					}
 				}
 				
+				if (changedFieldId == 'field_validation' || changedFieldId == 'show_field_twice_for_confirmation') {
+					if (item.field_validation == 'email' && item.show_field_twice_for_confirmation) {
+						if (!tags.tabs[tab].fields.confirmation_field_error_message.value) {
+							tags.tabs[tab].fields.confirmation_field_error_message.value = 'The email addresses you have entered do not match.';
+						}
+						
+						if (!tags.tabs[tab].fields.confirmation_field_label.value) {
+							tags.tabs[tab].fields.confirmation_field_label.value = tags.tabs[tab].fields.label.value + ' (confirm)';
+						}
+					}
+				}
+				
+				
 				//Update calculation code preview
 				if (item.type == 'calculated') {
 					var displayHTML = false;
@@ -1602,7 +1640,7 @@ methods.formatTUIX = function(itemType, item, tab, tags, changedFieldId) {
 				}
 				
 				//Update default values list for list type fields (defaults to checkbox values)
-				if (['radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) != -1) {
+				if (['radios', 'centralised_radios', 'select', 'centralised_select'].indexOf(item.type) != -1 && item.lov) {
 					tags.tabs[tab].fields.default_value_lov.values = JSON.parse(JSON.stringify(item.lov));
 				}
 				
@@ -1832,6 +1870,16 @@ methods.validateTUIX = function(itemType, item, tab, tags) {
 				if (item.field_validation && item.field_validation != 'none') {
 					if (!item.field_validation_error_message) {
 						tags.tabs[tab].fields.field_validation_error_message.error = 'Please enter a validation error message for this field.';
+					}
+					
+					if (item.field_validation == 'email' && item.show_field_twice_for_confirmation) {
+						if (!item.confirmation_field_label) {
+							tags.tabs[tab].fields.confirmation_field_label.error = 'Please enter the confirmation field label.';
+						}
+						
+						if (!item.confirmation_field_error_message) {
+							tags.tabs[tab].fields.confirmation_field_error_message.error = 'Please enter a confirmation error message for this field.';
+						}
 					}
 				}
 				
@@ -2368,14 +2416,14 @@ methods.calculationAdminBoxDelete = function() {
 methods.calculationAdminBoxUpdateDisplay = function(calculationCode) {
 	var displayHTML = true;
 	var calculationDisplay = thus.getCalculationCodeDisplay(calculationCode, displayHTML);
-	$('#zenario_calculation_display').html(calculationDisplay);
+	$('#zaf_zenario_calculation_display').html(calculationDisplay);
 };
 
 
 methods.openFormSettings = function() {
 	zenarioAB.open(
 		'zenario_user_form', 
-		{id: zenarioO.pi.refiner.id},
+		{id: zenarioO.pi.refiner.id, opened_from_form_editor: 1},
 		undefined, undefined,
 		function(key, values) {
 			//Update form title (note if lots of changes might be better to redraw entire form)

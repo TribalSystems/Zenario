@@ -221,7 +221,7 @@ empty_slot:
             page_modes:
                 edit: true
             onclick: >
-                if (zenarioA.draft(this.id, false, 'Are you sure you wish to stop hiding ~plugin~ on this content item?', 'Show')) {
+                if (zenarioA.draft(this.id, false, 'Stop hiding ~plugin~ on this content item?', 'Reveal')) {
                     zenarioA.showPlugin(this, slotName);
                 }
                 return false;

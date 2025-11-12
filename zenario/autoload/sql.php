@@ -37,6 +37,24 @@ class sql {
 
 
 
+	
+	
+	
+	
+	private static $pscache = [];
+	public static function prepare($sql, $types, $cacheBy = null) {
+		$statement = new \ze\preparedStatement(static::$db, $sql, $types);
+		
+		if (!is_null($cacheBy)) {
+			self::$pscache[$cacheBy] = $statement;
+		}
+		
+		return $statement;
+	}
+	
+	public static function previouslyPrepared($cacheBy) {
+		return self::$pscache[$cacheBy] ?? null;
+	}
 
 
 
@@ -162,6 +180,10 @@ class sql {
 			\ze\db::handleError(static::$db->con, $sql);
 		}
 	}
+	
+	
+
+	
 
 	//Runs a SQL query and always updates the revision number and clears the cache if needed
 	public static function update($sql, $checkCache = true, $checkRevNo = true) {

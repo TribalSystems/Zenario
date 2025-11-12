@@ -180,8 +180,6 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				newsletter_name,
 				subject,
 				status,
-				email_address_from,
-				email_name_from,
 				apply_css_rules,
 				body,
 				unsubscribe_text,
@@ -219,16 +217,10 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		
 		$newsletterArray = ["id" => $newsletterId,"body" => $body];
 		$body = zenario_newsletter::createTrackerHyperlinks($newsletterArray);
-		//Check if there is a User set up with this email address
-		if (!$user = self::getUserDetails(['email' => $email])) {
-			//Send the test email with the current Admin's details, rather than a User.
-			$user['first_name'] = $adminDetails['admin_first_name'];
-			$user['last_name'] = $adminDetails['admin_last_name'];
-			$user['admin_account'] = true;
-			
-			//The admins table doesn't have a title field.
-			$user['title'] = ze\admin::phrase('(Title)');
-		}
+		
+		$user = [
+			'admin_account' => true
+		];
 		
 		$newsletterURL = zenario_newsletter::getTrackerURL();
 		$newsletterSubject = zenario_newsletter::applyNewsletterMergeFields($subject, $user, $newsletterURL);
@@ -244,7 +236,7 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			$newsletterBody,
 			$email,
 			$emailOverriddenBy,
-			$user['first_name']. ' '. $user['last_name'],
+			'',
 			$emailAddresFrom, $emailNameFrom
 		);
 	}
@@ -285,6 +277,9 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		if ($mode == 'none') {
 			return false;
 		}
+		
+		$emailAddressFrom = ze::setting('email_address_from');
+		$emailNameFrom = ze::setting('email_name_from');
 		
 		// Get admins
 		$admins = [];
@@ -332,8 +327,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 				$admin['email'],
 				$emailOverriddenBy,
 				$admin['first_name']. ' '. $admin['last_name'],
-				$newsletter['email_address_from'],
-				$newsletter['email_name_from'],
+				$emailAddressFrom,
+				$emailNameFrom,
 				[],
 				[],
 				'bulk');
@@ -345,8 +340,6 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			SELECT 
 				id,
 				subject,
-				email_address_from,
-				email_name_from,
 				url,
 				apply_css_rules,
 				body,
@@ -457,6 +450,9 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		
 		$emailOverriddenBy = false;
 		
+		$emailAddressFrom = ze::setting('email_address_from');
+		$emailNameFrom = ze::setting('email_name_from');
+		
 		
 		if (ze\server::sendEmailAdvanced(
 			$newsletterSubject,
@@ -464,8 +460,8 @@ class zenario_newsletter extends ze\moduleBaseClass {
 			$user['email'],
 			$emailOverriddenBy,
 			$user['first_name']. ' '. $user['last_name'],
-			$newsletter['email_address_from'],
-			$newsletter['email_name_from'],
+			$emailAddressFrom,
+			$emailNameFrom,
 			[],
 			[],
 			'bulk'
@@ -549,22 +545,9 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		$search = [];
 		$replace = [];
 		if (isset($user['admin_account'])) {
-			if(isset($user['salutation'])){
-				$search[] = '[[SALUTATION]]';
-				$replace[] = htmlspecialchars($user['salutation']);
-			}
-			
-			if(isset($user['first_name'])){
-				$search[] = '[[FIRST_NAME]]';
-				$replace[] = htmlspecialchars($user['first_name']);
-			}
-			if(isset($user['last_name'])){
-				$search[] = '[[LAST_NAME]]';
-				$replace[] = htmlspecialchars($user['last_name']);
-			}
-			
+			//Do not merge any admin's details
 		} else {
-			$userDetails = ze\user::details($user['id']);
+			$userDetails = ze\user::userDetailsForEmails($user['id']);
 			if (is_array($userDetails)) {
 				foreach($userDetails as $dbColumn => $value) {
 					$search[] = '[['.$dbColumn.']]';
@@ -622,6 +605,56 @@ class zenario_newsletter extends ze\moduleBaseClass {
 		
 		$key = ['foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $id];
 		ze\row::delete('inline_images', $key);
+	}
+
+	public static function checkAllImagePublicLinksInNewsletters() {
+		
+		//Get the body text from the newsletters
+		$sql = "
+			SELECT id, body
+			FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+			WHERE body IS NOT NULL";
+		$result = ze\sql::select($sql);
+		
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$files = [];
+			$htmlChanged = false;
+			ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+			
+			if ($htmlChanged) {
+				ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', ['body' => $row['body']], ['id' => $row['id']]);
+			}
+			
+			ze\contentAdm::syncInlineFiles(
+				$files,
+				['foreign_key_to' => 'newsletter', 'foreign_key_id' => $row['id']],
+				$keepOldImagesThatAreNotInUse = true);
+		}
+	}
+
+	public static function checkAllImagePublicLinksInNewsletterTemplates() {
+		
+		//Get the body text from the newsletter templates
+		$sql = "
+			SELECT id, body
+			FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
+			WHERE body IS NOT NULL";
+		$result = ze\sql::select($sql);
+		
+		while ($row = ze\sql::fetchAssoc($result)) {
+			$files = [];
+			$htmlChanged = false;
+			ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
+			
+			if ($htmlChanged) {
+				ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['body' => $row['body']], ['id' => $row['id']]);
+			}
+			
+			ze\contentAdm::syncInlineFiles(
+				$files,
+				['foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $row['id']],
+				$keepOldImagesThatAreNotInUse = false);
+		}
 	}
 	
 

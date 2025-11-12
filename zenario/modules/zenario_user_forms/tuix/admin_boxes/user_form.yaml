@@ -6,6 +6,8 @@ zenario_user_form:
         type: ""
         tab: ""
         repeat_section_count: 0
+        admin_email_destination_fields_and_values: {}
+        opened_from_form_editor: 0
     identifier:
         css_class: zenario_user_forms
         label: Form ID
@@ -250,7 +252,7 @@ zenario_user_form:
                 
                 handle_referrer_content_item:
                     ord: 23
-                    label: 'Handle referrer code from Banner plugin on a content item linking to this one ("referrer")'
+                    label: 'Handle referrer code from a Banner plugin linking to this content item'
                     type: checkbox
                     note_below: "If a Banner plugin on another content item links to the content item on which this form appears, and its sends the referrer code, the form will refer back to that content item. It will be shown on the form log and sent on any emails."
                     redraw_onchange: true
@@ -349,15 +351,33 @@ zenario_user_form:
                     visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_deadline')
                     validation:
                         required_if_not_hidden: 'Please enter the deadline label.'
-                handle_referrer_content_item_alias:
+                handle_referrer_content_item_email_address:
+                    ord: 34
+                    indent: 1
+                    label: 'Email address(es)'
+                    type: checkbox
+                    redraw_onchange: true
+                    visible_if: zenarioAB.value('handle_referrer_content_item')
+                    note_below: 'This setting only works for job vacancy content items. "Send email to administrator" must be enabled in the form settings. If a vacancy uses custom destination email addresses, the response will be emailed to all custom addresses provided instead of the admin email addresses in the form settings.'
+                referrer_content_item_email_address_label:
                     ord: 35
+                    indent: 2
+                    type: text
+                    maxlength: 255
+                    label: 'Email address(es) field label:'
+                    value: 'Email address(es):'
+                    visible_if: zenarioAB.value('handle_referrer_content_item') && zenarioAB.value('handle_referrer_content_item_email_address')
+                    validation:
+                        required_if_not_hidden: 'Please enter the email address label.'
+                handle_referrer_content_item_alias:
+                    ord: 36
                     indent: 1
                     label: 'Alias'
                     type: checkbox
                     redraw_onchange: true
                     visible_if: zenarioAB.value('handle_referrer_content_item')
                 referrer_content_item_alias_label:
-                    ord: 36
+                    ord: 37
                     indent: 2
                     type: text
                     maxlength: 255
@@ -367,14 +387,14 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: 'Please enter the alias label.'
                 handle_referrer_content_item_tag:
-                    ord: 37
+                    ord: 38
                     indent: 1
                     label: 'Content item tag'
                     type: checkbox
                     redraw_onchange: true
                     visible_if: zenarioAB.value('handle_referrer_content_item')
                 referrer_content_item_tag_label:
-                    ord: 38
+                    ord: 39
                     indent: 2
                     type: text
                     maxlength: 255
@@ -389,6 +409,12 @@ zenario_user_form:
             edit_mode:
                 enabled: true
             ord: 2
+            notices:
+                tab_cannot_be_edited_when_opened_from_form_editor:
+                    type: warning
+                    message: "This tab may not be edited when the form field editor is open."
+                    show: true
+                    visible_if: zenarioAB.tuix.key.opened_from_form_editor
             fields:
                 actions_desc: 
                     class_name: zenario_user_forms
@@ -447,12 +473,20 @@ zenario_user_form:
                         enter_address_manually:
                             ord: 1
                             label: "Enter address(es) manually"
-                        call_static_method:
+                            split_values_if_selected: true
+                        destination_depends_on_a_field_and_its_values:
                             ord: 2
+                            label: "Destination depends on a select list"
+                            split_values_if_selected: true
+                            note_below: If a form has a select list (e.g. the visitor's enquiry type), you may set the destination email address(es) according to what the visitor selects.
+                        call_static_method:
+                            ord: 3
                             label: "Call a static method (advanced)"
+                            split_values_if_selected: true
                     format_onchange: true
                     visible_if: zenarioAB.value('send_email_to_admin')
                 admin_email_addresses:
+                    indent: 2
                     label: 'Send to these email address(es):'
                     type: text
                     side_note: |
@@ -460,7 +494,25 @@ zenario_user_form:
                     validation:
                         required_if_not_hidden: Please enter one or more admin email addresses.
                     is_email_address: true
+                
+                admin_email_destination_select_list_for_fields:
                     indent: 2
+                    label: 'Select a field:'
+                    type: select
+                    values: {}
+                    empty_value: -- Select --
+                    format_onchange: true
+                    visible_if: zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_destination_for_form_response') == 'destination_depends_on_a_field_and_its_values')
+                    validation:
+                        required_if_not_hidden: Please select a field.
+                    notices_below:
+                        requirements_notice:
+                            type: information
+                            message: Only regular select list fields may be used. The field must be always visible and mandatory (without condition). For multi-step forms, the step must also be always visible.
+                
+                admin_email_destination_for_field_values_grouping:
+                    type: grouping
+                
                 admin_email_destination_module_class_name:
                     indent: 2
                     visible_if: zenarioAB.value('send_email_to_admin') && (zenarioAB.value('send_email_to_admin_destination_for_form_response') == 'call_static_method')
@@ -486,19 +538,26 @@ zenario_user_form:
                         static_method_notice:
                             type: information
                             message: "No email will be sent if the static method does not return any email addresses."
+                
+                admin_destination_for_form_response_part_2:
+                    indent: 1
+                    snippet:
+                        show_split_values_from: send_email_to_admin_destination_for_form_response
+                    visible_if: zenarioAB.value('send_email_to_admin')
+                
                 admin_email_options:
                     type: radios
                     label: "Email options:"
                     values:
                         visible_fields:
                             ord: 1
-                            label: 'Send all visible fields (recommended)'
+                            label: 'Send response data (uses standard email template), recommended'
                         send_data:
                             ord: 2
-                            label: 'Send all form data (unformatted)'
+                            label: 'Send full response including invisible fields (uses standard email template)'
                         use_template:
                             ord: 3
-                            label: 'Send email using template'
+                            label: 'Send email using email template (may use standard email template, check settings for selected email template)'
                     
                     value: visible_fields
                     format_onchange: true
@@ -584,15 +643,15 @@ zenario_user_form:
                     values:
                         visible_fields:
                             ord: 1
-                            label: 'Send all visible fields (recommended)'
+                            label: 'Send all visible fields (uses standard email template, recommended)'
                             side_note: 'Attachments will be sent in this format.'
                         send_data:
                             ord: 2
-                            label: 'Send all form data (unformatted)'
+                            label: 'Send all form data (uses standard email template, unformatted)'
                             side_note: 'Attachments will not be sent in this format.'
                         use_template:
                             ord: 3
-                            label: 'Send email using template'
+                            label: 'Send email using template (check template settings for standard email template use)'
                     value: visible_fields
                     format_onchange: true
                     indent: 2
@@ -620,15 +679,15 @@ zenario_user_form:
                     values:
                         visible_fields:
                             ord: 1
-                            label: 'Send all visible fields (recommended)'
+                            label: 'Send all visible fields (uses standard email template, recommended)'
                             side_note: 'Attachments will be sent in this format.'
                         send_data:
                             ord: 2
-                            label: 'Send all form data (unformatted)'
+                            label: 'Send all form data (uses standard email template, unformatted)'
                             side_note: 'Attachments will not be sent in this format.'
                         use_template:
                             ord: 3
-                            label: 'Send email using template'
+                            label: 'Send email using template (check template settings for standard email template use)'
                     value: visible_fields
                     format_onchange: true
                     indent: 2

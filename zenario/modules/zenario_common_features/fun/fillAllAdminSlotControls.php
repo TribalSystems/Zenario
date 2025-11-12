@@ -152,8 +152,12 @@ if (!$moduleId) {
 	
 		//On the Layout Layer, add an option to insert a Wireframe version of each Plugin
 		//that is flagged as uses wireframe.
-		if (empty($controls['meta_info']['is_sitewide']) && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+		if (ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 			$i = 0;
+			
+			// Determine the correct level for insertion
+			// Level 3 for sitewide slots (header/footer), level 2 for regular layout slots
+			$level = $slot->isSitewide()? 3 : 2;
 			
 			$sql = "
 				SELECT id, display_name
@@ -166,11 +170,21 @@ if (!$moduleId) {
 					display_name";
 			
 			foreach (ze\sql::fetchAssocs($sql) as $module) {
+				if ($slot->isHeader()) {
+					$label = ze\admin::phrase('Insert a version-controlled [[display_name]] into the site-wide header...', $module);
+				
+				} elseif ($slot->isFooter()) {
+					$label = ze\admin::phrase('Insert a version-controlled [[display_name]] into the site-wide footer...', $module);
+				
+				} else {
+					$label = ze\admin::phrase('Insert a version-controlled [[display_name]]', $module);
+				}
+				
 				$controls['actions'][] = [
 					'ord' => ++$i,
-					'label' => ze\admin::phrase('Insert a version-controlled [[display_name]]', $module),
+					'label' => $label,
 					'page_modes' => ['layout' => true],
-					'onclick' => "zenarioA.addNewWireframePlugin(this, '". ze\escape::js($slotName). "', ". (int) $module['id']. ");"
+					'onclick' => "zenarioA.addNewWireframePlugin(this, '". ze\escape::js($slotName). "', ". (int) $module['id']. ", ". (int) $level. ", ". (int) $slot->isHeader(). ", ". (int) $slot->isFooter(). ");"
 				];
 			}
 		}

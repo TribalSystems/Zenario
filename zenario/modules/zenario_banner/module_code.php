@@ -736,7 +736,8 @@ class zenario_banner extends ze\moduleBaseClass {
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
 		if (empty($this->subSections['Image'])
 		 && empty($this->subSections['Text'])
-		 && empty($this->subSections['Title'])) {
+		 && empty($this->subSections['Title'])
+		 && empty($this->subSections['More_Link_Text'])) {
 			$this->empty = true;
 			return false;
 			
@@ -747,13 +748,13 @@ class zenario_banner extends ze\moduleBaseClass {
 			if ($this->subSections['Title']) {
 				if ($this->setting("use_product_display_name") && !empty($product) && is_array($product) && !empty($product['product_display_name'])) {
 					
-					if (!$this->isVersionControlled && $this->setting('translate_text')) {
+					if (!$this->isVersionControlled) {
 						$this->mergeFields['Title'] = htmlspecialchars($this->phrase($product['product_display_name']));
 					} else {
 						$this->mergeFields['Title'] = htmlspecialchars($product['product_display_name']);
 					}
 				} else {
-					$this->mergeFields['Title'] = htmlspecialchars($this->phraseFromSetting('title', $this->setting('translate_text')));
+					$this->mergeFields['Title'] = htmlspecialchars($this->phraseFromSetting('title'));
 				}
 				
 				if ($this->isVersionControlled) {
@@ -774,9 +775,7 @@ class zenario_banner extends ze\moduleBaseClass {
 				}
 				
 				if (!$this->isVersionControlled) {
-					if ($this->setting('translate_text')) {
-						$this->mergeFields['Text'] = $this->htmlPhrase($this->mergeFields['Text']);
-					}
+					$this->mergeFields['Text'] = $this->htmlPhrase($this->mergeFields['Text']);
 				} else {
 					if ($this->editing) {
 						$this->mergeFields['Text'] =
@@ -791,7 +790,7 @@ class zenario_banner extends ze\moduleBaseClass {
 			}
 			
 			if ($this->subSections['More_Link_Text']) {
-				$this->mergeFields['More_Link_Text'] = htmlspecialchars($this->phraseFromSetting('more_link_text', $this->setting('translate_text')));
+				$this->mergeFields['More_Link_Text'] = htmlspecialchars($this->phraseFromSetting('more_link_text'));
 			}
 			
 			//If we're reloading via AJAX, our addToPageHead() method won't be called, and the addStylesOnAJAXReload() function will add the styles.
@@ -835,7 +834,8 @@ class zenario_banner extends ze\moduleBaseClass {
 	function showSlot() {
 		if (!empty($this->subSections['Image'])
 		 || !empty($this->subSections['Text'])
-		 || !empty($this->subSections['Title'])) {
+		 || !empty($this->subSections['Title'])
+		 || !empty($this->subSections['More_Link_Text'])) {
 			//Display the Plugin
 			$this->framework('Outer', $this->mergeFields, $this->subSections);
 		}

@@ -35,8 +35,8 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			$recipients = self::newsletterRecipients($id, 'count');
 			$newsletter = $this->loadDetails($id);
 			$fields['send/desc']['snippet']['html'] = ze\admin::nPhrase(
-				'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipient? Click-throughs counts will be reset.',
-				'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipients? Click-throughs counts will be reset.',
+				'Send the newsletter "[[newsletter_name]]" to [[recipients]] recipient?',
+				'Send the newsletter "[[newsletter_name]]" to [[recipients]] recipients?',
 				$recipients,
 				['newsletter_name' => $newsletter['newsletter_name'], 'recipients' => $recipients]);
 				
@@ -118,7 +118,7 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 			
 			//If the admin is trying to send this newsletter, try to populate its recipients table
 			if (!self::newsletterRecipients($ids, 'populate')) {
-				echo ze\admin::phrase('This Newsletter has no recipients to send to.');
+				echo ze\admin::phrase('There are no recipients for this newsletter.');
 			
 			} else {
 				//Update it to the "_IN_PROGRESS" state
@@ -160,13 +160,13 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 							
 							if ($values['send/send_time_options'] == 'schedule') {
 								$date = ze\admin::formatDateTime($scheduledSendDate, '_MEDIUM');
-								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending on [[date]].', ['date' => $date]). '</p>';
+								$msg .= '<p>'. ze\admin::phrase('This newsletter will commence sending on [[date]].', ['date' => $date]). '</p>';
 							} else {
-								$msg .= '<p>'. ze\admin::phrase('This Newsletter will commence sending within the next 5 minutes.'). '</p>';
+								$msg .= '<p>'. ze\admin::phrase('This newsletter will commence sending within the next 5 minutes.'). '</p>';
 							}
 							
-							$msg .= '<p>'. ze\admin::phrase('This may take some time. You can view the Newsletter Outbox to check live sending progress, or the Newsletter Archive to view the receipt status of this Newsletter by User.'). '</p>';
-							$msg .= '<p><a href="#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/process//'. (int) $ids. '//" onclick="zenarioA.closeFloatingBox();">'. ze\admin::phrase('View Outbox.'). '</a></p>';
+							$msg .= '<p>'. ze\admin::phrase('This may take some time. You can view the Outbox to check live sending progress, or the Sent Newsletters panel to view the receipt status of this newsletter by user or contact.'). '</p>';
+							$msg .= '<p><a href="' . ze\link::absolute() .'organizer.php#zenario__email_template_manager/panels/newsletters/collection_buttons/process////'. (int) $ids. '" onclick="zenarioA.closeFloatingBox();">'. ze\admin::phrase('View outbox'). '</a></p>';
 							
 							
 							ze\tuix::closeWithFlags(['CLOSE_WITH_MESSAGE' => $msg]);
@@ -182,15 +182,15 @@ class zenario_newsletter__admin_boxes__live_send extends zenario_newsletter {
 				self::sendNewsletterToAdmins($ids, $values['send/admin_options']);
 				self::sendNewsletter($ids, true);
 				
-				$linkHref = ze\link::absolute() .'organizer.php#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/archive//'. (int) $ids. '//';
+				$linkHref = ze\link::absolute() .'organizer.php#zenario__email_template_manager/panels/newsletters/collection_buttons/archive////'. (int) $ids;
 				$linkOnclick = "zenarioA.closeFloatingBox();";
 
 				$link = '<a href="' . $linkHref . '" onclick="' . $linkOnclick . '">';
-				$link .= ze\admin::phrase('View Sent Newsletter in Archive.');
+				$link .= ze\admin::phrase('View sent newsletters');
 				$link .= '</a>';
 				
 				$msg = '<!--Message_Type:Success-->';
-				$msg .= '<p>'. ze\admin::phrase('Newsletter Sent.'). '</p>';
+				$msg .= '<p>'. ze\admin::phrase('The newsletter has been sent.'). '</p>';
 				$msg .= '<p>' . $link . '</p>';
 				
 				ze\tuix::closeWithFlags(['CLOSE_WITH_MESSAGE' => $msg]);

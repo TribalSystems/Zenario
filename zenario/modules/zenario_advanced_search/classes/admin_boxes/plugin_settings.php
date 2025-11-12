@@ -61,6 +61,10 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$values['content_types/blog_column_width'] = 20;
 				}
 
+				if (!$values['content_types/project_column_width']) {
+					$values['content_types/project_column_width'] = 20;
+				}
+
 				if (!$values['content_types/other_module_column_width']) {
 					$values['content_types/other_module_column_width'] = 20;
 				}
@@ -78,22 +82,13 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$fields['first_tab/let_user_select_language']['hidden'] = true;
 				}
 
-				//Set up category checkboxes for limiting the scope.
-				//Set up for HTML pages first...
-				ze\categoryAdm::setupFABCheckboxes($fields['content_types/html_limit_search_scope_choose_categories'], $showTotals = true);
-				//... then for other content types.
-				$fields['content_types/document_limit_search_scope_choose_categories']['values'] =
-				$fields['content_types/news_limit_search_scope_choose_categories']['values'] =
-				$fields['content_types/blog_limit_search_scope_choose_categories']['values'] = $fields['content_types/html_limit_search_scope_choose_categories']['values'];
-
-				foreach (['html', 'document', 'news', 'blog'] as $cType) {
+				foreach (['html', 'document', 'news', 'blog', 'project'] as $cType) {
 					//Content type HTML page is always enabled.
-					if ($cType != 'html' && ze\module::isRunning('zenario_ctype_' . $cType)) {
-						unset($box['tabs']['content_types']['fields'][$cType . '_ctype_not_running_warning']);
-					}
-
-					if (ze\row::exists('content_types', ['enable_categories' => 1, 'content_type_id' => $cType])) {
-						unset($box['tabs']['content_types']['fields'][$cType . '_category_support_not_enabled_warning']);
+					if ($cType != 'html') {
+						$moduleToCheck = ($cType == 'project') ? 'zenario_project_locations' : 'zenario_ctype_' . $cType;
+						if (ze\module::isRunning($moduleToCheck)) {
+							unset($box['tabs']['content_types']['fields'][$cType . '_ctype_not_running_warning']);
+						}
 					}
 				}
 
@@ -140,7 +135,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
                             <br/>
                             If the source image is not large enough this will have no effect.";
 				
-				foreach (['html', 'document', 'news', 'blog'] as $contentType) {
+				foreach (['html', 'document', 'news', 'blog', 'project'] as $contentType) {
 					$hidden = !$values['content_types/search_' . $contentType] || !$values['content_types/' . $contentType . '_show_featured_image'];
 					$this->showHideImageOptions($fields, $values, 'content_types', $hidden, $contentType . '_');
 
@@ -159,6 +154,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 								break;
 							case 'blog':
 								$columnHeadingText = 'Blog posts';
+								break;
+							case 'project':
+								$columnHeadingText = 'Projects';
 								break;
 						}
 	
@@ -180,6 +178,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 								break;
 							case 'blog':
 								$noResultsText = 'No blog posts found';
+								break;
+							case 'project':
+								$noResultsText = 'No projects found';
 								break;
 						}
 	
@@ -273,6 +274,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					'document',
 					'news',
 					'blog',
+					'project',
 					'other_modules'
 				];
 													
@@ -281,7 +283,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				//Give these fields nice names
 				foreach ($availableFields as $field) {
 
-					if ((ze::in($field, 'html', 'document', 'news', 'blog') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])) {
+					if ((ze::in($field, 'html', 'document', 'news', 'blog', 'project') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])) {
 						switch ($field) {
 							case 'html':
 								$niceName = ze\admin::phrase('HTML pages');
@@ -294,6 +296,9 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 								break;
 							case 'blog':
 								$niceName = ze\admin::phrase('Blog');
+								break;
+							case 'project':
+								$niceName = ze\admin::phrase('Projects');
 								break;
 							case 'other_modules':
 								$niceName = ze\admin::phrase('Results from other modules');
@@ -324,7 +329,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				//Only process fields selected on Details page
 				foreach ($searchResultTypesFields as $field) {
 					if ($field) {
-						if ((ze::in($field, 'html', 'document', 'news', 'blog') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])) {
+						if ((ze::in($field, 'html', 'document', 'news', 'blog', 'project') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])) {
 							$fieldsInOrder[$field] = $fieldsWithNiceNames[$field];
 						}
 					}
@@ -335,7 +340,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 				foreach ($fieldsWithNiceNames as $field => $value) {
 					if (
 						!isset($searchResultTypesFields[$field])
-						&& (ze::in($field, 'html', 'document', 'news', 'blog') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])
+						&& (ze::in($field, 'html', 'document', 'news', 'blog', 'project') && $values['content_types/search_' . $field]) || ($field == 'other_modules' && $values['content_types/search_in_other_modules'])
 					) {
 						$fieldsInOrder[$field] = $value;
 					}
@@ -400,6 +405,10 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$enabledColumns[] = 'blog';
 				}
 
+				if ($values['content_types/search_project']) {
+					$enabledColumns[] = 'project';
+				}
+
 				if ($values['content_types/search_in_other_modules']) {
 					$enabledColumns[] = 'other_module';
 				}
@@ -409,6 +418,7 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 					$fields['content_types/search_document']['error'] =
 					$fields['content_types/search_news']['error'] =
 					$fields['content_types/search_blog']['error'] =
+					$fields['content_types/search_project']['error'] =
 					$fields['content_types/search_in_other_modules']['error'] = ze\admin::phrase('Please select at least 1 content type or search in other module.');
 				} else {
 					$columnWidthSum = 0;
@@ -431,6 +441,21 @@ class zenario_advanced_search__admin_boxes__plugin_settings extends zenario_adva
 
 				if ($values['first_tab/limit_num_of_chars_in_title'] && ($values['first_tab/title_char_limit_value'] < 1 || $values['first_tab/title_char_limit_value'] > 125)) {
 					$fields['first_tab/title_char_limit_value']['error'] = ze\admin::phrase('Please enter a number between 1 and 125.');
+				}
+				
+				//Weightings
+				$loopThrough = [
+					'content_published_in_the_last_30_days_weighting',
+					'content_published_in_the_last_90_days_weighting',
+					'content_published_in_the_last_365_days_weighting',
+					'content_published_over_365_days_ago_weighting',
+					'pinned_content_item_weighting'
+				];
+				
+				foreach ($loopThrough as $settingName) {
+					if (!($values['weightings/' . $settingName] >= 0 && $values['weightings/' . $settingName] <= 12)) {
+						$fields['weightings/' . $settingName]['error'] = ze\admin::phrase('Please enter a number between 0 and 12.');
+					}
 				}
 
 				break;

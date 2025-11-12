@@ -220,7 +220,7 @@ properties:
                         type: object
                         description: >
                             A button on this section of the Admin Toolbar.
-                        oneOf:
+                        anyOf:
                             -
                                 required:
                                     - ajax
@@ -259,7 +259,8 @@ properties:
                             tooltip:
                                 type: string
                                 description: >
-                                    A tooltip for this button
+                                    A tooltip for this button.
+                                    The tooltip needs to be in HTML format, not plain text.
                             
                             parent:
                                 type: string
@@ -517,7 +518,7 @@ properties:
                                     tag id of the page (e.g. html_42) and the id chosen from the picker.
                                 required:
                                     - path
-                                oneOf:
+                                anyOf:
                                     -
                                         required:
                                             - request

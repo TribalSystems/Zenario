@@ -409,3 +409,19 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+        eggs_size:
+            visible_if:
+                zenarioAB.animationLibIn: one_slide, cycle2
+            label: All plugins size
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            The following settings let you set default values to apply to all plugins in this nest.
+                eggs_equal_height:
+                    label: 'Make all plugins in nest equal height'
+                    plugin_setting:
+                        name: eggs_equal_height
+                    type: checkbox
+

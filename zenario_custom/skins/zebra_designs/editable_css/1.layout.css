@@ -14,6 +14,10 @@ body.zenario_adminLoggedIn {
 	height:calc(100% - 129px);
 }
 
+body.zenario_adminLoggedIn.zenario_fbAdminFloatingBox__isOpen.tox-fullscreen {
+	height:100%;
+}
+
 body.zenario_adminLoggedIn.zenario_adminToolbarHidden {
 	height:calc(100% - 10px);
 }

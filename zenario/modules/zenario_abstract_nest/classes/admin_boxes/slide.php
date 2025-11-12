@@ -112,7 +112,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			
 			
 			$instance['slideNum'] = $details['slide_num'];
-			if (false !== strpos($instance['class_name'], 'slide')) {
+			if ($instance['class_name'] === 'zenario_slideshow') {
 				if ($instance['content_id']) {
 					$box['title'] = ze\admin::phrase('Editing slide [[slideNum]] of the slideshow on [[slot_name]]', $instance);
 				} else {
@@ -149,7 +149,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 			$details['slide_label'] = ze\admin::phrase('Slide [[num]]', ['num' => $details['slide_num']]);
 			
 			$instance['slideNum'] = $details['slide_num'];
-			if (false !== strpos($instance['class_name'], 'slide')) {
+			if ($instance['class_name'] === 'zenario_slideshow') {
 				if ($instance['content_id']) {
 					$box['title'] = ze\admin::phrase('Adding slide [[slideNum]] to the slideshow on [[slot_name]]', $instance);
 				} else {
@@ -245,12 +245,15 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 		$values['details/slide_label'] = $details['slide_label'];
 		$values['details/set_page_title_with_conductor'] = $details['set_page_title_with_conductor'] ?? 'append';
 		
+		$userCount = ze\row::count('users', ['status' => 'active']);
+		$userCountPhrase = ze\admin::nPhrase('1 user', '[[count]] users', $userCount, ['count' => $userCount]);
+		ze\lang::applyMergeFields($fields['details/privacy']['values']['logged_in']['label'], ['user_count' => $userCountPhrase]);
 		
 		$fields['details/smart_group_id']['values'] = ze\contentAdm::getListOfSmartGroupsWithCounts();
 		$fields['details/group_ids']['values'] = ze\datasetAdm::getGroupPickerCheckboxesForFAB();
 		
-		if ($ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager')) {
-			$fields['details/role_ids']['values'] = self::getRoleTypesIndexedByIdOrderedByName();
+		if (ze\module::inc('zenario_organization_manager')) {
+			$fields['details/role_ids']['values'] = zenario_organization_manager::getRoleTypesIndexedByIdOrderedByName();
 		} else {
 			$fields['details/role_ids']['hidden'] =
 			$fields['details/privacy']['values']['with_role']['hidden'] = true;
@@ -303,7 +306,7 @@ class zenario_abstract_nest__admin_boxes__slide extends zenario_abstract_nest {
 					break;
 				
 				default:
-					if (false !== strpos($instance['class_name'], 'slide')) {
+					if ($instance['class_name'] === 'zenario_slideshow') {
 						$fields['details/slide_label']['label'] = ze\admin::phrase('Slide label (for internal use only):');
 						$fields['details/slide_label_notices']['notices_below']['appearance'] = [
 							'type' => 'warning',

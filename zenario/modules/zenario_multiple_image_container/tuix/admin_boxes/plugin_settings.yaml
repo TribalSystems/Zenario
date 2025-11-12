@@ -20,7 +20,10 @@ plugin_settings:
                     plugin_setting:
                         name: image
                         foreign_key_to: 'multiple_files'
-                    label: Images
+                    label: |
+                        Images to display:
+                    note_below: |
+                        Select images to display in a gallery formation.
                     pick_items:
                         path: zenario__library/panels/mic_image_library
                         min_path: zenario__library/panels/mic_image_library
@@ -33,12 +36,14 @@ plugin_settings:
                         usage: 'mic'
                         location: 'docstore'
                         multi: true
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp, image/svg+xml'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
+                            - .svg
                         drag_and_drop: true
                         reorder_items: true
                     validation:
@@ -218,12 +223,14 @@ plugin_settings:
                     value: znz
                     upload:
                         multi: true
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp, image/svg+xml'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
+                            - .svg
                     values: {}
                 
                 image_link_znz:

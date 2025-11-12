@@ -39,11 +39,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			$box['tabs']['template']['fields']['name']['value'] = $details['name'];
 			$box['tabs']['template']['fields']['skin_id']['value'] = $details['skin_id'];
 			$box['tabs']['template']['fields']['content_type']['value'] = $details['content_type'];
-			$box['tabs']['css']['fields']['css_class']['value'] = $details['css_class'];
-			$box['tabs']['css']['fields']['background_image']['value'] = $details['bg_image_id'];
-			$box['tabs']['css']['fields']['bg_color']['value'] = $details['bg_color'];
-			$box['tabs']['css']['fields']['bg_position']['value'] = $details['bg_position'];
-			$box['tabs']['css']['fields']['bg_repeat']['value'] = $details['bg_repeat'];
+			$box['tabs']['template']['fields']['css_class']['value'] = $details['css_class'];
 			
 			$box['identifier']['value'] = ze\layoutAdm::codeName($details['layout_id']);
 			
@@ -69,45 +65,89 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			
 			if ($details['content_item_count'] == 1) {
 				$sql = '
-					SELECT DISTINCT
-						ci.id, ci.type, ci.alias, civ.layout_id, ci.status
-					FROM ' . DB_PREFIX . 'content_items ci
-					LEFT JOIN ' . DB_PREFIX . 'content_item_versions civ
+					SELECT ci.id, ci.type, ci.alias, civ.layout_id, civ.version, ci.status
+					FROM ' . DB_PREFIX . 'content_item_versions civ
+					LEFT JOIN ' . DB_PREFIX . 'content_items ci
 						ON civ.id = ci.id
-						AND ci.admin_version = civ.version
 						AND ci.type = civ.type
-					WHERE civ.layout_id = '. (int) $details['layout_id'];
+					WHERE civ.layout_id = '. (int) $details['layout_id'] . "
+					ORDER BY civ.version DESC";
 				
 				$result = ze\sql::select($sql);
-				$contentItem = (ze\sql::fetchAssoc($result));
-				$contentItemFormattedTag = ze\content::formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias']);
+				$contentItemVersions = (ze\sql::fetchAssocs($result));
 				
-				if ($contentItem['status'] == 'trashed') {
-					$link = ze\link::absolute() . '/organizer.php#zenario__content/panels/content/refiners/trash////' . htmlspecialchars($contentItemFormattedTag);
+				//Account for multiple possible versions using this layout (e.g. latest draft, published version, archived versions).
+				//Pick the latest possible version.
+				$contentItem = [];
+				$usedByArchivedVersion = false;
+				if ($contentItemVersions) {
+					$latestPublishedVersion = $latestAdminVersion = 0;
+					foreach ($contentItemVersions as $contentItemVersion) {
+						if (!$latestPublishedVersion && !$latestAdminVersion) {
+							$latestPublishedVersion = ze\content::publishedVersion($contentItemVersion['id'], $contentItemVersion['type']);
+							$latestAdminVersion = ze\content::latestVersion($contentItemVersion['id'], $contentItemVersion['type']);
+						}
+						
+						$contentItem = $contentItemVersion;
+						
+						if ($contentItemVersion['version'] != $latestAdminVersion && $contentItemVersion['version'] != $latestPublishedVersion) {
+							$contentItem['archived'] = true;
+						} else {
+							$contentItem['archived'] = false;
+						}
+						break;
+					}
+				}
+				
+				if ($contentItem) {
+					$contentItemFormattedTag = ze\content::formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias']);
 					
-					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
-						'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> (trashed content item) uses this layout. To delete this layout you must first empty the trash. Alternatively you may Retire this layout, so as to keep it but not allow it to be chosen again.'
-					);
-				} else {
-					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
-						'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> uses this layout.'
-					);
+					if ($contentItem['status'] == 'trashed') {
+						$link = ze\link::absolute() . '/organizer.php#zenario__content/panels/trashed_content_items//' . htmlspecialchars($contentItem['type'] . '_' . $contentItem['id']);
+						
+						if ($contentItem['archived']) {
+							$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+								'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> (trashed content item, archived version) uses this layout.'
+							);
+						} else {
+							$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+								'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> (trashed content item) uses this layout.'
+							);
+						}
+					} else {
+						if ($contentItem['archived']) {
+							$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+								'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> (archived version) uses this layout.'
+							);
+						} else {
+							$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+								'<a href="' . $link . '" target="_blank">' . $contentItemFormattedTag . '</a> uses this layout.'
+							);
+						}
+					}
 				}
 			} elseif ($details['content_item_count'] > 1) {
 				$usageByTrashedContentItems = ze\layoutAdm::usageByTrashedContentItems($box['key']['id'], $countItems = false);
 				$usageByTrashedContentItemsCount = count($usageByTrashedContentItems);
 				
-				if ($details['content_item_count'] == $usageByTrashedContentItemsCount) {
-					$link = ze\link::absolute() . '/organizer.php#zenario__content/panels/content/refiners/trash////';
-					
-					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
-						'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> (all trashed) use this layout. To delete this layout you must first empty the trash. Alternatively you may Retire this layout, so as to keep it but not allow it to be chosen again.',
-						['content_item_count' => $details['content_item_count']]
-					);
+				if ($usageByTrashedContentItemsCount) {
+					if ($details['content_item_count'] == $usageByTrashedContentItemsCount) {
+						$link = ze\link::absolute() . '/organizer.php#zenario__content/panels/trashed_content_items';
+						
+						$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+							'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> (all trashed) use this layout.',
+							['content_item_count' => $details['content_item_count']]
+						);
+					} else {
+						$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
+							'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> ([[trashed_count]] trashed) use this layout.',
+							['content_item_count' => $details['content_item_count'], 'trashed_count' => $usageByTrashedContentItemsCount]
+						);
+					}
 				} else {
 					$box['tabs']['template']['fields']['name']['note_below'] = ze\admin::phrase(
-						'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> ([[trashed_count]] trashed) use this layout.',
-						['content_item_count' => $details['content_item_count'], 'trashed_count' => $usageByTrashedContentItemsCount]
+						'<a href="' . $link . '" target="_blank">[[content_item_count]] content items</a> use this layout.',
+						['content_item_count' => $details['content_item_count']]
 					);
 				}
 			}
@@ -154,7 +194,7 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$box['tabs']['css']['fields']['css_class']['pre_field_html'] =
+		$box['tabs']['template']['fields']['css_class']['pre_field_html'] =
 			'<span class="zenario_css_class_label">'.
 				'zenario_'. $values['template/content_type']. '_layout'.
 			'</span> ';
@@ -197,7 +237,9 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			$layout = [
 				'name' => $values['template/name'],
 				'content_type' => $values['content_type'],
-				'skin_id' => $values['skin_id']];
+				'skin_id' => $values['skin_id'],
+				'css_class' => $values['template/css_class']
+			];
 			
 			//Save the layout in the database
 			if ($box['key']['duplicate']) {
@@ -206,27 +248,6 @@ class zenario_common_features__admin_boxes__layout extends ze\moduleBaseClass {
 			} else {
 				ze\layoutAdm::save($layout, $box['key']['id']);
 			}
-			
-		}
-		
-		if (ze\ring::engToBoolean($box['tabs']['css']['edit_mode']['on'] ?? false) && ze\priv::check('_PRIV_EDIT_TEMPLATE') && $box['key']['id']) {
-			$vals = [];
-			$vals['css_class'] = $values['css/css_class'];
-			
-			if (($filepath = ze\file::getPathOfUploadInCacheDir($values['css/background_image']))
-			 && ($imageId = ze\fileAdm::addToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
-				$vals['bg_image_id'] = $imageId;
-			} else {
-				$vals['bg_image_id'] = $values['css/background_image'];
-			}
-			
-			$vals['bg_color'] = $values['css/bg_color'];
-			$vals['bg_position'] = $values['css/bg_position']? $values['css/bg_position'] : null;
-			$vals['bg_repeat'] = $values['css/bg_repeat']? $values['css/bg_repeat'] : null;
-			
-			ze\layoutAdm::save($vals, $box['key']['id']);
-			
-			ze\contentAdm::deleteUnusedBackgroundImages();
 		}
 		
 		if ($needToClearCache) {

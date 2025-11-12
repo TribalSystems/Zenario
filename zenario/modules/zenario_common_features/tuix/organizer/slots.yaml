@@ -94,10 +94,10 @@ zenario__content:
                     parent: insert_dropdown
                     label: Insert plugin...
                     combine_items:
-                        path: zenario__modules/panels/modules/refiners/slotable_only////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/modules
-                        max_path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/modules/refiners/slotable_only////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/modules
+                        max_path: zenario__library/panels/plugins
                         one_to_one_choose_phrase: Insert plugin
                         request:
                             level: 1
@@ -115,10 +115,10 @@ zenario__content:
                     label: Insert nest...
                     combine_items:
                         class_name: zenario_common_features
-                        path: zenario__modules/panels/plugins/refiners/nests////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/plugins
-                        max_path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins/refiners/nests////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/plugins
+                        max_path: zenario__library/panels/plugins
                         one_to_one_choose_phrase: Insert nest
                         request:
                             level: 1
@@ -136,10 +136,10 @@ zenario__content:
                     label: Insert slideshow...
                     combine_items:
                         class_name: zenario_common_features
-                        path: zenario__modules/panels/plugins/refiners/slideshows////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/plugins
-                        max_path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins/refiners/slideshows////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/plugins
+                        max_path: zenario__library/panels/plugins
                         one_to_one_choose_phrase: Insert slideshow
                         request:
                             level: 1
@@ -157,10 +157,10 @@ zenario__content:
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
                     label: Insert plugin...
                     combine_items:
-                        path: zenario__modules/panels/modules/refiners/slotable_only////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/modules
-                        max_path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/modules/refiners/slotable_only////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/modules
+                        max_path: zenario__library/panels/plugins
                         one_to_one_choose_phrase: Insert plugin
                         request:
                             level: 2
@@ -179,10 +179,10 @@ zenario__content:
                     label: Insert nest...
                     combine_items:
                         class_name: zenario_common_features
-                        path: zenario__modules/panels/plugins/refiners/nests////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/plugins
-                        max_path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins/refiners/nests////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/plugins
+                        max_path: zenario__library/panels/plugins
                         one_to_one_choose_phrase: Insert nest
                         request:
                             level: 2
@@ -201,10 +201,10 @@ zenario__content:
                     label: Insert slideshow...
                     combine_items:
                         class_name: zenario_common_features
-                        path: zenario__modules/panels/plugins/refiners/slideshows////
-                        target_path: zenario__modules/panels/plugins
-                        min_path: zenario__modules/panels/plugins
-                        max_path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins/refiners/slideshows////
+                        target_path: zenario__library/panels/plugins
+                        min_path: zenario__library/panels/plugins
+                        max_path: zenario__library/panels/plugins
                         one_to_one_choose_phrase: Insert slideshow
                         request:
                             level: 2
@@ -240,7 +240,7 @@ zenario__content:
                     label: Remove plugin from slot
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to remove [[content_item_plain_text]] from the slot on this content item?'
+                            message: 'Remove [[content_item_plain_text]] from the slot on this content item?'
                             button_message: Remove
                             cancel_button_message: Cancel
                             message_type: warning

@@ -429,10 +429,6 @@ body.desktop .zenario_location_map_and_listing_2__default_style .interface_body 
 	background-size:21px 21px !important;
 }
 
-#map {
-	display:none !important;
-}
-
 #map + .zenario_slot_padding {
 	display:none;
 }

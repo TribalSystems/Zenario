@@ -47,25 +47,27 @@ zenario__content:
                         item.type == 'document' &&
                         zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
-                    label: Rescan text/image extract
+                    label: Rescan text and thumbnail
                     multiple_select: true
                     ajax:
                         confirm:
                             message: |
-                                Rescan and update the searchable text extract for the document "[[tag]]"?
+                                Rescan the text, and get a new thumbnail image of first page of the document "[[tag]]"?
+
                                 
                                 This action will read the contents of PDF and Microsoft Word documents
                                 (subject to external server programs being available).
                                 
                                 If the file is a PDF, an image of the first page will be attached as a featured image.
                             multiple_select_message: |
-                                Rescan and update the searchable text extracts for the selected documents?
+                                Rescan the text, and get a new thumbnail image of first page of the selected documents?
+
                                 
                                 This action will read the contents of PDF and Microsoft Word documents
                                 (subject to external server programs being available).
                                 
                                 If the files are PDFs, an image of the first page of each one will be attached as a featured image.
-                            button_message: Rescan text extract
+                            button_message: Rescan
                             cancel_button_message: Cancel
                             message_type: warning
                         request:

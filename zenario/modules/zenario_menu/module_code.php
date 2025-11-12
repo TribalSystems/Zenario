@@ -375,8 +375,6 @@ class zenario_menu extends ze\moduleBaseClass {
 
 		if (!empty($row['privacy'])) {
 			$objects['privacy'] = $row['privacy'];
-		} elseif (!empty($row['translation_chain_privacy'])) {
-			$objects['privacy'] = $row['translation_chain_privacy'];
 		}
 		
 		if (isset($objects['privacy']) && $objects['privacy'] != 'public') {

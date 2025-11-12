@@ -241,7 +241,6 @@ class zenario_user_forms__organizer__user_form_responses extends ze\moduleBaseCl
 			foreach (explode(',', $ids) as $id) {
 				zenario_user_forms::deleteFormResponse($id);
 			}
-
 		}
 	}
 }

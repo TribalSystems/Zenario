@@ -1,11 +1,12 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_module_info:
-    priv: _PRIV_RUN_MODULE
+    priv: _PRIV_VIEW_SLOT
     title: ""
     key:
         id: ""
     hide_tab_bar: true
+    css_class: zenario_fab_default_style zenario_fab_always_readonly
     tab: module_info
     tabs:
         module_info:
@@ -114,3 +115,5 @@ zenario_module_info:
                     label: 'DB tables created by this module:'
                     snippet:
                         html: ''
+    
+    cancel_button_message: Done

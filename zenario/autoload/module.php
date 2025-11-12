@@ -238,7 +238,8 @@ class module {
 	
 			if (class_exists($className)) {
 				if (\ze::$recordFiles) {
-					\ze::$tuixFiles[$phpPath] = true;
+					$relPath = str_replace('//', '/', \ze\ring::chopPrefix(CMS_ROOT, $phpPath, true));
+					\ze\tuix::recordPHPFile($relPath);
 				}
 				return $className;
 			} else {
@@ -313,16 +314,11 @@ class module {
 		$sql = "
 			SELECT dependency_class_name
 			FROM ".  DB_PREFIX. "module_dependencies
-			WHERE module_class_name = '". \ze\escape::asciiInSQL($moduleClassName). "'
-			  AND `type` = '". \ze\escape::asciiInSQL($type). "'
+			WHERE module_class_name = ?
+			  AND `type` = ?
 			LIMIT 1";
-	
-		$result = \ze\sql::select($sql);
-		if ($row = \ze\sql::fetchAssoc($result)) {
-			return $row['dependency_class_name'];
-		} else {
-			return false;
-		}
+		$statement = \ze\sql::prepare($sql, 'aa');
+		return $statement->fetchValue([$moduleClassName, $type]);
 	}
 
 	public static function inheritances($moduleClassName, $type, $includeCurrent = true, $recurseLimit = 9) {

@@ -1016,7 +1016,7 @@ class zenario_common_features extends ze\moduleBaseClass {
 		}
 	}
 	
-	public static function getTranslationsAndPluginsLinkingToThisContentItem($ids, &$box, &$fields, &$values, $panelName, $totalRowNum, $getPlugins, $getTranslations) {
+	public static function getTranslationsAndPluginsLinkingToThisContentItem($ids, &$box, &$fields, &$values, $panelName, $totalTranslationCount, $getPlugins, $getTranslations) {
 		require ze::funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -1248,7 +1248,7 @@ Requesting admin: [[requesting_admin]]
 			echo $error;
 
 		} elseif ($numberOf['wrong_language']) {
-			echo ze\admin::phrase("_VLP_IMPORT_FOR_WRONG_LANGUAGE");
+			echo ze\admin::phrase("The language pack you are trying to import is for a different language.");
 			
 		} elseif ($numberOf['language_not_enabled']) {
 			echo ze\admin::phrase("The language pack you are trying to import is for a language that is not enabled on this site.");

@@ -181,7 +181,7 @@ methods.closeInspectionView = function(id) {
 methods.addExtraMergeFieldsForColumns = function(data, column) {
 	
 	var c = column.id,
-		prefs = zenarioO.prefs[thus.path] || {},
+		prefs = zenarioO.panelPrefs(thus.path, thus.refiner),
 		columnWidth;
 	
 	if (prefs.colSizes

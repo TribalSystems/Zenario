@@ -32,7 +32,7 @@ zenario_menu:
                 description:
                     ord: 0.5
                     snippet:
-                        html: "The navigation hierarchy of this site is comprised of menu nodes. Use this screen to set this menu node's text."
+                        html: "Use this screen to set this menu node's text."
                 multilingual_description:
                     ord: 1
                     same_row: true
@@ -251,12 +251,12 @@ zenario_menu:
                     ord: 1.01
                     type: checkbox
                     format_onchange: true
-                    side_note: "A promotional image can appear in the drop-down area when a user hovers over this menu node. Only supported by Menu with Promo Images plugin (zenario_promo_menu)."
+                    note_below: "A promotional image can appear in the drop-down area when a user hovers over this menu node. Only supported by Menu with Promo Images plugin (zenario_promo_menu)."
                 promo__feature_image:
                     indent: 1
                     ord: 1.02
                     foreign_key_to: file
-                    label: 'Image:'
+                    label: 'Promotional image:'
                     pick_items:
                         path: zenario__library/panels/image_library
                         min_path: zenario__library/panels/image_library
@@ -265,12 +265,13 @@ zenario_menu:
                         select_phrase: Select image...
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: false
                         reorder_items: false
                     value: ""
@@ -298,7 +299,7 @@ zenario_menu:
                         select_phrase: Select image...
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif'
                         extensions:
                             - .gif
                             - .jpg
@@ -325,7 +326,7 @@ zenario_menu:
                 promo__title:
                     indent: 1
                     ord: 1.11
-                    label: 'Title:'
+                    label: 'Title for promotional image:'
                     type: text
                     width: "150"
                     maxlength: "255"
@@ -333,20 +334,22 @@ zenario_menu:
                 promo__text:
                     indent: 1
                     ord: 1.12
-                    label: 'Description (HTML):'
+                    label: 'Description (HTML) for promotional image:'
                     type: editor
                     dont_trim: true
                     editor_type: phrase_editor
-                    cols: "80"
-                    rows: "4"
                     value: ""
+                    editor_options:
+                        height: 200px
                 
                 
                 
                 promo__link_type:
                     indent: 1
                     ord: 1.13
-                    label: 'Destination:'
+                    label: 'Optional link from promotional image:'
+                    note_below: |
+                        Set this if you want the image to have a different link destination from the menu node itself.
                     type: radios
                     values:
                         no_link:
@@ -410,18 +413,18 @@ zenario_menu:
                 
                 show_image:
                     ord: 2.1
-                    label: 'Show thumbnail beside menu node text'
+                    label: 'Show thumbnail image beside menu node text'
                     type: checkbox
                     format_onchange: true
                     side_note: "A small image can appear beside the text of a menu node. Check here to enable this feature and select an image."
                 image_id:
                     visible_if: "zenarioAB.value('show_image')"
                     ord: 2.2
-                    label: 'Image:'
+                    label: 'Thumbnail image:'
                     indent: 1
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif'
                         extensions:
                             - .gif
                             - .jpg
@@ -451,7 +454,7 @@ zenario_menu:
                     visible_if: "zenarioAB.value('use_rollover_image')"
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif'
                         extensions:
                             - .gif
                             - .jpg
@@ -466,32 +469,22 @@ zenario_menu:
                         target_path: zenario__library/panels/image_library
                         select_phrase: Select image...
         advanced:
-            label: Advanced
+            label: Additional settings
             edit_mode:
                 enabled: ""
             fields:
                 
-                content_restriction_desc_grouping:
+                #This grouping is empty by default and populated when the Pro Features module is running.
+                promo_menu_description_grouping:
                     type: grouping
                     snippet:
-                        label: Preferential menu node for a content type
+                        label: Additional text for menu node
                         label_class: subheading
                 
-                content_restriction_desc:
-                    grouping: content_restriction_desc_grouping
-                    snippet:
-                        html: |
-                          You can help keep [[content_types]] on your site tidy by only
-                          allowing them to be under specific menu nodes.
-                          This can either be enforced or just a suggestion, depending on the options chosen in
-                          the <a href="[[link]]" target="blank">Settings for content types</a> panel.
+                #This grouping is empty by default and populated when the Pro Features module is running.
+                promo_menu_descriptive_text_grouping:
+                    type: grouping
 
-                restrict_child_content_types:
-                    grouping: content_restriction_desc_grouping
-                    type: select
-                    values: {}
-                    empty_value: ''
-                
                 description_css_grouping:
                     type: grouping
                     snippet:
@@ -530,17 +523,6 @@ zenario_menu:
                     type: text
                     style: "width: 1em;"
                 
-                #This grouping is empty by default and populated when the Pro Features module is running.
-                promo_menu_description_grouping:
-                    type: grouping
-                    snippet:
-                        label: Menus with promo images
-                        label_class: subheading
-                
-                #This grouping is empty by default and populated when the Pro Features module is running.
-                promo_menu_descriptive_text_grouping:
-                    type: grouping
-
                 description_other_advanced_grouping:
                     type: grouping
                     snippet:
@@ -625,3 +607,31 @@ zenario_menu:
                             <li><code>true</code> to show the menu node</li>
                             <li>An <code>array()</code> to show the menu node, and set/overwrite its properties.</li>
                         </ul>
+        content_item_preference:
+            label: Content type preference
+            edit_mode:
+                enabled: ""
+            fields:
+                content_restriction_desc_grouping:
+                    type: grouping
+                
+                content_restriction_desc:
+                    grouping: content_restriction_desc_grouping
+                    snippet:
+                        html: |
+                          <p>You can keep content types of this site ([[content_types]]) tidy by only
+                          allowing them to be created under specific menu nodes.</p>
+
+                          <p>This can be enforced, or just suggested, depending on the options in
+                          the <a href="[[link]]" target="blank">Settings for content types</a> panel.</p>
+
+                restrict_child_content_types:
+                    grouping: content_restriction_desc_grouping
+                    type: select
+                    values: {}
+                    empty_value: ''
+                    format_onchange: true
+                restriction_note:
+                    grouping: content_restriction_desc_grouping
+                    snippet:
+                        html: ''

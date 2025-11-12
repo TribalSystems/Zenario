@@ -84,10 +84,11 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                Attention server admins: your Apache config may override these settings.
-                                To ensure that these settings are not overriden, the correct Apache config line is:
+                                Attention server admins: your Apache config may need to be updated to prevent it blocking this embedding.
+                                If a trusted site is embedding content from this site, a suggested Apache config is:
                             </p>
                             <pre>
-                                Header setifempty X-Frame-Options SAMEORIGIN
+                                Header always set Content-Security-Policy "frame-ancestors 'self' https://your-trusted-site-domain;"
+                                Header always unset X-Frame-Options
                             </pre>
                             

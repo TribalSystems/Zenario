@@ -1,19 +1,362 @@
-<ul id="zenario_debug_menu">
-	<li id="zenario_dm_open_dev_tools">
-		<div>Open TUIX inspector</div>
+<% var tooltipOptions = 'data-tooltip-options=\'{"tooltipClass": "zenario_admin_tooltip zenario_debug_tooltip"}\''; %>
+
+<ul id="zenario_debug_menu" class="ui-menu ui-widget ui-widget-content ui-menu-icons">
+	<li class="ui-widget-header"><div class="ui-menu-item-wrapper">Debug tools</div></li>
+	<li class="ui-menu-item" data-command="open">
+		<div class="ui-menu-item-wrapper">Open TUIX inspector</div>
 	</li>
-	<% if (m.canShowSource) { %>
-		<li id="zenario_dm_copy_ls">
-			<div>List files: copy source file list in <code>ls -l</code> format</div>
+	<% if (m.lib.isFEA) { %>
+		<li class="ui-menu-item" data-command="console">
+			<div
+				class="zenario_debug_info"
+				title="
+					Clicking this will give you access to the
+					&lt;code style=&quot;font-size: 8px; white-space: nowrap;&quot; &gt;lib&lt;/code&gt;
+					variable in the browser's JavaScript console, to inspect the library or instance.
+				"
+				{{tooltipOptions}}
+			></div>
+			<div class="ui-menu-item-wrapper">Inspect lib in console</div>
 		</li>
-		<li id="zenario_dm_copy_grep">
-			<div>Search in files: copy source file list in <code>grep</code> format</div>
-		</li>
-		<li id="zenario_dm_copy_bbedit">
-			<div>Edit files: copy source file list in <code>bbedit</code> format</div>
-		</li>
+		<% if (m.lib.debugRevealAllObjects) { %>
+			<li class="ui-menu-item" data-command="unreveal">
+				<div
+					class="zenario_debug_info"
+					title="
+						Reveal all of the hidden fields and objects on the current form.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						Warning: Not all plugins will work smoothly with this option. You may see bugs, fields in the wrong places, and/or HTML errors.
+					"
+					{{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">Hide hidden objects</div>
+			</li>
+		<% } else { %>
+			<li class="ui-menu-item" data-command="reveal">
+				<div
+					class="zenario_debug_info"
+					title="
+						Reveal all of the hidden fields and objects on the current form.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						Warning: Not all plugins will work smoothly with this option. You may see bugs, fields in the wrong places, and/or HTML errors.
+					"
+					{{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">Reveal hidden objects</div>
+			</li>
+		<% } %>
 	<% } %>
 	
-	<!-- This line is needed as a workaround to make the jQuery UI menu widget work properly -->
-	<li style="display: none;" class="ui-icon"></li>
+	<% if (m.canShowSource) { %>
+		<li class="ui-widget-header"><div class="ui-menu-item-wrapper">Source files</div></li>
+		<li class="ui-menu-item" data-command="paths">
+			<div class="ui-menu-item-wrapper">Copy a list of the source files to use in terminal</div>
+		</li>
+		<% if (m.lib.isFEA) { %>
+			<li class="ui-menu-item" data-command="assistant">
+				<div class="ui-menu-item-wrapper">Copy a prompt on this FEA plugin for an AI assistant.</div>
+			</li>
+		<% } %>
+		<% if (m.lib.globalName == 'zenarioAB') { %>
+			<li class="ui-menu-item" data-command="assistant">
+				<div class="ui-menu-item-wrapper">Copy a prompt on this admin box for an AI assistant.</div>
+			</li>
+		<% } %>
+		<% if (m.lib.globalName == 'zenarioO' && !m.orgMap) { %>
+			<li class="ui-menu-item" data-command="assistant">
+				<div class="ui-menu-item-wrapper">Copy a prompt on this panel for an AI assistant.</div>
+			</li>
+		<% } %>
+	<% } %>
+	
+	<% if (!m.orgMap) { %>
+		<li class="ui-widget-header"><div class="ui-menu-item-wrapper">Important variables</div></li>
+		
+		<% if (m.lib.globalName == 'zenarioAT') { %>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">cID:</span>
+					<code class="zenario_debug_val">{{zenario.cID|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">cType:</span>
+					<code class="zenario_debug_val">{{zenario.cType|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">cVersion:</span>
+					<code class="zenario_debug_val">{{zenario.cVersion|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Tag ID:</span>
+					<code class="zenario_debug_val">{{zenario.cType + '_' + zenario.cID|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The equivID marks content items in different languages as translations of each other.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						The equivID creates &ldquo;translation chains&rdquo; - groups of content items that represent the same
+						logical content across different languages.
+						All translations of the same content share the same equiv_id value.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						For example, if you have an English article with cID=123 and equivId=123, when you create a French translation,
+						it gets a new cID=456 but shares the same equivId=123, marking them as translations of each other.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">equivId:</span>
+					<code class="zenario_debug_val">{{zenario.equivId|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Language ID:</span>
+					<code class="zenario_debug_val">{{zenario.langId|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">User ID:</span>
+					<code class="zenario_debug_val">{{zenario.userId|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Admin ID:</span>
+					<code class="zenario_debug_val">{{zenario.adminId|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Current admin toolbar tab:</span>
+					<code class="zenario_debug_val">{{zenarioA.toolbar|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						This affects what tools are currently visible to the administrator on the page.
+						The current mode is changed when the administrator changes to a different
+						tab on the admin toolbar.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Current page mode:</span>
+					<code class="zenario_debug_val">{{zenarioA.pageMode|e}}</code>
+				</div>
+			</li>
+		<% } else { %>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The tag path to the current location in TUIX.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						Many locations in TUIX have a single level, and so the tag path
+						will just be a single codename.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						At deeper navigation levels, the path will contain a combination of codenames and forward slashes (/)
+						to reflect a precise location.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Path:</span>
+					<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(m.lib.path)}}</code>
+				</div>
+			</li>
+		<% } %>
+		
+		<% if (m.lib.isFEA) { %>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The class name of the module that is running this FEA plugin.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Module:</span>
+					<code class="zenario_debug_val">{{m.lib.moduleClassName|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The mode in which this FEA plugin is running.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Mode:</span>
+					<code class="zenario_debug_val">{{m.lib.mode|e}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						What type of FEA plugin this is.
+						The most common types are &ldquo;list&rdquo; and &ldquo;form&rdquo;.
+						There are two more types, &ldquo;dash&rdquo; and &ldquo;graph&rdquo;,
+						that are less commonly used.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">FEA type:</span>
+					<code class="zenario_debug_val">{{m.lib.tuix.fea_type|e}}</code>
+				</div>
+			</li>
+		<% } %>
+		
+		<% if (m.lib.globalName == 'zenarioO') { %>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The codename of the class in JavaScript that is used to display this panel.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						These class definitions are stored in the zenarioO.panelTypes object.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Panel type:</span>
+					<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(zenarioO.getPanelType())}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The navigation in Organizer contains links called &ldquo;branches&rdquo;
+						that take the admin from one panel to another, whilst remembering
+						the panel they were previously on and any items they just click on.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						In this situation, the navigation path the admin took to reach the current
+						panel will be different to the tag path to that panel.
+						&lt;br/&gt;
+						&lt;br/&gt;
+						The navigation path variable shows you a representation of the path they
+						took, with branches in the path reperesented by multiple forward slashes (/)
+						in a row.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Navigation path:</span>
+					<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(zenarioO.getHash())}}</code>
+				</div>
+			</li>
+			
+			<% for (var b in zenarioO.branches) { %>
+				<% if (b > 0) { %>
+					<li class="ui-widget-header"><div class="ui-menu-item-wrapper">Branch #{{b|escape}}</div></li>
+					<li class="ui-menu-item" data-command="copy">
+						<div
+							title="
+								The path in Organizer that the branch/link went from.
+							" class="zenario_debug_info" {{tooltipOptions}}
+						></div>
+						<div class="ui-menu-item-wrapper">
+							<span class="zenario_debug_var">From path:</span>
+							<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(zenarioO.branches[b].from)}}</code>
+						</div>
+					</li>
+					<li class="ui-menu-item" data-command="copy">
+						<div
+							title="
+								The path in Organizer that the branch/link went to.
+							" class="zenario_debug_info" {{tooltipOptions}}
+						></div>
+						<div class="ui-menu-item-wrapper">
+							<span class="zenario_debug_var">To path:</span>
+							<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(zenarioO.branches[b].to)}}</code>
+						</div>
+					</li>
+					
+					<% var refiner; if (refiner = zenarioO.branches[b].refiners[zenarioO.branches[b].to]) { %>
+						<li class="ui-menu-item" data-command="copy">
+							<div
+								title="
+									When linking to a panel using a branch, the codename of a refiner
+									can be set to link to the panel with that refiner active.
+								" class="zenario_debug_info" {{tooltipOptions}}
+							></div>
+							<div class="ui-menu-item-wrapper">
+								<span class="zenario_debug_var">Refiner codename:</span>
+								<code class="zenario_debug_val">{{refiner.name|e}}</code>
+							</div>
+						</li>
+						<% if (!_.isEmpty(refiner.id)) { %>
+							<li class="ui-menu-item" data-command="copy">
+								<div
+									title="
+										Some refiners use a value in their logic.
+										Usually this is the ID of the item that the link was on.
+									" class="zenario_debug_info" {{tooltipOptions}}
+								></div>
+								<div class="ui-menu-item-wrapper">
+									<span class="zenario_debug_var">Refiner value:</span>
+									<code class="zenario_debug_val">{{refiner.id|e}}</code>
+								</div>
+							</li>
+						<% } %>
+					<% } %>
+				<% } %>
+			<% } %>
+		<% } %>
+		
+		<% if (m.lib.globalName == 'zenarioAB') { %>
+			<% if (!_.isEmpty(zenarioAB.tuix.key.id)) { %>
+				<li class="ui-menu-item" data-command="copy">
+					<div
+						title="
+							The ID of the current record that's open for editing.
+							&lt;br/&gt;
+							&lt;br/&gt;
+							If no ID is set, this is used to flag that we're creating a record instead.
+						" class="zenario_debug_info" {{tooltipOptions}}
+					></div>
+					<div class="ui-menu-item-wrapper">
+						<span class="zenario_debug_var">ID:</span>
+						<code class="zenario_debug_val">{{zenarioAB.tuix.key.id|e}}</code>
+					</div>
+				</li>
+			<% } %>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The Key variable used in floating admin boxes (FABs) is a collection of metadata for the FAB that's currently open.
+						It serves as a contextual data container that maintains essential information about the FAB's state and operation.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Key:</span>
+					<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(JSON.stringify(zenarioAB.tuix.key))}}</code>
+				</div>
+			</li>
+			<li class="ui-menu-item" data-command="copy">
+				<div
+					title="
+						The codename of the current tab of this floating admin box (FAB).
+						&lt;br/&gt;
+						&lt;br/&gt;
+						FABs always have at least one tab defined, even if they don't appear with a tabbed interface.
+					" class="zenario_debug_info" {{tooltipOptions}}
+				></div>
+				<div class="ui-menu-item-wrapper">
+					<span class="zenario_debug_var">Tab:</span>
+					<code class="zenario_debug_val">{{zenarioA.escapeDebugVal(zenarioAB.tuix.tab)}}</code>
+				</div>
+			</li>
+		<% } %>
+	<% } %>
+	
 </ul>

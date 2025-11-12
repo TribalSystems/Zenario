@@ -130,7 +130,7 @@ zenario_user__details:
                             "/>
                 screen_name_confirmed:
                     grouping: screen_name_grouping
-                    label: 'Screen Name chosen/accepted by user'
+                    label: 'Screen name chosen or accepted by user'
                     type: checkbox
                     visible_if: |
                         zenarioAB.tuix.key.id

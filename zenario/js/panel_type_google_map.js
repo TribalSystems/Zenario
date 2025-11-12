@@ -204,7 +204,10 @@ methods.deselectItem = function(id, marker) {
 };
 
 methods.updateItemCheckbox = function(id, checked) {
-	
+	//No checkboxes on the map, so we do nothing
+};
+
+methods.updateAllItemsCheckbox = function() {
 	//No checkboxes on the map, so we do nothing
 };
 

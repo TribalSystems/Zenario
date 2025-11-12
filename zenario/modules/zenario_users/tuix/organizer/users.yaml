@@ -4,15 +4,14 @@ zenario__users:
     panels:
         users:
             priv: _PRIV_VIEW_USER
-            title: 'All users & contacts'
+            title: 'Users and contacts'
             panel_type: multi_line_list_or_grid
             css_class: three_line_list_panel
             use_tall_rows: true
             grid_view_microtemplate: 'zenario_grid_view_user'
             label_format_for_grid_view: '[[identifier]]'
             no_items_message: >
-                No users/contacts. Click "Create" to create users and
-                contacts.
+                No users or contacts found
             select_mode_title: Select a user
             multiple_select_mode_title: Select user(s)
             db_items:
@@ -67,7 +66,7 @@ zenario__users:
                     parent: identifier
                     
                 screen_name:
-                    title: Screen Name
+                    title: Screen name
                     db_column: u.screen_name
                     searchable: true
                     width: small
@@ -139,11 +138,22 @@ zenario__users:
                     format: datetime
                     width: small
                 last_login:
-                    title: Last Login
+                    title: Last login
                     db_column: u.last_login
                     width: xsmall
                     format: date
                     empty_value: Never logged in
+                has_logged_in:
+                    title: Has logged in
+                    db_column: u.last_login IS NOT NULL
+                    format: yes_or_no
+                    yes_phrase: "Has logged in"
+                    no_phrase: "Never logged in"
+                    filters_by_value:
+                        1: |
+                            u.last_login IS NOT NULL
+                    width: xsmall
+                    always_show: false
                 checksum:
                     db_column: f.checksum
                     table_join: "LEFT JOIN [[DB_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
@@ -178,6 +188,23 @@ zenario__users:
                     label: 'Pending Users'
                     column: status
                     value: pending
+                    
+                has_logged_in:
+                    label: 'Login activity'
+                any_activity:
+                    parent: has_logged_in
+                    label: 'Any activity'
+                    column: has_logged_in
+                    remove_filter: true
+                logged_in:
+                    parent: has_logged_in
+                    label: 'Has logged in'
+                    column: has_logged_in
+                never_logged_in:
+                    parent: has_logged_in
+                    label: 'Never logged in'
+                    column: has_logged_in
+                    invert: true
 
             item:
                 css_class: user
@@ -277,7 +304,14 @@ zenario__users:
                         key:
                             id: data_protection
                     
-                
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            Users are people who can log in to a private area of a Zenario site. To enable this feature, the Extranet Base Module and Login module must be running.
+                            
+                            Contacts are people whose details are stored on the site. Beside storing their details, Zenario may be able to send email newsletters to them. For this, the Newsletter module must be running.
                 
             item_buttons:
                 edit:
@@ -426,8 +460,13 @@ zenario__users:
                         Upload an image|
                         You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an avatar for these Users.<br/>
                     upload:
-                        fileExt: '*.gif;*.jpg;*.jpeg;*.png'
-                        fileDesc: Images
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
                         request:
                             upload_image: true
                     without_columns_set:
@@ -448,8 +487,13 @@ zenario__users:
                         You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an avatar for these Users.<br/>
                         Your new image will replace the existing one.
                     upload:
-                        fileExt: '*.gif;*.jpg;*.jpeg;*.png'
-                        fileDesc: Images
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
                         request:
                             upload_image: true
                     with_columns_set:
@@ -499,7 +543,7 @@ zenario__users:
                         request:
                             convert_to_contact: "1"
                 activate:
-                    label: Activate user account
+                    label: Re-activate account
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
@@ -512,14 +556,20 @@ zenario__users:
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_EDIT_USER
-                    label: Suspend
+                    label: Suspend account
                     multiple_select: true
                     with_columns_set:
                         traits.active: true
                     ajax:
                         confirm:
-                            message: 'Are you sure you want to suspend the user "[[identifier]]"?'
-                            multiple_select_message: 'Are you sure you wish to suspend the selected users?'
+                            message: |
+                                Suspend account for user "[[identifier]]"?
+
+                                The account will then appear in Organizer's "Suspended users" panel.
+                            multiple_select_message: |
+                                Suspend accounts for the selected users?
+
+                                The accounts will then appear in Organizer's "Suspended users" panel.
                             button_message: Suspend
                             cancel_button_message: Cancel
                             message_type: warning

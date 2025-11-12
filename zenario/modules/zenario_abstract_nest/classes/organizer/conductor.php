@@ -168,14 +168,6 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 		
 		} else {
 			
-			$statesToSlideIds = [];
-			foreach ($slides as $slideId => $slide) {
-				$states = ze\ray::explodeAndTrim($slide['states']);
-				foreach ($states as $state) {
-					$statesToSlideIds[$state] = $slideId;
-				}
-			}
-			
 			
 			//Start adding elements for each slide, state and path
 			$ord = 100;
@@ -185,11 +177,20 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 				$states = ze\ray::explodeAndTrim($slide['states']);
 				$multipleStates = count($states) > 1;
 				
+				if ($multipleStates) {
+					$cssClasses = 'multiple_states';
+				
+				} else {
+					$cssClasses = 'one_state';
+				}
+				
 				$id = 'slide_'. $slide['id'];
 				$panel['items'][$id] = [
 					'id' => $id,
 					'type' => 'slide',
+					'classes' => $cssClasses,
 					'slide_num' => $slide['slide_num'],
+					'unselectable' => true,
 					'key' => [
 						'state' => $multipleStates? '' : $states[0],
 						'slideId' => $slide['id']
@@ -199,14 +200,7 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 				if ($showVars) {
 					$panel['items'][$id]['label'] = $slide['request_vars'];
 				} else {
-					$panel['items'][$id]['label'] = $slide['slide_label'];
-				}
-				
-				if ($multipleStates) {
-					$panel['items'][$id]['selected_label'] = ze\admin::phrase('Slide [[slide_num]]', $slide);
-				} else {
-					//If there's only one state, make the slide (grey square) unselectable
-					$panel['items'][$id]['unselectable'] = true;
+					$panel['items'][$id]['label'] = $slide['slide_num']. '. '. $slide['slide_label'];
 				}
 			
 				foreach ($states as $state) {
@@ -217,7 +211,7 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 						'type' => 'state',
 						'slide_num' => $slide['slide_num'],
 						'state' => $state,
-						'label' => $slide['slide_num']. $state,
+						'label' => $state,
 						'parent' => $id,
 						'color' => $coloursForStates[$state] = self::getAColour(),
 						'can_delete' => $multipleStates,
@@ -228,19 +222,11 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 					];
 					
 					$slide['state'] = $state;
-					if ($multipleStates) {
-						$panel['items'][$stateId]['selected_label'] = ze\admin::phrase('Slide [[slide_num]], state [[state]]', $slide);
-					} else {
-						$panel['items'][$stateId]['selected_label'] = ze\admin::phrase('Slide [[slide_num]]', $slide);
-					}
+					$panel['items'][$stateId]['selected_label'] = ze\admin::phrase('Slide [[slide_num]], state [[state]]', $slide);
 					
 					
 					//Add item buttons for adding and moving paths to each state
-					if ($multipleStates) {
-						$label = ze\admin::phrase('[[slide_num]][[state]]. [[slide_label]]', $slide);
-					} else {
-						$label = ze\admin::phrase('[[slide_num]]. [[slide_label]]', $slide);
-					}
+					$label = ze\admin::phrase('[[slide_num]]. [[slide_label]] (state [[state]])', $slide);
 					
 					$panel['item_buttons']['add_path_'. $state] = [
 						'ord' => ++$ord,
@@ -282,12 +268,7 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 					
 					foreach ($paths as $edge) {
 						$pathId = 'path_'. $edge['from_state']. '_'. $edge['to_state'];
-						
-						if ($multipleStates) {
-							$selected_label = ze\admin::phrase('path from [[slide_num]][[state]]', $slide);
-						} else {
-							$selected_label = ze\admin::phrase('path from [[slide_num]]', $slide);
-						}
+						$selected_label = ze\admin::phrase('path from state [[state]]', $slide);
 						
 						//Check if this is a link to another content item
 						if ($edge['equiv_id']) {
@@ -329,19 +310,7 @@ class zenario_abstract_nest__organizer__conductor extends zenario_abstract_nest_
 							$target = 'state_'. $edge['to_state'];
 							$colour = $coloursForStates[$edge['from_state']];
 							
-							if (isset($statesToSlideIds[$edge['to_state']])
-							 && isset($slides[$statesToSlideIds[$edge['to_state']]])) {
-								$targetSlide = $slides[$statesToSlideIds[$edge['to_state']]];
-								
-								if (false !== strpos($targetSlide['states'], ',')) {
-									$targetSlide['state'] = $edge['to_state'];
-									$selected_label .= ze\admin::phrase(' to [[slide_num]][[state]]', $targetSlide);
-								} else {
-									$selected_label .= ze\admin::phrase(' to [[slide_num]]', $targetSlide);
-								}
-							} else {
-								$selected_label .= ze\admin::phrase('');
-							}
+							$selected_label .= ze\admin::phrase(' to state [[to_state]]', $edge);
 						}
 				
 						$cssClasses = 'dotted';

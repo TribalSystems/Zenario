@@ -96,14 +96,14 @@ function init() {
 		}
 	
 	});
-
+	
 	google.maps.event.addListener(drawingManager, 'polygoncomplete', function (polygon) {
 		var stringPoints;
 		var arrayOfPoints = (polygon.getPath().getArray());
 		
 		stringPoints = getStringPoints(arrayOfPoints);
 		parent.zenarioAB.get("polygon_points").value = stringPoints;
-	
+		
 		google.maps.event.addListener(polygon.getPath(), 'set_at', function() {
 			arrayOfPoints = (polygon.getPath().getArray());
 			stringPoints = getStringPoints(arrayOfPoints);
@@ -250,14 +250,22 @@ function geocodeAddress () {
 	var geocoder = new google.maps.Geocoder();
 	
 	if (geocoder) {
-		geocoder.geocode({'address': document.getElementById("address_to_geocode").value}, function(results, status) {
-			if (status == google.maps.GeocoderStatus.OK) {
-				map.setCenter(results[0].geometry.location);
-				map.fitBounds(results[0].geometry.viewport);
-			} else {
-				alert("Geocode was not successful for the following reason: " + status);
-			}
-		});
+		var address = document.getElementById("address_to_geocode").value;
+		
+		if (address) {
+			geocoder.geocode(
+				{'address': address}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						map.setCenter(results[0].geometry.location);
+						map.fitBounds(results[0].geometry.viewport);
+					} else {
+						alert("Geocode was not successful for the following reason: " + status);
+					}
+				}
+			);
+		} else {
+			alert("Please enter an address.");
+		}
 	}
 }
 
@@ -266,13 +274,21 @@ function geoCodeViewport () {
 	var geocoder = new google.maps.Geocoder();
 	
 	if (geocoder) {
-		geocoder.geocode({'address': document.getElementById("address").value}, function(results, status) {
-			if (status == google.maps.GeocoderStatus.OK) {
-				map.setCenter(results[0].geometry.location);
-				map.fitBounds(results[0].geometry.viewport);
-			} else {
-				alert("Geocode was not successful for the following reason: " + status);
-			}
-		});
+		var address = document.getElementById("address").value;
+		
+		if (address) {
+			geocoder.geocode(
+				{'address': address}, function(results, status) {
+					if (status == google.maps.GeocoderStatus.OK) {
+						map.setCenter(results[0].geometry.location);
+						map.fitBounds(results[0].geometry.viewport);
+					} else {
+						alert("Geocode was not successful for the following reason: " + status);
+					}
+				}
+			);
+		} else {
+			alert("Please enter an address.");
+		}
 	}
 }

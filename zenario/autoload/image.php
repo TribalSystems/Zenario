@@ -48,15 +48,28 @@ class image {
 		
 		//Repeat the same logic that the linkInternal() function uses to decide whether
 		//an image should use WebP encoding. I.e. must not be an SVG, must not already be a WebP,
-		//and must not be oversized. Again, I've hard-coded the size limit, but it could possibly be a site setting at some point.
+		//images from the docstore are only re-encoded when being resized, and images must not be oversized.
+		//Again, I've hard-coded the size limit, but it could possibly be a site setting at some point.
 		//(Possibly with names like webp_max_width and webp_max_height; just leaving those there in a comment so I can grep for them later...)
 		if ($mimeType !== 'image/webp'
 		 && $mimeType !== 'image/svg+xml'
+		 && $image['location'] == 'db'
 		 && ($image['width'] <= 4096 && $image['height'] <= 2160)) {
 			$safeName = \ze\file::webpName($safeName);
 		}
 		
-		return 'public/images/'. $image['short_checksum']. '/'. $safeName;
+		//T13130, MIC images should be stored in their own folder inside public/ directory
+		//MiC images use slightly different different logic to regular images.
+		//From version 10.3 onwards, we're going to be putting them in a different directory to regular images
+		//to prevent bugs and issues caused when the same image is used in both places.
+		if ($image['usage'] == 'mic') {
+			$publicDir = 'public/mic_images/';
+		
+		} else {
+			$publicDir = 'public/images/';
+		}
+		
+		return $publicDir. $image['short_checksum']. '/'. $safeName;
 	}
 	
 	
@@ -406,17 +419,6 @@ class image {
 	) {
 		$mimeType = $isRetina = null;
 		
-		//This debug code here is me trying to look into a problem with large images crashing on my dev siet when they are resized
-		//and converted to WebP in one step
-		#return false;
-		
-		#$image = \ze\row::get('files', ['id', 'usage', 'filename', 'mime_type', 'width', 'height', 'size'], $imageId);
-		#
-		#if ($image && $image['size'] > 1e5) {
-		#	//var_dump($imageId, $maxWidth, $maxHeight, $canvas, $image);
-		#	return false;
-		#}
-		
 		return \ze\image::linkInternal(
 			$width, $height, $url, $retina, $isRetina, $mimeType,
 			$imageId, $maxWidth, $maxHeight, $canvas, $offset,
@@ -509,13 +511,29 @@ class image {
 			$fullPath, 'auto', true, false, false, false, true
 		);
 	}
+
+	public static function unTranscodedLink(
+		&$width, &$height, &$url, $imageId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
+		$retina = false, $fullPath = false, $privacy = 'auto',
+		$useCacheDir = true, $internalFilePath = false
+	) {
+		$mimeType = $isRetina = null;
+		
+		return \ze\image::linkInternal(
+			$width, $height, $url, $retina, $isRetina, $mimeType,
+			$imageId, $maxWidth, $maxHeight, $canvas, $offset,
+			$fullPath, $privacy,
+			$useCacheDir, $internalFilePath, $returnImageStringIfCacheDirNotWorking = false,
+			$adminFacing = false, $specialImage = false, $noTranscoding = true
+		);
+	}
 	
 	public static function linkInternal(
 		&$width, &$height, &$url, $retina, &$isRetina, &$mimeType,
 		$imageId, $maxWidth = 0, $maxHeight = 0, $canvas = 'resize', $offset = 0,
 		$fullPath = false, $privacy = 'auto',
 		$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false,
-		$adminFacing = false, $specialImage = false
+		$adminFacing = false, $specialImage = false, $noTranscoding = false
 	) {
 		$url =
 		$width = $height = $isRetina = $mimeType = false;
@@ -536,7 +554,7 @@ class image {
 				'privacy', 'mime_type', 'width', 'height',
 				'custom_thumbnail_1_width', 'custom_thumbnail_1_height', 'custom_thumbnail_2_width', 'custom_thumbnail_2_height',
 				'thumbnail_180x130_width', 'thumbnail_180x130_height',
-				'checksum', 'short_checksum', 'filename', 'location', 'path'
+				'checksum', 'short_checksum', 'usage', 'filename', 'location', 'path'
 			], $imageId, $orderBy = [], $ignoreMissingColumns = true))
 		 || !(\ze\file::isImageOrSVG($image['mime_type']))) {
 			return false;
@@ -550,6 +568,14 @@ class image {
 			$image['privacy'] = 'public';
 			
 			$publicDir = 'public/special_images';
+		
+		//T13130, MIC images should be stored in their own folder inside public/ directory
+		//MiC images use slightly different different logic to regular images.
+		//From version 10.3 onwards, we're going to be putting them in a different directory to regular images
+		//to prevent bugs and issues caused when the same image is used in both places.
+		} elseif ($image['usage'] == 'mic') {
+			$publicDir = 'public/mic_images';
+		
 		} else {
 			$publicDir = 'public/images';
 		}
@@ -628,7 +654,7 @@ class image {
 		$imageNeedsToBeResized = $imageNeedsToBeCropped || $imageWidth != $finalImageWidth || $imageHeight != $finalImageHeight;
 		$pregeneratedThumbnailUsed = false;
 		
-		$imageNeedsToBeReEncoded = $mimeType !== 'image/webp';
+		$imageNeedsToBeReEncoded = !$noTranscoding && $mimeType !== 'image/webp';
 		
 		//SVGs are vector images and don't need resizing or reprocessing.
 		if ($isSVG) {

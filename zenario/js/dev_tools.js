@@ -60,6 +60,7 @@ var $toolbar = $('#toolbar'),
 
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
+	id: {description: 'The CMS will automatically add an "id" property to some objects and set it to the object\'s codename. This is a &ldquo;Quality of Life&rdquo; feature, to help any developer who has a variable with a reference to the object in TUIX, but not a variable with its codename.'},
 	class_name: {description: 'This property tracks which module created each element.'},
 	only_merge_into_an_existing_object: {isGlobal: true, description: "This property is helpful when trying to add properties to an existing object defined in another TUIX file, but cannot be sure if the object will be there or not. If this property is set, its sibling properties will be ignored if the object is not there when the TUIX is merged."},
 	priv: {isGlobal: true, description: "If you give an element the <code>priv</code> property and enter the name of an admin permission, the element will be <code>unset()</code> if the current admin does not have the permission you specified.\n\nThis property must be written in your .yaml file. It can't be changed in php."},
@@ -970,6 +971,14 @@ devTools.validate = function() {
 				if (code == 12
 				 && devTools.mode == 'zenarioAB'
 				 && message == 'Propeties pick_items and upload may not appear together') {
+					continue;
+				}
+				
+				//It's legal to have a field without some of the specific required properties we've listed.
+				//(E.g. when writing tags or pre/post field HTML.)
+				if (code == 11
+				 && devTools.mode == 'zenarioAB'
+				 && message == 'Please include one of the following properties: type, pick_items, image, snippet, upload, captcha') {
 					continue;
 				}
 				

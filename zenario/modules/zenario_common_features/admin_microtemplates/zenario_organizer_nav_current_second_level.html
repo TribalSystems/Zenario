@@ -1,4 +1,14 @@
-<div class="organizer_item second_level_item {{m.css_class|escape}}">
+<div class="
+	organizer_item second_level_item
+	{{m.css_class|escape}}
+	
+	<% if (m.separator_before_this) { %>
+		zenario_separator_before_this
+	<% } %>
+	<% if (m.separator_after_this) { %>
+		zenario_separator_after_this
+	<% } %>
+">
 	<div class="organizer_legend {{m.selected? 'legend_on' : ''|escape}}">
 		<a title="{{m.tooltip|escape}}"
 			href="{{m.href|escape}}"

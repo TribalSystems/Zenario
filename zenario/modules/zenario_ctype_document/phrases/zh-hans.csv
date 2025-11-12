@@ -1,0 +1,11 @@
+"Language ID","Module"
+zh-hans,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"文档下载："
+_DOCUMENT_DOWNLOAD_PAGE,"此页面的URL："
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"此文档不属于任何类别。"
+_VIEW_OR_DOWNLOAD,"查看/下载："
+_FILE_TYPE_AND_SIZE,"文件类型和大小："
+_S3_FILE_TYPE_AND_SIZE,"S3文件类型和大小："
+_S3_FILENAME,"S3文件名："

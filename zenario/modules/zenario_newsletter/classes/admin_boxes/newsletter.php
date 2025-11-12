@@ -44,8 +44,19 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		
 		$adminDetails = ze\admin::details(ze\admin::id());
 		$values['meta_data/test_send_email_address'] = $adminDetails['admin_email'];
-		$box['tabs']['meta_data']['fields']['add_user_field']['values'] =
-			ze\datasetAdm::listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true, false, $putMergeFieldsIntoLabel = true);
+		
+		$datasetCustomFields = ze\datasetAdm::listCustomFields(
+			'users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = false,
+			$putMergeFieldsIntoLabel = true, $specificTab = 'details'
+		);
+		if ($datasetCustomFields) {
+			foreach ($datasetCustomFields as $datasetCustomFieldId => $datasetCustomField) {
+				if ($datasetCustomFieldId == 'tab__details' || (!empty($datasetCustomField['field_name']) && ze::in($datasetCustomField['field_name'], 'email', 'salutation', 'first_name', 'last_name'))) {
+					$box['tabs']['meta_data']['fields']['add_user_field']['values'][$datasetCustomFieldId] = $datasetCustomField;
+				}
+			}
+		}
+		
 		if (isset($box['tabs']['meta_data']['fields']['add_user_field']['values']['tab__zenario_organization_manager__roles'])) {
 			unset($box['tabs']['meta_data']['fields']['add_user_field']['values']['tab__zenario_organization_manager__roles']);
 		}
@@ -67,8 +78,6 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 							true
 						);			
 			$values['meta_data/subject'] = $details['subject'];
-			$values['meta_data/email_address_from'] = $details['email_address_from'];
-			$values['meta_data/email_name_from'] = $details['email_name_from'];
 			$values['meta_data/body'] = $details['body'];
 			$values['meta_data/apply_css_rules'] = $details['apply_css_rules'];
 
@@ -100,7 +109,6 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			}
 			
 			if ($details['status'] != '_DRAFT') {
-						
 				$box['tabs']['meta_data']['edit_mode']['enabled'] =
 				$box['tabs']['unsub_exclude']['edit_mode']['enabled'] = false;
 				$box['tabs']['meta_data']['fields']['test_send_button']['hidden'] =
@@ -121,24 +129,33 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				$box['last_updated'] = ze\admin::formatLastUpdated($details);
 			}
 		} else {
-			$i = 1;
-			$fuse = 100;
-			$nameCandidate = '';
-			while ($fuse--) {
-				$nameCandidate = ze\admin::phrase('Newsletter ' . ze\admin::formatDate(date('Y-m-d'), '_LONG') . ($i>1?(' (' . (int) $i . ')'):''));
-				if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['newsletter_name' => $nameCandidate])) {
-					break;
+			$nameCandidate = ze\admin::phrase('Newsletter ' . ze\admin::formatDate(date('Y-m-d'), '_LONG'));
+			$values['meta_data/subject'] = $nameCandidate;
+			
+			if (ze\row::exists(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['newsletter_name' => $nameCandidate])) {
+				/*
+				This loop will account for the possibility of multiple newsletters created on the same day.
+				For example, if a newsletter exists with this name:
+				Newsletter Monday 2nd June 2025
+				
+				then this logic will add (2), or (3) and so on to make its name unique.
+				Newsletter Monday 2nd June 2025 (2)
+				
+				The $fuse parameter exists to prevent an infinite loop.
+				*/
+				
+				$i = 2;
+				$fuse = 100;
+				
+				while ($fuse--) {
+					$nameCandidate = ze\admin::phrase('Newsletter ' . ze\admin::formatDate(date('Y-m-d'), '_LONG') . ' (' . (int) $i . ')');
+					if (!ze\row::exists(ZENARIO_NEWSLETTER_PREFIX . "newsletters", ['newsletter_name' => $nameCandidate])) {
+						break;
+					}
+					$i++;
 				}
-				$i++;
 			}
 			$values['meta_data/newsletter_name'] = $nameCandidate;
-
-			if (ze::setting('zenario_newsletter__default_from_name')) {
-				$values['meta_data/email_name_from'] = ze::setting('zenario_newsletter__default_from_name');
-			}
-			if (ze::setting('zenario_newsletter__default_from_email_address')) {
-				$values['meta_data/email_address_from'] = ze::setting('zenario_newsletter__default_from_email_address');
-			}
 
 			if (ze::setting('zenario_newsletter__default_unsubscribe_text')) {
 				$values['unsub_exclude/unsubscribe_text'] = ze::setting('zenario_newsletter__default_unsubscribe_text');
@@ -147,6 +164,36 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				$values['unsub_exclude/delete_account_text'] = ze::setting('zenario_newsletter__default_delete_account_text');
 			}
 			
+			if ($box['key']['action']) {
+				switch ($box['key']['action']) {
+					case 'create_empty_newsletter':
+						//Do nothing
+						
+						break;
+					
+					case 'create_newsletter_from_template':
+						if ($box['key']['newsletter_template']) {
+							$template = ze\row::get(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates', ['body', 'apply_css_rules'], $box['key']['newsletter_template']);
+							if ($template) {
+								$values['meta_data/body'] = $template['body'];
+								$values['meta_data/apply_css_rules'] = $template['apply_css_rules'];
+							}
+						}
+						
+						break;
+					
+					case 'create_newsletter_from_previous_newsletter':
+						if ($box['key']['previous_newsletter']) {
+							$previousNewsletter = ze\row::get(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', ['body', 'apply_css_rules'], $box['key']['previous_newsletter']);
+							if ($previousNewsletter) {
+								$values['meta_data/body'] = $previousNewsletter['body'];
+								$values['meta_data/apply_css_rules'] = $previousNewsletter['apply_css_rules'];
+							}
+						}
+						
+						break;
+				}
+			}
 		}
 
 		$pick_items = &$box['tabs']['meta_data']['fields']['body']['insert_image_button']['pick_items'];
@@ -186,9 +233,23 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			}
 		}
 		
+		//Show site-setting value next to field and a link to the settings panel:
+		//"From" details
+		$values['meta_data/from_details'] = ze::setting('email_address_from') . '/' . ze::setting('email_name_from');
+		
+		$linkStart = "<a href='".ze\link::absolute()."organizer.php?#zenario__administration/panels/site_settings//email~.site_settings~temail~k{\"id\"%3A\"email\"}' target='_blank'>";
+		$linkEnd = "</a>";
+		$fields['meta_data/from_details']['note_below'] = ze\admin::phrase('Go to [[link_start]]site settings for email[[link_end]].', ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+		
+		//CSS rules
 		$linkStart = "<a href='organizer.php#zenario__administration/panels/site_settings//email~.site_settings~tcss_rules~k{\"id\"%3A\"email\"}' target='_blank'>";
 		$linkEnd = "</a>";
 		ze\lang::applyMergeFields($fields['meta_data/apply_css_rules']['post_field_html'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
+		
+		if (!ze::setting('email_css_rules')) {
+			$fields['meta_data/apply_css_rules']['disabled'] = true;
+			$fields['meta_data/apply_css_rules']['note_below'] = ze\admin::phrase('Disabled as no CSS rules have been defined in settings.');
+		}
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -198,7 +259,6 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] =
 		$box['tabs']['meta_data']['notices']['test_send_sucesses']['show'] =
 		$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['show'] = false;
-		$clearCopyFromSourceFields = false;
 		
 		if (!empty($values['meta_data/add_user_field'])) {
 			$fieldId = $values['meta_data/add_user_field'];
@@ -209,64 +269,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$values['meta_data/add_user_field'] = '';
 		}
 		
-		if (($values['meta_data/load_content_source'] == 'use_email_template')
-			&& $values['meta_data/load_content_source_email_template'] 
-				&& (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
-
-			$clearCopyFromSourceFields = true;
-			$emailTemplate = zenario_common_features::getTemplateByCode($values['meta_data/load_content_source_email_template']);
-			$values['meta_data/body'] = $emailTemplate['body'];
-		}
-		if (($values['meta_data/load_content_source'] == 'use_newsletter_template')
-			&& $values['meta_data/load_content_source_newsletter_template'] 
-				&& (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
-
-			$clearCopyFromSourceFields = true;
-			$emailTemplate = ze\row::get(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['apply_css_rules', 'body'], ['id' => $values['meta_data/load_content_source_newsletter_template']]);
-			$values['meta_data/body'] = $emailTemplate['body'];
-			$values['meta_data/apply_css_rules'] = $emailTemplate['apply_css_rules'];
-		}
-		if (($values['meta_data/load_content_source'] == 'copy_from_archived_newsletter')
-				&& $values['meta_data/load_content_source_archived_newsletter'] 
-					&& (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
-
-			$clearCopyFromSourceFields= true;
-			$newsletter = $this->loadDetails($values['meta_data/load_content_source_archived_newsletter']);
-			$values['meta_data/body'] = $newsletter['body'];
-			$values['meta_data/apply_css_rules'] = $newsletter['apply_css_rules'];
-		}
-
-		if (ze\ray::engToBooleanArray($box,'tabs','meta_data','fields','load_content_cancel','pressed')) {
-			$clearCopyFromSourceFields= true;
-		}
-
-		if ($clearCopyFromSourceFields) {
-			$values['meta_data/load_content_source'] = 'nothing_selected';
-			$values['meta_data/load_content_source'] = 'nothing_selected';
-			$values['meta_data/load_content_source_email_template'] = '';
-			$values['meta_data/load_content_source_newsletter_template'] = '';
-			$values['meta_data/load_content_source_archived_newsletter'] = '';
-
-			$box['tabs']['meta_data']['fields']['load_content_continue']['pressed'] = '';
-			$box['tabs']['meta_data']['fields']['load_content_cancel']['pressed'] = '';
-		}
 		
-		$box['tabs']['meta_data']['fields']['load_content_source_newsletter_template']['hidden']	
-				= $values['meta_data/load_content_source'] != 'use_newsletter_template'; 
-		
-		$box['tabs']['meta_data']['fields']['load_content_source_email_template']['hidden']	
-				= $values['meta_data/load_content_source'] != 'use_email_template'; 
-
-		$box['tabs']['meta_data']['fields']['load_content_source_archived_newsletter']['hidden']	
-				= $values['meta_data/load_content_source'] != 'copy_from_archived_newsletter'; 
-				
-		$box['tabs']['meta_data']['fields']['load_content_cancel']['hidden'] =
-			$box['tabs']['meta_data']['fields']['load_content_continue']['hidden'] =
-				!($values['meta_data/body'] 
-					&& ($values['meta_data/load_content_source'] == 'use_email_template' && $values['meta_data/load_content_source_email_template'])
-						|| ($values['meta_data/load_content_source'] == 'use_newsletter_template' && $values['meta_data/load_content_source_newsletter_template'])
-							|| ($values['meta_data/load_content_source'] == 'copy_from_archived_newsletter' && $values['meta_data/load_content_source_archived_newsletter']));
-				
 		if (($values['unsub_exclude/unsubscribe_link'] == 'unsub') && !ze::setting('zenario_newsletter__all_newsletters_opt_out')) {
 			$values['unsub_exclude/unsubscribe_link'] = 'none';
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['show'] = true;
@@ -327,6 +330,9 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 				
 				foreach (ze\ray::explodeAndTrim($values['meta_data/test_send_email_address']) as $email) {
 					$body = $values['meta_data/body'];
+					$emailAddressFrom = ze::setting('email_address_from');
+					$emailNameFrom = ze::setting('email_name_from');
+					
 					if ($values['unsub_exclude/unsubscribe_link'] == 'unsub') {
 						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/unsubscribe_text']) . ' <a href="[[REMOVE_FROM_GROUPS_LINK]]">[[REMOVE_FROM_GROUPS_LINK]]</a></p>';
 					}
@@ -345,8 +351,8 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 						$cssRules,
 						$body, $adminDetails, $email,
 						$values['meta_data/subject'],
-						$values['meta_data/email_address_from'],
-						$values['meta_data/email_name_from'], $box['key']['id'])
+						$emailAddressFrom,
+						$emailNameFrom, $box['key']['id'])
 					) {
 						$error .= ($error? "\n" : ''). ze\admin::phrase("The test email(s) could not be sent. There could be a problem with the site's email system.");
 						break;
@@ -443,8 +449,6 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$record = [
 				'newsletter_name' => $values['meta_data/newsletter_name'],
 				'subject' => $values['meta_data/subject'],
-				'email_name_from' => $values['meta_data/email_name_from'],
-				'email_address_from' => $values['meta_data/email_address_from'],
 				'body' =>  $values['meta_data/body'],
 				'apply_css_rules' => $values['meta_data/apply_css_rules']
 			];
@@ -475,7 +479,7 @@ class zenario_newsletter__admin_boxes__newsletter extends zenario_newsletter {
 			$files = [];
 			$htmlChanged = false;
 			ze\fileAdm::addImageDataURIsToDatabase($body, ze\link::absolute());
-			ze\contentAdm::syncInlineFileLinks($files, $body, $htmlChanged);
+			ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $body, $htmlChanged);
 			ze\contentAdm::syncInlineFiles(
 				$files,
 				['foreign_key_to' => 'newsletter', 'foreign_key_id' => $box['key']['id']],

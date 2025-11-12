@@ -574,14 +574,14 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 		if ($values['first_tab/use_translation'] && empty($fields['first_tab/use_translation']['hidden'])) {
 			$fields['first_tab/hyperlink_target']['pick_items'] = $fields['first_tab/hyperlink_target__translation']['pick_items'];
 			$fields['first_tab/hyperlink_target']['validation'] = $fields['first_tab/hyperlink_target__translation']['validation'];
+			
+			$fields['first_tab/hyperlink_target']['label'] = ze\admin::phrase('Translation chain:');
 		
 		} else {
 			$fields['first_tab/hyperlink_target']['pick_items'] = $fields['first_tab/hyperlink_target__specific']['pick_items'];
 			$fields['first_tab/hyperlink_target']['validation'] = $fields['first_tab/hyperlink_target__specific']['validation'];
 			
-			if (!empty($fields['first_tab/use_translation']['hidden'])) {
-				$fields['first_tab/hyperlink_target']['label'] = ze\admin::phrase('Content item:');
-			}
+			$fields['first_tab/hyperlink_target']['label'] = ze\admin::phrase('Content item:');
 		}
 		
 		//On a multilingual site, if the “specific” option is selected, there should be a box below saying “this will link to the content item in [[language name]]”
@@ -631,13 +631,8 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 			$fields['first_tab/use_download_page']['hidden'] = true;
 		}
 		
-		//Don't show the translations checkbox if this can never be translated
-		$fields['title_and_description/translate_text']['hidden'] =
-			$box['key']['isVersionControlled']
-		 || !ze\row::exists('languages', ['translate_phrases' => 1]);
-		
-		//Don't show notes about translations if this won't be translated
-		if ($fields['title_and_description/translate_text']['hidden'] || !$values['title_and_description/translate_text']) {
+		//Don't show notes about translations if a phrase won't be translated
+		if ($box['key']['isVersionControlled'] || !ze\row::exists('languages', ['translate_phrases' => 1])) {
 			$fields['title_and_description/text']['show_phrase_icon'] =
 			$fields['title_and_description/title']['show_phrase_icon'] =
 			$fields['first_tab/more_link_text']['show_phrase_icon'] = false;
@@ -750,11 +745,9 @@ class zenario_banner__admin_boxes__plugin_settings extends ze\moduleBaseClass {
 				$contentItemPrivacy = ze\row::get('translation_chains', 'privacy', ['equiv_id' => $cID, 'type' => $cType]);
 				
 				//...and display it to the admin...
-				$fields['first_tab/hide_private_item']['note_below'] = '<p>Selected content item privacy setting is:</p><p>"' . ze\contentAdm::privacyDesc($contentItemPrivacy) . '"</p>';
-				$fields['first_tab/hide_private_item']['indent'] = 2;
+				$fields['first_tab/hide_private_item']['note_below'] = '<p>Selected content item privacy: ' . ze\contentAdm::privacyDesc($contentItemPrivacy) . '</p>';
 			} else {
 				//...or don't show the note at all if no content item is selected.
-				$fields['first_tab/hide_private_item']['indent'] = 1;
 				unset($fields['first_tab/hide_private_item']['note_below']);
 			}
 		}

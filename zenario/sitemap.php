@@ -63,7 +63,7 @@ $sql = "
 	  AND v.in_sitemap = 1
 	  AND tc.privacy = 'public'
 	  AND sp.equiv_id IS NULL
-	ORDER BY c.tag_id";
+	ORDER BY v.published_datetime DESC";
 
 $result = ze\sql::select($sql);
 
@@ -75,6 +75,7 @@ header('Content-Type: text/xml; charset=UTF-8');
 $xml = new XMLWriter();
 $xml->openURI('php://output');
 $xml->startDocument('1.0', 'UTF-8');
+	$xml->writePi('xml-stylesheet', 'type="text/xsl" href="' . ze\link::absolute() . 'zenario/sitemap.xsl"');
 	$xml->setIndent(4);
 	$xml->startElement('urlset');
 		$xml->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');

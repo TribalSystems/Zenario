@@ -1,0 +1,11 @@
+"Language ID","Module"
+gu,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"દસ્તાવેજ ડાઉનલોડ:"
+_DOCUMENT_DOWNLOAD_PAGE,"આ પેજનું URL:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"આ દસ્તાવેજ કોઈ પણ કેટેગરીમાં નથી."
+_VIEW_OR_DOWNLOAD,"જુઓ/ડાઉનલોડ:"
+_FILE_TYPE_AND_SIZE,"ફાઇલ પ્રકાર અને કદ:"
+_S3_FILE_TYPE_AND_SIZE,"S3 ફાઇલ પ્રકાર અને કદ:"
+_S3_FILENAME,"S3 ફાઇલનામ:"

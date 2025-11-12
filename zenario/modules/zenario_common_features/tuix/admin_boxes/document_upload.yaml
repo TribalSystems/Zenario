@@ -18,8 +18,6 @@ zenario_document_upload:
                         #accept: "application/zip"
                         #extensions: 
                         #	- .zip
-                        dropbox: true
-                        dropbox_phrase: 'Upload from Dropbox'
                 
                 privacy:
                     label: 'Select the kind of access:'

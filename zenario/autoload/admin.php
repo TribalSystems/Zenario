@@ -287,6 +287,15 @@ class admin {
 		}
 	}
 	
+	public static function isMultisite($adminId = null) {
+		
+		if (is_null($adminId)) {
+			$adminId = $_SESSION['admin_userid'] ?? 0;
+		}
+		
+		return \ze\row::exists('admins', ['id' => $adminId, 'authtype' => 'super']);
+	}
+	
 	public static $englishDatePhrases = [
 		'_MONTH_SHORT_01' => 'Jan',
 		'_MONTH_SHORT_02' => 'Feb',
@@ -400,11 +409,11 @@ class admin {
 	public static function floatingBoxJS($message, $buttons = false, $showWarning = false, $addCancelButton = false) {
 	
 		if (!$buttons) {
-			$buttons = '<input type="button" class="zenario_submit_button" value="'. \ze\admin::phrase('_OK'). '" />';
+			$buttons = '<input type="button" class="zenario_submit_button" value="'. \ze\admin::phrase('OK'). '" />';
 		}
 	
 		if ($addCancelButton) {
-			$buttons .= '<input type="button" class="zenario_gp_button" value="'. \ze\admin::phrase('_CANCEL'). '" />';
+			$buttons .= '<input type="button" class="zenario_gp_button" value="'. \ze\admin::phrase('Cancel'). '" />';
 		}
 	
 		return 'zenarioA.floatingBox(\''. \ze\escape::jsOnClick($message). '\', \''. \ze\escape::jsOnClick($buttons). '\', '. ($showWarning ===  2 || $showWarning === 'error'? '2' : ($showWarning? '1' : '0')). ');';
@@ -635,6 +644,74 @@ class admin {
 			$details['modified_date'] = $details['last_edited'];
 			unset($details['last_edited']);
 		}
+	}
+	
+	//Check and format an admin's login status, including session activity and 2FA status
+	//Returns array with formatted login info and activity status
+	public static function getFormattedLoginStatus($adminId, $adminDetails = null) {
+		if (!$adminDetails) {
+			$adminDetails = \ze\row::get('admins', ['last_login', 'session_id', 'created_date'], $adminId);
+		}
+		
+		$result = [
+			'last_login' => '',
+			'last_activity_time' => '',
+			'pending_2fa' => false
+		];
+		
+		if ($adminDetails['last_login']) {
+			$result['last_login'] = \ze\admin::formatDateTime($adminDetails['last_login'], 'vis_date_format_med', $useDefaultLang = true);
+			
+			if ($sessionId = $adminDetails['session_id']) {
+				$sessionPath = session_save_path() . "/sess_" . $sessionId;
+				
+				if (file_exists($sessionPath)) {
+					clearstatcache(true, $sessionPath);
+					$sessionInfo = stat($sessionPath);
+					
+					//Check how long ago the admin was active
+					$lastActivityTimestamp = $sessionInfo['mtime'];
+					$inactivityDuration = (time() - $lastActivityTimestamp);
+					
+					//If the admin was active less than 10 mins ago, show "Logged in now" instead of a date
+					if ($inactivityDuration < 600) {
+						//When 2FA is enabled, show the login status of this admin
+						if (\ze\site::description('enable_two_factor_authentication_for_admin_logins')) {
+							$sql = "
+								SELECT 1
+								FROM ". DB_PREFIX. "admin_settings
+								WHERE name LIKE 'z_admin_2fa_%'
+								AND admin_id = ". (int) $adminId;
+							
+							if (\ze\sql::exists($sql)) {
+								$result['last_login'] = \ze\admin::phrase('Logged in now');
+							} else {
+								$result['last_login'] = \ze\admin::phrase('Logged in now (pending 2FA)');
+								$result['pending_2fa'] = true;
+							}
+						} else {
+							$result['last_login'] = \ze\admin::phrase('Logged in now');
+						}
+					}
+					
+					//Set last activity time for organizer display
+					if ($lastActivityTimestamp && $inactivityDuration) {
+						if ($inactivityDuration < 90) {
+							$result['last_activity_time'] = \ze\admin::phrase('Last active just now');
+						} else {
+							$result['last_activity_time'] = \ze\admin::phrase('Last active [[last_active]] minutes ago', ['last_active' => (int) ($inactivityDuration / 60)]);
+						}
+					}
+				} elseif ($adminDetails['last_login']) {
+					$result['last_activity_time'] = \ze\admin::phrase('Logged out');
+				}
+			}
+		
+		} else {
+			$result['last_login'] = \ze\admin::phrase('Never logged in');
+		}
+		
+		return $result;
 	}
 	
 }

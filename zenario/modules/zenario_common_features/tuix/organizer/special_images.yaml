@@ -114,8 +114,15 @@ zenario__library:
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     upload:
-                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg;*.ico'
-                        fileDesc: Images
+                        accept: 'image/png, image/jpeg, image/gif, image/webp, image/svg+xml, image/x-icon, image/icon'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
+                            - .svg
+                            - .ico
                         multi: true
                         drag_and_drop: true
                         request:
@@ -164,7 +171,7 @@ zenario__library:
                     ajax:
                         confirm:
                             download: true
-                            message: 'Are you sure you wish to download the image "[[filename]]"?'
+                            message: 'Download the image "[[filename]]"?'
                             message_type: warning
                             button_message: Download
                             cancel_button_message: Cancel

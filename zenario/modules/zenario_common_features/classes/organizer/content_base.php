@@ -132,6 +132,36 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				zenario_organizer::setFilterValue('language_id', $langIdFilter);
 			}
 		}
+		
+		//In "Copy from other" mode, do not allow picking the same content item
+		//as the source and target. Hide it in the picker panel.
+		if (!empty($_GET['_combineItem'])) {
+			$panel['db_items']['where_statement'] .= "
+				AND c.tag_id != '" . ze\escape::sql($_GET['_combineItem']) . "'";
+		}
+		
+		//Also, only allow the "Copy from other" button to work on specific content type panels.
+		//Hide it entirely on "Trashed" and "Hidden" panels,
+		//and make it disabled for "All content items", "Draft content items", "Special pages", etc.
+		if ($refinerName != 'content_type') {
+			if ($path == 'zenario__content/panels/trashed_content_items' || $path == 'zenario__content/panels/hidden_content_items') {
+				if (isset($panel['item_buttons']['create_draft_by_copying'])) {
+					$panel['item_buttons']['create_draft_by_copying']['hidden'] = true;
+				}
+				
+				if (isset($panel['item_buttons']['create_draft_by_overwriting'])) {
+					$panel['item_buttons']['create_draft_by_overwriting']['hidden'] = true;
+				}
+			} else {
+				if (isset($panel['item_buttons']['create_draft_by_copying'])) {
+					$panel['item_buttons']['create_draft_by_copying']['disabled'] = true;
+				}
+				
+				if (isset($panel['item_buttons']['create_draft_by_overwriting'])) {
+					$panel['item_buttons']['create_draft_by_overwriting']['disabled'] = true;
+				}
+			}
+		}
 
 		//Have a refiner that enforces the language filter be set.
 		if ($mode != 'typeahead_search'
@@ -216,7 +246,6 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			
 					break;
 				case 'document':
-					$panel['item_buttons']['duplicate']['hidden'] = true;
 					$panel['item_buttons']['create_draft_by_overwriting']['hidden'] = true;
 			
 					break;
@@ -272,23 +301,47 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				ze\ray::valuesToKeys(ze\row::getValues('content_types', 'content_type_id', ['enable_categories' => 1]));
 		}
 		
-		$numLanguages = ze\lang::count();
-		if ($numLanguages < 2) {
-			unset($panel['columns']['sync_assist']);
-		} else {
-			$syncAssistLangs = ze\row::getValues('languages', 'id', ['sync_assist' => 1, 'id' => ['!' => ze::$defaultLang]]);
-			if ($this->numSyncAssistLangs = count($syncAssistLangs)) {
-				define('ZENARIO_SYNC_ASSIST_LANGS', ze\escape::in($syncAssistLangs, 'sql'));
-			} else {
-				unset($panel['columns']['sync_assist']);
-			}
-		}
-		
 		//If this is the Translations panel, and it was accessed from the menu nodes panel,
 		//make sure the admin box for creating/editing has the correct parameters.
 		if ($path == 'zenario__content/panels/chained' && $refinerName == 'zenario_trans__chained_in_link__from_menu_node' && ($menu = ze\menu::details($refinerId))) {
 			$panel['item_buttons']['create_translation']['admin_box']['key']['id_is_parent_menu_node_id'] = 1;
 			$panel['item_buttons']['create_translation']['admin_box']['key']['edit_linked_content_item'] = 1;
+		}
+		
+		
+		//Check to see if someone is using the activity filter.
+		$activityFilter = zenario_organizer::filterValue('activity_filter');
+		if (!is_null($activityFilter)) {
+			
+			//Note: I'm implemented in PHP to be able to use a greater-than logic and a dynamic date.
+			$ymd = ze\date::ymd();
+			
+			switch ($activityFilter) {
+				case 'today':
+					$panel['db_items']['where_statement'] .= "
+						AND v.last_activity_datetime >= '". ze\escape::sql($ymd). "'";
+					break;
+				
+				case 'last_3_days':
+					$panel['db_items']['where_statement'] .= "
+						AND v.last_activity_datetime >= DATE_SUB('". ze\escape::sql($ymd). "', INTERVAL 2 DAY)";
+					break;
+				
+				case 'last_15_days':
+					$panel['db_items']['where_statement'] .= "
+						AND v.last_activity_datetime >= DATE_SUB('". ze\escape::sql($ymd). "', INTERVAL 14 DAY)";
+					break;
+				
+				//Some options we didn't end up using, but I'll keep the code commented out:
+				#case 'this_week':
+				#	$panel['db_items']['where_statement'] .= "
+				#		AND v.last_activity_datetime >= DATE_SUB('". ze\escape::sql($ymd). "', INTERVAL WEEKDAY('". ze\escape::sql($ymd). "') DAY)";
+				#	break;
+				#case 'this_month':
+				#	$panel['db_items']['where_statement'] .= "
+				#		AND v.last_activity_datetime >= DATE_SUB('". ze\escape::sql($ymd). "', INTERVAL DAYOFMONTH('". ze\escape::sql($ymd). "') DAY)";
+				#	break;
+			}
 		}
 	}
 	
@@ -306,22 +359,55 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				unset($panel['inline_buttons']['multiple_categories']);
 			}
 		}
-
-		$panel['columns']['type']['values'] = [];
-		$ord = 1;
-		foreach (ze\content::getContentTypes(false, false) as $cType) {
-			$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
-
-			//Only populate the content type quick filter
-			//when viewing the "All content items" panel.
-			if (!$panel['key']['cType']) {
-				$panel['quick_filter_buttons'][$cType['content_type_id']] = [
-					'ord' => ++$ord,
-					'parent' => 'content_type',
-					'column' => 'type',
-					'label' => $cType['content_type_name_en'],
-					'value' => $cType['content_type_id']
-				];
+		
+		if (ze::in($mode, 'full', 'quick', 'select')) {
+			$ord = 1000;
+			$panel['columns']['type']['values'] = [];
+			foreach (ze\content::getContentTypes(false, false) as $cType) {
+				$panel['columns']['type']['values'][$cType['content_type_id']] = $cType['content_type_name_en'];
+	
+				//Only populate the content type quick filter
+				//when viewing the "All content items" panel.
+				if (!$panel['key']['cType']) {
+					$panel['quick_filter_buttons'][$cType['content_type_id']] = [
+						'ord' => ++$ord,
+						'parent' => 'content_type',
+						'column' => 'type',
+						'label' => $cType['content_type_name_en'],
+						'value' => $cType['content_type_id']
+					];
+				}
+			}
+			
+			
+	
+			$panel['columns']['last_activity_admin_id']['values'] = [];
+			foreach (ze\row::getAssocs('admins', ['username', 'status', 'first_name', 'last_name', 'authtype'], [], ['first_name', 'last_name']) as $adminId => $admin) {
+				
+				$hidden = $admin['status'] != 'active';
+				
+				$fullName = '';
+				if (!empty($admin['first_name']) && !empty($admin['last_name'])) {
+					$fullName = $admin['first_name'] . ' ' . $admin['last_name'];
+				}
+				
+				if ($admin['authtype'] == 'super') {
+					$fullName = ze\admin::phrase('By [[first_name]] [[last_name]] ([[username]], multi-site)', $admin);
+				} else {
+					$fullName = ze\admin::phrase('By [[first_name]] [[last_name]] ([[username]])', $admin);
+				}
+				
+				$panel['columns']['last_activity_admin_id']['values'][$adminId] = ['label' => $fullName, 'hidden' => $hidden];
+				
+				if (!$hidden) {
+					$panel['quick_filter_buttons']['admin_'. $adminId] = [
+						'ord' => ++$ord,
+						'parent' => 'admins',
+						'column' => 'last_activity_admin_id',
+						'label' => $fullName,
+						'value' => $adminId
+					];
+				}
 			}
 		}
 		
@@ -387,22 +473,31 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				$panel['columns']['scheduled_publish_datetime'],
 				$panel['item_buttons']['start_editing']
 			);
-		
-		//Otherwise if the status filter is set, make sure to change the label of the parent to what was chosen
-		} else
-		 if (($statusFilter = zenario_organizer::filterValue('status'))
-		  && (!empty($panel['quick_filter_buttons'][$statusFilter]['label']))) {
-			$panel['quick_filter_buttons']['status']['label'] =
-				$panel['quick_filter_buttons'][$statusFilter]['label'];
 		}
 
-		//Likewise, change the label for content type filter.
-		if (($typeFilter = zenario_organizer::filterValue('type'))
-			&& (!empty($panel['quick_filter_buttons'][$typeFilter]['label']))
-		) {
-			$panel['quick_filter_buttons']['content_type']['label'] =
-				$panel['quick_filter_buttons'][$typeFilter]['label'];
+		//If a filter is set, make sure to change the label of the parent to what was chosen.
+		//Likewise, change the parent labels for the other filters
+		foreach ([
+			'status' => 'status',
+			'type' => 'content_type',
+			'last_activity_admin_id' => 'admins',
+			'activity_filter' => 'activity'
+		] as $columnName => $filterParentButtonName) {
+			$filterValue = zenario_organizer::filterValue($columnName);
+			
+			if (!is_null($filterValue)) {
+				
+				if ($filterParentButtonName === 'admins') {
+					$filterValue = 'admin_'. $filterValue;
+				}
+				
+				if (isset($panel['quick_filter_buttons'][$filterValue]['label'])) {
+					$panel['quick_filter_buttons'][$filterParentButtonName]['label'] =
+						$panel['quick_filter_buttons'][$filterValue]['label'];
+				}
+			}
 		}
+		
 		
 		//If this panel is for a specific layout, don't show the layout filter
 
@@ -465,7 +560,7 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 		
 		if ($path == 'zenario__content/panels/trashed_content_items' && !$panel['key']['layoutId']) {
 			$panel['title'] = ze\admin::phrase('Trashed content items');
-			$panel['no_items_message'] = ze\admin::phrase('There are no trashed content items.');
+			$panel['no_items_message'] = ze\admin::phrase('No trashed content items found');
 			$panel['item']['css_class'] = 'content_trashed';
 			
 			unset($panel['columns']['status']);
@@ -505,7 +600,7 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 
 		} elseif ($path == 'zenario__content/panels/hidden_content_items' && !$panel['key']['layoutId']) {
 			$panel['title'] = ze\admin::phrase('Hidden content items');
-			$panel['no_items_message'] = ze\admin::phrase('There are no hidden content items.');
+			$panel['no_items_message'] = ze\admin::phrase('No content items are hidden');
 			$panel['item']['css_class'] = 'content_hidden';
 			
 			unset($panel['columns']['status']);
@@ -573,20 +668,44 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				$cID = $menu['equiv_id'];
 				$cType = $menu['content_type'];
 			}
-	
-			$panel['title'] = ze\admin::phrase('Translations of "[[tag]]"', ['tag' => ze\content::formatTag($cID, $cType, -1, false, true), 'lang_id' => ze\content::langId($cID, $cType)]);
+			
+			$equivId = ze\content::equivId($cID, $cType);
+			$equivContentLanguage = ze\content::langId($equivId, $cType);
+			
+			$panel['title'] = ze\admin::phrase('Translation chain of "[[tag]]"', ['tag' => ze\content::formatTag($equivId, $cType, -1, false, true), 'lang_id' => $equivContentLanguage]);
 			$panel['label_format_for_grid_view'] = "[[tag]] \n [[language_id]]";
-	
-			if (isset($panel['item_buttons']['create_translation'])) {
-				$panel['item_buttons']['create_translation']['tooltip'] =
-					ze\admin::phrase(
-						'Duplicate "[[tag]]" ([[language_id]]) to create a translation in [[lang_name]]',
-						[
-							'tag' => ze\content::formatTag($cID, $cType),
-							'language_id' => ze\content::langId($cID, $cType),
-							'lang_name' => '[[lang_name]]'
-						]
-					);
+			
+			//Check what is available.
+			//If there is a content item in this chain in the default language, use that as base for translating.
+			//Otherwise, do not allow creating any translations. The admin will need to go to the front-end
+			//to create a translation, as then it's clear which content item is used as base.
+			//Allow adding existing translations into the chain though.
+			$defaulltLangCID = ze\row::get('content_items', 'id', ['equiv_id' => $equivId, 'type' => $cType, 'language_id' => ze::$defaultLang]);
+			if ($defaulltLangCID) {
+				if (isset($panel['item_buttons']['create_translation'])) {
+					$panel['item_buttons']['create_translation']['tooltip'] =
+						ze\admin::phrase(
+							'Duplicate "[[tag]]" ([[language_id]]) to create a translation in [[lang_name]]',
+							[
+								'tag' => ze\content::formatTag($defaulltLangCID, $cType),
+								'language_id' => ze\content::langId($defaulltLangCID, $cType),
+								'lang_name' => '[[lang_name]]'
+							]
+						);
+				}
+			} else {
+				if (isset($panel['item_buttons']['create_translation'])) {
+					$panel['item_buttons']['create_translation']['tooltip'] =
+						ze\admin::phrase(
+							'Disabled: there is no content item in the default language ([[language]]).
+							Please go to any existing item in this translation chain on the front-end, and use it as base to create a new translation.',
+							[
+								'language' => ze\lang::name(ze::$defaultLang)
+							]
+						);
+					
+					$panel['item_buttons']['create_translation']['disabled'] = true;
+				}
 			}
 
 		} elseif ($panel['key']['layoutId'] && $panel['key']['language']) {
@@ -598,7 +717,7 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			];
 			$panel['label_format_for_grid_view'] = '[[tag]]';
 			$panel['title'] = ze\admin::phrase('Content items using the layout "[[codeName]] [[name]]" in [[language]]', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "[[codeName]] [[name]]" in [[language]].', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('No content items use the layout "[[codeName]] [[name]]" in [[language]]', $mrg);
 
 		} elseif ($panel['key']['cType'] && $panel['key']['language']) {
 			$mrg = [
@@ -606,7 +725,7 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				'language' => ze\lang::name($panel['key']['language'])
 			];
 			$panel['title'] = ze\admin::phrase('[[ctype]] content items in [[language]]', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no [[ctype]] content items in [[language]].', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no [[ctype]] content items in [[language]]', $mrg);
 			$panel['columns']['language_id']['hidden'] = true;
 			unset($panel['columns']['type']);
 
@@ -617,21 +736,21 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				'name' => $layout['name']
 			];
 			$panel['title'] = ze\admin::phrase('Content items using the layout "[[codeName]] [[name]]"', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using layout "[[codeName]] [[name]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('No content items use the layout "[[codeName]] [[name]]"', $mrg);
 
 		} elseif ($panel['key']['cType']) {
 			$panel['item']['css_class'] = 'content_type_'. $panel['key']['cType'];
 			$mrg = ze\contentAdm::cTypeDetails($panel['key']['cType']);
 			
 			$panel['title'] = ze\admin::phrase('[[content_type_plural_en]]', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no [[content_type_plural_lower_en]].', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('No [[content_type_plural_lower_en]] found', $mrg);
 			unset($panel['columns']['type']);
 
 		} elseif (ze::get('refiner__menu_children')) {
 			$mrg = [
 				'name' => ze\menu::name($_GET['refiner__menu_children'] ?? false, true)];
 			$panel['title'] = ze\admin::phrase('Content items under the menu node "[[name]]"', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items under the menu node "[[name]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('No content items found under this menu node', $mrg);
 			unset($panel['collection_buttons']['create']);
 
 		} elseif ($panel['key']['language']) {
@@ -646,44 +765,44 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			$mrg = [
 				'category' => ze\category::name(ze::get('refiner__category'))];
 			$panel['title'] = ze\admin::phrase('Content items in the category "[[category]]"', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items in the category "[[category]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('No content items found in this category', $mrg);
 
 		} elseif (ze::get('refiner__module_usage')) {
 			$mrg = [
 				'name' => ze\module::displayName(ze::get('refiner__module_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which module "[[name]]" is used', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the module "[[name]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the module "[[name]]"', $mrg);
 			unset($panel['collection_buttons']['create']);
 
 		} elseif (ze::get('refiner__module_effective_usage')) {
 			$mrg = [
 				'name' => ze\module::displayName(ze::get('refiner__module_effective_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which module "[[name]]" is used (effective usage)', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the module "[[name]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the module "[[name]]"', $mrg);
 			unset($panel['collection_buttons']['create']);
 
 		} elseif (ze::get('refiner__plugin_instance_usage')) {
 			$mrg = [
 				'name' => ze\plugin::name(ze::get('refiner__plugin_instance_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which the plugin "[[name]]" is used', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the plugin "[[name]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the plugin "[[name]]"', $mrg);
 			unset($panel['collection_buttons']['create']);
 
 		} elseif (ze::get('refiner__plugin_instance_effective_usage')) {
 			$mrg = [
 				'name' => ze\plugin::name(ze::get('refiner__plugin_instance_effective_usage'))];
 			$panel['title'] = ze\admin::phrase('Content items on which the plugin "[[name]]" appears (effective usage)', $mrg);
-			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the plugin "[[name]]".', $mrg);
+			$panel['no_items_message'] = ze\admin::phrase('There are no content items using the plugin "[[name]]"', $mrg);
 			unset($panel['collection_buttons']['create']);
 
 		} elseif ($refinerName == 'special_pages') {
-			$panel['title'] = ze\admin::phrase('Special Pages for the Default Language ([[lang]])', ['lang' => ze::$defaultLang]);
+			$panel['title'] = ze\admin::phrase('Special pages for the default language ([[lang]])', ['lang' => ze::$defaultLang]);
 			$panel['item']['css_class'] = 'special_content_published';
 			unset($panel['collection_buttons']['create']);
 
 		} elseif ($refinerName == 'work_in_progress') {
 			$panel['title'] = ze\admin::phrase('Work in progress');
-			$panel['no_items_message'] = ze\admin::phrase('There are no draft content items.');
+			$panel['no_items_message'] = ze\admin::phrase('No draft content items found');
 			$panel['item']['css_class'] = 'content_draft';
 			unset($panel['trash']);
 
@@ -711,6 +830,14 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			unset($panel['item_buttons']['duplicate']);
 			unset($panel['item_buttons']['create_draft_by_copying']);
 			unset($panel['item_buttons']['create_draft_by_overwriting']);
+		}
+		
+		if (isset($panel['item_buttons']['create_draft_by_copying'])) {
+			$panel['item_buttons']['create_draft_by_copying']['combine_items']['path'] = 'zenario__content/panels/content/refiners/content_type//'. $panel['key']['cType']. '//';
+		}
+		
+		if (isset($panel['item_buttons']['create_draft_by_overwriting'])) {
+			$panel['item_buttons']['create_draft_by_overwriting']['combine_items']['path'] = 'zenario__content/panels/content/refiners/content_type//'. $panel['key']['cType']. '//';
 		}
         
 		//If this is full, quick or select mode, and the admin looking at this only has permissions
@@ -774,8 +901,6 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				$item['tooltip'] = ze\admin::phrase('This content item has status [[statusPhrase]]', $item);
 				
 				if ($item['scheduled_publish_datetime']) {
-					$item['css_class'] = 'scheduled_tasks_on_icon';
-					
 					$item['publication_time'] = 
 						ze\admin::formatDateTime($item['scheduled_publish_datetime'], 'vis_date_format_med');
 				
@@ -879,15 +1004,11 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 					
 				}
 
-				if ($item['type'] == 'document')  {
-					$item['has_duplicate'] = false;
-					$item['has_document'] = false;
+				if ($item['type'] == 'document' || $item['type'] == 'audio' || $item['type'] == 'video')  {
+					$item['allow_copying_from_other'] = false;
 					
-				}
-				else
-				{
-					$item['has_duplicate'] = true;
-					$item['has_document'] = true;
+				} else {
+					$item['allow_copying_from_other'] = true;
 					
 				}
 				
@@ -924,13 +1045,6 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 					$item['is_special_page'] = true;
 				}
 			}
-	
-			if (isset($item['sync_assist'])
-			 && $item['sync_assist'] < $this->numSyncAssistLangs) {
-				
-				$item['cell_css_classes']['zenario_trans__links'] = 'orange';
-			}
-			unset($item['sync_assist']);
 			
 			//Content item privacy
 			if (!empty($item['permissions'])) {
@@ -1098,12 +1212,14 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 			}
 			
 			if ($langId) {
-				$ord = $panel['columns']['zenario_trans__links']['ord'];
+				//$ord = $panel['columns']['zenario_trans__links']['ord'];
+				$ord = 0.0;
 				foreach($langs as $lang) {
 					if ($lang['id'] != $langId) {
+						$ord += 0.001;
 						$panel['columns']['lang_'. $lang['id']] =
 							[
-								'ord' => $ord += 0.001,
+								'ord' => 'zenario_trans__links + '. $ord,
 								'title' => $lang['id'],
 								'width' => 'xxsmall',
 								'show_by_default' => (!ze::request('refiner__content_type') || ze::request('refiner__content_type') == 'html')
@@ -1350,7 +1466,80 @@ class zenario_common_features__organizer__content_base extends zenario_common_fe
 				}
 			}
 
-		} elseif (ze::post('create_draft_by_copying') && ze\priv::check('_PRIV_EDIT_DRAFT')) {
+		} elseif (ze::get('create_draft_by_copying')) {
+			$message = "
+				Copy the contents of the content item [[source_content_item]] over the content item [[target_content_item]]?
+                                
+                This will create a draft of the current content item with the contents of the one you selected.";
+            
+            $replace = [
+            	'source_content_item' => ze\content::formatTagFromTagId($ids2),
+            	'target_content_item' => ze\content::formatTagFromTagId($ids)
+            ];
+            
+            $currentAlias = ze\row::get('content_items', 'alias', ['tag_id' => $ids]);
+            if ($currentAlias) {
+            	$message .= "
+            		
+            		This item will keep its alias \"[[current_alias]]\", but its content (meta data, version-controlled content, plugins, nests and slideshows) and choice of layout will be overwritten.";
+            	$replace['current_alias'] = $currentAlias;
+            }
+            
+            if (ze\lang::count() > 1) {
+            	$sourceContentItemLang = ze\row::get('content_items', 'language_id', ['tag_id' => $ids2]);
+            	$targetContentItemLang = ze\row::get('content_items', 'language_id', ['tag_id' => $ids]);
+            	
+            	if ($sourceContentItemLang != $targetContentItemLang) {
+            		$message .= "
+            			
+            			Note that you are copying from an item in [[source_content_item_lang]] over an item in [[target_content_item_lang]].";
+            		
+            		$replace['source_content_item_lang'] = ze\lang::name($sourceContentItemLang);
+            		$replace['target_content_item_lang'] = ze\lang::name($targetContentItemLang);
+            	}
+            }
+            
+			echo ze\admin::phrase($message, $replace);
+		} elseif (ze::get('create_draft_by_overwriting')) {
+			$message = "
+            	Copy the contents of the content item [[source_content_item]] over the current draft of the content item [[target_content_item]]?";
+			
+			$replace = [
+            	'source_content_item' => ze\content::formatTagFromTagId($ids2),
+            	'target_content_item' => ze\content::formatTagFromTagId($ids)
+            ];
+            
+            $currentAlias = ze\row::get('content_items', 'alias', ['tag_id' => $ids]);
+            if ($currentAlias) {
+            	$message .= "
+            		
+            		This item will keep its alias \"[[current_alias]]\", but its content (meta data, version-controlled content, plugins, nests and slideshows) and choice of layout will be overwritten.";
+            	$replace['current_alias'] = $currentAlias;
+            }
+            
+            $message .= "
+            	
+            	This cannot be undone.";
+			
+			if (ze\lang::count() > 1) {
+            	$sourceContentItemLang = ze\row::get('content_items', 'language_id', ['tag_id' => $ids2]);
+            	$targetContentItemLang = ze\row::get('content_items', 'language_id', ['tag_id' => $ids]);
+            	
+            	if ($sourceContentItemLang != $targetContentItemLang) {
+            		$message .= "
+            			
+            			Note that you are copying from an item in [[source_content_item_lang]] over an item in [[target_content_item_lang]].";
+            		
+            		$replace['source_content_item_lang'] = ze\lang::name($sourceContentItemLang);
+            		$replace['target_content_item_lang'] = ze\lang::name($targetContentItemLang);
+            	}
+            }
+            
+			echo ze\admin::phrase($message, $replace);
+		} elseif (
+			(ze::post('create_draft_by_copying') && ze\priv::check('_PRIV_EDIT_DRAFT'))
+			|| (ze::post('create_draft_by_overwriting') && ze\priv::check('_PRIV_EDIT_DRAFT'))
+		) {
 			$sourceCID = $sourceCType = false;
 			if (ze\content::getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
 			 && ($content = ze\row::get('content_items', ['id', 'type', 'status'], ['tag_id' => $ids]))

@@ -53,13 +53,15 @@
 			<% } else if (m.type == 'button') { %>
 				<input type="button" id="field__{{m.id|e}}" value="{{m.value|e}}">
 			<% } else if (m.type == 'values_list') { %>
-				<% if (m.readonly) { %>
-					You cannot edit a dataset field's values
+				<% if (!m.is_form && m.readonly) { %>
+					You cannot edit a dataset field's values.
 				<% } else { %>
-				<div id="field_values_list">{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_field_value', m.lov)}}</div>
-				<div class="bottom_buttons">
-					<input type="button" id="organizer_add_a_field_value" value="Add a value"/>
-				</div>
+					<div id="field_values_list">{{zenarioT.microTemplate('zenario_organizer_admin_box_builder_field_value', m.lov)}}</div>
+					<% if (!m.readonly) { %>
+						<div class="bottom_buttons">
+							<input type="button" id="organizer_add_a_field_value" value="Add a value"/>
+						</div>
+					<% } %>
 				<% } %>
 			<% } else if (m.type == 'calculation_code') { %>
 				<div class="title">

@@ -124,6 +124,23 @@ full_slot:
         #    label: 'CSS & framework'
         #    locked_label: 'View CSS & framework'
         #    onclick: return zenarioA.pluginSlotEditSettings(this, slotName, 'plugin_css_and_framework');
+    
+    switch_to:
+        switch_to_edit:
+            page_modes:
+                layout: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
+            label: Switch to Content item view to edit content
+        switch_to_edit_settings:
+            page_modes:
+                layout: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
+            label: Switch to Content item view to edit plugin settings
+        switch_to_layout:
+            page_modes:
+                edit: true
+            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
+            label: Switch to Layout view to edit plugin settings
         
     
     re_move_place:
@@ -222,7 +239,7 @@ full_slot:
             page_modes:
                 edit: true
             onclick: >
-                if (zenarioA.draft(this.id, false, 'Are you sure you wish to show nothing on this content item?', 'Hide')) {
+                if (zenarioA.draft(this.id, false, 'Show nothing in this slot on this content item?', 'Show nothing')) {
                     zenarioA.hidePlugin(this, slotName);
                 }
                 return false;
@@ -298,7 +315,7 @@ full_slot:
             page_modes:
                 edit: true
             onclick: >
-                if (zenarioA.draft(this.id, false, 'Are you sure you wish to remove this ~plugin~ from this content item?', 'Remove')) {
+                if (zenarioA.draft(this.id, false, 'Remove this ~plugin~ from this content item?', 'Remove')) {
                     zenarioA.removePlugin(this, slotName, 1);
                 }
                 return false;
@@ -364,19 +381,3 @@ full_slot:
                 edit: true
             css_class: zenario_slotControl_no_perms
             label: 'Limited options: you lack Designer permission'
-    switch_to:
-        switch_to_edit:
-            page_modes:
-                layout: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
-            label: Switch to Content item view to edit content
-        switch_to_edit_settings:
-            page_modes:
-                layout: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'edit');
-            label: Switch to Content item view to edit plugin settings
-        switch_to_layout:
-            page_modes:
-                edit: true
-            onclick: return zenarioA.switchToolbarWithSlotControlsOpen(this, event, slotName, 'layout');
-            label: Switch to Layout view to edit plugin settings

@@ -52,27 +52,6 @@ site_settings:
                     label: 'Google Programmable Search JSON API key:'
                     type: text
                     note_below: You can obtain an API key <a href="https://developers.google.com/custom-search/v1/overview" target="_blank">here</a>.
-        dropbox:
-            label: Dropbox
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-            fields:
-                description:
-                    full_width: Yes
-                    snippet:
-                        html: When choosing files to upload to Zenario (e.g. documents and images), you can choose to pick them from Dropbox. To enable this feature, you will need an API Key from Dropbox entered into the field below.
-                dropbox_api_key:
-                    site_setting:
-                        name: dropbox_api_key
-                    label: 'Dropbox API Key:'
-                    type: text
-                    note_below: |
-                        An application key that can use the Dropbox API.
-                                                        You can obtain a key at
-                                                        <a href="https://www.dropbox.com/developers/apps" target="_blank">
-                                                            https://www.dropbox.com/developers/apps
-                                                        </a>.
 #         indexnow:
 #             label: IndexNow
 #             edit_mode:

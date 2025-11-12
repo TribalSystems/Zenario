@@ -90,6 +90,13 @@ class zenario_common_features__admin_boxes__document_folder extends ze\moduleBas
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//...
+		// Handle "Save and Create Another" functionality
+		if (!empty($_POST['_save_and_continue'])) {
+			// Clear the folder name field for creating another folder
+			$values['details/folder_name'] = '';
+			
+			// Reset the key to create mode (not edit mode)
+			$box['key']['id'] = '';
+		}
 	}
 }

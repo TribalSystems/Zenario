@@ -340,7 +340,7 @@ class zenario_pro_features extends zenario_common_features {
 				//Check if the scheduled task manager is running
 				if (!ze\module::inc('zenario_scheduled_task_manager')) {
 					echo '--', ze\cache::swig(ze\admin::phrase('The Scheduled Tasks Manager module is not running.'));
-					echo '-', ze\cache::swig('zenario__modules/panels/modules~-zenario_scheduled_task_manager');
+					echo '-', ze\cache::swig('zenario__library/panels/modules~-zenario_scheduled_task_manager');
 					return;
 		
 				} elseif (!zenario_scheduled_task_manager::checkScheduledTaskRunning($jobName = false, $checkPulse = false)) {

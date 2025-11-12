@@ -31,7 +31,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__sections extends ze\moduleBaseClass {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
+		if ($mode == 'full'
+		 && ($_GET['refiner__language'] ?? '') == ze::$defaultLang) {
+			unset($panel['item']['link']);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

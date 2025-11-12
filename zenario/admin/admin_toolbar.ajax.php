@@ -58,11 +58,7 @@ $originalTags = [];
 ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
 
 if (ze::$recordFiles) {
-	foreach ($moduleFilesLoaded as $moduleFiles) {
-		foreach ($moduleFiles['paths'] as $path) {
-			ze::$tuixFiles[$path] = true;
-		}
-	}
+	ze\tuix::recordYAMLFiles($moduleFilesLoaded);
 }
 
 ze\tuix::checkAdminToolbar($tags);
@@ -121,10 +117,7 @@ if (ze::request('_script')) {
 }
 
 if (ze::$recordFiles) {
-	$tags['__source_files'] = [
-		'root' => CMS_ROOT,
-		'paths' => ze::$tuixFiles
-	];
+	$tags['__source_files'] = ze\tuix::recordedFiles();
 }
 
 if (!empty(ze::$dumps)) {

@@ -183,7 +183,7 @@ class miscAdm {
 			$name = \ze\module::displayName($moduleId);
 			
 			if ($includeLinks) {
-				$link = 'zenario__modules/panels/modules//'. (int) $moduleId; 
+				$link = 'zenario__library/panels/modules//'. (int) $moduleId; 
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span class="listicon organizer_item_image plugin">
@@ -212,7 +212,7 @@ class miscAdm {
 			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
-				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
+				$link = 'zenario__library/panels/plugins//'. (int) $instanceId; 
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span class="listicon organizer_item_image plugin_album_instance">
@@ -240,7 +240,7 @@ class miscAdm {
 			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
-				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
+				$link = 'zenario__library/panels/plugins//'. (int) $instanceId; 
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span class="listicon organizer_item_image plugin_album_instance">
@@ -268,7 +268,7 @@ class miscAdm {
 			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
-				$link = 'zenario__modules/panels/plugins//'. (int) $instanceId; 
+				$link = 'zenario__library/panels/plugins//'. (int) $instanceId; 
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span class="listicon organizer_item_image plugin_album_instance">
@@ -306,7 +306,7 @@ class miscAdm {
 			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
-				$link = 'zenario__modules/panels/plugins/refiners/nests////'. (int) $instanceId;
+				$link = 'zenario__library/panels/plugins/refiners/nests////'. (int) $instanceId;
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span class="listicon organizer_item_image nest_library">
@@ -344,7 +344,7 @@ class miscAdm {
 			$name = \ze\plugin::name($instanceId);
 			
 			if ($includeLinks) {
-				$link = 'zenario__modules/panels/plugins/refiners/slideshows////'. (int) $instanceId;
+				$link = 'zenario__library/panels/plugins/refiners/slideshows////'. (int) $instanceId;
 				$name =
 					'<a target="_blank" href="'. htmlspecialchars($prefix. $link). '">
 						<span class="listicon organizer_item_image slideshow_library">
@@ -441,6 +441,98 @@ class miscAdm {
 			} else {
 				$usageText[] = \ze\admin::phrase("(in historic content)");
 			}
+		}
+		
+		//Check if this links to any content item translation chains
+		if (!empty($usage['content_translation_chains'])) {
+			
+			if ($usage['content_translation_chain'] == 'THIS') {
+				$name = \ze\admin::phrase('this translation chain');
+			
+			} else {
+				$name = \ze\content::formatTagFromTagId($usage['content_translation_chain']);
+				
+				//Show a link to the content item
+				if ($includeLinks) {
+					$cID = $cType = false;
+					\ze\content::getEquivIdAndCTypeFromTagId($cID, $cType, $usage['content_translation_chain']);
+					
+					$translationChain = $usage['content_translation_chain'] . '_t';
+				
+					if (\ze\row::exists('translation_chains', ['equiv_id' => $cID, 'type' => $cType])) {
+						$translationsCount = 0;
+						$exampleTranslatedItem = null;
+						$equivs = \ze\content::equivalences($cID, $cType, $includeCurrent = false, $cID);
+						
+						if (!empty($equivs)) {
+							foreach(\ze::$langs as $lang) {
+								if (!empty($equivs[$lang['id']])) {
+									if ($lang['id'] != \ze::$defaultLang) {
+										++$translationsCount;
+										
+										if ($translationsCount == 1) {
+											$exampleTranslatedItem = $equivs[$lang['id']];
+										}
+									}
+								}
+							}
+							
+							$cssClass = 'translation_chain';
+							
+							$mrg = ['tag' => \ze\content::formatTag($cID, $cType)];
+							
+							if ($translationsCount == 1) {
+								$mrg['example'] = \ze\content::formatTag($exampleTranslatedItem['id'], $exampleTranslatedItem['type'], $exampleTranslatedItem['alias'], $exampleTranslatedItem['language_id']);
+							}
+							
+							if ($translationsCount > 0) {
+								$desc = \ze\admin::nPhrase('[[tag]] and [[example]]', '[[tag]] and [[count]] more', $translationsCount, $mrg);
+							
+							} elseif (\ze\row::get('content_items', 'language_id', ['id' => $cID, 'type' => $cType]) == \ze::$defaultLang) {
+								$desc = \ze\admin::phrase('[[tag]] (no others in chain)', $mrg);
+								$cssClass = 'translation_chain_no_translations';
+							
+							} else {
+								$desc = \ze\admin::phrase('[[tag]] (no content item in default language)', $mrg);
+								$cssClass = 'translation_chain_not_in_default';
+							}
+							
+							$name = 
+								'<a target="_blank" href="'. htmlspecialchars('organizer.php#zenario__content/panels/translation_chains//' . $translationChain). '">
+									<span class="image listicon organizer_item_image organizer_list_view_icon '. $cssClass. '">
+									</span>'. htmlspecialchars($desc).
+								'</a>';
+						} else {
+							$name = \ze\admin::phrase('Missing translation chain of [[chain]]', ['chain' => $usage['content_translation_chain']]);
+						}
+					} else {
+						$name = htmlspecialchars($usage['content_translation_chain']);
+					}
+				}
+			}
+			
+			//Add other item text
+			$count = $usage['content_translation_chains'];
+			if ($count > 1) {
+				if (isset($usageLinks['content_translation_chains'])) {
+					$text = \ze\admin::nPhrase(
+						'[[name]] and 1 other translation chain (<a target="_blank" href="[[content_items]]">view all</a>)', 
+						'[[name]] and [[count]] other translation chains (<a target="_blank" href="[[content_items]]">view all</a>)',
+						$count - 1, 
+						['name' => $name, 'content_items' => $prefix. $usageLinks['content_translation_chains']]
+					);
+				} else {
+					$text = \ze\admin::nPhrase(
+						'[[name]] and 1 other translation chain', 
+						'[[name]] and [[count]] other translation chain', 
+						$count - 1, 
+						['name' => $name]
+					);
+				}
+			} else {
+				$text = $name;
+			}
+			$usageText[] = $text;
 		}
 		
 		
@@ -913,7 +1005,7 @@ class miscAdm {
 						$row['state'] = $state;
 						$box['lovs']['slides_and_states'][$state] = [
 							'ord' => ++$ord,
-							'label' => \ze\admin::phrase('Slide [[slide_num]][[state]]: [[slide_label]]', $row)
+							'label' => \ze\admin::phrase('Slide [[slide_num]]: [[slide_label]]', $row)
 						];
 					}
 				}
@@ -1433,7 +1525,8 @@ class miscAdm {
 		self::$times[] = hrtime(true);
 	}
 	public static function outputPerformance() {
-		for ($i = 1; $i < count(self::$times); ++$i) {
+		$c = count(self::$times);
+		for ($i = 1; $i < $c; ++$i) {
 			\ze::dump('Performance', $i, self::$times[$i] - self::$times[$i - 1]);
 		}
 		\ze\miscAdm::resetPerformance();
@@ -1445,7 +1538,7 @@ class miscAdm {
 		\ze\miscAdm::resetPerformance();
 	}
 	public static function resetPerformance() {
-		self::$times[] = [];
+		self::$times = [];
 	}
 	
 	

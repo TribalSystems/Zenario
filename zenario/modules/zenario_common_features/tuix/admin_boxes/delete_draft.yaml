@@ -15,10 +15,7 @@ zenario_delete_draft:
             notices:
                 delete_item:
                     type: warning
-                    message: ||
-                        Delete this content item's draft version?
-
-                        If the content item is already published, that version will not be affected.
+                    message: ''
                 delete_items:
                     type: warning
                     message: |
@@ -105,9 +102,9 @@ zenario_delete_draft:
                     empty_value: ' -- Please choose what to do with this translation -- '
                     values:
                         keep:
-                            label: Keep translation
+                            label: Keep translation in [[language]]
                         delete:
-                            label: Delete translation
+                            label: Delete translation in [[language]]
                     validate_onchange: true
                     validation:
                         only_validate_when_saving: true

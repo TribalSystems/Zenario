@@ -828,62 +828,6 @@ if (ze\dbAdm::needRevision(158)) {
 
 
 
-//Convert the format of inline image URLs in Newsletters again.
-//This time we're moving them from the old inline image pool to the new email pool.
-//Also resync all of the images used in them.
-if (ze\dbAdm::needRevision(159)) {
-	//Get the body text from the newsletters
-	$sql = "
-		SELECT id, body
-		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
-		WHERE body LIKE '%file.php%'";
-	$result = ze\sql::select($sql);
-	
-	while ($row = ze\sql::fetchAssoc($result)) {
-		$files = [];
-		$htmlChanged = false;
-		ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged);
-		
-		if ($htmlChanged) {
-			ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', ['body' => $row['body']], ['id' => $row['id']]);
-		}
-		
-		ze\contentAdm::syncInlineFiles(
-			$files,
-			['foreign_key_to' => 'newsletter', 'foreign_key_id' => $row['id']],
-			$keepOldImagesThatAreNotInUse = true);
-	}
-
-	ze\dbAdm::revision(159);
-}
-
-//Update and resync images in newsletter templates too
-if (ze\dbAdm::needRevision(160)) {
-	//Get the body text from the newsletters
-	$sql = "
-		SELECT id, body
-		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
-		WHERE body LIKE '%file.php%'";
-	$result = ze\sql::select($sql);
-	
-	while ($row = ze\sql::fetchAssoc($result)) {
-		$files = [];
-		$htmlChanged = false;
-		ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged);
-		
-		if ($htmlChanged) {
-			ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['body' => $row['body']], ['id' => $row['id']]);
-		}
-		
-		ze\contentAdm::syncInlineFiles(
-			$files,
-			['foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $row['id']],
-			$keepOldImagesThatAreNotInUse = false);
-	}
-
-	ze\dbAdm::revision(160);
-}
-
 //Flag the links to images in archived newsletters as archived.
 if (ze\dbAdm::needRevision(162)) {
 
@@ -1131,27 +1075,27 @@ _sql
 
 );
 
+ze\dbAdm::revision(190
+, <<<_sql
+	ALTER TABLE `[[DB_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	DROP COLUMN `email_address_from`,
+	DROP COLUMN `email_name_from`
+_sql
 
-//In Zenario 10.1, we're trying to use WebP images rather than PNG or JPEG.
-//Try to go through any newsletter templates and switch any links to public images from using 
-//PNG or JPEG to using WebP if possible.
-if (ze\dbAdm::needRevision(189)) {
-	$sql = "
-		SELECT id, body
-		FROM ". DB_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
-		WHERE body IS NOT NULL";
-	$result = \ze\sql::select($sql);
+);
 
-	while ($row = \ze\sql::fetchAssoc($result)) {
-		$files = [];
-		$htmlChanged = false;
-		\ze\contentAdm::syncInlineFileLinks($files, $row['body'], $htmlChanged, 'image', $publishingAPublicPage = false, $fixWhereLinksGo = true, $fixPublicDir = true);
-		
-		if ($htmlChanged) {
-			\ze\row::update(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', ['body' => $row['body']], $row['id']);
-		}
-	}
+
+
+//Combined update that fixes/resyncs links to images in newsletters/newsletter templates.
+//Try to replace links to file.php with links to the actual files in the public/images/ directory.
+//Also try to replace links to WebP images with links to the original JPEG/PNG versions.
+//Note: this was backpatched from 10.4 to 10.3, but is safe to run multiple times.
+if (ze\dbAdm::needRevision(191)) {
 	
-	ze\dbAdm::revision(189);
-}
+	if (ze\module::inc('zenario_newsletter')) {
+		zenario_newsletter::checkAllImagePublicLinksInNewsletters();
+		zenario_newsletter::checkAllImagePublicLinksInNewsletterTemplates();
+	}
 
+	ze\dbAdm::revision(191);
+}

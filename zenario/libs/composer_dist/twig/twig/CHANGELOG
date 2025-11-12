@@ -1,3 +1,123 @@
+# 3.21.1 (2025-05-03)
+
+ * Fix ExtensionSet usage of BinaryOperatorExpressionParser
+
+# 3.21.0 (2025-05-02)
+
+ * Fix wrong array index
+ * Deprecate `Template::loadTemplate()`
+ * Fix testing and expression when it evaluates to an instance of `Markup`
+ * Add `ReturnPrimitiveTypeInterface` (and sub-interfaces for number, boolean, string, and array)
+ * Add `SupportDefinedTestInterface` for expression nodes supporting the `defined` test
+ * Deprecate using the `|` operator in an expression with `+` or `-` without using parentheses to clarify precedence
+ * Deprecate operator precedence outside of the [0, 512] range
+ * Introduce expression parser classes to describe operators and operands provided by extensions
+   instead of arrays (it comes with many deprecations that are documented in
+   the ``deprecated`` documentation chapter)
+ * Deprecate the `Twig\ExpressionParser`, and `Twig\OperatorPrecedenceChange` classes
+ * Add attributes `AsTwigFilter`, `AsTwigFunction`, and `AsTwigTest` to ease extension development
+
+# 3.20.0 (2025-02-13)
+
+ * Fix support for ignoring syntax errors in an undefined handler in guard
+ * Add configuration for Commonmark
+ * Fix wrong array index
+ * Bump minimum PHP version to 8.1
+ * Add support for registering callbacks for undefined functions, filters or token parsers in the IntegrationTestCase
+ * Use correct line number for `ForElseNode`
+ * Fix timezone conversion on strings
+
+# 3.19.0 (2025-01-28)
+
+ * Fix a security issue where escaping was missing when using `??`
+ * Deprecate `Token::getType()`, use `Token::test()` instead
+ * Add `Token::toEnglish()`
+ * Add `ForElseNode`
+ * Deprecate `Twig\ExpressionParser::parseOnlyArguments()` and
+  `Twig\ExpressionParser::parseArguments()` (use
+  `Twig\ExpressionParser::parseNamedArguments()` instead)
+ * Fix `constant()` behavior when used with `??`
+ * Add the `invoke` filter
+ * Make `{}` optional for the `types` tag
+ * Add `LastModifiedExtensionInterface` and implementation in `AbstractExtension` to track modification of runtime classes
+ * Ignore static properties when using the dot operator
+
+# 3.18.0 (2024-12-29)
+
+ * Fix unary operator precedence change
+ * Ignore `SyntaxError` exceptions from undefined handlers when using the `guard` tag
+ * Add a way to stream template rendering (`TemplateWrapper::stream()` and `TemplateWrapper::streamBlock()`)
+
+# 3.17.1 (2024-12-12)
+
+ * Fix the null coalescing operator when the test returns null
+ * Fix the Elvis operator when used as '? :' instead of '?:'
+ * Support for invoking closures
+
+# 3.17.0 (2024-12-10)
+
+ * Fix ArrayAccess with objects as keys
+ * Support underscores in number literals
+ * Deprecate `ConditionalExpression` and `NullCoalesceExpression` (use `ConditionalTernary` and `NullCoalesceBinary` instead)
+
+# 3.16.0 (2024-11-29)
+
+ * Deprecate `InlinePrint`
+ * Fix having macro variables starting with an underscore
+ * Deprecate not passing a `Source` instance to `TokenStream`
+ * Deprecate returning `null` from `TwigFilter::getSafe()` and `TwigFunction::getSafe()`, return `[]` instead
+
+# 3.15.0 (2024-11-17)
+
+ * [BC BREAK] Add support for accessing class constants with the dot operator;
+   this can be a BC break if you don't use UPPERCASE constant names
+ * Add Spanish inflector support for the `plural` and `singular` filters in the String extension
+ * Deprecate `TempNameExpression` in favor of `LocalVariable`
+ * Deprecate `NameExpression` in favor of `ContextVariable`
+ * Deprecate `AssignNameExpression` in favor of `AssignContextVariable`
+ * Remove `MacroAutoImportNodeVisitor`
+ * Deprecate `MethodCallExpression` in favor of `MacroReferenceExpression`
+ * Fix support for the "is defined" test on `_self.xxx` (auto-imported) macros
+ * Fix support for the "is defined" test on inherited macros
+ * Add named arguments support for the dot operator arguments (`foo.bar(some: arg)`)
+ * Add named arguments support for macros
+ * Add a new `guard` tag that allows to test if some Twig callables are available at compilation time
+ * Allow arrow functions everywhere
+ * Deprecate passing a string or an array to Twig callable arguments accepting arrow functions (pass a `\Closure`)
+ * Add support for triggering deprecations for future operator precedence changes
+ * Deprecate using the `not` unary operator in an expression with ``*``, ``/``, ``//``, or ``%`` without using explicit parentheses to clarify precedence
+ * Deprecate using the `??` binary operator without explicit parentheses
+ * Deprecate using the `~` binary operator in an expression with `+` or `-` without using parentheses to clarify precedence
+ * Deprecate not passing `AbstractExpression` args to most constructor arguments for classes extending `AbstractExpression`
+ * Fix `power` expressions with a negative number in parenthesis (`(-1) ** 2`)
+ * Deprecate instantiating `Node` directly. Use `EmptyNode` or `Nodes` instead.
+ * Add support for inline comments
+ * Add `Profile::getStartTime()` and `Profile::getEndTime()`
+ * Fix "ignore missing" when used on an "embed" tag
+ * Fix the possibility to override an aliased block (via use)
+ * Add template cache hot reload
+ * Allow Twig callable argument names to be free-form (snake-case or camelCase) independently of the PHP callable signature
+   They were automatically converted to snake-cased before
+ * Deprecate the `attribute` function; use the `.` notation and wrap the name with parenthesis instead
+ * Add support for argument unpackaging
+ * Add JSON support for the file extension escaping strategy
+ * Support Markup instances (and any other \Stringable) as dynamic mapping keys
+ * Deprecate the `sandbox` tag
+ * Improve the way one can deprecate a Twig callable (use `deprecation_info` instead of the other callable options)
+ * Add the `enum` function
+ * Add support for logical `xor` operator
+
+# 3.14.2 (2024-11-07)
+
+ * Fix an infinite recursion in the sandbox code
+
+# 3.14.1 (2024-11-06)
+
+ * [BC BREAK] Fix a security issue in the sandbox mode allowing an attacker to call attributes on Array-like objects
+   They are now checked via the property policy
+ * Fix a security issue in the sandbox mode allowing an attacker to be able to call `toString()`
+   under some circumstances on an object even if the `__toString()` method is not allowed by the security policy
+
 # 3.14.0 (2024-09-09)
 
  * Fix a security issue when an included sandboxed template has been loaded before without the sandbox context
@@ -43,6 +163,17 @@
  * Bump minimum PHP version to 8.0
  * Fix integration tests when a test has more than one data/expect section and deprecations
  * Add the `enum_cases` function
+
+# 3.11.2 (2024-11-06)
+
+ * [BC BREAK] Fix a security issue in the sandbox mode allowing an attacker to call attributes on Array-like objects
+   They are now checked via the property policy
+ * Fix a security issue in the sandbox mode allowing an attacker to be able to call `toString()`
+   under some circumstances on an object even if the `__toString()` method is not allowed by the security policy
+
+# 3.11.1 (2024-09-10)
+
+ * Fix a security issue when an included sandboxed template has been loaded before without the sandbox context
 
 # 3.11.0 (2024-08-08)
 

@@ -4,8 +4,8 @@ plugin_settings:
     module_class_name: zenario_slideshow
     tabs:
         cycle2:
-            visible_if: |
-                zenarioAB.value('animation_library', 'first_tab') == 'cycle2'
+            visible_if:
+                zenarioAB.animationLibIs: cycle2
             label: jQuery Cycle
             fields:
                 use_timeout:

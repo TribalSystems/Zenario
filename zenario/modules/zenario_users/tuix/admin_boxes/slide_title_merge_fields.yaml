@@ -13,3 +13,19 @@ zenario_slide:
                 parent: user
                 data-class: user_icon
                 label: 'User first and last name: [[zenario_users:name]]'
+            '[[zenario_users:salutation]]':
+                parent: user
+                data-class: user_icon
+                label: 'User salutation: [[zenario_users:salutation]]'
+            '[[zenario_users:firstName]]':
+                parent: user
+                data-class: user_icon
+                label: 'User first name: [[zenario_users:firstName]]'
+            '[[zenario_users:lastName]]':
+                parent: user
+                data-class: user_icon
+                label: 'User last name: [[zenario_users:lastName]]'
+            '[[zenario_users:screenName]]':
+                parent: user
+                data-class: user_icon
+                label: 'User screen name: [[zenario_users:screenName]]'

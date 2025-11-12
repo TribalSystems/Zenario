@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Look up every content type on this site
 //Sort the items in the following order: html, news, blog then documents.
 $sql = "
-	SELECT content_type_id, content_type_name_en, content_type_plural_en,tooltip_text
+	SELECT content_type_id, content_type_name_en, content_type_plural_en, tooltip_text, organizer_default_sort_logic
 	FROM ". DB_PREFIX. "content_types AS ct
 	INNER JOIN ". DB_PREFIX. "modules AS m
 	   ON m.id = ct.module_id
@@ -58,7 +58,48 @@ foreach (ze\sql::fetchAssocs($sql) as $details) {
 			'refiner' => 'content_type',
 			'refinerId' => $cType
 	]];
+	
+	
+	//Set the default sort order for this content type's panel.
+	//(Note: This will be a refiner on the "All content types" panel.)
+	switch ($details['organizer_default_sort_logic']) {
+		case 'id_asc':
+			$sortCol = 'tag';
+			$sortDesc = false;
+			break;
+		case 'id_desc':
+			$sortCol = 'tag';
+			$sortDesc = true;
+			break;
+		case 'release_date_asc':
+			$sortCol = 'release_date';
+			$sortDesc = false;
+			break;
+		case 'release_date_desc':
+			$sortCol = 'release_date';
+			$sortDesc = true;
+			break;
+		case 'start_date_asc':
+			$sortCol = 'zenario_ctype_event__start_date';
+			$sortDesc = false;
+			break;
+		case 'start_date_desc':
+			$sortCol = 'zenario_ctype_event__start_date';
+			$sortDesc = true;
+			break;
+		default:
+			$sortCol = 'last_activity_datetime';
+			$sortDesc = true;
+	}
+	
+	$nav['zenario__content']['panels']['content']['refiners']['content_type']['prefs_by_refiner_value'][$cType] = [
+		'default_sort_column' => $sortCol,
+		'default_sort_desc' => $sortDesc
+	];
 }
+
+
+
 
 
 //Look up every menu section
@@ -89,7 +130,7 @@ foreach (ze\sql::fetchAssocs($sql) as $details) {
 }
 
 if ($last) {
-	$nav['zenario__menu']['nav'][$last]['css_class'] .= ' zenario_separator_after_this';
+	$nav['zenario__menu']['nav'][$last]['separator_after_this'] = true;
 }
 
 

@@ -223,12 +223,13 @@ zenario_location_manager__location:
                         disabled_if_for_any_selected_items: item.privacy != 'public'
                     upload:
                         multi: true
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                         reorder_items: true
         location_preview:

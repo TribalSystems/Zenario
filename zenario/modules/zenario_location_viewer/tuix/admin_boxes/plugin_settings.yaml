@@ -82,7 +82,7 @@ plugin_settings:
                 show_title:
                     plugin_setting:
                         name: show_title
-                    label: 'Show location title'
+                    label: 'Show location name'
                     type: checkbox
                 show_details:
                     plugin_setting:
@@ -131,42 +131,7 @@ plugin_settings:
                 show_country:
                     plugin_setting:
                         name: show_country
-                    label: 'Show country'
-                    type: checkbox
-                    value: 1
-                    indent: 1
-                show_phone:
-                    plugin_setting:
-                        name: show_phone
-                    label: 'Show phone'
-                    type: checkbox
-                    value: 1
-                    indent: 1
-                show_fax:
-                    plugin_setting:
-                        name: show_fax
-                    label: 'Show fax'
-                    type: checkbox
-                    value: 1
-                    indent: 1
-                show_email:
-                    plugin_setting:
-                        name: show_email
-                    label: 'Show email'
-                    type: checkbox
-                    value: 1
-                    indent: 1
-                show_website:
-                    plugin_setting:
-                        name: show_website
-                    label: 'Show website'
-                    type: checkbox
-                    value: 1
-                    indent: 1
-                show_summary:
-                    plugin_setting:
-                        name: show_summary
-                    label: 'Show summary'
+                    label: 'Show country name'
                     type: checkbox
                     value: 1
                     indent: 1

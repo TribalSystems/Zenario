@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__modules:
+zenario__library:
     panels:
         images_in_slideshow:
             priv: _PRIV_VIEW_REUSABLE_PLUGIN
@@ -204,8 +204,13 @@ zenario__modules:
                     label: Upload image
                     css_class: zenario_create_a_new
                     upload:
-                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-                        fileDesc: Images
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
                         multi: true
                         drag_and_drop: true
                         request:

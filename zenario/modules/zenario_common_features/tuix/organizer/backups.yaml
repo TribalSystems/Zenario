@@ -56,7 +56,6 @@ zenario__administration:
                         <p>(If the file it too large, you may need to upload the file to the backup directory using an FTP/SFTP tool.)</p>
                     upload:
                         accept: '.sql, .gz, .encrypted'
-                        fileDesc: Database backup files
                         request:
                             upload: 1
                 settings_dropdown:

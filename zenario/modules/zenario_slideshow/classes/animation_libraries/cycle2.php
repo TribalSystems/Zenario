@@ -62,7 +62,7 @@ class zenario_slideshow__animation_libraries__cycle2 extends zenario_slideshow {
 				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
 				'Visible' => true,
 				'Tab_Link' => $link,
-				'Tab_Name' => $this->formatTitleText($slide['slide_label'], true)
+				'Tab_Name' => $this->formatTitleText(htmlspecialchars($slide['slide_label']), true)
 			];
 			
 			if (!$firstTabNum) {
@@ -78,9 +78,9 @@ class zenario_slideshow__animation_libraries__cycle2 extends zenario_slideshow {
 		//so there are no transitions to animate
 		if ($tabOrd < 2) {
 			$this->mergeFields['Next_Link'] = '';
-			$this->mergeFields['Next_Disabled'] = '_disabled';
+			$this->mergeFields['Next_Disabled'] = '_disabled next';
 			$this->mergeFields['Prev_Link'] = '';
-			$this->mergeFields['Prev_Disabled'] = '_disabled';
+			$this->mergeFields['Prev_Disabled'] = '_disabled prev';
 		} else {
 			$this->mergeFields['Next_Link'] = 'href="#" onclick="return '. static::$interfaceClassName. '.next(this);"';
 			$this->mergeFields['Next_Disabled'] = '';

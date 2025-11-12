@@ -124,6 +124,8 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 			}
 		}
 		
+		ksort($this->mergeFields['nodes']);
+		// echo '<pre>'; var_dump($this->mergeFields['nodes']); echo '</pre>';
 		$this->twigFramework($this->mergeFields);
 	}
 
@@ -136,9 +138,6 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 		
 		$topLevelNodeId = 0;
 		$menuMergeFields = [];
-		$childrenArray = [];
-		$parentIdsAndNames = [];
-		$childrenExist = false;
 		
 		if (is_array($menuArray)) {
 			$i = 0;
@@ -149,11 +148,8 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 
 				if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $row)) {
 					if (!empty($row['children']) && (!$this->numLevels || $this->numLevels > 1)) {
-						$childrenExist = true;
 						$menuNodeMergeFields['hasChildren'] = true;
-
-						$childrenArray[$depth][] = $row['mID'];
-						$parentIdsAndNames[$row['mID']] = ['id' => $parentId, 'name' => $menuNodeMergeFields['Name']];
+						$this->getChildMenuMergeFields($row['children'], $menuMergeFields, $i, $row['name'], $depth, $row['mID'], $topLevelNodeId);
 
 						$menuNodeMergeFields['parentDivForNextButton'] = 'zz_node_' . $topLevelNodeId;
 						$menuNodeMergeFields['childDivForNextButton'] = 'zz_child_of_node_' . $row['mID'];
@@ -162,79 +158,50 @@ class zenario_menu_responsive_push_pull extends zenario_menu {
 					$menuMergeFields[$depth][$parentId][$row['mID']] = $menuNodeMergeFields;
 				}
 			}
+		}
+		
+		return $menuMergeFields;
+	}
+	
+	function getChildMenuMergeFields($childrenArray, &$menuMergeFields, &$i, $parentName, $depth = 1, $parentId = 0, $grandparentNodeId = 0) {
+		$parentDepth = $depth;
+		$depth++;
 
-			if (empty($childrenArray)) {
-				$childrenExist = false;
-			}
-
-			while ($childrenExist) {
-				$parentDepth = $depth;
-				$depth++;
-
-				$childrenToProcess = $childrenArray;
-				$childrenArray = [];
-
-				if (!$this->numLevels || $depth <= $this->numLevels) {
-					foreach ($childrenToProcess[$parentDepth] as $parentId) {
-						$subchildrenMenuArray =
-							ze\menu::getStructure(
-								$cachingRestrictions,
-								$this->sectionId, $this->currentMenuId, $parentId,
-								$this->numLevels, $this->maxLevel1MenuItems, $this->language,
-								$this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-								$this->showInvisibleMenuItems,
-								$this->showMissingMenuNodes,
-								$this->requests,
-								ze\content::showUntranslatedContentItems()
-							);
-
-						foreach ($subchildrenMenuArray as $subchild) {
-							$childrenExist = true;
-
-							if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $subchild)) {
-								$parentIdsAndNames[$subchild['mID']] = ['id' => $parentId, 'name' => $menuNodeMergeFields['Name']];
-								
-								$menuNodeMergeFields['parentId'] = $parentId;
-								$menuNodeMergeFields['parentName'] = $parentIdsAndNames[$parentId]['name'];
-
-								$menuNodeMergeFields['childDivForNextButton'] = 'zz_child_of_node_' . $subchild['mID'];
-
-								if ($depth == 1 && (!$this->numLevels || $this->numLevels > 1)) {
-									$menuNodeMergeFields['parentDivForNextButton'] = 'zz_node_' . $topLevelNodeId;
-								} elseif ($depth == 2) {
-									$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_node_' . $topLevelNodeId;
-									$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentId;
-									
-									if (!$this->numLevels || (($depth + 1) <= $this->numLevels)) {
-										$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
-									}
-								} else {
-									$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_child_of_node_' . $parentIdsAndNames[$parentId]['id'];
-									$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentIdsAndNames[$subchild['mID']]['id'];
-									
-									if (!$this->numLevels || (($depth + 1) <= $this->numLevels)) {
-										$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
-									}
-								}
-
-								if (!empty($subchild['children']) && isset($menuNodeMergeFields['parentDivForNextButton'])) {
-									$menuNodeMergeFields['hasChildren'] = true;
-								}
-								
-								$childrenArray[$depth][] = $subchild['mID'];
-								$menuMergeFields[$depth][$parentId][$subchild['mID']] = $menuNodeMergeFields;
-							}
+		if (!$this->numLevels || $depth <= $this->numLevels) {
+			foreach ($childrenArray as $childNode) {
+				if ($menuNodeMergeFields = $this->getMenuNodeMergeFields($depth, ++$i, $childNode)) {					
+					$menuNodeMergeFields['parentId'] = $parentId;
+					$menuNodeMergeFields['parentName'] = $parentName;
+	
+					$menuNodeMergeFields['childDivForNextButton'] = 'zz_child_of_node_' . $childNode['mID'];
+	
+					if ($depth == 2) {
+						$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_node_' . $grandparentNodeId;
+						$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentId;
+						
+						if (!$this->numLevels || (($depth + 1) <= $this->numLevels)) {
+							$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
+						}
+					} else {
+						$menuNodeMergeFields['parentDivForPrevButton'] = 'zz_child_of_node_' . $grandparentNodeId;
+						$menuNodeMergeFields['childDivForPrevButton'] = 'zz_child_of_node_' . $parentId;
+						
+						if (!$this->numLevels || (($depth + 1) <= $this->numLevels)) {
+							$menuNodeMergeFields['parentDivForNextButton'] = 'zz_child_of_node_' . $parentId;
 						}
 					}
-				}
-
-				if (empty($childrenArray)) {
-					$childrenExist = false;
+	
+					if (!empty($childNode['children']) && isset($menuNodeMergeFields['parentDivForNextButton'])) {
+						$menuNodeMergeFields['hasChildren'] = true;
+						$this->getChildMenuMergeFields($childNode['children'], $menuMergeFields, $i, $childNode['name'], $depth, $childNode['mID'], $parentId);
+					}
+					
+					$menuMergeFields[$depth][$parentId][$childNode['mID']] = $menuNodeMergeFields;
 				}
 			}
 		}
 		
-		return $menuMergeFields;
+		return $menuMergeFields[$depth];
 	}
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {

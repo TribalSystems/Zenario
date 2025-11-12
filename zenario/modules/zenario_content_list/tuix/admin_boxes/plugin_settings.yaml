@@ -32,7 +32,8 @@ plugin_settings:
                     type: select
                     value: all
                     values:
-                        all: -- All content types --
+                        all:
+                            label: -- All content types --
                     format_onchange: true
         
                 only_show:
@@ -372,15 +373,6 @@ plugin_settings:
                         label: |
                             For each item in RSS feed:
                         label_class: subheading
-                translate_text:
-                    plugin_setting:
-                        name: translate_text
-                    label: 'Make this plugin multilingual using the phrases system'
-                    note_below: 'Zenario creates phrases when they are viewed (by an admin or visitor) on a content item which is not in English.'
-                    type: checkbox
-                    value: 1
-                    format_onchange: true
-                
                 show_headings:
                     plugin_setting:
                         name: show_headings
@@ -456,7 +448,8 @@ plugin_settings:
                     type: select
                     value: Most_Recent_First
                     values:
-                        Alphabetically: Title (alphabetically)
+                        Alphabetically: Title (A-Z)
+                        Alphabetically_Reverse: Title (Z-A)
                         Most_Recent_First: Release date (most recent first)
                         Oldest_First: Release date (oldest first)
                     side_note: |
@@ -768,10 +761,10 @@ plugin_settings:
                     values:
                         content_item_title:
                             ord: 1
-                            label: 'Use meta data Title of each content item'
+                            label: 'Show browser title of each item'
                         content_item_menu_node:
                             ord: 2
-                            label: 'Use text of its menu node (but use meta data Title if content item isn\'t in the menu)'
+                            label: 'Show item\'s menu node (fall back on browser title if not in menu)'
                     value: content_item_title
                     visible_if: lib.value('show_titles')
                 show_language:
@@ -780,7 +773,7 @@ plugin_settings:
                     label: |
                         Show language
                     side_note: |
-                        Every content item has a language code. On a multi-lingual site you may wish to display that code.
+                        Every content item has a language code. On a multi-lingual site that code can be shown.
                     type: checkbox
                     value: ""
                 show_text_preview:
@@ -966,12 +959,13 @@ plugin_settings:
                     label: 'Fall-back image:'
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                         reorder_items: false
                     pick_items:

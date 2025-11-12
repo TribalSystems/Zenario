@@ -27,14 +27,21 @@ final class TokenStream
         private array $tokens,
         private ?Source $source = null,
     ) {
-        $this->source = $source ?: new Source('', '');
+        if (null === $this->source) {
+            trigger_deprecation('twig/twig', '3.16', \sprintf('Not passing a "%s" object to "%s" constructor is deprecated.', Source::class, __CLASS__));
+
+            $this->source = new Source('', '');
+        }
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return implode("\n", $this->tokens);
     }
 
+    /**
+     * @return void
+     */
     public function injectTokens(array $tokens)
     {
         $this->tokens = array_merge(\array_slice($this->tokens, 0, $this->current), $tokens, \array_slice($this->tokens, $this->current));
@@ -72,7 +79,7 @@ final class TokenStream
             $line = $token->getLine();
             throw new SyntaxError(\sprintf('%sUnexpected token "%s"%s ("%s" expected%s).',
                 $message ? $message.'. ' : '',
-                Token::typeToEnglish($token->getType()),
+                $token->toEnglish(),
                 $token->getValue() ? \sprintf(' of value "%s"', $token->getValue()) : '',
                 Token::typeToEnglish($type), $value ? \sprintf(' with value "%s"', $value) : ''),
                 $line,
@@ -109,7 +116,7 @@ final class TokenStream
      */
     public function isEOF(): bool
     {
-        return Token::EOF_TYPE === $this->tokens[$this->current]->getType();
+        return $this->tokens[$this->current]->test(Token::EOF_TYPE);
     }
 
     public function getCurrent(): Token
@@ -117,11 +124,6 @@ final class TokenStream
         return $this->tokens[$this->current];
     }
 
-    /**
-     * Gets the source associated with this stream.
-     *
-     * @internal
-     */
     public function getSourceContext(): Source
     {
         return $this->source;

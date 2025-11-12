@@ -138,19 +138,41 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 		$fields['details/fetch_youtube_details']['hidden'] = $fields['details/fetch_vimeo_details']['hidden'] = true;
 
 		$parsed = [];
+		$fields['details/video_privacy']['hidden'] = false;
 		if ($values['details/url']) {
 			$parsed = parse_url($values['details/url']);
 
 			if (isset($parsed['host'])) {
-				if (strpos($parsed['host'], 'youtube.com') !== false) {
+				if (strpos($parsed['host'], 'youtube.com') !== false || strpos($parsed['host'], 'youtu.be') !== false) {
 					$fields['details/fetch_youtube_details']['hidden'] = false;
-				} elseif (strpos($parsed['host'], 'youtu.be') !== false) {
-					$fields['details/fetch_youtube_details']['hidden'] = false;
+					
+					$noteBelowText = 'Enter a URL on YouTube, e.g. https://youtu.be/12345. You can then press the "Fetch" button to get the video\'s thumbnail and descriptive text.';
+					
+					$noticeBelowText = "
+						You may enter an additional start time argument.
+						For example, for YouTube, enter \"t=120\" to start the video 2 minutes in.";
+					
+					$fields['details/video_privacy']['hidden'] = true;
 				} elseif (strpos($parsed['host'], 'vimeo.com') !== false) {
 					$fields['details/fetch_vimeo_details']['hidden'] = false;
+					
+					$noteBelowText = 'Enter a URL on Vimeo, e.g. https://vimeo.com/12345 or https://vimeo.com/12345/98765 if the video is unlisted. You can then press the "Fetch" button to get the video\'s thumbnail and descriptive text.';
+					
+					$noticeBelowText = "
+						You may enter an additional start time argument.
+						For example, for Vimeo, enter \"t=2m\" to start the video 2 minutes in.";
 				}
 			}
+		} else {
+			$noteBelowText = 'Enter a URL on YouTube, e.g. https://youtu.be/12345 or Vimeo, e.g. https://vimeo.com/12345 or https://vimeo.com/12345/98765 if the video is unlisted. You can then press the "Fetch" button to get the video\'s thumbnail and descriptive text.';
+			$noticeBelowText = "
+				You may enter an additional start time argument.
+				For example, for YouTube, enter \"t=120\" to start the video 2 minutes in.
+				For Vimeo, enter \"t=2m\" to start the video 2 minutes in.";
 		}
+		
+		$fields['details/url']['note_below'] = ze\admin::phrase($noteBelowText);
+		$fields['details/start_time']['notices_below']['start_time_info']['message'] = ze\admin::phrase($noticeBelowText);
 		
 		//"Fetch thumbnail and title" feature:
 		if (!empty($fields['details/fetch_youtube_details']['pressed'])) {
@@ -222,7 +244,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 							}
 						}
 					} else {
-						$fields['details/fetch_youtube_details']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
+						$fields['details/fetch_youtube_details']['error'] = ze\admin::phrase("Video details not found. Please make sure the link is valid.");
 					}
 				}
 			} else {
@@ -245,7 +267,7 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 						if (($forwardSlashPos = strpos($videoId, '/')) !== false) {
 							$videoId = substr($videoId, 0, $forwardSlashPos);
 						}
-
+						
 						$thumbnailUrl = false;
 
 						$videoData = zenario_videos_manager::getVimeoVideoData($videoId);
@@ -257,6 +279,9 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 							if ($url) {
 								$result = ze\curl::fetch($url);
 								if ($result && ($json = json_decode($result, true))) {
+									$box['tabs']['details']['notices']['connection_via_api_key_successful']['show'] = true;
+									$fields['details/url']['note_below'] = ze\admin::phrase('Connection via API key is successful.') . ' ' . $fields['details/url']['note_below'];
+									
 									if (!$values['details/title'] && !empty($json['title'])) {
 										$values['details/title'] = $json['title'];
 									}
@@ -319,11 +344,11 @@ class zenario_videos_manager__admin_boxes__videos_manager__video extends zenario
 										}
 									}
 								} else {
-									$fields['details/fetch_vimeo_details']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
+									$fields['details/fetch_vimeo_details']['error'] = ze\admin::phrase("Video details not found. Please make sure the link is valid.");
 								}
 							}
 						} else {
-							$fields['details/fetch_vimeo_details']['error'] = ze\admin::phrase("Thumbnail not found. Please make sure the link is valid.");
+							$fields['details/fetch_vimeo_details']['error'] = ze\admin::phrase("Video details not found. Please make sure the link is valid.");
 						}
 					}
 				}

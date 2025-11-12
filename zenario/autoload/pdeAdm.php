@@ -156,7 +156,7 @@ return \''. $ascii . '\';';
 				
 				if ($hash) {
 					$sql .= ",
-						". $hashedCol. " = '". \ze\escape::sql(\ze\db::hashDBColumn($row[0])). "'";
+						". $hashedCol. " = '". \ze\escape::hashedColumn($row[0]). "'";
 				}
 			
 				$sql .= "

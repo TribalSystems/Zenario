@@ -27,6 +27,8 @@
 							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_news.twig.html' %}
 						{% elseif searchResultType == 'blog' %}
 							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_blog.twig.html' %}
+						{% elseif searchResultType == 'project' %}
+							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_project.twig.html' %}
 						{% elseif searchResultType == 'other_modules' %}
 							{% include advancedSearchCoreFrameworksPath ~ 'includes/search_results_other_module.twig.html' %}
 						{% endif %}

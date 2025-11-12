@@ -780,7 +780,15 @@
 		clear:both;
 		margin-top:15px;
 	}
-
+	
+	.zenario_ctype_document .document_details_content_panel,
+	.zenario_ctype_document .document_view_download .document_view_download_buttons {
+		flex-direction:column;
+	}
+	
+	.zenario_ctype_document .document_details_content_download .document_detail.document_view_download {
+		  align-items: baseline;
+	}
 	
 }
 
@@ -821,6 +829,10 @@
 	
 	.zenario_ai_qdrant_search .search_box input.search_input_box {
 		width:calc(100% - 22px);
+	}
+	
+	.zenario_ctype_document .document_details_content_download .document_detail {
+		display:block;
 	}
 	
 }

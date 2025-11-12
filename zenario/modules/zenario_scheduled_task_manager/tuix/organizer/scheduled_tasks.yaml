@@ -32,7 +32,7 @@ zenario__administration:
                 show: true
                 type: error
                 message: |
-                        crontab isn't invoking Scheduled Task Manager. A server administrator should copy code from below, paste into crontab, wait 1 minute and reload page.
+                        crontab isn't invoking Scheduled Task Manager. Please wait 1 minute and reload this panel. If message persists, ensure the code below is in server crontab.
             
             db_items:
                 table: '[[DB_PREFIX]]jobs AS j'
@@ -156,8 +156,10 @@ zenario__administration:
                     css_class: run
                     ajax:
                         confirm:
-                            message: >
-                                Turn the master switch to On?
+                            message: |
+                                Turn on the master switch?
+
+                                The cron job should run once per minute, so you may have to wait up to 1 minute to see it showing as enabled.
                             button_message: Enable
                             cancel_button_message: Cancel
                             message_type: question
@@ -169,8 +171,10 @@ zenario__administration:
                     css_class: stop
                     ajax:
                         confirm:
-                            message: >
-                                Are you sure that you wish to turn off the master switch? This will stop all scheduled tasks.
+                            message: |
+                                Turn off the master switch?
+                                
+                                This will stop all scheduled tasks.
                             button_message: Stop
                             cancel_button_message: Cancel
                             message_type: warning

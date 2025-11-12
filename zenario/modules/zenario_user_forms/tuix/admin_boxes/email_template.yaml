@@ -13,7 +13,7 @@ zenario_email_template:
                     grouping: user_form_merge_fields
                     type: select
                     css_class: email_merge_fields iconselectmenu
-                    empty_value: ...
+                    empty_value: "Insert merge fields from form..."
                     format_onchange: true
                     tooltip: |
                         Add forms fields and their merge fields onto the current email body by selecting a form and then choosing all or individual form fields

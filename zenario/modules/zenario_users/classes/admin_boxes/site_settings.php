@@ -141,6 +141,8 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					);
 				}
 				
+				$box['key']['current_password_min_score_value'] = $values['passwords/min_extranet_user_password_score'];
+				
 				break;
 			
 			case 'perms':
@@ -311,6 +313,59 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$fields['inactive_user_email/inactive_user_email_template_2']['hidden'] = true;
 				}
 				
+				if ($values['passwords/min_extranet_user_password_score'] < 1) {
+					$values['passwords/min_extranet_user_password_score'] = 1;
+				} elseif ($values['passwords/min_extranet_user_password_score'] > 4) {
+					$values['passwords/min_extranet_user_password_score'] = 4;
+				}
+				
+				if (
+					$values['passwords/min_extranet_user_password_score'] == 4
+					&& (
+						$values['passwords/min_extranet_user_password_score'] != $box['key']['current_password_min_score_value']
+						|| ($values['passwords/min_extranet_user_password_length'] < 12 && empty($fields['passwords/min_extranet_user_password_length']['error']))
+					)
+				) {
+					$values['passwords/min_extranet_user_password_length'] = 12;
+				} elseif (
+					$values['passwords/min_extranet_user_password_score'] == 3
+					&& (
+						$values['passwords/min_extranet_user_password_score'] != $box['key']['current_password_min_score_value']
+						|| ($values['passwords/min_extranet_user_password_length'] < 10 && empty($fields['passwords/min_extranet_user_password_length']['error']))
+					)
+				) {
+					$values['passwords/min_extranet_user_password_length'] = 10;
+				} elseif (
+					$values['passwords/min_extranet_user_password_score'] == 2
+					&& (
+						$values['passwords/min_extranet_user_password_score'] != $box['key']['current_password_min_score_value']
+						|| ($values['passwords/min_extranet_user_password_length'] < 8 && empty($fields['passwords/min_extranet_user_password_length']['error']))
+					)
+				) {
+					$values['passwords/min_extranet_user_password_length'] = 8;
+				} elseif (
+					$values['passwords/min_extranet_user_password_score'] == 1
+					&& (
+						$values['passwords/min_extranet_user_password_score'] != $box['key']['current_password_min_score_value']
+						|| ($values['passwords/min_extranet_user_password_length'] < 6 && empty($fields['passwords/min_extranet_user_password_length']['error']))
+					)
+				) {
+					$values['passwords/min_extranet_user_password_length'] = 6;
+				}
+				
+				$box['key']['current_password_min_score_value'] = $values['passwords/min_extranet_user_password_score'];
+				
+				$cssClass = 'black';
+				if ($values['passwords/min_extranet_user_password_score'] == 3 || $values['passwords/min_extranet_user_password_score'] == 4) {
+					$cssClass = 'green';
+				} elseif ($values['passwords/min_extranet_user_password_score'] == 2) {
+					$cssClass = 'orange';
+				} elseif ($values['passwords/min_extranet_user_password_score'] == 1) {
+					$cssClass = 'red';
+				}
+				
+				$fields['passwords/min_extranet_user_password_score']['slider']['class'] = $cssClass;
+				
 				break;
 		}
 	}
@@ -327,16 +382,20 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 					$fields['inactive_user_email/inactive_user_email_template_1']['error'] = ze\admin::phrase('Please select an email template for the second period.');
 				}
 				
-				if ($values['passwords/min_extranet_user_password_length'] < 8 || $values['passwords/min_extranet_user_password_length'] > 32) {
-					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The minimum password length must be between [[min_password_length]] and [[max_password_length]].',
-						['min_password_length' => 8, 'max_password_length' => 32]);
+				if ($values['passwords/min_extranet_user_password_length'] < 6 || $values['passwords/min_extranet_user_password_length'] > 32) {
+					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase(
+						'The minimum password length must be between [[min_password_length]] and [[max_password_length]].',
+						['min_password_length' => 6, 'max_password_length' => 32]
+					);
 				} elseif (!ctype_digit($values['passwords/min_extranet_user_password_length'])) {
 					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase('The value must be an integer.');
 				}
 
-				if ($values['passwords/min_extranet_user_password_score'] < 2 || $values['passwords/min_extranet_user_password_score'] > 4) {
-					$fields['passwords/min_extranet_user_password_score']['error'] = ze\admin::phrase('The minimum password score must be between [[min_password_score]] and [[max_password_score]].',
-						['min_password_score' => 2, 'max_password_score' => 4]);
+				if ($values['passwords/min_extranet_user_password_score'] < 1 || $values['passwords/min_extranet_user_password_score'] > 4) {
+					$fields['passwords/min_extranet_user_password_score']['error'] = ze\admin::phrase(
+						'The minimum password score must be between [[min_password_score]] and [[max_password_score]].',
+						['min_password_score' => 1, 'max_password_score' => 4]
+					);
 				} elseif (!ctype_digit($values['passwords/min_extranet_user_password_score'])) {
 					$fields['passwords/min_extranet_user_password_score']['error'] = ze\admin::phrase('The value must be an integer.');
 				}
@@ -344,12 +403,19 @@ class zenario_users__admin_boxes__site_settings extends ze\moduleBaseClass {
 				if (
 					($values['passwords/min_extranet_user_password_score'] == 4 & $values['passwords/min_extranet_user_password_length'] < 12)
 					|| ($values['passwords/min_extranet_user_password_score'] == 3 & $values['passwords/min_extranet_user_password_length'] < 10)
+					|| ($values['passwords/min_extranet_user_password_score'] == 2 & $values['passwords/min_extranet_user_password_length'] < 8)
+					|| ($values['passwords/min_extranet_user_password_score'] == 1 & $values['passwords/min_extranet_user_password_length'] < 6)
 				) {
 					if ($values['passwords/min_extranet_user_password_score'] == 4) {
 						$requiredMinLength = 12;
 					} elseif ($values['passwords/min_extranet_user_password_score'] == 3) {
 						$requiredMinLength = 10;
+					} elseif ($values['passwords/min_extranet_user_password_score'] == 2) {
+						$requiredMinLength = 8;
+					} elseif ($values['passwords/min_extranet_user_password_score'] == 1) {
+						$requiredMinLength = 6;
 					}
+					
 					$fields['passwords/min_extranet_user_password_length']['error'] = ze\admin::phrase(
 						'To match score [[score]], the password length needs to be at least [[min_length]] characters.',
 						['score' => $values['passwords/min_extranet_user_password_score'], 'min_length' => $requiredMinLength]

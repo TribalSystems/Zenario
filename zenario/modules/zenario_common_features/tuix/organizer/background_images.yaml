@@ -6,7 +6,7 @@ zenario__content:
             view_ mode: grid
             key:
                 usage: background_image
-            enable_close_up_view: Yes
+            enable_close_up_view: true
             title: Background images
             no_items_message: There are no existing background images.
             grid_view_microtemplate: zenario_grid_view_image
@@ -22,34 +22,34 @@ zenario__content:
                     db_column: f.id
                 filename:
                     title: Filename
-                    searchable: Yes
+                    searchable: true
                     db_column: f.filename
-                    show_by_default: Yes
+                    show_by_default: true
                 checksum:
                     db_column: f.checksum
                 mime_type:
-                    server_side_only: Yes
+                    server_side_only: true
                     db_column: f.mime_type
                 size:
                     title: Size
                     format: filesize
                     db_column: f.size
-                    show_by_default: Yes
-                    align_right: Yes
+                    show_by_default: true
+                    align_right: true
                     width: xsmall
                 width:
                     title: Width
-                    searchable: Yes
+                    searchable: true
                     db_column: f.width
-                    show_by_default: Yes
-                    align_right: Yes
+                    show_by_default: true
+                    align_right: true
                     width: xsmall
                 height:
                     title: Height
-                    searchable: Yes
+                    searchable: true
                     db_column: f.height
-                    show_by_default: Yes
-                    align_right: Yes
+                    show_by_default: true
+                    align_right: true
                     width: xsmall
                 #usage_content:
                 #    title: Usage (content items)
@@ -59,8 +59,8 @@ zenario__content:
                 #            FROM [[DB_PREFIX]]content_item_versions
                 #            WHERE ...
                 #        )
-                #    show_by_default: Yes
-                #    align_right: Yes
+                #    show_by_default: true
+                #    align_right: true
                 #    width: xsmall
                 #usage_layouts:
                 #    title: Usage (layouts)
@@ -70,8 +70,8 @@ zenario__content:
                 #            FROM [[DB_PREFIX]]layouts
                 #            WHERE ...
                 #        )
-                #    show_by_default: Yes
-                #    align_right: Yes
+                #    show_by_default: true
+                #    align_right: true
                 #    width: xsmall
             default_sort_column: filename
             label_format_for_popouts: |
@@ -84,20 +84,25 @@ zenario__content:
                 name: Image
                 names: Images
                 css_class: media_image
-            #collection_buttons:
-            #    upload:
-            #        priv: _PRIV_MANAGE_MEDIA
-            #        label: Upload
-            #        css_class: zenario_create_a_new
-            #        hide_on_filter: true
-            #        hide_in_select_mode: Yes
-            #        upload:
-            #            fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-            #            fileDesc: Images
-            #            multi: Yes
-            #            drag_and_drop: Yes
-            #            request:
-            #                upload: Yes
+            # collection_buttons:
+#                upload:
+#                    priv: _PRIV_MANAGE_MEDIA
+#                    label: Upload
+#                    css_class: zenario_create_a_new
+#                    hide_on_filter: true
+#                    hide_in_select_mode: true
+#                    upload:
+#                         accept: 'image/png, image/jpeg, image/gif, image/webp'
+#                         extensions:
+#                             - .gif
+#                             - .jpg
+#                             - .jpeg
+#                             - .png
+#                             - .webp
+#                        multi: true
+#                        drag_and_drop: true
+#                        request:
+#                            upload: true
             inline_buttons:
                 view:
                     css_class: inspect

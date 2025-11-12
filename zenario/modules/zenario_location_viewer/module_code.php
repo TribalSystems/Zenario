@@ -127,11 +127,6 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 			$this->data['show_city'] = $this->setting('show_city');
 			$this->data['show_state'] = $this->setting('show_state');
 			$this->data['show_country'] = $this->setting('show_country');
-			$this->data['show_phone'] = $this->setting('show_phone');
-			$this->data['show_fax'] = $this->setting('show_fax');
-			$this->data['show_email'] = $this->setting('show_email');
-			$this->data['show_website'] = $this->setting('show_website');
-			$this->data['show_summary'] = $this->setting('show_summary');
 			$this->data['show_locality'] = $this->setting('show_locality');
 			$this->data['show_postcode'] = $this->setting('show_postcode');
 			$this->data['show_region'] = $this->setting('show_region');
@@ -279,11 +274,6 @@ class zenario_location_viewer extends ze\moduleBaseClass {
 				$fields['show_city']['hidden'] =
 				$fields['show_state']['hidden'] =
 				$fields['show_country']['hidden'] =
-				$fields['show_phone']['hidden'] =
-				$fields['show_fax']['hidden'] =
-				$fields['show_email']['hidden'] =
-				$fields['show_website']['hidden'] =
-				$fields['show_summary']['hidden'] =
 				$fields['show_locality']['hidden'] =
 				$fields['show_postcode']['hidden'] =
 				$fields['show_region']['hidden'] =

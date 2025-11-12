@@ -27,7 +27,7 @@ zenario_admin:
                     grouping: specific_actions
                     type: checkbox
                     full_width: true
-                    post_field_label: Forms
+                    post_field_label: User forms
                 perm_manage_forms_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -36,10 +36,10 @@ zenario_admin:
                     checking_child_checks_parents: true
                     values:
                         _PRIV_VIEW_FORMS:
-                            label: View form designs
+                            label: View forms
                         _PRIV_MANAGE_FORMS:
                             parent: _PRIV_VIEW_FORMS
-                            label: Create, edit, delete form designs
+                            label: Create, edit, delete forms
                         _PRIV_VIEW_FORM_RESPONSES:
                             parent: _PRIV_VIEW_FORMS
                             label: View form responses

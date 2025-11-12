@@ -44,7 +44,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	
 		$box['title'] = "Converting the contact \"" . ($userDetails["identifier"] ?? false) . "\" to an extranet user";
 	
-		$fields['details/email_to_send']['value'] = ze::setting('default_activation_email_template');
+		$fields['details/email_to_send']['value'] = ze::setting('default_account_upgrade_email_template');
 
 		$siteSettingsLink = "<a href='organizer.php#zenario__administration/panels/site_settings//users~.site_settings~tactivation_email_template~k{\"id\"%3A\"users\"}' target='_blank'>site settings</a>";
 		$fields['details/email_to_send']['note_below'] = ze\admin::phrase(
@@ -167,12 +167,36 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 		if (ze\priv::check('_PRIV_EDIT_USER')) {
 			if (isset($values['details/send_activation_email_to_user']) &&  $values['details/send_activation_email_to_user']
 				&& ze\ray::issetArrayKey($values,'details/email_to_send')) {
-				$mergeFields=ze\user::userDetailsForEmails($box['key']['id']);
+				$mergeFields = ze\user::userDetailsForEmails($box['key']['id']);
 				$mergeFields['username'] = $mergeFields['screen_name'];
-				$mergeFields['password'] = $values['password'];
+				
+				$loginInstructions = '';
+			
+				if (ze::setting('user_use_screen_name')) {
+					if ($values['screen_name']) {
+						$screenName = str_replace(' ', '', $values['screen_name']);
+					} else {
+						$screenName = ze\admin::phrase('(empty)');
+					}
+					
+					$loginInstructions .= ze\admin::phrase("Screen name:") . " " . $screenName;
+					$loginInstructions .= "<br />";
+				}
+				
+				$loginInstructions .= ze\admin::phrase("Email:") . " " . $values['email'];
+				$loginInstructions .= "<br />";
+				$loginInstructions .= ze\admin::phrase("Password:") . " " . $values['password'];
+				
+				$mergeFields['login_details'] = $loginInstructions;
+				$mergeFields['login_page_link'] = ze\link::toSpecialPage('zenario_login');
+				
 				$mergeFields['cms_url'] = ze\link::absolute();
 				
-				zenario_common_features::sendEmailsUsingTemplate($mergeFields['email'] ?? false,($values['details/email_to_send'] ?? false),$mergeFields);
+				zenario_common_features::sendEmailsUsingTemplate(
+					$mergeFields['email'] ?? false, ($values['details/email_to_send'] ?? false), $mergeFields,
+					$attachments = [], $attachmentFilenameMappings = [],
+					$disableHTMLEscaping = true
+				);
 			}
 		}
 	}

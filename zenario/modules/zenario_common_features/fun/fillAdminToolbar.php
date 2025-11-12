@@ -67,7 +67,7 @@ if (!$content || !$version) {
 		//... or hide the "Rescan" button otherwise.
 		$adminToolbar['sections']['actions']['buttons']['rescan_extract']['hidden'] = true;
 	}
-		
+	
 	//Set the link to Gridmaker
 	if (isset($adminToolbar['sections']['layout']['buttons']['edit_body_slots'])) {
 		$adminToolbar['sections']['layout']['buttons']['edit_body_slots']['popout']['href'] .= '&id='. ze::$layoutId;
@@ -549,6 +549,7 @@ if (isset($adminToolbar['sections']['actions']['buttons']['trash_content'])) {
 
 
 //Only show locking info on drafts
+$allowCopyingFromOther = true;
 if (!ze::$isDraft) {
 	unset($adminToolbar['sections']['actions']['buttons']['lock']);
 	unset($adminToolbar['sections']['actions']['buttons']['locked']);
@@ -611,7 +612,8 @@ if (!ze::$isDraft) {
 		
 		$adminToolbar['lock_warning'] =
 			ze\admin::phrase('This content item is locked, you will need to unlock it via the Edit tab before you can make changes.');
-	
+		
+		$allowCopyingFromOther = false;
 	} else {
 		$adminToolbar['sections']['actions']['buttons']['locked']['label'] = ze\admin::phrase('LOCKED');
 		$adminToolbar['sections']['actions']['css_class'] = 'zenario_section_pink';
@@ -632,7 +634,14 @@ if (!ze::$isDraft) {
 		
 		$adminToolbar['lock_warning'] =
 			ze\admin::phrase('This content item is locked by another administrator, you will not be able to make changes.');
+		
+		$allowCopyingFromOther = false;
 	}
+}
+
+if ($cType == 'document' || $cType == 'audio' || $cType == 'video' || !$allowCopyingFromOther) {
+	unset($adminToolbar['sections']['actions']['buttons']['create_draft_by_copying']);
+	unset($adminToolbar['sections']['actions']['buttons']['create_draft_by_overwriting']);
 }
 
 
@@ -666,8 +675,9 @@ if (isset($adminToolbar['sections']['translations'])) {
 	
 	//Hide the multilingual section of the toolbar if not in use
 	if (!$isMultilingual || ($cVersion != ze::$adminVersion && $cVersion != ze::$visitorVersion)) {
-		$adminToolbar['sections']['translations']['hidden'] = true;
-		$adminToolbar['toolbars']['translations']['hidden'] = true;
+		$adminToolbar['sections']['translations']['hidden'] =
+		$adminToolbar['toolbars']['translations']['hidden'] =
+		$adminToolbar['sections']['translations_2']['hidden'] = true;
 
 	} else {
 		//Loop through every possible language, added a drop-down with options for that language
@@ -731,6 +741,14 @@ if (isset($adminToolbar['sections']['translations'])) {
 			
 			$adminToolbar['sections']['translations']['buttons'] = array_merge(
 				$adminToolbar['sections']['translations']['buttons'],
+				$buttons2
+			);
+			
+			if ($isCurrent) {
+				$buttons2[$n . '_go']['label'] .= ' (' . ze\admin::phrase('this item') . ')';
+			}
+			$adminToolbar['sections']['translations_2']['buttons'] = array_merge(
+				$adminToolbar['sections']['translations_2']['buttons'],
 				$buttons2
 			);
 			unset($buttons2);
@@ -1116,6 +1134,7 @@ if (isset($adminToolbar['sections']['create'])) {
 	foreach (ze\content::getContentTypes(true, true) as $contentTypeId => $contentType) {
 		if (ze\priv::check('_PRIV_EDIT_DRAFT', false, $contentTypeId)) {
 			$button = [
+				'ord' => ++$ord,
 				'label' => $contentType['content_type_name_en'],
 				'css_class' => 'zenario_create_a_new',
 				'appears_in_toolbars' => [
@@ -1135,20 +1154,6 @@ if (isset($adminToolbar['sections']['create'])) {
 					]
 				]
 			];
-		
-			switch ($contentTypeId) {
-				case 'html':
-					$button['ord'] = 1;
-					break;
-				case 'news':
-					$button['ord'] = 2;
-					break;
-				case 'event':
-					$button['ord'] = 3;
-					break;
-				default:
-					$button['ord'] = ++$ord;
-			}
 		
 			$adminToolbar['sections']['create']['buttons'][$contentTypeId] = $button;
 		}
@@ -1248,9 +1253,7 @@ if (!$isMultilingual) {
 }
 
 // Alias
-if (ze::$alias) {
-	unset($adminToolbar['sections']['icons']['buttons']['no_alias']);
-} else {
+if (!ze::$alias) {
 	unset($adminToolbar['sections']['icons']['buttons']['go_to_alias']);
 	$adminToolbar['sections']['icons']['buttons']['alias_dropdown']['css_class'] =
 		'zenario_at_icon_alias zenario_at_icon_no_alias';
@@ -1369,18 +1372,12 @@ if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = ze\admin::phrase('Go to content item via alias', ['alias' => (ze::$alias)]);
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['frontend_link'] = $visitorURL;
 } else {
-	$adminToolbar['sections']['icons']['buttons']['no_alias']['label'] = ze\admin::phrase('Content item has no alias');
-	unset($adminToolbar['sections']['icons']['buttons']['no_alias']['tooltip']);
 	$adminToolbar['sections']['icons']['buttons']['alias']['label'] = ze\admin::phrase('Set an alias');
+	$adminToolbar['sections']['icons']['buttons']['copy_url']['label'] = ze\admin::phrase('Copy URL to clipboard');
 }
 
 if (!ze\priv::check('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 	$adminToolbar['sections']['icons']['buttons']['alias']['hidden'] = true;
-}
-
-
-if (isset($adminToolbar['sections']['icons']['buttons']['no_alias'])) {
-	$adminToolbar['sections']['icons']['buttons']['no_alias']['frontend_link'] = $visitorURL;
 }
 
 

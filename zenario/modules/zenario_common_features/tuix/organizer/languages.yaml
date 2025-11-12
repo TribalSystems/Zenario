@@ -18,7 +18,6 @@ zenario__languages:
                     LEFT JOIN [[DB_PREFIX]]languages AS l
                        ON l.id = al.language_id
                 id_column: al.language_id
-                client_side: true
                 custom_where_statement_if_at_least_one_language_enabled: |
                     WHERE l.id IS NOT NULL
                 custom_where_statement_if_no_languages_enabled: |

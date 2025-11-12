@@ -1,3 +1,11 @@
+<% if (m.col.pre_value_microtemplate) { %>
+	{{m.lib.microTemplate(m.col.pre_value_microtemplate, m)}}
+<% } %>
+<% if (m.col.pre_value_html) { %>
+	{{m.col.pre_value_html}}
+<% } %>
+
+
 <% var b, val = m.item[m.col.id], isSet = zenario.defined(val) && val !== ""; %>
 <% if (b = m.item.__columnButtons && m.item.__columnButtons[m.col.id]) { %>
 	<a
@@ -43,7 +51,7 @@
 			<% frag = $.trim(frag); %>
 			
 			<% if (zenario.defined(m.col.values[frag])) { %>
-				<span class="fea_value fea_known_value">{{m.col.values[frag]|escape}}</span>
+				<span class="fea_value fea_known_value">{{zenarioT.valueLabel(m.col.values[frag])|escape}}</span>
 			<% } else { %>
 				<span class="fea_value fea_unknown_value">{{frag|escape}}</span>
 			<% } %>
@@ -51,7 +59,7 @@
 	</span>
     
 <% } else if (val && m.col.values && m.col.values[val]) { %>
-	<span class="fea_value fea_single_value fea_known_value">{{m.col.values[val]|escape}}</span>
+	<span class="fea_value fea_single_value fea_known_value">{{zenarioT.valueLabel(m.col.values[val])|escape}}</span>
 
 <% } else if (m.col.convert_to_percentage_of_total && m.lib.pcOfTotal[m.col.id] && isSet) { %>
 	{{zenario.round(100 * val / m.lib.pcOfTotal[m.col.id], 1)}} %
@@ -87,4 +95,12 @@
 
 <% if (b) { %>
 	</a>
+<% } %>
+
+
+<% if (m.col.post_value_html) { %>
+	{{m.col.post_value_html}}
+<% } %>
+<% if (m.col.post_value_microtemplate) { %>
+	{{m.lib.microTemplate(m.col.post_value_microtemplate, m)}}
 <% } %>

@@ -200,5 +200,5 @@ sections:
                             Normally just one menu node links to each content item. But it's possible to have several menu nodes linking to a content item, and in that situation one menu node is designated as "primary" and the others as "secondary".
                         </p>
                         <p>
-                            The whole menu hierarchy, or tree, can be re-arranged, and to do this click "Organize menu".
+                            The whole menu hierarchy, or tree, can be re-arranged, and to do this click "Reorder menu nodes".
                         </p>

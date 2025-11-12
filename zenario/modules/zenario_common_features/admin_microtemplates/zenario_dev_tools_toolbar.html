@@ -22,6 +22,11 @@
 			<% } %>
 			<% break; %>
 		
+		<% case 'zenarioSlot': %>
+			The TUIX shown below describes the <strong>Slot Controls</strong> for
+			<strong>{{window.opener.zenarioSlot.slotName|escape}}</strong>
+			<% break; %>
+		
 		<% default: %>
 			The TUIX shown below describes the <strong>Front-End Administration plugin</strong>
 			with the path <strong>{{devTools.path|escape}}</strong>

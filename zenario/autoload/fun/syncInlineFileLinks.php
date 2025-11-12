@@ -198,6 +198,18 @@ if ($usage == 'image'
 				$needsChanging = true;
 			}
 			
+			//When the "no transcoding" option is being used, watch out for JPEG/PNG images
+			//that have been converted to WebPs. We'll want to change these links back to
+			//links to the original JPEG/PNG images.
+			if ($noTranscoding) {
+				$type = explode('.', $filename);
+				$type = $type[count($type) - 1];
+				if ($type == 'webp'
+				 && $file['mime_type'] != 'image/webp') {
+					$needsChanging = true;
+				}
+			}
+			
 			
 			//If we see a private image (or an "auto" image that's not
 			//on a public page) then attempt to switch back to using zenario/file.php URL
@@ -221,12 +233,24 @@ if ($usage == 'image'
 				
 				$url = '';
 				$dummyWidth = $dummyHeight = 0;
-				if (ze\image::link(
-					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
-					$mode = 'adjust', $offset = 0, $retina = true,
-					$fullPath = false, $privacy = 'public'
-
-				)) {
+				
+				if ($noTranscoding) {
+					$imageCreated = ze\image::unTranscodedLink(
+						$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
+						$mode = 'adjust', $offset = 0, $retina = true,
+						$fullPath = false, $privacy = 'public'
+	
+					);
+				} else {
+					$imageCreated = ze\image::link(
+						$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
+						$mode = 'adjust', $offset = 0, $retina = true,
+						$fullPath = false, $privacy = 'public'
+	
+					);
+				}
+				
+				if ($imageCreated) {
 					if (\ze\ring::chopPrefix('public/images/', $url)) {
 						$html .= htmlspecialchars($url);
 						$htmlChanged = true;			
@@ -472,11 +496,22 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				
 				$rememberWhatThisWas = ze::$mustUseFullPath;
 				ze::$mustUseFullPath = false;
-				if (ze\image::link(
-					$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
-					$mode = 'adjust', $offset = 0, $retina = true,
-					$fullPath = false, $privacy = 'public',
-				)) {
+				
+				if ($noTranscoding) {
+					$imageCreated = ze\image::unTranscodedLink(
+						$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
+						$mode = 'adjust', $offset = 0, $retina = true,
+						$fullPath = false, $privacy = 'public'
+					);
+				} else {
+					$imageCreated = ze\image::link(
+						$dummyWidth, $dummyHeight, $url, $file['id'], $widthOnPage, $heightOnPage,
+						$mode = 'adjust', $offset = 0, $retina = true,
+						$fullPath = false, $privacy = 'public'
+					);
+				}
+				
+				if ($imageCreated) {
 					if (\ze\ring::chopPrefix('public/images/', $url)) {
 						$html .= htmlspecialchars($url);
 						$htmlChanged = true;			

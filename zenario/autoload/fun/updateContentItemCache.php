@@ -136,7 +136,7 @@ $text = implode("\n\n", $chunks);
 //Update the Content in the content_items_searchable_cache table
 if (\ze\contentAdm::contentItemIsSearchable($cID, $cType, $cVersion)) {
 	
-	$versionDetails = \ze\row::get('content_item_versions', ['file_id', 'title', 'description', 'keywords', 'content_summary'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
+	$versionDetails = \ze\row::get('content_item_versions', ['file_id', 'filename', 'title', 'description', 'keywords', 'content_summary'], ['id' => $cID, 'type' => $cType, 'version' => $cVersion]);
 	if (!$versionDetails['content_summary']) {
 		$versionDetails['content_summary'] = '';
 	}
@@ -146,10 +146,12 @@ if (\ze\contentAdm::contentItemIsSearchable($cID, $cType, $cVersion)) {
 		[
 			'content_tag' => $cType . '_' . $cID,
 			'content_version' => $cVersion,
+			'alias' => \ze\row::get('content_items', 'alias', ['id' => $cID, 'type' => $cType]),
 			'title' => $versionDetails['title'],
 			'description' => $versionDetails['description'],
 			'keywords' => $versionDetails['keywords'],
 			'content_summary' => implode("\n\n", \ze\ring::parseExtract($versionDetails['content_summary'], $isHTML = true)),
+			'filename' => $versionDetails['filename'],
 			'content_item_text' => $text,
 			'content_item_text_wordcount' => str_word_count($text)
 		],
@@ -159,8 +161,8 @@ if (\ze\contentAdm::contentItemIsSearchable($cID, $cType, $cVersion)) {
 		]
 	);
 
-//Drafts/trashed content items/hidden content items/unlisted content items should not be in the 
-//content_items_searchable_cache table, clear them up if they are there.
+//Drafts/trashed content items/hidden content items/unlisted content items/non-searchable special pages should not be in the 
+//content_items_searchable_cache table. Clear them up if they are there.
 } else {
 	\ze\row::delete('content_items_searchable_cache', ['content_id' => $cID, 'content_type' => $cType, 'content_version' => $cType]);
 }

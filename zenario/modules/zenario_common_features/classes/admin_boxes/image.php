@@ -33,7 +33,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!$details = ze\row::get(
 			'files',
-			['id', 'usage', 'path', 'filename', 'mime_type', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy', 'image_credit'],
+			['id', 'usage', 'path', 'filename', 'mime_type', 'width', 'height', 'size', 'location', 'alt_tag', 'floating_box_title', 'short_checksum', 'privacy', 'image_credit'],
 			$box['key']['id'])
 		) {
 			exit;
@@ -63,7 +63,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 
 		
 		
-		$details['filesize'] = ze\lang::formatFilesizeNicely($details['size'], 1, true);
+		$details['filesize'] = ze\file::formatSizeUnits($details['size'], $adminMode = true);
 		
 		$mimeType = $details['mime_type'];
 		$dimensionsString = '{{filesize}}';
@@ -153,7 +153,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					User profile search, Ctype Document, Videos FEA, Location map and listing:
 					image_canvas
 					
-					CSL, Meta Data and User profile search:
+					CSL, Metadata and User profile search:
 					image_2_canvas
 					
 					Advanced Search:
@@ -317,7 +317,7 @@ class zenario_common_features__admin_boxes__image extends ze\moduleBaseClass {
 					User profile search, Ctype Document, Videos FEA, Location map and listing:
 					image_canvas
 					
-					CSL, Meta Data and User profile search:
+					CSL, Metadata and User profile search:
 					image_2_canvas
 					
 					Advanced Search:

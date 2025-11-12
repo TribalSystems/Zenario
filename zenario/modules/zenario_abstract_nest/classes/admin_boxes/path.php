@@ -14,6 +14,17 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 		];
 	}
 	
+	protected function slideNumFromState($state, &$instanceId) {
+		$sql = "
+			SELECT id, slide_num, request_vars, states, slide_label
+			FROM ". DB_PREFIX. "nested_plugins AS slide
+			WHERE FIND_IN_SET('". ze\escape::sql($state). "', slide.states)
+			  AND slide.is_slide = 1
+			  AND slide.instance_id = ". (int) $instanceId;
+		
+		return ze\sql::fetchAssoc($sql);
+	}
+	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (!ze::get('refiner__nest')) {
 			exit;
@@ -34,6 +45,17 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 			$box['key']['to_state'] = $ids[2];
 		}
 		
+		$mrg = $box['key'];
+		$fromSlide = $this->slideNumFromState($box['key']['state'], $box['key']['instanceId']);
+		$mrg['from_slide_num'] = $fromSlide['slide_num'];
+		$mrg['from_slide_label'] = $fromSlide['slide_label'];
+		
+		if (!empty($box['key']['to_state']) && ($toSlide = $this->slideNumFromState($box['key']['to_state'], $box['key']['instanceId']))) {
+			$mrg['to_slide_num'] = $toSlide['slide_num'];
+			$mrg['to_slide_label'] = $toSlide['slide_label'];
+		}
+		
+		
 		if ($box['key']['linkToOtherContentItem'] == 'autodetect') {
 			$box['key']['linkToOtherContentItem'] = !empty($ids[3]);
 		}
@@ -49,10 +71,17 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 		
 		//Get the details of this slide
 		$slide = ze\row::get('nested_plugins',
-			['id', 'slide_num', 'request_vars'],
+			['id', 'slide_num', 'request_vars', 'states'],
 			['instance_id' => $box['key']['instanceId'], 'states' => [$box['key']['state']]]
 		);
 		$box['key']['slideNum'] = $slide['slide_num'];
+		
+		
+		//Check if this slide has multiple states (using the advanced options).
+		//We'll change the labels slightly in this situation.
+		$states = ze\ray::explodeAndTrim($slide['states']);
+		$box['key']['multipleStates'] = count($states) > 1;
+		
 		
 		$moduleDescs = [];
 		$modulesAndModes = [];
@@ -185,22 +214,23 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 				}
 				$values['path/to_state'] = $details['to_state'];
 				
-				$box['title'] = ze\admin::phrase('Editing the path from state [[state]]', $box['key']);
+				$box['title'] = ze\admin::phrase('Editing the path from [[from_slide_num]]. [[from_slide_label]] (state [[state]])', $mrg);
 			} else {
-				$box['title'] = ze\admin::phrase('Editing the path from state [[state]] to state [[to_state]]', $box['key']);
+				$box['title'] = ze\admin::phrase('Editing the path from [[from_slide_num]]. [[from_slide_label]] (state [[state]]) to [[to_slide_num]]. [[to_slide_label]] (state [[to_state]])', $mrg);
 			}
 		} else {
 			if ($box['key']['linkToOtherContentItem']) {
-				$box['title'] = ze\admin::phrase('Creating the path from state [[state]]', $box['key']);
+				$box['title'] = ze\admin::phrase('Creating a path from [[from_slide_num]]. [[from_slide_label]] (state [[state]])', $mrg);
 			} else {
-				$box['title'] = ze\admin::phrase('Creating the path from state [[state]] to state [[to_state]]', $box['key']);
+				$box['title'] = ze\admin::phrase('Creating a path from [[from_slide_num]]. [[from_slide_label]] (state [[state]]) to [[to_slide_num]]. [[to_slide_label]] (state [[to_state]])', $mrg);
 			}
 		}
 		
 		if ($box['key']['linkToOtherContentItem']) {
-			$fields['path/command']['label'] = ze\admin::phrase('Follow this link when a plugin issues the command:', $box['key']);
+			$fields['path/command']['label'] = ze\admin::phrase('Follow this link when a plugin issues the command:', $mrg);
 		} else {
-			$fields['path/command']['label'] = ze\admin::phrase('Go from state [[state]] to state [[to_state]] when a plugin issues the command:', $box['key']);
+			$fields['path/command']['label'] = ze\admin::phrase('Command name to navigate user from state [[state]] to state [[to_state]]:', $mrg);
+			$fields['path/command']['note_below'] = ze\admin::phrase('Commands are issued by plugins on the slides of a nest. The command that is issued determines navigation from one slide to another.');
 		}
 		
 	
@@ -266,10 +296,13 @@ class zenario_abstract_nest__admin_boxes__path extends zenario_abstract_nest {
 				LIMIT 1';
 			
 			if (ze\sql::exists($sql)) {
+				$mrg = $box['key'];
+				$mrg['command'] = $command;
+				
 				if ($values['path/command'] == '#custom#') {
-					$fields['path/custom_command']['error'] = ze\admin::phrase('This slide/state already has a [[command]] command from it.', ['command' => $command]);
+					$fields['path/custom_command']['error'] = ze\admin::phrase('State [[state]] already has a [[command]] command from it.', $mrg);
 				} else {
-					$box['tabs']['path']['errors'][] = ze\admin::phrase('This slide/state already has a [[command]] command from it.', ['command' => $command]);
+					$box['tabs']['path']['errors'][] = ze\admin::phrase('State [[state]] already has a [[command]] command from it.', $mrg);
 				}
 			}
 		}

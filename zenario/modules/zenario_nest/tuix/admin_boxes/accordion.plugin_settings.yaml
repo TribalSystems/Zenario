@@ -4,15 +4,15 @@ plugin_settings:
     module_class_name: zenario_nest
     tabs:
         accordion:
-            visible_if: |
-                zenarioAB.value('animation_library', 'first_tab') == 'accordion'
+            visible_if:
+                zenarioAB.animationLibIs: accordion
             label: Accordion
             fields:
                 accordion_1st_open:
                     plugin_setting:
                         name: accordion_1st_open
-                    label: 'Open the first slide when first showing the accordion'
-                    note_below: 'The visitor will then be able to open further slides with a click or tap.'
+                    label: 'When first showing the accordion, open the first slide'
+                    note_below: 'The visitor will be able to open further slides with a click or tap.'
                     type: checkbox
                     value: 1
                     redraw_onchange: true

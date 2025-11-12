@@ -206,64 +206,132 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'zenario_content':
-				if ($box['key']['cType'] == 'event' && ($box['key']['source_cID'] ?? false) && ($box['key']['source_cVersion'] ?? false) ) {
-					$eventDetails = $this->getEventDetails($box['key']['source_cID'], $box['key']['source_cVersion']);
-
-					if (!empty($eventDetails) && is_array($eventDetails)) {
-						$values['zenario_ctype_event__when_and_where/start_date'] = $eventDetails['start_date'];
-						$values['zenario_ctype_event__when_and_where/end_date'] = $eventDetails['end_date'];
-						$values['zenario_ctype_event__when_and_where/specify_time'] = $eventDetails['specify_time'];
-						$values['zenario_ctype_event__when_and_where/late_evening_event'] = $eventDetails['next_day_finish'];
-
-						if (!empty($eventDetails['start_time'])) {
-							$startTime = explode(":", $eventDetails['start_time']);
-						} else {
-							$startTime = [];
-						}
-						
-						if (!empty($eventDetails['end_time'])) {
-							$endTime = explode(":", $eventDetails['end_time']);
-						} else {
-							$endTime = [];
-						}
-						
-						$values['zenario_ctype_event__when_and_where/start_time_hours'] = $startTime[0] ?? false;
-						$values['zenario_ctype_event__when_and_where/start_time_minutes'] = $startTime[1] ?? false;
+				if ($box['key']['cType'] == 'event') {
+					$duplicatingOrTranslating = ($box['key']['duplicate'] || $box['key']['duplicate_from_menu'] || $box['key']['translate']);
+					
+					$fields['zenario_ctype_event__when_and_where/start_time_hours']['values'] =
+					$fields['zenario_ctype_event__when_and_where/end_time_hours']['values'] = [
+						"00" => ['label' => "00", 'ord' => 1],
+						"01" => ['label' => "01", 'ord' => 2],
+						"02" => ['label' => "02", 'ord' => 3],
+						"03" => ['label' => "03", 'ord' => 4],
+						"04" => ['label' => "04", 'ord' => 5],
+						"05" => ['label' => "05", 'ord' => 6],
+						"06" => ['label' => "06", 'ord' => 7],
+						"07" => ['label' => "07", 'ord' => 8],
+						"08" => ['label' => "08", 'ord' => 9],
+						"09" => ['label' => "09", 'ord' => 10],
+						"10" => ['label' => "10", 'ord' => 11],
+						"11" => ['label' => "11", 'ord' => 12],
+						"12" => ['label' => "12", 'ord' => 13],
+						"13" => ['label' => "13", 'ord' => 14],
+						"14" => ['label' => "14", 'ord' => 15],
+						"15" => ['label' => "15", 'ord' => 16],
+						"16" => ['label' => "16", 'ord' => 17],
+						"17" => ['label' => "17", 'ord' => 18],
+						"18" => ['label' => "18", 'ord' => 19],
+						"19" => ['label' => "19", 'ord' => 20],
+						"20" => ['label' => "20", 'ord' => 21],
+						"21" => ['label' => "21", 'ord' => 22],
+						"22" => ['label' => "22", 'ord' => 23],
+						"23" => ['label' => "23", 'ord' => 24]
+					];
+					
+					$fields['zenario_ctype_event__when_and_where/start_time_minutes']['values'] =
+					$fields['zenario_ctype_event__when_and_where/end_time_minutes']['values'] = [
+						"00" => ['label' => "00", 'ord' => 1],
+                        "05" => ['label' => "05", 'ord' => 2],
+                        "10" => ['label' => "10", 'ord' => 3],
+                        "15" => ['label' => "15", 'ord' => 4],
+                        "20" => ['label' => "20", 'ord' => 5],
+                        "25" => ['label' => "25", 'ord' => 6],
+                        "30" => ['label' => "30", 'ord' => 7],
+                        "35" => ['label' => "35", 'ord' => 8],
+                        "40" => ['label' => "40", 'ord' => 9],
+                        "45" => ['label' => "45", 'ord' => 10],
+                        "50" => ['label' => "50", 'ord' => 11],
+                        "55" => ['label' => "55", 'ord' => 12],
+                        "59" => ['label' => "59", 'ord' => 13]
+					];
+					
+					if (($box['key']['source_cID'] ?? false) && ($box['key']['source_cVersion'] ?? false)) {
+						$eventDetails = $this->getEventDetails($box['key']['source_cID'], $box['key']['source_cVersion']);
 	
-						$values['zenario_ctype_event__when_and_where/end_time_hours'] = $endTime[0] ?? false;
-						$values['zenario_ctype_event__when_and_where/end_time_minutes'] = $endTime[1] ?? false;
+						if (!empty($eventDetails) && is_array($eventDetails)) {
+							$values['zenario_ctype_event__when_and_where/start_date'] = $eventDetails['start_date'];
+							$values['zenario_ctype_event__when_and_where/end_date'] = $eventDetails['end_date'];
+							$values['zenario_ctype_event__when_and_where/specify_time'] = $eventDetails['specify_time'];
+							$values['zenario_ctype_event__when_and_where/late_evening_event'] = $eventDetails['next_day_finish'];
 	
-						$values['zenario_ctype_event__when_and_where/url'] = $eventDetails['url'];
-						
-						$values['zenario_ctype_event__when_and_where/online'] = $eventDetails['online'];
-						$values['zenario_ctype_event__when_and_where/location'] = $eventDetails['location'];
-						$values['zenario_ctype_event__when_and_where/location_id'] = $eventDetails['location_id'];
-
-						if ($eventDetails['location'] || $eventDetails['location_id']) {
-							$values['zenario_ctype_event__when_and_where/at_location_checkbox'] = true;
+							if (!empty($eventDetails['start_time'])) {
+								$startTime = explode(":", $eventDetails['start_time']);
+							} else {
+								$startTime = [];
+							}
+							
+							if (!empty($eventDetails['end_time'])) {
+								$endTime = explode(":", $eventDetails['end_time']);
+							} else {
+								$endTime = [];
+							}
+							
+							$values['zenario_ctype_event__when_and_where/start_time_hours'] = $startTime[0] ?? false;
+							$values['zenario_ctype_event__when_and_where/start_time_minutes'] = $startTime[1] ?? false;
+		
+							$values['zenario_ctype_event__when_and_where/end_time_hours'] = $endTime[0] ?? false;
+							$values['zenario_ctype_event__when_and_where/end_time_minutes'] = $endTime[1] ?? false;
+		
+							$values['zenario_ctype_event__when_and_where/url'] =
+							$values['zenario_ctype_event__when_and_where/event_url_original'] = $eventDetails['url'];
+							
+							$values['zenario_ctype_event__when_and_where/online'] = $eventDetails['online'];
+							$values['zenario_ctype_event__when_and_where/location'] = $eventDetails['location'];
+							$values['zenario_ctype_event__when_and_where/location_id'] = $eventDetails['location_id'];
+							
+							$values['zenario_ctype_event__when_and_where/online_original'] = $eventDetails['online'];
+							$values['zenario_ctype_event__when_and_where/location_original'] = $eventDetails['location'];
+							$values['zenario_ctype_event__when_and_where/location_id_original'] = $eventDetails['location_id'];
 	
-							if ($eventDetails['location_id']) {
-								$values['zenario_ctype_event__when_and_where/at_physical_location'] = 'location_picker';
-							} elseif ($eventDetails['location']) {
-								$values['zenario_ctype_event__when_and_where/at_physical_location'] = 'address_text';
+							if ($eventDetails['location'] || $eventDetails['location_id']) {
+								$values['zenario_ctype_event__when_and_where/at_location_checkbox'] = true;
+								$values['zenario_ctype_event__when_and_where/at_location_checkbox_original'] = true;
+		
+								if ($eventDetails['location_id']) {
+									$values['zenario_ctype_event__when_and_where/at_physical_location'] = 'location_picker';
+									$values['zenario_ctype_event__when_and_where/at_physical_location_original'] = 'location_picker';
+								} elseif ($eventDetails['location']) {
+									$values['zenario_ctype_event__when_and_where/at_physical_location_original'] = 'address_text';
+								}
 							}
 						}
-					}
-					
-					if ($values['zenario_ctype_event__when_and_where/start_date']) {
-						$fields['tabs']['zenario_ctype_event__when_and_where/start_date']['last_value'] = $values['zenario_ctype_event__when_and_where/start_date'];
+						
+						if ($values['zenario_ctype_event__when_and_where/start_date']) {
+							$fields['tabs']['zenario_ctype_event__when_and_where/start_date']['last_value'] = $values['zenario_ctype_event__when_and_where/start_date'];
+						}
+	
+						if ($values['zenario_ctype_event__when_and_where/start_time_hours']) {
+							$fields['tabs']['zenario_ctype_event__when_and_where/start_time_hours']['last_value'] = $values['zenario_ctype_event__when_and_where/start_time_hours'];
+						}
+	
+						if ($values['zenario_ctype_event__when_and_where/start_time_minutes']) {
+							$fields['tabs']['zenario_ctype_event__when_and_where/start_time_minutes']['last_value'] = $values['zenario_ctype_event__when_and_where/start_time_minutes'];
+						}
+						
+						if ($duplicatingOrTranslating) {
+							$values['zenario_ctype_event__when_and_where/start_date_original'] = $values['zenario_ctype_event__when_and_where/start_date'];
+							$values['zenario_ctype_event__when_and_where/end_date_original'] = $values['zenario_ctype_event__when_and_where/end_date'];
+							$values['zenario_ctype_event__when_and_where/specify_time_original'] = $values['zenario_ctype_event__when_and_where/specify_time'];
+							
+							$values['zenario_ctype_event__when_and_where/start_time_original'] =
+								$values['zenario_ctype_event__when_and_where/start_time_hours'] . ':' . $values['zenario_ctype_event__when_and_where/start_time_minutes'];
+							
+							$values['zenario_ctype_event__when_and_where/end_time_original'] =
+								$values['zenario_ctype_event__when_and_where/end_time_hours'] . ':' . $values['zenario_ctype_event__when_and_where/end_time_minutes'];
+							
+							$values['zenario_ctype_event__when_and_where/late_evening_event_original'] = $values['zenario_ctype_event__when_and_where/late_evening_event'];
+						}
 					}
 
-					if ($values['zenario_ctype_event__when_and_where/start_time_hours']) {
-						$fields['tabs']['zenario_ctype_event__when_and_where/start_time_hours']['last_value'] = $values['zenario_ctype_event__when_and_where/start_time_hours'];
-					}
-
-					if ($values['zenario_ctype_event__when_and_where/start_time_minutes']) {
-						$fields['tabs']['zenario_ctype_event__when_and_where/start_time_minutes']['last_value'] = $values['zenario_ctype_event__when_and_where/start_time_minutes'];
-					}
-				}
-
-				if ($box['key']['cType'] == 'event') {
 					if (!ze\module::isRunning('zenario_location_manager')) {
 						$fields['zenario_ctype_event__when_and_where/location_id']['disabled'] = true;
 						$fields['zenario_ctype_event__when_and_where/at_physical_location']['values']['location_picker']['disabled'] = true;
@@ -279,7 +347,13 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						$fields['zenario_ctype_event__when_and_where/locations_snippet']['hidden'] =
 						$fields['zenario_ctype_event__when_and_where/online']['hidden'] =
 						$fields['zenario_ctype_event__when_and_where/at_location_checkbox']['hidden'] =
-						$fields['zenario_ctype_event__when_and_where/at_physical_location']['hidden'] = true;
+						$fields['zenario_ctype_event__when_and_where/at_physical_location']['hidden'] =
+						$fields['zenario_ctype_event__when_and_where/location_original']['hidden'] =
+						$fields['zenario_ctype_event__when_and_where/location_id_original']['hidden'] =
+						$fields['zenario_ctype_event__when_and_where/locations_snippet_original']['hidden'] =
+						$fields['zenario_ctype_event__when_and_where/online_original']['hidden'] =
+						$fields['zenario_ctype_event__when_and_where/at_location_checkbox_original']['hidden'] =
+						$fields['zenario_ctype_event__when_and_where/at_physical_location_original']['hidden'] = true;
 					} else {
 						if (!ze::setting('zenario_ctype_event__location_text')) {
 							$fields['zenario_ctype_event__when_and_where/location']['disabled'] = true;
@@ -296,18 +370,31 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 				
 					$eventTimezoneSupport = ze::setting('zenario_ctype_event__timezone_support');
 					
-					if (!empty($eventDetails)) {
-						$values['zenario_ctype_event__when_and_where/event_timezone'] = $eventDetails['event_timezone'];
-						$values['zenario_ctype_event__when_and_where/event_other_timezone'] = $eventDetails['event_other_timezone'];
-					}
-					
 					$defaultTimezone = ze::setting('zenario_timezones__default_timezone');
 					$timezones = ze\dataset::getTimezonesLOV();
 					ze\lang::applyMergeFields($fields['zenario_ctype_event__when_and_where/event_timezone']['values']['default_timezone']['label'], ['default_timezone' => $timezones[$defaultTimezone]['label']]);
 					
-					if ($eventTimezoneSupport) {
-						$fields['zenario_ctype_event__when_and_where/event_other_timezone']['values'] = $timezones;
-					} else {
+					if (!empty($eventDetails)) {
+						$values['zenario_ctype_event__when_and_where/event_timezone'] = $eventDetails['event_timezone'];
+						$values['zenario_ctype_event__when_and_where/event_other_timezone'] = $eventDetails['event_other_timezone'];
+						
+						if ($duplicatingOrTranslating) {
+							if ($values['zenario_ctype_event__when_and_where/event_timezone']) {
+								if ($values['zenario_ctype_event__when_and_where/event_timezone'] == 'default_timezone') {
+									$values['zenario_ctype_event__when_and_where/event_timezone_original'] ==
+										$fields['zenario_ctype_event__when_and_where/event_timezone']['values']['default_timezone']['label'];
+								} elseif ($values['zenario_ctype_event__when_and_where/event_timezone'] == 'other_timezone') {
+									$timezone = $values['zenario_ctype_event__when_and_where/event_other_timezone'];
+									$timezoneLabel = $timezones[$timezone]['label'];
+									$values['zenario_ctype_event__when_and_where/event_timezone_original'] = $timezoneLabel;
+								}
+							}
+						}
+					}
+					
+					$fields['zenario_ctype_event__when_and_where/event_other_timezone']['values'] = $timezones;
+					
+					if (!$eventTimezoneSupport) {
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['disabled'] = $fields['zenario_ctype_event__when_and_where/event_other_timezone']['disabled'] = true;
 					
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['notices_below']['enable_timezone_support']['message'] = ze\admin::phrase(
@@ -317,6 +404,44 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 						$fields['zenario_ctype_event__when_and_where/event_timezone']['notices_below']['enable_timezone_support']['hidden'] = false;
 					
 						unset($fields['zenario_ctype_event__when_and_where/event_other_timezone']['validation']);
+					}
+				}
+				
+				if ($box['key']['cType'] != 'event' || !$duplicatingOrTranslating) {
+					$loopThrough = [
+						'start_date_original',
+						'end_date_original',
+						'specify_time_original',
+						'start_time_original',
+						'end_time_original',
+						'late_evening_event_original',
+						'event_timezone_original',
+						'locations_snippet_original',
+						'online_original',
+						'at_location_checkbox_original',
+						'at_physical_location_original',
+						'location_id_original',
+						'location_original',
+						'event_url_original',
+						'zenario_conference_manager__link_to_conference_original',
+						'zenario_conference_manager__conference_original',
+						'zenario_conference_manager__send_email_on_event_ticket_purchase_original',
+						'zenario_conference_manager__ticket_purchase_event_email_template_original',
+						'zenario_conference_manager__private_event_url_original',
+						
+						'grouping_start_date_left',
+						'grouping_end_date_left',
+						'grouping_specify_time_left',
+						'grouping_start_time_left',
+						'grouping_end_time_left',
+						'grouping_event_timezone_left',
+						'grouping_event_location_left',
+						'grouping_event_url_left',
+						'conference_grouping_left'
+					];
+					
+					foreach ($loopThrough as $fieldName) {
+						unset($box['tabs']['zenario_ctype_event__when_and_where']['fields'][$fieldName]);
 					}
 				}
 				
@@ -334,7 +459,7 @@ class zenario_ctype_event extends ze\moduleBaseClass {
 
 					ze\lang::applyMergeFields($fields['zenario_ctype_event__location_picker']['label'], ['running_or_not_running' => $runningOrNotRunning]);
 
-					$moduleLink = "<a href='organizer.php#zenario__modules/panels/modules~-Location%20Manager' target='_blank'>Modules panel</a>";
+					$moduleLink = "<a href='organizer.php#zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////~-Location%20Manager' target='_blank'>Modules panel</a>";
 					
 					$fields['zenario_ctype_event__location_picker']['side_note'] = ze\admin::phrase(
 						'You can manage the Location Manager module on the [[modules_panel_link]].',

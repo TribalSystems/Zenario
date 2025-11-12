@@ -88,19 +88,18 @@ site_settings:
                     type: editor
                     editor_type: description_editor
                     validation:
-                        required_if_not_hidden: Please enter a message
+                        required_if_not_hidden: Please enter a message.
                     note_below: 'The CSS class will be "cookies_implied".'
                 cookie_box1_02_continue_btn:
                     site_setting:
                         name: cookie_box1_02_continue_btn
                     value: "Continue"
+                    placeholder: "Continue"
                     indent: 1
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'implied'
                     label: '"Continue" button text:'
                     type: text
-                    validation:
-                        required_if_not_hidden: true
                 
                 cookie_box_1:
                     type: grouping
@@ -118,12 +117,13 @@ site_settings:
                     type: editor
                     editor_type: description_editor
                     validation:
-                        required_if_not_hidden: Please enter a message
+                        required_if_not_hidden: Please enter a message.
                     note_below: 'The CSS class will be "cookies_explicit".'
                 cookie_box1_05_accept_btn:
                     site_setting:
                         name: cookie_box1_05_accept_btn
                     value: "Accept all"
+                    placeholder: "Accept all"
                     grouping: cookie_box_1
                     indent: 1
                     visible_if: |
@@ -132,12 +132,34 @@ site_settings:
                     note_below: |
                         If the visitor clicks this button, they agree to accept all cookies without seeing further information.
                     type: text
-                    validation:
-                        required_if_not_hidden: true
+                cookie_box1_06_necessary_only_checkbox:
+                    site_setting:
+                        name: cookie_box1_06_necessary_only_checkbox
+                    grouping: cookie_box_1
+                    indent: 1
+                    redraw_onchange: true
+                    type: checkbox
+                    label: 'Show button for "Necessary only"'
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit'
+                cookie_box1_07_necessary_only_btn:
+                    site_setting:
+                        name: cookie_box1_07_necessary_only_btn
+                    value: "Necessary only"
+                    placeholder: "Necessary only"
+                    grouping: cookie_box_1
+                    indent: 2
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'explicit' && zenarioAB.value('cookie_box1_06_necessary_only_checkbox')
+                    label: '"Necessary only" button text:'
+                    note_below: |
+                        If the visitor clicks this button, they agree to only accept necessary cookies without seeing further information.
+                    type: text
                 cookie_box1_04_manage_btn:
                     site_setting:
                         name: cookie_box1_04_manage_btn
                     value: "Manage cookies"
+                    placeholder: "Manage cookies"
                     grouping: cookie_box_1
                     indent: 1
                     visible_if: |
@@ -146,8 +168,6 @@ site_settings:
                     note_below: |
                         If the user clicks this button, they will see a "Manage cookies" popup box. They will be able to access this again later, usually via the Footer menu.
                     type: text
-                    validation:
-                        required_if_not_hidden: true
                 cookie_box_2:
                     type: grouping
                     grouping_css_class: cookie_box
@@ -186,12 +206,13 @@ site_settings:
                         target_path: zenario__library/panels/special_images
                         select_phrase: Select from special images library...
                     upload: 
-                        accept: "image/*"
-                        extensions: 
-                            - .svg
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        extensions:
+                            - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: false
                     visible_if: zenarioAB.value('cookie_require_consent') == 'explicit' && zenarioAB.value('cookie_show_image')
                     validation:
@@ -251,6 +272,7 @@ site_settings:
                     site_setting:
                         name: cookie_box2_02_accept_all_btn
                     value: "Accept all"
+                    placeholder: "Accept all"
                     grouping: cookie_box_2
                     indent: 1
                     visible_if: |
@@ -259,12 +281,11 @@ site_settings:
                     note_below: |
                         In the large popup box, the text for the "Accept all cookies" button.
                     type: text
-                    validation:
-                        required_if_not_hidden: true
                 cookie_box2_11_save_preferences_btn:
                     site_setting:
                         name: cookie_box2_11_save_preferences_btn
                     value: "Save preferences"
+                    placeholder: "Save preferences"
                     grouping: cookie_box_2
                     indent: 1
                     visible_if: |
@@ -273,8 +294,6 @@ site_settings:
                     note_below: |
                         In the large popup box, the text for the "Save preferences" button.
                     type: text
-                    validation:
-                        required_if_not_hidden: true
                 popup_cookie_type_switches_initial_state:
                     grouping: cookie_box_2
                     indent: 1

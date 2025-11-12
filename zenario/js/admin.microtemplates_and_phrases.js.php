@@ -75,8 +75,9 @@ echo 'zenario.unpack(', json_encode(ze\cache::pack([
 	'continueAnyway' => 'Continue',
 	'copy' => 'Copy',
 	'copied' => 'Copied to clipboard',
-	'copiedCommand' => 'Commands and file paths copied to the clipboard. You should now paste this into your terminal window on your local machine.',
-	'copiedCommandCD' => 'Commands and file paths copied to the clipboard. In your terminal window, <code>cd</code> to your Zenario directory and then paste the copied code.',
+	'copiedAssistant' => 'The start of a prompt that you might give to an AI assistant has been copied to the clipboard.',
+	'copiedPaths' => 'File paths copied to the clipboard.',
+	'copiedX' => 'was copied to the clipboard.',
 	'core' => 'Core Features',
 	'couldNotOpenBox' => 'This admin box could not be displayed because the "tabs" property is missing.',
 	'createAnother' => 'Save & create another',
@@ -92,7 +93,6 @@ echo 'zenario.unpack(', json_encode(ze\cache::pack([
 	'dockMobile' => 'Show mobile preview',
 	'dockNoJS' => 'JavaScript disabled; image may not be visible.',
 	'dockRight' => 'Show preview to the right, slot width',
-	'dropboxDotDotDot' => 'Choose from Dropbox...',
 	'dropToUpload' => 'Drop files here to upload',
 	'edit' => 'Edit',
 	'editorOpen' => 'You have a WYSIWYG editor open, please close this before continuing.',
@@ -243,47 +243,11 @@ echo 'zenario.unpack(', json_encode(ze\cache::pack([
 	'skQuickSearch' => 'Search this panel',
 	'skSearch' => 'Search',
 	'skAdjustView' => 'Adjust view',
-	'skRefreshView' => 'Refresh view',
-	'skListView' => 'List View',
+	'skListView' => 'List view',
 	'skSummaryView' => 'Summary view',
 	'skGridView' => 'Preview',
 	'skBackTo' => 'Back to ',
 	'skOf' => ' of ',
-	
-	'debugHelpMode' => <<<_help
-		<p>Depending on how Organizer is currently being accessed by the Admin, it can operate in a different "mode". Organizer has six different modes, and each mode has a lowercase codename.</p>
-		<p>You can check the current mode using the <code>$</code><code>mode</code> parameter of your <code>fillStorekeeper()</code> and <code>lineStorekeeper()</code> methods, or the <code>[[ORGANIZER_MODE]]</code> constant:</p>
-		<p><strong>full</strong></p>
-		<p>This is the "normal" mode of operation; Organizer has been opened in its own browser window and is running full screen.</p>
-		<p><strong>select</strong></p>
-		<p>This is when the Admin is selecting something from Organizer; Organizer is inside an iframe which is covering the majority of the screen.</p>
-		<p>The left-hand navigation is hidden, and navigation may be restricted to a certain area or panel. Depending on the Panel there may be some degree of control to edit or create items.</p>
-		<p><strong>quick</strong></p>
-		<p>This is when the Admin is editing something on a page using Organizer; Organizer is inside an iframe which is covering the bottom half of the screen, leaving what they are working on still visible at the top.</p>
-		<p>The left-hand navigation is hidden, and navigation may be restricted to a certain area or panel. However there is full control to edit or create items.</p>
-_help
-	,
-	'debugHelpTagPath' => <<<_help
-		<p>The tag path to a panel is the direct path in the data to the panel - i.e. from the top of the <code>.yaml</code> file to the <code>panel:</code> definition.</p>
-		<p>When you create a <code>link</code> to a panel, you will need to specify its tag path.</p>
-		<p>When the CMS calls one of your module's methods (e.g. <code>fillOrganizerPanel()</code>) it will specify the tag path of the panel that is being accessed.</p>
-_help
-	,
-	'debugHelpNavigationPath' => <<<_help
-		<p>If an administrator clicks a link that uses a refiner, then their current location can no longer be specified using a direct tag path. Instead, a more complicated type of link called a navigation path will appear in the URL bar.</p>
-		<p>Navigation paths also work by listing the path taken, however the navigation path will go from the top of the <code>.yaml</code> file to the link that was clicked on.</p>
-		<p>If the link was inside an <code>item_button</code> or an <code>inline_button</code>, and an item on the panel was selected, the id of the item will be included in the navigation path.</p>
-		<p>As the administrator goes through multiple refiners, the tag path between each link and the id of each item will be added to the navigation path in turn.</p>
-_help
-	,
-	'debugHelpRefiner' => <<<_help
-		<p>Refiners modify a panel and change which items that are displayed.</p>
-		<p>For example, if you view the "All content items" panel, by default it will show you every content item that isn't trashed.
-			However if you to go "Content by language" and click on a language, you will only see content items that are in that language.</p>
-		<p>In order to create a working refiner you will need to write some code in SQL and/or PHP.
-			You can access your refiners using <code>request('refiner__my_refiner_name')</code> in PHP, and <code>[[REFINER__MY_REFINER_NAME]]</code> in SQL.</p>
-_help
-	,
 	
 	
 	//Phrases specifically used by Gridmaker
@@ -364,14 +328,17 @@ _help
 	'gridTablet' => 'Tablet',
 	'gridTemplateFileName' => 'Template filename:',
 	'gridTitle' => 'Editing [[layoutName]] with Gridmaker',
-	'password_score_4_matches_requirements' => 'Password matches the requirements (score 4, max)',
-	'password_score_4_exceeds_requirements' => 'Password is very strong and exceeds requirements (score 4, max)',
-	'password_score_3_matches_requirements' => 'Password matches the requirements (score 3)',
-	'password_score_3_too_easy_to_guess' => 'Password is too easy to guess (score 3)',
-	'password_score_2_matches_requirements_but_easy_to_guess' => 'Password is easy to guess. Make your password stronger if this will be a production site.',
-	'password_score_2_too_easy_to_guess' => 'Password is too easy to guess (score 2)',
-	'password_score_1_too_easy_to_guess' => 'Password is too easy to guess (score 1)',
-	'password_score_0_too_easy_to_guess' => 'Password is too easy to guess (score 0)',
+	'password_score_4_matches_requirements' => 'Strength 4, matches site requirements',
+	'password_score_4_exceeds_requirements' => 'Strength 4, very strong and exceeds site requirements',
+	'password_score_3_matches_requirements' => 'Strength 3, matches site requirements',
+	'password_score_3_too_easy_to_guess' => 'Strength 3, too easy to guess',
+	'password_score_2_matches_requirements_but_easy_to_guess' => 'Strength 2, matches site requirements but is easy to guess',
+	'password_score_2_matches_requirements' => 'Strength 2, matches site requirements but is easy to guess',
+	'password_score_2_too_easy_to_guess' => 'Strength 2, too easy to guess',
+	'password_score_1_matches_requirements_but_easy_to_guess' => 'Strength 1, matches site requirements but is easy to guess',
+	'password_score_1_matches_requirements' => 'Strength 1, matches site requirements but is easy to guess',
+	'password_score_1_too_easy_to_guess' => 'Strength 1, too easy to guess',
+	'password_score_0_too_easy_to_guess' => 'Strength 0, too easy to guess',
 	'password_does_not_match_the_requirements' => 'Password does not match the requirements',
 	'enter_password' => 'Please enter a password'
 

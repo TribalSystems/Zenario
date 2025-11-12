@@ -3,17 +3,15 @@
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
-start_running_on_install: false
+start_running_on_install: true  # N.b. changing this property won't do anything as this module is hard-coded in the installer to run on install.
 license_info: 'Modified BSD License'
 display_name: Copyright
 
 description: >
     <p>
-        Copyright
+        This module provides a simple plugin that displays a copyright notice (e.g. "Copyright (c) Your-Companyr" ).
     </p><p>
-        This module provides a simple plugin that displays a copyright notice (e.g. Copyright (c) Tribiq 2001-2012).
-    </p><p>
-        There are settings avaliavle to change the company name, start-year, end-year and a link to a content item or external URL.
+        There are settings available to change the company name, to show a year, and to a link to a content item or external URL.
     </p>
 category: pluggable
 

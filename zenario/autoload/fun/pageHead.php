@@ -306,8 +306,7 @@ if ($isAdmin) {
 
 
 if (\ze::$cID && \ze::$cID !== -1) {
-	$itemHTML = $templateHTML = $familyHTML =
-	$bgWidth = $bgHeight = $bgURL = false;
+	$itemHTML = $templateHTML = $familyHTML = false;
 	
 
 	//Include the site-wide head first
@@ -323,7 +322,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	
 	//Look up the background image and any HTML to add to the HEAD from the content item
 	$sql = "
-		SELECT head_html, head_cc, head_cc_specific_cookie_types, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
+		SELECT head_html, head_cc, head_cc_specific_cookie_types, head_visitor_only, head_overwrite
 		FROM ". DB_PREFIX. "content_item_versions
 		WHERE id = ". (int) \ze::$cID. "
 		  AND type = '". \ze\escape::asciiInSQL(\ze::$cType). "'
@@ -347,7 +346,7 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	
 	//Look up the background image and any HTML to add to the HEAD from the layout
 	$sql = "
-		SELECT head_html, head_cc, head_cc_specific_cookie_types, head_visitor_only, bg_image_id, bg_color, bg_position, bg_repeat
+		SELECT head_html, head_cc, head_cc_specific_cookie_types, head_visitor_only
 		FROM ". DB_PREFIX. "layouts
 		WHERE layout_id = ". (int) \ze::$layoutId;
 	$result = \ze\sql::select($sql);
@@ -377,51 +376,6 @@ if (\ze::$cID && \ze::$cID !== -1) {
 	if (!empty($itemHTML['head_html']) && (empty($itemHTML['head_visitor_only']) || !$isAdmin)) {
 		echo "\n\n". $itemHTML['head_html'], "\n\n";
 	}
-	
-	
-	//Check to see if there is a background image on this content item (or on this layout if not on the content item)
-	if ($itemHTML['bg_image_id']) {
-		ze\image::link($bgWidth, $bgHeight, $bgURL, $itemHTML['bg_image_id']);
-	} elseif ($templateHTML['bg_image_id']) {
-		ze\image::link($bgWidth, $bgHeight, $bgURL, $templateHTML['bg_image_id']);
-	}
-	
-	$bgColor = $itemHTML['bg_color']? $itemHTML['bg_color'] : $templateHTML['bg_color'];
-	$bgPosition = $itemHTML['bg_position']? $itemHTML['bg_position'] : $templateHTML['bg_position'];
-	$bgRepeat = $itemHTML['bg_repeat']? $itemHTML['bg_repeat'] : $templateHTML['bg_repeat'];
-	
-	if ($bgURL || $bgColor || $bgPosition || $bgRepeat) {
-		
-		$background_selector = 'body';
-		if (\ze::$skinId) {
-			$background_selector = \ze\row::get('skins', 'background_selector', \ze::$skinId);
-		}
-		
-		echo '
-<style type="text/css">
-	', $background_selector, ' {';
-		if ($bgURL) {
-			echo '
-		background-image: url(\'', htmlspecialchars($bgURL), '\');';
-		}
-		if ($bgColor) {
-			echo '
-		background-color: ', htmlspecialchars($bgColor), ';';
-		}
-		if ($bgPosition) {
-			echo '
-		background-position: ', htmlspecialchars($bgPosition), ';';
-		}
-		if ($bgRepeat) {
-			echo '
-		background-repeat: ', htmlspecialchars($bgRepeat), ';';
-		}
-		
-		echo '
-		}
-</style>';
-	}
-	
 }
 
 echo '<script type="text/javascript">window.zenarioCodeVersion = "', $codeVersion, '"</script>';

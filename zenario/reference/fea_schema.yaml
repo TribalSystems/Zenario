@@ -84,7 +84,7 @@ additionalProperties:
     type: object
     required:
         - fea_type
-    oneOf:
+    anyOf:
         -
             required:
                 - columns
@@ -189,10 +189,22 @@ additionalProperties:
             type: string
             description: >
                 When viewing a list, this mesage will be shown when there are no items.
+                Note: This uses HTML text, not plain text.
         no_items_in_search_message:
             type: string
             description: >
                 A message to display when there are no items in a search.
+                Note: This uses HTML text, not plain text.
+        use_merge_fields_from_request_vars_in_items_message:
+            type: boolean
+            description: >
+                Set this to true to enable using merge fields from variables in the request
+                in the no_items_message and no_items_in_search_message properties.
+                (The format used for the merge fields is the same as the format used in the slide labels.)
+                
+                This property will only take effect if you call $this->applyTitleSetting() in your fillVisitorTUIX() method.
+                
+                This works from version 10.3 onwards.
         
         key:
             type: object
@@ -388,7 +400,7 @@ additionalProperties:
                                     description: >
                                         This is used to define fields that let the user pick things,
                                         e.g. from a typahead search.
-                                    oneOf:
+                                    anyOf:
                                         -
                                             required:
                                                 - enable_type_ahead_search
@@ -510,10 +522,22 @@ additionalProperties:
                     values:
                         type: object
                         description: >
-                            The FEA list has support for lists of values.
-                            (with real values as keys and display values as values).
+                            The FEA list has support for lists of values (with real values as keys and display values as values).
+                            
+                            From version 10.3 onwards you can also use an object in the format "{label: 'My label'}", to be consistent
+                            with the format used by TUIX forms.
                         additionalProperties:
-                            type: *variable
+                            type:
+                                - number
+                                - string
+                                - object
+                            properties:
+                                label:
+                                    type:
+                                        - number
+                                        - string
+                                    description: >
+                                        The display value
                     empty_value:
                         type: string
                         description: >
@@ -524,6 +548,22 @@ additionalProperties:
                         description: >
                             Set this properly if you want to show multiple values, separated by a comma.
                             This works from version 10.1 onwards.
+                    
+                    show_value_in_tooltip:
+                        type: boolean
+                        description: >
+                            Set this properly if you want to show the value as a tooltip when the user hovers
+                            their mouse over the column.
+                            
+                            You would use this if you wanted to use CSS to display an icon in the column, but
+                            still give the user a wat to see the actual text value.
+                            
+                            Or another use would be if you were going to show a long bit of text that gets
+                            cut off in CSS, so the user can still read the full value by hovering the mouse
+                            over it.
+                            
+                            This works from version 10.3 onwards.
+                            Currently it only works in list view, not block view.
                     
                     align_right:
                         type: boolean
@@ -586,7 +626,7 @@ additionalProperties:
                     parent:
                         type: string
                         description: >
-                            Enter the code-name of another column button here to make your column's value appear
+                            Enter the code-name of another column here to make your column's value appear
                             inside the column you specify.
                             
                             If you also specify a title, then your title will appear in each row as a label.
@@ -612,6 +652,39 @@ additionalProperties:
                         description: >
                             This will add a label just after the value, intended to be for displaying
                             the units of the field.
+                    
+                    pre_value_microtemplate:
+                        type: object
+                        additionalProperties:
+                            type: string
+                        description: >
+                            This allows you to enter a microtemplate (this can either be the code for the template,
+                            or the name of a pre-defined template), that will be run on the client
+                            to display some HTML just before the value of the column.
+                            
+                            This works from version 10.3 onwards.
+                    pre_value_html:
+                        type: string
+                        description: >
+                            Some HTML code to be placed just before the value of the column.
+                            
+                            This works from version 10.3 onwards.
+                    post_value_html:
+                        type: string
+                        description: >
+                            Some HTML code to be placed just after the value of the column.
+                            
+                            This works from version 10.3 onwards.
+                    post_value_microtemplate:
+                        type: object
+                        additionalProperties:
+                            type: string
+                        description: >
+                            This allows you to enter a microtemplate (this can either be the code for the template,
+                            or the name of a pre-defined template), that will be run on the client
+                            to display some HTML just after the value of the column.
+                            
+                            This works from version 10.3 onwards.
                     
                     mirror_field:
                         type: object

@@ -42,7 +42,6 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			$values['settings/thousands_sep'] = $lang['thousands_sep'];
 			$values['settings/dec_point'] = $lang['dec_point'];
 			$values['settings/show_untranslated_content_items'] = $lang['show_untranslated_content_items'];
-			$values['settings/sync_assist'] = $lang['sync_assist'];
 			
 			//N.b. we're not longer allowing admins to change which languages get translated,
 			//so don't bother loading the saved value.
@@ -130,8 +129,6 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 			} else {
 				ze\lang::applyMergeFields($fields['settings/secondary_language_info_snippet']['snippet']['html'], $mergeFields);
 			}
-			
-			$fields['settings/sync_assist']['hidden'] = ($languageCount == 0 || $box['key']['id'] == ze::$defaultLang);
 		}
 	
 		//N.b. we're not longer allowing admins to change which languages get translated.
@@ -166,9 +163,11 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		$fields['settings/show_untranslated_content_items']['label'] =
 			ze\admin::phrase('When showing menus and banners plugins on pages in [[settings/english_name]]:', $values);
 		$fields['settings/show_untranslated_content_items']['values'][0]['label'] =
-			ze\admin::phrase('Hide text and link when the [[settings/english_name]] page does not exist (not recommended)', $values);
+			ze\admin::phrase('Hide the link when the [[settings/english_name]] page does not exist (not recommended)', $values);
 		$fields['settings/show_untranslated_content_items']['values'][1]['label'] =
-			ze\admin::phrase('Always show text and link, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists (recommended)', $values);
+			ze\admin::phrase('Show the link, but link to the [[dummy/default_name]] page when no [[settings/english_name]] page exists (recommended)', $values);
+		$fields['settings/show_untranslated_content_items']['values'][1]['note_below'] =
+			ze\admin::phrase('Whenever a visitor clicks a link to page that doesn\'t exist in [[settings/english_name]], Zenario adds a <code>visLang=[[settings/flag_filename]]</code> parameter to the URL to remember the visitor\'s preference for [[settings/english_name]].', $values);
 	}
 	
 	protected function lookupLangPhrase($code, $langId) {
@@ -305,7 +304,6 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 					'translate_phrases' => $values['settings/translate_phrases'], 
 					'language_picker_logic' => $values['settings/language_picker_logic'], 
 					'show_untranslated_content_items' => $values['settings/show_untranslated_content_items'], 
-					'sync_assist' => $values['settings/sync_assist'], 
 					'search_type' => ($values['settings/search_type'] == 'simple'? 'simple' : 'full_text'),
 					'thousands_sep' => $values['settings/thousands_sep'], 
 					'dec_point' => $values['settings/dec_point'], 
@@ -326,7 +324,7 @@ class zenario_common_features__admin_boxes__setup_language extends ze\moduleBase
 		ze\contentAdm::addNeededSpecialPages();
 
 		//Add any new phrases for this language
-		ze\contentAdm::importPhrasesForModules($langId);
+		ze\contentAdm::importPhrasesForModules($langId, $keepExistingTranslations = true);
 
 		//If we're adding a new language (i.e. no content items previously existed), show a message
 		//warning the admin what pages were just made.

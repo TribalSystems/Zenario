@@ -45,6 +45,7 @@ ze\db::loadSiteConfig();
 
 //Show a manage button if visitors can manage thier cookies individually
 $manageButtonHTML = '';
+$necessaryOnlyButtonHTML = '';
 if (in_array($_GET['type'], ['accept', 'accept_reject'])) {
 	$manageButtonHTML =  '
 		<div class="zenario_cc_manage">
@@ -57,6 +58,15 @@ if (in_array($_GET['type'], ['accept', 'accept_reject'])) {
 				'. htmlspecialchars(\ze::setting('cookie_box1_04_manage_btn')). '
 			</a>
 		</div>';
+	
+	if (\ze::setting('cookie_box1_06_necessary_only_checkbox')) {
+		$necessaryOnlyButtonHTML = '
+			<div class="zenario_cc_accept">
+				<a
+					href="zenario/cookies.php?accept_necessary_cookies_only=1"
+				>'. htmlspecialchars(\ze::setting('cookie_box1_07_necessary_only_btn')). '</a>
+			</div>';
+	}
 }
 
 switch ($_GET['type']) {
@@ -85,6 +95,7 @@ document.getElementById("zenario_cookie_consent").innerHTML = \'', ze\escape::js
 		<div class="zenario_cc_message">'. \ze::setting('cookie_box1_03_cookie_consent_msg'). '</div>
 		<div class="zenario_cc_buttons">
 			' . $manageButtonHTML . '
+			' . $necessaryOnlyButtonHTML . '
 			<div class="zenario_cc_accept">
 				<a
 					href="zenario/cookies.php?accept_cookies=1"

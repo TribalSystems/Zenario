@@ -576,9 +576,8 @@ diagnostics:
                     visible_if: zenarioAW.togglePressed(field)
                 
                 admin_timeout_not_set_up_correctly: *blank_child
-                public_documents: *blank_child
                 public_images: *blank_child
-                repair_public_images:
+                repair_public_images: &repair
                     grouping: sub_table
                     full_width: true
                     type: submit
@@ -587,6 +586,12 @@ diagnostics:
                         margin: auto;
                         display: inherit;
                     hide_on_install: true
+                public_ctype_documents: *blank_child
+                repair_public_ctype_documents: *repair
+                    value: Repair public document content items
+                public_hierarchical_documents: *blank_child
+                repair_public_hierarchical_documents: *repair
+                    value: Repair public hierarchical documents
                 
                 print_css: *blank_child
                     
@@ -762,7 +767,7 @@ diagnostics:
                     row_class: sub_level
                     visible_if: zenarioAW.togglePressed(field)
                 
-                error_log_grew_over_10000_records:
+                error_log_grew_over_20000_records:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
@@ -770,7 +775,7 @@ diagnostics:
                     visible_if: zenarioAW.togglePressed(field)
                     snippet:
                         html: |
-                            The 404 [[link_start]]error log[[link_end]] has over 10,000 records.
+                            The 404 [[link_start]]error log[[link_end]] has over 20,000 records.
                 
                 plugin_must_be_on_private_page_error:
                     grouping: sub_table
@@ -863,6 +868,7 @@ diagnostics:
                         <div class="continue_to_selector selector_wrap"><div>
                     post_field_html: |
                         </div></div>
+                    redraw_onchange: true
                 
                 continue:
                     value: Continue

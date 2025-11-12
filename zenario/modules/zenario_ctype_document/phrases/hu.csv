@@ -1,0 +1,11 @@
+"Language ID","Module"
+hu,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Dokumentum letöltés:"
+_DOCUMENT_DOWNLOAD_PAGE,"Ennek az oldalnak az URL-je:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Ez a dokumentum nincs egyetlen kategóriában sem."
+_VIEW_OR_DOWNLOAD,"Megtekintés/letöltés:"
+_FILE_TYPE_AND_SIZE,"Fájltípus és méret:"
+_S3_FILE_TYPE_AND_SIZE,"S3 fájltípus és méret:"
+_S3_FILENAME,"S3 fájlnév:"

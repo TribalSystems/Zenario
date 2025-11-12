@@ -121,7 +121,7 @@ zenario_path:
                 citem:
                     visible_if: |
                         lib.tuix.key.linkToOtherContentItem
-                    label: 'Content item'
+                    label: 'Content item:'
                     pick_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/content
@@ -134,7 +134,7 @@ zenario_path:
                 to_state:
                     visible_if: |
                         lib.tuix.key.linkToOtherContentItem
-                    label: 'Slide number or state letter'
+                    label: 'Slide number:'
                     type: text
                     maxlength: 2
                     style: |
@@ -143,5 +143,6 @@ zenario_path:
                         required_if_not_hidden: Please enter either a slide number or state letter
                         no_spaces: Please enter either a number or a letter
                         screen_name: Please enter either a number or a letter
-                    side_note: Enter the number of a slide, or the letter of a state, but not both.
+                    note_below: |
+                        Note to advanced users: you can also enter the letter code used for a slide.
                     

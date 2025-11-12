@@ -63,11 +63,32 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				$panel['no_items_message'] = ze\admin::phrase('There are no images attached to the content item [[tag]], version [[version]]', $mrg);
 
 				//Display notices when the content item has or hasn't got a featured image.
+				//Also warn if the featured image of a public content item is an .svg file, as they do not work on social media.
 				$panel['notice']['show'] = true;
-				$hasFeaturedImage = ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $mrg['version']]);
-				if ($hasFeaturedImage) {
-					$panel['notice']['type'] = 'information';
-					$panel['notice']['message'] = ze\admin::phrase("This content item has a featured image. The featured image will appear in content summary lists and in OG tags (used by social media).");
+				$featuredImageId = ze\row::get('content_item_versions', 'feature_image_id', ['id' => $cID, 'type' => $cType, 'version' => $mrg['version']]);
+				if ($featuredImageId) {
+					$featuredImageMimeType = ze\row::get('files', 'mime_type', $featuredImageId);
+					
+					$sql = "
+						SELECT tc.privacy
+						FROM " . DB_PREFIX . "translation_chains tc
+						INNER JOIN " . DB_PREFIX . "content_items c
+							ON tc.equiv_id = c.id
+							AND tc.type = c.type
+						WHERE c.id = " . (int) $cID . "
+						AND c.type = '" . ze\escape::sql($cType) . "'";
+					$result = ze\sql::select($sql);
+					$contentPrivacy = ze\sql::fetchValue($result);
+					
+					if (($contentPrivacy == 'public' || $contentPrivacy == 'logged_out') && $featuredImageMimeType == "image/svg+xml") {
+						$panel['notice']['type'] = 'warning';
+						$panel['notice']['message'] = ze\admin::phrase(
+							"The featured image is of type SVG and will probably not be handled automatically by social media sites on which you mention this page."
+						);
+					} else {
+						$panel['notice']['type'] = 'information';
+						$panel['notice']['message'] = ze\admin::phrase("This content item has a featured image. The featured image will appear in content summary lists and in OG tags (used by social media).");
+					}
 				} else {
 					$href = 'organizer.php#zenario__administration/panels/site_settings//logos_and_branding~.site_settings~tfavicon~k{"id"%3A"logos_and_branding"}';
 					$linkStart = '<a href="' . htmlspecialchars($href) . '" target="_blank">';
@@ -532,7 +553,7 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				return $fileId;
 
 			} else {
-				echo ze\admin::phrase('Please upload a valid GIF, JPG, PNG or SVG image.');
+				echo ze\admin::phrase('Please upload a valid JPG, PNG, SVG, WEBP or GIF image.');
 				return false;
 			}
 
@@ -575,11 +596,11 @@ class zenario_common_features__organizer__image_library extends ze\moduleBaseCla
 				
 				if ($usage) {
 					echo '
-						<p>', ze\admin::phrase('Are you sure you wish to delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
+						<p>', ze\admin::phrase('Delete the image &quot;[[filename]]&quot;? It is in use in the following places:', $mrg), '</p>
 						<ul><li>', implode('</li><li>', ze\miscAdm::getUsageText($usage, $usageLinks, $fullPath = true, "", $showExampleOfHistoricContent = true)), '</li></ul>';
 				} else {
 					echo '
-						<p>', ze\admin::phrase('Are you sure you wish to delete the unused image "[[filename]]"?', $mrg), '</p>';
+						<p>', ze\admin::phrase('Delete the image "[[filename]]"?', $mrg), '</p><p>It is not in use.</p>';
 				}
 			} elseif ($count > 0) {
 				$usedImages = $unusedImaged = 0;

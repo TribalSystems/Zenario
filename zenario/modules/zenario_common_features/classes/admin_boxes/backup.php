@@ -44,7 +44,7 @@ class zenario_common_features__admin_boxes__backup extends ze\moduleBaseClass {
 				FROM information_schema.tables
 				WHERE table_schema = "'. ze\escape::sql(DBNAME). '"'
 			)) {
-				$mrg = ['formattedSize' => ze\lang::formatFilesizeNicely($size, 1, true)];
+				$mrg = ['formattedSize' => ze\file::formatSizeUnits($size, $adminMode = true)];
 				
 				if ($size > 52428800 && !ze\dbAdm::testMySQL(true)) {
 					$box['tabs']['details']['notices']['mysqldump_unavailable']['show'] = true;

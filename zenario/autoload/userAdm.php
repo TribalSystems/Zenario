@@ -160,13 +160,13 @@ class userAdm {
 		if (!empty($values['screen_name'])) {
 			//...has no special characters...
 			if (!\ze\ring::validateScreenName($values['screen_name'])) {
-				$e->add('screen_name', 'The screen name can contain only lower case letters a-z, capital letters A-Z, numbers 0-9, hyphens, underscores, and periods.');
+				$e->add('screen_name', '_ERROR_SCREEN_NAME_USES_INVALID_CHARACTERS');
 			//...and is not already taken by a different row...
 			} elseif (\ze\row::exists('users', ['screen_name' => $values['screen_name'], 'id' => ['!' => $id]])) {
-				$e->add('screen_name', 'This screen name is already in use.');
+				$e->add('screen_name', '_ERROR_SCREEN_NAME_IN_USE');
 			//...and is not too long.
 			} elseif (strlen($values['screen_name']) > 50) {
-				$e->add('screen_name', 'Your screen name cannot be more than 50 characters long.');
+				$e->add('screen_name', '_ERROR_SCREEN_NAME_TOO_LONG');
 			}
 		}
 	
@@ -174,17 +174,17 @@ class userAdm {
 		//Ensure salutation, first_name and last_name are not too long
 		if (!empty($values['salutation'])) {
 			if (strlen($values['salutation']) > 25) {
-				$e->add('salutation', 'Your salutation cannot be more than 25 characters long.');
+				$e->add('salutation', '_ERROR_SALUTATION_TOO_LONG');
 			}
 		}
 		if (!empty($values['first_name'])) {
 			if (strlen($values['first_name']) > 100) {
-				$e->add('first_name', 'Your first name cannot be more than 100 characters long.');
+				$e->add('first_name', '_ERROR_FIRST_NAME_TOO_LONG');
 			}
 		}
 		if (!empty($values['last_name'])) {
 			if (strlen($values['last_name']) > 100) {
-				$e->add('last_name', 'Your last name cannot be more than 100 characters long.');
+				$e->add('last_name', '_ERROR_LAST_NAME_TOO_LONG');
 			}
 		}
 	
@@ -197,11 +197,11 @@ class userAdm {
 				$existingUserDetails = \ze\row::get('users', ['first_name', 'last_name', 'screen_name'], $id);
 				if (
 					!empty($existingUserDetails)
-					&& isset($values['first_name']) && isset($values['last_name']) && isset($values['screen_name'])
+					&& isset($values['first_name']) && isset($values['last_name'])
 					&& (
 						$existingUserDetails['first_name'] != $values['first_name']
 						|| $existingUserDetails['last_name'] != $values['last_name']
-						|| (isset($values['screen_name']) && $existingUserDetails['screen_name'] != $values['screen_name'])
+						|| (\ze::setting('user_use_screen_name') && isset($values['screen_name']) && $existingUserDetails['screen_name'] != $values['screen_name'])
 					)
 				) {
 					$firstNameLastNameOrScreenNameHasChanged = true;
@@ -221,7 +221,7 @@ class userAdm {
 		//Validate the email field if it is not empty.
 		if (!empty($values['email'])) {
 			if (strlen($values['email']) > 100 || !\ze\ring::validateEmailAddress($values['email'])) {
-				$e->add('email', 'Please enter a valid email address.');
+				$e->add('email', '_ERROR_EMAIL_ADDRESS_INVALID');
 		
 			//...and is not already taken by a different row.
 			} else {
@@ -230,11 +230,11 @@ class userAdm {
 						if ($exsitingUser['status'] == "contact") {
 							$id = $exsitingUser['id'];
 						} else {
-							$e->add('email', 'This email address is already in use by another user.');
+							$e->add('email', '_ERROR_EMAIL_ADDRESS_IN_USE');
 						}
 					}
 				} elseif (\ze\row::exists('users', ['email' => $values['email'], 'id' => ['!' => $id]])) {
-					$e->add('email', 'This email address is already in use by another user.');
+					$e->add('email', '_ERROR_EMAIL_ADDRESS_IN_USE');
 				}
 			}
 		}
@@ -329,13 +329,33 @@ class userAdm {
 		$password = "";
 
 		$passwordMinScore = (int) \ze::setting('min_extranet_user_password_score');
-		$passwordMinLength = max(8, (int) \ze::setting('min_extranet_user_password_length'));
+		$passwordMinLength = max(6, (int) \ze::setting('min_extranet_user_password_length'));
 		
-		//If the min score is 3 or 4, then make the password suggestions longer to be able to match.
+		/*
+			Currently the password length can be between 6 and 32 characters.
+			Min char length to match a score:
+				- score 4: min length 12
+				- score 3: min length 10
+				- score 2: min length 8
+					(but 8 is just the bare minimum pass for score 2 - the password notifier message would be displayed in amber
+					and say e.g. "Password is too easy to guess")
+				- score 1: min length 6
+			
+			For scores 4 and 3, if the min length site setting is less than the min above (e.g. old data),
+			or Zenario is not installed yet, then fall back on the values above to generate	a password that matches the score.
+			
+			For score 2, while an 8 char password would work, use 9 or above to generate a password that exceeds score 2.
+			This is to avoid a situation where a generated password shows "Password is too easy to guess" in amber.
+		*/
+		
 		if ($passwordMinScore == 4 && $passwordMinLength < 12) {
 			$passwordMinLength = 12;
 		} elseif ($passwordMinScore == 3 && $passwordMinLength < 10) {
 			$passwordMinLength = 10;
+		} elseif ($passwordMinScore == 2 && $passwordMinLength < 9) {
+			$passwordMinLength = 9;
+		} elseif ($passwordMinScore == 1 && $passwordMinLength < 6) {
+			$passwordMinLength = 6;
 		}
 		
 		$passwordLength = $passwordMinLength;
@@ -354,7 +374,10 @@ class userAdm {
 				$passwordCharacters = array_merge($passwordCharacters, $uppercase);
 				$passwordCharacters = array_merge($passwordCharacters, $lowercase);
 				$passwordCharacters = array_merge($passwordCharacters, $numbersArray);
-				$passwordCharacters = array_merge($passwordCharacters, $symbolsArray);
+				
+				if (\ze::setting('autogenerated_passwords_should_contain_symbols')) {
+					$passwordCharacters = array_merge($passwordCharacters, $symbolsArray);
+				}
 			
 				if ($passwordCharacters) {
 					for ($i = 1; $i <= $passwordLength; $i++) {
@@ -410,6 +433,25 @@ class userAdm {
 		\ze\row::update('users', $details, $userId);
 		//Adding hash
 		\ze\userAdm::updateHash($userId);
+	}
+	
+	public static function suspend($userId, $adminFacing = false) {
+		$cols = [];
+		
+		if ($adminFacing) {
+			\ze\admin::setLastUpdated($cols, $creating = false);
+		} else {
+			\ze\user::setLastUpdated($cols, $creating = false);
+		}
+		
+		$cols['modified_date'] = $cols['last_edited'];
+		$cols['suspended_date'] = $cols['last_edited'];
+		unset($cols['last_edited']);
+		$cols['status'] = 'suspended';
+		
+		\ze\row::update('users', $cols, $userId);
+		
+		\ze\module::sendSignal("eventUserStatusChange", ["userId" => $userId, "status" => "suspended"]);
 	}
 
 	public static function delete($userId, $deleteAllData = false) {

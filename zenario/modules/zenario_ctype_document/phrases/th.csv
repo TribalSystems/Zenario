@@ -1,0 +1,11 @@
+"Language ID","Module"
+th,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"ดาวน์โหลดเอกสาร:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL ของหน้านี้:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"เอกสารนี้ไม่อยู่ในหมวดหมู่ใด ๆ"
+_VIEW_OR_DOWNLOAD,"ดู/ดาวน์โหลด:"
+_FILE_TYPE_AND_SIZE,"ประเภทไฟล์และขนาด:"
+_S3_FILE_TYPE_AND_SIZE,"ประเภทไฟล์ S3 และขนาด:"
+_S3_FILENAME,"ชื่อไฟล์ S3:"

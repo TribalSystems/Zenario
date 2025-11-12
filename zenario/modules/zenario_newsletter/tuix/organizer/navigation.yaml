@@ -5,7 +5,8 @@ zenario__email_template_manager:
         newsletters:
             priv: _PRIV_EDIT_NEWSLETTER
             css_class: zenario_newsletter_draft
+            ord: 110
             label: Newsletters
-            tooltip: Write a Newsletter and send it to registered Users
+            tooltip: Send email newsletters to users and contacts
             link:
                 path: zenario__email_template_manager/panels/newsletters

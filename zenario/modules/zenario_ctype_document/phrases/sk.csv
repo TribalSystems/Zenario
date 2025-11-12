@@ -1,0 +1,11 @@
+"Language ID","Module"
+sk,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Sťahovanie dokumentu:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL tejto stránky:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Tento dokument nie je v žiadnej kategórii."
+_VIEW_OR_DOWNLOAD,"Zobraziť/stiahnuť:"
+_FILE_TYPE_AND_SIZE,"Typ súboru a veľkosť:"
+_S3_FILE_TYPE_AND_SIZE,"Typ súboru S3 a veľkosť:"
+_S3_FILENAME,"Názov súboru S3:"

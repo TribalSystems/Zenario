@@ -17,15 +17,12 @@
 	overflow:hidden;
 }
 
-.zenario_document_container__default_style .document_wrap .level_1 a {
-	clear:both;
+.zenario_document_container__default_style .document_wrap .level_1 .document_title {
+	font-size:1.3em;
+	font-family:'cardoregular','Times New Roman','Georgia',serif;
 }
 
-.zenario_document_container__default_style .document_wrap .level_1 span {
-	display:block;
-}
-
-.zenario_document_container__default_style .document_wrap .level_1 > a:first-child {
+.zenario_document_container__default_style .document_wrap .level_1 .document_title a {
 	color:#2a98ce;
 }
 

@@ -83,6 +83,7 @@ if (!empty($_REQUEST['clear_admin_cookie'])) {
 	}
 
 } else {
+	//Also covers the accept_necessary_cookies_only case
 	ze\cookie::setNoConsent();
 }
 

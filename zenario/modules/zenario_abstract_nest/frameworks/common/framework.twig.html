@@ -77,8 +77,6 @@
 			</div>
 		{% endif %}
 		
-		{% set Eggs_Equal_Height = this.setting('eggs_equal_height') %}
-		
 		<div class="nest_plugins_wrap">
 			{% for Tab in Tabs %}
 				{% if Tab.Plugins %}
@@ -127,7 +125,7 @@
 					<div
 						class="
 							nest_plugins
-							{% if Eggs_Equal_Height %}
+							{% if this.eggsEqualHeight() %}
 								nest_equal_height setmychildren
 							{% endif %}
 							{{Tab.Slide_Class|escape}}
@@ -146,14 +144,14 @@
 	{% endif %}
 	
 	{% if showButtons %}
-		<a {{Prev_Link}} class="prev{{Prev_Disabled}}">
+		<a {{Prev_Link}} id="{{containerId}}-prevButton" class="prev{{Prev_Disabled}}">
 			<div>
 				<span>{{this.phrase('&lt; Prev')}}</span>
 			</div>
 		</a>
 		<div class="background_prev"></div>
 		
-		<a {{Next_Link}} class="next{{Next_Disabled}}">
+		<a {{Next_Link}} id="{{containerId}}-nextButton" class="next{{Next_Disabled}}">
 			<div >
 				<span>{{this.phrase('Next &gt;')}}</span>
 			</div>

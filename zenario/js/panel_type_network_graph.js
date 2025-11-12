@@ -118,12 +118,20 @@ methods.drawItems = function($panel) {
 								'text-valign': 'bottom',
 								'text-halign': 'center',
 								'font-size': 15,
-								'background-color': '#ddd',
-								'background-opacity': 0.5,
-								'border-color': '#eee',
+								'background-opacity': 1,
+								'background-color': '#f6f6f6',
+								'border-color': '#888',
 								'border-opacity': 1,
-								'border-width': 1,
-								'border-style': 'solid'
+								'border-width': 2,
+								'border-radius': '15px',
+								'border-style': 'dashed',
+								'shape': 'round-rectangle'
+							}
+						}, {
+							selector: '$node.one_state > node',
+							css: {
+								'background-opacity': 0,
+								'border-opacity': 0
 							}
 						}, {
 							selector: 'edge',

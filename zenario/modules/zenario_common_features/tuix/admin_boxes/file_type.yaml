@@ -22,7 +22,7 @@ zenario_file_type:
                     validation:
                         required: Please enter an Extension.
                 mime_type:
-                    label: 'MIME Type:'
+                    label: 'MIME type:'
                     type: text
                     maxlength: 128
                     style: 'width: 15em;'

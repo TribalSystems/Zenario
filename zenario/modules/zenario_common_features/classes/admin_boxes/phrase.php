@@ -58,9 +58,12 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 		$existingPhrases = [];
 		$result = ze\row::query(
 			'visitor_phrases',
-			['local_text', 'language_id', 'protect_flag', 'modified_date', 'seen_at_content_id', 'seen_at_content_type'],
+			['local_text', 'language_id', 'protect_flag', 'modified_date', 'seen_at_content_id', 'seen_at_content_type', 'first_seen_by_visitor'],
 			['code' => $details['code'], 'module_class_name' => $details['module_class_name']]
 		);
+		
+		$contentFound = false;
+		$contentMissing = false;
 		
 		while ($row = ze\sql::fetchAssoc($result)) {
 			$existingPhrases[$row['language_id']] = $row;
@@ -72,25 +75,38 @@ class zenario_common_features__admin_boxes__phrase extends ze\moduleBaseClass {
 				}
 			}
 			
-			if ($row['seen_at_content_id'] && $row['seen_at_content_type']) {
-				$contentItemTag = $row['seen_at_content_type'] . '_' . $row['seen_at_content_id'];
-				$contentItemTagFormatted = ze\content::formatTag($row['seen_at_content_id'], $row['seen_at_content_type']);
-				
-				if (ze\row::exists('content_items', ['id' => $row['seen_at_content_id'], 'type' => $row['seen_at_content_type'], 'status' => ['!' => 'deleted']])) {
-					$contentItemLink = ze\link::toItem($row['seen_at_content_id'], $row['seen_at_content_type']);
-					$contentItemClass = ze\contentAdm::getItemIconClass($row['seen_at_content_id'], $row['seen_at_content_type']);
+			if (!$contentFound) {
+				if ($row['seen_at_content_id'] && $row['seen_at_content_type']) {
+					$contentFound = true;
 					
-					$linkStart = '<a href="organizer.php#zenario__content/panels/content//' . htmlspecialchars($contentItemTag) . '" target="_blank">';
-					$linkEnd = '</a>';
+					$contentItemTag = $row['seen_at_content_type'] . '_' . $row['seen_at_content_id'];
 					
-					$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase(
-						'[[link_start]][[content_item_tag]][[link_end]]',
-						['link_start' => $linkStart, 'content_item_tag' => $contentItemTagFormatted, 'link_end' => $linkEnd]
-					);
+					$usage = [];
 					
-					$fields['phrase/seen_at']['row_class'] = 'organizer_item_image ' . $contentItemClass;
+					if (ze\lang::count() > 1) {
+						$usage['content_translation_chains'] = 1;
+						$usage['content_translation_chain'] = $contentItemTag;
+					} else {
+						if (ze\row::exists('content_items', ['id' => $row['seen_at_content_id'], 'type' => $row['seen_at_content_type'], 'status' => ['!' => 'deleted']])) {
+							$usage['content_items'] = 1;
+							$usage['content_item'] = $contentItemTag;
+						} else {
+							$contentMissing = true;
+							$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('Missing content item [[tag]]', ['tag' => $contentItemTag]);
+						}
+					}
+					
+					if (!$contentMissing) {
+						$usageLinks = [];
+						$whereUsed = implode('; ', ze\miscAdm::getUsageText($usage, $usageLinks));
+						
+						$fields['phrase/seen_at']['snippet']['html'] = $whereUsed;
+					}
+					
+					$fields['phrase/first_seen_in_visitor_mode']['snippet']['html'] = ze\date::formatDateTime($row['first_seen_by_visitor']);
 				} else {
-					$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('[[content_item_tag]] (deleted)', ['content_item_tag' => $contentItemTagFormatted]);
+					$fields['phrase/seen_at']['snippet']['html'] = ze\admin::phrase('Not yet seen');
+					$fields['phrase/first_seen_in_visitor_mode']['hidden'] = true;
 				}
 			}
 		}

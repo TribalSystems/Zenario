@@ -6,18 +6,6 @@ plugin_settings:
         first_tab:
             label: Details
             fields:
-                autostart:
-                    plugin_setting:
-                        name: autostart
-                    label: 'Autostart'
-                    type: checkbox
-                    value: "1"
-                loop:
-                    plugin_setting:
-                        name: loop
-                    label: 'Loop'
-                    type: checkbox
-                    value: "0"
                 show_details_and_link:
                     label: 'Show Audio details from:'
                     type: radios
@@ -45,3 +33,20 @@ plugin_settings:
                         select_phrase: Select Content Item...
                     validation:
                         required_if_not_hidden: Please select Content Item.
+                show_file_size:
+                    label: 'Show file size'
+                    plugin_setting:
+                        name: show_file_size
+                    type: checkbox
+                autostart:
+                    plugin_setting:
+                        name: autostart
+                    label: 'Autostart'
+                    type: checkbox
+                    value: "1"
+                loop:
+                    plugin_setting:
+                        name: loop
+                    label: 'Loop'
+                    type: checkbox
+                    value: "0"

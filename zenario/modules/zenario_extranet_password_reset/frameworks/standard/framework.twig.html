@@ -1,17 +1,17 @@
 <div class="extranet_wrap">
     <div class="extranet_outer_wrap">
         <div class="extranet_inner_wrap">
+            {% if Main_Title %}
+            	<h1>{{"Reset your password"|trans}}</h1>
+            {% endif %}
+            
             {% if Message_Display %}
-                <div class="extranet_message">{{Message}}</div>
+                <div class="extranet_message {{Message_Css_Class|e}}">{{Message}}</div>
                 {% if Login_Link_Section %}
                     <div class="extranet_links">
                     	<div><a {{Login_Link}}>{{"Go back to login"|trans}}</a></div>
                     </div>
                 {% endif %}
-            {% endif %}
-            
-            {% if Main_Title %}
-            	<h1>{{"Reset your password"|trans}}</h1>
             {% endif %}
             
 			{% for item in Error_Display %}
@@ -45,7 +45,7 @@
                 <div>
                 	<input type="hidden" name="hash" value="{{hash}}"/>
                 	<input type="hidden" name="extranet_reset_password" value="{{extranet_reset_password}}"/>
-                    <div class="extranet_field zenario_visitor_tooltip_wrap">
+                    <div class="extranet_field">
                         <div class="label"><label for="extranet_new_password">{{"Your new password:"|trans}}</label></div>
                         <div class="password_field_with_eye">
 							{{this.frameworkField({

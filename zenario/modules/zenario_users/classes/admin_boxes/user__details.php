@@ -52,6 +52,16 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 		$box['key']['min_extranet_user_password_length'] = ze::setting('min_extranet_user_password_length');
 		$box['key']['min_extranet_user_password_score'] = ze::setting('min_extranet_user_password_score');
 		
+		$box['tabs']['details']['fields']['password_message']['notices_below']['password_requirements'] = [
+			'type' => 'information',
+			'size' => 'small',
+			'html' => true,
+			'message' => ze\admin::phrase(
+				'Password minimum strength [[score]], at least [[min_length]] characters.',
+				['score' => $box['key']['min_extranet_user_password_score'], 'min_length' => $box['key']['min_extranet_user_password_length']]
+			)
+		];
+		
 		if ($box['key']['id']) {
 			ze\priv::exitIfNot('_PRIV_VIEW_USER');
 			
@@ -291,71 +301,59 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 					$result = $zxcvbn->passwordStrength($values['details/password']);
 
 					if ($result && isset($result['score'])) {
+						$cssClass = '';
+						$phrase = '';
 						switch ($result['score']) {
 							case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+								$cssClass = 'title_green';
 								if ($minScore < 4) {
-									$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
+									$phrase = 'Strength 4, very strong and exceeds site requirements';
 								} elseif ($minScore == 4) {
-									$phrase = 'Password matches the requirements (score 4)';
+									$phrase = 'Strength 4, matches site requirements';
 								}
-
-								$passwordMessageSnippet = 
-									'<div>
-										<span id="zenario_password_message" class="title_green">' . ze\admin::phrase($phrase) . '</span>
-									</div>';
 								break;
 							case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
 								if ($minScore == 4) {
-									$passwordMessageSnippet = 
-									'<div>
-										<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-									</div>';
+									$cssClass = 'title_red';
+									$phrase = 'Strength 3, too easy to guess';
 								} elseif ($minScore < 4) {
-									$passwordMessageSnippet = 
-										'<div>
-											<span id="zenario_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
-										</div>';
+									$cssClass = 'title_green';
+									$phrase = 'Strength 3, matches site requirements';
 								}
 								break;
 							case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-								if ($minScore == 2) {
-									$passwordMessageSnippet = 
-										'<div>
-											<span id="zenario_password_message" class="title_orange">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-										</div>';
+								if ($minScore < 2) {
+									$cssClass = 'title_orange';
+									$phrase = 'Strength 2, matches site requirements but is easy to guess';
+								} elseif ($minScore == 2) {
+									$cssClass = 'title_orange';
+									$phrase = 'Strength 2, matches site requirements but is easy to guess';
 								} elseif ($minScore > 2) {
-									$passwordMessageSnippet = 
-										'<div>
-											<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-										</div>';
+									$cssClass = 'title_red';
+									$phrase = 'Strength 2, too easy to guess';
 								}
 								break;
 							case 1: //is still very guessable (guesses < 10^6)
+								if ($minScore == 1) {
+									$cssClass = 'title_orange';
+									$phrase = 'Strength 1, matches site requirements but is easy to guess';
+								} elseif ($minScore > 1) {
+									$cssClass = 'title_red';
+									$phrase = 'Strength 1, too easy to guess';
+								}
+								break;
 							case 0: //s extremely guessable (within 10^3 guesses)
 							default:
-								$passwordMessageSnippet = 
-									'<div>
-										<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-									</div>';
-								break;
+								$cssClass = 'title_red';
+								$phrase = 'Strength 0, too easy to guess';
 						}
+						
+						$passwordMessageSnippet = 
+							'<div>
+								<span id="zenario_password_message" class="' . $cssClass . '">' . ze\admin::phrase($phrase, ['score' => (int) $result['score']]) . '</span>
+							</div>';
 					}
 				}
-
-				// $passwordValidation = ze\user::checkPasswordStrength($values['details/password']);
-				// if (!$passwordValidation['password_matches_requirements']) {
-				// 	//Set the post-html field to display "FAIL" highlighted in red.
-				// 	$passwordMessageSnippet = 
-				// 		'<div>
-				// 			<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password does not match the requirements') . '</span>
-				// 		</div>';
-				// } else {
-				// 	//Set the post-html field to display "PASS" highlighted in green.
-				// 	$passwordMessageSnippet = 
-				// 		'<div>
-				// 			<span id="zenario_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements') . '</span>
-				// 		</div>';
-				// }
 			}
 			$box['tabs']['details']['fields']['password_message']['post_field_html'] = $passwordMessageSnippet;
 		}
@@ -553,7 +551,13 @@ class zenario_users__admin_boxes__user__details extends ze\moduleBaseClass {
 			$loginInstructions = '';
 			
 			if (ze::setting('user_use_screen_name')) {
-				$loginInstructions .= ze\admin::phrase("Screen name:") . " " . $values['screen_name'];
+				if ($values['screen_name']) {
+					$screenName = str_replace(' ', '', $values['screen_name']);
+				} else {
+					$screenName = ze\admin::phrase('(empty)');
+				}
+				
+				$loginInstructions .= ze\admin::phrase("Screen name:") . " " . $screenName;
 				$loginInstructions .= "<br />";
 			}
 			

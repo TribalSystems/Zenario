@@ -233,12 +233,13 @@ styles_fab_white: &styles_fab
                     label: Image
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                     pick_items:
                         path: zenario__library/panels/image_library
@@ -249,12 +250,13 @@ styles_fab_white: &styles_fab
                     label: Multiple images
                     upload:
                         multi: true
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                     pick_items:
                         path: zenario__library/panels/image_library
@@ -265,12 +267,13 @@ styles_fab_white: &styles_fab
                     label: Multiple, rearrangable images
                     upload:
                         multi: true
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                     pick_items:
                         path: zenario__library/panels/image_library

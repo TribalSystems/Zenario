@@ -67,7 +67,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		//Always boolean
 		$values['details/auto_flag_feature_image'] = $details['auto_flag_feature_image'];
 		$values['details/enable_categories'] = $details['enable_categories'];
-		$values['details/enable_css_tab'] = $details['enable_css_tab'];
+		$values['details/enable_css_field'] = $details['enable_css_field'];
 		$values['details/allow_pinned_content'] = $details['allow_pinned_content'];
 		$values['details/when_creating_put_title_in_body'] = $details['when_creating_put_title_in_body'];
 		
@@ -76,7 +76,9 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 		$values['details/description_field'] = $details['description_field'] != 'hidden';
 		$values['details/keywords_field'] = $details['keywords_field'] != 'hidden';
 		$values['details/summary_field'] = $details['summary_field'] != 'hidden';
+		$values['details/allow_editing_content_in_fab'] = $details['allow_editing_content_in_fab'];
 		$values['details/release_date_field'] = $details['release_date_field'] != 'hidden';
+		$values['details/organizer_default_sort_logic'] = $details['organizer_default_sort_logic'];
 		
 		$values['details/writer_field_mandatory'] = $details['writer_field'] == 'mandatory';
 		$values['details/description_field_mandatory'] = $details['description_field'] == 'mandatory';
@@ -198,7 +200,8 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			//Always boolean
 			$vals['auto_flag_feature_image'] = $values['details/auto_flag_feature_image'];
 			$vals['enable_categories'] = $values['details/enable_categories'];
-			$vals['enable_css_tab'] = $values['details/enable_css_tab'];
+			$vals['enable_css_field'] = $values['details/enable_css_field'];
+			$vals['allow_editing_content_in_fab'] = $values['details/allow_editing_content_in_fab'];
 			$vals['allow_pinned_content'] = $values['details/allow_pinned_content'];
 			$vals['when_creating_put_title_in_body'] = $values['details/when_creating_put_title_in_body'];
 			$vals['auto_set_release_date'] = ($values['details/auto_set_release_date'] && $values['details/release_date_field']);
@@ -209,6 +212,7 @@ class zenario_common_features__admin_boxes__content_type_details extends ze\modu
 			$vals['keywords_field'] = $values['details/keywords_field'] ? ($values['details/keywords_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
 			$vals['summary_field'] = $values['details/summary_field'] ? ($values['details/summary_field_mandatory'] ? 'mandatory' : 'optional') : 'hidden';
 			$vals['release_date_field'] = $values['details/release_date_field'] ? 'optional' : 'hidden';
+			$vals['organizer_default_sort_logic'] = $values['details/organizer_default_sort_logic'];
 			
 			$vals['maximum_title_length'] = $values['details/maximum_title_length'];
 			

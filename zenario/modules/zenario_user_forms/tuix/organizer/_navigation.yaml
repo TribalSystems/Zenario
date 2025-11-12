@@ -29,7 +29,7 @@ zenario__email_template_manager:
     nav:
         form_email_addresses: 
             css_class: zenario_user_forms
-            ord: 4
+            ord: 210
             priv: _PRIV_VIEW_USER
             label: Form recipients
             tooltip: "View forms that have an email address in a setting"

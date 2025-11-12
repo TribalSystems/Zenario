@@ -74,7 +74,7 @@ foreach ($rules as $rule) {
 					if ($rule['not']) {
 						$desc .= 'Not a member of '. $field['label'];
 					} else {
-						$desc .= 'Member of '. $field['label'];
+						$desc .= 'Member of group '. $field['label'];
 		
 						//If you filter by group, an "OR" logic containing multiple groups is allowed.
 						//Check if multiple groups have been picked...

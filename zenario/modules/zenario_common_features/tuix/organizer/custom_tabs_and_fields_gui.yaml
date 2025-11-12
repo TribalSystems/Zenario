@@ -56,7 +56,7 @@ zenario__administration:
                                         This system field does not have a recognisable type so you cannot edit its details.
                                 post_field_html: </div>
                                 visible_if: |
-                                    item.type == 'other_system_field' && item.tuix_type != "pick_items"
+                                    item.type == 'other_system_field'
                             screen_names_site_setting_disabled:
                                 pre_field_html: <div class="dataset_warning">
                                 snippet:
@@ -149,7 +149,7 @@ zenario__administration:
                                     html: |
                                         <strong>Deleting or changing the code name of this field may break your site.</strong>
                             include_in_export:
-                                label: Include in export
+                                label: Include in Excel/CSV export
                                 type: checkbox
                                 visible_if: |
                                     lib.tuix.show_include_in_export_option && ((item.type != 'other_system_field' && (item.db_column || item._just_added)) || item.allow_admin_to_change_export)

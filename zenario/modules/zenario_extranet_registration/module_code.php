@@ -334,16 +334,6 @@ class zenario_extranet_registration extends zenario_extranet {
 				ze\lang::applyMergeFields($fields['initial_signup_actions/add_user_to_group']['side_note'], ['link_start' => $linkStart, 'link_end' => $linkEnd]);
 
 				break;
-			case 'site_settings':
-				if ($settingGroup == 'users') {
-					$times = [];
-					for ($i = 0; $i <= 23; ++$i) {
-						$time = sprintf('%02d', $i) . ':00';
-						$times[$time] = ['label' => $time];
-					}
-					$fields['registration/delayed_registration_email_time_of_day']['values'] = $times;
-				}
-				break;
 		}
 			
 		return parent::fillAdminBox($path, $settingGroup, $box, $fields, $values);
@@ -413,10 +403,6 @@ class zenario_extranet_registration extends zenario_extranet {
 				
 				break;
 			
-			case 'site_settings':
-				$showWarningMessage = $values['registration/send_delayed_registration_email'] && !ze\miscAdm::checkScheduledTaskRunning('jobSendDelayedRegistrationEmails');
-				$fields['registration/warning_message']['hidden'] = !$showWarningMessage;
-				break;
 		}
 	}
 	
@@ -891,9 +877,6 @@ class zenario_extranet_registration extends zenario_extranet {
 			zenario_user_timers::createTimer($this->setting('timer_for_new_users'), $userId);
 		}
 		
-		if (ze::setting('send_delayed_registration_email')) {
-			ze\row::update('users', ['send_delayed_registration_email' => 1], $userId);
-		}
 		
 		//Send signal
 		$this->sendSignalFromForm('eventUserRegistered', $userId);
@@ -1064,34 +1047,4 @@ class zenario_extranet_registration extends zenario_extranet {
 		return $groupIds;
 	}
 	
-	public static function jobSendDelayedRegistrationEmails() {
-		$return = false;
-		$date = new DateTime();
-		$hour = (int) $date->format('H');
-		$hourToSend = ze::setting('delayed_registration_email_time_of_day');
-		if ($hour == $hourToSend) {
-			
-			$delay = ze::setting('delayed_registration_email_days_delayed');
-			$template = ze::setting('delayed_registration_email_template');
-			$sql = '
-				SELECT u.id, u.identifier, u.first_name, u.last_name, u.email
-				FROM ' . DB_PREFIX. 'users AS u
-				WHERE u.send_delayed_registration_email = 1
-				  AND u.status = "active"
-				  AND DATE_ADD(u.created_date, INTERVAL '. (int) $delay. ' DAY) <= NOW()';
-			
-			$result = ze\sql::select($sql);
-			while ($user = ze\sql::fetchAssoc($result)) {
-				$mergeFields = $user;
-				$mergeFields['cms_url'] = ze\link::absolute();
-				
-				zenario_common_features::sendEmailsUsingTemplate($user['email'], $template, $mergeFields);
-				ze\row::update('users', ['send_delayed_registration_email' => 0], $user['id']);
-				
-				echo "Sent delayed registration email to user " . $user['identifier'] . "\n";
-				$return = true;
-			}
-		}
-		return $return;
-	}
 }

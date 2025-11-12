@@ -72,6 +72,9 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 	public function nestType() {
 		return $this->setting('nest_type');
 	}
+	public function eggsEqualHeight() {
+		return $this->sameHeight;
+	}
 	
 	
 	public function init() {
@@ -84,68 +87,6 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 		} else {
 			$this->addStylesToPageHead($this->styles);
 		}
-	}
-	
-	public function formatTitleText($text, $htmlescape = false) {
-		
-		//The old Tribiq frameworks need things escaped, so put this case in for them.
-		//(Note that for backwards compatability reasons the new Twig frameworks are also working like this)
-		if ($htmlescape) {
-			$text = htmlspecialchars($text);
-		}
-		
-		//If this is a library plugin, and therefore multilingual, we need to translate the text here
-		if ($this->inLibrary) {
-			$text = $this->phrase($text);
-		}
-		
-		//Break the title up by mergefields, using the [[merge_field_name]] syntax
-		$frags = explode('[[', $text);
-		$count = count($frags);
-	
-		if ($count > 1) {
-			$text = $frags[0];
-			for ($i = 1; $i < $count; ++$i) {
-			
-				$part = explode(']]', $frags[$i], 2);
-			
-				if (isset($part[1])) {
-					
-					
-					//Look for variables from modules, using the syntax [[module_class_name:var_name]]
-					$details = explode(':', $part[0], 2);
-					
-					if (isset($details[1])
-					 && ze\module::inc($details[0])) {
-						
-						$val = call_user_func([$details[0], 'requestVarMergeField'], $details[1]);
-					
-					//Allow any id from the $_REQUEST or core vars to be displayed
-					} elseif (isset(ze::$vars[$details[0]])) {
-						$val = ze::$vars[$details[0]];
-					
-					} elseif (isset($_REQUEST[$details[0]])) {
-						$val = $_REQUEST[$details[0]];
-					
-					} else {
-						$val = '';
-					}
-				
-					if ($htmlescape) {
-						$text .= htmlspecialchars($val ?: '');
-					} else {
-						$text .= $val;
-					}
-					
-					//Anything that's not a mergefield should be left as-is
-					$text .= $part[1];
-				} else {
-					$text .= $part[0];
-				}
-			}
-		}
-		
-		return $text;
 	}
 	
 	public static function formatTitleTextAdmin($text, $htmlescape = false) {
@@ -212,7 +153,6 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 	
 	
 	protected function loadTabs() {
-		
 		$sql = "
 			SELECT
 				id, id AS slide_id,
@@ -221,28 +161,27 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 				request_vars, global_command,
 				privacy, at_location, smart_group_id, module_class_name, method_name, param_1, param_2, always_visible_to_admins
 			FROM ". DB_PREFIX. "nested_plugins
-			WHERE instance_id = ". (int) $this->instanceId. "
+			WHERE instance_id = ?
 			  AND is_slide = 1
 			ORDER BY slide_num";
 		
-		$result = ze\sql::select($sql);
-		$sqlNumRows = ze\sql::numRows($result);
+		$statement = ze\sql::prepare($sql, 'i');
+		$rows = $statement->fetchAssocs([$this->instanceId]);
 		
-		if (!$sqlNumRows) {
+		if (empty($rows)) {
 			//When a nest is first inserted, it will be empty.
 			//This also sometimes happens after a site migration.
 			//In this case, call the resyncNest function,
 			//e.g. to ensure there is at least one slide and fix any other possibly invalid date
 			self::resyncNest($this->instanceId);
-			$result = ze\sql::select($sql);
-			$sqlNumRows = ze\sql::numRows($result);
+			$rows = $statement->fetchAssocs([$this->instanceId]);
 		}
 		
-		if (!$sqlNumRows) {
+		if (empty($rows)) {
 			return false;
 		
 		} else {
-			while ($row = ze\sql::fetchAssoc($result)) {
+			foreach ($rows as $row) {
 				$row['states'] = explode(',', $row['states']);
 				$row['request_vars'] = ze\ray::explodeAndTrim($row['request_vars']);
 				
@@ -528,6 +467,7 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 		
 		//Don't show anything if not slides have been created
 		if (empty($this->slides)) {
+			$this->nestEmptyMessage();
 			return false;
 		}
 		
@@ -539,12 +479,46 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 		}
 		
 		if (!$this->show) {
+			$this->nestEmptyMessage();
 			return false;
 		}
 		
 		$this->showInFloatingBox(false);
 		
 		return $this->initAnimationLibrary();
+	}
+	
+	
+	
+	
+	public function nestEmptyMessage($conductorEnabled = false) {
+		
+		//Only show setup errors to admins
+		if (!ze::isAdmin()) {
+			return;
+		}
+		
+		//Check if there was a slide that is blocked by permissions.
+		//Don't show a setup error in these cases.
+		$slideExists = ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 1]);
+		$pluginExists = ze\row::exists('nested_plugins', ['instance_id' => $this->instanceId, 'is_slide' => 0]);
+		
+		if ($slideExists && $pluginExists) {
+			return;
+		}
+		
+		
+		$slot = &\ze::$slotContents[$this->slotName];
+		
+		if ($slot->isSlideshow()) {
+			$this->setErrorMessage('This slideshow is empty. It needs at least one slide and at least one plugin to be displayed.');
+		
+		} elseif ($conductorEnabled) {
+			$this->setErrorMessage('This nest is empty. Conductor-driven nests need at least one slide to be displayed.');
+		
+		} else {
+			$this->setErrorMessage('This nest is empty. It needs at least one slide and at least one plugin to be displayed.');
+		}
 	}
 	
 	
@@ -558,27 +532,6 @@ class zenario_abstract_nest extends ze\moduleBaseClass {
 				$this->refreshPluginSlotJS($requests, $scrollToTopOfSlot, $fadeOutAndIn).
 				' return false;"';
 	}
-	//To show roles and sub-roles
-	public static function getRoleTypesIndexedByIdOrderedByName(){
-		$ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager'); 
-		$rv = [];
-		$ord = 0;
-		$sql = "SELECT 
-					id,
-					parent_id,
-					name
-				FROM " . 
-					DB_PREFIX . $ZENARIO_ORGANIZATION_MANAGER_PREFIX . "user_location_roles
-				ORDER BY name";
-		$result = ze\sql::select($sql);
-		while($row = ze\sql::fetchAssoc($result)){
-			$rv[$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
-		}
-		return $rv;
-		
-	
-	}
-	
 	
 	protected function needToAddCSSAndJS() {
 		return $this->methodCallIs('refreshPlugin');

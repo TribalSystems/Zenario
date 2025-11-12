@@ -48,6 +48,8 @@ sections:
                 tooptip: Content Item Layout
                 admin_box:
                     path: zenario_content_layout
+                    key:
+                        fromAdminToolbar: true
                 appears_in_toolbars:
                     preview: true
                     edit: true
@@ -69,16 +71,8 @@ sections:
                     preview: true
                     edit: true
                     translations: true
-            no_alias:
-                ord: 10
-                parent: alias_dropdown
-                tooltip: This content item does not have an alias
-                appears_in_toolbars:
-                    preview: true
-                    edit: true
-                    translations: true
             alias:
-                ord: 11
+                ord: 10
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
@@ -92,7 +86,7 @@ sections:
                     edit: true
                     translations: true
             copy_url:
-                ord: 12
+                ord: 11
                 visible_if: zenario.canCopy()
                 parent: alias_dropdown
                 label: Copy URL/alias to clipboard
@@ -101,7 +95,7 @@ sections:
                     edit: true
                     translations: true
             go_to_alias:
-                ord: 13
+                ord: 12
                 parent: alias_dropdown
                 label: Go to content item via its alias
                 appears_in_toolbars:
@@ -110,7 +104,7 @@ sections:
                     translations: true
             
             item_categories_some:
-                ord: 14
+                ord: 13
                 css_class: zenario_at_icon_categories_some
                 tooltip: Content Item Categories|
                 admin_box:
@@ -120,7 +114,7 @@ sections:
                     preview: true
                     edit: true
             item_categories_none:
-                ord: 15
+                ord: 14
                 css_class: zenario_at_icon_categories_none
                 tooltip: Content Item Categories|None
                 admin_box:
@@ -130,7 +124,7 @@ sections:
                     preview: true
                     edit: true
             pinned:
-                ord: 16
+                ord: 15
                 css_class: pinned
                 tooltip: "This content item is pinned"
                 admin_box:
@@ -139,7 +133,7 @@ sections:
                     preview: true
                     edit: true
             not_pinned:
-                ord: 17
+                ord: 16
                 css_class: not_pinned
                 tooltip: "This content item is not pinned"
                 admin_box:

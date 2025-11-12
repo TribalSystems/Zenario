@@ -86,7 +86,7 @@ empty_sitewide_slot:
                 layout: true
             visible_if: zenarioA.canShowSlotOptionsInFAB(slotName, 'actions', 'layout');
             onclick: return zenarioA.showSlotOptionsInFAB(slotName, 'actions', 'layout');
-            label: Insert into site-wide ~header~...
+            label: Insert a plugin/nest/slideshow into the site-wide ~header~...
     
     
     overridden_info:
@@ -111,11 +111,11 @@ empty_sitewide_slot:
             page_modes:
                 edit: true
             onclick: >
-                if (zenarioA.draft(this.id, false, 'Are you sure you wish to stop hiding ~plugin~ on this content item?', 'Show')) {
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to stop showing nothing in this slot on this content item?', 'Stop showing nothing')) {
                     zenarioA.showPlugin(this, slotName);
                 }
                 return false;
-            label: Stop hiding ~plugin~ on this content item
+            label: Stop showing nothing on this content item
         remove_from_layout_layer:
             page_modes:
                 layout: true

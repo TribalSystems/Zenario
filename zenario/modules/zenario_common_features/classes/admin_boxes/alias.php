@@ -41,7 +41,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			$modRewriteSuffix = ze::setting('mod_rewrite_suffix');
 
 			if ($modRewriteSuffix && ze::in($modRewriteSuffix, '.htm', '.html')) {
-				$fields['meta_data/alias']['onkeyup'] .= ' zenarioAB.removeHtmAndHtmlFromAlias("' . htmlspecialchars($modRewriteSuffix) . '");';
+				$fields['meta_data/alias']['oninput'] = 'zenarioAB.removeHtmAndHtmlFromAlias("' . htmlspecialchars($modRewriteSuffix) . '");';
 			}
 		}
 		
@@ -60,7 +60,9 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			unset($box['tabs']['meta_data']['edit_mode']);
 		}
 		
-		//Load the alias
+		//Load the details.
+		//The title comes from the latest admin version.
+		$values['meta_data/title'] = ze\content::title($content['id'], $content['type'], $content['admin_version']);
 		$values['meta_data/alias'] =
 			ze\content::alias($box['key']['cID'], $box['key']['cType']);
 		$values['meta_data/lang_code_in_url'] =
@@ -159,7 +161,7 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
+		//...
 	}
 
 
@@ -193,6 +195,14 @@ class zenario_common_features__admin_boxes__alias extends ze\moduleBaseClass {
 			}
 			
 			ze\row::update('content_items', $cols, $key);
+			
+			//Update the alias column on the searchable cache table
+			$contentItems = ze\row::getArray('content_items', ['id', 'type', 'visitor_version'], $key);
+			if ($contentItems && is_array($contentItems) && count($contentItems) > 0) {			
+				foreach ($contentItems as $contentItem) {
+					ze\contentAdm::updateContentItemCache($contentItem['id'], $contentItem['type'], $contentItem['visitor_version']);
+				}
+			}
 		}
 	}
 	

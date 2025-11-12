@@ -139,6 +139,7 @@ class zenario_language_picker extends ze\moduleBaseClass {
 			}
 			
 			$this->sections['Languages'] = $this->langs;
+			$this->sections['Choose_your_language_phrase'] = ze\lang::phrase('_CHOOSE_YOUR_LANGUAGE');
 			$this->twigFramework($this->sections);
 		}
 	}

@@ -45,6 +45,11 @@
 						</div>
 						<% if (m.mode == 'edit_field') { %>
 							<div class="field_info">
+								<% if (m.field_name) { %>
+									<span class="field_code_name_message">{{m.field_name|e}}</span>
+								<% } else if (m.db_column) { %>
+									<span class="field_code_name_message">{{m.db_column|e}}</span>
+								<% } %>
 								<span class="field_type_message">{{m.type|e}} {{m.record_count|e}}</span>
 							</div> 
 						<% } %>

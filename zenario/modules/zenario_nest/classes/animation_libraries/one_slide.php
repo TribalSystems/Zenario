@@ -42,8 +42,8 @@ class zenario_nest__animation_libraries__one_slide extends zenario_nest {
 	
 	public function initAnimationLibrary() {
 		
-		//N.b. this does nothing
-		
+		//The cycle2 and one_slide animation libraries both have support for the "Make all plugins in nest equal height" option
+		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
 		
 		return true;
 	}

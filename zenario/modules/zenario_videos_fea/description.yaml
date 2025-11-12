@@ -41,6 +41,7 @@ default_instance_name: Videos FEA
 # to fix it automatically for every site.
 dependencies:
     zenario_abstract_fea: true
+    zenario_abstract_nest: true
     zenario_videos_manager: true
 inheritance:
     include_javascript_from_module: zenario_abstract_fea

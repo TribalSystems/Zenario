@@ -22,10 +22,10 @@ zenario_content_type_details:
                     label: 'Module:'
                     readonly: true
                     pick_items:
-                        path: zenario__modules/panels/modules
-                        target_path: zenario__modules/panels/modules
-                        min_path: zenario__modules/panels/modules
-                        max_path: zenario__modules/panels/modules
+                        path: zenario__library/panels/modules
+                        target_path: zenario__library/panels/modules
+                        min_path: zenario__library/panels/modules
+                        max_path: zenario__library/panels/modules
                         disallow_refiners_looping_on_min_path: true
                 content_type_name_en:
                     label: 'Name (singular):'
@@ -115,9 +115,8 @@ zenario_content_type_details:
                 
                 other_options:
                     snippet:
-                        html: |
-                            <hr />
-                            <b>Other options</b>
+                        hr: true
+                        h3: Other options
                 
                 maximum_title_length:
                     label: 'Maximum title length:'
@@ -204,6 +203,13 @@ zenario_content_type_details:
                     hide_if_previous_outdented_value_isnt: 1
                     type: checkbox
                     label: Mandatory
+                allow_pinned_content:
+                    label: |
+                        Allow content items to be "pinned"
+                    type: checkbox
+                    onoff: true
+                    side_note: |
+                        Pinned content items appear first on Content Summary List plugins.
                 summary_field:
                     label: 'Enable summary field'
                     type: checkbox
@@ -218,15 +224,43 @@ zenario_content_type_details:
                     hide_if_previous_outdented_value_isnt: 1
                     type: checkbox
                     label: Mandatory
-                allow_pinned_content:
-                    label: |
-                        Allow content items to be "pinned"
+                allow_editing_content_in_fab:
+                    label: 'Show WYSIWYG editing areas on the content item metadata admin box'
                     type: checkbox
                     onoff: true
-                    side_note: |
-                        Pinned content items appear first on Content Summary List plugins.
-                enable_css_tab:
-                    label: 'Allow a CSS class to be set per content item, and to add a page background'
+                enable_css_field:
+                    label: 'Allow a CSS class to be set per content item'
                     type: checkbox
                     onoff: true
+                
+                organizer_default_sort_logic:
+                    ord: 9999
+                    label: 'Default sort logic in Organizer'
+                    type: select
+                    values:
+                        last_activity_desc:
+                            label: Last activity descending
+                        id_asc:
+                            label: ID ascending
+                        id_desc:
+                            label: ID descending
+                        release_date_asc:
+                            label: Release date ascending
+                            visible_if:
+                                lib.value: release_date_field
+                        release_date_desc:
+                            label: Release date descending
+                            visible_if:
+                                lib.value: release_date_field
+                        start_date_asc:
+                            label: Start date ascending
+                            visible_if: |
+                                tuix.key.id == 'event'
+                        start_date_desc:
+                            label: Start date descending
+                            visible_if: |
+                                tuix.key.id == 'event'
+                    note_below: |
+                        If you have other browser tabs open, you will need to reload them to see changes to this option.
+                        
 

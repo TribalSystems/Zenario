@@ -30,7 +30,51 @@
 namespace ze;
 
 class tuix {
-
+	
+	//These first few functions are used for recording the PHP and YAML files used by
+	//calls to TUIX's placheolder methods.
+	//Note: recording PHP files only works if module subclasses are being used in our standard format.
+	public static $tuixFiles = [];
+	public static $firstYAMLFile;
+	public static $firstPHPFile;
+	
+	public static function recordYAMLFiles($moduleFilesLoaded) {
+		if (\ze::$recordFiles) {
+			foreach ($moduleFilesLoaded as $moduleFiles) {
+				foreach ($moduleFiles['paths'] as $path) {
+					\ze\tuix::$tuixFiles[$path] = true;
+					
+					if (is_null(\ze\tuix::$firstYAMLFile)
+					 && !empty($moduleFiles['first'])) {
+						\ze\tuix::$firstYAMLFile = $path;
+					}
+				}
+			}
+		}
+	}
+	
+	public static function recordPHPFile($path) {
+		\ze\tuix::$tuixFiles[$path] = true;
+		
+		if (is_null(\ze\tuix::$firstPHPFile)) {
+			\ze\tuix::$firstPHPFile = $path;
+		}
+	}
+	
+	public static function recordedFiles() {
+		$output = [
+			'root' => CMS_ROOT,
+			'paths' => \ze\tuix::$tuixFiles,
+			'firstPHPFile' => \ze\tuix::$firstPHPFile,
+			'firstYAMLFile' => \ze\tuix::$firstYAMLFile
+		];
+		
+		\ze\tuix::$tuixFiles = [];
+		\ze\tuix::$firstPHPFile = null;
+		\ze\tuix::$firstYAMLFile = null;
+		
+		return $output;
+	}
 
 
 	//Some functions for loading a YAML file
@@ -311,6 +355,7 @@ class tuix {
 	
 		//Include every Module's TUIX files in dependency order
 		$limit = 9999;
+		$firstFile = true;
 		do {
 			$progressBeingMade = false;
 		
@@ -351,6 +396,13 @@ class tuix {
 							$module['paths'] = [];
 						}
 						$module['paths'][$file] = $dir. $file;
+						
+						//Flag the first module/file we find.
+						//We'll mention this if an admin with dev tools enables clicks the "Copy a prompt for an AI assistant" button.
+						if ($firstFile) {
+							$firstFile = false;
+							$module['first'] = true;
+						}
 					}
 				}
 			
@@ -526,8 +578,8 @@ class tuix {
 				//The left hand nav always needs to be sent
 				$includeThisSubTree = true;
 		
-			} elseif ($parent == 'refiners') {
-				//Always include refiner tags
+			} elseif ($parent == 'refiners' || ($parentsParent == 'refiners' && $parent == 'prefs_by_refiner_value')) {
+				//Always include refiner tags, and any objects in the "prefs_by_refiner_value" list
 				$includeThisSubTree = true;
 		
 			} elseif ($parent == 'columns' && $ord == 1) {
@@ -567,9 +619,6 @@ class tuix {
 						}
 						break;
 					case 'db_items':
-					case 'default_sort_column':
-					case 'default_sort_desc':
-					case 'default_sort_column':
 					case 'item':
 					case 'no_return':
 					case 'panel_type':
@@ -578,6 +627,14 @@ class tuix {
 					case 'title':
 					case '_path_here':
 						if ($lastWasPanel) {
+							$includeThisSubTree = true;
+						}
+						break;
+					case 'prefs_by_refiner':
+					case 'prefs_by_refiner_value':
+					case 'default_sort_column':
+					case 'default_sort_desc':
+						if ($lastWasPanel || $parentsParent == 'refiners' || $parentsParent == 'prefs_by_refiner_value') {
 							$includeThisSubTree = true;
 						}
 						break;
@@ -1174,6 +1231,30 @@ class tuix {
 		}
 	
 		return true;
+	}
+	
+	//Look at the validation flags for a field, and check if it's supposed to be an integer.
+	//Note: There are a few combinations of flags that could cause a field to be treated as an integer.
+	public static function isIntField(&$field) {
+		
+		if (!empty($field['validation']['integer_number'])) {
+			return true;
+		}
+		
+		if (!empty($field['validation']['numeric'])
+		 && isset($field['decimal_places'])
+		 && empty($field['decimal_places'])) {
+			return true;
+		}
+		
+		if (isset($field['type'])
+		 && $field['type'] == 'currency'
+		 && isset($field['decimal_places'])
+		 && empty($field['decimal_places'])) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	public static function saveCopyOnServer(&$tags) {
@@ -1950,6 +2031,7 @@ class tuix {
 						case 'label':
 						case 'tooltip':
 						case 'disabled_tooltip':
+						case 'widget_wrap_tooltip':
 					
 						case 'placeholder':
 						case 'subtitle':
@@ -2020,6 +2102,7 @@ class tuix {
 					if (isset($t[$i='multiple_select_message'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='disabled_tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
+					if (isset($t[$i='widget_wrap_tooltip'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='placeholder'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					if (isset($t[$i='no_search_label'])) \ze\tuix::translatePhrase($t, $o, $p, $c, $l, $s, $i);
 					
@@ -2348,6 +2431,29 @@ class tuix {
 		return true;
 	}
 	
+	//Setup a radio-selector box.
+	//This widget looks like clickable boxes, but is actually just a radiogroup with some styling to make it look fancy!
+	public static function setupRadioSelectorValues($idPrefix, $fieldCodeName, &$field, $lov) {
+		
+		$ord = 0;
+		$field['values'] = [];
+		
+		foreach ($lov as $val => $html) {
+			$field['values'][$val] = [
+				'ord' => ++$ord,
+				'label' => '',
+				'post_field_html' =>
+					'<label
+						for="'. htmlspecialchars($idPrefix. $fieldCodeName). '___'. htmlspecialchars($val). '"
+						id="radio_selector_box___'. htmlspecialchars($val). '"
+						class="radio_selector_box"
+					>
+						'. $html. '
+					</label>'
+			];
+		}
+	}
+	
 	
 	//Some constant definitions to make code calling the setupMultipleRows() function a bit more readable,
 	//without me needing to make a breaking change.
@@ -2598,17 +2704,22 @@ class tuix {
 	
 	
 		//Either hide or unset() any rows that were flagged to be removed
+		$deletePressed = false;
 		foreach ($removeRows as $n => $deleteRow) {
 
 			foreach ($fieldCodeNames as $fieldCodeName) {
 				$fieldCodeName = str_replace('znz', $n, $fieldCodeName);
 			
 				if (isset($tab['fields'][$fieldCodeName])) {
-					$tab['fields'][$fieldCodeName]['hidden'] = true;
 				
 					if ($deleteRow) {
 						unset($tab['fields'][$fieldCodeName]);
 						$changed = true;
+						$deletePressed = true;
+					
+					} elseif (empty($tab['fields'][$fieldCodeName]['hidden'])) {
+						$tab['fields'][$fieldCodeName]['hidden'] = true;
+						$deletePressed = true;
 					}
 				}
 			}
@@ -2644,7 +2755,8 @@ class tuix {
 			'numRows' => $numRows,
 			'activeRows' => $activeRows,
 			'firstRow' => $firstRow,
-			'lastRow' => $lastRow
+			'lastRow' => $lastRow,
+			'deletePressed' => $deletePressed
 		];
 	}
 	
@@ -3043,6 +3155,10 @@ class tuix {
 		$moduleFilesLoaded = [];
 		\ze\tuix::load($moduleFilesLoaded, $tags, $type, $requestedPath);
 		
+		if (!$debugMode && $filling && \ze::$recordFiles) {
+			\ze\tuix::recordYAMLFiles($moduleFilesLoaded);
+		}
+		
 		if (empty($tags[$requestedPath])) {
 			
 			$paths = [];
@@ -3120,7 +3236,16 @@ class tuix {
 					}
 				}
 			}
+			
 			\ze\tuix::$feaDebugMode = true;
+			
+			$fields = [];
+			$values = [];
+			$changes = [];
+			if (\ze\tuix::looksLikeFAB($tags)) {
+				\ze\tuix::readValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
+			}
+			
 			foreach ($modules as $className => &$module) {
 				$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
 			}
@@ -3172,6 +3297,10 @@ class tuix {
 			
 			foreach ($modules as $className => &$module) {
 				$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
+			}
+			
+			if (\ze::$recordFiles) {
+				$tags['__source_files'] = \ze\tuix::recordedFiles();
 			}
 	
 	

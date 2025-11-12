@@ -41,17 +41,9 @@ class zenario_copyright__admin_boxes__plugin_settings extends ze\moduleBaseClass
 		}
 		
 		
-		//Don't show the option to pick a translation chain when not linking to a content item, on single-language sites,
-		//or on version controlled plugins.
-		$fields['first_tab/use_translation']['hidden'] = 
-			$values['first_tab/link_type'] != 'internal'
-		 || $box['key']['isVersionControlled']
-		 || ze\lang::count() < 2;
-
-		//On multilingual sites, default the set the value of the use_translation option to enabled by default.
+		//On multilingual sites, set the value of the use_translation option to enabled by default.
 		//We'll achieve this by changing the value on opening the FAB, if we see it hidden.
 		if (!empty($fields['first_tab/use_translation']['hidden'])
-		 && !$box['key']['isVersionControlled']
 		 && ze\lang::count() >= 2) {
 			$values['first_tab/use_translation'] = 1;
 		}
@@ -72,11 +64,9 @@ class zenario_copyright__admin_boxes__plugin_settings extends ze\moduleBaseClass
 		$values['first_tab/hyperlink_target'] =
 			ze\contentAdm::convertBetweenTagIdAndTranslationChainId($values['first_tab/hyperlink_target'], $values['first_tab/use_translation']);
 		
-		//Don't show the option to pick a translation chain when not linking to a content item, on single-language sites,
-		//or on version controlled plugins.
+		//Don't show the option to pick a translation chain when not linking to a content item, or on single-language sites.
 		$fields['first_tab/use_translation']['hidden'] = 
 			$values['first_tab/link_type'] != 'internal'
-		 || $box['key']['isVersionControlled']
 		 || ze\lang::count() < 2;
 
 		//Format the picker slightly differently when selecting a translation chain v.s selecting a content item.
@@ -105,12 +95,7 @@ class zenario_copyright__admin_boxes__plugin_settings extends ze\moduleBaseClass
 			ze\contentAdm::convertBetweenTagIdAndTranslationChainId($values['first_tab/hyperlink_target'], false);
 	}
 	
-	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//...
 	}
-	
-	
-	
-	
 }

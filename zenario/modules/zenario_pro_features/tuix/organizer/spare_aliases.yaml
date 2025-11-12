@@ -1,19 +1,17 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__library:
+zenario__administration:
     nav:
         zenario_settings_pro_features__spare_aliases:
-            ord: 4
+            ord: 40
             visible_if: >
                 zenarioA.siteSettings.default_language
-            #css_class: alias_urls_collection
-            name: Spare aliases (301s)
-            tooltip: Manage spare aliases (301 redirects)
+            label: Spare aliases
             link:
-                path: zenario__library/panels/zenario_settings_pro_features__spare_aliases
+                path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
     panels:
         zenario_settings_pro_features__spare_aliases:
-            title: Spare aliases (permanent/301 redirects)
+            title: Spare aliases (301/permanent redirects)
             no_items_message: There are no spare aliases (permanent/301 redirects).
             db_items:
                 table: '[[DB_PREFIX]]spare_aliases AS sa'

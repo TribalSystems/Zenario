@@ -85,13 +85,13 @@ class zenario_common_features__organizer__menu_position extends ze\moduleBaseCla
 					case 'create':
 						$item['menu_path'] =
 							$this->getParentPath($parentId, $item).
-							($item['name'] = ze\admin::phrase('[ Create here ]'));
+							($item['name'] = ze\admin::phrase('[Create here]'));
 						break;
 					
 					case 'move':
 						$item['menu_path'] =
 							$this->getParentPath($parentId, $item).
-							($item['name'] = ze\admin::phrase('[ Move to the end ]'));
+							($item['name'] = ze\admin::phrase('[Move to the end]'));
 						break;
 				}
 				
@@ -133,13 +133,13 @@ class zenario_common_features__organizer__menu_position extends ze\moduleBaseCla
 					case 'create':
 						$item['menu_path'] =
 							$this->getParentPath($parentId, $item).
-							($item['name'] = ze\admin::phrase('[ Create before "[[name]]" ]', $item));
+							($item['name'] = ze\admin::phrase('[Create before "[[name]]"]', $item));
 						break;
 					
 					case 'move':
 						$item['menu_path'] =
 							$this->getParentPath($parentId, $item).
-							($item['name'] = ze\admin::phrase('[ Move before "[[name]]" ]', $item));
+							($item['name'] = ze\admin::phrase('[Move before "[[name]]"]', $item));
 						break;
 					
 					case 'existing':

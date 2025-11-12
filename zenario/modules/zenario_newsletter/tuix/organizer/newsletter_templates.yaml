@@ -61,8 +61,14 @@ zenario__email_template_manager:
                     multiple_select: Yes
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to delete the newsletter template "[[name]]"?'
-                            multiple_select_message: Are you sure you wish to delete these newsletter templates?
+                            message: |
+                                Delete the newsletter template "[[name]]"?
+
+                                This cannot be undone.
+                            multiple_select_message: |
+                                Delete these newsletter templates?
+
+                                This cannot be undone.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

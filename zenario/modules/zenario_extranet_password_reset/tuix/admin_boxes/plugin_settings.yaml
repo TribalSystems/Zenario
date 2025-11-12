@@ -11,7 +11,7 @@ plugin_settings:
                         name: password_reset_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Password reset Email Template:'
+                    label: 'Email template for password reset:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates

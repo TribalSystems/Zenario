@@ -105,7 +105,7 @@ class zenario_common_features__admin_boxes__content_staging_mode extends ze\modu
 			ze\admin::phrase('Staging mode for the content item "[[tag]]"', ['tag' => ze\content::formatTag($box['key']['cID'], $box['key']['cType'])]);
 		
 		$fields['staging_mode/use_access_code']['label'] =
-			ze\admin::phrase('Enable staging mode for this version of this content item (version [[version]])', $version);
+			ze\admin::phrase('Enable staging mode for this content item\'s draft version [[version]]', $version);
 		
 		
 		//Get a list for the auto-complete drop-down

@@ -107,6 +107,13 @@ class zenario_event_listing extends ze\moduleBaseClass {
 				$categories = ze\row::getAssocs('categories', ['name', 'id', 'parent_id', 'public'], []);
 			}
 			
+			$showEventTitle = $this->setting('show_event_title');
+			if ($showEventTitle) {
+				$this->data['Event_Title_Tags'] = $this->setting('event_title_tags') ?: 'h2';
+			}
+			
+			$showEventSummary = $this->setting('show_event_summary');
+			
 			$result = ze\sql::select($sql . ze\sql::limit($this->page, $this->setting('page_size'), $this->setting('offset')));
 			while($row = ze\sql::fetchAssoc($result)){
 			    $eventRow = [];
@@ -128,14 +135,14 @@ class zenario_event_listing extends ze\moduleBaseClass {
                     }
 				}
 				
-				if ($this->setting('show_event_title')){
+				if ($showEventTitle) {
 					$eventRow['Event_Title'] = htmlspecialchars($row['title']);
 				}
 
-				if ($this->setting('show_event_summary')){
-					$eventRow['Event_Description'] = $row['content_summary'];
-					ze\ring::displayHTMLAsPlainText($eventRow['Event_Description'],$this->setting('excerpt_length'));
-					$eventRow['Event_Description'] = nl2br($eventRow['Event_Description']);
+				if ($showEventSummary){
+					$eventRow['Event_Summary'] = $row['content_summary'];
+					ze\ring::displayHTMLAsPlainText($eventRow['Event_Summary'],$this->setting('excerpt_length'));
+					$eventRow['Event_Summary'] = nl2br($eventRow['Event_Summary']);
 				}
 
 				if ($this->setting('show_location_name') && ze::setting('zenario_ctype_event__location_field') != 'hidden') {
@@ -304,10 +311,11 @@ class zenario_event_listing extends ze\moduleBaseClass {
 		switch ($this->setting('heading')) {
 			case 'show_heading':
 				$this->data['Title'] = $this->phrase($this->setting('heading_text'));
-				
+				$this->data['Title_Tags'] = $this->setting('heading_tags') ?: 'h2';
 				break;
 			case 'show_period_name':
 				$this->data['Title'] = $this->getPeriodName($periodName, $periodShift);
+				$this->data['Title_Tags'] = $this->setting('heading_tags') ?: 'h2';
 				break;
 			case 'dont_show':
 			default:
@@ -341,8 +349,17 @@ class zenario_event_listing extends ze\moduleBaseClass {
 			
 			$this->data['More_Link'] = $moreLink;
 			$this->data['More_Link_Title'] = $moreLinkText;
+			
+			if ($this->setting('show_headings_if_items')) {
+		    	$this->data['Items_Message'] = $this->setting('heading_if_items');
+		    	$this->data['Title_Tags_If_Items'] = $this->setting('heading_tags_if_items');
+		    }
 		} else {
 		    $this->data['No_Events'] = true;
+		    if ($this->setting('show_headings_if_no_items')) {
+		    	$this->data['No_Items_Message'] = $this->setting('heading_if_no_items');
+		    	$this->data['Title_Tags_If_No_Items'] = $this->setting('heading_tags_if_no_items');
+		    }
 		}
 		return true;
 	}
@@ -769,6 +786,54 @@ class zenario_event_listing extends ze\moduleBaseClass {
 
 				$fields['overall_list/heading_text']['hidden'] =
 					$values['overall_list/heading'] != 'show_heading';
+				
+				$fields['overall_list/heading_tags']['hidden'] = false;
+				unset($fields['overall_list/heading_tags']['indent'], $fields['overall_list/heading_tags']['same_row']);
+				if ($values['overall_list/heading'] == 'show_heading') {
+					$fields['overall_list/heading_tags']['same_row'] = true;
+				} elseif ($values['overall_list/heading'] == 'show_period_name') {
+					$fields['overall_list/heading_tags']['indent'] = 1;
+				} else {
+					$fields['overall_list/heading_tags']['hidden'] = true;
+				}
+				
+				$fields['overall_list/heading_if_items']['hidden'] = 
+				$fields['overall_list/heading_tags_if_items']['hidden'] = 
+					($values['overall_list/show_headings_if_items'] != 1);
+				
+				$fields['overall_list/heading_if_no_items']['hidden'] =
+				$fields['overall_list/heading_tags_if_no_items']['hidden'] =
+					($values['overall_list/show_headings_if_no_items'] != 1);
+				
+				//Don't show notes about translations if a phrase won't be translated
+				if (!ze\row::exists('languages', ['translate_phrases' => 1])) {
+					$fields['overall_list/heading_text']['show_phrase_icon'] =
+					$fields['overall_list/heading_if_items']['show_phrase_icon'] =
+					$fields['overall_list/heading_if_no_items']['show_phrase_icon'] =
+					$fields['overall_list/more_link_text']['show_phrase_icon'] = false;
+					
+					$fields['overall_list/heading_text']['side_note'] =
+					$fields['overall_list/heading_if_items']['side_note'] =
+					$fields['overall_list/heading_if_no_items']['side_note'] =
+					$fields['overall_list/more_link_text']['side_note'] = '';
+				
+				} else {
+					$mrg = [
+						'def_lang_name' => htmlspecialchars(ze\lang::name(ze::$defaultLang)),
+						'phrases_panel' => htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__languages/panels/phrases')
+					];
+					
+					$fields['overall_list/heading_text']['show_phrase_icon'] =
+					$fields['overall_list/heading_if_items']['show_phrase_icon'] =
+					$fields['overall_list/heading_if_no_items']['show_phrase_icon'] =
+					$fields['overall_list/more_link_text']['show_phrase_icon'] = true;
+					
+					$fields['overall_list/heading_text']['side_note'] =
+					$fields['overall_list/heading_if_items']['side_note'] = 
+					$fields['overall_list/heading_if_no_items']['side_note'] =
+					$fields['overall_list/more_link_text']['side_note'] =
+						ze\admin::phrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer.</a>.', $mrg);
+				}
 				
 				
 				$fields['each_item/retina']['hidden'] = 

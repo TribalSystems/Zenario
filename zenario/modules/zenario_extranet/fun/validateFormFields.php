@@ -60,7 +60,7 @@ foreach ($this->frameworkFields as $name => $field) {
 				break;
 			case 'extranet_screen_name':
 			case 'screen_name':
-				$phrase = "Please enter your Screen Name.";
+				$phrase = "Please enter your screen name.";
 				break;
 			case 'extranet_terms_and_conditions':
 				$phrase = "Please confirm that you accept the Terms and Conditions.";

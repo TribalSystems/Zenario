@@ -309,6 +309,6 @@ class zenario_videos_manager extends ze\moduleBaseClass {
 			}
 		}
 
-		return ['Record_Count' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => 'videoId'];
+		return ['Record_count_total' => $recordCount, 'Results' => $resultsFromModule, 'Variable_name' => 'videoId', 'No_results_text' => 'No videos found'];
 	}
 }

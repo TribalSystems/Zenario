@@ -103,24 +103,29 @@
 							<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 								onclick="zenarioAB.enableOrDisableSite();"
 							<% } %>
+							
+							<% var iconClassName = 'zenario_at_dev_icon zenario_topRightIcon'; %>
+							<% if (zenarioA.siteSettings.in_moratorium) { %>
+								<% iconClassName += ' site_in_moratorium'; %>
+							<% } %>
 						
 							<% if (zenarioA.siteSettings.site_enabled) { %>
 								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-									class="zenario_at_dev_icon zenario_topRightIcon site_enabled_development site_mode"
+									class="{{iconClassName}} site_enabled_development site_mode"
 									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 										title="Site enabled; developer mode"
 									<% } %>
 								<% } else { %>
-									class="zenario_at_dev_icon zenario_topRightIcon site_enabled site_mode"
+									class="{{iconClassName}} site_enabled site_mode"
 								<% } %>
 							<% } else { %>
 								<% if (zenarioA.siteSettings.site_in_dev_mode) { %>
-									class="zenario_at_dev_icon zenario_topRightIcon site_disabled site_mode"
+									class="{{iconClassName}} site_disabled site_mode"
 									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 										title="Site disabled; developer mode"
 									<% } %>
 								<% } else { %>
-									class="zenario_at_dev_icon zenario_topRightIcon site_disabled site_mode"
+									class="{{iconClassName}} site_disabled site_mode"
 									<% if ( zenarioA.pageMode != 'menu' && zenarioA.pageMode != 'layout' ) { %>
 										title="Site disabled"
 									<% } %>

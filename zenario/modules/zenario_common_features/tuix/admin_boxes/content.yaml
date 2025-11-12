@@ -41,15 +41,19 @@ zenario_content:
         last_title: ''
         
         local_file_id_on_load: 0
+        menu_text_on_load: ''
     
     identifier:
         css_class: content_draft
         label: Content item ID 
     title: Creating a content item
+    
+    css_class: 'zenario_fab_default_style zenario_fab_2_cols'
+    
     tabs:
         meta_data:
             ord: 10
-            label: Meta Data
+            label: Metadata
             edit_mode:
                 enabled: false
                 priv: _PRIV_EDIT_DRAFT
@@ -64,14 +68,30 @@ zenario_content:
                     message: ''
             fields:
                 special_page_message:
-                    ord: 19
                     hidden: true 
                     pre_field_html: "<div class=\"zenario_fbInfo\">"
                     snippet: 
                         html: ""
                     post_field_html: "</div>"
                     
+                grouping_title_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                title_original:
+                    grouping: grouping_title_left
+                    type: text
+                    label: 'Browser title (original):'
+                    show_as_a_span: true
+                
+                grouping_title_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 title:
+                    grouping: grouping_title_right
                     ord: 20
                     label: 'Browser title:'
                     type: text
@@ -82,7 +102,7 @@ zenario_content:
                         zenarioAB.contentTitleChange();
                         cnt = $(lib.get('title')).val().length;
                         if (cnt < 1) {
-                            seo_message_title = 'Please enter a title for the content item.';
+                            seo_message_title = 'Please enter a title for this content item.';
                         } else if (cnt < 12) {
                             seo_message_title = 'For good SEO and on-site search, make the title longer.';
                         } else if (cnt < 26) {
@@ -95,7 +115,6 @@ zenario_content:
 
                         $('#' + lib.idPrefix() + 'row__title .zenario_note_below_plain .zenario_note_content').text(seo_message_title);
                         
-                        zenarioAB.updateSEP();
                     redraw_microtemplates_onkeyup: true
                     notices_below:
                         title_is_longer_than_the_allowed_length:
@@ -104,24 +123,64 @@ zenario_content:
                             size: small
                             message: "Warning: the content item's title is longer than the allowed length. It will be shortened on saving."
                 auto_populate_title_from_filename:
+                    grouping: grouping_title_right
                     ord: 20.1
                     label: "Auto-populate from file name"
                     type: checkbox
                     format_onchange: true
+                
+                grouping_language_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                language_id_original:
+                    grouping: grouping_language_left
+                    label: 'Language (original):'
+                    type: select
+                    show_as_a_span: true
+                
+                grouping_language_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 language_id:
+                    grouping: grouping_language_right
                     ord: 30
                     label: 'Language:'
                     type: select
                     show_as_a_span: false
                 language_id_on_load:
+                    grouping: grouping_language_right
                     hidden: true
                     type: text
+                
                 content_item_translation_info:
+                    grouping: grouping_language_right
                     ord: 31
                     snippet:
                         html: ''
                     hidden: true
+                
+                grouping_release_date_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                release_date_original:
+                    grouping: grouping_release_date_left
+                    type: date
+                    label: 'Release date (original):'
+                    show_as_a_span: true
+                
+                grouping_release_date_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 release_date:
+                    grouping: grouping_release_date_right
                     ord: 32
                     label: 'Release date:'
                     type: date
@@ -130,25 +189,41 @@ zenario_content:
                     show_date_format_as_placeholder: true
                     tooltip: |
                         The official, or publicly-displayed date, of this content item; it may differ from the date when actually published.
-                menu:
+                
+                grouping_menu_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                    ord: 32
+                
+                menu_original:
+                    grouping: grouping_menu_left
+                    label: 'Menu (original):'
+                    type: text
+                    show_as_a_span: true
+                    css_class: zenario_textbox_noborder zfab_menuPathPreviewNode zfab_menuPathPreviewUpdatingNode
+                
+                grouping_menu_right:
                     ord: 33
                     type: grouping
                     name: menu
+                    grouping_css_class: duplicating_right_column
                 create_menu_node:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     type: checkbox
                     label: Add to menu navigation
                     value: 1
                     format_onchange: true
                 no_menu_warning:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 1
                     hide_if_previous_outdented_value_isnt: ''
                     snippet:
                         div_class: zenario_fbWarning
                         div: 'Warning: if not added to menu navigation, this page might be hard for users to find.'
                 menu_pos_locked_warning:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 1
                     hidden: true
                     hide_if_previous_outdented_value_isnt: 1
@@ -156,7 +231,7 @@ zenario_content:
                         div_class: zenario_fbWarning
                         div: 'A preferential menu node exists for this content type. The initial menu position for content items of this type has been locked.'
                 menu_pos:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
                     type: select
@@ -178,7 +253,7 @@ zenario_content:
                                 Choose position in the menu...
                     format_onchange: true
                 menu_pos_suggested:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 2
                     visible_if: |
                         lib.value('create_menu_node')
@@ -187,7 +262,7 @@ zenario_content:
                     values: {}
                     format_onchange: true
                 menu_pos_before:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 2
                     hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: before
@@ -201,21 +276,21 @@ zenario_content:
                         visible_if_for_all_selected_items: |
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                 menu_pos_after:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 2
                     hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: after
                     readonly: true
                     pick_items: *pick_menu_pos
                 menu_pos_under:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 2
                     hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: under
                     readonly: true
                     pick_items: *pick_menu_pos
                 menu_pos_specific:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 2
                     hide_with_previous_outdented_field: true
                     hide_if_previous_outdented_value_isnt: specific
@@ -224,10 +299,11 @@ zenario_content:
                         required_if_not_hidden: Please select where this item should appear in the menu.
                     format_onchange: true
                 menu_content_status:
+                    grouping: grouping_menu_right
                     type: hidden
                     same_row: true        
                 menu_text:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 1
                     hide_if_previous_outdented_value_isnt: 1
                     label: 'Menu navigation text:'
@@ -241,15 +317,15 @@ zenario_content:
                     oninput: |
                         $(zenarioAB.get('span__menu_path_preview')).text(this.value);
                 menu_id_when_editing:
+                    grouping: grouping_menu_right
                     type: hidden
                     hidden: true
                 menu_text_when_editing:
                     #This field is the same as the "Menu node text" one, but only visible when editing an item.
-                    grouping: menu
+                    grouping: grouping_menu_right
                     label: 'Menu node text:'
                     type: text
                     maxlength: 125
-                    same_row: true
                     onchange: zenarioAB.tuix.___menu_text_changed = true;
                     validation:
                         required_if_not_hidden: Please enter some text for the menu node.
@@ -276,42 +352,67 @@ zenario_content:
                         
                         $(zenarioAB.get('span__menu_path_preview')).text(this.value);
                 menu_text_when_editing_on_load:
+                    grouping: grouping_menu_right
                     type: hidden
                     hidden: true
                 redraft_menu_warning:
                     row_class: zfab_inline_warning_hidden
-                    grouping: menu
+                    grouping: grouping_menu_right
                     indent: 1
                     snippet:
                         html: |
                             <div id="zaf_redraft_menu_warning" class="zenario_fbWarning"></div>
                 
                 menu_path_preview:
-                    grouping: menu
+                    grouping: grouping_menu_right
                     ord: 1003
                     label: 'Menu path preview:'
                     type: text
                     show_as_a_span: true
                     css_class: zenario_textbox_noborder zfab_menuPathPreviewNode zfab_menuPathPreviewUpdatingNode
                 
+                menu_text_already_exists_warning:
+                    grouping: grouping_menu_right
+                    ord: 1004
+                    hidden: true
+                    snippet:
+                        html: |
+                            <div class="zenario_fbWarning">The menu node text already exists in [[language]].</div>
+                
                 content_item_is_public:
                     type: hidden
                     hidden: true
                 
-                alias_grouping:
+                grouping_alias_left:
                     type: grouping
-                    ord: 50
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                    ord: 34
+                
+                alias_original:
+                    grouping: grouping_alias_left
+                    type: text
+                    label: 'Alias (original):'
+                    show_as_a_span: true
+                
+                grouping_alias_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                    ord: 35
                 alias:
-                    grouping: alias_grouping
+                    grouping: grouping_alias_right
                     label: 'Alias:'
                     type: text
+                    #PLEASE NOTE: if you need to change the maxlength parameter,
+                    #please also update the function zenarioAB.generateAlias()
+                    #to trim the auto-generated alias to the new maxlength.
                     maxlength: 75
                     note_below: 'alias'
                     show_plain_note_below: true
                     progress_bar: true
                     read_only: false
                     oninput: |
-                        zenarioAB.updateSEP();
                         $(lib.get('suggest_alias_from_title')).show();
 
                         cnt = $(lib.get('alias')).val().length;
@@ -335,7 +436,7 @@ zenario_content:
                         $(lib.get('alias_changed')).val(1);
                     redraw_microtemplates_onkeyup: true
                 suggest_alias_from_title:
-                    grouping: alias_grouping
+                    grouping: grouping_alias_right
                     type: button
                     css_class: zfab_text_link_button
                     same_row: true
@@ -347,20 +448,40 @@ zenario_content:
                         zenarioAB.contentTitleChange(); 
                         $(lib.get('suggest_alias_from_title')).hide();
                 alias_warning_display_wrapper:
-                    grouping: alias_grouping
+                    grouping: grouping_alias_right
                     row_class: zfab_inline_warning_hidden
                     snippet:
                         html: |
                             <div id="alias_warning_display"></div>
                 url_format:
+                    grouping: grouping_alias_right
                     type: text
                     hidden: true
                 alias_changed:
+                    grouping: grouping_alias_right
                     type: hidden
                     same_row: true
                     hide_if_empty: true
+                
+                grouping_description_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                description_original:
+                    grouping: grouping_description_left
+                    type: textarea
+                    style: height:45px
+                    label: 'Description meta tag (original):'
+                    show_as_a_span: true
+                
+                grouping_description_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 description:
-                    ord: 70
+                    grouping: grouping_description_right
                     label: 'Description meta tag:'
                     type: textarea
                     style: height:45px
@@ -383,16 +504,28 @@ zenario_content:
 
                         $('#' + lib.idPrefix() + 'row__description .zenario_note_below_plain .zenario_note_content').text(seo_message_description);
                     
-                        zenarioAB.updateSEP();
+                    redraw_microtemplates_onkeyup: true
                 
-                sitemap_grouping:
+                grouping_sitemap_left:
                     type: grouping
-                    ord: 75
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                sitemap_original:
+                    grouping: grouping_sitemap_left
+                    type: text
+                    label: 'XML sitemap (original):'
+                    show_as_a_span: true
+                
+                grouping_sitemap_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
                 sitemap:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     label: 'XML sitemap:'
                 sitemap_disabled:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     same_row: true
                     visible_if: |
                         !zenarioA.siteSettings.sitemap_enabled
@@ -403,13 +536,13 @@ zenario_content:
                     
                     enable_microtemplates_in_properties: true
                     post_field_html: |
-                        <% link = 'organizer.php#zenario__administration/panels/site_settings//search_engine_optimisation~.site_settings~tsitemap~k{"id"%3A"search_engine_optimisation"}'; %>
+                        <% link = 'organizer.php#zenario__administration/panels/site_settings//search_engine_optimisation~.site_settings~tsitemap_robots~k{"id"%3A"search_engine_optimisation"}'; %>
                         <a
                             target="_blank"
                             href="{{URLBasePath|e}}{{link|e}}"
                         >View XML sitemap settings</a>
                 excluded_from_sitemap:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     same_row: true
                     visible_if: |
                         zenarioA.siteSettings.sitemap_enabled
@@ -418,7 +551,7 @@ zenario_content:
                     readonly: true
                     show_as_a_span_when_readonly: true
                 included_in_sitemap:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     same_row: true
                     visible_if: |
                         zenarioA.siteSettings.sitemap_enabled
@@ -427,7 +560,7 @@ zenario_content:
                     readonly: true
                     show_as_a_span_when_readonly: true
                 exclude_from_sitemap:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     same_row: true
                     hide_with_previous_field: true
                     type: checkbox
@@ -436,7 +569,7 @@ zenario_content:
                     post_field_html: ')'
                     redraw_onchange: true
                 search_engine_preview:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     indent: 1
                     hide_with_previous_field: true
                     visible_if: |
@@ -445,16 +578,31 @@ zenario_content:
                     snippet:
                         microtemplate: zenario_admin_box_search_engine_preview
                 apply_noindex_meta_tag:
-                    grouping: sitemap_grouping
+                    grouping: grouping_sitemap_right
                     indent: 1
                     type: checkbox
                     label: Apply a noindex meta tag
                     visible_if: |
                         (zenarioA.siteSettings.sitemap_enabled && lib.value('exclude_from_sitemap'))
-                    
+                
+                grouping_keywords_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                keywords_original:
+                    grouping: grouping_keywords_left
+                    type: textarea
+                    label: 'Keywords meta tag (original):'
+                    show_as_a_span: true
+                
+                grouping_keywords_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
                 
                 keywords:
-                    ord: 80
+                    grouping: grouping_keywords_right
                     label: 'Keywords meta tag:'
                     type: textarea
                     style: height:30px
@@ -465,29 +613,75 @@ zenario_content:
                                 <span id="zaf_snippet__keywords_counter">[[initial_characters_count]]</span>
                             </div>
                         </div>
+                
+                grouping_writer_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                writer_id_original:
+                    grouping: grouping_writer_left
+                    label: 'Writer (original):'
+                    pick_items:
+                        path: zenario__content/panels/writer_profiles
+                        target_path: zenario__content/panels/writer_profiles
+                        min_path: zenario__content/panels/writer_profiles
+                        select_phrase: Select a writer...
+                        nothing_selected_phrase: Nobody selected
+                    show_as_a_span: true
+                
+                grouping_writer_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 writer_id:
-                    ord: 100
+                    grouping: grouping_writer_right
                     label: 'Writer:'
                     pick_items:
-                        path: zenario__library/panels/writer_profiles
-                        target_path: zenario__library/panels/writer_profiles
-                        min_path: zenario__library/panels/writer_profiles
+                        path: zenario__content/panels/writer_profiles
+                        target_path: zenario__content/panels/writer_profiles
+                        min_path: zenario__content/panels/writer_profiles
                         select_phrase: Select a writer...
                         nothing_selected_phrase: Nobody selected
                     format_onchange: true
                 
-                pinned_grouping:
+                
+                grouping_pinned_left:
                     type: grouping
-                    ord: 135
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                    ord: 129
+                
+                pinned_original:
+                    grouping: grouping_pinned_left
+                    type: checkbox
+                    onoff: true
+                    label: 'Pinned (original)'
+                    show_as_a_span: true
+                
+                pinned_original_more_info:
+                    indent: 1
+                    grouping: grouping_pinned_left
+                    type: text
+                    show_as_a_span: true
+                    visible_if: lib.value('pinned_original')
+                
+                grouping_pinned_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                    ord: 130
                 pinned:
                     label: 'Pin'
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     type: checkbox
+                    onoff: true
                     tooltip: 'Pinned items appear first on content summary lists.'
                     redraw_onchange: true
                 pinned_duration:
                     indent: 1
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     type: radios
                     value: until_unpinned
                     values:
@@ -507,14 +701,14 @@ zenario_content:
                     validation:
                         required_if_not_hidden: 'Please select the duration.'
                 unpin_date:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 2
                     label: 'Unpin date:'
                     type: date
                     change_month_and_year: true
                     visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_date'
                 pinned_fixed_duration_value:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 2
                     type: text
                     value: 1
@@ -525,7 +719,7 @@ zenario_content:
                         numeric: 'Please enter a number.'
                     visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_duration'
                 pinned_fixed_duration_unit:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     same_row: true
                     type: select
                     value: days
@@ -538,57 +732,106 @@ zenario_content:
                             label: 'Weeks'
                     visible_if: lib.value('pinned') && lib.value('pinned_duration') == 'fixed_duration'
                 pinned_duration_part_2:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 1
                     snippet:
                         show_split_values_from: pinned_duration
                     visible_if: lib.value('pinned')
                 pinned_error_scheduled_task_manager_not_running:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is not installed. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 pinned_error_scheduled_task_master_switch_is_off:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is enabled, but the master switch is Off. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 pinned_error_scheduled_task_master_not_set_up_correctly:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is installed and the master switch is On, but the crontab is not set up correctly. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
                 pinned_error_scheduled_task_master_job_not_running:
-                    grouping: pinned_grouping
+                    grouping: grouping_pinned_right
                     indent: 1
                     snippet:
                         html: |
                             <div class="zenario_fbWarning">Scheduled unpinning is not available. The Scheduled Task Manager is set up correctly, but the scheduled unpinning task (jobUnpinContent) is not enabled. [[link_start]]Click for more info.[[link_end]]</div>
                     hidden: true
+                
+                grouping_summary_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                    ord: 131
+                
+                content_summary_original:
+                    grouping: grouping_summary_left
+                    label: 'Short summary (original):'
+                    type: editor
+                    editor_type: readonly
+                    editor_options:
+                        height: 220
+                    dont_trim: true
+                
+                grouping_summary_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                    ord: 132
+                
                 content_summary:
+                    grouping: grouping_summary_right
                     label: 'Short summary:'
-                    ord: 130
                     type: editor
                     editor_type: summary_editor
                     editor_options:
                         invalid_elements: img, picture, iframe
-                        height: 135
+                        height: 220
                     dont_trim: true
                     tooltip: >
                         Summary of the article or page. This may appear on this site in a content summary list. You may include simple HTML but not images.
+                
+                grouping_layout_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                    ord: 133
+                
+                layout_original:
+                    grouping: grouping_layout_left
+                    label: 'Layout (original):'
+                    pick_items:
+                        path: zenario__layouts/panels/layouts
+                        target_path: zenario__layouts/panels/layouts
+                        min_path: zenario__layouts/panels/layouts
+                        max_path: zenario__layouts/panels/layouts
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose this layout
+                        select_phrase: Select a layout...
+                        hide_remove_button: true
+                    show_as_a_span: true
+                
+                grouping_layout_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                    ord: 134
+                
                 archived_template_notice:
-                    ord: 160
+                    grouping: grouping_layout_right
                     snippet:
                         html: '<div class="zenario_fbWarning">The chosen layout is retired.</div>'
                     hidden: true
                 layout_id:
-                    ord: 161
+                    grouping: grouping_layout_right
                     label: 'Layout:'
                     pick_items:
                         path: zenario__layouts/panels/layouts
@@ -600,6 +843,40 @@ zenario_content:
                         select_phrase: Select a layout...
                         hide_remove_button: true
                     format_onchange: true
+                
+                css_desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            If you wish to style this content item specifically in your skin, you may give it one or more CSS class names.
+                            A <code>&lt;div&gt;</code> with these class names will be added to this page.
+                    ord: 135
+                
+                grouping_css_class_field_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                    ord: 136
+                
+                css_class_field_original:
+                    grouping: grouping_css_class_field_left
+                    label: 'CSS class names (original):'
+                    type: text
+                    show_as_a_span: true
+                
+                grouping_css_class_field_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                    ord: 137
+                
+                css_class:
+                    grouping: grouping_css_class_field_right
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
+                    tooltip: 'This CSS will be added to the outer <code>&lt;div&gt;</code> of the rendered HTML page.'
+        
         content_dropdown:
             ord: 25
             label: Content
@@ -715,110 +992,7 @@ zenario_content:
                         exists: true
                     language: html
                     tall_as_possible: true
-        css:
-            ord: 36
-            label: CSS
-            edit_mode:
-                enabled: false
-                priv: _PRIV_EDIT_DRAFT
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: |
-                            If you wish to style this content item specifically in your skin, you may give it one or more CSS class names.
-                            A <code>&lt;div&gt;</code> with these class names will be added to this page.
-                css_class:
-                    label: 'CSS class names:'
-                    type: text
-                    maxlength: 100
-                    tooltip: 'This CSS will be added to the outer <code>&lt;div&gt;</code> of the rendered HTML page.'
-                customise_background:
-                    label: 'Customise page background'
-                    type: checkbox
-                    value: false
-                    redraw_onchange: true
-                background_image:
-                    label: 'Background image:'
-                    indent: 1
-                    upload:
-                        multi: false
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                        reorder_items: false
-                    pick_items:
-                        path: zenario__content/panels/background_images
-                        target_path: zenario__content/panels/background_images
-                        min_path: zenario__content/panels/background_images
-                        max_path: zenario__content/panels/background_images
-                        multiple_select: false
-                        select_phrase: 'Use existing...'
-                    redraw_onchange: true
-                    visible_if: |
-                        lib.value('customise_background') == true
-                
-                bg_color:
-                    label: 'Background color:'
-                    indent: 1
-                    type: color_picker
-                    color_picker_options:
-                        allowEmpty: true
-                        showInput: true
-                        showPalette: true
-                        showInitial: true
-                        clickoutFiresChange: true
-                    maxlength: 64
-                    visible_if: |
-                        lib.value('customise_background') == true
-                
-                bg_position:
-                    label: 'Background position:'
-                    indent: 1
-                    type: select
-                    empty_value: "[ Don't specify ]"
-                    values:
-                        'left top':
-                            label: '↖ Top left'
-                        'center top':
-                            label: '↑ Top center'
-                        'right top':
-                            label: '↗ Top right'
-                        'left center':
-                            label: '← Left center'
-                        'center center':
-                            label: '• Center'
-                        'right center':
-                            label: '→ Right center'
-                        'left bottom':
-                            label: '↙ Bottom left'
-                        'center bottom':
-                            label: '↓ Bottom center'
-                        'right bottom':
-                            label: '↘ Bottom right'
-                    visible_if: |
-                        lib.value('customise_background') == true
-                
-                bg_repeat:
-                    label: 'Background repeat:'
-                    indent: 1
-                    type: select
-                    empty_value: "[ Don't specify ]"
-                    values:
-                        repeat:
-                            label: ' ⸬ Repeat in all directions'
-                        repeat-x:
-                            label: ' … Repeat horizontally'
-                        repeat-y:
-                            label: ' ⋮ Repeat vertically'
-                        no-repeat:
-                            label: " • Don't repeat"
-                    visible_if: |
-                        lib.value('customise_background') == true
+        
         history:
             edit_mode:
                 enabled: false
@@ -922,6 +1096,7 @@ zenario_content:
                         drag_and_drop: true
                         accept: ''
                         extensions: []
+                        replace_phrase: 'Replace with...'
                     format_onchange: true
                     notices_below:
                         file_is_missing:
@@ -987,12 +1162,38 @@ zenario_content:
                     full_width: true
                     snippet:
                         html: ''
+                
+                categories_grouping_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                categories_original:
+                    grouping: categories_grouping_left
+                    label: 'Categories (original):'
+                    type: checkboxes
+                    values: ''
+                    checking_child_checks_parents: true
+                    show_as_a_span: true
+                no_categories_original:
+                    grouping: categories_grouping_left
+                    label: 'Categories (original):'
+                    snippet:
+                        html: No categories have been created.
+                
+                categories_grouping_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 categories:
+                    grouping: categories_grouping_right
                     label: 'Categories:'
                     type: checkboxes
                     values: ''
                     checking_child_checks_parents: true
                 no_categories:
+                    grouping: categories_grouping_right
                     label: 'Categories:'
                     snippet:
                         html: No categories have been created.
@@ -1014,15 +1215,10 @@ zenario_content:
                 desc:
                     snippet:
                         p: ''
-                th_slotname:
+                th_contents:
                     <table class="zfab_grey_table"><tr><th>:
                     snippet:
-                        label: Slot name
-                    </th>:
-                th_module:
-                    <th>:
-                    snippet:
-                        label: Module
+                        label: Slot name/Module
                     </th>:
                 th_plugin:
                     <th>:
@@ -1039,29 +1235,20 @@ zenario_content:
                     </table>:
             custom_template_fields:
                 slotname__znz:
+                    type: hidden
+                    hidden: true
+                    readonly: true
+                
+                contents__znz:
                     <tr><td>:
-                    type: text
-                    show_as_a_span: true
-                    readonly: true
-                    </td>:
-                module__znz:
-                    <td>:
-                    type: text
-                    show_as_a_span: true
-                    readonly: true
+                    snippet:
+                        html: ''
                     </td>:
                 plugin_instance_id__znz:
                     <td>:
-                    type: text
-                    show_as_a_span: true
-                    readonly: true
+                    snippet:
+                        html: ''
                     css_class: zfab_plugin_icon
-                plugin_name__znz:
-                    <br/>:
-                    type: text
-                    show_as_a_span: true
-                    readonly: true
-                    </td>:
                 instance_id__znz:
                     type: hidden
                     hidden: true

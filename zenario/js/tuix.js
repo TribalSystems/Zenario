@@ -691,10 +691,6 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			}
 			
 			html += ' accept="' + htmlspecialchars(extensions.join(',')) + '"';
-		
-		//Backwards compatibility with old versions
-		} else if (object.upload.fileDesc == 'Images') {
-			html += ' accept="image/*"';
 		}
 		
 		if (fallback) {
@@ -1139,11 +1135,17 @@ zenarioT.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 	
 	} else if (object.help) {
-		var messageType = object.help.message_type || 'question',
-			htmlEscapeMessage = !engToBoolean(object.help.html);
+		var message = object.help.message,
+			messageType = object.help.message_type || 'question',
+			isHTML = object.help.html;
 		
 		if (object.help.message) {
-			zenarioA.showMessage(object.help.message, true, messageType, false, htmlEscapeMessage);
+			
+			if (!isHTML) {
+				message = htmlspecialchars(message, true, false, true);
+			}
+			
+			zenarioA.showMessage(message, true, messageType);
 		}
 		
 	
@@ -1228,6 +1230,15 @@ zenarioT.longToast = function(msg, type, options) {
 	options = options || {};
 	options.timeOut =
 	options.extendedTimeOut = 15000;
+	
+	zenarioT.notification(msg, type, options);
+};
+
+zenarioT.permaToast = function(msg, type, options) {
+	
+	options = options || {};
+	options.timeOut =
+	options.extendedTimeOut = 0;
 	
 	zenarioT.notification(msg, type, options);
 };
@@ -1582,6 +1593,20 @@ zenarioT.tuixToArray = function(tuix) {
 	return vals;
 };
 
+//This an entry from a LoV, which could be a string or an object.
+//If it's an object it will return the label.
+zenarioT.valueLabel = function(value) {
+	if (typeof value == 'object') {
+		if (defined(value.label)) {
+			return value.label;
+		} else {
+			return undefined;
+		}
+	} else {
+		return value;
+	}
+};
+
 
 
 
@@ -1677,6 +1702,62 @@ zenarioT.setKin = function(buttons, parentClass) {
 			zenarioT.addClass(button, 'tuix_object_with_children');
 			zenarioT.addClass(button.children[0], 'tuix_object_first_child');
 			zenarioT.addClass(button.children[button.children.length - 1], 'tuix_object_last_child');
+		}
+	}
+	
+	if (_.isEmpty(buttons)) {
+		return;
+	}
+	
+	zenarioT.addClass(buttons[0], 'tuix_object_first');
+	zenarioT.addClass(buttons[buttons.length - 1], 'tuix_object_last');
+};
+
+//Given multiple buttons, some of which could have parent/child relationships,
+//try and get a flat list excluding the parent buttons.
+zenarioT.flattenKin = function(buttons) {
+	
+	if (_.isEmpty(buttons)) {
+		return;
+	}
+	
+	var bi, button, originalTUIX,
+		pi, parentId, parentButton,
+		in_use,
+		buttonsPos = {};
+	
+	foreach (buttons as bi => button) {
+		delete button.children;
+		buttonsPos[button.id] = bi;
+	}
+	
+	//Look for parent/child relationships
+	foreach (buttons as bi => button) {
+		
+		//Accept either an array of TUIX objects, or a list of objects with pointers to TUIX objects.
+		originalTUIX = button.tuix || button;
+		
+		//Flag any buttons that were being used as parent containers
+		if (parentId = originalTUIX.parent) {
+			pi = buttonsPos[parentId];
+			
+			if (parentButton = buttons[pi]) {
+				parentButton.children = true;
+			}
+		}
+	}
+	
+	//Remove the parent containers from the top-level buttons
+	for (bi = buttons.length - 1; bi >= 0; --bi) {
+		button = buttons[bi];
+		
+		//Accept either an array of TUIX objects, or a list of objects with pointers to TUIX objects.
+		originalTUIX = button.tuix || button;
+		
+		//Remove any buttons that we found had children earlier.
+		//Also remove anything with the hide_when_children_are_not_visible propery set.
+		if (button.children || originalTUIX.hide_when_children_are_not_visible) {
+			buttons.splice(bi, 1);
 		}
 	}
 	

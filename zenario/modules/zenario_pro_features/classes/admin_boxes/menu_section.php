@@ -40,17 +40,18 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-			if (preg_replace('/\S/', '', $values['menu_section/section_name'])) {
-				$box['tabs']['menu_section']['errors'][] = ze\admin::phrase('The name may not contain spaces.');
-			
-			} else
-			if (ze\row::exists(
+		if (!preg_match('/^[A-Za-z0-9_-]+$/', $values['menu_section/section_name'])) {
+			$fields['menu_section/section_name']['error'] =
+				ze\admin::phrase('The section name may contain only alphanumeric characters, underscores and hyphens. It may not contain spaces.');
+		} elseif (
+			ze\row::exists(
 				'menu_sections',
 				['section_name' => $values['menu_section/section_name'], 'id' => ['!' => $box['key']['id']]]
-			)) {
-				$box['tabs']['menu_section']['errors'][] =
-					ze\admin::phrase('The Menu Section "[[section_name]]" already exists.', $values['menu_section']);
-			}
+			)
+		) {
+			$fields['menu_section/section_name']['error'] =
+				ze\admin::phrase('The menu section "[[section_name]]" already exists.', ['section_name' => $values['menu_section/section_name']]);
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -65,5 +66,4 @@ class zenario_pro_features__admin_boxes__menu_section extends ze\moduleBaseClass
 		ze\tuix::closeWithFlags(['RELOAD_ORGANIZER' => true, 'ORGANIZER_PATH' => 'zenario__menu/panels/by_language/item//'. ze::$defaultLang. '//'. $box['key']['id']]);
 		exit;
 	}
-
 }

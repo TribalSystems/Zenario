@@ -7,30 +7,16 @@ start_running_on_install: false
 license_info: 'Modified BSD License'
 display_name: Newsletter
 description: |
-            <p>Design and send HTML Newsletters to your customers.</p>
-            <p>You can create an HTML formatted newsletter using the usual zenario WYSIWYG editor.</p>
-            <p>You can choose from a number of pre-formatted emails (you'll find these in your Email Templates), or design your own.
-                You can embed hyperlinks and images in your Newsletters.</p>
-            <p>You can easily specify email sending details (the Subject line, the "From:" Name and email address, and the Reply-to address.</p>
-            <p>It's easy to view the newsletter on-screen when editing, and you can press the Test button to send a test email to yourself.</p>
-            <p>When you're ready, you can select your recipients from your Extranet Users in your CMS database.
-                You can include/exclude Extranet Users to/from Newsletters by:</p>
-            <ul>
-                <li>Group Membership</li>
-                <li>Simple Characteristic (if you have Zenario ProBusiness)</li>
-                <li>Recipients of previously sent Newsletters</li>
-            </ul>
-            <p>Then just press Send!</p>
-            <p>If you have the Scheduled Task Module, you may send Newsletters in batch. This lets you send Newsletters to a very large number of 
-                recipients.</p>
-            <p>Once your sending has started you can check its progress, and even see which recipients have opened the email.
-            Each Newsletter sent will contain a unique tracking code, which allows you to see which recipients have opened their Newsletters,
-                and the time when they opened. (This feature will not work for Recipients who choose not to view remote images in their email clients.)</p>
-            <p>Unsubscribe functionality is built in, so that recipients can opt out of a given Group of recipients,
-                or can opt to be removed entirely from the database. Also included are merge fields for the recipient's salutation, first and last name,
-                so that each email can be personalized to your taste.</p>
+            <p>Design and send HTML Newsletters to extranet users and contacts.</p>
+            <p>You can create an HTML formatted newsletter using the usual Zenario WYSIWYG editor.</p>
+            <p>You can choose from a number of pre-formatted emails (you'll find these in your Email Templates), or design your own.</p>
+            <p>It's possible to preview the newsletter on-screen when editing, and there is a "Send test" button to send a test email to yourself or your colleagues.</p>
+            <p>When the content is complete, you can select the recipients, these being defined via a smart group, of extranet users and/or contacts.</p>
+            <p>Press the "Live send" button to send the newsletter. Once started, you can check progress, and see which recipients have opened the email.</p>
+            <p>Each individual email will contain a unique tracking code which allows you to see which recipients have opened the email. (This feature will only work for recipients whose email clients allow viewing of remote images.)</p>
+            <p>Unsubscribe functionality is built in, so that recipients can opt out of receiving newsletters.</p>
 category: management
-keywords: email, inbox, mail
+keywords: email, inbox, mail, news
 
 # Reminder: you need to increment the LATEST_REVISION_NO in this module's
 # latest_revision_no.inc.php file if you change any of the fields below:

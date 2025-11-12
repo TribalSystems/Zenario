@@ -6,7 +6,7 @@ zenario_content_layout:
         id: ""
         cID: ""
         cType: ""
-
+        fromAdminToolbar: false
         idInOrganizer: ''
         id_is_menu_node_id: false
     identifier:

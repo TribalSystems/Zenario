@@ -32,8 +32,8 @@ zenario_phrase:
                     show_as_a_span: true
                 seen_at:
                     label: 'Seen at:'
-                    snippet:
-                        html: ''
+                first_seen_in_visitor_mode:
+                    label: 'First seen in visitor mode:'
                 code:
                     type: textarea
                     readonly: true

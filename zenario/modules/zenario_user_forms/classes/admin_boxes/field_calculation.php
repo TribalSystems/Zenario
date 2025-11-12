@@ -117,6 +117,6 @@ class zenario_user_forms__admin_boxes__field_calculation extends ze\moduleBaseCl
 				$calculationDisplay = trim($calculationDisplay);
 			}
 		}
-		$fields['details/calculation_display']['snippet']['html'] = '<div id="zenario_calculation_display">' . trim($calculationDisplay) . '</div>';
+		$fields['details/calculation_display']['snippet']['html'] = '<div id="zaf_zenario_calculation_display">' . trim($calculationDisplay) . '</div>';
 	}
 }

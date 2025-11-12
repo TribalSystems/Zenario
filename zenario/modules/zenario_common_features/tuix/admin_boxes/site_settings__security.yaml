@@ -54,9 +54,9 @@ site_settings:
                         name: warn_when_site_contains_personal_data_but_does_not_use_pde
                     label: "Warn when site contains personal data but is not protected using Personal Data Encryption (PDE)"
                     type: checkbox
-                warn_when_error_log_grows_beyond_10000_records:
+                warn_when_error_log_grows_beyond_20000_records:
                     site_setting:
-                        name: warn_when_error_log_grows_beyond_10000_records
-                    label: "Warn if the Error log grows beyond 10,000 records"
+                        name: warn_when_error_log_grows_beyond_20000_records
+                    label: "Warn if the Error log grows beyond 20,000 records"
                     type: checkbox
                     value: true

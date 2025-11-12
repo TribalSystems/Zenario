@@ -26,6 +26,9 @@ abstract class CallExpression extends AbstractExpression
 {
     private $reflector = null;
 
+    /**
+     * @return void
+     */
     protected function compileCallable(Compiler $compiler)
     {
         $twigCallable = $this->getTwigCallable();
@@ -128,7 +131,7 @@ abstract class CallExpression extends AbstractExpression
     }
 
     /**
-     * @deprecated since 3.12, use Twig\Util\CallableArgumentsExtractor::getArguments() instead
+     * @deprecated since Twig 3.12, use Twig\Util\CallableArgumentsExtractor::getArguments() instead
      */
     protected function getArguments($callable, $arguments)
     {
@@ -208,7 +211,7 @@ abstract class CallExpression extends AbstractExpression
             } elseif ($callableParameter->isDefaultValueAvailable()) {
                 $optionalArguments[] = new ConstantExpression($callableParameter->getDefaultValue(), -1);
             } elseif ($callableParameter->isOptional()) {
-                if (empty($parameters)) {
+                if (!$parameters) {
                     break;
                 } else {
                     $missingArguments[] = $name;
@@ -235,7 +238,7 @@ abstract class CallExpression extends AbstractExpression
             }
         }
 
-        if (!empty($parameters)) {
+        if ($parameters) {
             $unknownParameter = null;
             foreach ($parameters as $parameter) {
                 if ($parameter instanceof Node) {
@@ -258,7 +261,7 @@ abstract class CallExpression extends AbstractExpression
     }
 
     /**
-     * @deprecated since 3.12
+     * @deprecated since Twig 3.12
      */
     protected function normalizeName(string $name): string
     {
@@ -334,7 +337,7 @@ abstract class CallExpression extends AbstractExpression
                 [
                     'is_variadic' => $this->hasAttribute('is_variadic') ? $this->getAttribute('is_variadic') : $current->isVariadic(),
                 ],
-            ))->withDynamicArguments($this->getAttribute('name'), $this->hasAttribute('dynamic_name') ? $this->getAttribute('dynamic_name') : $current->getDynamicName(), $this->hasAttribute('arguments') ?: $current->getArguments()),
+            ))->withDynamicArguments($this->getAttribute('name'), $this->hasAttribute('dynamic_name') ? $this->getAttribute('dynamic_name') : $current->getDynamicName(), $this->hasAttribute('arguments') ? $this->getAttribute('arguments') : $current->getArguments()),
             'function' => (new TwigFunction(
                 $this->hasAttribute('name') ? $this->getAttribute('name') : $current->getName(),
                 $this->hasAttribute('callable') ? $this->getAttribute('callable') : $current->getCallable(),
@@ -344,7 +347,7 @@ abstract class CallExpression extends AbstractExpression
                     'needs_charset' => $this->hasAttribute('needs_charset') ? $this->getAttribute('needs_charset') : $current->needsCharset(),
                     'is_variadic' => $this->hasAttribute('is_variadic') ? $this->getAttribute('is_variadic') : $current->isVariadic(),
                 ],
-            ))->withDynamicArguments($this->getAttribute('name'), $this->hasAttribute('dynamic_name') ? $this->getAttribute('dynamic_name') : $current->getDynamicName(), $this->hasAttribute('arguments') ?: $current->getArguments()),
+            ))->withDynamicArguments($this->getAttribute('name'), $this->hasAttribute('dynamic_name') ? $this->getAttribute('dynamic_name') : $current->getDynamicName(), $this->hasAttribute('arguments') ? $this->getAttribute('arguments') : $current->getArguments()),
             'filter' => (new TwigFilter(
                 $this->getAttribute('name'),
                 $this->hasAttribute('callable') ? $this->getAttribute('callable') : $current->getCallable(),
@@ -354,7 +357,7 @@ abstract class CallExpression extends AbstractExpression
                     'needs_charset' => $this->hasAttribute('needs_charset') ? $this->getAttribute('needs_charset') : $current->needsCharset(),
                     'is_variadic' => $this->hasAttribute('is_variadic') ? $this->getAttribute('is_variadic') : $current->isVariadic(),
                 ],
-            ))->withDynamicArguments($this->getAttribute('name'), $this->hasAttribute('dynamic_name') ? $this->getAttribute('dynamic_name') : $current->getDynamicName(), $this->hasAttribute('arguments') ?: $current->getArguments()),
+            ))->withDynamicArguments($this->getAttribute('name'), $this->hasAttribute('dynamic_name') ? $this->getAttribute('dynamic_name') : $current->getDynamicName(), $this->hasAttribute('arguments') ? $this->getAttribute('arguments') : $current->getArguments()),
         });
 
         return $this->getAttribute('twig_callable');

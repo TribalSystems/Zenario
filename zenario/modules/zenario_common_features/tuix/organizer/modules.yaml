@@ -1,10 +1,10 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__modules:
+zenario__library:
     panels:
         modules:
             priv: _PRIV_VIEW_SLOT
-            title: Modules
+            title: All modules
             disable_periodic_refresh: true
             enable_close_up_view: true
             
@@ -17,26 +17,31 @@ zenario__modules:
             default_sort_column: display_name
             
             quick_filter_buttons:
-                all:
-                    ord: 1
-                    label: "All"
-                    column: status
-                    remove_filter: true
-                module_not_initialized:
-                    ord: 2
-                    label: "Uninitialised"
-                    column: status
-                    value: module_not_initialized
                 module_running:
-                    ord: 3
+                    ord: 1
                     label: "Running"
                     column: status
                     value: module_running
+                module_is_abstract:
+                    ord: 2
+                    label: "Abstract"
+                    column: status
+                    value: module_is_abstract
+                module_not_initialized:
+                    ord: 3
+                    label: "Uninitialised"
+                    column: status
+                    value: module_not_initialized
                 module_suspended:
                     ord: 4
                     label: "Suspended"
                     column: status
                     value: module_suspended
+                all:
+                    ord: 5
+                    label: "All"
+                    column: status
+                    remove_filter: true
                     
             refiners:
                 nestable_only:
@@ -76,11 +81,6 @@ zenario__modules:
                     searchable: true
                     width: large
                     always_show: true
-                path:
-                    title: Directory path
-                    show_by_default: No
-                    searchable: No
-                    width: xlarge
                 status:
                     title: Status
                     db_column: m.status
@@ -90,8 +90,17 @@ zenario__modules:
                         module_not_initialized: Uninitialised
                         module_running: Running
                         module_suspended: Suspended
+                        module_is_abstract: Abstract module
                     width: small
                     always_show: true
+                core_extra_or_custom:
+                    title: Core/extra/custom
+                    show_by_default: true
+                path:
+                    title: Directory path
+                    show_by_default: No
+                    searchable: No
+                    width: xlarge
                 vlp_class:
                     db_column: m.vlp_class
                 category:
@@ -110,8 +119,7 @@ zenario__modules:
                     searchable: true
                     hidden: true
                 special_page:
-                    title: Linked Special Page
-                    show_by_default: true
+                    title: Linked special page
                     item_link: content_item
                 is_pluggable:
                     db_column: m.is_pluggable
@@ -131,9 +139,6 @@ zenario__modules:
                 editions: {}
                 edition:
                     db_column: m.edition
-                core_extra_or_custom:
-                    title: Core/extra/custom
-                    show_by_default: true
                 editions_column:
                     title: Included in editions
                     width: xxlarge
@@ -152,9 +157,9 @@ zenario__modules:
             item:
                 name: Module
                 names: Modules
-                css_class: plugin
+                css_class: module
                 link:
-                    path: zenario__modules/panels/plugins
+                    path: zenario__library/panels/plugins
                     branch: true
                     refiner: plugin
                 tooltip_when_link_is_active: |
@@ -180,7 +185,6 @@ zenario__modules:
                         item:
                             name: Framework
                             names: Frameworks
-                            css_class: dropbox_file
                         item_buttons:
                             view_dropdown:
                                 label: View
@@ -199,7 +203,7 @@ zenario__modules:
                     select_mode_only: true
                     label: View all plugins
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: album
             item_buttons:
                 run:
@@ -298,7 +302,7 @@ zenario__modules:
                         item.nestable !== 2 &&
                         item.status == 'module_running'
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: plugin
                 usage_layouts:
                     parent: view_dropdown
@@ -329,7 +333,7 @@ zenario__modules:
                     visible_if: |
                         item.is_pluggable && item.status == 'module_running'
                     link:
-                        path: zenario__modules/panels/modules/hidden_nav/view_frameworks/panel
+                        path: zenario__library/panels/modules/hidden_nav/view_frameworks/panel
                         refiner: module
                 view_content_items:
                     parent: view_dropdown

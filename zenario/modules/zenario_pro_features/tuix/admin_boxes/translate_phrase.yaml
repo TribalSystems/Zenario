@@ -15,7 +15,7 @@ zenario_translate_phrase:
                     grouping: right_column
                     class_name: zenario_pro_features
                     css_class: zenario_text_button
-                    ord: 8
+                    ord: 10
                     value: 'Translate with Google'
                     type: button
                     format_onchange: true

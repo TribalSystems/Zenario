@@ -139,6 +139,14 @@ class zenario_common_features__organizer__phrases_base extends ze\moduleBaseClas
 		if ($this->standard && !$translationInUse) {
 			$panel['item_buttons']['edit']['hidden'] = true;
 		}
+		
+		if (count($languages) > 1) {
+			$panel['columns']['seen_at']['item_link'] = 'content_item_translation_chain';
+			$panel['columns']['seen_at']['db_column'] = "IF (tc.equiv_id IS NULL, NULL, CONCAT(tc.type, '_', tc.equiv_id))";
+		} else {
+			$panel['columns']['seen_at']['item_link'] = 'content_item';
+			$panel['columns']['seen_at']['db_column'] = "IF (vp.seen_at_content_id IS NULL, NULL, CONCAT(vp.seen_at_content_type, '_', vp.seen_at_content_id))";
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -393,7 +401,7 @@ class zenario_common_features__organizer__phrases_base extends ze\moduleBaseClas
 			}
 
 		} elseif ($this->codeBased && ze::request('reimport_phrases')) {
-			ze\contentAdm::importPhrasesForModules();
+			ze\contentAdm::importPhrasesForModules($langId = false, $keepExistingTranslations = false);
 		}
 	}
 	

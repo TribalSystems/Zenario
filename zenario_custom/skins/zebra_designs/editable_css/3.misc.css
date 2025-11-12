@@ -16,7 +16,8 @@ a.link_like_button,
 .zenario_job_vacancy_summary_list__default_style a.content_list_more_link,
 .zenario_document_container .view_button a,
 .zenario_document_container .download_link a,
-.zenario_document_container #archive_download_link > a {
+.zenario_document_container #archive_download_link > a,
+.zenario_ctype_document a.document_download {
 	display:inline-block;
 	min-width:80px;
 	height:45px;
@@ -57,7 +58,8 @@ a.link_like_button:hover,
 .zenario_job_vacancy_summary_list__default_style a.content_list_more_link:hover,
 .zenario_document_container .view_button a:hover,
 .zenario_document_container .download_link a:hover,
-.zenario_document_container #archive_download_link > a:hover {
+.zenario_document_container #archive_download_link > a:hover,
+.zenario_ctype_document a.document_download:hover {
 	background-color:rgb(0,101,155);
 	text-decoration:none;
 	opacity:1;
@@ -119,7 +121,8 @@ a.link_like_button:hover,
 .zenario_document_container .view_button a,
 .zenario_document_container .download_link a,
 .zenario_document_container #archive_download_link > a,
-.zenario_skin a.link_like_button.small {
+.zenario_skin a.link_like_button.small,
+.zenario_ctype_document a.document_download {
 	min-width:auto;
 	height: 30px;
 	line-height: 28px;
@@ -428,6 +431,92 @@ a.link_external:hover::after {
 
 .extranet_wrap .extranet_close_account_button:hover {
 	color:#FFF;
+}
+
+.extranet_wrap #password_message {
+	display:block;
+	padding: 5px 5px 2px !important;
+  	text-align: left;
+  	font-family: 'robotolight',Arial, Helvetica, sans-serif;
+  	font-size: 13px;
+  	transition: all 0.5s ease-in-out;
+}
+
+.extranet_wrap #password_message.title_red:before, 
+.extranet_wrap #password_message.title_orange:before, 
+.extranet_wrap #password_message.title_yellow:before {
+	font-family:"FontAwesome";
+	padding-right:5px;
+}
+
+.extranet_wrap #password_message.title_red:before {
+	content:"\f056";
+}
+
+.extranet_wrap #password_message.title_orange:before {
+	content:"\f06a";
+}
+
+.extranet_wrap #password_message.title_yellow:before {
+	content:"\f05a";
+}
+
+.extranet_wrap #password_message.title_green:before {
+	font-family:"Font Awesome 6 Free";
+	content:"\f164";
+	padding-right:5px;
+}
+
+.zenario_extranet_password_reset .extranet_message.email_sent,
+.zenario_extranet_password_reset .extranet_message.password_changed,
+.zenario_extranet_password_reset .extranet_message.link_expired {
+	position: relative;
+  	padding-top: 60px;
+}
+
+.zenario_extranet_password_reset .extranet_message.email_sent {
+	color:#00659b;
+}
+
+.zenario_extranet_password_reset .extranet_message.link_expired {
+	color:#e25f00;
+}
+
+.zenario_extranet_password_reset .extranet_message.email_sent:before,
+.zenario_extranet_password_reset .extranet_message.password_changed:before,
+.zenario_extranet_password_reset .extranet_message.link_expired:before {
+	position: absolute;
+  	top: -10px;
+  	left: 0;
+  	right: 0;
+  	margin: auto;
+  	display: inline-block;
+  	width: 60px;
+  	height: 60px;
+  	line-height: 60px;
+  	font-size:26px;
+  	font-weight: 100;
+  	color: #292e35;
+  	background: #effaee;
+  	border-radius: 50%;
+}
+
+.zenario_extranet_password_reset .extranet_message.email_sent:before {
+	font-family:"Font Awesome 6 Free";
+	content:"\f0e0";
+	background:#e8f7ff;
+}
+
+.zenario_extranet_password_reset .extranet_message.password_changed:before {
+	font-family:"FontAwesome";
+	content:"\f00c";
+}
+
+.zenario_extranet_password_reset .extranet_message.link_expired:before {
+	font-family:"FontAwesome";
+	content:"\f127";
+	font-size: 24px;
+	background:#ffece0;
 }
 
 /* Password field with eye icon

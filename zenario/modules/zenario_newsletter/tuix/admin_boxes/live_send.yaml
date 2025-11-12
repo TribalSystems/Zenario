@@ -54,8 +54,3 @@ zenario_live_send:
                     values: {}
                     same_row: true
                     visible_if: zenarioAB.value('send_time_options') == 'schedule'
-                note:
-                    full_width: true
-                    snippet:
-                        html: |
-                            After it is sent, this newsletter will appear in the Archive.

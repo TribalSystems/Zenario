@@ -34,6 +34,19 @@ zenario__menu:
                     label: Advanced
                     ord: 20
                     hide_when_children_are_not_visible: Yes
+                help:
+                    label: Help
+                    ord: 30
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            Menu sections are the way in which Zenario organises broad parts of the menu navigation.
+                            
+                            On most sites they represent visible parts of the menu, such as the main menu navigation near the top of every page, and a footer menu near the bottom.
+                            
+                            On large sites that are arranged into separate areas, such as sub-sites, or private areas of a larger site, additional menu sections are created to contain the navigation for those parts of the site.
+                            
+                            There is always a menu section called "Main", although administrators may create additional menu sections.
             item_buttons:
                 view_dropdown:
                     label: View

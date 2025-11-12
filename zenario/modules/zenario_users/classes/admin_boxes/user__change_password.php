@@ -55,6 +55,26 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 			
 			$box['key']['min_extranet_user_password_length'] = ze::setting('min_extranet_user_password_length');
 			$box['key']['min_extranet_user_password_score'] = ze::setting('min_extranet_user_password_score');
+			
+			$box['tabs']['details']['fields']['password_message']['notices_below']['password_requirements'] = [
+				'type' => 'information',
+				'size' => 'small',
+				'html' => true,
+				'message' => ze\admin::phrase(
+					'Password minimum strength [[score]], at least [[min_length]] characters.',
+					['score' => $box['key']['min_extranet_user_password_score'], 'min_length' => $box['key']['min_extranet_user_password_length']]
+				)
+			];
+			
+			if (empty($user['email'])) {
+				$fields['details/send_password_reset_email_upon_save']['disabled'] = true;
+				$fields['details/password_reset_email']['disabled'] = true;
+				
+				$fields['details/send_password_reset_email_upon_save']['notices_below']['user_has_no_email'] = [
+					'type' => 'information',
+					'message' => ze\admin::phrase('Disabled as this user has no email address.')
+				];
+			}
 		}
 	}
 	
@@ -87,54 +107,57 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 					$result = $zxcvbn->passwordStrength($values['details/password']);
 
 					if ($result && isset($result['score'])) {
+						$cssClass = '';
+						$phrase = '';
 						switch ($result['score']) {
 							case 4: //is very unguessable (guesses >= 10^10) and provides strong protection from offline slow-hash scenario
+								$cssClass = 'title_green';
 								if ($minScore < 4) {
-									$phrase = 'Password is very strong and exceeds requirements (score 4, max)';
+									$phrase = 'Strength 4, very strong and exceeds site requirements';
 								} elseif ($minScore == 4) {
-									$phrase = 'Password matches the requirements (score 4)';
+									$phrase = 'Strength 4, matches site requirements';
 								}
-
-								$passwordMessageSnippet = 
-									'<div>
-										<span id="zenario_password_message" class="title_green">' . ze\admin::phrase($phrase) . '</span>
-									</div>';
 								break;
 							case 3: //is safely unguessable (guesses < 10^10), offers moderate protection from offline slow-hash scenario
 								if ($minScore == 4) {
-									$passwordMessageSnippet = 
-									'<div>
-										<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-									</div>';
+									$cssClass = 'title_red';
+									$phrase = 'Strength 3, too easy to guess';
 								} elseif ($minScore < 4) {
-									$passwordMessageSnippet = 
-										'<div>
-											<span id="zenario_password_message" class="title_green">' . ze\admin::phrase('Password matches the requirements (score 3)') . '</span>
-										</div>';
+									$cssClass = 'title_green';
+									$phrase = 'Strength 3, matches site requirements';
 								}
 								break;
 							case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
-								if ($minScore == 2) {
-									$passwordMessageSnippet = 
-										'<div>
-											<span id="zenario_password_message" class="title_orange">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-										</div>';
+								if ($minScore < 2) {
+									$cssClass = 'title_orange';
+									$phrase = 'Strength 2, matches site requirements but is easy to guess';
+								} elseif ($minScore == 2) {
+									$cssClass = 'title_orange';
+									$phrase = 'Strength 2, matches site requirements but is easy to guess';
 								} elseif ($minScore > 2) {
-									$passwordMessageSnippet = 
-										'<div>
-											<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-										</div>';
+									$cssClass = 'title_red';
+									$phrase = 'Strength 2, too easy to guess';
 								}
 								break;
 							case 1: //is still very guessable (guesses < 10^6)
+								if ($minScore == 1) {
+									$cssClass = 'title_orange';
+									$phrase = 'Strength 1, matches site requirements but is easy to guess';
+								} elseif ($minScore > 1) {
+									$cssClass = 'title_red';
+									$phrase = 'Strength 1, too easy to guess';
+								}
+								break;
 							case 0: //s extremely guessable (within 10^3 guesses)
 							default:
-								$passwordMessageSnippet = 
-									'<div>
-										<span id="zenario_password_message" class="title_red">' . ze\admin::phrase('Password is too easy to guess (score [[score]])', ['score' => (int) $result['score']]) . '</span>
-									</div>';
-								break;
+								$cssClass = 'title_red';
+								$phrase = 'Strength 0, too easy to guess';
 						}
+						
+						$passwordMessageSnippet = 
+							'<div>
+								<span id="zenario_password_message" class="' . $cssClass . '">' . ze\admin::phrase($phrase, ['score' => (int) $result['score']]) . '</span>
+							</div>';
 					}
 				}
 			}
@@ -235,35 +258,38 @@ class zenario_users__admin_boxes__user__change_password extends ze\moduleBaseCla
 		
 		if (!empty($fields['details/send_password_reset_email_upon_save']['pressed']) && $values['details/password_reset_email']) {
 			$mergeFields = ze\user::userDetailsForEmails($box['key']['id']);
-			$mergeFields['cms_url'] = ze\link::absolute();
 			
-			if (!empty($fields['details/change_password']['pressed']) && $values['details/password']) {
-				$mergeFields['password'] = $values['details/password'];
-			} else {
-				$mergeFields['password'] = '(' . ze\admin::phrase('password not changed') . ')';
-			}
-			
-			//It's possible that an admin changes the password and sends an email,
-			//but it's also possible to just send an email without changing the password.
-			$mergeFields['password_reset_message'] = '';
-			
-			if (!empty($fields['details/change_password']['pressed']) && $values['details/password']) {
-				$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account password has been reset.') . '</p>';
-				$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your new password is: [[password]]', ['password' => $mergeFields['password']]) . '</p>';
+			if (!empty($mergeFields['email'])) {
+				$mergeFields['cms_url'] = ze\link::absolute();
 				
-				if ($values['details/password_needs_changing']) {
-					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change this new password to one you can remember upon logging in.') . '</p>';
+				if (!empty($fields['details/change_password']['pressed']) && $values['details/password']) {
+					$mergeFields['password'] = $values['details/password'];
+				} else {
+					$mergeFields['password'] = '(' . ze\admin::phrase('password not changed') . ')';
 				}
-			} else {
-				$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account has been updated.') . '</p>';
 				
-				if ($values['details/password_needs_changing']) {
-					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change your password upon logging in.') . '</p>';
+				//It's possible that an admin changes the password and sends an email,
+				//but it's also possible to just send an email without changing the password.
+				$mergeFields['password_reset_message'] = '';
+				
+				if (!empty($fields['details/change_password']['pressed']) && $values['details/password']) {
+					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account password has been reset.') . '</p>';
+					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your new password is: [[password]]', ['password' => $mergeFields['password']]) . '</p>';
+					
+					if ($values['details/password_needs_changing']) {
+						$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change this new password to one you can remember upon logging in.') . '</p>';
+					}
+				} else {
+					$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('Your account has been updated.') . '</p>';
+					
+					if ($values['details/password_needs_changing']) {
+						$mergeFields['password_reset_message'] .= '<p>' . $this->phrase('You will need to change your password upon logging in.') . '</p>';
+					}
 				}
+				
+				
+				zenario_common_features::sendEmailsUsingTemplate($mergeFields['email'], $values['details/password_reset_email'], $mergeFields, [], [], $disableHTMLEscaping = true);
 			}
-			
-			
-			zenario_common_features::sendEmailsUsingTemplate($mergeFields['email'], $values['details/password_reset_email'], $mergeFields, [], [], $disableHTMLEscaping = true);
 		}
 	}
 }

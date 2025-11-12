@@ -67,6 +67,7 @@ zenario__administration:
                     db_column: a.is_client_account
                     disallow_sorting: true
                 permissions:
+                    css_class: organizer_cell_uses_multiple_rows
                     title: Permissions
                     show_by_default: true
                     always_show: true
@@ -161,7 +162,6 @@ zenario__administration:
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_admin
-                        create_another: true
             item_buttons:
                 edit:
                     ord: 1

@@ -29,7 +29,7 @@ zenario_admin:
                     grouping: specific_actions
                     type: checkbox
                     full_width: true
-                    post_field_label: Manage organizations/locations
+                    post_field_label: Locations and organizations
                 perm_locations_permissions:
                     is_admin_permission: true
                     grouping: specific_actions
@@ -37,6 +37,6 @@ zenario_admin:
                     full_width: true
                     values:
                         _PRIV_MANAGE_LOCATIONS:
-                            label: Edit companies & locations
+                            label: Create, edit, delete locations and organizations
                         _PRIV_EXPORT_LOCATIONS:
                             label: Export and import locations

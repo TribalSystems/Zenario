@@ -368,13 +368,14 @@ class link {
 		   || $alias === false
 		   || ($mod_rewrite_slashes && ($equivId === false || $languageId === false))
 		))) {
-			$result = \ze\sql::select("
+			$sql = "
 				SELECT alias, equiv_id, language_id, lang_code_in_url
 				FROM ". DB_PREFIX. "content_items
-				WHERE id = ". (int) $cID. "
-				  AND type = '". \ze\escape::asciiInSQL($cType). "'"
-			);
-			if ($content = \ze\sql::fetchRow($result)) {
+				WHERE id = ?
+				  AND type = ?";
+			$statement = \ze\sql::prepare($sql, 'ia');
+			
+			if ($content = $statement->fetchRow([$cID, $cType])) {
 				$alias = $content[0];
 				$equivId = $content[1];
 				$languageId = $content[2];
@@ -445,6 +446,18 @@ class link {
 			$fullPath = '';
 		}
 	
+		//If a translation isn't available, record the intended language.
+		//Please note: this will not run for document content items.
+		//They will always be displayed/downloaded using the current language code provided
+		//and the desired language of an unavailable translation will not be recorded.
+		if ($multilingual
+		 && $stayInCurrentLanguage
+		 && \ze::$visLang != $languageId
+		 && $cType != 'document'
+		) {
+			$request .= '&visLang='. rawurlencode(\ze::$visLang);
+		}
+	
 		//If we're linking to a homepage, if possible, just use a slash and never show the alias
 		if ($returnSlashForHomepage) {
 		
@@ -510,18 +523,6 @@ class link {
 			$aliasOrCID = $languageId. '/'. $aliasOrCID;
 		}
 	
-		//If a translation isn't available, record the intended language.
-		//Please note: this will not run for document content items.
-		//They will always be displayed/downloaded using the current language code provided
-		//and the desired language of an unavailable translation will not be recorded.
-		if ($multilingual
-		 && $stayInCurrentLanguage
-		 && \ze::$visLang != $languageId
-		 && $cType != 'document'
-		) {
-			$request .= '&visLang='. rawurlencode(\ze::$visLang);
-		}
-	
 		//"Download now" format for old documents
 		if ($useAlias
 		 && $cType == 'document' //target content type
@@ -554,48 +555,70 @@ class link {
 			return $basePath. '?cID='. $aliasOrCID. ($request? \ze\ring::addAmp($request) : '');
 		}
 	}
-
+	
+	
 	public static function hierarchicalAlias($equivId, $cType, $languageId, $alias) {
-	
-		//Try to get the menu node that this content item is for, and check if it has a parent to follow
-		$sql = "
-			SELECT id, parent_id, section_id
-			FROM ". DB_PREFIX. "menu_nodes AS m
-			WHERE m.equiv_id = ". (int) $equivId. "
-			  AND m.content_type = '" . \ze\escape::asciiInSQL($cType) . "'
-			  AND m.target_loc = 'int'
-			ORDER BY m.redundancy = 'primary' DESC
-			LIMIT 1";
-		$result = \ze\sql::select($sql);
-	
-		if (($menu = \ze\sql::fetchAssoc($result))
-		 && ($menu['parent_id'])) {
+		
+		//This function calculates the aliases to show when generating a link with the
+		//"Show menu path in friendly URLs" site setting enabled.
+		
+		//Firstly, we need to check if the content item we're attempting to link to
+		//is actually in the menu.
+		
+		//This function is quite heavily hit, so we're going to be using cached prepared statements.
+		//The first time it is called, the statements will be prepared using the ze\sql::prepare() function.
+		//Any additional calls will reuse the same using the ze\sql::previouslyPrepared() function.
+		if (!$statement = \ze\sql::previouslyPrepared($cacheBy = __CLASS__. __LINE__)) {
+			$sql = "
+				SELECT id, parent_id, section_id
+				FROM ". DB_PREFIX. "menu_nodes AS m
+				WHERE m.equiv_id = ?
+				  AND m.content_type = ?
+				  AND m.target_loc = 'int'
+				ORDER BY m.redundancy = 'primary' DESC
+				LIMIT 1";
+			$statement = \ze\sql::prepare($sql, 'ia', $cacheBy);
+		}
+		
+		//The $useCache option is being used, which causes the query results to be cached in memory too.
+		//This is useful if you might be calling the same query on the same values multiple times in one pageload.
+		$menu = $statement->fetchAssoc([$equivId, $cType], $useCache = true);
+		
+		
+		//If the content item is in the menu, and also has a menu parent, then loop through
+		//all of the nodes above, getting their aliases.
+		if ($menu && $menu['parent_id']) {
+			$lastAlias = $alias;
 		
 			//Loop through the menu structure above. Where a content item has an alias,
 			//add it into the URL.
 			//Note that we should not add the same alias twice in a row - this may happen
 			//if a content item has a secondary menu node
-			$sql = "
-				SELECT c.alias
-				FROM ". DB_PREFIX. "menu_hierarchy AS mh
-				INNER JOIN ". DB_PREFIX. "menu_nodes AS m
-				   ON m.id = mh.ancestor_id
-				  AND m.target_loc = 'int'
-				INNER JOIN ". DB_PREFIX. "content_items AS c
-				   ON c.equiv_id = m.equiv_id
-				  AND c.type = m.content_type
-				  AND c.language_id = '" . \ze\escape::asciiInSQL($languageId) . "'
-				WHERE mh.section_id = ". (int) $menu['section_id']. "
-				  AND mh.child_id = ". (int) $menu['parent_id']. "
-				ORDER BY mh.separation ASC";
-			$result = \ze\sql::select($sql);
-		
-			$lastAlias = $alias;
-			while ($menu = \ze\sql::fetchAssoc($result)) {
-				if ($menu['alias'] != '') {
-					if ($menu['alias'] != $lastAlias) {
-						$alias = $menu['alias']. '/'. $alias;
-						$lastAlias = $menu['alias'];
+			if (!$statement = \ze\sql::previouslyPrepared($cacheBy = __CLASS__. __LINE__)) {
+				$sql = "
+					SELECT c.alias
+					FROM ". DB_PREFIX. "menu_hierarchy AS mh
+					INNER JOIN ". DB_PREFIX. "menu_nodes AS m
+					   ON m.id = mh.ancestor_id
+					  AND m.target_loc = 'int'
+					INNER JOIN ". DB_PREFIX. "content_items AS c
+					   ON c.equiv_id = m.equiv_id
+					  AND c.type = m.content_type
+					  AND c.language_id = ?
+					WHERE mh.section_id = ?
+					  AND mh.child_id = ?
+					ORDER BY mh.separation ASC";
+				$statement = \ze\sql::prepare($sql, 'aii', $cacheBy);
+			}
+			
+			$key = [$languageId, $menu['section_id'], $menu['parent_id']];
+			$parentAliases = $statement->fetchValues($key, $indexBySecondColumn = false, $useCache = true);
+			
+			foreach ($parentAliases as $parentAlias) {
+				if ($parentAlias != '') {
+					if ($parentAlias != $lastAlias) {
+						$alias = $parentAlias. '/'. $alias;
+						$lastAlias = $parentAlias;
 					}
 				}
 			}

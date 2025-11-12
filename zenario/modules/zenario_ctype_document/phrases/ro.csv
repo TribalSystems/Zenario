@@ -1,0 +1,11 @@
+"Language ID","Module"
+ro,zenario_ctype_document
+
+"Phrase Code",Translation
+_DOCUMENT_DOWNLOAD,"Descărcare document:"
+_DOCUMENT_DOWNLOAD_PAGE,"URL-ul acestei pagini:"
+_DOCUMENT_IS_NOT_IN_ANY_CATEGORY,"Acest document nu este în nicio categorie."
+_VIEW_OR_DOWNLOAD,"Vizualizează/descarcă:"
+_FILE_TYPE_AND_SIZE,"Tipul fișierului și dimensiunea:"
+_S3_FILE_TYPE_AND_SIZE,"Tipul fișierului S3 și dimensiunea:"
+_S3_FILENAME,"Numele fișierului S3:"

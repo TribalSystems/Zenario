@@ -386,7 +386,7 @@ class zenario_location_map_and_listing_2 extends ze\moduleBaseClass {
 				
 				<div class="div_table_row">
 					<input type="text" id="address_to_geocode" style="width: 300px" class="input_text" />
-					<button onclick="geocodeAddress();return false;" class="submit">Find Address</button>
+					<button onclick="geocodeAddress();return false;" class="submit">Find address</button>
 				</div>
 				
 				<button id="delete-button" class="submit">Delete shape</button>

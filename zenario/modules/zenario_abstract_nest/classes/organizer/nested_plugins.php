@@ -37,6 +37,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		$panel['key']['cID'] = $_REQUEST['parent__cID'] ?? ze::request('cID');
 		$panel['key']['cType'] = $_REQUEST['parent__cType'] ?? ze::request('cType');
 		$panel['key']['cVersion'] = $_REQUEST['parent__cVersion'] ?? ze::request('cVersion');
+		$panel['key']['nest_module_class_name'] = $instance['class_name'];
 		
 		$this->setTitleAndCheckPermissions($path, $panel, $refinerName, $refinerId, $mode, $instance);
 		
@@ -331,7 +332,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		}
 		
 		
-		if ($panel['key']['isSlideshow'] = (strpos($instance['class_name'], 'slide') !== false)) {
+		if ($panel['key']['isSlideshow'] = $instance['class_name'] === 'zenario_slideshow') {
 			if ($instance['content_id']) {
 				$panel['title'] = ze\admin::phrase('Editing the slideshow on [[slot_name]]', $instance);
 			} else {
@@ -402,6 +403,16 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 		$slideCount = 0;
 		require_once CMS_ROOT. 'zenario/libs/manually_maintained/public_domain/convert_to_roman/convert_to_roman.php';
 		
+		//User Forms should not be used in a regular Nest. Remember the module ID for a check later on.
+		$disallowedModuleList = [];
+		$userFormsModuleId = 0;
+		if (ze\module::isRunning('zenario_user_forms')) {
+			$userFormsModuleDetails = ze\module::details('zenario_user_forms', $fetchBy = 'name');
+			$userFormsModuleId = $userFormsModuleDetails['module_id'];
+			$disallowedModuleList[] = $userFormsModuleDetails['display_name'];
+			ze\lang::applyMergeFields($panel['inline_buttons']['at_least_one_module_should_not_be_used_in_regular_nest']['tooltip'], ['disallowed_module_list' => implode(', ', $disallowedModuleList)]);
+		}
+		
 		foreach ($panel['items'] as $id => &$item) {
 			
 			if ($item['is_slide']) {
@@ -459,7 +470,7 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 							}
 						
 						} elseif (isset($statesToSlides[$toState['to_state']])) {
-							$label .= $statesToSlides[$toState['to_state']]. $toState['to_state'];
+							$label .= $statesToSlides[$toState['to_state']];
 							$panel['custom__slides_with_incoming_paths'][$statesToSlides[$toState['to_state']]] = true;
 						}
 						
@@ -487,7 +498,14 @@ class zenario_abstract_nest__organizer__nested_plugins extends zenario_abstract_
 				if (!isset($slideNumsWithPlugins[$item['slide_num']])) {
 					$item['no_plugins_warning'] = true;
 				}
-			
+				
+				//If this is a regular Nest, check if there are any plugins on this slide that should not be used in a regular Nest.
+				if ($panel['key']['nest_module_class_name'] == 'zenario_nest' && $userFormsModuleId) {
+					$count = ze\row::count('nested_plugins', ['instance_id' => $refinerId, 'slide_num' => $item['slide_num'], 'is_slide' => 0, 'module_id' => $userFormsModuleId]);
+					if ($count) {
+						$item['at_least_one_module_should_not_be_used_in_regular_nest'] = true;
+					}
+				}
 			} else {
 				$item['prefix'] = strtolower(convertToRoman($item['ordinal'])). '. ';
 				

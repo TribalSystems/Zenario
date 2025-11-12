@@ -71,88 +71,8 @@ zenario_layout:
                     format_onchange: true
                     side_note: |
                         A "skin" is a set of CSS files that determine the appearance of this layout and thereby content items using it. If you change the skin of this layout, it will immediately effect the appearance of all content items that use it.
-        css:
-            label: Background & CSS
-            edit_mode:
-                priv: _PRIV_EDIT_TEMPLATE
-                enabled: true
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: |
-                            Use this screen to set the background for every content item that uses this layout.
-                background_image:
-                    label: 'Background image:'
-                    upload:
-                        multi: false
-                        accept: 'image/*'
-                        extensions:
-                            - .gif
-                            - .jpg
-                            - .jpeg
-                            - .png
-                        drag_and_drop: true
-                        reorder_items: false
-                    pick_items:
-                        path: zenario__content/panels/background_images
-                        target_path: zenario__content/panels/background_images
-                        min_path: zenario__content/panels/background_images
-                        max_path: zenario__content/panels/background_images
-                        multiple_select: false
-                        select_phrase: 'Use existing...'
-                    redraw_onchange: true
                 
-                bg_color:
-                    label: 'Background color:'
-                    type: color_picker
-                    color_picker_options:
-                        allowEmpty: true
-                        showInput: true
-                        showPalette: true
-                        showInitial: true
-                        clickoutFiresChange: true
-                    maxlength: 64
-                
-                bg_position:
-                    label: 'Background position:'
-                    type: select
-                    empty_value: "[ Don't specify ]"
-                    values:
-                        'left top':
-                            label: '↖ Top left'
-                        'center top':
-                            label: '↑ Top center'
-                        'right top':
-                            label: '↗ Top right'
-                        'left center':
-                            label: '← Left center'
-                        'center center':
-                            label: '• Center'
-                        'right center':
-                            label: '→ Right center'
-                        'left bottom':
-                            label: '↙ Bottom left'
-                        'center bottom':
-                            label: '↓ Bottom center'
-                        'right bottom':
-                            label: '↘ Bottom right'
-                
-                bg_repeat:
-                    label: 'Background repeat:'
-                    type: select
-                    empty_value: "[ Don't specify ]"
-                    values:
-                        repeat:
-                            label: ' ⸬ Repeat in all directions'
-                        repeat-x:
-                            label: ' … Repeat horizontally'
-                        repeat-y:
-                            label: ' ⋮ Repeat vertically'
-                        no-repeat:
-                            label: " • Don't repeat"
-                
-                desc2:
+                css_desc:
                     full_width: true
                     snippet:
                         html: |
@@ -162,6 +82,7 @@ zenario_layout:
                     label: 'CSS class names:'
                     type: text
                     maxlength: 100
+                
     confirm:
         show: ""
         message: ""

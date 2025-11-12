@@ -51,6 +51,9 @@ class zenario_nest__animation_libraries__cycle2 extends zenario_nest {
 				break;
 		}
 		
+		//The cycle2 and one_slide animation libraries both have support for the "Make all plugins in nest equal height" option
+		$this->sameHeight = (bool) $this->setting('eggs_equal_height');
+		
 		
 		$firstTabNum = false;
 		
@@ -74,7 +77,7 @@ class zenario_nest__animation_libraries__cycle2 extends zenario_nest {
 				'Slide_Class' => 'slide_'. $slide['slide_num']. ' '. $slide['css_class'],
 				'Visible' => true,
 				'Tab_Link' => $link,
-				'Tab_Name' => $this->formatTitleText($slide['slide_label'], true)
+				'Tab_Name' => $this->formatTitleText(htmlspecialchars($slide['slide_label']), true)
 			];
 			
 			$this->addSlideImage($tabMergeFields, $slide, $tabOrd);

@@ -130,6 +130,8 @@ class zenario_common_features__admin_boxes__menu_text extends ze\moduleBaseClass
 				'menu_text',
 				['name' => $values['text/menu_title']],
 				['menu_id' => $box['key']['id'], 'language_id' => $box['key']['languageId']]);
+			
+			\ze\menuAdm::syncMenuTextStatus($box['key']['id'], $box['key']['languageId']);
 		}
 	}
 }

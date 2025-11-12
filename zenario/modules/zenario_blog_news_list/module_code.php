@@ -234,7 +234,7 @@ class zenario_blog_news_list extends zenario_content_list {
 		//if needed
 		$titleWithContent = '';
 		if ($this->setting('show_headings')) {
-			$titleWithContent = htmlspecialchars($this->phraseFromSetting('heading_if_items', $this->setting('translate_text')));
+			$titleWithContent = htmlspecialchars($this->phraseFromSetting('heading_if_items'));
 			
 			if ($selectedCategoryName == $allCategoriesPhrase) {
 				$selectedCategoryName = $this->phrase($selectedCategoryName);
@@ -244,11 +244,11 @@ class zenario_blog_news_list extends zenario_content_list {
 		}
 		
 		$titleWithNoContent = '';
-		$titleWithNoContent = htmlspecialchars($this->phraseFromSetting('heading_if_no_items', $this->setting('translate_text')));
+		$titleWithNoContent = htmlspecialchars($this->phraseFromSetting('heading_if_no_items'));
 		
 		$moreLinkText = '';
 		if ($moreLink) {
-			$moreLinkText = htmlspecialchars($this->phraseFromSetting('more_link_text', $this->setting('translate_text')));
+			$moreLinkText = htmlspecialchars($this->phraseFromSetting('more_link_text'));
 		}
 		
 		foreach($this->items as &$item) {

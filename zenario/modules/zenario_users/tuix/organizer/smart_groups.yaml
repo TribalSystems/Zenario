@@ -13,7 +13,7 @@ zenario__users:
                 css_class: zenario_smart_group
             title: Smart groups
             select_mode_title: Select a smart group
-            no_items_message: No smart groups are defined.
+            no_items_message: No smart groups found
             no_items_in_search_message: No smart groups match your search.
             label_format_for_picked_items: '[[name]] ([[members_formatted_nicely]])'
             
@@ -25,7 +25,7 @@ zenario__users:
                 smart_newsletter_group:
                     title: Smart newsletter groups
                     select_mode_title: Select a smart newsletter group
-                    no_items_message: No smart newsletter groups are defined.
+                    no_items_message: No smart newsletter groups found
                     no_items_in_search_message: No smart newsletter groups match your search.
                     sql: |
                         sg.intended_usage = 'smart_newsletter_group'
@@ -106,9 +106,11 @@ zenario__users:
                     label: Help
                     help:
                         message: |
-                            Smart groups are views of user/contact records that you can define. When creating a smart group, you define criteria based on fields on the user/contact data record, such as groups and checkbox flags.
+                            Smart groups are pre-defined "views" of user or contact records.
                             
-                            If you are using the Newsletter system to send mass emails, you should create a smart group for each mailing list you would like to send to.
+                            When creating a smart group, you can set rules based on fields on user/contact data records, such as group memberships and checkboxes.
+                            
+                            If you are using the Newsletter system to send mass emails, you should create one or more smart newsletter groups. A smart newsletter group is like a mailing list.
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_USER
@@ -150,9 +152,13 @@ zenario__users:
                     ajax:
                         confirm:
                             message: |
-                                Are you sure you want to delete the smart group "[[name]]"? No users will be deleted.
+                                Delete the smart group "[[name]]"?
+                                
+                                No user or contact accounts will be deleted.
                             multiple_select_message: |
-                                Are you sure you wish to delete all of the selected smart groups? No users will be deleted.
+                                Delete the selected smart groups?
+                                
+                                No user or contact accounts will be deleted.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

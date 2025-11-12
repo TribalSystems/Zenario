@@ -41,7 +41,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 		//Whether to allow adding fields of type "group"
 		$panel['use_groups_field'] = ($dataset['system_table'] == 'users');
 		
-		//Whether to show the "Include in export" option for this dataset
+		//Whether to show the "Include in Excel/CSV export" option for this dataset
 		$panel['show_include_in_export_option'] = ($dataset['system_table'] == 'users' || (ze\module::inc('zenario_location_manager') && $dataset['system_table'] == ZENARIO_LOCATION_MANAGER_PREFIX . 'locations'));
 		
 		//Get centralised lists for fields of type "centralised_radios" and "centralised_select"
@@ -224,6 +224,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					'is_protected' => (int)$field['protected'],
 					'was_protected' => (int)$field['protected'],
 					'ord' => $fieldCount,
+					'field_name' => $field['field_name'],
 					'label' => $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : ''),
 					'type' => $field['type'],
 					'width' => (int)$field['width'],
@@ -340,21 +341,18 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				// Display a warning if the relevant site setting is turned off.
 				if ($dataset['system_table'] == 'users') {
 					if (ze::in($field['field_name'], 'screen_name', 'suggest_screen_name', 'screen_name_confirmed')) {
-						$fieldProperties['field_name'] = $field['field_name'];
 						$fieldProperties['dataset'] = $dataset['system_table'];
 						$fieldProperties['field_dependent_on_a_site_setting'] = true;
 						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('user_use_screen_name');
 					}
 					
 					if ($field['field_name'] == 'linked_countries') {
-						$fieldProperties['field_name'] = 'linked_countries';
 						$fieldProperties['dataset'] = $dataset['system_table'];
 						$fieldProperties['field_dependent_on_a_site_setting'] = true;
 						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('users_use_linked_countries');
 					}
 					
 					if ($field['field_name'] == 'user_supervised_smart_groups') {
-						$fieldProperties['field_name'] = 'user_supervised_smart_groups';
 						$fieldProperties['dataset'] = $dataset['system_table'];
 						$fieldProperties['field_dependent_on_a_site_setting'] = true;
 						$fieldProperties['site_setting_enabled'] = (bool) ze::setting('enable_supervised_smart_groups');
@@ -364,7 +362,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				if ($locationManagerPrefix) {
 					if ($dataset['system_table'] == $locationManagerPrefix . 'locations') {
 						if ($field['field_name'] == 'external_id') {
-							$fieldProperties['field_name'] = 'external_id';
 							$fieldProperties['dataset'] = 'locations';
 							$fieldProperties['field_dependent_on_a_site_setting'] = true;
 							$fieldProperties['site_setting_enabled'] = (bool) ze::setting('zenario_location_manager__enable_external_id');
@@ -375,7 +372,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 				if ($organizationManagerPrefix) {
 					if ($dataset['system_table'] == $organizationManagerPrefix . 'companies') {
 						if ($field['field_name'] == 'company_number') {
-							$fieldProperties['field_name'] = 'company_number';
 							$fieldProperties['dataset'] = 'companies';
 							$fieldProperties['field_dependent_on_a_site_setting'] = true;
 							$fieldProperties['site_setting_enabled'] = (bool) ze::setting('zenario_company_locations_manager__enable_external_id');
@@ -404,6 +400,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends ze\
 					if (isset($tuixField['dataset_label'])) {
 						$fieldProperties['label'] = $tuixField['dataset_label'];
 					}
+					
+					if (empty($fieldProperties['label'])) {
+						$fieldProperties['label'] = '[' . $fieldProperties['field_name'] . ']';
+					}
+					
 					//Always show key fields as having an index
 					if (!empty($systemKeys[$field['db_column']])) {
 						$fieldProperties['create_index'] = true;

@@ -29,16 +29,142 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 				
 class zenario_pro_features__organizer__menu_nodes extends ze\moduleBaseClass {
+	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if ($path != 'zenario__menu/panels/menu_nodes') return;
+	}
+	
+	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if ($path != 'zenario__menu/panels/menu_nodes') return;
+	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
-		
 			case 'zenario__menu/panels/menu_nodes':
-				if (ze::post('make_invisible') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+				if (ze::get('make_invisible') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+					$idsArray = explode(',', $ids);
+					
+					if ($idsArray) {
+						$totalCount = count($idsArray);
+						
+						if ($totalCount == 1) {
+							$message = ze\admin::phrase(
+								"Make the selected menu node invisible?
+								
+								It will no longer appear in the regular menu navigation, but will still appear in the breadcrumb trail."
+							);
+							
+							echo $message;
+						} elseif ($totalCount > 1) {
+							$sql = "
+								SELECT COUNT(*)
+								FROM " . DB_PREFIX . "menu_nodes
+								WHERE invisible = 1
+								AND id IN(" . ze\escape::in($ids) . ")";
+							$result = ze\sql::select($sql);
+							$invisibleCount = ze\sql::fetchValue($result);
+							
+							$firstLine = "Make [[total_count]] selected menu nodes invisible?";
+							$secondLine = "";
+							$thirdLine = "They will no longer appear in the regular menu navigation.";
+							$replace = ['total_count' => $totalCount, 'invisible_count' => $invisibleCount];
+							
+							if ($invisibleCount) {
+								$visibleCount = $totalCount - $invisibleCount;
+								
+								if ($invisibleCount == 1) {
+									$secondLine = "Note that [[invisible_count]] is already invisible, so this will only affect [[visible_count]].";
+								} elseif ($invisibleCount > 1) {
+									$secondLine = "Note that [[invisible_count]] are already invisible, so this will only affect [[visible_count]].";
+								}
+								
+								$replace['visible_count'] = $visibleCount;
+								
+								$message = ze\admin::phrase(
+									$firstLine . "
+									
+									" . $secondLine . "
+									
+									" . $thirdLine,
+									$replace
+								);
+							} else {
+								$message = ze\admin::phrase(
+									$firstLine . "
+									
+									" . $thirdLine,
+									$replace
+								);
+							}
+							
+							echo $message;
+						}
+					}
+				
+				} elseif (ze::post('make_invisible') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::update('menu_nodes', ['invisible' => 1], $id);
 					}
 		
+				} elseif (ze::get('make_visible') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
+					$idsArray = explode(',', $ids);
+					
+					if ($idsArray) {
+						$totalCount = count($idsArray);
+						
+						if ($totalCount == 1) {
+							$message = ze\admin::phrase(
+								"Make the selected menu node visible?
+								
+								It will then appear in the regular menu navigation."
+							);
+							
+							echo $message;
+						} elseif ($totalCount > 1) {
+							$sql = "
+								SELECT COUNT(*)
+								FROM " . DB_PREFIX . "menu_nodes
+								WHERE invisible = 0
+								AND id IN(" . ze\escape::in($ids) . ")";
+							$result = ze\sql::select($sql);
+							$visibleCount = ze\sql::fetchValue($result);
+							
+							$firstLine = "Make [[total_count]] selected menu nodes visible?";
+							$secondLine = "";
+							$thirdLine = "They will then appear in the regular menu navigation.";
+							$replace = ['total_count' => $totalCount, 'visible_count' => $visibleCount];
+							
+							if ($visibleCount) {
+								$invisibleCount = $totalCount - $visibleCount;
+								
+								if ($visibleCount == 1) {
+									$secondLine = "Note that [[visible_count]] is already visible, so this will only affect [[invisible_count]].";
+								} elseif ($visibleCount > 1) {
+									$secondLine = "Note that [[visible_count]] are already visible, so this will only affect [[invisible_count]].";
+								}
+								
+								$replace['invisible_count'] = $invisibleCount;
+								
+								$message = ze\admin::phrase(
+									$firstLine . "
+									
+									" . $secondLine . "
+									
+									" . $thirdLine,
+									$replace
+								);
+							} else {
+								$message = ze\admin::phrase(
+									$firstLine . "
+									
+									" . $thirdLine,
+									$replace
+								);
+							}
+							
+							echo $message;
+						}
+					}
+				
 				} elseif (ze::post('make_visible') && ze\priv::check('_PRIV_EDIT_MENU_ITEM')) {
 					foreach (explode(',', $ids) as $id) {
 						ze\row::update('menu_nodes', ['invisible' => 0], $id);
@@ -46,10 +172,8 @@ class zenario_pro_features__organizer__menu_nodes extends ze\moduleBaseClass {
 				}
 		
 				break;
-		
 		}
 		
 		return false;
 	}
-
 }

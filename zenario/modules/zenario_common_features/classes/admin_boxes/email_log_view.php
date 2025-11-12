@@ -78,8 +78,12 @@ class zenario_common_features__admin_boxes__email_log_view extends zenario_commo
 				
 				if ($logRecord['email_template_id'] && $logRecord['email_template_name']) {
 					$template = ze\row::get('email_templates', ['id', 'code'], ['id' => $logRecord['email_template_id']]);
-					$templateLink = ze\link::absolute() . 'organizer.php#zenario__email_template_manager/panels/email_templates//' . $template['code'];
-					$info[] = ze\admin::phrase('Email template: <a href="' . $templateLink . '" target="_blank">' . $logRecord['email_template_name'] . '</a> (ID' . $template['id'] . ')');
+					if ($template) {
+						$templateLink = ze\link::absolute() . 'organizer.php#zenario__email_template_manager/panels/email_templates//' . $template['code'];
+						$info[] = ze\admin::phrase('Email template: <a href="' . $templateLink . '" target="_blank">' . $logRecord['email_template_name'] . '</a> (ID' . $template['id'] . ')');
+					} else {
+						$info[] = ze\admin::phrase('Email template: ID[[email_template_id]] (template not found)', ['email_template_id' => $logRecord['email_template_id']]);
+					}
 				} else {
 					$info[] = ze\admin::phrase('No template');
 				}

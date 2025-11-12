@@ -3,7 +3,7 @@
         {% for item in Search_Result_Tab %}
             <div class="search_results_tab{{item.Tab_On}}">
                 <a {{item.Tab_Onclick}}>
-                    {{item.Type}} ({{item.Record_Count}})
+                    {{item.Type}} ({{item.Record_count_total}})
                 </a>
             </div>
         {% endfor %}

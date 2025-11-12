@@ -4,8 +4,8 @@ plugin_settings:
     module_class_name: zenario_slideshow
     tabs:
         swiper:
-            visible_if: |
-                zenarioAB.value('animation_library', 'first_tab') == 'swiper'
+            visible_if:
+                zenarioAB.animationLibIs: swiper
             label: Swiper
             fields:
                 

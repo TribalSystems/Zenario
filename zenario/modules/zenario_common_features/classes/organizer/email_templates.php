@@ -109,10 +109,16 @@ class zenario_common_features__organizer__email_templates extends zenario_common
 				$panel['items'][$K]['sent_email_count'] = 0;
 			}
 		}
+		
+		if (($adminId = ze\admin::id()) && ($adminDetails = ze\admin::details($adminId))) {
+			$adminEmail = $adminDetails['email'];
+			ze\lang::applyMergeFields($panel['item_buttons']['test_send_template']['ajax']['confirm']['message'], ['admin_email_address' => $adminEmail]);
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if ((ze::post('action') == 'delete_template') && ze\priv::check('_PRIV_MANAGE_EMAIL_TEMPLATE')) {
+		$action = ze::post('action');
+		if ($action == 'delete_template' && ze\priv::check('_PRIV_MANAGE_EMAIL_TEMPLATE')) {
 			foreach (explode(',',$ids) as $code) {
 				$sql = "
 					DELETE FROM "
@@ -123,6 +129,91 @@ class zenario_common_features__organizer__email_templates extends zenario_common
 				
 				ze\contentAdm::removeItemFromPluginSettings('email_template', 0, $code);
 			}
+		} elseif ($action == 'test_send_template') {
+			foreach (explode(',',$ids) as $code) {
+				if ($emailTemplate = self::getTemplateByCode($code)) {
+					$adminDetails = ze\admin::details(ze\admin::id());
+					$email = $adminDetails['email'];
+					
+					//Try and ensure that we use absolute URLs where possible
+					ze\contentAdm::addAbsURLsToAdminBoxField($emailTemplate['body']);
+					
+					$body = $emailTemplate['body'];
+					
+					$useStandardEmailTemplate = '';
+					switch ($emailTemplate['use_standard_email_template']) {
+						case 0:
+							$useStandardEmailTemplate = 'no';
+							break;
+						case 1:
+							$useStandardEmailTemplate = 'yes';
+							break;
+						case 2:
+							$useStandardEmailTemplate = 'twig';
+							break;
+					}
+					
+					if ($useStandardEmailTemplate == 'twig') {
+						$body = ze\twig::render("\n". $body, []);
+					}
+					
+					if ($emailTemplate['apply_css_rules']) {
+						$cssRules = ze::setting('email_css_rules');
+						static::putHeadOnBody($cssRules, $body);
+					}
+					
+					if ($useStandardEmailTemplate != 'no') {
+						static::putBodyInTemplate($body);
+					}
+					
+					$emailAddressFrom = ze::setting('email_address_from');
+					$emailNameFrom = ze::setting('email_name_from');
+					
+					$error = false;
+					$attachments = [];
+					if ($emailTemplate['include_a_fixed_attachment'] && $emailTemplate['selected_attachment']) {
+						$document = ze\row::get('documents', ['file_id', 'privacy'], ['id' => $emailTemplate['selected_attachment']]);
+						
+						if ($document) {
+							if ($document['privacy'] != 'offline') {
+								$file = ze\file::link($document['file_id']);
+								$attachments[] = realpath(rawurldecode($file));
+							} else {
+								$error = true;
+								echo '<p>' . ze\admin::phrase('The test email could not be sent. The selected email template has an attachment which is [[privateOrOffline]]. Please change its privacy settings, or choose a different document.', ['privateOrOffline' => $document['privacy']]) . '</p>';
+							}
+						} else {
+							$error = true;
+							echo '<p>' . ze\admin::phrase('The test email could not be sent. The selected email template has an attachment which is missing. Please choose a different document.') . '</p>';
+						}
+					}
+					
+					if (!$error) {
+						if (!static::testSendEmailTemplate(
+								$emailTemplate['id'],
+								$body,
+								$adminDetails, 
+								$email, 
+								$emailTemplate['subject'], 
+								$emailAddressFrom,
+								$emailNameFrom,
+								$attachments
+							)
+						) {
+							echo '<p>' . ze\admin::phrase("The test email could not be sent. There could be a problem with the site's email system.") . '</p>';;
+						} else {
+							ze\escape::bFlag('MESSAGE_TYPE', 'Success');
+							echo '<p>' . ze\admin::phrase('Test email sent to [[email]].', ['email' => $email]) , '</p>';
+						}
+					}
+				}
+			
+			}
+			
+			
+			
+			
+			
 		}
 	}
 	

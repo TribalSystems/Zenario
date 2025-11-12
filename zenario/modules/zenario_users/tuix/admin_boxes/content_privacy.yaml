@@ -20,12 +20,6 @@ zenario_content_privacy:
             edit_mode:
                 enabled: true
             fields: &contentPrivacyFields
-                desc:
-                    full_width: Yes
-                    snippet: 
-                        html: |
-                           <p>Use this screen to edit permissions for this content item.</p>
-                
                 privacy_settings_disabled_note:
                     pre_field_html: '<div class="zenario_fbInfo">'
                     snippet:
@@ -33,7 +27,18 @@ zenario_content_privacy:
                     post_field_html: '</div>'
                     hidden: true
                 
+                privacy_grouping_left:
+                    type: grouping
+                    grouping_css_class: duplicating_left_column
+                    start_new_grouping_wrapper: true
+                    grouping_wrapper_css_class: row_of_groupings
+                
+                privacy_grouping_right:
+                    type: grouping
+                    grouping_css_class: duplicating_right_column
+                
                 privacy:
+                    grouping: privacy_grouping_right
                     label: 'Permission to access:'
                     type: radios
                     values:
@@ -42,7 +47,7 @@ zenario_content_privacy:
                             label: 'Public: visible to everyone'
                         logged_in:
                             icon_class: content_privacy logged_in
-                            label: 'Private: access is only for extranet users'
+                            label: 'Private: access is only for extranet users ([[user_count]])'
                         group_members:
                             icon_class: content_privacy group_members
                             label: 'Private: access is only for extranet users in groups...'
@@ -77,15 +82,17 @@ zenario_content_privacy:
                         required_if_not_hidden: Please select a visibility option
                 
                 group_ids:
+                    grouping: privacy_grouping_right
                     indent: 1
                     visible_if:
                         zenarioAB.valueIs: privacy, group_members
                     type: checkboxes
-                    no_values_message: No groups defined
+                    no_values_message: No groups found
                     validation:
                         required_if_not_hidden: Please select a group.
                     format_onchange: true
                 smart_group_id:
+                    grouping: privacy_grouping_right
                     #If no smart groups are defined, this field will not be displayed.
                     #It will be hidden in the PHP class, and its visible_if logic will be removed.
                     indent: 1
@@ -97,25 +104,28 @@ zenario_content_privacy:
                         required_if_not_hidden: Please select a smart group.
                     format_onchange: true
                 no_smart_groups_defined:
+                    grouping: privacy_grouping_right
                     #If there are smart groups defined, this field will not be displayed.
                     #It will be unset in the PHP class.
                     indent: 1
                     snippet:
-                        html: 'No smart groups defined'
+                        html: 'No smart groups found'
                     visible_if:
                         zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
                     validation:
                         required_if_not_hidden: Please select a smart group.
                 role_ids:
+                    grouping: privacy_grouping_right
                     indent: 1
                     visible_if:
                         zenarioAB.valueIs: privacy, with_role
                     type: checkboxes
-                    no_values_message: No roles defined
+                    no_values_message: No roles found
                     validation:
                         required_if_not_hidden: Please select a role.
                     format_onchange: true
                 at_location:
+                    grouping: privacy_grouping_right
                     indent: 1
                     hide_with_previous_field: true
                     type: radios
@@ -129,6 +139,7 @@ zenario_content_privacy:
                             label: at the location in the URL, or at ANY location when there is no location in the URL
                     format_onchange: true
                 module_class_name:
+                    grouping: privacy_grouping_right
                     indent: 1
                     visible_if:
                         zenarioAB.valueIs: privacy, call_static_method
@@ -145,24 +156,28 @@ zenario_content_privacy:
                             $warningRow.addClass('zfab_inline_warning_hidden');
                         }
                 method_name:
+                    grouping: privacy_grouping_right
                     indent: 1
                     hide_with_previous_field: true
                     label: 'Static method name:'
                     type: text
                     maxlength: 127
                 param_1:
+                    grouping: privacy_grouping_right
                     indent: 1
                     hide_with_previous_field: true
                     label: 'Parameter 1:'
                     type: text
                     maxlength: 255
                 param_2:
+                    grouping: privacy_grouping_right
                     indent: 1
                     hide_with_previous_field: true
                     label: 'Parameter 2:'
                     type: text
                     maxlength: 255
                 signal_blurb:
+                    grouping: privacy_grouping_right
                     indent: 1
                     visible_if:
                         zenarioAB.valueIs: privacy, send_signal
@@ -172,6 +187,7 @@ zenario_content_privacy:
                             such as the ecommerce module, to sell access to this content.
                             The following signal will be sent:
                 signal_name:
+                    grouping: privacy_grouping_right
                     indent: 2
                     hide_with_previous_field: true
                     snippet:
@@ -179,22 +195,22 @@ zenario_content_privacy:
                              <code>eventCheckContentItemPermission($userId, $cID, $cType, $cVersion)</code>
                 
                 clist_warning:
+                    grouping: privacy_grouping_right
                     indent: 1
                     visible_if:
                         zenarioAB.valueIn: privacy, in_smart_group, logged_in_not_in_smart_group
-                    snippet:
-                        html: |
-                            <div class="zenario_fbWarning">
-                                Content items with this permission  will never appear in Content Summary Lists.
-                            </div>
+                    note_below: |
+                        Content items with this permission will never appear in Content Summary Lists.
                 
                 privacy_part_2:
+                    grouping: privacy_grouping_right
                     snippet:
                         show_split_values_from: privacy
                     note_below: |
                         Content items are always visible to logged-in administrators.
                 
                 content_item_privacy_info_warning:
+                    grouping: privacy_grouping_right
                     row_class: zfab_inline_warning_hidden
                     snippet:
                         html: |

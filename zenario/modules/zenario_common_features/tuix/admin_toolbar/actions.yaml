@@ -8,18 +8,16 @@ sections:
                 label: 
                 tooltip: 
             locked:
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
-                label: Locked
-                css_class: zenario_item_locked
-            publish:
-                appears_in_toolbars: &publish_appears_in_toolbars
+                appears_in_toolbars: &actions_appear_in_these_toolbars
                     preview: true
                     edit_disabled: true
                     edit: true
                     rollback: true
                     restricted_editing: true
+                label: Locked
+                css_class: zenario_item_locked
+            publish:
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
@@ -38,7 +36,7 @@ sections:
                 # Warning: the presence of this button affects how the zenarioA.draft() function
                 # works. If this button is missing then zenarioA.draft() won't attempt to make
                 # a draft!
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
@@ -63,7 +61,7 @@ sections:
                         create_draft: 1
                         switch_to_edit_mode: 1
             cant_start_editing:
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
@@ -72,7 +70,7 @@ sections:
                 css_class: zenario_at_big_action_button zenario_at_cant_start_editing
             
             redraft:
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
@@ -97,9 +95,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                 label: Lock this draft
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 ajax:
                     confirm:
                         message: |
@@ -113,9 +109,7 @@ sections:
                         lock: 1
             unlock:
                 parent: action_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 label: Unlock
                 tooltip: This content item is locked by you
                 ajax:
@@ -127,9 +121,7 @@ sections:
                         unlock: 1
             force_open:
                 parent: action_dropdown
-                appears_in_toolbars:
-                    edit: true
-                    edit_disabled: true
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 priv: _PRIV_CANCEL_CHECKOUT
                 label: Force unlock
                 tooltip: This content item is locked by another administrator
@@ -146,96 +138,23 @@ sections:
                         message_type: warning
                     request:
                         unlock: 1
-            rescan_extract:
-                parent: action_dropdown
-                priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPerms(id)
-                label: Rescan text/image extract
-                with_columns_set:
-                    traits.is_document: true
-                ajax:
-                    confirm:
-                        message: |
-                            Are you sure you wish to rescan and update the text extract for the document "[[tag]]"?
-                            
-                            This action will read the contents of a Microsoft Word or PDF document
-                            (subject to external server programs being available).
-                            
-                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a featured image.
-                        button_message: Rescan text extract
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        rescan_extract: 1
-
             
-            delist:
-                appears_in_toolbars: *publish_appears_in_toolbars
-                parent: action_dropdown
-                priv: _PRIV_PUBLISH_CONTENT_ITEM
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Make unlisted
-                css_class: zenario_at_big_action_button zenario_at_action zenario_at_unlisted_action
-                ajax:
-                    confirm:
-                        html: true
-                        message: |
-                            <p>Are you sure you want to make this content item unlisted?</p>
-                            <p>Unlisted content items are not shown in:</p>
-                            <ul><li>
-                                Menus
-                            </li><li>
-                                Content summary lists
-                            </li><li>
-                                Site maps
-                            </li><li>
-                                Search results
-                            </li></ul>
-                            <p>They can still be reached by links from banners, WYSIWYG editors, Raw HTML/JavaScript snippets, and from external links to this site.</p>
-                        button_message: Make unlisted
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        delist: 1
-            relist:
-                appears_in_toolbars: *publish_appears_in_toolbars
-                parent: action_dropdown
-                priv: _PRIV_PUBLISH_CONTENT_ITEM
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Make listed
-                css_class: zenario_at_big_action_button zenario_at_action zenario_at_listed_action
-                ajax:
-                    confirm:
-                        html: true
-                        message: |
-                            <p>Are you sure you want to make this content item listed?</p>
-                            <p>When listed, the content item will appear in any menu/content summary list/search plugins as normal.</p>
-                        button_message: Make listed
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        relist: 1
-            republish:
-                appears_in_toolbars: *publish_appears_in_toolbars
+            duplicate_content:
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Re-publish
-                css_class: zenario_at_big_action_button zenario_at_action
+                label: Duplicate
                 admin_box:
-                    path: zenario_publish
-            
+                    path: zenario_content
+                    key:
+                        duplicate: 1
+                        create_from_toolbar: 1
+
             create_draft_by_copying:
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                appears_in_toolbars:
-                    edit: true
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 label: Copy from other...
                 pick_items:
                     path: ""
@@ -245,10 +164,6 @@ sections:
                     one_to_one_choose_phrase: Copy from selected
                     ajax:
                         confirm:
-                            message: |
-                                Are you sure you wish to copy the contents of the selected content item?
-                                
-                                This will create a draft of the current content item with the contents of the one you selected.
                             button_message: Create draft and copy
                             cancel_button_message: Cancel
                             message_type: warning
@@ -259,8 +174,7 @@ sections:
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                appears_in_toolbars:
-                    edit: true
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 label: Copy from other...
                 pick_items:
                     path: ""
@@ -270,15 +184,11 @@ sections:
                     one_to_one_choose_phrase: Copy from selected
                     ajax:
                         confirm:
-                            message: |
-                                Are you sure you wish to copy the contents of the selected content item over the current draft?
-                                
-                                This cannot be undone.
                             button_message: Copy and overwrite
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            create_draft_by_copying: 1
+                            create_draft_by_overwriting: 1
             rollback_item:
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
@@ -297,6 +207,65 @@ sections:
                         message_type: question
                     request:
                         rollback: 1
+            delist:
+                appears_in_toolbars: *actions_appear_in_these_toolbars
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make unlisted
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_unlisted_action
+                ajax:
+                    confirm:
+                        html: true
+                        message: |
+                            <p>Make this content item unlisted?</p>
+                            <p>Unlisted content items are not shown in:</p>
+                            <ul><li>
+                                Menus
+                            </li><li>
+                                Content summary lists
+                            </li><li>
+                                Site maps
+                            </li><li>
+                                Search results
+                            </li></ul>
+                            <p>They can still be reached by links from banners, WYSIWYG editors, Raw HTML/JavaScript snippets, and from external links to this site.</p>
+                        button_message: Make unlisted
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        delist: 1
+            relist:
+                appears_in_toolbars: *actions_appear_in_these_toolbars
+                parent: action_dropdown
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Make listed
+                css_class: zenario_at_big_action_button zenario_at_action zenario_at_listed_action
+                ajax:
+                    confirm:
+                        html: true
+                        message: |
+                            <p>Make this content item listed?</p>
+                            <p>When listed, the content item will appear in any menu/content summary list/search plugins as normal.</p>
+                        button_message: Make listed
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        relist: 1
+            republish:
+                appears_in_toolbars: *actions_appear_in_these_toolbars
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Re-publish
+                css_class: zenario_at_big_action_button zenario_at_action
+                admin_box:
+                    path: zenario_publish
+            
             no_rollback_item:
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
@@ -308,7 +277,7 @@ sections:
                     You can't re-draft the archived version in view because a draft already exists.
 
             delete_draft:
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
@@ -329,7 +298,7 @@ sections:
                     request:
                         delete: 1
             delete_media_content_item:
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_EDIT_DRAFT
                 visible_if: |
@@ -339,7 +308,7 @@ sections:
                 admin_box:
                     path: zenario_delete_media_content_item
             hide_content:
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
@@ -349,7 +318,7 @@ sections:
                 admin_box:
                     path: zenario_hide
             trash_content:
-                appears_in_toolbars: *publish_appears_in_toolbars
+                appears_in_toolbars: *actions_appear_in_these_toolbars
                 parent: action_dropdown
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
                 visible_if: |
@@ -381,3 +350,29 @@ sections:
                         message_type: warning
                     request:
                         delete_archives: 1
+            rescan_extract:
+                parent: action_dropdown
+                priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPerms(id)
+                label: Rescan text and thumbnail
+                ajax:
+                    confirm:
+                        message: |
+                            Rescan the text, and get a new thumbnail image of first page of the document "[[tag]]"?
+                            
+                            This action will read the contents of a Microsoft Word or PDF document
+                            (subject to external server programs being available).
+                            
+                            If the file is a PDF document also a screenshot of the first page will be extracted and attached as a featured image.
+                        button_message: Rescan
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        rescan_extract: 1
+
+    translations_2:
+        buttons: {}
+            existing_translations_dropdown:
+                css_class: existing_translations_dropdown
+                label: "Translation chain"

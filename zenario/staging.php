@@ -138,10 +138,21 @@ echo
 echo '
 <title>', htmlspecialchars(ze::$pageTitle), '</title>
 <meta name="robots" content="noindex" />
-<meta name="description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '" />
-<meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />
-<meta name="keywords" content="', (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ''), '" />
-<meta name="skin" content="' . ze::$skinName . '"/>';
+<meta name="description" content="', (ze::$pageDesc ? htmlspecialchars(ze::$pageDesc) : ''), '" />';
+
+if (ze::setting('show_generator_meta_tag')) {
+	$generatorContents = ze::setting('generator_meta_tag_contents');
+	if ($generatorContents == 'show_zenario_only') {
+		echo '
+<meta name="generator" content="Zenario" />';
+	} elseif ($generatorContents == 'show_zenario_name_and_version') {
+		echo '
+<meta name="generator" content="Zenario ', ze\site::versionNumber(), '" />';
+	}
+}
+
+echo '
+<meta name="keywords" content="', (ze::$pageKeywords ? htmlspecialchars(ze::$pageKeywords) : ''), '" />';
 
 ze\content::pageHead('zenario/');
 

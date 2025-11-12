@@ -1,6 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-zenario__modules:
+zenario__library:
     panels:
         plugins:
             key:
@@ -218,7 +218,7 @@ zenario__modules:
                 names: Plugins
                 css_class: plugin_album_instance
                 link:
-                    path: zenario__modules/panels/nested_plugins
+                    path: zenario__library/panels/nested_plugins
                     refiner: nest
             collection_buttons:
                 create:
@@ -231,11 +231,11 @@ zenario__modules:
                         path: plugin_settings
                         create_another: false
                 view_nests_containing:
-                    label: View nests/slideshows containing this module
+                    label: View nests/slideshows containing plugins of this module
                     hidden: true
                     hide_on_refiner: view_nests_containing
                     link:
-                        path: zenario__modules/panels/plugins
+                        path: zenario__library/panels/plugins
                         refiner: view_nests_containing
                 create_dropdown:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
@@ -245,6 +245,20 @@ zenario__modules:
                     hide_when_children_are_not_visible: true
                     hide_on_refiner: email_address_setting
                     label: Create a ~plugin~
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            A plugins is an instance of one of Zenario's modules. A plugin can be used in one or multiple places on a Zenario site, and must be placed in a slot in order to appear to visitors.
+                            
+                            To put a plugin on a content item via the front end, use the Tools menu, and then the Content item view (to add a plugin to a content item), or the Layout view (to add a plugin to the Layout, thereby affecting all content items that use that Layout). You may need to click "Show mobile & empty slots" to reveal slots that don't already have anything in them. Then click the Slot Inspector, click "Insert...", then select a plugin. (You may need to create a new plugin, depending on what you need.)
+                            
+                            A plugin has settings that determine how it should work or appear. Once a plugin is in a slot, use the Tools menu to get to the Content item view or Layout view, click the Slot Inspector, and then "Edit plugin settings".
+                            
+                            When editing plugin settings, changes go live immediately and cannot be undone. Also note that a plugin may be used in slots on several content items or layouts.
+                            
+                            Some kinds of plugin work in Nests, and/or in Slideshows. For these, you will need to first add a Nest (or Slideshow) to a content item, then add at least one slide, and then add a plugin on that slide.
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
@@ -261,6 +275,24 @@ zenario__modules:
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                view_nest_contents:
+                    parent: view_dropdown
+                    label: Nest contents
+                    link:
+                        path: zenario__library/panels/nested_plugins
+                        branch: true
+                        refiner: nest
+                    visible_if: |
+                        (item.module_class_name == 'zenario_nest' || item.module_class_name == 'zenario_ajax_nest')
+                view_slideshow_contents:
+                    parent: view_dropdown
+                    label: Slideshow contents
+                    link:
+                        path: zenario__library/panels/images_in_slideshow
+                        branch: true
+                        refiner: nest
+                    visible_if: |
+                        (item.module_class_name == 'zenario_slideshow')
                 view:
                     parent: view_dropdown
                     label: Plugin's image

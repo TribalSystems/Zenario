@@ -488,30 +488,33 @@ class zenario_users extends ze\moduleBaseClass {
 		ze\contentAdm::deleteUnusedImagesByUsage('user');
 	}
 	
-	public function suspendUser($userId) {
-		$cols = [];
-		ze\admin::setLastUpdated($cols, $creating = false);
-		$cols['modified_date'] = $cols['last_edited'];
-		$cols['suspended_date'] = $cols['last_edited'];
-		unset($cols['last_edited']);
-		$cols['status'] = 'suspended';
-		
-		ze\row::update('users', $cols, $userId);
-		
-		ze\module::sendSignal("eventUserStatusChange", ["userId" => $userId, "status" => "suspended"]);
-	}
-	
 	public static function requestVarMergeField($name) {
 		switch ($name) {
 			//Allow a user's first/last name to be displayed
 			case 'name':
 				return ze\user::name(ze::$vars['userId']);
+			case 'salutation':
+				return ze\user::salutation(ze::$vars['userId']);
+			case 'firstName':
+				return ze\user::firstName(ze::$vars['userId']);
+			case 'lastName':
+				return ze\user::lastName(ze::$vars['userId']);
+			case 'screenName':
+				return ze\user::screenName(ze::$vars['userId']);
 		}
 	}
 	public static function requestVarDisplayName($name) {
 		switch ($name) {
 			case 'name':
 				return 'User first and last name';
+			case 'salutation':
+				return 'User salutation';
+			case 'firstName':
+				return 'User first name';
+			case 'lastName':
+				return 'User last name';
+			case 'screenName':
+				return 'User screen name';
 		}
 	}
 	
@@ -525,25 +528,4 @@ class zenario_users extends ze\moduleBaseClass {
 		}
 		return $user;
 	}
-	//To show roles and sub-roles
-	public static function getRoleTypesIndexedByIdOrderedByName(){
-		$ZENARIO_ORGANIZATION_MANAGER_PREFIX = ze\module::prefix('zenario_organization_manager'); 
-		$rv = [];
-		$ord = 0;
-		$sql = "SELECT 
-					id,
-					parent_id,
-					name
-				FROM " . 
-					DB_PREFIX . $ZENARIO_ORGANIZATION_MANAGER_PREFIX . "user_location_roles
-				ORDER BY name";
-		$result = ze\sql::select($sql);
-		while($row = ze\sql::fetchAssoc($result)){
-			$rv[$row['id']] = ['label' => $row['name'], 'parent' => $row['parent_id'], 'ord' => ++$ord];
-		}
-		return $rv;
-		
-	
-	}
-	
 }

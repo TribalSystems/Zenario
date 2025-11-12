@@ -60,8 +60,6 @@ site_settings:
                         name: standard_email_template
                         advanced_inline_styles: true
                     label: 'Standard email template:'
-                    note_below: |
-                            Should contain the merge field [[email_body_content]].
                     type: editor
                     editor_type: full_featured
                     tall_as_possible: true
@@ -131,7 +129,11 @@ site_settings:
                                 </tr>
                             </tbody>
                         </table>
-
+                    notices_below:
+                        merge_field_notice:
+                            hidden: false
+                            #The type is set in the PHP class.
+                            message: "Should contain the merge field [[email_body_content]]."
         smtp:
             label: SMTP
             edit_mode:
@@ -293,8 +295,8 @@ site_settings:
                     editor_type: readonly
                     readonly: true
                     disabled: true
-                    style: |
-                        height: 200px;
+                    editor_options:
+                        height: 100
                 test_send_format:
                     label: "Test email format:"
                     type: radios

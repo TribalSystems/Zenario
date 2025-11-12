@@ -1172,10 +1172,10 @@ class moduleAPI {
 				$sql = "
 					SELECT `name`, default_value
 					FROM ". DB_PREFIX. "plugin_setting_defs
-					WHERE module_class_name = '". \ze\escape::asciiInSQL($className). "'";
-				$result = \ze\sql::select($sql);
+					WHERE module_class_name = ?";
+				$statement = \ze\sql::prepare($sql, 'a');
 				
-				while($row = \ze\sql::fetchAssoc($result)) {
+				foreach ($statement->select([$className]) as $row) {
 					if (!isset($this->zAPISettings[$row['name']])) {
 						$this->zAPISettings[$row['name']] = $row['default_value'];
 					}
@@ -1385,9 +1385,24 @@ class moduleAPI {
 	public final function startInner() {
 		if (\ze::$isTwig) return;
 		
+		$slotClassName = 'zenario_full_slot ';
+		$isAdmin = \ze::isAdmin();
+		
+		if ($isAdmin) {
+			$slot = &\ze::$slotContents[$this->slotNameNestId];
+			
+			if ($slot->isOpaque()) {
+				$slotClassName = 'zenario_opaque_slot ';
+			
+			} elseif (!$slot->instanceId()) {
+				$slotClassName = 'zenario_empty_slot ';
+			}
+		}
+		
+		
 		$html = '
 
-					<div id="'. $this->containerId. '"  class="zenario_slot '. $this->wrapperClass(). '"';
+					<div id="'. $this->containerId. '"  class="zenario_slot '. $slotClassName. $this->wrapperClass(). '"';
 		
 		if (\ze::isAdmin()) {
 			$html .= ' onclick="return zenarioA.adminSlotWrapperClick(\''. htmlspecialchars($this->slotName). '\', event, '. ($this->eggId? 1 : 0). ');"';
@@ -1759,6 +1774,66 @@ class moduleAPI {
 		
 		return $vars;
 	}
+	
+	public function formatTitleText($text, $isHTML = false) {
+		
+		//If this is a library plugin, and therefore multilingual, we need to translate the text here
+		if ($this->inLibrary) {
+			if ($isHTML) {
+				$text = $this->htmlPhrase($text);
+			} else {
+				$text = $this->phrase($text);
+			}
+		}
+		
+		//Break the title up by mergefields, using the [[merge_field_name]] syntax
+		$frags = explode('[[', $text);
+		$count = count($frags);
+	
+		if ($count > 1) {
+			$text = $frags[0];
+			for ($i = 1; $i < $count; ++$i) {
+			
+				$part = explode(']]', $frags[$i], 2);
+			
+				if (isset($part[1])) {
+					
+					
+					//Look for variables from modules, using the syntax [[module_class_name:var_name]]
+					$details = explode(':', $part[0], 2);
+					
+					if (isset($details[1])
+					 && \ze\module::inc($details[0])) {
+						
+						$val = call_user_func([$details[0], 'requestVarMergeField'], $details[1]);
+					
+					//Allow any id from the $_REQUEST or core vars to be displayed
+					} elseif (isset(\ze::$vars[$details[0]])) {
+						$val = \ze::$vars[$details[0]];
+					
+					} elseif (isset($_REQUEST[$details[0]])) {
+						$val = $_REQUEST[$details[0]];
+					
+					} else {
+						$val = '';
+					}
+				
+					if ($isHTML) {
+						$text .= htmlspecialchars($val ?: '');
+					} else {
+						$text .= $val;
+					}
+					
+					//Anything that's not a mergefield should be left as-is
+					$text .= $part[1];
+				} else {
+					$text .= $part[0];
+				}
+			}
+		}
+		
+		return $text;
+	}
 }
 
 
@@ -2038,6 +2113,13 @@ class moduleBaseClass extends moduleAPI {
 		if ($c = $this->runSubClass(static::class, false, $path)) {
 			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
+	}
+	
+	public function quickSearchOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode, $searchString) {
+		if ($c = $this->runSubClass(static::class, false, $path)) {
+			return $c->quickSearchOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode, $searchString);
+		}
+		return '';
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

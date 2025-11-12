@@ -3,7 +3,7 @@
 zenario__content:
     panels:
         access_codes:
-            title: Access codes
+            title: Access codes for staging mode
             db_items:
                 table: >
                     [[DB_PREFIX]]content_item_versions AS v
@@ -15,9 +15,12 @@ zenario__content:
                 id_column: v.access_code
                 group_by: v.access_code
                 where_statement: "WHERE v.access_code IS NOT NULL"
-            no_items_message: There are no access codes in use on this site.
-            panel_type: list
-            #use_tall_rows: true
+            no_items_message: No access codes found
+            panel_type: multi_line_list
+            notice:
+                show: true
+                type: information
+                message: Access codes allow non-administrators to view content items in staging mode before they are published.
             default_sort_column: path
             label_format_for_grid_view: '[[access_code]]'
             columns:
@@ -38,8 +41,47 @@ zenario__content:
                 name: Access code
                 names: Access codes
                 css_class: access_code
-                tooltip_when_link_is_active: 'View content items using the access code &quot;[[access_code]]&quot;'
+                tooltip_when_link_is_active: 'View content items using the access code [[access_code]]'
                 link:
                     path: zenario__content/panels/content
                     branch: true
                     refiner: uses_access_code
+            
+            collection_buttons:
+                help:
+                    label: Help
+                    hide_in_select_mode: true
+                    help:
+                        message: |
+                            Access codes allow non-administrators to view draft versions of content items before they are published.
+                            
+                            When access codes exist, this panel will list them, and show which draft content items use them.
+                            
+                            To create an access code, make a draft of one or more content items, and click the thumbs-up icon to enable staging mode. This will let you assign an access code for those items.
+            item_buttons:
+                view_content_items:
+                    label: View content items
+                    multiple_select: true
+                    link:
+                        path: zenario__content/panels/content
+                        branch: true
+                        refiner: uses_access_code
+                delete_access_code:
+                    label: Delete access code
+                    multiple_select: true
+                    multiple_select_label: Delete access codes
+                    ajax:
+                        confirm:
+                            message: |
+                                Delete access code "[[access_code]]"?
+                                
+                                This will remove the access code from all content items that currently use it.
+                            multiple_select_message: |
+                                Delete the selected access codes?
+                                
+                                This will remove the access codes from all content items that currently use them.
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_access_code: 1

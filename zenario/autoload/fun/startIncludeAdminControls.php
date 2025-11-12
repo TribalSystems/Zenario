@@ -34,13 +34,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if ($this->eggId && isset($this->parentNest)) {
 	
 	$organizerLink = 'organizer.php?fromCID='. ze::$cID. '&fromCType='. ze::$cType. '#';
-	$tagPath = 'zenario__modules/panels/nested_plugins';
+	$tagPath = 'zenario__library/panels/nested_plugins';
 	
 	switch ($this->parentNest->moduleClassName) {
 		case 'zenario_slideshow':
 			$isSlideshow = true;
 			$buttonName = 'images_in_slideshow';
-			$tagPath = 'zenario__modules/panels/images_in_slideshow';
+			$tagPath = 'zenario__library/panels/images_in_slideshow';
 			break;
 		default:
 			$buttonName = 'plugins_in_nest';
@@ -48,7 +48,7 @@ if ($this->eggId && isset($this->parentNest)) {
 			break;
 	}
 	
-	$navPath = 'zenario__modules/panels/modules/item//'. (int) $this->parentNest->moduleId. '//item_buttons/'. $buttonName. '//'. (int) $this->instanceId. '//';
+	$navPath = 'zenario__library/panels/modules/item//'. (int) $this->parentNest->moduleId. '//item_buttons/'. $buttonName. '//'. (int) $this->instanceId. '//';
 	
 	
 	
@@ -109,7 +109,7 @@ if ($this->eggId && isset($this->parentNest)) {
 					if (zenarioA.checkForEdits())
 						zenarioAT.organizerQuick(
 							'", $navPath, $this->eggId, "',
-							'zenario__modules/panels/nested_plugins',
+							'zenario__library/panels/nested_plugins',
 							false,
 							'", ze\escape::js($this->slotName), "',
 							false,

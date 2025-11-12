@@ -348,7 +348,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 					if (!empty($plugin['settings']['allow_user_to_delete_their_account']) && !empty($plugin['settings']['notify_admin_when_user_account_deleted']) && !empty($plugin['settings']['user_account_deleted_admin_notification_addresses'])) {
 						$panel['items']['extranet_edit_profile_' . $plugin['instance_id'] . '_' . $plugin['egg_id']] = [
 							'id' => $plugin['instance_id'],
-							'name' => '<a href="organizer.php#zenario__modules/panels/modules/item//' . $moduleInfo['module_id'] . '//' . $plugin['instance_id'] . '" target="_blank">' . ze\plugin::name($plugin['instance_id']) . '</a>',
+							'name' => '<a href="organizer.php#zenario__library/panels/modules_running_and_suspended/collection_buttons/view_all_modules////item//' . $moduleInfo['module_id'] . '//' . $plugin['instance_id'] . '" target="_blank">' . ze\plugin::name($plugin['instance_id']) . '</a>',
 							'email_address_value' => $plugin['settings']['user_account_deleted_admin_notification_addresses'],
 							'type' => $this->phrase('Extranet Profile'),
 							'css_class' => 'zenario_extranet_profile_edit__plugin'

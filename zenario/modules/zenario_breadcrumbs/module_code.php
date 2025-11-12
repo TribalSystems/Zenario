@@ -262,7 +262,7 @@ class zenario_breadcrumbs extends zenario_menu {
 					}
 				}
 				
-				$url = ze\link::toItem(
+				$url = ze\link::toItemInVisitorsLanguage(
 					ze::$cID, ze::$cType, false, $back['requests'], ze::$alias,
 					$autoAddImportantRequests = false
 				);

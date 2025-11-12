@@ -95,6 +95,13 @@ zenario__user_forms:
                     details:
                         label: Details
                         fields:
+                            field_is_used_as_email_destination_in_form_setting: &field_is_used_as_email_destination_in_form_setting
+                                pre_field_html: <div class="form_warning">
+                                snippet:
+                                    html: |
+                                        <p>The destination email address(es) of the form depend upon this select list. It may not be edited. If you need to make changes, first deselect it in the form settings.</p>
+                                post_field_html: </div>
+                                visible_if: item.field_is_used_as_email_destination_in_form_setting
                             name:
                                 hidden: true
                             label:
@@ -154,7 +161,7 @@ zenario__user_forms:
                                 type: select
                                 empty_value: -- Select --
                                 values: centralised_lists
-                                format_onchange: true
+                                readonly: true
                             values_source_filter:
                                 indent: 1
                                 hide_with_previous_field: true
@@ -356,9 +363,36 @@ zenario__user_forms:
                                 label: 'Validation error message:'
                                 type: text
                                 maxlength: 250
-                                note_below: Error message to be shown when validation fails. 
                                 is_phrase: true
                                 db_column: validation_error_message
+                            show_field_twice_for_confirmation:
+                                hide_with_previous_outdented_field: true
+                                format_onchange: true
+                                label: 'Show field twice for confirmation'
+                                indent: 1
+                                type: checkbox
+                                visible_if: |
+                                    item.field_validation && item.field_validation == 'email'
+                            confirmation_field_label:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.field_validation && item.field_validation == 'email' && item.show_field_twice_for_confirmation
+                                label: 'Confirmation field label:'
+                                type: text
+                                maxlength: 250
+                                is_phrase: true
+                                db_column: confirmation_field_label
+                            confirmation_field_error_message:
+                                indent: 2
+                                hide_with_previous_outdented_field: true
+                                visible_if: |
+                                    item.field_validation && item.field_validation == 'email' && item.show_field_twice_for_confirmation
+                                label: 'Error message when contents do not match:'
+                                type: text
+                                maxlength: 250
+                                is_phrase: true
+                                db_column: confirmation_field_error_message
                             placeholder:
                                 visible_if: |
                                     item.type == 'text' || item.type == 'textarea'
@@ -441,6 +475,7 @@ zenario__user_forms:
                         visible_if: |
                             ['select', 'radios', 'checkboxes', 'sortable_selection', 'text'].indexOf(item.type) != -1 && ['first_name', 'last_name', 'email'].indexOf(item.db_column) == -1
                         fields:
+                            field_is_used_as_email_destination_in_form_setting: *field_is_used_as_email_destination_in_form_setting
                             enable_suggested_values:
                                 visible_if: |
                                     item.type == 'text'
@@ -509,6 +544,7 @@ zenario__user_forms:
                     advanced:
                         label: Advanced
                         fields:
+                            field_is_used_as_email_destination_in_form_setting: *field_is_used_as_email_destination_in_form_setting
                             merge_name:
                                 visible_if: |
                                     item.type != 'section_description' && item.type != 'section_spacer' && item.type != 'restatement' && item.type != 'repeat_start'
@@ -672,6 +708,7 @@ zenario__user_forms:
                         visible_if: |
                             zenarioO.pi.tuix.show_translation_tab
                         fields:
+                            field_is_used_as_email_destination_in_form_setting: *field_is_used_as_email_destination_in_form_setting
                             translations:
                                 type: translations
                                 
@@ -680,6 +717,7 @@ zenario__user_forms:
                         visible_if: |
                             zenarioO.pi.tuix.crm_enabled && (['section_description', 'repeat_start', 'attachment', 'file_picker', 'document_upload', 'restatement'].indexOf(item.type) == -1)
                         fields:
+                            field_is_used_as_email_destination_in_form_setting: *field_is_used_as_email_destination_in_form_setting
                             send_to_crm:
                                 label: Send to CRM
                                 type: checkbox
@@ -717,6 +755,3 @@ zenario__user_forms:
                                 visible_if: |
                                     item.send_to_crm && (['select', 'radios', 'checkboxes', 'centralised_select', 'centralised_radios', 'checkbox', 'group'].indexOf(item.type) != -1)
                                 type: crm_values
-                                    
-                                    
-                            

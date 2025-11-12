@@ -32,7 +32,6 @@ zenario__layouts:
             item:
                 name: Skin File
                 names: Skin Files
-                css_class: dropbox_file
                 link:
                     path: zenario__layouts/panels/skin_files
                     branch: true

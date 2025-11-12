@@ -74,8 +74,7 @@ if (ze::request('method_call') == 'handleWelcomeAJAX') {
 		ze\fileAdm::putUploadFileIntoCacheDir(
 			$_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'],
 			$_REQUEST['_html5_backwards_compatibility_hack'] ?? false,
-			false, false,
-			$isAllowed = true
+			$cacheFor = false, $isAllowed = true
 		);
 	}
 	exit;

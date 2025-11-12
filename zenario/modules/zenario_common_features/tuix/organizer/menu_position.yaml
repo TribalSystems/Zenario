@@ -34,7 +34,7 @@ zenario__menu:
                 create:
                     title: Select a position to create a menu node
                 move:
-                    title: Select a position to move to
+                    title: Select a destination for the selected menu node(s)
                 existing:
                     title: Select a position
                     sql: |

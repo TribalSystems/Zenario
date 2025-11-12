@@ -78,7 +78,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				}
 				
 				if ($this->setting('show_file_size')) {
-					$imageMF['File_Size'] = ze\lang::formatFilesizeNicely($image['size']);
+					$imageMF['File_Size'] = ze\file::formatSizeUnits($image['size']);
 				}
 				
 				if ($this->setting('show_image_uploaded_date')) {
@@ -155,10 +155,8 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 		$this->mergeFields['Title'] = $this->setting('title');
 		$this->mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h2';
 		
-		if (!$this->isVersionControlled && $this->setting('translate_text')) {
-			if ($this->mergeFields['Title']) {
-				$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
-			}
+		if ($this->mergeFields['Title']) {
+			$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
 		}
 		
 		if ($this->setting('zip_archive_enabled')) {
@@ -462,7 +460,7 @@ class zenario_multiple_image_container extends ze\moduleBaseClass {
 				$request = 'download=1';
 			}
 			
-			if (!$this->isVersionControlled && $useTranslation) {
+			if ($useTranslation) {
 				$link = ze\link::toItemInVisitorsLanguage($cID, $cType, $fullPath = false, $request);
 			} else {
 				$link = ze\link::toItem($cID, $cType, $fullPath = false, $request);

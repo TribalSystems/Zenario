@@ -4,7 +4,7 @@ zenario__administration:
     panels:
         file_types:
             priv: _PRIV_VIEW_SITE_SETTING
-            title: File/MIME Types
+            title: File/MIME types
             db_items:
                 table: '[[DB_PREFIX]]document_types AS dt'
                 id_column: dt.type
@@ -41,7 +41,6 @@ zenario__administration:
             item:
                 name: File type
                 names: File types
-                css_class: dropbox_file
             collection_buttons:
                 create:
                     priv: _PRIV_EDIT_CONTENT_TYPE

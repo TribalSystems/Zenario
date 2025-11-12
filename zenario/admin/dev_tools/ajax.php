@@ -15,6 +15,9 @@ switch (ze::get('mode')) {
 	case 'zenarioO';
 		$type = 'organizer';
 		break;
+	case 'zenarioSlot';
+		$type = 'slot_controls';
+		break;
 	default:
 		$type = 'visitor';
 		break;

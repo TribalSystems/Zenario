@@ -111,7 +111,7 @@ zenario_document_properties:
                     full_width: true
                     snippet:
                         html: ""
-                    dataset_label: 'Link to add document tags'
+                    dataset_label: '[Link to add document tags]'
         upload_image:
             label: Thumbnail image
             edit_mode:
@@ -141,12 +141,13 @@ zenario_document_properties:
                     upload:
                         multi: false
                         drag_and_drop: true
-                        accept: "image/png, image/gif, image/jpg, image/jpeg, image/webp"
-                        #extensions: 
-                        #	- .gif
-                        #	- .png
-                        dropbox: true
-                        dropbox_phrase: 'Upload from dropbox'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                            - .webp
         extract:
             label: Extract
             edit_mode:

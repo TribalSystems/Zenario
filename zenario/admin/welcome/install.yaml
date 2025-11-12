@@ -335,6 +335,7 @@ install:
                     type: radios
                     post_field_html: |
                         </div></div>
+                    redraw_onchange: true
                 
                 organisation_name:
                     label: "Your site's name (e.g. your organisation's name):"
@@ -347,7 +348,7 @@ install:
                             Your site's logo (optional); if adding this, please ensure the directories "cache", "public" and "private" are writeable by the web server:
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/svg+xml'
                         extensions:
                             - .gif
                             - .jpg

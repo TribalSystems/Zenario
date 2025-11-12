@@ -434,6 +434,9 @@ class zenario_content_list extends ze\moduleBaseClass {
 		} elseif ($this->setting('order') == 'Alphabetically') {
 			$orderBy .= "v.title";
 		
+		} elseif ($this->setting('order') == 'Alphabetically_Reverse') {
+			$orderBy .= "v.title DESC";
+		
 		} elseif ($this->setting('order') == 'Most_Recent_First') {
 			$orderBy .= "`content_table_date` DESC, c.id DESC";
 		
@@ -616,7 +619,7 @@ class zenario_content_list extends ze\moduleBaseClass {
 					}
 				}
 				
-				if ($localFileDetails && $localFileDetails['size'] && $item['cType'] == 'document') {
+				if ($localFileDetails && $localFileDetails['size'] && ze::in($item['cType'], 'document', 'audio', 'video')) {
 					$item['Local_File_Size'] = ze\file::formatSizeUnits($localFileDetails['size']);
 				}
 				
@@ -1087,15 +1090,15 @@ class zenario_content_list extends ze\moduleBaseClass {
 		//if needed
 		$titleWithContent = '';
 		if ($this->setting('show_headings')) {
-			$titleWithContent = htmlspecialchars($this->phraseFromSetting('heading_if_items', $this->setting('translate_text')));
+			$titleWithContent = htmlspecialchars($this->phraseFromSetting('heading_if_items'));
 		}
 		$titleWithNoContent = '';
 		if ($this->setting('show_headings_if_no_items')) {
-			$titleWithNoContent = htmlspecialchars($this->phraseFromSetting('heading_if_no_items', $this->setting('translate_text')));
+			$titleWithNoContent = htmlspecialchars($this->phraseFromSetting('heading_if_no_items'));
 		}
 		$moreLinkText = '';
 		if ($moreLink) {
-			$moreLinkText = htmlspecialchars($this->phraseFromSetting('more_link_text', $this->setting('translate_text')));
+			$moreLinkText = htmlspecialchars($this->phraseFromSetting('more_link_text'));
 		}
 
 		//To add Zip download link
@@ -1428,21 +1431,24 @@ class zenario_content_list extends ze\moduleBaseClass {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['pagination']['fields']['pagination_style']['values'] = 
+				$fields['pagination/pagination_style']['values'] = 
 					ze\pluginAdm::paginationOptions();
 				
-				if (empty($box['tabs']['pagination']['fields']['maximum_results_number']['value'])) {
-					$box['tabs']['pagination']['fields']['maximum_results_number']['value'] = 5;
+				if (empty($values['pagination/maximum_results_number'])) {
+					$values['pagination/maximum_results_number'] = 5;
 				}
 				
+				$ord = 100;
 				foreach (ze\content::getContentTypes(false, false) as $cType) {
 					switch ($cType['content_type_id'] ?? false) {
 						case 'recurringevent':
 						case 'event':
 							break;
 						default:
-							$box['tabs']['first_tab']['fields']['content_type']['values'][$cType['content_type_id']] =
-								$cType['content_type_name_en'];
+							$fields['first_tab/content_type']['values'][$cType['content_type_id']] = [
+								'ord' => ++$ord,
+								'label' => $cType['content_type_name_en']
+							];
 							break;
 					}
 				}

@@ -58,7 +58,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 	function getContentItemMetaData() {
 		$adminId = ze\admin::id();
 		
-		if ($this->setting('show_date') && $this->setting('date_format')){
+		if ($this->setting('show_release_date') && $this->setting('release_date_format')){
 			$dates = ze\row::get('content_item_versions', ['release_date'], ['id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion]);
 			
 			$releaseDateCTypeSetting = ze\row::get('content_types', ['release_date_field', 'auto_set_release_date'], ['content_type_id' => $this->cType]);
@@ -66,7 +66,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			$releaseDate = '';
 			if ($dates['release_date']) {
 				if ($releaseDateCTypeSetting['release_date_field'] == 'optional') {
-					$releaseDate = ze\date::format($dates['release_date'], $this->setting('date_format'));
+					$releaseDate = ze\date::format($dates['release_date'], $this->setting('release_date_format'));
 				}
 			} elseif ($adminId) {
 				if ($releaseDateCTypeSetting['release_date_field'] == 'optional' && $releaseDateCTypeSetting['auto_set_release_date']) {
@@ -75,8 +75,8 @@ class zenario_meta_data extends ze\moduleBaseClass {
 			}
 			
 			if ($releaseDateCTypeSetting['release_date_field'] == 'optional' && $releaseDate) {
-				$this->mergeFields['Date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
-				$this->showSections['show_date'] = true;
+				$this->mergeFields['Release_date'] = ['value' => $releaseDate, 'html_tag' => $this->setting('release_date_html_tag'), 'label' => $this->phrase('Release date'), 'class' => 'release_date'];
+				$this->showSections['show_release_date'] = true;
 			}
 		}
 		
@@ -334,9 +334,9 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				$mediumDateFormat = ze::setting('vis_date_format_med');
 				$longDateFormat = ze::setting('vis_date_format_long');
 				
-				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/date_format']['values']['_SHORT']['label'], $shortDateFormat);
-				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/date_format']['values']['_MEDIUM']['label'], $mediumDateFormat);
-				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/date_format']['values']['_LONG']['label'], $longDateFormat, false);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/release_date_format']['values']['_SHORT']['label'], $shortDateFormat);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/release_date_format']['values']['_MEDIUM']['label'], $mediumDateFormat);
+				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/release_date_format']['values']['_LONG']['label'], $longDateFormat, false);
 				
 				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/published_date_format']['values']['_SHORT']['label'], $shortDateFormat);
 				ze\miscAdm::addDateFormatAndExampleToDateFormatLabel($fields['first_tab/published_date_format']['values']['_MEDIUM']['label'], $mediumDateFormat);
@@ -351,7 +351,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 		switch ($path) {
 			case 'plugin_settings':
 
-				$fields['first_tab/date_format']['hidden'] = !$values['first_tab/show_date'];
+				$fields['first_tab/release_date_format']['hidden'] = !$values['first_tab/show_release_date'];
 				$fields['first_tab/published_date_format']['hidden'] = !$values['first_tab/show_published_date'];
 				
 				$hidden = !$values['show_writer_name'] || !$values['first_tab/show_writer_image'];
@@ -387,7 +387,7 @@ class zenario_meta_data extends ze\moduleBaseClass {
 				
 				//All available fields in Details tab
 				$availableFields = [
-					'show_date',
+					'show_release_date',
 					'show_published_date',
 					'show_title',
 					'show_description',

@@ -82,18 +82,18 @@ plugin_settings:
                         lib.value: show_text_when_pinned
                     type: select
                     values: *tags
-                show_date:
+                show_release_date:
                     plugin_setting:
-                        name: show_date
+                        name: show_release_date
                     grouping: filters
                     label: "Show content item's release date"
                     type: checkbox
                     note_below: "This information will only be displayed if the release date field is enabled for the content item's type."
                     value: 1
                     format_onchange: true
-                date_format:
+                release_date_format:
                     plugin_setting:
-                        name: date_format
+                        name: release_date_format
                     grouping: filters
                     label: 'Date format:'
                     type: radios
@@ -107,15 +107,15 @@ plugin_settings:
                         _LONG:
                             label: Long
                     indent: 1
-                date_html_tag:
+                release_date_html_tag:
                     indent: 1
                     plugin_setting:
-                        name: date_html_tag
+                        name: release_date_html_tag
                     grouping: filters
                     label: "Date tags:"
                     value: h2
                     visible_if:
-                        lib.value: show_date
+                        lib.value: show_release_date
                     type: select
                     values: *tags
                 show_published_date:
@@ -560,12 +560,13 @@ plugin_settings:
                     format_onchange: true
                     upload:
                         multi: false
-                        accept: 'image/*'
+                        accept: 'image/png, image/jpeg, image/gif, image/webp'
                         extensions:
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
+                            - .webp
                         drag_and_drop: true
                         reorder_items: false
                     visible_if: lib.value('show_featured_image') && lib.value('fall_back_to_default_image')

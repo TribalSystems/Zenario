@@ -34,19 +34,19 @@ ze\module::incSubclass('zenario_common_features', 'admin_boxes', 'plugin_setting
 class zenario_common_features__admin_boxes__skin_editor extends zenario_common_features__admin_boxes__plugin_settings {
 	
 	protected $filesFirstHalf = [
-		'0.reset.css' => "Enter CSS here to reset the browser's default styles.",
-		'1.colorbox.css' => "This should contain styles for the Colorbox library.",
-		'1.fonts.css' => 'This should contain styles for fonts.',
-		'1.forms.css' => 'This should contain styles for form elements, e.g. <code>&lt;input&gt;s<code>, <code>&lt;select&gt;s<code> and <code>&lt;textareas&gt;s<code>.',
-		'1.jquery_ui.css' => "This should contain styles for the JQuery library.",
-		'1.layout.css' => 'This should contain styles that relate to the layout of the page and slots.'
+		'0.reset.css' => "This file contains styles to reset the browser's default styles.",
+		'1.colorbox.css' => "This file contains styles for the Colorbox library.",
+		'1.fonts.css' => 'This file contains styles for fonts.',
+		'1.forms.css' => 'This file contains styles for form elements.',
+		'1.jquery_ui.css' => "This file contains styles for the JQuery library.",
+		'1.layout.css' => 'This file contains styles relating to the layout of the page and slots.'
 	];
 
 	protected $filesSecondHalf = [
-		'3.misc.css' => "This should contain styles for anything that doesn't fit in another category, e.g. pagination.",
-		'3.misc_zfea.css' => "This should contain styles for FEA plugins",
-		'4.responsive.css' => 'This should contain rules for mobile devices.',
-		'print.css' => 'This should contain rules for printing.'
+		'3.misc.css' => "This file contains styles for anything that doesn't fit in another category, e.g. pagination.",
+		'3.misc_zfea.css' => "This file contains styles for FEA plugins",
+		'4.responsive.css' => 'This file contains rules for mobile devices.',
+		'print.css' => 'This contains rules for printing.'
 	];
 	
 	protected function addSlide(&$box, &$fields, &$values, $file, $desc) {
@@ -189,7 +189,7 @@ class zenario_common_features__admin_boxes__skin_editor extends zenario_common_f
 		}
 
 		if (!empty($editableCssFiles)) {
-			$desc = 'Editable CSS file used by the skin.';
+			$desc = 'This file contains plugin-related styles.';
 			
 			foreach ($editableCssFiles as $file) {
 				$files[$file] = $desc;

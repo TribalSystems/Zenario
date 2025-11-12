@@ -110,19 +110,33 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy
 			exit;
 		}
 		$box['key']['id'] = implode(',', $tagIds);
+		
+		//This means "Total translation chain count"
 		$total = count($tagIds);
 		
 		$numLanguages = ze\lang::count();
 		if ($numLanguages > 1) {
-			if ($total > 1) {
+			$box['identifier']['label'] = ze\admin::phrase('Content item translation chain');
+			$totalContentItems = count(explode(',', $box['key']['originalId']));
+			if ($totalContentItems > 1) {
 				$box['confirm']['show'] = true;
+				
 				$box['confirm']['message'] =
-					ze\admin::phrase('Update permissions of [[count]] selected content items?',
-						['count' => $total]);
+					ze\admin::nPhrase(
+						'Update permissions of [[content_item_count]] selected content items in 1 translation chain?',
+						'Update permissions of [[content_item_count]] selected content items in [[translation_chain_count]] translation chains?',
+						$total,
+						['content_item_count' => $totalContentItems, 'translation_chain_count' => $total]);
 				
 				$box['title'] =
-					ze\admin::phrase('Changing permissions for [[count]] content items',
-						['count' => $total]);
+					ze\admin::nPhrase(
+						'Changing permissions for [[content_item_count]] content items in 1 translation chain',
+						'Changing permissions for [[content_item_count]] content items in [[translation_chain_count]] translation chains',
+						$total,
+						['content_item_count' => $totalContentItems, 'translation_chain_count' => $total]
+					);
+				
+				unset($box['identifier']);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for the content item "[[tag]]" and its translations',
@@ -133,12 +147,14 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy
 			if ($total > 1) {
 				$box['confirm']['show'] = true;
 				$box['confirm']['message'] =
-					ze\admin::phrase('This will update the permissions of [[count]] content items.',
+					ze\admin::phrase('Update the permissions of [[count]] content items?',
 						['count' => $total]);
 				
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for [[count]] content items',
 						['count' => $total]);
+				
+				unset($box['identifier']);
 			} else {
 				$box['title'] =
 					ze\admin::phrase('Changing permissions for the content item "[[tag]]"',
@@ -146,10 +162,10 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users__privacy
 			}
 		}
 		
-		if ($total > 1) {
+		if ($numLanguages > 1 && $total > 1) {
 			$box['confirm']['message'] .=
 				"\n\n".
-				ze\admin::phrase('Where content items are translated, permission changes affect the translation chain of each content item, i.e. across all languages.');
+				ze\admin::phrase('When content items have been translated into other languages, changes to permissions affect the entire translation chain of those content items.');
 		}
 	}
 	

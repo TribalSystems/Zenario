@@ -34,9 +34,18 @@ $chain = ze\row::get('translation_chains', ['equiv_id', 'type', 'privacy', 'at_l
 
 
 if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions'])) {
+	
+	$html = '';
+	$recordCount = 0;
+	ze\contentAdm::privacyDescHTML($chain, $html, $recordCount);
+	
 	$adminToolbar['sections']['icons']['buttons']['item_permissions']['css_class'] .=  ' privacy_'. $chain['privacy'];
 	$adminToolbar['sections']['icons']['buttons']['item_permissions']['tooltip'] =
-		ze\admin::phrase('Permissions: [[privacyDesc]]', ['privacyDesc' => htmlspecialchars(ze\contentAdm::privacyDesc($chain))]);
+		ze\admin::phrase('Permissions: [[privacyDesc]]', ['privacyDesc' => $html]);
+	
+	if ($recordCount !== 0) {
+		$adminToolbar['sections']['icons']['buttons']['item_permissions']['record_count'] = $recordCount;
+	}
 }
 
 

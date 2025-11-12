@@ -1,4 +1,13 @@
-<div class="zenario_radio_or_checkbox zenario_group zenario_group_{{m.cols|e}}_cols zenario_group_col_{{m.col|e}}">
+<div class="
+	zenario_radio_or_checkbox
+	zenario_group
+	zenario_group_{{m.cols|e}}_cols
+	zenario_group_col_{{m.col|e}}
+	
+	<% if (m.checked) { %>
+		zenario_group_selected
+	<% } %>
+">
 
 	<% if (m.lovField.pre_field_html !== undefined) { %>
 		{{m.lovField.pre_field_html}}

@@ -145,27 +145,44 @@ class user {
 		}
 	}
 
-	public static function getUserGroupsNames( $userId ) {
+	public static function getUserGroupsNames($userId) {
 		$groups = \ze\user::groups($userId);
 	
 		if (empty($groups)) {
-			return \ze\admin::phrase('_NO_GROUP_MEMBERSHIPS');
+			return \ze\admin::phrase('No current group memberships');
 		} else {
 			return implode(', ', $groups);
 		}
 	}
 
-	public static function getGroupLabel($group_id) {
-		if ($group_id) {
-			if(is_numeric($group_id)) {
-				return \ze\row::get('custom_dataset_fields', 'label', $group_id);
+	public static function getGroupLabel($groupId) {
+		if ($groupId) {
+			if (is_numeric($groupId)) {
+				return \ze\row::get('custom_dataset_fields', 'label', $groupId);
 			} else {
-				return \ze\row::get('custom_dataset_fields', 'label', ['db_column' => $group_id]);
+				return \ze\row::get('custom_dataset_fields', 'label', ['db_column' => $groupId]);
 			}
 		} else {
-			return \ze\admin::phrase("_ALL_EXTRANET_USERS");
+			return \ze\admin::phrase("All extranet users");
 		}
 
+	}
+	
+	public static function getGroupMemberCount($group) {
+		//Please note: this will only count users who are not suspended.
+		if (is_numeric($group)) {
+			$group = \ze\dataset::fieldDetails($group);
+		}
+		
+		$sql = '
+			SELECT COUNT(*)
+			FROM '. DB_PREFIX. 'users_custom_data AS ucd
+			INNER JOIN '. DB_PREFIX. 'users AS u
+			   ON ucd.user_id = u.id
+			'. \ze\row::whereCol('users_custom_data', 'ucd', $group['db_column'], '=', 1, $first = true). '
+			'. \ze\row::whereCol('users', 'u', 'status', '!=', 'suspended');
+		
+		return (int) \ze\sql::fetchValue($sql);
 	}
 	
 	public static function idAndSessionIsValid($userId, $loggedIntoSite) {
@@ -209,7 +226,9 @@ class user {
 			//Check if we can find the current admin
 			$admin = false;
 			if (empty($_SESSION['admin_global_id'])) {
-				$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_userid'], 'status' => 'active']);
+				if (!\ze::setting('in_moratorium')) {
+					$admin = \ze\row::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_userid'], 'status' => 'active']);
+				}
 		
 			} elseif (\ze\db::connectGlobal()) {
 				$admin = \ze\row\g::get('admins', ['modified_date'], ['authtype' => 'local', 'id' => $_SESSION['admin_global_id'], 'status' => 'active']);
@@ -1233,12 +1252,17 @@ class user {
 						}
 						break;
 					case 2: //is somewhat guessable (guesses < 10^8), provides some protection from unthrottled online attacks
+						$passwordIsTooEasyToGuess = true;
 						if ($minScore > 2) {
 							$passwordMatchesRequirements = false;
-							$passwordIsTooEasyToGuess = true;
 						}
 						break;
 					case 1: //is still very guessable (guesses < 10^6)
+						$passwordIsTooEasyToGuess = true;
+						if ($minScore > 1) {
+							$passwordMatchesRequirements = false;
+						}
+						break;
 					case 0: //s extremely guessable (within 10^3 guesses)
 					default:
 						$passwordMatchesRequirements = false;
@@ -1388,20 +1412,18 @@ class user {
 			foreach ($array as &$row) {
 			
 				if ($adminFacing) {
-					//It's ok to display the admin's first name, last name and username in a FAB.
-					$getFullAdminDetails = true;
 					$row['string'] = \ze\admin::phrase($row['string']);
 				} else {
-					//Do not display the admin details on the front end (data protection reasons).
-					$getFullAdminDetails = false;
 					$row['string'] = \ze\lang::phrase($row['string']);
 				}
 			
 				if (!empty($row['editedOrCreatedAdminId'])) {
 					if ($adminFacing) {
 						if ($lastUpdatedByAdmin = \ze\row::get("admins", "id", ["id" => $row['editedOrCreatedAdminId']])) {
+							//It's ok to display the admin's first name, last name and username in a FAB.
 							$userOrAdmin = \ze\admin::formatName($row['editedOrCreatedAdminId']);
 						} else {
+							//Do not display the admin details on the front end (data protection reasons).
 							$userOrAdmin = "an administrator (admin account deleted)";
 						}
 					} else {
@@ -1452,27 +1474,29 @@ class user {
 		];
 		
 		if ($adminFacing) {
-			//It's ok to display the admin's first name, last name and username in a FAB.
-			$getFullAdminDetails = true;
 			$row['string'] = \ze\admin::phrase($row['string']);
 		} else {
-			//Do not display the admin details on the front end (data protection reasons).
-			$getFullAdminDetails = false;
 			$row['string'] = \ze\lang::phrase($row['string']);
 		}
 	
-		if (!empty($row['actionAdminId'])) {
-			$userOrAdmin = "an administrator";
-		} elseif (!empty($row['actionUserId']) && $lastUpdatedByUser = \ze\user::details($row['actionUserId'])) {
+		if (!empty($row['actionAdminId']) && ($adminDetails = \ze\admin::details($row['actionAdminId']))) {
+			if ($adminFacing) {
+				//It's ok to display the admin's first name, last name and username in a FAB.
+				$userOrAdmin = \ze\admin::formatName($adminDetails);
+			} else {
+				//Do not display the admin details on the front end (data protection reasons).
+				$userOrAdmin = "an administrator";
+			}
+		} elseif (!empty($row['actionUserId']) && ($lastUpdatedByUser = \ze\user::details($row['actionUserId']))) {
 			if (
 				!$adminFacing
 				&& \ze::setting('user_use_screen_name')
 				&& !empty($lastUpdatedByUser['screen_name'])
 				&& $lastUpdatedByUser['screen_name_confirmed']
 			) {
-				$userOrAdmin = ($lastUpdatedByUser['screen_name'] ?? false) . " (user)";
+				$userOrAdmin = ($lastUpdatedByUser['screen_name'] ?? false);
 			} else {
-				$userOrAdmin = ($lastUpdatedByUser['identifier'] ?? false) . " (user)";
+				$userOrAdmin = ($lastUpdatedByUser['identifier'] ?? false);
 			}
 		} elseif (!empty($row['actionUsername'])) {
 			$userOrAdmin = ($row['actionUsername'] ?? false) . " (user account deleted)";

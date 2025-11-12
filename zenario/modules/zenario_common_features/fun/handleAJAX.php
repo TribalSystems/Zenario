@@ -198,7 +198,7 @@ if (ze\priv::check()) {
 					FROM information_schema.tables
 					WHERE table_schema = "'. ze\escape::sql(DBNAME). '"'
 				)) {
-					$formattedSize = ze\lang::formatFilesizeNicely($size, 1, true);
+					$formattedSize = ze\file::formatSizeUnits($size, $adminMode = true);
 				}
 				
 				if (ze\db::hasGlobal() || ze\db::hasDataArchive()) {
@@ -226,7 +226,7 @@ if (ze\priv::check()) {
 							FROM information_schema.tables
 							WHERE table_schema = "'. ze\escape::sql(DBNAME_DA). '"'
 						)) {
-							$daFormattedSize = ze\lang::formatFilesizeNicely($daSize, 1, true);
+							$daFormattedSize = ze\file::formatSizeUnits($daSize, $adminMode = true);
 							$section['fields'][] = ['label' => ze\admin::phrase('Data archive size:', $mrg), 'value' => $daFormattedSize];
 						}
 					}
@@ -320,36 +320,64 @@ if (ze\priv::check()) {
 		//Insert a version-controlled plugin into a slot
 		} elseif (ze::get('addPlugin')) {
 			
-			$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false),
-							'published' => ze\layoutAdm::usage($layoutId, true),
-							'moduleDisplayName' => htmlspecialchars(ze\module::displayName(ze::get('addPlugin'))),
-							'slotName' => htmlspecialchars(ze::get('slotName'))];
+			if ($level == 3) {
+				$mrg = [
+					'pages' => ze\layoutAdm::usage(false, false),
+					'published' => ze\layoutAdm::usage(false, true),
+					//'layouts' => ze\row::count('layouts', ['header_and_footer' => 1]),
+					'moduleDisplayName' => htmlspecialchars(ze\module::displayName(ze::get('addPlugin'))),
+					'slotName' => $slotName
+				];
+				
+				if (ze::get('isHeader')) {
+					echo ze\admin::phrase(
+						'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on the site-wide header?
+						<br/><br/>
+						This will affect [[pages]] content items, including <b>[[published]] published</b> content items.'
+					, $mrg);
+				} else {
+					echo ze\admin::phrase(
+						'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on the site-wide footer?
+						<br/><br/>
+						This will affect [[pages]] content items, including <b>[[published]] published</b> content items.'
+					, $mrg);
+				}
 			
-			if ($mrg['pages'] == 1) {
-				echo ze\admin::phrase(
-					'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on this layout?
-					<br/><br/>
-					The content will then be editable in &quot;Content item&quot; view.
-					<br/><br/>
-					This will affect just this content item, so <b>[[published]] published</b> content items.'
-				, $mrg);
 			} else {
-				echo ze\admin::phrase(
-					'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on this layout?
-					<br/><br/>
-					The content will then be editable in &quot;Content item&quot; view.
-					<br/><br/>
-					This will affect [[pages]] content items, including <b>[[published]] published</b> content items.'
-				, $mrg);
+				$mrg = ['pages' => ze\layoutAdm::usage($layoutId, false),
+								'published' => ze\layoutAdm::usage($layoutId, true),
+								'moduleDisplayName' => htmlspecialchars(ze\module::displayName(ze::get('addPlugin'))),
+								'slotName' => htmlspecialchars(ze::get('slotName'))];
+				
+				if ($mrg['pages'] == 1) {
+					echo ze\admin::phrase(
+						'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on this layout?
+						<br/><br/>
+						The content will then be editable in &quot;Content item&quot; view.
+						<br/><br/>
+						This will affect just this content item, so <b>[[published]] published</b> content items.'
+					, $mrg);
+				} else {
+					echo ze\admin::phrase(
+						'Insert a version-controlled [[moduleDisplayName]] into slot [[slotName]] on this layout?
+						<br/><br/>
+						The content will then be editable in &quot;Content item&quot; view.
+						<br/><br/>
+						This will affect [[pages]] content items, including <b>[[published]] published</b> content items.'
+					, $mrg);
+				}
 			}
 	
-		} elseif (ze::post('addPlugin') && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId) {
+		} elseif (ze::post('addPlugin') && $level == 2 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId) {
 			ze\pluginAdm::updateLayoutSlot(false, $slotName, $layoutId, ze::post('addPlugin'));
 		
 			//To avoid confusin, also remove the "hide plugin on this content item" option
 			//for this slot on this version of this content item if it has been set.
 			//(But don't touch any other versions/content items, even if they're also hidden.)
 			ze\pluginAdm::unhide($cID, $cType, $cVersion, $slotName);
+		
+		} elseif (ze::post('addPlugin') && $level == 3 && ze\priv::check('_PRIV_MANAGE_TEMPLATE_SLOT')) {
+			ze\pluginAdm::updateSitewideSlot($slotName, false, ze::post('addPlugin'));
 		
 		
 		
@@ -551,7 +579,12 @@ if (ze\priv::check()) {
 			
 			if ($placement) {
 				$mrg['moduleDisplayName'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
-				$mrg['pluginName'] = htmlspecialchars(ze\plugin::name($placement['instance_id']));
+				// For version-controlled plugins, instance_id is 0, so use module display name
+				if ($placement['instance_id']) {
+					$mrg['pluginName'] = htmlspecialchars(ze\plugin::name($placement['instance_id']));
+				} else {
+					$mrg['pluginName'] = htmlspecialchars(ze\module::displayName($placement['module_id']));
+				}
 			}
 			
 			

@@ -7,7 +7,13 @@
 
 		{% if Title %}
 			<div class="heading">
-				<h2>{{Title}}</h2>
+				<{{Title_Tags|e}}>{{Title}}</{{Title_Tags|e}}>
+			</div>
+		{% endif %}
+		
+		{% if Items_Message %}
+			<div class="events_to_show"> 
+				<{{Title_Tags_If_Items|e}}>{{Items_Message}}</{{Title_Tags_If_Items|e}}>
 			</div>
 		{% endif %}
 		
@@ -43,7 +49,7 @@
 				{% endif %}
 				<div class="single_event_description">
 					<div class="event_title">
-						<h2><a href="{{Event.Link_To_Event}}">{{Event.Event_Title}}</a></h2>
+						<{{Event_Title_Tags|e}}><a href="{{Event.Link_To_Event}}">{{Event.Event_Title}}</a></{{Event_Title_Tags|e}}>
 					</div>
 					<span class="single_event_date">{{Event.Event_Dates}}{% if Event.Event_Timezone %}, {{Event.Event_Timezone}}{% endif %}</span>
 					{% if Event.Event_location_name %}
@@ -55,7 +61,7 @@
 					{% if Event.Event_location_country %}
 						<span class="single_event_location_country">{{Event.Event_location_country}}</span>
 					{% endif %}
-					<span class="single_event_description">{{Event.Event_Description}}</span>
+					<span class="single_event_description">{{Event.Event_Summary}}</span>
 					{% if Show_Category and Event.Category %}
 						{% if Event.Category_Landing_Page_Link %}
 							<a href="{{Event.Category_Landing_Page_Link|e}}" target="_blank">
@@ -82,7 +88,9 @@
 		</div>
 	{% endif %}
 	
-    <div class="no_events_to_show" > 
-		{{'There are no events to show.'|trans}}
-	</div>
+    {% if No_Items_Message %}
+		<div class="no_events_to_show"> 
+			<{{Title_Tags_If_No_Items|e}}>{{No_Items_Message}}</{{Title_Tags_If_No_Items|e}}>
+		</div>
+	{% endif %}
 {% endif %}

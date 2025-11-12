@@ -29,18 +29,19 @@
 						{% endif %}
 					</div>
 				{% else %}
-					<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
-						{% if item.Thumbnail %}
-							<div class="thumbnail thumbnail_{{item.Document_Mime}}">
-								{{item.Thumbnail}}
-							</div>
-						{% else %}
-							<div class="thumbnail no_thumbnail_{{item.Document_Mime}}"></div>
-						{% endif %}
-					</a>
+					
+					{% if item.Thumbnail %}
+						<div class="thumbnail thumbnail_{{item.Document_Mime}}">
+							<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{item.Thumbnail}}</a>
+						</div>
+					{% else %}
+						<div class="thumbnail no_thumbnail_{{item.Document_Mime}}"></div>
+					{% endif %}
+					
 					{% if item.Document_Type == 'file' %}
 						<div class="level_{{item.Document_Level}}">
 							{% if item.Document_Title %}
+								<div class="document_title">
 								{% if item.Make_Title_A_Hyperlink %}
 									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
 								{% endif %}
@@ -50,9 +51,11 @@
 								{% if item.Make_Title_A_Hyperlink %}
 									</a>
 								{% endif %}
+								</div>
 							{% endif %}
 							
 							{% if item.Document_Filename %}
+								<div class="document_filename">
 								{% if item.Make_Filename_A_Hyperlink %}
 									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
 								{% endif %}
@@ -62,24 +65,29 @@
 								{% if item.Make_Filename_A_Hyperlink %}
 									</a>
 								{% endif %}
-							{% endif %}
-							
-							{% if item.File_Size %}
-								<span class="file_size">{{item.File_Size|e}}</span>
-							{% endif %}
-							{% if item.Upload_Date %}
-								<span class="upload_date">{{item.Upload_Date|e}}</span>
-							{% endif %}
-							
-							{% if View_Button %}
-								<div class="view_button">
-									<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{'View'|trans}}</a>
 								</div>
 							{% endif %}
 							
-							{% if Download_Link %}
-								<div class="download_link">
-									<a href="{{item.Document_Link}}" onclick="{{item.Google_Analytics_Link}}" download>{{Download_Link_Phrase|trans}}</a>
+							{% if item.File_Size %}
+								<div class="file_size">{{item.File_Size|e}}</div>
+							{% endif %}
+							{% if item.Upload_Date %}
+								<div class="upload_date">{{item.Upload_Date|e}}</div>
+							{% endif %}
+							
+							{% if View_Button or Download_Link %}
+								<div class="buttons">
+								{% if View_Button %}
+									<div class="view_button">
+										<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{'View'|trans}}</a>
+									</div>
+								{% endif %}
+								
+								{% if Download_Link %}
+									<div class="download_link">
+										<a href="{{item.Document_Link}}" onclick="{{item.Google_Analytics_Link}}" download>{{Download_Link_Phrase|trans}}</a>
+									</div>
+								{% endif %}
 								</div>
 							{% endif %}
 						</div>

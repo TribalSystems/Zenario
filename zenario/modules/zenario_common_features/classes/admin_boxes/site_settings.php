@@ -229,7 +229,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 						ze\ring::engToBoolean($settings['have_query_cache'] ?? false) && ze\ring::engToBoolean($settings['query_cache_type'] ?? false)
 				)) {
 					$fields['speed/query_cache_size']['value'] =
-					$fields['speed/query_cache_size']['current_value'] = ze\lang::formatFilesizeNicely((int) ($settings['query_cache_size'] ?? false), $precision = 1, $adminMode = true);
+					$fields['speed/query_cache_size']['current_value'] = ze\file::formatSizeUnits((int) ($settings['query_cache_size'] ?? false), $adminMode = true);
 				}
 	
 			} else {
@@ -485,7 +485,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		
 			} else {
 				$scheduledTaskManagerModuleId = ze\module::id('zenario_scheduled_task_manager');
-				$link = 'href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__modules/panels/modules//'. (int) $scheduledTaskManagerModuleId. '~-scheduled_task_manager'). '" target="_blank"';
+				$link = 'href="'. htmlspecialchars(ze\link::absolute(). 'organizer.php#zenario__library/panels/modules//'. (int) $scheduledTaskManagerModuleId. '~-scheduled_task_manager'). '" target="_blank"';
 				$fields['awss3_file_downloads/textract_description']['notices_below'] = [[
 					'type' => 'warning',
 					'message' => ze\admin::phrase('Document extracts are not available. To enable them, please install the Scheduled Task Manager module. <a [[link]]>See available modules.</a>', ['link' => $link]),
@@ -505,6 +505,10 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				$days,
 				['days' => $days]
 			);
+		}
+		
+		if ($settingGroup == 'admin_passwords') {
+			$box['key']['current_password_min_score_value'] = $values['passwords/min_admin_password_score'];
 		}
 	}
 
@@ -577,20 +581,20 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 
 		if (isset($fields['urls/mod_rewrite_enabled']) && $values['urls/mod_rewrite_enabled']) {
 			$fields['urls/friendly_urls_disabled_warning']['hidden'] = true;
-			$fields['sitemap/sitemap_enabled']['hidden'] = false;
-			$fields['sitemap/sitemap_disabled_warning']['hidden'] = true;
-			if (isset($fields['sitemap/sitemap_url'])) {
-				if (!$fields['sitemap/sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
-					$fields['sitemap/sitemap_url']['value'] =
-					$fields['sitemap/sitemap_url']['current_value'] = ze\miscAdm::sitemapURL($values['sitemap/sitemap_enabled']);
+			$fields['sitemap_robots/sitemap_enabled']['hidden'] = false;
+			$fields['sitemap_robots/sitemap_disabled_warning']['hidden'] = true;
+			if (isset($fields['sitemap_robots/sitemap_url'])) {
+				if (!$fields['sitemap_robots/sitemap_url']['hidden'] = !$values['sitemap_robots/sitemap_enabled']) {
+					$fields['sitemap_robots/sitemap_url']['value'] =
+					$fields['sitemap_robots/sitemap_url']['current_value'] = ze\miscAdm::sitemapURL($values['sitemap_robots/sitemap_enabled']);
 				}
 			}
 		} elseif (isset($fields['urls/mod_rewrite_enabled']) && !$values['urls/mod_rewrite_enabled']) {
 			$fields['urls/friendly_urls_disabled_warning']['hidden'] = false;
-			$fields['sitemap/sitemap_enabled']['hidden'] = true;
-			$fields['sitemap/sitemap_url']['hidden'] = true;
-			$values['sitemap/sitemap_url'] = false;
-			$fields['sitemap/sitemap_disabled_warning']['hidden'] = false;
+			$fields['sitemap_robots/sitemap_enabled']['hidden'] = true;
+			$fields['sitemap_robots/sitemap_url']['hidden'] = true;
+			$values['sitemap_robots/sitemap_url'] = false;
+			$fields['sitemap_robots/sitemap_disabled_warning']['hidden'] = false;
 		}
 		
 		if (isset($box['tabs']['caching'])) {
@@ -815,6 +819,12 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		if (isset($fields['template/standard_email_template'])) {
 			//Try and ensure that we use absolute URLs where possible
 			ze\contentAdm::addAbsURLsToAdminBoxField($fields['template/standard_email_template']);
+			
+			if (strpos($values['template/standard_email_template'], '[[email_body_content]]') === false) {
+				$fields['template/standard_email_template']['notices_below']['merge_field_notice']['type'] = 'warning';
+			} else {
+				$fields['template/standard_email_template']['notices_below']['merge_field_notice']['type'] = 'information';
+			}
 		}
 
 		if (isset($fields['test/test_send_button'])) {
@@ -925,44 +935,44 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		
 		//Set the default template values for the two buttons below the textarea for editing the robots.txt file.
 		//Note: This is done in formatAdminBox() and not fillAdminBox() as one of the default values changes depending
-		//on the settings chosen in the sitemap tab!
+		//on the settings chosen in the sitemap section!
 		if ($settingGroup == 'search_engine_optimisation') {
-			$defaultConfig = ze\miscAdm::robotsTxtDefaultConfig($values['sitemap/sitemap_enabled'], $values['sitemap/sitemap_url']);
+			$defaultConfig = ze\miscAdm::robotsTxtDefaultConfig($values['sitemap_robots/sitemap_enabled'], $values['sitemap_robots/sitemap_url']);
 			$blockAll = ze\miscAdm::robotsTxtBlockAllConfig();
 			
-			if (!empty($fields['robots_txt/default_config']['pressed'])) {
-				unset($fields['robots_txt/default_config']['pressed']);
+			if (!empty($fields['sitemap_robots/default_config']['pressed'])) {
+				unset($fields['sitemap_robots/default_config']['pressed']);
 				
-				$fields['robots_txt/default_config']['disabled'] = true;
-				$values['robots_txt/robots_txt_file_contents'] = $defaultConfig;
+				$fields['sitemap_robots/default_config']['disabled'] = true;
+				$values['sitemap_robots/robots_txt_file_contents'] = $defaultConfig;
 			} else {
-				$fields['robots_txt/default_config']['disabled'] = false;
+				$fields['sitemap_robots/default_config']['disabled'] = false;
 			}
 			
-			if (!empty($fields['robots_txt/block_all']['pressed'])) {
-				unset($fields['robots_txt/block_all']['pressed']);
+			if (!empty($fields['sitemap_robots/block_all']['pressed'])) {
+				unset($fields['sitemap_robots/block_all']['pressed']);
 				
-				$fields['robots_txt/block_all']['disabled'] = true;
-				$values['robots_txt/robots_txt_file_contents'] = $blockAll;
+				$fields['sitemap_robots/block_all']['disabled'] = true;
+				$values['sitemap_robots/robots_txt_file_contents'] = $blockAll;
 			} else {
-				$fields['robots_txt/block_all']['disabled'] = false;
+				$fields['sitemap_robots/block_all']['disabled'] = false;
 			}
 			
-			$fields['robots_txt/robots_config_info_message__blocks_all']['hidden'] = true;
-			$fields['robots_txt/robots_config_info_message__default_config']['hidden'] = true;
+			$fields['sitemap_robots/robots_config_info_message__blocks_all']['hidden'] = true;
+			$fields['sitemap_robots/robots_config_info_message__default_config']['hidden'] = true;
 			
-			if ($values['robots_txt/robots_txt_file_contents'] == $blockAll) {
-				$fields['robots_txt/robots_config_info_message__blocks_all']['hidden'] = false;
-			} elseif ($values['robots_txt/robots_txt_file_contents'] == $defaultConfig) {
-				$fields['robots_txt/robots_config_info_message__default_config']['hidden'] = false;
+			if ($values['sitemap_robots/robots_txt_file_contents'] == $blockAll) {
+				$fields['sitemap_robots/robots_config_info_message__blocks_all']['hidden'] = false;
+			} elseif ($values['sitemap_robots/robots_txt_file_contents'] == $defaultConfig) {
+				$fields['sitemap_robots/robots_config_info_message__default_config']['hidden'] = false;
 			}
 			
 			$robotxTxtReferencesSitemap = false;
-			if (strpos($values['robots_txt/robots_txt_file_contents'], 'Sitemap:') !== false) {
+			if (strpos($values['sitemap_robots/robots_txt_file_contents'], 'Sitemap:') !== false) {
 				$robotxTxtReferencesSitemap = true;
 			}
-			$box['tabs']['robots_txt']['notices']['robots_txt_refers_to_disabled_sitemap']['show'] = $robotxTxtReferencesSitemap && !$values['sitemap/sitemap_enabled'];
-			$box['tabs']['robots_txt']['notices']['robots_txt_does_not_include_sitemap']['show'] = !$robotxTxtReferencesSitemap && $values['sitemap/sitemap_enabled'];
+			$box['tabs']['sitemap_robots']['notices']['robots_txt_refers_to_disabled_sitemap']['show'] = $robotxTxtReferencesSitemap && !$values['sitemap_robots/sitemap_enabled'];
+			$box['tabs']['sitemap_robots']['notices']['robots_txt_does_not_include_sitemap']['show'] = !$robotxTxtReferencesSitemap && $values['sitemap_robots/sitemap_enabled'];
     	}
     	
     	if ($settingGroup == 'logos_and_branding') {
@@ -988,6 +998,43 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 			}
     	}
+    	
+    	if ($settingGroup == 'admin_passwords') {
+			if ($values['passwords/min_admin_password_score'] < 1) {
+					$values['passwords/min_admin_password_score'] = 1;
+				} elseif ($values['passwords/min_admin_password_score'] > 4) {
+					$values['passwords/min_admin_password_score'] = 4;
+				}
+			
+			if (
+				$values['passwords/min_admin_password_score'] == 4
+				&& (
+					$values['passwords/min_admin_password_score'] != $box['key']['current_password_min_score_value']
+					|| $values['passwords/min_admin_password_length'] < 12
+				)
+			) {
+				$values['passwords/min_admin_password_length'] = 12;
+			} elseif (
+				$values['passwords/min_admin_password_score'] == 3
+				&& (
+					$values['passwords/min_admin_password_score'] != $box['key']['current_password_min_score_value']
+					|| $values['passwords/min_admin_password_length'] < 10
+				)
+			) {
+				$values['passwords/min_admin_password_length'] = 10;
+			} elseif ($values['passwords/min_admin_password_length'] < 10) {
+				$values['passwords/min_admin_password_length'] = 10;
+			}
+			
+			$box['key']['current_password_min_score_value'] = $values['passwords/min_admin_password_score'];
+			
+			$cssClass = 'black';
+			if ($values['passwords/min_admin_password_score'] == 3 || $values['passwords/min_admin_password_score'] == 4) {
+				$cssClass = 'green';
+			}
+			
+			$fields['passwords/min_admin_password_score']['slider']['class'] = $cssClass;
+		}
 	}
 
 
@@ -1167,11 +1214,11 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 		}
 		
 		if ($settingGroup == 'search_engine_optimisation') {
-			$fields['robots_txt/robots_txt_file_contents_required_lines_description']['hidden'] = true;
+			$fields['sitemap_robots/robots_txt_file_contents_required_lines_description']['hidden'] = true;
 			
-			if ($values['robots_txt/robots_txt_file_contents']) {
+			if ($values['sitemap_robots/robots_txt_file_contents']) {
 				$rules = [];
-				foreach (explode("\n", $values['robots_txt/robots_txt_file_contents']) as $line) {
+				foreach (explode("\n", $values['sitemap_robots/robots_txt_file_contents']) as $line) {
 					$parts = explode(':', $line, 2);
 					if (!empty($parts[1])) {
 						$command = trim(strtolower($parts[0]));
@@ -1243,8 +1290,8 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				}
 				
 				if (!$robotstxtContentsAreValid) {
-					$fields['robots_txt/robots_txt_file_contents']['error'] = ze\admin::phrase('Please check the note below and make sure the required lines are present in the robots.txt file contents.');
-					$fields['robots_txt/robots_txt_file_contents_required_lines_description']['hidden'] = false;
+					$fields['sitemap_robots/robots_txt_file_contents']['error'] = ze\admin::phrase('Please check the note below and make sure the required lines are present in the robots.txt file contents.');
+					$fields['sitemap_robots/robots_txt_file_contents_required_lines_description']['hidden'] = false;
 				}
 			}
 		}
@@ -1292,6 +1339,42 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 				)
 			) {
 				$fields['data_protection/period_to_delete_the_email_template_sending_log_content']['error'] = ze\admin::phrase('You cannot save content for longer than the headers.');
+			}
+		}
+		
+		if ($settingGroup == 'admin_passwords') {
+			if ($values['passwords/min_admin_password_length'] < 10 || $values['passwords/min_admin_password_length'] > 32) {
+				$fields['passwords/min_admin_password_length']['error'] = ze\admin::phrase(
+					'The minimum password length must be between [[min_password_length]] and [[max_password_length]].',
+					['min_password_length' => 10, 'max_password_length' => 32]
+				);
+			} elseif (!ctype_digit($values['passwords/min_admin_password_length'])) {
+				$fields['passwords/min_admin_password_length']['error'] = ze\admin::phrase('The value must be an integer.');
+			}
+
+			if ($values['passwords/min_admin_password_score'] < 3 || $values['passwords/min_admin_password_score'] > 4) {
+				$fields['passwords/min_admin_password_score']['error'] = ze\admin::phrase(
+					'The minimum password score must be either [[min_password_score]] or [[max_password_score]].',
+					['min_password_score' => 3, 'max_password_score' => 4]
+				);
+			} elseif (!ctype_digit($values['passwords/min_admin_password_score'])) {
+				$fields['passwords/min_admin_password_score']['error'] = ze\admin::phrase('The value must be an integer.');
+			}
+
+			if (
+				($values['passwords/min_admin_password_score'] == 4 & $values['passwords/min_admin_password_length'] < 12)
+				|| ($values['passwords/min_admin_password_score'] == 3 & $values['passwords/min_admin_password_length'] < 10)
+			) {
+				if ($values['passwords/min_admin_password_score'] == 4) {
+					$requiredMinLength = 12;
+				} elseif ($values['passwords/min_admin_password_score'] == 3) {
+					$requiredMinLength = 10;
+				}
+				
+				$fields['passwords/min_admin_password_length']['error'] = ze\admin::phrase(
+					'To match score [[score]], the password length needs to be at least [[min_length]] characters.',
+					['score' => $values['passwords/min_admin_password_score'], 'min_length' => $requiredMinLength]
+				);
 			}
 		}
 	}
@@ -1342,6 +1425,18 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 							$clearSiteSetting = true;
 						} else {
 							$value = $values[$tabName. '/'. $fieldName] ?? '';
+						}
+						
+						//As per T12878, trim leading zeroes from integers
+						if (ze\tuix::isIntField($field)) {
+							$valWithZeros = trim($value);
+							$value = ltrim($valWithZeros, '0');
+							
+							//Catch the case where "0" was trimmed to an empty string
+							if ($value === ''
+							 && $valWithZeros !== '') {
+								$value = '0';
+							}
 						}
 				
 						//Setting the primary or admin domain to "none" should count as being empty
@@ -1440,7 +1535,7 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 								} elseif ($setting == 'standard_email_template') {
 									$files = [];
 									$htmlChanged = false;
-									ze\contentAdm::syncInlineFileLinks($files, $value, $htmlChanged);
+									ze\contentAdm::syncInlineFileLinksWithoutTranscoding($files, $value, $htmlChanged);
 									$key = ['foreign_key_to' => 'standard_email_template', 'foreign_key_id' => 1, 'foreign_key_char' => ''];
 									ze\contentAdm::syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 								}
@@ -1506,6 +1601,36 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 					ze\site::setSetting('max_location_image_filesize', '');
 					ze\site::setSetting('max_location_image_filesize_unit', '');
 					ze\site::setSetting('max_location_image_filesize_override', false);
+				}
+			}
+		}
+		
+		if ($settingGroup == 'cookies') {
+			if ($values['cookies/cookie_require_consent']) {
+				if ($values['cookies/cookie_require_consent'] == 'implied') {
+					if (!$values['cookies/cookie_box1_02_continue_btn']) {
+						ze\site::setSetting('cookie_box1_02_continue_btn', 'Continue');
+					}
+				} elseif ($values['cookies/cookie_require_consent'] == 'explicit') {
+					if (!$values['cookies/cookie_box1_05_accept_btn']) {
+						ze\site::setSetting('cookie_box1_05_accept_btn', 'Accept all');
+					}
+					
+					if ($values['cookies/cookie_box1_06_necessary_only_checkbox'] && !$values['cookies/cookie_box1_07_necessary_only_btn']) {
+						ze\site::setSetting('cookie_box1_07_necessary_only_btn', 'Necessary only');
+					}
+					
+					if (!$values['cookies/cookie_box1_04_manage_btn']) {
+						ze\site::setSetting('cookie_box1_04_manage_btn', 'Manage cookies');
+					}
+					
+					if (!$values['cookies/cookie_box2_02_accept_all_btn']) {
+						ze\site::setSetting('cookie_box2_02_accept_all_btn', 'Accept all');
+					}
+					
+					if (!$values['cookies/cookie_box2_11_save_preferences_btn']) {
+						ze\site::setSetting('cookie_box2_11_save_preferences_btn', 'Save preferences');
+					}
 				}
 			}
 		}

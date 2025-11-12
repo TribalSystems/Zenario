@@ -31,7 +31,11 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		$formId = $refinerId;
-		$form = ze\row::get(ZENARIO_USER_FORMS_PREFIX . 'user_forms', ['name', 'type', 'title', 'translate_text', 'enable_summary_page', 'status'], $formId);
+		$form = ze\row::get(
+			ZENARIO_USER_FORMS_PREFIX . 'user_forms',
+			['name', 'type', 'title', 'translate_text', 'enable_summary_page', 'status', 'send_email_to_admin', 'send_email_to_admin_destination_for_form_response', 'admin_email_destination_select_list_for_fields'],
+			$formId
+		);
 		
 		if ($form['status'] == 'archived') {
 			$panel['title'] = ze\admin::phrase('Form fields for "[[name]]" (the form is archived, editing is disabled)', $form);
@@ -226,6 +230,17 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						'label' => $label, 
 						'ord' => ++$ord
 					];
+					
+					if ($form['status'] == 'archived'
+						|| (
+							$form['send_email_to_admin']
+							&& $form['send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values'
+							&& $field['type'] == 'select'
+							&& $fieldId == $form['admin_email_destination_select_list_for_fields']
+						)
+					) {
+						$field['lov'][$valueId]['readonly'] = true;
+					}
 				}
 				
 				$field['invalid_responses'] = array_map('strval', array_values(ze\row::getAssocs(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', 'id', ['form_field_id' => $field['id'], 'is_invalid' => true], 'ord')));
@@ -262,6 +277,15 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 						}
 					}
 				}
+			}
+			
+			if (
+				$form['send_email_to_admin']
+				&& $form['send_email_to_admin_destination_for_form_response'] == 'destination_depends_on_a_field_and_its_values'
+				&& $field['type'] == 'select'
+				&& $fieldId == $form['admin_email_destination_select_list_for_fields']
+			) {
+				$field['field_is_used_as_email_destination_in_form_setting'] = true;
 			}
 		}
 		unset($field);
@@ -1253,9 +1277,21 @@ class zenario_user_forms__organizer__form_fields_gui extends ze\moduleBaseClass 
 		
 		$values['validation'] = null;
 		$values['validation_error_message'] = null;
+		$values['show_field_twice_for_confirmation'] = 0;
+		$values['confirmation_field_label'] = '';
+		$values['confirmation_field_error_message'] = '';
 		if (!empty($field['field_validation']) && $field['field_validation'] != 'none') {
 			$values['validation'] = $field['field_validation'];
 			$values['validation_error_message'] = $this->sanitizeTextForSQL($field['field_validation_error_message']);
+			
+			if ($field['field_validation'] == 'email') {
+				$values['show_field_twice_for_confirmation'] = (int) $field['show_field_twice_for_confirmation'];
+				
+				if ($values['show_field_twice_for_confirmation']) {
+					$values['confirmation_field_label'] = $this->sanitizeTextForSQL($field['confirmation_field_label']);
+					$values['confirmation_field_error_message'] = $this->sanitizeTextForSQL($field['confirmation_field_error_message']);
+				}
+			}
 		}
 		
 		$values['description'] = isset($field['description']) ? $this->sanitizeTextForSQL($field['description'], 65535) : null;
