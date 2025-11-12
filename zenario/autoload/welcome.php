@@ -3601,18 +3601,19 @@ class welcome {
 						['link_start' => $linkStart, 'link_end' => $linkEnd]
 					);
 			}
-		
+			
+			
 			//Check to see if this is a developer installation...
 			$fields['0/notices_shown']['hidden'] = true;
 			$fields['0/errors_not_shown']['hidden'] = true;
-		
-			if (\ze\site::inDevMode()) {
+			
+			$inDevMode = \ze\site::inDevMode();
+			if ($inDevMode) {
 			
 				//Check to see if any developers are not showing errors/warnings
 				//Note: only show this message if it's in the error state; hide it otherwise
 				if (!(ERROR_REPORTING_LEVEL & E_ALL)
-				 || !(ERROR_REPORTING_LEVEL & E_NOTICE)
-				 || !(ERROR_REPORTING_LEVEL & E_STRICT)) {
+				 || !(ERROR_REPORTING_LEVEL & E_NOTICE)) {
 					$show_warning = true;
 					$fields['0/errors_not_shown']['hidden'] = false;
 					$fields['0/errors_not_shown']['row_class'] = 'warning';
@@ -3631,15 +3632,31 @@ class welcome {
 			
 				//Reverse of the above;
 				//Warn production sites that level a high level of error reporting on
-				if ((ERROR_REPORTING_LEVEL & E_NOTICE)
-				 || (ERROR_REPORTING_LEVEL & E_STRICT)) {
+				if ((ERROR_REPORTING_LEVEL & E_NOTICE)) {
 					$show_warning = true;
 					$fields['0/notices_shown']['hidden'] = false;
 					$fields['0/notices_shown']['row_class'] = 'warning';
 				}
-			
 			}
-
+			
+			//Warn someone if they still have a reference to "E_STRICT" in their zenario_siteconfig.php file.
+			//In production mode we can quickly check if this is set by doing (ERROR_REPORTING_LEVEL & 2048) and checking that it is not empty.
+			//However there's no easy way to check in development mode, so I am reading the file contents to check it in this case!
+			if (defined('ERROR_REPORTING_LEVEL')
+			 && ($inDevMode || empty(ERROR_REPORTING_LEVEL & 2048))
+			 && ($sConfig = file_get_contents(CMS_ROOT. 'zenario_siteconfig.php'))
+			 && (preg_match('@\bE_STRICT\b@i', $sConfig))) {
+				$fields['0/strict_still_mentioned']['row_class'] = 'warning';
+				$fields['0/strict_still_mentioned']['hidden'] = false;
+				$show_warning = true;
+				
+				$fields['0/strict_still_mentioned']['snippet']['html'] =
+					\ze\admin::phrase('The <code>zenario_siteconfig.php</code> file contains a reference to the deprecated <code><strong>E_STRICT</strong></code> constant. This will cause your site to stop working in a future version of PHP. Please edit the <code>zenario_siteconfig.php</code> file remove any reference to <code><strong>E_STRICT</strong></code>.');
+			} else {
+				$fields['0/strict_still_mentioned']['hidden'] = true;
+			}
+			
+			
 			//Check to see if cache debug is enabled
 			if (\ze::setting('caching_debug_info')) {
 				$show_warning = true;

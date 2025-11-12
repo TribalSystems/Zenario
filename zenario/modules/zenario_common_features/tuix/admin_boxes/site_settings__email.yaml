@@ -174,20 +174,6 @@ site_settings:
                             ord: 2
                             label: Use an SMTP gateway (recommended)
                     redraw_onchange: true
-                base64_encode_emails:
-                    site_setting:
-                        name: base64_encode_emails
-                    indent: 1
-                    label: 'Encoding (advanced):'
-                    type: radios
-                    value: ""
-                    values:
-                        - Do not encode (recommended)
-                        - Use base64 encoding
-                    visible_if: |
-                        !zenarioAB.value('smtp_specify_server')
-                    note_below: |
-                        You should only use the base64 option if you are regularly seeing corrupted characters in sent emails.
                 smtp_host:
                     site_setting:
                         name: smtp_host
@@ -263,6 +249,23 @@ site_settings:
                     type: password
                     visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"
                     indent: 2
+                base64_encode_emails:
+                    site_setting:
+                        name: base64_encode_emails
+                    label: 'Encoding:'
+                    type: radios
+                    value: 1
+                    values:
+                        1:
+                            ord: 1
+                            label: Use base64 encoding (recommended)
+                        '':
+                            ord: 2
+                            label: Automatic
+                    note_below: |
+                        Base64 encoding is the most reliable.
+                        The "automatic" option will try to reduce the size of emails,
+                        but this may result in emails appearing corrupted on some older email clients.
         test:
             priv: _PRIV_EDIT_SITE_SETTING
             label: Test

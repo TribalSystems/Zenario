@@ -33,19 +33,6 @@ site_settings:
                         and turned <strong>off</strong> for <strong>live</strong> sites.
                         If enabled, Zenario and running modules will show messages whenever there is a warning
                         or error.
-                show_strict:
-                    grouping: zenario_siteconfig
-                    label: 'Show strict PHP warnings'
-                    type: checkbox
-                    readonly: true
-                    post_field_html: |
-                        (<code>E_STRICT</code>)
-                    note_below: |
-                        This should be turned <strong>on</strong> for <strong>development</strong> and <strong>staging</strong> sites,
-                        and turned <strong>off</strong> for <strong>live</strong> sites.
-                        If enabled, Zenario and running modules will show messages whenever they
-                        encounter PHP code that is no longer compatible with the latest version of PHP, or not complying with
-                        good coding standards.
                 show_all:
                     grouping: zenario_siteconfig
                     label: 'Show all other PHP errors'

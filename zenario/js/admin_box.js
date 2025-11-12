@@ -703,7 +703,7 @@ zenarioAB.contentTitleChange = function() {
 		aliasDOM.value = zenarioAB.generateAlias(zenarioAB.get('title').value);
 		zenarioAB.validateAlias();
 
-		$('#alias').trigger('input');
+		$(aliasDOM).trigger('input');
 	}
 };
 

@@ -229,7 +229,7 @@ echo
 '<!DOCTYPE HTML>
 <html>
 <head>
-	<title>', ze\admin::phrase('Zenario admininstrator login'), '</title>
+	<title>', ze\admin::phrase('Zenario administrator login'), '</title>
 	<meta name="viewport" content="initial-scale=0.5">
 	<base href="', ze\link::absolute(), '">';
 

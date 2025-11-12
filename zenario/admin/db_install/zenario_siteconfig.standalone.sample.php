@@ -118,10 +118,10 @@ define('SESSION_TIMEOUT', 1800);
  // Error reporting //
 /////////////////////
 
-//define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE | E_STRICT));
+//define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE));
 // This shows every type of error.
 // We recommend using this level of reporting on development or staging sites that are not live.
 
-define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));
+define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE));
 // This shows all errors except notices and strict errors.
 // We recommend using this level of reporting on live/production sites.

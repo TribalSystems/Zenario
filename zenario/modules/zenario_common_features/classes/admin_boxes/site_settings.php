@@ -515,14 +515,9 @@ class zenario_common_features__admin_boxes__site_settings extends ze\moduleBaseC
 			$fields['errors/show_notices']['current_value'] = (error_reporting() & E_NOTICE) == E_NOTICE;
 		}
 
-		if (isset($fields['errors/show_strict'])) {
-			$fields['errors/show_strict']['value'] =
-			$fields['errors/show_strict']['current_value'] = (error_reporting() & E_STRICT) == E_STRICT;
-		}
-
 		if (isset($fields['errors/show_all'])) {
 			$fields['errors/show_all']['value'] =
-			$fields['errors/show_all']['current_value'] = ((error_reporting() | E_NOTICE | E_STRICT) & (E_ALL | E_NOTICE | E_STRICT)) == (E_ALL | E_NOTICE | E_STRICT);
+			$fields['errors/show_all']['current_value'] = ((error_reporting() | E_NOTICE) & (E_ALL | E_NOTICE)) == (E_ALL | E_NOTICE);
 		}
 
 		if (isset($fields['cookie_domain/cookie_domain'])) {

@@ -46,5 +46,8 @@ ze\bundle::incJS('zenario/libs/not_to_redistribute/highcharts/exporting');
 ze\bundle::incJS('zenario/libs/not_to_redistribute/highcharts/export-csv');
 ze\bundle::incJS('zenario/libs/not_to_redistribute/highcharts/modules/no-data-to-display');
 
+//Add the functionality for Sparkline Chats
+ze\bundle::incJS('zenario/js/highcharts.sparkline');
+
 //Run post-display actions
 if (ze::$canCache) require CMS_ROOT. 'zenario/includes/bundle.post_display.inc.php';

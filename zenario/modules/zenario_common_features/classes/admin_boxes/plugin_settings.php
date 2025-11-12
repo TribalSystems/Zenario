@@ -465,25 +465,10 @@ class zenario_common_features__admin_boxes__plugin_settings extends ze\moduleBas
 					$title = ze\admin::phrase('Version controlled [[module]] ([[class_name]])', $titleMrg);
 		
 				} elseif ($box['key']['instanceId']) {
-					switch ($module['class_name']) {
-						case 'zenario_nest':
-						case 'zenario_ajax_nest':
-							$title = ze\admin::phrase('Nest ([[class_name]])', $titleMrg);
-							break;
-						default:
-							$title = ze\admin::phrase('[[module]] ([[class_name]])', $titleMrg);
-					}
+					$title = ze\admin::phrase('[[module]] ([[class_name]])', $titleMrg);
 		
 				} else {
-					switch ($module['class_name']) {
-						case 'zenario_nest':
-						case 'zenario_ajax_nest':
-							$title = ze\admin::phrase('New nest ([[class_name]])', $titleMrg);
-							break;
-						default:
-							$title = 
-								ze\admin::phrase('New [[module]] ([[class_name]])', $titleMrg);
-					}
+					$title = ze\admin::phrase('New [[module]] ([[class_name]])', $titleMrg);
 				}
 		
 				// Get modules description file

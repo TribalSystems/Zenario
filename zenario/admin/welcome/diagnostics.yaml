@@ -613,7 +613,7 @@ diagnostics:
                         html: |
                             Your site is in developer mode.<br/>
                             The PHP error reporting level specified in <code>zenario_siteconfig.php</code> currently tells Zenario to suppress PHP issues which developers should see. To change this, edit the file and ensure it has the following line:<br/>
-                            <code>define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE | E_STRICT));</code><br/>
+                            <code>define('ERROR_REPORTING_LEVEL', (E_ALL | E_NOTICE));</code><br/>
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
                 notices_shown:
@@ -624,9 +624,10 @@ diagnostics:
                         html: |
                             Your site is in production mode, but its <code>zenario_siteconfig.php</code> file is set to show "Notices" raised by PHP programs. These could be seen by website visitors. Notices are normally intended for Zenario software developers.<br/>
                             To change this, edit the file and ensure it has the following line:<br/>
-                            <code>define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));</code><br>
+                            <code>define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE));</code><br>
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(field)
+                strict_still_mentioned: *blank_child
                 cache_debug_enabled:
                     grouping: sub_table
                     full_width: true

@@ -156,7 +156,7 @@ zenario__administration:
                     priv: _PRIV_CREATE_ADMIN
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create an admininstrator
+                    label: Create an administrator
                     hide_on_refiner: trashed
                     hide_in_select_mode: true
                     admin_box:

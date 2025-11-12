@@ -237,11 +237,6 @@ class ze {
 					$errorType = "notice";
 					break;
 				
-				//"Strict"
-				case 2048: //E_STRICT
-					$errorType = "strict warning";
-					break;
-				
 				default:
 					$errorType = "error";
 					break;
@@ -524,8 +519,8 @@ if (!empty($_REQUEST)) ze::trim($_REQUEST);
 
 
 
-//Set the error level if specified in the site configs, defaulting to (E_ALL & ~E_NOTICE | E_STRICT) if not defined or if the site configs have not yet been included
-ze::define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
+//Set the error level if specified in the site configs, defaulting to (E_ALL & ~E_NOTICE) if not defined or if the site configs have not yet been included
+ze::define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE);
 error_reporting(ERROR_REPORTING_LEVEL);
 
 //Also add a wrapper to the error handler that checks if a page has a visible error on it
